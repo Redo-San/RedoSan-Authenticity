@@ -6,15 +6,37 @@
 
 ## Features
 
-| # | Feature | Description |
-|---|---------|-------------|
-| 1 | **Hide + Timestamp** | Embed a secret file into an image (LSB steganography), then create a verifiable timestamp proof |
-| 2 | **Extract + Verify** | Extract a hidden file from an image and verify its timestamp integrity |
-| 3 | **Timestamp** | Calculate SHA-256 hash and create an OpenTimestamps proof for any file |
-| 4 | **Verify** | Verify that a file matches its timestamp proof (integrity check) |
-| 5 | **Watermark + Timestamp** | Add an invisible digital watermark (DWT wavelet) to an image and timestamp it |
-| 6 | **Gen Signature** | Generate a watermarking signature file |
-| 7 | **Check Watermark** | Check if an image contains a specific digital watermark |
+| # | Feature | Media | Description |
+|---|---------|-------|-------------|
+| 1 | **Hide + Timestamp** | 🖼 Image | Embed secret in image (LSB), timestamp the result |
+| 2 | **Extract + Verify** | 🖼 Image | Extract secret from image, verify timestamp |
+| 3 | **Timestamp** | 📄 Any file | SHA-256 + OpenTimestamps proof |
+| 4 | **Verify** | 📄 Any file | Verify file integrity against .ots proof |
+| 5 | **Watermark + Timestamp** | 🖼 Image | DWT watermark + timestamp |
+| 6 | **Gen Signature** | 🔑 - | Generate watermarking signature |
+| 7 | **Check Watermark** | 🖼 Image | Detect watermark in image |
+| 8 | **Hide in Audio** | 🔊 WAV | LSB steganography in WAV files (pure Python) |
+| 9 | **Extract from Audio** | 🔊 WAV | Extract hidden data from WAV |
+| 10 | **Hide in Video** | 🎬 Video | Frame-based LSB via ffmpeg + Pillow |
+| 11 | **Extract from Video** | 🎬 Video | Extract hidden data from video |
+| 12 | **View Metadata** | 🖼🔊🎬 Any media | Read EXIF, ID3, video streams, etc. |
+
+---
+
+## Requirements
+
+| Dependency | Required For | Install |
+|------------|-------------|---------|
+| **Python 3.8+** | Core tool | [python.org](https://www.python.org/downloads/) |
+| **Java 8+ (JRE)** | Image stego (OpenStego) | [java.com](https://www.java.com/download/) |
+| **OpenStego** | Image stego | [openstego.com](https://www.openstego.com/) |
+| `opentimestamps` | Timestamping | `pip install opentimestamps opentimestamps-client` |
+| **ffmpeg** | Video stego (optional) | [ffmpeg.org](https://ffmpeg.org/) |
+| `Pillow` | Video stego / Metadata (optional) | `pip install Pillow` |
+| `mutagen` | Audio metadata (optional) | `pip install mutagen` |
+
+> **Pure Python features** (no extra deps): Timestamp (3), Verify (4), Audio stego (8, 9)
+> **External tools needed**: Image stego (1,2,5,6,7) ← Java + OpenStego; Video stego (10,11) ← ffmpeg + Pillow
 
 ---
 

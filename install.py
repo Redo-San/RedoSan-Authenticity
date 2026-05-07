@@ -5,7 +5,7 @@ Run:  python install.py
 """
 import os, sys, subprocess, platform
 
-PACKAGES = ["opentimestamps", "opentimestamps-client"]
+PACKAGES = ["opentimestamps", "opentimestamps-client", "Pillow", "mutagen"]
 
 
 def run(cmd, desc):
@@ -44,8 +44,22 @@ def main():
         print("       Install Java from: https://www.java.com/download/")
     print()
 
-    # 3. OpenStego check
-    print("[3/4] Checking OpenStego...")
+    # 3. Extended modules check
+    print("[3/5] Checking audio module (WAV LSB)...")
+    print("       Pure Python - no deps needed")
+    audio_ok = True
+    print()
+
+    print("[4/5] Checking ffmpeg for video module...")
+    try:
+        subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
+        print("       ffmpeg found")
+    except:
+        print("       ffmpeg not found (optional, for video stego)")
+        print("       Install from: https://ffmpeg.org/")
+    print()
+
+    print("[5/5] Checking OpenStego...")
     if platform.system() == "Windows":
         jars = [
             r"C:\Program Files (x86)\OpenStego\lib\openstego.jar",

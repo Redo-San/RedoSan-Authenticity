@@ -7,6 +7,34 @@ OTS_SCRIPT = os.path.join(SCRIPT_DIR, "ots_direct.py")
 
 
 # -----------------------------------------------------------------------
+#  Optional module imports
+# -----------------------------------------------------------------------
+MODULES = {}
+
+try:
+    from modules import audio as _audio_mod
+    MODULES["audio"] = _audio_mod
+except ImportError:
+    MODULES["audio"] = None
+
+try:
+    from modules import video as _video_mod
+    MODULES["video"] = _video_mod
+except ImportError:
+    MODULES["video"] = None
+
+try:
+    from modules import metadata as _meta_mod
+    MODULES["metadata"] = _meta_mod
+except ImportError:
+    MODULES["metadata"] = None
+
+
+def has_module(name):
+    return MODULES.get(name) is not None
+
+
+# -----------------------------------------------------------------------
 #  Dependency auto-detection
 # -----------------------------------------------------------------------
 
@@ -353,6 +381,81 @@ def feature_batch_process(filepath, jar):
         print("Invalid choice")
 
 
+# -----------------------------------------------------------------------
+#  Audio stego features
+# -----------------------------------------------------------------------
+
+def feature_audio_embed():
+    h1("HIDE DATA IN AUDIO (WAV LSB)")
+    wav = _s(input("Cover audio (WAV) path: "))
+    secret = _s(input("Secret file path: "))
+    out = _s(input("Output WAV path (Enter = auto): "))
+    if not out:
+        out = os.path.splitext(wav)[0] + "_stego.wav"
+    pw = input("Password (Enter = none): ").strip()
+
+    ok, msg = MODULES["audio"].embed(wav, secret, out, pw or None)
+    print(f"\n  {'SUCCESS' if ok else 'ERROR'}: {msg}")
+
+
+def feature_audio_extract():
+    h1("EXTRACT DATA FROM AUDIO (WAV LSB)")
+    wav = _s(input("Stego audio (WAV) path: "))
+    outdir = _s(input("Extract to directory (Enter = current): "))
+    if not outdir:
+        outdir = os.path.dirname(wav) or "."
+    pw = input("Password (Enter = none): ").strip()
+
+    ok, msg = MODULES["audio"].extract(wav, outdir, pw or None)
+    print(f"\n  {'SUCCESS' if ok else 'ERROR'}: {msg}")
+
+
+# -----------------------------------------------------------------------
+#  Video stego features
+# -----------------------------------------------------------------------
+
+def feature_video_embed():
+    h1("HIDE DATA IN VIDEO (FFMPEG + LSB)")
+    vid = _s(input("Cover video path: "))
+    secret = _s(input("Secret file path: "))
+    out = _s(input("Output video path (Enter = auto): "))
+    if not out:
+        out = os.path.splitext(vid)[0] + "_stego" + os.path.splitext(vid)[1]
+    pw = input("Password (Enter = none): ").strip()
+
+    ok, msg = MODULES["video"].embed(vid, secret, out, pw or None)
+    print(f"\n  {'SUCCESS' if ok else 'ERROR'}: {msg}")
+
+
+def feature_video_extract():
+    h1("EXTRACT DATA FROM VIDEO (FFMPEG + LSB)")
+    vid = _s(input("Stego video path: "))
+    outdir = _s(input("Extract to directory (Enter = current): "))
+    if not outdir:
+        outdir = os.path.dirname(vid) or "."
+    pw = input("Password (Enter = none): ").strip()
+
+    ok, msg = MODULES["video"].extract(vid, outdir, pw or None)
+    print(f"\n  {'SUCCESS' if ok else 'ERROR'}: {msg}")
+
+
+# -----------------------------------------------------------------------
+#  Metadata feature
+# -----------------------------------------------------------------------
+
+def feature_metadata():
+    h1("VIEW FILE METADATA")
+    path = _s(input("File path: "))
+    if not os.path.exists(path):
+        return print("ERROR: File not found")
+    meta = MODULES["metadata"].read_metadata(path)
+    MODULES["metadata"].print_metadata(meta)
+
+
+# -----------------------------------------------------------------------
+#  Setup
+# -----------------------------------------------------------------------
+
 def run_setup():
     h1("RedoSan Authenticity - Setup")
     print("Checking dependencies...\n")
@@ -419,14 +522,31 @@ def main():
         if not java or not check_pip_packages():
             print("  [!] Some features limited - run with --setup for info")
         print()
+        print("  == IMAGE STEGANOGRAPHY ==")
         print("  1. Hide secret in image + Timestamp")
         print("  2. Extract secret + Verify timestamp")
-        print("  3. Timestamp a file")
-        print("  4. Verify timestamp integrity")
         print("  5. Watermark image + Timestamp")
         print("  6. Generate watermark signature")
         print("  7. Check watermark in image")
-        if not jar or not java or not check_pip_packages():
+        if has_module("audio"):
+            print()
+            print("  == AUDIO STEGANOGRAPHY ==")
+            print("  8. Hide data in audio (WAV LSB)")
+            print("  9. Extract data from audio")
+        if has_module("video"):
+            print()
+            print("  == VIDEO STEGANOGRAPHY ==")
+            print("  10. Hide data in video (ffmpeg + LSB)")
+            print("  11. Extract data from video")
+        if has_module("metadata"):
+            print()
+            print("  == METADATA ==")
+            print("  12. View file metadata")
+        print()
+        print("  == TIMESTAMPING ==")
+        print("  3. Timestamp a file")
+        print("  4. Verify timestamp integrity")
+        if not jar or not java or not check_pip_packages() or not has_module("audio"):
             print()
             print("  s. Setup / Check dependencies")
         print("  0. Exit")
@@ -452,6 +572,16 @@ def main():
         elif choice == "7":
             if not jar: print("ERROR: OpenStego not found"); pause(); continue
             feature_check_watermark(jar)
+        elif choice == "8" and has_module("audio"):
+            feature_audio_embed()
+        elif choice == "9" and has_module("audio"):
+            feature_audio_extract()
+        elif choice == "10" and has_module("video"):
+            feature_video_embed()
+        elif choice == "11" and has_module("video"):
+            feature_video_extract()
+        elif choice == "12" and has_module("metadata"):
+            feature_metadata()
         elif choice in ("s", "setup"):
             run_setup()
         elif choice == "0":

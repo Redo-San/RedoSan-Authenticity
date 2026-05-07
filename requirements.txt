@@ -1,2 +1,4 @@
 opentimestamps>=0.4.5
 opentimestamps-client>=0.7.2
+Pillow>=10.0.0
+mutagen>=1.47.0
