@@ -5,7 +5,7 @@ Run:  python install.py
 """
 import os, sys, subprocess, platform
 
-PACKAGES = ["opentimestamps", "opentimestamps-client", "Pillow", "mutagen"]
+PACKAGES = ["opentimestamps", "opentimestamps-client", "Pillow", "mutagen", "c2pa-python"]
 
 
 def run(cmd, desc):
@@ -48,6 +48,20 @@ def main():
     print("[3/5] Checking audio module (WAV LSB)...")
     print("       Pure Python - no deps needed")
     audio_ok = True
+    print()
+
+    print("[3/5] Checking c2patool for C2PA signing...")
+    c2pa_paths = [
+        os.path.join(os.path.dirname(__file__) or ".", "c2patool.exe"),
+        os.path.join(os.path.dirname(__file__) or ".", "c2patool"),
+    ]
+    if any(os.path.isfile(p) for p in c2pa_paths):
+        print("       c2patool found")
+    elif run(["c2patool", "-V"], "c2patool -V"):
+        print("       c2patool found on PATH")
+    else:
+        print("       c2patool not found (optional, for C2PA writing)")
+        print("       Download from: https://github.com/contentauth/c2pa-rs/releases")
     print()
 
     print("[4/5] Checking ffmpeg for video module...")

@@ -30,3 +30,12 @@ Thumbs.db
 *_watermarked.*
 debug_redosan_log.txt
 redosan_debug.log
+
+# Binary tools (download separately)
+c2patool.exe
+c2patool
+openstego.jar
+
+# C2PA sample certs
+c2pa_certs.pem
+c2pa_private.key

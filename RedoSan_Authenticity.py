@@ -440,7 +440,7 @@ def feature_video_extract():
 
 
 # -----------------------------------------------------------------------
-#  Metadata feature
+#  Metadata features
 # -----------------------------------------------------------------------
 
 def feature_metadata():
@@ -450,6 +450,95 @@ def feature_metadata():
         return print("ERROR: File not found")
     meta = MODULES["metadata"].read_metadata(path)
     MODULES["metadata"].print_metadata(meta)
+
+
+def feature_write_metadata():
+    h1("WRITE METADATA (EXIF / ID3)")
+    path = _s(input("File path: "))
+    if not os.path.exists(path):
+        return print("ERROR: File not found")
+    print("\nEnter metadata fields (leave blank to skip):")
+    title = input("  Title: ").strip()
+    artist = input("  Artist: ").strip()
+    copyright = input("  Copyright: ").strip()
+    description = input("  Description: ").strip()
+    data = {}
+    if title: data["title"] = title
+    if artist: data["artist"] = artist
+    if copyright: data["copyright"] = copyright
+    if description: data["description"] = description
+    if not data:
+        return print("No fields entered, skipping")
+    out = _s(input("Output path (Enter = overwrite): "))
+    ok, msg = MODULES["metadata"].write_metadata(path, data, out or None)
+    print(f"\n  {'SUCCESS' if ok else 'ERROR'}: {msg}")
+
+
+def feature_c2pa_read():
+    h1("READ C2PA PROVENANCE (AI CONTENT CREDENTIALS)")
+    path = _s(input("File path: "))
+    if not os.path.exists(path):
+        return print("ERROR: File not found")
+    meta, err = MODULES["metadata"].c2pa_read(path)
+    if err:
+        print(f"\n  {err}")
+    else:
+        MODULES["metadata"].c2pa_print(meta, path)
+
+
+def feature_c2pa_write():
+    h1("WRITE C2PA PROVENANCE")
+    path = _s(input("File path: "))
+    if not os.path.exists(path):
+        return print("ERROR: File not found")
+    print("\nContent type:")
+    print("  1. AI-generated content")
+    print("  2. AI-edited content")
+    print("  3. Digitally created")
+    print("  4. Digitally captured (camera)")
+    print("  5. Composite")
+    print("  6. Do Not Train (opt-out of AI training)")
+    print("  7. Stego embed claim")
+    ctype = input("Choice (1-7): ").strip()
+    desc = input("Description (optional): ").strip()
+    model = input("AI model name (if AI, optional): ").strip()
+
+    meta_mod = MODULES["metadata"]
+    if ctype == "1":
+        manifest = meta_mod.c2pa_build_manifest(desc, ai_generated=True, model_name=model)
+    elif ctype == "2":
+        manifest = meta_mod.c2pa_build_manifest(desc, digital_source="ai_edited", model_name=model)
+    elif ctype == "3":
+        manifest = meta_mod.c2pa_build_manifest(desc, digital_source="digital_creation")
+    elif ctype == "4":
+        manifest = meta_mod.c2pa_build_manifest(desc, digital_source="digital_capture")
+    elif ctype == "5":
+        manifest = meta_mod.c2pa_build_manifest(desc, digital_source="composite")
+    elif ctype == "6":
+        manifest = meta_mod.c2pa_build_do_not_train_manifest()
+    elif ctype == "7":
+        algo = input("Stego algorithm (e.g. lsb, dwtxie): ").strip() or "lsb"
+        manifest = meta_mod.c2pa_build_stego_manifest(algo, desc)
+    else:
+        return print("Invalid choice")
+
+    out, err = meta_mod.c2pa_write(path, manifest)
+    if err:
+        print(f"\n  ERROR: {err}")
+    else:
+        print(f"\n  SUCCESS: C2PA manifest written to: {out}")
+
+
+def feature_c2pa_init():
+    h1("INITIALIZE C2PA CERTIFICATE")
+    force = input("Force regenerate? (y/N): ").strip().lower() == "y"
+    ok, msg = MODULES["metadata"].c2pa_init(force=force)
+    if ok:
+        print(f"\n  [OK] {msg}")
+        print(f"  Certificate: {MODULES['metadata'].CERT_FILE}")
+        print(f"  Key:         {MODULES['metadata'].KEY_FILE}")
+    else:
+        print(f"\n  [FAIL] {msg}")
 
 
 # -----------------------------------------------------------------------
@@ -542,6 +631,12 @@ def main():
             print()
             print("  == METADATA ==")
             print("  12. View file metadata")
+            print("  13. Write metadata (EXIF/ID3)")
+            print()
+            print("  == C2PA PROVENANCE (AI CONTENT) ==")
+            print("  14. Read C2PA provenance (AI credentials)")
+            print("  15. Write C2PA provenance (AI/stego claims)")
+            print("  16. Init C2PA certificate (first use)")
         print()
         print("  == TIMESTAMPING ==")
         print("  3. Timestamp a file")
@@ -582,6 +677,14 @@ def main():
             feature_video_extract()
         elif choice == "12" and has_module("metadata"):
             feature_metadata()
+        elif choice == "13" and has_module("metadata"):
+            feature_write_metadata()
+        elif choice == "14" and has_module("metadata"):
+            feature_c2pa_read()
+        elif choice == "15" and has_module("metadata"):
+            feature_c2pa_write()
+        elif choice == "16" and has_module("metadata"):
+            feature_c2pa_init()
         elif choice in ("s", "setup"):
             run_setup()
         elif choice == "0":
