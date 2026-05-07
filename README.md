@@ -1,6 +1,6 @@
 # RedoSan Authenticity
 
-**RedoSan Authenticity** is an integrated tool that combines **steganography** (via [OpenStego](https://www.openstego.com/)) with **cryptographic timestamping** (via [OpenTimestamps](https://opentimestamps.org/)) to provide a complete workflow for hiding, watermarking, and proving the authenticity of digital files.
+**RedoSan Authenticity** is a cross-platform tool that combines **steganography** (via [OpenStego](https://www.openstego.com/)) with **cryptographic timestamping** (via [OpenTimestamps](https://opentimestamps.org/)) to provide a complete workflow for hiding, watermarking, and proving the authenticity of digital files.
 
 ---
 
@@ -20,47 +20,76 @@
 
 ## Requirements
 
-- **Windows** (currently Windows-only due to path dependencies)
-- **Java** (JRE 8+) — [Download](https://www.java.com/download/)
-- **Python 3.11** — [Download](https://www.python.org/downloads/)
-- **OpenStego** v0.8.6 — [Download](https://www.openstego.com/)
-- Python packages: `opentimestamps`, `opentimestamps-client`
+| Dependency | Required For | Install |
+|------------|-------------|---------|
+| **Python 3.8+** | Core tool | [python.org](https://www.python.org/downloads/) |
+| **Java 8+ (JRE)** | Steganography (OpenStego) | [java.com](https://www.java.com/download/) |
+| **OpenStego** | Steganography | [openstego.com](https://www.openstego.com/) |
+| `opentimestamps` | Timestamping | `pip install opentimestamps opentimestamps-client` |
+
+> **Note:** Features 3 (Timestamp) and 4 (Verify) work with Python alone.
+> Features 1, 2, 5, 6, 7 also require Java + OpenStego.
 
 ---
 
 ## Installation
 
-### 1. Install dependencies
+### 1. Clone & enter the directory
+
+```bash
+git clone https://github.com/Redo_San/RedoSan-Authenticity.git
+cd RedoSan-Authenticity
+```
+
+### 2. Install Python packages
 
 ```bash
 pip install opentimestamps opentimestamps-client
 ```
 
-### 2. Install OpenStego
+### 3. Install OpenStego (optional - only for steganography features)
 
-Download and install from [openstego.com](https://www.openstego.com/)
+Download from [openstego.com](https://www.openstego.com/) and install.
 
-### 3. Clone or download RedoSan Authenticity
+### 4. Run the setup checker
 
 ```bash
-git clone https://github.com/yourusername/RedoSan-Authenticity.git
-cd RedoSan-Authenticity
+python install.py
 ```
 
-Or simply copy the files to `C:\RedoSan Authenticity\`.
+This will verify all dependencies and guide you if anything is missing.
 
-### 4. Run
+### 5. Start the tool
 
-**Interactive menu:**
 ```bash
 python RedoSan_Authenticity.py
 ```
 
-**Drag-and-drop:**
-Drop a file onto `RedoSan_Authenticity.vbs`
+---
 
-**Windows Send To:**
-Right-click any file → **Send To** → **RedoSan Authenticity**
+## Platform-Specific Launchers
+
+### Windows
+
+| Method | File | How |
+|--------|------|-----|
+| **Interactive menu** | Double-click `RedoSan_Authenticity.bat` | Opens menu in terminal |
+| **Drag & drop** | Drop file onto `RedoSan_Authenticity.vbs` | Quick action menu |
+| **Send To menu** | Right-click file → **Send To** → **RedoSan Authenticity** | Quick action |
+| **Terminal** | `py -3 RedoSan_Authenticity.py` | Full control |
+
+### Linux / macOS
+
+| Method | File | How |
+|--------|------|-----|
+| **Interactive menu** | `./RedoSan_Authenticity.sh` | Opens menu in terminal |
+| **Terminal** | `python3 RedoSan_Authenticity.py [file]` | Full control |
+| **Alias** | Add to `.bashrc`: `alias redosan='python3 /path/to/RedoSan_Authenticity.py'` | |
+
+Make the shell script executable on first use:
+```bash
+chmod +x RedoSan_Authenticity.sh
+```
 
 ---
 
@@ -79,6 +108,11 @@ Password: mypassword
 [2/3] Saving SHA-256...
 [3/3] Creating timestamp proof...
 ```
+
+Output files:
+- `wallpaper_stego.png` — the image with hidden data
+- `wallpaper_stego.png.sha256.txt` — SHA-256 hash
+- `wallpaper_stego.png.ots` — verifiable timestamp proof
 
 ### Extract a hidden file and verify timestamp
 
@@ -100,6 +134,20 @@ File path: document.pdf
 
 [1/2] Calculating SHA-256...
 [2/2] Creating timestamp proof...
+```
+
+### Drag-and-drop quick action (Windows or via CLI)
+
+```bash
+python RedoSan_Authenticity.py myfile.png
+```
+
+Then choose from the quick menu:
+```
+1 - Timestamp this file
+2 - Verify timestamp of this file
+3 - Hide secret in this image (requires OpenStego)
+4 - Extract secret from this image (requires OpenStego)
 ```
 
 ---
@@ -149,12 +197,18 @@ When processing a file like `photo.png`, the tool generates:
 
 ---
 
-## Environment Variables
+## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENSTEGO_JAR` | `C:\Program Files (x86)\OpenStego\lib\openstego.jar` | Path to OpenStego JAR |
-| `REDOSAN_PYTHON` | Auto-detected | Python interpreter path |
+The tool auto-detects dependencies. Override paths via environment variables:
+
+| Variable | Default (Windows) | Default (Linux/macOS) |
+|----------|-------------------|----------------------|
+| `OPENSTEGO_JAR` | `C:\Program Files (x86)\OpenStego\lib\openstego.jar` | `/usr/local/share/openstego/lib/openstego.jar` |
+
+To check your setup:
+```bash
+python RedoSan_Authenticity.py --setup
+```
 
 ---
 
@@ -170,4 +224,4 @@ RedoSan Authenticity incorporates:
 
 ## Author
 
-Built with ❤️ by [Your Name]
+Built by Redo_San

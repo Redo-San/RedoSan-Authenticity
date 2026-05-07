@@ -12,6 +12,7 @@ If Not fso.FileExists(sFile) Then
     WScript.Quit
 End If
 
-sScript = fso.GetParentFolderName(WScript.ScriptFullName) & "\RedoSan_Authenticity.bat"
-sCmd = "cmd.exe /c """ & sScript & """ """ & sFile & """"
+sDir = fso.GetParentFolderName(WScript.ScriptFullName)
+sBat = sDir & "\RedoSan_Authenticity.bat"
+sCmd = "cmd.exe /c """ & sBat & """ """ & sFile & """"
 CreateObject("WScript.Shell").Run sCmd, 1, True

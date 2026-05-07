@@ -1,42 +1,65 @@
-import os, sys, hashlib, subprocess, platform
+#!/usr/bin/env python3
+import os, sys, hashlib, subprocess, platform, shutil
 
 __version__ = "1.0.0"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-OPENSTEGO_JAR = (
-    os.environ.get("OPENSTEGO_JAR")
-    or r"C:\Program Files (x86)\OpenStego\lib\openstego.jar"
-)
-
-
-def _find_python():
-    candidates = [
-        r"C:\Program Files\Python311\python.exe",
-        r"C:\Users\pc\AppData\Local\Programs\Python\Python311\python.exe",
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            return path
-    for p in os.environ.get("PATH", "").split(os.pathsep):
-        exe = os.path.join(p, "python3.exe")
-        if os.path.exists(exe):
-            return exe
-        exe = os.path.join(p, "python.exe")
-        if os.path.exists(exe):
-            return exe
-    return "python"
-
-
-PYTHON_CMD = os.environ.get("REDOSAN_PYTHON") or _find_python()
 OTS_SCRIPT = os.path.join(SCRIPT_DIR, "ots_direct.py")
 
 
-def java_available():
+# -----------------------------------------------------------------------
+#  Dependency auto-detection
+# -----------------------------------------------------------------------
+
+def find_openstego_jar():
+    path = os.environ.get("OPENSTEGO_JAR", "")
+    if path and os.path.isfile(path):
+        return path
+    local = os.path.join(SCRIPT_DIR, "openstego.jar")
+    if os.path.isfile(local):
+        return local
+    syst = platform.system()
+    pre = [r"C:\Program Files (x86)\OpenStego\lib\openstego.jar",
+           r"C:\Program Files\OpenStego\lib\openstego.jar"] if syst == "Windows" else (
+        ["/Applications/OpenStego/lib/openstego.jar",
+         "/usr/local/share/openstego/lib/openstego.jar",
+         "/usr/share/openstego/lib/openstego.jar",
+         "/opt/openstego/lib/openstego.jar"] if syst == "Darwin" else
+        ["/usr/local/share/openstego/lib/openstego.jar",
+         "/usr/share/openstego/lib/openstego.jar",
+         "/opt/openstego/lib/openstego.jar"])
+    for p in pre:
+        if os.path.isfile(p):
+            return p
+    return None
+
+
+def find_java():
     try:
         subprocess.run(["java", "-version"], capture_output=True, check=True)
-        return True
+        return "java"
     except (FileNotFoundError, subprocess.CalledProcessError):
+        jh = os.environ.get("JAVA_HOME", "")
+        if jh:
+            exe = os.path.join(jh, "bin", "java.exe" if platform.system() == "Windows" else "java")
+            if os.path.isfile(exe):
+                return exe
+    return None
+
+
+def check_pip_packages():
+    try:
+        import opentimestamps.calendar  # noqa
+        return True
+    except ImportError:
         return False
+
+
+# -----------------------------------------------------------------------
+#  Helpers
+# -----------------------------------------------------------------------
+
+def _s(path):
+    return path.strip().strip("\"'")
 
 
 def sha256_file(path):
@@ -47,43 +70,83 @@ def sha256_file(path):
     return h.hexdigest()
 
 
-def run_java(args):
+def run_java(jar, args):
     return subprocess.run(
-        ["java", "-jar", OPENSTEGO_JAR] + args,
+        ["java", "-jar", jar] + args,
         capture_output=True, text=True
     )
 
 
 def run_ots(args):
     return subprocess.run(
-        [PYTHON_CMD, OTS_SCRIPT] + args,
+        [sys.executable, OTS_SCRIPT] + args,
         capture_output=True, text=True
     )
 
 
-def _strip_quotes(s):
-    return s.strip().strip("\"'")
-
-# ---------------------------------------------------------------------------
-#  Feature functions
-# ---------------------------------------------------------------------------
-
-def print_header(title):
-    print(f"\n{'=' * 55}")
-    print(f"   {title}")
-    print(f"{'=' * 55}")
+def h1(t):
+    print(f"\n{'=' * 55}\n   {t}\n{'=' * 55}")
 
 
-def wait_and_exit():
+def pause():
     print(f"\n{'-' * 55}")
     input("Press Enter to continue...")
 
 
-def feature_hide_timestamp():
-    print_header("HIDE SECRET IN IMAGE + TIMESTAMP")
-    cover = _strip_quotes(input("Cover image path: "))
-    secret = _strip_quotes(input("Secret file path: "))
-    output = _strip_quotes(input("Output image path (Enter = auto): "))
+# -----------------------------------------------------------------------
+#  Dependency check
+# -----------------------------------------------------------------------
+
+DEP_WARNINGS = []
+
+
+def check_deps():
+    global DEP_WARNINGS
+    DEP_WARNINGS = []
+    ok = True
+
+    if not check_pip_packages():
+        DEP_WARNINGS.append(
+            "Python packages missing: opentimestamps\n"
+            "  Install:  pip install opentimestamps opentimestamps-client"
+        )
+        ok = False
+
+    java = find_java()
+    if not java:
+        DEP_WARNINGS.append(
+            "Java not found.\n"
+            "  Install Java JRE 8+ from: https://www.java.com/download/"
+        )
+        ok = False
+
+    jar = find_openstego_jar()
+    if not jar:
+        DEP_WARNINGS.append(
+            "OpenStego JAR not found.\n"
+            "  Download from: https://www.openstego.com/\n"
+            "  Or set env:  set OPENSTEGO_JAR=C:\\path\\to\\openstego.jar"
+        )
+
+    if DEP_WARNINGS:
+        print("\n" + "#" * 55)
+        print("  DEPENDENCY CHECK")
+        print("#" * 55)
+        for w in DEP_WARNINGS:
+            print(f"\n  [!] {w}")
+        print()
+    return ok
+
+
+# -----------------------------------------------------------------------
+#  Feature functions
+# -----------------------------------------------------------------------
+
+def feature_hide_timestamp(jar):
+    h1("HIDE SECRET IN IMAGE + TIMESTAMP")
+    cover = _s(input("Cover image path: "))
+    secret = _s(input("Secret file path: "))
+    output = _s(input("Output image path (Enter = auto): "))
     if not output:
         base, ext = os.path.splitext(cover)
         output = f"{base}_stego{ext}"
@@ -98,7 +161,7 @@ def feature_hide_timestamp():
     args = ["embed", "-a", "lsb", "-mf", secret, "-cf", cover, "-sf", output]
     if pw:
         args += ["-e", "-p", pw]
-    r = run_java(args)
+    r = run_java(jar, args)
     if r.returncode != 0:
         return print(f"ERROR: OpenStego failed:\n{r.stderr}")
     print(f"       Done: {output}")
@@ -118,10 +181,10 @@ def feature_hide_timestamp():
         print(f"WARNING: Timestamp failed: {r2.stderr.strip()}")
 
 
-def feature_extract_verify():
-    print_header("EXTRACT SECRET + VERIFY TIMESTAMP")
-    stego = _strip_quotes(input("Stego image path: "))
-    outdir = _strip_quotes(input("Extract to directory (Enter = current): "))
+def feature_extract_verify(jar):
+    h1("EXTRACT SECRET + VERIFY TIMESTAMP")
+    stego = _s(input("Stego image path: "))
+    outdir = _s(input("Extract to directory (Enter = current): "))
     if not outdir:
         outdir = os.path.dirname(stego) or "."
     pw = input("Password (Enter = none): ").strip()
@@ -142,7 +205,7 @@ def feature_extract_verify():
     args = ["extract", "-a", "lsb", "-sf", stego, "-xd", outdir]
     if pw:
         args += ["-p", pw]
-    r = run_java(args)
+    r = run_java(jar, args)
     if r.returncode == 0:
         print(f"       Extracted to: {outdir}")
     else:
@@ -150,8 +213,8 @@ def feature_extract_verify():
 
 
 def feature_timestamp():
-    print_header("TIMESTAMP A FILE")
-    path = _strip_quotes(input("File path: "))
+    h1("TIMESTAMP A FILE")
+    path = _s(input("File path: "))
     if not os.path.exists(path):
         return print("ERROR: File not found")
     print("\n[1/2] Calculating SHA-256...")
@@ -168,8 +231,8 @@ def feature_timestamp():
 
 
 def feature_verify():
-    print_header("VERIFY TIMESTAMP INTEGRITY")
-    path = _strip_quotes(input("File path: "))
+    h1("VERIFY TIMESTAMP INTEGRITY")
+    path = _s(input("File path: "))
     if not os.path.exists(path):
         return print("ERROR: File not found")
     r = run_ots(["verify", path])
@@ -178,11 +241,11 @@ def feature_verify():
         print(r.stderr.strip())
 
 
-def feature_watermark_timestamp():
-    print_header("WATERMARK IMAGE + TIMESTAMP")
-    sig = _strip_quotes(input("Signature file path: "))
-    cover = _strip_quotes(input("Cover image path: "))
-    output = _strip_quotes(input("Output image path (Enter = auto): "))
+def feature_watermark_timestamp(jar):
+    h1("WATERMARK IMAGE + TIMESTAMP")
+    sig = _s(input("Signature file path: "))
+    cover = _s(input("Cover image path: "))
+    output = _s(input("Output image path (Enter = auto): "))
     if not output:
         base, ext = os.path.splitext(cover)
         output = f"{base}_watermarked{ext}"
@@ -193,7 +256,7 @@ def feature_watermark_timestamp():
         return print("ERROR: Cover image not found")
 
     print("\n[1/3] Watermarking image...")
-    r = run_java(["embedmark", "-a", "dwtxie", "-gf", sig, "-cf", cover, "-sf", output])
+    r = run_java(jar, ["embedmark", "-a", "dwtxie", "-gf", sig, "-cf", cover, "-sf", output])
     if r.returncode != 0:
         return print(f"ERROR: OpenStego failed:\n{r.stderr}")
     print(f"       Done: {output}")
@@ -212,37 +275,37 @@ def feature_watermark_timestamp():
         print(f"WARNING: Timestamp failed: {r2.stderr.strip()}")
 
 
-def feature_gen_signature():
-    print_header("GENERATE WATERMARK SIGNATURE")
-    sig = _strip_quotes(input("Output signature file path: "))
+def feature_gen_signature(jar):
+    h1("GENERATE WATERMARK SIGNATURE")
+    sig = _s(input("Output signature file path: "))
     if not sig:
         return print("ERROR: No path specified")
     pw = input("Password (Enter = none): ").strip()
     print("\nGenerating signature...")
     args = ["gensig", "-a", "dwtxie", "-gf", sig]
-    r = run_java(args)
+    r = run_java(jar, args)
     if r.returncode == 0:
         print(f"       Signature saved to: {sig}")
     else:
         print(f"ERROR: {r.stderr.strip()}")
 
 
-def feature_check_watermark():
-    print_header("CHECK WATERMARK")
-    sig = _strip_quotes(input("Signature file: "))
-    stego = _strip_quotes(input("Stego image: "))
+def feature_check_watermark(jar):
+    h1("CHECK WATERMARK")
+    sig = _s(input("Signature file: "))
+    stego = _s(input("Stego image: "))
     if not os.path.exists(sig):
         return print("ERROR: Signature not found")
     if not os.path.exists(stego):
         return print("ERROR: Image not found")
-    r = run_java(["checkmark", "-a", "dwtxie", "-gf", sig, "-sf", stego])
+    r = run_java(jar, ["checkmark", "-a", "dwtxie", "-gf", sig, "-sf", stego])
     print(r.stdout.strip() or "       Done")
     if r.stderr:
         print(r.stderr.strip())
 
 
-def feature_batch_process(filepath):
-    print_header("BATCH: PROCESS DROPPED FILE")
+def feature_batch_process(filepath, jar):
+    h1("BATCH: PROCESS DROPPED FILE")
     print(f"File: {filepath}\n")
     print("Choose action:")
     print("  1 - Timestamp this file")
@@ -262,7 +325,9 @@ def feature_batch_process(filepath):
     elif choice == "2":
         run_ots(["verify", filepath])
     elif choice == "3":
-        secret = _strip_quotes(input("Secret file to hide: "))
+        if not jar:
+            return print("ERROR: OpenStego not available for this operation")
+        secret = _s(input("Secret file to hide: "))
         if not os.path.exists(secret):
             return print("ERROR: Secret not found")
         output = os.path.splitext(filepath)[0] + "_stego" + ext
@@ -270,29 +335,89 @@ def feature_batch_process(filepath):
         args = ["embed", "-a", "lsb", "-mf", secret, "-cf", filepath, "-sf", output]
         if pw:
             args += ["-e", "-p", pw]
-        r = run_java(args)
+        r = run_java(jar, args)
         print(f"Secret hidden in: {output}" if r.returncode == 0 else f"ERROR: {r.stderr.strip()}")
     elif choice == "4":
-        outdir = _strip_quotes(input("Extract to directory (Enter=auto): "))
+        if not jar:
+            return print("ERROR: OpenStego not available for this operation")
+        outdir = _s(input("Extract to directory (Enter=auto): "))
         if not outdir:
             outdir = os.path.dirname(filepath) or "."
         pw = input("Password (Enter=none): ").strip()
         args = ["extract", "-a", "lsb", "-sf", filepath, "-xd", outdir]
         if pw:
             args += ["-p", pw]
-        r = run_java(args)
+        r = run_java(jar, args)
         print(f"Extracted to: {outdir}" if r.returncode == 0 else f"ERROR: {r.stderr.strip()}")
     else:
         print("Invalid choice")
 
 
-def main_menu():
+def run_setup():
+    h1("RedoSan Authenticity - Setup")
+    print("Checking dependencies...\n")
+
+    ok = check_deps()
+    if ok:
+        print("  [OK] All dependencies met.")
+    else:
+        print("  Some dependencies are missing. Install them and re-run.")
+        print("  After installing, run this script again.")
+
+    print()
+    if not check_pip_packages():
+        print("  To install Python packages:")
+        print(f"    {sys.executable} -m pip install opentimestamps opentimestamps-client")
+        print()
+    if not find_java():
+        print("  To install Java:")
+        print("    Windows: https://www.java.com/download/")
+        print("    Linux:   sudo apt install default-jre  (or equivalent)")
+        print("    macOS:   brew install openjdk")
+        print()
+    if not find_openstego_jar():
+        print("  To install OpenStego:")
+        print("    Download from: https://www.openstego.com/")
+        print("    Or download the JAR and place it in this directory.")
+        print("    Or set OPENSTEGO_JAR environment variable.")
+        print()
+    pause()
+
+
+# -----------------------------------------------------------------------
+#  Entry point
+# -----------------------------------------------------------------------
+
+def main():
+    if "--version" in sys.argv or "-v" in sys.argv:
+        print(f"RedoSan Authenticity v{__version__}")
+        return
+    if "--setup" in sys.argv or "--install" in sys.argv:
+        return run_setup()
+
+    jar = find_openstego_jar()
+    java = find_java()
+
+    # Only check deps in menu mode; batch mode may still work for timestamping
+    if len(sys.argv) <= 1 or not os.path.isfile(sys.argv[1]):
+        check_deps()
+
+    # Batch mode: file dropped as argument
+    if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
+        feature_batch_process(sys.argv[1], jar)
+        return
+
+    # Interactive menu
     while True:
         os.system("cls" if os.name == "nt" else "clear")
         print("=" * 55)
         print(f"          RedoSan Authenticity v{__version__}")
         print("   Steganography + OpenTimestamps Integration")
         print("=" * 55)
+        if not jar:
+            print("  [!] OpenStego not found - only timestamping features available")
+        if not java or not check_pip_packages():
+            print("  [!] Some features limited - run with --setup for info")
         print()
         print("  1. Hide secret in image + Timestamp")
         print("  2. Extract secret + Verify timestamp")
@@ -301,49 +426,45 @@ def main_menu():
         print("  5. Watermark image + Timestamp")
         print("  6. Generate watermark signature")
         print("  7. Check watermark in image")
+        if not jar or not java or not check_pip_packages():
+            print()
+            print("  s. Setup / Check dependencies")
         print("  0. Exit")
         print()
-        choice = input("  Choice: ").strip()
+        choice = input("  Choice: ").strip().lower()
+
         if choice == "1":
-            feature_hide_timestamp()
+            if not jar: print("ERROR: OpenStego not found"); pause(); continue
+            feature_hide_timestamp(jar)
         elif choice == "2":
-            feature_extract_verify()
+            if not jar: print("ERROR: OpenStego not found"); pause(); continue
+            feature_extract_verify(jar)
         elif choice == "3":
             feature_timestamp()
         elif choice == "4":
             feature_verify()
         elif choice == "5":
-            feature_watermark_timestamp()
+            if not jar: print("ERROR: OpenStego not found"); pause(); continue
+            feature_watermark_timestamp(jar)
         elif choice == "6":
-            feature_gen_signature()
+            if not jar: print("ERROR: OpenStego not found"); pause(); continue
+            feature_gen_signature(jar)
         elif choice == "7":
-            feature_check_watermark()
+            if not jar: print("ERROR: OpenStego not found"); pause(); continue
+            feature_check_watermark(jar)
+        elif choice in ("s", "setup"):
+            run_setup()
         elif choice == "0":
             print("Goodbye!")
             break
         else:
             print("Invalid choice")
-        wait_and_exit()
+        pause()
 
 
 if __name__ == "__main__":
-    if "--version" in sys.argv or "-v" in sys.argv:
-        print(f"RedoSan Authenticity v{__version__}")
-        sys.exit(0)
-
-    if not java_available():
-        print("ERROR: Java not found. OpenStego requires Java.")
-        print("Install Java from: https://www.java.com/download/")
+    if not os.path.isfile(OTS_SCRIPT):
+        print(f"ERROR: Required file not found: {OTS_SCRIPT}")
+        print("Reinstall the tool or copy ots_direct.py to the same directory.")
         sys.exit(1)
-    if not os.path.exists(OPENSTEGO_JAR):
-        print(f"ERROR: OpenStego not found at: {OPENSTEGO_JAR}")
-        print("Set OPENSTEGO_JAR environment variable if installed elsewhere.")
-        sys.exit(1)
-    if not os.path.exists(OTS_SCRIPT):
-        print(f"ERROR: {OTS_SCRIPT} not found. Reinstall the tool.")
-        sys.exit(1)
-
-    if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
-        feature_batch_process(sys.argv[1])
-    else:
-        main_menu()
+    main()

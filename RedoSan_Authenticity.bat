@@ -1,12 +1,9 @@
 @echo off
 title RedoSan Authenticity
-set "PYDIR=C:\RedoSan Authenticity"
-set "PYTHON=C:\Program Files\Python311\python.exe"
-
-if "%~1"=="" (
-    "%PYTHON%" "%PYDIR%\RedoSan_Authenticity.py"
-    goto :eof
+set "DIR=%~dp0"
+py -3 "%DIR%RedoSan_Authenticity.py" %*
+if %errorlevel% neq 0 (
+    echo.
+    echo [INFO] 'py -3' failed, trying 'python'...
+    python "%DIR%RedoSan_Authenticity.py" %*
 )
-
-"%PYTHON%" "%PYDIR%\RedoSan_Authenticity.py" "%~1"
-ping -n 6 localhost >nul

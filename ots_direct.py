@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import hashlib, sys, os
 from opentimestamps.core.timestamp import Timestamp, DetachedTimestampFile
 from opentimestamps.core.op import OpSHA256
