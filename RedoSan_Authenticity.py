@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, hashlib, subprocess, platform, shutil
+import os, sys, hashlib, subprocess, platform, shutil, json
 
 __version__ = "1.0.0"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -119,6 +119,45 @@ def h1(t):
 def pause():
     print(f"\n{'-' * 55}")
     input("Press Enter to continue...")
+
+
+def _prompt_export(data, default_name, format_hint=""):
+    """Ask user if they want to export metadata as TXT or JSON."""
+    inp = input(f"\nExport to file? (txt/json/N): ").strip().lower()
+    if inp not in ("txt", "json"):
+        return
+    out = _s(input(f"Output path (Enter = {default_name}.{inp}): "))
+    if not out:
+        out = f"{default_name}.{inp}"
+    try:
+        with open(out, "w", encoding="utf-8") as f:
+            if inp == "json":
+                import json
+                json.dump(data, f, ensure_ascii=False, indent=2, default=str)
+            else:
+                if isinstance(data, str):
+                    f.write(data)
+                elif isinstance(data, dict):
+                    for k, v in _flatten_dict(data).items():
+                        f.write(f"{k}: {v}\n")
+                else:
+                    f.write(str(data))
+        print(f"  Exported to: {out}")
+    except Exception as e:
+        print(f"  Export error: {e}")
+
+
+def _flatten_dict(d, prefix=""):
+    items = []
+    for k, v in d.items():
+        tag = f"{prefix}.{k}" if prefix else k
+        if isinstance(v, dict):
+            items.extend(_flatten_dict(v, tag).items())
+        elif isinstance(v, list):
+            items.append((tag, json.dumps(v, ensure_ascii=False, default=str)[:300]))
+        else:
+            items.append((tag, str(v)))
+    return dict(items)
 
 
 # -----------------------------------------------------------------------
@@ -450,6 +489,7 @@ def feature_metadata():
         return print("ERROR: File not found")
     meta = MODULES["metadata"].read_metadata(path)
     MODULES["metadata"].print_metadata(meta)
+    _prompt_export(meta, os.path.splitext(path)[0] + "_metadata")
 
 
 def feature_write_metadata():
@@ -482,8 +522,11 @@ def feature_c2pa_read():
     meta, err = MODULES["metadata"].c2pa_read(path)
     if err:
         print(f"\n  {err}")
-    else:
+    elif meta:
         MODULES["metadata"].c2pa_print(meta, path)
+        _prompt_export(meta, os.path.splitext(path)[0] + "_c2pa")
+    else:
+        print("\n  No C2PA manifest found")
 
 
 def feature_c2pa_write():
