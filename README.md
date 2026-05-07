@@ -20,6 +20,10 @@
 | 10 | **Hide in Video** | 🎬 Video | Frame-based LSB via ffmpeg + Pillow |
 | 11 | **Extract from Video** | 🎬 Video | Extract hidden data from video |
 | 12 | **View Metadata** | 🖼🔊🎬 Any media | Read EXIF, ID3, video streams, etc. |
+| 13 | **Write Metadata** | 🖼🔊 EXIF/ID3 | Write title, artist, copyright to images/audio |
+| 14 | **Read C2PA** | 🖼🎬🔊 AI Content | Read C2PA provenance / AI content credentials |
+| 15 | **Write C2PA** | 🖼🎬 Image/Video | Sign media with AI/stego provenance claims |
+| 16 | **Init C2PA** | 🔑 Certificate | Generate self-signed C2PA signing certificate |
 
 ---
 
@@ -34,9 +38,12 @@
 | **ffmpeg** | Video stego (optional) | [ffmpeg.org](https://ffmpeg.org/) |
 | `Pillow` | Video stego / Metadata (optional) | `pip install Pillow` |
 | `mutagen` | Audio metadata (optional) | `pip install mutagen` |
+| `c2pa-python` | C2PA provenance (optional) | `pip install c2pa-python` |
+| `cryptography` | C2PA cert generation (optional) | `pip install cryptography` |
 
 > **Pure Python features** (no extra deps): Timestamp (3), Verify (4), Audio stego (8, 9)
 > **External tools needed**: Image stego (1,2,5,6,7) ← Java + OpenStego; Video stego (10,11) ← ffmpeg + Pillow
+> **C2PA features** (14,15,16) ← c2pa-python (and cryptography for auto-cert)
 
 ---
 
