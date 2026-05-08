@@ -486,10 +486,18 @@ def feature_metadata():
     h1("VIEW FILE METADATA")
     path = _s(input("File path: "))
     if not os.path.exists(path):
-        return print("ERROR: File not found")
-    meta = MODULES["metadata"].read_metadata(path)
+        print("ERROR: File not found")
+        return
+    try:
+        meta = MODULES["metadata"].read_metadata(path)
+    except Exception as e:
+        print(f"\n  ERROR: {e}")
+        return
     MODULES["metadata"].print_metadata(meta)
-    _prompt_export(meta, os.path.splitext(path)[0] + "_metadata")
+    print(f"\n{'─' * 55}")
+    inp = input("  Press Enter for export options or type 'skip': ").strip().lower()
+    if inp != "skip":
+        _prompt_export(meta, os.path.splitext(path)[0] + "_metadata")
 
 
 def feature_write_metadata():
@@ -518,15 +526,22 @@ def feature_c2pa_read():
     h1("READ C2PA PROVENANCE (AI CONTENT CREDENTIALS)")
     path = _s(input("File path: "))
     if not os.path.exists(path):
-        return print("ERROR: File not found")
-    meta, err = MODULES["metadata"].c2pa_read(path)
+        print("ERROR: File not found")
+        return
+    try:
+        meta, err = MODULES["metadata"].c2pa_read(path)
+    except Exception as e:
+        print(f"\n  ERROR: {e}")
+        return
     if err:
         print(f"\n  {err}")
     elif meta:
         MODULES["metadata"].c2pa_print(meta, path)
+        print(f"\n{'─' * 55}")
+        input("  Press Enter for export options...")
         _prompt_export(meta, os.path.splitext(path)[0] + "_c2pa")
     else:
-        print("\n  No C2PA manifest found")
+        print("\n  No C2PA manifest found in this file")
 
 
 def feature_c2pa_write():
