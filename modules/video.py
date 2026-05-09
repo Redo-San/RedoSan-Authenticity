@@ -11,6 +11,11 @@ def _ffmpeg_available():
         subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
         return True
     except (FileNotFoundError, subprocess.CalledProcessError):
+        # Try local ffmpeg
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        local_ffmpeg = os.path.join(base_dir, "ffmpeg", "bin", "ffmpeg.exe")
+        if os.path.isfile(local_ffmpeg):
+            return local_ffmpeg
         return False
 
 
@@ -72,18 +77,22 @@ def _lsb_extract_from_png(png_path, pw):
 
 
 def embed(video_path, secret_path, output_path, password=None):
-    if not _ffmpeg_available():
-        return False, "ffmpeg not found in PATH"
+    ffmpeg = _ffmpeg_available()
+    if not ffmpeg:
+        return False, "ffmpeg not found. Install ffmpeg or run install.py"
     if not _have_pil():
         return False, "Pillow not installed (pip install Pillow)"
 
+    # ffmpeg is either "ffmpeg" (in PATH) or full path
+    ffmpeg_cmd = ffmpeg if isinstance(ffmpeg, str) else "ffmpeg"
+    
     tmp = tempfile.mkdtemp()
     try:
         frames_dir = os.path.join(tmp, "frames")
         os.makedirs(frames_dir)
 
         r = subprocess.run(
-            ["ffmpeg", "-i", video_path, os.path.join(frames_dir, "frame_%05d.png"), "-y"],
+            [ffmpeg_cmd, "-i", video_path, os.path.join(frames_dir, "frame_%05d.png"), "-y"],
             capture_output=True, text=True
         )
         if r.returncode != 0:
@@ -101,11 +110,23 @@ def embed(video_path, secret_path, output_path, password=None):
         target = os.path.join(frames_dir, frames[mid])
         _lsb_embed_in_png(target, secret, password)
 
+        # Check if input has audio stream
+        probe = subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "a:0",
+             "-show_entries", "stream=codec_type",
+             "-of", "default=nokey=1:noprint_wrappers=1", video_path],
+            capture_output=True, text=True
+        )
+        has_audio = probe.returncode == 0 and probe.stdout.strip() == "audio"
+
         r2 = subprocess.run(
-            ["ffmpeg", "-i", os.path.join(frames_dir, "frame_%05d.png"),
-             "-i", video_path, "-c:v", "libx264", "-pix_fmt", "yuv420p",
-             "-map", "0:v:0", "-map", "1:a:0" if r"C:Audio" in str(r.stderr) else "-map",
-             output_path, "-y"],
+            ["ffmpeg",
+             "-i", os.path.join(frames_dir, "frame_%05d.png"),
+             "-i", video_path,
+             "-c:v", "libx264", "-pix_fmt", "yuv420p",
+             "-map", "0:v:0"] +
+            (["-map", "1:a:0", "-c:a", "copy"] if has_audio else []) +
+            [output_path, "-y"],
             capture_output=True, text=True
         )
         if r2.returncode != 0:
@@ -117,10 +138,13 @@ def embed(video_path, secret_path, output_path, password=None):
 
 
 def extract(video_path, outdir, password=None):
-    if not _ffmpeg_available():
-        return False, "ffmpeg not found in PATH"
+    ffmpeg = _ffmpeg_available()
+    if not ffmpeg:
+        return False, "ffmpeg not found. Install ffmpeg or run install.py"
     if not _have_pil():
         return False, "Pillow not installed (pip install Pillow)"
+
+    ffmpeg_cmd = ffmpeg if isinstance(ffmpeg, str) else "ffmpeg"
 
     tmp = tempfile.mkdtemp()
     try:

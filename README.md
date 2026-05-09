@@ -63,35 +63,28 @@
 
 ## Installation
 
-### 1. Clone & enter the directory
+### One-Click Setup (Windows)
+
+Double-click **`setup.bat`** — it installs everything automatically:
+- All Python packages
+- Downloads `c2patool.exe` (C2PA signing) if missing
+- Downloads `openstego.jar` (image stego) if missing
+- Creates Desktop and SendTo shortcuts
+
+### Manual Setup (all platforms)
 
 ```bash
+# 1. Clone & enter
 git clone https://github.com/Redo_San/RedoSan-Authenticity.git
 cd RedoSan-Authenticity
-```
 
-### 2. Install Python packages
-
-```bash
-pip install opentimestamps opentimestamps-client
-```
-
-### 3. Install OpenStego (optional - only for steganography features)
-
-Download from [openstego.com](https://www.openstego.com/) and install.
-
-### 4. Run the setup checker
-
-```bash
+# 2. One command to install everything
+pip install opentimestamps opentimestamps-client Pillow mutagen c2pa-python
 python install.py
-```
 
-This will verify all dependencies and guide you if anything is missing.
-
-### 5. Start the tool
-
-```bash
-python RedoSan_Authenticity.py
+# 3. Start the tool
+python RedoSan_Authenticity.py          # interactive menu
+python RedoSan_Authenticity.py --help   # see all CLI commands
 ```
 
 ---
@@ -103,7 +96,7 @@ python RedoSan_Authenticity.py
 | Method | File | How |
 |--------|------|-----|
 | **Interactive menu** | Double-click `RedoSan_Authenticity.bat` | Opens menu in terminal |
-| **Drag & drop** | Drop file onto `RedoSan_Authenticity.vbs` | Quick action menu |
+| **Drag & drop** | Drop file onto `RedoSan_Authenticity_dragdrop.vbs` | Quick action menu |
 | **Send To menu** | Right-click file → **Send To** → **RedoSan Authenticity** | Quick action |
 | **Terminal** | `py -3 RedoSan_Authenticity.py` | Full control |
 

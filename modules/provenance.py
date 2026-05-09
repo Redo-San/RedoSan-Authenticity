@@ -83,9 +83,9 @@ VIDEO_EXT = {".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm", ".m4v", ".
 C2PA_READ_EXT  = {".jpg", ".jpeg", ".png", ".webp", ".avif", ".heic", ".heif", ".mp4", ".mov", ".gif", ".tiff", ".tif", ".flac", ".wav"}
 C2PA_WRITE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".avif", ".mp4", ".mov"}
 
-C2PA_CERT_DIR = os.path.join(os.path.expanduser("~"), ".redosan", "c2pa")
-CERT_FILE = os.path.join(C2PA_CERT_DIR, "cert.pem")
-KEY_FILE  = os.path.join(C2PA_CERT_DIR, "key.pem")
+C2PA_CERT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".keys")
+CERT_FILE = os.path.join(C2PA_CERT_DIR, "c2pa_certs.pem")
+KEY_FILE  = os.path.join(C2PA_CERT_DIR, "c2pa_private.key")
 
 
 # ---------------------------------------------------------------------------
@@ -405,135 +405,48 @@ DIGITAL_SOURCE_TYPES = {
     "virtual":          "virtualRecording",
 }
 
-# Content type options for C2PA
-CONTENT_TYPE_OPTIONS = {
-    "1": ("AI Generated", "trainedAlgorithmicMedia"),
-    "2": ("AI Edited", "algorithmicMedia"),
-    "3": ("Digital Creation", "digitalCreation"),
-    "4": ("Digital Capture", "digitalCapture"),
-    "5": ("Composite", "composite"),
-    "6": ("Human Edited", "minorHumanEdits"),
-}
 
-
-def c2pa_build_manifest(
-    # Section 1: Identity (Required)
-    creator_name="",
-    creator_id="",
-    
-    # Section 2: Content Origin (Required for AI content)
-    digital_source="digital_creation",
-    ai_model="",
-    description="",
-    
-    # Section 3: Copyright (Required)
-    rights_holder="",
-    copyright_notice="",
-    license_url="",
-    
-    # Section 4: AI Training Opt-out
-    opt_out_ai_training=False,
-    
-    # Custom assertions (advanced use)
-    custom_assertions=None
-):
-    """
-    Build a comprehensive C2PA manifest with all provenance fields.
-    
-    Args:
-        creator_name: Name of the content creator
-        creator_id: Unique identifier (URL, ISNI, etc.)
-        digital_source: Type of content origin (see CONTENT_TYPE_OPTIONS)
-        ai_model: Name of AI model used (if applicable)
-        description: Brief description of the content
-        rights_holder: Name of the rights holder
-        copyright_notice: Copyright notice text
-        license_url: URL to the license (optional)
-        opt_out_ai_training: Whether to opt-out of AI training
-        custom_assertions: Additional custom assertions
-    
-    Returns:
-        dict: C2PA manifest JSON structure
-    """
-    from datetime import datetime, timezone
-    
-    # Get digital source type URL
+def c2pa_build_manifest(description="", ai_generated=False, model_name="",
+                         digital_source="digital_creation", custom_assertions=None):
     ds_type = DIGITAL_SOURCE_TYPES.get(digital_source, "digitalCreation")
     ds_url = f"http://cv.iptc.org/newscodes/digitalsourcetype/{ds_type}"
-    
-    # Build timestamp
-    timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    
-    # Build the actions assertion
-    actions_data = {
-        "actions": [{
-            "action": "c2pa.created",
-            "when": timestamp,
-            "softwareAgent": {
-                "name": ai_model if ai_model else "RedoSan Authenticity",
-                "version": "1.0"
-            },
-            "digitalSourceType": ds_url,
-        }]
-    }
-    
-    # Build the CreativeWork assertion (metadata)
-    author = []
-    if creator_name:
-        author_info = {"@type": "Person", "name": creator_name}
-        if creator_id:
-            author_info["identifier"] = creator_id
-        author.append(author_info)
-    
-    creative_work_data = {
-        "@context": "https://schema.org",
-        "@type": "CreativeWork"
-    }
-    if author:
-        creative_work_data["author"] = author
-    if description:
-        creative_work_data["description"] = description
-    if rights_holder:
-        creative_work_data["copyrightHolder"] = {"@type": "Organization", "name": rights_holder}
-    if copyright_notice:
-        creative_work_data["copyrightNotice"] = copyright_notice
-    if license_url:
-        creative_work_data["license"] = license_url
-    
-    # Build assertions list
-    assertions = [
-        {"label": "c2pa.actions", "data": actions_data},
-        {"label": "stds.schema-org.CreativeWork", "data": creative_work_data}
-    ]
-    
-    # Add AI training opt-out if requested
-    if opt_out_ai_training:
-        assertions.append({
-            "label": "cawg.training-mining",
-            "data": {
-                "entries": {
-                    "cawg.ai_inference": {"use": "notAllowed"},
-                    "cawg.ai_generative_training": {"use": "notAllowed"}
-                }
-            }
-        })
-    
-    # Add custom assertions if provided
-    if custom_assertions:
-        assertions.extend(custom_assertions)
-    
-    # Build final manifest
+    if ai_generated:
+        ds_url = "http://ns.adobe.com/xap/1.0/sType/DigitalSourceType#AIContent"
+
     manifest = {
         "claim_generator": "RedoSan Authenticity/1.0",
         "claim_generator_info": [{"name": "RedoSan Authenticity", "version": "1.0"}],
-        "assertions": assertions
+        "assertions": [
+            {
+                "label": "c2pa.actions",
+                "data": {
+                    "actions": [{
+                        "action": "c2pa.created",
+                        "digitalSourceType": ds_url,
+                        "softwareAgent": {"name": "RedoSan Authenticity", "version": "1.0"},
+                    }]
+                }
+            }
+        ]
     }
-    
+
+    extra = {}
+    if description:
+        extra["description"] = description
+    if ai_generated:
+        extra["ai_generated"] = True
+    if model_name:
+        extra["model"] = model_name
+    if extra:
+        manifest["assertions"].append({"label": "org.redosan.provenance", "data": extra})
+
+    if custom_assertions:
+        manifest["assertions"].extend(custom_assertions)
+
     return manifest
 
 
 def c2pa_build_stego_manifest(algorithm="lsb", description=""):
-    """Build a manifest for steganography content."""
     return c2pa_build_manifest(
         description=description or f"Data hidden using {algorithm} steganography",
         digital_source="composite",

@@ -1,0 +1,24 @@
+{
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.git": true,
+        "**/build": true,
+        "**/dist": true
+    },
+    "files.associations": {
+        "*.py": "python"
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "explorer.fileNesting.enabled": true,
+    "python.linting.enabled": true,
+    "python.formatting.provider": "none",
+    "jdk.advanced.disable.nbjavac": false
+}
