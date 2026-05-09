@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedoSan Authenticity</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <h1>RedoSan Authenticity</h1>
+            <span class="version">v1.0.0</span>
+        </header>
+        
+        <nav class="tabs">
+            <button class="tab active" data-tab="fingerprint">Fingerprint</button>
+            <button class="tab" data-tab="timestamp">Timestamp</button>
+            <button class="tab" data-tab="c2pa">C2PA</button>
+            <button class="tab" data-tab="watermark">Watermark</button>
+            <button class="tab" data-tab="metadata">Metadata</button>
+            <button class="tab" data-tab="setup">Setup</button>
+        </nav>
+        
+        <main>
+            <div class="tab-content active" id="fingerprint">
+                <h2>Forensic Fingerprint</h2>
+                <div class="form-group">
+                    <label>File:</label>
+                    <input type="text" id="fp-file" placeholder="Select a file...">
+                    <button class="btn-small" onclick="browseFile('fp-file')">Browse</button>
+                </div>
+                <button class="btn-primary" onclick="runFingerprint()">Generate Fingerprint</button>
+                <div id="fp-result" class="result-box"></div>
+            </div>
+            
+            <div class="tab-content" id="timestamp">
+                <h2>Timestamp</h2>
+                <div class="form-group">
+                    <label>File:</label>
+                    <input type="text" id="ts-file" placeholder="Select a file...">
+                    <button class="btn-small" onclick="browseFile('ts-file')">Browse</button>
+                </div>
+                <button class="btn-primary" onclick="runTimestamp()">Timestamp</button>
+                <button class="btn-secondary" onclick="runVerifyTimestamp()">Verify</button>
+                <div id="ts-result" class="result-box"></div>
+            </div>
+            
+            <div class="tab-content" id="c2pa">
+                <h2>C2PA Analysis</h2>
+                <div class="form-group">
+                    <label>File:</label>
+                    <input type="text" id="c2pa-file" placeholder="Select an image...">
+                    <button class="btn-small" onclick="browseFile('c2pa-file')">Browse</button>
+                </div>
+                <button class="btn-primary" onclick="runC2PA()">Analyze</button>
+                <div id="c2pa-result" class="result-box"></div>
+            </div>
+            
+            <div class="tab-content" id="watermark">
+                <h2>Watermark</h2>
+                <div class="form-group">
+                    <label>Mode:</label>
+                    <select id="wm-mode">
+                        <option value="check">Check</option>
+                        <option value="embed">Embed</option>
+                        <option value="extract">Extract</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>File:</label>
+                    <input type="text" id="wm-file" placeholder="Select a file...">
+                    <button class="btn-small" onclick="browseFile('wm-file')">Browse</button>
+                </div>
+                <button class="btn-primary" onclick="runWatermark()">Execute</button>
+                <div id="wm-result" class="result-box"></div>
+            </div>
+            
+            <div class="tab-content" id="metadata">
+                <h2>Metadata</h2>
+                <div class="form-group">
+                    <label>File:</label>
+                    <input type="text" id="meta-file" placeholder="Select a file...">
+                    <button class="btn-small" onclick="browseFile('meta-file')">Browse</button>
+                </div>
+                <button class="btn-primary" onclick="runMetadata()">Extract</button>
+                <div id="meta-result" class="result-box"></div>
+            </div>
+            
+            <div class="tab-content" id="setup">
+                <h2>Setup</h2>
+                <div id="status">
+                    <p>Checking modules...</p>
+                </div>
+                <button class="btn-secondary" onclick="checkStatus()">Refresh</button>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="progress-bar" id="progress">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="status-bar" id="status-bar">Ready</div>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

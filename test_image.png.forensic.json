@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "tool": "RedoSan Authenticity",
+  "timestamp_created": "2026-05-09T03:40:56.539492+00:00",
+  "file_info": {
+    "file_name": "test_image.png",
+    "file_path": "F:\\RedoSan Authenticity\\test_image.png",
+    "file_size_bytes": 286,
+    "file_size_mb": 0.0003,
+    "date_created": "2026-05-09T05:07:40.838505",
+    "date_modified": "2026-05-09T05:07:40.841506",
+    "dimensions": {
+      "width": 100,
+      "height": 100,
+      "color_mode": "RGB",
+      "format": "PNG"
+    }
+  },
+  "protection": {
+    "watermarked": false,
+    "watermark_type": null,
+    "c2pa_signed": false,
+    "ots_timestamped": false,
+    "certificate_signed": false,
+    "protection_date": null
+  },
+  "provenance": {
+    "creator": null,
+    "creator_id": null,
+    "software_used": [],
+    "creation_steps": [],
+    "parent_file": null,
+    "previous_version_hash": null
+  },
+  "fingerprints": {
+    "ahash": "0000000000000000",
+    "dhash": "0000000000000000",
+    "phash": "8000000000000000",
+    "whash": "0000000000000000",
+    "sha256": "d485d63486aa352c760ff6d9ddda692189ad533c5d506d3dcdbe6db482941b02",
+    "file_type": "image"
+  },
+  "forensic_analysis": {
+    "detected_ai_generated": null,
+    "detected_watermark": null,
+    "unique_artifacts": [],
+    "analysis_date": null
+  },
+  "file_type": "image",
+  "signature": null
+}

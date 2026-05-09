@@ -1,0 +1,24 @@
+{
+  "c2patool.exe": {
+    "version": "0.26.56",
+    "sha1": "978e863bd7beb60678aca262acfab8998927cd05",
+    "sha256": "8f554b63a3c8c0289687eeaf5cf64987535ea247a30ffc3e6287d457bd3b9c33",
+    "sha512": "646ceac4d1cc8f9217ca4dc82f716bd90b11c6ea8636f81621d3a0728a9079ebb65ab224ad47324a6383f9aec93f35727e8bb7f4ea1ffeba9005ae105a79c0f4",
+    "size": 29279744,
+    "urls": {
+      "primary": "https://github.com/Redo_San/RedoSan-Authenticity/releases/download/v1.0.0/c2patool.exe",
+      "fallback": "https://github.com/contentauth/c2pa-rs/releases/download/c2patool-v0.26.56/c2patool-x86_64-pc-windows-msvc.zip"
+    }
+  },
+  "openstego.jar": {
+    "version": "0.8.6",
+    "sha1": "d3d6671a144af6024571a725cf90af3a8098ff41",
+    "sha256": "2ce8e84bfac3e7d3fd3386db04b103ee3bf3be08d0b4baeaf77718861e6105a1",
+    "sha512": "2f4c082ae37698bfdd7f57e90f37c55f10aa50330a463c72bde5818f537d78227beff3b1fddd520dec61c2040ef8c0f7398c67b9de2027c50970ec8d135c4cb8",
+    "size": 186592,
+    "urls": {
+      "primary": "https://github.com/Redo_San/RedoSan-Authenticity/releases/download/v1.0.0/openstego.jar",
+      "fallback": "https://github.com/syvaidya/openstego/releases/download/openstego-0.8.6/openstego-0.8.6.zip"
+    }
+  }
+}

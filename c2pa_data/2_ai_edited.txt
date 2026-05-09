@@ -1,0 +1,7 @@
+creator_name: AI Edited Test
+creator_id: edited.test@example.com
+ai_model: DALL-E 3
+description: Test AI edited content
+rights_holder: Edited Company
+copyright: © 2024 Edited Company
+license: https://edited.example.com/license
