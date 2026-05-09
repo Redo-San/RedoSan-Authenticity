@@ -14,17 +14,21 @@ venv/
 .venv/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
+.vscode/settings.json.local
+.vscode/launch.json.local
+.vscode/.env
 
 # OS
 .DS_Store
 Thumbs.db
 
 # Project specific
+*.sha1.txt
 *.sha256.txt
+*.sha512.txt
 *.ots
 *_stego.*
 *_watermarked.*
@@ -39,3 +43,11 @@ openstego.jar
 # C2PA sample certs
 c2pa_certs.pem
 c2pa_private.key
+
+# Installer build output
+installer_output/
+
+# PyInstaller output
+dist/
+build/
+*.spec
