@@ -1,0 +1,14 @@
+[package]
+name = "redosan_backend"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "redosan_backend"
+path = "src/main.rs"
+
+[dependencies]
+parking_lot = "=0.11"
+
+[profile.release]
+opt-level = 3

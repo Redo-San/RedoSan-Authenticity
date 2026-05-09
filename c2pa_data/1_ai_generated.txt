@@ -1,0 +1,7 @@
+creator_name: AI Generated Test
+creator_id: ai.test@example.com
+ai_model: GPT-4
+description: Test AI generated content
+rights_holder: Test Company
+copyright: © 2024 Test Company
+license: https://example.com/license
