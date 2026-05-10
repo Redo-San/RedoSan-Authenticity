@@ -1,17 +1,22 @@
 let pyodide = null;
 let ready = false;
+let initError = null;
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('py-status');
+  if (el) { el.textContent = msg; if (cls) el.className = 'badge badge-' + cls; }
+}
 
 async function init() {
-  const status = document.getElementById('py-status');
-  status.textContent = 'Loading Pyodide...';
+  setStatus('Loading Pyodide...', 'muted');
   try {
     pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.4/full/' });
-    status.textContent = 'Installing packages...';
+    setStatus('Installing packages...', 'muted');
     await pyodide.loadPackage('micropip');
     const micropip = pyodide.pyimport('micropip');
     await micropip.install('Pillow');
     await micropip.install('imagehash');
-    status.textContent = 'Loading modules...';
+    setStatus('Loading modules...', 'muted');
 
     const base = document.location.href.includes('localhost')
       ? '/py/' : '/RedoSan-Authenticity/py/';
@@ -233,14 +238,32 @@ def ots_verify_web(fname, ots_fname):
     `);
 
     ready = true;
-    status.textContent = 'Ready';
-    status.className = 'badge badge-success';
+    setStatus('Ready', 'success');
     console.log('Pyodide ready');
   } catch (e) {
-    status.textContent = 'Error';
-    status.className = 'badge badge-warning';
+    initError = e;
+    setStatus('Load failed', 'warning');
     console.error('Pyodide init error:', e);
+    // Show retry button
+    const nav = document.querySelector('nav');
+    if (nav) {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.style.cssText = 'font-size:0.75rem;padding:4px 12px;margin-left:8px';
+      btn.textContent = 'Retry';
+      btn.onclick = () => { initError = null; setStatus('Loading...', 'muted'); btn.remove(); init(); };
+      nav.appendChild(btn);
+    }
   }
+}
+
+function checkReady() {
+  if (ready) return true;
+  const nav = document.querySelector('nav');
+  if (initError) {
+    setStatus('Click Retry', 'warning');
+  }
+  return false;
 }
 
 // ── Navigation ──
@@ -292,7 +315,7 @@ async function watermarkEmbed() {
   const output = document.getElementById('wm-output');
   const dl = document.getElementById('wm-download');
 
-  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
   const type = parseInt(document.getElementById('wm-type').value);
   const pw = document.getElementById('wm-password').value || null;
   const imgFile = document.getElementById('wm-image').files[0];
@@ -334,7 +357,7 @@ async function watermarkExtract() {
   const output = document.getElementById('wm-output');
   const dl = document.getElementById('wm-download');
 
-  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
   const type = parseInt(document.getElementById('wm-type-ex').value);
   const pw = document.getElementById('wm-password-ex').value || null;
   const imgFile = document.getElementById('wm-image-ex').files[0];
@@ -378,7 +401,7 @@ async function fingerprintFile() {
   const output = document.getElementById('fp-output');
   const dl = document.getElementById('fp-download');
 
-  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('fp-file').files[0];
   if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
 
@@ -461,7 +484,7 @@ async function readMetadata() {
   const output = document.getElementById('md-output');
   const dl = document.getElementById('md-download');
 
-  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('md-file').files[0];
   if (!file) { output.textContent = 'Please select an image'; resultDiv.style.display = 'block'; return; }
 
@@ -511,7 +534,7 @@ async function timestampHash() {
   const output = document.getElementById('ts-output');
   const dl = document.getElementById('ts-download');
 
-  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('ts-file').files[0];
   if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
 
@@ -540,7 +563,7 @@ async function timestampOTS() {
   const output = document.getElementById('ts-output');
   const dl = document.getElementById('ts-download');
 
-  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('ts-ots-file').files[0];
   if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
 
@@ -605,7 +628,7 @@ async function verifyOTS() {
   const output = document.getElementById('ts-output');
   const dl = document.getElementById('ts-download');
 
-  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('ts-verify-file').files[0];
   const otsFile = document.getElementById('ts-ots-proof').files[0];
   if (!file || !otsFile) { output.textContent = 'Please select both a file and its .ots proof'; resultDiv.style.display = 'block'; return; }
