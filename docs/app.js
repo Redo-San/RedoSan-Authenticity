@@ -100,11 +100,6 @@ def fingerprint_file_data(fname):
     hashes['MD5'] = hashlib.md5(data).hexdigest()
     hashes['BLAKE2b'] = hashlib.blake2b(data).hexdigest()
     hashes['BLAKE2s'] = hashlib.blake2s(data).hexdigest()
-    hashes['RIPEMD-160'] = 'Requires pycryptodome (not in browser)'
-    hashes['Whirlpool'] = 'Requires pycryptodome (not in browser)'
-    hashes['BLAKE3'] = 'Requires blake3 module (not in browser)'
-    hashes['MD2'] = 'Requires pycryptodome (not in browser)'
-    hashes['MD4'] = 'Requires pycryptodome (not in browser)'
 
     result = {
         'file_info': {
@@ -411,19 +406,15 @@ async function fingerprintFile() {
     const familyOrder = [
       { label: 'SHA-2', keys: ['SHA-1','SHA-224','SHA-256','SHA-384','SHA-512'] },
       { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
-      { label: 'MD', keys: ['MD5','MD2','MD4'] },
+      { label: 'MD', keys: ['MD5'] },
       { label: 'BLAKE2', keys: ['BLAKE2b','BLAKE2s'] },
-      { label: 'Other', keys: ['BLAKE3','RIPEMD-160','Whirlpool'] },
     ];
     for (const family of familyOrder) {
       html += `<div style="margin-top:12px;font-weight:700;font-size:0.85rem">${family.label}</div>`;
       html += '<table class="meta-table">';
       for (const key of family.keys) {
         const v = result.hashes[key];
-        if (v) {
-          const isMissing = typeof v === 'string' && v.startsWith('Requires');
-          html += `<tr><td style="width:100px">${key}</td><td>${isMissing ? `<span style="color:var(--text-muted);font-size:0.7rem">${escHtml(v)}</span>` : `<code style="font-size:0.65rem">${v}</code>`}</td></tr>`;
-        }
+        if (v) html += `<tr><td style="width:100px">${key}</td><td><code style="font-size:0.65rem">${v}</code></td></tr>`;
       }
       html += '</table>';
     }
