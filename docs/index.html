@@ -168,11 +168,28 @@
         <button class="btn" onclick="timestampHash()" id="ts-btn">Compute SHA-256</button>
       </div>
       <div id="ts-ots" style="display:none">
-        <div class="form-group">
-          <label>File to timestamp</label>
-          <input type="file" id="ts-ots-file">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn tab-btn active" data-ots-tab="create" onclick="switchOtsTab('create')">Create .ots</button>
+          <button class="btn tab-btn" data-ots-tab="verify" onclick="switchOtsTab('verify')">Verify .ots</button>
         </div>
-        <button class="btn" onclick="timestampOTS()" id="ts-ots-btn">Create Timestamp</button>
+        <div id="ots-create">
+          <div class="form-group">
+            <label>File to timestamp</label>
+            <input type="file" id="ts-ots-file">
+          </div>
+          <button class="btn" onclick="timestampOTS()" id="ts-ots-btn">Create .ots Timestamp</button>
+        </div>
+        <div id="ots-verify" style="display:none">
+          <div class="form-group">
+            <label>Original file</label>
+            <input type="file" id="ts-verify-file">
+          </div>
+          <div class="form-group">
+            <label>.ots proof file</label>
+            <input type="file" id="ts-ots-proof" accept=".ots">
+          </div>
+          <button class="btn" onclick="verifyOTS()" id="ts-verify-btn">Verify Timestamp</button>
+        </div>
       </div>
       <div class="spinner" id="ts-spinner"></div>
     </div>
