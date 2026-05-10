@@ -15,14 +15,56 @@ function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
+const PYODIDE_VERSION = 'v0.27.4';
+const CDN_LIST = [
+  'https://cdn.jsdelivr.net/pyodide/' + PYODIDE_VERSION + '/full/',
+  'https://fastly.jsdelivr.net/pyodide/' + PYODIDE_VERSION + '/full/',
+  'https://unpkg.com/pyodide@' + PYODIDE_VERSION + '/full/',
+];
+
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('Failed to load ' + url));
+    document.head.appendChild(s);
+  });
+}
+
+async function loadPyodideScript(cdnIndex) {
+  if (cdnIndex >= CDN_LIST.length) throw new Error('All CDNs failed for pyodide.js');
+  const url = CDN_LIST[cdnIndex] + 'pyodide.js';
+  setStatus('Loading engine (CDN ' + (cdnIndex + 1) + '/' + CDN_LIST.length + ')...', 'muted');
+  try {
+    await loadScript(url);
+  } catch (e) {
+    console.warn('Script CDN ' + (cdnIndex + 1) + ' failed:', url);
+    await loadPyodideScript(cdnIndex + 1);
+  }
+}
+
+async function tryLoadPyodide(cdnIndex) {
+  if (cdnIndex >= CDN_LIST.length) throw new Error('All CDNs failed');
+  const url = CDN_LIST[cdnIndex];
+  setStatus('Trying CDN ' + (cdnIndex + 1) + '/' + CDN_LIST.length + '...', 'muted');
+  try {
+    return await Promise.race([
+      loadPyodide({ indexURL: url }),
+      timeout(120000)
+    ]);
+  } catch (e) {
+    console.warn('CDN ' + (cdnIndex + 1) + ' failed:', url, e);
+    return await tryLoadPyodide(cdnIndex + 1);
+  }
+}
+
 async function init() {
   const IS_MOBILE = isMobile();
   setStatus(IS_MOBILE ? 'Loading Python (may take 30-60s on mobile)...' : 'Loading Pyodide...', 'muted');
   try {
-    pyodide = await Promise.race([
-      loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.4/full/' }),
-      timeout(120000)
-    ]);
+    await loadPyodideScript(0);
+    pyodide = await tryLoadPyodide(0);
     setStatus('Installing packages...', 'muted');
     await pyodide.loadPackage('micropip');
     const micropip = pyodide.pyimport('micropip');
@@ -257,6 +299,7 @@ def ots_verify_web(fname, ots_fname):
     console.log('Pyodide ready');
   } catch (e) {
     initError = e;
+    const errMsg = e.message || String(e);
     setStatus('Load failed', 'warning');
     console.error('Pyodide init error:', e);
     const nav = document.querySelector('nav');
@@ -268,18 +311,20 @@ def ots_verify_web(fname, ots_fname):
       btn.onclick = () => { initError = null; setStatus('Loading...', 'muted'); btn.remove(); init(); };
       nav.appendChild(btn);
     }
-    // Show fallback message on the active page
+    // Show fallback message
     const active = document.querySelector('.page.active');
     if (active) {
       const container = active.querySelector('.card-form') || active.querySelector('.hero') || active;
       const msg = document.createElement('div');
       msg.className = 'card-form';
       msg.style.cssText = 'margin-top:16px;text-align:center';
+      const isMem = errMsg.includes('Memory') || errMsg.includes('memory') || errMsg.includes('Wasm');
       msg.innerHTML = IS_MOBILE
-        ? `<p style="color:var(--text-muted);margin-bottom:12px">Python engine couldn't load on this device (iPhone 7 / older).</p>
-           <p style="color:var(--text-muted);margin-bottom:12px;font-size:0.85rem">The web version requires a modern device with ~200MB RAM free for WebAssembly.</p>
+        ? `<p style="color:var(--text-muted);margin-bottom:12px">Python engine couldn't load on this device.</p>
+           <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px">${isMem ? 'iPhone 7 / older devices may lack sufficient WebAssembly memory.' : 'Error: ' + escHtml(errMsg)}<br>Try a modern device or use the desktop app.</p>
            <a href="https://github.com/Redo-San/RedoSan-Authenticity/releases" class="btn" target="_blank">Download Desktop App</a>`
-        : `<p style="color:var(--text-muted);margin-bottom:12px">Python engine failed to load. Check your network or try again.</p>
+        : `<p style="color:var(--text-muted);margin-bottom:12px">Python engine failed to load.</p>
+           <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px">Error: ${escHtml(errMsg)}</p>
            <button class="btn" onclick="location.reload()">Reload Page</button>`;
       container.parentNode.insertBefore(msg, container.nextSibling);
     }
