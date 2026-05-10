@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Metadata — RedoSan Authenticity{% endblock %}
+{% block content %}
+<h2 style="margin-bottom:24px">Metadata Reader</h2>
+
+<div class="card-form">
+  <form id="meta-form" onsubmit="return submitMetadata(event)">
+    <div class="form-group">
+      <label>File</label>
+      <input type="file" name="file" required>
+    </div>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px">
+      Extracts EXIF, XMP, and format-specific metadata from images, audio, and video files.
+    </p>
+    <button type="submit" class="btn" id="meta-btn">Read Metadata</button>
+    <div class="spinner" id="meta-spinner"></div>
+  </form>
+</div>
+
+<div id="meta-result" style="display:none">
+  <div class="result" id="meta-json"></div>
+</div>
+
+<script>
+async function submitMetadata(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const btn = document.getElementById('meta-btn');
+  const spinner = document.getElementById('meta-spinner');
+  const resultDiv = document.getElementById('meta-result');
+  const jsonDiv = document.getElementById('meta-json');
+
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  resultDiv.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/metadata', { method: 'POST', body: fd });
+    const data = await res.json();
+    jsonDiv.textContent = JSON.stringify(data, null, 2);
+    resultDiv.style.display = 'block';
+  } catch (err) {
+    jsonDiv.textContent = 'Error: ' + err.message;
+    resultDiv.style.display = 'block';
+  }
+  btn.disabled = false;
+  spinner.style.display = 'none';
+}
+</script>
+{% endblock %}

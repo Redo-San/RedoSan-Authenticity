@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}RedoSan Authenticity — Web App{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1><span>RedoSan</span> Authenticity</h1>
+  <p>Embed and verify digital watermarks, generate forensic fingerprints, and inspect metadata — all in your browser.</p>
+  <div class="grid">
+    <a href="/watermark" class="card">
+      <div class="icon">💧</div>
+      <h3>Watermark</h3>
+      <p>Embed or extract invisible digital watermarks using 9 different algorithms (LSB, DCT, DWT, etc.)</p>
+    </a>
+    <a href="/fingerprint" class="card">
+      <div class="icon">🔍</div>
+      <h3>Fingerprint</h3>
+      <p>Generate multi-algorithm forensic fingerprints — perceptual hashes, SHA hashes, and more.</p>
+    </a>
+    <a href="/metadata" class="card">
+      <div class="icon">📋</div>
+      <h3>Metadata</h3>
+      <p>Read EXIF, XMP, and other embedded metadata from images, audio, and video files.</p>
+    </a>
+  </div>
+</div>
+{% endblock %}
