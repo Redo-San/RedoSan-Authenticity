@@ -165,15 +165,15 @@ class WatermarkTabMixin:
 
         cfg = self.WT_FIELDS.get(wtype, {"needs_msg": True, "needs_pw": True})
 
+        msg = f["secret"][0].get()
         if cfg["needs_msg"]:
-            secret = f["secret"][0].get()
-            if not os.path.exists(secret):
-                print(f"ERROR: Message file not found: {secret}"); return
+            if not os.path.exists(msg):
+                print(f"ERROR: Message file not found: {msg}"); return
         else:
-            secret = ""
+            msg = ""
 
         pw = f["password"][0].get().strip() or None if cfg["needs_pw"] else None
 
         print(f"Embedding type {wtype}...")
-        ok, msg = wt.embed(wtype, cover, secret, output, pw)
-        print(f"\n  {'SUCCESS' if ok else 'ERROR'}: {msg}")
+        ok, result = wt.embed(wtype, cover, msg, output, pw)
+        print(f"\n  {'SUCCESS' if ok else 'ERROR'}: {result}")

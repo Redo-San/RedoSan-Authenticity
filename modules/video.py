@@ -30,7 +30,7 @@ def _have_pil():
 def _lsb_embed_in_png(png_path, payload, pw):
     from PIL import Image
     if pw:
-        key = hashlib.sha256(pw.encode()).digest()
+        key = hashlib.pbkdf2_hmac("sha256", pw.encode(), pw.encode(), 100000)
         payload = bytes(payload[i] ^ key[i % len(key)] for i in range(len(payload)))
     img = Image.open(png_path).convert("RGB")
     px = img.load()
@@ -71,7 +71,7 @@ def _lsb_extract_from_png(png_path, pw):
     raw_bits = raw[32:32 + dlen * 8]
     data = bytes(int(raw_bits[i:i+8], 2) for i in range(0, len(raw_bits), 8))
     if pw:
-        key = hashlib.sha256(pw.encode()).digest()
+        key = hashlib.pbkdf2_hmac("sha256", pw.encode(), pw.encode(), 100000)
         data = bytes(data[i] ^ key[i % len(key)] for i in range(len(data)))
     return data
 

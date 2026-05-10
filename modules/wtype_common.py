@@ -13,7 +13,7 @@ def load_rgb(path):
 def pw_key(password):
     if not password:
         return b""
-    return hashlib.sha256(password.encode()).digest()
+    return hashlib.pbkdf2_hmac("sha256", password.encode(), password.encode(), 100000)
 
 def xor_bytes(data, key):
     if not key:

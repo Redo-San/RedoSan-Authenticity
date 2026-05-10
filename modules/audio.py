@@ -30,7 +30,7 @@ def embed(wav_path, secret_path, output_path, password=None):
         secret = f.read()
 
     if password:
-        key = hashlib.sha256(password.encode()).digest()
+        key = hashlib.pbkdf2_hmac("sha256", password.encode(), password.encode(), 100000)
         secret = bytes(secret[i] ^ key[i % len(key)] for i in range(len(secret)))
 
     payload = struct.pack(">I", len(secret)) + secret
@@ -82,7 +82,7 @@ def extract(wav_path, outdir, password=None):
     secret = _bytes_from_bits(data_bits)
 
     if password:
-        key = hashlib.sha256(password.encode()).digest()
+        key = hashlib.pbkdf2_hmac("sha256", password.encode(), password.encode(), 100000)
         secret = bytes(secret[i] ^ key[i % len(key)] for i in range(len(secret)))
 
     os.makedirs(outdir, exist_ok=True)
