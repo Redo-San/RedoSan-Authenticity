@@ -168,7 +168,7 @@ class WatermarkTabMixin:
         msg = f["secret"][0].get()
         if cfg["needs_msg"]:
             if not os.path.exists(msg):
-                print(f"ERROR: Message file not found: {msg}"); return
+                print("ERROR: Message file not found"); return
         else:
             msg = ""
 
