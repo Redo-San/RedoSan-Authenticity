@@ -10,8 +10,6 @@
 
 > **⚠️ IMPORTANT: BETA SOFTWARE**
 > This tool is **still under development and testing**. It is **not complete** and contains **many bugs**, especially in the GUI interface. Some sections and features may not work as expected. Use at your own risk and report issues on GitHub.
->
-> **هذه الأداة لا تزال قيد التطوير والاختبار وغير مكتملة.** تحتوي على أخطاء كثيرة خصوصًا في الواجهة الرسومية. بعض الفقرات والأجزاء قد لا تعمل. تستخدمها على مسؤوليتك الخاصة.
 
 **RedoSan Authenticity** is a cross-platform tool that combines **steganography** (via [OpenStego](https://www.openstego.com/)) with **cryptographic timestamping** (via [OpenTimestamps](https://opentimestamps.org/)) to provide a complete workflow for hiding, watermarking, and proving the authenticity of digital files.
 
