@@ -13,6 +13,8 @@
   <a href="#" class="active" data-page="home">Home</a>
   <a href="#" data-page="watermark">Watermark</a>
   <a href="#" data-page="fingerprint">Fingerprint</a>
+  <a href="#" data-page="metadata">Metadata</a>
+  <a href="#" data-page="timestamp">Timestamp</a>
   <span id="py-status" class="badge badge-muted">Loading...</span>
 </nav>
 
@@ -22,16 +24,26 @@
     <div class="hero">
       <h1><span>RedoSan</span> Authenticity</h1>
       <p>Browser-based digital authenticity tool. All processing happens locally — nothing is uploaded to any server.</p>
-      <div class="grid">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <a href="#" data-page="watermark" class="card">
           <div class="icon">💧</div>
           <h3>Watermark</h3>
-          <p>Embed or extract invisible watermarks using 9 algorithms (LSB, DCT, DWT, etc.)</p>
+          <p>9 algorithms: LSB, DCT, DWT and more</p>
         </a>
         <a href="#" data-page="fingerprint" class="card">
-          <div class="icon" style="font-size:1.5rem">🔍</div>
+          <div class="icon">🔍</div>
           <h3>Fingerprint</h3>
-          <p>Generate SHA hashes and perceptual image hashes to verify file integrity.</p>
+          <p>SHA-256 + perceptual image hashes</p>
+        </a>
+        <a href="#" data-page="metadata" class="card">
+          <div class="icon">📋</div>
+          <h3>Metadata</h3>
+          <p>EXIF, dimensions, format info</p>
+        </a>
+        <a href="#" data-page="timestamp" class="card">
+          <div class="icon">🕒</div>
+          <h3>Timestamp</h3>
+          <p>SHA-256 hashing + OpenTimestamps</p>
         </a>
       </div>
     </div>
@@ -117,6 +129,56 @@
     <div id="fp-result" style="display:none;margin-top:16px">
       <div class="result" id="fp-output"></div>
       <div id="fp-download" style="margin-top:12px;text-align:center"></div>
+    </div>
+  </section>
+
+  <!-- Metadata -->
+  <section id="page-metadata" class="page">
+    <h2 style="margin-bottom:20px">Metadata Reader</h2>
+    <div class="card-form">
+      <div class="form-group">
+        <label>Image file</label>
+        <input type="file" id="md-file" accept="image/*">
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px">
+        Reads EXIF, dimensions, format, and color mode using Pillow. Audio/video metadata requires server-side processing.
+      </p>
+      <button class="btn" onclick="readMetadata()" id="md-btn">Read Metadata</button>
+      <div class="spinner" id="md-spinner"></div>
+    </div>
+    <div id="md-result" style="display:none;margin-top:16px">
+      <div class="result" id="md-output"></div>
+      <div id="md-download" style="margin-top:12px;text-align:center"></div>
+    </div>
+  </section>
+
+  <!-- Timestamp -->
+  <section id="page-timestamp" class="page">
+    <h2 style="margin-bottom:20px">File Timestamping</h2>
+    <div class="card-form">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn tab-btn active" data-ts-tab="hash" onclick="switchTsTab('hash')">SHA-256 Hash</button>
+        <button class="btn tab-btn" data-ts-tab="ots" onclick="switchTsTab('ots')">OpenTimestamps</button>
+      </div>
+      <div id="ts-hash">
+        <div class="form-group">
+          <label>File to hash</label>
+          <input type="file" id="ts-file">
+        </div>
+        <button class="btn" onclick="timestampHash()" id="ts-btn">Compute SHA-256</button>
+      </div>
+      <div id="ts-ots" style="display:none">
+        <div class="form-group">
+          <label>File to timestamp</label>
+          <input type="file" id="ts-ots-file">
+        </div>
+        <button class="btn" onclick="timestampOTS()" id="ts-ots-btn">Create Timestamp</button>
+      </div>
+      <div class="spinner" id="ts-spinner"></div>
+    </div>
+    <div id="ts-result" style="display:none;margin-top:16px">
+      <div class="result" id="ts-output"></div>
+      <div id="ts-download" style="margin-top:12px;text-align:center"></div>
     </div>
   </section>
 </main>

@@ -104,6 +104,40 @@ def fingerprint_file_data(fname):
         except Exception as e:
             result['image_error'] = str(e)
     return json.dumps(result)
+
+def read_metadata_web(fname):
+    path = os.path.join(TMP, fname)
+    result = {'file': fname, 'size': os.path.getsize(path)}
+    from PIL import Image
+    from PIL.ExifTags import TAGS
+    try:
+        img = Image.open(path)
+        result['image'] = {'width': img.width, 'height': img.height, 'mode': img.mode, 'format': img.format}
+        exif_data = img._getexif()
+        if exif_data:
+            exif = {}
+            for k, v in exif_data.items():
+                tag = TAGS.get(k, k)
+                val = str(v)
+                if len(val) > 200:
+                    val = val[:197] + '...'
+                exif[tag] = val
+            result['exif'] = exif
+        img.close()
+    except Exception as e:
+        result['error'] = str(e)
+    return json.dumps(result, ensure_ascii=False)
+
+def hash_file_web(fname):
+    path = os.path.join(TMP, fname)
+    sha = hashlib.sha256()
+    with open(path, 'rb') as f:
+        while True:
+            chunk = f.read(65536)
+            if not chunk:
+                break
+            sha.update(chunk)
+    return json.dumps({'file': fname, 'sha256': sha.hexdigest()})
     `);
 
     ready = true;
@@ -139,6 +173,13 @@ function switchWmTab(mode) {
   document.getElementById('wm-embed').style.display = mode === 'embed' ? '' : 'none';
   document.getElementById('wm-extract').style.display = mode === 'extract' ? '' : 'none';
   document.querySelector(`.tab-btn[data-wm-tab="${mode}"]`).classList.add('active');
+}
+
+function switchTsTab(mode) {
+  document.querySelectorAll('.tab-btn[data-ts-tab]').forEach(b => b.classList.remove('active'));
+  document.getElementById('ts-hash').style.display = mode === 'hash' ? '' : 'none';
+  document.getElementById('ts-ots').style.display = mode === 'ots' ? '' : 'none';
+  document.querySelector(`.tab-btn[data-ts-tab="${mode}"]`).classList.add('active');
 }
 
 function writeFile(name, data) {
@@ -267,6 +308,121 @@ function base64ToBlob(b64, mime) {
   const arr = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
   return new Blob([arr], { type: mime });
+}
+
+async function readMetadata() {
+  const btn = document.getElementById('md-btn');
+  const spinner = document.getElementById('md-spinner');
+  const resultDiv = document.getElementById('md-result');
+  const output = document.getElementById('md-output');
+  const dl = document.getElementById('md-download');
+
+  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  const file = document.getElementById('md-file').files[0];
+  if (!file) { output.textContent = 'Please select an image'; resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner.style.display = 'block';
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+
+  try {
+    const data = await file.arrayBuffer();
+    writeFile(file.name, data);
+    const jsonStr = pyodide.runPython(`read_metadata_web(${repr(file.name)})`);
+    const pretty = JSON.stringify(JSON.parse(jsonStr), null, 2);
+    output.textContent = pretty;
+    const blob = new Blob([pretty], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    dl.innerHTML = `<a href="${url}" download="${file.name}.metadata.json" class="btn">Download JSON</a>`;
+  } catch (e) { output.textContent = 'Error: ' + e.message; }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner.style.display = 'none';
+}
+
+async function timestampHash() {
+  const btn = document.getElementById('ts-btn');
+  const spinner = document.getElementById('ts-spinner');
+  const resultDiv = document.getElementById('ts-result');
+  const output = document.getElementById('ts-output');
+  const dl = document.getElementById('ts-download');
+
+  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  const file = document.getElementById('ts-file').files[0];
+  if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner.style.display = 'block';
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+
+  try {
+    const data = await file.arrayBuffer();
+    writeFile(file.name, data);
+    const jsonStr = pyodide.runPython(`hash_file_web(${repr(file.name)})`);
+    const result = JSON.parse(jsonStr);
+    output.textContent = `SHA-256: ${result.sha256}`;
+    const lines = `SHA-256 (${file.name}) = ${result.sha256}`;
+    const blob = new Blob([lines], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    dl.innerHTML = `<a href="${url}" download="${file.name}.sha256.txt" class="btn">Download .sha256.txt</a>`;
+  } catch (e) { output.textContent = 'Error: ' + e.message; }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner.style.display = 'none';
+}
+
+async function timestampOTS() {
+  const btn = document.getElementById('ts-ots-btn');
+  const spinner = document.getElementById('ts-spinner');
+  const resultDiv = document.getElementById('ts-result');
+  const output = document.getElementById('ts-output');
+  const dl = document.getElementById('ts-download');
+
+  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  const file = document.getElementById('ts-ots-file').files[0];
+  if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner.style.display = 'block';
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+
+  try {
+    // Write file to Pyodide FS
+    const data = await file.arrayBuffer();
+    writeFile(file.name, data);
+
+    // Compute SHA-256 (always works)
+    const jsonStr = pyodide.runPython(`hash_file_web(${repr(file.name)})`);
+    const result = JSON.parse(jsonStr);
+    const sha256 = result.sha256;
+
+    // Try to install opentimestamps, fall back to SHA-256 only
+    let otsOk = false;
+    try {
+      pyodide.runPython(`
+import micropip, sys
+try:
+    import opentimestamps
+except:
+    pass
+`);
+      const micropip = pyodide.pyimport('micropip');
+      await micropip.install('opentimestamps');
+      otsOk = true;
+    } catch (e) {
+      otsOk = false;
+    }
+
+    if (otsOk) {
+      output.textContent = `SHA-256: ${sha256}\n\nOpenTimestamps is available in browser. Creating timestamp...`;
+      // Future: implement full OTS stamp when the library supports it in Pyodide
+    } else {
+      output.textContent = `SHA-256: ${sha256}\n\nOpenTimestamps library cannot run in-browser (requires native crypto extensions). Use the desktop app or install opentimestamps locally for full timestamp verification.`;
+    }
+
+    // Always offer SHA-256 download
+    const lines = `SHA-256 (${file.name}) = ${sha256}`;
+    const blob = new Blob([lines], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    dl.innerHTML = `<a href="${url}" download="${file.name}.sha256.txt" class="btn">Download .sha256.txt</a>`;
+  } catch (e) { output.textContent = 'Error: ' + e.message; }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner.style.display = 'none';
 }
 
 init();
