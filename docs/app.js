@@ -171,7 +171,13 @@ async function watermarkEmbed() {
     if (result.ok) {
       const blob = base64ToBlob(result.data, 'image/png');
       const url = URL.createObjectURL(blob);
-      dl.innerHTML = `<a href="${url}" download="watermarked.png" class="btn">Download watermarked.png</a>`;
+      const report = JSON.stringify({ algorithm: type, message: result.msg, status: 'ok' }, null, 2);
+      const reportBlob = new Blob([report], { type: 'application/json' });
+      const reportUrl = URL.createObjectURL(reportBlob);
+      dl.innerHTML = `
+        <a href="${url}" download="watermarked.png" class="btn">Download watermarked.png</a>
+        <a href="${reportUrl}" download="watermark_report.json" class="btn" style="margin-left:8px">Download Report (JSON)</a>
+      `;
       output.textContent = result.msg;
     } else {
       output.textContent = 'Error: ' + result.error;
@@ -204,12 +210,18 @@ async function watermarkExtract() {
     const result = JSON.parse(jsonStr);
     if (result.ok) {
       let text = result.msg + '\n';
+      const reportData = { algorithm: type, message: result.msg, files: {}, status: 'ok' };
       for (const [name, b64] of Object.entries(result.files || {})) {
         text += `\n  ${name}: extracted`;
+        reportData.files[name] = `${b64.length > 100 ? '...' : ''}`;
         const blob = base64ToBlob(b64, 'application/octet-stream');
         const url = URL.createObjectURL(blob);
         dl.innerHTML += `<a href="${url}" download="${name}" class="btn" style="margin:4px">Download ${name}</a> `;
       }
+      const report = JSON.stringify(reportData, null, 2);
+      const reportBlob = new Blob([report], { type: 'application/json' });
+      const reportUrl = URL.createObjectURL(reportBlob);
+      dl.innerHTML += `<a href="${reportUrl}" download="extract_report.json" class="btn" style="margin:4px">Download Report (JSON)</a>`;
       output.textContent = text;
     } else {
       output.textContent = 'Error: ' + result.error;
@@ -224,18 +236,25 @@ async function fingerprintFile() {
   const spinner = document.getElementById('fp-spinner');
   const resultDiv = document.getElementById('fp-result');
   const output = document.getElementById('fp-output');
+  const dl = document.getElementById('fp-download');
 
   if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('fp-file').files[0];
   if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
 
-  btn.disabled = true; spinner.style.display = 'block'; resultDiv.style.display = 'none';
+  btn.disabled = true; spinner.style.display = 'block';
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
 
   try {
     const data = await file.arrayBuffer();
     writeFile(file.name, data);
     const jsonStr = pyodide.runPython(`fingerprint_file_data(${repr(file.name)})`);
-    output.textContent = JSON.stringify(JSON.parse(jsonStr), null, 2);
+    const pretty = JSON.stringify(JSON.parse(jsonStr), null, 2);
+    output.textContent = pretty;
+    // Download as JSON
+    const blob = new Blob([pretty], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    dl.innerHTML = `<a href="${url}" download="${file.name}.fingerprint.json" class="btn">Download JSON</a>`;
   } catch (e) { output.textContent = 'Error: ' + e.message; }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner.style.display = 'none';
