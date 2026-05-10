@@ -107,7 +107,7 @@ def fingerprint_file_data(fname):
 
 def read_metadata_web(fname):
     path = os.path.join(TMP, fname)
-    result = {'file': fname, 'size': os.path.getsize(path)}
+    result = {'file': fname, 'size': os.path.getsize(path), 'sha256': hashlib.sha256(open(path, 'rb').read()).hexdigest()}
     from PIL import Image
     from PIL.ExifTags import TAGS
     try:
@@ -138,6 +138,71 @@ def hash_file_web(fname):
                 break
             sha.update(chunk)
     return json.dumps({'file': fname, 'sha256': sha.hexdigest()})
+
+def ots_create_web(fname):
+    path = os.path.join(TMP, fname)
+    try:
+        from opentimestamps.core.timestamp import DetachedTimestampFile
+        from opentimestamps.core.op import OpSHA256
+        from opentimestamps.core.serialize import StreamSerializationContext
+        import io, base64
+
+        with open(path, 'rb') as f:
+            dtf = DetachedTimestampFile.from_fd(OpSHA256(), f)
+
+        # Try calendar submission
+        try:
+            from opentimestamps.calendar import RemoteCalendar, DEFAULT_AGGREGATORS
+            for url in DEFAULT_AGGREGATORS:
+                try:
+                    cal = RemoteCalendar(url)
+                    cal_timestamp = cal.submit(dtf.timestamp.msg)
+                    dtf.timestamp.merge(cal_timestamp)
+                    break
+                except:
+                    continue
+        except:
+            pass
+
+        buf = io.BytesIO()
+        ctx = StreamSerializationContext(buf)
+        dtf.serialize(ctx)
+        ots_bytes = buf.getvalue()
+        return json.dumps({
+            'ok': True,
+            'ots_b64': base64.b64encode(ots_bytes).decode(),
+            'sha256': dtf.timestamp.msg.hex()
+        })
+    except Exception as e:
+        return json.dumps({'ok': False, 'error': str(e)})
+
+def ots_verify_web(fname, ots_fname):
+    path = os.path.join(TMP, fname)
+    ots_path = os.path.join(TMP, ots_fname)
+    try:
+        from opentimestamps.core.timestamp import DetachedTimestampFile
+        from opentimestamps.core.op import OpSHA256
+        from opentimestamps.core.serialize import BytesDeserializationContext
+
+        with open(path, 'rb') as f:
+            dtf = DetachedTimestampFile.from_fd(OpSHA256(), f)
+        current_digest = dtf.timestamp.msg
+
+        with open(ots_path, 'rb') as f:
+            data = f.read()
+        ctx = BytesDeserializationContext(data)
+        ots_dtf = DetachedTimestampFile.deserialize(ctx)
+        ots_digest = ots_dtf.timestamp.msg
+
+        match = current_digest == ots_digest
+        return json.dumps({
+            'ok': True,
+            'match': match,
+            'file_sha256': current_digest.hex(),
+            'ots_sha256': ots_digest.hex()
+        })
+    except Exception as e:
+        return json.dumps({'ok': False, 'error': str(e)})
     `);
 
     ready = true;
@@ -180,6 +245,13 @@ function switchTsTab(mode) {
   document.getElementById('ts-hash').style.display = mode === 'hash' ? '' : 'none';
   document.getElementById('ts-ots').style.display = mode === 'ots' ? '' : 'none';
   document.querySelector(`.tab-btn[data-ts-tab="${mode}"]`).classList.add('active');
+}
+
+function switchOtsTab(mode) {
+  document.querySelectorAll('.tab-btn[data-ots-tab]').forEach(b => b.classList.remove('active'));
+  document.getElementById('ots-create').style.display = mode === 'create' ? '' : 'none';
+  document.getElementById('ots-verify').style.display = mode === 'verify' ? '' : 'none';
+  document.querySelector(`.tab-btn[data-ots-tab="${mode}"]`).classList.add('active');
 }
 
 function writeFile(name, data) {
@@ -303,6 +375,12 @@ async function fingerprintFile() {
 
 function repr(s) { return JSON.stringify(s); }
 
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
 function base64ToBlob(b64, mime) {
   const bin = atob(b64);
   const arr = new Uint8Array(bin.length);
@@ -328,8 +406,30 @@ async function readMetadata() {
     const data = await file.arrayBuffer();
     writeFile(file.name, data);
     const jsonStr = pyodide.runPython(`read_metadata_web(${repr(file.name)})`);
-    const pretty = JSON.stringify(JSON.parse(jsonStr), null, 2);
-    output.textContent = pretty;
+    const result = JSON.parse(jsonStr);
+    const pretty = JSON.stringify(result, null, 2);
+
+    let html = `<table class="meta-table">`;
+    html += `<tr><td>File</td><td>${escHtml(result.file)}</td></tr>`;
+    html += `<tr><td>Size</td><td>${(result.size / 1024).toFixed(1)} KB</td></tr>`;
+    html += `<tr><td>SHA-256</td><td><code>${result.sha256}</code></td></tr>`;
+    if (result.image) {
+      html += `<tr><td>Dimensions</td><td>${result.image.width} x ${result.image.height}</td></tr>`;
+      html += `<tr><td>Mode</td><td>${result.image.mode}</td></tr>`;
+      html += `<tr><td>Format</td><td>${result.image.format}</td></tr>`;
+    }
+    if (result.exif) {
+      html += `<tr><td colspan="2" style="font-weight:700;padding-top:12px">EXIF</td></tr>`;
+      for (const [k, v] of Object.entries(result.exif)) {
+        if (v && v !== '0') html += `<tr><td style="padding-left:12px">${escHtml(k)}</td><td>${escHtml(v)}</td></tr>`;
+      }
+    }
+    if (result.error) {
+      html += `<tr><td style="color:var(--danger)">Error</td><td>${escHtml(result.error)}</td></tr>`;
+    }
+    html += `</table>`;
+    output.innerHTML = html;
+
     const blob = new Blob([pretty], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     dl.innerHTML = `<a href="${url}" download="${file.name}.metadata.json" class="btn">Download JSON</a>`;
@@ -382,44 +482,93 @@ async function timestampOTS() {
   resultDiv.style.display = 'none'; dl.innerHTML = '';
 
   try {
-    // Write file to Pyodide FS
     const data = await file.arrayBuffer();
     writeFile(file.name, data);
+    output.textContent = 'Loading OpenTimestamps...';
 
-    // Compute SHA-256 (always works)
-    const jsonStr = pyodide.runPython(`hash_file_web(${repr(file.name)})`);
-    const result = JSON.parse(jsonStr);
-    const sha256 = result.sha256;
-
-    // Try to install opentimestamps, fall back to SHA-256 only
-    let otsOk = false;
+    // Load cryptography WASM package first, then install opentimestamps
+    let otsReady = false;
     try {
-      pyodide.runPython(`
-import micropip, sys
-try:
-    import opentimestamps
-except:
-    pass
-`);
+      await pyodide.loadPackage('cryptography');
       const micropip = pyodide.pyimport('micropip');
       await micropip.install('opentimestamps');
-      otsOk = true;
+      otsReady = true;
     } catch (e) {
-      otsOk = false;
+      otsReady = false;
     }
 
-    if (otsOk) {
-      output.textContent = `SHA-256: ${sha256}\n\nOpenTimestamps is available in browser. Creating timestamp...`;
-      // Future: implement full OTS stamp when the library supports it in Pyodide
+    if (!otsReady) {
+      // Fallback: just SHA-256
+      const jsonStr = pyodide.runPython(`hash_file_web(${repr(file.name)})`);
+      const result = JSON.parse(jsonStr);
+      output.textContent = `OpenTimestamps unavailable (cryptography not in Pyodide). SHA-256: ${result.sha256}`;
+      const lines = `SHA-256 (${file.name}) = ${result.sha256}`;
+      const blob = new Blob([lines], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      dl.innerHTML = `<a href="${url}" download="${file.name}.sha256.txt" class="btn">Download .sha256.txt</a>`;
+      btn.disabled = false; spinner.style.display = 'none';
+      return;
+    }
+
+    // Create OTS timestamp
+    const jsonStr = pyodide.runPython(`ots_create_web(${repr(file.name)})`);
+    const result = JSON.parse(jsonStr);
+    if (!result.ok) throw new Error(result.error);
+
+    const sha256 = result.sha256;
+    const otsBlob = base64ToBlob(result.ots_b64, 'application/octet-stream');
+    const otsUrl = URL.createObjectURL(otsBlob);
+    const shaLines = `SHA-256 (${file.name}) = ${sha256}`;
+    const shaBlob = new Blob([shaLines], { type: 'text/plain' });
+    const shaUrl = URL.createObjectURL(shaBlob);
+
+    output.innerHTML = `SHA-256: <code>${sha256}</code><br><br>.ots file created. Calendar submission attempted (may fail due to CORS in browser).`;
+    dl.innerHTML = `
+      <a href="${otsUrl}" download="${file.name}.ots" class="btn">Download .ots</a>
+      <a href="${shaUrl}" download="${file.name}.sha256.txt" class="btn" style="margin-left:8px">Download .sha256.txt</a>
+    `;
+  } catch (e) { output.textContent = 'Error: ' + e.message; }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner.style.display = 'none';
+}
+
+async function verifyOTS() {
+  const btn = document.getElementById('ts-verify-btn');
+  const spinner = document.getElementById('ts-spinner');
+  const resultDiv = document.getElementById('ts-result');
+  const output = document.getElementById('ts-output');
+  const dl = document.getElementById('ts-download');
+
+  if (!ready) { output.textContent = 'Pyodide still loading...'; resultDiv.style.display = 'block'; return; }
+  const file = document.getElementById('ts-verify-file').files[0];
+  const otsFile = document.getElementById('ts-ots-proof').files[0];
+  if (!file || !otsFile) { output.textContent = 'Please select both a file and its .ots proof'; resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner.style.display = 'block';
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+
+  try {
+    const data = await file.arrayBuffer();
+    const otsData = await otsFile.arrayBuffer();
+    writeFile(file.name, data);
+    writeFile(otsFile.name, otsData);
+
+    // Try loading OTS library if not already loaded
+    try {
+      await pyodide.loadPackage('cryptography');
+      const micropip = pyodide.pyimport('micropip');
+      await micropip.install('opentimestamps');
+    } catch (e) { /* if already loaded, fine */ }
+
+    const jsonStr = pyodide.runPython(`ots_verify_web(${repr(file.name)}, ${repr(otsFile.name)})`);
+    const result = JSON.parse(jsonStr);
+    if (!result.ok) throw new Error(result.error);
+
+    if (result.match) {
+      output.innerHTML = `<span style="color:var(--success);font-weight:700">VERIFIED</span> — SHA-256 hash matches the .ots proof.<br><br>File hash: <code style="font-size:0.7rem">${result.file_sha256}</code><br>OTS hash:  <code style="font-size:0.7rem">${result.ots_sha256}</code>`;
     } else {
-      output.textContent = `SHA-256: ${sha256}\n\nOpenTimestamps library cannot run in-browser (requires native crypto extensions). Use the desktop app or install opentimestamps locally for full timestamp verification.`;
+      output.innerHTML = `<span style="color:var(--danger);font-weight:700">MISMATCH</span> — The file has been modified or the .ots proof is for a different file.<br><br>File hash: <code style="font-size:0.7rem">${result.file_sha256}</code><br>OTS hash:  <code style="font-size:0.7rem">${result.ots_sha256}</code>`;
     }
-
-    // Always offer SHA-256 download
-    const lines = `SHA-256 (${file.name}) = ${sha256}`;
-    const blob = new Blob([lines], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    dl.innerHTML = `<a href="${url}" download="${file.name}.sha256.txt" class="btn">Download .sha256.txt</a>`;
   } catch (e) { output.textContent = 'Error: ' + e.message; }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner.style.display = 'none';
