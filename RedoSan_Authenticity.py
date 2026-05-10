@@ -552,40 +552,26 @@ def cmd_fingerprint(file_path, output=None, file_type=None):
     if not has_module("fingerprint"):
         return print("ERROR: Fingerprint module not available. Install: pip install imagehash opencv-python")
     
-    print(f"\n[1/2] Extracting forensic fingerprint from {os.path.basename(file_path)}...")
     fp_mod = MODULES["fingerprint"]
     
-    # Use new forensic format
-    package, err = fp_mod.create_forensic_fingerprint(file_path)
-    if err:
-        return print(f"ERROR: {err}")
+    print(f"\nGenerating comprehensive fingerprint for {os.path.basename(file_path)}...")
+    ok, out = fp_mod.save_fingerprint(file_path, output)
+    if not ok:
+        return print(f"ERROR: {out}")
     
-    fp = package.get("fingerprints", {})
-    
-    print(f"  SHA256: {fp.get('sha256', 'N/A')[:32]}...")
-    print(f"  File Type: {package.get('file_type')}")
-    print(f"  Size: {package.get('file_info', {}).get('file_size_mb')} MB")
-    
-    if "ahash" in fp:
-        print(f"  AHash: {fp['ahash']}")
-    if "dhash" in fp:
-        print(f"  DHash: {fp['dhash']}")
-    if "phash" in fp:
-        print(f"  PHash: {fp['phash']}")
-    
-    print(f"\n[2/2] Saving forensic package to JSON...")
-    if output is None:
-        output = file_path + ".forensic.json"
-    elif not output.endswith(".forensic.json"):
-        output = output.replace(".json", ".forensic.json")
-    
-    import json
-    with open(output, "w", encoding="utf-8") as f:
-        json.dump(package, f, indent=2, ensure_ascii=False)
-    
-    print(f"  Saved: {output}")
-    print("\n*** FORENSIC FINGERPRINT GENERATED ***")
-    print("Layers: file_info, fingerprints, protection, provenance, forensic_analysis")
+    print(f"  Saved: {out}")
+    print("\n*** COMPREHENSIVE FINGERPRINT GENERATED ***")
+    print("Hashes: SHA-1/224/256/384/512, SHA-3_224/256/384/512, MD5, BLAKE2b/2s")
+    print("Perceptual: ahash, dhash, phash, whash")
+    print("Extras + pycryptodome: MD2, MD4, RIPEMD-160, Whirlpool, BLAKE3")
+
+
+def feature_fingerprint_menu():
+    h1("GENERATE COMPREHENSIVE FINGERPRINT")
+    path = _s(input("File path: "))
+    if not os.path.isfile(path):
+        return print("ERROR: File not found")
+    cmd_fingerprint(path, None, None)
 
 
 def cmd_certify(file_path, key_dir, output, skip_fp):
@@ -610,11 +596,11 @@ def cmd_certify(file_path, key_dir, output, skip_fp):
     
     print(f"\n[1/3] Generating fingerprint...")
     fp_mod = MODULES["fingerprint"]
-    fp, err = fp_mod.fingerprint_file(file_path)
-    if err:
-        return print(f"ERROR: {err}")
+    all_hashes = fp_mod.generate_all_hashes(file_path)
+    sha256 = all_hashes.get('SHA-256', '')
+    fp = {'sha256': sha256, 'sha256_full': sha256, 'file_type': os.path.splitext(file_path)[1].lower()}
     
-    print(f"  SHA256: {fp.get('sha256', '')[:32]}...")
+    print(f"  SHA256: {sha256[:32]}...")
     
     print(f"\n[2/3] Creating certificate...")
     cert_mod = MODULES["certification"]

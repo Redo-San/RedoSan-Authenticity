@@ -129,11 +129,7 @@ class FingerprintTabMixin:
         if not filepath or not os.path.isfile(filepath):
             print("ERROR: File not found"); return
 
-        print(f"Generating fingerprint for {os.path.basename(filepath)}...")
-
-        # Show progress if Rust available
-        if RUST_AVAILABLE:
-            print(rb.progress_bar(10, 100))
+        print(f"Generating comprehensive fingerprint for {os.path.basename(filepath)}...")
 
         if not has_module("fingerprint"):
             print("ERROR: Fingerprint module not installed")
@@ -142,42 +138,38 @@ class FingerprintTabMixin:
 
         fp_mod = MODULES["fingerprint"]
 
-        # Use new forensic format
-        package, err = fp_mod.create_forensic_fingerprint(filepath)
-        if err:
-            print(f"ERROR: {err}")
+        ok, out = fp_mod.save_fingerprint(filepath)
+        if not ok:
+            print(f"ERROR: {out}")
             return
 
-        # Update progress
-        if RUST_AVAILABLE:
-            print("\r" + rb.progress_bar(80, 100), end="")
-            print()
-
-        fp = package.get("fingerprints", {})
-        fi = package.get("file_info", {})
-        
-        base_name = os.path.splitext(filepath)[0]
-        out_path = base_name + ".forensic.json"
-
+        # Load and display the result
         import json
-        with open(out_path, "w", encoding="utf-8") as fp_file:
-            json.dump(package, fp_file, indent=2, ensure_ascii=False)
+        with open(out, "r", encoding="utf-8") as f:
+            package = json.load(f)
 
-        print(f"SUCCESS: Forensic fingerprint saved")
-        print(f"  File: {os.path.basename(out_path)}")
-        print(f"  SHA256: {fp.get('sha256', '')[:32]}...")
-        print(f"  Type: {package.get('file_type')}")
-        print(f"  Size: {fi.get('file_size_mb')} MB")
+        fi = package.get("file_info", {})
+        hs = package.get("hashes", {})
+        ph = package.get("perceptual_hashes", {})
+
+        print(f"SUCCESS: Comprehensive fingerprint saved")
+        print(f"  File: {os.path.basename(out)}")
+        print(f"  Size: {fi.get('file_size_bytes', 0) / 1024:.1f} KB")
         
         dims = fi.get("dimensions", {})
         if dims:
-            print(f"  Dimensions: {dims.get('width')}x{dims.get('height')} ({dims.get('color_mode')})")
+            print(f"  Dimensions: {dims.get('width')}x{dims.get('height')}")
         
-        # Show all hashes
-        print(f"  AHash: {fp.get('ahash')}")
-        print(f"  DHash: {fp.get('dhash')}")
-        print(f"  PHash: {fp.get('phash')}")
-        print(f"  WHash: {fp.get('whash')}")
+        print(f"  SHA-256: {hs.get('SHA-256', '')[:32]}...")
+        
+        available = [k for k, v in hs.items() if isinstance(v, str) and not v.startswith('Requires')]
+        missing = [k for k, v in hs.items() if isinstance(v, str) and v.startswith('Requires')]
+        print(f"  Hashes ({len(available)} available): {', '.join(available)}")
+        if missing:
+            print(f"  Unavailable ({len(missing)}): install pycryptodome + blake3")
+        
+        if ph:
+            print(f"  Perceptual: {', '.join(ph.keys())}")
 
     def _fp_certify(self, filepath, key_dir):
         if not filepath or not os.path.isfile(filepath):
