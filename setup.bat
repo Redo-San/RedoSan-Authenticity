@@ -2,14 +2,17 @@
 title RedoSan Authenticity - Setup
 set "DIR=%~dp0"
 
-REM Force Python 3.12 (where packages are installed)
-set "PYTHON=C:\Users\pc\AppData\Local\Programs\Python\Python312\python.exe"
-
-if exist "%PYTHON%" (
-    "%PYTHON%" "%DIR%install.py"
-) else (
-    echo Python not found, trying py...
+REM Try python first, fall back to py launcher
+python "%DIR%install.py"
+if %ERRORLEVEL% NEQ 0 (
+    echo Trying py launcher...
     py -3 "%DIR%install.py"
+)
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo Python not found! Please install Python 3.10+ from https://python.org
+    pause
+    exit /b 1
 )
 
 pause
