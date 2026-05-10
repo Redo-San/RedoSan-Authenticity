@@ -82,27 +82,59 @@ def extract_watermark(wtype, password):
 
 def fingerprint_file_data(fname):
     path = os.path.join(TMP, fname)
-    result = {'sha256': hashlib.sha256(open(path, 'rb').read()).hexdigest()}
+    with open(path, 'rb') as f:
+        data = f.read()
     ext = os.path.splitext(fname)[1].lower()
     img_exts = {'.png','.jpg','.jpeg','.bmp','.gif','.tiff','.webp'}
+
+    hashes = {}
+    hashes['SHA-1'] = hashlib.sha1(data).hexdigest()
+    hashes['SHA-224'] = hashlib.sha224(data).hexdigest()
+    hashes['SHA-256'] = hashlib.sha256(data).hexdigest()
+    hashes['SHA-384'] = hashlib.sha384(data).hexdigest()
+    hashes['SHA-512'] = hashlib.sha512(data).hexdigest()
+    hashes['SHA-3_224'] = hashlib.sha3_224(data).hexdigest()
+    hashes['SHA-3_256'] = hashlib.sha3_256(data).hexdigest()
+    hashes['SHA-3_384'] = hashlib.sha3_384(data).hexdigest()
+    hashes['SHA-3_512'] = hashlib.sha3_512(data).hexdigest()
+    hashes['MD5'] = hashlib.md5(data).hexdigest()
+    hashes['BLAKE2b'] = hashlib.blake2b(data).hexdigest()
+    hashes['BLAKE2s'] = hashlib.blake2s(data).hexdigest()
+    hashes['RIPEMD-160'] = 'Requires pycryptodome (not in browser)'
+    hashes['Whirlpool'] = 'Requires pycryptodome (not in browser)'
+    hashes['BLAKE3'] = 'Requires blake3 module (not in browser)'
+    hashes['MD2'] = 'Requires pycryptodome (not in browser)'
+    hashes['MD4'] = 'Requires pycryptodome (not in browser)'
+
+    result = {
+        'file_info': {
+            'file_name': fname,
+            'file_size_bytes': os.path.getsize(path),
+        },
+        'hashes': hashes,
+        'perceptual_hashes': {},
+    }
+
     if ext in img_exts:
         try:
             from PIL import Image
             import imagehash
             img = Image.open(path)
-            result['ahash'] = str(imagehash.average_hash(img))
-            result['dhash'] = str(imagehash.dhash(img))
-            result['phash'] = str(imagehash.phash(img))
+            ph = {}
+            ph['ahash'] = str(imagehash.average_hash(img))
+            ph['dhash'] = str(imagehash.dhash(img))
+            ph['phash'] = str(imagehash.phash(img))
             try:
-                result['whash'] = str(imagehash.whash(img))
+                ph['whash'] = str(imagehash.whash(img))
             except:
                 pass
-            result['width'] = img.width
-            result['height'] = img.height
-            result['format'] = img.format
+            result['perceptual_hashes'] = ph
+            result['file_info']['width'] = img.width
+            result['file_info']['height'] = img.height
+            result['file_info']['format'] = img.format
             img.close()
         except Exception as e:
-            result['image_error'] = str(e)
+            result['file_info']['image_error'] = str(e)
     return json.dumps(result)
 
 def read_metadata_web(fname):
@@ -362,9 +394,52 @@ async function fingerprintFile() {
     const data = await file.arrayBuffer();
     writeFile(file.name, data);
     const jsonStr = pyodide.runPython(`fingerprint_file_data(${repr(file.name)})`);
-    const pretty = JSON.stringify(JSON.parse(jsonStr), null, 2);
-    output.textContent = pretty;
-    // Download as JSON
+    const result = JSON.parse(jsonStr);
+    const pretty = JSON.stringify(result, null, 2);
+
+    // Build formatted display
+    let html = '<table class="meta-table">';
+    html += `<tr><td>File</td><td>${escHtml(result.file_info.file_name)}</td></tr>`;
+    html += `<tr><td>Size</td><td>${(result.file_info.file_size_bytes / 1024).toFixed(1)} KB</td></tr>`;
+    if (result.file_info.width) {
+      html += `<tr><td>Dimensions</td><td>${result.file_info.width} x ${result.file_info.height}</td></tr>`;
+      html += `<tr><td>Format</td><td>${result.file_info.format}</td></tr>`;
+    }
+    html += '</table>';
+
+    // Hash families table
+    const familyOrder = [
+      { label: 'SHA-2', keys: ['SHA-1','SHA-224','SHA-256','SHA-384','SHA-512'] },
+      { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
+      { label: 'MD', keys: ['MD5','MD2','MD4'] },
+      { label: 'BLAKE2', keys: ['BLAKE2b','BLAKE2s'] },
+      { label: 'Other', keys: ['BLAKE3','RIPEMD-160','Whirlpool'] },
+    ];
+    for (const family of familyOrder) {
+      html += `<div style="margin-top:12px;font-weight:700;font-size:0.85rem">${family.label}</div>`;
+      html += '<table class="meta-table">';
+      for (const key of family.keys) {
+        const v = result.hashes[key];
+        if (v) {
+          const isMissing = typeof v === 'string' && v.startsWith('Requires');
+          html += `<tr><td style="width:100px">${key}</td><td>${isMissing ? `<span style="color:var(--text-muted);font-size:0.7rem">${escHtml(v)}</span>` : `<code style="font-size:0.65rem">${v}</code>`}</td></tr>`;
+        }
+      }
+      html += '</table>';
+    }
+
+    // Perceptual hashes
+    if (result.perceptual_hashes && Object.keys(result.perceptual_hashes).length > 0) {
+      html += `<div style="margin-top:12px;font-weight:700;font-size:0.85rem">Perceptual (image hashes)</div>`;
+      html += '<table class="meta-table">';
+      for (const [k, v] of Object.entries(result.perceptual_hashes)) {
+        html += `<tr><td style="width:100px">${k}</td><td><code style="font-size:0.65rem">${v}</code></td></tr>`;
+      }
+      html += '</table>';
+    }
+
+    output.innerHTML = html;
+
     const blob = new Blob([pretty], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     dl.innerHTML = `<a href="${url}" download="${file.name}.fingerprint.json" class="btn">Download JSON</a>`;
