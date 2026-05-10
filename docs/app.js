@@ -17,25 +17,19 @@ function isMobile() {
 
 async function init() {
   const IS_MOBILE = isMobile();
-  setStatus(IS_MOBILE ? 'Loading Python (may take 30s on mobile)...' : 'Loading Pyodide...', 'muted');
+  setStatus(IS_MOBILE ? 'Loading Python (may take 30-60s on mobile)...' : 'Loading Pyodide...', 'muted');
   try {
     pyodide = await Promise.race([
       loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.4/full/' }),
-      timeout(IS_MOBILE ? 60000 : 30000)
+      timeout(120000)
     ]);
     setStatus('Installing packages...', 'muted');
-    await Promise.race([
-      pyodide.loadPackage('micropip'),
-      timeout(15000)
-    ]);
+    await pyodide.loadPackage('micropip');
     const micropip = pyodide.pyimport('micropip');
-    await Promise.race([
-      micropip.install('Pillow'),
-      timeout(IS_MOBILE ? 60000 : 30000)
-    ]);
+    await micropip.install('Pillow');
     await Promise.race([
       micropip.install('imagehash'),
-      timeout(20000)
+      timeout(60000)
     ]);
     setStatus('Loading modules...', 'muted');
 
