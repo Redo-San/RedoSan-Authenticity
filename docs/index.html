@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedoSan Authenticity</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/RedoSan-Authenticity/" class="logo">RedoSan</a>
+  <a href="#" class="active" data-page="home">Home</a>
+  <a href="#" data-page="watermark">Watermark</a>
+  <a href="#" data-page="fingerprint">Fingerprint</a>
+  <span id="py-status" class="badge badge-muted">Loading...</span>
+</nav>
+
+<main class="container" id="app">
+  <!-- Home -->
+  <section id="page-home" class="page active">
+    <div class="hero">
+      <h1><span>RedoSan</span> Authenticity</h1>
+      <p>Browser-based digital authenticity tool. All processing happens locally — nothing is uploaded to any server.</p>
+      <div class="grid">
+        <a href="#" data-page="watermark" class="card">
+          <div class="icon">💧</div>
+          <h3>Watermark</h3>
+          <p>Embed or extract invisible watermarks using 9 algorithms (LSB, DCT, DWT, etc.)</p>
+        </a>
+        <a href="#" data-page="fingerprint" class="card">
+          <div class="icon" style="font-size:1.5rem">🔍</div>
+          <h3>Fingerprint</h3>
+          <p>Generate SHA hashes and perceptual image hashes to verify file integrity.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Watermark -->
+  <section id="page-watermark" class="page">
+    <h2 style="margin-bottom:20px">Digital Watermarking</h2>
+    <div class="card-form">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn tab-btn active" data-wm-tab="embed" onclick="switchWmTab('embed')">Embed</button>
+        <button class="btn tab-btn" data-wm-tab="extract" onclick="switchWmTab('extract')">Extract</button>
+      </div>
+      <div id="wm-embed">
+        <div class="form-group">
+          <label>Algorithm</label>
+          <select id="wm-type">
+            <option value="1">1. Spatial LSB</option>
+            <option value="2">2. Frequency DCT</option>
+            <option value="3">3. Neural SS</option>
+            <option value="4">4. Latent DCT</option>
+            <option value="5">5. Zero-bit</option>
+            <option value="6">6. Multi-bit</option>
+            <option value="7">7. Forensic</option>
+            <option value="8">8. Fragile</option>
+            <option value="9">9. Imatag-style</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cover image</label>
+          <input type="file" id="wm-image" accept="image/png,image/jpeg">
+        </div>
+        <div class="form-group">
+          <label>Password (optional)</label>
+          <input type="password" id="wm-password" placeholder="Leave blank">
+        </div>
+        <button class="btn" onclick="watermarkEmbed()" id="wm-btn">Embed Watermark</button>
+      </div>
+      <div id="wm-extract" style="display:none">
+        <div class="form-group">
+          <label>Algorithm</label>
+          <select id="wm-type-ex">
+            <option value="1">1. Spatial LSB</option>
+            <option value="2">2. Frequency DCT</option>
+            <option value="3">3. Neural SS</option>
+            <option value="4">4. Latent DCT</option>
+            <option value="5">5. Zero-bit</option>
+            <option value="6">6. Multi-bit</option>
+            <option value="7">7. Forensic</option>
+            <option value="8">8. Fragile</option>
+            <option value="9">9. Imatag-style</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Stego image</label>
+          <input type="file" id="wm-image-ex" accept="image/png,image/jpeg">
+        </div>
+        <div class="form-group">
+          <label>Password (optional)</label>
+          <input type="password" id="wm-password-ex" placeholder="Leave blank">
+        </div>
+        <button class="btn" onclick="watermarkExtract()" id="wm-btn-ex">Extract Watermark</button>
+      </div>
+      <div class="spinner" id="wm-spinner"></div>
+    </div>
+    <div id="wm-result" style="display:none;margin-top:16px">
+      <div class="result" id="wm-output"></div>
+      <div id="wm-download" style="margin-top:12px;text-align:center"></div>
+    </div>
+  </section>
+
+  <!-- Fingerprint -->
+  <section id="page-fingerprint" class="page">
+    <h2 style="margin-bottom:20px">File Fingerprinting</h2>
+    <div class="card-form">
+      <div class="form-group">
+        <label>File</label>
+        <input type="file" id="fp-file">
+      </div>
+      <button class="btn" onclick="fingerprintFile()" id="fp-btn">Generate Fingerprint</button>
+      <div class="spinner" id="fp-spinner"></div>
+    </div>
+    <div id="fp-result" style="display:none;margin-top:16px">
+      <div class="result" id="fp-output"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  RedoSan Authenticity &mdash; Beta &bull; Processing is 100% client-side
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
