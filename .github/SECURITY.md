@@ -17,7 +17,7 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 
 ### How to Report
 
-1. **Email**: [redosantech@gmail.com](mailto:redosantech@gmail.com)
+1. **Email**: [redosan@artlover.com](mailto:redosan@artlover.com)
 2. **GitHub Private Vulnerability Reporting**: Visit the repository's Security tab and use the "Report a vulnerability" feature.
 
 Please include the following details:
