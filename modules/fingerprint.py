@@ -36,6 +36,19 @@ try:
 except ImportError:
     HAS_DOCX = False
 
+# Comprehensive hash libraries
+try:
+    import blake3
+    HAS_BLAKE3 = True
+except ImportError:
+    HAS_BLAKE3 = False
+
+try:
+    from Crypto.Hash import RIPEMD160, Whirlpool, MD2, MD4
+    HAS_PYCRYPTODOME = True
+except ImportError:
+    HAS_PYCRYPTODOME = False
+
 
 def _now_iso():
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -47,6 +60,60 @@ def _get_file_hash(filepath, algorithm="sha256"):
         for chunk in iter(lambda: f.read(8192), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def generate_all_hashes(filepath):
+    """Generate a comprehensive dictionary of all hash types for a file."""
+    with open(filepath, 'rb') as f:
+        data = f.read()
+
+    hashes = {}
+
+    # SHA-2 Family
+    hashes['SHA-1'] = hashlib.sha1(data).hexdigest()
+    hashes['SHA-224'] = hashlib.sha224(data).hexdigest()
+    hashes['SHA-256'] = hashlib.sha256(data).hexdigest()
+    hashes['SHA-384'] = hashlib.sha384(data).hexdigest()
+    hashes['SHA-512'] = hashlib.sha512(data).hexdigest()
+
+    # SHA-3 Family
+    hashes['SHA-3_224'] = hashlib.sha3_224(data).hexdigest()
+    hashes['SHA-3_256'] = hashlib.sha3_256(data).hexdigest()
+    hashes['SHA-3_384'] = hashlib.sha3_384(data).hexdigest()
+    hashes['SHA-3_512'] = hashlib.sha3_512(data).hexdigest()
+
+    # MD Family
+    hashes['MD5'] = hashlib.md5(data).hexdigest()
+    if HAS_PYCRYPTODOME:
+        hashes['MD2'] = MD2.new(data).hexdigest()
+        hashes['MD4'] = MD4.new(data).hexdigest()
+    else:
+        hashes['MD2'] = 'Requires pycryptodome'
+        hashes['MD4'] = 'Requires pycryptodome'
+
+    # BLAKE2 (built into hashlib)
+    hashes['BLAKE2b'] = hashlib.blake2b(data).hexdigest()
+    hashes['BLAKE2s'] = hashlib.blake2s(data).hexdigest()
+
+    # BLAKE3
+    if HAS_BLAKE3:
+        hashes['BLAKE3'] = blake3.blake3(data).hexdigest()
+    else:
+        hashes['BLAKE3'] = 'Requires blake3 module'
+
+    # RIPEMD-160
+    if HAS_PYCRYPTODOME:
+        hashes['RIPEMD-160'] = RIPEMD160.new(data).hexdigest()
+    else:
+        hashes['RIPEMD-160'] = 'Requires pycryptodome'
+
+    # Whirlpool
+    if HAS_PYCRYPTODOME:
+        hashes['Whirlpool'] = Whirlpool.new(data).hexdigest()
+    else:
+        hashes['Whirlpool'] = 'Requires pycryptodome'
+
+    return hashes
 
 
 def _get_image_dimensions(img_path):
@@ -503,9 +570,30 @@ def verify_forensic_fingerprint(fingerprint_path, public_key_path):
         return False, str(e)
 
 
+def generate_perceptual_hashes(img_path):
+    """Generate perceptual image hashes. Returns dict or empty dict on failure."""
+    if not HAS_IMAGEHASH:
+        return {}
+    try:
+        img = Image.open(img_path)
+        ph = {
+            'ahash': str(imagehash.average_hash(img)),
+            'dhash': str(imagehash.dhash(img)),
+            'phash': str(imagehash.phash(img)),
+        }
+        try:
+            ph['whash'] = str(imagehash.whash(img))
+        except Exception:
+            pass
+        img.close()
+        return ph
+    except Exception:
+        return {}
+
+
 # Legacy function for compatibility
 def save_fingerprint(file_path, output_path=None):
-    """Save basic fingerprint (legacy compatibility)"""
+    """Save comprehensive fingerprint with all hash families."""
     fp, err = fingerprint_file(file_path)
     if err:
         return False, err
@@ -513,22 +601,30 @@ def save_fingerprint(file_path, output_path=None):
     if output_path is None:
         output_path = file_path + ".fingerprint.json"
     
-    # Convert to new format for compatibility
+    stat = os.stat(file_path)
+    ext = Path(file_path).suffix.lower()
+    img_exts = {'.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.webp'}
+    
     package = {
-        "version": "1.0",
+        "version": "2.0",
         "tool": "RedoSan Authenticity",
-        "timestamp_created": _now_iso(),
+        "timestamp": _now_iso(),
         "file_info": {
             "file_name": os.path.basename(file_path),
             "file_path": os.path.abspath(file_path),
-            "file_size_bytes": os.path.getsize(file_path),
-            "date_modified": datetime.datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat(),
+            "file_size_bytes": stat.st_size,
+            "file_type": fp.get("file_type", "unknown"),
         },
-        "fingerprints": fp,
-        "file_type": fp.get("file_type", "unknown"),
+        "hashes": generate_all_hashes(file_path),
+        "perceptual_hashes": generate_perceptual_hashes(file_path) if ext in img_exts else {},
     }
     
+    if ext in img_exts:
+        dims = _get_image_dimensions(file_path)
+        if dims:
+            package["file_info"]["dimensions"] = dims
+    
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(package, f, indent=2)
+        json.dump(package, f, indent=2, ensure_ascii=False)
     
     return True, output_path
