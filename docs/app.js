@@ -7,15 +7,36 @@ function setStatus(msg, cls) {
   if (el) { el.textContent = msg; if (cls) el.className = 'badge badge-' + cls; }
 }
 
+function timeout(ms) {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms));
+}
+
+function isMobile() {
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 async function init() {
-  setStatus('Loading Pyodide...', 'muted');
+  const IS_MOBILE = isMobile();
+  setStatus(IS_MOBILE ? 'Loading Python (may take 30s on mobile)...' : 'Loading Pyodide...', 'muted');
   try {
-    pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.4/full/' });
+    pyodide = await Promise.race([
+      loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.4/full/' }),
+      timeout(IS_MOBILE ? 60000 : 30000)
+    ]);
     setStatus('Installing packages...', 'muted');
-    await pyodide.loadPackage('micropip');
+    await Promise.race([
+      pyodide.loadPackage('micropip'),
+      timeout(15000)
+    ]);
     const micropip = pyodide.pyimport('micropip');
-    await micropip.install('Pillow');
-    await micropip.install('imagehash');
+    await Promise.race([
+      micropip.install('Pillow'),
+      timeout(IS_MOBILE ? 60000 : 30000)
+    ]);
+    await Promise.race([
+      micropip.install('imagehash'),
+      timeout(20000)
+    ]);
     setStatus('Loading modules...', 'muted');
 
     const base = document.location.href.includes('localhost')
@@ -244,7 +265,6 @@ def ots_verify_web(fname, ots_fname):
     initError = e;
     setStatus('Load failed', 'warning');
     console.error('Pyodide init error:', e);
-    // Show retry button
     const nav = document.querySelector('nav');
     if (nav) {
       const btn = document.createElement('button');
@@ -253,6 +273,21 @@ def ots_verify_web(fname, ots_fname):
       btn.textContent = 'Retry';
       btn.onclick = () => { initError = null; setStatus('Loading...', 'muted'); btn.remove(); init(); };
       nav.appendChild(btn);
+    }
+    // Show fallback message on the active page
+    const active = document.querySelector('.page.active');
+    if (active) {
+      const container = active.querySelector('.card-form') || active.querySelector('.hero') || active;
+      const msg = document.createElement('div');
+      msg.className = 'card-form';
+      msg.style.cssText = 'margin-top:16px;text-align:center';
+      msg.innerHTML = IS_MOBILE
+        ? `<p style="color:var(--text-muted);margin-bottom:12px">Python engine couldn't load on this device (iPhone 7 / older).</p>
+           <p style="color:var(--text-muted);margin-bottom:12px;font-size:0.85rem">The web version requires a modern device with ~200MB RAM free for WebAssembly.</p>
+           <a href="https://github.com/Redo-San/RedoSan-Authenticity/releases" class="btn" target="_blank">Download Desktop App</a>`
+        : `<p style="color:var(--text-muted);margin-bottom:12px">Python engine failed to load. Check your network or try again.</p>
+           <button class="btn" onclick="location.reload()">Reload Page</button>`;
+      container.parentNode.insertBefore(msg, container.nextSibling);
     }
   }
 }
@@ -315,7 +350,7 @@ async function watermarkEmbed() {
   const output = document.getElementById('wm-output');
   const dl = document.getElementById('wm-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
   const type = parseInt(document.getElementById('wm-type').value);
   const pw = document.getElementById('wm-password').value || null;
   const imgFile = document.getElementById('wm-image').files[0];
@@ -357,7 +392,7 @@ async function watermarkExtract() {
   const output = document.getElementById('wm-output');
   const dl = document.getElementById('wm-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
   const type = parseInt(document.getElementById('wm-type-ex').value);
   const pw = document.getElementById('wm-password-ex').value || null;
   const imgFile = document.getElementById('wm-image-ex').files[0];
@@ -401,7 +436,7 @@ async function fingerprintFile() {
   const output = document.getElementById('fp-output');
   const dl = document.getElementById('fp-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('fp-file').files[0];
   if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
 
@@ -484,7 +519,7 @@ async function readMetadata() {
   const output = document.getElementById('md-output');
   const dl = document.getElementById('md-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('md-file').files[0];
   if (!file) { output.textContent = 'Please select an image'; resultDiv.style.display = 'block'; return; }
 
@@ -534,7 +569,7 @@ async function timestampHash() {
   const output = document.getElementById('ts-output');
   const dl = document.getElementById('ts-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('ts-file').files[0];
   if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
 
@@ -563,7 +598,7 @@ async function timestampOTS() {
   const output = document.getElementById('ts-output');
   const dl = document.getElementById('ts-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('ts-ots-file').files[0];
   if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
 
@@ -628,7 +663,7 @@ async function verifyOTS() {
   const output = document.getElementById('ts-output');
   const dl = document.getElementById('ts-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Click Retry above.' : 'still loading on mobile — please wait 10-30s...'); resultDiv.style.display = 'block'; return; }
+  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
   const file = document.getElementById('ts-verify-file').files[0];
   const otsFile = document.getElementById('ts-ots-proof').files[0];
   if (!file || !otsFile) { output.textContent = 'Please select both a file and its .ots proof'; resultDiv.style.display = 'block'; return; }
