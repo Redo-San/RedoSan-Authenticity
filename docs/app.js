@@ -33,6 +33,8 @@ function loadScript(url) {
 }
 
 async function loadPyodideScript(cdnIndex) {
+  // If already loaded via static <script> tag, skip
+  if (typeof loadPyodide === 'function') return;
   if (cdnIndex >= CDN_LIST.length) throw new Error('All CDNs failed for pyodide.js');
   const url = CDN_LIST[cdnIndex] + 'pyodide.js';
   setStatus('Loading engine (CDN ' + (cdnIndex + 1) + '/' + CDN_LIST.length + ')...', 'muted');
