@@ -410,8 +410,17 @@ function ripemd160(data) {
 
 // ── BLAKE3 (fallback to SHA-256) ──
 async function blake3(data) {
-    var h = await crypto.subtle.digest('SHA-256', data);
-    return 'BLAKE3_UNAVAILABLE_' + Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('').substring(0,32);
+    try {
+        var mod = await import('https://cdn.jsdelivr.net/npm/blake3@2.1.7/esm/browser/index.js');
+        var result = mod.hash(data);
+        return Array.from(new Uint8Array(result)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    } catch(e) {
+        console.warn('BLAKE3 import failed, using fallback:', e);
+    }
+    try {
+        var h = await crypto.subtle.digest('SHA-256', data);
+        return 'BLAKE3_UNAVAILABLE_' + Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('').substring(0,32);
+    } catch(e2) { return 'BLAKE3_ERROR'; }
 }
 
 // ── Whirlpool (fallback to SHA-512) ──
