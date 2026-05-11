@@ -109,7 +109,7 @@ async function timestampOTS() {
     const buf = await file.arrayBuffer();
     const h = await crypto.subtle.digest('SHA-256', buf);
     const sha = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
-    setText('ts-output', 'SHA-256: ' + sha + '\n\nOpenTimestamps (.ots creation) requires a server. Use the desktop app for full OTS support.');
+    setText('ts-output', 'SHA-256: ' + sha + '\n\nOpenTimestamps (.ots creation) requires an external server. SHA-256 hash is shown for manual verification.');
     const blob = new Blob(['SHA-256 (' + file.name + ') = ' + sha], { type: 'text/plain' });
     downloadBlob(blob, file.name + '.sha256.txt', 'ts-download');
   } catch (e) { setText('ts-output', 'Error: ' + e.message); }
@@ -134,7 +134,7 @@ async function verifyOTS() {
     const buf = await file.arrayBuffer();
     const h = await crypto.subtle.digest('SHA-256', buf);
     const sha = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
-    setText('ts-output', 'File SHA-256: ' + sha + '\n\nOTS verification requires a server. Download the hash for manual verification.');
+    setText('ts-output', 'File SHA-256: ' + sha + '\n\nOTS verification requires an external server. SHA-256 hash is shown for manual verification.');
     const blob = new Blob(['SHA-256 (' + file.name + ') = ' + sha], { type: 'text/plain' });
     downloadBlob(blob, file.name + '.sha256.txt', 'ts-download');
   } catch (e) { setText('ts-output', 'Error: ' + e.message); }

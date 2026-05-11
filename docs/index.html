@@ -21,7 +21,7 @@
   <section id="page-home" class="page active">
     <div class="hero">
       <h1><span>RedoSan</span> Authenticity</h1>
-      <p>Browser-based digital authenticity tool. All processing happens locally — nothing is uploaded to any server.</p>
+      <p>Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server.</p>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <a href="#" data-page="watermark" class="card">
           <div class="icon">💧</div>
@@ -167,7 +167,7 @@
       </div>
       <div id="ts-ots" style="display:none">
         <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">
-          OpenTimestamps (.ots) requires Python. SHA-256 hash is shown for manual verification. Use the desktop app for full OTS support.
+          OpenTimestamps (.ots) requires an external server. SHA-256 hash is shown for manual verification.
         </p>
         <div style="display:flex;gap:8px;margin-bottom:16px">
           <button class="btn tab-btn active" data-ots-tab="create" onclick="switchOtsTab('create')">Create .ots</button>
@@ -202,13 +202,13 @@
 </main>
 
 <footer>
-  RedoSan Authenticity &mdash; Beta &bull; Processing is 100% client-side JavaScript
+  RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves your device
 </footer>
 
 <script src="js/utils.js?v=2"></script>
 <script src="js/watermark_core.js?v=2"></script>
 <script src="js/watermark.js?v=2"></script>
 <script src="js/hashing.js?v=4"></script>
-<script src="js/app.js?v=2"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>
