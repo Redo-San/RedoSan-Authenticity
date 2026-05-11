@@ -1,3 +1,5 @@
+// ── Watermark embed/extract orchestrators + UI handlers ──
+
 async function watermarkEmbed(type, imageFile, secretFile, password) {
     const [imgResult, secretBuf] = await Promise.all([loadImage(imageFile), secretFile.arrayBuffer()]);
     const secret = new Uint8Array(secretBuf);
@@ -195,4 +197,78 @@ async function watermarkExtract(type, imageFile, password) {
     }
     
     return { ok: false, error: `Unknown type ${type}` };
+}
+
+// ── UI Handlers ──
+
+async function handleWatermarkEmbed() {
+  const btn = document.getElementById('wm-btn');
+  const resultDiv = document.getElementById('wm-result');
+  const output = document.getElementById('wm-output');
+  const dl = document.getElementById('wm-download');
+
+  const type = parseInt(getVal('wm-type'));
+  const pw = getVal('wm-password') || null;
+  const imgFile = getFile('wm-image');
+  if (!imgFile) { setText('wm-output', 'Please select an image'); resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner('wm-spinner', true);
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+  setText('wm-output', 'Processing...');
+
+  try {
+    const result = await watermarkEmbed(type, imgFile, imgFile, pw);
+    if (result.ok) {
+      const report = JSON.stringify({ algorithm: type, message: result.msg, status: 'ok' }, null, 2);
+      const reportBlob = new Blob([report], { type: 'application/json' });
+      const reportUrl = URL.createObjectURL(reportBlob);
+      const imgUrl = URL.createObjectURL(result.data);
+      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">Download watermarked.png</a>' +
+        '<a href="' + reportUrl + '" download="watermark_report.json" class="btn" style="margin-left:8px">Download Report (JSON)</a>';
+      setText('wm-output', result.msg);
+    } else {
+      setText('wm-output', 'Error: ' + result.error);
+    }
+  } catch (e) { setText('wm-output', 'Error: ' + e.message); }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner('wm-spinner', false);
+}
+
+async function handleWatermarkExtract() {
+  const btn = document.getElementById('wm-btn-ex');
+  const resultDiv = document.getElementById('wm-result');
+  const output = document.getElementById('wm-output');
+  const dl = document.getElementById('wm-download');
+
+  const type = parseInt(getVal('wm-type-ex'));
+  const pw = getVal('wm-password-ex') || null;
+  const imgFile = getFile('wm-image-ex');
+  if (!imgFile) { setText('wm-output', 'Please select a stego image'); resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner('wm-spinner', true);
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+  setText('wm-output', 'Processing...');
+
+  try {
+    const result = await watermarkExtract(type, imgFile, pw);
+    if (result.ok) {
+      let text = result.msg + '\n';
+      const reportData = { algorithm: type, message: result.msg, status: 'ok' };
+      dl.innerHTML = '';
+      if (result.files) {
+        for (const [name, data] of Object.entries(result.files)) {
+          text += '\n  ' + name + ': extracted';
+          const blob = new Blob([data], { type: 'application/octet-stream' });
+          downloadBlob(blob, name, 'wm-download');
+        }
+      }
+      const reportBlob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+      downloadBlob(reportBlob, 'extract_report.json', 'wm-download');
+      setText('wm-output', text);
+    } else {
+      setText('wm-output', 'Error: ' + result.error);
+    }
+  } catch (e) { setText('wm-output', 'Error: ' + e.message); }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner('wm-spinner', false);
 }

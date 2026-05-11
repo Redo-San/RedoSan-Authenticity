@@ -1,3 +1,5 @@
+// ── Algorithm implementations (pure JS, no UI) ──
+
 // ── RGB ↔ YCbCr ──
 function rgbToYcbcr(imgData) {
     const { data, w, h } = imgData;
@@ -116,17 +118,6 @@ function extractFromDCT(Y, w, h, numBits) {
 function maxDCTBits(w, h, bpb) {
     const cols = Math.floor(w / 8), rows = Math.floor(h / 8);
     return cols * rows * (bpb || 11);
-}
-
-// ── Embed secret → pixel data ──
-function prepareSecret(secret, password, keyBytes) {
-    if (keyBytes) return { payload: secret, keyBytes };
-    const key = password ? (typeof password === 'string' ? new TextEncoder().encode(password) : password) : new Uint8Array(0);
-    const xored = xor_bytes(secret, key);
-    const lenBytes = pack32(secret.length);
-    const payload = new Uint8Array(lenBytes.length + xored.length);
-    payload.set(lenBytes); payload.set(xored, 4);
-    return { payload, bits: bits(payload), key };
 }
 
 // ── Algorithm 1: Spatial LSB ──

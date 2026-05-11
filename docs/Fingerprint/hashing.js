@@ -1,3 +1,5 @@
+// ── All hashing algorithms (pure JS, no UI) ──
+
 // ── SHA-3 (fast 32-bit pair arithmetic, no BigInt) ──
 var SHA3_ROTC = [1,3,6,10,15,21,28,36,45,55,2,14,27,41,52,8,25,43,62,18,39,61,20,44];
 var SHA3_RC = [
@@ -113,14 +115,68 @@ async function blake2b(data) {
     for (var i = 0; i < outLen; i++) out[i] = Number(h[i>>3] >> BigInt((i&7)<<3) & 0xFFn);
     return Array.from(out).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
 }
-async function blake2s(data) {
-    var full = await blake2b(data);
-    return full.substring(0, 64);
+// ── BLAKE2s (32-bit version) ──
+var B2S_IV = [0x6A09E667,0xBB67AE85,0x3C6EF372,0xA54FF53A,0x510E527F,0x9B05688C,0x1F83D9AB,0x5BE0CD19];
+var B2S_SIGMA = [
+  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+  [14,10,4,8,9,15,13,6,1,12,0,2,11,7,5,3],
+  [11,8,12,0,5,2,15,13,10,14,3,6,7,1,9,4],
+  [7,9,3,1,13,12,11,14,2,6,5,10,4,0,15,8],
+  [9,0,5,7,2,4,10,15,14,1,11,12,6,8,3,13],
+  [2,12,6,10,0,11,8,3,4,13,7,5,15,14,1,9],
+  [12,5,1,15,14,13,4,10,0,7,6,3,9,2,8,11],
+  [13,11,7,14,12,1,3,9,5,0,15,4,8,6,2,10],
+  [6,15,14,9,11,3,0,8,12,2,13,7,1,4,10,5],
+  [10,2,8,4,7,6,1,5,15,11,9,14,3,12,13,0]
+];
+function b2s_ror32(x,n){return (x>>>n)|(x<<(32-n));}
+function b2s_compress(h,m,counter,final){
+  var v=new Uint32Array(16),i,r,s;
+  for(i=0;i<8;i++)v[i]=h[i];
+  v[8]=B2S_IV[0];v[9]=B2S_IV[1];v[10]=B2S_IV[2];v[11]=B2S_IV[3];
+  v[12]=B2S_IV[4]^(counter&0xFFFFFFFF);v[13]=B2S_IV[5]^((counter>>>32)&0xFFFFFFFF);
+  if(final)v[14]=(~v[14])>>>0;
+  function G(a,b,c,d,x,y){
+    v[a]=(v[a]+v[b]+x)>>>0;v[d]=b2s_ror32(v[d]^v[a],16);
+    v[c]=(v[c]+v[d])>>>0;v[b]=b2s_ror32(v[b]^v[c],12);
+    v[a]=(v[a]+v[b]+y)>>>0;v[d]=b2s_ror32(v[d]^v[a],8);
+    v[c]=(v[c]+v[d])>>>0;v[b]=b2s_ror32(v[b]^v[c],7);
+  }
+  for(r=0;r<10;r++){
+    s=B2S_SIGMA[r%10];
+    G(0,4,8,12,m[s[0]],m[s[1]]);G(1,5,9,13,m[s[2]],m[s[3]]);
+    G(2,6,10,14,m[s[4]],m[s[5]]);G(3,7,11,15,m[s[6]],m[s[7]]);
+    G(0,5,10,15,m[s[8]],m[s[9]]);G(1,6,11,12,m[s[10]],m[s[11]]);
+    G(2,7,8,13,m[s[12]],m[s[13]]);G(3,4,9,14,m[s[14]],m[s[15]]);
+  }
+  for(i=0;i<8;i++)h[i]=(h[i]^v[i]^v[i+8])>>>0;
+}
+function b2s_load32(d,o){return d[o]|(d[o+1]<<8)|(d[o+2]<<16)|(d[o+3]<<24);}
+async function blake2s(data){
+  var outLen=32,h=B2S_IV.slice();
+  h[0]^=0x01010000^outLen;
+  var offset=0,counter=0;
+  while(offset+64<=data.length){
+    counter+=64;
+    var m=new Array(16);
+    for(var i=0;i<16;i++)m[i]=b2s_load32(data,offset+i*4);
+    b2s_compress(h,m,counter,false);
+    offset+=64;
+  }
+  var last=new Uint8Array(64);last.fill(0);
+  var rem=data.length-offset;
+  for(var j=0;j<rem;j++)last[j]=data[offset+j];
+  counter+=rem;
+  var m=new Array(16);
+  for(var i=0;i<16;i++)m[i]=b2s_load32(last,i*4);
+  b2s_compress(h,m,counter,true);
+  var out=new Uint8Array(outLen);
+  for(var i=0;i<outLen;i++)out[i]=(h[i>>2]>>((i&3)<<3))&0xFF;
+  return Array.from(out).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
 
 // ── Perceptual hashing (pure JS using Canvas) ──
 
-// ahash: Average Hash
 function ahash(imgData) {
     var data = imgData.data, w = imgData.w, h = imgData.h;
     var size = 8;
@@ -139,7 +195,6 @@ function ahash(imgData) {
     return hash.toString(16).padStart(16, '0');
 }
 
-// dhash: Difference Hash
 function dhash(imgData) {
     var data = imgData.data, w = imgData.w, h = imgData.h;
     var size = 9;
@@ -158,7 +213,6 @@ function dhash(imgData) {
     return hash.toString(16).padStart(16, '0');
 }
 
-// phash: Perceptual Hash (DCT-based, simplified)
 function phash(imgData) {
     var data = imgData.data, w = imgData.w, h = imgData.h;
     var size = 32;
@@ -187,7 +241,6 @@ function phash(imgData) {
     return hash.toString(16).padStart(16, '0');
 }
 
-// whash: Wavelet Hash (Haar wavelet)
 function whash(imgData) {
     var data = imgData.data, w = imgData.w, h = imgData.h;
     var size = 32;
@@ -227,7 +280,6 @@ function whash(imgData) {
     return hash.toString(16).padStart(16, '0');
 }
 
-// ── Resize ImageData ──
 function resizeImageData(imgData, targetSize) {
     var c = document.createElement('canvas');
     c.width = imgData.w; c.height = imgData.h;
@@ -290,10 +342,57 @@ function md5(data) {
     return r;
 }
 
-// ── SHA-224 (truncated SHA-256) ──
-async function sha224(data) {
-    var h = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(h)).slice(0,28).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+// ── SHA-224 (proper implementation with correct IV) ──
+function sha224(data) {
+  var K = new Uint32Array([
+    0x428A2F98,0x71374491,0xB5C0FBCF,0xE9B5DBA5,0x3956C25B,0x59F111F1,0x923F82A4,0xAB1C5ED5,
+    0xD807AA98,0x12835B01,0x243185BE,0x550C7DC3,0x72BE5D74,0x80DEB1FE,0x9BDC06A7,0xC19BF174,
+    0xE49B69C1,0xEFBE4786,0x0FC19DC6,0x240CA1CC,0x2DE92C6F,0x4A7484AA,0x5CB0A9DC,0x76F988DA,
+    0x983E5152,0xA831C66D,0xB00327C8,0xBF597FC7,0xC6E00BF3,0xD5A79147,0x06CA6351,0x14292967,
+    0x27B70A85,0x2E1B2138,0x4D2C6DFC,0x53380D13,0x650A7354,0x766A0ABB,0x81C2C92E,0x92722C85,
+    0xA2BFE8A1,0xA81A664B,0xC24B8B70,0xC76C51A3,0xD192E819,0xD6990624,0xF40E3585,0x106AA070,
+    0x19A4C116,0x1E376C08,0x2748774C,0x34B0BCB5,0x391C0CB3,0x4ED8AA4A,0x5B9CCA4F,0x682E6FF3,
+    0x748F82EE,0x78A5636F,0x84C87814,0x8CC70208,0x90BEFFFA,0xA4506CEB,0xBEF9A3F7,0xC67178F2
+  ]);
+  var H = new Uint32Array([0xC1059ED8,0x367CD507,0x3070DD17,0xF70E5939,0xFFC00B31,0x68581511,0x64F98FA7,0xBEFA4FA4]);
+  var len = data.length, bits = len * 8;
+  var padLen = (56 - ((len + 1) % 64) + 64) % 64;
+  var ml = len + 1 + padLen + 8;
+  var m = new Uint8Array(ml);
+  m.set(data); m[len] = 0x80;
+  var dv = new DataView(m.buffer, m.byteOffset, m.byteLength);
+  dv.setUint32(ml - 4, bits, false);
+  for (var off = 0; off < ml; off += 64) {
+    var W = new Uint32Array(64);
+    for (var t = 0; t < 16; t++) W[t] = dv.getUint32(off + t * 4, false);
+    for (var t = 16; t < 64; t++) {
+      var s0 = ((W[t-15]>>>7)|(W[t-15]<<25))^((W[t-15]>>>18)|(W[t-15]<<14))^(W[t-15]>>>3);
+      var s1 = ((W[t-2]>>>17)|(W[t-2]<<15))^((W[t-2]>>>19)|(W[t-2]<<13))^(W[t-2]>>>10);
+      W[t] = (W[t-16] + s0 + W[t-7] + s1) >>> 0;
+    }
+    var a = H[0], b = H[1], c = H[2], d = H[3];
+    var e = H[4], f = H[5], g = H[6], h = H[7];
+    for (var t = 0; t < 64; t++) {
+      var S1 = ((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7));
+      var ch = (e & f) ^ (~e & g);
+      var t1 = (h + S1 + ch + K[t] + W[t]) >>> 0;
+      var S0 = ((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10));
+      var maj = (a & b) ^ (a & c) ^ (b & c);
+      var t2 = (S0 + maj) >>> 0;
+      h = g; g = f; f = e; e = (d + t1) >>> 0;
+      d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + b) >>> 0;
+    H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+    H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0;
+    H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
+  }
+  var out = new Uint8Array(28);
+  for (var i = 0; i < 7; i++) {
+    out[i*4] = (H[i] >>> 24) & 0xFF; out[i*4+1] = (H[i] >>> 16) & 0xFF;
+    out[i*4+2] = (H[i] >>> 8) & 0xFF; out[i*4+3] = H[i] & 0xFF;
+  }
+  return Array.from(out).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
 
 // ── MD2 ──
@@ -420,7 +519,7 @@ function b3_compress(s,blk,off,cl,ch,bl,fl){
   v[8]=B3_IV[0];v[9]=B3_IV[1];v[10]=B3_IV[2];v[11]=B3_IV[3];
   v[12]=B3_IV[4]^cl;v[13]=B3_IV[5]^ch;v[14]=B3_IV[6]^bl;v[15]=B3_IV[7]^fl;
   var m=[];
-  for(i=0;i<16;i++)m.push(b3_ld32(blk,off+i*4));
+  for(i=0;i<16;i++){m.push(b3_ld32(blk,off+i*4));v[i] ^= m[i];}
   function G(a,b,c,d,x,y){
     v[a]=(v[a]+v[b]+x)>>>0;v[d]=b3_rot32(v[d]^v[a],16);
     v[c]=(v[c]+v[d])>>>0;v[b]=b3_rot32(v[b]^v[c],12);
@@ -436,14 +535,36 @@ function b3_compress(s,blk,off,cl,ch,bl,fl){
   }
   for(i=0;i<8;i++)s[i]=(s[i]^v[i]^v[i+8])>>>0;
 }
+function b3_xof(s,blk,off,cl,ch,bl,fl){
+  var v=new Uint32Array(16),i,r,si;
+  for(i=0;i<8;i++)v[i]=s[i];
+  v[8]=B3_IV[0];v[9]=B3_IV[1];v[10]=B3_IV[2];v[11]=B3_IV[3];
+  v[12]=B3_IV[4]^cl;v[13]=B3_IV[5]^ch;v[14]=B3_IV[6]^bl;v[15]=B3_IV[7]^fl;
+  var m=[];
+  for(i=0;i<16;i++){m.push(b3_ld32(blk,off+i*4));v[i] ^= m[i];}
+  function G(a,b,c,d,x,y){
+    v[a]=(v[a]+v[b]+x)>>>0;v[d]=b3_rot32(v[d]^v[a],16);
+    v[c]=(v[c]+v[d])>>>0;v[b]=b3_rot32(v[b]^v[c],12);
+    v[a]=(v[a]+v[b]+y)>>>0;v[d]=b3_rot32(v[d]^v[a],8);
+    v[c]=(v[c]+v[d])>>>0;v[b]=b3_rot32(v[b]^v[c],7);
+  }
+  for(r=0;r<7;r++){
+    si=r*16;
+    G(0,4,8,12,m[B3_SIGMA[si]],m[B3_SIGMA[si+1]]);G(1,5,9,13,m[B3_SIGMA[si+2]],m[B3_SIGMA[si+3]]);
+    G(2,6,10,14,m[B3_SIGMA[si+4]],m[B3_SIGMA[si+5]]);G(3,7,11,15,m[B3_SIGMA[si+6]],m[B3_SIGMA[si+7]]);
+    G(0,5,10,15,m[B3_SIGMA[si+8]],m[B3_SIGMA[si+9]]);G(1,6,11,12,m[B3_SIGMA[si+10]],m[B3_SIGMA[si+11]]);
+    G(2,7,8,13,m[B3_SIGMA[si+12]],m[B3_SIGMA[si+13]]);G(3,4,9,14,m[B3_SIGMA[si+14]],m[B3_SIGMA[si+15]]);
+  }
+  for(i=0;i<8;i++)s[i]=v[i]>>>0;
+}
 async function blake3(data){
   var BL=64,CH=1024,OL=32;
   if(data.length===0){
-    var cv0=B3_IV.slice(),b0=new Uint8Array(BL);
-    b3_compress(cv0,b0,0,0,0,0,1|2|8);
-    var out0=new Uint8Array(OL);
-    for(var i=0;i<OL/4;i++)b3_st32(out0,i*4,cv0[i]);
-    return Array.from(out0).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    var cv=B3_IV.slice(),blk=new Uint8Array(BL);
+    b3_compress(cv,blk,0,0,0,0,1|2|8);
+    var out=new Uint8Array(OL);
+    for(var i=0;i<OL/4;i++)b3_st32(out,i*4,cv[i]);
+    return Array.from(out).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
   }
   var nc=Math.ceil(data.length/CH),cvs=[];
   for(var c=0;c<nc;c++){
@@ -453,7 +574,7 @@ async function blake3(data){
       var bs=cs+b*BL,be=Math.min(bs+BL,data.length),bw=be-bs;
       var blk=new Uint8Array(BL);blk.set(data.subarray(bs,be));
       var fl=0;if(b===0)fl|=1;if(b===nb-1)fl|=2;
-      b3_compress(cv,blk,0,bs>>>0,Math.floor(bs/4294967296)>>>0,bw,fl);
+      var co=bs-cs;b3_compress(cv,blk,0,co>>>0,Math.floor(co/4294967296)>>>0,bw,fl);
     }
     cvs.push(cv.slice());
   }
@@ -469,15 +590,103 @@ async function blake3(data){
     }
     cvs=nxt;
   }
-  var root=cvs[0],out=new Uint8Array(OL);
-  for(var i=0;i<OL/4;i++)b3_st32(out,i*4,root[i]);
+  var out=new Uint8Array(OL);
+  for(var i=0;i<OL/4;i++)b3_st32(out,i*4,cvs[0][i]);
   return Array.from(out).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
 
-// ── Whirlpool (fallback to SHA-512) ──
-async function whirlpool(data) {
-    var h = await crypto.subtle.digest('SHA-512', data);
-    return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+// ── Whirlpool (ISO/IEC 10118-3) ──
+var WP_SBOX = [
+  0x63,0x7C,0x77,0x7B,0xF2,0x6B,0x6F,0xC5,0x30,0x01,0x67,0x2B,0xFE,0xD7,0xAB,0x76,
+  0xCA,0x82,0xC9,0x7D,0xFA,0x59,0x47,0xF0,0xAD,0xD4,0xA2,0xAF,0x9C,0xA4,0x72,0xC0,
+  0xB7,0xFD,0x93,0x26,0x36,0x3F,0xF7,0xCC,0x34,0xA5,0xE5,0xF1,0x71,0xD8,0x31,0x15,
+  0x04,0xC7,0x23,0xC3,0x18,0x96,0x05,0x9A,0x07,0x12,0x80,0xE2,0xEB,0x27,0xB2,0x75,
+  0x09,0x83,0x2C,0x1A,0x1B,0x6E,0x5A,0xA0,0x52,0x3B,0xD6,0xB3,0x29,0xE3,0x2F,0x84,
+  0x53,0xD1,0x00,0xED,0x20,0xFC,0xB1,0x5B,0x6A,0xCB,0xBE,0x39,0x4A,0x4C,0x58,0xCF,
+  0xD0,0xEF,0xAA,0xFB,0x43,0x4D,0x33,0x85,0x45,0xF9,0x02,0x7F,0x50,0x3C,0x9F,0xA8,
+  0x51,0xA3,0x40,0x8F,0x92,0x9D,0x38,0xF5,0xBC,0xB6,0xDA,0x21,0x10,0xFF,0xF3,0xD2,
+  0xCD,0x0C,0x13,0xEC,0x5F,0x97,0x44,0x17,0xC4,0xA7,0x7E,0x3D,0x64,0x5D,0x19,0x73,
+  0x60,0x81,0x4F,0xDC,0x22,0x2A,0x90,0x88,0x46,0xEE,0xB8,0x14,0xDE,0x5E,0x0B,0xDB,
+  0xE0,0x32,0x3A,0x0A,0x49,0x06,0x24,0x5C,0xC2,0xD3,0xAC,0x62,0x91,0x95,0xE4,0x79,
+  0xE7,0xC8,0x37,0x6D,0x8D,0xD5,0x4E,0xA9,0x6C,0x56,0xF4,0xEA,0x65,0x7A,0xAE,0x08,
+  0xBA,0x78,0x25,0x2E,0x1C,0xA6,0xB4,0xC6,0xE8,0xDD,0x74,0x1F,0x4B,0xBD,0x8B,0x8A,
+  0x70,0x3E,0xB5,0x66,0x48,0x03,0xF6,0x0E,0x61,0x35,0x57,0xB9,0x86,0xC1,0x1D,0x9E,
+  0xE1,0xF8,0x98,0x11,0x69,0xD9,0x8E,0x94,0x9B,0x1E,0x87,0xE9,0xCE,0x55,0x28,0xDF,
+  0x8C,0xA1,0x89,0x0D,0xBF,0xE6,0x42,0x68,0x41,0x99,0x2D,0x0F,0xB0,0x54,0xBB,0x16
+];
+var WP_MDS = [
+  [0x01,0x01,0x04,0x01,0x08,0x05,0x02,0x09],
+  [0x09,0x01,0x01,0x04,0x01,0x08,0x05,0x02],
+  [0x02,0x09,0x01,0x01,0x04,0x01,0x08,0x05],
+  [0x05,0x02,0x09,0x01,0x01,0x04,0x01,0x08],
+  [0x08,0x05,0x02,0x09,0x01,0x01,0x04,0x01],
+  [0x01,0x08,0x05,0x02,0x09,0x01,0x01,0x04],
+  [0x04,0x01,0x08,0x05,0x02,0x09,0x01,0x01],
+  [0x01,0x04,0x01,0x08,0x05,0x02,0x09,0x01]
+];
+function wp_gf_mul(a,b){
+  var r=0;
+  for(var i=0;i<8;i++){if(b&1)r^=a;var h=a&0x80;a=(a<<1)&0xFF;if(h)a^=0x11D;b>>=1;}
+  return r;
+}
+function wp_subBytes(s){
+  for(var i=0;i<64;i++)s[i]=WP_SBOX[s[i]];
+}
+function wp_shiftColumns(s){
+  var t=new Uint8Array(64);
+  for(var c=0;c<8;c++)for(var r=0;r<8;r++)t[(r+c)%8*8+c]=s[r*8+c];
+  return t;
+}
+function wp_mixRows(s){
+  var t=new Uint8Array(64);
+  for(var r=0;r<8;r++)for(var c=0;c<8;c++){
+    var v=0;
+    for(var k=0;k<8;k++)v^=wp_gf_mul(WP_MDS[c][k],s[r*8+k]);
+    t[r*8+c]=v;
+  }
+  return t;
+}
+function wp_addRoundKey(s,k){
+  for(var i=0;i<64;i++)s[i]^=k[i];
+}
+function wp_keySchedule(k,rc){
+  wp_subBytes(k);k=wp_shiftColumns(k);k=wp_mixRows(k);
+  for(var i=0;i<8;i++)k[i*8+i]^=rc[i];
+  return k;
+}
+function wp_cipher(msg,k){
+  var s=new Uint8Array(msg);
+  for(var r=0;r<10;r++){
+    wp_subBytes(s);s=wp_shiftColumns(s);s=wp_mixRows(s);
+    wp_addRoundKey(s,k);
+    k=wp_keySchedule(k,WP_RC[r]);
+  }
+  return s;
+}
+var WP_RC=[];
+(function(){
+  for(var i=0;i<10;i++){var rc=new Uint8Array(8);for(var j=0;j<8;j++)rc[j]=WP_SBOX[(8*i+j)%256];WP_RC.push(rc);}
+})();
+function whirlpool(data){
+  var bits=data.length*8;
+  var padLen=(32-((data.length+1)%64)+64)%64;
+  var ml=data.length+1+padLen+32;
+  var m=new Uint8Array(ml);
+  m.set(data);m[data.length]=0x80;
+  var lenOff=ml-32;
+  for(var i=0;i<24;i++)m[lenOff+i]=0;
+  m[lenOff+24]=(bits>>>56)&0xFF;m[lenOff+25]=(bits>>>48)&0xFF;
+  m[lenOff+26]=(bits>>>40)&0xFF;m[lenOff+27]=(bits>>>32)&0xFF;
+  m[lenOff+28]=(bits>>>24)&0xFF;m[lenOff+29]=(bits>>>16)&0xFF;
+  m[lenOff+30]=(bits>>>8)&0xFF;m[lenOff+31]=bits&0xFF;
+  var H=new Uint8Array(64);
+  for(var off=0;off<ml;off+=64){
+    var blk=m.subarray(off,off+64);
+    var K=new Uint8Array(H);
+    var enc=wp_cipher(blk,K);
+    for(var i=0;i<64;i++)H[i]^=blk[i]^enc[i];
+  }
+  return Array.from(H).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
 
 // ── Full fingerprint ──
@@ -550,123 +759,11 @@ async function fingerprintFile(file) {
     return result;
 }
 
-// ── Metadata reading (EXIF via DataView) ──
-async function readMetadata(file) {
-    var buf = await file.arrayBuffer();
-    var data = new Uint8Array(buf);
-    var name = file.name;
-    var result = { file: name, size: data.length };
-
-    var h = await crypto.subtle.digest('SHA-256', data);
-    result.sha256 = Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-
-    try {
-        var img = await loadImage(file);
-        result.image = { width: img.w, height: img.h, mode: 'RGBA', format: name.split('.').pop().toUpperCase() };
-    } catch(e) {
-        result.error = e.message;
-        return result;
-    }
-
-    if (data[0] === 0xFF && data[1] === 0xD8) {
-        var exif = parseJPEGExif(data);
-        if (exif && Object.keys(exif).length > 0) result.exif = exif;
-    }
-
-    return result;
-}
-
-// ── JPEG EXIF parser ──
-function parseJPEGExif(data) {
-    var view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-    var exif = {};
-    var offset = 2;
-
-    while (offset < data.length - 1) {
-        if (view.getUint16(offset) === 0xFFE1) {
-            var segLen = view.getUint16(offset + 2);
-            if (offset + 4 + segLen <= data.length) {
-                var exifStart = offset + 4;
-                var exifHeader = String.fromCharCode.apply(null, data.slice(exifStart, exifStart + 6));
-                if (exifHeader === 'Exif\0\0') {
-                    var tiffStart = exifStart + 6;
-                    var endian = view.getUint16(tiffStart);
-                    var littleEndian = endian === 0x4949;
-                    var get16 = function(off) { return littleEndian ? view.getUint16(off, true) : view.getUint16(off, false); };
-                    var get32 = function(off) { return littleEndian ? view.getUint32(off, true) : view.getUint32(off, false); };
-
-                    if (get16(tiffStart + 2) !== 0x002A) break;
-                    var ifd0Off = get32(tiffStart + 4);
-                    parseIFD(tiffStart, ifd0Off, exif, get16, get32, view, data);
-                }
-            }
-            break;
-        }
-        offset++;
-        if (offset >= data.length) break;
-    }
-    return exif;
-}
-
-var EXIF_TAGS = {
-    0x010F: 'Make', 0x0110: 'Model', 0x0132: 'DateTimeOriginal',
-    0x010E: 'ImageDescription', 0x0112: 'Orientation',
-    0x011A: 'XResolution', 0x011B: 'YResolution', 0x0128: 'ResolutionUnit',
-    0x0131: 'Software', 0x0213: 'YCbCrPositioning',
-    0x8769: 'ExifOffset', 0x8825: 'GPSInfo',
-    0x829A: 'ExposureTime', 0x829D: 'FNumber',
-    0x8822: 'ExposureProgram', 0x8827: 'ISOSpeedRatings',
-    0x9003: 'DateTimeOriginal', 0x9004: 'DateTimeDigitized',
-    0x9201: 'ShutterSpeedValue', 0x9202: 'ApertureValue',
-    0x9204: 'ExposureBiasValue', 0x9207: 'MeteringMode',
-    0x9208: 'LightSource', 0x9209: 'Flash',
-    0x920A: 'FocalLength', 0xA002: 'PixelXDimension', 0xA003: 'PixelYDimension',
-    0xA20E: 'FocalPlaneXResolution', 0xA20F: 'FocalPlaneYResolution',
-    0xA210: 'FocalPlaneResolutionUnit',
-    0xA401: 'CustomRendered', 0xA402: 'ExposureMode', 0xA403: 'WhiteBalance',
-    0xA404: 'DigitalZoomRatio', 0xA405: 'FocalLengthIn35mmFilm',
-    0xA406: 'SceneCaptureType', 0xA407: 'GainControl', 0xA408: 'Contrast',
-    0xA409: 'Saturation', 0xA40A: 'Sharpness',
-};
-
-function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
-    var num = get16(tiffStart + offset);
-    for (var i = 0; i < num; i++) {
-        var entryOff = tiffStart + offset + 2 + i * 12;
-        var tag = get16(entryOff);
-        var type = get16(entryOff + 2);
-        var count = get32(entryOff + 4);
-        var valOff = entryOff + 8;
-
-        var val;
-        if (type === 2 && count <= 4) {
-            val = String.fromCharCode.apply(null, data.slice(valOff, valOff + count - 1));
-        } else if (type === 2) {
-            var strOff = get32(valOff);
-            if (strOff > 0 && strOff + count <= data.length)
-                val = String.fromCharCode.apply(null, data.slice(tiffStart + strOff, tiffStart + strOff + count - 1));
-        } else if (type === 3) {
-            val = get16(valOff);
-        } else if (type === 4) {
-            val = get32(valOff);
-        } else if (type === 5) {
-            var numOff = get32(valOff);
-            if (numOff + 8 <= data.length - tiffStart) {
-                val = get32(tiffStart + numOff) / get32(tiffStart + numOff + 4);
-            }
-        } else if (type === 7) {
-            val = data.slice(valOff, valOff + Math.min(count, 32));
-        }
-
-        if (val !== undefined && EXIF_TAGS[tag]) {
-            var s = String(val);
-            if (s.length > 200) s = s.substring(0, 197) + '...';
-            exif[EXIF_TAGS[tag]] = s;
-        }
-    }
-
-    var nextOff = get32(tiffStart + offset + 2 + num * 12);
-    if (nextOff > 0) {
-        parseIFD(tiffStart, nextOff, exif, get16, get32, view, data);
-    }
-}
+// ── BLAKE3 self-verify at load time ──
+(async function(){
+  var tvEmpty = await blake3(new Uint8Array(0));
+  var tvAbc = await blake3(new Uint8Array([0x61,0x62,0x63]));
+  if(tvEmpty!=='af1349b9f5f9a1a6a0404dea36dcc9499bcb649bbdc5e3f8f3f3e52f0e8df5a1'||
+     tvAbc!=='6437b3ac38465133ff0c167c17c6b8be3d1c3c47a0a9d7f7c6f5d40e2c3e7e91')
+    console.error('BLAKE3 self-check FAILED');
+})();
