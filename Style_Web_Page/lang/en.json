@@ -1,0 +1,93 @@
+{
+  "nav.about": "About",
+  "nav.privacy": "Privacy",
+  "nav.contact": "Contact",
+  "nav.social": "Social",
+
+  "sidebar.title": "Menu",
+  "sidebar.home": "Home",
+  "sidebar.watermark": "Watermark",
+  "sidebar.fingerprint": "Fingerprint",
+  "sidebar.metadata": "Metadata",
+  "sidebar.timestamp": "Timestamp",
+
+  "home.tagline": "Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server.",
+  "card.watermark.title": "Watermark",
+  "card.watermark.desc": "9 algorithms: LSB, DCT, DWT and more",
+  "card.fingerprint.title": "Fingerprint",
+  "card.fingerprint.desc": "SHA-256 + perceptual image hashes",
+  "card.metadata.title": "Metadata",
+  "card.metadata.desc": "EXIF, dimensions, format info",
+  "card.timestamp.title": "Timestamp",
+  "card.timestamp.desc": "SHA-256 hashing + OTS hash verification",
+
+  "wm.heading": "Digital Watermarking",
+  "wm.embed_btn": "Embed",
+  "wm.extract_btn": "Extract",
+  "wm.algo_label": "Algorithm",
+  "wm.image_label": "Cover image",
+  "wm.image_ex_label": "Stego image",
+  "wm.password_label": "Password (optional)",
+  "wm.embed_submit": "Embed Watermark",
+  "wm.extract_submit": "Extract Watermark",
+
+  "fp.heading": "File Fingerprinting",
+  "fp.file_label": "File",
+  "fp.submit": "Generate Fingerprint",
+  "fp.download_title": "Download Fingerprint",
+  "fp.choose_format": "Choose a format:",
+
+  "md.heading": "Metadata Reader",
+  "md.file_label": "Image file",
+  "md.desc": "Reads EXIF, dimensions, format, and color mode. All processing in pure JavaScript.",
+  "md.submit": "Read Metadata",
+
+  "ts.heading": "File Timestamping",
+  "ts.hash_btn": "SHA-256 Hash",
+  "ts.ots_btn": "OpenTimestamps",
+  "ts.hash_desc": "Compute SHA-256 hash of your file",
+  "ts.ots_create_btn": "Create .ots",
+  "ts.ots_verify_btn": "Verify .ots",
+  "ts.file_label": "File to hash",
+  "ts.submit_hash": "Compute SHA-256",
+  "ts.ots_file_label": "File to timestamp",
+  "ts.verify_file_label": "Original file",
+  "ts.ots_proof_label": ".ots proof file",
+  "ts.verify_submit": "Verify SHA-256",
+  "ts.ots_note": "OpenTimestamps (.ots) requires an external server. SHA-256 hash is shown for manual verification.",
+
+  "page.about": "<h2>About RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> is an open-source digital authenticity tool that runs entirely in your browser. No files are ever uploaded to any server — all processing happens client-side.</p><p>We provide a comprehensive suite of tools for digital forensics and media verification:</p><ul><li><strong>Watermarking</strong> — 9 algorithms including LSB, DCT, DWT, neural-style, and forensic watermarking</li><li><strong>Fingerprinting</strong> — Cryptographic hashing (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) and perceptual image hashing</li><li><strong>Metadata</strong> — Read EXIF, dimensions, format, and color mode from images</li><li><strong>Timestamping</strong> — SHA-256 hashing with OpenTimestamps verification support</li></ul><p>Built with privacy as a core principle. Your files never leave your device.</p>",
+
+  "page.privacy": "<h2>Privacy Policy</h2><p><strong>Your data stays on your device.</strong> RedoSan Authenticity is a 100% client-side application. All processing is done in your browser using JavaScript. No files, metadata, or any other data are transmitted to any server.</p><h3>What we collect</h3><p>Nothing. We do not collect, store, or transmit any personal data, files, or analytics. The application runs entirely on GitHub Pages and no backend server is involved.</p><h3>Third-party libraries</h3><p>We load JavaScript libraries from CDNs (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> and <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) for PDF and DOCX export functionality. These CDNs may have their own logging and analytics. No data from your files is shared with these services.</p><h3>Changes</h3><p>This policy may be updated occasionally. Continued use of the tool constitutes acceptance of the current policy.</p>",
+
+  "page.contact": "<h2>Contact Us</h2><p>Have questions, suggestions, or found a bug? We'd love to hear from you.</p>",
+
+  "page.social": "<h2>Follow Us</h2><p>Stay connected and follow RedoSan on social media.</p>",
+
+  "contact.github_issues": "GitHub Issues",
+  "contact.github_issues_desc": "Report bugs &amp; request features",
+  "contact.github_profile": "GitHub Profile",
+  "contact.github_profile_desc": "Follow the developer on GitHub",
+
+  "social.github": "GitHub",
+  "social.github_handle": "@Redo-San",
+  "social.repo": "Repository",
+  "social.repo_handle": "RedoSan-Authenticity",
+
+  "footer.copyright": "100% browser-based &bull; Nothing leaves your device",
+
+  "dl.title": "Download Fingerprint",
+  "dl.subtitle": "Choose a format:",
+
+  "lang.switch": "العربية",
+  "lang.current": "Current language",
+  "lang.select": "Select Language",
+  "lang.auto_detect": "Auto-detected from location",
+  "lang.fallback": "Browser language",
+  "lang.name.en": "English",
+  "lang.name.ar": "العربية",
+  "lang.name.fr": "Français",
+  "lang.name.de": "Deutsch",
+  "lang.name.es": "Español",
+  "lang.name.zh": "中文"
+}

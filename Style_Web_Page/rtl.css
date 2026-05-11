@@ -1,0 +1,7 @@
+/* ── RTL overrides for Arabic ── */
+.sidebar { left:auto; right:-280px; border-right:none; border-left:1px solid var(--border); }
+.sidebar.open { left:auto; right:0; }
+.sidebar a.active { border-right:none; border-left:3px solid var(--primary); }
+.sidebar-header { direction:ltr; }
+.meta-table td:first-child { text-align:right; }
+.static-page ul { padding-right:20px; padding-left:0; }

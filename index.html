@@ -17,24 +17,35 @@
     <a href="/RedoSan-Authenticity/" class="logo"><img src="Style_Web_Page/logo.png" alt="RedoSan" class="logo-img"></a>
   </div>
   <div class="nav-links">
-    <a href="#" data-page="about">About</a>
-    <a href="#" data-page="privacy">Privacy</a>
-    <a href="#" data-page="contact">Contact</a>
-    <a href="#" data-page="social">Social</a>
+    <a href="#" data-page="about" data-i18n="nav.about">About</a>
+    <a href="#" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
+    <a href="#" data-page="contact" data-i18n="nav.contact">Contact</a>
+    <a href="#" data-page="social" data-i18n="nav.social">Social</a>
+    <div class="lang-dropdown">
+      <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">English</button>
+      <div class="lang-menu" id="langMenu">
+        <a href="#" onclick="switchLang('en'); return false;" class="lang-option" data-lang="en">English</a>
+        <a href="#" onclick="switchLang('ar'); return false;" class="lang-option" data-lang="ar">العربية</a>
+        <a href="#" onclick="switchLang('fr'); return false;" class="lang-option" data-lang="fr">Français</a>
+        <a href="#" onclick="switchLang('de'); return false;" class="lang-option" data-lang="de">Deutsch</a>
+        <a href="#" onclick="switchLang('es'); return false;" class="lang-option" data-lang="es">Español</a>
+        <a href="#" onclick="switchLang('zh'); return false;" class="lang-option" data-lang="zh">中文</a>
+      </div>
+    </div>
   </div>
 </nav>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <span class="sidebar-title">Menu</span>
+    <span class="sidebar-title" data-i18n="sidebar.title">Menu</span>
     <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
   </div>
-  <a href="#" class="active" data-page="home">Home</a>
-  <a href="#" data-page="watermark">Watermark</a>
-  <a href="#" data-page="fingerprint">Fingerprint</a>
-  <a href="#" data-page="metadata">Metadata</a>
-  <a href="#" data-page="timestamp">Timestamp</a>
+  <a href="#" class="active" data-page="home" data-i18n="sidebar.home">Home</a>
+  <a href="#" data-page="watermark" data-i18n="sidebar.watermark">Watermark</a>
+  <a href="#" data-page="fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
+  <a href="#" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
+  <a href="#" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
 </div>
 
 <main class="container" id="app">
@@ -42,27 +53,27 @@
   <section id="page-home" class="page active">
     <div class="hero">
       <h1><span>RedoSan</span> Authenticity</h1>
-      <p>Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server.</p>
+      <p data-i18n="home.tagline">Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server.</p>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <a href="#" data-page="watermark" class="card">
           <div class="icon">💧</div>
-          <h3>Watermark</h3>
-          <p>9 algorithms: LSB, DCT, DWT and more</p>
+          <h3 data-i18n="card.watermark.title">Watermark</h3>
+          <p data-i18n="card.watermark.desc">9 algorithms: LSB, DCT, DWT and more</p>
         </a>
         <a href="#" data-page="fingerprint" class="card">
           <div class="icon">🔍</div>
-          <h3>Fingerprint</h3>
-          <p>SHA-256 + perceptual image hashes</p>
+          <h3 data-i18n="card.fingerprint.title">Fingerprint</h3>
+          <p data-i18n="card.fingerprint.desc">SHA-256 + perceptual image hashes</p>
         </a>
         <a href="#" data-page="metadata" class="card">
           <div class="icon">📋</div>
-          <h3>Metadata</h3>
-          <p>EXIF, dimensions, format info</p>
+          <h3 data-i18n="card.metadata.title">Metadata</h3>
+          <p data-i18n="card.metadata.desc">EXIF, dimensions, format info</p>
         </a>
         <a href="#" data-page="timestamp" class="card">
           <div class="icon">🕒</div>
-          <h3>Timestamp</h3>
-          <p>SHA-256 hashing + OTS hash verification</p>
+          <h3 data-i18n="card.timestamp.title">Timestamp</h3>
+          <p data-i18n="card.timestamp.desc">SHA-256 hashing + OTS hash verification</p>
         </a>
       </div>
     </div>
@@ -70,15 +81,15 @@
 
   <!-- Watermark -->
   <section id="page-watermark" class="page">
-    <h2 style="margin-bottom:20px">Digital Watermarking</h2>
+    <h2 style="margin-bottom:20px" data-i18n="wm.heading">Digital Watermarking</h2>
     <div class="card-form">
       <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="btn tab-btn active" data-wm-tab="embed" onclick="switchWmTab('embed')">Embed</button>
-        <button class="btn tab-btn" data-wm-tab="extract" onclick="switchWmTab('extract')">Extract</button>
+        <button class="btn tab-btn active" data-wm-tab="embed" onclick="switchWmTab('embed')" data-i18n="wm.embed_btn">Embed</button>
+        <button class="btn tab-btn" data-wm-tab="extract" onclick="switchWmTab('extract')" data-i18n="wm.extract_btn">Extract</button>
       </div>
       <div id="wm-embed">
         <div class="form-group">
-          <label>Algorithm</label>
+          <label data-i18n="wm.algo_label">Algorithm</label>
           <select id="wm-type">
             <option value="1">1. Spatial LSB</option>
             <option value="2">2. Frequency DCT</option>
@@ -92,18 +103,18 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Cover image</label>
+          <label data-i18n="wm.image_label">Cover image</label>
           <input type="file" id="wm-image" accept="image/png,image/jpeg">
         </div>
         <div class="form-group">
-          <label>Password (optional)</label>
+          <label data-i18n="wm.password_label">Password (optional)</label>
           <input type="password" id="wm-password" placeholder="Leave blank">
         </div>
-        <button class="btn" onclick="handleWatermarkEmbed()" id="wm-btn">Embed Watermark</button>
+        <button class="btn" onclick="handleWatermarkEmbed()" id="wm-btn" data-i18n="wm.embed_submit">Embed Watermark</button>
       </div>
       <div id="wm-extract" style="display:none">
         <div class="form-group">
-          <label>Algorithm</label>
+          <label data-i18n="wm.algo_label">Algorithm</label>
           <select id="wm-type-ex">
             <option value="1">1. Spatial LSB</option>
             <option value="2">2. Frequency DCT</option>
@@ -117,14 +128,14 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Stego image</label>
+          <label data-i18n="wm.image_ex_label">Stego image</label>
           <input type="file" id="wm-image-ex" accept="image/png,image/jpeg">
         </div>
         <div class="form-group">
-          <label>Password (optional)</label>
+          <label data-i18n="wm.password_label">Password (optional)</label>
           <input type="password" id="wm-password-ex" placeholder="Leave blank">
         </div>
-        <button class="btn" onclick="handleWatermarkExtract()" id="wm-btn-ex">Extract Watermark</button>
+        <button class="btn" onclick="handleWatermarkExtract()" id="wm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
       </div>
       <div class="spinner" id="wm-spinner"></div>
     </div>
@@ -136,13 +147,13 @@
 
   <!-- Fingerprint -->
   <section id="page-fingerprint" class="page">
-    <h2 style="margin-bottom:20px">File Fingerprinting</h2>
+    <h2 style="margin-bottom:20px" data-i18n="fp.heading">File Fingerprinting</h2>
     <div class="card-form">
       <div class="form-group">
-        <label>File</label>
+        <label data-i18n="fp.file_label">File</label>
         <input type="file" id="fp-file">
       </div>
-      <button class="btn" onclick="handleFingerprint()" id="fp-btn">Generate Fingerprint</button>
+      <button class="btn" onclick="handleFingerprint()" id="fp-btn" data-i18n="fp.submit">Generate Fingerprint</button>
       <div class="spinner" id="fp-spinner"></div>
     </div>
     <div id="fp-result" style="display:none;margin-top:16px">
@@ -152,11 +163,11 @@
   </section>
 
   <!-- Download Format Modal -->
-  <div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
+    <div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
     <div class="modal-box">
       <div class="modal-close" onclick="closeDownloadModal()">&times;</div>
-      <h3>Download Fingerprint</h3>
-      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px">Choose a format:</p>
+      <h3 data-i18n="dl.title">Download Fingerprint</h3>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px" data-i18n="dl.subtitle">Choose a format:</p>
       <div class="dl-grid">
         <button class="dl-option" onclick="downloadFingerprint('json')"><span class="dl-icon">&#123;&#125;</span> JSON</button>
         <button class="dl-option" onclick="downloadFingerprint('csv')"><span class="dl-icon">&#35;</span> CSV</button>
@@ -322,6 +333,7 @@
 </footer>
 
 <script src="Style_Web_Page/shared.js"></script>
+<script src="Style_Web_Page/i18n.js"></script>
 <script src="Style_Web_Page/navigation.js"></script>
 <script src="Watermark/utils.js"></script>
 <script src="Watermark/watermark_core.js"></script>

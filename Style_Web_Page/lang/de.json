@@ -1,0 +1,83 @@
+{
+  "nav.about": "Über",
+  "nav.privacy": "Datenschutz",
+  "nav.contact": "Kontakt",
+  "nav.social": "Social",
+
+  "sidebar.title": "Menü",
+  "sidebar.home": "Start",
+  "sidebar.watermark": "Wasserzeichen",
+  "sidebar.fingerprint": "Fingerabdruck",
+  "sidebar.metadata": "Metadaten",
+  "sidebar.timestamp": "Zeitstempel",
+
+  "home.tagline": "Online-Digital-Authentizitätstool — 100% browserbasiert. Nichts wird auf einen Server hochgeladen.",
+  "card.watermark.title": "Wasserzeichen",
+  "card.watermark.desc": "9 Algorithmen: LSB, DCT, DWT und mehr",
+  "card.fingerprint.title": "Fingerabdruck",
+  "card.fingerprint.desc": "SHA-256 + Wahrnehmungsbild-Hashes",
+  "card.metadata.title": "Metadaten",
+  "card.metadata.desc": "EXIF, Abmessungen, Format-Info",
+  "card.timestamp.title": "Zeitstempel",
+  "card.timestamp.desc": "SHA-256 Hashing + OTS Hash-Verifizierung",
+
+  "wm.heading": "Digitales Wasserzeichen",
+  "wm.embed_btn": "Einbetten",
+  "wm.extract_btn": "Extrahieren",
+  "wm.algo_label": "Algorithmus",
+  "wm.image_label": "Cover-Bild",
+  "wm.image_ex_label": "Stego-Bild",
+  "wm.password_label": "Passwort (optional)",
+  "wm.embed_submit": "Wasserzeichen Einbetten",
+  "wm.extract_submit": "Wasserzeichen Extrahieren",
+
+  "fp.heading": "Datei-Fingerabdruck",
+  "fp.file_label": "Datei",
+  "fp.submit": "Fingerabdruck Erstellen",
+  "fp.download_title": "Fingerabdruck Herunterladen",
+  "fp.choose_format": "Wählen Sie ein Format:",
+
+  "md.heading": "Metadaten-Leser",
+  "md.file_label": "Bilddatei",
+  "md.desc": "Liest EXIF, Abmessungen, Format und Farbmodus. Alle Verarbeitung in reinem JavaScript.",
+  "md.submit": "Metadaten Lesen",
+
+  "ts.heading": "Datei-Zeitstempelung",
+  "ts.hash_btn": "SHA-256 Hash",
+  "ts.ots_btn": "OpenTimestamps",
+  "ts.hash_desc": "SHA-256 Hash der Datei berechnen",
+  "ts.ots_create_btn": ".ots Erstellen",
+  "ts.ots_verify_btn": ".ots Verifizieren",
+  "ts.file_label": "Zu hashende Datei",
+  "ts.submit_hash": "SHA-256 Berechnen",
+  "ts.ots_file_label": "Zu zeitstempelnde Datei",
+  "ts.verify_file_label": "Originaldatei",
+  "ts.ots_proof_label": ".ots Beweisdatei",
+  "ts.verify_submit": "SHA-256 Verifizieren",
+  "ts.ots_note": "OpenTimestamps (.ots) erfordert einen externen Server. SHA-256 Hash wird zur manuellen Überprüfung angezeigt.",
+
+  "page.about": "<h2>Über RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> ist ein Open-Source-Digital-Authentizitätstool, das vollständig in Ihrem Browser läuft. Es werden niemals Dateien auf einen Server hochgeladen — alle Verarbeitungen finden clientseitig statt.</p><p>Wir bieten eine umfassende Suite von Tools für digitale Forensik und Medienverifizierung:</p><ul><li><strong>Wasserzeichen</strong> — 9 Algorithmen einschließlich LSB, DCT, DWT, Neural-Style und forensische Wasserzeichen</li><li><strong>Fingerabdruck</strong> — Kryptografisches Hashing (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) und Wahrnehmungsbild-Hashing</li><li><strong>Metadaten</strong> — EXIF, Abmessungen, Format und Farbmodus aus Bildern lesen</li><li><strong>Zeitstempel</strong> — SHA-256 Hashing mit OpenTimestamps-Verifizierungsunterstützung</li></ul><p>Gebaut mit Datenschutz als Kernprinzip. Ihre Dateien verlassen niemals Ihr Gerät.</p>",
+
+  "page.privacy": "<h2>Datenschutzerklärung</h2><p><strong>Ihre Daten bleiben auf Ihrem Gerät.</strong> RedoSan Authenticity ist eine 100% Client-seitige Anwendung. Alle Verarbeitungen erfolgen in Ihrem Browser mit JavaScript. Es werden keine Dateien, Metadaten oder anderen Daten an einen Server übertragen.</p><h3>Was wir sammeln</h3><p>Nichts. Wir sammeln, speichern oder übertragen keine persönlichen Daten, Dateien oder Analysen. Die Anwendung läuft vollständig auf GitHub Pages und es ist kein Backend-Server involviert.</p><h3>Drittanbieter-Bibliotheken</h3><p>Wir laden JavaScript-Bibliotheken von CDNs (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> und <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) für PDF- und DOCX-Export-Funktionalität. Diese CDNs können eigene Logging- und Analysedienste haben. Es werden keine Daten aus Ihren Dateien mit diesen Diensten geteilt.</p><h3>Änderungen</h3><p>Diese Richtlinie kann gelegentlich aktualisiert werden. Die fortgesetzte Nutzung des Tools stellt die Akzeptanz der aktuellen Richtlinie dar.</p>",
+
+  "page.contact": "<h2>Kontaktieren Sie uns</h2><p>Haben Sie Fragen, Vorschläge oder einen Fehler gefunden? Wir würden gerne von Ihnen hören.</p>",
+
+  "page.social": "<h2>Folgen Sie uns</h2><p>Bleiben Sie verbunden und folgen Sie RedoSan in sozialen Medien.</p>",
+
+  "contact.github_issues": "GitHub Issues",
+  "contact.github_issues_desc": "Bugs melden & Funktionen anfordern",
+  "contact.github_profile": "GitHub-Profil",
+  "contact.github_profile_desc": "Entwickler auf GitHub folgen",
+
+  "social.github": "GitHub",
+  "social.github_handle": "@Redo-San",
+  "social.repo": "Repository",
+  "social.repo_handle": "RedoSan-Authenticity",
+
+  "footer.copyright": "100% browserbasiert • Nichts verlässt Ihr Gerät",
+
+  "dl.title": "Fingerabdruck Herunterladen",
+  "dl.subtitle": "Wählen Sie ein Format:",
+
+  "lang.switch": "English"
+}

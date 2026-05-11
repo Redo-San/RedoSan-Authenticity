@@ -1,0 +1,83 @@
+{
+  "nav.about": "关于",
+  "nav.privacy": "隐私",
+  "nav.contact": "联系",
+  "nav.social": "社交",
+
+  "sidebar.title": "菜单",
+  "sidebar.home": "首页",
+  "sidebar.watermark": "水印",
+  "sidebar.fingerprint": "指纹",
+  "sidebar.metadata": "元数据",
+  "sidebar.timestamp": "时间戳",
+
+  "home.tagline": "在线数字真实性工具 — 100%基于浏览器。没有任何内容上传到任何服务器。",
+  "card.watermark.title": "水印",
+  "card.watermark.desc": "9种算法：LSB、DCT、DWT等",
+  "card.fingerprint.title": "指纹",
+  "card.fingerprint.desc": "SHA-256 + 感知图像哈希",
+  "card.metadata.title": "元数据",
+  "card.metadata.desc": "EXIF、尺寸、格式信息",
+  "card.timestamp.title": "时间戳",
+  "card.timestamp.desc": "SHA-256哈希 + OTS哈希验证",
+
+  "wm.heading": "数字水印",
+  "wm.embed_btn": "嵌入",
+  "wm.extract_btn": "提取",
+  "wm.algo_label": "算法",
+  "wm.image_label": "封面图像",
+  "wm.image_ex_label": "隐写图像",
+  "wm.password_label": "密码（可选）",
+  "wm.embed_submit": "嵌入水印",
+  "wm.extract_submit": "提取水印",
+
+  "fp.heading": "文件指纹",
+  "fp.file_label": "文件",
+  "fp.submit": "生成指纹",
+  "fp.download_title": "下载指纹",
+  "fp.choose_format": "选择格式：",
+
+  "md.heading": "元数据读取器",
+  "md.file_label": "图像文件",
+  "md.desc": "读取EXIF、尺寸、格式和颜色模式。所有处理均使用纯JavaScript。",
+  "md.submit": "读取元数据",
+
+  "ts.heading": "文件时间戳",
+  "ts.hash_btn": "SHA-256哈希",
+  "ts.ots_btn": "OpenTimestamps",
+  "ts.hash_desc": "计算文件的SHA-256哈希",
+  "ts.ots_create_btn": "创建.ots",
+  "ts.ots_verify_btn": "验证.ots",
+  "ts.file_label": "要哈希的文件",
+  "ts.submit_hash": "计算SHA-256",
+  "ts.ots_file_label": "要时间戳的文件",
+  "ts.verify_file_label": "原始文件",
+  "ts.ots_proof_label": ".ots证明文件",
+  "ts.verify_submit": "验证SHA-256",
+  "ts.ots_note": "OpenTimestamps (.ots) 需要外部服务器。显示SHA-256哈希以供手动验证。",
+
+  "page.about": "<h2>关于RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong>是一个完全在浏览器中运行的开源数字真实性工具。没有任何文件上传到任何服务器 — 所有处理都在客户端进行。</p><p>我们为数字取证和媒体验证提供全面的工具套件：</p><ul><li><strong>水印</strong> — 9种算法，包括LSB、DCT、DWT、神经风格和取证水印</li><li><strong>指纹</strong> — 加密哈希（SHA-1/2/3、BLAKE2/3、MD5、RIPEMD-160、Whirlpool）和感知图像哈希</li><li><strong>元数据</strong> — 从图像读取EXIF、尺寸、格式和颜色模式</li><li><strong>时间戳</strong> — SHA-256哈希，支持OpenTimestamps验证</li></ul><p>以隐私为核心原则构建。您的文件永远不会离开您的设备。</p>",
+
+  "page.privacy": "<h2>隐私政策</h2><p><strong>您的数据保留在您的设备上。</strong> RedoSan Authenticity是100%客户端应用程序。所有处理都在您的浏览器中使用JavaScript进行。没有任何文件、元数据或任何其他数据传输到任何服务器。</p><h3>我们收集什么</h3><p>什么都没有。我们不收集、存储或传输任何个人数据、文件或分析。应用程序完全在GitHub Pages上运行，不涉及后端服务器。</p><h3>第三方库</h3><p>我们从CDN（<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a>和<a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>）加载JavaScript库用于PDF和DOCX导出功能。这些CDN可能有自己的日志和分析。您文件的任何数据都不会与这些服务共享。</p><h3>变更</h3><p>本政策可能会偶尔更新。继续使用该工具即表示接受当前政策。</p>",
+
+  "page.contact": "<h2>联系我们</h2><p>有问题、建议或发现错误？我们很乐意听取您的意见。</p>",
+
+  "page.social": "<h2>关注我们</h2><p>保持联系并在社交媒体上关注RedoSan。</p>",
+
+  "contact.github_issues": "GitHub问题",
+  "contact.github_issues_desc": "报告错误和请求功能",
+  "contact.github_profile": "GitHub个人资料",
+  "contact.github_profile_desc": "在GitHub上关注开发者",
+
+  "social.github": "GitHub",
+  "social.github_handle": "@Redo-San",
+  "social.repo": "仓库",
+  "social.repo_handle": "RedoSan-Authenticity",
+
+  "footer.copyright": "100%基于浏览器 • 没有任何内容离开您的设备",
+
+  "dl.title": "下载指纹",
+  "dl.subtitle": "选择格式：",
+
+  "lang.switch": "English"
+}

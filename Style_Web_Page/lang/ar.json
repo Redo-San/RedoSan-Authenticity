@@ -1,0 +1,93 @@
+{
+  "nav.about": "من نحن",
+  "nav.privacy": "الخصوصية",
+  "nav.contact": "اتصل بنا",
+  "nav.social": "التواصل",
+
+  "sidebar.title": "القائمة",
+  "sidebar.home": "الرئيسية",
+  "sidebar.watermark": "العلامة المائية",
+  "sidebar.fingerprint": "البصمة",
+  "sidebar.metadata": "البيانات الوصفية",
+  "sidebar.timestamp": "الطابع الزمني",
+
+  "home.tagline": "أداة أصالة رقمية عبر الإنترنت — تعمل بالكامل في المتصفح. لا يتم رفع أي ملف إلى أي خادم.",
+  "card.watermark.title": "علامة مائية",
+  "card.watermark.desc": "9 خوارزميات: LSB و DCT و DWT والمزيد",
+  "card.fingerprint.title": "بصمة",
+  "card.fingerprint.desc": "SHA-256 + بصمات الصور الإدراكية",
+  "card.metadata.title": "بيانات وصفية",
+  "card.metadata.desc": "EXIF والأبعاد ومعلومات التنسيق",
+  "card.timestamp.title": "طابع زمني",
+  "card.timestamp.desc": "تجزئة SHA-256 + التحقق من OTS",
+
+  "wm.heading": "العلامة المائية الرقمية",
+  "wm.embed_btn": "تضمين",
+  "wm.extract_btn": "استخراج",
+  "wm.algo_label": "الخوارزمية",
+  "wm.image_label": "الصورة الأصلية",
+  "wm.image_ex_label": "الصورة المضغوطة",
+  "wm.password_label": "كلمة المرور (اختياري)",
+  "wm.embed_submit": "تضمين العلامة المائية",
+  "wm.extract_submit": "استخراج العلامة المائية",
+
+  "fp.heading": "بصمة الملف",
+  "fp.file_label": "الملف",
+  "fp.submit": "إنشاء البصمة",
+  "fp.download_title": "تحميل البصمة",
+  "fp.choose_format": "اختر الصيغة:",
+
+  "md.heading": "قارئ البيانات الوصفية",
+  "md.file_label": "ملف الصورة",
+  "md.desc": "يقرأ EXIF والأبعاد والتنسيق ووضع الألوان. جميع المعالجة بلغة JavaScript نقية.",
+  "md.submit": "قراءة البيانات الوصفية",
+
+  "ts.heading": "الطابع الزمني للملف",
+  "ts.hash_btn": "SHA-256",
+  "ts.ots_btn": "OpenTimestamps",
+  "ts.hash_desc": "حساب تجزئة SHA-256 للملف",
+  "ts.ots_create_btn": "إنشاء .ots",
+  "ts.ots_verify_btn": "التحقق .ots",
+  "ts.file_label": "الملف للتجزئة",
+  "ts.submit_hash": "حساب SHA-256",
+  "ts.ots_file_label": "الملف للطابع الزمني",
+  "ts.verify_file_label": "الملف الأصلي",
+  "ts.ots_proof_label": "ملف الإثبات .ots",
+  "ts.verify_submit": "التحقق من SHA-256",
+  "ts.ots_note": "OpenTimestamps (.ots) يتطلب خادمًا خارجيًا. يتم عرض تجزئة SHA-256 للتحقق اليدوي.",
+
+  "page.about": "<h2>عن RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> هي أداة أصالة رقمية مفتوحة المصدر تعمل بالكامل في متصفحك. لا يتم رفع أي ملفات إلى أي خادم — جميع المعالجة تحدث على جهازك.</p><p>نوفر مجموعة شاملة من الأدوات للطب الشرعي الرقمي والتحقق من الوسائط:</p><ul><li><strong>العلامة المائية</strong> — 9 خوارزميات تشمل LSB و DCT و DWT والعلامة المائية العصبية والطب الشرعي</li><li><strong>البصمة</strong> — التجزئة التشفيرية (SHA-1/2/3 و BLAKE2/3 و MD5 و RIPEMD-160 و Whirlpool) وبصمات الصور الإدراكية</li><li><strong>البيانات الوصفية</strong> — قراءة EXIF والأبعاد والتنسيق ووضع الألوان من الصور</li><li><strong>الطابع الزمني</strong> — تجزئة SHA-256 مع دعم التحقق من OpenTimestamps</li></ul><p>بُنيت مع الخصوصية كمبدأ أساسي. ملفاتك لا تغادر جهازك أبدًا.</p>",
+
+  "page.privacy": "<h2>سياسة الخصوصية</h2><p><strong>بياناتك تبقى على جهازك.</strong> RedoSan Authenticity هو تطبيق يعمل بالكامل على جهاز العميل. جميع المعالجة تتم في متصفحك باستخدام JavaScript. لا يتم إرسال أي ملفات أو بيانات وصفية أو أي بيانات أخرى إلى أي خادم.</p><h3>ما نجمعه</h3><p>لا شيء. لا نقوم بجمع أو تخزين أو إرسال أي بيانات شخصية أو ملفات أو تحليلات. يعمل التطبيق بالكامل على GitHub Pages ولا يوجد خادم خلفي.</p><h3>مكتبات الطرف الثالث</h3><p>نقوم بتحميل مكتبات JavaScript من شبكات توصيل المحتوى (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> و <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) لوظائف تصدير PDF و DOCX. قد يكون لشبكات CDN هذه سجلاتها وتحليلاتها الخاصة. لا تتم مشاركة أي بيانات من ملفاتك مع هذه الخدمات.</p><h3>التغييرات</h3><p>قد يتم تحديث هذه السياسة من وقت لآخر. الاستمرار في استخدام الأداة يشكل قبولاً للسياسة الحالية.</p>",
+
+  "page.contact": "<h2>اتصل بنا</h2><p>هل لديك أسئلة أو اقتراحات أو وجدت خطأ؟ يسعدنا سماع رأيك.</p>",
+
+  "page.social": "<h2>تابعنا</h2><p>ابق على اتصال وتابع RedoSan على وسائل التواصل الاجتماعي.</p>",
+
+  "contact.github_issues": "مشكلات GitHub",
+  "contact.github_issues_desc": "أبلغ عن الأخطاء واطلب الميزات",
+  "contact.github_profile": "ملف GitHub",
+  "contact.github_profile_desc": "تابع المطور على GitHub",
+
+  "social.github": "GitHub",
+  "social.github_handle": "@Redo-San",
+  "social.repo": "المستودع",
+  "social.repo_handle": "RedoSan-Authenticity",
+
+  "footer.copyright": "يعمل بالكامل في المتصفح • لا شيء يغادر جهازك",
+
+  "dl.title": "تحميل البصمة",
+  "dl.subtitle": "اختر الصيغة:",
+
+  "lang.switch": "English",
+  "lang.current": "اللغة الحالية",
+  "lang.select": "اختر اللغة",
+  "lang.auto_detect": "تم الكشف التلقائي من الموقع",
+  "lang.fallback": "لغة المتصفح",
+  "lang.name.en": "English",
+  "lang.name.ar": "العربية",
+  "lang.name.fr": "Français",
+  "lang.name.de": "Deutsch",
+  "lang.name.es": "Español",
+  "lang.name.zh": "中文"
+}

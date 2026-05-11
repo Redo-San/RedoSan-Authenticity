@@ -1,0 +1,83 @@
+{
+  "nav.about": "Acerca de",
+  "nav.privacy": "Privacidad",
+  "nav.contact": "Contacto",
+  "nav.social": "Social",
+
+  "sidebar.title": "Menú",
+  "sidebar.home": "Inicio",
+  "sidebar.watermark": "Marca de Agua",
+  "sidebar.fingerprint": "Huella Digital",
+  "sidebar.metadata": "Metadatos",
+  "sidebar.timestamp": "Marca de Tiempo",
+
+  "home.tagline": "Herramienta de autenticidad digital en línea — 100% basada en navegador. Nada se sube a ningún servidor.",
+  "card.watermark.title": "Marca de Agua",
+  "card.watermark.desc": "9 algoritmos: LSB, DCT, DWT y más",
+  "card.fingerprint.title": "Huella Digital",
+  "card.fingerprint.desc": "SHA-256 + hashes de imagen perceptual",
+  "card.metadata.title": "Metadatos",
+  "card.metadata.desc": "EXIF, dimensiones, información de formato",
+  "card.timestamp.title": "Marca de Tiempo",
+  "card.timestamp.desc": "Hash SHA-256 + verificación de hash OTS",
+
+  "wm.heading": "Marca de Agua Digital",
+  "wm.embed_btn": "Incrustar",
+  "wm.extract_btn": "Extraer",
+  "wm.algo_label": "Algoritmo",
+  "wm.image_label": "Imagen de portada",
+  "wm.image_ex_label": "Imagen estego",
+  "wm.password_label": "Contraseña (opcional)",
+  "wm.embed_submit": "Incrustar Marca de Agua",
+  "wm.extract_submit": "Extraer Marca de Agua",
+
+  "fp.heading": "Huella Digital de Archivo",
+  "fp.file_label": "Archivo",
+  "fp.submit": "Generar Huella Digital",
+  "fp.download_title": "Descargar Huella Digital",
+  "fp.choose_format": "Elija un formato:",
+
+  "md.heading": "Lector de Metadatos",
+  "md.file_label": "Archivo de imagen",
+  "md.desc": "Lee EXIF, dimensiones, formato y modo de color. Todo procesamiento en JavaScript puro.",
+  "md.submit": "Leer Metadatos",
+
+  "ts.heading": "Marca de Tiempo de Archivo",
+  "ts.hash_btn": "Hash SHA-256",
+  "ts.ots_btn": "OpenTimestamps",
+  "ts.hash_desc": "Calcular hash SHA-256 del archivo",
+  "ts.ots_create_btn": "Crear .ots",
+  "ts.ots_verify_btn": "Verificar .ots",
+  "ts.file_label": "Archivo para hashear",
+  "ts.submit_hash": "Calcular SHA-256",
+  "ts.ots_file_label": "Archivo para marcar tiempo",
+  "ts.verify_file_label": "Archivo original",
+  "ts.ots_proof_label": "Archivo de prueba .ots",
+  "ts.verify_submit": "Verificar SHA-256",
+  "ts.ots_note": "OpenTimestamps (.ots) requiere un servidor externo. El hash SHA-256 se muestra para verificación manual.",
+
+  "page.about": "<h2>Acerca de RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> es una herramienta de autenticidad digital de código abierto que se ejecuta completamente en su navegador. Nunca se suben archivos a ningún servidor — todo procesamiento ocurre del lado del cliente.</p><p>Proporcionamos una suite completa de herramientas para forense digital y verificación de medios:</p><ul><li><strong>Marcado de Agua</strong> — 9 algoritmos incluyendo LSB, DCT, DWT, estilo neuronal y marcado de agua forense</li><li><strong>Huella Digital</strong> — Hash criptográfico (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) y hash de imagen perceptual</li><li><strong>Metadatos</strong> — Leer EXIF, dimensiones, formato y modo de color de imágenes</li><li><strong>Marcado de Tiempo</strong> — Hash SHA-256 con soporte de verificación OpenTimestamps</li></ul><p>Construido con la privacidad como principio fundamental. Sus archivos nunca dejan su dispositivo.</p>",
+
+  "page.privacy": "<h2>Política de Privacidad</h2><p><strong>Sus datos permanecen en su dispositivo.</strong> RedoSan Authenticity es una aplicación 100% del lado del cliente. Todo procesamiento se realiza en su navegador usando JavaScript. No se transmiten archivos, metadatos o cualquier otro dato a ningún servidor.</p><h3>Qué recopilamos</h3><p>Nada. No recopilamos, almacenamos o transmitimos datos personales, archivos o análisis. La aplicación se ejecuta completamente en GitHub Pages y no hay servidor backend involucrado.</p><h3>Bibliotecas de terceros</h3><p>Cargamos bibliotecas JavaScript desde CDNs (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> y <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) para funcionalidad de exportación PDF y DOCX. Estos CDNs pueden tener su propio registro y análisis. No se comparten datos de sus archivos con estos servicios.</p><h3>Cambios</h3><p>Esta política puede actualizarse ocasionalmente. El uso continuado de la herramienta constituye la aceptación de la política actual.</p>",
+
+  "page.contact": "<h2>Contáctenos</h2><p>¿Tiene preguntas, sugerencias o encontró un error? Nos encantaría saber de usted.</p>",
+
+  "page.social": "<h2>Síganos</h2><p>Manténgase conectado y siga a RedoSan en redes sociales.</p>",
+
+  "contact.github_issues": "Issues de GitHub",
+  "contact.github_issues_desc": "Reportar bugs & solicitar características",
+  "contact.github_profile": "Perfil de GitHub",
+  "contact.github_profile_desc": "Seguir al desarrollador en GitHub",
+
+  "social.github": "GitHub",
+  "social.github_handle": "@Redo-San",
+  "social.repo": "Repositorio",
+  "social.repo_handle": "RedoSan-Authenticity",
+
+  "footer.copyright": "100% basado en navegador • Nada sale de su dispositivo",
+
+  "dl.title": "Descargar Huella Digital",
+  "dl.subtitle": "Elija un formato:",
+
+  "lang.switch": "English"
+}

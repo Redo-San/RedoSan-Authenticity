@@ -1,0 +1,83 @@
+{
+  "nav.about": "À propos",
+  "nav.privacy": "Confidentialité",
+  "nav.contact": "Contact",
+  "nav.social": "Social",
+
+  "sidebar.title": "Menu",
+  "sidebar.home": "Accueil",
+  "sidebar.watermark": "Filigrane",
+  "sidebar.fingerprint": "Empreinte",
+  "sidebar.metadata": "Métadonnées",
+  "sidebar.timestamp": "Horodatage",
+
+  "home.tagline": "Outil d'authenticité numérique en ligne — 100% basé sur navigateur. Rien n'est téléchargé sur aucun serveur.",
+  "card.watermark.title": "Filigrane",
+  "card.watermark.desc": "9 algorithmes : LSB, DCT, DWT et plus",
+  "card.fingerprint.title": "Empreinte",
+  "card.fingerprint.desc": "SHA-256 + hachages d'image perceptuels",
+  "card.metadata.title": "Métadonnées",
+  "card.metadata.desc": "EXIF, dimensions, informations de format",
+  "card.timestamp.title": "Horodatage",
+  "card.timestamp.desc": "Hachage SHA-256 + vérification de hachage OTS",
+
+  "wm.heading": "Filigrane Numérique",
+  "wm.embed_btn": "Intégrer",
+  "wm.extract_btn": "Extraire",
+  "wm.algo_label": "Algorithme",
+  "wm.image_label": "Image de couverture",
+  "wm.image_ex_label": "Image stégo",
+  "wm.password_label": "Mot de passe (optionnel)",
+  "wm.embed_submit": "Intégrer le Filigrane",
+  "wm.extract_submit": "Extraire le Filigrane",
+
+  "fp.heading": "Empreinte de Fichier",
+  "fp.file_label": "Fichier",
+  "fp.submit": "Générer l'Empreinte",
+  "fp.download_title": "Télécharger l'Empreinte",
+  "fp.choose_format": "Choisissez un format :",
+
+  "md.heading": "Lecteur de Métadonnées",
+  "md.file_label": "Fichier image",
+  "md.desc": "Lit EXIF, dimensions, format et mode couleur. Tout traitement en JavaScript pur.",
+  "md.submit": "Lire les Métadonnées",
+
+  "ts.heading": "Horodatage de Fichier",
+  "ts.hash_btn": "Hachage SHA-256",
+  "ts.ots_btn": "OpenTimestamps",
+  "ts.hash_desc": "Calculer le hachage SHA-256 du fichier",
+  "ts.ots_create_btn": "Créer .ots",
+  "ts.ots_verify_btn": "Vérifier .ots",
+  "ts.file_label": "Fichier à hacher",
+  "ts.submit_hash": "Calculer SHA-256",
+  "ts.ots_file_label": "Fichier à horodater",
+  "ts.verify_file_label": "Fichier original",
+  "ts.ots_proof_label": "Fichier de preuve .ots",
+  "ts.verify_submit": "Vérifier SHA-256",
+  "ts.ots_note": "OpenTimestamps (.ots) nécessite un serveur externe. Le hachage SHA-256 est affiché pour vérification manuelle.",
+
+  "page.about": "<h2>À propos de RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> est un outil d'authenticité numérique open-source qui fonctionne entièrement dans votre navigateur. Aucun fichier n'est jamais téléchargé sur aucun serveur — tout traitement se produit côté client.</p><p>Nous fournissons une suite complète d'outils pour la forensique numérique et la vérification des médias :</p><ul><li><strong>Filigranage</strong> — 9 algorithmes incluant LSB, DCT, DWT, style neuronal et filigrane forensique</li><li><strong>Empreinte</strong> — Hachage cryptographique (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) et hachage d'image perceptuel</li><li><strong>Métadonnées</strong> — Lire EXIF, dimensions, format et mode couleur des images</li><li><strong>Horodatage</strong> — Hachage SHA-256 avec support de vérification OpenTimestamps</li></ul><p>Construit avec la confidentialité comme principe fondamental. Vos fichiers ne quittent jamais votre appareil.</p>",
+
+  "page.privacy": "<h2>Politique de Confidentialité</h2><p><strong>Vos données restent sur votre appareil.</strong> RedoSan Authenticity est une application 100% côté client. Tout traitement est effectué dans votre navigateur en utilisant JavaScript. Aucun fichier, métadonnée ou autre donnée n'est transmis à aucun serveur.</p><h3>Ce que nous collectons</h3><p>Rien. Nous ne collectons, stockons ou transmettons aucune donnée personnelle, fichier ou analytique. L'application fonctionne entièrement sur GitHub Pages et aucun serveur backend n'est impliqué.</p><h3>Bibliothèques tierces</h3><p>Nous chargeons des bibliothèques JavaScript depuis des CDN (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> et <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) pour les fonctionnalités d'exportation PDF et DOCX. Ces CDN peuvent avoir leurs propres logs et analytiques. Aucune donnée de vos fichiers n'est partagée avec ces services.</p><h3>Changements</h3><p>Cette politique peut être mise à jour occasionnellement. L'utilisation continue de l'outil constitue l'acceptation de la politique actuelle.</p>",
+
+  "page.contact": "<h2>Nous Contacter</h2><p>Des questions, suggestions ou trouvé un bug ? Nous aimerions avoir de vos nouvelles.</p>",
+
+  "page.social": "<h2>Suivez-nous</h2><p>Restez connecté et suivez RedoSan sur les réseaux sociaux.</p>",
+
+  "contact.github_issues": "Issues GitHub",
+  "contact.github_issues_desc": "Signaler des bugs & demander des fonctionnalités",
+  "contact.github_profile": "Profil GitHub",
+  "contact.github_profile_desc": "Suivre le développeur sur GitHub",
+
+  "social.github": "GitHub",
+  "social.github_handle": "@Redo-San",
+  "social.repo": "Dépôt",
+  "social.repo_handle": "RedoSan-Authenticity",
+
+  "footer.copyright": "100% basé sur navigateur • Rien ne quitte votre appareil",
+
+  "dl.title": "Télécharger l'Empreinte",
+  "dl.subtitle": "Choisissez un format :",
+
+  "lang.switch": "English"
+}
