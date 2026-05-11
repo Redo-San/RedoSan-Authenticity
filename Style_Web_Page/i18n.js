@@ -230,10 +230,31 @@ const originalConsoleWarn = console.warn;
 const originalConsoleLog = console.log;
 
 function shouldFilterError(message) {
+  if (!message) return false;
   const msg = message.toString().toLowerCase();
-  return msg.includes('runtime.lasterror') && 
-         msg.includes('could not establish connection') &&
-         msg.includes('receiving end does not exist');
+  
+  // Filter all Chrome extension runtime errors
+  return (
+    // Connection errors
+    (msg.includes('runtime.lasterror') && msg.includes('could not establish connection')) ||
+    (msg.includes('runtime.lasterror') && msg.includes('receiving end does not exist')) ||
+    
+    // Message passing errors
+    (msg.includes('runtime.lasterror') && msg.includes('message')) ||
+    (msg.includes('runtime.lasterror') && msg.includes('tabs.sendmessage')) ||
+    
+    // Extension communication errors
+    (msg.includes('runtime.lasterror') && msg.includes('the message port closed')) ||
+    (msg.includes('runtime.lasterror') && msg.includes('extension context invalidated')) ||
+    
+    // General extension errors
+    (msg.includes('runtime.lasterror') && msg.includes('access denied')) ||
+    (msg.includes('runtime.lasterror') && msg.includes('not available')) ||
+    
+    // Promise rejection errors from extensions
+    (msg.includes('could not establish connection') && msg.includes('receiving end does not exist')) ||
+    (msg.includes('uncaught (in promise)') && msg.includes('could not establish connection'))
+  );
 }
 
 console.error = function(...args) {
@@ -274,6 +295,13 @@ window.addEventListener('unhandledrejection', function(event) {
 // Also handle regular uncaught errors
 window.addEventListener('error', function(event) {
   if (event.message && shouldFilterError(event.message)) {
+    event.preventDefault(); // Prevent the error from showing in console
+  }
+});
+
+// Also handle console exceptions
+window.addEventListener('error', function(event) {
+  if (event.error && event.error.message && shouldFilterError(event.error.message)) {
     event.preventDefault(); // Prevent the error from showing in console
   }
 });
