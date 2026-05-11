@@ -4,9 +4,18 @@ function toggleSidebar() {
   document.getElementById('sidebarOverlay').classList.toggle('open');
 }
 
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
 // ── Page navigation ──
-document.querySelectorAll('.sidebar a[data-page], .footer-links a[data-page]').forEach(a => {
-  a.addEventListener('click', e => { e.preventDefault(); showPage(a.dataset.page); });
+document.querySelectorAll('.nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    showPage(a.dataset.page);
+    if (a.closest('.sidebar')) closeSidebar();
+  });
 });
 document.querySelectorAll('.card[data-page]').forEach(c => {
   c.addEventListener('click', e => { e.preventDefault(); showPage(c.dataset.page); });
