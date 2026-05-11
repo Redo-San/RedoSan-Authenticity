@@ -408,19 +408,70 @@ function ripemd160(data) {
     return Array.from(r).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
 
-// ── BLAKE3 (fallback to SHA-256) ──
-async function blake3(data) {
-    try {
-        var mod = await import('https://cdn.jsdelivr.net/npm/blake3@2.1.7/esm/browser/index.js');
-        var result = mod.hash(data);
-        return Array.from(new Uint8Array(result)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-    } catch(e) {
-        console.warn('BLAKE3 import failed, using fallback:', e);
+// ── BLAKE3 (pure JS implementation) ──
+var B3_IV = [0x6A09E667,0xBB67AE85,0x3C6EF372,0xA54FF53A,0x510E527F,0x9B05688C,0x1F83D9AB,0x5BE0CD19];
+var B3_SIGMA = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,14,10,4,8,9,15,13,6,1,12,0,2,11,7,5,3,11,8,12,0,5,2,15,13,10,14,3,6,7,1,9,4,7,9,3,1,13,12,11,14,2,6,5,10,4,0,15,8,9,0,5,7,2,4,10,15,14,1,11,12,6,8,3,13,2,12,6,10,0,11,8,3,4,13,7,5,15,14,1,9,12,5,1,15,14,13,4,10,0,7,6,3,9,2,8,11];
+function b3_rot32(x,n){return (x>>>n)|(x<<(32-n));}
+function b3_ld32(b,o){return b[o]|(b[o+1]<<8)|(b[o+2]<<16)|(b[o+3]<<24);}
+function b3_st32(a,o,v){a[o]=v&255;a[o+1]=(v>>>8)&255;a[o+2]=(v>>>16)&255;a[o+3]=(v>>>24)&255;}
+function b3_compress(s,blk,off,cl,ch,bl,fl){
+  var v=new Uint32Array(16),i,r,si;
+  for(i=0;i<8;i++)v[i]=s[i];
+  v[8]=B3_IV[0];v[9]=B3_IV[1];v[10]=B3_IV[2];v[11]=B3_IV[3];
+  v[12]=B3_IV[4]^cl;v[13]=B3_IV[5]^ch;v[14]=B3_IV[6]^bl;v[15]=B3_IV[7]^fl;
+  var m=[];
+  for(i=0;i<16;i++)m.push(b3_ld32(blk,off+i*4));
+  function G(a,b,c,d,x,y){
+    v[a]=(v[a]+v[b]+x)>>>0;v[d]=b3_rot32(v[d]^v[a],16);
+    v[c]=(v[c]+v[d])>>>0;v[b]=b3_rot32(v[b]^v[c],12);
+    v[a]=(v[a]+v[b]+y)>>>0;v[d]=b3_rot32(v[d]^v[a],8);
+    v[c]=(v[c]+v[d])>>>0;v[b]=b3_rot32(v[b]^v[c],7);
+  }
+  for(r=0;r<7;r++){
+    si=r*16;
+    G(0,4,8,12,m[B3_SIGMA[si]],m[B3_SIGMA[si+1]]);G(1,5,9,13,m[B3_SIGMA[si+2]],m[B3_SIGMA[si+3]]);
+    G(2,6,10,14,m[B3_SIGMA[si+4]],m[B3_SIGMA[si+5]]);G(3,7,11,15,m[B3_SIGMA[si+6]],m[B3_SIGMA[si+7]]);
+    G(0,5,10,15,m[B3_SIGMA[si+8]],m[B3_SIGMA[si+9]]);G(1,6,11,12,m[B3_SIGMA[si+10]],m[B3_SIGMA[si+11]]);
+    G(2,7,8,13,m[B3_SIGMA[si+12]],m[B3_SIGMA[si+13]]);G(3,4,9,14,m[B3_SIGMA[si+14]],m[B3_SIGMA[si+15]]);
+  }
+  for(i=0;i<8;i++)s[i]=(s[i]^v[i]^v[i+8])>>>0;
+}
+async function blake3(data){
+  var BL=64,CH=1024,OL=32;
+  if(data.length===0){
+    var cv0=B3_IV.slice(),b0=new Uint8Array(BL);
+    b3_compress(cv0,b0,0,0,0,0,1|2|8);
+    var out0=new Uint8Array(OL);
+    for(var i=0;i<OL/4;i++)b3_st32(out0,i*4,cv0[i]);
+    return Array.from(out0).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+  var nc=Math.ceil(data.length/CH),cvs=[];
+  for(var c=0;c<nc;c++){
+    var cs=c*CH,ce=Math.min(cs+CH,data.length),nb=Math.ceil((ce-cs)/BL);
+    var cv=B3_IV.slice();
+    for(var b=0;b<nb;b++){
+      var bs=cs+b*BL,be=Math.min(bs+BL,data.length),bw=be-bs;
+      var blk=new Uint8Array(BL);blk.set(data.subarray(bs,be));
+      var fl=0;if(b===0)fl|=1;if(b===nb-1)fl|=2;
+      b3_compress(cv,blk,0,bs>>>0,Math.floor(bs/4294967296)>>>0,bw,fl);
     }
-    try {
-        var h = await crypto.subtle.digest('SHA-256', data);
-        return 'BLAKE3_UNAVAILABLE_' + Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('').substring(0,32);
-    } catch(e2) { return 'BLAKE3_ERROR'; }
+    cvs.push(cv.slice());
+  }
+  while(cvs.length>1){
+    var nxt=[];
+    for(var i=0;i<cvs.length;i+=2){
+      if(i+1>=cvs.length){nxt.push(cvs[i]);continue;}
+      var l=cvs[i],rgt=cvs[i+1],pb=new Uint8Array(BL);
+      for(var j=0;j<8;j++){b3_st32(pb,j*4,l[j]);b3_st32(pb,32+j*4,rgt[j]);}
+      var pc=B3_IV.slice(),isLast=nxt.length===0&&cvs.length<=2;
+      b3_compress(pc,pb,0,0,0,BL,4|(isLast?8:0));
+      nxt.push(pc);
+    }
+    cvs=nxt;
+  }
+  var root=cvs[0],out=new Uint8Array(OL);
+  for(var i=0;i<OL/4;i++)b3_st32(out,i*4,root[i]);
+  return Array.from(out).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
 
 // ── Whirlpool (fallback to SHA-512) ──
