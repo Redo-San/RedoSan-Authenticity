@@ -21,7 +21,8 @@ nav {
   background: var(--card); border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 100; flex-wrap: wrap;
 }
-nav .logo { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-right: 8px; }
+nav .logo { margin-right: 8px; }
+.logo-img { height: 32px; width: auto; display: block; }
 nav a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: .2s; }
 nav a:hover, nav a.active { color: var(--text); background: var(--card-hover); }
 .container { max-width: 720px; margin: 0 auto; padding: 32px 20px; }
