@@ -38,26 +38,14 @@ Please include the following details:
 
 ### For Users
 
-- Always download the latest release from the official GitHub repository
-- Verify checksums if available
-- Do not run the tool on untrusted or sensitive systems without proper isolation
-- The online launcher downloads and executes code from GitHub — review the launcher script before running
+- Always use the latest version by visiting the official GitHub Pages site
+- Verify you are on the correct URL: `https://redo-san.github.io/RedoSan-Authenticity/`
+- No files are uploaded — all processing is client-side JavaScript
+- Review the source code in the repository if you have concerns
 
 ### For Developers
 
 - Avoid hardcoding credentials or tokens in source code
 - Never commit sensitive files (.env, keys, certificates) to the repository
-- Use `except Exception:` instead of bare `except:` to avoid suppressing system signals
-- Close file handles and PIL Image objects properly
-- Validate user-supplied file paths before passing to subprocess calls
-
-## Known Security Considerations
-
-This project is in **beta** and has known security-related issues being tracked:
-
-- Private keys are stored unencrypted on disk ([#11](https://github.com/Redo-San/RedoSan-Authenticity/issues/11))
-- Password-based key derivation uses unsalted SHA256 ([#12](https://github.com/Redo-San/RedoSan-Authenticity/issues/12))
-- User-controlled paths passed to subprocess calls ([#13](https://github.com/Redo-San/RedoSan-Authenticity/issues/13))
-- Online launcher lacks integrity verification ([#14](https://github.com/Redo-San/RedoSan-Authenticity/issues/14))
-
-These are actively being addressed and will be resolved in future releases.
+- Validate user-supplied files before processing
+- Keep JavaScript dependencies up to date
