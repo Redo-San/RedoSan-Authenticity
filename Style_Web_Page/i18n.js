@@ -226,6 +226,8 @@ document.addEventListener('click', function(e) {
 
 // Filter out common browser extension errors
 const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
 console.error = function(...args) {
   const message = args.join(' ');
   // Filter out common runtime errors from browser extensions
@@ -235,6 +237,25 @@ console.error = function(...args) {
   }
   return originalConsoleError.apply(console, args);
 };
+
+console.warn = function(...args) {
+  const message = args.join(' ');
+  // Filter out common runtime errors from browser extensions
+  if (message.includes('runtime.lastError') && 
+      message.includes('Could not establish connection')) {
+    return; // Silently ignore these errors
+  }
+  return originalConsoleWarn.apply(console, args);
+};
+
+// Handle uncaught promise rejections from browser extensions
+window.addEventListener('unhandledrejection', function(event) {
+  if (event.reason && event.reason.message && 
+      event.reason.message.includes('runtime.lastError') &&
+      event.reason.message.includes('Could not establish connection')) {
+    event.preventDefault(); // Prevent the error from showing in console
+  }
+});
 
 // Initialize language system
 document.addEventListener('DOMContentLoaded', async function() { 
