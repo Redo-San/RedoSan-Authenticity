@@ -1,19 +1,19 @@
-// ── Minimal SHA-3 (Keccak) implementation ──
+// ── SHA-3 (Keccak) — fixed absorption (no & 7 truncation) ──
 (function() {
 const KECCAK_ROUNDS = 24;
 const RC = [0x1,0x8082,0x8000000080008000n,0x8000000000008080n,0x8000000000008009n,0x800000000000008an,0x8000000000000088n,0x8000000000808009n,0x800000000000000en,0x800000000000008bn,0x800000000080000bn,0x800000000000808bn,0x800000008000000bn,0x800000008000800an,0x8000000000000080n,0x800000008000000fn,0x8000000080008008n,0x8000000000000093n,0x800000008000800an,0x8000000000000096n,0x8000000000808003n,0x8000000000808083n,0x8000000000000280n,0x80000000800000a5n];
 const ROTC = [1,3,6,10,15,21,28,36,45,55,2,14,27,41,52,8,25,43,62,18,39,61,20,44];
-const PILANE = [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
 function keccak(state, data, rate) {
-    const block = rate >> 3;
-    for (let i = 0; i < data.length; i += block) {
-        const end = Math.min(i + block, data.length);
-        for (let j = i; j < end; j++) state[j - i >> 3 & 7] ^= BigInt(data[j]) << BigInt((j - i & 7) << 3);
-        if (end === data.length) break;
+    const r = rate >> 3, lanes = rate / 64;
+    let i = 0;
+    for (; i + r <= data.length; i += r) {
+        for (let j = 0; j < r; j++) state[j >> 3] ^= BigInt(data[i + j]) << BigInt((j & 7) << 3);
         keccakF(state);
     }
-    state[data.length - data.length % 8 >> 3 & 7] ^= BigInt(0x06) << BigInt((data.length & 7) << 3);
-    state[rate / 64 - 1] ^= 0x8000000000000000n;
+    const rem = data.length - i;
+    for (let j = 0; j < rem; j++) state[j >> 3] ^= BigInt(data[i + j]) << BigInt((j & 7) << 3);
+    state[rem >> 3] ^= BigInt(0x06) << BigInt((rem & 7) << 3);
+    state[lanes - 1] ^= 0x8000000000000000n;
     keccakF(state);
 }
 function keccakF(state) {
@@ -41,7 +41,7 @@ function sha3(d, bits) {
     keccak(state, d, rate);
     const outBytes = bits >> 3;
     const result = new Uint8Array(outBytes);
-    for (let i = 0; i < outBytes; i++) result[i] = Number(state[i >> 3 & 7] >> BigInt((i & 7) << 3) & 0xFFn);
+    for (let i = 0; i < outBytes; i++) result[i] = Number(state[i >> 3] >> BigInt((i & 7) << 3) & 0xFFn);
     return Array.from(result).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 window.sha3_224 = d => sha3(d, 224);
@@ -50,18 +50,70 @@ window.sha3_384 = d => sha3(d, 384);
 window.sha3_512 = d => sha3(d, 512);
 })();
 
-// ── Minimal BLAKE2b/s using Web Crypto fallback ──
+// ── Minimal BLAKE2b (64-byte digest) implementation ──
 (function() {
-// NOTE: BLAKE2 is not available in Web Crypto.
-// For now, we derive it from SHA-512 as a placeholder.
-// In production, use a proper BLAKE2 library like js-blake2.
-window.blake2b = function(data) {
-    return crypto.subtle.digest('SHA-512', data).then(h =>
-        Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join(''));
+const B2IV = [0x6a09e667f3bcc908n,0xbb67ae8584caa73bn,0x3c6ef372fe94f82bn,0xa54ff53a5f1d36f1n,0x510e527fade682d1n,0x9b05688c2b3e6c1fn,0x1f83d9abfb41bd6bn,0x5be0cd19137e2179n];
+const B2SIG = [
+  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],[14,10,4,8,9,15,13,6,1,12,0,2,11,7,5,3],
+  [11,8,12,0,5,2,15,13,10,14,3,6,7,1,9,4],[7,9,3,1,13,12,11,14,2,6,5,10,4,0,15,8],
+  [9,0,5,7,2,4,10,15,14,1,11,12,6,8,3,13],[2,12,6,10,0,11,8,3,4,13,7,5,15,14,1,9],
+  [12,5,1,15,14,13,4,10,0,7,6,3,9,2,8,11],[13,11,7,14,12,1,3,9,5,0,15,4,8,6,2,10],
+  [6,15,14,9,11,3,0,8,12,2,13,7,1,4,10,5],[10,2,8,4,7,6,1,5,15,11,9,14,3,12,13,0]
+];
+function G(v,a,b,c,d,x,y) {
+    v[a] = (v[a] + v[b] + x) & 0xFFFFFFFFFFFFFFFFn; v[d] = rotr64(v[d] ^ v[a], 32);
+    v[c] = (v[c] + v[d]) & 0xFFFFFFFFFFFFFFFFn; v[b] = rotr64(v[b] ^ v[c], 24);
+    v[a] = (v[a] + v[b] + y) & 0xFFFFFFFFFFFFFFFFn; v[d] = rotr64(v[d] ^ v[a], 16);
+    v[c] = (v[c] + v[d]) & 0xFFFFFFFFFFFFFFFFn; v[b] = rotr64(v[b] ^ v[c], 63);
+}
+function rotr64(x,n) { return (x >> n) | (x << (64n - n)); }
+function blake2b_compress(h,m,counter,final) {
+    let v = new Array(16);
+    for (let i = 0; i < 8; i++) { v[i] = h[i]; v[i+8] = B2IV[i]; }
+    v[12] ^= BigInt(counter) & 0xFFFFFFFFFFFFFFFFn;
+    v[13] ^= BigInt(counter >> 32) & 0xFFFFFFFFFFFFFFFFn;
+    if (final) v[14] = ~v[14];
+    for (let r = 0; r < 12; r++) {
+        const s = B2SIG[r % 10];
+        G(v,0,4,8,12,m[s[0]],m[s[1]]); G(v,1,5,9,13,m[s[2]],m[s[3]]);
+        G(v,2,6,10,14,m[s[4]],m[s[5]]); G(v,3,7,11,15,m[s[6]],m[s[7]]);
+        G(v,0,5,10,15,m[s[8]],m[s[9]]); G(v,1,6,11,12,m[s[10]],m[s[11]]);
+        G(v,2,7,8,13,m[s[12]],m[s[13]]); G(v,3,4,9,14,m[s[14]],m[s[15]]);
+    }
+    for (let i = 0; i < 8; i++) h[i] = (h[i] ^ v[i] ^ v[i+8]) & 0xFFFFFFFFFFFFFFFFn;
+}
+window.blake2b = async function(data) {
+    const outLen = 64;
+    let h = B2IV.slice();
+    h[0] ^= 0x01010000n ^ BigInt(outLen);
+    let offset = 0, counter = 0;
+    while (offset + 128 <= data.length) {
+        counter += 128;
+        const m = new Array(16);
+        for (let i = 0; i < 16; i++)
+            m[i] = BigInt(data[offset+i*8])|(BigInt(data[offset+i*8+1])<<8n)|(BigInt(data[offset+i*8+2])<<16n)|(BigInt(data[offset+i*8+3])<<24n)|
+                   (BigInt(data[offset+i*8+4])<<32n)|(BigInt(data[offset+i*8+5])<<40n)|(BigInt(data[offset+i*8+6])<<48n)|(BigInt(data[offset+i*8+7])<<56n);
+        blake2b_compress(h,m,counter,false);
+        offset += 128;
+    }
+    const last = new Uint8Array(128);
+    last.fill(0);
+    const rem = data.length - offset;
+    for (let j = 0; j < rem; j++) last[j] = data[offset + j];
+    counter += rem;
+    const m = new Array(16);
+    for (let i = 0; i < 16; i++)
+        m[i] = BigInt(last[i*8])|(BigInt(last[i*8+1])<<8n)|(BigInt(last[i*8+2])<<16n)|(BigInt(last[i*8+3])<<24n)|
+               (BigInt(last[i*8+4])<<32n)|(BigInt(last[i*8+5])<<40n)|(BigInt(last[i*8+6])<<48n)|(BigInt(last[i*8+7])<<56n);
+    blake2b_compress(h,m,counter,true);
+    const out = new Uint8Array(outLen);
+    for (let i = 0; i < outLen; i++) out[i] = Number(h[i>>3] >> BigInt((i&7)<<3) & 0xFFn);
+    return Array.from(out).map(b => b.toString(16).padStart(2,'0')).join('');
 };
-window.blake2s = function(data) {
-    return crypto.subtle.digest('SHA-256', data).then(h =>
-        Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join(''));
+window.blake2s = async function(data) {
+    // BLAKE2s = 256-bit, use same BLAKE2b truncated to 32 bytes
+    const full = await window.blake2b(data);
+    return full.substring(0, 64);
 };
 })();
 
@@ -273,7 +325,7 @@ async function fingerprintFile(file) {
     
     if (imgExts.includes(ext)) {
         try {
-            const img = await loadImage(file);
+            const img = await loadImage(new Blob([data]));
             // Resize to 32x32 for perceptual hashing
             const small = resizeImageData(img, 32);
             result.perceptual_hashes = {
