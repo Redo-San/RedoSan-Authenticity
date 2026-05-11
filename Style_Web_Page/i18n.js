@@ -224,6 +224,18 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// Filter out common browser extension errors
+const originalConsoleError = console.error;
+console.error = function(...args) {
+  const message = args.join(' ');
+  // Filter out common runtime errors from browser extensions
+  if (message.includes('runtime.lastError') && 
+      message.includes('Could not establish connection')) {
+    return; // Silently ignore these errors
+  }
+  return originalConsoleError.apply(console, args);
+};
+
 // Initialize language system
 document.addEventListener('DOMContentLoaded', async function() { 
   console.log('DOM loaded, initializing language system...');
