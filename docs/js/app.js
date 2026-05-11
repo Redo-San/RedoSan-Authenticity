@@ -243,10 +243,11 @@ async function handleFingerprint() {
     html += '</table>';
 
     const familyOrder = [
-      { label: 'SHA-2', keys: ['SHA-1','SHA-256','SHA-384','SHA-512'] },
+      { label: 'SHA-2', keys: ['SHA-1','SHA-224','SHA-256','SHA-384','SHA-512'] },
       { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
-      { label: 'MD', keys: ['MD5'] },
-      { label: 'BLAKE2', keys: ['BLAKE2b','BLAKE2s'] },
+      { label: 'MD', keys: ['MD2','MD4','MD5'] },
+      { label: 'BLAKE', keys: ['BLAKE2b','BLAKE2s','BLAKE3'] },
+      { label: 'Other', keys: ['RIPEMD-160','Whirlpool'] },
     ];
     for (const family of familyOrder) {
       const hasAny = family.keys.some(k => result.hashes[k]);

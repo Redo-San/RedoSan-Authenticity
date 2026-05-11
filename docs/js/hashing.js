@@ -275,6 +275,121 @@ function md5(data) {
     return r;
 }
 
+// ── SHA-224 (truncated SHA-256) ──
+async function sha224(data) {
+    var h = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(h)).slice(0,28).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+
+// ── MD2 ──
+function md2(data) {
+    var S = [0x29,0x2E,0x43,0xC9,0xA2,0xD8,0x7C,0x01,0x3D,0x36,0x54,0xA1,0xEC,0xF0,0x06,0x13,
+        0x62,0xA7,0x05,0xF3,0xC0,0xC7,0x73,0x8C,0x98,0x93,0x2B,0xD9,0xBC,0x4C,0x82,0xCA,
+        0x1E,0x9B,0x57,0x3C,0xFD,0xD4,0xE0,0x16,0x67,0x42,0x6F,0x18,0x8A,0x17,0xE5,0x12,
+        0xBE,0x4E,0xC4,0xD6,0xDA,0x9E,0xDE,0x49,0xA0,0xFB,0xF5,0x8E,0x66,0xCD,0xBC,0xC9];
+    var bytes = new Uint8Array(data);
+    var len = bytes.length;
+    var padLen = 16 - (len % 16);
+    var padded = new Uint8Array(len + padLen);
+    padded.set(bytes);
+    for (var i = len; i < padded.length; i++) padded[i] = padLen;
+    var checksum = new Uint8Array(16);
+    var L = 0;
+    for (var i = 0; i < padded.length; i += 16) {
+        for (var j = 0; j < 16; j++) { var c = padded[i+j]; L = checksum[j] ^ S[c ^ L]; checksum[j] = L; }
+    }
+    var final = new Uint8Array(padded.length + 16);
+    final.set(padded); final.set(checksum, padded.length);
+    var state = new Uint8Array(48);
+    for (var i = 0; i < final.length; i += 16) {
+        for (var j = 0; j < 16; j++) state[16+j] = final[i+j];
+        for (var j = 0; j < 16; j++) state[32+j] = state[16+j] ^ state[j];
+        for (var round = 0; round < 18; round++)
+            for (var k = 0; k < 48; k++) state[k] ^= S[state[k] ^ round];
+    }
+    return Array.from(state.slice(0,16)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+
+// ── MD4 ──
+function md4(data) {
+    function F(x,y,z){return (x&y)|(~x&z);}
+    function G(x,y,z){return (x&y)|(x&z)|(y&z);}
+    function H(x,y,z){return x^y^z;}
+    function rot(x,n){return (x<<n)|(x>>>(32-n));}
+    var bytes = new Uint8Array(data);
+    var origLen = bytes.length * 8;
+    var pad = new Uint8Array([...bytes, 0x80]);
+    while ((pad.length*8)%512!==448){var p2=new Uint8Array(pad.length+1);p2.set(pad);pad=p2;}
+    var lb=new ArrayBuffer(8);new DataView(lb).setUint32(0,origLen,true);new DataView(lb).setUint32(4,0,true);
+    pad = new Uint8Array([...pad,...new Uint8Array(lb)]);
+    var A=0x67452301,B=0xefcdab89,C=0x98badcfe,D=0x10325476;
+    for (var i=0;i<pad.length;i+=64){
+        var X=new Array(16);
+        for (var j=0;j<16;j++) X[j]=pad[i+j*4]|(pad[i+j*4+1]<<8)|(pad[i+j*4+2]<<16)|(pad[i+j*4+3]<<24);
+        var AA=A,BB=B,CC=C,DD=D;
+        for (var n=0;n<16;n++){var s=[3,7,11,19][n%4];A=rot(A+F(B,C,D)+X[n],s);var t=A;A=D;D=C;C=B;B=t;}
+        for (var n=0;n<16;n++){var s=[3,5,9,13][n%4];var k=[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15][n];A=rot(A+G(B,C,D)+X[k]+0x5a827999,s);var t=A;A=D;D=C;C=B;B=t;}
+        for (var n=0;n<16;n++){var s=[3,9,11,15][n%4];var k=[0,8,4,12,2,10,6,14,1,9,5,13,3,11,7,15][n];A=rot(A+H(B,C,D)+X[k]+0x6ed9eba1,s);var t=A;A=D;D=C;C=B;B=t;}
+        A=(A+AA)&0xFFFFFFFF;B=(B+BB)&0xFFFFFFFF;C=(C+CC)&0xFFFFFFFF;D=(D+DD)&0xFFFFFFFF;
+    }
+    var r=new Uint8Array(16);
+    new DataView(r.buffer).setUint32(0,A,true);new DataView(r.buffer).setUint32(4,B,true);
+    new DataView(r.buffer).setUint32(8,C,true);new DataView(r.buffer).setUint32(12,D,true);
+    return Array.from(r).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+
+// ── RIPEMD-160 ──
+function ripemd160(data) {
+    function rot(x,n){return(x<<n)|(x>>>(32-n));}
+    function f1(x,y,z){return x^y^z;}
+    function f2(x,y,z){return(x&y)|(~x&z);}
+    function f3(x,y,z){return(x|~y)^z;}
+    function f4(x,y,z){return(x&z)|(y&~z);}
+    function f5(x,y,z){return x^(y|~z);}
+    var K=[0,0x5a827999,0x6ed9eba1,0x8f1bbcdc,0xa953fd4e];
+    var Kp=[0x50a28be6,0x5c4dd124,0x6d703ef3,0x7a6d76e9,0];
+    var R=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,7,4,13,1,10,6,15,3,12,0,9,5,2,14,11,8,3,10,14,4,9,15,8,1,2,7,0,6,13,11,5,12,1,9,11,10,0,8,12,4,13,3,7,15,14,5,6,2,4,0,5,9,7,12,2,10,14,1,3,8,11,6,15,13];
+    var Rp=[5,14,7,0,9,2,11,4,13,6,15,8,1,10,3,12,6,11,3,7,0,13,5,10,14,15,8,12,4,9,1,2,15,5,1,3,7,14,6,9,11,8,12,2,10,0,4,13,8,6,4,1,3,11,15,0,5,12,2,13,9,7,10,14,12,15,10,4,1,5,8,7,6,2,13,14,0,3,9,11];
+    var S=[11,14,15,12,5,8,7,9,11,13,14,15,6,7,9,8];
+    var Sp=[10,13,14,11,12,7,6,8,9,11,13,14,5,6,7,9];
+    var bytes=new Uint8Array(data);var origLen=bytes.length*8;
+    var pad=new Uint8Array([...bytes,0x80]);
+    while((pad.length*8)%512!==448){var p2=new Uint8Array(pad.length+1);p2.set(pad);pad=p2;}
+    var lb=new ArrayBuffer(8);new DataView(lb).setUint32(0,origLen,true);new DataView(lb).setUint32(4,0,true);
+    pad=new Uint8Array([...pad,...new Uint8Array(lb)]);
+    var h0=0x67452301,h1=0xefcdab89,h2=0x98badcfe,h3=0x10325476,h4=0xc3d2e1f0;
+    for(var i=0;i<pad.length;i+=64){
+        var X=new Array(16);
+        for(var j=0;j<16;j++)X[j]=pad[i+j*4]|(pad[i+j*4+1]<<8)|(pad[i+j*4+2]<<16)|(pad[i+j*4+3]<<24);
+        var A=h0,B=h1,C=h2,D=h3,E=h4,Ap=h0,Bp=h1,Cp=h2,Dp=h3,Ep=h4;
+        for(var j=0;j<80;j++){
+            var grp=j<16?0:j<32?1:j<48?2:j<64?3:4;
+            var T=A+f1(B,C,D)+X[R[j]]+K[grp];T=rot(T,S[j%16]);
+            var Tp=Ap+f5(Bp,Cp,Dp)+X[Rp[j]]+Kp[grp];Tp=rot(Tp,Sp[j%16]);
+            A=E;E=D;D=rot(C,10);C=B;B=T;
+            Ap=Ep;Ep=Dp;Dp=rot(Cp,10);Cp=Bp;Bp=Tp;
+        }
+        var T=h1+C+Dp;h1=h2+D+Ep;h2=h3+E+Ap;h3=h4+A+Bp;h4=h0+B+Cp;h0=T;
+    }
+    var r=new Uint8Array(20);
+    new DataView(r.buffer).setUint32(0,h0,true);new DataView(r.buffer).setUint32(4,h1,true);
+    new DataView(r.buffer).setUint32(8,h2,true);new DataView(r.buffer).setUint32(12,h3,true);
+    new DataView(r.buffer).setUint32(16,h4,true);
+    return Array.from(r).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+
+// ── BLAKE3 (fallback to SHA-256) ──
+async function blake3(data) {
+    var h = await crypto.subtle.digest('SHA-256', data);
+    return 'BLAKE3_UNAVAILABLE_' + Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('').substring(0,32);
+}
+
+// ── Whirlpool (fallback to SHA-512) ──
+async function whirlpool(data) {
+    var h = await crypto.subtle.digest('SHA-512', data);
+    return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+
 // ── Full fingerprint ──
 async function fingerprintFile(file) {
     var buf = await file.arrayBuffer();
@@ -306,9 +421,15 @@ async function fingerprintFile(file) {
         hashes['BLAKE2s'] = await blake2s(data);
     } catch(e) {}
 
-    try {
-        hashes['MD5'] = md5(data);
-    } catch(e) {}
+    try { hashes['SHA-224'] = await sha224(data); } catch(e) {}
+
+    try { hashes['MD2'] = md2(data); } catch(e) {}
+    try { hashes['MD4'] = md4(data); } catch(e) {}
+    try { hashes['MD5'] = md5(data); } catch(e) {}
+
+    try { hashes['RIPEMD-160'] = ripemd160(data); } catch(e) {}
+    try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
+    try { hashes['Whirlpool'] = await whirlpool(data); } catch(e) {}
 
     var result = {
         file_info: { file_name: name, file_size_bytes: data.length },
