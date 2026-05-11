@@ -78,7 +78,7 @@
           <label>Password (optional)</label>
           <input type="password" id="wm-password" placeholder="Leave blank">
         </div>
-        <button class="btn" onclick="watermarkEmbed()" id="wm-btn">Embed Watermark</button>
+        <button class="btn" onclick="handleWatermarkEmbed()" id="wm-btn">Embed Watermark</button>
       </div>
       <div id="wm-extract" style="display:none">
         <div class="form-group">
@@ -103,7 +103,7 @@
           <label>Password (optional)</label>
           <input type="password" id="wm-password-ex" placeholder="Leave blank">
         </div>
-        <button class="btn" onclick="watermarkExtract()" id="wm-btn-ex">Extract Watermark</button>
+        <button class="btn" onclick="handleWatermarkExtract()" id="wm-btn-ex">Extract Watermark</button>
       </div>
       <div class="spinner" id="wm-spinner"></div>
     </div>
@@ -121,7 +121,7 @@
         <label>File</label>
         <input type="file" id="fp-file">
       </div>
-      <button class="btn" onclick="fingerprintFile()" id="fp-btn">Generate Fingerprint</button>
+      <button class="btn" onclick="handleFingerprint()" id="fp-btn">Generate Fingerprint</button>
       <div class="spinner" id="fp-spinner"></div>
     </div>
     <div id="fp-result" style="display:none;margin-top:16px">
@@ -141,7 +141,7 @@
       <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px">
         Reads EXIF, dimensions, format, and color mode. All processing in pure JavaScript.
       </p>
-      <button class="btn" onclick="readMetadata()" id="md-btn">Read Metadata</button>
+      <button class="btn" onclick="handleReadMetadata()" id="md-btn">Read Metadata</button>
       <div class="spinner" id="md-spinner"></div>
     </div>
     <div id="md-result" style="display:none;margin-top:16px">
