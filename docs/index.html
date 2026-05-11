@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RedoSan Authenticity</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
 </head>
 <body>
 <nav>
@@ -141,7 +143,7 @@
         <button class="dl-option" onclick="downloadFingerprint('csv')"><span class="dl-icon">&#35;</span> CSV</button>
         <button class="dl-option" onclick="downloadFingerprint('txt')"><span class="dl-icon">&#8471;</span> TXT</button>
         <button class="dl-option" onclick="downloadFingerprint('xml')"><span class="dl-icon">&lt;/&gt;</span> XML</button>
-        <button class="dl-option" onclick="downloadFingerprint('html')"><span class="dl-icon">&#128196;</span> PDF</button>
+        <button class="dl-option" onclick="downloadFingerprint('pdf')"><span class="dl-icon">&#128196;</span> PDF</button>
         <button class="dl-option" onclick="downloadFingerprint('doc')"><span class="dl-icon">&#128209;</span> DOCX</button>
       </div>
     </div>
