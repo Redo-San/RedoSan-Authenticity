@@ -17,7 +17,14 @@ function keccakF(state) {
             state[idx] = state[idx] << BigInt(SHA3_ROTC[x]) | state[idx] >> BigInt(64 - SHA3_ROTC[x]);
         }
         for (var x = 0; x < 25; x++) { var t2 = state[x]; state[x] = t; t = t2; }
-        for (var x = 0; x < 25; x++) state[x] ^= (~state[(x+1)%5+((x+1)/5|0)*5] & state[(x+2)%5+((x+2)/5|0)*5]);
+        for (var x = 0; x < 25; x += 5) {
+            var t0 = state[x], t1 = state[x+1], t2 = state[x+2], t3 = state[x+3], t4 = state[x+4];
+            state[x] ^= (~t1 & t2);
+            state[x+1] ^= (~t2 & t3);
+            state[x+2] ^= (~t3 & t4);
+            state[x+3] ^= (~t4 & t0);
+            state[x+4] ^= (~t0 & t1);
+        }
         state[0] ^= SHA3_RC[r];
     }
 }
@@ -439,16 +446,17 @@ async function fingerprintFile(file) {
 
     if (imgExts.includes(ext)) {
         try {
-            var img = await loadImage(new Blob([data]));
-            var small = resizeImageData(img, 32);
+            var loaded = await loadImage(new Blob([data]));
+            var imgData = loaded.imgData;
+            var small = resizeImageData(imgData, 32);
             result.perceptual_hashes = {
                 ahash: ahash(small),
                 dhash: dhash(small),
                 phash: phash(small)
             };
             try { result.perceptual_hashes.whash = whash(small); } catch(e) { console.error('whash error:', e); }
-            result.file_info.width = img.w;
-            result.file_info.height = img.h;
+            result.file_info.width = loaded.w;
+            result.file_info.height = loaded.h;
             result.file_info.format = ext.replace('.', '').toUpperCase();
         } catch(e) {
             result.file_info.image_error = e.message;
