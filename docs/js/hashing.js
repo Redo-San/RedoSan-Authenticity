@@ -229,6 +229,52 @@ function resizeImageData(imgData, targetSize) {
     return r;
 }
 
+// ── Minimal MD5 implementation ──
+function md5(data) {
+    var s = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+    function F(x,y,z) { return (x & y) | (~x & z); }
+    function G(x,y,z) { return (x & z) | (y & ~z); }
+    function H(x,y,z) { return x ^ y ^ z; }
+    function I(x,y,z) { return y ^ (x | ~z); }
+    function rot(x,n) { return (x << n) | (x >>> (32 - n)); }
+    function FF(a,b,c,d,x,s,ac) { a = rot((a + F(b,c,d) + x + ac) & 0xFFFFFFFF, s) + b; return a & 0xFFFFFFFF; }
+    function GG(a,b,c,d,x,s,ac) { a = rot((a + G(b,c,d) + x + ac) & 0xFFFFFFFF, s) + b; return a & 0xFFFFFFFF; }
+    function HH(a,b,c,d,x,s,ac) { a = rot((a + H(b,c,d) + x + ac) & 0xFFFFFFFF, s) + b; return a & 0xFFFFFFFF; }
+    function II(a,b,c,d,x,s,ac) { a = rot((a + I(b,c,d) + x + ac) & 0xFFFFFFFF, s) + b; return a & 0xFFFFFFFF; }
+    function toBytes(d) { var b = new Uint8Array(4); b[0]=d & 0xFF; b[1]=(d>>8)&0xFF; b[2]=(d>>16)&0xFF; b[3]=(d>>24)&0xFF; return b; }
+    var origLen = data.length * 8;
+    var msg = new Uint8Array(((data.length + 8) & -64) + 64);
+    for (var i = 0; i < data.length; i++) msg[i] = data[i];
+    msg[data.length] = 0x80;
+    new DataView(msg.buffer).setUint32(msg.length - 8, origLen, true);
+    for (var off = 0; off < msg.length; off += 64) {
+        var w = new Array(16);
+        for (var i = 0; i < 16; i++) w[i] = new DataView(msg.buffer).getUint32(off + i*4, true);
+        var a = s[0], b = s[1], c = s[2], d = s[3];
+        a = FF(a,b,c,d,w[0],7,0xd76aa478); d = FF(d,a,b,c,w[1],12,0xe8c7b756); c = FF(c,d,a,b,w[2],17,0x242070db); b = FF(b,c,d,a,w[3],22,0xc1bdceee);
+        a = FF(a,b,c,d,w[4],7,0xf57c0faf); d = FF(d,a,b,c,w[5],12,0x4787c62a); c = FF(c,d,a,b,w[6],17,0xa8304613); b = FF(b,c,d,a,w[7],22,0xfd469501);
+        a = FF(a,b,c,d,w[8],7,0x698098d8); d = FF(d,a,b,c,w[9],12,0x8b44f7af); c = FF(c,d,a,b,w[10],17,0xffff5bb1); b = FF(b,c,d,a,w[11],22,0x895cd7be);
+        a = FF(a,b,c,d,w[12],7,0x6b901122); d = FF(d,a,b,c,w[13],12,0xfd987193); c = FF(c,d,a,b,w[14],17,0xa679438e); b = FF(b,c,d,a,w[15],22,0x49b40821);
+        a = GG(a,b,c,d,w[1],5,0xf61e2562); d = GG(d,a,b,c,w[6],9,0xc040b340); c = GG(c,d,a,b,w[11],14,0x265e5a51); b = GG(b,c,d,a,w[0],20,0xe9b6c7aa);
+        a = GG(a,b,c,d,w[5],5,0xd62f105d); d = GG(d,a,b,c,w[10],9,0x02441453); c = GG(c,d,a,b,w[15],14,0xd8a1e681); b = GG(b,c,d,a,w[4],20,0xe7d3fbc8);
+        a = GG(a,b,c,d,w[9],5,0x21e1cde6); d = GG(d,a,b,c,w[14],9,0xc33707d6); c = GG(c,d,a,b,w[3],14,0xf4d50d87); b = GG(b,c,d,a,w[8],20,0x455a14ed);
+        a = GG(a,b,c,d,w[13],5,0xa9e3e905); d = GG(d,a,b,c,w[2],9,0xfcefa3f8); c = GG(c,d,a,b,w[7],14,0x676f02d9); b = GG(b,c,d,a,w[12],20,0x8d2a4c8a);
+        a = HH(a,b,c,d,w[5],4,0xfffa3942); d = HH(d,a,b,c,w[8],11,0x8771f681); c = HH(c,d,a,b,w[11],16,0x6d9d6122); b = HH(b,c,d,a,w[14],23,0xfde5380c);
+        a = HH(a,b,c,d,w[1],4,0xa4beea44); d = HH(d,a,b,c,w[4],11,0x4bdecfa9); c = HH(c,d,a,b,w[7],16,0xf6bb4b60); b = HH(b,c,d,a,w[10],23,0xbebfbc70);
+        a = HH(a,b,c,d,w[13],4,0x289b7ec6); d = HH(d,a,b,c,w[0],11,0xeaa127fa); c = HH(c,d,a,b,w[3],16,0xd4ef3085); b = HH(b,c,d,a,w[6],23,0x04881d05);
+        a = HH(a,b,c,d,w[9],4,0xd9d4d039); d = HH(d,a,b,c,w[12],11,0xe6db99e5); c = HH(c,d,a,b,w[15],16,0x1fa27cf8); b = HH(b,c,d,a,w[2],23,0xc4ac5665);
+        a = II(a,b,c,d,w[0],6,0xf4292244); d = II(d,a,b,c,w[7],10,0x432aff97); c = II(c,d,a,b,w[14],15,0xab9423a7); b = II(b,c,d,a,w[5],21,0xfc93a039);
+        a = II(a,b,c,d,w[12],6,0x655b59c3); d = II(d,a,b,c,w[3],10,0x8f0ccc92); c = II(c,d,a,b,w[10],15,0xffeff47d); b = II(b,c,d,a,w[1],21,0x85845dd1);
+        a = II(a,b,c,d,w[8],6,0x6fa87e4f); d = II(d,a,b,c,w[15],10,0xfe2ce6e0); c = II(c,d,a,b,w[6],15,0xa3014314); b = II(b,c,d,a,w[13],21,0x4e0811a1);
+        a = II(a,b,c,d,w[4],6,0xf7537e82); d = II(d,a,b,c,w[11],10,0xbd3af235); c = II(c,d,a,b,w[2],15,0x2ad7d2bb); b = II(b,c,d,a,w[9],21,0xeb86d391);
+        s[0] = (s[0] + a) & 0xFFFFFFFF; s[1] = (s[1] + b) & 0xFFFFFFFF;
+        s[2] = (s[2] + c) & 0xFFFFFFFF; s[3] = (s[3] + d) & 0xFFFFFFFF;
+    }
+    var r = '';
+    for (var i = 0; i < 4; i++) { for (var j = 0; j < 4; j++) r += ((s[i] >>> (j*8)) & 0xFF).toString(16).padStart(2,'0'); }
+    return r;
+}
+
 // ── Full fingerprint ──
 async function fingerprintFile(file) {
     var buf = await file.arrayBuffer();
