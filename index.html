@@ -11,16 +11,27 @@
 <body>
 <nav>
   <a href="/RedoSan-Authenticity/" class="logo"><img src="Style_Web_Page/logo.png" alt="RedoSan" class="logo-img"></a>
-  <a href="#" class="active" data-page="home">Home</a>
-  <a href="#" data-page="watermark">Watermark</a>
-  <a href="#" data-page="fingerprint">Fingerprint</a>
-  <a href="#" data-page="metadata">Metadata</a>
-  <a href="#" data-page="timestamp">Timestamp</a>
-  <a href="#" data-page="about">About</a>
-  <a href="#" data-page="privacy">Privacy</a>
-  <a href="#" data-page="contact">Contact</a>
-  <a href="#" data-page="social">Social</a>
+  <button class="hamburger" id="menuBtn" onclick="toggleSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">Menu</span>
+    <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
+  </div>
+  <a href="#" class="active" data-page="home" onclick="toggleSidebar()">Home</a>
+  <a href="#" data-page="watermark" onclick="toggleSidebar()">Watermark</a>
+  <a href="#" data-page="fingerprint" onclick="toggleSidebar()">Fingerprint</a>
+  <a href="#" data-page="metadata" onclick="toggleSidebar()">Metadata</a>
+  <a href="#" data-page="timestamp" onclick="toggleSidebar()">Timestamp</a>
+  <a href="#" data-page="about" onclick="toggleSidebar()">About</a>
+  <a href="#" data-page="privacy" onclick="toggleSidebar()">Privacy</a>
+  <a href="#" data-page="contact" onclick="toggleSidebar()">Contact</a>
+  <a href="#" data-page="social" onclick="toggleSidebar()">Social</a>
+</div>
 
 <main class="container" id="app">
   <!-- Home -->

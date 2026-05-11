@@ -1,5 +1,11 @@
+// ── Sidebar toggle ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
 // ── Page navigation ──
-document.querySelectorAll('nav a[data-page], .footer-links a[data-page]').forEach(a => {
+document.querySelectorAll('.sidebar a[data-page], .footer-links a[data-page]').forEach(a => {
   a.addEventListener('click', e => { e.preventDefault(); showPage(a.dataset.page); });
 });
 document.querySelectorAll('.card[data-page]').forEach(c => {
@@ -8,10 +14,10 @@ document.querySelectorAll('.card[data-page]').forEach(c => {
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav a[data-page]').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
   const page = document.getElementById('page-' + name);
   if (page) page.classList.add('active');
-  const nav = document.querySelector('nav a[data-page="' + name + '"]');
+  const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
   if (nav) nav.classList.add('active');
 }
 
