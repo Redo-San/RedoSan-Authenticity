@@ -60,7 +60,7 @@ function blake2bG(v,a,b,c,d,x,y) {
     v[a] = (v[a] + v[b] + y) & 0xFFFFFFFFFFFFFFFFn; v[d] = blake2bRor(v[d] ^ v[a], 16);
     v[c] = (v[c] + v[d]) & 0xFFFFFFFFFFFFFFFFn; v[b] = blake2bRor(v[b] ^ v[c], 63);
 }
-function blake2bRor(x,n) { return (x >> n) | (x << (64n - n)); }
+function blake2bRor(x,n) { return (x >> BigInt(n)) | (x << BigInt(64 - n)); }
 function blake2bLoad64(data, off) {
     return BigInt(data[off])|(BigInt(data[off+1])<<8n)|(BigInt(data[off+2])<<16n)|(BigInt(data[off+3])<<24n)|
            (BigInt(data[off+4])<<32n)|(BigInt(data[off+5])<<40n)|(BigInt(data[off+6])<<48n)|(BigInt(data[off+7])<<56n);
@@ -414,12 +414,12 @@ async function fingerprintFile(file) {
         hashes['SHA-3_256'] = sha3_256(data);
         hashes['SHA-3_384'] = sha3_384(data);
         hashes['SHA-3_512'] = sha3_512(data);
-    } catch(e) {}
+    } catch(e) { console.error('SHA-3 error:', e); }
 
     try {
         hashes['BLAKE2b'] = await blake2b(data);
         hashes['BLAKE2s'] = await blake2s(data);
-    } catch(e) {}
+    } catch(e) { console.error('BLAKE2 error:', e); }
 
     try { hashes['SHA-224'] = await sha224(data); } catch(e) {}
 
@@ -446,12 +446,13 @@ async function fingerprintFile(file) {
                 dhash: dhash(small),
                 phash: phash(small)
             };
-            try { result.perceptual_hashes.whash = whash(small); } catch(e) {}
+            try { result.perceptual_hashes.whash = whash(small); } catch(e) { console.error('whash error:', e); }
             result.file_info.width = img.w;
             result.file_info.height = img.h;
             result.file_info.format = ext.replace('.', '').toUpperCase();
         } catch(e) {
             result.file_info.image_error = e.message;
+            console.error('Perceptual hash error:', e);
         }
     }
 
