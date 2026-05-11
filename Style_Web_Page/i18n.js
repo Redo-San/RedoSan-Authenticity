@@ -224,15 +224,21 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// Filter out common browser extension errors
+// Comprehensive error filtering for browser extensions
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
+const originalConsoleLog = console.log;
+
+function shouldFilterError(message) {
+  const msg = message.toString().toLowerCase();
+  return msg.includes('runtime.lasterror') && 
+         msg.includes('could not establish connection') &&
+         msg.includes('receiving end does not exist');
+}
 
 console.error = function(...args) {
   const message = args.join(' ');
-  // Filter out common runtime errors from browser extensions
-  if (message.includes('runtime.lastError') && 
-      message.includes('Could not establish connection')) {
+  if (shouldFilterError(message)) {
     return; // Silently ignore these errors
   }
   return originalConsoleError.apply(console, args);
@@ -240,19 +246,34 @@ console.error = function(...args) {
 
 console.warn = function(...args) {
   const message = args.join(' ');
-  // Filter out common runtime errors from browser extensions
-  if (message.includes('runtime.lastError') && 
-      message.includes('Could not establish connection')) {
+  if (shouldFilterError(message)) {
     return; // Silently ignore these errors
   }
   return originalConsoleWarn.apply(console, args);
 };
 
+console.log = function(...args) {
+  const message = args.join(' ');
+  if (shouldFilterError(message)) {
+    return; // Silently ignore these errors
+  }
+  return originalConsoleLog.apply(console, args);
+};
+
 // Handle uncaught promise rejections from browser extensions
 window.addEventListener('unhandledrejection', function(event) {
-  if (event.reason && event.reason.message && 
-      event.reason.message.includes('runtime.lastError') &&
-      event.reason.message.includes('Could not establish connection')) {
+  if (event.reason) {
+    const reasonStr = event.reason.toString().toLowerCase();
+    if (shouldFilterError(reasonStr)) {
+      event.preventDefault(); // Prevent the error from showing in console
+      return;
+    }
+  }
+});
+
+// Also handle regular uncaught errors
+window.addEventListener('error', function(event) {
+  if (event.message && shouldFilterError(event.message)) {
     event.preventDefault(); // Prevent the error from showing in console
   }
 });
