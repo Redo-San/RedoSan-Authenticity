@@ -24,7 +24,7 @@ def clean_upload(path):
             os.remove(path)
         elif os.path.isdir(path):
             shutil.rmtree(path, ignore_errors=True)
-    except:
+    except Exception:
         pass
 
 

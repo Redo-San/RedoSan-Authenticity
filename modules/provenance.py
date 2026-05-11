@@ -36,7 +36,7 @@ def _have_exiftool():
     try:
         subprocess.run(["exiftool", "-ver"], capture_output=True, check=True)
         return "exiftool"
-    except:
+    except Exception:
         return None
 
 
@@ -44,7 +44,7 @@ def _have_ffprobe():
     try:
         subprocess.run(["ffprobe", "-version"], capture_output=True, check=True)
         return "ffprobe"
-    except:
+    except Exception:
         return None
 
 
@@ -68,7 +68,7 @@ def _have_openssl():
     try:
         subprocess.run(["openssl", "version"], capture_output=True, check=True)
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -100,12 +100,11 @@ def read_metadata(filepath):
         from PIL import Image
         from PIL.ExifTags import TAGS
         try:
-            img = Image.open(filepath)
-            meta["image"] = {"w": img.width, "h": img.height, "mode": img.mode, "format": img.format}
-            exif_data = img._getexif()
-            if exif_data:
-                meta["exif"] = {TAGS.get(k, k): _safe(v) for k, v in exif_data.items()}
-            img.close()
+            with Image.open(filepath) as img:
+                meta["image"] = {"w": img.width, "h": img.height, "mode": img.mode, "format": img.format}
+                exif_data = img._getexif()
+                if exif_data:
+                    meta["exif"] = {TAGS.get(k, k): _safe(v) for k, v in exif_data.items()}
         except Exception as e:
             meta["image_error"] = str(e)
 
@@ -129,7 +128,7 @@ def read_metadata(filepath):
             if r.returncode == 0:
                 data = json.loads(r.stdout)
                 meta["ffprobe_audio"] = data
-        except:
+        except Exception:
             pass
 
     if ext in VIDEO_EXT:
@@ -160,7 +159,7 @@ def read_metadata(filepath):
                 exif = json.loads(r.stdout)
                 if exif:
                     meta["exiftool"] = {_safe(k): _safe(v) for k, v in exif[0].items()}
-        except:
+        except Exception:
             pass
 
     return meta
@@ -210,25 +209,24 @@ def _write_metadata_image(filepath, metadata_dict, output_path):
     from PIL import Image
     from PIL.ExifTags import Base
     try:
-        img = Image.open(filepath)
-        exif = img.getexif()
+        with Image.open(filepath) as img:
+            exif = img.getexif()
 
-        tag_map = {
-            "title": Base.XPTitle,
-            "artist": Base.Artist,
-            "copyright": Base.Copyright,
-            "description": Base.ImageDescription,
-            "software": Base.Software,
-            "make": Base.Make,
-            "model": Base.Model,
-        }
+            tag_map = {
+                "title": Base.XPTitle,
+                "artist": Base.Artist,
+                "copyright": Base.Copyright,
+                "description": Base.ImageDescription,
+                "software": Base.Software,
+                "make": Base.Make,
+                "model": Base.Model,
+            }
 
-        for key, value in metadata_dict.items():
-            if key in tag_map:
-                exif[tag_map[key]] = value[:200] if isinstance(value, str) else str(value)[:200]
+            for key, value in metadata_dict.items():
+                if key in tag_map:
+                    exif[tag_map[key]] = value[:200] if isinstance(value, str) else str(value)[:200]
 
-        img.save(output_path, exif=exif)
-        img.close()
+            img.save(output_path, exif=exif)
         return True, "Metadata written to image"
     except Exception as e:
         return False, str(e)
@@ -549,5 +547,5 @@ def c2pa_write(filepath, manifest_dict):
     finally:
         try:
             os.unlink(manifest_path)
-        except:
+        except Exception:
             pass

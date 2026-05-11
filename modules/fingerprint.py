@@ -126,7 +126,7 @@ def _get_image_dimensions(img_path):
                 "color_mode": img.mode,
                 "format": img.format
             }
-    except:
+    except Exception:
         return None
 
 
@@ -139,15 +139,15 @@ def fingerprint_image(img_path, algorithms=None):
     
     result = {}
     try:
-        img = Image.open(img_path)
-        if "ahash" in algorithms:
-            result["ahash"] = str(imagehash.average_hash(img))
-        if "dhash" in algorithms:
-            result["dhash"] = str(imagehash.dhash(img))
-        if "phash" in algorithms:
-            result["phash"] = str(imagehash.phash(img))
-        if "whash" in algorithms:
-            result["whash"] = str(imagehash.whash(img))
+        with Image.open(img_path) as img:
+            if "ahash" in algorithms:
+                result["ahash"] = str(imagehash.average_hash(img))
+            if "dhash" in algorithms:
+                result["dhash"] = str(imagehash.dhash(img))
+            if "phash" in algorithms:
+                result["phash"] = str(imagehash.phash(img))
+            if "whash" in algorithms:
+                result["whash"] = str(imagehash.whash(img))
         if "sha256" in algorithms:
             result["sha256"] = _get_file_hash(img_path, "sha256")
         
@@ -276,7 +276,7 @@ def fingerprint_document(doc_path):
                 text_sample = full_text[:4096]
                 draw.text((10, 10), text_sample[:500], fill=0)
                 result["imagehash"] = str(imagehash.average_hash(img))
-            except:
+            except Exception:
                 pass
     
     result["file_type"] = "document"
@@ -340,7 +340,7 @@ def create_forensic_fingerprint(file_path, protection_data=None, provenance_data
         c2pa_data, c2pa_err = prov_mod.c2pa_read(file_path)
         if c2pa_data:
             c2pa_detected = True
-    except:
+    except Exception:
         pass
     
     # Auto-detect from C2PA
@@ -385,59 +385,6 @@ def create_forensic_fingerprint(file_path, protection_data=None, provenance_data
                             detected_watermark = desc
     
     # Build comprehensive package
-    package = {
-        "version": "1.0",
-        "tool": "RedoSan Authenticity",
-        "timestamp_created": _now_iso(),
-        
-        # Layer 1: Basic File Info
-        "file_info": {
-            "file_name": os.path.basename(file_path),
-            "file_path": os.path.abspath(file_path),
-            "file_size_bytes": stat.st_size,
-            "file_size_mb": round(stat.st_size / (1024 * 1024), 4),
-            "date_created": datetime.datetime.fromtimestamp(stat.st_ctime).isoformat(),
-            "date_modified": datetime.datetime.fromtimestamp(stat.st_mtime).isoformat(),
-        },
-        
-        # Layer 2: Protection Metadata (auto-detect C2PA)
-        "protection": {
-            "watermarked": bool(detected_watermark),
-            "watermark_type": detected_watermark,
-            "c2pa_signed": c2pa_detected,
-            "c2pa_manifest": c2pa_data.get("active_manifest") if c2pa_data else None,
-            "ots_timestamped": False,
-            "certificate_signed": False,
-            "protection_date": _now_iso() if c2pa_detected else None
-        },
-        
-        # Layer 3: Provenance Chain (auto-detect from C2PA)
-        "provenance": {
-            "creator": None,
-            "creator_id": c2pa_data.get("active_manifest") if c2pa_data else None,
-            "software_used": software_used,
-            "creation_steps": creation_steps,
-            "parent_file": None,
-            "previous_version_hash": None
-        },
-        
-        # Layer 4: Fingerprints
-        "fingerprints": fp,
-        
-        # Layer 5: Forensic Analysis
-        "forensic_analysis": {
-            "detected_ai_generated": ai_generated,
-            "detected_watermark": detected_watermark,
-            "software_from_c2pa": software_used,
-            "actions_from_c2pa": creation_steps,
-            "unique_artifacts": [],
-            "analysis_date": _now_iso() if c2pa_detected else None
-        },
-        
-        "file_type": fp.get("file_type", "unknown"),
-        "signature": None  # Will be added if signing
-    }
-    
     package = {
         "version": "1.0",
         "tool": "RedoSan Authenticity",
@@ -575,17 +522,16 @@ def generate_perceptual_hashes(img_path):
     if not HAS_IMAGEHASH:
         return {}
     try:
-        img = Image.open(img_path)
-        ph = {
-            'ahash': str(imagehash.average_hash(img)),
-            'dhash': str(imagehash.dhash(img)),
-            'phash': str(imagehash.phash(img)),
-        }
-        try:
-            ph['whash'] = str(imagehash.whash(img))
-        except Exception:
-            pass
-        img.close()
+        with Image.open(img_path) as img:
+            ph = {
+                'ahash': str(imagehash.average_hash(img)),
+                'dhash': str(imagehash.dhash(img)),
+                'phash': str(imagehash.phash(img)),
+            }
+            try:
+                ph['whash'] = str(imagehash.whash(img))
+            except Exception:
+                pass
         return ph
     except Exception:
         return {}

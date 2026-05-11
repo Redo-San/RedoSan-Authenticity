@@ -28,7 +28,7 @@ def _copy_selection(widget):
         sel = widget.selection_get()
         widget.clipboard_clear()
         widget.clipboard_append(sel)
-    except:
+    except tkinter.TclError:
         pass
 
 
@@ -38,10 +38,10 @@ def _paste_to_widget(widget):
         if widget.selection_present():
             widget.delete("sel.first", "sel.last")
         widget.insert("insert", text)
-    except:
+    except tkinter.TclError:
         try:
             widget.insert("insert", widget.clipboard_get())
-        except:
+        except tkinter.TclError:
             pass
 
 
@@ -211,10 +211,10 @@ class SharedGUIMixin:
                 else:
                     entry.delete(0, "end")
                 entry.insert("insert", text)
-            except:
+            except tkinter.TclError:
                 try:
                     entry.insert("insert", entry.clipboard_get())
-                except:
+                except tkinter.TclError:
                     pass
         
         def do_cut():

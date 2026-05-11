@@ -237,7 +237,7 @@ def _download_ffmpeg():
     # Cleanup
     try:
         shutil.rmtree(temp_dir, ignore_errors=True)
-    except:
+    except Exception:
         pass
     
     return False

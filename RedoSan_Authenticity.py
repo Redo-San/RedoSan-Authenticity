@@ -181,14 +181,14 @@ def run_ots(args):
             if r.returncode == 0:
                 py_exe = name
                 break
-        except:
+        except Exception:
             pass
     if not py_exe:
         try:
             r = subprocess.run(["py", "-3", "-c", "import opentimestamps"], capture_output=True, text=True, timeout=10)
             if r.returncode == 0:
                 py_exe = "py -3"
-        except:
+        except Exception:
             pass
 
     if not py_exe:
@@ -574,6 +574,37 @@ def feature_fingerprint_menu():
     cmd_fingerprint(path, None, None)
 
 
+def feature_certify_menu():
+    h1("SIGN & CERTIFY FILE")
+    if not has_module("certification"):
+        return print("ERROR: Certification module not available. Install: pip install cryptography")
+    path = _s(input("File path: "))
+    if not os.path.isfile(path):
+        return print("ERROR: File not found")
+    key_dir = _s(input("Key directory (Enter = .keys): ")) or None
+    cmd_certify(path, key_dir, None, False)
+
+
+def feature_certify_verify_menu():
+    h1("VERIFY CERTIFICATE")
+    if not has_module("certification"):
+        return print("ERROR: Certification module not available")
+    cert_path = _s(input("Certificate file path: "))
+    if not os.path.isfile(cert_path):
+        return print("ERROR: Certificate not found")
+    key_dir = _s(input("Key directory (Enter = .keys): ")) or None
+    cmd_certify_verify(cert_path, key_dir)
+
+
+def feature_certify_init_menu():
+    h1("INIT CERTIFICATION KEYS")
+    if not has_module("certification"):
+        return print("ERROR: Certification module not available. Install: pip install cryptography")
+    key_dir = _s(input("Key directory (Enter = .keys): ")) or None
+    force = input("Force overwrite existing keys? (y/N): ").strip().lower() == "y"
+    cmd_certify_init(key_dir, force)
+
+
 def cmd_certify(file_path, key_dir, output, skip_fp):
     if not has_module("certification"):
         return print("ERROR: Certification module not available. Install: pip install cryptography")
@@ -772,10 +803,6 @@ def cmd_log_view(log_path, format):
         return print(f"ERROR: {err}")
     
     print(content)
-
-
-def _s(path):
-    return path.strip().strip("\"'")
 
 
 def feature_log_create_menu():
@@ -1756,7 +1783,7 @@ def main():
         elif choice == "14" and has_module("metadata"):
             feature_metadata()
         elif choice == "15" and has_module("metadata"):
-            feature_metadata_write()
+            feature_write_metadata()
         elif choice == "16" and has_module("metadata"):
             feature_c2pa_read()
         elif choice == "17" and has_module("metadata"):
@@ -1781,22 +1808,6 @@ def main():
             feature_log_add_step_menu()
         elif choice == "27" and has_module("creative_log"):
             feature_log_view_menu()
-        elif choice == "13" and has_module("metadata"):
-            feature_write_metadata()
-        elif choice == "14" and has_module("metadata"):
-            feature_c2pa_read()
-        elif choice == "15" and has_module("metadata"):
-            feature_c2pa_write()
-        elif choice == "16" and has_module("metadata"):
-            feature_c2pa_init()
-        elif choice == "19" and has_module("watermark"):
-            feature_wt_list()
-        elif choice == "20" and has_module("watermark"):
-            feature_wt_embed()
-        elif choice == "21" and has_module("watermark"):
-            feature_wt_extract()
-        elif choice == "22" and has_module("watermark"):
-            feature_wt_describe()
         elif choice in ("s", "setup"):
             run_setup()
         elif choice == "0":

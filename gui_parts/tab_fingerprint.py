@@ -5,12 +5,7 @@ from tkinter import filedialog
 
 from RedoSan_Authenticity import MODULES, has_module, run_ots
 
-try:
-    import redosan_backend as rb
-    RUST_AVAILABLE = rb.is_available()
-except ImportError:
-    rb = None
-    RUST_AVAILABLE = False
+RUST_AVAILABLE = False
 
 
 class FingerprintTabMixin:

@@ -1,12 +1,7 @@
 import sys, os, subprocess
 import customtkinter as ctk
 
-try:
-    import redosan_backend as rb
-    RUST_AVAILABLE = rb.is_available()
-except ImportError:
-    rb = None
-    RUST_AVAILABLE = False
+RUST_AVAILABLE = False
 
 from RedoSan_Authenticity import has_module, find_ffmpeg, SCRIPT_DIR as _SD
 

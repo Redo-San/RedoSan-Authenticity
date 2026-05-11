@@ -8,7 +8,8 @@ def from_bits(bits_str):
 
 def load_rgb(path):
     from PIL import Image
-    return Image.open(path).convert("RGB")
+    with Image.open(path) as img:
+        return img.convert("RGB")
 
 def pw_key(password):
     if not password:

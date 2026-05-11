@@ -1,3 +1,4 @@
+import os
 import customtkinter as ctk
 from tkinter import messagebox
 
@@ -17,6 +18,8 @@ class C2paTabMixin:
         }
         # Track current content type to avoid unnecessary saves
         self._c2pa_current_type = None
+        # Prevent re-entrant auto-save during content type switching
+        self._c2pa_switching = False
     
     def _build_c2pa_tab(self):
         # Initialize data storage if not already done
@@ -172,22 +175,21 @@ class C2paTabMixin:
 
     def _auto_save_field(self):
         """Auto save field data when StringVar changes"""
+        if self._c2pa_switching:
+            return
         try:
             self._save_current_content_data()
-        except Exception as e:
-            print(f"DEBUG: Auto save error: {e}")
+        except Exception:
+            pass
     
     def _save_current_content_data(self):
         """Save current field data for current content type to text file"""
         if not hasattr(self, 'c2pa_content_type'):
-            print("DEBUG: No c2pa_content_type attribute")
             return
             
         try:
             content_type = self.c2pa_content_type.get()
-            print(f"DEBUG: Saving data for content type: {content_type}")
-        except Exception as e:
-            print(f"DEBUG: Error getting content type: {e}")
+        except Exception:
             return
             
         # Map content type to file name
@@ -201,7 +203,6 @@ class C2paTabMixin:
         }
         
         if content_type not in file_mapping:
-            print(f"DEBUG: Content type not in file_mapping: {content_type}")
             return
             
         # Get current field values
@@ -209,17 +210,13 @@ class C2paTabMixin:
         for field_name in ['creator_name', 'creator_id', 'ai_model', 'description', 'rights_holder', 'copyright', 'license']:
             field = self._c2pa_entries.get(field_name)
             if field:
-                value = field.get()
-                saved_data[field_name] = value
-                print(f"DEBUG: {field_name} = {repr(value)}")
+                saved_data[field_name] = field.get()
             else:
                 saved_data[field_name] = ''
-                print(f"DEBUG: {field_name} field not found")
         
         # Save to text file
-        import os
+        os.makedirs("c2pa_data", exist_ok=True)
         file_path = os.path.join("c2pa_data", file_mapping[content_type])
-        print(f"DEBUG: Saving to file: {file_path}")
         
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -230,14 +227,11 @@ class C2paTabMixin:
                 f.write(f"rights_holder: {saved_data['rights_holder']}\n")
                 f.write(f"copyright: {saved_data['copyright']}\n")
                 f.write(f"license: {saved_data['license']}\n")
-            print(f"DEBUG: Successfully saved to {file_path}")
-        except Exception as e:
-            print(f"DEBUG: Error saving to file: {e}")
+        except Exception:
+            pass
     
     def _load_content_data(self, content_type):
         """Load field data for specified content type from text file"""
-        print(f"DEBUG: Loading data for content type: {content_type}")
-        
         # Map content type to file name
         file_mapping = {
             "1. AI Generated": "1_ai_generated.txt",
@@ -249,13 +243,10 @@ class C2paTabMixin:
         }
         
         if content_type not in file_mapping:
-            print(f"DEBUG: Content type not in file_mapping: {content_type}")
             return
             
         # Load data from text file
-        import os
         file_path = os.path.join("c2pa_data", file_mapping[content_type])
-        print(f"DEBUG: Loading from file: {file_path}")
         data = {}
         
         try:
@@ -265,16 +256,12 @@ class C2paTabMixin:
                     if ':' in line:
                         key, value = line.split(':', 1)
                         data[key.strip()] = value.strip()
-                        print(f"DEBUG: Loaded {key.strip()} = {repr(value.strip())}")
         except FileNotFoundError:
-            print(f"DEBUG: File not found: {file_path}")
-            # Default empty data if file doesn't exist
             data = {
                 'creator_name': '', 'creator_id': '', 'ai_model': '',
                 'description': '', 'rights_holder': '', 'copyright': '', 'license': ''
             }
-        except Exception as e:
-            print(f"DEBUG: Error loading from file: {e}")
+        except Exception:
             data = {
                 'creator_name': '', 'creator_id': '', 'ai_model': '',
                 'description': '', 'rights_holder': '', 'copyright': '', 'license': ''
@@ -326,27 +313,22 @@ class C2paTabMixin:
     def _c2pa_content_type_change(self, choice=None):
         """Handle content type change to show/hide relevant fields"""
         content_type = self.c2pa_content_type.get()
-        print(f"DEBUG: Content type changed to: {content_type}")
         
         # Get current mode to ensure we're in Write mode
         mode = self.c2pa_mode.get()
         if mode != "Write":
-            print(f"DEBUG: Not in Write mode, current mode: {mode}")
             return
         
         # Save current data before switching
-        print("DEBUG: Saving current content data...")
+        self._c2pa_switching = True
         self._save_current_content_data()
-        print("DEBUG: Current content data saved")
         
         # Clear all fields before loading new data
-        print("DEBUG: Clearing all fields...")
         for field_name in ['creator_name', 'creator_id', 'ai_model', 'description', 'rights_holder', 'copyright', 'license']:
             field = self._c2pa_entries.get(field_name)
             if field:
                 field.delete(0, 'end')
-                print(f"DEBUG: Cleared {field_name}")
-        print("DEBUG: All fields cleared")
+        self._c2pa_switching = False
             
         # Define field requirements for each content type
         ai_types = ["1. AI Generated", "2. AI Edited"]

@@ -1,347 +1,3 @@
-let pyodide = null;
-let ready = false;
-let initError = null;
-
-function setStatus(msg, cls) {
-  const el = document.getElementById('py-status');
-  if (el) { el.textContent = msg; if (cls) el.className = 'badge badge-' + cls; }
-}
-
-function timeout(ms) {
-  return new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms));
-}
-
-function isMobile() {
-  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-const PYODIDE_VERSION = 'v0.27.4';
-const CDN_LIST = [
-  'https://cdn.jsdelivr.net/pyodide/' + PYODIDE_VERSION + '/full/',
-  'https://fastly.jsdelivr.net/pyodide/' + PYODIDE_VERSION + '/full/',
-  'https://unpkg.com/pyodide@' + PYODIDE_VERSION + '/full/',
-];
-
-function loadScript(url) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = url;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error('Failed to load ' + url));
-    document.head.appendChild(s);
-  });
-}
-
-async function loadPyodideScript(cdnIndex) {
-  // If already loaded via static <script> tag, skip
-  if (typeof loadPyodide === 'function') return;
-  if (cdnIndex >= CDN_LIST.length) throw new Error('All CDNs failed for pyodide.js');
-  const url = CDN_LIST[cdnIndex] + 'pyodide.js';
-  setStatus('Loading engine (CDN ' + (cdnIndex + 1) + '/' + CDN_LIST.length + ')...', 'muted');
-  try {
-    await loadScript(url);
-  } catch (e) {
-    console.warn('Script CDN ' + (cdnIndex + 1) + ' failed:', url);
-    await loadPyodideScript(cdnIndex + 1);
-  }
-}
-
-async function tryLoadPyodide(cdnIndex) {
-  if (cdnIndex >= CDN_LIST.length) throw new Error('All CDNs failed');
-  const url = CDN_LIST[cdnIndex];
-  setStatus('Trying CDN ' + (cdnIndex + 1) + '/' + CDN_LIST.length + '...', 'muted');
-  try {
-    return await Promise.race([
-      loadPyodide({ indexURL: url }),
-      timeout(120000)
-    ]);
-  } catch (e) {
-    console.warn('CDN ' + (cdnIndex + 1) + ' failed:', url, e);
-    return await tryLoadPyodide(cdnIndex + 1);
-  }
-}
-
-async function init() {
-  const IS_MOBILE = isMobile();
-  setStatus(IS_MOBILE ? 'Loading Python (may take 30-60s on mobile)...' : 'Loading Pyodide...', 'muted');
-  try {
-    await loadPyodideScript(0);
-    pyodide = await tryLoadPyodide(0);
-    setStatus('Installing packages...', 'muted');
-    await pyodide.loadPackage('micropip');
-    const micropip = pyodide.pyimport('micropip');
-    await micropip.install('Pillow');
-    await Promise.race([
-      micropip.install('imagehash'),
-      timeout(60000)
-    ]);
-    setStatus('Loading modules...', 'muted');
-
-    const base = document.location.href.includes('localhost')
-      ? '/py/' : '/RedoSan-Authenticity/py/';
-
-    const modules = [
-      'wtype_common.py', 'wtype1.py', 'wtype2.py', 'wtype3.py',
-      'wtype4.py', 'wtype5.py', 'wtype6.py', 'wtype7.py',
-      'wtype8.py', 'wtype9.py'
-    ];
-    for (const mod of modules) {
-      const resp = await fetch(`${base}${mod}`);
-      const code = await resp.text();
-      pyodide.FS.writeFile(mod, code);
-    }
-
-    pyodide.runPython(`
-import sys, os, json, tempfile, hashlib, shutil
-sys.path.insert(0, '.')
-import wtype_common
-import wtype1, wtype2, wtype3, wtype4, wtype5, wtype6, wtype7, wtype8, wtype9
-
-WTYPES = {1:wtype1,2:wtype2,3:wtype3,4:wtype4,5:wtype5,6:wtype6,7:wtype7,8:wtype8,9:wtype9}
-
-TMP = '/tmp/redosan'
-os.makedirs(TMP, exist_ok=True)
-
-def embed_watermark(wtype, password):
-    img_path = os.path.join(TMP, 'input.png')
-    sec_path = os.path.join(TMP, 'secret.bin')
-    out_path = os.path.join(TMP, 'output.png')
-    mod = WTYPES.get(wtype)
-    if not mod:
-        return json.dumps({'ok': False, 'error': f'Unknown type {wtype}'})
-    try:
-        ok, msg = mod.embed(img_path, sec_path, out_path, password)
-        if ok:
-            with open(out_path, 'rb') as f:
-                import base64
-                data = base64.b64encode(f.read()).decode()
-            return json.dumps({'ok': True, 'data': data, 'msg': msg})
-        return json.dumps({'ok': False, 'error': msg})
-    except Exception as e:
-        return json.dumps({'ok': False, 'error': str(e)})
-
-def extract_watermark(wtype, password):
-    img_path = os.path.join(TMP, 'stego.png')
-    out_dir = os.path.join(TMP, 'extracted')
-    os.makedirs(out_dir, exist_ok=True)
-    mod = WTYPES.get(wtype)
-    if not mod:
-        return json.dumps({'ok': False, 'error': f'Unknown type {wtype}'})
-    try:
-        ok, msg = mod.extract(img_path, out_dir, password)
-        if ok:
-            files = {}
-            for fname in os.listdir(out_dir):
-                fpath = os.path.join(out_dir, fname)
-                with open(fpath, 'rb') as f:
-                    import base64
-                    files[fname] = base64.b64encode(f.read()).decode()
-            shutil.rmtree(out_dir, ignore_errors=True)
-            return json.dumps({'ok': True, 'files': files, 'msg': msg})
-        shutil.rmtree(out_dir, ignore_errors=True)
-        return json.dumps({'ok': False, 'error': msg})
-    except Exception as e:
-        shutil.rmtree(out_dir, ignore_errors=True)
-        return json.dumps({'ok': False, 'error': str(e)})
-
-def fingerprint_file_data(fname):
-    path = os.path.join(TMP, fname)
-    with open(path, 'rb') as f:
-        data = f.read()
-    ext = os.path.splitext(fname)[1].lower()
-    img_exts = {'.png','.jpg','.jpeg','.bmp','.gif','.tiff','.webp'}
-
-    hashes = {}
-    hashes['SHA-1'] = hashlib.sha1(data).hexdigest()
-    hashes['SHA-224'] = hashlib.sha224(data).hexdigest()
-    hashes['SHA-256'] = hashlib.sha256(data).hexdigest()
-    hashes['SHA-384'] = hashlib.sha384(data).hexdigest()
-    hashes['SHA-512'] = hashlib.sha512(data).hexdigest()
-    hashes['SHA-3_224'] = hashlib.sha3_224(data).hexdigest()
-    hashes['SHA-3_256'] = hashlib.sha3_256(data).hexdigest()
-    hashes['SHA-3_384'] = hashlib.sha3_384(data).hexdigest()
-    hashes['SHA-3_512'] = hashlib.sha3_512(data).hexdigest()
-    hashes['MD5'] = hashlib.md5(data).hexdigest()
-    hashes['BLAKE2b'] = hashlib.blake2b(data).hexdigest()
-    hashes['BLAKE2s'] = hashlib.blake2s(data).hexdigest()
-
-    result = {
-        'file_info': {
-            'file_name': fname,
-            'file_size_bytes': os.path.getsize(path),
-        },
-        'hashes': hashes,
-        'perceptual_hashes': {},
-    }
-
-    if ext in img_exts:
-        try:
-            from PIL import Image
-            import imagehash
-            img = Image.open(path)
-            ph = {}
-            ph['ahash'] = str(imagehash.average_hash(img))
-            ph['dhash'] = str(imagehash.dhash(img))
-            ph['phash'] = str(imagehash.phash(img))
-            try:
-                ph['whash'] = str(imagehash.whash(img))
-            except:
-                pass
-            result['perceptual_hashes'] = ph
-            result['file_info']['width'] = img.width
-            result['file_info']['height'] = img.height
-            result['file_info']['format'] = img.format
-            img.close()
-        except Exception as e:
-            result['file_info']['image_error'] = str(e)
-    return json.dumps(result)
-
-def read_metadata_web(fname):
-    path = os.path.join(TMP, fname)
-    result = {'file': fname, 'size': os.path.getsize(path), 'sha256': hashlib.sha256(open(path, 'rb').read()).hexdigest()}
-    from PIL import Image
-    from PIL.ExifTags import TAGS
-    try:
-        img = Image.open(path)
-        result['image'] = {'width': img.width, 'height': img.height, 'mode': img.mode, 'format': img.format}
-        exif_data = img._getexif()
-        if exif_data:
-            exif = {}
-            for k, v in exif_data.items():
-                tag = TAGS.get(k, k)
-                val = str(v)
-                if len(val) > 200:
-                    val = val[:197] + '...'
-                exif[tag] = val
-            result['exif'] = exif
-        img.close()
-    except Exception as e:
-        result['error'] = str(e)
-    return json.dumps(result, ensure_ascii=False)
-
-def hash_file_web(fname):
-    path = os.path.join(TMP, fname)
-    sha = hashlib.sha256()
-    with open(path, 'rb') as f:
-        while True:
-            chunk = f.read(65536)
-            if not chunk:
-                break
-            sha.update(chunk)
-    return json.dumps({'file': fname, 'sha256': sha.hexdigest()})
-
-def ots_create_web(fname):
-    path = os.path.join(TMP, fname)
-    try:
-        from opentimestamps.core.timestamp import DetachedTimestampFile
-        from opentimestamps.core.op import OpSHA256
-        from opentimestamps.core.serialize import StreamSerializationContext
-        import io, base64
-
-        with open(path, 'rb') as f:
-            dtf = DetachedTimestampFile.from_fd(OpSHA256(), f)
-
-        # Try calendar submission
-        try:
-            from opentimestamps.calendar import RemoteCalendar, DEFAULT_AGGREGATORS
-            for url in DEFAULT_AGGREGATORS:
-                try:
-                    cal = RemoteCalendar(url)
-                    cal_timestamp = cal.submit(dtf.timestamp.msg)
-                    dtf.timestamp.merge(cal_timestamp)
-                    break
-                except:
-                    continue
-        except:
-            pass
-
-        buf = io.BytesIO()
-        ctx = StreamSerializationContext(buf)
-        dtf.serialize(ctx)
-        ots_bytes = buf.getvalue()
-        return json.dumps({
-            'ok': True,
-            'ots_b64': base64.b64encode(ots_bytes).decode(),
-            'sha256': dtf.timestamp.msg.hex()
-        })
-    except Exception as e:
-        return json.dumps({'ok': False, 'error': str(e)})
-
-def ots_verify_web(fname, ots_fname):
-    path = os.path.join(TMP, fname)
-    ots_path = os.path.join(TMP, ots_fname)
-    try:
-        from opentimestamps.core.timestamp import DetachedTimestampFile
-        from opentimestamps.core.op import OpSHA256
-        from opentimestamps.core.serialize import BytesDeserializationContext
-
-        with open(path, 'rb') as f:
-            dtf = DetachedTimestampFile.from_fd(OpSHA256(), f)
-        current_digest = dtf.timestamp.msg
-
-        with open(ots_path, 'rb') as f:
-            data = f.read()
-        ctx = BytesDeserializationContext(data)
-        ots_dtf = DetachedTimestampFile.deserialize(ctx)
-        ots_digest = ots_dtf.timestamp.msg
-
-        match = current_digest == ots_digest
-        return json.dumps({
-            'ok': True,
-            'match': match,
-            'file_sha256': current_digest.hex(),
-            'ots_sha256': ots_digest.hex()
-        })
-    except Exception as e:
-        return json.dumps({'ok': False, 'error': str(e)})
-    `);
-
-    ready = true;
-    setStatus('Ready', 'success');
-    console.log('Pyodide ready');
-  } catch (e) {
-    initError = e;
-    const errMsg = e.message || String(e);
-    setStatus('Load failed', 'warning');
-    console.error('Pyodide init error:', e);
-    const nav = document.querySelector('nav');
-    if (nav) {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.style.cssText = 'font-size:0.75rem;padding:4px 12px;margin-left:8px';
-      btn.textContent = 'Retry';
-      btn.onclick = () => { initError = null; setStatus('Loading...', 'muted'); btn.remove(); init(); };
-      nav.appendChild(btn);
-    }
-    // Show fallback message
-    const active = document.querySelector('.page.active');
-    if (active) {
-      const container = active.querySelector('.card-form') || active.querySelector('.hero') || active;
-      const msg = document.createElement('div');
-      msg.className = 'card-form';
-      msg.style.cssText = 'margin-top:16px;text-align:center';
-      const isMem = errMsg.includes('Memory') || errMsg.includes('memory') || errMsg.includes('Wasm');
-      msg.innerHTML = IS_MOBILE
-        ? `<p style="color:var(--text-muted);margin-bottom:12px">Python engine couldn't load on this device.</p>
-           <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px">${isMem ? 'iPhone 7 / older devices may lack sufficient WebAssembly memory.' : 'Error: ' + escHtml(errMsg)}<br>Try a modern device or use the desktop app.</p>
-           <a href="https://github.com/Redo-San/RedoSan-Authenticity/releases" class="btn" target="_blank">Download Desktop App</a>`
-        : `<p style="color:var(--text-muted);margin-bottom:12px">Python engine failed to load.</p>
-           <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px">Error: ${escHtml(errMsg)}</p>
-           <button class="btn" onclick="location.reload()">Reload Page</button>`;
-      container.parentNode.insertBefore(msg, container.nextSibling);
-    }
-  }
-}
-
-function checkReady() {
-  if (ready) return true;
-  const nav = document.querySelector('nav');
-  if (initError) {
-    setStatus('Click Retry', 'warning');
-  }
-  return false;
-}
-
 // ── Navigation ──
 document.querySelectorAll('nav a[data-page]').forEach(a => {
   a.addEventListener('click', e => { e.preventDefault(); showPage(a.dataset.page); });
@@ -353,9 +9,9 @@ document.querySelectorAll('.card[data-page]').forEach(c => {
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav a[data-page]').forEach(a => a.classList.remove('active'));
-  const page = document.getElementById(`page-${name}`);
+  const page = document.getElementById('page-' + name);
   if (page) page.classList.add('active');
-  const nav = document.querySelector(`nav a[data-page="${name}"]`);
+  const nav = document.querySelector('nav a[data-page="' + name + '"]');
   if (nav) nav.classList.add('active');
 }
 
@@ -363,145 +19,224 @@ function switchWmTab(mode) {
   document.querySelectorAll('.tab-btn[data-wm-tab]').forEach(b => b.classList.remove('active'));
   document.getElementById('wm-embed').style.display = mode === 'embed' ? '' : 'none';
   document.getElementById('wm-extract').style.display = mode === 'extract' ? '' : 'none';
-  document.querySelector(`.tab-btn[data-wm-tab="${mode}"]`).classList.add('active');
+  document.querySelector('.tab-btn[data-wm-tab="' + mode + '"]').classList.add('active');
 }
 
 function switchTsTab(mode) {
   document.querySelectorAll('.tab-btn[data-ts-tab]').forEach(b => b.classList.remove('active'));
   document.getElementById('ts-hash').style.display = mode === 'hash' ? '' : 'none';
   document.getElementById('ts-ots').style.display = mode === 'ots' ? '' : 'none';
-  document.querySelector(`.tab-btn[data-ts-tab="${mode}"]`).classList.add('active');
+  document.querySelector('.tab-btn[data-ts-tab="' + mode + '"]').classList.add('active');
 }
 
 function switchOtsTab(mode) {
   document.querySelectorAll('.tab-btn[data-ots-tab]').forEach(b => b.classList.remove('active'));
   document.getElementById('ots-create').style.display = mode === 'create' ? '' : 'none';
   document.getElementById('ots-verify').style.display = mode === 'verify' ? '' : 'none';
-  document.querySelector(`.tab-btn[data-ots-tab="${mode}"]`).classList.add('active');
+  document.querySelector('.tab-btn[data-ots-tab="' + mode + '"]').classList.add('active');
 }
 
-function writeFile(name, data) {
-  pyodide.FS.writeFile('/tmp/redosan/' + name, new Uint8Array(data));
+// ── Helper functions ──
+function setStatus(msg, cls) {
+  const el = document.getElementById('py-status');
+  if (el) { el.textContent = msg; if (cls) el.className = 'badge badge-' + cls; }
 }
 
+function getFile(id) { return document.getElementById(id).files[0]; }
+function getVal(id) { return document.getElementById(id).value; }
+
+function spinner(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
+
+function showResult(resultId, outputId, dlId) {
+  document.getElementById(resultId).style.display = 'block';
+}
+
+function downloadBlob(blob, name, containerId) {
+  const url = URL.createObjectURL(blob);
+  document.getElementById(containerId).innerHTML += '<a href="' + url + '" download="' + name + '" class="btn" style="margin:4px">Download ' + name + '</a> ';
+}
+
+function setOutput(id, html) { document.getElementById(id).innerHTML = html; }
+function setText(id, text) { document.getElementById(id).textContent = text; }
+
+// ── Status ──
+setStatus('Ready - JS mode', 'success');
+
+// ── Hash tab (pure client-side SHA-256) ──
+async function timestampHash() {
+  const btn = document.getElementById('ts-btn');
+  const resultDiv = document.getElementById('ts-result');
+  const output = document.getElementById('ts-output');
+  const dl = document.getElementById('ts-download');
+
+  const file = getFile('ts-file');
+  if (!file) { setText('ts-output', 'Please select a file'); resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner('ts-spinner', true);
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+
+  try {
+    const buf = await file.arrayBuffer();
+    const h = await crypto.subtle.digest('SHA-256', buf);
+    const sha = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
+    setText('ts-output', 'SHA-256: ' + sha);
+    const blob = new Blob(['SHA-256 (' + file.name + ') = ' + sha], { type: 'text/plain' });
+    downloadBlob(blob, file.name + '.sha256.txt', 'ts-download');
+  } catch (e) { setText('ts-output', 'Error: ' + e.message); }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner('ts-spinner', false);
+}
+
+// ── OTS tab (client-side SHA-256 only, full OTS requires server) ──
+async function timestampOTS() {
+  const btn = document.getElementById('ts-ots-btn');
+  const resultDiv = document.getElementById('ts-result');
+  const output = document.getElementById('ts-output');
+  const dl = document.getElementById('ts-download');
+
+  const file = getFile('ts-ots-file');
+  if (!file) { setText('ts-output', 'Please select a file'); resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner('ts-spinner', true);
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+
+  try {
+    const buf = await file.arrayBuffer();
+    const h = await crypto.subtle.digest('SHA-256', buf);
+    const sha = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
+    setText('ts-output', 'SHA-256: ' + sha + '\n\nOpenTimestamps (.ots creation) requires a server. Use the desktop app for full OTS support.');
+    const blob = new Blob(['SHA-256 (' + file.name + ') = ' + sha], { type: 'text/plain' });
+    downloadBlob(blob, file.name + '.sha256.txt', 'ts-download');
+  } catch (e) { setText('ts-output', 'Error: ' + e.message); }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner('ts-spinner', false);
+}
+
+async function verifyOTS() {
+  const btn = document.getElementById('ts-verify-btn');
+  const resultDiv = document.getElementById('ts-result');
+  const output = document.getElementById('ts-output');
+  const dl = document.getElementById('ts-download');
+
+  const file = getFile('ts-verify-file');
+  const otsFile = getFile('ts-ots-proof');
+  if (!file || !otsFile) { setText('ts-output', 'Please select both a file and its .ots proof'); resultDiv.style.display = 'block'; return; }
+
+  btn.disabled = true; spinner('ts-spinner', true);
+  resultDiv.style.display = 'none'; dl.innerHTML = '';
+
+  try {
+    const buf = await file.arrayBuffer();
+    const h = await crypto.subtle.digest('SHA-256', buf);
+    const sha = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
+    setText('ts-output', 'File SHA-256: ' + sha + '\n\nOTS verification requires a server. Download the hash for manual verification.');
+    const blob = new Blob(['SHA-256 (' + file.name + ') = ' + sha], { type: 'text/plain' });
+    downloadBlob(blob, file.name + '.sha256.txt', 'ts-download');
+  } catch (e) { setText('ts-output', 'Error: ' + e.message); }
+  resultDiv.style.display = 'block';
+  btn.disabled = false; spinner('ts-spinner', false);
+}
+
+// ── Watermark tab ──
 async function watermarkEmbed() {
   const btn = document.getElementById('wm-btn');
-  const spinner = document.getElementById('wm-spinner');
   const resultDiv = document.getElementById('wm-result');
   const output = document.getElementById('wm-output');
   const dl = document.getElementById('wm-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
-  const type = parseInt(document.getElementById('wm-type').value);
-  const pw = document.getElementById('wm-password').value || null;
-  const imgFile = document.getElementById('wm-image').files[0];
-  if (!imgFile) { output.textContent = 'Please select an image'; resultDiv.style.display = 'block'; return; }
+  const type = parseInt(getVal('wm-type'));
+  const pw = getVal('wm-password') || null;
+  const imgFile = getFile('wm-image');
+  if (!imgFile) { setText('wm-output', 'Please select an image'); resultDiv.style.display = 'block'; return; }
 
-  btn.disabled = true; spinner.style.display = 'block';
+  btn.disabled = true; spinner('wm-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
+  setText('wm-output', 'Processing...');
 
   try {
-    const imgData = await imgFile.arrayBuffer();
-    writeFile('input.png', imgData);
-    writeFile('secret.bin', imgData); // embed image as secret
-
-    const jsonStr = pyodide.runPython(`embed_watermark(${type}, ${pw ? repr(pw) : 'None'})`);
-    const result = JSON.parse(jsonStr);
+    const result = await watermarkEmbed(type, imgFile, imgFile, pw);
     if (result.ok) {
-      const blob = base64ToBlob(result.data, 'image/png');
-      const url = URL.createObjectURL(blob);
       const report = JSON.stringify({ algorithm: type, message: result.msg, status: 'ok' }, null, 2);
       const reportBlob = new Blob([report], { type: 'application/json' });
       const reportUrl = URL.createObjectURL(reportBlob);
-      dl.innerHTML = `
-        <a href="${url}" download="watermarked.png" class="btn">Download watermarked.png</a>
-        <a href="${reportUrl}" download="watermark_report.json" class="btn" style="margin-left:8px">Download Report (JSON)</a>
-      `;
-      output.textContent = result.msg;
+      const imgUrl = URL.createObjectURL(result.data);
+      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">Download watermarked.png</a>' +
+        '<a href="' + reportUrl + '" download="watermark_report.json" class="btn" style="margin-left:8px">Download Report (JSON)</a>';
+      setText('wm-output', result.msg);
     } else {
-      output.textContent = 'Error: ' + result.error;
+      setText('wm-output', 'Error: ' + result.error);
     }
-  } catch (e) { output.textContent = 'Error: ' + e.message; }
+  } catch (e) { setText('wm-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
-  btn.disabled = false; spinner.style.display = 'none';
+  btn.disabled = false; spinner('wm-spinner', false);
 }
 
 async function watermarkExtract() {
   const btn = document.getElementById('wm-btn-ex');
-  const spinner = document.getElementById('wm-spinner');
   const resultDiv = document.getElementById('wm-result');
   const output = document.getElementById('wm-output');
   const dl = document.getElementById('wm-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
-  const type = parseInt(document.getElementById('wm-type-ex').value);
-  const pw = document.getElementById('wm-password-ex').value || null;
-  const imgFile = document.getElementById('wm-image-ex').files[0];
-  if (!imgFile) { output.textContent = 'Please select a stego image'; resultDiv.style.display = 'block'; return; }
+  const type = parseInt(getVal('wm-type-ex'));
+  const pw = getVal('wm-password-ex') || null;
+  const imgFile = getFile('wm-image-ex');
+  if (!imgFile) { setText('wm-output', 'Please select a stego image'); resultDiv.style.display = 'block'; return; }
 
-  btn.disabled = true; spinner.style.display = 'block';
+  btn.disabled = true; spinner('wm-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
+  setText('wm-output', 'Processing...');
 
   try {
-    const imgData = await imgFile.arrayBuffer();
-    writeFile('stego.png', imgData);
-    const jsonStr = pyodide.runPython(`extract_watermark(${type}, ${pw ? repr(pw) : 'None'})`);
-    const result = JSON.parse(jsonStr);
+    const result = await watermarkExtract(type, imgFile, pw);
     if (result.ok) {
       let text = result.msg + '\n';
-      const reportData = { algorithm: type, message: result.msg, files: {}, status: 'ok' };
-      for (const [name, b64] of Object.entries(result.files || {})) {
-        text += `\n  ${name}: extracted`;
-        reportData.files[name] = `${b64.length > 100 ? '...' : ''}`;
-        const blob = base64ToBlob(b64, 'application/octet-stream');
-        const url = URL.createObjectURL(blob);
-        dl.innerHTML += `<a href="${url}" download="${name}" class="btn" style="margin:4px">Download ${name}</a> `;
+      const reportData = { algorithm: type, message: result.msg, status: 'ok' };
+      dl.innerHTML = '';
+      if (result.files) {
+        for (const [name, data] of Object.entries(result.files)) {
+          text += '\n  ' + name + ': extracted';
+          const blob = new Blob([data], { type: 'application/octet-stream' });
+          downloadBlob(blob, name, 'wm-download');
+        }
       }
-      const report = JSON.stringify(reportData, null, 2);
-      const reportBlob = new Blob([report], { type: 'application/json' });
-      const reportUrl = URL.createObjectURL(reportBlob);
-      dl.innerHTML += `<a href="${reportUrl}" download="extract_report.json" class="btn" style="margin:4px">Download Report (JSON)</a>`;
-      output.textContent = text;
+      const reportBlob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+      downloadBlob(reportBlob, 'extract_report.json', 'wm-download');
+      setText('wm-output', text);
     } else {
-      output.textContent = 'Error: ' + result.error;
+      setText('wm-output', 'Error: ' + result.error);
     }
-  } catch (e) { output.textContent = 'Error: ' + e.message; }
+  } catch (e) { setText('wm-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
-  btn.disabled = false; spinner.style.display = 'none';
+  btn.disabled = false; spinner('wm-spinner', false);
 }
 
+// ── Fingerprint tab ──
 async function fingerprintFile() {
   const btn = document.getElementById('fp-btn');
-  const spinner = document.getElementById('fp-spinner');
   const resultDiv = document.getElementById('fp-result');
   const output = document.getElementById('fp-output');
   const dl = document.getElementById('fp-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
-  const file = document.getElementById('fp-file').files[0];
-  if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
+  const file = getFile('fp-file');
+  if (!file) { setText('fp-output', 'Please select a file'); resultDiv.style.display = 'block'; return; }
 
-  btn.disabled = true; spinner.style.display = 'block';
+  btn.disabled = true; spinner('fp-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
+  setText('fp-output', 'Processing...');
 
   try {
-    const data = await file.arrayBuffer();
-    writeFile(file.name, data);
-    const jsonStr = pyodide.runPython(`fingerprint_file_data(${repr(file.name)})`);
-    const result = JSON.parse(jsonStr);
+    const result = await fingerprintFile(file);
     const pretty = JSON.stringify(result, null, 2);
 
-    // Build formatted display
     let html = '<table class="meta-table">';
-    html += `<tr><td>File</td><td>${escHtml(result.file_info.file_name)}</td></tr>`;
-    html += `<tr><td>Size</td><td>${(result.file_info.file_size_bytes / 1024).toFixed(1)} KB</td></tr>`;
+    html += '<tr><td>File</td><td>' + escHtml(result.file_info.file_name) + '</td></tr>';
+    html += '<tr><td>Size</td><td>' + (result.file_info.file_size_bytes / 1024).toFixed(1) + ' KB</td></tr>';
     if (result.file_info.width) {
-      html += `<tr><td>Dimensions</td><td>${result.file_info.width} x ${result.file_info.height}</td></tr>`;
-      html += `<tr><td>Format</td><td>${result.file_info.format}</td></tr>`;
+      html += '<tr><td>Dimensions</td><td>' + result.file_info.width + ' x ' + result.file_info.height + '</td></tr>';
+      html += '<tr><td>Format</td><td>' + escHtml(result.file_info.format) + '</td></tr>';
     }
     html += '</table>';
 
-    // Hash families table
     const familyOrder = [
       { label: 'SHA-2', keys: ['SHA-1','SHA-224','SHA-256','SHA-384','SHA-512'] },
       { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
@@ -509,21 +244,22 @@ async function fingerprintFile() {
       { label: 'BLAKE2', keys: ['BLAKE2b','BLAKE2s'] },
     ];
     for (const family of familyOrder) {
-      html += `<div style="margin-top:12px;font-weight:700;font-size:0.85rem">${family.label}</div>`;
+      const hasAny = family.keys.some(k => result.hashes[k]);
+      if (!hasAny) continue;
+      html += '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">' + family.label + '</div>';
       html += '<table class="meta-table">';
       for (const key of family.keys) {
         const v = result.hashes[key];
-        if (v) html += `<tr><td style="width:100px">${key}</td><td><code style="font-size:0.65rem">${v}</code></td></tr>`;
+        if (v) html += '<tr><td style="width:100px">' + key + '</td><td><code style="font-size:0.65rem">' + v + '</code></td></tr>';
       }
       html += '</table>';
     }
 
-    // Perceptual hashes
     if (result.perceptual_hashes && Object.keys(result.perceptual_hashes).length > 0) {
-      html += `<div style="margin-top:12px;font-weight:700;font-size:0.85rem">Perceptual (image hashes)</div>`;
+      html += '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">Perceptual (image hashes)</div>';
       html += '<table class="meta-table">';
       for (const [k, v] of Object.entries(result.perceptual_hashes)) {
-        html += `<tr><td style="width:100px">${k}</td><td><code style="font-size:0.65rem">${v}</code></td></tr>`;
+        html += '<tr><td style="width:100px">' + k + '</td><td><code style="font-size:0.65rem">' + v + '</code></td></tr>';
       }
       html += '</table>';
     }
@@ -532,211 +268,55 @@ async function fingerprintFile() {
 
     const blob = new Blob([pretty], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    dl.innerHTML = `<a href="${url}" download="${file.name}.fingerprint.json" class="btn">Download JSON</a>`;
-  } catch (e) { output.textContent = 'Error: ' + e.message; }
+    dl.innerHTML = '<a href="' + url + '" download="' + file.name + '.fingerprint.json" class="btn">Download JSON</a>';
+  } catch (e) { setText('fp-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
-  btn.disabled = false; spinner.style.display = 'none';
+  btn.disabled = false; spinner('fp-spinner', false);
 }
 
-function repr(s) { return JSON.stringify(s); }
-
-function escHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-function base64ToBlob(b64, mime) {
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-  return new Blob([arr], { type: mime });
-}
-
+// ── Metadata tab ──
 async function readMetadata() {
   const btn = document.getElementById('md-btn');
-  const spinner = document.getElementById('md-spinner');
   const resultDiv = document.getElementById('md-result');
   const output = document.getElementById('md-output');
   const dl = document.getElementById('md-download');
 
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
-  const file = document.getElementById('md-file').files[0];
-  if (!file) { output.textContent = 'Please select an image'; resultDiv.style.display = 'block'; return; }
+  const file = getFile('md-file');
+  if (!file) { setText('md-output', 'Please select an image'); resultDiv.style.display = 'block'; return; }
 
-  btn.disabled = true; spinner.style.display = 'block';
+  btn.disabled = true; spinner('md-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
+  setText('md-output', 'Processing...');
 
   try {
-    const data = await file.arrayBuffer();
-    writeFile(file.name, data);
-    const jsonStr = pyodide.runPython(`read_metadata_web(${repr(file.name)})`);
-    const result = JSON.parse(jsonStr);
+    const result = await readMetadata(file);
     const pretty = JSON.stringify(result, null, 2);
 
-    let html = `<table class="meta-table">`;
-    html += `<tr><td>File</td><td>${escHtml(result.file)}</td></tr>`;
-    html += `<tr><td>Size</td><td>${(result.size / 1024).toFixed(1)} KB</td></tr>`;
-    html += `<tr><td>SHA-256</td><td><code>${result.sha256}</code></td></tr>`;
+    let html = '<table class="meta-table">';
+    html += '<tr><td>File</td><td>' + escHtml(result.file) + '</td></tr>';
+    html += '<tr><td>Size</td><td>' + (result.size / 1024).toFixed(1) + ' KB</td></tr>';
+    html += '<tr><td>SHA-256</td><td><code>' + result.sha256 + '</code></td></tr>';
     if (result.image) {
-      html += `<tr><td>Dimensions</td><td>${result.image.width} x ${result.image.height}</td></tr>`;
-      html += `<tr><td>Mode</td><td>${result.image.mode}</td></tr>`;
-      html += `<tr><td>Format</td><td>${result.image.format}</td></tr>`;
+      html += '<tr><td>Dimensions</td><td>' + result.image.width + ' x ' + result.image.height + '</td></tr>';
+      html += '<tr><td>Mode</td><td>' + result.image.mode + '</td></tr>';
+      html += '<tr><td>Format</td><td>' + escHtml(result.image.format) + '</td></tr>';
     }
     if (result.exif) {
-      html += `<tr><td colspan="2" style="font-weight:700;padding-top:12px">EXIF</td></tr>`;
+      html += '<tr><td colspan="2" style="font-weight:700;padding-top:12px">EXIF</td></tr>';
       for (const [k, v] of Object.entries(result.exif)) {
-        if (v && v !== '0') html += `<tr><td style="padding-left:12px">${escHtml(k)}</td><td>${escHtml(v)}</td></tr>`;
+        if (v && v !== '0') html += '<tr><td style="padding-left:12px">' + escHtml(k) + '</td><td>' + escHtml(v) + '</td></tr>';
       }
     }
     if (result.error) {
-      html += `<tr><td style="color:var(--danger)">Error</td><td>${escHtml(result.error)}</td></tr>`;
+      html += '<tr><td style="color:var(--danger)">Error</td><td>' + escHtml(result.error) + '</td></tr>';
     }
-    html += `</table>`;
+    html += '</table>';
     output.innerHTML = html;
 
     const blob = new Blob([pretty], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    dl.innerHTML = `<a href="${url}" download="${file.name}.metadata.json" class="btn">Download JSON</a>`;
-  } catch (e) { output.textContent = 'Error: ' + e.message; }
+    dl.innerHTML = '<a href="' + url + '" download="' + file.name + '.metadata.json" class="btn">Download JSON</a>';
+  } catch (e) { setText('md-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
-  btn.disabled = false; spinner.style.display = 'none';
+  btn.disabled = false; spinner('md-spinner', false);
 }
-
-async function timestampHash() {
-  const btn = document.getElementById('ts-btn');
-  const spinner = document.getElementById('ts-spinner');
-  const resultDiv = document.getElementById('ts-result');
-  const output = document.getElementById('ts-output');
-  const dl = document.getElementById('ts-download');
-
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
-  const file = document.getElementById('ts-file').files[0];
-  if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
-
-  btn.disabled = true; spinner.style.display = 'block';
-  resultDiv.style.display = 'none'; dl.innerHTML = '';
-
-  try {
-    const data = await file.arrayBuffer();
-    writeFile(file.name, data);
-    const jsonStr = pyodide.runPython(`hash_file_web(${repr(file.name)})`);
-    const result = JSON.parse(jsonStr);
-    output.textContent = `SHA-256: ${result.sha256}`;
-    const lines = `SHA-256 (${file.name}) = ${result.sha256}`;
-    const blob = new Blob([lines], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    dl.innerHTML = `<a href="${url}" download="${file.name}.sha256.txt" class="btn">Download .sha256.txt</a>`;
-  } catch (e) { output.textContent = 'Error: ' + e.message; }
-  resultDiv.style.display = 'block';
-  btn.disabled = false; spinner.style.display = 'none';
-}
-
-async function timestampOTS() {
-  const btn = document.getElementById('ts-ots-btn');
-  const spinner = document.getElementById('ts-spinner');
-  const resultDiv = document.getElementById('ts-result');
-  const output = document.getElementById('ts-output');
-  const dl = document.getElementById('ts-download');
-
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
-  const file = document.getElementById('ts-ots-file').files[0];
-  if (!file) { output.textContent = 'Please select a file'; resultDiv.style.display = 'block'; return; }
-
-  btn.disabled = true; spinner.style.display = 'block';
-  resultDiv.style.display = 'none'; dl.innerHTML = '';
-
-  try {
-    const data = await file.arrayBuffer();
-    writeFile(file.name, data);
-    output.textContent = 'Loading OpenTimestamps...';
-
-    // Load cryptography WASM package first, then install opentimestamps
-    let otsReady = false;
-    try {
-      await pyodide.loadPackage('cryptography');
-      const micropip = pyodide.pyimport('micropip');
-      await micropip.install('opentimestamps');
-      otsReady = true;
-    } catch (e) {
-      otsReady = false;
-    }
-
-    if (!otsReady) {
-      // Fallback: just SHA-256
-      const jsonStr = pyodide.runPython(`hash_file_web(${repr(file.name)})`);
-      const result = JSON.parse(jsonStr);
-      output.textContent = `OpenTimestamps unavailable (cryptography not in Pyodide). SHA-256: ${result.sha256}`;
-      const lines = `SHA-256 (${file.name}) = ${result.sha256}`;
-      const blob = new Blob([lines], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      dl.innerHTML = `<a href="${url}" download="${file.name}.sha256.txt" class="btn">Download .sha256.txt</a>`;
-      btn.disabled = false; spinner.style.display = 'none';
-      return;
-    }
-
-    // Create OTS timestamp
-    const jsonStr = pyodide.runPython(`ots_create_web(${repr(file.name)})`);
-    const result = JSON.parse(jsonStr);
-    if (!result.ok) throw new Error(result.error);
-
-    const sha256 = result.sha256;
-    const otsBlob = base64ToBlob(result.ots_b64, 'application/octet-stream');
-    const otsUrl = URL.createObjectURL(otsBlob);
-    const shaLines = `SHA-256 (${file.name}) = ${sha256}`;
-    const shaBlob = new Blob([shaLines], { type: 'text/plain' });
-    const shaUrl = URL.createObjectURL(shaBlob);
-
-    output.innerHTML = `SHA-256: <code>${sha256}</code><br><br>.ots file created. Calendar submission attempted (may fail due to CORS in browser).`;
-    dl.innerHTML = `
-      <a href="${otsUrl}" download="${file.name}.ots" class="btn">Download .ots</a>
-      <a href="${shaUrl}" download="${file.name}.sha256.txt" class="btn" style="margin-left:8px">Download .sha256.txt</a>
-    `;
-  } catch (e) { output.textContent = 'Error: ' + e.message; }
-  resultDiv.style.display = 'block';
-  btn.disabled = false; spinner.style.display = 'none';
-}
-
-async function verifyOTS() {
-  const btn = document.getElementById('ts-verify-btn');
-  const spinner = document.getElementById('ts-spinner');
-  const resultDiv = document.getElementById('ts-result');
-  const output = document.getElementById('ts-output');
-  const dl = document.getElementById('ts-download');
-
-  if (!ready) { output.textContent = 'Python engine ' + (initError ? 'failed to load. Scroll up and click Retry, or use the desktop app.' : 'still loading — please wait, especially on mobile it can take 30-60s...'); resultDiv.style.display = 'block'; return; }
-  const file = document.getElementById('ts-verify-file').files[0];
-  const otsFile = document.getElementById('ts-ots-proof').files[0];
-  if (!file || !otsFile) { output.textContent = 'Please select both a file and its .ots proof'; resultDiv.style.display = 'block'; return; }
-
-  btn.disabled = true; spinner.style.display = 'block';
-  resultDiv.style.display = 'none'; dl.innerHTML = '';
-
-  try {
-    const data = await file.arrayBuffer();
-    const otsData = await otsFile.arrayBuffer();
-    writeFile(file.name, data);
-    writeFile(otsFile.name, otsData);
-
-    // Try loading OTS library if not already loaded
-    try {
-      await pyodide.loadPackage('cryptography');
-      const micropip = pyodide.pyimport('micropip');
-      await micropip.install('opentimestamps');
-    } catch (e) { /* if already loaded, fine */ }
-
-    const jsonStr = pyodide.runPython(`ots_verify_web(${repr(file.name)}, ${repr(otsFile.name)})`);
-    const result = JSON.parse(jsonStr);
-    if (!result.ok) throw new Error(result.error);
-
-    if (result.match) {
-      output.innerHTML = `<span style="color:var(--success);font-weight:700">VERIFIED</span> — SHA-256 hash matches the .ots proof.<br><br>File hash: <code style="font-size:0.7rem">${result.file_sha256}</code><br>OTS hash:  <code style="font-size:0.7rem">${result.ots_sha256}</code>`;
-    } else {
-      output.innerHTML = `<span style="color:var(--danger);font-weight:700">MISMATCH</span> — The file has been modified or the .ots proof is for a different file.<br><br>File hash: <code style="font-size:0.7rem">${result.file_sha256}</code><br>OTS hash:  <code style="font-size:0.7rem">${result.ots_sha256}</code>`;
-    }
-  } catch (e) { output.textContent = 'Error: ' + e.message; }
-  resultDiv.style.display = 'block';
-  btn.disabled = false; spinner.style.display = 'none';
-}
-
-init();
