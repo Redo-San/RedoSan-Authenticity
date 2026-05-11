@@ -16,6 +16,10 @@
   <a href="#" data-page="fingerprint">Fingerprint</a>
   <a href="#" data-page="metadata">Metadata</a>
   <a href="#" data-page="timestamp">Timestamp</a>
+  <a href="#" data-page="about">About</a>
+  <a href="#" data-page="privacy">Privacy</a>
+  <a href="#" data-page="contact">Contact</a>
+  <a href="#" data-page="social">Social</a>
 </nav>
 
 <main class="container" id="app">
@@ -218,10 +222,88 @@
       <div id="ts-download" style="margin-top:12px;text-align:center"></div>
     </div>
   </section>
+
+  <!-- About -->
+  <section id="page-about" class="page">
+    <div class="static-page">
+      <h2>About RedoSan Authenticity</h2>
+      <p><strong>RedoSan Authenticity</strong> is an open-source digital authenticity tool that runs entirely in your browser. No files are ever uploaded to any server — all processing happens client-side.</p>
+      <p>We provide a comprehensive suite of tools for digital forensics and media verification:</p>
+      <ul>
+        <li><strong>Watermarking</strong> — 9 algorithms including LSB, DCT, DWT, neural-style, and forensic watermarking</li>
+        <li><strong>Fingerprinting</strong> — Cryptographic hashing (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) and perceptual image hashing</li>
+        <li><strong>Metadata</strong> — Read EXIF, dimensions, format, and color mode from images</li>
+        <li><strong>Timestamping</strong> — SHA-256 hashing with OpenTimestamps verification support</li>
+      </ul>
+      <p>Built with privacy as a core principle. Your files never leave your device.</p>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section id="page-privacy" class="page">
+    <div class="static-page">
+      <h2>Privacy Policy</h2>
+      <p><strong>Your data stays on your device.</strong> RedoSan Authenticity is a 100% client-side application. All processing is done in your browser using JavaScript. No files, metadata, or any other data are transmitted to any server.</p>
+      <h3>What we collect</h3>
+      <p>Nothing. We do not collect, store, or transmit any personal data, files, or analytics. The application runs entirely on GitHub Pages and no backend server is involved.</p>
+      <h3>Third-party libraries</h3>
+      <p>We load JavaScript libraries from CDNs (<a href="https://cdnjs.cloudflare.com" target="_blank" rel="noopener">cdnjs</a> and <a href="https://www.jsdelivr.com" target="_blank" rel="noopener">jsdelivr</a>) for PDF and DOCX export functionality. These CDNs may have their own logging and analytics. No data from your files is shared with these services.</p>
+      <h3>Changes</h3>
+      <p>This policy may be updated occasionally. Continued use of the tool constitutes acceptance of the current policy.</p>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="page-contact" class="page">
+    <div class="static-page">
+      <h2>Contact Us</h2>
+      <p>Have questions, suggestions, or found a bug? We'd love to hear from you.</p>
+      <div class="contact-links">
+        <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" class="contact-card">
+          <span class="contact-icon">🐛</span>
+          <span class="contact-title">GitHub Issues</span>
+          <span class="contact-desc">Report bugs &amp; request features</span>
+        </a>
+        <a href="https://github.com/Redo-San" target="_blank" rel="noopener" class="contact-card">
+          <span class="contact-icon">💻</span>
+          <span class="contact-title">GitHub Profile</span>
+          <span class="contact-desc">Follow the developer on GitHub</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social -->
+  <section id="page-social" class="page">
+    <div class="static-page">
+      <h2>Follow Us</h2>
+      <p>Stay connected and follow RedoSan on social media.</p>
+      <div class="social-grid">
+        <a href="https://github.com/Redo-San" target="_blank" rel="noopener" class="social-card">
+          <span class="social-icon">🐙</span>
+          <span class="social-name">GitHub</span>
+          <span class="social-handle">@Redo-San</span>
+        </a>
+        <a href="https://github.com/Redo-San/RedoSan-Authenticity" target="_blank" rel="noopener" class="social-card">
+          <span class="social-icon">📦</span>
+          <span class="social-name">Repository</span>
+          <span class="social-handle">RedoSan-Authenticity</span>
+        </a>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer>
-  RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves your device
+  <div class="footer-links">
+    <a href="#" data-page="about">About</a>
+    <a href="#" data-page="privacy">Privacy</a>
+    <a href="#" data-page="contact">Contact</a>
+    <a href="#" data-page="social">Social</a>
+  </div>
+  <div class="footer-copy">
+    RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves your device
+  </div>
 </footer>
 
 <script src="Style_Web_Page/shared.js"></script>

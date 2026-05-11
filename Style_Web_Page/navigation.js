@@ -1,5 +1,5 @@
 // ── Page navigation ──
-document.querySelectorAll('nav a[data-page]').forEach(a => {
+document.querySelectorAll('nav a[data-page], .footer-links a[data-page]').forEach(a => {
   a.addEventListener('click', e => { e.preventDefault(); showPage(a.dataset.page); });
 });
 document.querySelectorAll('.card[data-page]').forEach(c => {
