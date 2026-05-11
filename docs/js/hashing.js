@@ -325,8 +325,11 @@ function md2(data) {
     for (var i = 0; i < final.length; i += 16) {
         for (var j = 0; j < 16; j++) state[16+j] = final[i+j];
         for (var j = 0; j < 16; j++) state[32+j] = state[16+j] ^ state[j];
-        for (var round = 0; round < 18; round++)
-            for (var k = 0; k < 48; k++) state[k] ^= S[state[k] ^ round];
+        var t2 = 0;
+        for (var round = 0; round < 18; round++) {
+            for (var k = 0; k < 48; k++) { t2 = state[k] ^= S[t2]; }
+            t2 = (t2 + round) & 0xFF;
+        }
     }
     return Array.from(state.slice(0,16)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
