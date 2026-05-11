@@ -15,11 +15,9 @@ venv/
 
 # IDE
 .idea/
+.vscode/
 *.swp
 *.swo
-.vscode/settings.json.local
-.vscode/launch.json.local
-.vscode/.env
 
 # OS
 .DS_Store
