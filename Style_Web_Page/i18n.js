@@ -71,8 +71,17 @@ async function detectLang() {
 
 async function detectLanguageFromLocation() {
   try {
-    // Use a free IP geolocation service
-    var response = await fetch('https://ipapi.co/json/');
+    // Use a free IP geolocation service with timeout
+    var controller = new AbortController();
+    var timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    var response = await fetch('https://ipapi.co/json/', {
+      signal: controller.signal,
+      mode: 'cors'
+    });
+    
+    clearTimeout(timeoutId);
+    
     if (!response.ok) throw new Error('Geolocation service unavailable');
     
     var data = await response.json();
@@ -86,7 +95,11 @@ async function detectLanguageFromLocation() {
       }
     }
   } catch (e) {
-    console.log('Geolocation detection failed:', e);
+    if (e.name === 'AbortError') {
+      console.log('Geolocation request timed out');
+    } else {
+      console.log('Geolocation detection failed:', e.message);
+    }
   }
   
   return null;
