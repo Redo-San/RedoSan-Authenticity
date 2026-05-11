@@ -1,58 +1,58 @@
-// ── SHA-3 (Keccak) ──
-var KECCAK_ROUNDS = 24;
-var SHA3_RC = [0x1n,0x8082n,0x8000000080008000n,0x8000000000008080n,0x8000000000008009n,0x800000000000008an,0x8000000000000088n,0x8000000000808009n,0x800000000000000en,0x800000000000008bn,0x800000000080000bn,0x800000000000808bn,0x800000008000000bn,0x800000008000800an,0x8000000000000080n,0x800000008000000fn,0x8000000080008008n,0x8000000000000093n,0x800000008000800an,0x8000000000000096n,0x8000000000808003n,0x8000000000808083n,0x8000000000000280n,0x80000000800000a5n];
+// ── SHA-3 (fast 32-bit pair arithmetic, no BigInt) ──
 var SHA3_ROTC = [1,3,6,10,15,21,28,36,45,55,2,14,27,41,52,8,25,43,62,18,39,61,20,44];
-function keccakF(state) {
+var SHA3_RC = [
+    0x00000001,0x00000000,0x00008082,0x00000000,0x80008000,0x80000000,0x00008080,0x80000000,
+    0x00008009,0x80000000,0x0000008A,0x80000000,0x00000088,0x80000000,0x00808009,0x80000000,
+    0x0000000E,0x80000000,0x0000008B,0x80000000,0x0080000B,0x80000000,0x0000808B,0x80000000,
+    0x8000000B,0x80000000,0x8000800A,0x80000000,0x00000080,0x80000000,0x8000000F,0x80000000,
+    0x80008008,0x80000000,0x00000093,0x80000000,0x8000800A,0x80000000,0x00000096,0x80000000,
+    0x00808003,0x80000000,0x00808083,0x80000000,0x00000280,0x80000000,0x800000A5,0x80000000
+];
+function keccakF(st) {
+    var C0 = [0,0,0,0,0], C1 = [0,0,0,0,0], D0, D1, x, y, i, t, xs, ys, idx, n, v0, v1;
     for (var r = 0; r < 24; r++) {
-        var C = [0n,0n,0n,0n,0n];
-        for (var x = 0; x < 5; x++) C[x] = state[x] ^ state[x+5] ^ state[x+10] ^ state[x+15] ^ state[x+20];
-        var D = [0n,0n,0n,0n,0n];
-        for (var x = 0; x < 5; x++) D[x] = C[(x+4)%5] ^ (C[(x+1)%5] << 1n | C[(x+1)%5] >> 63n);
-        for (var x = 0; x < 25; x++) state[x] ^= D[x%5];
-        var t = state[1];
-        for (var x = 0; x < 24; x++) {
-            var xs = [0,1,2,3,4,1,2,3,4,0,2,3,4,0,1,3,4,0,1,2,4,0,1,2,3][x];
-            var ys = [0,1,2,3,4,3,4,0,1,2,1,2,3,4,0,4,0,1,2,3,2,3,4,0,1][x];
-            var idx = xs * 5 + ys;
-            state[idx] = state[idx] << BigInt(SHA3_ROTC[x]) | state[idx] >> BigInt(64 - SHA3_ROTC[x]);
+        for (x = 0; x < 5; x++) {
+            i = x*2; C0[x] = st[i]^st[i+10]^st[i+20]^st[i+30]^st[i+40]; C1[x] = st[i+1]^st[i+11]^st[i+21]^st[i+31]^st[i+41];
         }
-        for (var x = 0; x < 25; x++) { var t2 = state[x]; state[x] = t; t = t2; }
-        for (var x = 0; x < 25; x += 5) {
-            var t0 = state[x], t1 = state[x+1], t2 = state[x+2], t3 = state[x+3], t4 = state[x+4];
-            state[x] ^= (~t1 & t2);
-            state[x+1] ^= (~t2 & t3);
-            state[x+2] ^= (~t3 & t4);
-            state[x+3] ^= (~t4 & t0);
-            state[x+4] ^= (~t0 & t1);
+        for (x = 0; x < 5; x++) {
+            var xp1 = (x+1)%5, xm1 = (x+4)%5;
+            D0 = C0[xm1] ^ ((C0[xp1]<<1)|(C1[xp1]>>>31)); D1 = C1[xm1] ^ ((C1[xp1]<<1)|(C0[xp1]>>>31));
+            for (y = 0; y < 5; y++) { idx = y*10 + x*2; st[idx] ^= D0; st[idx+1] ^= D1; }
         }
-        state[0] ^= SHA3_RC[r];
+        t = st[2]; var th = st[3]; xs = [0,1,2,3,4,1,2,3,4,0,2,3,4,0,1,3,4,0,1,2,4,0,1,2,3]; ys = [0,1,2,3,4,3,4,0,1,2,1,2,3,4,0,4,0,1,2,3,2,3,4,0,1];
+        for (x = 0; x < 24; x++) {
+            idx = (xs[x]*5+ys[x])*2; v0 = st[idx]; v1 = st[idx+1]; n = SHA3_ROTC[x];
+            st[idx] = n<32 ? ((v0<<n)|(v1>>>(32-n)))>>>0 : ((v1<<(n-32))|(v0>>>(64-n)))>>>0;
+            st[idx+1] = n<32 ? ((v1<<n)|(v0>>>(32-n)))>>>0 : ((v0<<(n-32))|(v1>>>(64-n)))>>>0;
+        }
+        for (x = 0; x < 25; x++) { idx = x*2; var t2l = st[idx], t2h = st[idx+1]; st[idx] = t; st[idx+1] = th; t = t2l; th = t2h; }
+        for (y = 0; y < 5; y++) for (x = 0; x < 5; x++) {
+            i = y*10+x*2; var ip1 = y*10+((x+1)%5)*2, ip2 = y*10+((x+2)%5)*2;
+            st[i] ^= (~st[ip1] & st[ip2]); st[i+1] ^= (~st[ip1+1] & st[ip2+1]);
+        }
+        st[0] ^= SHA3_RC[r*2]; st[1] ^= SHA3_RC[r*2+1];
     }
 }
-async function sha3(data, bits) {
-    var rate = 1600 - bits * 2;
-    var r = rate >> 3, lanes = rate / 64;
-    var state = [0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n];
+function sha3(data, bits) {
+    var rate = 1600 - bits*2, r = rate>>3, lanes = rate/64|0, st = new Uint32Array(50);
     var i = 0;
-    var lastYield = Date.now();
-    for (; i + r <= data.length; i += r) {
-        for (var j = 0; j < r; j++) state[j >> 3] ^= BigInt(data[i + j]) << BigInt((j & 7) << 3);
-        keccakF(state);
-        if (Date.now() - lastYield > 10) { await new Promise(function(r){setTimeout(r,0);}); lastYield = Date.now(); }
+    for (; i+r <= data.length; i += r) {
+        for (var j = 0; j < r; j++) { var half = j&4?1:0; st[(j>>3)*2+half] ^= (data[i+j])<<((j&3)<<3); }
+        keccakF(st);
     }
     var rem = data.length - i;
-    for (var j = 0; j < rem; j++) state[j >> 3] ^= BigInt(data[i + j]) << BigInt((j & 7) << 3);
-    state[rem >> 3] ^= BigInt(0x06) << BigInt((rem & 7) << 3);
-    state[lanes - 1] ^= 0x8000000000000000n;
-    keccakF(state);
-    var outBytes = bits >> 3;
-    var result = new Uint8Array(outBytes);
-    for (var i = 0; i < outBytes; i++) result[i] = Number(state[i >> 3] >> BigInt((i & 7) << 3) & 0xFFn);
-    return Array.from(result).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+    for (var j = 0; j < rem; j++) { var half = j&4?1:0; st[(j>>3)*2+half] ^= (data[i+j])<<((j&3)<<3); }
+    st[(rem>>3)*2+(rem&4?1:0)] ^= 0x06 << ((rem&3)<<3);
+    st[(lanes-1)*2] ^= 0x80000000; st[(lanes-1)*2+1] ^= 0x80000000;
+    keccakF(st);
+    var outBytes = bits>>3, result = new Uint8Array(outBytes);
+    for (var j = 0; j < outBytes; j++) result[j] = (st[(j>>3)*2+(j&4?1:0)] >> ((j&3)<<3)) & 0xFF;
+    return Array.from(result).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
-var sha3_224 = async function(d) { return await sha3(d, 224); };
-var sha3_256 = async function(d) { return await sha3(d, 256); };
-var sha3_384 = async function(d) { return await sha3(d, 384); };
-var sha3_512 = async function(d) { return await sha3(d, 512); };
+var sha3_224 = function(d) { return sha3(d, 224); };
+var sha3_256 = function(d) { return sha3(d, 256); };
+var sha3_384 = function(d) { return sha3(d, 384); };
+var sha3_512 = function(d) { return sha3(d, 512); };
 
 // ── BLAKE2b (64-byte digest) ──
 var B2IV = [0x6a09e667f3bcc908n,0xbb67ae8584caa73bn,0x3c6ef372fe94f82bn,0xa54ff53a5f1d36f1n,0x510e527fade682d1n,0x9b05688c2b3e6c1fn,0x1f83d9abfb41bd6bn,0x5be0cd19137e2179n];
@@ -419,10 +419,10 @@ async function fingerprintFile(file) {
     hashes['SHA-512'] = await hashAlgo('SHA-512', data);
 
     try {
-        hashes['SHA-3_224'] = await sha3_224(data);
-        hashes['SHA-3_256'] = await sha3_256(data);
-        hashes['SHA-3_384'] = await sha3_384(data);
-        hashes['SHA-3_512'] = await sha3_512(data);
+        hashes['SHA-3_224'] = sha3_224(data);
+        hashes['SHA-3_256'] = sha3_256(data);
+        hashes['SHA-3_384'] = sha3_384(data);
+        hashes['SHA-3_512'] = sha3_512(data);
     } catch(e) { console.error('SHA-3 error:', e); }
 
     try {
