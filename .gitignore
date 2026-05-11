@@ -35,8 +35,30 @@ Thumbs.db
 debug_redosan_log.txt
 redosan_debug.log
 
-# Binary tools (download separately)
-c2patool.exe
+# Desktop version (removed from GitHub, kept locally)
+RedoSan_Authenticity.py
+RedoSan_Authenticity_gui.py
+RedoSan_Authenticity.bat
+RedoSan_Authenticity_gui.bat
+RedoSan_Authenticity.sh
+RedoSan_Authenticity.vbs
+RedoSan_Authenticity_dragdrop.vbs
+Run_Online.bat
+Run_Online_GUI.bat
+redosan_online.py
+redosan_online_gui.py
+setup.bat
+setup_venv.bat
+setup_sendto.ps1
+install.py
+gui_parts/
+modules/
+web/
+pyproject.toml
+requirements.txt
+.keys/
+_archive/
+ c2patool.exe
 c2patool
 openstego.jar
 
