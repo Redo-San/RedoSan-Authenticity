@@ -1,9 +1,30 @@
 """
 Metadata + C2PA Provenance module — read/write metadata and C2PA for images, audio, video
+Canonical module; metadata.py re-exports from here.
 """
 
 import os, subprocess, json, shutil
 from datetime import datetime, timezone, timedelta
+
+
+# ---------------------------------------------------------------------------
+#  Configuration — cert paths (mutable, call configure_c2pa() to change)
+# ---------------------------------------------------------------------------
+
+C2PA_CERT_DIR = os.path.join(os.path.expanduser("~"), ".redosan", "c2pa")
+CERT_FILE = os.path.join(C2PA_CERT_DIR, "cert.pem")
+KEY_FILE  = os.path.join(C2PA_CERT_DIR, "key.pem")
+
+
+def configure_c2pa(cert_dir=None, cert_name=None, key_name=None):
+    """Update C2PA certificate paths at runtime."""
+    global C2PA_CERT_DIR, CERT_FILE, KEY_FILE
+    if cert_dir is not None:
+        C2PA_CERT_DIR = cert_dir
+    if cert_name is not None:
+        CERT_FILE = os.path.join(C2PA_CERT_DIR, cert_name)
+    if key_name is not None:
+        KEY_FILE = os.path.join(C2PA_CERT_DIR, key_name)
 
 
 # ---------------------------------------------------------------------------
@@ -82,10 +103,6 @@ VIDEO_EXT = {".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm", ".m4v", ".
 
 C2PA_READ_EXT  = {".jpg", ".jpeg", ".png", ".webp", ".avif", ".heic", ".heif", ".mp4", ".mov", ".gif", ".tiff", ".tif", ".flac", ".wav"}
 C2PA_WRITE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".avif", ".mp4", ".mov"}
-
-C2PA_CERT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".keys")
-CERT_FILE = os.path.join(C2PA_CERT_DIR, "c2pa_certs.pem")
-KEY_FILE  = os.path.join(C2PA_CERT_DIR, "c2pa_private.key")
 
 
 # ---------------------------------------------------------------------------
@@ -403,48 +420,164 @@ DIGITAL_SOURCE_TYPES = {
     "virtual":          "virtualRecording",
 }
 
+# Content type options for C2PA
+CONTENT_TYPE_OPTIONS = {
+    "1": ("AI Generated", "trainedAlgorithmicMedia"),
+    "2": ("AI Edited", "algorithmicMedia"),
+    "3": ("Digital Creation", "digitalCreation"),
+    "4": ("Digital Capture", "digitalCapture"),
+    "5": ("Composite", "composite"),
+    "6": ("Human Edited", "minorHumanEdits"),
+}
 
-def c2pa_build_manifest(description="", ai_generated=False, model_name="",
-                         digital_source="digital_creation", custom_assertions=None):
+
+def c2pa_build_manifest(
+    # Section 1: Identity (Required)
+    creator_name="",
+    creator_id="",
+
+    # Section 2: Content Origin (Required for AI content)
+    digital_source="digital_creation",
+    ai_model="",
+    description="",
+
+    # Section 3: Copyright (Required)
+    rights_holder="",
+    copyright_notice="",
+    license_url="",
+
+    # Section 4: AI Training Opt-out
+    opt_out_ai_training=False,
+
+    # Simple-style alias params (provenance.py compat)
+    ai_generated=False,
+    model_name="",
+
+    # Custom assertions (advanced use)
+    custom_assertions=None
+):
+    """
+    Build a comprehensive C2PA manifest with provenance fields.
+
+    Supports both rich calling convention (creator_name, rights_holder, ...)
+    and simple convention (ai_generated, model_name, ...).
+
+    Args:
+        creator_name: Name of the content creator
+        creator_id: Unique identifier (URL, ISNI, etc.)
+        digital_source: Type of content origin
+        ai_model: Name of AI model used
+        description: Brief description of the content
+        rights_holder: Name of the rights holder
+        copyright_notice: Copyright notice text
+        license_url: URL to the license (optional)
+        opt_out_ai_training: Whether to opt-out of AI training
+        ai_generated: Shortcut — marks as AI-generated content
+        model_name: Alias for ai_model (simple-style compat)
+        custom_assertions: Additional custom assertions
+
+    Returns:
+        dict: C2PA manifest JSON structure
+    """
+    from datetime import datetime, timezone
+
     ds_type = DIGITAL_SOURCE_TYPES.get(digital_source, "digitalCreation")
     ds_url = f"http://cv.iptc.org/newscodes/digitalsourcetype/{ds_type}"
+
+    # Override DS URL if ai_generated shortcut is used
     if ai_generated:
         ds_url = "http://ns.adobe.com/xap/1.0/sType/DigitalSourceType#AIContent"
+
+    # Use model_name as fallback for ai_model
+    resolved_model = ai_model or model_name or ""
+
+    # Build timestamp
+    timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+    # Build the actions assertion
+    actions_data = {
+        "actions": [{
+            "action": "c2pa.created",
+            "when": timestamp,
+            "softwareAgent": {
+                "name": resolved_model if resolved_model else "RedoSan Authenticity",
+                "version": "1.0"
+            },
+            "digitalSourceType": ds_url,
+        }]
+    }
+
+    # Build assertions list
+    assertions = [
+        {"label": "c2pa.actions", "data": actions_data},
+    ]
+
+    # Add CreativeWork assertion if any metadata fields are provided
+    has_meta = bool(creator_name or creator_id or description or
+                    rights_holder or copyright_notice or license_url)
+    if has_meta:
+        author = []
+        if creator_name:
+            author_info = {"@type": "Person", "name": creator_name}
+            if creator_id:
+                author_info["identifier"] = creator_id
+            author.append(author_info)
+
+        creative_work_data = {
+            "@context": "https://schema.org",
+            "@type": "CreativeWork"
+        }
+        if author:
+            creative_work_data["author"] = author
+        if description:
+            creative_work_data["description"] = description
+        if rights_holder:
+            creative_work_data["copyrightHolder"] = {"@type": "Organization", "name": rights_holder}
+        if copyright_notice:
+            creative_work_data["copyrightNotice"] = copyright_notice
+        if license_url:
+            creative_work_data["license"] = license_url
+
+        assertions.append({"label": "stds.schema-org.CreativeWork", "data": creative_work_data})
+
+    # Add simple provenance assertion for ai_generated/model_name style
+    if ai_generated or resolved_model:
+        extra = {}
+        if description:
+            extra["description"] = description
+        if ai_generated:
+            extra["ai_generated"] = True
+        if resolved_model:
+            extra["model"] = resolved_model
+        if extra:
+            assertions.append({"label": "org.redosan.provenance", "data": extra})
+
+    # Add AI training opt-out if requested
+    if opt_out_ai_training:
+        assertions.append({
+            "label": "cawg.training-mining",
+            "data": {
+                "entries": {
+                    "cawg.ai_inference": {"use": "notAllowed"},
+                    "cawg.ai_generative_training": {"use": "notAllowed"}
+                }
+            }
+        })
+
+    if custom_assertions:
+        assertions.extend(custom_assertions)
 
     manifest = {
         "claim_generator": "RedoSan Authenticity/1.0",
         "claim_generator_info": [{"name": "RedoSan Authenticity", "version": "1.0"}],
-        "assertions": [
-            {
-                "label": "c2pa.actions",
-                "data": {
-                    "actions": [{
-                        "action": "c2pa.created",
-                        "digitalSourceType": ds_url,
-                        "softwareAgent": {"name": "RedoSan Authenticity", "version": "1.0"},
-                    }]
-                }
-            }
-        ]
+        "assertions": assertions
     }
-
-    extra = {}
-    if description:
-        extra["description"] = description
-    if ai_generated:
-        extra["ai_generated"] = True
-    if model_name:
-        extra["model"] = model_name
-    if extra:
-        manifest["assertions"].append({"label": "org.redosan.provenance", "data": extra})
-
-    if custom_assertions:
-        manifest["assertions"].extend(custom_assertions)
 
     return manifest
 
 
 def c2pa_build_stego_manifest(algorithm="lsb", description=""):
+    """Build a manifest for steganography content."""
     return c2pa_build_manifest(
         description=description or f"Data hidden using {algorithm} steganography",
         digital_source="composite",
@@ -493,7 +626,6 @@ def _find_c2patool():
     exe = shutil.which("c2patool")
     if exe:
         return exe
-    # Check next to the script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_dir = os.path.dirname(script_dir)
     local = os.path.join(project_dir, "c2patool.exe")
@@ -525,7 +657,6 @@ def c2pa_write(filepath, manifest_dict):
     base, ext_f = os.path.splitext(filepath)
     output = f"{base}_c2pa{ext_f}"
 
-    # Write manifest to temp file
     fd, manifest_path = tempfile.mkstemp(suffix=".json")
     with os.fdopen(fd, "w") as f:
         json.dump(manifest_dict, f, ensure_ascii=False, indent=2)
