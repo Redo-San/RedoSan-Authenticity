@@ -130,6 +130,23 @@
     </div>
   </section>
 
+  <!-- Download Format Modal -->
+  <div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
+    <div class="modal-box">
+      <div class="modal-close" onclick="closeDownloadModal()">&times;</div>
+      <h3>Download Fingerprint</h3>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px">Choose a format:</p>
+      <div class="dl-grid">
+        <button class="dl-option" onclick="downloadFingerprint('json')"><span class="dl-icon">&#123;&#125;</span> JSON</button>
+        <button class="dl-option" onclick="downloadFingerprint('csv')"><span class="dl-icon">&#35;</span> CSV</button>
+        <button class="dl-option" onclick="downloadFingerprint('txt')"><span class="dl-icon">&#8471;</span> TXT</button>
+        <button class="dl-option" onclick="downloadFingerprint('xml')"><span class="dl-icon">&lt;/&gt;</span> XML</button>
+        <button class="dl-option" onclick="downloadFingerprint('html')"><span class="dl-icon">&#128196;</span> PDF</button>
+        <button class="dl-option" onclick="downloadFingerprint('doc')"><span class="dl-icon">&#128209;</span> DOCX</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Metadata -->
   <section id="page-metadata" class="page">
     <h2 style="margin-bottom:20px">Metadata Reader</h2>
