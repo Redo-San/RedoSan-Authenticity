@@ -240,9 +240,7 @@ async function fingerprintFile(file) {
     hashes['SHA-384'] = await hashAlgo('SHA-384', data);
     hashes['SHA-512'] = await hashAlgo('SHA-512', data);
     
-    // SHA-224 via truncated SHA-256 (not standard but practical)
-    const sha256full = await hashAlgo('SHA-256', data);
-    hashes['SHA-224'] = sha256full.substring(0, 56);
+    // SHA-224 is not supported by Web Crypto; skip
     
     // JS implementation of SHA-3 and BLAKE2 using a small embedded library
     try {
@@ -255,8 +253,8 @@ async function fingerprintFile(file) {
     } catch(e) {}
     try {
         if (typeof blake2b === 'function') {
-            hashes['BLAKE2b'] = blake2b(data);
-            hashes['BLAKE2s'] = blake2s(data);
+            hashes['BLAKE2b'] = await blake2b(data);
+            hashes['BLAKE2s'] = await blake2s(data);
         }
     } catch(e) {}
     
