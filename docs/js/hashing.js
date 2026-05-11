@@ -28,14 +28,16 @@ function keccakF(state) {
         state[0] ^= SHA3_RC[r];
     }
 }
-function sha3(data, bits) {
+async function sha3(data, bits) {
     var rate = 1600 - bits * 2;
     var r = rate >> 3, lanes = rate / 64;
     var state = [0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n,0n];
     var i = 0;
+    var lastYield = Date.now();
     for (; i + r <= data.length; i += r) {
         for (var j = 0; j < r; j++) state[j >> 3] ^= BigInt(data[i + j]) << BigInt((j & 7) << 3);
         keccakF(state);
+        if (Date.now() - lastYield > 10) { await new Promise(function(r){setTimeout(r,0);}); lastYield = Date.now(); }
     }
     var rem = data.length - i;
     for (var j = 0; j < rem; j++) state[j >> 3] ^= BigInt(data[i + j]) << BigInt((j & 7) << 3);
@@ -47,10 +49,10 @@ function sha3(data, bits) {
     for (var i = 0; i < outBytes; i++) result[i] = Number(state[i >> 3] >> BigInt((i & 7) << 3) & 0xFFn);
     return Array.from(result).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
 }
-var sha3_224 = function(d) { return sha3(d, 224); };
-var sha3_256 = function(d) { return sha3(d, 256); };
-var sha3_384 = function(d) { return sha3(d, 384); };
-var sha3_512 = function(d) { return sha3(d, 512); };
+var sha3_224 = async function(d) { return await sha3(d, 224); };
+var sha3_256 = async function(d) { return await sha3(d, 256); };
+var sha3_384 = async function(d) { return await sha3(d, 384); };
+var sha3_512 = async function(d) { return await sha3(d, 512); };
 
 // ── BLAKE2b (64-byte digest) ──
 var B2IV = [0x6a09e667f3bcc908n,0xbb67ae8584caa73bn,0x3c6ef372fe94f82bn,0xa54ff53a5f1d36f1n,0x510e527fade682d1n,0x9b05688c2b3e6c1fn,0x1f83d9abfb41bd6bn,0x5be0cd19137e2179n];
@@ -417,10 +419,10 @@ async function fingerprintFile(file) {
     hashes['SHA-512'] = await hashAlgo('SHA-512', data);
 
     try {
-        hashes['SHA-3_224'] = sha3_224(data);
-        hashes['SHA-3_256'] = sha3_256(data);
-        hashes['SHA-3_384'] = sha3_384(data);
-        hashes['SHA-3_512'] = sha3_512(data);
+        hashes['SHA-3_224'] = await sha3_224(data);
+        hashes['SHA-3_256'] = await sha3_256(data);
+        hashes['SHA-3_384'] = await sha3_384(data);
+        hashes['SHA-3_512'] = await sha3_512(data);
     } catch(e) { console.error('SHA-3 error:', e); }
 
     try {
