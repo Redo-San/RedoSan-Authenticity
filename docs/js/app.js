@@ -36,6 +36,11 @@ function switchOtsTab(mode) {
   document.querySelector('.tab-btn[data-ots-tab="' + mode + '"]').classList.add('active');
 }
 
+function escHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // ── Helper functions ──
 function setStatus(msg, cls) {
   const el = document.getElementById('py-status');
