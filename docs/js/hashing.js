@@ -212,10 +212,16 @@ function whash(imgData) {
             out2[y * size + x] = (a + b) / Math.SQRT2;
             out2[(y + half) * size + x] = (a - b) / Math.SQRT2;
         }
+    var vals = [];
+    for (var y = 0; y < 8; y++)
+        for (var x = 0; x < 8; x++)
+            vals.push(out2[y * size + x]);
+    var sorted = vals.slice().sort(function(a,b){return a-b;});
+    var median = sorted[32];
     var hash = 0n, idx = 0;
     for (var y = 0; y < 8; y++)
         for (var x = 0; x < 8; x++) {
-            if (out2[y * size + x] > 0) hash |= (1n << BigInt(idx));
+            if (out2[y * size + x] > median) hash |= (1n << BigInt(idx));
             idx++;
         }
     return hash.toString(16).padStart(16, '0');
