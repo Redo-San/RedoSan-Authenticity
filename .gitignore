@@ -71,3 +71,4 @@ installer_output/
 dist/
 build/
 *.spec
+c2patool.exe
