@@ -517,7 +517,7 @@ function b3_compress(s,blk,off,cl,ch,bl,fl){
   var v=new Uint32Array(16),i,r,si;
   for(i=0;i<8;i++)v[i]=s[i];
   v[8]=B3_IV[0];v[9]=B3_IV[1];v[10]=B3_IV[2];v[11]=B3_IV[3];
-  v[12]=cl;v[13]=ch;v[14]=bl;v[15]=fl;
+  v[12]=B3_IV[4]^cl;v[13]=B3_IV[5]^ch;v[14]=B3_IV[6]^bl;v[15]=B3_IV[7]^fl;
   var m=[];
   for(i=0;i<16;i++){m.push(b3_ld32(blk,off+i*4));v[i] ^= m[i];}
   function G(a,b,c,d,x,y){
@@ -539,7 +539,7 @@ function b3_xof(s,blk,off,cl,ch,bl,fl){
   var v=new Uint32Array(16),i,r,si;
   for(i=0;i<8;i++)v[i]=s[i];
   v[8]=B3_IV[0];v[9]=B3_IV[1];v[10]=B3_IV[2];v[11]=B3_IV[3];
-  v[12]=cl;v[13]=ch;v[14]=bl;v[15]=fl;
+  v[12]=B3_IV[4]^cl;v[13]=B3_IV[5]^ch;v[14]=B3_IV[6]^bl;v[15]=B3_IV[7]^fl;
   var m=[];
   for(i=0;i<16;i++){m.push(b3_ld32(blk,off+i*4));v[i] ^= m[i];}
   function G(a,b,c,d,x,y){
@@ -575,7 +575,7 @@ async function blake3(data){
       var blk=new Uint8Array(BL);blk.set(data.subarray(bs,be));
       var fl=0;if(b===0)fl|=1;if(b===nb-1)fl|=2;
       if(c===nc-1&&b===nb-1&&nc===1)fl|=8;
-      b3_compress(cv,blk,0,bs>>>0,Math.floor(bs/4294967296)>>>0,bw,fl);
+      var co=b*BL;b3_compress(cv,blk,0,co>>>0,Math.floor(co/4294967296)>>>0,bw,fl);
     }
     cvs.push(cv.slice());
   }
