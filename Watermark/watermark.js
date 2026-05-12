@@ -243,8 +243,9 @@ async function handleWatermarkEmbed() {
 
 async function updateCapacity() {
   const capEl = document.getElementById('wm-capacity');
+  const secretStatusEl = document.getElementById('wm-secret-status');
   const imgFile = getFile('wm-image');
-  if (!imgFile) { capEl.textContent = ''; return; }
+  if (!imgFile) { capEl.textContent = ''; secretStatusEl.textContent = ''; return; }
   const type = parseInt(getVal('wm-type') || '1');
   try {
     const loaded = await loadImage(imgFile);
@@ -260,10 +261,30 @@ async function updateCapacity() {
     } else if (type === 8) {
       bits = 512;
     }
-    const bytes = Math.floor(bits/8);
+    const capacityBytes = Math.floor(bits/8);
     const suffix = type === 9 ? ' (chrominance redundant)' : type === 4 ? ' (redundant x3)' : '';
-    capEl.textContent = `Capacity: ~${bytes.toLocaleString()} byte${bytes!==1?'s':''}${suffix} (${w}\u00d7${h} image)`;
-  } catch(e) { capEl.textContent = ''; }
+    const capText = `Capacity: ~${capacityBytes.toLocaleString()} byte${capacityBytes!==1?'s':''}${suffix} (${w}\u00d7${h} image)`;
+    capEl.textContent = capText;
+
+    const secretFile = getFile('wm-secret');
+    if (type === 5) {
+      secretStatusEl.textContent = '';
+    } else if (type === 8) {
+      secretStatusEl.textContent = '';
+    } else if (!secretFile) {
+      const maxSecretBytes = type === 4 ? Math.floor(capacityBytes * 3) : capacityBytes;
+      secretStatusEl.innerHTML = `<span style="color:var(--text-muted)">Max secret size: ~${maxSecretBytes.toLocaleString()} bytes</span>`;
+    } else {
+      const secretSize = secretFile.size;
+      const effectiveCapacity = type === 4 ? Math.floor(capacityBytes * 3) : capacityBytes;
+      if (secretSize <= effectiveCapacity) {
+        secretStatusEl.innerHTML = `<span style="color:#4caf50">\u2713 Secret file: ${secretSize.toLocaleString()} bytes — fits within capacity</span>`;
+      } else {
+        const excess = secretSize - effectiveCapacity;
+        secretStatusEl.innerHTML = `<span style="color:#f44336">\u2717 Secret file: ${secretSize.toLocaleString()} bytes — exceeds capacity by ${excess.toLocaleString()} bytes</span>`;
+      }
+    }
+  } catch(e) { capEl.textContent = ''; secretStatusEl.textContent = ''; }
 }
 
 async function handleWatermarkExtract() {
