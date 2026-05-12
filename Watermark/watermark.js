@@ -99,29 +99,17 @@ async function watermarkExtract(type, imageFile, password) {
     
     function extractData(bitsStr) {
         if (bitsStr.length < 32) return null;
-        // First attempt: decrypt first 8 bytes (needs 64+ bits), read length (old full-XOR format)
-        if (bitsStr.length >= 64) {
-            const raw8 = from_bits(bitsStr.substr(0, 64));
-            const dec8 = xor_bytes(raw8, key);
-            const dv = new DataView(dec8.buffer, dec8.byteOffset, dec8.byteLength);
-            var dlen = dv.getUint32(0);
-            if (dlen > 0 && dlen <= w * h * 3 / 8 && bitsStr.length >= (4 + dlen) * 8) {
-                const rawFull = from_bits(bitsStr.substr(0, (4 + dlen) * 8));
-                const decFull = xor_bytes(rawFull, key);
-                const result = decFull.slice(4);
-                if (result.length >= 2 && result[0] === 0xAA && result[1] === 0xBB)
-                    return result.slice(2);
-                return result;
-            }
-        }
-        // Fallback: plaintext length (handles new format + old no-password format)
-        dlen = parseInt(bitsStr.substr(0, 32), 2);
+        var dlen = parseInt(bitsStr.substr(0, 32), 2);
         if (dlen <= 0 || dlen > w * h * 3 / 8) return null;
         if (bitsStr.length < 32 + dlen * 8) return null;
         const enc = from_bits(bitsStr.substr(32, dlen * 8));
         const dec = xor_bytes(enc, key);
+        // New format: has [0xAA,0xBB] magic marker → confirm password correct, strip and return
         if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB)
             return dec.slice(2);
+        // No marker with password → wrong password (or old no-password format)
+        if (key && key.length) return null;
+        // Old format (no marker, no password) → return data as-is
         return dec;
     }
     
