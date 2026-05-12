@@ -233,13 +233,15 @@ function wm6_extract(imgData) {
 }
 
 // ── Algorithm 8: Fragile (SHA-256 hash embed) ──
-async function wm8_embed(imgData, secretData) {
+async function wm8_embed(imgData, secretData, key) {
     const hash = await sha256Hex(secretData);
     const hashBytes = new TextEncoder().encode(hash);
-    const b = bits(hashBytes);
+    let payload = new Uint8Array(hashBytes);
+    if (key && key.length) payload = xor_bytes(payload, key);
+    const b = bits(payload);
     return wm1_embed(imgData, b);
 }
-function wm8_extract(imgData) {
+function wm8_extract(imgData, key) {
     const { data, w, h } = imgData;
     let b = '';
     for (let y = 0; y < h && b.length < 512; y++) {
@@ -249,6 +251,7 @@ function wm8_extract(imgData) {
         }
     }
     if (b.length < 512) return null;
-    const hashBytes = from_bits(b.substr(0, 512));
-    return new TextDecoder().decode(hashBytes);
+    let dec = from_bits(b.substr(0, 512));
+    if (key && key.length) dec = xor_bytes(dec, key);
+    return new TextDecoder().decode(dec);
 }

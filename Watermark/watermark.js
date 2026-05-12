@@ -9,10 +9,15 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         var key = await pw_key(password);
     } else { key = new Uint8Array(0); }
     
-    const lenBytes = pack32(secret.length);
-    const fullPayload = new Uint8Array(4 + secret.length);
-    fullPayload.set(lenBytes); fullPayload.set(secret, 4);
-    const payload = xor_bytes(fullPayload, key);
+    // Format: [len (4 plaintext)] + [xor_bytes([0xAA,0xBB || secret], key)]
+    // len = 2 + secret.length (includes magic marker)
+    const magic = new Uint8Array([0xAA, 0xBB]);
+    const rawData = new Uint8Array(2 + secret.length);
+    rawData.set(magic); rawData.set(secret, 2);
+    const xored = xor_bytes(rawData, key);
+    const lenBytes = pack32(2 + secret.length);
+    const payload = new Uint8Array(4 + xored.length);
+    payload.set(lenBytes); payload.set(xored, 4);
     const payloadBits = bits(payload);
     
     const maxPixels = w * h * 3;
@@ -74,7 +79,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     
     else if (type === 8) {
         if (512 > maxPixels) return { ok: false, error: 'Image too small (need at least 171 pixels for 512-bit hash)' };
-        await wm8_embed(imgData, secret);
+        await wm8_embed(imgData, secret, key);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: 'Type 8 (Fragile): SHA-256 integrity hash embedded' };
     }
@@ -93,23 +98,31 @@ async function watermarkExtract(type, imageFile, password) {
     const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
     
     function extractData(bitsStr) {
-        if (bitsStr.length < 64) return null;
-        const raw8 = from_bits(bitsStr.substr(0, 64));
-        const dec8 = xor_bytes(raw8, key);
-        const dv = new DataView(dec8.buffer, dec8.byteOffset, dec8.byteLength);
-        var dlen = dv.getUint32(0);
-        var decFull;
-        if (dlen > 0 && dlen <= w * h * 3 / 8 && bitsStr.length >= (4 + dlen) * 8) {
-            const rawFull = from_bits(bitsStr.substr(0, (4 + dlen) * 8));
-            decFull = xor_bytes(rawFull, key);
-            return decFull.slice(4);
+        if (bitsStr.length < 32) return null;
+        // First attempt: decrypt first 8 bytes (needs 64+ bits), read length (old full-XOR format)
+        if (bitsStr.length >= 64) {
+            const raw8 = from_bits(bitsStr.substr(0, 64));
+            const dec8 = xor_bytes(raw8, key);
+            const dv = new DataView(dec8.buffer, dec8.byteOffset, dec8.byteLength);
+            var dlen = dv.getUint32(0);
+            if (dlen > 0 && dlen <= w * h * 3 / 8 && bitsStr.length >= (4 + dlen) * 8) {
+                const rawFull = from_bits(bitsStr.substr(0, (4 + dlen) * 8));
+                const decFull = xor_bytes(rawFull, key);
+                const result = decFull.slice(4);
+                if (result.length >= 2 && result[0] === 0xAA && result[1] === 0xBB)
+                    return result.slice(2);
+                return result;
+            }
         }
-        // Fallback: old format (plaintext length, XOR data only)
+        // Fallback: plaintext length (handles new format + old no-password format)
         dlen = parseInt(bitsStr.substr(0, 32), 2);
         if (dlen <= 0 || dlen > w * h * 3 / 8) return null;
         if (bitsStr.length < 32 + dlen * 8) return null;
         const enc = from_bits(bitsStr.substr(32, dlen * 8));
-        return xor_bytes(enc, key);
+        const dec = xor_bytes(enc, key);
+        if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB)
+            return dec.slice(2);
+        return dec;
     }
     
     if (type === 1) {
@@ -140,16 +153,9 @@ async function watermarkExtract(type, imageFile, password) {
     
     else if (type === 4) {
         const ycbcr = rgbToYcbcr(imgData);
-        let b = extractFromDCT(ycbcr.Y, w, h, 96);
-        let dlen;
-        if (b.length >= 96) {
-            const d0 = parseInt(b.substr(0, 32), 2), d1 = parseInt(b.substr(32, 32), 2), d2 = parseInt(b.substr(64, 32), 2);
-            dlen = [d0, d1, d2].sort((a,b) => a-b)[1];
-        } else {
-            b = extractFromDCT(ycbcr.Y, w, h, 32);
-            if (b.length < 32) return { ok: false, error: 'No data found' };
-            dlen = parseInt(b.substr(0, 32), 2);
-        }
+        let b = extractFromDCT(ycbcr.Y, w, h, 32);
+        if (b.length < 32) return { ok: false, error: 'No data found' };
+        const dlen = parseInt(b.substr(0, 32), 2);
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted: invalid size ${dlen}` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
@@ -190,7 +196,7 @@ async function watermarkExtract(type, imageFile, password) {
     }
     
     else if (type === 8) {
-        const hash = wm8_extract(imgData);
+        const hash = wm8_extract(imgData, key);
         if (!hash) return { ok: false, error: 'No hash found' };
         return { ok: true, files: { 'extracted_hash_type8.txt': new TextEncoder().encode(hash) }, msg: `Type 8: Embedded hash: ${hash}` };
     }
@@ -263,7 +269,7 @@ async function updateCapacity() {
     } else if (type === 6) {
       bits = Math.floor(w * h * 3 * 2 / 3);
     } else if (type === 2 || type === 4 || type === 5 || type === 7 || type === 9) {
-      bits = maxDCTBits(w, h, 11) * (type === 9 ? 2 : 1);
+      bits = maxDCTBits(w, h, 11);
       if (type === 4) bits = Math.floor(bits / 3);
     } else if (type === 8) {
       bits = 512;
@@ -279,11 +285,11 @@ async function updateCapacity() {
     } else if (type === 8) {
       secretStatusEl.textContent = '';
     } else if (!secretFile) {
-      const maxSecretBytes = type === 4 ? Math.floor(capacityBytes * 3) : capacityBytes;
+      const maxSecretBytes = capacityBytes;
       secretStatusEl.innerHTML = `<span style="color:var(--text-muted)">Max secret size: ~${maxSecretBytes.toLocaleString()} bytes</span>`;
     } else {
       const secretSize = secretFile.size;
-      const effectiveCapacity = type === 4 ? Math.floor(capacityBytes * 3) : capacityBytes;
+      const effectiveCapacity = capacityBytes;
       if (secretSize <= effectiveCapacity) {
         secretStatusEl.innerHTML = `<span style="color:#4caf50">\u2713 Secret file: ${secretSize.toLocaleString()} bytes — fits within capacity</span>`;
       } else {
