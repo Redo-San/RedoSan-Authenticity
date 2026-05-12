@@ -116,7 +116,7 @@ async function watermarkExtract(type, imageFile, password) {
     if (type === 1) {
         const b = wm1_extract(imgData);
         const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: 'No data found' };
+        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'No data found' };
         return { ok: true, files: { 'extracted_type1.bin': data }, msg: `Type 1 extract: ${data.length} bytes` };
     }
     
@@ -128,14 +128,14 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted: invalid size ${dlen}` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: 'Not enough bits' };
+        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
         return { ok: true, files: { 'extracted_type2.bin': data }, msg: `Type 2 extract: ${data.length} bytes` };
     }
     
     else if (type === 3) {
         const b = wm3_extract(imgData, keyVal);
         const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: 'No data found' };
+        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'No data found' };
         return { ok: true, files: { 'extracted_type3.bin': data }, msg: `Type 3 extract: ${data.length} bytes` };
     }
     
@@ -147,7 +147,7 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted: invalid size ${dlen}` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: 'Not enough bits' };
+        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
         return { ok: true, files: { 'extracted_type4.bin': data }, msg: `Type 4 extract: ${data.length} bytes` };
     }
     
@@ -167,7 +167,7 @@ async function watermarkExtract(type, imageFile, password) {
     else if (type === 6) {
         const b = wm6_extract(imgData);
         const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: 'No data found' };
+        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'No data found' };
         return { ok: true, files: { 'extracted_type6.bin': data }, msg: `Type 6 extract: ${data.length} bytes` };
     }
     
@@ -179,13 +179,13 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: 'Not enough bits' };
+        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
         return { ok: true, files: { 'extracted_type7.bin': data }, msg: `Type 7 extract: ${data.length} bytes` };
     }
     
     else if (type === 8) {
         const hash = wm8_extract(imgData, key);
-        if (!hash) return { ok: false, error: 'No hash found' };
+        if (!hash) return { ok: false, error: key && key.length ? 'Wrong password' : 'No hash found' };
         return { ok: true, files: { 'extracted_hash_type8.txt': new TextEncoder().encode(hash) }, msg: `Type 8: Embedded hash: ${hash}` };
     }
     
@@ -197,7 +197,7 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: 'Not enough bits' };
+        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
         return { ok: true, files: { 'extracted_type9.bin': data }, msg: `Type 9 extract: ${data.length} bytes` };
     }
     
