@@ -289,6 +289,24 @@ async function updateCapacity() {
   } catch(e) { capEl.textContent = ''; secretStatusEl.textContent = ''; }
 }
 
+async function detectWatermarkAlgorithm(imgFile, password) {
+  const results = [];
+  const pw = password || '';
+  for (let t = 1; t <= 9; t++) {
+    if (t === 5) continue; // Zero-bit: no password, special handling
+    try {
+      const r = await watermarkExtract(t, imgFile, pw);
+      if (r.ok) results.push({ type: t, msg: r.msg, files: r.files });
+    } catch(e) { /* skip */ }
+  }
+  // Also try type 5 (Zero-bit) without password
+  try {
+    const r5 = await watermarkExtract(5, imgFile, '');
+    if (r5.ok) results.push({ type: 5, msg: r5.msg });
+  } catch(e) { /* skip */ }
+  return results;
+}
+
 async function handleWatermarkExtract() {
   const btn = document.getElementById('wm-btn-ex');
   const resultDiv = document.getElementById('wm-result');
@@ -323,9 +341,56 @@ async function handleWatermarkExtract() {
       }
       setText('wm-output', text);
     } else {
-      setText('wm-output', 'Error: ' + result.error);
+      let errMsg = 'Error: ' + result.error;
+      // Offer detection hint when extraction fails with password
+      if (pw && pw.trim()) {
+        errMsg += '\n\nTip: The image may use a different watermark algorithm.';
+        errMsg += '\nClick "Auto Detect" to find the correct algorithm.';
+      }
+      setText('wm-output', errMsg);
     }
   } catch (e) { setText('wm-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
+  btn.disabled = false; spinner('wm-spinner', false);
+}
+
+async function handleAutoDetect() {
+  const btn = document.getElementById('wm-detect-btn');
+  const pw = getVal('wm-password-ex');
+  const imgFile = getFile('wm-image-ex');
+  if (!imgFile) { alert('Please select a stego image first'); return; }
+
+  btn.disabled = true; spinner('wm-spinner', true);
+  document.getElementById('wm-output').textContent = 'Scanning all algorithms...';
+
+  try {
+    const found = await detectWatermarkAlgorithm(imgFile, pw);
+    const resultDiv = document.getElementById('wm-result');
+    const output = document.getElementById('wm-output');
+    const dl = document.getElementById('wm-download');
+    resultDiv.style.display = 'block'; dl.innerHTML = '';
+
+    if (found.length === 0) {
+      setText('wm-output', 'No watermark detected with any algorithm. Try without password (for type 5 Zero-bit) or check if the image is watermarked.');
+    } else {
+      let html = `<strong>Detection Results:</strong> Found ${found.length} matching algorithm(s):\n`;
+      for (const r of found) {
+        const names = {1:'Spatial LSB',2:'Frequency DCT',3:'Neural SS',4:'Latent DCT',5:'Zero-bit',6:'Multi-bit',7:'Forensic',8:'Fragile',9:'Imatag-style'};
+        html += `\n  Type ${r.type} (${names[r.type]}): ${r.msg}`;
+        if (r.files) {
+          for (const [name, data] of Object.entries(r.files)) {
+            html += `\n    ${name}: extracted`;
+            const blob = new Blob([data], { type: 'application/octet-stream' });
+            downloadBlob(blob, name, 'wm-download');
+          }
+        }
+      }
+      html += '\n\nTip: Switch to the detected algorithm above for future extractions.';
+      // Auto-select the first found algorithm
+      const sel = document.getElementById('wm-type-ex');
+      if (sel && found[0].type && found[0].type !== 5) sel.value = found[0].type;
+      setText('wm-output', html);
+    }
+  } catch(e) { setText('wm-output', 'Detection error: ' + e.message); }
   btn.disabled = false; spinner('wm-spinner', false);
 }
