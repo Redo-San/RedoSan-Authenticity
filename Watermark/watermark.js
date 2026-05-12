@@ -9,10 +9,10 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         var key = await pw_key(password);
     } else { key = new Uint8Array(0); }
     
-    const xored = xor_bytes(secret, key);
     const lenBytes = pack32(secret.length);
-    const payload = new Uint8Array(lenBytes.length + xored.length);
-    payload.set(lenBytes); payload.set(xored, 4);
+    const fullPayload = new Uint8Array(4 + secret.length);
+    fullPayload.set(lenBytes); fullPayload.set(secret, 4);
+    const payload = xor_bytes(fullPayload, key);
     const payloadBits = bits(payload);
     
     const maxPixels = w * h * 3;
@@ -93,12 +93,16 @@ async function watermarkExtract(type, imageFile, password) {
     const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
     
     function extractData(bitsStr) {
-        if (bitsStr.length < 32) return null;
-        const dlen = parseInt(bitsStr.substr(0, 32), 2);
+        if (bitsStr.length < 64) return null;
+        const raw8 = from_bits(bitsStr.substr(0, 64));
+        const dec8 = xor_bytes(raw8, key);
+        const dv = new DataView(dec8.buffer, dec8.byteOffset, dec8.byteLength);
+        const dlen = dv.getUint32(0);
         if (dlen <= 0 || dlen > w * h * 3 / 8) return null;
-        if (bitsStr.length < 32 + dlen * 8) return null;
-        const enc = from_bits(bitsStr.substr(32, dlen * 8));
-        return xor_bytes(enc, key);
+        if (bitsStr.length < (4 + dlen) * 8) return null;
+        const rawFull = from_bits(bitsStr.substr(0, (4 + dlen) * 8));
+        const decFull = xor_bytes(rawFull, key);
+        return decFull.slice(4);
     }
     
     if (type === 1) {
@@ -302,7 +306,6 @@ async function handleWatermarkExtract() {
     const result = await watermarkExtract(type, imgFile, pw);
     if (result.ok) {
       let text = result.msg + '\n';
-      const reportData = { algorithm: type, message: result.msg, status: 'ok' };
       dl.innerHTML = '';
       if (result.files) {
         for (const [name, data] of Object.entries(result.files)) {
@@ -311,8 +314,6 @@ async function handleWatermarkExtract() {
           downloadBlob(blob, name, 'wm-download');
         }
       }
-      const reportBlob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-      downloadBlob(reportBlob, 'extract_report.json', 'wm-download');
       setText('wm-output', text);
     } else {
       setText('wm-output', 'Error: ' + result.error);
