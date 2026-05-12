@@ -105,7 +105,7 @@ async function watermarkExtract(type, imageFile, password) {
         const b = wm1_extract(imgData);
         const data = b.length >= 32 ? extractData(b) : null;
         if (!data) return { ok: false, error: 'No data found' };
-        return { ok: true, files: { 'extracted_type1': data }, msg: `Type 1 extract: ${data.length} bytes` };
+        return { ok: true, files: { 'extracted_type1.bin': data }, msg: `Type 1 extract: ${data.length} bytes` };
     }
     
     else if (type === 2) {
@@ -117,14 +117,14 @@ async function watermarkExtract(type, imageFile, password) {
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
         if (!data) return { ok: false, error: 'Not enough bits' };
-        return { ok: true, files: { 'extracted_type2': data }, msg: `Type 2 extract: ${data.length} bytes` };
+        return { ok: true, files: { 'extracted_type2.bin': data }, msg: `Type 2 extract: ${data.length} bytes` };
     }
     
     else if (type === 3) {
         const b = wm3_extract(imgData, keyVal);
         const data = b.length >= 32 ? extractData(b) : null;
         if (!data) return { ok: false, error: 'No data found' };
-        return { ok: true, files: { 'extracted_type3': data }, msg: `Type 3 extract: ${data.length} bytes` };
+        return { ok: true, files: { 'extracted_type3.bin': data }, msg: `Type 3 extract: ${data.length} bytes` };
     }
     
     else if (type === 4) {
@@ -143,7 +143,7 @@ async function watermarkExtract(type, imageFile, password) {
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
         if (!data) return { ok: false, error: 'Not enough bits' };
-        return { ok: true, files: { 'extracted_type4': data }, msg: `Type 4 extract: ${data.length} bytes` };
+        return { ok: true, files: { 'extracted_type4.bin': data }, msg: `Type 4 extract: ${data.length} bytes` };
     }
     
     else if (type === 5) {
@@ -163,7 +163,7 @@ async function watermarkExtract(type, imageFile, password) {
         const b = wm6_extract(imgData);
         const data = b.length >= 32 ? extractData(b) : null;
         if (!data) return { ok: false, error: 'No data found' };
-        return { ok: true, files: { 'extracted_type6': data }, msg: `Type 6 extract: ${data.length} bytes` };
+        return { ok: true, files: { 'extracted_type6.bin': data }, msg: `Type 6 extract: ${data.length} bytes` };
     }
     
     else if (type === 7) {
@@ -175,7 +175,7 @@ async function watermarkExtract(type, imageFile, password) {
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
         if (!data) return { ok: false, error: 'Not enough bits' };
-        return { ok: true, files: { 'extracted_type7': data }, msg: `Type 7 extract: ${data.length} bytes` };
+        return { ok: true, files: { 'extracted_type7.bin': data }, msg: `Type 7 extract: ${data.length} bytes` };
     }
     
     else if (type === 8) {
@@ -193,7 +193,7 @@ async function watermarkExtract(type, imageFile, password) {
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
         if (!data) return { ok: false, error: 'Not enough bits' };
-        return { ok: true, files: { 'extracted_type9': data }, msg: `Type 9 extract: ${data.length} bytes` };
+        return { ok: true, files: { 'extracted_type9.bin': data }, msg: `Type 9 extract: ${data.length} bytes` };
     }
     
     return { ok: false, error: `Unknown type ${type}` };
@@ -226,12 +226,8 @@ async function handleWatermarkEmbed() {
   try {
     const result = await watermarkEmbed(type, imgFile, secretFile, pw);
     if (result.ok) {
-      const report = JSON.stringify({ algorithm: type, message: result.msg, status: 'ok' }, null, 2);
-      const reportBlob = new Blob([report], { type: 'application/json' });
-      const reportUrl = URL.createObjectURL(reportBlob);
       const imgUrl = URL.createObjectURL(result.data);
-      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">Download watermarked.png</a>' +
-        '<a href="' + reportUrl + '" download="watermark_report.json" class="btn" style="margin-left:8px">Download Report (JSON)</a>';
+      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">Download watermarked.png</a>';
       setText('wm-output', result.msg);
     } else {
       setText('wm-output', 'Error: ' + result.error);
