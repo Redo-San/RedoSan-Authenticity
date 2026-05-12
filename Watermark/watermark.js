@@ -380,12 +380,20 @@ async function handleAutoDetect() {
         if (r.files) {
           for (const [name, data] of Object.entries(r.files)) {
             html += `\n    ${name}: extracted`;
-            const blob = new Blob([data], { type: 'application/octet-stream' });
-            downloadBlob(blob, name, 'wm-download');
           }
         }
       }
       html += '\n\nTip: Switch to the detected algorithm above for future extractions.';
+      // Single download button for first match
+      const first = found[0];
+      if (first && first.files) {
+        const entries = Object.entries(first.files);
+        if (entries.length) {
+          const [name, data] = entries[0];
+          const blob = new Blob([data], { type: 'application/octet-stream' });
+          downloadBlob(blob, 'extracted.bin', 'wm-download');
+        }
+      }
       // Auto-select the first found algorithm
       const sel = document.getElementById('wm-type-ex');
       if (sel && found[0].type && found[0].type !== 5) sel.value = found[0].type;

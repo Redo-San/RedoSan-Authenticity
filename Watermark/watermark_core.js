@@ -242,22 +242,36 @@ function wm6_extract(imgData) {
 async function wm8_embed(imgData, secretData, key) {
     const hash = await sha256Hex(secretData);
     const hashBytes = new TextEncoder().encode(hash);
-    let payload = new Uint8Array(hashBytes);
-    if (key && key.length) payload = xor_bytes(payload, key);
+    let payload;
+    if (key && key.length) {
+        const raw = new Uint8Array(2 + hashBytes.length);
+        raw.set([0xAA, 0xBB]); raw.set(hashBytes, 2);
+        payload = xor_bytes(raw, key);
+    } else {
+        payload = hashBytes;
+    }
     const b = bits(payload);
     return wm1_embed(imgData, b);
 }
 function wm8_extract(imgData, key) {
     const { data, w, h } = imgData;
+    const neededBits = (key && key.length) ? 528 : 512;
     let b = '';
-    for (let y = 0; y < h && b.length < 512; y++) {
-        for (let x = 0; x < w && b.length < 512; x++) {
+    for (let y = 0; y < h && b.length < neededBits; y++) {
+        for (let x = 0; x < w && b.length < neededBits; x++) {
             const i = (y * w + x) * 4;
             b += (data[i] & 1) + '' + (data[i+1] & 1) + '' + (data[i+2] & 1);
         }
     }
-    if (b.length < 512) return null;
-    let dec = from_bits(b.substr(0, 512));
-    if (key && key.length) dec = xor_bytes(dec, key);
-    return new TextDecoder().decode(dec);
+    if (b.length < neededBits) return null;
+    let dec = from_bits(b.substr(0, neededBits));
+    if (key && key.length) {
+        dec = xor_bytes(dec, key);
+        if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB)
+            return new TextDecoder().decode(dec.slice(2));
+        return null;
+    }
+    const hash = new TextDecoder().decode(dec);
+    if (/^[0-9a-f]{64}$/i.test(hash)) return hash;
+    return null;
 }
