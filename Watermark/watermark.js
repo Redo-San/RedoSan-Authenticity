@@ -98,53 +98,53 @@ async function watermarkExtract(type, imageFile, password) {
     const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
     
     function extractData(bitsStr) {
-        if (bitsStr.length < 32) return null;
+        if (bitsStr.length < 32) return { data: null, reason: 'no-data' };
         var dlen = parseInt(bitsStr.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > Math.min(w * h * 3 / 8, 100000)) return null;
-        if (bitsStr.length < 32 + dlen * 8) return null;
+        if (dlen <= 0 || dlen > Math.min(w * h * 3 / 8, 100000)) return { data: null, reason: 'no-data' };
+        if (bitsStr.length < 32 + dlen * 8) return { data: null, reason: 'no-data' };
         const enc = from_bits(bitsStr.substr(32, dlen * 8));
         const dec = xor_bytes(enc, key);
         if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB)
-            return dec.slice(2);
-        return null;
+            return { data: dec.slice(2), reason: 'ok' };
+        return { data: null, reason: 'bad-password' };
     }
     
     if (type === 1) {
         const b = wm1_extract(imgData);
-        const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: 'Wrong password' };
-        return { ok: true, files: { 'extracted_type1.bin': data }, msg: `Type 1 extract: ${data.length} bytes` };
+        const res = b.length >= 32 ? extractData(b) : { data: null, reason: 'no-data' };
+        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
+        return { ok: true, files: { 'extracted_type1.bin': res.data }, msg: `Type 1 extract: ${res.data.length} bytes` };
     }
     
     else if (type === 2) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
-        if (b.length < 32) return { ok: false, error: 'No data found' };
+        if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
         const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted: invalid size ${dlen}` };
+        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-        const data = extractData(b);
-        if (!data) return { ok: false, error: 'Wrong password' };
-        return { ok: true, files: { 'extracted_type2.bin': data }, msg: `Type 2 extract: ${data.length} bytes` };
+        const res = extractData(b);
+        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
+        return { ok: true, files: { 'extracted_type2.bin': res.data }, msg: `Type 2 extract: ${res.data.length} bytes` };
     }
     
     else if (type === 3) {
         const b = wm3_extract(imgData, keyVal);
-        const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: 'Wrong password' };
-        return { ok: true, files: { 'extracted_type3.bin': data }, msg: `Type 3 extract: ${data.length} bytes` };
+        const res = b.length >= 32 ? extractData(b) : { data: null, reason: 'no-data' };
+        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
+        return { ok: true, files: { 'extracted_type3.bin': res.data }, msg: `Type 3 extract: ${res.data.length} bytes` };
     }
     
     else if (type === 4) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
-        if (b.length < 32) return { ok: false, error: 'No data found' };
+        if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
         const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted: invalid size ${dlen}` };
+        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-        const data = extractData(b);
-        if (!data) return { ok: false, error: 'Wrong password' };
-        return { ok: true, files: { 'extracted_type4.bin': data }, msg: `Type 4 extract: ${data.length} bytes` };
+        const res = extractData(b);
+        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
+        return { ok: true, files: { 'extracted_type4.bin': res.data }, msg: `Type 4 extract: ${res.data.length} bytes` };
     }
     
     else if (type === 5) {
@@ -162,21 +162,21 @@ async function watermarkExtract(type, imageFile, password) {
     
     else if (type === 6) {
         const b = wm6_extract(imgData);
-        const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: 'Wrong password' };
-        return { ok: true, files: { 'extracted_type6.bin': data }, msg: `Type 6 extract: ${data.length} bytes` };
+        const res = b.length >= 32 ? extractData(b) : { data: null, reason: 'no-data' };
+        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
+        return { ok: true, files: { 'extracted_type6.bin': res.data }, msg: `Type 6 extract: ${res.data.length} bytes` };
     }
     
     else if (type === 7) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
-        if (b.length < 32) return { ok: false, error: 'No data found' };
+        if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
         const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted` };
+        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-        const data = extractData(b);
-        if (!data) return { ok: false, error: 'Wrong password' };
-        return { ok: true, files: { 'extracted_type7.bin': data }, msg: `Type 7 extract: ${data.length} bytes` };
+        const res = extractData(b);
+        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
+        return { ok: true, files: { 'extracted_type7.bin': res.data }, msg: `Type 7 extract: ${res.data.length} bytes` };
     }
     
     else if (type === 8) {
@@ -188,13 +188,13 @@ async function watermarkExtract(type, imageFile, password) {
     else if (type === 9) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
-        if (b.length < 32) return { ok: false, error: 'No data found' };
+        if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
         const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted` };
+        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-        const data = extractData(b);
-        if (!data) return { ok: false, error: 'Wrong password' };
-        return { ok: true, files: { 'extracted_type9.bin': data }, msg: `Type 9 extract: ${data.length} bytes` };
+        const res = extractData(b);
+        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
+        return { ok: true, files: { 'extracted_type9.bin': res.data }, msg: `Type 9 extract: ${res.data.length} bytes` };
     }
     
     return { ok: false, error: `Unknown type ${type}` };
