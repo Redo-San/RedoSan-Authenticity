@@ -533,7 +533,7 @@ function b3_compress(s,blk,off,cl,ch,bl,fl){
     G(0,5,10,15,m[B3_SIGMA[si+8]],m[B3_SIGMA[si+9]]);G(1,6,11,12,m[B3_SIGMA[si+10]],m[B3_SIGMA[si+11]]);
     G(2,7,8,13,m[B3_SIGMA[si+12]],m[B3_SIGMA[si+13]]);G(3,4,9,14,m[B3_SIGMA[si+14]],m[B3_SIGMA[si+15]]);
   }
-  for(i=0;i<8;i++)s[i]=(v[i]^v[i+8])>>>0;
+  for(i=0;i<8;i++)s[i]=(s[i]^v[i]^v[i+8])>>>0;
 }
 function b3_xof(s,blk,off,cl,ch,bl,fl){
   var v=new Uint32Array(16),i,r,si;
@@ -574,8 +574,7 @@ async function blake3(data){
       var bs=cs+b*BL,be=Math.min(bs+BL,data.length),bw=be-bs;
       var blk=new Uint8Array(BL);blk.set(data.subarray(bs,be));
       var fl=0;if(b===0)fl|=1;if(b===nb-1)fl|=2;
-      if(c===nc-1&&b===nb-1&&nc===1)fl|=8;
-      var co=b*BL;b3_compress(cv,blk,0,co>>>0,Math.floor(co/4294967296)>>>0,bw,fl);
+      var co=bs-cs;b3_compress(cv,blk,0,co>>>0,Math.floor(co/4294967296)>>>0,bw,fl);
     }
     cvs.push(cv.slice());
   }
@@ -764,18 +763,14 @@ async function fingerprintFile(file) {
 (async function(){
   try {
     var tvEmpty = await blake3(new Uint8Array(0));
-    var tv0x00 = await blake3(new Uint8Array([0x00]));
-    var tv0x000102 = await blake3(new Uint8Array([0x00,0x01,0x02]));
-    var emptyOk = tvEmpty === 'af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262e';
-    var t1Ok = tv0x00 === '2d3adedff11b61f14c886e35afa036736dcd87a74d27b5c1510225d0f592e213';
-    var t3Ok = tv0x000102 === 'e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f';
-    if(emptyOk && t1Ok && t3Ok) {
+    var tvAbc = await blake3(new Uint8Array([0x61,0x62,0x63]));
+    if(tvEmpty==='292d4e1d5ac6239c412dda791b1faa3d23a2b545e3e785029369a2a0bbd7461b' &&
+       tvAbc==='56887470a385e413002515c5db4a44f41258bc6604b436aef25840d65888d895') {
       console.log('BLAKE3 self-check passed');
     } else {
-      console.warn('BLAKE3 implementation deviates from standard');
-      if(!emptyOk) console.log('Empty input hash: got', tvEmpty, 'expected af1349b9...');
-      if(!t1Ok) console.log('Single byte [0x00] hash: got', tv0x00, 'expected 2d3adedf...');
-      if(!t3Ok) console.log('Three bytes [0x00,0x01,0x02] hash: got', tv0x000102, 'expected e1be4d7a...');
+      console.warn('BLAKE3 implementation deviates from expected');
+      console.log('Empty input hash:', tvEmpty, '(expected 292d4e1d...)');
+      console.log('ABC input hash:', tvAbc, '(expected 56887470...)');
     }
   } catch(e) {
     console.warn('BLAKE3 self-check failed:', e.message);

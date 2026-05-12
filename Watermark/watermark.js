@@ -241,6 +241,30 @@ async function handleWatermarkEmbed() {
   btn.disabled = false; spinner('wm-spinner', false);
 }
 
+async function updateCapacity() {
+  const capEl = document.getElementById('wm-capacity');
+  const imgFile = getFile('wm-image');
+  if (!imgFile) { capEl.textContent = ''; return; }
+  const type = parseInt(getVal('wm-type') || '1');
+  try {
+    const loaded = await loadImage(imgFile);
+    const { w, h } = loaded;
+    let bits = 0;
+    if (type === 1 || type === 3) {
+      bits = w * h * 3;
+    } else if (type === 6) {
+      bits = Math.floor(w * h * 3 * 2 / 3);
+    } else if (type === 2 || type === 4 || type === 5 || type === 7 || type === 9) {
+      const bpb = type === 9 ? 15 : type === 7 ? 20 : type === 4 ? 30 : 25;
+      bits = maxDCTBits(w, h, bpb);
+    } else if (type === 8) {
+      bits = 512;
+    }
+    const bytes = Math.floor(bits/8);
+    capEl.textContent = `Capacity: ~${bytes.toLocaleString()} byte${bytes!==1?'s':''} (${w}\u00d7${h} image)`;
+  } catch(e) { capEl.textContent = ''; }
+}
+
 async function handleWatermarkExtract() {
   const btn = document.getElementById('wm-btn-ex');
   const resultDiv = document.getElementById('wm-result');
