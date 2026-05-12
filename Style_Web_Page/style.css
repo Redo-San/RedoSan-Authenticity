@@ -21,7 +21,7 @@ nav {
   background: var(--card); border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 100;
 }
-.nav-left { display:flex; align-items:center; gap:10px; }
+.nav-left { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
 nav .logo { display:flex; align-items:center; }
 .logo-img { height: 28px; width: auto; display: block; }
 .nav-links { display:flex; align-items:center; gap:4px; }
@@ -152,8 +152,9 @@ nav .logo { display:flex; align-items:center; }
 .nav-search.focused .search-btn::before { border-color:var(--primary); }
 .nav-search.focused .search-btn::after { background:var(--primary); }
 .nav-search .search-results {
-  display:none; position:fixed; top:52px; right:20px;
-  width:340px; max-height:360px; overflow-y:auto;
+  display:none; position:fixed; top:52px; left:50%;
+  transform:translateX(-50%); width:min(420px,calc(100vw - 32px));
+  max-height:360px; overflow-y:auto;
   background:var(--card); border:1px solid var(--border); border-radius:10px;
   box-shadow:0 8px 24px rgba(0,0,0,.4); z-index:1000;
 }
@@ -226,7 +227,7 @@ nav .logo { display:flex; align-items:center; }
   .hero h1 { font-size: 1.8rem; }
   .sidebar { width:220px; left:-240px; }
   .nav-search.focused { width:140px; }
-  .nav-search .search-results { width:280px; right:10px; top:48px; }
+  .nav-search .search-results { width:calc(100vw - 32px); left:50%; transform:translateX(-50%); top:48px; }
   .error-code { font-size:5rem; }
 }
 .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200; align-items:center; justify-content:center; }
