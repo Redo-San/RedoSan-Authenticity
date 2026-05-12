@@ -30,6 +30,8 @@
   "wm.password_label": "Mot de passe (optionnel)",
   "wm.embed_submit": "Intégrer le Filigrane",
   "wm.extract_submit": "Extraire le Filigrane",
+  "wm.secret_label": "Fichier secret (données à cacher)",
+  "wm.secret_hint": "Requis pour les algorithmes 1-4, 6-9. Le type 5 (Zero-bit) l'ignore.",
 
   "fp.heading": "Empreinte de Fichier",
   "fp.file_label": "Fichier",

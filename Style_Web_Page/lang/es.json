@@ -30,6 +30,8 @@
   "wm.password_label": "Contraseña (opcional)",
   "wm.embed_submit": "Incrustar Marca de Agua",
   "wm.extract_submit": "Extraer Marca de Agua",
+  "wm.secret_label": "Archivo secreto (datos a ocultar)",
+  "wm.secret_hint": "Requerido para algoritmos 1-4, 6-9. El tipo 5 (Zero-bit) lo ignora.",
 
   "fp.heading": "Huella Digital de Archivo",
   "fp.file_label": "Archivo",

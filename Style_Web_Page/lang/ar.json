@@ -30,6 +30,8 @@
   "wm.password_label": "كلمة المرور (اختياري)",
   "wm.embed_submit": "تضمين العلامة المائية",
   "wm.extract_submit": "استخراج العلامة المائية",
+  "wm.secret_label": "الملف السري (البيانات المراد إخفاؤها)",
+  "wm.secret_hint": "مطلوب للخوارزميات 1-4 و 6-9. النوع 5 (Zero-bit) يتجاهله.",
 
   "fp.heading": "بصمة الملف",
   "fp.file_label": "الملف",

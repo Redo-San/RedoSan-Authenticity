@@ -212,12 +212,19 @@ async function handleWatermarkEmbed() {
   const imgFile = getFile('wm-image');
   if (!imgFile) { setText('wm-output', 'Please select an image'); resultDiv.style.display = 'block'; return; }
 
+  var secretFile = getFile('wm-secret');
+  if (type !== 5 && type !== 8 && !secretFile) {
+    setText('wm-output', 'Please select a secret file (required for algorithm ' + type + ')');
+    resultDiv.style.display = 'block'; return;
+  }
+  if (!secretFile) secretFile = imgFile;
+
   btn.disabled = true; spinner('wm-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
   setText('wm-output', 'Processing...');
 
   try {
-    const result = await watermarkEmbed(type, imgFile, imgFile, pw);
+    const result = await watermarkEmbed(type, imgFile, secretFile, pw);
     if (result.ok) {
       const report = JSON.stringify({ algorithm: type, message: result.msg, status: 'ok' }, null, 2);
       const reportBlob = new Blob([report], { type: 'application/json' });

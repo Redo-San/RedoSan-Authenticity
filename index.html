@@ -140,6 +140,11 @@
           <label data-i18n="wm.image_label">Cover image</label>
           <input type="file" id="wm-image" accept="image/png,image/jpeg">
         </div>
+        <div class="form-group" id="wm-secret-group">
+          <label data-i18n="wm.secret_label">Secret file</label>
+          <input type="file" id="wm-secret">
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="wm.secret_hint">Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores this.</p>
+        </div>
         <div class="form-group">
           <label data-i18n="wm.password_label">Password (optional)</label>
           <input type="password" id="wm-password" placeholder="Leave blank">

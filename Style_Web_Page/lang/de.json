@@ -30,6 +30,8 @@
   "wm.password_label": "Passwort (optional)",
   "wm.embed_submit": "Wasserzeichen Einbetten",
   "wm.extract_submit": "Wasserzeichen Extrahieren",
+  "wm.secret_label": "Geheime Datei (zu versteckende Daten)",
+  "wm.secret_hint": "Erforderlich für Algorithmen 1-4, 6-9. Typ 5 (Zero-bit) ignoriert dies.",
 
   "fp.heading": "Datei-Fingerabdruck",
   "fp.file_label": "Datei",

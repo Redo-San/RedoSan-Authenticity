@@ -30,6 +30,8 @@
   "wm.password_label": "密码（可选）",
   "wm.embed_submit": "嵌入水印",
   "wm.extract_submit": "提取水印",
+  "wm.secret_label": "秘密文件（要隐藏的数据）",
+  "wm.secret_hint": "算法 1-4、6-9 需要。类型 5（零位）忽略此项。",
 
   "fp.heading": "文件指纹",
   "fp.file_label": "文件",
