@@ -17,6 +17,7 @@ function spinner(id, show) { document.getElementById(id).style.display = show ? 
 function showResult(resultId, outputId, dlId) { document.getElementById(resultId).style.display = 'block'; }
 function setOutput(id, html) { document.getElementById(id).innerHTML = html; }
 function setText(id, text) { document.getElementById(id).textContent = text; }
+function __(key, fallback) { return (i18n && i18n.data && i18n.data[key]) || fallback || key; }
 
 function downloadBlobSimple(blob, fileName) {
   var url = URL.createObjectURL(blob);

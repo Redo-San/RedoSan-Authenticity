@@ -211,34 +211,34 @@ async function handleWatermarkEmbed() {
   const type = parseInt(getVal('wm-type'));
   const pw = getVal('wm-password');
   const imgFile = getFile('wm-image');
-  if (!imgFile) { setText('wm-output', 'Please select an image'); resultDiv.style.display = 'block'; return; }
+  if (!imgFile) { setText('wm-output', __('wm.err_select_image')); resultDiv.style.display = 'block'; return; }
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
-    setText('wm-output', 'Password is required for this algorithm');
+    setText('wm-output', __('wm.err_pw_required'));
     resultDiv.style.display = 'block'; return;
   }
 
   var secretFile = getFile('wm-secret');
   if (type !== 5 && type !== 8 && !secretFile) {
-    setText('wm-output', 'Please select a secret file (required for algorithm ' + type + ')');
+    setText('wm-output', __('wm.err_select_secret').replace('{type}', type));
     resultDiv.style.display = 'block'; return;
   }
   if (!secretFile) secretFile = imgFile;
 
   btn.disabled = true; spinner('wm-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
-  setText('wm-output', 'Processing...');
+  setText('wm-output', __('wm.processing'));
 
   try {
     const result = await watermarkEmbed(type, imgFile, secretFile, pw);
     if (result.ok) {
       const imgUrl = URL.createObjectURL(result.data);
-      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">Download watermarked.png</a>';
+      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">' + __('wm.download_btn') + '</a>';
       setText('wm-output', result.msg);
     } else {
-      setText('wm-output', 'Error: ' + result.error);
+      setText('wm-output', __('wm.error_prefix').replace('{msg}', result.error));
     }
-  } catch (e) { setText('wm-output', 'Error: ' + e.message); }
+  } catch (e) { setText('wm-output', __('wm.error_prefix').replace('{msg}', e.message)); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('wm-spinner', false);
 }
@@ -336,16 +336,24 @@ async function handleWatermarkExtract() {
   const type = parseInt(getVal('wm-type-ex'));
   const pw = getVal('wm-password-ex');
   const imgFile = getFile('wm-image-ex');
-  if (!imgFile) { setText('wm-output', 'Please select a stego image'); resultDiv.style.display = 'block'; return; }
+  if (!imgFile) { setText('wm-output', __('wm.err_select_stego')); resultDiv.style.display = 'block'; return; }
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
-    setText('wm-output', 'Password is required for this algorithm');
+    setText('wm-output', __('wm.err_pw_required'));
     resultDiv.style.display = 'block'; return;
   }
 
   btn.disabled = true; spinner('wm-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
-  setText('wm-output', 'Processing...');
+  setText('wm-output', __('wm.processing'));
+
+  function wmErr(err) {
+    const m = {
+      'Wrong password': __('wm.err_wrong_password'),
+      'No watermark found with this algorithm': __('wm.err_no_watermark'),
+    };
+    return m[err] || err;
+  }
 
   try {
     const result = await watermarkExtract(type, imgFile, pw);
@@ -354,22 +362,20 @@ async function handleWatermarkExtract() {
       dl.innerHTML = '';
       if (result.files) {
         for (const [name, data] of Object.entries(result.files)) {
-          text += '\n  ' + name + ': extracted';
+          text += '\n  ' + name + ': ' + __('wm.extracted');
           const blob = new Blob([data], { type: 'application/octet-stream' });
           downloadBlob(blob, name, 'wm-download');
         }
       }
       setText('wm-output', text);
     } else {
-      let errMsg = 'Error: ' + result.error;
-      // Offer detection hint when extraction fails with password
+      let errMsg = __('wm.error_prefix').replace('{msg}', wmErr(result.error));
       if (pw && pw.trim()) {
-        errMsg += '\n\nTip: The image may use a different watermark algorithm.';
-        errMsg += '\nClick "Auto Detect" to find the correct algorithm.';
+        errMsg += '\n\n' + __('wm.tip_wrong_algo');
       }
       setText('wm-output', errMsg);
     }
-  } catch (e) { setText('wm-output', 'Error: ' + e.message); }
+  } catch (e) { setText('wm-output', __('wm.error_prefix').replace('{msg}', e.message)); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('wm-spinner', false);
 }
@@ -378,10 +384,10 @@ async function handleAutoDetect() {
   const btn = document.getElementById('wm-detect-btn');
   const pw = getVal('wm-password-ex');
   const imgFile = getFile('wm-image-ex');
-  if (!imgFile) { alert('Please select a stego image first'); return; }
+  if (!imgFile) { alert(__('wm.detect_select_image')); return; }
 
   btn.disabled = true; spinner('wm-spinner', true);
-  document.getElementById('wm-output').textContent = 'Scanning all algorithms...';
+  document.getElementById('wm-output').textContent = __('wm.detect_scanning');
 
   try {
     const found = await detectWatermarkAlgorithm(imgFile, pw);
@@ -391,23 +397,21 @@ async function handleAutoDetect() {
     resultDiv.style.display = 'block'; dl.innerHTML = '';
 
     if (found.length === 0) {
-      setText('wm-output', 'No watermark detected with any algorithm. Try without password (for type 5 Zero-bit) or check if the image is watermarked.');
+      setText('wm-output', __('wm.detect_no_match'));
     } else {
-      // Sort by specificity priority: 8 > 9 > 4 > 7 > 2 > 1 > 3 > 6 > 5
       const priority = [8, 9, 4, 7, 2, 1, 3, 6, 5];
       found.sort((a, b) => priority.indexOf(a.type) - priority.indexOf(b.type));
-      const names = {1:'Spatial LSB',2:'Frequency DCT',3:'Neural SS',4:'Latent DCT',5:'Zero-bit',6:'Multi-bit',7:'Forensic',8:'Fragile',9:'Imatag-style'};
-      let html = `Detection Results: Found ${found.length} matching algorithm(s)\n`;
+      let html = __('wm.detect_results').replace('{count}', found.length) + '\n';
       for (const r of found) {
         const size = r.msg.match(/(\d+) bytes/);
-        const suffix = size ? `(${size[1]} bytes)` : '';
-        html += `\n  Type ${r.type} (${names[r.type]}) ${suffix}`;
+        const suffix = size ? ` (${size[1]} bytes)` : '';
+        html += '\n  ' + __('wm.type_label').replace('{type}', r.type) + ' (' + __('algo.' + r.type) + ')' + suffix;
       }
-      html += '\n\nTip: Switch to the algorithm above and click "Extract Watermark" to download the data.';
+      html += '\n\n' + __('wm.detect_tip');
       const sel = document.getElementById('wm-type-ex');
       if (sel && found[0].type && found[0].type !== 5) sel.value = found[0].type;
       setText('wm-output', html);
     }
-  } catch(e) { setText('wm-output', 'Detection error: ' + e.message); }
+  } catch(e) { setText('wm-output', __('wm.detect_error').replace('{msg}', e.message)); }
   btn.disabled = false; spinner('wm-spinner', false);
 }
