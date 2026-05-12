@@ -73,7 +73,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     }
     
     else if (type === 8) {
-        if (256 > maxPixels) return { ok: false, error: 'Image too small' };
+        if (512 > maxPixels) return { ok: false, error: 'Image too small (need at least 171 pixels for 512-bit hash)' };
         await wm8_embed(imgData, secret);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: 'Type 8 (Fragile): SHA-256 integrity hash embedded' };

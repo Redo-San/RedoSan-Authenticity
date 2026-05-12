@@ -46,7 +46,9 @@ function parseJPEGExif(data) {
 
                     if (get16(tiffStart + 2) !== 0x002A) break;
                     var ifd0Off = get32(tiffStart + 4);
-                    parseIFD(tiffStart, ifd0Off, exif, get16, get32, view, data);
+                    if (ifd0Off > 0 && tiffStart + ifd0Off < data.length) {
+                        parseIFD(tiffStart, ifd0Off, exif, get16, get32, view, data);
+                    }
                 }
             }
             break;
@@ -92,7 +94,7 @@ function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
             val = String.fromCharCode.apply(null, data.slice(valOff, valOff + count - 1));
         } else if (type === 2) {
             var strOff = get32(valOff);
-            if (strOff > 0 && strOff + count <= data.length)
+            if (strOff > 0 && tiffStart + strOff + count <= data.length)
                 val = String.fromCharCode.apply(null, data.slice(tiffStart + strOff, tiffStart + strOff + count - 1));
         } else if (type === 3) {
             val = get16(valOff);
@@ -115,7 +117,7 @@ function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
     }
 
     var nextOff = get32(tiffStart + offset + 2 + num * 12);
-    if (nextOff > 0) {
+    if (nextOff > 0 && tiffStart + nextOff < data.length && nextOff > offset) {
         parseIFD(tiffStart, nextOff, exif, get16, get32, view, data);
     }
 }
