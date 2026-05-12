@@ -290,20 +290,40 @@ async function updateCapacity() {
 }
 
 async function detectWatermarkAlgorithm(imgFile, password) {
-  const results = [];
+  const all = [];
   const pw = password || '';
   for (let t = 1; t <= 9; t++) {
-    if (t === 5) continue; // Zero-bit: no password, special handling
+    if (t === 5) continue;
     try {
       const r = await watermarkExtract(t, imgFile, pw);
-      if (r.ok) results.push({ type: t, msg: r.msg, files: r.files });
+      if (r.ok) all.push({ type: t, msg: r.msg, files: r.files });
     } catch(e) { /* skip */ }
   }
-  // Also try type 5 (Zero-bit) without password
   try {
     const r5 = await watermarkExtract(5, imgFile, '');
-    if (r5.ok) results.push({ type: 5, msg: r5.msg });
+    if (r5.ok) all.push({ type: 5, msg: r5.msg });
   } catch(e) { /* skip */ }
+  // Deduplicate: group by payload content, keep most specific type per group
+  function payloadKey(r) {
+    if (!r.files) return 'nofiles';
+    const data = Object.values(r.files)[0];
+    if (!data) return 'nodata';
+    let k = data.length + ':';
+    for (let i = 0; i < Math.min(data.length, 64); i++) k += data[i] + ',';
+    return k;
+  }
+  const groups = new Map();
+  for (const r of all) {
+    const key = payloadKey(r);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  }
+  const priority = [8, 9, 4, 7, 2, 1, 3, 6, 5];
+  const results = [];
+  for (const [, group] of groups) {
+    group.sort((a, b) => priority.indexOf(a.type) - priority.indexOf(b.type));
+    results.push(group[0]);
+  }
   return results;
 }
 
