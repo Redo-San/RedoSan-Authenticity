@@ -27,7 +27,8 @@ function downloadBlobSimple(blob, fileName) {
 
 function downloadBlob(blob, name, containerId) {
   const url = URL.createObjectURL(blob);
-  document.getElementById(containerId).innerHTML += '<a href="' + url + '" download="' + name + '" class="btn" style="margin:4px">Download ' + name + '</a> ';
+  const safe = escHtml(name);
+  document.getElementById(containerId).innerHTML += '<a href="' + url + '" download="' + safe + '" class="btn" style="margin:4px">Download ' + safe + '</a> ';
 }
 
 function loadImage(file) {

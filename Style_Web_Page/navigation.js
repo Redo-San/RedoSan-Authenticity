@@ -28,6 +28,35 @@ function showPage(name) {
   if (page) page.classList.add('active');
   const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
   if (nav) nav.classList.add('active');
+  // Update URL hash for direct linking
+  if (name && name !== 'home') {
+    history.replaceState(null, '', '#/' + name);
+  } else {
+    history.replaceState(null, '', window.location.pathname.replace(/\/+$/, '') + '/');
+  }
+}
+
+// Handle hash-based navigation on load
+function handleHashNav() {
+  var hash = window.location.hash;
+  if (hash && hash.indexOf('#/') === 0) {
+    var page = hash.replace('#/', '');
+    if (page) showPage(page);
+  }
+  // Handle ?search= query param
+  var params = new URLSearchParams(window.location.search);
+  var sq = params.get('search');
+  if (sq) {
+    setTimeout(function() {
+      var inp = document.getElementById('searchInput');
+      if (inp) { inp.value = sq; siteSearch(); }
+    }, 500);
+  }
+}
+document.addEventListener('DOMContentLoaded', handleHashNav);
+// Also run immediately if DOM already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  handleHashNav();
 }
 
 // ── Tab switching ──

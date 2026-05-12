@@ -76,6 +76,12 @@
 
   "footer.copyright": "100%基于浏览器 • 没有任何内容离开您的设备",
 
+  "search.placeholder": "搜索功能...",
+  "search.heading": "搜索结果",
+  "search.no_results": "未找到 \"{query}\" 的结果。",
+  "search.results_for": "\"{query}\" 的结果：",
+  "search.hint": "尝试搜索：watermark, fingerprint, metadata, timestamp",
+
   "dl.title": "下载指纹",
   "dl.subtitle": "选择格式：",
 

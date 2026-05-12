@@ -76,6 +76,12 @@
 
   "footer.copyright": "100% browserbasiert • Nichts verlässt Ihr Gerät",
 
+  "search.placeholder": "Funktionen durchsuchen...",
+  "search.heading": "Suchergebnisse",
+  "search.no_results": "Keine Ergebnisse für \"{query}\".",
+  "search.results_for": "Ergebnisse für \"{query}\":",
+  "search.hint": "Versuchen Sie: watermark, fingerprint, metadata, timestamp",
+
   "dl.title": "Fingerabdruck Herunterladen",
   "dl.subtitle": "Wählen Sie ein Format:",
 

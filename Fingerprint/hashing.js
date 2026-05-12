@@ -517,7 +517,7 @@ function b3_compress(s,blk,off,cl,ch,bl,fl){
   var v=new Uint32Array(16),i,r,si;
   for(i=0;i<8;i++)v[i]=s[i];
   v[8]=B3_IV[0];v[9]=B3_IV[1];v[10]=B3_IV[2];v[11]=B3_IV[3];
-  v[12]=B3_IV[4]^cl;v[13]=B3_IV[5]^ch;v[14]=B3_IV[6]^bl;v[15]=B3_IV[7]^fl;
+  v[12]=cl;v[13]=ch;v[14]=bl;v[15]=fl;
   var m=[];
   for(i=0;i<16;i++){m.push(b3_ld32(blk,off+i*4));v[i] ^= m[i];}
   function G(a,b,c,d,x,y){
@@ -533,13 +533,13 @@ function b3_compress(s,blk,off,cl,ch,bl,fl){
     G(0,5,10,15,m[B3_SIGMA[si+8]],m[B3_SIGMA[si+9]]);G(1,6,11,12,m[B3_SIGMA[si+10]],m[B3_SIGMA[si+11]]);
     G(2,7,8,13,m[B3_SIGMA[si+12]],m[B3_SIGMA[si+13]]);G(3,4,9,14,m[B3_SIGMA[si+14]],m[B3_SIGMA[si+15]]);
   }
-  for(i=0;i<8;i++)s[i]=(s[i]^v[i]^v[i+8])>>>0;
+  for(i=0;i<8;i++)s[i]=(v[i]^v[i+8])>>>0;
 }
 function b3_xof(s,blk,off,cl,ch,bl,fl){
   var v=new Uint32Array(16),i,r,si;
   for(i=0;i<8;i++)v[i]=s[i];
   v[8]=B3_IV[0];v[9]=B3_IV[1];v[10]=B3_IV[2];v[11]=B3_IV[3];
-  v[12]=B3_IV[4]^cl;v[13]=B3_IV[5]^ch;v[14]=B3_IV[6]^bl;v[15]=B3_IV[7]^fl;
+  v[12]=cl;v[13]=ch;v[14]=bl;v[15]=fl;
   var m=[];
   for(i=0;i<16;i++){m.push(b3_ld32(blk,off+i*4));v[i] ^= m[i];}
   function G(a,b,c,d,x,y){
@@ -574,7 +574,8 @@ async function blake3(data){
       var bs=cs+b*BL,be=Math.min(bs+BL,data.length),bw=be-bs;
       var blk=new Uint8Array(BL);blk.set(data.subarray(bs,be));
       var fl=0;if(b===0)fl|=1;if(b===nb-1)fl|=2;
-      var co=bs-cs;b3_compress(cv,blk,0,co>>>0,Math.floor(co/4294967296)>>>0,bw,fl);
+      if(c===nc-1&&b===nb-1&&nc===1)fl|=8;
+      b3_compress(cv,blk,0,bs>>>0,Math.floor(bs/4294967296)>>>0,bw,fl);
     }
     cvs.push(cv.slice());
   }
@@ -763,16 +764,18 @@ async function fingerprintFile(file) {
 (async function(){
   try {
     var tvEmpty = await blake3(new Uint8Array(0));
-    var tvAbc = await blake3(new Uint8Array([0x61,0x62,0x63]));
-    // Test vectors matching current implementation
-    if(tvEmpty==='292d4e1d5ac6239c412dda791b1faa3d23a2b545e3e785029369a2a0bbd7461b' &&
-       tvAbc==='56887470a385e413002515c5db4a44f41258bc6604b436aef25840d65888d895') {
+    var tv0x00 = await blake3(new Uint8Array([0x00]));
+    var tv0x000102 = await blake3(new Uint8Array([0x00,0x01,0x02]));
+    var emptyOk = tvEmpty === 'af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262e';
+    var t1Ok = tv0x00 === '2d3adedff11b61f14c886e35afa036736dcd87a74d27b5c1510225d0f592e213';
+    var t3Ok = tv0x000102 === 'e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f';
+    if(emptyOk && t1Ok && t3Ok) {
       console.log('BLAKE3 self-check passed');
     } else {
       console.warn('BLAKE3 implementation deviates from standard');
-      console.log('Current implementation values:');
-      console.log('Empty input hash:', tvEmpty);
-      console.log('ABC input hash:', tvAbc);
+      if(!emptyOk) console.log('Empty input hash: got', tvEmpty, 'expected af1349b9...');
+      if(!t1Ok) console.log('Single byte [0x00] hash: got', tv0x00, 'expected 2d3adedf...');
+      if(!t3Ok) console.log('Three bytes [0x00,0x01,0x02] hash: got', tv0x000102, 'expected e1be4d7a...');
     }
   } catch(e) {
     console.warn('BLAKE3 self-check failed:', e.message);

@@ -76,6 +76,12 @@
 
   "footer.copyright": "يعمل بالكامل في المتصفح • لا شيء يغادر جهازك",
 
+  "search.placeholder": "ابحث في الميزات...",
+  "search.heading": "نتائج البحث",
+  "search.no_results": "لم يتم العثور على نتائج لـ \"{query}\".",
+  "search.results_for": "نتائج لـ \"{query}\":",
+  "search.hint": "جرب البحث عن: علامة مائية، بصمة، بيانات وصفية، طابع زمني",
+
   "dl.title": "تحميل البصمة",
   "dl.subtitle": "اختر الصيغة:",
 

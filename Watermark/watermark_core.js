@@ -240,8 +240,15 @@ async function wm8_embed(imgData, secretData) {
     return wm1_embed(imgData, b);
 }
 function wm8_extract(imgData) {
-    const b = wm1_extract(imgData);
-    if (b.length < 256) return null;
-    const hashBytes = from_bits(b.substr(0, 256));
+    const { data, w, h } = imgData;
+    let b = '';
+    for (let y = 0; y < h && b.length < 512; y++) {
+        for (let x = 0; x < w && b.length < 512; x++) {
+            const i = (y * w + x) * 4;
+            b += (data[i] & 1) + '' + (data[i+1] & 1) + '' + (data[i+2] & 1);
+        }
+    }
+    if (b.length < 512) return null;
+    const hashBytes = from_bits(b.substr(0, 512));
     return new TextDecoder().decode(hashBytes);
 }

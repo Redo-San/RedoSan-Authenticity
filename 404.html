@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Page Not Found | RedoSan Authenticity</title>
+<meta name="description" content="The page you're looking for doesn't exist. Return to RedoSan Authenticity home page.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://redo-san.github.io/RedoSan-Authenticity/404.html">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="Style_Web_Page/style.css">
+</head>
+<body>
+<div class="error-shapes">
+  <div class="error-shape"></div>
+  <div class="error-shape"></div>
+  <div class="error-shape"></div>
+</div>
+
+<nav>
+  <div class="nav-left">
+    <a href="/RedoSan-Authenticity/" class="logo"><img src="Style_Web_Page/logo.png" alt="RedoSan" class="logo-img"></a>
+  </div>
+  <div class="nav-links">
+    <a href="/RedoSan-Authenticity/">Home</a>
+    <a href="/RedoSan-Authenticity/#watermark">Watermark</a>
+    <a href="/RedoSan-Authenticity/#fingerprint">Fingerprint</a>
+    <a href="/RedoSan-Authenticity/#metadata">Metadata</a>
+    <a href="/RedoSan-Authenticity/#timestamp">Timestamp</a>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="error-page">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Page Not Found</h1>
+    <p class="error-desc">The page you're looking for doesn't exist or has been moved. Try searching below or use the navigation.</p>
+
+    <div class="error-search">
+      <input type="text" id="errorSearchInput" placeholder="Search the site..." aria-label="Search" onkeydown="if(event.key==='Enter')doErrorSearch()">
+    </div>
+
+    <div class="error-links">
+      <a href="/RedoSan-Authenticity/">Home</a>
+      <a href="/RedoSan-Authenticity/#watermark">Watermark</a>
+      <a href="/RedoSan-Authenticity/#fingerprint">Fingerprint</a>
+      <a href="/RedoSan-Authenticity/#metadata">Metadata</a>
+      <a href="/RedoSan-Authenticity/#timestamp">Timestamp</a>
+      <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener">Report Issue</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="/RedoSan-Authenticity/">Home</a>
+    <a href="https://github.com/Redo-San" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener">Report Issue</a>
+  </div>
+  <div class="footer-copy">RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves your device</div>
+</footer>
+
+<script>
+function doErrorSearch() {
+  var q = document.getElementById('errorSearchInput').value.trim();
+  if (!q) return;
+  window.location.href = '/RedoSan-Authenticity/?search=' + encodeURIComponent(q);
+}
+document.getElementById('errorSearchInput').addEventListener('focus', function() {
+  this.parentElement.style.boxShadow = '0 0 0 3px rgba(108,92,231,.15)';
+  this.parentElement.style.borderColor = '#6C5CE7';
+});
+document.getElementById('errorSearchInput').addEventListener('blur', function() {
+  this.parentElement.style.boxShadow = '';
+  this.parentElement.style.borderColor = '';
+});
+</script>
+</body>
+</html>

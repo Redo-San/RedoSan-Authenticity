@@ -76,6 +76,12 @@
 
   "footer.copyright": "100% basé sur navigateur • Rien ne quitte votre appareil",
 
+  "search.placeholder": "Rechercher des fonctionnalités...",
+  "search.heading": "Résultats de recherche",
+  "search.no_results": "Aucun résultat pour \"{query}\".",
+  "search.results_for": "Résultats pour \"{query}\":",
+  "search.hint": "Essayez de chercher : watermark, fingerprint, metadata, timestamp",
+
   "dl.title": "Télécharger l'Empreinte",
   "dl.subtitle": "Choisissez un format :",
 

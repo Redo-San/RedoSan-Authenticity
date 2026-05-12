@@ -3,9 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RedoSan Authenticity</title>
+<title>RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool</title>
+<meta name="description" content="RedoSan Authenticity is a free online digital authenticity tool for watermarking, fingerprinting (SHA-256, BLAKE3), metadata reading, and timestamping images. 100% browser-based, nothing uploaded.">
+<meta name="keywords" content="digital watermark, image fingerprint, steganography, LSB, DCT, DWT, SHA-256, BLAKE3, EXIF reader, photo metadata, OpenTimestamps, image hashing, perceptual hash, digital authenticity">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Redo_San">
+<meta property="og:title" content="RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool">
+<meta property="og:description" content="Free online tool for image watermarking, fingerprinting, metadata reading, and timestamping. 100% browser-based, nothing leaves your device.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://redo-san.github.io/RedoSan-Authenticity/">
+<meta property="og:image" content="https://redo-san.github.io/RedoSan-Authenticity/Style_Web_Page/logo.png">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RedoSan Authenticity">
+<meta name="twitter:description" content="Free online digital authenticity tool — watermarking, fingerprinting, metadata reading, and timestamping. 100% browser-based.">
+<link rel="canonical" href="https://redo-san.github.io/RedoSan-Authenticity/">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="stylesheet" href="Style_Web_Page/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "RedoSan Authenticity",
+  "description": "Online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% client-side.",
+  "url": "https://redo-san.github.io/RedoSan-Authenticity/",
+  "applicationCategory": "Multimedia",
+  "operatingSystem": "Web Browser",
+  "browserRequirements": "Requires JavaScript",
+  "author": { "@type": "Person", "name": "Redo_San" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
 </head>
@@ -22,6 +50,11 @@
     <a href="#" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
     <a href="#" data-page="contact" data-i18n="nav.contact">Contact</a>
     <a href="#" data-page="social" data-i18n="nav.social">Social</a>
+    <div class="nav-search" id="navSearch">
+      <input type="text" id="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search..." aria-label="Search" onkeydown="if(event.key==='Enter')siteSearch()" onfocus="this.parentElement.classList.add('focused')" onblur="this.parentElement.classList.remove('focused')">
+      <button class="search-btn" onclick="siteSearch()" aria-label="Search"></button>
+      <div class="search-results" id="searchResults"></div>
+    </div>
     <div class="lang-dropdown">
       <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">English</button>
       <div class="lang-menu" id="langMenu">
@@ -163,6 +196,12 @@
     </div>
   </section>
 
+  <!-- Search Results -->
+  <section id="page-search" class="page">
+    <h2 style="margin-bottom:20px" data-i18n="search.heading">Search Results</h2>
+    <div id="search-output"></div>
+  </section>
+
   <!-- Download Format Modal -->
     <div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
     <div class="modal-box">
@@ -182,16 +221,16 @@
 
   <!-- Metadata -->
   <section id="page-metadata" class="page">
-    <h2 style="margin-bottom:20px">Metadata Reader</h2>
+    <h2 style="margin-bottom:20px" data-i18n="md.heading">Metadata Reader</h2>
     <div class="card-form">
       <div class="form-group">
-        <label>Image file</label>
+        <label data-i18n="md.file_label">Image file</label>
         <input type="file" id="md-file" accept="image/*">
       </div>
-      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px">
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px" data-i18n="md.desc">
         Reads EXIF, dimensions, format, and color mode. All processing in pure JavaScript.
       </p>
-      <button class="btn" onclick="handleReadMetadata()" id="md-btn">Read Metadata</button>
+      <button class="btn" onclick="handleReadMetadata()" id="md-btn" data-i18n="md.submit">Read Metadata</button>
       <div class="spinner" id="md-spinner"></div>
     </div>
     <div id="md-result" style="display:none;margin-top:16px">
@@ -202,44 +241,44 @@
 
   <!-- Timestamp -->
   <section id="page-timestamp" class="page">
-    <h2 style="margin-bottom:20px">File Timestamping</h2>
+    <h2 style="margin-bottom:20px" data-i18n="ts.heading">File Timestamping</h2>
     <div class="card-form">
       <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="btn tab-btn active" data-ts-tab="hash" onclick="switchTsTab('hash')">SHA-256 Hash</button>
-        <button class="btn tab-btn" data-ts-tab="ots" onclick="switchTsTab('ots')">OpenTimestamps</button>
+        <button class="btn tab-btn active" data-ts-tab="hash" onclick="switchTsTab('hash')" data-i18n="ts.hash_btn">SHA-256 Hash</button>
+        <button class="btn tab-btn" data-ts-tab="ots" onclick="switchTsTab('ots')" data-i18n="ts.ots_btn">OpenTimestamps</button>
       </div>
       <div id="ts-hash">
         <div class="form-group">
-          <label>File to hash</label>
+          <label data-i18n="ts.file_label">File to hash</label>
           <input type="file" id="ts-file">
         </div>
-        <button class="btn" onclick="timestampHash()" id="ts-btn">Compute SHA-256</button>
+        <button class="btn" onclick="timestampHash()" id="ts-btn" data-i18n="ts.submit_hash">Compute SHA-256</button>
       </div>
       <div id="ts-ots" style="display:none">
-        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px" data-i18n="ts.ots_note">
           OpenTimestamps (.ots) requires an external server. SHA-256 hash is shown for manual verification.
         </p>
         <div style="display:flex;gap:8px;margin-bottom:16px">
-          <button class="btn tab-btn active" data-ots-tab="create" onclick="switchOtsTab('create')">Create .ots</button>
-          <button class="btn tab-btn" data-ots-tab="verify" onclick="switchOtsTab('verify')">Verify .ots</button>
+          <button class="btn tab-btn active" data-ots-tab="create" onclick="switchOtsTab('create')" data-i18n="ts.ots_create_btn">Create .ots</button>
+          <button class="btn tab-btn" data-ots-tab="verify" onclick="switchOtsTab('verify')" data-i18n="ts.ots_verify_btn">Verify .ots</button>
         </div>
         <div id="ots-create">
           <div class="form-group">
-            <label>File to timestamp</label>
+            <label data-i18n="ts.ots_file_label">File to timestamp</label>
             <input type="file" id="ts-ots-file">
           </div>
-          <button class="btn" onclick="timestampOTS()" id="ts-ots-btn">Compute SHA-256</button>
+          <button class="btn" onclick="timestampOTS()" id="ts-ots-btn" data-i18n="ts.submit_hash">Compute SHA-256</button>
         </div>
         <div id="ots-verify" style="display:none">
           <div class="form-group">
-            <label>Original file</label>
+            <label data-i18n="ts.verify_file_label">Original file</label>
             <input type="file" id="ts-verify-file">
           </div>
           <div class="form-group">
-            <label>.ots proof file</label>
+            <label data-i18n="ts.ots_proof_label">.ots proof file</label>
             <input type="file" id="ts-ots-proof" accept=".ots">
           </div>
-          <button class="btn" onclick="verifyOTS()" id="ts-verify-btn">Verify SHA-256</button>
+          <button class="btn" onclick="verifyOTS()" id="ts-verify-btn" data-i18n="ts.verify_submit">Verify SHA-256</button>
         </div>
       </div>
       <div class="spinner" id="ts-spinner"></div>
@@ -252,7 +291,7 @@
 
   <!-- About -->
   <section id="page-about" class="page">
-    <div class="static-page">
+    <div class="static-page" data-i18n="page.about">
       <h2>About RedoSan Authenticity</h2>
       <p><strong>RedoSan Authenticity</strong> is an open-source digital authenticity tool that runs entirely in your browser. No files are ever uploaded to any server — all processing happens client-side.</p>
       <p>We provide a comprehensive suite of tools for digital forensics and media verification:</p>
@@ -268,7 +307,7 @@
 
   <!-- Privacy -->
   <section id="page-privacy" class="page">
-    <div class="static-page">
+    <div class="static-page" data-i18n="page.privacy">
       <h2>Privacy Policy</h2>
       <p><strong>Your data stays on your device.</strong> RedoSan Authenticity is a 100% client-side application. All processing is done in your browser using JavaScript. No files, metadata, or any other data are transmitted to any server.</p>
       <h3>What we collect</h3>
@@ -283,18 +322,18 @@
   <!-- Contact -->
   <section id="page-contact" class="page">
     <div class="static-page">
-      <h2>Contact Us</h2>
-      <p>Have questions, suggestions, or found a bug? We'd love to hear from you.</p>
+      <h2 data-i18n="nav.contact">Contact Us</h2>
+      <p data-i18n="page.contact">Have questions, suggestions, or found a bug? We'd love to hear from you.</p>
       <div class="contact-links">
         <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" class="contact-card">
           <span class="contact-icon">🐛</span>
-          <span class="contact-title">GitHub Issues</span>
-          <span class="contact-desc">Report bugs &amp; request features</span>
+          <span class="contact-title" data-i18n="contact.github_issues">GitHub Issues</span>
+          <span class="contact-desc" data-i18n="contact.github_issues_desc">Report bugs &amp; request features</span>
         </a>
         <a href="https://github.com/Redo-San" target="_blank" rel="noopener" class="contact-card">
           <span class="contact-icon">💻</span>
-          <span class="contact-title">GitHub Profile</span>
-          <span class="contact-desc">Follow the developer on GitHub</span>
+          <span class="contact-title" data-i18n="contact.github_profile">GitHub Profile</span>
+          <span class="contact-desc" data-i18n="contact.github_profile_desc">Follow the developer on GitHub</span>
         </a>
       </div>
     </div>
@@ -303,18 +342,18 @@
   <!-- Social -->
   <section id="page-social" class="page">
     <div class="static-page">
-      <h2>Follow Us</h2>
-      <p>Stay connected and follow RedoSan on social media.</p>
+      <h2 data-i18n="nav.social">Follow Us</h2>
+      <p data-i18n="page.social">Stay connected and follow RedoSan on social media.</p>
       <div class="social-grid">
         <a href="https://github.com/Redo-San" target="_blank" rel="noopener" class="social-card">
           <span class="social-icon">🐙</span>
-          <span class="social-name">GitHub</span>
-          <span class="social-handle">@Redo-San</span>
+          <span class="social-name" data-i18n="social.github">GitHub</span>
+          <span class="social-handle" data-i18n="social.github_handle">@Redo-San</span>
         </a>
         <a href="https://github.com/Redo-San/RedoSan-Authenticity" target="_blank" rel="noopener" class="social-card">
           <span class="social-icon">📦</span>
-          <span class="social-name">Repository</span>
-          <span class="social-handle">RedoSan-Authenticity</span>
+          <span class="social-name" data-i18n="social.repo">Repository</span>
+          <span class="social-handle" data-i18n="social.repo_handle">RedoSan-Authenticity</span>
         </a>
       </div>
     </div>
@@ -323,19 +362,20 @@
 
 <footer>
   <div class="footer-links">
-    <a href="#" data-page="about">About</a>
-    <a href="#" data-page="privacy">Privacy</a>
-    <a href="#" data-page="contact">Contact</a>
-    <a href="#" data-page="social">Social</a>
+    <a href="#" data-page="about" data-i18n="nav.about">About</a>
+    <a href="#" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
+    <a href="#" data-page="contact" data-i18n="nav.contact">Contact</a>
+    <a href="#" data-page="social" data-i18n="nav.social">Social</a>
   </div>
-  <div class="footer-copy">
+  <div class="footer-copy" data-i18n="footer.copyright">
     RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves your device
   </div>
 </footer>
 
-<script src="Style_Web_Page/shared.js"></script>
 <script src="Style_Web_Page/i18n.js"></script>
+<script src="Style_Web_Page/shared.js"></script>
 <script src="Style_Web_Page/navigation.js"></script>
+<script src="Style_Web_Page/search.js"></script>
 <script src="Watermark/utils.js"></script>
 <script src="Watermark/watermark_core.js"></script>
 <script src="Watermark/watermark.js"></script>

@@ -76,6 +76,12 @@
 
   "footer.copyright": "100% browser-based &bull; Nothing leaves your device",
 
+  "search.placeholder": "Search features...",
+  "search.heading": "Search Results",
+  "search.no_results": "No results found for \"{query}\".",
+  "search.results_for": "Results for \"{query}\":",
+  "search.hint": "Try searching for: watermark, fingerprint, metadata, timestamp, sha256, lsb, dct",
+
   "dl.title": "Download Fingerprint",
   "dl.subtitle": "Choose a format:",
 

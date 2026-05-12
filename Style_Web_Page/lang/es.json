@@ -76,6 +76,12 @@
 
   "footer.copyright": "100% basado en navegador • Nada sale de su dispositivo",
 
+  "search.placeholder": "Buscar funciones...",
+  "search.heading": "Resultados de búsqueda",
+  "search.no_results": "Sin resultados para \"{query}\".",
+  "search.results_for": "Resultados para \"{query}\":",
+  "search.hint": "Intente buscar: watermark, fingerprint, metadata, timestamp",
+
   "dl.title": "Descargar Huella Digital",
   "dl.subtitle": "Elija un formato:",
 
