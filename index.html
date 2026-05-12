@@ -148,8 +148,8 @@
           <p id="wm-secret-status" style="font-size:0.75rem;margin-top:2px"></p>
         </div>
         <div class="form-group">
-          <label data-i18n="wm.password_label">Password (optional)</label>
-          <input type="password" id="wm-password" placeholder="Leave blank">
+          <label data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
+          <input type="password" id="wm-password" placeholder="Enter password" required>
         </div>
         <button class="btn" onclick="handleWatermarkEmbed()" id="wm-btn" data-i18n="wm.embed_submit">Embed Watermark</button>
       </div>
@@ -173,8 +173,8 @@
           <input type="file" id="wm-image-ex" accept="image/png,image/jpeg">
         </div>
         <div class="form-group">
-          <label data-i18n="wm.password_label">Password (optional)</label>
-          <input type="password" id="wm-password-ex" placeholder="Leave blank">
+          <label data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
+          <input type="password" id="wm-password-ex" placeholder="Enter password" required>
         </div>
         <button class="btn" onclick="handleWatermarkExtract()" id="wm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
       </div>

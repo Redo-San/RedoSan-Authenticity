@@ -1,13 +1,13 @@
 // ── Watermark embed/extract orchestrators + UI handlers ──
 
 async function watermarkEmbed(type, imageFile, secretFile, password) {
+    if (type !== 5 && type !== 8 && (!password || !password.trim()))
+        return { ok: false, error: 'Password is required for this algorithm' };
     const [imgResult, secretBuf] = await Promise.all([loadImage(imageFile), secretFile.arrayBuffer()]);
     const secret = new Uint8Array(secretBuf);
     const { imgData, canvas, w, h } = imgResult;
     
-    if (password !== null && password !== undefined && password !== '') {
-        var key = await pw_key(password);
-    } else { key = new Uint8Array(0); }
+    var key = password ? await pw_key(password) : new Uint8Array(0);
     
     // Format: [len (4 plaintext)] + [xor_bytes([0xAA,0xBB || secret], key)]
     // len = 2 + secret.length (includes magic marker)
@@ -88,12 +88,12 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
 }
 
 async function watermarkExtract(type, imageFile, password) {
+    if (type !== 5 && type !== 8 && (!password || !password.trim()))
+        return { ok: false, error: 'Password is required for this algorithm' };
     const imgResult = await loadImage(imageFile);
     const { imgData, w, h } = imgResult;
     
-    if (password !== null && password !== undefined && password !== '') {
-        var key = await pw_key(password);
-    } else { key = new Uint8Array(0); }
+    var key = password ? await pw_key(password) : new Uint8Array(0);
     
     const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
     
@@ -104,19 +104,15 @@ async function watermarkExtract(type, imageFile, password) {
         if (bitsStr.length < 32 + dlen * 8) return null;
         const enc = from_bits(bitsStr.substr(32, dlen * 8));
         const dec = xor_bytes(enc, key);
-        // New format: has [0xAA,0xBB] magic marker → confirm password correct, strip and return
         if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB)
             return dec.slice(2);
-        // No marker with password → wrong password (or old no-password format)
-        if (key && key.length) return null;
-        // Old format (no marker, no password) → return data as-is
-        return dec;
+        return null;
     }
     
     if (type === 1) {
         const b = wm1_extract(imgData);
         const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'No data found' };
+        if (!data) return { ok: false, error: 'Wrong password' };
         return { ok: true, files: { 'extracted_type1.bin': data }, msg: `Type 1 extract: ${data.length} bytes` };
     }
     
@@ -128,14 +124,14 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted: invalid size ${dlen}` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
+        if (!data) return { ok: false, error: 'Wrong password' };
         return { ok: true, files: { 'extracted_type2.bin': data }, msg: `Type 2 extract: ${data.length} bytes` };
     }
     
     else if (type === 3) {
         const b = wm3_extract(imgData, keyVal);
         const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'No data found' };
+        if (!data) return { ok: false, error: 'Wrong password' };
         return { ok: true, files: { 'extracted_type3.bin': data }, msg: `Type 3 extract: ${data.length} bytes` };
     }
     
@@ -147,7 +143,7 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted: invalid size ${dlen}` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
+        if (!data) return { ok: false, error: 'Wrong password' };
         return { ok: true, files: { 'extracted_type4.bin': data }, msg: `Type 4 extract: ${data.length} bytes` };
     }
     
@@ -167,7 +163,7 @@ async function watermarkExtract(type, imageFile, password) {
     else if (type === 6) {
         const b = wm6_extract(imgData);
         const data = b.length >= 32 ? extractData(b) : null;
-        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'No data found' };
+        if (!data) return { ok: false, error: 'Wrong password' };
         return { ok: true, files: { 'extracted_type6.bin': data }, msg: `Type 6 extract: ${data.length} bytes` };
     }
     
@@ -179,7 +175,7 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
+        if (!data) return { ok: false, error: 'Wrong password' };
         return { ok: true, files: { 'extracted_type7.bin': data }, msg: `Type 7 extract: ${data.length} bytes` };
     }
     
@@ -197,7 +193,7 @@ async function watermarkExtract(type, imageFile, password) {
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: `Corrupted` };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const data = extractData(b);
-        if (!data) return { ok: false, error: key && key.length ? 'Wrong password' : 'Not enough bits' };
+        if (!data) return { ok: false, error: 'Wrong password' };
         return { ok: true, files: { 'extracted_type9.bin': data }, msg: `Type 9 extract: ${data.length} bytes` };
     }
     
@@ -213,9 +209,14 @@ async function handleWatermarkEmbed() {
   const dl = document.getElementById('wm-download');
 
   const type = parseInt(getVal('wm-type'));
-  const pw = getVal('wm-password') || null;
+  const pw = getVal('wm-password');
   const imgFile = getFile('wm-image');
   if (!imgFile) { setText('wm-output', 'Please select an image'); resultDiv.style.display = 'block'; return; }
+
+  if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
+    setText('wm-output', 'Password is required for this algorithm');
+    resultDiv.style.display = 'block'; return;
+  }
 
   var secretFile = getFile('wm-secret');
   if (type !== 5 && type !== 8 && !secretFile) {
@@ -295,9 +296,14 @@ async function handleWatermarkExtract() {
   const dl = document.getElementById('wm-download');
 
   const type = parseInt(getVal('wm-type-ex'));
-  const pw = getVal('wm-password-ex') || null;
+  const pw = getVal('wm-password-ex');
   const imgFile = getFile('wm-image-ex');
   if (!imgFile) { setText('wm-output', 'Please select a stego image'); resultDiv.style.display = 'block'; return; }
+
+  if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
+    setText('wm-output', 'Password is required for this algorithm');
+    resultDiv.style.display = 'block'; return;
+  }
 
   btn.disabled = true; spinner('wm-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
