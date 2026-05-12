@@ -377,16 +377,13 @@ async function handleAutoDetect() {
       const priority = [8, 9, 4, 7, 2, 1, 3, 6, 5];
       found.sort((a, b) => priority.indexOf(a.type) - priority.indexOf(b.type));
       const names = {1:'Spatial LSB',2:'Frequency DCT',3:'Neural SS',4:'Latent DCT',5:'Zero-bit',6:'Multi-bit',7:'Forensic',8:'Fragile',9:'Imatag-style'};
-      let html = `<strong>Detection Results:</strong> Found ${found.length} matching algorithm(s):\n`;
+      let html = `Detection Results: Found ${found.length} matching algorithm(s)\n`;
       for (const r of found) {
-        html += `\n  Type ${r.type} (${names[r.type]}): ${r.msg}`;
-        if (r.files) {
-          for (const [name, data] of Object.entries(r.files)) {
-            html += `\n    ${name}: extracted`;
-          }
-        }
+        const size = r.msg.match(/(\d+) bytes/);
+        const suffix = size ? `(${size[1]} bytes)` : '';
+        html += `\n  Type ${r.type} (${names[r.type]}) ${suffix}`;
       }
-      html += '\n\nTip: Switch to the detected algorithm above and click "Extract Watermark" to download.';
+      html += '\n\nTip: Switch to the algorithm above and click "Extract Watermark" to download the data.';
       const sel = document.getElementById('wm-type-ex');
       if (sel && found[0].type && found[0].type !== 5) sel.value = found[0].type;
       setText('wm-output', html);
