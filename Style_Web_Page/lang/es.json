@@ -27,7 +27,7 @@
   "wm.algo_label": "Algoritmo",
   "wm.image_label": "Imagen de portada",
   "wm.image_ex_label": "Imagen estego",
-  "wm.password_label": "Contraseña (opcional)",
+  "wm.password_label": "Contraseña (obligatoria para algoritmos 1-4,6-7,9)",
   "wm.embed_submit": "Incrustar Marca de Agua",
   "wm.extract_submit": "Extraer Marca de Agua",
   "wm.secret_label": "Archivo secreto (datos a ocultar)",

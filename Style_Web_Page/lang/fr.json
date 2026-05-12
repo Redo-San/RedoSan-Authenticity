@@ -27,7 +27,7 @@
   "wm.algo_label": "Algorithme",
   "wm.image_label": "Image de couverture",
   "wm.image_ex_label": "Image stégo",
-  "wm.password_label": "Mot de passe (optionnel)",
+  "wm.password_label": "Mot de passe (requis pour les algorithmes 1-4,6-7,9)",
   "wm.embed_submit": "Intégrer le Filigrane",
   "wm.extract_submit": "Extraire le Filigrane",
   "wm.secret_label": "Fichier secret (données à cacher)",

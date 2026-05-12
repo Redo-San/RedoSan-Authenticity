@@ -27,7 +27,7 @@
   "wm.algo_label": "Algorithmus",
   "wm.image_label": "Cover-Bild",
   "wm.image_ex_label": "Stego-Bild",
-  "wm.password_label": "Passwort (optional)",
+  "wm.password_label": "Passwort (erforderlich für Algorithmen 1-4,6-7,9)",
   "wm.embed_submit": "Wasserzeichen Einbetten",
   "wm.extract_submit": "Wasserzeichen Extrahieren",
   "wm.secret_label": "Geheime Datei (zu versteckende Daten)",

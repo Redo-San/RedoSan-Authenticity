@@ -27,7 +27,7 @@
   "wm.algo_label": "算法",
   "wm.image_label": "封面图像",
   "wm.image_ex_label": "隐写图像",
-  "wm.password_label": "密码（可选）",
+  "wm.password_label": "密码（算法1-4,6-7,9需要）",
   "wm.embed_submit": "嵌入水印",
   "wm.extract_submit": "提取水印",
   "wm.secret_label": "秘密文件（要隐藏的数据）",

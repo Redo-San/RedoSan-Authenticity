@@ -27,7 +27,7 @@
   "wm.algo_label": "Algorithm",
   "wm.image_label": "Cover image",
   "wm.image_ex_label": "Stego image",
-  "wm.password_label": "Password (optional)",
+  "wm.password_label": "Password (required for algorithms 1-4,6-7,9)",
   "wm.embed_submit": "Embed Watermark",
   "wm.extract_submit": "Extract Watermark",
   "wm.secret_label": "Secret file (data to hide)",

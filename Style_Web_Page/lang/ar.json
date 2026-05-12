@@ -27,7 +27,7 @@
   "wm.algo_label": "الخوارزمية",
   "wm.image_label": "الصورة الأصلية",
   "wm.image_ex_label": "الصورة المضغوطة",
-  "wm.password_label": "كلمة المرور (اختياري)",
+  "wm.password_label": "كلمة المرور (مطلوبة للخوارزميات 1-4،6-7،9)",
   "wm.embed_submit": "تضمين العلامة المائية",
   "wm.extract_submit": "استخراج العلامة المائية",
   "wm.secret_label": "الملف السري (البيانات المراد إخفاؤها)",
