@@ -27,7 +27,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     else if (type === 2 || type === 4 || type === 5 || type === 7 || type === 9) {
         const cap = maxDCTBits(w, h, 11);
         if (type === 4) {
-            if (payloadBits.length * 3 > maxDCTBits(w, h, 11) * 3) return { ok: false, error: 'Secret too large for redundant embedding' };
+            if (payloadBits.length * 3 > cap) return { ok: false, error: 'Secret too large for redundant embedding' };
         } else if (type !== 5) {
             if (payloadBits.length > cap) return { ok: false, error: `Secret too large: image supports ~${Math.floor(cap/8)} bytes` };
         }
@@ -255,13 +255,14 @@ async function updateCapacity() {
     } else if (type === 6) {
       bits = Math.floor(w * h * 3 * 2 / 3);
     } else if (type === 2 || type === 4 || type === 5 || type === 7 || type === 9) {
-      const bpb = type === 9 ? 15 : type === 7 ? 20 : type === 4 ? 30 : 25;
-      bits = maxDCTBits(w, h, bpb);
+      bits = maxDCTBits(w, h, 11) * (type === 9 ? 2 : 1);
+      if (type === 4) bits = Math.floor(bits / 3);
     } else if (type === 8) {
       bits = 512;
     }
     const bytes = Math.floor(bits/8);
-    capEl.textContent = `Capacity: ~${bytes.toLocaleString()} byte${bytes!==1?'s':''} (${w}\u00d7${h} image)`;
+    const suffix = type === 9 ? ' (chrominance redundant)' : type === 4 ? ' (redundant x3)' : '';
+    capEl.textContent = `Capacity: ~${bytes.toLocaleString()} byte${bytes!==1?'s':''}${suffix} (${w}\u00d7${h} image)`;
   } catch(e) { capEl.textContent = ''; }
 }
 
