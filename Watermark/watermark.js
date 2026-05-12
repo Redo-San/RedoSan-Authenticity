@@ -100,7 +100,7 @@ async function watermarkExtract(type, imageFile, password) {
     function extractData(bitsStr) {
         if (bitsStr.length < 32) return null;
         var dlen = parseInt(bitsStr.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > w * h * 3 / 8) return null;
+        if (dlen <= 0 || dlen > Math.min(w * h * 3 / 8, 100000)) return null;
         if (bitsStr.length < 32 + dlen * 8) return null;
         const enc = from_bits(bitsStr.substr(32, dlen * 8));
         const dec = xor_bytes(enc, key);

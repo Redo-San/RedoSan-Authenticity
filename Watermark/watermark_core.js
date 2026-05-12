@@ -120,6 +120,8 @@ function maxDCTBits(w, h, bpb) {
     return cols * rows * (bpb || 11);
 }
 
+const LSB_MAX_BITS = 100000;
+
 // ── Algorithm 1: Spatial LSB ──
 function wm1_embed(imgData, payloadBits) {
     const { data, w, h } = imgData;
@@ -134,21 +136,22 @@ function wm1_embed(imgData, payloadBits) {
     }
     return imgData;
 }
-function wm1_extract(imgData, maxLen) {
+function wm1_extract(imgData) {
     const { data, w, h } = imgData;
     let b = '';
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
+    const maxBits = Math.min(w * h * 3, LSB_MAX_BITS);
+    for (let y = 0; y < h && b.length < maxBits; y++) {
+        for (let x = 0; x < w && b.length < maxBits; x++) {
             const i = (y * w + x) * 4;
             b += (data[i] & 1) + '' + (data[i+1] & 1) + '' + (data[i+2] & 1);
             if (b.length >= 32) {
                 const dlen = parseInt(b.substr(0, 32), 2);
-                if (dlen > 0 && dlen < w * h * 3 / 8 && b.length >= 32 + dlen * 8) break;
+                if (dlen > 0 && dlen < w * h * 3 / 8 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
             }
         }
         if (b.length >= 32) {
             const dlen = parseInt(b.substr(0, 32), 2);
-            if (b.length >= 32 + dlen * 8) break;
+            if (dlen > 0 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
@@ -176,12 +179,14 @@ function wm3_extract(imgData, seed) {
     const { data, w, h } = imgData;
     const order = wm3_order(w, h, seed);
     let b = '';
+    const maxBits = Math.min(w * h * 3, LSB_MAX_BITS);
     for (const pi of order) {
+        if (b.length >= maxBits) break;
         const i = pi * 4;
         b += (data[i] & 1) + '' + (data[i+1] & 1) + '' + (data[i+2] & 1);
         if (b.length >= 32) {
             const dlen = parseInt(b.substr(0, 32), 2);
-            if (dlen > 0 && dlen < w * h * 3 / 8 && b.length >= 32 + dlen * 8) break;
+            if (dlen > 0 && dlen < w * h * 3 / 8 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
@@ -213,20 +218,21 @@ function wm6_embed(imgData, payloadBits) {
 function wm6_extract(imgData) {
     const { data, w, h } = imgData;
     let b = '';
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
+    const maxBits = Math.min(w * h * 3, LSB_MAX_BITS);
+    for (let y = 0; y < h && b.length < maxBits; y++) {
+        for (let x = 0; x < w && b.length < maxBits; x++) {
             const i = (y * w + x) * 4;
             b += ((data[i] >> 1) & 1) + '' + (data[i] & 1);
             b += ((data[i+1] >> 1) & 1) + '' + (data[i+1] & 1);
             b += ((data[i+2] >> 1) & 1) + '' + (data[i+2] & 1);
             if (b.length >= 32) {
                 const dlen = parseInt(b.substr(0, 32), 2);
-                if (dlen > 0 && dlen < w * h * 3 / 4 && b.length >= 32 + dlen * 8) break;
+                if (dlen > 0 && dlen < w * h * 3 / 4 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
             }
         }
         if (b.length >= 32) {
             const dlen = parseInt(b.substr(0, 32), 2);
-            if (b.length >= 32 + dlen * 8) break;
+            if (dlen > 0 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
