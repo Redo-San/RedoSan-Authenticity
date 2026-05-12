@@ -373,9 +373,12 @@ async function handleAutoDetect() {
     if (found.length === 0) {
       setText('wm-output', 'No watermark detected with any algorithm. Try without password (for type 5 Zero-bit) or check if the image is watermarked.');
     } else {
+      // Sort by specificity priority: 8 > 9 > 4 > 7 > 2 > 1 > 3 > 6 > 5
+      const priority = [8, 9, 4, 7, 2, 1, 3, 6, 5];
+      found.sort((a, b) => priority.indexOf(a.type) - priority.indexOf(b.type));
+      const names = {1:'Spatial LSB',2:'Frequency DCT',3:'Neural SS',4:'Latent DCT',5:'Zero-bit',6:'Multi-bit',7:'Forensic',8:'Fragile',9:'Imatag-style'};
       let html = `<strong>Detection Results:</strong> Found ${found.length} matching algorithm(s):\n`;
       for (const r of found) {
-        const names = {1:'Spatial LSB',2:'Frequency DCT',3:'Neural SS',4:'Latent DCT',5:'Zero-bit',6:'Multi-bit',7:'Forensic',8:'Fragile',9:'Imatag-style'};
         html += `\n  Type ${r.type} (${names[r.type]}): ${r.msg}`;
         if (r.files) {
           for (const [name, data] of Object.entries(r.files)) {
@@ -383,18 +386,7 @@ async function handleAutoDetect() {
           }
         }
       }
-      html += '\n\nTip: Switch to the detected algorithm above for future extractions.';
-      // Single download button for first match
-      const first = found[0];
-      if (first && first.files) {
-        const entries = Object.entries(first.files);
-        if (entries.length) {
-          const [name, data] = entries[0];
-          const blob = new Blob([data], { type: 'application/octet-stream' });
-          downloadBlob(blob, 'extracted.bin', 'wm-download');
-        }
-      }
-      // Auto-select the first found algorithm
+      html += '\n\nTip: Switch to the detected algorithm above and click "Extract Watermark" to download.';
       const sel = document.getElementById('wm-type-ex');
       if (sel && found[0].type && found[0].type !== 5) sel.value = found[0].type;
       setText('wm-output', html);
