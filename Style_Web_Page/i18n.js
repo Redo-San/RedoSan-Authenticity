@@ -229,6 +229,13 @@ const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 const originalConsoleLog = console.log;
 
+// Prevent multiple declarations
+if (typeof window.originalConsoleError === 'undefined') {
+    window.originalConsoleError = console.error;
+    window.originalConsoleWarn = console.warn;
+    window.originalConsoleLog = console.log;
+}
+
 function shouldFilterError(message) {
   if (!message) return false;
   const msg = message.toString().toLowerCase();

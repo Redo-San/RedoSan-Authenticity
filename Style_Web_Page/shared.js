@@ -70,3 +70,66 @@ async function sha256Hex(data) {
 
 function pack32(v) { return new Uint8Array([(v>>24)&255,(v>>16)&255,(v>>8)&255,v&255]); }
 function unpack32(b) { return (b[0]<<24)|(b[1]<<16)|(b[2]<<8)|b[3]; }
+
+// ── Theme Toggle ──
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+  localStorage.setItem('redosan_theme', theme);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'light' ? 'dark' : 'light');
+}
+function initTheme() {
+  const saved = localStorage.getItem('redosan_theme');
+  if (saved) { setTheme(saved); return; }
+  setTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+}
+
+// ── File Drop Zones ──
+function initDropZones() {
+  document.querySelectorAll('.form-group input[type="file"]').forEach(input => {
+    if (input.parentElement.classList.contains('file-drop-zone')) return;
+    const dz = document.createElement('div');
+    dz.className = 'file-drop-zone';
+    input.parentNode.insertBefore(dz, input);
+    dz.appendChild(input);
+    const icon = document.createElement('span');
+    icon.className = 'dz-icon'; icon.textContent = '📁';
+    dz.appendChild(icon);
+    const text = document.createElement('div');
+    text.className = 'dz-text';
+    text.innerHTML = 'Drop file here or <strong>browse</strong>';
+    dz.appendChild(text);
+    const fileDiv = document.createElement('div');
+    fileDiv.className = 'dz-file';
+    dz.appendChild(fileDiv);
+    dz.addEventListener('click', e => { if (e.target === dz || e.target.classList.contains('dz-icon') || e.target.classList.contains('dz-text')) input.click(); });
+    function updateFile() {
+      if (input.files && input.files.length) {
+        dz.classList.add('has-file');
+        fileDiv.textContent = '📄 ' + input.files[0].name;
+      } else {
+        dz.classList.remove('has-file');
+        fileDiv.textContent = '';
+      }
+    }
+    input.addEventListener('change', updateFile);
+    ['dragenter', 'dragover'].forEach(evt => dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.add('drag-over'); }));
+    ['dragleave', 'drop'].forEach(evt => dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.remove('drag-over'); }));
+    dz.addEventListener('drop', e => {
+      e.preventDefault();
+      if (e.dataTransfer.files.length) {
+        const dt = new DataTransfer();
+        for (const f of e.dataTransfer.files) dt.items.add(f);
+        input.files = dt.files;
+        updateFile();
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    if (input.files && input.files.length) updateFile();
+  });
+}
+document.addEventListener('DOMContentLoaded', () => { initTheme(); initDropZones(); });

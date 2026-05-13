@@ -49,6 +49,7 @@
       <button class="search-btn" onclick="siteSearch()" aria-label="Search"></button>
       <div class="search-results" id="searchResults"></div>
     </div>
+    <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">🌙</button>
   </div>
   <div class="nav-links">
     <a href="#" data-page="about" data-i18n="nav.about">About</a>
@@ -77,6 +78,7 @@
   </div>
   <a href="#" class="active" data-page="home" data-i18n="sidebar.home">Home</a>
   <a href="#" data-page="watermark" data-i18n="sidebar.watermark">Watermark</a>
+  <a href="#" data-page="pixel-injection" data-i18n="sidebar.pixel_injection">Pixel Injection</a>
   <a href="#" data-page="fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
   <a href="#" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
   <a href="#" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
@@ -93,6 +95,11 @@
           <div class="icon">💧</div>
           <h3 data-i18n="card.watermark.title">Watermark</h3>
           <p data-i18n="card.watermark.desc">9 algorithms: LSB, DCT, DWT and more</p>
+        </a>
+        <a href="#" data-page="pixel-injection" class="card">
+          <div class="icon">🔬</div>
+          <h3 data-i18n="card.pixel_injection.title">Pixel Injection</h3>
+          <p data-i18n="card.pixel_injection.desc">20+ advanced pixel injection algorithms</p>
         </a>
         <a href="#" data-page="fingerprint" class="card">
           <div class="icon">🔍</div>
@@ -226,6 +233,86 @@
       </div>
     </div>
   </div>
+
+  <!-- Pixel Injection -->
+  <section id="page-pixel-injection" class="page">
+    <h2 style="margin-bottom:20px" data-i18n="pi.heading">Advanced Pixel Injection</h2>
+    <div class="card-form">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn tab-btn active" data-pi-tab="embed" onclick="switchPiTab('embed')" data-i18n="pi.embed_btn">Embed</button>
+        <button class="btn tab-btn" data-pi-tab="extract" onclick="switchPiTab('extract')" data-i18n="pi.extract_btn">Extract</button>
+        <button class="btn tab-btn" data-pi-tab="analyze" onclick="switchPiTab('analyze')" data-i18n="pi.analyze_btn">Analyze</button>
+      </div>
+      <div id="pi-embed">
+        <div class="form-group">
+          <label data-i18n="pi.category_label">Algorithm Category</label>
+          <select id="pi-category">
+            <option value="spatial" data-i18n="pi.spatial">Spatial Domain</option>
+            <option value="frequency" data-i18n="pi.frequency">Frequency Domain</option>
+            <option value="deep_learning" data-i18n="pi.deep_learning">Deep Learning</option>
+            <option value="professional" data-i18n="pi.professional">Professional Tools</option>
+            <option value="detection" data-i18n="pi.detection">Detection & Analysis</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="pi.algorithm_label">Algorithm</label>
+          <select id="pi-algorithm">
+            <!-- Options will be populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="pi.image_label">Image</label>
+          <input type="file" id="pi-image" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label data-i18n="pi.message_label">Message</label>
+          <textarea id="pi-message" placeholder="Enter your secret message..." rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-i18n="pi.password_label">Password (optional)</label>
+          <input type="password" id="pi-password" placeholder="Enter password for encryption">
+        </div>
+        <div id="pi-advanced-options" style="display:none;">
+          <h4 style="color:var(--primary);margin:15px 0 10px 0;" data-i18n="pi.advanced_options">Advanced Options</h4>
+          <div id="pi-options-container"></div>
+        </div>
+        <button class="btn" onclick="showPiAdvancedOptions()" id="pi-advanced-btn" data-i18n="pi.show_advanced">Show Advanced Options</button>
+        <button class="btn" onclick="handlePixelInjection()" id="pi-btn" data-i18n="pi.embed_submit">Inject Pixel</button>
+        <div class="spinner" id="pi-spinner"></div>
+      </div>
+      <div id="pi-extract" style="display:none;">
+        <div class="form-group">
+          <label data-i18n="pi.watermarked_image_label">Watermarked Image</label>
+          <input type="file" id="pi-watermarked-image" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label data-i18n="pi.algorithm_label">Algorithm</label>
+          <select id="pi-extract-algorithm">
+            <option value="auto" data-i18n="pi.auto_detect">Auto Detect</option>
+            <!-- Options will be populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="pi.password_label">Password (if required)</label>
+          <input type="password" id="pi-extract-password" placeholder="Enter password for decryption">
+        </div>
+        <button class="btn" onclick="handlePixelExtraction()" id="pi-extract-btn" data-i18n="pi.extract_submit">Extract Message</button>
+        <div class="spinner" id="pi-extract-spinner"></div>
+      </div>
+      <div id="pi-analyze" style="display:none;">
+        <div class="form-group">
+          <label data-i18n="pi.analyze_image_label">Image to Analyze</label>
+          <input type="file" id="pi-analyze-image" accept="image/*">
+        </div>
+        <button class="btn" onclick="handlePixelAnalysis()" id="pi-analyze-btn" data-i18n="pi.analyze_submit">Analyze Image</button>
+        <div class="spinner" id="pi-analyze-spinner"></div>
+      </div>
+    </div>
+    <div id="pi-result" style="display:none;margin-top:16px">
+      <div class="result" id="pi-output"></div>
+      <div id="pi-download" style="margin-top:12px;text-align:center"></div>
+    </div>
+  </section>
 
   <!-- Metadata -->
   <section id="page-metadata" class="page">
@@ -382,10 +469,13 @@
 
 <script src="Style_Web_Page/i18n.js"></script>
 <script src="Style_Web_Page/shared.js"></script>
+<script src="Style_Web_Page/i18n.js"></script>
 <script src="Style_Web_Page/navigation.js"></script>
-<script src="Style_Web_Page/search.js"></script>
 <script src="Watermark/utils.js"></script>
 <script src="Watermark/watermark_core.js"></script>
+<script src="Watermark/watermark_core_advanced.js"></script>
+<script src="Watermark/watermark_advanced_ui.js"></script>
+<script src="Watermark/pixel_injection.js"></script>
 <script src="Watermark/watermark.js"></script>
 <script src="Fingerprint/hashing.js"></script>
 <script src="Fingerprint/fingerprint_ui.js"></script>

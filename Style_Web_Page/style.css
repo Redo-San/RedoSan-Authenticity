@@ -11,6 +11,16 @@
   --danger: #FF5252;
   --radius: 12px;
 }
+[data-theme="light"] {
+  --bg: #F5F5FA;
+  --card: #FFFFFF;
+  --card-hover: #EEEEF5;
+  --text: #1A1A2E;
+  --text-muted: #8888A0;
+  --border: #D0D0E0;
+  --success: #00C853;
+  --danger: #FF1744;
+}
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -271,6 +281,36 @@ nav .logo { display:flex; align-items:center; }
 .social-icon { font-size:2.2rem; }
 .social-name { font-weight:600; font-size:1rem; color:var(--text); }
 .social-handle { font-size:0.8rem; color:var(--text-muted); }
+
+/* ── Theme Toggle ── */
+.theme-btn {
+  background:none; border:1px solid var(--border); border-radius:50%; width:32px; height:32px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+  font-size:1rem; transition:.2s; color:var(--text-muted);
+}
+.theme-btn:hover { background:var(--card-hover); color:var(--text); border-color:var(--primary); }
+
+/* ── File Drop Zone ── */
+.file-drop-zone {
+  border:2px dashed var(--border); border-radius:var(--radius); padding:24px 20px;
+  text-align:center; cursor:pointer; transition:.2s; position:relative;
+}
+.file-drop-zone:hover { border-color:var(--primary); background:rgba(108,92,231,.04); }
+.file-drop-zone.drag-over { border-color:var(--primary); background:rgba(108,92,231,.08); transform:scale(1.01); }
+.file-drop-zone input[type="file"] { display:none; }
+.file-drop-zone .dz-icon { font-size:2rem; display:block; margin-bottom:6px; }
+.file-drop-zone .dz-text { font-size:0.85rem; color:var(--text-muted); }
+.file-drop-zone .dz-text strong { color:var(--primary); }
+.file-drop-zone .dz-file {
+  display:none; align-items:center; gap:8px; justify-content:center;
+  font-size:0.85rem; color:var(--text); margin-top:8px;
+  background:rgba(108,92,231,.1); padding:6px 14px; border-radius:20px;
+  word-break:break-all;
+}
+.file-drop-zone.has-file .dz-icon,
+.file-drop-zone.has-file .dz-text { display:none; }
+.file-drop-zone.has-file .dz-file { display:inline-flex; }
+.file-drop-zone.has-file { border-style:solid; border-color:var(--success); }
 
 /* ── Language Dropdown ── */
 .lang-dropdown { position:relative; display:inline-block; flex-shrink:0; }
