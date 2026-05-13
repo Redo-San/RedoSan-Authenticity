@@ -432,7 +432,7 @@
         </p>
         <div class="form-group">
           <label data-i18n="c2pa.content_type_label">Content Type</label>
-          <select id="c2pa-write-type">
+          <select id="c2pa-write-type" onchange="updateC2paWriteForm()">
             <option value="create" data-i18n="c2pa.type_digital">Digitally Created</option>
             <option value="edit" data-i18n="c2pa.type_edited">Edited / Modified</option>
             <option value="create" data-i18n="c2pa.type_ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">AI-Generated</option>
@@ -441,20 +441,20 @@
             <option value="update" data-i18n="c2pa.type_dnt">Do Not Train</option>
           </select>
         </div>
-        <div class="form-group">
-          <label data-i18n="c2pa.title_label">Title (optional)</label>
+        <div id="c2pa-write-title-group" class="form-group">
+          <label id="c2pa-write-title-label" data-i18n="c2pa.title_label">Title (optional)</label>
           <input type="text" id="c2pa-write-title" placeholder="My Image">
         </div>
-        <div class="form-group">
-          <label data-i18n="c2pa.author_label">Creator (optional)</label>
+        <div id="c2pa-write-author-group" class="form-group">
+          <label id="c2pa-write-author-label" data-i18n="c2pa.author_label">Creator (optional)</label>
           <input type="text" id="c2pa-write-author" placeholder="Your name">
         </div>
         <div class="form-group">
           <label data-i18n="c2pa.image_label">Image to sign</label>
           <input type="file" id="c2pa-write-file" accept="image/png,image/jpeg,image/avif,image/webp">
         </div>
-        <div class="form-group">
-          <label data-i18n="c2pa.ingredient_label">Source ingredients (optional)</label>
+        <div id="c2pa-write-ingredient-group" class="form-group">
+          <label id="c2pa-write-ingredient-label" data-i18n="c2pa.ingredient_label">Source ingredients (optional)</label>
           <input type="file" id="c2pa-write-ingredient" accept="image/*" multiple>
         </div>
         <button class="btn" onclick="handleC2paWrite()" id="c2pa-write-btn" data-i18n="c2pa.write_submit">Sign with C2PA</button>

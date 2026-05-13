@@ -71,19 +71,29 @@ export async function signImage(options) {
 
   const builder = WasmBuilder.fromJson(JSON.stringify(manifestDef));
 
+  let actionName = 'c2pa.created';
   if (digitalSrc) {
     builder.setIntent({ create: digitalSrc });
+    if (digitalSrc.includes('composite')) {
+      actionName = 'c2pa.created';
+    } else if (digitalSrc.includes('trainedAlgorithmicMedia')) {
+      actionName = 'c2pa.created';
+    } else if (digitalSrc.includes('digitalCapture')) {
+      actionName = 'c2pa.captured';
+    }
   } else if (contentType === 'edit') {
     builder.setIntent('edit');
+    actionName = 'c2pa.edited';
   } else if (contentType === 'update') {
     builder.setIntent('update');
+    actionName = 'c2pa.opt_out';
   } else {
     // 'create' — no specific digital source type, skip setIntent
   }
 
   if (author) {
     const action = {
-      action: 'c2pa.created',
+      action: actionName,
       actor: { name: author },
       when: new Date().toISOString()
     };

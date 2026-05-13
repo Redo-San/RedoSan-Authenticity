@@ -293,6 +293,94 @@ window.handleC2paRead = async function() {
   }
 };
 
+function getC2paWriteFormType() {
+  const select = document.getElementById('c2pa-write-type');
+  const opt = select.options[select.selectedIndex];
+  const val = opt.value;
+  const src = opt.dataset.c2paSrc || '';
+  if (src.includes('trainedAlgorithmicMedia')) return 'ai';
+  if (src.includes('digitalCapture')) return 'capture';
+  if (src.includes('composite')) return 'composite';
+  return val;
+}
+
+const C2PA_FORM_CONFIG = {
+  create: {
+    title: { show: true,  label: 'Title',             placeholder: 'My Image' },
+    author: { show: true,  label: 'Creator',           placeholder: 'Your name' },
+    ingredients: { show: false },
+    action: 'c2pa.created'
+  },
+  edit: {
+    title: { show: true,  label: 'Title',             placeholder: 'Edited Image' },
+    author: { show: true,  label: 'Editor',            placeholder: 'Editor name' },
+    ingredients: { show: true },
+    action: 'c2pa.edited'
+  },
+  ai: {
+    title: { show: true,  label: 'Title',             placeholder: 'AI Generated Image' },
+    author: { show: true,  label: 'Prompt Author',     placeholder: 'Your name' },
+    ingredients: { show: false },
+    action: 'c2pa.created'
+  },
+  capture: {
+    title: { show: true,  label: 'Title',             placeholder: 'Photo title' },
+    author: { show: true,  label: 'Photographer',      placeholder: 'Photographer name' },
+    ingredients: { show: false },
+    action: 'c2pa.created'
+  },
+  composite: {
+    title: { show: true,  label: 'Title',             placeholder: 'Composite Image' },
+    author: { show: true,  label: 'Creator',           placeholder: 'Creator name' },
+    ingredients: { show: true },
+    action: 'c2pa.created'
+  },
+  update: {
+    title: { show: false, label: '',                   placeholder: '' },
+    author: { show: false, label: '',                   placeholder: '' },
+    ingredients: { show: false },
+    action: 'c2pa.opt_out'
+  }
+};
+
+window.updateC2paWriteForm = function() {
+  const type = getC2paWriteFormType();
+  const cfg = C2PA_FORM_CONFIG[type] || C2PA_FORM_CONFIG.create;
+
+  const titleGroup = document.getElementById('c2pa-write-title-group');
+  const titleLabel = document.getElementById('c2pa-write-title-label');
+  const titleInput = document.getElementById('c2pa-write-title');
+
+  const authorGroup = document.getElementById('c2pa-write-author-group');
+  const authorLabel = document.getElementById('c2pa-write-author-label');
+  const authorInput = document.getElementById('c2pa-write-author');
+
+  const ingredientGroup = document.getElementById('c2pa-write-ingredient-group');
+
+  if (cfg.title.show) {
+    titleGroup.style.display = '';
+    titleLabel.textContent = cfg.title.label;
+    titleInput.placeholder = cfg.title.placeholder;
+  } else {
+    titleGroup.style.display = 'none';
+    titleInput.value = '';
+  }
+
+  if (cfg.author.show) {
+    authorGroup.style.display = '';
+    authorLabel.textContent = cfg.author.label;
+    authorInput.placeholder = cfg.author.placeholder;
+  } else {
+    authorGroup.style.display = 'none';
+    authorInput.value = '';
+  }
+
+  ingredientGroup.style.display = cfg.ingredients.show ? '' : 'none';
+  if (!cfg.ingredients.show) {
+    document.getElementById('c2pa-write-ingredient').value = '';
+  }
+};
+
 window.handleC2paWrite = async function() {
   const fileInput = document.getElementById('c2pa-write-file');
   const titleInput = document.getElementById('c2pa-write-title');
@@ -314,6 +402,8 @@ window.handleC2paWrite = async function() {
     const selectedOption = typeSelect.options[typeSelect.selectedIndex];
     const digitalSrc = selectedOption.dataset.c2paSrc;
     const contentType = typeSelect.value;
+    const formType = getC2paWriteFormType();
+    const formCfg = C2PA_FORM_CONFIG[formType] || C2PA_FORM_CONFIG.create;
 
     let signedBytes;
     let usedCustomSigner = false;
@@ -359,7 +449,7 @@ window.handleC2paWrite = async function() {
 
       if (authorInput.value) {
         await builder.addAction({
-          action: 'c2pa.created',
+          action: formCfg.action,
           actor: { name: authorInput.value }
         });
       }
