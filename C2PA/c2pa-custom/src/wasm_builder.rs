@@ -279,14 +279,14 @@ impl WasmBuilder {
     ) -> Result<Vec<u8>, JsString> {
         let signer = WasmSigner::from_definition(signer_definition)?;
         let mut cursor = Cursor::new(source);
-        let mut dest = Vec::new();
+        let mut dest = Cursor::new(Vec::new());
 
         self.builder
             .sign_async(&signer, format, &mut cursor, &mut dest)
             .await
             .map_err(WasmError::from)?;
 
-        Ok(dest)
+        Ok(dest.into_inner())
     }
 
     /// Sign an asset using the provided SignerDefinition, format, and source Blob.
