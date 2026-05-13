@@ -2,7 +2,7 @@ let wasmExports = null;
 
 async function ensureWasm() {
   if (!wasmExports) {
-    wasmExports = await import('../c2pa-custom/pkg/c2pa_custom.js');
+    wasmExports = await import('./c2pa-custom/pkg/c2pa_custom.js');
     await wasmExports.default();
   }
   return wasmExports;

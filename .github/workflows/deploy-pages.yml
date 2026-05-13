@@ -29,7 +29,7 @@ jobs:
           cargo install wasm-pack
       - name: Build custom C2PA WASM
         run: |
-          cd c2pa-custom && wasm-pack build --target web --out-dir pkg
+          cd C2PA/c2pa-custom && wasm-pack build --target web --out-dir pkg
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
