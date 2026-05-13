@@ -65,6 +65,17 @@ function parsePem(pem) {
   return bytes.buffer;
 }
 
+function splitCerts(pem) {
+  const certs = [];
+  const regex = /-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g;
+  let match;
+  while ((match = regex.exec(pem)) !== null) {
+    const b64 = match[0].replace(/-----BEGIN [\w\s]+-----/g, '').replace(/-----END [\w\s]+-----/g, '').replace(/\s/g, '');
+    certs.push(Uint8Array.from(atob(b64), c => c.charCodeAt(0)));
+  }
+  return certs;
+}
+
 async function createBrowserSigner() {
   const privateKeyBuffer = parsePem(C2PA_PRIVATE_KEY);
   const privateKey = await crypto.subtle.importKey(
@@ -74,9 +85,12 @@ async function createBrowserSigner() {
     false,
     ['sign']
   );
+  const allCerts = splitCerts(C2PA_CERTS);
   return {
     alg: 'es256',
     reserveSize: async () => 300,
+    signingCert: allCerts[0],
+    taCerts: allCerts.slice(1),
     sign: async (data) => {
       const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, data);
       return new Uint8Array(sig);
@@ -329,13 +343,13 @@ window.handleC2paWrite = async function() {
       const builder = await c2pa.builder.new();
 
       if (digitalSrc) {
-        await builder.setIntent({ Create: digitalSrc });
+        await builder.setIntent({ create: digitalSrc });
       } else if (contentType === 'edit') {
-        await builder.setIntent('Edit');
+        await builder.setIntent('edit');
       } else if (contentType === 'update') {
-        await builder.setIntent('Update');
+        await builder.setIntent('update');
       } else {
-        await builder.setIntent({ Create: 'http://c2pa.org/digitalsourcetype/empty' });
+        // 'create' — no specific digital source type, skip setIntent
       }
 
       if (titleInput.value) {

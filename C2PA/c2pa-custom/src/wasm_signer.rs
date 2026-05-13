@@ -152,6 +152,6 @@ impl AsyncSigner for WasmSigner {
     }
 
     fn direct_cose_handling(&self) -> bool {
-        true
+        false
     }
 }
