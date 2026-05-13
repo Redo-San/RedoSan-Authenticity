@@ -163,7 +163,7 @@ async function handleReadMetadata() {
 
     const blob = new Blob([pretty], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    dl.innerHTML = '<a href="' + url + '" download="' + file.name + '.metadata.json" class="btn">Download JSON</a>';
+    dl.innerHTML = '<a href="' + url + '" download="' + escHtml(file.name) + '.metadata.json" class="btn">Download JSON</a>';
   } catch (e) { setText('md-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('md-spinner', false);

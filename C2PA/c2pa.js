@@ -372,7 +372,7 @@ window.handleC2paWrite = async function() {
       <div class="c2pa-success">
         <strong>Success!</strong>
         <p>Image signed with C2PA provenance metadata${usedCustomSigner ? ' (full certificate chain)' : ''}.</p>
-        <a href="${url}" download="${fileName}" class="btn">Download Signed Image</a>
+        <a href="${url}" download="${escHtml(fileName)}" class="btn">Download Signed Image</a>
       </div>
     `;
     spinner.style.display = 'none';
