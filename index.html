@@ -38,6 +38,13 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "@contentauth/c2pa-web": "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm"
+  }
+}
+</script>
 </head>
 <body>
 <nav>
@@ -84,6 +91,7 @@
   <a href="#" data-page="fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
   <a href="#" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
   <a href="#" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
+  <a href="#" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
 </div>
 
 <main class="container" id="app">
@@ -117,6 +125,11 @@
           <div class="icon">🕒</div>
           <h3 data-i18n="card.timestamp.title">Timestamp</h3>
           <p data-i18n="card.timestamp.desc">SHA-256 hashing + OTS hash verification</p>
+        </a>
+        <a href="#" data-page="c2pa" class="card">
+          <div class="icon">🪪</div>
+          <h3 data-i18n="card.c2pa.title">C2PA Provenance</h3>
+          <p data-i18n="card.c2pa.desc">Read & write content provenance metadata</p>
         </a>
       </div>
     </div>
@@ -386,6 +399,92 @@
     </div>
   </section>
 
+  <!-- C2PA -->
+  <section id="page-c2pa" class="page">
+    <h2 style="margin-bottom:20px" data-i18n="c2pa.heading">C2PA Content Provenance</h2>
+    <div class="card-form">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn tab-btn active" data-c2pa-tab="read" onclick="switchC2paTab('read')" data-i18n="c2pa.read_btn">Read</button>
+        <button class="btn tab-btn" data-c2pa-tab="write" onclick="switchC2paTab('write')" data-i18n="c2pa.write_btn">Sign</button>
+        <button class="btn tab-btn" data-c2pa-tab="verify" onclick="switchC2paTab('verify')" data-i18n="c2pa.verify_btn">Verify</button>
+      </div>
+
+      <!-- Read Tab -->
+      <div id="c2pa-read">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px" data-i18n="c2pa.read_desc">
+          Read C2PA content provenance metadata from images. Displays manifests, assertions, actions, ingredients, and signature info.
+        </p>
+        <div class="form-group">
+          <label data-i18n="c2pa.read_file_label">Image with C2PA data</label>
+          <input type="file" id="c2pa-read-file" accept="image/png,image/jpeg,image/avif,image/webp,image/tiff">
+        </div>
+        <button class="btn" onclick="handleC2paRead()" id="c2pa-read-btn" data-i18n="c2pa.read_submit">Read C2PA Data</button>
+        <div class="spinner" id="c2pa-read-spinner"></div>
+      </div>
+
+      <!-- Write Tab -->
+      <div id="c2pa-write" style="display:none">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px" data-i18n="c2pa.write_desc">
+          Sign an image with C2PA provenance metadata using a test certificate. Select the content type and add optional details.
+        </p>
+        <div class="form-group">
+          <label data-i18n="c2pa.content_type_label">Content Type</label>
+          <select id="c2pa-write-type">
+            <option value="create" data-i18n="c2pa.type_digital">Digitally Created</option>
+            <option value="edit" data-i18n="c2pa.type_edited">Edited / Modified</option>
+            <option value="create" data-i18n="c2pa.type_ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">AI-Generated</option>
+            <option value="create" data-i18n="c2pa.type_capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">Digitally Captured</option>
+            <option value="create" data-i18n="c2pa.type_composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">Composite</option>
+            <option value="update" data-i18n="c2pa.type_dnt">Do Not Train</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="c2pa.title_label">Title (optional)</label>
+          <input type="text" id="c2pa-write-title" placeholder="My Image">
+        </div>
+        <div class="form-group">
+          <label data-i18n="c2pa.author_label">Creator (optional)</label>
+          <input type="text" id="c2pa-write-author" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label data-i18n="c2pa.image_label">Image to sign</label>
+          <input type="file" id="c2pa-write-file" accept="image/png,image/jpeg,image/avif,image/webp">
+        </div>
+        <div class="form-group">
+          <label data-i18n="c2pa.ingredient_label">Source ingredients (optional)</label>
+          <input type="file" id="c2pa-write-ingredient" accept="image/*" multiple>
+        </div>
+        <button class="btn" onclick="handleC2paWrite()" id="c2pa-write-btn" data-i18n="c2pa.write_submit">Sign with C2PA</button>
+        <div class="spinner" id="c2pa-write-spinner"></div>
+        <p style="font-size:0.72rem;color:var(--text-muted);margin-top:10px" data-i18n="c2pa.write_note">
+          Uses a test C2PA certificate. This is suitable for development and testing purposes.
+        </p>
+      </div>
+
+      <!-- Verify Tab -->
+      <div id="c2pa-verify" style="display:none">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px" data-i18n="c2pa.verify_desc">
+          Quick verification of C2PA signatures. Upload an image to check if it has valid C2PA provenance data.
+        </p>
+        <div class="form-group">
+          <label data-i18n="c2pa.verify_file_label">Image to verify</label>
+          <input type="file" id="c2pa-verify-file" accept="image/png,image/jpeg,image/avif,image/webp,image/tiff">
+        </div>
+        <button class="btn" onclick="handleC2paVerify()" id="c2pa-verify-btn" data-i18n="c2pa.verify_submit">Verify C2PA</button>
+        <div class="spinner" id="c2pa-verify-spinner"></div>
+      </div>
+    </div>
+    <div id="c2pa-read-result" style="display:none;margin-top:16px">
+      <div class="result" id="c2pa-read-output"></div>
+    </div>
+    <div id="c2pa-write-result" style="display:none;margin-top:16px">
+      <div class="result" id="c2pa-write-output"></div>
+    </div>
+    <div id="c2pa-verify-result" style="display:none;margin-top:16px">
+      <div class="result" id="c2pa-verify-output"></div>
+    </div>
+  </section>
+
   <!-- About -->
   <section id="page-about" class="page">
     <div class="static-page" data-i18n="page.about">
@@ -483,5 +582,6 @@
 <script src="Fingerprint/fingerprint_ui.js"></script>
 <script src="Metadata/metadata.js"></script>
 <script src="Timestamp/timestamp.js"></script>
+<script type="module" src="C2PA/c2pa.js"></script>
 </body>
 </html>

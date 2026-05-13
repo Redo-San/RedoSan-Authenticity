@@ -88,3 +88,15 @@ function showDownloadModal() {
 function closeDownloadModal() {
   document.getElementById('dl-modal').classList.remove('open');
 }
+
+function switchC2paTab(mode) {
+  document.querySelectorAll('.tab-btn[data-c2pa-tab]').forEach(b => b.classList.remove('active'));
+  document.getElementById('c2pa-read').style.display = mode === 'read' ? '' : 'none';
+  document.getElementById('c2pa-write').style.display = mode === 'write' ? '' : 'none';
+  document.getElementById('c2pa-verify').style.display = mode === 'verify' ? '' : 'none';
+  document.querySelector('.tab-btn[data-c2pa-tab="' + mode + '"]').classList.add('active');
+  // Hide all result sections when switching tabs
+  ['c2pa-read-result', 'c2pa-write-result', 'c2pa-verify-result'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+}
