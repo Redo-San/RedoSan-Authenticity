@@ -72,13 +72,13 @@ export async function signImage(options) {
   const builder = WasmBuilder.fromJson(JSON.stringify(manifestDef));
 
   if (digitalSrc) {
-    builder.setIntent({ Create: digitalSrc });
+    builder.setIntent({ create: digitalSrc });
   } else if (contentType === 'edit') {
-    builder.setIntent('Edit');
+    builder.setIntent('edit');
   } else if (contentType === 'update') {
-    builder.setIntent('Update');
+    builder.setIntent('update');
   } else {
-    builder.setIntent({ Create: 'http://c2pa.org/digitalsourcetype/empty' });
+    // 'create' — no specific digital source type, skip setIntent
   }
 
   if (author) {
