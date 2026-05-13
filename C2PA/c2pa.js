@@ -320,7 +320,7 @@ window.handleC2paWrite = async function() {
         usedCustomSigner = true;
       }
     } catch (customErr) {
-      console.warn('Custom C2PA signer unavailable, falling back:', customErr.message);
+      console.warn('Custom C2PA signer unavailable, falling back:', customErr?.message ?? customErr);
     }
 
     if (!usedCustomSigner) {
@@ -329,9 +329,13 @@ window.handleC2paWrite = async function() {
       const builder = await c2pa.builder.new();
 
       if (digitalSrc) {
-        await builder.setIntent({ create: digitalSrc });
+        await builder.setIntent({ Create: digitalSrc });
+      } else if (contentType === 'edit') {
+        await builder.setIntent('Edit');
+      } else if (contentType === 'update') {
+        await builder.setIntent('Update');
       } else {
-        await builder.setIntent(contentType);
+        await builder.setIntent({ Create: 'http://c2pa.org/digitalsourcetype/empty' });
       }
 
       if (titleInput.value) {
