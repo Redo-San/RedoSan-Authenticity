@@ -421,72 +421,46 @@ window.handleC2paWrite = async function() {
     const digitalSrc = firstChecked ? firstChecked.src : '';
     const contentType = firstChecked ? firstChecked.value : '';
 
-    let signedBytes;
-    let usedCustomSigner = false;
+    const c2pa = await getC2pa();
+    const signer = await createBrowserSigner();
+    const builder = await c2pa.builder.new();
 
-    try {
-      const signerModule = await import('./c2pa-signer.js');
-      if (await signerModule.isAvailable()) {
-        const signerTypes = checkedTypes.map(t => t.formType);
-        signedBytes = await signerModule.signImage({
-          file,
-          title: titleInput.value,
-          author: authorInput.value,
-          contentType,
-          digitalSrc,
-          ingredients: ingredientInput.files,
-          privateKeyPem: C2PA_PRIVATE_KEY,
-          certsPem: C2PA_CERTS,
-          dnt
+    if (digitalSrc) {
+      await builder.setIntent({ create: digitalSrc });
+    } else if (contentType === 'edit') {
+      await builder.setIntent('edit');
+    }
+
+    if (titleInput.value) {
+      const def = await builder.getDefinition();
+      def.title = titleInput.value;
+    }
+
+    const authorName = authorInput.value;
+    for (const { formType } of checkedTypes) {
+      const cfg = C2PA_FORM_CONFIG[formType];
+      if (cfg && authorName) {
+        await builder.addAction({
+          action: cfg.action,
+          actor: { name: authorName }
         });
-        usedCustomSigner = true;
       }
-    } catch (customErr) {
-      console.warn('Custom C2PA signer unavailable, falling back:', customErr?.message ?? customErr);
+    }
+    if (dnt) {
+      await builder.addAction({ action: 'c2pa.opt_out' });
     }
 
-    if (!usedCustomSigner) {
-      const c2pa = await getC2pa();
-      const signer = await createBrowserSigner();
-      const builder = await c2pa.builder.new();
-
-      if (digitalSrc) {
-        await builder.setIntent({ create: digitalSrc });
-      } else if (contentType === 'edit') {
-        await builder.setIntent('edit');
+    if (ingredientInput.files && ingredientInput.files.length) {
+      for (const ingFile of ingredientInput.files) {
+        await addIngredientFromFile(builder, ingFile, 'componentOf');
       }
-
-      if (titleInput.value) {
-        const def = await builder.getDefinition();
-        def.title = titleInput.value;
-      }
-
-      const authorName = authorInput.value;
-      for (const { formType } of checkedTypes) {
-        const cfg = C2PA_FORM_CONFIG[formType];
-        if (cfg && authorName) {
-          await builder.addAction({
-            action: cfg.action,
-            actor: { name: authorName }
-          });
-        }
-      }
-      if (dnt) {
-        await builder.addAction({ action: 'c2pa.opt_out' });
-      }
-
-      if (ingredientInput.files && ingredientInput.files.length) {
-        for (const ingFile of ingredientInput.files) {
-          await addIngredientFromFile(builder, ingFile, 'componentOf');
-        }
-      }
-
-      const buf = await file.arrayBuffer();
-      const blob = new Blob([buf]);
-
-      signedBytes = await builder.sign(signer, file.type || 'image/jpeg', blob);
-      await builder.free();
     }
+
+    const buf = await file.arrayBuffer();
+    const blob = new Blob([buf]);
+
+    const signedBytes = await builder.sign(signer, file.type || 'image/jpeg', blob);
+    await builder.free();
 
     const signedBlob = new Blob([signedBytes], { type: file.type || 'image/jpeg' });
     const url = URL.createObjectURL(signedBlob);
@@ -496,7 +470,7 @@ window.handleC2paWrite = async function() {
     output.innerHTML = `
       <div class="c2pa-success">
         <strong>Success!</strong>
-        <p>Image signed with C2PA provenance metadata${usedCustomSigner ? ' (full certificate chain)' : ''}.</p>
+        <p>Image signed with C2PA provenance metadata.</p>
         <a href="${url}" download="${escHtml(fileName)}" class="btn">Download Signed Image</a>
       </div>
     `;
