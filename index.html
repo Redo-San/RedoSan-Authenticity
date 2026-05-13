@@ -52,7 +52,10 @@
     <button class="hamburger" id="menuBtn" onclick="toggleSidebar()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
-    <a href="/RedoSan-Authenticity/" class="logo"><img src="Style_Web_Page/logo.png" alt="RedoSan" class="logo-img"></a>
+    <a href="/RedoSan-Authenticity/" class="logo">
+      <img src="Style_Web_Page/logo.png" alt="RedoSan" class="logo-img logo-white">
+      <img src="Style_Web_Page/logo-black.png" alt="RedoSan" class="logo-img logo-black">
+    </a>
     <div class="nav-search" id="navSearch">
       <input type="text" id="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search..." aria-label="Search" onkeydown="if(event.key==='Enter')siteSearch()" onfocus="this.parentElement.classList.add('focused')" onblur="this.parentElement.classList.remove('focused')">
       <button class="search-btn" onclick="siteSearch()" aria-label="Search"></button>

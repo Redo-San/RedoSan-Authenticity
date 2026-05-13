@@ -34,6 +34,9 @@ nav {
 .nav-left { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
 nav .logo { display:flex; align-items:center; }
 .logo-img { height: 28px; width: auto; display: block; }
+.logo-black { display: none; }
+[data-theme="light"] .logo-white { display: none; }
+[data-theme="light"] .logo-black { display: block; }
 .nav-links { display:flex; align-items:center; gap:4px; }
 .nav-links a {
   color:var(--text-muted); text-decoration:none; font-size:0.85rem; padding:6px 12px;
