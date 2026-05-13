@@ -89,6 +89,12 @@ function closeDownloadModal() {
   document.getElementById('dl-modal').classList.remove('open');
 }
 
+function downloadResult(format) {
+  var handler = window._currentDownloadHandler;
+  if (handler) { handler(format); return; }
+  if (typeof downloadFingerprint === 'function') { downloadFingerprint(format); }
+}
+
 function switchC2paTab(mode) {
   document.querySelectorAll('.tab-btn[data-c2pa-tab]').forEach(b => b.classList.remove('active'));
   document.getElementById('c2pa-read').style.display = mode === 'read' ? '' : 'none';

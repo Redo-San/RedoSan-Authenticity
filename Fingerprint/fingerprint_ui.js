@@ -350,6 +350,8 @@ async function handleFingerprint() {
 
     output.innerHTML = html;
 
+    window._currentDownloadHandler = downloadFingerprint;
+    document.getElementById('dl-modal-title').textContent = 'Download Fingerprint';
     dl.innerHTML = '<button onclick="showDownloadModal()" class="btn">Download Results</button>';
   } catch (e) { setText('fp-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
