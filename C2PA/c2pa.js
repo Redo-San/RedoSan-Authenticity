@@ -293,17 +293,6 @@ window.handleC2paRead = async function() {
   }
 };
 
-function getC2paWriteFormType() {
-  const select = document.getElementById('c2pa-write-type');
-  const opt = select.options[select.selectedIndex];
-  const val = opt.value;
-  const src = opt.dataset.c2paSrc || '';
-  if (src.includes('trainedAlgorithmicMedia')) return 'ai';
-  if (src.includes('digitalCapture')) return 'capture';
-  if (src.includes('composite')) return 'composite';
-  return val;
-}
-
 const C2PA_FORM_CONFIG = {
   create: {
     title: { show: true,  label: 'Title',             placeholder: 'My Image' },
@@ -327,25 +316,47 @@ const C2PA_FORM_CONFIG = {
     title: { show: true,  label: 'Title',             placeholder: 'Photo title' },
     author: { show: true,  label: 'Photographer',      placeholder: 'Photographer name' },
     ingredients: { show: false },
-    action: 'c2pa.created'
+    action: 'c2pa.captured'
   },
   composite: {
     title: { show: true,  label: 'Title',             placeholder: 'Composite Image' },
     author: { show: true,  label: 'Creator',           placeholder: 'Creator name' },
     ingredients: { show: true },
     action: 'c2pa.created'
-  },
-  update: {
-    title: { show: false, label: '',                   placeholder: '' },
-    author: { show: false, label: '',                   placeholder: '' },
-    ingredients: { show: false },
-    action: 'c2pa.opt_out'
   }
 };
 
+function getCheckedFormTypes() {
+  const types = [];
+  document.querySelectorAll('#c2pa-write-types .c2pa-type-card').forEach(card => {
+    const cb = card.querySelector('input[type="checkbox"]');
+    if (cb && cb.checked) {
+      types.push({
+        formType: card.dataset.formType,
+        src: card.dataset.c2paSrc || '',
+        value: cb.value
+      });
+    }
+  });
+  return types;
+}
+
 window.updateC2paWriteForm = function() {
-  const type = getC2paWriteFormType();
-  const cfg = C2PA_FORM_CONFIG[type] || C2PA_FORM_CONFIG.create;
+  const checked = getCheckedFormTypes();
+  const dnt = document.getElementById('c2pa-write-dnt').checked;
+
+  let showTitle = false, showAuthor = false, showIngredients = false;
+  let firstType = null;
+
+  for (const { formType } of checked) {
+    const cfg = C2PA_FORM_CONFIG[formType];
+    if (cfg) {
+      if (cfg.title.show) showTitle = true;
+      if (cfg.author.show) showAuthor = true;
+      if (cfg.ingredients.show) showIngredients = true;
+      if (!firstType) firstType = formType;
+    }
+  }
 
   const titleGroup = document.getElementById('c2pa-write-title-group');
   const titleLabel = document.getElementById('c2pa-write-title-label');
@@ -357,35 +368,35 @@ window.updateC2paWriteForm = function() {
 
   const ingredientGroup = document.getElementById('c2pa-write-ingredient-group');
 
-  if (cfg.title.show) {
+  if (showTitle && firstType) {
     titleGroup.style.display = '';
-    titleLabel.textContent = cfg.title.label;
-    titleInput.placeholder = cfg.title.placeholder;
+    titleLabel.textContent = C2PA_FORM_CONFIG[firstType].title.label;
+    titleInput.placeholder = C2PA_FORM_CONFIG[firstType].title.placeholder;
   } else {
     titleGroup.style.display = 'none';
     titleInput.value = '';
   }
 
-  if (cfg.author.show) {
+  if (showAuthor && firstType) {
     authorGroup.style.display = '';
-    authorLabel.textContent = cfg.author.label;
-    authorInput.placeholder = cfg.author.placeholder;
+    authorLabel.textContent = C2PA_FORM_CONFIG[firstType].author.label;
+    authorInput.placeholder = C2PA_FORM_CONFIG[firstType].author.placeholder;
   } else {
     authorGroup.style.display = 'none';
     authorInput.value = '';
   }
 
-  ingredientGroup.style.display = cfg.ingredients.show ? '' : 'none';
-  if (!cfg.ingredients.show) {
+  ingredientGroup.style.display = showIngredients ? '' : 'none';
+  if (!showIngredients) {
     document.getElementById('c2pa-write-ingredient').value = '';
   }
+
 };
 
 window.handleC2paWrite = async function() {
   const fileInput = document.getElementById('c2pa-write-file');
   const titleInput = document.getElementById('c2pa-write-title');
   const authorInput = document.getElementById('c2pa-write-author');
-  const typeSelect = document.getElementById('c2pa-write-type');
   const ingredientInput = document.getElementById('c2pa-write-ingredient');
   const output = document.getElementById('c2pa-write-output');
   const spinner = document.getElementById('c2pa-write-spinner');
@@ -394,16 +405,21 @@ window.handleC2paWrite = async function() {
   const file = fileInput.files[0];
   if (!file) { alert('Please select an image'); return; }
 
+  const checkedTypes = getCheckedFormTypes();
+  const dnt = document.getElementById('c2pa-write-dnt').checked;
+  if (checkedTypes.length === 0 && !dnt) {
+    alert('Please select at least one content type');
+    return;
+  }
+
   output.innerHTML = '';
   spinner.style.display = 'block';
   resultDiv.style.display = 'none';
 
   try {
-    const selectedOption = typeSelect.options[typeSelect.selectedIndex];
-    const digitalSrc = selectedOption.dataset.c2paSrc;
-    const contentType = typeSelect.value;
-    const formType = getC2paWriteFormType();
-    const formCfg = C2PA_FORM_CONFIG[formType] || C2PA_FORM_CONFIG.create;
+    const firstChecked = checkedTypes[0] || null;
+    const digitalSrc = firstChecked ? firstChecked.src : '';
+    const contentType = firstChecked ? firstChecked.value : '';
 
     let signedBytes;
     let usedCustomSigner = false;
@@ -411,6 +427,7 @@ window.handleC2paWrite = async function() {
     try {
       const signerModule = await import('./c2pa-signer.js');
       if (await signerModule.isAvailable()) {
+        const signerTypes = checkedTypes.map(t => t.formType);
         signedBytes = await signerModule.signImage({
           file,
           title: titleInput.value,
@@ -419,7 +436,8 @@ window.handleC2paWrite = async function() {
           digitalSrc,
           ingredients: ingredientInput.files,
           privateKeyPem: C2PA_PRIVATE_KEY,
-          certsPem: C2PA_CERTS
+          certsPem: C2PA_CERTS,
+          dnt
         });
         usedCustomSigner = true;
       }
@@ -436,10 +454,6 @@ window.handleC2paWrite = async function() {
         await builder.setIntent({ create: digitalSrc });
       } else if (contentType === 'edit') {
         await builder.setIntent('edit');
-      } else if (contentType === 'update') {
-        await builder.setIntent('update');
-      } else {
-        // 'create' — no specific digital source type, skip setIntent
       }
 
       if (titleInput.value) {
@@ -447,11 +461,18 @@ window.handleC2paWrite = async function() {
         def.title = titleInput.value;
       }
 
-      if (authorInput.value) {
-        await builder.addAction({
-          action: formCfg.action,
-          actor: { name: authorInput.value }
-        });
+      const authorName = authorInput.value;
+      for (const { formType } of checkedTypes) {
+        const cfg = C2PA_FORM_CONFIG[formType];
+        if (cfg && authorName) {
+          await builder.addAction({
+            action: cfg.action,
+            actor: { name: authorName }
+          });
+        }
+      }
+      if (dnt) {
+        await builder.addAction({ action: 'c2pa.opt_out' });
       }
 
       if (ingredientInput.files && ingredientInput.files.length) {

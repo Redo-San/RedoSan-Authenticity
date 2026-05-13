@@ -33,7 +33,7 @@ export async function isAvailable() {
 }
 
 export async function signImage(options) {
-  const { file, title, author, contentType, digitalSrc, ingredients, privateKeyPem, certsPem } = options;
+  const { file, title, author, contentType, digitalSrc, ingredients, privateKeyPem, certsPem, dnt } = options;
 
   const wasm = await ensureWasm();
   const { WasmBuilder } = wasm;
@@ -113,6 +113,10 @@ export async function signImage(options) {
         ingBlob
       );
     }
+  }
+
+  if (dnt) {
+    builder.addAction({ action: 'c2pa.opt_out' });
   }
 
   const buf = await file.arrayBuffer();

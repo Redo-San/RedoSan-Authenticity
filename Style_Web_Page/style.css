@@ -126,6 +126,17 @@ nav .logo { display:flex; align-items:center; }
 .badge-warning { background: rgba(255,193,7,.15); color: #ffc107; }
 .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite; margin: 12px auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.c2pa-type-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.c2pa-type-card {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+  padding: 8px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; transition: .2s;
+}
+.c2pa-type-card:hover { border-color: var(--primary); background: var(--card-hover); }
+.c2pa-type-card:has(input:checked) { border-color: var(--primary); background: rgba(108,92,231,.12); }
+.c2pa-type-card input { accent-color: var(--primary); margin: 0; }
+.c2pa-type-name { font-size: 0.85rem; }
 /* footer moved below */
 #md-output { font-family: inherit; white-space: normal; }
 .meta-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }

@@ -105,4 +105,7 @@ function switchC2paTab(mode) {
   ['c2pa-read-result', 'c2pa-write-result', 'c2pa-verify-result'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
+  if (mode === 'write' && typeof updateC2paWriteForm === 'function') {
+    updateC2paWriteForm();
+  }
 }

@@ -431,15 +431,35 @@
           Sign an image with C2PA provenance metadata using a test certificate. Select the content type and add optional details.
         </p>
         <div class="form-group">
-          <label data-i18n="c2pa.content_type_label">Content Type</label>
-          <select id="c2pa-write-type" onchange="updateC2paWriteForm()">
-            <option value="create" data-i18n="c2pa.type_digital">Digitally Created</option>
-            <option value="edit" data-i18n="c2pa.type_edited">Edited / Modified</option>
-            <option value="create" data-i18n="c2pa.type_ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">AI-Generated</option>
-            <option value="create" data-i18n="c2pa.type_capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">Digitally Captured</option>
-            <option value="create" data-i18n="c2pa.type_composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">Composite</option>
-            <option value="update" data-i18n="c2pa.type_dnt">Do Not Train</option>
-          </select>
+          <label data-i18n="c2pa.content_type_label">Content Options</label>
+          <div id="c2pa-write-types" class="c2pa-type-grid">
+            <label class="c2pa-type-card" data-form-type="create">
+              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+              <span class="c2pa-type-name" data-i18n="c2pa.type_digital">Digitally Created</span>
+            </label>
+            <label class="c2pa-type-card" data-form-type="edit">
+              <input type="checkbox" value="edit" onchange="updateC2paWriteForm()">
+              <span class="c2pa-type-name" data-i18n="c2pa.type_edited">Edited / Modified</span>
+            </label>
+            <label class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">
+              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+              <span class="c2pa-type-name" data-i18n="c2pa.type_ai">AI-Generated</span>
+            </label>
+            <label class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">
+              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+              <span class="c2pa-type-name" data-i18n="c2pa.type_capture">Digitally Captured</span>
+            </label>
+            <label class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">
+              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+              <span class="c2pa-type-name" data-i18n="c2pa.type_composite">Composite</span>
+            </label>
+          </div>
+        </div>
+        <div id="c2pa-write-dnt-group" class="form-group" style="margin-top:-6px">
+          <label class="c2pa-type-card">
+            <input type="checkbox" id="c2pa-write-dnt" onchange="updateC2paWriteForm()">
+            <span class="c2pa-type-name" data-i18n="c2pa.type_dnt">Do Not Train</span>
+          </label>
         </div>
         <div id="c2pa-write-title-group" class="form-group">
           <label id="c2pa-write-title-label" data-i18n="c2pa.title_label">Title (optional)</label>
