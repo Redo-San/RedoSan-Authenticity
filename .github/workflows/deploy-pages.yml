@@ -23,6 +23,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install wasm32 target & wasm-pack
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-pack
+      - name: Build custom C2PA WASM
+        run: |
+          cd c2pa-custom && wasm-pack build --target web --out-dir pkg
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

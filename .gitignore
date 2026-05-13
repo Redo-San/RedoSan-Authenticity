@@ -56,7 +56,11 @@ pyproject.toml
 requirements.txt
 .keys/
 _archive/
- c2patool.exe
+c2patool.exe
+
+# C2PA custom WASM build output
+c2pa-custom/pkg/
+c2pa-custom/target/
 c2patool
 openstego.jar
 
