@@ -141,7 +141,23 @@ async function watermarkExtract(type, imageFile, password) {
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
         const dlen = parseInt(b.substr(0, 32), 2);
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
-        b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
+        // Type 4 embeds payload 3x redundantly — read all 3 copies
+        const totalBits = 32 + dlen * 8 * 3;
+        b = extractFromDCT(ycbcr.Y, w, h, totalBits);
+        if (b.length < totalBits) return { ok: false, error: 'No watermark found with this algorithm' };
+        // Majority vote across 3 copies to validate type 4
+        const copy1 = b.substr(32, dlen * 8);
+        const copy2 = b.substr(32 + dlen * 8, dlen * 8);
+        const copy3 = b.substr(32 + dlen * 8 * 2, dlen * 8);
+        let agree12 = 0, agree13 = 0, agree23 = 0;
+        for (let i = 0; i < dlen * 8; i++) {
+            if (copy1[i] === copy2[i]) agree12++;
+            if (copy1[i] === copy3[i]) agree13++;
+            if (copy2[i] === copy3[i]) agree23++;
+        }
+        const maxAgree = Math.max(agree12, agree13, agree23);
+        // Type 4 redundancy: expect > 90% agreement between any 2 copies
+        if (maxAgree < dlen * 8 * 0.9) return { ok: false, error: 'No watermark found with this algorithm' };
         const res = extractData(b);
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
         return { ok: true, files: { 'extracted_type4.bin': res.data }, msg: `Type 4 extract: ${res.data.length} bytes` };
@@ -191,8 +207,18 @@ async function watermarkExtract(type, imageFile, password) {
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
         const dlen = parseInt(b.substr(0, 32), 2);
         if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
-        b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-        const res = extractData(b);
+        // Type 9 embeds in both Y and Cb — verify Cb matches Y
+        const bY = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
+        const bCb = extractFromDCT(ycbcr.Cb, w, h, 32 + dlen * 8);
+        if (bY.length < 32 + dlen * 8 || bCb.length < 32 + dlen * 8)
+            return { ok: false, error: 'No watermark found with this algorithm' };
+        let matches = 0;
+        for (let i = 0; i < 32 + dlen * 8; i++) {
+            if (bY[i] === bCb[i]) matches++;
+        }
+        const matchRatio = matches / (32 + dlen * 8);
+        if (matchRatio < 0.8) return { ok: false, error: 'No watermark found with this algorithm' };
+        const res = extractData(bY);
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
         return { ok: true, files: { 'extracted_type9.bin': res.data }, msg: `Type 9 extract: ${res.data.length} bytes` };
     }
