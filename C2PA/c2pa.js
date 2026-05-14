@@ -397,7 +397,7 @@ window.handleC2paRead = async function() {
     var c2paDl = document.createElement('div');
     c2paDl.style.marginTop = '16px';
     c2paDl.innerHTML = '<button onclick="showC2paDownloadModal()" class="btn">Download Results</button>';
-    output.appendChild(c2paDl);
+    resultDiv.appendChild(c2paDl);
 
     window._c2paReadResult = {
       manifestStore: manifestStore,
