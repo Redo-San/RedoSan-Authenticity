@@ -1,19 +1,21 @@
-import { createC2pa } from 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm';
 import { encodeInt, encodeBstr, encodeTstr, encodeArray, encodeMap, encodeTag } from './cbor.js';
 
+const C2PA_MODULE_URL = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm';
+const C2PA_MODULE_HASH = '6cb9b90c5410f124466ba91d1df4f944f5059755c6f2570336d9bd51abf40564';
 const WASM_SRC = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm';
+const EXPECTED_WASM_HASH = '640d8e02f9d6d8e2c919f3795126d049c4800ce2e71611322ae352a9e075c9ea';
 
-const C2PA_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
+var C2PA_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
 MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgfNJBsaRLSeHizv0m
 GL+gcn78QmtfLSm+n+qG9veC2W2hRANCAAQPaL6RkAkYkKU4+IryBSYxJM3h77sF
 iMrbvbI8fG7w2Bbl9otNG/cch3DAw5rGAPV7NWkyl3QGuV/wt0MrAPDo
 -----END PRIVATE KEY-----`;
 
-const C2PA_CERTS = `-----BEGIN CERTIFICATE-----
+var C2PA_CERTS = `-----BEGIN CERTIFICATE-----
 MIIChzCCAi6gAwIBAgIUcCTmJHYF8dZfG0d1UdT6/LXtkeYwCgYIKoZIzj0EAwIw
 gYwxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJDQTESMBAGA1UEBwwJU29tZXdoZXJl
 MScwJQYDVQQKDB5DMlBBIFRlc3QgSW50ZXJtZWRpYXRlIFJvb3QgQ0ExGTAXBgNV
-BAsMEEZPUiBURVNUSU5HX09OTFkxGDAWBgNVBAMMD0ludGVybWVkaWF0ZSBDQTAe
+BAsMEEZPUiBURVNUSU5HX09OTFkxGDAWBgNVBAMMD0ludGVybWVkaXRlIENBMCAe
 Fw0yMjA2MTAxODQ2NDBaFw0zMDA4MjYxODQ2NDBaMIGAMQswCQYDVQQGEwJVUzEL
 MAkGA1UECAwCQ0ExEjAQBgNVBAcMCVNvbWV3aGVyZTEfMB0GA1UECgwWQzJQQSBU
 ZXN0IFNpZ25pbmcgQ2VydDEZMBcGA1UECwwQRk9SIFRFU1RJTkdfT05MWTEUMBIG
@@ -41,14 +43,51 @@ UrYpDsuojDAKBggqhkjOPQQDAgNJADBGAiEAtdZ3+05CzFo90fWeZ4woeJcNQC4B
 84Ill3YeZVvR8ZECIQDVRdha1xEDKuNTAManY0zthSosfXcvLnZui1A/y/DYeg==
 -----END CERTIFICATE-----`;
 
-let c2paInstance = null;
+var c2paInstance = null;
+var c2paCreateFn = null;
+
+async function sha256Hex(buf) {
+  var h = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
 
 async function getC2pa() {
   if (!c2paInstance) {
-    var timeout = new Promise(function(_, reject) {
-      setTimeout(function() { reject(new Error('C2PA engine timed out loading WASM from CDN. Check your connection.')); }, 20000);
+    // Load and verify C2PA module
+    if (!c2paCreateFn) {
+      var modTimeout = new Promise(function(_, reject) {
+        setTimeout(function() { reject(new Error('C2PA module download timed out')); }, 20000);
+      });
+      var modResp = await Promise.race([fetch(C2PA_MODULE_URL), modTimeout]);
+      var modCode = await modResp.text();
+      var modHash = await sha256Hex(new TextEncoder().encode(modCode));
+      if (modHash !== C2PA_MODULE_HASH) {
+        throw new Error('C2PA module integrity check failed — possible supply-chain attack');
+      }
+      var modBlob = new Blob([modCode], { type: 'text/javascript' });
+      var modUrl = URL.createObjectURL(modBlob);
+      var mod = await import(modUrl);
+      URL.revokeObjectURL(modUrl);
+      c2paCreateFn = mod.createC2pa;
+    }
+    
+    // Load and verify WASM binary
+    var wasmTimeout = new Promise(function(_, reject) {
+      setTimeout(function() { reject(new Error('C2PA WASM download timed out')); }, 30000);
     });
-    c2paInstance = await Promise.race([createC2pa({ wasmSrc: WASM_SRC }), timeout]);
+    var wasmResp = await Promise.race([fetch(WASM_SRC), wasmTimeout]);
+    var wasmBuf = await wasmResp.arrayBuffer();
+    var wasmHash = await sha256Hex(wasmBuf);
+    if (wasmHash !== EXPECTED_WASM_HASH) {
+      throw new Error('C2PA WASM integrity check failed — possible supply-chain attack');
+    }
+    var wasmBlob = new Blob([wasmBuf], { type: 'application/wasm' });
+    var verifiedWasmUrl = URL.createObjectURL(wasmBlob);
+    
+    var engineTimeout = new Promise(function(_, reject) {
+      setTimeout(function() { reject(new Error('C2PA engine timed out initializing')); }, 20000);
+    });
+    c2paInstance = await Promise.race([c2paCreateFn({ wasmSrc: verifiedWasmUrl }), engineTimeout]);
   }
   return c2paInstance;
 }

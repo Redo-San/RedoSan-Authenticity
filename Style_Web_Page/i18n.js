@@ -2,29 +2,7 @@
 var i18n = { lang: 'en', data: {} };
 var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh'];
 
-// Language mapping for geographic detection
-var GEO_LANGUAGE_MAP = {
-  // North America
-  'US': 'en', 'CA': 'en', 'MX': 'es',
-  // South America
-  'BR': 'pt', 'AR': 'es', 'CL': 'es', 'CO': 'es', 'PE': 'es', 'VE': 'es',
-  // Europe
-  'GB': 'en', 'DE': 'de', 'FR': 'fr', 'ES': 'es', 'IT': 'it', 'PT': 'pt',
-  'NL': 'nl', 'BE': 'nl', 'AT': 'de', 'CH': 'de', 'SE': 'sv', 'NO': 'no',
-  'DK': 'da', 'FI': 'fi', 'PL': 'pl', 'CZ': 'cs', 'HU': 'hu', 'GR': 'el',
-  'RU': 'ru', 'UA': 'uk', 'RO': 'ro', 'BG': 'bg', 'HR': 'hr', 'RS': 'sr',
-  // Middle East & North Africa
-  'SA': 'ar', 'AE': 'ar', 'EG': 'ar', 'MA': 'ar', 'TN': 'ar', 'DZ': 'ar',
-  'JO': 'ar', 'LB': 'ar', 'SY': 'ar', 'IQ': 'ar', 'YE': 'ar', 'OM': 'ar',
-  // Asia
-  'CN': 'zh', 'TW': 'zh', 'HK': 'zh', 'SG': 'zh', 'JP': 'ja', 'KR': 'ko',
-  'IN': 'hi', 'PK': 'ur', 'BD': 'bn', 'ID': 'id', 'MY': 'ms', 'TH': 'th',
-  'VN': 'vi', 'PH': 'tl', 'TR': 'tr', 'IR': 'fa', 'IL': 'he',
-  // Africa
-  'ZA': 'en', 'NG': 'en', 'KE': 'en', 'GH': 'en', 'ET': 'am',
-  // Oceania
-  'AU': 'en', 'NZ': 'en'
-};
+// Browser language fallback mapping
 
 // Fallback language mapping for browser language
 var BROWSER_LANGUAGE_MAP = {
@@ -38,62 +16,21 @@ var BROWSER_LANGUAGE_MAP = {
 };
 
 async function detectLang() {
-  // Check if language is explicitly stored
   var stored = localStorage.getItem('redosan_lang');
   if (stored && SUPPORTED.includes(stored)) return stored;
 
-  // Try geographic detection first
-  try {
-    var geoLang = await detectLanguageFromLocation();
-    if (geoLang && SUPPORTED.includes(geoLang)) return geoLang;
-  } catch (e) {} // fall through to browser language
-
-  // Fallback to browser language
   var navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
   var primaryLang = navLang.substring(0, 2);
   
-  // Check exact match first
   if (SUPPORTED.includes(primaryLang)) return primaryLang;
   
-  // Check mapped languages
   var mappedLang = BROWSER_LANGUAGE_MAP[primaryLang];
   if (mappedLang && SUPPORTED.includes(mappedLang)) return mappedLang;
 
-  // Try browser language with region
   var langWithRegion = navLang.substring(0, 5);
   if (SUPPORTED.includes(langWithRegion)) return langWithRegion;
 
-  // Default to English
   return 'en';
-}
-
-async function detectLanguageFromLocation() {
-  try {
-    // Use a free IP geolocation service with timeout
-    var controller = new AbortController();
-    var timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
-    var response = await fetch('https://ipapi.co/json/', {
-      signal: controller.signal,
-      mode: 'cors'
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) throw new Error('Geolocation service unavailable');
-    
-    var data = await response.json();
-    var countryCode = data.country_code;
-    
-    if (countryCode && GEO_LANGUAGE_MAP[countryCode]) {
-      var detectedLang = GEO_LANGUAGE_MAP[countryCode];
-      if (SUPPORTED.includes(detectedLang)) {
-        return detectedLang;
-      }
-    }
-  } catch (e) {} // silently ignore geolocation errors
-  
-  return null;
 }
 
 function switchLang(lang) {
