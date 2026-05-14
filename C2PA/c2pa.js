@@ -45,9 +45,18 @@ let c2paInstance = null;
 
 async function getC2pa() {
   if (!c2paInstance) {
-    c2paInstance = await createC2pa({ wasmSrc: WASM_SRC });
+    var timeout = new Promise(function(_, reject) {
+      setTimeout(function() { reject(new Error('C2PA engine timed out loading WASM from CDN. Check your connection.')); }, 20000);
+    });
+    c2paInstance = await Promise.race([createC2pa({ wasmSrc: WASM_SRC }), timeout]);
   }
   return c2paInstance;
+}
+
+function withTimeout(promise, ms, msg) {
+  return Promise.race([promise, new Promise(function(_, reject) {
+    setTimeout(function() { reject(new Error(msg || 'Operation timed out')); }, ms);
+  })]);
 }
 
 function escHtml(s) {
@@ -287,7 +296,7 @@ window.handleC2paRead = async function() {
 
   try {
     const c2pa = await getC2pa();
-    const reader = await c2pa.reader.fromBlob(file.type || 'image/jpeg', file);
+    const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file), 15000, 'Reader timed out — file may be too large');
 
     if (!reader) {
       output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file does not contain any C2PA provenance metadata.</p></div>';
@@ -296,7 +305,7 @@ window.handleC2paRead = async function() {
       return;
     }
 
-    const manifestStore = await reader.manifestStore();
+    const manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
     await reader.free();
 
     if (!manifestStore || !manifestStore.manifests || !Object.keys(manifestStore.manifests).length) {
@@ -926,7 +935,7 @@ window.handleC2paVerify = async function() {
 
   try {
     const c2pa = await getC2pa();
-    const reader = await c2pa.reader.fromBlob(file.type || 'image/jpeg', file);
+    const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file), 15000, 'Reader timed out — file may be too large');
 
     if (!reader) {
       output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file has no C2PA provenance metadata.</p></div>';
@@ -935,7 +944,7 @@ window.handleC2paVerify = async function() {
       return;
     }
 
-    const manifestStore = await reader.manifestStore();
+    const manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
     await reader.free();
 
     if (!manifestStore || !manifestStore.manifests) {
