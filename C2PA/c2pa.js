@@ -1,7 +1,6 @@
+import { createC2pa } from 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm';
 import { encodeInt, encodeBstr, encodeTstr, encodeArray, encodeMap, encodeTag } from './cbor.js';
 
-const C2PA_MODULE_URL = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm';
-const C2PA_MODULE_HASH = '6cb9b90c5410f124466ba91d1df4f944f5059755c6f2570336d9bd51abf40564';
 const WASM_SRC = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm';
 const EXPECTED_WASM_HASH = '640d8e02f9d6d8e2c919f3795126d049c4800ce2e71611322ae352a9e075c9ea';
 
@@ -44,34 +43,15 @@ UrYpDsuojDAKBggqhkjOPQQDAgNJADBGAiEAtdZ3+05CzFo90fWeZ4woeJcNQC4B
 -----END CERTIFICATE-----`;
 
 var c2paInstance = null;
-var c2paCreateFn = null;
+var verifiedWasmUrl = null;
 
 async function sha256Hex(buf) {
   var h = await crypto.subtle.digest('SHA-256', buf);
   return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
-async function getC2pa() {
-  if (!c2paInstance) {
-    // Load and verify C2PA module
-    if (!c2paCreateFn) {
-      var modTimeout = new Promise(function(_, reject) {
-        setTimeout(function() { reject(new Error('C2PA module download timed out')); }, 20000);
-      });
-      var modResp = await Promise.race([fetch(C2PA_MODULE_URL), modTimeout]);
-      var modCode = await modResp.text();
-      var modHash = await sha256Hex(new TextEncoder().encode(modCode));
-      if (modHash !== C2PA_MODULE_HASH) {
-        throw new Error('C2PA module integrity check failed — possible supply-chain attack');
-      }
-      var modBlob = new Blob([modCode], { type: 'text/javascript' });
-      var modUrl = URL.createObjectURL(modBlob);
-      var mod = await import(modUrl);
-      URL.revokeObjectURL(modUrl);
-      c2paCreateFn = mod.createC2pa;
-    }
-    
-    // Load and verify WASM binary
+async function ensureVerifiedWasm() {
+  if (!verifiedWasmUrl) {
     var wasmTimeout = new Promise(function(_, reject) {
       setTimeout(function() { reject(new Error('C2PA WASM download timed out')); }, 30000);
     });
@@ -82,12 +62,18 @@ async function getC2pa() {
       throw new Error('C2PA WASM integrity check failed — possible supply-chain attack');
     }
     var wasmBlob = new Blob([wasmBuf], { type: 'application/wasm' });
-    var verifiedWasmUrl = URL.createObjectURL(wasmBlob);
-    
+    verifiedWasmUrl = URL.createObjectURL(wasmBlob);
+  }
+  return verifiedWasmUrl;
+}
+
+async function getC2pa() {
+  if (!c2paInstance) {
+    var verified = await ensureVerifiedWasm();
     var engineTimeout = new Promise(function(_, reject) {
       setTimeout(function() { reject(new Error('C2PA engine timed out initializing')); }, 20000);
     });
-    c2paInstance = await Promise.race([c2paCreateFn({ wasmSrc: verifiedWasmUrl }), engineTimeout]);
+    c2paInstance = await Promise.race([createC2pa({ wasmSrc: verified }), engineTimeout]);
   }
   return c2paInstance;
 }
