@@ -1,4 +1,4 @@
-import { createC2pa } from '@contentauth/c2pa-web';
+import { createC2pa } from 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm';
 import { encodeInt, encodeBstr, encodeTstr, encodeArray, encodeMap, encodeTag } from './cbor.js';
 
 const WASM_SRC = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm';
@@ -1011,5 +1011,7 @@ window.handleC2paVerify = async function() {
   }
 };
 
+// Signal that the C2PA module has loaded (imports resolved, handlers attached)
+window.__c2paReady = true;
 
 

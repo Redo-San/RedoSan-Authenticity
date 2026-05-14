@@ -38,13 +38,6 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0" integrity="sha384-TcLTgu6flPhnZ5dfHnHimsxNFjYWN0povfGgnOvgPJKbZe6IbuoC2ociiatSHl9E" crossorigin="anonymous"></script>
-<script type="importmap">
-{
-  "imports": {
-    "@contentauth/c2pa-web": "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm"
-  }
-}
-</script>
 </head>
 <body>
 <nav>
@@ -605,25 +598,73 @@
 <script src="Metadata/metadata.js"></script>
 <script src="Timestamp/timestamp.js"></script>
 <script>
-// Placeholder C2PA handlers — shows spinner immediately while module loads on slow networks.
-// Once the real handlers from c2pa.js module arrive, they replace these placeholders.
+// C2PA boot loader — shows spinner + auto-retries once the module+CDN finish loading.
 (function() {
-  var real = {};
+  var TAP_BTN_IDS = {
+    handleC2paRead: 'c2pa-read-btn',
+    handleC2paWrite: 'c2pa-write-btn',
+    handleC2paVerify: 'c2pa-verify-btn'
+  };
+  // Save original labels so we can restore them later (for i18n lookup)
+  document.addEventListener('DOMContentLoaded', function() {
+    for (var k in TAP_BTN_IDS) {
+      var b = document.getElementById(TAP_BTN_IDS[k]);
+      if (b) b.dataset.origLabel = b.textContent;
+    }
+  });
+
+  var pending = {};
+
   function showC2paSpinner(fnName) {
-    return function() {
-      var btn = document.activeElement;
-      var container = btn && btn.closest('.card-form');
-      var spinner = container && container.querySelector('.spinner');
+    var placeholder = function() {
+      var btn = document.getElementById(TAP_BTN_IDS[fnName]);
+      var spinner = btn && btn.closest('.card-form') && btn.closest('.card-form').querySelector('.spinner');
       if (spinner) spinner.style.display = 'block';
-      // Poll for real handler (module may still be fetching from CDN)
-      if (typeof window[fnName] === 'function' && window[fnName] !== arguments.callee) {
-        window[fnName]();
+
+      // If the real handler from the module is already in place, just forward.
+      if (window[fnName] !== placeholder) return window[fnName]();
+
+      // Otherwise start polling (once).
+      if (!pending[fnName]) {
+        pending[fnName] = setInterval(function() {
+          if (window[fnName] !== placeholder) {
+            clearInterval(pending[fnName]);
+            delete pending[fnName];
+            window[fnName]();  // call the real handler
+          }
+        }, 400);
       }
     };
+    // Mark as placeholder so the poll check can compare
+    placeholder._c2paPlaceholder = true;
+    return placeholder;
   }
-  ['handleC2paRead','handleC2paWrite','handleC2paVerify'].forEach(function(name) {
-    if (!window[name]) window[name] = showC2paSpinner(name);
-  });
+
+  for (var fn in TAP_BTN_IDS) {
+    if (!window[fn]) window[fn] = showC2paSpinner(fn);
+  }
+
+  // Safety: if after 30s the module still hasn't loaded, show an error
+  setTimeout(function() {
+    for (var fn in TAP_BTN_IDS) {
+      var placeholder = window[fn];
+      if (placeholder && placeholder._c2paPlaceholder) {
+        if (pending[fn]) clearInterval(pending[fn]);
+        delete pending[fn];
+        // Inject error into the relevant output container
+        var out = document.getElementById(fn.replace('handleC2pa', '') === 'Read' ? 'c2pa-read-output' :
+                    fn.replace('handleC2pa', '') === 'Write' ? 'c2pa-write-output' : 'c2pa-verify-output');
+        if (out) {
+          out.innerHTML = '<div class="c2pa-error"><strong>Loading failed</strong><p>The C2PA module could not be loaded. Check your internet connection and try refreshing the page.</p></div>';
+          out.parentElement.style.display = 'block';
+        }
+        var btn = document.getElementById(TAP_BTN_IDS[fn]);
+        if (btn) btn.textContent = 'Retry';
+        window[fn] = function() { location.reload(); };
+        break;  // show only one error
+      }
+    }
+  }, 30000);
 })();
 </script>
 <script type="module" src="C2PA/c2pa.js"></script>
