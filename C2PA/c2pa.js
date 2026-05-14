@@ -326,33 +326,35 @@ window.handleC2paRead = async function() {
 
   try {
     const c2pa = await getC2pa();
-    var readerSettings = { verify: { verifyTrust: true, verifyAfterReading: true } };
-    var reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, readerSettings), 15000, 'Reader timed out — file may be too large');
+    var reader, manifestStore;
+    var retried = false;
 
-    if (!reader) {
-      output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file does not contain any C2PA provenance metadata.</p></div>';
-      spinner.style.display = 'none';
-      resultDiv.style.display = 'block';
-      return;
-    }
-
-    var manifestStore;
-    try {
-      manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
-    } catch (readErr) {
-      // If cert validation fails (test certificate), retry without trust verification
-      await reader.free();
-      if (String(readErr.message || readErr).includes('CoseInvalidCert')) {
-        readerSettings.verify.verifyTrust = false;
-        reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, readerSettings), 15000, 'Reader timed out');
-        if (!reader) throw readErr;
+    // Retry loop: first with full trust verification, then without if cert is invalid
+    for (var attempt = 0; attempt < 2; attempt++) {
+      var trustEnabled = (attempt === 0);
+      var settings = trustEnabled ? { verify: { verifyTrust: true, verifyAfterReading: true } } : { verify: { verifyTrust: false, verifyAfterReading: true } };
+      
+      try {
+        reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, settings), 15000, 'Reader timed out');
+        if (!reader) {
+          output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file does not contain any C2PA provenance metadata.</p></div>';
+          spinner.style.display = 'none';
+          resultDiv.style.display = 'block';
+          return;
+        }
         manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
-        manifestStore.__testCert = true;
-      } else {
-        throw readErr;
+        await reader.free();
+        if (!trustEnabled) manifestStore.__testCert = true;
+        break; // success, exit loop
+      } catch (e) {
+        if (reader) { try { await reader.free(); } catch (_) {} }
+        if (attempt === 0 && String(e.message || e).includes('CoseInvalidCert')) {
+          retried = true;
+          continue; // retry without trust
+        }
+        throw e; // rethrow if not a cert issue or already retried
       }
     }
-    await reader.free();
 
     if (!manifestStore || !manifestStore.manifests || !Object.keys(manifestStore.manifests).length) {
       output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA manifests</strong><p>The file has C2PA data but no readable manifests.</p></div>';
