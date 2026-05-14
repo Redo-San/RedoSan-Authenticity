@@ -163,21 +163,30 @@ async function addIngredientFromFile(builder, file, rel) {
 
 function getActionsHtml(manifest) {
   const assertions = manifest.assertions || [];
-  const actions = assertions.filter(a => a.label === 'c2pa.actions');
+  const actions = assertions.filter(a => a.label === 'c2pa.actions' || a.label === 'c2pa.actions.v2');
   if (!actions.length) return '<p class="c2pa-empty">No actions recorded</p>';
-  return actions.map(a => {
+  let html = '';
+  for (const a of actions) {
     const data = a.data;
     const items = Array.isArray(data) ? data : (data.actions || [data]);
-    return items.map(act => `
+    html += `<div class="c2pa-section"><strong>${escHtml(items.length)} entries from ${escHtml(a.label)}</strong></div>`;
+    items.forEach((act, i) => {
+      html += `
       <div class="c2pa-action-item">
-        <span class="c2pa-action-badge">${escHtml(act.action || 'unknown')}</span>
-        ${act.softwareAgent ? `<span class="c2pa-action-agent">${escHtml(act.softwareAgent)}</span>` : ''}
-        ${act.when ? `<span class="c2pa-action-when">${formatDate(act.when)}</span>` : ''}
-        ${act.digitalSourceType ? `<span class="c2pa-action-src">${escHtml(act.digitalSourceType.split('/').pop())}</span>` : ''}
-        ${act.reason ? `<span class="c2pa-action-reason">${escHtml(act.reason)}</span>` : ''}
-      </div>
-    `).join('');
-  }).join('');
+        <span class="c2pa-action-number">${i + 1}</span>
+        <div class="c2pa-action-content">
+          <span class="c2pa-action-badge">${escHtml(act.action || 'unknown')}</span>
+          ${act.digitalSourceType ? `<span class="c2pa-action-src">${escHtml(act.digitalSourceType.split('/').pop())}</span>` : ''}
+          ${act.description ? `<div class="c2pa-action-desc">${escHtml(act.description)}</div>` : ''}
+          ${act.softwareAgent ? `<span class="c2pa-action-agent">${escHtml(act.softwareAgent)}</span>` : ''}
+          ${act.when ? `<span class="c2pa-action-when">${formatDate(act.when)}</span>` : ''}
+          ${act.reason ? `<span class="c2pa-action-reason">${escHtml(act.reason)}</span>` : ''}
+          ${act.parameters ? `<div class="c2pa-action-params"><pre>${escHtml(JSON.stringify(act.parameters, null, 2))}</pre></div>` : ''}
+        </div>
+      </div>`;
+    });
+  }
+  return html;
 }
 
 function getAssertionsHtml(manifest) {
@@ -226,15 +235,40 @@ function getValidationHtml(manifestStore) {
   const status = manifestStore.validation_status || [];
   const results = manifestStore.validation_results;
 
-  if (state === 'ok' || (state == null && (!status || !status.length))) {
-    return '<span class="badge badge-success">Valid</span>';
+  const stateLabel = state === 'ok' ? 'Valid' : state === 'Trusted' ? 'Trusted' : state || 'Unknown';
+  const badgeClass = state === 'ok' || state === 'Trusted' ? 'badge-success' :
+    state === 'warning' ? 'badge-warning' : 'badge-muted';
+
+  let html = `<span class="badge ${badgeClass}">${escHtml(stateLabel)}</span>`;
+
+  // Validation results (structured format with success/warning/failure)
+  const vr = results || {};
+  const am = vr.activeManifest;
+  if (am) {
+    for (const [cat, items] of Object.entries(am)) {
+      if (!items || !items.length) continue;
+      html += `<div class="c2pa-validation-category"><strong>${escHtml(cat)}</strong> (${items.length})</div>`;
+      html += '<ul class="c2pa-validation-list">';
+      for (const item of items) {
+        const code = item.code || item;
+        const explanation = item.explanation || '';
+        html += `<li><code>${escHtml(code)}</code>${explanation ? ` — ${escHtml(explanation)}` : ''}</li>`;
+      }
+      html += '</ul>';
+    }
   }
-  let html = `<span class="badge ${state === 'warning' ? 'badge-warning' : 'badge-muted'}">${escHtml(state || 'unknown')}</span>`;
-  if (status.length) {
+
+  // Legacy validation_status format
+  if (status.length && !am) {
     html += '<ul class="c2pa-validation-list">' +
-      status.map(s => `<li>${escHtml(JSON.stringify(s))}</li>`).join('') +
+      status.map(s => {
+        const code = typeof s === 'string' ? s : (s.code || JSON.stringify(s));
+        const explanation = s.explanation || '';
+        return `<li><code>${escHtml(code)}</code>${explanation ? ` — ${escHtml(explanation)}` : ''}</li>`;
+      }).join('') +
       '</ul>';
   }
+
   return html;
 }
 
@@ -277,6 +311,36 @@ window.handleC2paRead = async function() {
 
     // Validation
     html += `<div class="c2pa-section"><h3>Validation</h3>${getValidationHtml(manifestStore)}</div>`;
+    // Validation summary counts
+    const vr = manifestStore.validation_results || {};
+    const am = vr.activeManifest;
+    if (am) {
+      const total = (am.success?.length || 0) + (am.informational?.length || 0) + (am.failure?.length || 0);
+      if (total > 0) {
+        html += `<div class="c2pa-validation-summary">${total} checks · ${am.success?.length || 0} passed`;
+        if (am.failure?.length) html += `, ${am.failure.length} failed`;
+        if (am.informational?.length) html += `, ${am.informational.length} info`;
+        html += '</div>';
+      }
+    }
+    // Ingredient deltas
+    if (vr.ingredientDeltas && vr.ingredientDeltas.length) {
+      html += '<div class="c2pa-section"><h3>Ingredient Validation</h3>';
+      for (const delta of vr.ingredientDeltas) {
+        if (delta.validationDeltas) {
+          for (const [cat, items] of Object.entries(delta.validationDeltas)) {
+            if (!items || !items.length) continue;
+            html += `<div class="c2pa-validation-category"><strong>${escHtml(cat)}</strong> (${items.length})</div>`;
+            html += '<ul class="c2pa-validation-list">';
+            for (const item of items) {
+              html += `<li><code>${escHtml(item.code || '')}</code>${item.explanation ? ` — ${escHtml(item.explanation)}` : ''}</li>`;
+            }
+            html += '</ul>';
+          }
+        }
+      }
+      html += '</div>';
+    }
 
     // Active manifest label
     html += `<div class="c2pa-section"><h3>Active Manifest</h3><code>${escHtml(activeLabel)}</code></div>`;
@@ -875,20 +939,46 @@ window.handleC2paVerify = async function() {
 
     const state = manifestStore.validation_state;
     const statusList = manifestStore.validation_status || [];
+    const results = manifestStore.validation_results;
     const activeLabel = manifestStore.active_manifest || Object.keys(manifestStore.manifests)[0];
     const manifest = manifestStore.manifests[activeLabel];
 
-    let html = `<div class="c2pa-verify-result ${state === 'ok' ? 'c2pa-verified' : 'c2pa-unverified'}">`;
+    const stateLabel = state === 'ok' ? 'Verified' : state === 'Trusted' ? 'Trusted' : state || 'Unknown';
+    const isGood = state === 'ok' || state === 'Trusted';
 
-    if (state === 'ok') {
-      html += '<div class="c2pa-verify-icon">✓</div><strong>Verified</strong>';
+    let html = `<div class="c2pa-verify-result ${isGood ? 'c2pa-verified' : 'c2pa-unverified'}">`;
+
+    if (isGood) {
+      html += '<div class="c2pa-verify-icon">✓</div><strong>' + escHtml(stateLabel) + '</strong>';
     } else {
-      html += '<div class="c2pa-verify-icon c2pa-verify-icon-warn">!</div><strong>' + escHtml(state || 'Unknown') + '</strong>';
+      html += '<div class="c2pa-verify-icon c2pa-verify-icon-warn">!</div><strong>' + escHtml(stateLabel) + '</strong>';
     }
 
-    if (statusList.length) {
+    // Validation summary from results
+    const am = results?.activeManifest;
+    if (am) {
+      const total = (am.success?.length || 0) + (am.informational?.length || 0) + (am.failure?.length || 0);
+      html += `<div class="c2pa-validation-summary">${total} checks · ${am.success?.length || 0} passed`;
+      if (am.failure?.length) html += `, ${am.failure.length} failed`;
+      if (am.informational?.length) html += `, ${am.informational.length} info`;
+      html += '</div>';
+
+      // Show validation results grouped by category
+      for (const [cat, items] of Object.entries(am)) {
+        if (!items || !items.length) continue;
+        html += `<div class="c2pa-validation-category"><strong>${escHtml(cat)}</strong></div>`;
+        html += '<ul class="c2pa-validation-list">';
+        for (const item of items) {
+          html += `<li><code>${escHtml(item.code || '')}</code>${item.explanation ? ` — ${escHtml(item.explanation)}` : ''}</li>`;
+        }
+        html += '</ul>';
+      }
+    } else if (statusList.length) {
       html += '<ul class="c2pa-validation-list">' +
-        statusList.map(s => '<li><code>' + escHtml(JSON.stringify(s)) + '</code></li>').join('') +
+        statusList.map(s => {
+          const code = s.code || JSON.stringify(s);
+          return '<li><code>' + escHtml(code) + '</code></li>';
+        }).join('') +
         '</ul>';
     }
 
@@ -901,11 +991,7 @@ window.handleC2paVerify = async function() {
     if (manifest.signature_info && manifest.signature_info.issuer) {
       html += `<p>Signed by: ${escHtml(manifest.signature_info.issuer)}</p>`;
     }
-    if (manifestStore.validation_results && manifestStore.validation_results.length) {
-      html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">View Full Details</a></p>';
-    } else {
-      html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">View Full Details</a></p>';
-    }
+    html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">View Full Details</a></p>';
 
     html += '</div>';
     output.innerHTML = html;
