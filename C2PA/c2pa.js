@@ -125,7 +125,10 @@ async function createBrowserSigner() {
     false,
     ['sign']
   );
-  const allCerts = splitCerts(C2PA_CERTS);
+  // Use only the signer cert (first PEM). Dropping the intermediate CA
+  // because we don't have the Root CA to complete the chain. The reader
+  // will handle the untrusted cert gracefully (verifyTrust:false fallback).
+  var allCerts = [splitCerts(C2PA_CERTS)[0]];
 
   // Must be large enough for COSE + claim + cert chain + overhead
   const RESERVE_SIZE = 5000;
