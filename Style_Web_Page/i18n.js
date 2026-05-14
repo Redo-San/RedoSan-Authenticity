@@ -260,7 +260,13 @@ function shouldFilterError(message) {
     
     // Promise rejection errors from extensions
     (msg.includes('could not establish connection') && msg.includes('receiving end does not exist')) ||
-    (msg.includes('uncaught (in promise)') && msg.includes('could not establish connection'))
+    (msg.includes('uncaught (in promise)') && msg.includes('could not establish connection')) ||
+
+    // Async response / message channel closed (Chrome extension service worker)
+    msg.includes('listener indicated an asynchronous response') ||
+    msg.includes('message channel closed before a response') ||
+    msg.includes('unchecked runtime.lasterror') ||
+    (msg.includes('runtime.lasterror') && msg.includes('port closed'))
   );
 }
 
