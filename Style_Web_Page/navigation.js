@@ -28,6 +28,8 @@ function showPage(name) {
   if (page) page.classList.add('active');
   const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
   if (nav) nav.classList.add('active');
+  // Initialize sub-tabs
+  if (name === 'timestamp') { if (typeof switchOtsTab === 'function') switchOtsTab('create'); }
   // Update URL hash for direct linking
   if (name && name !== 'home') {
     history.replaceState(null, '', '#/' + name);
@@ -65,13 +67,6 @@ function switchWmTab(mode) {
   document.getElementById('wm-embed').style.display = mode === 'embed' ? '' : 'none';
   document.getElementById('wm-extract').style.display = mode === 'extract' ? '' : 'none';
   document.querySelector('.tab-btn[data-wm-tab="' + mode + '"]').classList.add('active');
-}
-
-function switchTsTab(mode) {
-  document.querySelectorAll('.tab-btn[data-ts-tab]').forEach(b => b.classList.remove('active'));
-  document.getElementById('ts-hash').style.display = mode === 'hash' ? '' : 'none';
-  document.getElementById('ts-ots').style.display = mode === 'ots' ? '' : 'none';
-  document.querySelector('.tab-btn[data-ts-tab="' + mode + '"]').classList.add('active');
 }
 
 function switchOtsTab(mode) {

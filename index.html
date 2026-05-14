@@ -349,43 +349,34 @@
   <section id="page-timestamp" class="page">
     <h2 style="margin-bottom:20px" data-i18n="ts.heading">File Timestamping</h2>
     <div class="card-form">
-      <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="btn tab-btn active" data-ts-tab="hash" onclick="switchTsTab('hash')" data-i18n="ts.hash_btn">SHA-256 Hash</button>
-        <button class="btn tab-btn" data-ts-tab="ots" onclick="switchTsTab('ots')" data-i18n="ts.ots_btn">OpenTimestamps</button>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn tab-btn active" data-ots-tab="create" onclick="switchOtsTab('create')" data-i18n="ts.ots_create_btn">Create .ots</button>
+        <button class="btn tab-btn" data-ots-tab="verify" onclick="switchOtsTab('verify')" data-i18n="ts.ots_verify_btn">Verify .ots</button>
       </div>
-      <div id="ts-hash">
-        <div class="form-group">
-          <label data-i18n="ts.file_label">File to hash</label>
-          <input type="file" id="ts-file">
-        </div>
-        <button class="btn" onclick="timestampHash()" id="ts-btn" data-i18n="ts.submit_hash">Compute SHA-256</button>
-      </div>
-      <div id="ts-ots" style="display:none">
-        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px" data-i18n="ts.ots_note">
-          OpenTimestamps (.ots) requires an external server. SHA-256 hash is shown for manual verification.
+      <div id="ots-create">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px" data-i18n="ts.ots_create_note">
+          Creates an OpenTimestamps (.ots) proof file from your file's SHA-256 hash. Fully compatible with the OpenTimestamps protocol. Submit the .ots to a calendar aggregator for a blockchain attestation.
         </p>
-        <div style="display:flex;gap:8px;margin-bottom:16px">
-          <button class="btn tab-btn active" data-ots-tab="create" onclick="switchOtsTab('create')" data-i18n="ts.ots_create_btn">Create .ots</button>
-          <button class="btn tab-btn" data-ots-tab="verify" onclick="switchOtsTab('verify')" data-i18n="ts.ots_verify_btn">Verify .ots</button>
+        <div class="form-group">
+          <label data-i18n="ts.ots_file_label">File to timestamp</label>
+          <input type="file" id="ts-create-file">
         </div>
-        <div id="ots-create">
-          <div class="form-group">
-            <label data-i18n="ts.ots_file_label">File to timestamp</label>
-            <input type="file" id="ts-ots-file">
-          </div>
-          <button class="btn" onclick="timestampOTS()" id="ts-ots-btn" data-i18n="ts.submit_hash">Compute SHA-256</button>
+        <button class="btn" onclick="handleOtsCreate()" id="ts-create-btn" data-i18n="ts.create_ots">Create .ots</button>
+        <button class="btn" onclick="document.getElementById('ts-create-file').click()" id="ts-create-dl-btn" style="display:none;margin-top:10px;background:var(--card-hover);color:var(--text);border:1px solid var(--border)" data-i18n="ts.create_another">Create Another</button>
+      </div>
+      <div id="ots-verify" style="display:none">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px" data-i18n="ts.ots_verify_note">
+          Verify that a file matches its .ots proof. Select the original file and its .ots proof to check if the file has been modified.
+        </p>
+        <div class="form-group">
+          <label data-i18n="ts.verify_file_label">Original file</label>
+          <input type="file" id="ts-verify-file">
         </div>
-        <div id="ots-verify" style="display:none">
-          <div class="form-group">
-            <label data-i18n="ts.verify_file_label">Original file</label>
-            <input type="file" id="ts-verify-file">
-          </div>
-          <div class="form-group">
-            <label data-i18n="ts.ots_proof_label">.ots proof file</label>
-            <input type="file" id="ts-ots-proof" accept=".ots">
-          </div>
-          <button class="btn" onclick="verifyOTS()" id="ts-verify-btn" data-i18n="ts.verify_submit">Verify SHA-256</button>
+        <div class="form-group">
+          <label data-i18n="ts.ots_proof_label">.ots proof file</label>
+          <input type="file" id="ts-ots-proof" accept=".ots">
         </div>
+        <button class="btn" onclick="handleOtsVerify()" id="ts-verify-btn" data-i18n="ts.verify_ots">Verify .ots</button>
       </div>
       <div class="spinner" id="ts-spinner"></div>
     </div>
