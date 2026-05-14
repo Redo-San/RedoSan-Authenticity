@@ -71,6 +71,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: manipulation;
   }
   .file-drop-zone { padding: 16px 14px; }
   .file-drop-zone .dz-icon { font-size: 1.5rem; }
@@ -78,6 +79,18 @@ body {
 }
 @media (min-width: 414px) {
   .btn { min-height: 44px; }
+}
+/* ── C2PA type cards (content checkboxes) on mobile ── */
+@media (max-width: 413px) {
+  .c2pa-type-card {
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+  .c2pa-type-name { font-size: 0.8rem; }
+}
+/* ── C2PA tab buttons on mobile ── */
+@media (max-width: 413px) {
+  .tab-btn { touch-action: manipulation; }
 }
 
 /* ── Tab buttons stack on tiny screens ── */

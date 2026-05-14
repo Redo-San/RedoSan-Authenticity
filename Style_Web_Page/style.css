@@ -110,6 +110,7 @@ nav .logo { display:flex; align-items:center; }
 .btn {
   display: inline-block; padding: 10px 28px; background: var(--primary); color: #fff;
   border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: .2s;
+  touch-action: manipulation;
 }
 .btn:hover { background: var(--primary-dark); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }

@@ -604,6 +604,28 @@
 <script src="Fingerprint/fingerprint_ui.js"></script>
 <script src="Metadata/metadata.js"></script>
 <script src="Timestamp/timestamp.js"></script>
+<script>
+// Placeholder C2PA handlers — shows spinner immediately while module loads on slow networks.
+// Once the real handlers from c2pa.js module arrive, they replace these placeholders.
+(function() {
+  var real = {};
+  function showC2paSpinner(fnName) {
+    return function() {
+      var btn = document.activeElement;
+      var container = btn && btn.closest('.card-form');
+      var spinner = container && container.querySelector('.spinner');
+      if (spinner) spinner.style.display = 'block';
+      // Poll for real handler (module may still be fetching from CDN)
+      if (typeof window[fnName] === 'function' && window[fnName] !== arguments.callee) {
+        window[fnName]();
+      }
+    };
+  }
+  ['handleC2paRead','handleC2paWrite','handleC2paVerify'].forEach(function(name) {
+    if (!window[name]) window[name] = showC2paSpinner(name);
+  });
+})();
+</script>
 <script type="module" src="C2PA/c2pa.js"></script>
 </body>
 </html>
