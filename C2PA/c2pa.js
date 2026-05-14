@@ -64,6 +64,11 @@ function escHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function safeUrl(url) {
+  if (!url) return '';
+  return (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) ? url : '';
+}
+
 function formatDate(d) {
   if (!d) return '—';
   try { return new Date(d).toLocaleString(); } catch(e) { return d; }
@@ -371,7 +376,7 @@ window.handleC2paRead = async function() {
     if (manifest.claim_generator_info && manifest.claim_generator_info.length) {
       html += '<div class="c2pa-section"><h3>Generator Info</h3>';
       html += manifest.claim_generator_info.map(info =>
-        `<div class="c2pa-gen-info">${info.name ? `<strong>${escHtml(info.name)}</strong>` : ''}${info.version ? ` v${escHtml(info.version)}` : ''}${info.icon_url ? `<br><img src="${escHtml(info.icon_url)}" style="max-height:24px">` : ''}</div>`
+        `<div class="c2pa-gen-info">${info.name ? `<strong>${escHtml(info.name)}</strong>` : ''}${info.version ? ` v${escHtml(info.version)}` : ''}${info.icon_url ? `<br><img src="${escHtml(safeUrl(info.icon_url))}" style="max-height:24px">` : ''}</div>`
       ).join('');
       html += '</div>';
     }

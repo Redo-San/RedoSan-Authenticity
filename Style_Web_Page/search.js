@@ -72,7 +72,8 @@ function showSearchResults(query, results) {
     html += '<p style="color:var(--text-muted);margin-bottom:16px;font-size:0.85rem">' + title + ' <strong>' + results.length + '</strong></p>';
     results.forEach(function(r) {
       var pageName = r.page.id.replace('page-', '');
-      html += '<a href="#" data-page="' + pageName + '" class="search-result-item" onclick="navigateToSearchResult(\'' + pageName + '\');return false;">';
+      var safeName = escHtml(pageName);
+      html += '<a href="#" data-page="' + safeName + '" class="search-result-item">';
       html += '<div class="search-result-title">' + escHtml(r.page.title) + '</div>';
       if (r.snippet) {
         html += '<div class="search-result-snippet">' + escHtml(r.snippet) + '</div>';
@@ -97,6 +98,12 @@ function closeSearchResults() {
 }
 
 document.addEventListener('click', function(e) {
+  var item = e.target.closest('.search-result-item');
+  if (item) {
+    var pageName = item.getAttribute('data-page');
+    if (pageName) navigateToSearchResult(pageName);
+    e.preventDefault();
+  }
   var search = document.getElementById('navSearch');
   if (search && !search.contains(e.target)) {
     closeSearchResults();

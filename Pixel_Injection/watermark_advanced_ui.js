@@ -612,22 +612,25 @@ class AdvancedWatermarkUI {
         resultDiv.style.display = 'block';
         
         const outputDiv = document.getElementById('wm-output');
+        const safeMsg = escHtml(this.extractedMessage);
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
                 <h5 style="color: var(--primary); margin-bottom: 10px;">Extracted Message</h5>
                 <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); font-family: monospace; word-break: break-all;">
-                    ${this.extractedMessage}
+                    ${safeMsg}
                 </div>
             </div>
         `;
         
         // Add copy button
         const downloadDiv = document.getElementById('wm-download');
-        downloadDiv.innerHTML = `
-            <button class="btn" onclick="navigator.clipboard.writeText('${this.extractedMessage}')" style="margin-top: 10px;">
-                Copy Message
-            </button>
-        `;
+        downloadDiv.innerHTML = '<button class="btn" id="wm-copy-btn" style="margin-top: 10px;">Copy Message</button>';
+        const copyBtn = document.getElementById('wm-copy-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(this.extractedMessage);
+            }.bind(this));
+        }
     }
     
     updateQualityDisplay() {

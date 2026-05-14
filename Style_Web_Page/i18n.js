@@ -46,9 +46,7 @@ async function detectLang() {
   try {
     var geoLang = await detectLanguageFromLocation();
     if (geoLang && SUPPORTED.includes(geoLang)) return geoLang;
-  } catch (e) {
-    console.log('Geographic detection failed:', e);
-  }
+  } catch (e) {} // fall through to browser language
 
   // Fallback to browser language
   var navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
@@ -90,17 +88,10 @@ async function detectLanguageFromLocation() {
     if (countryCode && GEO_LANGUAGE_MAP[countryCode]) {
       var detectedLang = GEO_LANGUAGE_MAP[countryCode];
       if (SUPPORTED.includes(detectedLang)) {
-        console.log('Detected language from location:', countryCode, '->', detectedLang);
         return detectedLang;
       }
     }
-  } catch (e) {
-    if (e.name === 'AbortError') {
-      console.log('Geolocation request timed out');
-    } else {
-      console.log('Geolocation detection failed:', e.message);
-    }
-  }
+  } catch (e) {} // silently ignore geolocation errors
   
   return null;
 }
@@ -154,7 +145,6 @@ async function loadLang(lang) {
     console.error('i18n load error:', e);
     // Fallback to English if language fails to load
     if (lang !== 'en') {
-      console.log('Falling back to English');
       return loadLang('en');
     }
     return false;
@@ -162,18 +152,14 @@ async function loadLang(lang) {
 }
 
 function applyLang() {
-  console.log('Applying language:', i18n.lang);
   document.documentElement.lang = i18n.lang;
   document.documentElement.dir = i18n.lang === 'ar' ? 'rtl' : 'ltr';
   
   var btn = document.getElementById('langBtn');
   if (btn) {
     const displayName = getLanguageDisplayName(i18n.lang);
-    console.log('Setting button text to:', displayName);
     btn.textContent = displayName;
     btn.title = 'Current: ' + displayName + '\nClick to change language';
-  } else {
-    console.error('Language button not found!');
   }
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
@@ -321,12 +307,9 @@ window.addEventListener('error', function(event) {
 
 // Initialize language system
 document.addEventListener('DOMContentLoaded', async function() { 
-  console.log('DOM loaded, initializing language system...');
   try {
     const lang = await detectLang();
-    console.log('Detected language:', lang);
     await loadLang(lang);
-    console.log('Language loaded successfully');
   } catch (e) {
     console.error('Language initialization failed:', e);
     // Fallback to English

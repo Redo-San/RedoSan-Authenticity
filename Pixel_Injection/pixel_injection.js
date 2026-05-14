@@ -64,26 +64,19 @@ class PixelInjection {
     }
     
     setupPixelInjectionUI() {
-        // Initialize the pixel injection interface
-        console.log('Setting up Pixel Injection UI...');
         this.updatePiAlgorithms();
         this.updateExtractAlgorithms();
         
-        // Add change event listener to category select
         const categorySelect = document.getElementById('pi-category');
         if (categorySelect) {
             categorySelect.addEventListener('change', () => {
-                console.log('Category changed to:', categorySelect.value);
                 this.updatePiAlgorithms();
             });
         }
         
-        // Add change event listener to extract algorithm select
         const extractAlgorithmSelect = document.getElementById('pi-extract-algorithm');
         if (extractAlgorithmSelect) {
-            extractAlgorithmSelect.addEventListener('change', () => {
-                console.log('Extract algorithm changed to:', extractAlgorithmSelect.value);
-            });
+            extractAlgorithmSelect.addEventListener('change', () => {});
         }
     }
     
@@ -91,30 +84,14 @@ class PixelInjection {
         const categorySelect = document.getElementById('pi-category');
         const algorithmSelect = document.getElementById('pi-algorithm');
         
-        console.log('=== DEBUGGING updatePiAlgorithms ===');
-        console.log('Category select element:', categorySelect);
-        console.log('Algorithm select element:', algorithmSelect);
-        
-        if (!categorySelect || !algorithmSelect) {
-            console.log('ERROR: Missing DOM elements');
-            return;
-        }
+        if (!categorySelect || !algorithmSelect) return;
         
         const category = categorySelect.value;
-        console.log('Selected category:', category);
-        console.log('All available categories:', Object.keys(this.algorithms));
-        
         const algorithms = this.algorithms[category];
-        console.log('Algorithms for category:', algorithms);
-        console.log('Algorithm keys:', Object.keys(algorithms));
         
-        // Clear existing options
         algorithmSelect.innerHTML = '';
-        console.log('Cleared algorithm select options');
         
-        // Add algorithms for selected category
         Object.entries(algorithms).forEach(([key, algorithm]) => {
-            console.log('Adding algorithm:', key, algorithm.name);
             const option = document.createElement('option');
             option.value = key;
             option.textContent = algorithm.name;
@@ -122,51 +99,29 @@ class PixelInjection {
             algorithmSelect.appendChild(option);
         });
         
-        console.log('Total algorithms added:', algorithmSelect.options.length);
-        
         this.currentCategory = category;
         this.currentAlgorithm = Object.keys(algorithms)[0];
         this.updatePiOptions();
         
-        // Debug logging
-        console.log('Updated algorithms for category:', category);
-        console.log('Available algorithms:', Object.keys(algorithms));
-        console.log('Current algorithm:', this.currentAlgorithm);
-        console.log('Algorithm select options count:', algorithmSelect.options.length);
-        
-        // Force update algorithm select
         if (algorithmSelect) {
             algorithmSelect.value = this.currentAlgorithm;
-            console.log('Set algorithm select value to:', this.currentAlgorithm);
         }
-        
-        console.log('=== END DEBUGGING updatePiAlgorithms ===');
     }
     
     updateExtractAlgorithms() {
         const extractAlgorithmSelect = document.getElementById('pi-extract-algorithm');
         
-        console.log('=== DEBUGGING updateExtractAlgorithms ===');
-        console.log('Extract algorithm select element:', extractAlgorithmSelect);
+        if (!extractAlgorithmSelect) return;
         
-        if (!extractAlgorithmSelect) {
-            console.log('ERROR: Missing extract algorithm select element');
-            return;
-        }
-        
-        // Clear existing options except "Auto Detect"
         const autoOption = extractAlgorithmSelect.querySelector('option[value="auto"]');
         extractAlgorithmSelect.innerHTML = '';
         if (autoOption) {
             extractAlgorithmSelect.appendChild(autoOption);
         }
         
-        // Add all algorithms from all categories
         const allAlgorithms = {};
         
-        // Collect all algorithms from all categories
         Object.entries(this.algorithms).forEach(([category, algorithms]) => {
-            console.log('Adding algorithms from category:', category);
             Object.entries(algorithms).forEach(([key, algorithm]) => {
                 allAlgorithms[key] = {
                     ...algorithm,
@@ -175,20 +130,13 @@ class PixelInjection {
             });
         });
         
-        console.log('All algorithms collected:', Object.keys(allAlgorithms));
-        
-        // Add algorithms to extract select
         Object.entries(allAlgorithms).forEach(([key, algorithm]) => {
-            console.log('Adding extract algorithm:', key, algorithm.name, 'from', algorithm.category);
             const option = document.createElement('option');
             option.value = key;
             option.textContent = `${algorithm.name} (${algorithm.category})`;
             option.title = algorithm.description;
             extractAlgorithmSelect.appendChild(option);
         });
-        
-        console.log('Total extract algorithms added:', extractAlgorithmSelect.options.length);
-        console.log('=== END DEBUGGING updateExtractAlgorithms ===');
     }
     
     updatePiOptions() {
@@ -415,11 +363,6 @@ class PixelInjection {
         const message = messageInput.value;
         const password = passwordInput.value;
         
-        console.log('Starting pixel injection...');
-        console.log('Algorithm:', this.currentAlgorithm);
-        console.log('Category:', this.currentCategory);
-        console.log('Message:', message);
-        
         try {
             // Show loading state
             this.showLoading(true);
@@ -455,7 +398,6 @@ class PixelInjection {
             
             // Check if algorithm exists in core or algorithms object
             if (!this.core[this.currentAlgorithm] || typeof this.core[this.currentAlgorithm] !== 'function') {
-                console.log(`Algorithm ${this.currentAlgorithm} not found in core, trying algorithms object...`);
                 if (!this.core.algorithms[this.currentAlgorithm]) {
                     throw new Error(`Algorithm ${this.currentAlgorithm} is not available`);
                 }
@@ -562,24 +504,18 @@ class PixelInjection {
             
             // Check if algorithm exists and is a function
             if (!this.core[algorithm] || typeof this.core[algorithm] !== 'function') {
-                console.log(`Algorithm ${algorithm} not found in core, trying algorithms object...`);
                 if (!this.core.algorithms[algorithm]) {
-                    // Check if it's a detection algorithm
                     if (this.core.detection && this.core.detection[algorithm]) {
-                        console.log(`Found ${algorithm} in detection algorithms`);
                         extractedMessage = await this.core.detection[algorithm](imageData);
                     } else {
-                        // Try to find corresponding extraction method
                         const extractionMethod = `extract${algorithm.charAt(0).toUpperCase() + algorithm.slice(1).replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())}`;
                         if (this.core[extractionMethod] && typeof this.core[extractionMethod] === 'function') {
-                            console.log(`Found extraction method: ${extractionMethod}`);
                             extractedMessage = await this.core[extractionMethod](imageData);
                         } else {
                             throw new Error(`Extraction algorithm ${algorithm} is not available`);
                         }
                     }
                 } else {
-                    // Use algorithms object as fallback
                     const coreAlgorithm = this.core.algorithms[algorithm];
                     if (typeof coreAlgorithm !== 'function') {
                         throw new Error(`Extraction algorithm ${algorithm} is not a function`);
@@ -587,26 +523,18 @@ class PixelInjection {
                     extractedMessage = await coreAlgorithm(imageData, '', password, options);
                 }
             } else {
-                // Try to extract using the core algorithm
                 try {
                     extractedMessage = await this.core[algorithm](imageData, '', password, options);
                 } catch (extractError) {
-                    // Fallback to algorithms object if direct extraction fails
-                    console.log('Direct extraction failed, trying algorithms object:', extractError);
                     if (this.core.algorithms[algorithm]) {
                         extractedMessage = await this.core.algorithms[algorithm](imageData, '', password, options);
                     } else if (this.core.detection && this.core.detection[algorithm]) {
-                        console.log(`Found ${algorithm} in detection algorithms as fallback`);
                         extractedMessage = await this.core.detection[algorithm](imageData);
                     } else {
-                        // Try to find corresponding extraction method
                         const extractionMethod = `extract${algorithm.charAt(0).toUpperCase() + algorithm.slice(1).replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())}`;
                         if (this.core[extractionMethod] && typeof this.core[extractionMethod] === 'function') {
-                            console.log(`Found extraction method: ${extractionMethod}`);
                             extractedMessage = await this.core[extractionMethod](imageData);
                         } else {
-                            // Final fallback to blind_decoding
-                            console.log('Algorithm not found, trying blind_decoding');
                             extractedMessage = await this.core.detection.blind_decoding(imageData, algorithm, options);
                         }
                     }
@@ -833,22 +761,25 @@ class PixelInjection {
             messageText = 'No message extracted';
         }
         
+        const safeMsg = escHtml(messageText);
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
                 <h5 style="color: var(--primary); margin-bottom: 10px;">Extracted Message</h5>
                 <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); font-family: monospace; word-break: break-all; max-height: 200px; overflow-y: auto;">
-                    ${messageText}
+                    ${safeMsg}
                 </div>
             </div>
         `;
         
         // Add copy button
         const downloadDiv = document.getElementById('pi-download');
-        downloadDiv.innerHTML = `
-            <button class="btn" onclick="navigator.clipboard.writeText('${messageText.replace(/'/g, "\\'")}')" style="margin-top: 10px;">
-                Copy Message
-            </button>
-        `;
+        downloadDiv.innerHTML = '<button class="btn" id="pi-copy-btn" style="margin-top: 10px;">Copy Message</button>';
+        const copyBtn = document.getElementById('pi-copy-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(messageText);
+            });
+        }
     }
     
     showQualityMetrics() {
@@ -1124,7 +1055,6 @@ window.handlePixelAnalysis = function() {
 
 // Initialize pixel injection system
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing Pixel Injection...');
     window.pixelInjection = new PixelInjection();
     
     // Force initial update

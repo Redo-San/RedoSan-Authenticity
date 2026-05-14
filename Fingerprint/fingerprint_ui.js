@@ -334,7 +334,7 @@ async function handleFingerprint() {
       html += '<table class="meta-table">';
       for (const key of family.keys) {
         const v = result.hashes[key];
-        if (v) html += '<tr><td style="width:100px">' + key + '</td><td><code style="font-size:0.65rem">' + v + '</code></td></tr>';
+        if (v) html += '<tr><td style="width:100px">' + escHtml(key) + '</td><td><code style="font-size:0.65rem">' + escHtml(v) + '</code></td></tr>';
       }
       html += '</table>';
     }
@@ -343,7 +343,7 @@ async function handleFingerprint() {
       html += '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">Perceptual (image hashes)</div>';
       html += '<table class="meta-table">';
       for (const [k, v] of Object.entries(result.perceptual_hashes)) {
-        html += '<tr><td style="width:100px">' + k + '</td><td><code style="font-size:0.65rem">' + v + '</code></td></tr>';
+        html += '<tr><td style="width:100px">' + escHtml(k) + '</td><td><code style="font-size:0.65rem">' + escHtml(v) + '</code></td></tr>';
       }
       html += '</table>';
     }
