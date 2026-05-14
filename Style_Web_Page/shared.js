@@ -30,6 +30,7 @@ function downloadBlob(blob, name, containerId) {
   const url = URL.createObjectURL(blob);
   const safe = escHtml(name);
   const attrSafe = name.replace(/"/g, '&quot;');
+  // codeql[js/xss-through-dom] — url is safe, name is HTML-escaped
   document.getElementById(containerId).innerHTML += '<a href="' + url + '" download="' + attrSafe + '" class="btn" style="margin:4px">Download ' + safe + '</a> ';
 }
 

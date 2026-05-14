@@ -3,7 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-    let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+    let rawPath = req.url === '/' ? 'index.html' : req.url;
+    let filePath = path.normalize(path.join(__dirname, rawPath));
+    if (!filePath.startsWith(__dirname)) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+    }
     
     const extname = path.extname(filePath);
     let contentType = 'text/html';

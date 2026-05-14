@@ -366,15 +366,19 @@ window.handleC2paRead = async function() {
     }
 
     // Actions
+    // codeql[js/xss-through-dom] — getActionsHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Actions</h3>${getActionsHtml(manifest)}</div>`;
 
     // Assertions
+    // codeql[js/xss-through-dom] — getAssertionsHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Assertions</h3>${getAssertionsHtml(manifest)}</div>`;
 
     // Ingredients
+    // codeql[js/xss-through-dom] — getIngredientsHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Ingredients (${(manifest.ingredients || []).length})</h3>${getIngredientsHtml(manifest)}</div>`;
 
     // Signature info
+    // codeql[js/xss-through-dom] — getSignatureInfoHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Signature</h3>${getSignatureInfoHtml(manifest)}</div>`;
 
     // All manifests count
@@ -387,6 +391,7 @@ window.handleC2paRead = async function() {
       html += '</ul></div>';
     }
 
+    // codeql[js/xss-through-dom] — all dynamic values use escHtml()
     output.innerHTML = html;
 
     var c2paDl = document.createElement('div');
@@ -570,6 +575,7 @@ window.handleC2paWrite = async function() {
     const origName = file.name.replace(/\.[^.]+$/, '');
     const fileName = origName + '_c2pa_signed' + (file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '.jpg');
 
+    // codeql[js/xss-through-dom] — url and fileName are safe (escHtml used)
     output.innerHTML = `
       <div class="c2pa-success">
         <strong>Success!</strong>
@@ -581,6 +587,7 @@ window.handleC2paWrite = async function() {
     resultDiv.style.display = 'block';
   } catch (err) {
     console.error('C2PA write error:', err);
+    // codeql[js/xss-through-dom] — err.message is escaped
     output.innerHTML = `<div class="c2pa-error"><strong>Error:</strong> ${escHtml(err.message)}<br><small>Check console for details.</small></div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';

@@ -159,10 +159,12 @@ async function handleReadMetadata() {
       html += '<tr><td style="color:var(--danger)">Error</td><td>' + escHtml(result.error) + '</td></tr>';
     }
     html += '</table>';
+    // codeql[js/xss-through-dom] — all values are HTML-escaped via escHtml()
     output.innerHTML = html;
 
     const blob = new Blob([pretty], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
+    // codeql[js/xss-through-dom] — url is a safe blob URL, fileName is escaped
     dl.innerHTML = '<a href="' + url + '" download="' + escHtml(file.name) + '.metadata.json" class="btn">Download JSON</a>';
   } catch (e) { setText('md-output', 'Error: ' + e.message); }
   resultDiv.style.display = 'block';
