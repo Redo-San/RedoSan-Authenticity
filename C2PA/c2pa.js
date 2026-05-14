@@ -282,6 +282,8 @@ window.handleC2paRead = async function() {
   output.innerHTML = '';
   spinner.style.display = 'block';
   resultDiv.style.display = 'none';
+  var dlBtn = document.getElementById('c2pa-read-dl-btn');
+  if (dlBtn) dlBtn.style.display = 'none';
 
   try {
     const c2pa = await getC2pa();
@@ -394,10 +396,9 @@ window.handleC2paRead = async function() {
     // codeql[js/xss-through-dom] — all dynamic values use escHtml()
     output.innerHTML = html;
 
-    var c2paDl = document.createElement('div');
-    c2paDl.style.marginTop = '16px';
-    c2paDl.innerHTML = '<button onclick="showC2paDownloadModal()" class="btn">Download Results</button>';
-    resultDiv.appendChild(c2paDl);
+    // Show the download button placed in the HTML (below the Read button)
+    var dlBtn = document.getElementById('c2pa-read-dl-btn');
+    if (dlBtn) dlBtn.style.display = '';
 
     window._c2paReadResult = {
       manifestStore: manifestStore,
