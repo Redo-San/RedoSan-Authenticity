@@ -1,4 +1,5 @@
 import { createC2pa } from '@contentauth/c2pa-web';
+import { encodeInt, encodeBstr, encodeTstr, encodeArray, encodeMap, encodeTag } from './cbor.js';
 
 const WASM_SRC = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm';
 
@@ -86,17 +87,69 @@ async function createBrowserSigner() {
     ['sign']
   );
   const allCerts = splitCerts(C2PA_CERTS);
+
+  // Must be large enough for COSE + claim + cert chain + overhead
+  const RESERVE_SIZE = 5000;
+
   return {
     alg: 'es256',
-    reserveSize: async () => 300,
-    signingCert: allCerts[0],
-    taCerts: allCerts.slice(1),
+    reserveSize: async () => RESERVE_SIZE,
     sign: async (data) => {
-      const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, data);
-      return new Uint8Array(sig);
-    }
+      const claimBytes = new Uint8Array(data);
+
+      const certChain = allCerts.map(c => encodeBstr(c));
+      const protectedHeader = encodeMap([
+        [1, encodeInt(-7)],
+        [33, encodeArray(certChain)]
+      ]);
+      const protectedBstr = encodeBstr(protectedHeader);
+      const payloadBstr = encodeBstr(claimBytes);
+
+      // Compute actual signature first (TBS doesn't include unprotected header)
+      const emptyBstr = encodeBstr(new Uint8Array(0));
+      const tbs = encodeArray([
+        encodeTstr('Signature1'), protectedBstr, emptyBstr, payloadBstr
+      ]);
+      const ecdsaSig = await crypto.subtle.sign(
+        { name: 'ECDSA', hash: 'SHA-256' }, privateKey, tbs
+      );
+      const realSigBstr = encodeBstr(new Uint8Array(ecdsaSig));
+
+      // Compute base COSE size with empty unprotected header
+      const emptyHeader = new Uint8Array([0xA0]);
+      const baseCose = encodeTag(18, encodeArray([
+        protectedBstr, emptyHeader, payloadBstr, realSigBstr
+      ]));
+
+      if (baseCose.length >= RESERVE_SIZE) {
+        return baseCose;
+      }
+
+      // Two-pass padding: compute pad to reach exact RESERVE_SIZE
+      const padKey = encodeTstr('pad');
+      // First estimate: assume bstr header for pad is 1 byte (pad <= 23)
+      let currentPad = RESERVE_SIZE - baseCose.length;
+      for (let iter = 0; iter < 3; iter++) {
+        const pb = encodeBstr(new Uint8Array(currentPad));
+        const uh = encodeMap([[padKey, pb]]);
+        const cose = encodeTag(18, encodeArray([
+          protectedBstr, uh, payloadBstr, realSigBstr
+        ]));
+        const diff = RESERVE_SIZE - cose.length;
+        if (diff === 0) return cose;
+        currentPad += diff;
+      }
+
+      // Fallback: return padded COSE (close enough)
+      const padBstr = encodeBstr(new Uint8Array(Math.max(0, currentPad)));
+      const unprotectedHeader = encodeMap([[padKey, padBstr]]);
+      return encodeTag(18, encodeArray([
+        protectedBstr, unprotectedHeader, payloadBstr, realSigBstr
+      ]));
+    },
   };
 }
+
 
 async function addIngredientFromFile(builder, file, rel) {
   const buf = await file.arrayBuffer();
@@ -417,49 +470,35 @@ window.handleC2paWrite = async function() {
   resultDiv.style.display = 'none';
 
   try {
-    const firstChecked = checkedTypes[0] || null;
-    const digitalSrc = firstChecked ? firstChecked.src : '';
-    const contentType = firstChecked ? firstChecked.value : '';
-
     const c2pa = await getC2pa();
     const signer = await createBrowserSigner();
     const builder = await c2pa.builder.new();
 
-    if (digitalSrc) {
-      await builder.setIntent({ create: digitalSrc });
-    } else if (contentType === 'edit') {
-      await builder.setIntent('edit');
-    }
-
-    if (titleInput.value) {
-      const def = await builder.getDefinition();
-      def.title = titleInput.value;
-    }
-
-    const authorName = authorInput.value;
-    for (const { formType } of checkedTypes) {
+    // Add actions for each checked content type
+    const addedActions = new Set();
+    for (const { formType, src } of checkedTypes) {
       const cfg = C2PA_FORM_CONFIG[formType];
-      if (cfg && authorName) {
-        await builder.addAction({
-          action: cfg.action,
-          actor: { name: authorName }
-        });
+      if (!cfg) continue;
+      const action = { action: cfg.action, actor: { name: authorInput.value || 'RedoSan' } };
+      if (src) action.digitalSourceType = src;
+      const key = cfg.action + (src || '');
+      if (!addedActions.has(key)) {
+        await builder.addAction(action);
+        addedActions.add(key);
       }
     }
+
+    // DNT
     if (dnt) {
-      await builder.addAction({ action: 'c2pa.opt_out' });
-    }
-
-    if (ingredientInput.files && ingredientInput.files.length) {
-      for (const ingFile of ingredientInput.files) {
-        await addIngredientFromFile(builder, ingFile, 'componentOf');
+      const dntKey = 'c2pa.opt_out';
+      if (!addedActions.has(dntKey)) {
+        await builder.addAction({ action: dntKey, actor: { name: authorInput.value || 'RedoSan' } });
+        addedActions.add(dntKey);
       }
     }
 
-    const buf = await file.arrayBuffer();
-    const blob = new Blob([buf]);
-
-    const signedBytes = await builder.sign(signer, file.type || 'image/jpeg', blob);
+    const mimeType = file.type || 'image/jpeg';
+    const signedBytes = await builder.sign(signer, mimeType, file);
     await builder.free();
 
     const signedBlob = new Blob([signedBytes], { type: file.type || 'image/jpeg' });
@@ -847,6 +886,12 @@ window.handleC2paVerify = async function() {
       html += '<div class="c2pa-verify-icon c2pa-verify-icon-warn">!</div><strong>' + escHtml(state || 'Unknown') + '</strong>';
     }
 
+    if (statusList.length) {
+      html += '<ul class="c2pa-validation-list">' +
+        statusList.map(s => '<li><code>' + escHtml(JSON.stringify(s)) + '</code></li>').join('') +
+        '</ul>';
+    }
+
     html += `<p>Claim: ${escHtml(manifest.title || 'Untitled')}</p>`;
     html += `<p>Generator: ${escHtml(manifest.claim_generator || 'Unknown')}</p>`;
     if (manifest.claim_generator_info && manifest.claim_generator_info.length) {
@@ -856,7 +901,11 @@ window.handleC2paVerify = async function() {
     if (manifest.signature_info && manifest.signature_info.issuer) {
       html += `<p>Signed by: ${escHtml(manifest.signature_info.issuer)}</p>`;
     }
-    html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">View Full Details</a></p>';
+    if (manifestStore.validation_results && manifestStore.validation_results.length) {
+      html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">View Full Details</a></p>';
+    } else {
+      html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">View Full Details</a></p>';
+    }
 
     html += '</div>';
     output.innerHTML = html;
