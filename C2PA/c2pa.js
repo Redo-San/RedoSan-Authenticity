@@ -326,7 +326,8 @@ window.handleC2paRead = async function() {
 
   try {
     const c2pa = await getC2pa();
-    const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file), 15000, 'Reader timed out — file may be too large');
+    var readerSettings = { verify: { verifyTrust: true, verifyAfterReading: true } };
+    var reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, readerSettings), 15000, 'Reader timed out — file may be too large');
 
     if (!reader) {
       output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file does not contain any C2PA provenance metadata.</p></div>';
@@ -335,7 +336,22 @@ window.handleC2paRead = async function() {
       return;
     }
 
-    const manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
+    var manifestStore;
+    try {
+      manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
+    } catch (readErr) {
+      // If cert validation fails (test certificate), retry without trust verification
+      await reader.free();
+      if (String(readErr.message || readErr).includes('CoseInvalidCert')) {
+        readerSettings.verify.verifyTrust = false;
+        reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, readerSettings), 15000, 'Reader timed out');
+        if (!reader) throw readErr;
+        manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
+        manifestStore.__testCert = true;
+      } else {
+        throw readErr;
+      }
+    }
     await reader.free();
 
     if (!manifestStore || !manifestStore.manifests || !Object.keys(manifestStore.manifests).length) {
@@ -349,6 +365,11 @@ window.handleC2paRead = async function() {
     const manifest = manifestStore.manifests[activeLabel];
 
     let html = '';
+
+    // Show warning if read without trust (test certificate)
+    if (manifestStore.__testCert) {
+      html += '<div class="c2pa-section" style="background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius);padding:12px;margin-bottom:12px"><strong>⚠️ Test Certificate</strong><p style="margin:4px 0 0;font-size:0.85rem">This file was signed with a test certificate. The signature chain could not be verified against a trusted root CA. The manifest data is displayed below but should not be considered authenticated for production use.</p></div>';
+    }
 
     // Validation
     html += `<div class="c2pa-section"><h3>Validation</h3>${getValidationHtml(manifestStore)}</div>`;
