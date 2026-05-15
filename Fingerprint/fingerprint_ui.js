@@ -155,6 +155,7 @@ function fpToDOCX(r) {
 }
 
 function createDocxTable(docx, rows) {
+  if (!rows || !rows.length) return null;
   return new docx.Table({
     rows: rows.map(function(row, i) {
       return new docx.TableRow({

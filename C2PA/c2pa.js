@@ -751,7 +751,7 @@ function c2paToDOCX(r) {
     var sigRows = [];
     if (m.signature_info.issuer) sigRows.push(['Issuer', m.signature_info.issuer]);
     if (m.signature_info.time) sigRows.push(['Signed', m.signature_info.time]);
-    children.push(createDocxTable(docx, sigRows));
+    if (sigRows.length) children.push(createDocxTable(docx, sigRows));
   }
   var d = new docx.Document({ sections: [{ children: children }] });
   return docx.Packer.toBlob(d);
