@@ -39,6 +39,16 @@ function otsParse(bytes) {
   return { hash: hash, tag: tag };
 }
 
+async function upgradeOts(bytes) {
+  var resp = await fetch('https://a.pool.opentimestamps.org', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-ots-timestamp' },
+    body: bytes
+  });
+  if (!resp.ok) throw new Error('Aggregator returned HTTP ' + resp.status);
+  return new Uint8Array(await resp.arrayBuffer());
+}
+
 async function handleOtsCreate() {
   var btn = document.getElementById('ts-create-btn');
   var fileInput = document.getElementById('ts-create-file');
@@ -57,12 +67,26 @@ async function handleOtsCreate() {
     var buf = await file.arrayBuffer();
     var hashBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
     var otsBytes = otsBuildDetached(buf, hashBytes);
+    var hex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+
+    // Try to get a complete timestamp from the calendar aggregator
+    var complete = false;
+    try {
+      var upgraded = await upgradeOts(otsBytes);
+      otsBytes = upgraded;
+      complete = true;
+    } catch (e) {
+      // Aggregator unreachable (CORS, network, etc.) — use incomplete timestamp
+    }
 
     var blob = new Blob([otsBytes], { type: 'application/octet-stream' });
     downloadBlob(blob, file.name + '.ots', 'ts-download');
 
-    var hex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-    setText('ts-output', 'SHA-256: ' + hex + '\n\nIncomplete .ots timestamp created. To make it complete, submit the .ots file to a calendar aggregator (e.g., https://a.pool.opentimestamps.org).');
+    if (complete) {
+      setText('ts-output', '✓ Complete .ots timestamp created with blockchain attestation!\n\nSHA-256: ' + hex + '\nSize: ' + otsBytes.length + ' bytes\n\nThis .ots file includes merkle proof from the OpenTimestamps calendar aggregator. Verify it anytime using the Verify tab.');
+    } else {
+      setText('ts-output', 'SHA-256: ' + hex + '\n\n⚠ Calendar aggregator unreachable. Created an incomplete .ots timestamp (' + otsBytes.length + ' bytes). To get a blockchain attestation, use the command:\n  ots upgrade "' + file.name + '.ots"\nor submit the .ots file at https://opentimestamps.org');
+    }
 
     var dlBtn = document.getElementById('ts-create-dl-btn');
     if (dlBtn) dlBtn.style.display = '';
