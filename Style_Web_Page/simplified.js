@@ -293,10 +293,12 @@ function renderWatermarkStep(body) {
     btn.textContent = 'Embed Watermark & Continue →';
   }
 
-  // Setup file drop zones
-  body.querySelectorAll('input[type="file"]').forEach(function(input) {
-    if (input.parentElement.classList.contains('file-drop-zone')) return;
-    wrapSimpleDropZone(input);
+  // Use professional drop zone setup (same as shared.js)
+  if (window.initDropZones) initDropZones();
+  // Ensure clicking anywhere in a form-group opens the file dialog
+  body.querySelectorAll('.form-group').forEach(function(g) {
+    var fi = g.querySelector('input[type="file"]');
+    if (fi) g.addEventListener('click', function(e) { if (e.target !== fi) fi.click(); });
   });
   // Hide cover image field (already uploaded in step 1) and show file name instead
   var imgGroup = document.getElementById('swm-image');
@@ -401,10 +403,12 @@ function renderPixelInjectStep(body) {
     btn.textContent = 'Inject & Continue →';
   }
 
-  // Setup file drop zones
-  body.querySelectorAll('input[type="file"]').forEach(function(input) {
-    if (input.parentElement.classList.contains('file-drop-zone')) return;
-    wrapSimpleDropZone(input);
+  // Use professional drop zone setup (same as shared.js)
+  if (window.initDropZones) initDropZones();
+  // Ensure clicking anywhere in a form-group opens the file dialog
+  body.querySelectorAll('.form-group').forEach(function(g) {
+    var fi = g.querySelector('input[type="file"]');
+    if (fi) g.addEventListener('click', function(e) { if (e.target !== fi) fi.click(); });
   });
   // Hide image input (already uploaded in step 1)
   var imgGroup = document.getElementById('spi-image');
@@ -592,57 +596,6 @@ function toggleSimpleLangDropdown() {
 function toggleModeLangDropdown() {
   var menu = document.getElementById('modeLangMenu');
   if (menu) menu.classList.toggle('show');
-}
-
-// ── File drop zone wrapper (same as shared.js) ──
-
-function wrapSimpleDropZone(input) {
-  if (!input || input.parentElement.classList.contains('file-drop-zone')) return;
-  var dz = document.createElement('div');
-  dz.className = 'file-drop-zone';
-  input.parentNode.insertBefore(dz, input);
-  dz.appendChild(input);
-  var icon = document.createElement('span');
-  icon.className = 'dz-icon'; icon.textContent = '📁';
-  dz.appendChild(icon);
-  var text = document.createElement('div');
-  text.className = 'dz-text';
-  text.innerHTML = 'Drop file here or <strong>browse</strong>';
-  dz.appendChild(text);
-  var fileDiv = document.createElement('div');
-  fileDiv.className = 'dz-file';
-  dz.appendChild(fileDiv);
-  dz.addEventListener('click', function(e) {
-    if (e.target === dz || e.target.classList.contains('dz-icon') || e.target.classList.contains('dz-text'))
-      input.click();
-  });
-  function updateFile() {
-    if (input.files && input.files.length) {
-      dz.classList.add('has-file');
-      fileDiv.textContent = '📄 ' + input.files[0].name;
-    } else {
-      dz.classList.remove('has-file');
-      fileDiv.textContent = '';
-    }
-  }
-  input.addEventListener('change', updateFile);
-  ['dragenter', 'dragover'].forEach(function(evt) {
-    dz.addEventListener(evt, function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
-  });
-  ['dragleave', 'drop'].forEach(function(evt) {
-    dz.addEventListener(evt, function(e) { e.preventDefault(); dz.classList.remove('drag-over'); });
-  });
-  dz.addEventListener('drop', function(e) {
-    e.preventDefault();
-    if (e.dataTransfer.files.length) {
-      var dt = new DataTransfer();
-      for (var j = 0; j < e.dataTransfer.files.length; j++) dt.items.add(e.dataTransfer.files[j]);
-      input.files = dt.files;
-      updateFile();
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  });
-  if (input.files && input.files.length) updateFile();
 }
 
 // ── Helpers ──
