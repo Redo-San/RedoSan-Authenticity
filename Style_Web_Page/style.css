@@ -474,9 +474,11 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 }
 .simple-mode-switch:hover { border-color: var(--primary); color: var(--text); }
 .simple-progress {
-  display: flex; align-items: center; flex: 1;
-  overflow-x: auto; gap: 0; padding: 4px 0;
-  justify-content: center;
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto; justify-content: center;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
 }
 .sp-step { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
 .sp-step.sp-active { color: var(--primary); font-weight: 600; }
@@ -547,7 +549,7 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   .mode-cards { flex-direction: column; }
   .simple-ai-options { flex-direction: column; }
   .simple-top { padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
-  .simple-progress { font-size: 0.7rem; width: 100%; order: 3; }
+  .simple-progress { font-size: 0.7rem; padding: 4px 12px; }
   .simple-top-right .lang-btn { padding: 4px 8px; font-size: 0.75rem; }
   .simple-top-left .theme-btn { width: 28px; height: 28px; font-size: 0.85rem; }
   .simple-body { padding: 24px 16px; }
