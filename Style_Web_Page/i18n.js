@@ -104,6 +104,12 @@ function applyLang() {
     sBtn.textContent = displayName;
     sBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
+  var mBtn = document.getElementById('modeLangBtn');
+  if (mBtn) {
+    var displayName = getLanguageDisplayName(i18n.lang);
+    mBtn.textContent = displayName;
+    mBtn.title = 'Current: ' + displayName + '\nClick to change language';
+  }
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.getAttribute('data-i18n');
@@ -154,6 +160,12 @@ document.addEventListener('click', function(e) {
   var sDropdown = document.querySelector('#simplifiedMode .lang-dropdown');
   if (sDropdown && !sDropdown.contains(e.target) && sMenu) {
     sMenu.classList.remove('show');
+  }
+  // Also close mode select language menu
+  var mMenus = document.getElementById('modeLangMenu');
+  var mDropdown = document.querySelector('#modeSelect .lang-dropdown');
+  if (mDropdown && !mDropdown.contains(e.target) && mMenus) {
+    mMenus.classList.remove('show');
   }
 });
 

@@ -35,6 +35,11 @@ function switchMode() {
   location.reload();
 }
 
+function showModeSelect() {
+  localStorage.removeItem('redosan_mode');
+  location.reload();
+}
+
 // ── File type detection ──
 
 function detectFileType(file) {
@@ -281,18 +286,30 @@ function renderWatermarkStep(body) {
 function runWatermarkStep() {
   var algo = document.getElementById('swm-algo').value;
   var pass = document.getElementById('swm-password').value || 'redosan';
-  var fileInput = document.getElementById('wm-file');
-  if (fileInput && simpleFile) {
+  // Set file on professional mode's image input
+  var imgInput = document.getElementById('wm-image');
+  if (imgInput && simpleFile) {
     var dt = new DataTransfer();
     dt.items.add(simpleFile);
-    fileInput.files = dt.files;
+    imgInput.files = dt.files;
     var evt = new Event('change');
-    fileInput.dispatchEvent(evt);
+    imgInput.dispatchEvent(evt);
   }
-  var algoSelect = document.getElementById('wm-algorithm');
-  if (algoSelect) { algoSelect.value = algo; algoSelect.dispatchEvent(new Event('change')); }
+  // Set algorithm type
+  var typeSelect = document.getElementById('wm-type');
+  if (typeSelect) { typeSelect.value = algo; typeSelect.dispatchEvent(new Event('change')); }
+  // Set password
   var passInput = document.getElementById('wm-password');
   if (passInput) passInput.value = pass;
+  // Use same file as secret (simplified mode always uses the image itself)
+  var secretInput = document.getElementById('wm-secret');
+  if (secretInput && simpleFile) {
+    var dt2 = new DataTransfer();
+    dt2.items.add(simpleFile);
+    secretInput.files = dt2.files;
+    var evt2 = new Event('change');
+    secretInput.dispatchEvent(evt2);
+  }
   var btn = document.getElementById('swm-btn');
   btn.disabled = true; btn.textContent = 'Embedding...';
   var origHandler = window.handleWatermarkEmbed;
@@ -337,7 +354,7 @@ function runPixelInjectStep() {
   var cat = document.getElementById('spi-cat').value;
   var msg = document.getElementById('spi-msg').value;
   var pass = document.getElementById('spi-pass').value || 'redosan';
-  var fileInput = document.getElementById('pi-file');
+  var fileInput = document.getElementById('pi-image');
   if (fileInput && simpleFile) {
     var dt = new DataTransfer();
     dt.items.add(simpleFile);

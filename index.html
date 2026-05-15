@@ -44,6 +44,20 @@
 <body>
 <!-- Mode Selection Overlay -->
 <div id="modeSelect" class="mode-select-overlay">
+  <div class="mode-select-bar">
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="modeThemeBtn">🌙</button>
+    <div class="lang-dropdown" style="position:relative">
+      <button class="lang-btn" onclick="toggleLangDropdown()" id="modeLangBtn">English</button>
+      <div class="lang-menu" id="modeLangMenu">
+        <a href="#" onclick="switchLang('en'); return false;" class="lang-option" data-lang="en">English</a>
+        <a href="#" onclick="switchLang('ar'); return false;" class="lang-option" data-lang="ar">العربية</a>
+        <a href="#" onclick="switchLang('fr'); return false;" class="lang-option" data-lang="fr">Français</a>
+        <a href="#" onclick="switchLang('de'); return false;" class="lang-option" data-lang="de">Deutsch</a>
+        <a href="#" onclick="switchLang('es'); return false;" class="lang-option" data-lang="es">Español</a>
+        <a href="#" onclick="switchLang('zh'); return false;" class="lang-option" data-lang="zh">中文</a>
+      </div>
+    </div>
+  </div>
   <div class="mode-select-box">
     <img src="Style_Web_Page/logo.png" alt="RedoSan" class="mode-logo">
     <h1>RedoSan Authenticity</h1>
@@ -146,6 +160,8 @@
   <a href="#" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
   <a href="#" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
   <a href="#" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
+  <div class="sidebar-divider"></div>
+  <a href="#" onclick="showModeSelect(); return false;" class="sidebar-mode-switch" data-i18n="sidebar.switch_mode">🔀 Switch Mode</a>
 </div>
 
 <main class="container" id="app">
