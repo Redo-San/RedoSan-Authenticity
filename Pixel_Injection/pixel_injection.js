@@ -1037,19 +1037,19 @@ window.switchPiTab = function(tab) {
 
 window.handlePixelInjection = function() {
     if (window.pixelInjection) {
-        window.pixelInjection.handlePixelInjection();
+        return window.pixelInjection.handlePixelInjection();
     }
 };
 
 window.handlePixelExtraction = function() {
     if (window.pixelInjection) {
-        window.pixelInjection.handlePixelExtraction();
+        return window.pixelInjection.handlePixelExtraction();
     }
 };
 
 window.handlePixelAnalysis = function() {
     if (window.pixelInjection) {
-        window.pixelInjection.handlePixelAnalysis();
+        return window.pixelInjection.handlePixelAnalysis();
     }
 };
 
