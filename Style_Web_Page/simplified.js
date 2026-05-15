@@ -415,9 +415,22 @@ function renderPixelInjectStep(body) {
   var passEl = document.getElementById('spi-password');
   if (passEl) passEl.value = 'redosan';
 
-  // Hide algorithm select (auto-determined by category in professional mode)
-  var algoGroup = document.getElementById('spi-algorithm');
-  if (algoGroup) algoGroup.closest('.form-group').style.display = 'none';
+  // Copy algorithm options from professional mode (populated dynamically)
+  var srcAlgo = document.getElementById('pi-algorithm');
+  var dstAlgo = document.getElementById('spi-algorithm');
+  if (srcAlgo && dstAlgo) {
+    dstAlgo.innerHTML = srcAlgo.innerHTML;
+    // Sync category changes to keep algorithm list updated
+    var srcCat = document.getElementById('pi-category');
+    var dstCat = document.getElementById('spi-category');
+    if (srcCat && dstCat) {
+      dstCat.addEventListener('change', function() {
+        srcCat.value = this.value;
+        srcCat.dispatchEvent(new Event('change'));
+        dstAlgo.innerHTML = srcAlgo.innerHTML;
+      });
+    }
+  }
 
   // Hide advanced options button
   var advBtn = document.getElementById('spi-advanced-btn');
@@ -478,6 +491,10 @@ function runPixelInjectStep() {
   }
   var catSelect = document.getElementById('pi-category');
   if (catSelect) { catSelect.value = cat; catSelect.dispatchEvent(new Event('change')); }
+  // Sync algorithm selection
+  var algoSelect = document.getElementById('pi-algorithm');
+  var srcAlgo = document.getElementById('spi-algorithm');
+  if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
   var msgInput = document.getElementById('pi-message');
   if (msgInput) msgInput.value = msg;
   var passInput = document.getElementById('pi-password');
