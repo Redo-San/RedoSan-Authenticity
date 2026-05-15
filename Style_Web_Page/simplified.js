@@ -276,7 +276,7 @@ function renderWatermarkStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>Digital Watermark</h2><p>Embed an invisible watermark to protect your image.</p>' +
     '<div class="form-group"><label>Algorithm</label>' +
-    '<select id="swm-algo" class="c2pa-link"><option value="lsb">LSB (Fast)</option><option value="dct">DCT (Balanced)</option><option value="dwt">DWT (Robust)</option></select></div>' +
+    '<select id="swm-algo" class="c2pa-link"><option value="1">1. Spatial LSB (Fast)</option><option value="2">2. Frequency DCT (Balanced)</option><option value="6">6. Multi-bit (Robust)</option></select></div>' +
     '<div class="form-group"><label>Password</label>' +
     '<input type="text" class="c2pa-link" id="swm-password" placeholder="Enter a password" value="redosan"></div>' +
     '<button class="btn" onclick="runWatermarkStep()" id="swm-btn">Embed Watermark &amp; Continue →</button>' +
@@ -503,6 +503,11 @@ function renderDone(body) {
 
 function toggleSimpleLangDropdown() {
   var menu = document.getElementById('simpleLangMenu');
+  if (menu) menu.classList.toggle('show');
+}
+
+function toggleModeLangDropdown() {
+  var menu = document.getElementById('modeLangMenu');
   if (menu) menu.classList.toggle('show');
 }
 

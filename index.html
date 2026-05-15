@@ -47,7 +47,7 @@
   <div class="mode-select-bar">
     <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="modeThemeBtn">🌙</button>
     <div class="lang-dropdown" style="position:relative">
-      <button class="lang-btn" onclick="toggleLangDropdown()" id="modeLangBtn">English</button>
+      <button class="lang-btn" onclick="toggleModeLangDropdown()" id="modeLangBtn">English</button>
       <div class="lang-menu" id="modeLangMenu">
         <a href="#" onclick="switchLang('en'); return false;" class="lang-option" data-lang="en">English</a>
         <a href="#" onclick="switchLang('ar'); return false;" class="lang-option" data-lang="ar">العربية</a>
@@ -59,7 +59,10 @@
     </div>
   </div>
   <div class="mode-select-box">
-    <img src="Style_Web_Page/logo.png" alt="RedoSan" class="mode-logo">
+    <div class="mode-logo-wrap">
+      <img src="Style_Web_Page/logo.png" alt="RedoSan" class="mode-logo logo-white">
+      <img src="Style_Web_Page/logo-black.png" alt="RedoSan" class="mode-logo logo-black">
+    </div>
     <h1>RedoSan Authenticity</h1>
     <p class="mode-subtitle">Choose your experience</p>
     <div class="mode-cards">
