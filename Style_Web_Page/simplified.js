@@ -300,6 +300,35 @@ function renderWatermarkStep(body) {
     var fi = g.querySelector('input[type="file"]');
     if (fi) g.addEventListener('click', function(e) { if (e.target !== fi) fi.click(); });
   });
+  // Force update drop zone display on file selection
+  body.querySelectorAll('input[type="file"]').forEach(function(inp) {
+    inp.addEventListener('change', function() {
+      var dz = this.closest('.file-drop-zone');
+      if (!dz) return;
+      var fd = dz.querySelector('.dz-file');
+      if (this.files && this.files.length) {
+        dz.classList.add('has-file');
+        if (fd) fd.textContent = '📄 ' + this.files[0].name;
+      } else {
+        dz.classList.remove('has-file');
+        if (fd) fd.textContent = '';
+      }
+    });
+  });
+  // Restore numeric algorithm values (AdvancedWatermarkUI overwrites with text values)
+  var typeSelect = document.getElementById('swm-type');
+  if (typeSelect) {
+    typeSelect.innerHTML =
+      '<option value="1">1. Spatial LSB</option>' +
+      '<option value="2">2. Frequency DCT</option>' +
+      '<option value="3">3. Neural SS</option>' +
+      '<option value="4">4. Latent DCT</option>' +
+      '<option value="5">5. Zero-bit (no password/secret needed)</option>' +
+      '<option value="6">6. Multi-bit</option>' +
+      '<option value="7">7. Forensic</option>' +
+      '<option value="8">8. Fragile</option>' +
+      '<option value="9">9. Imatag-style</option>';
+  }
   // Hide cover image field (already uploaded in step 1) and show file name instead
   var imgGroup = document.getElementById('swm-image');
   if (imgGroup) {
