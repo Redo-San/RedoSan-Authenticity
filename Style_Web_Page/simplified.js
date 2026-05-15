@@ -298,6 +298,12 @@ function renderWatermarkStep(body) {
     if (input.parentElement.classList.contains('file-drop-zone')) return;
     wrapSimpleDropZone(input);
   });
+  // Hide cover image field (already uploaded in step 1) and show file name instead
+  var imgGroup = document.getElementById('swm-image');
+  if (imgGroup) {
+    var group = imgGroup.closest('.form-group');
+    if (group) group.style.display = 'none';
+  }
   // Pre-populate cover image with the file from step 1
   if (simpleFile) {
     var imgInput = document.getElementById('swm-image');
@@ -307,6 +313,12 @@ function renderWatermarkStep(body) {
       imgInput.files = dt.files;
       imgInput.dispatchEvent(new Event('change'));
     }
+    // Show file name indicator
+    var nameEl = document.createElement('p');
+    nameEl.style.cssText = 'font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left';
+    nameEl.textContent = '✓ Using: ' + simpleFile.name;
+    var cardForm = body.querySelector('.card-form');
+    if (cardForm) cardForm.insertBefore(nameEl, cardForm.firstChild);
   }
 }
 
@@ -394,6 +406,12 @@ function renderPixelInjectStep(body) {
     if (input.parentElement.classList.contains('file-drop-zone')) return;
     wrapSimpleDropZone(input);
   });
+  // Hide image input (already uploaded in step 1)
+  var imgGroup = document.getElementById('spi-image');
+  if (imgGroup) {
+    var group = imgGroup.closest('.form-group');
+    if (group) group.style.display = 'none';
+  }
   // Pre-populate image input with the file from step 1
   if (simpleFile) {
     var imgInput = document.getElementById('spi-image');
@@ -403,6 +421,12 @@ function renderPixelInjectStep(body) {
       imgInput.files = dt.files;
       imgInput.dispatchEvent(new Event('change'));
     }
+    // Show file name indicator
+    var nameEl = document.createElement('p');
+    nameEl.style.cssText = 'font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left';
+    nameEl.textContent = '✓ Using: ' + simpleFile.name;
+    var cardForm = body.querySelector('.card-form');
+    if (cardForm) cardForm.insertBefore(nameEl, cardForm.firstChild);
   }
 }
 
