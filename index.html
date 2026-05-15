@@ -42,7 +42,49 @@
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0" integrity="sha384-TcLTgu6flPhnZ5dfHnHimsxNFjYWN0povfGgnOvgPJKbZe6IbuoC2ociiatSHl9E" crossorigin="anonymous"></script>
 </head>
 <body>
-<nav>
+<!-- Mode Selection Overlay -->
+<div id="modeSelect" class="mode-select-overlay">
+  <div class="mode-select-box">
+    <img src="Style_Web_Page/logo.png" alt="RedoSan" class="mode-logo">
+    <h1>RedoSan Authenticity</h1>
+    <p class="mode-subtitle">Choose your experience</p>
+    <div class="mode-cards">
+      <div class="mode-card mode-card-simple" onclick="setMode('simplified')">
+        <div class="mode-card-icon">✨</div>
+        <h3>Simplified Mode</h3>
+        <p>Step-by-step wizard — upload a file and follow the guide</p>
+      </div>
+      <div class="mode-card mode-card-pro" onclick="setMode('professional')">
+        <div class="mode-card-icon">⚙️</div>
+        <h3>Professional Mode</h3>
+        <p>Full access to all tools with advanced options</p>
+      </div>
+    </div>
+    <label class="mode-remember">
+      <input type="checkbox" id="rememberMode"> Don't show again
+    </label>
+  </div>
+</div>
+
+<!-- Simplified Mode Container -->
+<div id="simplifiedMode" style="display:none">
+  <div class="simple-top">
+    <div class="simple-top-left">
+      <button class="simple-mode-switch" onclick="switchMode()">⚙️ Professional</button>
+    </div>
+    <div class="simple-progress" id="simpleProgress"></div>
+  </div>
+  <div class="simple-body" id="simpleBody">
+    <div class="simple-loading">Loading...</div>
+  </div>
+  <div class="simple-nav" id="simpleNav" style="display:none">
+    <button class="btn" id="simplePrevBtn" onclick="simplePrev()" style="display:none">← Previous</button>
+    <span class="simple-step-counter" id="simpleStepCounter"></span>
+    <button class="btn btn-primary" id="simpleNextBtn" onclick="simpleNext()">Next →</button>
+  </div>
+</div>
+
+<nav id="mainNav">
   <div class="nav-left">
     <button class="hamburger" id="menuBtn" onclick="toggleSidebar()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -604,7 +646,7 @@
   </section>
 </main>
 
-<footer>
+<footer id="mainFooter">
   <div class="footer-links">
     <a href="#" data-page="about" data-i18n="nav.about">About</a>
     <a href="#" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
@@ -629,6 +671,7 @@
 <script src="Fingerprint/fingerprint_ui.js"></script>
 <script src="Metadata/metadata.js"></script>
 <script src="Timestamp/timestamp.js"></script>
+<script src="Style_Web_Page/simplified.js"></script>
 <script>
 // C2PA boot loader — shows spinner + auto-retries once the module+CDN finish loading.
 (function() {
