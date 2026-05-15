@@ -625,7 +625,7 @@ window.showC2paDownloadModal = function() {
   showDownloadModal();
 };
 
-window.downloadC2pa = function(format) {
+window.downloadC2pa = async function(format) {
   closeDownloadModal();
   var r = window._c2paReadResult;
   if (!r) return;
@@ -636,7 +636,7 @@ window.downloadC2pa = function(format) {
     return;
   }
   if (format === 'doc') {
-    var blob = c2paToDOCX(r);
+    var blob = await c2paToDOCX(r);
     downloadBlobSimple(blob, name + '.c2pa.docx');
     return;
   }
