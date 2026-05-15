@@ -948,7 +948,7 @@ window.handleC2paVerify = async function() {
 
   try {
     const c2pa = await getC2pa();
-    const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file), 15000, 'Reader timed out — file may be too large');
+    const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: false } }), 15000, 'Reader timed out — file may be too large');
 
     if (!reader) {
       output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file has no C2PA provenance metadata.</p></div>';
