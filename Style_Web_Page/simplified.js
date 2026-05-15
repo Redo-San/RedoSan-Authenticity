@@ -393,16 +393,15 @@ function runTimestampStep() {
         window.handleOtsCreate = orig;
         var resultDiv = document.getElementById('sts-result');
         if (resultDiv) {
-          var text = (document.getElementById('ts-output') || {}).textContent || '';
+          var text = escapeHtml((document.getElementById('ts-output') || {}).textContent || '');
           resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
         }
         simpleResults.timestamp = true;
-        // Remove auto-next; user clicks Next
         return r;
       }).catch(function(e) {
         window.handleOtsCreate = orig;
         var resultDiv = document.getElementById('sts-result');
-        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Timestamp failed: ' + e.message + '</div>';
+        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Timestamp failed: ' + escapeHtml(e.message) + '</div>';
         throw e;
       });
     };
@@ -435,7 +434,7 @@ function runFingerprintStep() {
         window.handleFingerprint = orig;
         var resultDiv = document.getElementById('sfp-result');
         if (resultDiv) {
-          var text = (document.getElementById('fp-output') || {}).textContent || '';
+          var text = escapeHtml((document.getElementById('fp-output') || {}).textContent || '');
           resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
         }
         simpleResults.fingerprint = true;
@@ -443,7 +442,7 @@ function runFingerprintStep() {
       }).catch(function(e) {
         window.handleFingerprint = orig;
         var resultDiv = document.getElementById('sfp-result');
-        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Fingerprint failed: ' + e.message + '</div>';
+        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Fingerprint failed: ' + escapeHtml(e.message) + '</div>';
         throw e;
       });
     };
