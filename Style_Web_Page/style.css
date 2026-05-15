@@ -449,10 +449,12 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   background: var(--bg);
 }
 .simple-top {
-  display: flex; align-items: center; gap: 16px;
-  padding: 12px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; border-bottom: 1px solid var(--border);
   background: var(--card);
 }
+.simple-top-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.simple-top-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .simple-mode-switch {
   background: none; border: 1px solid var(--border); border-radius: 8px;
   padding: 6px 14px; color: var(--text-muted); cursor: pointer;
@@ -462,6 +464,7 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .simple-progress {
   display: flex; align-items: center; flex: 1;
   overflow-x: auto; gap: 0; padding: 4px 0;
+  justify-content: center;
 }
 .sp-step { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
 .sp-step.sp-active { color: var(--primary); font-weight: 600; }
@@ -531,7 +534,9 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 @media (max-width: 480px) {
   .mode-cards { flex-direction: column; }
   .simple-ai-options { flex-direction: column; }
-  .simple-top { padding: 10px 12px; flex-wrap: wrap; }
+  .simple-top { padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
   .simple-progress { font-size: 0.7rem; width: 100%; order: 3; }
+  .simple-top-right .lang-btn { padding: 4px 8px; font-size: 0.75rem; }
+  .simple-top-left .theme-btn { width: 28px; height: 28px; font-size: 0.85rem; }
   .simple-body { padding: 24px 16px; }
 }

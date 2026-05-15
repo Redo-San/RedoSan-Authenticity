@@ -7,6 +7,7 @@ var simpleIsAI = false;
 var simpleStep = 0;
 var simpleSteps = [];
 var simpleResults = {};
+var simpleStepDone = false;
 
 function initMode() {
   var mode = localStorage.getItem('redosan_mode');
@@ -79,7 +80,15 @@ function renderStep() {
   var prevBtn = document.getElementById('simplePrevBtn');
   prevBtn.style.display = simpleStep === 0 ? 'none' : '';
   var isLast = simpleStep === simpleSteps.length - 1;
-  nextBtn.textContent = isLast ? 'Finish' : 'Next →';
+  nextBtn.textContent = isLast ? 'Start Over' : 'Next →';
+  // Manage Next button: hidden for action-required steps, disabled until done for others
+  simpleStepDone = false;
+  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection'].indexOf(step.id) >= 0) {
+    nextBtn.style.display = 'none';
+  } else {
+    nextBtn.style.display = '';
+    nextBtn.disabled = step.id === 'upload' ? !simpleFile : step.id === 'done' ? false : true;
+  }
   if (step.id === 'upload') renderUpload(body);
   else if (step.id === 'ai-question') renderAiQuestion(body);
   else if (step.id === 'c2pa') renderC2paStep(body);
@@ -105,24 +114,9 @@ function renderProgress() {
 function simpleNext() {
   var step = simpleSteps[simpleStep];
   if (step.id === 'upload' && !simpleFile) return;
-  if (step.id === 'ai-question' && !simpleIsAI !== null) {
-    simpleIsAI = simpleIsAI === true;
-  }
-  if (step.id === 'c2pa') runC2paStep();
-  if (step.id === 'watermark') runWatermarkStep();
-  if (step.id === 'pixel-injection') runPixelInjectStep();
-  if (step.id === 'timestamp') runTimestampStep();
-  if (step.id === 'fingerprint') runFingerprintStep();
+  // Timestamp/fingerprint must complete before advancing
+  if ((step.id === 'timestamp' || step.id === 'fingerprint') && !simpleStepDone) return;
   if (step.id === 'done') { restartSimple(); return; }
-  // Rebuild steps after ai-question
-  if (step.id === 'ai-question') {
-    simpleSteps = buildSteps(simpleType, simpleIsAI);
-    simpleStep = simpleSteps.findIndex(function(s) { return s.id === 'c2pa'; });
-    if (simpleStep < 0) simpleStep = simpleSteps.findIndex(function(s) { return s.id === 'watermark'; });
-    if (simpleStep < 0) simpleStep = 1;
-    renderStep();
-    return;
-  }
   simpleStep++;
   if (simpleStep >= simpleSteps.length) simpleStep = simpleSteps.length - 1;
   renderStep();
@@ -131,6 +125,7 @@ function simpleNext() {
 function simplePrev() {
   if (simpleStep <= 0) return;
   simpleStep--;
+  simpleStepDone = false;
   renderStep();
 }
 
@@ -149,6 +144,8 @@ function renderUpload(body) {
     '<input type="file" id="simpleFileInput" style="display:none" onchange="simpleFileSelected(this)">' +
     '<div id="simpleFileInfo"></div></div>';
   setupSimpleDropZone();
+  // Restore file info if already selected
+  if (simpleFile) restoreUploadFileInfo();
 }
 
 function setupSimpleDropZone() {
@@ -160,6 +157,17 @@ function setupSimpleDropZone() {
     e.preventDefault(); dz.classList.remove('drag-over');
     if (e.dataTransfer.files.length) simpleFileSelected({ files: e.dataTransfer.files });
   });
+}
+
+function restoreUploadFileInfo() {
+  var dz = document.getElementById('simpleDropZone');
+  var info = document.getElementById('simpleFileInfo');
+  if (!dz || !info || !simpleFile) return;
+  dz.classList.add('has-file');
+  var icon = { image: '🖼️', audio: '🎵', video: '🎬', document: '📄', other: '📁' }[simpleType] || '📁';
+  info.innerHTML = '<div class="simple-file-info"><span class="simple-file-icon">' + icon + '</span>' +
+    '<div><strong>' + escapeHtml(simpleFile.name) + '</strong><br>' + formatSize(simpleFile.size) +
+    ' <span class="badge badge-muted">' + simpleType + '</span></div></div>';
 }
 
 function simpleFileSelected(input) {
@@ -397,6 +405,8 @@ function runTimestampStep() {
           resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
         }
         simpleResults.timestamp = true;
+        simpleStepDone = true;
+        document.getElementById('simpleNextBtn').disabled = false;
         return r;
       }).catch(function(e) {
         window.handleOtsCreate = orig;
@@ -438,6 +448,8 @@ function runFingerprintStep() {
           resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
         }
         simpleResults.fingerprint = true;
+        simpleStepDone = true;
+        document.getElementById('simpleNextBtn').disabled = false;
         return r;
       }).catch(function(e) {
         window.handleFingerprint = orig;
@@ -470,6 +482,11 @@ function renderDone(body) {
     '</div></div>';
   document.getElementById('simplePrevBtn').style.display = 'none';
   document.getElementById('simpleNextBtn').textContent = 'Start Over';
+}
+
+function toggleSimpleLangDropdown() {
+  var menu = document.getElementById('simpleLangMenu');
+  if (menu) menu.classList.toggle('show');
 }
 
 // ── Helpers ──

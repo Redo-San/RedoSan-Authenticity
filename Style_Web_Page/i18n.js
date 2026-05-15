@@ -94,9 +94,15 @@ function applyLang() {
   
   var btn = document.getElementById('langBtn');
   if (btn) {
-    const displayName = getLanguageDisplayName(i18n.lang);
+    var displayName = getLanguageDisplayName(i18n.lang);
     btn.textContent = displayName;
     btn.title = 'Current: ' + displayName + '\nClick to change language';
+  }
+  var sBtn = document.getElementById('simpleLangBtn');
+  if (sBtn) {
+    var displayName = getLanguageDisplayName(i18n.lang);
+    sBtn.textContent = displayName;
+    sBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
 
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
@@ -133,9 +139,7 @@ function applyLang() {
 
 function toggleLangDropdown() {
   var menu = document.getElementById('langMenu');
-  if (menu) {
-    menu.classList.toggle('show');
-  }
+  if (menu) menu.classList.toggle('show');
 }
 
 // Close language dropdown when clicking outside
@@ -144,6 +148,12 @@ document.addEventListener('click', function(e) {
   var menu = document.getElementById('langMenu');
   if (dropdown && !dropdown.contains(e.target) && menu) {
     menu.classList.remove('show');
+  }
+  // Also close simplified language menu
+  var sMenu = document.getElementById('simpleLangMenu');
+  var sDropdown = document.querySelector('#simplifiedMode .lang-dropdown');
+  if (sDropdown && !sDropdown.contains(e.target) && sMenu) {
+    sMenu.classList.remove('show');
   }
 });
 
