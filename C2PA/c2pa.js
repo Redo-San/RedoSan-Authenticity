@@ -330,7 +330,7 @@ window.handleC2paRead = async function() {
 
     // Show warning if read without trust (test certificate)
     if (manifestStore.__testCert) {
-      html += '<div class="c2pa-section" style="background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius);padding:12px;margin-bottom:12px"><strong>⚠️ Test Certificate</strong><p style="margin:4px 0 0;font-size:0.85rem">This file was signed with a test certificate. The signature chain could not be verified against a trusted root CA. The manifest data is displayed below but should not be considered authenticated for production use.</p></div>';
+      html += '<div class="c2pa-section" style="background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius);padding:12px;margin-bottom:12px;color:#000"><strong>⚠️ Test Certificate</strong><p style="margin:4px 0 0;font-size:0.85rem;color:#000">This file was signed with a test certificate. The signature chain could not be verified against a trusted root CA. The manifest data is displayed below but should not be considered authenticated for production use.</p></div>';
     }
 
     // Validation
