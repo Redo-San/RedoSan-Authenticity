@@ -39,14 +39,40 @@ function otsParse(bytes) {
   return { hash: hash, tag: tag };
 }
 
+var OTS_AGGREGATORS = [
+  'https://a.pool.opentimestamps.org',
+  'https://b.pool.opentimestamps.org'
+];
+
 async function upgradeOts(bytes) {
-  var resp = await fetch('https://a.pool.opentimestamps.org', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-ots-timestamp' },
-    body: bytes
-  });
-  if (!resp.ok) throw new Error('Aggregator returned HTTP ' + resp.status);
-  return new Uint8Array(await resp.arrayBuffer());
+  var lastErr;
+  for (var url of OTS_AGGREGATORS) {
+    try {
+      var resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-ots-timestamp' },
+        body: bytes
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return new Uint8Array(await resp.arrayBuffer());
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
+}
+
+function getOtsUpgradeCommand(fileName) {
+  var escaped = fileName.replace(/'/g, "'\\''");
+  return [
+    '# Windows PowerShell:',
+    'Invoke-WebRequest -Uri https://a.pool.opentimestamps.org -Method POST -ContentType "application/x-ots-timestamp" -InFile "' + fileName.replace(/"/g, '`"') + '.ots" -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"',
+    '',
+    '# OR Linux/macOS:',
+    'curl -s -X POST --data-binary @"' + fileName.replace(/"/g, '\\"') + '.ots" -o "' + fileName.replace(/"/g, '\\"') + '.ots.upgraded" https://a.pool.opentimestamps.org',
+    '',
+    '# OR use the official CLI:',
+    '#   pip install opentimestamps-client',
+    '#   ots upgrade "' + fileName + '.ots"'
+  ].join('\n');
 }
 
 async function handleOtsCreate() {
@@ -69,14 +95,13 @@ async function handleOtsCreate() {
     var otsBytes = otsBuildDetached(buf, hashBytes);
     var hex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 
-    // Try to get a complete timestamp from the calendar aggregator
     var complete = false;
     try {
       var upgraded = await upgradeOts(otsBytes);
       otsBytes = upgraded;
       complete = true;
     } catch (e) {
-      // Aggregator unreachable (CORS, network, etc.) — use incomplete timestamp
+      // Aggregator unreachable — use incomplete timestamp below
     }
 
     var blob = new Blob([otsBytes], { type: 'application/octet-stream' });
@@ -85,7 +110,8 @@ async function handleOtsCreate() {
     if (complete) {
       setText('ts-output', '✓ Complete .ots timestamp created with blockchain attestation!\n\nSHA-256: ' + hex + '\nSize: ' + otsBytes.length + ' bytes\n\nThis .ots file includes merkle proof from the OpenTimestamps calendar aggregator. Verify it anytime using the Verify tab.');
     } else {
-      setText('ts-output', 'SHA-256: ' + hex + '\n\n⚠ Calendar aggregator unreachable. Created an incomplete .ots timestamp (' + otsBytes.length + ' bytes). To get a blockchain attestation, use the command:\n  ots upgrade "' + file.name + '.ots"\nor submit the .ots file at https://opentimestamps.org');
+      var cmd = getOtsUpgradeCommand(file.name);
+      setText('ts-output', 'SHA-256: ' + hex + '\n\n⚠ Calendar aggregator unreachable. Created an incomplete .ots timestamp (' + otsBytes.length + ' bytes, standard format).\n\nTo attach a blockchain attestation, run one of these commands:\n\n' + cmd);
     }
 
     var dlBtn = document.getElementById('ts-create-dl-btn');
