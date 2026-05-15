@@ -40,19 +40,12 @@ function otsParse(bytes) {
 }
 
 var OTS_AGGREGATORS = [
-  'https://a.pool.opentimestamps.org',
-  'https://b.pool.opentimestamps.org'
-];
-
-// Free CORS proxies (binary-safe) used when aggregators block CORS
-var OTS_PROXIES = [
-  'https://corsproxy.io/?url=',
-  'https://api.allorigins.win/raw?url='
+  'https://a.pool.opentimestamps.org/digest',
+  'https://b.pool.opentimestamps.org/digest'
 ];
 
 async function upgradeOts(bytes) {
   var lastErr;
-  // Try direct first
   for (var url of OTS_AGGREGATORS) {
     try {
       var resp = await fetch(url, {
@@ -64,21 +57,6 @@ async function upgradeOts(bytes) {
       return new Uint8Array(await resp.arrayBuffer());
     } catch (e) { lastErr = e; }
   }
-  // Fall back to CORS proxies
-  for (var proxy of OTS_PROXIES) {
-    for (var url of OTS_AGGREGATORS) {
-      try {
-        var proxiedUrl = proxy + encodeURIComponent(url);
-        var resp = await fetch(proxiedUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-ots-timestamp' },
-          body: bytes
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        return new Uint8Array(await resp.arrayBuffer());
-      } catch (e) { lastErr = e; }
-    }
-  }
   throw lastErr;
 }
 
@@ -86,12 +64,12 @@ function getOtsUpgradeCommand(fileName) {
   var escaped = fileName.replace(/'/g, "'\\''");
   return [
     '# Windows PowerShell:',
-    'Invoke-WebRequest -Uri https://a.pool.opentimestamps.org -Method POST -ContentType "application/x-ots-timestamp" -InFile "' + fileName.replace(/"/g, '`"') + '.ots" -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"',
+    'Invoke-WebRequest -Uri https://a.pool.opentimestamps.org/digest -Method POST -ContentType "application/x-ots-timestamp" -InFile "' + fileName.replace(/"/g, '`"') + '.ots" -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"',
     '',
     '# OR Linux/macOS:',
-    'curl -s -X POST --data-binary @"' + fileName.replace(/"/g, '\\"') + '.ots" -o "' + fileName.replace(/"/g, '\\"') + '.ots.upgraded" https://a.pool.opentimestamps.org',
+    'curl -s -X POST --data-binary @"' + fileName.replace(/"/g, '\\"') + '.ots" -o "' + fileName.replace(/"/g, '\\"') + '.ots.upgraded" https://a.pool.opentimestamps.org/digest',
     '',
-    '# OR use the official CLI:',
+    '# OR use the official CLI (does not need /digest):',
     '#   pip install opentimestamps-client',
     '#   ots upgrade "' + fileName + '.ots"'
   ].join('\n');
