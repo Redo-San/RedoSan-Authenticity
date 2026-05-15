@@ -273,30 +273,45 @@ function runC2paStep() {
 }
 
 function renderWatermarkStep(body) {
+  // Copy professional form HTML directly
+  var embed = document.getElementById('wm-embed');
+  var html = embed ? embed.innerHTML : '';
+  // Rename IDs to avoid conflicts with hidden #app
+  html = html.replace(/\bid="wm-/g, 'id="swm-');
+  // Remove onchange handlers that reference old IDs
+  html = html.replace(/ onchange="[^"]*"/g, '');
+
   body.innerHTML =
-    '<div class="simple-card"><h2>Digital Watermark</h2><p>Embed an invisible watermark to protect your image.</p>' +
-    '<div class="form-group"><label>Algorithm</label>' +
-    '<select id="swm-algo" class="c2pa-link">' +
-    '<option value="1">1. Spatial LSB</option>' +
-    '<option value="2">2. Frequency DCT</option>' +
-    '<option value="3">3. Neural SS</option>' +
-    '<option value="4">4. Latent DCT</option>' +
-    '<option value="5">5. Zero-bit (no password/secret needed)</option>' +
-    '<option value="6">6. Multi-bit</option>' +
-    '<option value="7">7. Forensic</option>' +
-    '<option value="8">8. Fragile</option>' +
-    '<option value="9">9. Imatag-style</option>' +
-    '</select></div>' +
-    '<div class="form-group"><label>Secret file (data to hide)</label>' +
-    '<input type="file" id="swm-secret" class="c2pa-link"></div>' +
-    '<div class="form-group"><label>Password (required for algos 1-4, 6-7, 9)</label>' +
-    '<input type="text" class="c2pa-link" id="swm-password" placeholder="Enter a password"></div>' +
-    '<button class="btn" onclick="runWatermarkStep()" id="swm-btn">Embed Watermark &amp; Continue →</button>' +
-    '<div id="swm-result"></div></div>';
+    '<div class="simple-card"><h2>Digital Watermark</h2>' +
+    '<p>Embed an invisible watermark to protect your image.</p>' +
+    '<div class="card-form" style="text-align:left">' + html + '</div></div>';
+
+  // Override button
+  var btn = document.getElementById('swm-btn');
+  if (btn) {
+    btn.onclick = runWatermarkStep;
+    btn.textContent = 'Embed Watermark & Continue →';
+  }
+
+  // Setup file drop zones
+  body.querySelectorAll('input[type="file"]').forEach(function(input) {
+    if (input.parentElement.classList.contains('file-drop-zone')) return;
+    wrapSimpleDropZone(input);
+  });
+  // Pre-populate cover image with the file from step 1
+  if (simpleFile) {
+    var imgInput = document.getElementById('swm-image');
+    if (imgInput) {
+      var dt = new DataTransfer();
+      dt.items.add(simpleFile);
+      imgInput.files = dt.files;
+      imgInput.dispatchEvent(new Event('change'));
+    }
+  }
 }
 
 function runWatermarkStep() {
-  var algo = parseInt(document.getElementById('swm-algo').value);
+  var algo = parseInt(document.getElementById('swm-type').value);
   var pass = document.getElementById('swm-password').value || '';
   var secretFileInput = document.getElementById('swm-secret');
   var hasSecret = secretFileInput && secretFileInput.files && secretFileInput.files[0];
@@ -305,111 +320,129 @@ function runWatermarkStep() {
     if (!pass) { alert('Password is required for this algorithm.'); return; }
     if (!hasSecret) { alert('Please select a secret file (data to hide).'); return; }
   }
-  // Set file on professional mode's image input
-  var imgInput = document.getElementById('wm-image');
-  if (imgInput && simpleFile) {
-    var dt = new DataTransfer();
-    dt.items.add(simpleFile);
-    imgInput.files = dt.files;
-    var evt = new Event('change');
-    imgInput.dispatchEvent(evt);
-  }
-  // Set algorithm type
-  var typeSelect = document.getElementById('wm-type');
-  if (typeSelect) { typeSelect.value = algo; typeSelect.dispatchEvent(new Event('change')); }
-  // Set password
-  var passInput = document.getElementById('wm-password');
-  if (passInput) passInput.value = pass;
-  // Set secret file on professional mode's secret input
-  var secretInput = document.getElementById('wm-secret');
-  if (secretInput) {
-    if (hasSecret) {
-      var dt2 = new DataTransfer();
-      dt2.items.add(secretFileInput.files[0]);
-      secretInput.files = dt2.files;
-    } else if (algo === 5 || algo === 8) {
-      // For Zero-bit and Fragile, use the image itself as secret
-      var dt2 = new DataTransfer();
-      dt2.items.add(simpleFile);
-      secretInput.files = dt2.files;
-    }
-    var evt2 = new Event('change');
-    secretInput.dispatchEvent(evt2);
-  }
+  var secretFile = hasSecret ? secretFileInput.files[0] : simpleFile;
   var btn = document.getElementById('swm-btn');
   btn.disabled = true; btn.textContent = 'Embedding...';
-  var origHandler = window.handleWatermarkEmbed;
-  if (origHandler) {
-    // Wrap to catch completion
-    var orig = origHandler;
-    window.handleWatermarkEmbed = function() {
-      return orig.call(this).then(function(r) {
-        window.handleWatermarkEmbed = orig;
-        btn.textContent = '✓ Watermarked!';
-        simpleResults.watermark = true;
-        setTimeout(simpleNext, 1000);
-        return r;
-      }).catch(function(e) {
-        window.handleWatermarkEmbed = orig;
-        btn.textContent = 'Failed — try again';
-        btn.disabled = false;
-        throw e;
-      });
-    };
-    origHandler();
-  }
+
+  watermarkEmbed(algo, simpleFile, secretFile, pass).then(function(result) {
+    if (result.ok) {
+      btn.textContent = '✓ Watermarked!';
+      simpleResults.watermark = true;
+      // Show download link
+      var imgUrl = URL.createObjectURL(result.data);
+      var card = btn.closest('.simple-card');
+      var dlDiv = card.querySelector('.simple-wm-dl');
+      if (!dlDiv) {
+        dlDiv = document.createElement('div');
+        dlDiv.className = 'simple-wm-dl';
+        dlDiv.style.cssText = 'margin-top:12px;text-align:center';
+        btn.parentNode.insertBefore(dlDiv, btn.nextSibling);
+      }
+      dlDiv.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn" style="margin-right:8px">Download Watermarked</a>' +
+        '<button class="btn" onclick="simpleNext()">Continue →</button>';
+      setTimeout(simpleNext, 1500);
+    } else {
+      btn.textContent = 'Failed — try again';
+      btn.disabled = false;
+      alert(result.error || 'Embedding failed');
+    }
+  }).catch(function(e) {
+    btn.textContent = 'Failed — try again';
+    btn.disabled = false;
+    alert(e.message);
+  });
 }
 
 function renderPixelInjectStep(body) {
+  // Copy professional pi-embed HTML directly
+  var piEmbed = document.getElementById('pi-embed');
+  var html = piEmbed ? piEmbed.innerHTML : '';
+  html = html.replace(/\bid="pi-/g, 'id="spi-');
+  html = html.replace(/ onchange="[^"]*"/g, '');
+  html = html.replace(/ onclick="[^"]*"/g, '');
+
   body.innerHTML =
-    '<div class="simple-card"><h2>Pixel Injection</h2><p>Hide a secret message in the image pixels.</p>' +
-    '<div class="form-group"><label>Category</label>' +
-    '<select id="spi-cat" class="c2pa-link">' +
-    '<option value="copyright">© Copyright</option>' +
-    '<option value="metadata">📋 Metadata</option>' +
-    '<option value="secret">🔒 Secret Message</option></select></div>' +
-    '<div class="form-group"><label>Message</label>' +
-    '<textarea class="c2pa-link" id="spi-msg" rows="2" placeholder="Your hidden message">Authenticated via RedoSan</textarea></div>' +
-    '<div class="form-group"><label>Password</label>' +
-    '<input type="text" class="c2pa-link" id="spi-pass" placeholder="Password" value="redosan"></div>' +
-    '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">Inject &amp; Continue →</button>' +
-    '<div id="spi-result"></div></div>';
+    '<div class="simple-card"><h2>Pixel Injection</h2>' +
+    '<p>Hide a secret message in the image pixels.</p>' +
+    '<div class="card-form" style="text-align:left">' + html + '</div></div>';
+
+  // Set defaults
+  var msgEl = document.getElementById('spi-message');
+  if (msgEl) msgEl.value = 'Authenticated via RedoSan';
+  var passEl = document.getElementById('spi-password');
+  if (passEl) passEl.value = 'redosan';
+
+  // Hide algorithm select (auto-determined by category in professional mode)
+  var algoGroup = document.getElementById('spi-algorithm');
+  if (algoGroup) algoGroup.closest('.form-group').style.display = 'none';
+
+  // Hide advanced options button
+  var advBtn = document.getElementById('spi-advanced-btn');
+  if (advBtn) advBtn.style.display = 'none';
+  var advOpts = document.getElementById('spi-advanced-options');
+  if (advOpts) advOpts.style.display = 'none';
+
+  // Override button
+  var btn = document.getElementById('spi-btn');
+  if (btn) {
+    btn.onclick = runPixelInjectStep;
+    btn.textContent = 'Inject & Continue →';
+  }
+
+  // Setup file drop zones
+  body.querySelectorAll('input[type="file"]').forEach(function(input) {
+    if (input.parentElement.classList.contains('file-drop-zone')) return;
+    wrapSimpleDropZone(input);
+  });
+  // Pre-populate image input with the file from step 1
+  if (simpleFile) {
+    var imgInput = document.getElementById('spi-image');
+    if (imgInput) {
+      var dt = new DataTransfer();
+      dt.items.add(simpleFile);
+      imgInput.files = dt.files;
+      imgInput.dispatchEvent(new Event('change'));
+    }
+  }
 }
 
 function runPixelInjectStep() {
-  var cat = document.getElementById('spi-cat').value;
-  var msg = document.getElementById('spi-msg').value;
-  var pass = document.getElementById('spi-pass').value || 'redosan';
+  var cat = document.getElementById('spi-category').value;
+  var msg = document.getElementById('spi-message').value;
+  var pass = document.getElementById('spi-password').value || 'redosan';
+
+  // Populate hidden professional form fields
   var fileInput = document.getElementById('pi-image');
   if (fileInput && simpleFile) {
     var dt = new DataTransfer();
     dt.items.add(simpleFile);
     fileInput.files = dt.files;
-    var evt = new Event('change');
-    fileInput.dispatchEvent(evt);
+    fileInput.dispatchEvent(new Event('change'));
   }
   var catSelect = document.getElementById('pi-category');
-  if (catSelect) catSelect.value = cat;
+  if (catSelect) { catSelect.value = cat; catSelect.dispatchEvent(new Event('change')); }
   var msgInput = document.getElementById('pi-message');
   if (msgInput) msgInput.value = msg;
   var passInput = document.getElementById('pi-password');
   if (passInput) passInput.value = pass;
+
   var btn = document.getElementById('spi-btn');
   btn.disabled = true; btn.textContent = 'Injecting...';
-  // Switch to embed tab
+
   if (window.switchPiTab) window.switchPiTab('embed');
-  var origHandler = window.handlePixelInject;
+
+  var origHandler = window.handlePixelInjection;
   if (origHandler) {
     var orig = origHandler;
-    window.handlePixelInject = function() {
+    window.handlePixelInjection = function() {
       return orig.call(this).then(function(r) {
-        window.handlePixelInject = orig;
+        window.handlePixelInjection = orig;
         btn.textContent = '✓ Injected!';
         simpleResults['pixel-injection'] = true;
         setTimeout(simpleNext, 1000);
         return r;
       }).catch(function(e) {
-        window.handlePixelInject = orig;
+        window.handlePixelInjection = orig;
         btn.textContent = 'Failed — try again';
         btn.disabled = false;
         throw e;
@@ -535,6 +568,57 @@ function toggleSimpleLangDropdown() {
 function toggleModeLangDropdown() {
   var menu = document.getElementById('modeLangMenu');
   if (menu) menu.classList.toggle('show');
+}
+
+// ── File drop zone wrapper (same as shared.js) ──
+
+function wrapSimpleDropZone(input) {
+  if (!input || input.parentElement.classList.contains('file-drop-zone')) return;
+  var dz = document.createElement('div');
+  dz.className = 'file-drop-zone';
+  input.parentNode.insertBefore(dz, input);
+  dz.appendChild(input);
+  var icon = document.createElement('span');
+  icon.className = 'dz-icon'; icon.textContent = '📁';
+  dz.appendChild(icon);
+  var text = document.createElement('div');
+  text.className = 'dz-text';
+  text.innerHTML = 'Drop file here or <strong>browse</strong>';
+  dz.appendChild(text);
+  var fileDiv = document.createElement('div');
+  fileDiv.className = 'dz-file';
+  dz.appendChild(fileDiv);
+  dz.addEventListener('click', function(e) {
+    if (e.target === dz || e.target.classList.contains('dz-icon') || e.target.classList.contains('dz-text'))
+      input.click();
+  });
+  function updateFile() {
+    if (input.files && input.files.length) {
+      dz.classList.add('has-file');
+      fileDiv.textContent = '📄 ' + input.files[0].name;
+    } else {
+      dz.classList.remove('has-file');
+      fileDiv.textContent = '';
+    }
+  }
+  input.addEventListener('change', updateFile);
+  ['dragenter', 'dragover'].forEach(function(evt) {
+    dz.addEventListener(evt, function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
+  });
+  ['dragleave', 'drop'].forEach(function(evt) {
+    dz.addEventListener(evt, function(e) { e.preventDefault(); dz.classList.remove('drag-over'); });
+  });
+  dz.addEventListener('drop', function(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) {
+      var dt = new DataTransfer();
+      for (var j = 0; j < e.dataTransfer.files.length; j++) dt.items.add(e.dataTransfer.files[j]);
+      input.files = dt.files;
+      updateFile();
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+  if (input.files && input.files.length) updateFile();
 }
 
 // ── Helpers ──
