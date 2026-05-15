@@ -564,8 +564,8 @@ class AdvancedWatermarkUI {
                     ctx.drawImage(img, 0, 0);
                     
                     const imageData = ctx.getImageData(0, 0, img.width, img.height);
-                    imageData.width = img.width;
-                    imageData.height = img.height;
+                    imageData.w = img.width;
+                    imageData.h = img.height;
                     resolve(imageData);
                 };
                 img.onerror = reject;
