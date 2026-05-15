@@ -631,8 +631,7 @@ function renderDone(body) {
     var fpHtml = '<div class="simple-done-section"><h3>✅ Cryptographic Fingerprint</h3>';
     if (results.fpHtml) fpHtml += '<div class="simple-done-fp">' + results.fpHtml + '</div>';
     fpHtml += '<div style="margin-top:12px">';
-    fpHtml += '<button class="btn" onclick="downloadFingerprintTxt()">Download as TXT</button> ';
-    fpHtml += '<button class="btn" onclick="downloadFingerprintJson()">Download as JSON</button>';
+    fpHtml += '<button class="btn" onclick="setupFpDownload();showDownloadModal()">Download Results</button>';
     fpHtml += '</div></div>';
     sections.push(fpHtml);
   }
@@ -654,42 +653,9 @@ function renderDone(body) {
   document.getElementById('simpleNextBtn').textContent = 'Start Over';
 }
 
-function downloadFingerprintTxt() {
-  var r = simpleResults.fpResult;
-  if (!r) return;
-  var lines = [];
-  lines.push('File: ' + (r.file_info.file_name || ''));
-  lines.push('Size: ' + (r.file_info.file_size_bytes || '') + ' bytes');
-  if (r.file_info.width) lines.push('Dimensions: ' + r.file_info.width + ' x ' + r.file_info.height);
-  lines.push('');
-  if (r.hashes) {
-    for (var k in r.hashes) {
-      lines.push(k + ': ' + r.hashes[k]);
-    }
-  }
-  if (r.perceptual_hashes) {
-    lines.push('');
-    lines.push('--- Perceptual Hashes ---');
-    for (var k2 in r.perceptual_hashes) {
-      lines.push(k2 + ': ' + r.perceptual_hashes[k2]);
-    }
-  }
-  var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'fingerprint.txt'; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function downloadFingerprintJson() {
-  var r = simpleResults.fpResult;
-  if (!r) return;
-  var json = JSON.stringify(r, null, 2);
-  var blob = new Blob([json], { type: 'application/json;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'fingerprint.json'; a.click();
-  URL.revokeObjectURL(url);
+function setupFpDownload() {
+  window._currentDownloadHandler = downloadFingerprint;
+  document.getElementById('dl-modal-title').textContent = 'Download Fingerprint';
 }
 
 function toggleSimpleLangDropdown() {
