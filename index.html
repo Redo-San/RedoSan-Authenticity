@@ -219,7 +219,7 @@
       <div id="wm-embed">
         <div class="form-group">
           <label data-i18n="wm.algo_label">Algorithm</label>
-          <select id="wm-type" onchange="updateCapacity()">
+          <select id="wm-type">
             <option value="1">1. Spatial LSB</option>
             <option value="2">2. Frequency DCT</option>
             <option value="3">3. Neural SS</option>
@@ -233,12 +233,12 @@
         </div>
         <div class="form-group">
           <label data-i18n="wm.image_label">Cover image</label>
-          <input type="file" id="wm-image" accept="image/png,image/jpeg" onchange="updateCapacity()">
-          <p id="wm-capacity" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px"></p>
+          <input type="file" id="wm-image" accept="image/png,image/jpeg">
+           <p id="wm-capacity" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px"></p>
         </div>
         <div class="form-group" id="wm-secret-group">
           <label data-i18n="wm.secret_label">Secret file</label>
-          <input type="file" id="wm-secret" onchange="updateCapacity()">
+          <input type="file" id="wm-secret">
           <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="wm.secret_hint">Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores this.</p>
           <p id="wm-secret-status" style="font-size:0.75rem;margin-top:2px"></p>
         </div>
