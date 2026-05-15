@@ -44,8 +44,15 @@ var OTS_AGGREGATORS = [
   'https://b.pool.opentimestamps.org'
 ];
 
+// Free CORS proxies (binary-safe) used when aggregators block CORS
+var OTS_PROXIES = [
+  'https://corsproxy.io/?url=',
+  'https://api.allorigins.win/raw?url='
+];
+
 async function upgradeOts(bytes) {
   var lastErr;
+  // Try direct first
   for (var url of OTS_AGGREGATORS) {
     try {
       var resp = await fetch(url, {
@@ -56,6 +63,21 @@ async function upgradeOts(bytes) {
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       return new Uint8Array(await resp.arrayBuffer());
     } catch (e) { lastErr = e; }
+  }
+  // Fall back to CORS proxies
+  for (var proxy of OTS_PROXIES) {
+    for (var url of OTS_AGGREGATORS) {
+      try {
+        var proxiedUrl = proxy + encodeURIComponent(url);
+        var resp = await fetch(proxiedUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-ots-timestamp' },
+          body: bytes
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return new Uint8Array(await resp.arrayBuffer());
+      } catch (e) { lastErr = e; }
+    }
   }
   throw lastErr;
 }
