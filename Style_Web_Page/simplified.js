@@ -656,6 +656,7 @@ function renderDone(body) {
 function setupFpDownload() {
   window._currentDownloadHandler = downloadFingerprint;
   document.getElementById('dl-modal-title').textContent = 'Download Fingerprint';
+  if (!window._fpResult && simpleResults.fpResult) window._fpResult = simpleResults.fpResult;
 }
 
 function toggleSimpleLangDropdown() {

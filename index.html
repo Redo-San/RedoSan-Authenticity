@@ -305,23 +305,6 @@
     <div id="search-output"></div>
   </section>
 
-  <!-- Download Format Modal -->
-    <div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
-    <div class="modal-box">
-      <div class="modal-close" onclick="closeDownloadModal()">&times;</div>
-      <h3 id="dl-modal-title">Download Report</h3>
-      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px" id="dl-modal-subtitle">Choose a format:</p>
-      <div class="dl-grid">
-        <button class="dl-option" onclick="downloadResult('json')"><span class="dl-icon">&#123;&#125;</span> JSON</button>
-        <button class="dl-option" onclick="downloadResult('csv')"><span class="dl-icon">&#35;</span> CSV</button>
-        <button class="dl-option" onclick="downloadResult('txt')"><span class="dl-icon">&#8471;</span> TXT</button>
-        <button class="dl-option" onclick="downloadResult('xml')"><span class="dl-icon">&lt;/&gt;</span> XML</button>
-        <button class="dl-option" onclick="downloadResult('pdf')"><span class="dl-icon">&#128196;</span> PDF</button>
-        <button class="dl-option" onclick="downloadResult('doc')"><span class="dl-icon">&#128209;</span> DOCX</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Pixel Injection -->
   <section id="page-pixel-injection" class="page">
     <h2 style="margin-bottom:20px" data-i18n="pi.heading">Advanced Pixel Injection</h2>
@@ -678,6 +661,23 @@
     </div>
   </section>
 </main>
+
+<!-- Download Format Modal (outside #app so it works when #app is hidden in simplified mode) -->
+<div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
+  <div class="modal-box">
+    <div class="modal-close" onclick="closeDownloadModal()">&times;</div>
+    <h3 id="dl-modal-title">Download Report</h3>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px" id="dl-modal-subtitle">Choose a format:</p>
+    <div class="dl-grid">
+      <button class="dl-option" onclick="downloadResult('json')"><span class="dl-icon">{ }</span> JSON</button>
+      <button class="dl-option" onclick="downloadResult('csv')"><span class="dl-icon">#</span> CSV</button>
+      <button class="dl-option" onclick="downloadResult('txt')"><span class="dl-icon">©</span> TXT</button>
+      <button class="dl-option" onclick="downloadResult('xml')"><span class="dl-icon">&lt;/&gt;</span> XML</button>
+      <button class="dl-option" onclick="downloadResult('pdf')"><span class="dl-icon">📄</span> PDF</button>
+      <button class="dl-option" onclick="downloadResult('doc')"><span class="dl-icon">📑</span> DOCX</button>
+    </div>
+  </div>
+</div>
 
 <footer id="mainFooter">
   <div class="footer-links">
