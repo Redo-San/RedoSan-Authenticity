@@ -50,7 +50,9 @@ async function upgradeOts(bytes) {
     try {
       var resp = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-ots-timestamp' },
+        // Use x-www-form-urlencoded to avoid CORS preflight (simple content-type).
+        // Aggregator ignores Content-Type — only reads raw body bytes.
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: bytes
       });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -64,10 +66,10 @@ function getOtsUpgradeCommand(fileName) {
   var escaped = fileName.replace(/'/g, "'\\''");
   return [
     '# Windows PowerShell:',
-    'Invoke-WebRequest -Uri https://a.pool.opentimestamps.org/digest -Method POST -ContentType "application/x-ots-timestamp" -InFile "' + fileName.replace(/"/g, '`"') + '.ots" -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"',
+    'Invoke-WebRequest -Uri https://a.pool.opentimestamps.org/digest -Method POST -ContentType "application/x-www-form-urlencoded" -InFile "' + fileName.replace(/"/g, '`"') + '.ots" -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"',
     '',
     '# OR Linux/macOS:',
-    'curl -s -X POST --data-binary @"' + fileName.replace(/"/g, '\\"') + '.ots" -o "' + fileName.replace(/"/g, '\\"') + '.ots.upgraded" https://a.pool.opentimestamps.org/digest',
+    'curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" --data-binary @"' + fileName.replace(/"/g, '\\"') + '.ots" -o "' + fileName.replace(/"/g, '\\"') + '.ots.upgraded" https://a.pool.opentimestamps.org/digest',
     '',
     '# OR use the official CLI (does not need /digest):',
     '#   pip install opentimestamps-client',
