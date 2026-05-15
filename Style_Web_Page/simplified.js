@@ -276,16 +276,35 @@ function renderWatermarkStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>Digital Watermark</h2><p>Embed an invisible watermark to protect your image.</p>' +
     '<div class="form-group"><label>Algorithm</label>' +
-    '<select id="swm-algo" class="c2pa-link"><option value="1">1. Spatial LSB (Fast)</option><option value="2">2. Frequency DCT (Balanced)</option><option value="6">6. Multi-bit (Robust)</option></select></div>' +
-    '<div class="form-group"><label>Password</label>' +
-    '<input type="text" class="c2pa-link" id="swm-password" placeholder="Enter a password" value="redosan"></div>' +
+    '<select id="swm-algo" class="c2pa-link">' +
+    '<option value="1">1. Spatial LSB</option>' +
+    '<option value="2">2. Frequency DCT</option>' +
+    '<option value="3">3. Neural SS</option>' +
+    '<option value="4">4. Latent DCT</option>' +
+    '<option value="5">5. Zero-bit (no password/secret needed)</option>' +
+    '<option value="6">6. Multi-bit</option>' +
+    '<option value="7">7. Forensic</option>' +
+    '<option value="8">8. Fragile</option>' +
+    '<option value="9">9. Imatag-style</option>' +
+    '</select></div>' +
+    '<div class="form-group"><label>Secret file (data to hide)</label>' +
+    '<input type="file" id="swm-secret" class="c2pa-link"></div>' +
+    '<div class="form-group"><label>Password (required for algos 1-4, 6-7, 9)</label>' +
+    '<input type="text" class="c2pa-link" id="swm-password" placeholder="Enter a password"></div>' +
     '<button class="btn" onclick="runWatermarkStep()" id="swm-btn">Embed Watermark &amp; Continue →</button>' +
     '<div id="swm-result"></div></div>';
 }
 
 function runWatermarkStep() {
-  var algo = document.getElementById('swm-algo').value;
-  var pass = document.getElementById('swm-password').value || 'redosan';
+  var algo = parseInt(document.getElementById('swm-algo').value);
+  var pass = document.getElementById('swm-password').value || '';
+  var secretFileInput = document.getElementById('swm-secret');
+  var hasSecret = secretFileInput && secretFileInput.files && secretFileInput.files[0];
+  // Validate: algorithms 1-4, 6-7, 9 require password + secret file
+  if (algo !== 5 && algo !== 8) {
+    if (!pass) { alert('Password is required for this algorithm.'); return; }
+    if (!hasSecret) { alert('Please select a secret file (data to hide).'); return; }
+  }
   // Set file on professional mode's image input
   var imgInput = document.getElementById('wm-image');
   if (imgInput && simpleFile) {
@@ -301,12 +320,19 @@ function runWatermarkStep() {
   // Set password
   var passInput = document.getElementById('wm-password');
   if (passInput) passInput.value = pass;
-  // Use same file as secret (simplified mode always uses the image itself)
+  // Set secret file on professional mode's secret input
   var secretInput = document.getElementById('wm-secret');
-  if (secretInput && simpleFile) {
-    var dt2 = new DataTransfer();
-    dt2.items.add(simpleFile);
-    secretInput.files = dt2.files;
+  if (secretInput) {
+    if (hasSecret) {
+      var dt2 = new DataTransfer();
+      dt2.items.add(secretFileInput.files[0]);
+      secretInput.files = dt2.files;
+    } else if (algo === 5 || algo === 8) {
+      // For Zero-bit and Fragile, use the image itself as secret
+      var dt2 = new DataTransfer();
+      dt2.items.add(simpleFile);
+      secretInput.files = dt2.files;
+    }
     var evt2 = new Event('change');
     secretInput.dispatchEvent(evt2);
   }
