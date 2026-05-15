@@ -505,24 +505,16 @@ function runPixelInjectStep() {
 
   if (window.switchPiTab) window.switchPiTab('embed');
 
-  var origHandler = window.handlePixelInjection;
-  if (origHandler) {
-    var orig = origHandler;
-    window.handlePixelInjection = function() {
-      return orig.call(this).then(function(r) {
-        window.handlePixelInjection = orig;
-        btn.textContent = '✓ Injected!';
-        simpleResults['pixel-injection'] = true;
-        setTimeout(simpleNext, 1000);
-        return r;
-      }).catch(function(e) {
-        window.handlePixelInjection = orig;
-        btn.textContent = 'Failed — try again';
-        btn.disabled = false;
-        throw e;
-      });
-    };
-    origHandler();
+  var promise = window.handlePixelInjection();
+  if (promise && promise.then) {
+    promise.then(function() {
+      btn.textContent = '✓ Injected!';
+      simpleResults['pixel-injection'] = true;
+      setTimeout(simpleNext, 1000);
+    }).catch(function() {
+      btn.textContent = 'Failed — try again';
+      btn.disabled = false;
+    });
   }
 }
 
@@ -543,29 +535,21 @@ function runTimestampStep() {
     var evt = new Event('change');
     fileInput.dispatchEvent(evt);
   }
-  var origHandler = window.handleOtsCreate;
-  if (origHandler) {
-    var orig = origHandler;
-    window.handleOtsCreate = function() {
-      return orig.call(this).then(function(r) {
-        window.handleOtsCreate = orig;
-        var resultDiv = document.getElementById('sts-result');
-        if (resultDiv) {
-          var text = escapeHtml((document.getElementById('ts-output') || {}).textContent || '');
-          resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
-        }
-        simpleResults.timestamp = true;
-        simpleStepDone = true;
-        document.getElementById('simpleNextBtn').disabled = false;
-        return r;
-      }).catch(function(e) {
-        window.handleOtsCreate = orig;
-        var resultDiv = document.getElementById('sts-result');
-        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Timestamp failed: ' + escapeHtml(e.message) + '</div>';
-        throw e;
-      });
-    };
-    origHandler();
+  var promise = window.handleOtsCreate();
+  if (promise && promise.then) {
+    promise.then(function() {
+      var resultDiv = document.getElementById('sts-result');
+      if (resultDiv) {
+        var text = escapeHtml((document.getElementById('ts-output') || {}).textContent || '');
+        resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
+      }
+      simpleResults.timestamp = true;
+      simpleStepDone = true;
+      document.getElementById('simpleNextBtn').disabled = false;
+    }).catch(function(e) {
+      var resultDiv = document.getElementById('sts-result');
+      if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Timestamp failed: ' + escapeHtml(e.message) + '</div>';
+    });
   }
 }
 
@@ -586,29 +570,21 @@ function runFingerprintStep() {
     var evt = new Event('change');
     fileInput.dispatchEvent(evt);
   }
-  var origHandler = window.handleFingerprint;
-  if (origHandler) {
-    var orig = origHandler;
-    window.handleFingerprint = function() {
-      return orig.call(this).then(function(r) {
-        window.handleFingerprint = orig;
-        var resultDiv = document.getElementById('sfp-result');
-        if (resultDiv) {
-          var text = escapeHtml((document.getElementById('fp-output') || {}).textContent || '');
-          resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
-        }
-        simpleResults.fingerprint = true;
-        simpleStepDone = true;
-        document.getElementById('simpleNextBtn').disabled = false;
-        return r;
-      }).catch(function(e) {
-        window.handleFingerprint = orig;
-        var resultDiv = document.getElementById('sfp-result');
-        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Fingerprint failed: ' + escapeHtml(e.message) + '</div>';
-        throw e;
-      });
-    };
-    origHandler();
+  var promise = window.handleFingerprint();
+  if (promise && promise.then) {
+    promise.then(function() {
+      var resultDiv = document.getElementById('sfp-result');
+      if (resultDiv) {
+        var text = escapeHtml((document.getElementById('fp-output') || {}).textContent || '');
+        resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
+      }
+      simpleResults.fingerprint = true;
+      simpleStepDone = true;
+      document.getElementById('simpleNextBtn').disabled = false;
+    }).catch(function(e) {
+      var resultDiv = document.getElementById('sfp-result');
+      if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">Fingerprint failed: ' + escapeHtml(e.message) + '</div>';
+    });
   }
 }
 
