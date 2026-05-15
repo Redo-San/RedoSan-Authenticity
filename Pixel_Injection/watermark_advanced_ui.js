@@ -434,7 +434,7 @@ class AdvancedWatermarkUI {
     
     async handleAdvancedEmbed() {
         const fileInput = document.getElementById('wm-image');
-        const messageInput = document.getElementById('wm-message') || document.createElement('input');
+        var messageInput = document.getElementById('wm-message');
         const passwordInput = document.getElementById('wm-password');
         
         if (!fileInput.files.length) {
@@ -442,13 +442,21 @@ class AdvancedWatermarkUI {
             return;
         }
         
-        if (!messageInput.value) {
+        var message = messageInput ? messageInput.value : '';
+        // Fallback: use secret file name as message if wm-message is not present
+        if (!message) {
+            const secretInput = document.getElementById('wm-secret');
+            if (secretInput && secretInput.files && secretInput.files.length) {
+                message = secretInput.files[0].name;
+            }
+        }
+        
+        if (!message) {
             this.showMessage('Please enter a message to embed', 'error');
             return;
         }
         
         const file = fileInput.files[0];
-        const message = messageInput.value;
         const password = passwordInput.value;
         
         try {
