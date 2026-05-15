@@ -371,8 +371,8 @@ function runWatermarkStep() {
     if (result.ok) {
       btn.textContent = '✓ Watermarked!';
       simpleResults.watermark = true;
-      // Show download link
       var imgUrl = URL.createObjectURL(result.data);
+      simpleResults.watermarkUrl = imgUrl;
       var card = btn.closest('.simple-card');
       var dlDiv = card.querySelector('.simple-wm-dl');
       if (!dlDiv) {
@@ -510,6 +510,10 @@ function runPixelInjectStep() {
     promise.then(function() {
       btn.textContent = '✓ Injected!';
       simpleResults['pixel-injection'] = true;
+      var piDl = document.getElementById('pi-download');
+      if (piDl) simpleResults.piHtml = piDl.innerHTML;
+      var piOutput = document.getElementById('pi-output');
+      if (piOutput) simpleResults.piPreviewHtml = piOutput.innerHTML;
       setTimeout(simpleNext, 1000);
     }).catch(function() {
       btn.textContent = 'Failed — try again';
@@ -544,6 +548,8 @@ function runTimestampStep() {
         resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
       }
       simpleResults.timestamp = true;
+      var tsDl = document.getElementById('ts-download');
+      if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
       simpleStepDone = true;
       document.getElementById('simpleNextBtn').disabled = false;
     }).catch(function(e) {
@@ -579,6 +585,11 @@ function runFingerprintStep() {
         resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
       }
       simpleResults.fingerprint = true;
+      var fpOutput = document.getElementById('fp-output');
+      if (fpOutput) {
+        simpleResults.fpHtml = fpOutput.innerHTML;
+        simpleResults.fpResult = window._fpResult || null;
+      }
       simpleStepDone = true;
       document.getElementById('simpleNextBtn').disabled = false;
     }).catch(function(e) {
@@ -590,24 +601,95 @@ function runFingerprintStep() {
 
 function renderDone(body) {
   var results = simpleResults;
-  var parts = [];
-  if (results.c2pa) parts.push('✅ C2PA Provenance');
-  if (results.watermark) parts.push('✅ Digital Watermark');
-  if (results['pixel-injection']) parts.push('✅ Pixel Injection');
-  if (results.timestamp) parts.push('✅ OpenTimestamp (.ots)');
-  if (results.fingerprint) parts.push('✅ Cryptographic Fingerprint');
-  body.innerHTML =
-    '<div class="simple-card simple-done"><h2>🎉 All Done!</h2>' +
-    '<p>Your file has been processed through all the steps.</p>' +
-    '<div class="simple-results-list">' + parts.map(function(p) {
-      return '<div class="simple-result-item">' + p + '</div>';
-    }).join('') + '</div>' +
+  var sections = [];
+
+  if (results.watermark || results.watermarkUrl) {
+    var wmHtml = '<div class="simple-done-section"><h3>✅ Watermarked Image</h3>';
+    if (results.watermarkUrl) {
+      wmHtml += '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">Download Watermarked Image</a>';
+    }
+    wmHtml += '</div>';
+    sections.push(wmHtml);
+  }
+
+  if (results['pixel-injection']) {
+    var piHtml = '<div class="simple-done-section"><h3>✅ Pixel Injection</h3>';
+    if (results.piHtml) piHtml += results.piHtml;
+    if (results.piPreviewHtml) piHtml += '<div class="simple-done-preview">' + results.piPreviewHtml + '</div>';
+    piHtml += '</div>';
+    sections.push(piHtml);
+  }
+
+  if (results.timestamp) {
+    var tsHtml = '<div class="simple-done-section"><h3>✅ OpenTimestamp (.ots)</h3>';
+    if (results.tsHtml) tsHtml += results.tsHtml;
+    tsHtml += '</div>';
+    sections.push(tsHtml);
+  }
+
+  if (results.fingerprint) {
+    var fpHtml = '<div class="simple-done-section"><h3>✅ Cryptographic Fingerprint</h3>';
+    if (results.fpHtml) fpHtml += '<div class="simple-done-fp">' + results.fpHtml + '</div>';
+    fpHtml += '<div style="margin-top:12px">';
+    fpHtml += '<button class="btn" onclick="downloadFingerprintTxt()">Download as TXT</button> ';
+    fpHtml += '<button class="btn" onclick="downloadFingerprintJson()">Download as JSON</button>';
+    fpHtml += '</div></div>';
+    sections.push(fpHtml);
+  }
+
+  if (results.c2pa) {
+    sections.push('<div class="simple-done-section"><h3>✅ C2PA Provenance</h3><p>Provenance data embedded.</p></div>');
+  }
+
+  var mainHtml = '<div class="simple-card simple-done"><h2>🎉 All Done!</h2>' +
+    '<p>Your file has been processed. Download your results below:</p>' +
+    '<div class="simple-results-list">' + sections.join('') + '</div>' +
     '<div class="simple-done-actions">' +
     '<button class="btn" onclick="restartSimple()">🔄 Process Another File</button>' +
     '<button class="btn" onclick="switchMode()">⚙️ Switch to Professional</button>' +
     '</div></div>';
+
+  body.innerHTML = mainHtml;
   document.getElementById('simplePrevBtn').style.display = 'none';
   document.getElementById('simpleNextBtn').textContent = 'Start Over';
+}
+
+function downloadFingerprintTxt() {
+  var r = simpleResults.fpResult;
+  if (!r) return;
+  var lines = [];
+  lines.push('File: ' + (r.file_info.file_name || ''));
+  lines.push('Size: ' + (r.file_info.file_size_bytes || '') + ' bytes');
+  if (r.file_info.width) lines.push('Dimensions: ' + r.file_info.width + ' x ' + r.file_info.height);
+  lines.push('');
+  if (r.hashes) {
+    for (var k in r.hashes) {
+      lines.push(k + ': ' + r.hashes[k]);
+    }
+  }
+  if (r.perceptual_hashes) {
+    lines.push('');
+    lines.push('--- Perceptual Hashes ---');
+    for (var k2 in r.perceptual_hashes) {
+      lines.push(k2 + ': ' + r.perceptual_hashes[k2]);
+    }
+  }
+  var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'fingerprint.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadFingerprintJson() {
+  var r = simpleResults.fpResult;
+  if (!r) return;
+  var json = JSON.stringify(r, null, 2);
+  var blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'fingerprint.json'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 function toggleSimpleLangDropdown() {

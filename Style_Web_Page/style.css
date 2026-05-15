@@ -544,6 +544,14 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .simple-results-list { margin: 20px 0; text-align: left; }
 .simple-result-item { padding: 10px 14px; margin-bottom: 6px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem; }
 .simple-done-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+.simple-done-section { padding: 16px; margin-bottom: 12px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); }
+.simple-done-section h3 { margin: 0 0 8px; font-size: 1rem; }
+.simple-done-section .btn { margin-top: 8px; }
+.simple-done-preview { margin-top: 8px; }
+.simple-done-preview img { max-width: 100%; max-height: 200px; border-radius: 4px; }
+.simple-done-fp { font-size: 0.8rem; }
+.simple-done-fp table { width: 100%; }
+.simple-done-fp td { padding: 2px 4px; word-break: break-all; }
 
 @media (max-width: 480px) {
   .mode-cards { flex-direction: column; }
