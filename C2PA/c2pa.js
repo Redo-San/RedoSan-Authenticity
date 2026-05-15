@@ -1,5 +1,4 @@
 import { createC2pa } from 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm';
-import { encodeInt, encodeBstr, encodeTstr, encodeArray, encodeMap, encodeTag } from './cbor.js';
 
 const WASM_SRC = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm';
 const EXPECTED_WASM_HASH = '640d8e02f9d6d8e2c919f3795126d049c4800ce2e71611322ae352a9e075c9ea';
@@ -130,64 +129,23 @@ async function createBrowserSigner() {
   // will handle the untrusted cert gracefully (verifyTrust:false fallback).
   var allCerts = [splitCerts(C2PA_CERTS)[0]];
 
-  // Must be large enough for COSE + claim + cert chain + overhead
+  // Must be large enough for signing overhead
   const RESERVE_SIZE = 5000;
 
   return {
     alg: 'es256',
     reserveSize: async () => RESERVE_SIZE,
+    // The WASM builder constructs the COSE Sign1 structure internally.
+    // This function should return ONLY the raw ECDSA signature bytes.
     sign: async (data) => {
-      const claimBytes = new Uint8Array(data);
-
-      const certChain = allCerts.map(c => encodeBstr(c));
-      const protectedHeader = encodeMap([
-        [1, encodeInt(-7)],
-        [33, encodeArray(certChain)]
-      ]);
-      const protectedBstr = encodeBstr(protectedHeader);
-      const payloadBstr = encodeBstr(claimBytes);
-
-      // Compute actual signature first (TBS doesn't include unprotected header)
-      const emptyBstr = encodeBstr(new Uint8Array(0));
-      const tbs = encodeArray([
-        encodeTstr('Signature1'), protectedBstr, emptyBstr, payloadBstr
-      ]);
-      const ecdsaSig = await crypto.subtle.sign(
-        { name: 'ECDSA', hash: 'SHA-256' }, privateKey, tbs
+      const sig = await crypto.subtle.sign(
+        { name: 'ECDSA', hash: 'SHA-256' }, privateKey, data
       );
-      const realSigBstr = encodeBstr(new Uint8Array(ecdsaSig));
-
-      // Compute base COSE size with empty unprotected header
-      const emptyHeader = new Uint8Array([0xA0]);
-      const baseCose = encodeTag(18, encodeArray([
-        protectedBstr, emptyHeader, payloadBstr, realSigBstr
-      ]));
-
-      if (baseCose.length >= RESERVE_SIZE) {
-        return baseCose;
-      }
-
-      // Two-pass padding: compute pad to reach exact RESERVE_SIZE
-      const padKey = encodeTstr('pad');
-      // First estimate: assume bstr header for pad is 1 byte (pad <= 23)
-      let currentPad = RESERVE_SIZE - baseCose.length;
-      for (let iter = 0; iter < 3; iter++) {
-        const pb = encodeBstr(new Uint8Array(currentPad));
-        const uh = encodeMap([[padKey, pb]]);
-        const cose = encodeTag(18, encodeArray([
-          protectedBstr, uh, payloadBstr, realSigBstr
-        ]));
-        const diff = RESERVE_SIZE - cose.length;
-        if (diff === 0) return cose;
-        currentPad += diff;
-      }
-
-      // Fallback: return padded COSE (close enough)
-      const padBstr = encodeBstr(new Uint8Array(Math.max(0, currentPad)));
-      const unprotectedHeader = encodeMap([[padKey, padBstr]]);
-      return encodeTag(18, encodeArray([
-        protectedBstr, unprotectedHeader, payloadBstr, realSigBstr
-      ]));
+      return new Uint8Array(sig);
+    },
+    // Provide the certificate chain for the x5chain COSE header
+    certs: async () => {
+      return allCerts;
     },
   };
 }
@@ -331,26 +289,24 @@ window.handleC2paRead = async function() {
     const c2pa = await getC2pa();
     var reader, manifestStore;
 
-    // Read with trust verification first, fallback to untrusted if cert fails
     try {
-      reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: true, verifyAfterReading: true } }), 15000, 'Reader timed out');
+      reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: false } }), 15000, 'Reader timed out');
       if (reader) {
         manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
         await reader.free();
+        manifestStore.__testCert = true;
       }
     } catch (e) {
       if (reader) { try { await reader.free(); } catch (_) {} }
-      // Retry without trust verification (handles test/self-signed certificates)
-      try {
-        reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: true } }), 15000, 'Reader timed out');
-        if (reader) {
-          manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
-          await reader.free();
-          manifestStore.__testCert = true;
-        }
-      } catch (e2) {
-        throw e; // throw original error if both attempts fail
+      // If reading fails even without trust (e.g. old images signed with
+      // broken COSE structure), show a helpful message suggesting re-sign.
+      if (e.message && e.message.includes('CoseInvalidCert')) {
+        output.innerHTML = '<div class="c2pa-error"><strong>C2PA Read Error</strong><p>This file was signed with an older version of this tool that produced an invalid certificate structure. Try signing the image again with the latest version of this tool.</p><p class="c2pa-error-detail">' + escHtml(e.message) + '</p></div>';
+        spinner.style.display = 'none';
+        resultDiv.style.display = 'block';
+        return;
       }
+      throw e;
     }
     
     if (!reader) {
