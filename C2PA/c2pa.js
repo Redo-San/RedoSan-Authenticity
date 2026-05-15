@@ -161,6 +161,18 @@ async function addIngredientFromFile(builder, file, rel) {
   );
 }
 
+function getActionLabel(action) {
+  var labels = {
+    'c2pa.created': '📄 Created',
+    'c2pa.edited': '✏️ Edited',
+    'c2pa.captured': '📸 Captured',
+    'c2pa.opened': '📂 Opened',
+    'c2pa.converted': '🔄 Converted',
+    'c2pa.opt_out': '🚫 Do Not Train'
+  };
+  return labels[action] || action;
+}
+
 function getActionsHtml(manifest) {
   const assertions = manifest.assertions || [];
   const actions = assertions.filter(a => a.label === 'c2pa.actions' || a.label === 'c2pa.actions.v2');
@@ -175,12 +187,14 @@ function getActionsHtml(manifest) {
       <div class="c2pa-action-item">
         <span class="c2pa-action-number">${i + 1}</span>
         <div class="c2pa-action-content">
-          <span class="c2pa-action-badge">${escHtml(act.action || 'unknown')}</span>
+          <span class="c2pa-action-badge">${escHtml(getActionLabel(act.action || 'unknown'))}</span>
           ${act.digitalSourceType ? `<span class="c2pa-action-src">${escHtml(act.digitalSourceType.split('/').pop())}</span>` : ''}
           ${act.description ? `<div class="c2pa-action-desc">${escHtml(act.description)}</div>` : ''}
           ${act.softwareAgent ? `<span class="c2pa-action-agent">${escHtml(act.softwareAgent)}</span>` : ''}
           ${act.when ? `<span class="c2pa-action-when">${formatDate(act.when)}</span>` : ''}
-          ${act.reason ? `<span class="c2pa-action-reason">${escHtml(act.reason)}</span>` : ''}
+          ${act.actor?.name ? `<span class="c2pa-action-actor">by ${escHtml(act.actor.name)}</span>` : ''}
+          ${act.actor?.identifier ? `<span class="c2pa-action-id">${escHtml(act.actor.identifier)}</span>` : ''}
+          ${act.reason ? `<span class="c2pa-action-reason">📝 ${escHtml(act.reason)}</span>` : ''}
           ${act.parameters ? `<div class="c2pa-action-params"><pre>${escHtml(JSON.stringify(act.parameters, null, 2))}</pre></div>` : ''}
         </div>
       </div>`;
@@ -439,41 +453,16 @@ window.handleC2paRead = async function() {
 };
 
 const C2PA_FORM_CONFIG = {
-  create: {
-    title: { show: true,  label: 'Title',             placeholder: 'My Image' },
-    author: { show: true,  label: 'Creator',           placeholder: 'Your name' },
-    ingredients: { show: false },
-    action: 'c2pa.created'
-  },
-  edit: {
-    title: { show: true,  label: 'Title',             placeholder: 'Edited Image' },
-    author: { show: true,  label: 'Editor',            placeholder: 'Editor name' },
-    ingredients: { show: true },
-    action: 'c2pa.edited'
-  },
-  ai: {
-    title: { show: true,  label: 'Title',             placeholder: 'AI Generated Image' },
-    author: { show: true,  label: 'Prompt Author',     placeholder: 'Your name' },
-    ingredients: { show: false },
-    action: 'c2pa.created'
-  },
-  capture: {
-    title: { show: true,  label: 'Title',             placeholder: 'Photo title' },
-    author: { show: true,  label: 'Photographer',      placeholder: 'Photographer name' },
-    ingredients: { show: false },
-    action: 'c2pa.captured'
-  },
-  composite: {
-    title: { show: true,  label: 'Title',             placeholder: 'Composite Image' },
-    author: { show: true,  label: 'Creator',           placeholder: 'Creator name' },
-    ingredients: { show: true },
-    action: 'c2pa.created'
-  }
+  create: { action: 'c2pa.created', title: 'Title', author: 'Creator' },
+  edit:   { action: 'c2pa.edited',  title: 'Title', author: 'Editor', ingredients: true },
+  ai:     { action: 'c2pa.created', title: 'Title', author: 'Prompt Author' },
+  capture:{ action: 'c2pa.captured',title: 'Title', author: 'Photographer' },
+  composite:{ action: 'c2pa.created',title: 'Title', author: 'Creator', ingredients: true }
 };
 
 function getCheckedFormTypes() {
   const types = [];
-  document.querySelectorAll('#c2pa-write-types .c2pa-type-card').forEach(card => {
+  document.querySelectorAll('#c2pa-write-types .c2pa-type-card[data-form-type]').forEach(card => {
     const cb = card.querySelector('input[type="checkbox"]');
     if (cb && cb.checked) {
       types.push({
@@ -486,63 +475,22 @@ function getCheckedFormTypes() {
   return types;
 }
 
+function getSocialLinks() {
+  const links = [];
+  document.querySelectorAll('.c2pa-link').forEach(input => {
+    const val = input.value.trim();
+    if (val) links.push({ platform: input.dataset.platform, url: val });
+  });
+  return links;
+}
+
 window.updateC2paWriteForm = function() {
-  const checked = getCheckedFormTypes();
-  const dnt = document.getElementById('c2pa-write-dnt').checked;
-
-  let showTitle = false, showAuthor = false, showIngredients = false;
-  let firstType = null;
-
-  for (const { formType } of checked) {
-    const cfg = C2PA_FORM_CONFIG[formType];
-    if (cfg) {
-      if (cfg.title.show) showTitle = true;
-      if (cfg.author.show) showAuthor = true;
-      if (cfg.ingredients.show) showIngredients = true;
-      if (!firstType) firstType = formType;
-    }
-  }
-
-  const titleGroup = document.getElementById('c2pa-write-title-group');
-  const titleLabel = document.getElementById('c2pa-write-title-label');
-  const titleInput = document.getElementById('c2pa-write-title');
-
-  const authorGroup = document.getElementById('c2pa-write-author-group');
-  const authorLabel = document.getElementById('c2pa-write-author-label');
-  const authorInput = document.getElementById('c2pa-write-author');
-
-  const ingredientGroup = document.getElementById('c2pa-write-ingredient-group');
-
-  if (showTitle && firstType) {
-    titleGroup.style.display = '';
-    titleLabel.textContent = C2PA_FORM_CONFIG[firstType].title.label;
-    titleInput.placeholder = C2PA_FORM_CONFIG[firstType].title.placeholder;
-  } else {
-    titleGroup.style.display = 'none';
-    titleInput.value = '';
-  }
-
-  if (showAuthor && firstType) {
-    authorGroup.style.display = '';
-    authorLabel.textContent = C2PA_FORM_CONFIG[firstType].author.label;
-    authorInput.placeholder = C2PA_FORM_CONFIG[firstType].author.placeholder;
-  } else {
-    authorGroup.style.display = 'none';
-    authorInput.value = '';
-  }
-
-  ingredientGroup.style.display = showIngredients ? '' : 'none';
-  if (!showIngredients) {
-    document.getElementById('c2pa-write-ingredient').value = '';
-  }
-
+  // Fields are shown/hidden by CSS based on :has(input:checked)
+  // This function is kept for future extensibility
 };
 
 window.handleC2paWrite = async function() {
   const fileInput = document.getElementById('c2pa-write-file');
-  const titleInput = document.getElementById('c2pa-write-title');
-  const authorInput = document.getElementById('c2pa-write-author');
-  const ingredientInput = document.getElementById('c2pa-write-ingredient');
   const output = document.getElementById('c2pa-write-output');
   const spinner = document.getElementById('c2pa-write-spinner');
   const resultDiv = document.getElementById('c2pa-write-result');
@@ -557,6 +505,9 @@ window.handleC2paWrite = async function() {
     return;
   }
 
+  const socialLinks = getSocialLinks();
+  const formattedLinks = socialLinks.map(l => l.platform + ': ' + l.url).join(' | ');
+
   output.innerHTML = '';
   spinner.style.display = 'block';
   resultDiv.style.display = 'none';
@@ -566,12 +517,29 @@ window.handleC2paWrite = async function() {
     const signer = await createBrowserSigner();
     const builder = await c2pa.builder.new();
 
+    // Build actor with social links embedded
+    const baseActorName = checkedTypes.length ? (document.querySelector('.c2pa-field[data-field="author"]')?.value?.trim() || 'RedoSan') : 'RedoSan';
+    const actorName = formattedLinks ? baseActorName + ' (' + formattedLinks + ')' : baseActorName;
+
     // Add actions for each checked content type
     const addedActions = new Set();
     for (const { formType, src } of checkedTypes) {
       const cfg = C2PA_FORM_CONFIG[formType];
       if (!cfg) continue;
-      const action = { action: cfg.action, actor: { name: authorInput.value || 'RedoSan' } };
+
+      // Get per-type title and author from the card's inline fields
+      const card = document.querySelector('.c2pa-type-card[data-form-type="' + formType + '"]');
+      const titleVal = card?.querySelector('.c2pa-field[data-field="title"]')?.value?.trim() || '';
+      const authorVal = card?.querySelector('.c2pa-field[data-field="author"]')?.value?.trim() || '';
+
+      const action = {
+        action: cfg.action,
+        actor: {
+          name: authorVal || baseActorName,
+          identifier: socialLinks.length ? socialLinks[0].url : undefined
+        }
+      };
+      if (titleVal) action.parameter = titleVal;
       if (src) action.digitalSourceType = src;
       const key = cfg.action + (src || '');
       if (!addedActions.has(key)) {
@@ -580,12 +548,29 @@ window.handleC2paWrite = async function() {
       }
     }
 
-    // DNT
+    // DNT with reason
     if (dnt) {
       const dntKey = 'c2pa.opt_out';
       if (!addedActions.has(dntKey)) {
-        await builder.addAction({ action: dntKey, actor: { name: authorInput.value || 'RedoSan' } });
+        await builder.addAction({
+          action: dntKey,
+          actor: { name: baseActorName },
+          reason: 'The creator has requested that this image not be used for AI training purposes.'
+        });
         addedActions.add(dntKey);
+      }
+    }
+
+    // Add ingredients from each card that has them checked
+    for (const { formType } of checkedTypes) {
+      const cfg = C2PA_FORM_CONFIG[formType];
+      if (!cfg || !cfg.ingredients) continue;
+      const card = document.querySelector('.c2pa-type-card[data-form-type="' + formType + '"]');
+      const ingInput = card?.querySelector('.c2pa-field-ingredient');
+      if (ingInput?.files?.length) {
+        for (const ingFile of ingInput.files) {
+          await addIngredientFromFile(builder, ingFile, 'parentOf');
+        }
       }
     }
 

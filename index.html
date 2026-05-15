@@ -419,50 +419,96 @@
         </p>
         <div class="form-group">
           <label data-i18n="c2pa.content_type_label">Content Options</label>
-          <div id="c2pa-write-types" class="c2pa-type-grid">
-            <label class="c2pa-type-card" data-form-type="create">
-              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
-              <span class="c2pa-type-name" data-i18n="c2pa.type_digital">Digitally Created</span>
-            </label>
-            <label class="c2pa-type-card" data-form-type="edit">
-              <input type="checkbox" value="edit" onchange="updateC2paWriteForm()">
-              <span class="c2pa-type-name" data-i18n="c2pa.type_edited">Edited / Modified</span>
-            </label>
-            <label class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">
-              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
-              <span class="c2pa-type-name" data-i18n="c2pa.type_ai">AI-Generated</span>
-            </label>
-            <label class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">
-              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
-              <span class="c2pa-type-name" data-i18n="c2pa.type_capture">Digitally Captured</span>
-            </label>
-            <label class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">
-              <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
-              <span class="c2pa-type-name" data-i18n="c2pa.type_composite">Composite</span>
-            </label>
+          <div id="c2pa-write-types">
+            <div class="c2pa-type-card" data-form-type="create">
+              <label class="c2pa-type-header">
+                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <span class="c2pa-type-name" data-i18n="c2pa.type_digital">Digitally Created</span>
+              </label>
+              <div class="c2pa-type-fields">
+                <input type="text" class="c2pa-field" data-field="title" data-type="create" placeholder="My Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="create" placeholder="Creator name">
+              </div>
+            </div>
+            <div class="c2pa-type-card" data-form-type="edit">
+              <label class="c2pa-type-header">
+                <input type="checkbox" value="edit" onchange="updateC2paWriteForm()">
+                <span class="c2pa-type-name" data-i18n="c2pa.type_edited">Edited / Modified</span>
+              </label>
+              <div class="c2pa-type-fields">
+                <input type="text" class="c2pa-field" data-field="title" data-type="edit" placeholder="Edited Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="edit" placeholder="Editor name">
+                <div class="c2pa-ingredient-wrap">
+                  <label style="font-size:0.75rem;color:var(--text-muted)">Source images (optional)</label>
+                  <input type="file" class="c2pa-field-ingredient" accept="image/*" multiple>
+                </div>
+              </div>
+            </div>
+            <div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">
+              <label class="c2pa-type-header">
+                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <span class="c2pa-type-name" data-i18n="c2pa.type_ai">AI-Generated</span>
+              </label>
+              <div class="c2pa-type-fields">
+                <input type="text" class="c2pa-field" data-field="title" data-type="ai" placeholder="AI Generated Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="ai" placeholder="Prompt Author name">
+              </div>
+            </div>
+            <div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">
+              <label class="c2pa-type-header">
+                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <span class="c2pa-type-name" data-i18n="c2pa.type_capture">Digitally Captured</span>
+              </label>
+              <div class="c2pa-type-fields">
+                <input type="text" class="c2pa-field" data-field="title" data-type="capture" placeholder="Photo title">
+                <input type="text" class="c2pa-field" data-field="author" data-type="capture" placeholder="Photographer name">
+              </div>
+            </div>
+            <div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">
+              <label class="c2pa-type-header">
+                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <span class="c2pa-type-name" data-i18n="c2pa.type_composite">Composite</span>
+              </label>
+              <div class="c2pa-type-fields">
+                <input type="text" class="c2pa-field" data-field="title" data-type="composite" placeholder="Composite Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="composite" placeholder="Creator name">
+                <div class="c2pa-ingredient-wrap">
+                  <label style="font-size:0.75rem;color:var(--text-muted)">Source images (optional)</label>
+                  <input type="file" class="c2pa-field-ingredient" accept="image/*" multiple>
+                </div>
+              </div>
+            </div>
+            <div class="c2pa-type-card dnt-card">
+              <label class="c2pa-type-header">
+                <input type="checkbox" id="c2pa-write-dnt" onchange="updateC2paWriteForm()">
+                <span class="c2pa-type-name" data-i18n="c2pa.type_dnt">Do Not Train AI</span>
+              </label>
+            </div>
           </div>
         </div>
-        <div id="c2pa-write-dnt-group" class="form-group" style="margin-top:-6px">
-          <label class="c2pa-type-card">
-            <input type="checkbox" id="c2pa-write-dnt" onchange="updateC2paWriteForm()">
-            <span class="c2pa-type-name" data-i18n="c2pa.type_dnt">Do Not Train Ai</span>
-          </label>
+
+        <div class="form-group" id="c2pa-write-links-group">
+          <label>Social Links (optional)</label>
+          <div class="c2pa-links-grid">
+            <input type="url" class="c2pa-link" data-platform="instagram" placeholder="Instagram URL (e.g. https://instagram.com/username)">
+            <input type="url" class="c2pa-link" data-platform="twitter" placeholder="X / Twitter URL">
+            <input type="url" class="c2pa-link" data-platform="facebook" placeholder="Facebook URL">
+            <input type="url" class="c2pa-link" data-platform="tiktok" placeholder="TikTok URL">
+            <input type="url" class="c2pa-link" data-platform="youtube" placeholder="YouTube URL">
+            <input type="url" class="c2pa-link" data-platform="website" placeholder="Website URL">
+          </div>
+          <label style="margin-top:10px;display:block">Music Streaming (optional)</label>
+          <div class="c2pa-links-grid">
+            <input type="url" class="c2pa-link" data-platform="spotify" placeholder="Spotify URL">
+            <input type="url" class="c2pa-link" data-platform="applemusic" placeholder="Apple Music URL">
+            <input type="url" class="c2pa-link" data-platform="soundcloud" placeholder="SoundCloud URL">
+            <input type="url" class="c2pa-link" data-platform="bandcamp" placeholder="Bandcamp URL">
+          </div>
         </div>
-        <div id="c2pa-write-title-group" class="form-group">
-          <label id="c2pa-write-title-label" data-i18n="c2pa.title_label">Title (optional)</label>
-          <input type="text" id="c2pa-write-title" placeholder="My Image">
-        </div>
-        <div id="c2pa-write-author-group" class="form-group">
-          <label id="c2pa-write-author-label" data-i18n="c2pa.author_label">Creator (optional)</label>
-          <input type="text" id="c2pa-write-author" placeholder="Your name">
-        </div>
-        <div class="form-group">
+
+        <div class="form-group" id="c2pa-write-image-group">
           <label data-i18n="c2pa.image_label">Image to sign</label>
           <input type="file" id="c2pa-write-file" accept="image/png,image/jpeg,image/avif,image/webp">
-        </div>
-        <div id="c2pa-write-ingredient-group" class="form-group">
-          <label id="c2pa-write-ingredient-label" data-i18n="c2pa.ingredient_label">Source ingredients (optional)</label>
-          <input type="file" id="c2pa-write-ingredient" accept="image/*" multiple>
         </div>
         <button class="btn" onclick="handleC2paWrite()" id="c2pa-write-btn" data-i18n="c2pa.write_submit">Sign with C2PA</button>
         <div class="spinner" id="c2pa-write-spinner"></div>
