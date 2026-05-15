@@ -556,9 +556,79 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 @media (max-width: 480px) {
   .mode-cards { flex-direction: column; }
   .simple-ai-options { flex-direction: column; }
-  .simple-top { padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
-  .simple-progress { font-size: 0.7rem; padding: 4px 12px; }
-  .simple-top-right .lang-btn { padding: 4px 8px; font-size: 0.75rem; }
+  .simple-top { padding: 6px 10px; flex-wrap: wrap; gap: 6px; }
+  .simple-progress { font-size: 0.65rem; padding: 4px 10px; overflow-x: auto; gap: 2px; }
+  .simple-top-right .lang-btn { padding: 4px 6px; font-size: 0.7rem; }
   .simple-top-left .theme-btn { width: 28px; height: 28px; font-size: 0.85rem; }
-  .simple-body { padding: 24px 16px; }
+  .simple-body { padding: 20px 12px; }
+  /* mode selection overlay */
+  .mode-select-box { padding: 24px 16px; }
+  .mode-select-box h1 { font-size: 1.4rem; }
+  .mode-subtitle { font-size: 0.85rem; }
+  .mode-card { padding: 16px; }
+  .mode-card-icon { font-size: 2rem; }
+  .mode-card h3 { font-size: 0.95rem; }
+  .mode-card p { font-size: 0.78rem; }
+  .mode-select-bar { padding: 6px 10px; }
+  .mode-remember { font-size: 0.8rem; }
+  /* simplified cards */
+  .simple-card { padding: 20px 14px; }
+  .simple-card h2 { font-size: 1.15rem; }
+  .simple-card > p { font-size: 0.82rem; }
+  /* upload zone */
+  .simple-upload-zone { padding: 32px 16px; min-height: 120px; }
+  .simple-upload-zone .dz-icon { font-size: 2.2rem; }
+  .simple-upload-zone .dz-text { font-size: 0.85rem; }
+  /* file info */
+  .simple-file-info { padding: 10px; gap: 10px; }
+  .simple-file-icon { font-size: 1.6rem; }
+  .simple-file-info strong { font-size: 0.85rem; }
+  .simple-file-info .badge { font-size: 0.7rem; }
+  /* ai cards */
+  .simple-ai-card { padding: 14px; }
+  .simple-ai-card .ai-icon { font-size: 1.8rem; }
+  .simple-ai-card h3 { font-size: 0.9rem; }
+  .simple-ai-card p { font-size: 0.78rem; }
+  /* progress steps */
+  .sp-step { padding: 4px 5px; font-size: 0.6rem; white-space: nowrap; }
+  .sp-dot { width: 6px; height: 6px; }
+  .sp-line { min-width: 14px; }
+  /* navigation */
+  .simple-nav { padding: 8px 12px 12px; gap: 8px; }
+  .simple-step-counter { font-size: 0.78rem; }
+  .simple-nav .btn { min-height: 40px; font-size: 0.82rem; }
+  /* done section */
+  .simple-done h2 { font-size: 1.3rem; }
+  .simple-done-section { padding: 12px; }
+  .simple-done-section h3 { font-size: 0.9rem; }
+  .simple-done-section .btn { width: 100%; margin-top: 6px; }
+  .simple-done-actions { flex-direction: column; gap: 8px; }
+  .simple-done-actions .btn { width: 100%; }
+  .simple-done-fp table { font-size: 0.7rem; }
+  .simple-done-fp td { padding: 2px; }
+  .simple-done-preview img { max-height: 150px; }
+  /* watermark download inline area */
+  .simple-wm-dl .btn { width: auto; display: inline-block; }
+  /* C2PA links */
+  .c2pa-link { font-size: 0.82rem; padding: 8px 10px; }
+  /* language menu in simplified */
+  .simple-top-right .lang-menu { right: 0; left: auto; }
+  /* simplified mode switch button */
+  .simple-mode-switch { font-size: 0.75rem; padding: 4px 8px; }
+}
+
+@media (max-width: 360px) {
+  .mode-select-box { padding: 16px 10px; }
+  .mode-select-box h1 { font-size: 1.15rem; }
+  .mode-card { padding: 12px; }
+  .simple-card { padding: 16px 10px; }
+  .simple-card h2 { font-size: 1rem; }
+  .simple-upload-zone { padding: 24px 12px; min-height: 100px; }
+  .simple-body { padding: 16px 8px; }
+  .simple-done h2 { font-size: 1.1rem; }
+  .simple-top { padding: 4px 8px; gap: 4px; }
+  .simple-progress { font-size: 0.6rem; padding: 3px 8px; gap: 1px; }
+  .sp-step { padding: 3px 3px; font-size: 0.55rem; }
+  .sp-line { min-width: 10px; }
+  .simple-done-section { padding: 10px; }
 }
