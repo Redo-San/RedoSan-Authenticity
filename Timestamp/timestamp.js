@@ -65,15 +65,17 @@ async function upgradeOts(bytes) {
 function getOtsUpgradeCommand(fileName) {
   var escaped = fileName.replace(/'/g, "'\\''");
   return [
-    '# Windows PowerShell:',
-    'Invoke-WebRequest -Uri https://a.pool.opentimestamps.org/digest -Method POST -ContentType "application/x-www-form-urlencoded" -InFile "' + fileName.replace(/"/g, '`"') + '.ots" -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"',
+    '# Option 1 — OpenTimestamps website (easiest):',
+    '#   1. Go to https://opentimestamps.org',
+    '#   2. Drag & drop "' + fileName + '.ots" onto the page',
+    '#   3. Click "Stamp" to get complete .ots with blockchain proof',
     '',
-    '# OR Linux/macOS:',
-    'curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" --data-binary @"' + fileName.replace(/"/g, '\\"') + '.ots" -o "' + fileName.replace(/"/g, '\\"') + '.ots.upgraded" https://a.pool.opentimestamps.org/digest',
-    '',
-    '# OR use the official CLI (does not need /digest):',
+    '# Option 2 — Official CLI:',
     '#   pip install opentimestamps-client',
-    '#   ots upgrade "' + fileName + '.ots"'
+    '#   ots upgrade "' + fileName + '.ots"',
+    '',
+    '# Option 3 — PowerShell (submit raw hash, 32 bytes only):',
+    '#   $hash = (Get-Item "' + fileName.replace(/"/g, '`"') + '.ots").OpenRead();' + " $hash.Position = $hash.Length - 32;" + ' $bytes = [byte[]]::new(32);' + ' $hash.Read($bytes, 0, 32) | Out-Null;' + ' $hash.Close();' + ' Invoke-WebRequest -Uri https://a.pool.opentimestamps.org/digest -Method POST -ContentType "application/x-www-form-urlencoded" -Body $bytes -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"'
   ].join('\n');
 }
 
@@ -94,16 +96,23 @@ async function handleOtsCreate() {
   try {
     var buf = await file.arrayBuffer();
     var hashBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
-    var otsBytes = otsBuildDetached(buf, hashBytes);
     var hex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 
+    // Try aggregator: send just the 32-byte hash (avoids 64-byte size limit)
+    var otsBytes;
     var complete = false;
     try {
-      var upgraded = await upgradeOts(otsBytes);
-      otsBytes = upgraded;
+      var resp = await upgradeOts(hashBytes);
+      // Aggregator returns serialized timestamp (without magic header).
+      // Response format: version(1) | SHA-256_op(1) | hash(32) | calendar_ops[...]
+      // Prepend magic to make valid .ots file:
+      otsBytes = new Uint8Array(OTS_HEADER.length + resp.length);
+      otsBytes.set(new Uint8Array(OTS_HEADER));
+      otsBytes.set(resp, OTS_HEADER.length);
       complete = true;
     } catch (e) {
-      // Aggregator unreachable — use incomplete timestamp below
+      // Aggregator unreachable — build incomplete .ots as fallback
+      otsBytes = otsBuildDetached(buf, hashBytes);
     }
 
     var blob = new Blob([otsBytes], { type: 'application/octet-stream' });
