@@ -607,12 +607,11 @@ function runFingerprintStep() {
   if (promise && promise.then) {
     promise.then(function() {
       var resultDiv = document.getElementById('sfp-result');
-      if (resultDiv) {
-        var text = escapeHtml((document.getElementById('fp-output') || {}).textContent || '');
-        resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
+      var fpOutput = document.getElementById('fp-output');
+      if (resultDiv && fpOutput && fpOutput.innerHTML) {
+        resultDiv.innerHTML = '<div class="simple-fp-result" style="text-align:left;max-height:400px;overflow-y:auto;padding:12px;background:var(--bg);border-radius:8px;margin-top:12px">' + fpOutput.innerHTML + '</div>';
       }
       simpleResults.fingerprint = true;
-      var fpOutput = document.getElementById('fp-output');
       if (fpOutput) {
         simpleResults.fpHtml = fpOutput.innerHTML;
         simpleResults.fpResult = window._fpResult || null;
@@ -655,8 +654,7 @@ function renderDone(body) {
   }
 
   if (results.fingerprint) {
-    var fpHtml = '<div class="simple-done-section"><h3>' + __('simple.fp_label') + '</h3>';
-    if (results.fpHtml) fpHtml += '<div class="simple-done-fp">' + results.fpHtml + '</div>';
+    var fpHtml = '<div class="simple-done-section"><h3>✅ ' + __('simple.fp_label') + '</h3>';
     fpHtml += '<div style="margin-top:12px">';
     fpHtml += '<button class="btn" onclick="setupFpDownload();showDownloadModal()">' + __('simple.fp_dl_btn') + '</button>';
     fpHtml += '</div></div>';

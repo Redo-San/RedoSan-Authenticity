@@ -678,6 +678,35 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   .simple-done-section { padding: 10px; }
 }
 
+/* ── Simplified fingerprint result table ── */
+.simple-fp-result table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.simple-fp-result td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.simple-fp-result td:first-child {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 90px;
+}
+.simple-fp-result td code {
+  word-break: break-all;
+  font-size: 0.65rem;
+}
+.simple-fp-result > div {
+  font-weight: 700;
+  font-size: 0.82rem;
+  margin-top: 12px;
+  padding: 6px 0 2px;
+  border-top: 1px solid var(--border);
+}
+
 /* ── Floating Music Player ── */
 .music-btn {
   position: fixed;
