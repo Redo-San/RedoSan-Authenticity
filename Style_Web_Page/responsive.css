@@ -17,9 +17,9 @@ body {
   padding: 32px 16px;
 }
 
-/* ── Nav: hide links below 768px ── */
+/* ── Nav: hide links below 768px (keep lang dropdown) ── */
 @media (max-width: 767px) {
-  .nav-links { display: none !important; }
+  .nav-links a[data-page] { display: none; }
 }
 
 @media (min-width: 768px) {
