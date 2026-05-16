@@ -301,22 +301,22 @@ async function handleFingerprint() {
   const dl = document.getElementById('fp-download');
 
   const file = getFile('fp-file');
-  if (!file) { setText('fp-output', 'Please select a file'); resultDiv.style.display = 'block'; return; }
+  if (!file) { setText('fp-output', __('shared.select_file') || 'Please select a file'); resultDiv.style.display = 'block'; return; }
 
   btn.disabled = true; spinner('fp-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
-  setText('fp-output', 'Processing...');
+  setText('fp-output', __('shared.processing', 'Processing...'));
 
   try {
     const result = await fingerprintFile(file);
     window._fpResult = result;
 
     let html = '<table class="meta-table">';
-    html += '<tr><td>File</td><td>' + escHtml(result.file_info.file_name) + '</td></tr>';
-    html += '<tr><td>Size</td><td>' + (result.file_info.file_size_bytes / 1024).toFixed(1) + ' KB</td></tr>';
+    html += '<tr><td>' + __('fp.label_file', 'File') + '</td><td>' + escHtml(result.file_info.file_name) + '</td></tr>';
+    html += '<tr><td>' + __('fp.label_size', 'Size') + '</td><td>' + (result.file_info.file_size_bytes / 1024).toFixed(1) + ' KB</td></tr>';
     if (result.file_info.width) {
-      html += '<tr><td>Dimensions</td><td>' + result.file_info.width + ' x ' + result.file_info.height + '</td></tr>';
-      html += '<tr><td>Format</td><td>' + escHtml(result.file_info.format) + '</td></tr>';
+      html += '<tr><td>' + __('fp.label_dimensions', 'Dimensions') + '</td><td>' + result.file_info.width + ' x ' + result.file_info.height + '</td></tr>';
+      html += '<tr><td>' + __('fp.label_format', 'Format') + '</td><td>' + escHtml(result.file_info.format) + '</td></tr>';
     }
     html += '</table>';
 
@@ -326,7 +326,7 @@ async function handleFingerprint() {
       { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
       { label: 'MD', keys: ['MD2','MD4','MD5'] },
       { label: 'BLAKE', keys: ['BLAKE2b','BLAKE2s','BLAKE3'] },
-      { label: 'Other', keys: ['RIPEMD-160','Whirlpool'] },
+      { label: __('fp.other_label', 'Other'), keys: ['RIPEMD-160','Whirlpool'] },
     ];
     for (const family of familyOrder) {
       const hasAny = family.keys.some(k => result.hashes[k]);
@@ -341,7 +341,7 @@ async function handleFingerprint() {
     }
 
     if (result.perceptual_hashes && Object.keys(result.perceptual_hashes).length > 0) {
-      html += '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">Perceptual (image hashes)</div>';
+      html += '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">' + __('fp.perceptual_label', 'Perceptual (image hashes)') + '</div>';
       html += '<table class="meta-table">';
       for (const [k, v] of Object.entries(result.perceptual_hashes)) {
         html += '<tr><td style="width:100px">' + escHtml(k) + '</td><td><code style="font-size:0.65rem">' + escHtml(v) + '</code></td></tr>';
@@ -352,9 +352,9 @@ async function handleFingerprint() {
     output.innerHTML = html;
 
     window._currentDownloadHandler = downloadFingerprint;
-    document.getElementById('dl-modal-title').textContent = 'Download Fingerprint';
-    dl.innerHTML = '<button onclick="showDownloadModal()" class="btn">Download Results</button>';
-  } catch (e) { setText('fp-output', 'Error: ' + e.message); }
+    document.getElementById('dl-modal-title').textContent = __('dl.title') || 'Download Fingerprint';
+    dl.innerHTML = '<button onclick="showDownloadModal()" class="btn">' + __('fp.results_btn', 'Download Results') + '</button>';
+  } catch (e) { setText('fp-output', __('shared.error_prefix', 'Error: ') + e.message); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('fp-spinner', false);
 }

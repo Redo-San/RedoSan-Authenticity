@@ -163,12 +163,12 @@ async function addIngredientFromFile(builder, file, rel) {
 
 function getActionLabel(action) {
   var labels = {
-    'c2pa.created': '📄 Created',
-    'c2pa.edited': '✏️ Edited',
-    'c2pa.captured': '📸 Captured',
-    'c2pa.opened': '📂 Opened',
-    'c2pa.converted': '🔄 Converted',
-    'c2pa.opt_out': '🚫 Do Not Train'
+    'c2pa.created': __('c2pa.action_created', '📄 Created'),
+    'c2pa.edited': __('c2pa.action_edited', '✏️ Edited'),
+    'c2pa.captured': __('c2pa.action_captured', '📸 Captured'),
+    'c2pa.opened': __('c2pa.action_opened', '📂 Opened'),
+    'c2pa.converted': __('c2pa.action_converted', '🔄 Converted'),
+    'c2pa.opt_out': __('c2pa.action_opt_out', '🚫 Do Not Train')
   };
   return labels[action] || action;
 }
@@ -176,7 +176,7 @@ function getActionLabel(action) {
 function getActionsHtml(manifest) {
   const assertions = manifest.assertions || [];
   const actions = assertions.filter(a => a.label === 'c2pa.actions' || a.label === 'c2pa.actions.v2');
-  if (!actions.length) return '<p class="c2pa-empty">No actions recorded</p>';
+  if (!actions.length) return '<p class="c2pa-empty">' + __('c2pa.no_actions', 'No actions recorded') + '</p>';
   let html = '';
   for (const a of actions) {
     const data = a.data;
@@ -205,7 +205,7 @@ function getActionsHtml(manifest) {
 
 function getAssertionsHtml(manifest) {
   const assertions = (manifest.assertions || []).filter(a => a.label !== 'c2pa.actions' && a.label !== 'c2pa.thumbnail');
-  if (!assertions.length) return '<p class="c2pa-empty">No additional assertions</p>';
+  if (!assertions.length) return '<p class="c2pa-empty">' + __('c2pa.no_assertions', 'No additional assertions') + '</p>';
   return assertions.map(a => {
     const dataStr = typeof a.data === 'object' ? JSON.stringify(a.data, null, 2) : String(a.data);
     return `
@@ -220,10 +220,10 @@ function getAssertionsHtml(manifest) {
 
 function getIngredientsHtml(manifest) {
   const ingredients = manifest.ingredients || [];
-  if (!ingredients.length) return '<p class="c2pa-empty">No ingredients</p>';
+  if (!ingredients.length) return '<p class="c2pa-empty">' + __('c2pa.no_ingredients', 'No ingredients') + '</p>';
   return ingredients.map(ing => `
     <div class="c2pa-ingredient-item">
-      <strong>${escHtml(ing.title || ing.instance_id || 'Unnamed')}</strong>
+      <strong>${escHtml(ing.title || ing.instance_id || __('c2pa.unnamed', 'Unnamed'))}</strong>
       ${ing.format ? `<span class="badge badge-muted">${escHtml(ing.format)}</span>` : ''}
       ${ing.relationship ? `<span class="badge badge-muted">${escHtml(ing.relationship)}</span>` : ''}
       ${ing.document_id ? `<br><span class="c2pa-meta">Document ID: ${escHtml(ing.document_id)}</span>` : ''}
@@ -234,7 +234,7 @@ function getIngredientsHtml(manifest) {
 
 function getSignatureInfoHtml(manifest) {
   const sig = manifest.signature_info;
-  if (!sig) return '<p class="c2pa-empty">No signature info</p>';
+  if (!sig) return '<p class="c2pa-empty">' + __('c2pa.no_signature', 'No signature info') + '</p>';
   return `
     <div class="c2pa-sig-info">
       ${sig.issuer ? `<p><strong>Issuer:</strong> ${escHtml(sig.issuer)}</p>` : ''}
@@ -249,7 +249,7 @@ function getValidationHtml(manifestStore) {
   const status = manifestStore.validation_status || [];
   const results = manifestStore.validation_results;
 
-  const stateLabel = state === 'ok' ? 'Valid' : state === 'Trusted' ? 'Trusted' : state || 'Unknown';
+  const stateLabel = state === 'ok' ? __('c2pa.valid', 'Valid') : state === 'Trusted' ? __('c2pa.trusted', 'Trusted') : state || __('c2pa.unknown', 'Unknown');
   const badgeClass = state === 'ok' || state === 'Trusted' ? 'badge-success' :
     state === 'warning' ? 'badge-warning' : 'badge-muted';
 
@@ -288,7 +288,7 @@ function getValidationHtml(manifestStore) {
 
 window.handleC2paRead = async function() {
   const file = document.getElementById('c2pa-read-file').files[0];
-  if (!file) { alert('Please select a file'); return; }
+  if (!file) { alert(__('shared.select_file', 'Please select a file')); return; }
 
   const output = document.getElementById('c2pa-read-output');
   const spinner = document.getElementById('c2pa-read-spinner');
@@ -324,14 +324,14 @@ window.handleC2paRead = async function() {
     }
     
     if (!reader) {
-      output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file does not contain any C2PA provenance metadata.</p></div>';
+      output.innerHTML = '<div class="c2pa-no-data"><strong>' + __('c2pa.no_data_found', 'No C2PA data found') + '</strong><p>' + __('c2pa.no_data_desc', 'This file does not contain any C2PA provenance metadata.') + '</p></div>';
       spinner.style.display = 'none';
       resultDiv.style.display = 'block';
       return;
     }
 
     if (!manifestStore || !manifestStore.manifests || !Object.keys(manifestStore.manifests).length) {
-      output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA manifests</strong><p>The file has C2PA data but no readable manifests.</p></div>';
+      output.innerHTML = '<div class="c2pa-no-data"><strong>' + __('c2pa.no_manifests_title', 'No C2PA manifests') + '</strong><p>' + __('c2pa.no_manifests_desc', 'The file has C2PA data but no readable manifests.') + '</p></div>';
       spinner.style.display = 'none';
       resultDiv.style.display = 'block';
       return;
@@ -386,11 +386,11 @@ window.handleC2paRead = async function() {
     // Title & format
     html += '<div class="c2pa-section"><h3>Details</h3>';
     html += `<table class="c2pa-details-table">
-      <tr><td>Title</td><td>${escHtml(manifest.title || '—')}</td></tr>
-      <tr><td>Format</td><td>${escHtml(manifest.format || '—')}</td></tr>
-      <tr><td>Claim Generator</td><td>${escHtml(manifest.claim_generator || '—')}</td></tr>
-      <tr><td>Instance ID</td><td><code>${escHtml(manifest.instance_id || '—')}</code></td></tr>
-      <tr><td>Claim Version</td><td>${manifest.claim_version != null ? manifest.claim_version : '—'}</td></tr>
+      <tr><td>${__('c2pa.title_label', 'Title')}</td><td>${escHtml(manifest.title || '—')}</td></tr>
+      <tr><td>${__('c2pa.format_label', 'Format')}</td><td>${escHtml(manifest.format || '—')}</td></tr>
+      <tr><td>${__('c2pa.claim_generator', 'Claim Generator')}</td><td>${escHtml(manifest.claim_generator || '—')}</td></tr>
+      <tr><td>${__('c2pa.instance_id', 'Instance ID')}</td><td><code>${escHtml(manifest.instance_id || '—')}</code></td></tr>
+      <tr><td>${__('c2pa.claim_version', 'Claim Version')}</td><td>${manifest.claim_version != null ? manifest.claim_version : '—'}</td></tr>
     </table>`;
     html += '</div>';
 
@@ -424,7 +424,7 @@ window.handleC2paRead = async function() {
     if (manifestCount > 1) {
       html += `<div class="c2pa-section"><h3>All Manifests (${manifestCount})</h3><ul class="c2pa-manifest-list">`;
       for (const [label, m] of Object.entries(manifestStore.manifests)) {
-        html += `<li>${label === activeLabel ? '<strong>' : ''}${escHtml(label)}: ${escHtml(m.title || 'Untitled')} ${m.claim_generator ? `— ${escHtml(m.claim_generator)}` : ''}${label === activeLabel ? ' (active)</strong>' : ''}</li>`;
+        html += `<li>${label === activeLabel ? '<strong>' : ''}${escHtml(label)}: ${escHtml(m.title || __('c2pa.untitled', 'Untitled'))} ${m.claim_generator ? `— ${escHtml(m.claim_generator)}` : ''}${label === activeLabel ? ' (active)</strong>' : ''}</li>`;
       }
       html += '</ul></div>';
     }
@@ -446,7 +446,7 @@ window.handleC2paRead = async function() {
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
   } catch (err) {
-    output.innerHTML = `<div class="c2pa-error"><strong>Error:</strong> ${escHtml(err.message)}</div>`;
+    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(err.message)}</div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
   }
@@ -496,12 +496,12 @@ window.handleC2paWrite = async function() {
   const resultDiv = document.getElementById('c2pa-write-result');
 
   const file = fileInput.files[0];
-  if (!file) { alert('Please select an image'); return; }
+  if (!file) { alert(__('c2pa.select_image', 'Please select an image')); return; }
 
   const checkedTypes = getCheckedFormTypes();
   const dnt = document.getElementById('c2pa-write-dnt').checked;
   if (checkedTypes.length === 0 && !dnt) {
-    alert('Please select at least one content type');
+    alert(__('c2pa.select_content_type', 'Please select at least one content type'));
     return;
   }
 
@@ -586,9 +586,9 @@ window.handleC2paWrite = async function() {
     // codeql[js/xss-through-dom] — url and fileName are safe (escHtml used)
     output.innerHTML = `
       <div class="c2pa-success">
-        <strong>Success!</strong>
-        <p>Image signed with C2PA provenance metadata.</p>
-        <a href="${url}" download="${escHtml(fileName)}" class="btn">Download Signed Image</a>
+        <strong>${__('c2pa.success_title', 'Success!')}</strong>
+        <p>${__('c2pa.success_message', 'Image signed with C2PA provenance metadata.')}</p>
+        <a href="${url}" download="${escHtml(fileName)}" class="btn">${__('c2pa.download_signed', 'Download Signed Image')}</a>
       </div>
     `;
     spinner.style.display = 'none';
@@ -596,7 +596,7 @@ window.handleC2paWrite = async function() {
   } catch (err) {
     console.error('C2PA write error:', err);
     // codeql[js/xss-through-dom] — err.message is escaped
-    output.innerHTML = `<div class="c2pa-error"><strong>Error:</strong> ${escHtml(err.message)}<br><small>Check console for details.</small></div>`;
+    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(err.message)}<br><small>${__('c2pa.check_console', 'Check console for details.')}</small></div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
   }
@@ -606,7 +606,7 @@ window.handleC2paWrite = async function() {
 
 window.showC2paDownloadModal = function() {
   window._currentDownloadHandler = window.downloadC2pa;
-  document.getElementById('dl-modal-title').textContent = 'Download C2PA Report';
+  document.getElementById('dl-modal-title').textContent = __('c2pa.download_report', 'Download C2PA Report');
   showDownloadModal();
 };
 
@@ -925,7 +925,7 @@ window.handleC2paVerify = async function() {
   const resultDiv = document.getElementById('c2pa-verify-result');
 
   const file = fileInput.files[0];
-  if (!file) { alert('Please select a file'); return; }
+  if (!file) { alert(__('shared.select_file', 'Please select a file')); return; }
 
   output.innerHTML = '';
   spinner.style.display = 'block';
@@ -936,7 +936,7 @@ window.handleC2paVerify = async function() {
     const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: false } }), 15000, 'Reader timed out — file may be too large');
 
     if (!reader) {
-      output.innerHTML = '<div class="c2pa-no-data"><strong>No C2PA data found</strong><p>This file has no C2PA provenance metadata.</p></div>';
+      output.innerHTML = '<div class="c2pa-no-data"><strong>' + __('c2pa.no_data_found', 'No C2PA data found') + '</strong><p>' + __('c2pa.no_data_desc_alt', 'This file has no C2PA provenance metadata.') + '</p></div>';
       spinner.style.display = 'none';
       resultDiv.style.display = 'block';
       return;
@@ -946,7 +946,7 @@ window.handleC2paVerify = async function() {
     await reader.free();
 
     if (!manifestStore || !manifestStore.manifests) {
-      output.innerHTML = '<div class="c2pa-no-data"><strong>No manifests found</strong></div>';
+      output.innerHTML = '<div class="c2pa-no-data"><strong>' + __('c2pa.no_manifests', 'No manifests found') + '</strong></div>';
       spinner.style.display = 'none';
       resultDiv.style.display = 'block';
       return;
@@ -958,7 +958,7 @@ window.handleC2paVerify = async function() {
     const activeLabel = manifestStore.active_manifest || Object.keys(manifestStore.manifests)[0];
     const manifest = manifestStore.manifests[activeLabel];
 
-    const stateLabel = state === 'ok' ? 'Verified' : state === 'Trusted' ? 'Trusted' : state || 'Unknown';
+    const stateLabel = state === 'ok' ? __('c2pa.verified', 'Verified') : state === 'Trusted' ? __('c2pa.trusted', 'Trusted') : state || __('c2pa.unknown', 'Unknown');
     const isGood = state === 'ok' || state === 'Trusted';
 
     let html = `<div class="c2pa-verify-result ${isGood ? 'c2pa-verified' : 'c2pa-unverified'}">`;
@@ -997,8 +997,8 @@ window.handleC2paVerify = async function() {
         '</ul>';
     }
 
-    html += `<p>Claim: ${escHtml(manifest.title || 'Untitled')}</p>`;
-    html += `<p>Generator: ${escHtml(manifest.claim_generator || 'Unknown')}</p>`;
+    html += `<p>Claim: ${escHtml(manifest.title || __('c2pa.untitled', 'Untitled'))}</p>`;
+    html += `<p>Generator: ${escHtml(manifest.claim_generator || __('c2pa.unknown_gen', 'Unknown'))}</p>`;
     if (manifest.claim_generator_info && manifest.claim_generator_info.length) {
       const genInfo = manifest.claim_generator_info[0];
       html += `<p>Software: ${escHtml(genInfo.name || '')} ${genInfo.version || ''}</p>`;
@@ -1006,14 +1006,14 @@ window.handleC2paVerify = async function() {
     if (manifest.signature_info && manifest.signature_info.issuer) {
       html += `<p>Signed by: ${escHtml(manifest.signature_info.issuer)}</p>`;
     }
-    html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">View Full Details</a></p>';
+    html += '<p><a href="#" onclick="showPage(\'c2pa\');switchC2paTab(\'read\');return false;">' + __('c2pa.view_details', 'View Full Details') + '</a></p>';
 
     html += '</div>';
     output.innerHTML = html;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
   } catch (err) {
-    output.innerHTML = `<div class="c2pa-error"><strong>Error:</strong> ${escHtml(err.message)}</div>`;
+    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(err.message)}</div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
   }

@@ -130,33 +130,33 @@ async function handleReadMetadata() {
   const dl = document.getElementById('md-download');
 
   const file = getFile('md-file');
-  if (!file) { setText('md-output', 'Please select an image'); resultDiv.style.display = 'block'; return; }
+  if (!file) { setText('md-output', __('md.select_image', 'Please select an image')); resultDiv.style.display = 'block'; return; }
 
   btn.disabled = true; spinner('md-spinner', true);
   resultDiv.style.display = 'none'; dl.innerHTML = '';
-  setText('md-output', 'Processing...');
+  setText('md-output', __('shared.processing', 'Processing...'));
 
   try {
     const result = await readMetadata(file);
     const pretty = JSON.stringify(result, null, 2);
 
     let html = '<table class="meta-table">';
-    html += '<tr><td>File</td><td>' + escHtml(result.file) + '</td></tr>';
-    html += '<tr><td>Size</td><td>' + (result.size / 1024).toFixed(1) + ' KB</td></tr>';
+    html += '<tr><td>' + __('md.label_file', 'File') + '</td><td>' + escHtml(result.file) + '</td></tr>';
+    html += '<tr><td>' + __('md.label_size', 'Size') + '</td><td>' + (result.size / 1024).toFixed(1) + ' KB</td></tr>';
     html += '<tr><td>SHA-256</td><td><code>' + result.sha256 + '</code></td></tr>';
     if (result.image) {
-      html += '<tr><td>Dimensions</td><td>' + result.image.width + ' x ' + result.image.height + '</td></tr>';
-      html += '<tr><td>Mode</td><td>' + result.image.mode + '</td></tr>';
-      html += '<tr><td>Format</td><td>' + escHtml(result.image.format) + '</td></tr>';
+      html += '<tr><td>' + __('md.label_dimensions', 'Dimensions') + '</td><td>' + result.image.width + ' x ' + result.image.height + '</td></tr>';
+      html += '<tr><td>' + __('md.label_mode', 'Mode') + '</td><td>' + result.image.mode + '</td></tr>';
+      html += '<tr><td>' + __('md.label_format', 'Format') + '</td><td>' + escHtml(result.image.format) + '</td></tr>';
     }
     if (result.exif) {
-      html += '<tr><td colspan="2" style="font-weight:700;padding-top:12px">EXIF</td></tr>';
+      html += '<tr><td colspan="2" style="font-weight:700;padding-top:12px">' + __('md.label_exif', 'EXIF') + '</td></tr>';
       for (const [k, v] of Object.entries(result.exif)) {
         if (v && v !== '0') html += '<tr><td style="padding-left:12px">' + escHtml(k) + '</td><td>' + escHtml(v) + '</td></tr>';
       }
     }
     if (result.error) {
-      html += '<tr><td style="color:var(--danger)">Error</td><td>' + escHtml(result.error) + '</td></tr>';
+      html += '<tr><td style="color:var(--danger)">' + __('md.label_error', 'Error') + '</td><td>' + escHtml(result.error) + '</td></tr>';
     }
     html += '</table>';
     // codeql[js/xss-through-dom] — all values are HTML-escaped via escHtml()
@@ -165,8 +165,8 @@ async function handleReadMetadata() {
     const blob = new Blob([pretty], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     // codeql[js/xss-through-dom] — url is a safe blob URL, fileName is escaped
-    dl.innerHTML = '<a href="' + url + '" download="' + escHtml(file.name) + '.metadata.json" class="btn">Download JSON</a>';
-  } catch (e) { setText('md-output', 'Error: ' + e.message); }
+    dl.innerHTML = '<a href="' + url + '" download="' + escHtml(file.name) + '.metadata.json" class="btn">' + __('md.download_json', 'Download JSON') + '</a>';
+  } catch (e) { setText('md-output', __('shared.error_prefix', 'Error: ') + e.message); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('md-spinner', false);
 }

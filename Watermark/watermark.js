@@ -290,8 +290,8 @@ async function updateCapacity() {
       bits = 512;
     }
     const capacityBytes = Math.floor(bits/8);
-    const suffix = type === 9 ? ' (chrominance redundant)' : type === 4 ? ' (redundant x3)' : '';
-    const capText = `Capacity: ~${capacityBytes.toLocaleString()} byte${capacityBytes!==1?'s':''}${suffix} (${w}\u00d7${h} image)`;
+    const suffix = type === 9 ? __('wm.chrominance_suffix', ' (chrominance redundant)') : type === 4 ? __('wm.redundant_suffix', ' (redundant x3)') : '';
+    const capText = __('wm.capacity_label', 'Capacity: ~{bytes} byte{s}{suffix} ({w}×{h} image)').replace('{bytes}', capacityBytes.toLocaleString()).replace('{s}', capacityBytes !== 1 ? 's' : '').replace('{suffix}', suffix).replace('{w}', w).replace('{h}', h);
     capEl.textContent = capText;
 
     const secretFile = getFile('wm-secret');
@@ -301,15 +301,15 @@ async function updateCapacity() {
       secretStatusEl.textContent = '';
     } else if (!secretFile) {
       const maxSecretBytes = capacityBytes;
-      secretStatusEl.innerHTML = `<span style="color:var(--text-muted)">Max secret size: ~${maxSecretBytes.toLocaleString()} bytes</span>`;
+      secretStatusEl.innerHTML = `<span style="color:var(--text-muted)">${__('wm.secret_status_max', 'Max secret size: ~{bytes} bytes').replace('{bytes}', maxSecretBytes.toLocaleString())}</span>`;
     } else {
       const secretSize = secretFile.size;
       const effectiveCapacity = capacityBytes;
       if (secretSize <= effectiveCapacity) {
-        secretStatusEl.innerHTML = `<span style="color:#4caf50">\u2713 Secret file: ${secretSize.toLocaleString()} bytes — fits within capacity</span>`;
+        secretStatusEl.innerHTML = `<span style="color:#4caf50">${__('wm.secret_status_ok', '✓ Secret file: {size} bytes — fits within capacity').replace('{size}', secretSize.toLocaleString())}</span>`;
       } else {
         const excess = secretSize - effectiveCapacity;
-        secretStatusEl.innerHTML = `<span style="color:#f44336">\u2717 Secret file: ${secretSize.toLocaleString()} bytes — exceeds capacity by ${excess.toLocaleString()} bytes</span>`;
+        secretStatusEl.innerHTML = `<span style="color:#f44336">${__('wm.secret_status_exceed', '✗ Secret file: {size} bytes — exceeds capacity by {excess} bytes').replace('{size}', secretSize.toLocaleString()).replace('{excess}', excess.toLocaleString())}</span>`;
       }
     }
   } catch(e) { capEl.textContent = ''; secretStatusEl.textContent = ''; }

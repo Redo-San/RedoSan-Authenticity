@@ -64,21 +64,21 @@
       <img src="Style_Web_Page/logo-black.png" alt="RedoSan" class="mode-logo logo-black">
     </div>
     <h1>RedoSan Authenticity</h1>
-    <p class="mode-subtitle">Choose your experience</p>
+    <p class="mode-subtitle" data-i18n="mode.title">Choose your experience</p>
     <div class="mode-cards">
       <div class="mode-card mode-card-simple" onclick="setMode('simplified')">
         <div class="mode-card-icon">✨</div>
-        <h3>Simplified Mode</h3>
-        <p>Step-by-step wizard — upload a file and follow the guide</p>
+        <h3 data-i18n="mode.simplified_title">Simplified Mode</h3>
+        <p data-i18n="mode.simplified_desc">Step-by-step wizard — upload a file and follow the guide</p>
       </div>
       <div class="mode-card mode-card-pro" onclick="setMode('professional')">
         <div class="mode-card-icon">⚙️</div>
-        <h3>Professional Mode</h3>
-        <p>Full access to all tools with advanced options</p>
+        <h3 data-i18n="mode.professional_title">Professional Mode</h3>
+        <p data-i18n="mode.professional_desc">Full access to all tools with advanced options</p>
       </div>
     </div>
     <label class="mode-remember">
-      <input type="checkbox" id="rememberMode"> Don't show again
+      <input type="checkbox" id="rememberMode"> <span data-i18n="mode.dont_show">Don't show again</span>
     </label>
   </div>
 </div>
@@ -87,7 +87,7 @@
 <div id="simplifiedMode" style="display:none">
    <div class="simple-top">
     <div class="simple-top-left">
-      <button class="simple-mode-switch" onclick="switchMode()">⚙️ Professional</button>
+      <button class="simple-mode-switch" onclick="switchMode()" data-i18n="simple.pro_mode_btn">⚙️ Professional</button>
       <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="simpleThemeBtn">🌙</button>
     </div>
     <div class="simple-top-right">
@@ -106,12 +106,12 @@
   </div>
   <div class="simple-progress" id="simpleProgress"></div>
   <div class="simple-body" id="simpleBody">
-    <div class="simple-loading">Loading...</div>
+    <div class="simple-loading" data-i18n="simple.loading">Loading...</div>
   </div>
   <div class="simple-nav" id="simpleNav" style="display:none">
-    <button class="btn" id="simplePrevBtn" onclick="simplePrev()" style="display:none">← Previous</button>
+    <button class="btn" id="simplePrevBtn" onclick="simplePrev()" style="display:none" data-i18n="simple.prev_btn">← Previous</button>
     <span class="simple-step-counter" id="simpleStepCounter"></span>
-    <button class="btn btn-primary" id="simpleNextBtn" onclick="simpleNext()">Next →</button>
+    <button class="btn btn-primary" id="simpleNextBtn" onclick="simpleNext()" data-i18n="simple.next_btn">Next →</button>
   </div>
 </div>
 

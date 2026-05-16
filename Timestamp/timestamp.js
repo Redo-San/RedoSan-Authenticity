@@ -65,16 +65,16 @@ async function upgradeOts(bytes) {
 function getOtsUpgradeCommand(fileName) {
   var escaped = fileName.replace(/'/g, "'\\''");
   return [
-    '# Option 1 — OpenTimestamps website (easiest):',
-    '#   1. Go to https://opentimestamps.org',
-    '#   2. Drag & drop "' + fileName + '.ots" onto the page',
-    '#   3. Click "Stamp" to get complete .ots with blockchain proof',
+    '# ' + __('ts.option1_title', 'Option 1 — OpenTimestamps website (easiest):'),
+    '#   ' + __('ts.option1_step1', '1. Go to https://opentimestamps.org'),
+    '#   ' + __('ts.option1_step2', '2. Drag & drop "{name}.ots" onto the page').replace('{name}', fileName),
+    '#   ' + __('ts.option1_step3', '3. Click "Stamp" to get complete .ots with blockchain proof'),
     '',
-    '# Option 2 — Official CLI:',
+    '# ' + __('ts.option2_title', 'Option 2 — Official CLI:'),
     '#   pip install opentimestamps-client',
     '#   ots upgrade "' + fileName + '.ots"',
     '',
-    '# Option 3 — PowerShell (submit raw hash, 32 bytes only):',
+    '# ' + __('ts.option3_title', 'Option 3 — PowerShell (submit raw hash, 32 bytes only):'),
     '#   $hash = (Get-Item "' + fileName.replace(/"/g, '`"') + '.ots").OpenRead();' + " $hash.Position = $hash.Length - 32;" + ' $bytes = [byte[]]::new(32);' + ' $hash.Read($bytes, 0, 32) | Out-Null;' + ' $hash.Close();' + ' Invoke-WebRequest -Uri https://a.pool.opentimestamps.org/digest -Method POST -ContentType "application/x-www-form-urlencoded" -Body $bytes -OutFile "' + fileName.replace(/"/g, '`"') + '.ots.upgraded"'
   ].join('\n');
 }
@@ -87,7 +87,7 @@ async function handleOtsCreate() {
   var dlContainer = document.getElementById('ts-download');
 
   var file = fileInput.files[0];
-  if (!file) { setText('ts-output', 'Please select a file'); resultDiv.style.display = 'block'; return; }
+  if (!file) { setText('ts-output', __('shared.select_file', 'Please select a file')); resultDiv.style.display = 'block'; return; }
 
   btn.disabled = true; spinner('ts-spinner', true);
   output.innerHTML = ''; dlContainer.innerHTML = '';
@@ -119,15 +119,15 @@ async function handleOtsCreate() {
     downloadBlob(blob, file.name + '.ots', 'ts-download');
 
     if (complete) {
-      setText('ts-output', '✓ Complete .ots timestamp created with blockchain attestation!\n\nSHA-256: ' + hex + '\nSize: ' + otsBytes.length + ' bytes\n\nThis .ots file includes merkle proof from the OpenTimestamps calendar aggregator. Verify it anytime using the Verify tab.');
+      setText('ts-output', __('ts.created_success', '✓ Complete .ots timestamp created with blockchain attestation!\n\nSHA-256: {hash}\nSize: {size} bytes\n\nThis .ots file includes merkle proof from the OpenTimestamps calendar aggregator. Verify it anytime using the Verify tab.').replace('{hash}', hex).replace('{size}', otsBytes.length));
     } else {
       var cmd = getOtsUpgradeCommand(file.name);
-      setText('ts-output', 'SHA-256: ' + hex + '\n\n⚠ Calendar aggregator unreachable. Created an incomplete .ots timestamp (' + otsBytes.length + ' bytes, standard format).\n\nTo attach a blockchain attestation, run one of these commands:\n\n' + cmd);
+      setText('ts-output', __('ts.created_warning', 'SHA-256: {hash}\n\n⚠ Calendar aggregator unreachable. Created an incomplete .ots timestamp ({size} bytes, standard format).\n\nTo attach a blockchain attestation, run one of these commands:\n\n{commands}').replace('{hash}', hex).replace('{size}', otsBytes.length).replace('{commands}', cmd));
     }
 
     var dlBtn = document.getElementById('ts-create-dl-btn');
     if (dlBtn) dlBtn.style.display = '';
-  } catch (e) { setText('ts-output', 'Error: ' + e.message); }
+  } catch (e) { setText('ts-output', __('shared.error_prefix', 'Error: ') + e.message); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('ts-spinner', false);
 }
@@ -141,7 +141,7 @@ async function handleOtsVerify() {
 
   var file = fileInput.files[0];
   var otsFile = otsInput.files[0];
-  if (!file || !otsFile) { setText('ts-output', 'Please select both the original file and its .ots proof'); resultDiv.style.display = 'block'; return; }
+  if (!file || !otsFile) { setText('ts-output', __('ts.select_both', 'Please select both the original file and its .ots proof')); resultDiv.style.display = 'block'; return; }
 
   btn.disabled = true; spinner('ts-spinner', true);
   output.innerHTML = '';
@@ -160,11 +160,11 @@ async function handleOtsVerify() {
     }
 
     if (match) {
-      setText('ts-output', '✓ Verified! Hash matches the .ots proof.\n\nFile SHA-256: ' + fileHex + '\n.ots SHA-256:  ' + storedHex + '\n\nThe file has NOT changed since the timestamp was created.');
+      setText('ts-output', __('ts.verified_match', '✓ Verified! Hash matches the .ots proof.\n\nFile SHA-256: {fileHash}\n.ots SHA-256:  {otsHash}\n\nThe file has NOT changed since the timestamp was created.').replace('{fileHash}', fileHex).replace('{otsHash}', storedHex));
     } else {
-      setText('ts-output', '✗ Hash MISMATCH! The file has been modified.\n\nFile SHA-256: ' + fileHex + '\n.ots SHA-256:  ' + storedHex + '\n\nThe file has changed since the timestamp was created.');
+      setText('ts-output', __('ts.verified_mismatch', '✗ Hash MISMATCH! The file has been modified.\n\nFile SHA-256: {fileHash}\n.ots SHA-256:  {otsHash}\n\nThe file has changed since the timestamp was created.').replace('{fileHash}', fileHex).replace('{otsHash}', storedHex));
     }
-  } catch (e) { setText('ts-output', 'Error: ' + e.message); }
+  } catch (e) { setText('ts-output', __('shared.error_prefix', 'Error: ') + e.message); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('ts-spinner', false);
 }

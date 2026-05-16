@@ -31,7 +31,7 @@ function downloadBlob(blob, name, containerId) {
   const safe = escHtml(name);
   const attrSafe = name.replace(/"/g, '&quot;');
   // codeql[js/xss-through-dom] — url is safe, name is HTML-escaped
-  document.getElementById(containerId).innerHTML += '<a href="' + url + '" download="' + attrSafe + '" class="btn" style="margin:4px">Download ' + safe + '</a> ';
+  document.getElementById(containerId).innerHTML += '<a href="' + url + '" download="' + attrSafe + '" class="btn" style="margin:4px">' + __('shared.download') + ' ' + safe + '</a> ';
 }
 
 function loadImage(file) {
@@ -47,7 +47,7 @@ function loadImage(file) {
       URL.revokeObjectURL(url);
       resolve({ canvas: c, ctx, imgData: d, w: img.width, h: img.height });
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(__('shared.failed_load_image', 'Failed to load image'))); };
     img.src = url;
   });
 }

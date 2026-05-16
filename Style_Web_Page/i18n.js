@@ -141,6 +141,21 @@ function applyLang() {
   } else {
     if (link) link.remove();
   }
+
+  // Update dynamic file drop zone text
+  var dzText = i18n.data['shared.drop_file'];
+  if (dzText) {
+    document.querySelectorAll('.dz-text').forEach(function(el) {
+      el.innerHTML = dzText;
+    });
+  }
+
+  // Update language button titles
+  var displayName = getLanguageDisplayName(i18n.lang);
+  ['langBtn', 'simpleLangBtn', 'modeLangBtn'].forEach(function(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.title = __('shared.lang_title', 'Current: ' + displayName + '\nClick to change language').replace('{lang}', displayName);
+  });
 }
 
 function toggleLangDropdown() {
