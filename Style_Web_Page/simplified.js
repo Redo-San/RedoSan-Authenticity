@@ -434,7 +434,8 @@ function renderPixelInjectStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' + __('simple.pi_title') + '</h2>' +
     '<p>' + __('simple.pi_desc') + '</p>' +
-    '<div class="card-form" style="text-align:left">' + html + '</div></div>';
+    '<div class="card-form" style="text-align:left">' + html + '</div>' +
+    '<div id="spi-result"></div></div>';
 
   // Clear any default values (must start empty)
   var msgEl = document.getElementById('spi-message');
@@ -539,9 +540,16 @@ function runPixelInjectStep() {
       simpleResults['pixel-injection'] = true;
       var piDl = document.getElementById('pi-download');
       if (piDl) simpleResults.piHtml = piDl.innerHTML;
+      var resultDiv = document.getElementById('spi-result');
       var piOutput = document.getElementById('pi-output');
-      if (piOutput) simpleResults.piPreviewHtml = piOutput.innerHTML;
-      setTimeout(simpleNext, 1000);
+      if (resultDiv && piOutput && piOutput.innerHTML) {
+        resultDiv.innerHTML = '<div class="simple-pi-result" style="text-align:left;max-height:400px;overflow-y:auto;padding:12px;background:var(--bg);border-radius:8px;margin-top:12px">' + piOutput.innerHTML + '</div>';
+      }
+      setTimeout(function() {
+        simpleStepDone = true;
+        document.getElementById('simpleNextBtn').disabled = false;
+        simpleNext();
+      }, 1500);
     }).catch(function() {
       btn.textContent = __('simple.failed_retry');
       btn.disabled = false;
@@ -641,7 +649,6 @@ function renderDone(body) {
   if (results['pixel-injection']) {
     var piHtml = '<div class="simple-done-section"><h3>' + __('simple.pi_label') + '</h3>';
     if (results.piHtml) piHtml += results.piHtml;
-    if (results.piPreviewHtml) piHtml += '<div class="simple-done-preview">' + results.piPreviewHtml + '</div>';
     piHtml += '</div>';
     sections.push(piHtml);
   }
