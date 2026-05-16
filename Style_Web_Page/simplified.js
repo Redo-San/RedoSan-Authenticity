@@ -31,13 +31,29 @@ function setMode(mode) {
 }
 
 function switchMode() {
+  // Show mode overlay without page reload (keeps music playing)
+  document.getElementById('modeSelect').style.display = '';
+  document.getElementById('simplifiedMode').style.display = 'none';
+  document.getElementById('mainNav').style.display = '';
+  document.getElementById('sidebar').style.display = '';
+  document.getElementById('sidebarOverlay').style.display = '';
+  document.getElementById('app').style.display = '';
+  document.getElementById('mainFooter').style.display = '';
   localStorage.removeItem('redosan_mode');
-  location.reload();
+  // Reset to home page
+  showPage('home');
 }
 
 function showModeSelect() {
+  // Show mode overlay without page reload (keeps music playing)
+  document.getElementById('modeSelect').style.display = '';
+  document.getElementById('simplifiedMode').style.display = 'none';
+  document.getElementById('mainNav').style.display = 'none';
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('sidebarOverlay').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('mainFooter').style.display = 'none';
   localStorage.removeItem('redosan_mode');
-  location.reload();
 }
 
 // ── File type detection ──
