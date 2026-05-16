@@ -824,6 +824,22 @@ document.addEventListener('DOMContentLoaded', function() {
   var credit = document.getElementById('music-credit');
   if (credit) credit.classList.remove('show');
 });
+// Start music on first user interaction (any click on the page)
+var musicStarted = false;
+document.addEventListener('click', function startMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+  var audio = document.getElementById('bg-music');
+  var btn = document.getElementById('music-btn');
+  var credit = document.getElementById('music-credit');
+  if (audio && audio.paused) {
+    audio.play().then(function() {
+      if (btn) { btn.textContent = '🔊'; btn.classList.add('playing'); }
+      if (credit) credit.classList.add('show');
+    }).catch(function() {});
+  }
+  document.removeEventListener('click', startMusic);
+});
 </script>
 </body>
 </html>
