@@ -80,7 +80,7 @@
       </div>
     </div>
     <label class="mode-remember">
-      <input type="checkbox" id="rememberMode"> <span data-i18n="mode.dont_show">Don't show again</span>
+      <input type="checkbox" id="rememberMode" name="rememberMode"> <span data-i18n="mode.dont_show">Don't show again</span>
     </label>
   </div>
 </div>
@@ -129,7 +129,7 @@
       <img src="Style_Web_Page/logo-black.png" alt="RedoSan" class="logo-img logo-black">
     </a>
     <div class="nav-search" id="navSearch">
-      <input type="text" id="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search..." aria-label="Search" onkeydown="if(event.key==='Enter')siteSearch()" onfocus="this.parentElement.classList.add('focused')" onblur="this.parentElement.classList.remove('focused')">
+      <input type="text" id="searchInput" name="searchInput" data-i18n-placeholder="search.placeholder" placeholder="Search..." aria-label="Search" onkeydown="if(event.key==='Enter')siteSearch()" onfocus="this.parentElement.classList.add('focused')" onblur="this.parentElement.classList.remove('focused')">
       <button class="search-btn" onclick="siteSearch()" aria-label="Search"></button>
       <div class="search-results" id="searchResults"></div>
     </div>
@@ -228,8 +228,8 @@
       </div>
       <div id="wm-embed">
         <div class="form-group">
-          <label data-i18n="wm.algo_label">Algorithm</label>
-          <select id="wm-type">
+          <label for="wm-type" data-i18n="wm.algo_label">Algorithm</label>
+          <select id="wm-type" name="wm-type">
             <option value="1">1. Spatial LSB</option>
             <option value="2">2. Frequency DCT</option>
             <option value="3">3. Neural SS</option>
@@ -242,26 +242,26 @@
           </select>
         </div>
         <div class="form-group">
-          <label data-i18n="wm.image_label">Cover image</label>
-          <input type="file" id="wm-image" accept="image/png,image/jpeg">
+          <label for="wm-image" data-i18n="wm.image_label">Cover image</label>
+<input type="file" id="wm-image" name="wm-image" accept="image/png,image/jpeg">
            <p id="wm-capacity" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px"></p>
         </div>
         <div class="form-group" id="wm-secret-group">
-          <label data-i18n="wm.secret_label">Secret file</label>
-          <input type="file" id="wm-secret">
+          <label for="wm-secret" data-i18n="wm.secret_label">Secret file</label>
+<input type="file" id="wm-secret" name="wm-secret">
           <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="wm.secret_hint">Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores this.</p>
           <p id="wm-secret-status" style="font-size:0.75rem;margin-top:2px"></p>
         </div>
         <div class="form-group">
-          <label data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
-          <input type="password" id="wm-password" placeholder="Enter password" required>
+          <label for="wm-password" data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
+<input type="password" id="wm-password" name="wm-password" placeholder="Enter password" required>
         </div>
         <button class="btn" onclick="handleWatermarkEmbed()" id="wm-btn" data-i18n="wm.embed_submit">Embed Watermark</button>
       </div>
       <div id="wm-extract" style="display:none">
         <div class="form-group">
-          <label data-i18n="wm.algo_label">Algorithm</label>
-          <select id="wm-type-ex">
+          <label for="wm-type-ex" data-i18n="wm.algo_label">Algorithm</label>
+<select id="wm-type-ex" name="wm-type-ex">
             <option value="1">1. Spatial LSB</option>
             <option value="2">2. Frequency DCT</option>
             <option value="3">3. Neural SS</option>
@@ -274,12 +274,12 @@
           </select>
         </div>
         <div class="form-group">
-          <label data-i18n="wm.image_ex_label">Stego image</label>
-          <input type="file" id="wm-image-ex" accept="image/png,image/jpeg">
+          <label for="wm-image-ex" data-i18n="wm.image_ex_label">Stego image</label>
+<input type="file" id="wm-image-ex" name="wm-image-ex" accept="image/png,image/jpeg">
         </div>
         <div class="form-group">
-          <label data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
-          <input type="password" id="wm-password-ex" placeholder="Enter password" required>
+          <label for="wm-password-ex" data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
+<input type="password" id="wm-password-ex" name="wm-password-ex" placeholder="Enter password" required>
         </div>
         <button class="btn" onclick="handleWatermarkExtract()" id="wm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
         <button class="btn" onclick="handleAutoDetect()" id="wm-detect-btn" style="margin-top:8px;background:var(--accent2,#00b894)">Auto Detect Algorithm</button>
@@ -300,8 +300,8 @@
     </div>
     <div class="card-form">
       <div class="form-group">
-        <label data-i18n="fp.file_label">File</label>
-        <input type="file" id="fp-file">
+        <label for="fp-file" data-i18n="fp.file_label">File</label>
+<input type="file" id="fp-file" name="fp-file">
       </div>
       <button class="btn" onclick="handleFingerprint()" id="fp-btn" data-i18n="fp.submit">Generate Fingerprint</button>
       <div class="spinner" id="fp-spinner"></div>
@@ -332,8 +332,8 @@
       </div>
       <div id="pi-embed">
         <div class="form-group">
-          <label data-i18n="pi.category_label">Algorithm Category</label>
-          <select id="pi-category">
+          <label for="pi-category" data-i18n="pi.category_label">Algorithm Category</label>
+<select id="pi-category" name="pi-category">
             <option value="spatial">Spatial Domain</option>
             <option value="frequency">Frequency Domain</option>
             <option value="deep_learning">Deep Learning</option>
@@ -342,22 +342,22 @@
           </select>
         </div>
         <div class="form-group">
-          <label data-i18n="pi.algorithm_label">Algorithm</label>
-          <select id="pi-algorithm">
+          <label for="pi-algorithm" data-i18n="pi.algorithm_label">Algorithm</label>
+<select id="pi-algorithm" name="pi-algorithm">
             <!-- Options will be populated dynamically -->
           </select>
         </div>
         <div class="form-group">
-          <label data-i18n="pi.image_label">Image</label>
-          <input type="file" id="pi-image" accept="image/*">
+          <label for="pi-image" data-i18n="pi.image_label">Image</label>
+<input type="file" id="pi-image" name="pi-image" accept="image/*">
         </div>
         <div class="form-group">
-          <label data-i18n="pi.message_label">Message</label>
-          <textarea id="pi-message" placeholder="Enter your secret message..." rows="3"></textarea>
+          <label for="pi-message" data-i18n="pi.message_label">Message</label>
+<textarea id="pi-message" name="pi-message" placeholder="Enter your secret message..." rows="3"></textarea>
         </div>
         <div class="form-group">
-          <label data-i18n="pi.password_label">Password (optional)</label>
-          <input type="password" id="pi-password" placeholder="Enter password for encryption">
+          <label for="pi-password" data-i18n="pi.password_label">Password (optional)</label>
+<input type="password" id="pi-password" name="pi-password" placeholder="Enter password for encryption">
         </div>
         <div id="pi-advanced-options" style="display:none;">
           <h4 style="color:var(--primary);margin:15px 0 10px 0;" data-i18n="pi.advanced_options">Advanced Options</h4>
@@ -369,27 +369,27 @@
       </div>
       <div id="pi-extract" style="display:none;">
         <div class="form-group">
-          <label data-i18n="pi.watermarked_image_label">Watermarked Image</label>
-          <input type="file" id="pi-watermarked-image" accept="image/*">
+          <label for="pi-watermarked-image" data-i18n="pi.watermarked_image_label">Watermarked Image</label>
+<input type="file" id="pi-watermarked-image" name="pi-watermarked-image" accept="image/*">
         </div>
         <div class="form-group">
-          <label data-i18n="pi.algorithm_label">Algorithm</label>
-          <select id="pi-extract-algorithm">
+          <label for="pi-extract-algorithm" data-i18n="pi.algorithm_label">Algorithm</label>
+<select id="pi-extract-algorithm" name="pi-extract-algorithm">
             <option value="auto" data-i18n="pi.auto_detect">Auto Detect</option>
             <!-- Options will be populated dynamically -->
           </select>
         </div>
         <div class="form-group">
-          <label data-i18n="pi.password_label">Password (if required)</label>
-          <input type="password" id="pi-extract-password" placeholder="Enter password for decryption">
+          <label for="pi-extract-password" data-i18n="pi.password_label">Password (if required)</label>
+<input type="password" id="pi-extract-password" name="pi-extract-password" placeholder="Enter password for decryption">
         </div>
         <button class="btn" onclick="handlePixelExtraction()" id="pi-extract-btn" data-i18n="pi.extract_submit">Extract Message</button>
         <div class="spinner" id="pi-extract-spinner"></div>
       </div>
       <div id="pi-analyze" style="display:none;">
         <div class="form-group">
-          <label data-i18n="pi.analyze_image_label">Image to Analyze</label>
-          <input type="file" id="pi-analyze-image" accept="image/*">
+          <label for="pi-analyze-image" data-i18n="pi.analyze_image_label">Image to Analyze</label>
+<input type="file" id="pi-analyze-image" name="pi-analyze-image" accept="image/*">
         </div>
         <button class="btn" onclick="handlePixelAnalysis()" id="pi-analyze-btn" data-i18n="pi.analyze_submit">Analyze Image</button>
         <div class="spinner" id="pi-analyze-spinner"></div>
@@ -409,8 +409,8 @@
     </div>
     <div class="card-form">
       <div class="form-group">
-        <label data-i18n="md.file_label">Image file</label>
-        <input type="file" id="md-file" accept="image/*">
+        <label for="md-file" data-i18n="md.file_label">Image file</label>
+<input type="file" id="md-file" name="md-file" accept="image/*">
       </div>
       <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px" data-i18n="md.desc">
         Reads EXIF, dimensions, format, and color mode. All processing in pure JavaScript.
@@ -440,8 +440,8 @@
           Creates an OpenTimestamps (.ots) proof file from your file's SHA-256 hash. Fully compatible with the OpenTimestamps protocol. Automatically submits to the calendar aggregator for a blockchain attestation.
         </p>
         <div class="form-group">
-          <label data-i18n="ts.ots_file_label">File to timestamp</label>
-          <input type="file" id="ts-create-file">
+          <label for="ts-create-file" data-i18n="ts.ots_file_label">File to timestamp</label>
+<input type="file" id="ts-create-file" name="ts-create-file">
         </div>
         <button class="btn" onclick="handleOtsCreate()" id="ts-create-btn" data-i18n="ts.create_ots">Create .ots</button>
         <button class="btn" onclick="document.getElementById('ts-create-file').click()" id="ts-create-dl-btn" style="display:none;margin-top:10px;background:var(--card-hover);color:var(--text);border:1px solid var(--border)" data-i18n="ts.create_another">Create Another</button>
@@ -451,12 +451,12 @@
           Verify that a file matches its .ots proof. Select the original file and its .ots proof to check if the file has been modified.
         </p>
         <div class="form-group">
-          <label data-i18n="ts.verify_file_label">Original file</label>
-          <input type="file" id="ts-verify-file">
+          <label for="ts-verify-file" data-i18n="ts.verify_file_label">Original file</label>
+<input type="file" id="ts-verify-file" name="ts-verify-file">
         </div>
         <div class="form-group">
-          <label data-i18n="ts.ots_proof_label">.ots proof file</label>
-          <input type="file" id="ts-ots-proof" accept=".ots">
+          <label for="ts-ots-proof" data-i18n="ts.ots_proof_label">.ots proof file</label>
+<input type="file" id="ts-ots-proof" name="ts-ots-proof" accept=".ots">
         </div>
         <button class="btn" onclick="handleOtsVerify()" id="ts-verify-btn" data-i18n="ts.verify_ots">Verify .ots</button>
       </div>
@@ -487,8 +487,8 @@
           Read C2PA content provenance metadata from images. Displays manifests, assertions, actions, ingredients, and signature info.
         </p>
         <div class="form-group">
-          <label data-i18n="c2pa.read_file_label">Image with C2PA data</label>
-          <input type="file" id="c2pa-read-file" accept="image/png,image/jpeg,image/avif,image/webp,image/tiff">
+          <label for="c2pa-read-file" data-i18n="c2pa.read_file_label">Image with C2PA data</label>
+<input type="file" id="c2pa-read-file" name="c2pa-read-file" accept="image/png,image/jpeg,image/avif,image/webp,image/tiff">
         </div>
         <button class="btn" onclick="handleC2paRead()" id="c2pa-read-btn" data-i18n="c2pa.read_submit">Read C2PA Data</button>
         <div class="spinner" id="c2pa-read-spinner"></div>
@@ -501,61 +501,61 @@
           Sign an image with C2PA provenance metadata using a test certificate. Select the content type and add optional details.
         </p>
         <div class="form-group">
-          <label data-i18n="c2pa.content_type_label">Content Options</label>
+          <span data-i18n="c2pa.content_type_label">Content Options</span>
           <div id="c2pa-write-types">
             <div class="c2pa-type-card" data-form-type="create">
               <label class="c2pa-type-header">
-                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <input type="checkbox" id="c2pa-write-create" name="c2pa-write-create" value="create" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_digital">Digitally Created</span>
               </label>
               <div class="c2pa-type-fields">
-                <input type="text" class="c2pa-field" data-field="title" data-type="create" placeholder="My Image">
-                <input type="text" class="c2pa-field" data-field="author" data-type="create" placeholder="Creator name">
+                <input type="text" class="c2pa-field" data-field="title" data-type="create" id="c2pa-field-create-title" name="c2pa-field-create-title" placeholder="My Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="create" id="c2pa-field-create-author" name="c2pa-field-create-author" placeholder="Creator name">
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="edit">
               <label class="c2pa-type-header">
-                <input type="checkbox" value="edit" onchange="updateC2paWriteForm()">
+                <input type="checkbox" id="c2pa-write-edit" name="c2pa-write-edit" value="edit" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_edited">Edited / Modified</span>
               </label>
               <div class="c2pa-type-fields">
-                <input type="text" class="c2pa-field" data-field="title" data-type="edit" placeholder="Edited Image">
-                <input type="text" class="c2pa-field" data-field="author" data-type="edit" placeholder="Editor name">
+                <input type="text" class="c2pa-field" data-field="title" data-type="edit" id="c2pa-field-edit-title" name="c2pa-field-edit-title" placeholder="Edited Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="edit" id="c2pa-field-edit-author" name="c2pa-field-edit-author" placeholder="Editor name">
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">
               <label class="c2pa-type-header">
-                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <input type="checkbox" id="c2pa-write-ai" name="c2pa-write-ai" value="ai" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_ai">AI-Generated</span>
               </label>
               <div class="c2pa-type-fields">
-                <input type="text" class="c2pa-field" data-field="title" data-type="ai" placeholder="AI Generated Image">
-                <input type="text" class="c2pa-field" data-field="author" data-type="ai" placeholder="Prompt Author name">
+                <input type="text" class="c2pa-field" data-field="title" data-type="ai" id="c2pa-field-ai-title" name="c2pa-field-ai-title" placeholder="AI Generated Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="ai" id="c2pa-field-ai-author" name="c2pa-field-ai-author" placeholder="Prompt Author name">
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">
               <label class="c2pa-type-header">
-                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <input type="checkbox" id="c2pa-write-capture" name="c2pa-write-capture" value="capture" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_capture">Digitally Captured</span>
               </label>
               <div class="c2pa-type-fields">
-                <input type="text" class="c2pa-field" data-field="title" data-type="capture" placeholder="Photo title">
-                <input type="text" class="c2pa-field" data-field="author" data-type="capture" placeholder="Photographer name">
+                <input type="text" class="c2pa-field" data-field="title" data-type="capture" id="c2pa-field-capture-title" name="c2pa-field-capture-title" placeholder="Photo title">
+                <input type="text" class="c2pa-field" data-field="author" data-type="capture" id="c2pa-field-capture-author" name="c2pa-field-capture-author" placeholder="Photographer name">
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">
               <label class="c2pa-type-header">
-                <input type="checkbox" value="create" onchange="updateC2paWriteForm()">
+                <input type="checkbox" id="c2pa-write-composite" name="c2pa-write-composite" value="composite" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_composite">Composite</span>
               </label>
               <div class="c2pa-type-fields">
-                <input type="text" class="c2pa-field" data-field="title" data-type="composite" placeholder="Composite Image">
-                <input type="text" class="c2pa-field" data-field="author" data-type="composite" placeholder="Creator name">
+                <input type="text" class="c2pa-field" data-field="title" data-type="composite" id="c2pa-field-composite-title" name="c2pa-field-composite-title" placeholder="Composite Image">
+                <input type="text" class="c2pa-field" data-field="author" data-type="composite" id="c2pa-field-composite-author" name="c2pa-field-composite-author" placeholder="Creator name">
               </div>
             </div>
             <div class="c2pa-type-card dnt-card">
               <label class="c2pa-type-header">
-                <input type="checkbox" id="c2pa-write-dnt" onchange="updateC2paWriteForm()">
+                <input type="checkbox" id="c2pa-write-dnt" name="c2pa-write-dnt" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_dnt">Do Not Train AI</span>
               </label>
             </div>
@@ -563,27 +563,27 @@
         </div>
 
         <div class="form-group" id="c2pa-write-links-group">
-          <label>Social Links (optional)</label>
+          <span>Social Links (optional)</span>
           <div class="c2pa-links-grid">
-            <input type="url" class="c2pa-link" data-platform="instagram" placeholder="Instagram URL (e.g. https://instagram.com/username)">
-            <input type="url" class="c2pa-link" data-platform="twitter" placeholder="X / Twitter URL">
-            <input type="url" class="c2pa-link" data-platform="facebook" placeholder="Facebook URL">
-            <input type="url" class="c2pa-link" data-platform="tiktok" placeholder="TikTok URL">
-            <input type="url" class="c2pa-link" data-platform="youtube" placeholder="YouTube URL">
-            <input type="url" class="c2pa-link" data-platform="website" placeholder="Website URL">
+            <input type="url" class="c2pa-link" data-platform="instagram" id="c2pa-link-instagram" name="c2pa-link-instagram" placeholder="Instagram URL (e.g. https://instagram.com/username)">
+            <input type="url" class="c2pa-link" data-platform="twitter" id="c2pa-link-twitter" name="c2pa-link-twitter" placeholder="X / Twitter URL">
+            <input type="url" class="c2pa-link" data-platform="facebook" id="c2pa-link-facebook" name="c2pa-link-facebook" placeholder="Facebook URL">
+            <input type="url" class="c2pa-link" data-platform="tiktok" id="c2pa-link-tiktok" name="c2pa-link-tiktok" placeholder="TikTok URL">
+            <input type="url" class="c2pa-link" data-platform="youtube" id="c2pa-link-youtube" name="c2pa-link-youtube" placeholder="YouTube URL">
+            <input type="url" class="c2pa-link" data-platform="website" id="c2pa-link-website" name="c2pa-link-website" placeholder="Website URL">
           </div>
-          <label style="margin-top:10px;display:block">Music Streaming (optional)</label>
+          <span style="margin-top:10px;display:block">Music Streaming (optional)</span>
           <div class="c2pa-links-grid">
-            <input type="url" class="c2pa-link" data-platform="spotify" placeholder="Spotify URL">
-            <input type="url" class="c2pa-link" data-platform="applemusic" placeholder="Apple Music URL">
-            <input type="url" class="c2pa-link" data-platform="soundcloud" placeholder="SoundCloud URL">
-            <input type="url" class="c2pa-link" data-platform="bandcamp" placeholder="Bandcamp URL">
+            <input type="url" class="c2pa-link" data-platform="spotify" id="c2pa-link-spotify" name="c2pa-link-spotify" placeholder="Spotify URL">
+            <input type="url" class="c2pa-link" data-platform="applemusic" id="c2pa-link-applemusic" name="c2pa-link-applemusic" placeholder="Apple Music URL">
+            <input type="url" class="c2pa-link" data-platform="soundcloud" id="c2pa-link-soundcloud" name="c2pa-link-soundcloud" placeholder="SoundCloud URL">
+            <input type="url" class="c2pa-link" data-platform="bandcamp" id="c2pa-link-bandcamp" name="c2pa-link-bandcamp" placeholder="Bandcamp URL">
           </div>
         </div>
 
         <div class="form-group" id="c2pa-write-image-group">
-          <label data-i18n="c2pa.image_label">Image to sign</label>
-          <input type="file" id="c2pa-write-file" accept="image/png,image/jpeg,image/avif,image/webp">
+          <label for="c2pa-write-file" data-i18n="c2pa.image_label">Image to sign</label>
+          <input type="file" id="c2pa-write-file" name="c2pa-write-file" accept="image/png,image/jpeg,image/avif,image/webp">
         </div>
         <button class="btn" onclick="handleC2paWrite()" id="c2pa-write-btn" data-i18n="c2pa.write_submit">Sign with C2PA</button>
         <div class="spinner" id="c2pa-write-spinner"></div>
@@ -598,8 +598,8 @@
           Quick verification of C2PA signatures. Upload an image to check if it has valid C2PA provenance data.
         </p>
         <div class="form-group">
-          <label data-i18n="c2pa.verify_file_label">Image to verify</label>
-          <input type="file" id="c2pa-verify-file" accept="image/png,image/jpeg,image/avif,image/webp,image/tiff">
+          <label for="c2pa-verify-file" data-i18n="c2pa.verify_file_label">Image to verify</label>
+<input type="file" id="c2pa-verify-file" name="c2pa-verify-file" accept="image/png,image/jpeg,image/avif,image/webp,image/tiff">
         </div>
         <button class="btn" onclick="handleC2paVerify()" id="c2pa-verify-btn" data-i18n="c2pa.verify_submit">Verify C2PA</button>
         <div class="spinner" id="c2pa-verify-spinner"></div>
