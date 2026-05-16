@@ -25,67 +25,10 @@ class AdvancedWatermarkUI {
     }
     
     createAlgorithmSelector() {
-        const watermarkSection = document.getElementById('page-watermark');
-        if (!watermarkSection) return;
-        
-        // Find the algorithm select element
-        const algorithmSelect = document.getElementById('wm-type');
-        if (!algorithmSelect) return;
-        
-        // Clear existing options
-        algorithmSelect.innerHTML = '';
-        
-        // Add advanced algorithms
-        const algorithms = [
-            { value: 'enhanced_lsb', text: '1. Enhanced LSB', category: 'Spatial Domain' },
-            { value: 'adaptive_lsb', text: '2. Adaptive LSB', category: 'Spatial Domain' },
-            { value: 'dct', text: '3. Robust DCT', category: 'Frequency Domain' },
-            { value: 'dwt', text: '4. Multi-resolution DWT', category: 'Frequency Domain' },
-            { value: 'dft', text: '5. Rotation-resistant DFT', category: 'Frequency Domain' },
-            { value: 'hybrid_dct_dwt', text: '6. Hybrid DCT-DWT', category: 'Frequency Domain' },
-            { value: 'vine', text: '7. VINE (Deep Learning)', category: 'Deep Learning' },
-            { value: 'pixel_seal', text: '8. Pixel Seal', category: 'Deep Learning' },
-            { value: 'nullguard', text: '9. NullGuard', category: 'Deep Learning' },
-            { value: 'shallow_diffuse', text: '10. Shallow Diffuse', category: 'Deep Learning' },
-            { value: 'imagewmark', text: '11. Imagewmark Pro', category: 'Professional Tools' },
-            { value: 'meta_seal', text: '12. Meta Seal', category: 'Professional Tools' },
-            { value: 'stardustmark', text: '13. STARDUSTmark', category: 'Professional Tools' },
-            { value: 'invisimark', text: '14. InvisMark', category: 'Professional Tools' },
-            { value: 'elevenlikes', text: '15. ElevenLikes', category: 'Professional Tools' }
-        ];
-        
-        // Group algorithms by category
-        const categories = {};
-        algorithms.forEach(algo => {
-            if (!categories[algo.category]) {
-                categories[algo.category] = [];
-            }
-            categories[algo.category].push(algo);
-        });
-        
-        // Add optgroups to select
-        Object.entries(categories).forEach(([category, algos]) => {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = category;
-            
-            algos.forEach(algo => {
-                const option = document.createElement('option');
-                option.value = algo.value;
-                option.textContent = algo.text;
-                optgroup.appendChild(option);
-            });
-            
-            algorithmSelect.appendChild(optgroup);
-        });
-        
-        // Add event listener for algorithm change
-        algorithmSelect.addEventListener('change', (e) => {
-            this.currentAlgorithm = e.target.value;
-            this.updateAdvancedOptions();
-        });
-        
-        // Set default algorithm
-        algorithmSelect.value = this.currentAlgorithm;
+        // This class was designed for pixel injection but wrongly targeted #wm-type,
+        // contaminating the watermark module's algorithms with pixel injection ones.
+        // Pixel injection uses its own selector (#pi-algorithm) handled by PixelInjection class.
+        return;
     }
     
     createAdvancedOptions() {
@@ -427,9 +370,9 @@ class AdvancedWatermarkUI {
     }
     
     bindEvents() {
-        // Override the original watermark handlers
-        window.handleWatermarkEmbed = () => this.handleAdvancedEmbed();
-        window.handleWatermarkExtract = () => this.handleAdvancedExtract();
+        // Intentionally empty — was overriding window.handleWatermarkEmbed and
+        // window.handleWatermarkExtract, which broke the watermark module.
+        // The pixel injection module has its own handler via PixelInjection class.
     }
     
     async handleAdvancedEmbed() {
@@ -1012,7 +955,7 @@ class AdvancedWatermarkUI {
 }
 
 // Initialize the advanced watermarking UI
-let advancedWatermarkUI;
-document.addEventListener('DOMContentLoaded', () => {
-    advancedWatermarkUI = new AdvancedWatermarkUI();
-});
+// let advancedWatermarkUI;
+// document.addEventListener('DOMContentLoaded', () => {
+//     advancedWatermarkUI = new AdvancedWatermarkUI();
+// });
