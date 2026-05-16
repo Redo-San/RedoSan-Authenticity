@@ -314,5 +314,5 @@ body {
 
 /* ── Nav items alignment on tight screens ── */
 @media (max-width: 374px) {
-  .nav-left .theme-btn { display: none; }
+  .nav-left .theme-btn:not(.mode-switch-btn) { display: none; }
 }
