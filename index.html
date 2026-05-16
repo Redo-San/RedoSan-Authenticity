@@ -710,6 +710,11 @@
   </div>
 </footer>
 
+<!-- Music Player -->
+<audio id="bg-music" src="Style_Web_Page/RedoSan_Music.mp3" loop></audio>
+<button id="music-btn" class="music-btn" onclick="toggleMusic()" title="Play Music" aria-label="Toggle Music">🎵</button>
+<div id="music-credit" class="music-credit">RedoSan</div>
+
 <script src="Style_Web_Page/i18n.js"></script>
 <script src="Style_Web_Page/shared.js"></script>
 <script src="Style_Web_Page/navigation.js"></script>
@@ -795,5 +800,30 @@
 })();
 </script>
 <script type="module" src="C2PA/c2pa.js"></script>
+<script>
+// ── Floating Music Player ──
+function toggleMusic() {
+  var audio = document.getElementById('bg-music');
+  var btn = document.getElementById('music-btn');
+  var credit = document.getElementById('music-credit');
+  if (audio.paused) {
+    audio.play().then(function() {
+      btn.textContent = '🔊';
+      btn.classList.add('playing');
+      credit.classList.add('show');
+    }).catch(function() {});
+  } else {
+    audio.pause();
+    btn.textContent = '🎵';
+    btn.classList.remove('playing');
+    credit.classList.remove('show');
+  }
+}
+// Auto-hide credit after page load — only show when playing
+document.addEventListener('DOMContentLoaded', function() {
+  var credit = document.getElementById('music-credit');
+  if (credit) credit.classList.remove('show');
+});
+</script>
 </body>
 </html>
