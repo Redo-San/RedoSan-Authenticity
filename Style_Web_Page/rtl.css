@@ -131,3 +131,11 @@ main {
 .lang-btn { 
   min-width: 100px; 
 }
+
+/* Back arrow flip for RTL */
+.back-arrow {
+  display: inline-block;
+}
+html[dir="rtl"] .back-arrow {
+  transform: scaleX(-1);
+}
