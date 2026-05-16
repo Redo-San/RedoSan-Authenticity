@@ -361,6 +361,12 @@ nav .logo { display:flex; align-items:center; }
   border-color: var(--primary);
   transform: scale(1.08);
 }
+.back-btn:hover .back-arrow {
+  transform: translateX(-3px);
+}
+html[dir="rtl"] .back-btn:hover .back-arrow {
+  transform: translateX(3px) scaleX(-1);
+}
 .back-btn:active {
   transform: scale(0.92);
 }
