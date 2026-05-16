@@ -165,22 +165,23 @@ function toggleLangDropdown() {
 
 // Close language dropdown when clicking outside
 document.addEventListener('click', function(e) {
-  var dropdown = document.querySelector('.lang-dropdown');
-  var menu = document.getElementById('langMenu');
-  if (dropdown && !dropdown.contains(e.target) && menu) {
-    menu.classList.remove('show');
-  }
-  // Also close simplified language menu
+  // Close simplified language menu
   var sMenu = document.getElementById('simpleLangMenu');
   var sDropdown = document.querySelector('#simplifiedMode .lang-dropdown');
   if (sDropdown && !sDropdown.contains(e.target) && sMenu) {
     sMenu.classList.remove('show');
   }
-  // Also close mode select language menu
+  // Close mode select language menu
   var mMenus = document.getElementById('modeLangMenu');
   var mDropdown = document.querySelector('#modeSelect .lang-dropdown');
   if (mDropdown && !mDropdown.contains(e.target) && mMenus) {
     mMenus.classList.remove('show');
+  }
+  // Close professional mode (nav) language menu
+  var pMenu = document.getElementById('langMenu');
+  var pDropdown = document.querySelector('nav .lang-dropdown');
+  if (pDropdown && !pDropdown.contains(e.target) && pMenu) {
+    pMenu.classList.remove('show');
   }
 });
 
