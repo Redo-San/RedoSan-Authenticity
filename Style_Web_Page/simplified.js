@@ -326,19 +326,19 @@ function renderWatermarkStep(body) {
       }
     });
   });
-  // Restore numeric algorithm values (AdvancedWatermarkUI overwrites with text values)
+  // Restore numeric algorithm values (English only — scientific names)
   var typeSelect = document.getElementById('swm-type');
   if (typeSelect) {
     typeSelect.innerHTML =
-      '<option value="1">1. ' + __('algo.1') + '</option>' +
-      '<option value="2">2. ' + __('algo.2') + '</option>' +
-      '<option value="3">3. ' + __('algo.3') + '</option>' +
-      '<option value="4">4. ' + __('algo.4') + '</option>' +
-      '<option value="5">5. ' + __('algo.5') + '</option>' +
-      '<option value="6">6. ' + __('algo.6') + '</option>' +
-      '<option value="7">7. ' + __('algo.7') + '</option>' +
-      '<option value="8">8. ' + __('algo.8') + '</option>' +
-      '<option value="9">9. ' + __('algo.9') + '</option>';
+      '<option value="1">1. Spatial LSB</option>' +
+      '<option value="2">2. Frequency DCT</option>' +
+      '<option value="3">3. Neural SS</option>' +
+      '<option value="4">4. Latent DCT</option>' +
+      '<option value="5">5. Zero-bit</option>' +
+      '<option value="6">6. Multi-bit</option>' +
+      '<option value="7">7. Forensic</option>' +
+      '<option value="8">8. Fragile</option>' +
+      '<option value="9">9. Imatag-style</option>';
   }
   // Hide cover image field (already uploaded in step 1) and show file name instead
   var imgGroup = document.getElementById('swm-image');
@@ -420,11 +420,11 @@ function renderPixelInjectStep(body) {
     '<p>' + __('simple.pi_desc') + '</p>' +
     '<div class="card-form" style="text-align:left">' + html + '</div></div>';
 
-  // Set defaults
+  // Clear any default values (must start empty)
   var msgEl = document.getElementById('spi-message');
-  if (msgEl) msgEl.value = 'Authenticated via RedoSan';
+  if (msgEl) msgEl.value = '';
   var passEl = document.getElementById('spi-password');
-  if (passEl) passEl.value = 'redosan';
+  if (passEl) passEl.value = '';
 
   // Copy algorithm options from professional mode (populated dynamically)
   var srcAlgo = document.getElementById('pi-algorithm');
@@ -490,7 +490,7 @@ function renderPixelInjectStep(body) {
 function runPixelInjectStep() {
   var cat = document.getElementById('spi-category').value;
   var msg = document.getElementById('spi-message').value;
-  var pass = document.getElementById('spi-password').value || 'redosan';
+  var pass = document.getElementById('spi-password').value;
 
   // Populate hidden professional form fields
   var fileInput = document.getElementById('pi-image');
