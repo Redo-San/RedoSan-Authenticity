@@ -336,6 +336,45 @@ nav .logo { display:flex; align-items:center; }
 .file-drop-zone.has-file .dz-file { display:inline-flex; }
 .file-drop-zone.has-file { border-style:solid; border-color:var(--success); }
 
+/* ── Back button (circular) ── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--card-hover);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 1.25rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.back-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  transform: scale(1.08);
+}
+.back-btn:active {
+  transform: scale(0.92);
+}
+.back-btn-label {
+  display: none;
+  font-size: 0.85rem;
+  color: var(--primary);
+}
+@media (min-width: 768px) {
+  .back-btn-label {
+    display: inline;
+  }
+}
+
 /* ── Language Dropdown ── */
 .lang-dropdown { position:relative; display:inline-block; flex-shrink:0; }
 .lang-btn {
