@@ -79,7 +79,7 @@
         <p data-i18n="mode.professional_desc">Full access to all tools with advanced options</p>
       </div>
     </div>
-    <label class="mode-remember">
+    <label class="mode-remember" for="rememberMode">
       <input type="checkbox" id="rememberMode" name="rememberMode"> <span data-i18n="mode.dont_show">Don't show again</span>
     </label>
   </div>
@@ -504,7 +504,7 @@
           <span data-i18n="c2pa.content_type_label">Content Options</span>
           <div id="c2pa-write-types">
             <div class="c2pa-type-card" data-form-type="create">
-              <label class="c2pa-type-header">
+              <label class="c2pa-type-header" for="c2pa-write-create">
                 <input type="checkbox" id="c2pa-write-create" name="c2pa-write-create" value="create" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_digital">Digitally Created</span>
               </label>
@@ -514,7 +514,7 @@
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="edit">
-              <label class="c2pa-type-header">
+              <label class="c2pa-type-header" for="c2pa-write-edit">
                 <input type="checkbox" id="c2pa-write-edit" name="c2pa-write-edit" value="edit" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_edited">Edited / Modified</span>
               </label>
@@ -524,7 +524,7 @@
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">
-              <label class="c2pa-type-header">
+              <label class="c2pa-type-header" for="c2pa-write-ai">
                 <input type="checkbox" id="c2pa-write-ai" name="c2pa-write-ai" value="ai" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_ai">AI-Generated</span>
               </label>
@@ -534,7 +534,7 @@
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">
-              <label class="c2pa-type-header">
+              <label class="c2pa-type-header" for="c2pa-write-capture">
                 <input type="checkbox" id="c2pa-write-capture" name="c2pa-write-capture" value="capture" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_capture">Digitally Captured</span>
               </label>
@@ -544,7 +544,7 @@
               </div>
             </div>
             <div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">
-              <label class="c2pa-type-header">
+              <label class="c2pa-type-header" for="c2pa-write-composite">
                 <input type="checkbox" id="c2pa-write-composite" name="c2pa-write-composite" value="composite" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_composite">Composite</span>
               </label>
@@ -554,7 +554,7 @@
               </div>
             </div>
             <div class="c2pa-type-card dnt-card">
-              <label class="c2pa-type-header">
+              <label class="c2pa-type-header" for="c2pa-write-dnt">
                 <input type="checkbox" id="c2pa-write-dnt" name="c2pa-write-dnt" onchange="updateC2paWriteForm()">
                 <span class="c2pa-type-name" data-i18n="c2pa.type_dnt">Do Not Train AI</span>
               </label>
