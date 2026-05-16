@@ -1,12 +1,13 @@
 // ── Internationalization ──
 var i18n = { lang: 'en', data: {} };
-var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh'];
+var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
 // Browser language fallback mapping
 
 // Fallback language mapping for browser language
 var BROWSER_LANGUAGE_MAP = {
   'en': 'en', 'ar': 'ar', 'fr': 'fr', 'de': 'de', 'es': 'es', 'zh': 'zh',
+  'ja': 'ja', 'ko': 'ko',
   'pt': 'pt', 'it': 'it', 'ja': 'ja', 'ko': 'ko', 'ru': 'ru', 'hi': 'hi',
   'ur': 'ur', 'bn': 'bn', 'id': 'id', 'ms': 'ms', 'th': 'th', 'vi': 'vi',
   'tl': 'tl', 'tr': 'tr', 'fa': 'fa', 'he': 'he', 'nl': 'nl', 'sv': 'sv',
@@ -47,7 +48,9 @@ function langBtnText(lang) {
     'fr': 'English',
     'de': 'English',
     'es': 'English',
-    'zh': 'English'
+    'zh': 'English',
+    'ja': 'English',
+    'ko': 'English'
   };
   return alternatives[lang] || 'English';
 }
@@ -65,7 +68,9 @@ function getLanguageDisplayName(lang) {
     'fr': 'Français',
     'de': 'Deutsch',
     'es': 'Español',
-    'zh': '中文'
+    'zh': '中文',
+    'ja': '日本語',
+    'ko': '한국어'
   };
   return names[lang] || lang;
 }
