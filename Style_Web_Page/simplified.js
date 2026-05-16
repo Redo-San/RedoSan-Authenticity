@@ -52,16 +52,16 @@ function detectFileType(file) {
 }
 
 function buildSteps(type, isAI) {
-  var s = [{ id: 'upload', label: 'Upload' }];
+  var s = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
   if (type === 'image') {
-    s.push({ id: 'ai-question', label: 'Type' });
-    if (isAI) s.push({ id: 'c2pa', label: 'C2PA' });
-    s.push({ id: 'watermark', label: 'Watermark' });
-    s.push({ id: 'pixel-injection', label: 'Inject' });
+    s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
+    if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
+    s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
+    s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
   }
-  s.push({ id: 'timestamp', label: 'Timestamp' });
-  s.push({ id: 'fingerprint', label: 'Fingerprint' });
-  s.push({ id: 'done', label: 'Done' });
+  s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
+  s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
+  s.push({ id: 'done', label: __('simple.step_done', 'Done') });
   return s;
 }
 
@@ -71,7 +71,7 @@ function initSimplified() {
   simpleFile = null; simpleBuf = null; simpleType = null;
   simpleIsAI = false; simpleStep = 0; simpleSteps = [];
   simpleResults = {};
-  var steps = [{ id: 'upload', label: 'Upload' }];
+  var steps = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
   simpleSteps = steps;
   document.getElementById('simpleNav').style.display = '';
   renderStep();
@@ -205,7 +205,7 @@ function simpleFileSelected(input) {
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
   if (type === 'image') {
-    simpleSteps = [{ id: 'upload', label: 'Upload' }, { id: 'ai-question', label: 'Type' }];
+    simpleSteps = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }, { id: 'ai-question', label: __('simple.step_type', 'Type') }];
   } else {
     simpleSteps = buildSteps(type, false);
   }
