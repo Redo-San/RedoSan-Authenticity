@@ -8,6 +8,12 @@ var simpleStep = 0;
 var simpleSteps = [];
 var simpleResults = {};
 var simpleStepDone = false;
+var simpleUserInfo = {
+  name: '', email: '', phone: '', website: '',
+  social: { tiktok: '', facebook: '', instagram: '', youtube: '' },
+  isArtist: false,
+  music: { spotify: '', appleMusic: '', youtubeMusic: '', soundcloud: '', bandcamp: '' }
+};
 
 function initMode() {
   var mode = localStorage.getItem('redosan_mode');
@@ -87,6 +93,12 @@ function initSimplified() {
   simpleFile = null; simpleBuf = null; simpleType = null;
   simpleIsAI = false; simpleStep = 0; simpleSteps = [];
   simpleResults = {};
+  simpleUserInfo = {
+    name: '', email: '', phone: '', website: '',
+    social: { tiktok: '', facebook: '', instagram: '', youtube: '' },
+    isArtist: false,
+    music: { spotify: '', appleMusic: '', youtubeMusic: '', soundcloud: '', bandcamp: '' }
+  };
   var steps = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
   simpleSteps = steps;
   document.getElementById('simpleNav').style.display = '';
@@ -135,6 +147,7 @@ function renderProgress() {
 function simpleNext() {
   var step = simpleSteps[simpleStep];
   if (step.id === 'upload' && !simpleFile) return;
+  if (step.id === 'upload') saveSimpleUserInfo();
   // Timestamp/fingerprint must complete before advancing
   if ((step.id === 'timestamp' || step.id === 'fingerprint') && !simpleStepDone) return;
   if (step.id === 'done') { restartSimple(); return; }
@@ -157,16 +170,75 @@ function restartSimple() {
 // ── Step renderers ──
 
 function renderUpload(body) {
+  var socialVal = simpleUserInfo.social || {};
+  var musicVal = simpleUserInfo.music || {};
   body.innerHTML =
     '<div class="simple-card"><h2>' + __('simple.upload_title') + '</h2><p>' + __('simple.upload_desc') + '</p>' +
     '<div class="simple-upload-zone" id="simpleDropZone" onclick="document.getElementById(\'simpleFileInput\').click()">' +
     '<div class="dz-icon">📂</div>' +
     '<div class="dz-text">' + __('simple.drop_text') + '</div></div>' +
     '<input type="file" id="simpleFileInput" style="display:none" onchange="simpleFileSelected(this)">' +
-    '<div id="simpleFileInfo"></div></div>';
+    '<div id="simpleFileInfo"></div>' +
+    '<div class="simple-info-section" style="margin-top:20px;text-align:left">' +
+    '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information (optional)') + '</h3>' +
+    '<div class="form-group"><label>' + __('simple.info_name', 'Full Name') + '</label>' +
+    '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' + __('simple.info_name_ph', 'e.g. John Doe') + '" value="' + escHtml(simpleUserInfo.name) + '"></div>' +
+    '<div class="form-group"><label>' + __('simple.info_email', 'Email') + '</label>' +
+    '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' + __('simple.info_email_ph', 'e.g. john@example.com') + '" value="' + escHtml(simpleUserInfo.email) + '"></div>' +
+    '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + '</label>' +
+    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. +1 234 567 890') + '" value="' + escHtml(simpleUserInfo.phone) + '"></div>' +
+    '<div class="form-group"><label>' + __('simple.info_website', 'Website') + '</label>' +
+    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '"></div>' +
+    '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
+    '<div class="simple-social-grid">' +
+    '<input type="url" id="sinfo-tiktok" placeholder="TikTok URL" value="' + escHtml(socialVal.tiktok || '') + '">' +
+    '<input type="url" id="sinfo-facebook" placeholder="Facebook URL" value="' + escHtml(socialVal.facebook || '') + '">' +
+    '<input type="url" id="sinfo-instagram" placeholder="Instagram URL" value="' + escHtml(socialVal.instagram || '') + '">' +
+    '<input type="url" id="sinfo-youtube" placeholder="YouTube URL" value="' + escHtml(socialVal.youtube || '') + '">' +
+    '</div>' +
+    '<label class="simple-artist-check" style="display:flex;align-items:center;gap:8px;margin:14px 0 8px;cursor:pointer;font-size:0.9rem">' +
+    '<input type="checkbox" id="sinfo-isArtist"' + (simpleUserInfo.isArtist ? ' checked' : '') + ' onchange="toggleArtistFields()"> ' +
+    __('simple.info_artist', 'I am an artist / musician') +
+    '</label>' +
+    '<div id="sinfo-artist-fields" style="display:' + (simpleUserInfo.isArtist ? '' : 'none') + '">' +
+    '<h4 style="font-size:0.9rem;margin:0 0 8px;color:var(--text-muted)">' + __('simple.info_music', 'Music Platforms') + '</h4>' +
+    '<div class="simple-social-grid">' +
+    '<input type="url" id="sinfo-spotify" placeholder="Spotify URL" value="' + escHtml(musicVal.spotify || '') + '">' +
+    '<input type="url" id="sinfo-applemusic" placeholder="Apple Music URL" value="' + escHtml(musicVal.appleMusic || '') + '">' +
+    '<input type="url" id="sinfo-ytmusic" placeholder="YouTube Music URL" value="' + escHtml(musicVal.youtubeMusic || '') + '">' +
+    '<input type="url" id="sinfo-soundcloud" placeholder="SoundCloud URL" value="' + escHtml(musicVal.soundcloud || '') + '">' +
+    '<input type="url" id="sinfo-bandcamp" placeholder="Bandcamp URL" value="' + escHtml(musicVal.bandcamp || '') + '">' +
+    '</div></div></div></div>';
   setupSimpleDropZone();
-  // Restore file info if already selected
   if (simpleFile) restoreUploadFileInfo();
+}
+
+function toggleArtistFields() {
+  var cb = document.getElementById('sinfo-isArtist');
+  var fields = document.getElementById('sinfo-artist-fields');
+  if (fields) fields.style.display = cb && cb.checked ? '' : 'none';
+}
+
+function saveSimpleUserInfo() {
+  simpleUserInfo.name = (document.getElementById('sinfo-name') || {}).value || '';
+  simpleUserInfo.email = (document.getElementById('sinfo-email') || {}).value || '';
+  simpleUserInfo.phone = (document.getElementById('sinfo-phone') || {}).value || '';
+  simpleUserInfo.website = (document.getElementById('sinfo-website') || {}).value || '';
+  simpleUserInfo.social = {
+    tiktok: (document.getElementById('sinfo-tiktok') || {}).value || '',
+    facebook: (document.getElementById('sinfo-facebook') || {}).value || '',
+    instagram: (document.getElementById('sinfo-instagram') || {}).value || '',
+    youtube: (document.getElementById('sinfo-youtube') || {}).value || ''
+  };
+  var cb = document.getElementById('sinfo-isArtist');
+  simpleUserInfo.isArtist = cb ? cb.checked : false;
+  simpleUserInfo.music = {
+    spotify: (document.getElementById('sinfo-spotify') || {}).value || '',
+    appleMusic: (document.getElementById('sinfo-applemusic') || {}).value || '',
+    youtubeMusic: (document.getElementById('sinfo-ytmusic') || {}).value || '',
+    soundcloud: (document.getElementById('sinfo-soundcloud') || {}).value || '',
+    bandcamp: (document.getElementById('sinfo-bandcamp') || {}).value || ''
+  };
 }
 
 function setupSimpleDropZone() {
@@ -670,6 +742,20 @@ function renderDone(body) {
 
   if (results.c2pa) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.c2pa_label') + '</h3><p>' + __('simple.c2pa_done_desc') + '</p></div>');
+  }
+
+  // Certificate download section
+  var hasAnyResult = results.watermark || results['pixel-injection'] || results.timestamp || results.fingerprint;
+  if (hasAnyResult) {
+    sections.push('<div class="simple-done-section simple-cert-section">' +
+      '<h3>' + __('simple.cert_title', 'Digital Passport') + '</h3>' +
+      '<p style="font-size:0.82rem;color:var(--text-muted);margin:4px 0 12px">' +
+      __('simple.cert_desc', 'Download a signed document with all results, image preview, and QR verification code.') + '</p>' +
+      '<div class="simple-cert-btns">' +
+      '<button class="btn cert-btn" onclick="downloadCert(\'pdf\', this)" style="background:#d32f2f;color:#fff">📄 PDF</button>' +
+      '<button class="btn cert-btn" onclick="downloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
+      '<button class="btn cert-btn" onclick="downloadCert(\'epub\', this)" style="background:#7ab55c;color:#fff">📖 EPUB</button>' +
+      '</div></div>');
   }
 
   var mainHtml = '<div class="simple-card simple-done"><h2>' + __('simple.done_title') + '</h2>' +

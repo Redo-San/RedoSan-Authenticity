@@ -712,6 +712,28 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   border-top: 1px solid var(--border);
 }
 
+/* ── Simplified info fields (step 1) ── */
+.simple-info-section { border-top: 1px solid var(--border); padding-top: 16px; }
+.simple-info-section .form-group { margin-bottom: 8px; }
+.simple-info-section .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 3px; }
+.simple-info-field { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 0.85rem; }
+.simple-social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.simple-social-grid input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 0.82rem; box-sizing: border-box; }
+.simple-artist-check input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+/* ── Certificate section (done page) ── */
+.simple-cert-section { text-align: center; border: 2px solid var(--primary); }
+.simple-cert-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.cert-btn { min-width: 100px; min-height: 44px; font-size: 0.85rem; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: opacity .2s; }
+.cert-btn:hover { opacity: .85; }
+.cert-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+@media (max-width: 480px) {
+  .simple-social-grid { grid-template-columns: 1fr; }
+  .simple-cert-btns { flex-direction: column; align-items: center; }
+  .cert-btn { width: 100%; max-width: 200px; }
+}
+
 /* ── Floating Music Player ── */
 .music-btn {
   position: fixed;

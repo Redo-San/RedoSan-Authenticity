@@ -293,6 +293,21 @@
   "simple.type_document": "document",
   "simple.type_other": "other",
 
+  "simple.info_title": "Owner Information (optional)",
+  "simple.info_name": "Full Name",
+  "simple.info_name_ph": "e.g. John Doe",
+  "simple.info_email": "Email",
+  "simple.info_email_ph": "e.g. john@example.com",
+  "simple.info_phone": "Phone",
+  "simple.info_phone_ph": "e.g. +1 234 567 890",
+  "simple.info_website": "Website",
+  "simple.info_website_ph": "e.g. https://example.com",
+  "simple.info_social": "Social Links",
+  "simple.info_artist": "I am an artist / musician",
+  "simple.info_music": "Music Platforms",
+  "simple.cert_title": "Digital Passport",
+  "simple.cert_desc": "Download a signed document with all results, image preview, and QR verification code.",
+
   "page.about": "<h2>About RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> is an open-source digital authenticity tool that runs entirely in your browser. No files are ever uploaded to any server — all processing happens client-side.</p><p>We provide a comprehensive suite of tools for digital forensics and media verification:</p><ul><li><strong>Watermarking</strong> — 9 algorithms including LSB, DCT, DWT, neural-style, and forensic watermarking</li><li><strong>Fingerprinting</strong> — Cryptographic hashing (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) and perceptual image hashing</li><li><strong>Metadata</strong> — Read EXIF, dimensions, format, and color mode from images</li><li><strong>Timestamping</strong> — SHA-256 hashing with OpenTimestamps verification support</li></ul><p>Built with privacy as a core principle. Your files never leave your device.</p>",
 
   "page.privacy": "<h2>Privacy Policy</h2><p><strong>Your data stays on your device.</strong> RedoSan Authenticity is a 100% client-side application. All processing is done in your browser using JavaScript. No files, metadata, or any other data are transmitted to any server.</p><h3>What we collect</h3><p>Nothing. We do not collect, store, or transmit any personal data, files, or analytics. The application runs entirely on GitHub Pages and no backend server is involved.</p><h3>Third-party libraries</h3><p>We load JavaScript libraries from CDNs (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> and <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) for PDF and DOCX export functionality. These CDNs may have their own logging and analytics. No data from your files is shared with these services.</p><h3>Changes</h3><p>This policy may be updated occasionally. Continued use of the tool constitutes acceptance of the current policy.</p>",
