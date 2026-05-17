@@ -92,15 +92,21 @@
 
 <!-- Simplified Mode Container -->
 <div id="simplifiedMode" style="display:none">
-   <div class="simple-top">
-    <div class="simple-top-left">
-      <button class="simple-mode-switch" onclick="switchMode()" data-i18n="simple.pro_mode_btn">⚙️ Professional</button>
-      <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="simpleThemeBtn">🌙</button>
-    </div>
-    <div class="simple-top-right">
-      <div class="lang-dropdown" style="position:relative">
-        <button class="lang-btn" onclick="toggleSimpleLangDropdown()" id="simpleLangBtn">English</button>
-        <div class="lang-menu" id="simpleLangMenu">
+    <div class="simple-top">
+     <div class="simple-top-left">
+       <button class="simple-mode-switch" onclick="switchMode()" data-i18n="simple.pro_mode_btn">⚙️ Professional</button>
+       <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="simpleThemeBtn">🌙</button>
+     </div>
+     <div class="simple-nav-links">
+       <a href="#" data-page="about" data-i18n="nav.about">About</a>
+       <a href="#" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
+       <a href="#" data-page="contact" data-i18n="nav.contact">Contact</a>
+       <a href="#" data-page="social" data-i18n="nav.social">Social</a>
+     </div>
+     <div class="simple-top-right">
+       <div class="lang-dropdown" style="position:relative">
+         <button class="lang-btn" onclick="toggleSimpleLangDropdown()" id="simpleLangBtn">English</button>
+         <div class="lang-menu" id="simpleLangMenu">
           <a href="#" onclick="switchLang('en'); return false;" class="lang-option" data-lang="en">English</a>
           <a href="#" onclick="switchLang('ar'); return false;" class="lang-option" data-lang="ar">العربية</a>
           <a href="#" onclick="switchLang('fr'); return false;" class="lang-option" data-lang="fr">Français</a>

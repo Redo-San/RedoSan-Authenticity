@@ -121,17 +121,28 @@ body {
 }
 
 /* ── Search (nav) ── */
+@media (max-width: 767px) {
+  .nav-search input { font-size: 0.75rem; }
+  .nav-search { width: 140px; }
+  .nav-search.focused { width: 180px; }
+}
+@media (max-width: 480px) {
+  .nav-search { width: 120px; }
+  .nav-search.focused { width: 150px; }
+  .nav-search .search-results {
+    width: calc(100vw - 24px);
+    left: 0;
+    max-height: 280px;
+  }
+}
 @media (max-width: 359px) {
-  .nav-search { width: 100%; margin: 0; }
-  .nav-search.focused { width: 100%; }
+  .nav-search { width: 80px; }
+  .nav-search.focused { width: 130px; }
   .nav-search .search-results {
     width: calc(100vw - 24px);
     left: -4px;
     max-height: 280px;
   }
-}
-@media (max-width: 767px) {
-  .nav-search input { font-size: 0.75rem; }
 }
 
 /* ── Language dropdown overflow fix ── */
@@ -327,7 +338,6 @@ body {
      Samsung Z Fold 5/6/7 cover: 301-412px wide
      Hide non-essential nav items to prevent overflow */
 @media (max-width: 359px) {
-  .nav-search { display: none; }
   .simple-progress { gap: 1px; }
   .sp-step { font-size: 0.55rem; padding: 2px 2px; gap: 3px; }
   .sp-line { min-width: 5px; }

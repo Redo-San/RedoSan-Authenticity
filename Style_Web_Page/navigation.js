@@ -10,7 +10,7 @@ function closeSidebar() {
 }
 
 // ── Page navigation ──
-document.querySelectorAll('.nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page]').forEach(a => {
+document.querySelectorAll('.nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .simple-nav-links a[data-page]').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
     showPage(a.dataset.page);
