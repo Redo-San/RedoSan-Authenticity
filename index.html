@@ -251,7 +251,7 @@
         </div>
         <div class="form-group" id="wm-secret-group">
           <label for="wm-secret" data-i18n="wm.secret_label">Secret file</label>
-<input type="file" id="wm-secret" name="wm-secret">
+<input type="file" id="wm-secret" name="wm-secret" accept="image/png,image/jpeg">
           <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="wm.secret_hint">Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores this.</p>
           <p id="wm-secret-status" style="font-size:0.75rem;margin-top:2px"></p>
         </div>
@@ -304,7 +304,7 @@
     <div class="card-form">
       <div class="form-group">
         <label for="fp-file" data-i18n="fp.file_label">File</label>
-<input type="file" id="fp-file" name="fp-file">
+<input type="file" id="fp-file" name="fp-file" accept="image/*,audio/*,video/*,.pdf">
       </div>
       <button class="btn" onclick="handleFingerprint()" id="fp-btn" data-i18n="fp.submit">Generate Fingerprint</button>
       <div class="spinner" id="fp-spinner"></div>

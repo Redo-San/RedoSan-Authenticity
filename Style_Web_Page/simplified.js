@@ -177,7 +177,7 @@ function renderUpload(body) {
     '<div class="simple-upload-zone" id="simpleDropZone" onclick="document.getElementById(\'simpleFileInput\').click()">' +
     '<div class="dz-icon">📂</div>' +
     '<div class="dz-text">' + __('simple.drop_text') + '</div></div>' +
-    '<input type="file" id="simpleFileInput" style="display:none" onchange="simpleFileSelected(this)">' +
+    '<input type="file" id="simpleFileInput" style="display:none" accept="image/*,audio/*,video/*,.pdf" onchange="simpleFileSelected(this)">' +
     '<div id="simpleFileInfo"></div>' +
     '<div class="simple-info-section" style="margin-top:20px;text-align:left">' +
     '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information (optional)') + '</h3>' +
