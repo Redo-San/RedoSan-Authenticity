@@ -16,14 +16,10 @@ var simpleUserInfo = {
 };
 
 function initMode() {
-  var mode = localStorage.getItem('redosan_mode');
-  if (mode === 'simplified') setMode('simplified');
-  else if (mode === 'professional') setMode('professional');
+  // Mode overlay is always shown on first load
 }
 
 function setMode(mode) {
-  if (document.getElementById('rememberMode').checked)
-    localStorage.setItem('redosan_mode', mode);
   document.getElementById('modeSelect').style.display = 'none';
   if (mode === 'simplified') {
     document.getElementById('mainNav').style.display = 'none';
@@ -45,7 +41,6 @@ function switchMode() {
   document.getElementById('sidebarOverlay').style.display = '';
   document.getElementById('app').style.display = '';
   document.getElementById('mainFooter').style.display = '';
-  localStorage.removeItem('redosan_mode');
   // Reset to home page
   showPage('home');
 }
@@ -59,7 +54,6 @@ function showModeSelect() {
   document.getElementById('sidebarOverlay').style.display = 'none';
   document.getElementById('app').style.display = 'none';
   document.getElementById('mainFooter').style.display = 'none';
-  localStorage.removeItem('redosan_mode');
 }
 
 // ── File type detection ──

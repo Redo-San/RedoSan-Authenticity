@@ -482,7 +482,7 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   position: fixed; inset: 0; z-index: 9999;
   background: var(--bg);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 24px;
+  padding: 24px; overflow: hidden;
 }
 .mode-select-bar {
   position: fixed; top: 0; left: 0; right: 0;
@@ -508,7 +508,6 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .mode-card-icon { font-size: 2.4rem; margin-bottom: 12px; }
 .mode-card h3 { margin: 0 0 8px; font-size: 1.05rem; }
 .mode-card p { margin: 0; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; }
-.mode-remember { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
 
 /* ── Simplified mode ── */
 #simplifiedMode {
@@ -625,7 +624,6 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   .mode-card h3 { font-size: 0.95rem; }
   .mode-card p { font-size: 0.78rem; }
   .mode-select-bar { padding: 6px 10px; }
-  .mode-remember { font-size: 0.8rem; }
   /* simplified cards */
   .simple-card { padding: 20px 14px; }
   .simple-card h2 { font-size: 1.15rem; }
