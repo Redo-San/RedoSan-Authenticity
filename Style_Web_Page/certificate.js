@@ -590,7 +590,8 @@ async function downloadCertEPUB(data) {
 
   var manifestItems = [
     { id: 'content', href: 'content.xhtml', mt: 'application/xhtml+xml' },
-    { id: 'style', href: 'style.css', mt: 'text/css' }
+    { id: 'style', href: 'style.css', mt: 'text/css' },
+    { id: 'ncx', href: 'toc.ncx', mt: 'application/x-dtbncx+xml' }
   ];
   if (data.file.dataUrl) {
     var imgExt = data.file.type === 'image/png' ? 'png' : 'jpg';
@@ -598,9 +599,16 @@ async function downloadCertEPUB(data) {
   }
   manifestItems.push({ id: 'qr', href: 'images/qr.png', mt: 'image/png' });
 
-  var spine = manifestItems.filter(function(m) { return m.id === 'content'; }).concat(
-    manifestItems.filter(function(m) { return m.id !== 'content' && m.id !== 'style'; })
-  );
+  var spineItems = manifestItems.filter(function(m) { return m.mt === 'application/xhtml+xml'; });
+
+  var ncx = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">' +
+    '<head><meta name="dtb:uid" content="urn:uuid:' + makeUUID() + '"/></head>' +
+    '<docTitle><text>Digital Passport</text></docTitle>' +
+    '<navMap><navPoint id="np-1" playOrder="1">' +
+    '<navLabel><text>Digital Passport</text></navLabel>' +
+    '<content src="content.xhtml"/>' +
+    '</navPoint></navMap></ncx>';
 
   var opf = '<?xml version="1.0" encoding="UTF-8"?>' +
     '<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="uid">' +
@@ -614,14 +622,15 @@ async function downloadCertEPUB(data) {
     opf += '<item id="' + manifestItems[mi].id + '" href="' + manifestItems[mi].href + '" media-type="' + manifestItems[mi].mt + '"/>';
   }
   opf += '</manifest><spine toc="ncx">';
-  for (var si = 0; si < spine.length; si++) {
-    opf += '<itemref idref="' + spine[si].id + '"/>';
+  for (var si = 0; si < spineItems.length; si++) {
+    opf += '<itemref idref="' + spineItems[si].id + '"/>';
   }
   opf += '</spine></package>';
 
   zip.folder('OEBPS').file('content.opf', opf);
   zip.folder('OEBPS').file('content.xhtml', xhtml);
   zip.folder('OEBPS').file('style.css', css);
+  zip.folder('OEBPS').file('toc.ncx', ncx);
   if (data.file.dataUrl) {
     var imgExt = data.file.type === 'image/png' ? 'png' : 'jpg';
     zip.folder('OEBPS').folder('images').file('photo.' + imgExt, imgBase64, { base64: true });
