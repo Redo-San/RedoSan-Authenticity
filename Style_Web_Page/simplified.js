@@ -296,6 +296,12 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
     return;
   }
+  var dangerous = await checkDangerousContent(file);
+  if (dangerous) {
+    alert(__('shared.dangerous_content', 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.') || 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.');
+    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    return;
+  }
   simpleFile = file;
   var type = detectFileType(file);
   var dz = document.getElementById('simpleDropZone');

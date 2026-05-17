@@ -77,6 +77,35 @@ function matchesMagicBytes(file) {
   });
 }
 
+var DANGEROUS_PATTERNS = [
+  /<script[\s>]/i,
+  /(?:^|\s)on\w+\s*=\s*["']/i,
+  /javascript\s*:/i,
+  /vbscript\s*:/i,
+  /data\s*:\s*text\/html/i,
+  /<\s*foreignObject[\s>]/i,
+];
+
+function hasDangerousContent(arr) {
+  var dec = new TextDecoder('utf-8', { fatal: false });
+  var s = dec.decode(arr.slice(0, 4096));
+  for (var i = 0; i < DANGEROUS_PATTERNS.length; i++) {
+    if (DANGEROUS_PATTERNS[i].test(s)) return true;
+  }
+  return false;
+}
+
+function checkDangerousContent(file) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      resolve(hasDangerousContent(new Uint8Array(reader.result)));
+    };
+    reader.onerror = function() { resolve(false); };
+    reader.readAsArrayBuffer(file.slice(0, 4096));
+  });
+}
+
 function matchesAccept(file, acceptAttr) {
   if (!acceptAttr) return true;
   var name = file.name.toLowerCase();
@@ -120,6 +149,12 @@ async function validateFileInput(input) {
     clearInputFiles(input);
     return false;
   }
+  var dangerous = await checkDangerousContent(file);
+  if (dangerous) {
+    alert(__('shared.dangerous_content', 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.') || 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.');
+    clearInputFiles(input);
+    return false;
+  }
   return true;
 }
 
@@ -152,6 +187,12 @@ async function getFile(id) {
     var magicOk = await matchesMagicBytes(file);
     if (!magicOk) {
       alert(__('shared.corrupt_file', 'This file appears to be corrupted or has an incorrect format.') || 'This file appears to be corrupted or has an incorrect format.');
+      input.value = '';
+      return null;
+    }
+    var dangerous = await checkDangerousContent(file);
+    if (dangerous) {
+      alert(__('shared.dangerous_content', 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.') || 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.');
       input.value = '';
       return null;
     }
