@@ -353,6 +353,7 @@
   "shared.wrong_type": "Please select a valid file type for this tool.",
   "shared.corrupt_file": "This file appears to be corrupted or has an incorrect format.",
   "shared.dangerous_content": "This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.",
+  "shared.dangerous_document": "This document contains potentially dangerous features (embedded JavaScript, auto-execute actions, external launches, embedded files) and is not allowed.",
   "shared.bad_structure": "This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.",
 
   "dl.title": "Download Fingerprint",

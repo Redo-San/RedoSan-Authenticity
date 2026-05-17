@@ -304,6 +304,12 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
     return;
   }
+  var docOk = await checkDocumentThreats(file);
+  if (!docOk) {
+    alert(__('shared.dangerous_document', 'This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.') || 'This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.');
+    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    return;
+  }
   var structOk = await checkFileStructure(file);
   if (!structOk) {
     alert(__('shared.bad_structure', 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.') || 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.');

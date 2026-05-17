@@ -4,7 +4,7 @@ var BLOCKED_EXTS = ['.exe','.bat','.cmd','.com','.msi','.scr','.pif',
   '.vbs','.vbe','.js','.jse','.wsf','.wsh','.ps1','.psm1','.psd1',
   '.py','.pyc','.rb','.pl','.sh','.bash','.dll','.sys','.ocx',
   '.app','.jar','.msu','.msp','.reg','.inf','.gadget','.cpl','.mst',
-  '.hta','.ws','.vb','.vba','.swf','.action'];
+  '.hta','.ws','.vb','.vba','.swf','.action','.epub','.xps','.oxps'];
 
 function isDangerousFile(file) {
   var name = file.name.toLowerCase();
@@ -84,6 +84,18 @@ var DANGEROUS_PATTERNS = [
   /vbscript\s*:/i,
   /data\s*:\s*text\/html/i,
   /<\s*foreignObject[\s>]/i,
+  /<!ENTITY\s+/i,
+  /<!DOCTYPE\s+\w+\s+SYSTEM/i,
+  /<\s*xi:include[\s>]/i,
+  /<\s*xi:fallback[\s>]/i,
+];
+
+var DOC_THREAT_PATTERNS = [
+  { pattern: /\/JavaScript[\s<]/i, label: 'embedded JavaScript' },
+  { pattern: /\/JS\s+\d+\s+0\s+R/i, label: 'embedded JavaScript' },
+  { pattern: /\/OpenAction[\s<]/i, label: 'auto-execute action' },
+  { pattern: /\/Launch[\s<]/i, label: 'launch external app' },
+  { pattern: /\/EmbeddedFiles[\s<]/i, label: 'embedded file attachments' },
 ];
 
 function hasDangerousContent(arr) {
@@ -103,6 +115,28 @@ function checkDangerousContent(file) {
     };
     reader.onerror = function() { resolve(false); };
     reader.readAsArrayBuffer(file.slice(0, 4096));
+  });
+}
+
+function checkDocumentThreats(file) {
+  return new Promise(function(resolve) {
+    if (file.type !== 'application/pdf') { resolve(true); return; }
+    if (file.size > 10 * 1024 * 1024) { resolve(true); return; }
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      var arr = new Uint8Array(reader.result);
+      var dec = new TextDecoder('utf-8', { fatal: false });
+      var s = dec.decode(arr);
+      for (var i = 0; i < DOC_THREAT_PATTERNS.length; i++) {
+        if (DOC_THREAT_PATTERNS[i].pattern.test(s)) {
+          resolve(false);
+          return;
+        }
+      }
+      resolve(true);
+    };
+    reader.onerror = function() { resolve(true); };
+    reader.readAsArrayBuffer(file);
   });
 }
 
@@ -192,6 +226,12 @@ async function validateFileInput(input) {
     clearInputFiles(input);
     return false;
   }
+  var docOk = await checkDocumentThreats(file);
+  if (!docOk) {
+    alert(__('shared.dangerous_document', 'This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.') || 'This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.');
+    clearInputFiles(input);
+    return false;
+  }
   var structOk = await checkFileStructure(file);
   if (!structOk) {
     alert(__('shared.bad_structure', 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.') || 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.');
@@ -236,6 +276,12 @@ async function getFile(id) {
     var dangerous = await checkDangerousContent(file);
     if (dangerous) {
       alert(__('shared.dangerous_content', 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.') || 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.');
+      input.value = '';
+      return null;
+    }
+    var docOk = await checkDocumentThreats(file);
+    if (!docOk) {
+      alert(__('shared.dangerous_document', 'This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.') || 'This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.');
       input.value = '';
       return null;
     }
