@@ -30,13 +30,27 @@ function showPage(name) {
   if (nav) nav.classList.add('active');
   // Initialize sub-tabs
   if (name === 'timestamp') { if (typeof switchOtsTab === 'function') switchOtsTab('create'); }
-  // Update URL hash for direct linking
-  if (name && name !== 'home') {
-    history.replaceState(null, '', '#/' + name);
-  } else {
-    history.replaceState(null, '', window.location.pathname.replace(/\/+$/, '') + '/');
+  // Update URL hash for direct linking (professional mode only)
+  var isProfessional = document.getElementById('mainNav') && document.getElementById('mainNav').style.display !== 'none';
+  if (isProfessional) {
+    if (name && name !== 'home') {
+      history.pushState({ page: name }, '', '#/' + name);
+    } else {
+      history.pushState({ page: 'home' }, '', window.location.pathname.replace(/\/+$/, '') + '/');
+    }
   }
 }
+
+// Restore page state on browser back/forward
+window.addEventListener('popstate', function(e) {
+  var state = e.state;
+  if (state && state.page) {
+    var isProfessional = document.getElementById('mainNav') && document.getElementById('mainNav').style.display !== 'none';
+    if (isProfessional || document.getElementById('page-' + state.page)) {
+      showPage(state.page);
+    }
+  }
+});
 
 // Handle hash-based navigation on load
 function handleHashNav() {
@@ -55,10 +69,17 @@ function handleHashNav() {
     }, 500);
   }
 }
-document.addEventListener('DOMContentLoaded', handleHashNav);
+// Initialize first history state
+function initNav() {
+  if (!history.state || !history.state.page) {
+    history.replaceState({ page: 'home' }, '', window.location.pathname.replace(/\/+$/, '') + '/');
+  }
+  handleHashNav();
+}
+document.addEventListener('DOMContentLoaded', initNav);
 // Also run immediately if DOM already loaded
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  handleHashNav();
+  initNav();
 }
 
 // ── Tab switching ──
