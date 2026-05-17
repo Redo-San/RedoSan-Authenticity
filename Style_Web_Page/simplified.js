@@ -461,6 +461,14 @@ function renderWatermarkStep(body) {
     var cardForm = body.querySelector('.card-form');
     if (cardForm) cardForm.insertBefore(nameEl, cardForm.firstChild);
   }
+  // Add capacity hint below secret file section
+  var secretStatus = document.getElementById('swm-secret-status');
+  if (secretStatus) {
+    var hint = document.createElement('p');
+    hint.style.cssText = 'font-size:0.7rem;color:var(--text-muted);margin-top:6px;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px';
+    hint.textContent = __('wm.secret_size_note', '💡 The secret image must be smaller than the cover image. Select a cover image first to see available capacity below.');
+    secretStatus.parentNode.insertBefore(hint, secretStatus.nextSibling);
+  }
 }
 
 function runWatermarkStep() {

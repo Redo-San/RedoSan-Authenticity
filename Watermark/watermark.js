@@ -441,3 +441,13 @@ async function handleAutoDetect() {
   } catch(e) { setText('wm-output', __('wm.detect_error').replace('{msg}', e.message)); }
   btn.disabled = false; spinner('wm-spinner', false);
 }
+
+// ── Live capacity updates ──
+document.addEventListener('DOMContentLoaded', function() {
+  var imgInput = document.getElementById('wm-image');
+  var secretInput = document.getElementById('wm-secret');
+  var typeSelect = document.getElementById('wm-type');
+  if (imgInput) imgInput.addEventListener('change', updateCapacity);
+  if (secretInput) secretInput.addEventListener('change', updateCapacity);
+  if (typeSelect) typeSelect.addEventListener('change', updateCapacity);
+});
