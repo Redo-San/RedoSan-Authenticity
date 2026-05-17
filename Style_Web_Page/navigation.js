@@ -41,7 +41,8 @@ function showPage(name) {
 
 window.addEventListener('popstate', function(e) {
   var state = e.state;
-  // Clean up page states for all branches
+  // Always hide simplified mode unless we explicitly restore it below
+  var showSimplified = false;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
   // Mode overlay → re-show the selection screen
@@ -51,12 +52,12 @@ window.addEventListener('popstate', function(e) {
     document.getElementById('simplifiedMode').style.display = 'none';
     document.getElementById('mainNav').style.display = '';
     document.getElementById('sidebar').style.display = '';
-    document.getElementById('sidebarOverlay').style.display = '';
+    document.getElementById('sidebarOverlay').style.display = 'none';
     document.getElementById('app').style.display = '';
     document.getElementById('mainFooter').style.display = '';
     return;
   }
-  // Within-a-mode → show the correct mode's home page
+  // Within-a-mode → restore the correct mode
   if (state.modeSet) {
     document.documentElement.style.overflow = '';
     document.getElementById('modeSelect').style.display = 'none';
@@ -79,9 +80,10 @@ window.addEventListener('popstate', function(e) {
     if (home) home.classList.add('active');
     return;
   }
-  // Page state (professional mode pages)
+  // Page state (professional mode navigation) — hide simplified mode
   document.documentElement.style.overflow = '';
   document.getElementById('modeSelect').style.display = 'none';
+  document.getElementById('simplifiedMode').style.display = 'none';
   var targetPage = (state && state.page) || 'home';
   var el = document.getElementById('page-' + targetPage);
   if (el) el.classList.add('active');
@@ -112,16 +114,17 @@ function handleHashNav() {
     }, 500);
   }
 }
-// Initialize first history state
+// Initialize first history state — runs exactly once
 function initNav() {
   handleHashNav();
-  if (!history.state) {
+  if (!history.state || !history.state.modeOverlay) {
     history.replaceState({ modeOverlay: true }, '', window.location.pathname.replace(/\/+$/, '') + '/');
   }
 }
-document.addEventListener('DOMContentLoaded', initNav);
-// Also run immediately if DOM already loaded
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
+// Run only via DOMContentLoaded to avoid double execution with defer scripts
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initNav);
+} else {
   initNav();
 }
 
