@@ -470,6 +470,11 @@ function runWatermarkStep() {
     if (result.ok) {
       btn.textContent = __('simple.watermarked');
       simpleResults.watermark = true;
+      simpleResults.watermarkAlgo = algo;
+      var algoNames = ['','Spatial LSB','Frequency DCT','Neural SS','Latent DCT','Zero-bit','Multi-bit','Forensic','Fragile','Imatag-style'];
+      simpleResults.watermarkAlgoName = algoNames[algo] || 'Algorithm ' + algo;
+      var wmOut = document.getElementById('wm-output');
+      if (wmOut && wmOut.textContent) simpleResults.watermarkResult = wmOut.textContent;
       var imgUrl = URL.createObjectURL(result.data);
       simpleResults.watermarkUrl = imgUrl;
       var card = btn.closest('.simple-card');
@@ -610,10 +615,11 @@ function runPixelInjectStep() {
     promise.then(function() {
       btn.textContent = __('simple.injected');
       simpleResults['pixel-injection'] = true;
-      var piDl = document.getElementById('pi-download');
-      if (piDl) simpleResults.piHtml = piDl.innerHTML;
       var resultDiv = document.getElementById('spi-result');
       var piOutput = document.getElementById('pi-output');
+      var piDownload = document.getElementById('pi-download');
+      if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
+      if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
       if (resultDiv && piOutput && piOutput.innerHTML) {
         resultDiv.innerHTML = '<div class="simple-pi-result" style="text-align:left;max-height:400px;overflow-y:auto;padding:12px;background:var(--bg);border-radius:8px;margin-top:12px">' + piOutput.innerHTML + '</div>';
       }
@@ -655,6 +661,8 @@ function runTimestampStep() {
         resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
       }
       simpleResults.timestamp = true;
+      var tsOut = document.getElementById('ts-output');
+      if (tsOut) simpleResults.tsResult = tsOut.textContent || '';
       var tsDl = document.getElementById('ts-download');
       if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
       simpleStepDone = true;

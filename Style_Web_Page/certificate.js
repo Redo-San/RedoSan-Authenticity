@@ -52,8 +52,12 @@ async function collectCertData() {
     file: { name: file ? file.name : '', size: file ? file.size : 0, type: file ? file.type : '' },
     watermark: !!results.watermark,
     watermarkUrl: results.watermarkUrl || null,
+    watermarkAlgo: results.watermarkAlgoName || '',
+    watermarkResult: results.watermarkResult || '',
     pixelInjection: !!results['pixel-injection'],
+    piResultHtml: results.piResultHtml || '',
     timestamp: !!results.timestamp,
+    tsResult: results.tsResult || '',
     fingerprint: !!results.fingerprint,
     fpResult: results.fpResult || null
   };
@@ -211,7 +215,15 @@ async function downloadCertPDF(data) {
     doc.text('Watermark', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text('Status: Embedded successfully', margin, y); y += 4;
+    doc.text('Algorithm: ' + (data.watermarkAlgo || 'Embedded'), margin, y); y += 4;
+    if (data.watermarkResult) {
+      doc.setFontSize(7);
+      var wmLines = doc.splitTextToSize(data.watermarkResult, pageW);
+      doc.text(wmLines, margin, y);
+      y += wmLines.length * 3.5;
+    } else {
+      doc.text('Watermark embedded successfully.', margin, y); y += 4;
+    }
     y += 2;
   }
 
@@ -223,7 +235,14 @@ async function downloadCertPDF(data) {
     doc.text('Pixel Injection', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text('Status: Injected successfully', margin, y); y += 4;
+    if (data.piResultHtml) {
+      var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      var piLines = doc.splitTextToSize(piText, pageW);
+      doc.text(piLines, margin, y);
+      y += piLines.length * 3.5;
+    } else {
+      doc.text('Message injected successfully.', margin, y); y += 4;
+    }
     y += 2;
   }
 
@@ -235,7 +254,13 @@ async function downloadCertPDF(data) {
     doc.text('Timestamp', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text('Status: Timestamped successfully', margin, y); y += 4;
+    if (data.tsResult) {
+      var tsLines = doc.splitTextToSize(data.tsResult, pageW);
+      doc.text(tsLines, margin, y);
+      y += tsLines.length * 3.5;
+    } else {
+      doc.text('Timestamp created successfully.', margin, y); y += 4;
+    }
     y += 2;
   }
 
@@ -369,30 +394,38 @@ async function downloadCertDOCX(data) {
   if (data.file.hash) addLabelValue('SHA-256', data.file.hash);
   children.push(new docx.Paragraph({ spacing: { after: 200 } }));
 
-  // 3. Embed image (DOCX doesn't support easy image embedding via browser)
-  // We skip the image in DOCX since docx library requires a file path for images
-  addBody('(Image preview not available in DOCX format. Use PDF for image preview.)');
-
-  children.push(new docx.Paragraph({ spacing: { after: 200 } }));
-
   // 4. Watermark
   if (data.watermark) {
     addHeading('Watermark', 2);
-    addBody('Status: Embedded successfully');
+    addLabelValue('Algorithm', data.watermarkAlgo || 'Embedded');
+    if (data.watermarkResult) {
+      addBody(data.watermarkResult);
+    } else {
+      addBody('Watermark embedded successfully.');
+    }
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
 
   // 5. Pixel Injection
   if (data.pixelInjection) {
     addHeading('Pixel Injection', 2);
-    addBody('Status: Injected successfully');
+    if (data.piResultHtml) {
+      var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      addBody(piText);
+    } else {
+      addBody('Message injected successfully.');
+    }
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
 
   // 6. Timestamp
   if (data.timestamp) {
     addHeading('Timestamp', 2);
-    addBody('Status: Timestamped successfully');
+    if (data.tsResult) {
+      addBody(data.tsResult);
+    } else {
+      addBody('Timestamp created successfully.');
+    }
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
 
@@ -429,11 +462,6 @@ async function downloadCertDOCX(data) {
     }
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
-
-  // 8. QR note
-  addHeading('Verification', 2);
-  addBody('Scan the QR code on the PDF version of this document to verify contents.');
-  addBody('The QR encodes file hashes, owner information, and result status for cross-checking.');
 
   var docObj = new docx.Document({ sections: [{ children: children }] });
   var blob = await docx.Packer.toBlob(docObj);
@@ -524,9 +552,9 @@ async function downloadCertEPUB(data) {
 
     (imgBase64 ? '<div class="img-wrapper"><img src="images/photo.' + (data.file.type === 'image/png' ? 'png' : 'jpg') + '" alt="Original Image"/></div>' : '') +
 
-    (data.watermark ? '<h2>Watermark</h2><p>Status: Embedded successfully</p>' : '') +
-    (data.pixelInjection ? '<h2>Pixel Injection</h2><p>Status: Injected successfully</p>' : '') +
-    (data.timestamp ? '<h2>Timestamp</h2><p>Status: Timestamped successfully</p>' : '') +
+    (data.watermark ? '<h2>Watermark</h2><p><strong>Algorithm:</strong> ' + escHtml(data.watermarkAlgo || 'Embedded') + '</p><pre>' + escHtml(data.watermarkResult || 'Watermark embedded successfully.') + '</pre>' : '') +
+    (data.pixelInjection ? '<h2>Pixel Injection</h2><pre>' + escHtml(data.piResultHtml ? data.piResultHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : 'Message injected successfully.') + '</pre>' : '') +
+    (data.timestamp ? '<h2>Timestamp</h2><pre>' + escHtml(data.tsResult || 'Timestamp created successfully.') + '</pre>' : '') +
 
     fpSection +
 
