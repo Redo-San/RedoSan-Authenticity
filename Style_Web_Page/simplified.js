@@ -21,6 +21,7 @@ function initMode() {
 
 function setMode(mode) {
   document.getElementById('modeSelect').style.display = 'none';
+  history.pushState({ modeSet: mode }, '', window.location.pathname.replace(/\/+$/, '') + '/');
   if (mode === 'simplified') {
     document.getElementById('mainNav').style.display = 'none';
     document.getElementById('sidebar').style.display = 'none';

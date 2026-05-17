@@ -41,10 +41,50 @@ function showPage(name) {
 
 window.addEventListener('popstate', function(e) {
   var state = e.state;
+  // Mode overlay → re-show the selection screen
+  if (!state || state.modeOverlay) {
+    document.getElementById('modeSelect').style.display = '';
+    document.getElementById('simplifiedMode').style.display = 'none';
+    document.getElementById('mainNav').style.display = '';
+    document.getElementById('sidebar').style.display = '';
+    document.getElementById('sidebarOverlay').style.display = '';
+    document.getElementById('app').style.display = '';
+    document.getElementById('mainFooter').style.display = '';
+    return;
+  }
+  // Within-a-mode → show the correct mode's home page
+  if (state.modeSet) {
+    document.getElementById('modeSelect').style.display = 'none';
+    document.getElementById('sidebarOverlay').style.display = 'none';
+    if (state.modeSet === 'simplified') {
+      document.getElementById('mainNav').style.display = 'none';
+      document.getElementById('sidebar').style.display = 'none';
+      document.getElementById('sidebarOverlay').style.display = 'none';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('mainFooter').style.display = 'none';
+      document.getElementById('simplifiedMode').style.display = '';
+    } else {
+      document.getElementById('simplifiedMode').style.display = 'none';
+      document.getElementById('mainNav').style.display = '';
+      document.getElementById('sidebar').style.display = '';
+      document.getElementById('app').style.display = '';
+      document.getElementById('mainFooter').style.display = '';
+    }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
+    var home = document.getElementById('page-home');
+    if (home) home.classList.add('active');
+    return;
+  }
+  // Page state (professional mode pages)
+  document.getElementById('modeSelect').style.display = 'none';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
   var targetPage = (state && state.page) || 'home';
   var el = document.getElementById('page-' + targetPage);
   if (el) el.classList.add('active');
+  var navItem = document.querySelector('.sidebar a[data-page="' + targetPage + '"]');
+  if (navItem) navItem.classList.add('active');
   if (el && el.closest('#app') && document.getElementById('mainNav').style.display === 'none') {
     document.getElementById('mainNav').style.display = '';
     document.getElementById('sidebar').style.display = '';
@@ -74,12 +114,7 @@ function handleHashNav() {
 function initNav() {
   handleHashNav();
   if (!history.state) {
-    var page = 'home';
-    var hash = window.location.hash;
-    if (hash && hash.indexOf('#/') === 0) page = hash.replace('#/', '');
-    var url = window.location.pathname.replace(/\/+$/, '') + '/';
-    if (page !== 'home') url += '#/' + page;
-    history.replaceState({ page: page }, '', url);
+    history.replaceState({ modeOverlay: true }, '', window.location.pathname.replace(/\/+$/, '') + '/');
   }
 }
 document.addEventListener('DOMContentLoaded', initNav);
