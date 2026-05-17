@@ -486,21 +486,11 @@ function runWatermarkStep() {
       simpleResults.watermarkAlgo = algo;
       var algoNames = ['','Spatial LSB','Frequency DCT','Neural SS','Latent DCT','Zero-bit','Multi-bit','Forensic','Fragile','Imatag-style'];
       simpleResults.watermarkAlgoName = algoNames[algo] || 'Algorithm ' + algo;
+      simpleResults.watermarkBlob = result.data;
+      simpleResults.watermarkUrl = URL.createObjectURL(result.data);
       var wmOut = document.getElementById('wm-output');
       if (wmOut && wmOut.textContent) simpleResults.watermarkResult = wmOut.textContent;
-      var imgUrl = URL.createObjectURL(result.data);
-      simpleResults.watermarkUrl = imgUrl;
-      var card = btn.closest('.simple-card');
-      var dlDiv = card.querySelector('.simple-wm-dl');
-      if (!dlDiv) {
-        dlDiv = document.createElement('div');
-        dlDiv.className = 'simple-wm-dl';
-        dlDiv.style.cssText = 'margin-top:12px;text-align:center';
-        btn.parentNode.insertBefore(dlDiv, btn.nextSibling);
-      }
-      dlDiv.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn" style="margin-right:8px">' + __('simple.watermark_download') + '</a>' +
-        '<button class="btn" onclick="simpleNext()">' + __('simple.next_btn') + '</button>';
-      setTimeout(simpleNext, 1500);
+      setTimeout(simpleNext, 1200);
     } else {
       btn.textContent = __('simple.failed_retry');
       btn.disabled = false;
@@ -576,21 +566,29 @@ function renderPixelInjectStep(body) {
     var group = imgGroup.closest('.form-group');
     if (group) group.style.display = 'none';
   }
-  // Pre-populate image input with the file from step 1
+  // Pre-populate image input with the file from step 1 or watermarked result
   if (simpleFile) {
     var imgInput = document.getElementById('spi-image');
     if (imgInput) {
+      var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleFile.type }) : simpleFile;
       var dt = new DataTransfer();
-      dt.items.add(simpleFile);
+      dt.items.add(srcFile);
       imgInput.files = dt.files;
       imgInput.dispatchEvent(new Event('change'));
     }
     // Show file name indicator
     var nameEl = document.createElement('p');
     nameEl.style.cssText = 'font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left';
-    nameEl.textContent = __('simple.using_file').replace('{name}', simpleFile.name);
+    nameEl.textContent = __('simple.using_file').replace('{name}', simpleFile.name) + (simpleResults.watermarkBlob ? ' (' + __('simple.watermarked', 'watermarked') + ')' : '');
     var cardForm = body.querySelector('.card-form');
     if (cardForm) cardForm.insertBefore(nameEl, cardForm.firstChild);
+  }
+  // Style the message field as required
+  var msgField = document.getElementById('spi-message');
+  if (msgField) {
+    msgField.style.cssText = 'width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.85rem;resize:vertical;min-height:70px';
+    msgField.required = true;
+    msgField.placeholder = __('simple.pi_msg_ph', 'Enter your secret message (required)');
   }
 }
 
@@ -601,11 +599,14 @@ function runPixelInjectStep() {
 
   // Populate hidden professional form fields
   var fileInput = document.getElementById('pi-image');
-  if (fileInput && simpleFile) {
-    var dt = new DataTransfer();
-    dt.items.add(simpleFile);
-    fileInput.files = dt.files;
-    fileInput.dispatchEvent(new Event('change'));
+  if (fileInput) {
+    var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleFile.type }) : simpleFile;
+    if (srcFile) {
+      var dt = new DataTransfer();
+      dt.items.add(srcFile);
+      fileInput.files = dt.files;
+      fileInput.dispatchEvent(new Event('change'));
+    }
   }
   var catSelect = document.getElementById('pi-category');
   if (catSelect) { catSelect.value = cat; catSelect.dispatchEvent(new Event('change')); }
@@ -633,6 +634,10 @@ function runPixelInjectStep() {
       var piDownload = document.getElementById('pi-download');
       if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
       if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
+      if (piDownload) {
+        var piLink = piDownload.querySelector('a');
+        if (piLink) simpleResults.piFinalUrl = piLink.href;
+      }
       if (resultDiv && piOutput && piOutput.innerHTML) {
         resultDiv.innerHTML = '<div class="simple-pi-result" style="text-align:left;max-height:400px;overflow-y:auto;padding:12px;background:var(--bg);border-radius:8px;margin-top:12px">' + piOutput.innerHTML + '</div>';
       }
@@ -730,20 +735,18 @@ function renderDone(body) {
   var results = simpleResults;
   var sections = [];
 
-  if (results.watermark || results.watermarkUrl) {
-    var wmHtml = '<div class="simple-done-section"><h3>' + __('simple.watermarked_label') + '</h3>';
-    if (results.watermarkUrl) {
-      wmHtml += '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">' + __('simple.watermark_dl_btn') + '</a>';
-    }
-    wmHtml += '</div>';
-    sections.push(wmHtml);
-  }
-
-  if (results['pixel-injection']) {
-    var piHtml = '<div class="simple-done-section"><h3>' + __('simple.pi_label') + '</h3>';
-    if (results.piHtml) piHtml += results.piHtml;
-    piHtml += '</div>';
-    sections.push(piHtml);
+  if (results.watermark && results['pixel-injection'] && results.piFinalUrl) {
+    sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
+      '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
+      __('simple.final_image_desc', 'Watermarked + secret message injected — single download.') + '</p>' +
+      '<a href="' + results.piFinalUrl + '" download="protected.png" class="btn" style="background:var(--primary);color:#fff">' +
+      __('simple.final_dl_btn', '📥 Download Final Image') + '</a></div>');
+  } else if (results.watermark && results.watermarkUrl) {
+    sections.push('<div class="simple-done-section"><h3>' + __('simple.watermarked_label') + '</h3>' +
+      '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
+  } else if (results['pixel-injection'] && results.piFinalUrl) {
+    sections.push('<div class="simple-done-section"><h3>' + __('simple.pi_label') + '</h3>' +
+      '<a href="' + results.piFinalUrl + '" download="injected.png" class="btn">' + __('simple.pi_dl_btn', '📥 Download Injected Image') + '</a></div>');
   }
 
   if (results.timestamp) {
