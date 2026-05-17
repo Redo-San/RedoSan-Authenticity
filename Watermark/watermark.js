@@ -236,7 +236,7 @@ async function handleWatermarkEmbed() {
 
   const type = parseInt(getVal('wm-type'));
   const pw = getVal('wm-password');
-  const imgFile = getFile('wm-image');
+  const imgFile = await getFile('wm-image');
   if (!imgFile) { setText('wm-output', __('wm.err_select_image')); resultDiv.style.display = 'block'; return; }
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
@@ -244,7 +244,7 @@ async function handleWatermarkEmbed() {
     resultDiv.style.display = 'block'; return;
   }
 
-  var secretFile = getFile('wm-secret');
+  var secretFile = await getFile('wm-secret');
   if (type !== 5 && type !== 8 && !secretFile) {
     setText('wm-output', __('wm.err_select_secret').replace('{type}', type));
     resultDiv.style.display = 'block'; return;
@@ -272,7 +272,7 @@ async function handleWatermarkEmbed() {
 async function updateCapacity() {
   const capEl = document.getElementById('wm-capacity');
   const secretStatusEl = document.getElementById('wm-secret-status');
-  const imgFile = getFile('wm-image');
+  const imgFile = await getFile('wm-image');
   if (!imgFile) { capEl.textContent = ''; secretStatusEl.textContent = ''; return; }
   const type = parseInt(getVal('wm-type') || '1');
   try {
@@ -294,7 +294,7 @@ async function updateCapacity() {
     const capText = __('wm.capacity_label', 'Capacity: ~{bytes} byte{s}{suffix} ({w}×{h} image)').replace('{bytes}', capacityBytes.toLocaleString()).replace('{s}', capacityBytes !== 1 ? 's' : '').replace('{suffix}', suffix).replace('{w}', w).replace('{h}', h);
     capEl.textContent = capText;
 
-    const secretFile = getFile('wm-secret');
+    const secretFile = await getFile('wm-secret');
     if (type === 5) {
       secretStatusEl.textContent = '';
     } else if (type === 8) {
@@ -361,7 +361,7 @@ async function handleWatermarkExtract() {
 
   const type = parseInt(getVal('wm-type-ex'));
   const pw = getVal('wm-password-ex');
-  const imgFile = getFile('wm-image-ex');
+  const imgFile = await getFile('wm-image-ex');
   if (!imgFile) { setText('wm-output', __('wm.err_select_stego')); resultDiv.style.display = 'block'; return; }
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
@@ -409,7 +409,7 @@ async function handleWatermarkExtract() {
 async function handleAutoDetect() {
   const btn = document.getElementById('wm-detect-btn');
   const pw = getVal('wm-password-ex');
-  const imgFile = getFile('wm-image-ex');
+  const imgFile = await getFile('wm-image-ex');
   if (!imgFile) { alert(__('wm.detect_select_image')); return; }
 
   btn.disabled = true; spinner('wm-spinner', true);

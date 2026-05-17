@@ -129,7 +129,7 @@ async function handleReadMetadata() {
   const output = document.getElementById('md-output');
   const dl = document.getElementById('md-download');
 
-  const file = getFile('md-file');
+  const file = await getFile('md-file');
   if (!file) { setText('md-output', __('md.select_image', 'Please select an image')); resultDiv.style.display = 'block'; return; }
 
   btn.disabled = true; spinner('md-spinner', true);

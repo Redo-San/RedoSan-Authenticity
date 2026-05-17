@@ -276,7 +276,7 @@ function restoreUploadFileInfo() {
     ' <span class="badge badge-muted">' + getSimpleTypeLabel(simpleType) + '</span></div></div>';
 }
 
-function simpleFileSelected(input) {
+async function simpleFileSelected(input) {
   var file = input.files ? input.files[0] : input;
   if (!file) return;
   if (isDangerousFile(file)) {
@@ -288,6 +288,12 @@ function simpleFileSelected(input) {
   if (acceptEl && acceptEl.getAttribute('accept') && !matchesAccept(file, acceptEl.getAttribute('accept'))) {
     alert(__('shared.wrong_type', 'Please select a valid file type for this tool.'));
     if (input && input.tagName === 'INPUT') { input.value = ''; }
+    return;
+  }
+  var magicOk = await matchesMagicBytes(file);
+  if (!magicOk) {
+    alert(__('shared.corrupt_file', 'This file appears to be corrupted or has an incorrect format.') || 'This file appears to be corrupted or has an incorrect format.');
+    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
     return;
   }
   simpleFile = file;
@@ -753,7 +759,7 @@ function renderDone(body) {
 
   if (results.timestamp) {
     var tsHtml = '<div class="simple-done-section"><h3>' + __('simple.ts_label') + '</h3>';
-    if (results.tsHtml) tsHtml += results.tsHtml;
+    if (results.tsResult) tsHtml += '<pre style="white-space:pre-wrap;font-size:0.78rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' + escapeHtml(results.tsResult) + '</pre>';
     tsHtml += '</div>';
     sections.push(tsHtml);
   }

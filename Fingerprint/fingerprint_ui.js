@@ -300,7 +300,7 @@ async function handleFingerprint() {
   const output = document.getElementById('fp-output');
   const dl = document.getElementById('fp-download');
 
-  const file = getFile('fp-file');
+  const file = await getFile('fp-file');
   if (!file) { setText('fp-output', __('shared.select_file') || 'Please select a file'); resultDiv.style.display = 'block'; return; }
 
   btn.disabled = true; spinner('fp-spinner', true);

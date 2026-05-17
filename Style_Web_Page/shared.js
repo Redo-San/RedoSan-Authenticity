@@ -14,6 +14,69 @@ function isDangerousFile(file) {
   return false;
 }
 
+var MAGIC_BYTES = {
+  'image/png':       [[0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A]],
+  'image/jpeg':      [[0xFF,0xD8,0xFF]],
+  'image/gif':       [[0x47,0x49,0x46,0x38,0x39,0x61],[0x47,0x49,0x46,0x38,0x37,0x61]],
+  'image/webp':      function(buf) {
+    if (buf[0]!==0x52||buf[1]!==0x49||buf[2]!==0x46||buf[3]!==0x46) return false;
+    if (buf[8]!==0x57||buf[9]!==0x45||buf[10]!==0x42||buf[11]!==0x50) return false;
+    return true;
+  },
+  'image/bmp':       [[0x42,0x4D]],
+  'image/tiff':      [[0x49,0x49,0x2A,0x00],[0x4D,0x4D,0x00,0x2A]],
+  'image/svg+xml':   function(buf) {
+    var s = String.fromCharCode.apply(null, buf.slice(0, 50)).toLowerCase();
+    return s.indexOf('<svg') !== -1 || s.indexOf('<?xml') !== -1;
+  },
+  'application/pdf': [[0x25,0x50,0x44,0x46]],
+  'audio/mpeg':      [[0x49,0x44,0x33],[0xFF,0xFB],[0xFF,0xF3],[0xFF,0xF2]],
+  'audio/wav':       function(buf) {
+    if (buf[0]!==0x52||buf[1]!==0x49||buf[2]!==0x46||buf[3]!==0x46) return false;
+    if (buf[8]!==0x57||buf[9]!==0x41||buf[10]!==0x56||buf[11]!==0x45) return false;
+    return true;
+  },
+  'audio/flac':      [[0x66,0x4C,0x61,0x43]],
+  'audio/ogg':       [[0x4F,0x67,0x67,0x53]],
+  'video/mp4':       function(buf) {
+    if (buf[4]!==0x66||buf[5]!==0x74||buf[6]!==0x79||buf[7]!==0x70) return false;
+    return true;
+  },
+  'video/webm':      [[0x1A,0x45,0xDF,0xA3]],
+  'video/avi':       function(buf) {
+    if (buf[0]!==0x52||buf[1]!==0x49||buf[2]!==0x46||buf[3]!==0x46) return false;
+    if (buf[8]!==0x41||buf[9]!==0x56||buf[10]!==0x49||buf[11]!==0x20) return false;
+    return true;
+  }
+};
+
+function matchesMagicBytes(file) {
+  return new Promise(function(resolve) {
+    var mime = file.type.toLowerCase();
+    var expected = MAGIC_BYTES[mime];
+    if (!expected) { resolve(true); return; }
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      var arr = new Uint8Array(reader.result);
+      if (typeof expected === 'function') {
+        resolve(expected(arr));
+        return;
+      }
+      for (var m = 0; m < expected.length; m++) {
+        var sig = expected[m];
+        var match = true;
+        for (var i = 0; i < sig.length; i++) {
+          if (arr[i] !== sig[i]) { match = false; break; }
+        }
+        if (match) { resolve(true); return; }
+      }
+      resolve(false);
+    };
+    reader.onerror = function() { resolve(true); };
+    reader.readAsArrayBuffer(file.slice(0, 64));
+  });
+}
+
 function matchesAccept(file, acceptAttr) {
   if (!acceptAttr) return true;
   var name = file.name.toLowerCase();
@@ -28,19 +91,33 @@ function matchesAccept(file, acceptAttr) {
   return false;
 }
 
-function validateFileInput(input) {
+function clearInputFiles(input) {
+  try { input.value = ''; } catch(e) {}
+  if (input.files && input.files.length) {
+    var dt = new DataTransfer();
+    input.files = dt.files;
+  }
+}
+
+async function validateFileInput(input) {
   if (!input || !input.files || !input.files.length) return true;
   var file = input.files[0];
   if (!file) return true;
   if (isDangerousFile(file)) {
     alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.') || 'This file type is not allowed for security reasons.');
-    input.value = '';
+    clearInputFiles(input);
     return false;
   }
   var accept = input.getAttribute('accept');
   if (accept && !matchesAccept(file, accept)) {
     alert(__('shared.wrong_type', 'Please select a valid file type for this tool.') || 'Please select a valid file type for this tool.');
-    input.value = '';
+    clearInputFiles(input);
+    return false;
+  }
+  var magicOk = await matchesMagicBytes(file);
+  if (!magicOk) {
+    alert(__('shared.corrupt_file', 'This file appears to be corrupted or has an incorrect format.') || 'This file appears to be corrupted or has an incorrect format.');
+    clearInputFiles(input);
     return false;
   }
   return true;
@@ -57,7 +134,7 @@ function setStatus(msg, cls) {
 }
 setStatus('Ready - JS mode', 'success');
 
-function getFile(id) {
+async function getFile(id) {
   var input = document.getElementById(id);
   if (input && input.files && input.files.length) {
     var file = input.files[0];
@@ -69,6 +146,12 @@ function getFile(id) {
     var accept = input.getAttribute('accept');
     if (accept && !matchesAccept(file, accept)) {
       alert(__('shared.wrong_type', 'Please select a valid file type for this tool.'));
+      input.value = '';
+      return null;
+    }
+    var magicOk = await matchesMagicBytes(file);
+    if (!magicOk) {
+      alert(__('shared.corrupt_file', 'This file appears to be corrupted or has an incorrect format.') || 'This file appears to be corrupted or has an incorrect format.');
       input.value = '';
       return null;
     }
@@ -171,9 +254,9 @@ function initDropZones() {
     fileDiv.className = 'dz-file';
     dz.appendChild(fileDiv);
     dz.addEventListener('click', e => { if (e.target === dz || e.target.classList.contains('dz-icon') || e.target.classList.contains('dz-text')) input.click(); });
-    function updateFile() {
+    async function updateFile() {
       if (input.files && input.files.length) {
-        if (!validateFileInput(input)) { input.value = ''; fileDiv.textContent = ''; dz.classList.remove('has-file'); return; }
+        if (input.files[0] && !(await validateFileInput(input))) { clearInputFiles(input); fileDiv.textContent = ''; dz.classList.remove('has-file'); return; }
         dz.classList.add('has-file');
         fileDiv.textContent = '📄 ' + input.files[0].name;
       } else {
@@ -184,13 +267,13 @@ function initDropZones() {
     input.addEventListener('change', updateFile);
     ['dragenter', 'dragover'].forEach(evt => dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.add('drag-over'); }));
     ['dragleave', 'drop'].forEach(evt => dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.remove('drag-over'); }));
-    dz.addEventListener('drop', e => {
+    dz.addEventListener('drop', async e => {
       e.preventDefault();
       if (e.dataTransfer.files.length) {
         const dt = new DataTransfer();
         for (const f of e.dataTransfer.files) dt.items.add(f);
         input.files = dt.files;
-        if (!validateFileInput(input)) { input.value = ''; dt.items.clear(); input.files = dt.files; dz.classList.remove('has-file'); fileDiv.textContent = ''; return; }
+        if (input.files[0] && !(await validateFileInput(input))) { clearInputFiles(input); dz.classList.remove('has-file'); fileDiv.textContent = ''; return; }
         updateFile();
         input.dispatchEvent(new Event('change', { bubbles: true }));
       }
