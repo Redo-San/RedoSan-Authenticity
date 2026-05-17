@@ -106,6 +106,43 @@ function checkDangerousContent(file) {
   });
 }
 
+function checkFileStructure(file) {
+  return new Promise(function(resolve) {
+    var mime = file.type.toLowerCase();
+    var size = file.size;
+    if (size < 20) { resolve(true); return; }
+    var tailSize = Math.min(100, size);
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      var arr = new Uint8Array(reader.result);
+      var off = size - tailSize;
+      if (mime === 'image/png') {
+        // Last 12 bytes must be IEND chunk: 0-length, "IEND", CRC
+        if (tailSize < 12) { resolve(false); return; }
+        var i = arr.length - 12;
+        if (arr[i] !== 0 || arr[i+1] !== 0 || arr[i+2] !== 0 || arr[i+3] !== 0) { resolve(false); return; }
+        if (arr[i+4] !== 0x49 || arr[i+5] !== 0x45 || arr[i+6] !== 0x4E || arr[i+7] !== 0x44) { resolve(false); return; }
+        resolve(true);
+      } else if (mime === 'image/jpeg') {
+        // Last 2 bytes must be EOI marker FF D9
+        if (tailSize < 2) { resolve(false); return; }
+        if (arr[arr.length-2] !== 0xFF || arr[arr.length-1] !== 0xD9) resolve(false);
+        else resolve(true);
+      } else if (mime === 'image/gif') {
+        // Last byte must be GIF trailer 0x3B
+        if (arr[arr.length-1] !== 0x3B) resolve(false);
+        else resolve(true);
+      } else if (mime === 'image/webp') {
+        resolve(true);
+      } else {
+        resolve(true);
+      }
+    };
+    reader.onerror = function() { resolve(true); };
+    reader.readAsArrayBuffer(file.slice(-tailSize));
+  });
+}
+
 function matchesAccept(file, acceptAttr) {
   if (!acceptAttr) return true;
   var name = file.name.toLowerCase();
@@ -155,6 +192,12 @@ async function validateFileInput(input) {
     clearInputFiles(input);
     return false;
   }
+  var structOk = await checkFileStructure(file);
+  if (!structOk) {
+    alert(__('shared.bad_structure', 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.') || 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.');
+    clearInputFiles(input);
+    return false;
+  }
   return true;
 }
 
@@ -193,6 +236,12 @@ async function getFile(id) {
     var dangerous = await checkDangerousContent(file);
     if (dangerous) {
       alert(__('shared.dangerous_content', 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.') || 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.');
+      input.value = '';
+      return null;
+    }
+    var structOk = await checkFileStructure(file);
+    if (!structOk) {
+      alert(__('shared.bad_structure', 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.') || 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.');
       input.value = '';
       return null;
     }

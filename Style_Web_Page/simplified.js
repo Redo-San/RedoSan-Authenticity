@@ -181,6 +181,8 @@ function renderUpload(body) {
     '<div id="simpleFileInfo"></div>' +
     '<p style="font-size:0.72rem;color:var(--text-muted);margin:8px 0 0;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px">' +
     __('simple.upload_size_note', '💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.') + '</p>' +
+    '<p style="font-size:0.7rem;color:var(--danger);margin:6px 0 0;padding:4px 8px;background:rgba(220,53,69,.08);border-radius:6px">' +
+    __('simple.usage_warning', '⚠️ This tool is for lawful use only. Uploading illegal or harmful content is strictly prohibited. All processing is local — nothing is stored or sent to any server.') + '</p>' +
     '<div class="simple-info-section" style="margin-top:20px;text-align:left">' +
     '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information (optional)') + '</h3>' +
     '<div class="form-group"><label>' + __('simple.info_name', 'Full Name') + '</label>' +
@@ -299,6 +301,12 @@ async function simpleFileSelected(input) {
   var dangerous = await checkDangerousContent(file);
   if (dangerous) {
     alert(__('shared.dangerous_content', 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.') || 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.');
+    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    return;
+  }
+  var structOk = await checkFileStructure(file);
+  if (!structOk) {
+    alert(__('shared.bad_structure', 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.') || 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.');
     if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
     return;
   }

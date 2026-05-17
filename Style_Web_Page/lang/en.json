@@ -14,6 +14,7 @@
   "sidebar.timestamp": "Timestamp",
   "sidebar.c2pa": "C2PA Provenance",
   "sidebar.switch_mode": "🔀 Switch Mode",
+  "sidebar.usage_warning": "⚠️ Lawful use only. Illegal/harmful content is prohibited. All processing is 100% local.",
 
   "home.tagline": "Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server.",
   "card.watermark.title": "Watermark",
@@ -226,6 +227,7 @@
   "simple.upload_title": "Upload Your File",
   "simple.upload_desc": "Select a photo, audio, video, or document to get started.",
   "simple.upload_size_note": "💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.",
+  "simple.usage_warning": "⚠️ This tool is for lawful use only. Uploading illegal or harmful content is strictly prohibited. All processing is local — nothing is stored or sent to any server.",
   "simple.drop_text": "Click to browse or drag & drop",
   "simple.ai_title": "What kind of image is this?",
   "simple.ai_desc": "This helps us choose the right tools for your image.",
@@ -347,6 +349,11 @@
   "shared.error_prefix": "Error: ",
   "shared.lang_title": "Current: {lang}\nClick to change language",
   "shared.failed_load_image": "Failed to load image",
+  "shared.dangerous_file": "This file type is not allowed for security reasons.",
+  "shared.wrong_type": "Please select a valid file type for this tool.",
+  "shared.corrupt_file": "This file appears to be corrupted or has an incorrect format.",
+  "shared.dangerous_content": "This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.",
+  "shared.bad_structure": "This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.",
 
   "dl.title": "Download Fingerprint",
   "dl.subtitle": "Choose a format:",
