@@ -28,9 +28,7 @@ function showPage(name) {
   if (page) page.classList.add('active');
   const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
   if (nav) nav.classList.add('active');
-  // Initialize sub-tabs
   if (name === 'timestamp') { if (typeof switchOtsTab === 'function') switchOtsTab('create'); }
-  // Update URL hash for direct linking (professional mode only)
   var isProfessional = document.getElementById('mainNav') && document.getElementById('mainNav').style.display !== 'none';
   if (isProfessional) {
     if (name && name !== 'home') {
@@ -41,14 +39,17 @@ function showPage(name) {
   }
 }
 
-// Restore page state on browser back/forward
 window.addEventListener('popstate', function(e) {
   var state = e.state;
-  if (state && state.page) {
-    var isProfessional = document.getElementById('mainNav') && document.getElementById('mainNav').style.display !== 'none';
-    if (isProfessional || document.getElementById('page-' + state.page)) {
-      showPage(state.page);
-    }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  var targetPage = (state && state.page) || 'home';
+  var el = document.getElementById('page-' + targetPage);
+  if (el) el.classList.add('active');
+  if (el && el.closest('#app') && document.getElementById('mainNav').style.display === 'none') {
+    document.getElementById('mainNav').style.display = '';
+    document.getElementById('sidebar').style.display = '';
+    document.getElementById('app').style.display = '';
+    document.getElementById('simplifiedMode').style.display = 'none';
   }
 });
 
