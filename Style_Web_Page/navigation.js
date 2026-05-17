@@ -41,9 +41,12 @@ function showPage(name) {
 
 window.addEventListener('popstate', function(e) {
   var state = e.state;
+  // Clean up page states for all branches
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
   // Mode overlay → re-show the selection screen
   if (!state || state.modeOverlay) {
-    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     document.getElementById('modeSelect').style.display = '';
     document.getElementById('simplifiedMode').style.display = 'none';
     document.getElementById('mainNav').style.display = '';
@@ -55,7 +58,7 @@ window.addEventListener('popstate', function(e) {
   }
   // Within-a-mode → show the correct mode's home page
   if (state.modeSet) {
-    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
     document.getElementById('modeSelect').style.display = 'none';
     document.getElementById('sidebarOverlay').style.display = 'none';
     if (state.modeSet === 'simplified') {
@@ -72,17 +75,13 @@ window.addEventListener('popstate', function(e) {
       document.getElementById('app').style.display = '';
       document.getElementById('mainFooter').style.display = '';
     }
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
     var home = document.getElementById('page-home');
     if (home) home.classList.add('active');
     return;
   }
   // Page state (professional mode pages)
-  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
   document.getElementById('modeSelect').style.display = 'none';
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
   var targetPage = (state && state.page) || 'home';
   var el = document.getElementById('page-' + targetPage);
   if (el) el.classList.add('active');

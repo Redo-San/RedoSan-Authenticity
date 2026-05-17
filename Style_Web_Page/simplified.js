@@ -16,7 +16,7 @@ var simpleUserInfo = {
 };
 
 function setBodyOverflow(disable) {
-  document.body.style.overflow = disable ? 'hidden' : '';
+  document.documentElement.style.overflow = disable ? 'hidden' : '';
 }
 
 function initMode() {
@@ -35,6 +35,16 @@ function setMode(mode) {
     document.getElementById('mainFooter').style.display = 'none';
     document.getElementById('simplifiedMode').style.display = '';
     initSimplified();
+  } else {
+    document.getElementById('simplifiedMode').style.display = 'none';
+    document.getElementById('mainNav').style.display = '';
+    document.getElementById('sidebar').style.display = '';
+    document.getElementById('app').style.display = '';
+    document.getElementById('mainFooter').style.display = '';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
+    var home = document.getElementById('page-home');
+    if (home) home.classList.add('active');
   }
 }
 
