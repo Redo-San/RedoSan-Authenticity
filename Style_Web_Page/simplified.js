@@ -695,6 +695,8 @@ function runTimestampStep() {
 function renderFingerprintStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' + __('simple.fp_title') + '</h2><p>' + __('simple.fp_desc') + '</p>' +
+    '<p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 12px;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
+    __('simple.fp_processing_note', '⏳ Computing multiple hash algorithms (SHA-2, SHA-3, BLAKE, MD, RIPEMD, Whirlpool) and perceptual hashes. This may take a moment for large files.') + '</p>' +
     '<div id="sfp-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
   runFingerprintStep();
 }
@@ -757,7 +759,7 @@ function renderDone(body) {
   }
 
   if (results.fingerprint) {
-    var fpHtml = '<div class="simple-done-section"><h3>✅ ' + __('simple.fp_label') + '</h3>';
+    var fpHtml = '<div class="simple-done-section"><h3>' + __('simple.fp_label') + '</h3>';
     fpHtml += '<div style="margin-top:12px">';
     fpHtml += '<button class="btn" onclick="setupFpDownload();showDownloadModal()">' + __('simple.fp_dl_btn') + '</button>';
     fpHtml += '</div></div>';
