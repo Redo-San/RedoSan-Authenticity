@@ -179,6 +179,8 @@ function renderUpload(body) {
     '<div class="dz-text">' + __('simple.drop_text') + '</div></div>' +
     '<input type="file" id="simpleFileInput" style="display:none" accept="image/*,audio/*,video/*,.pdf" onchange="simpleFileSelected(this)">' +
     '<div id="simpleFileInfo"></div>' +
+    '<p style="font-size:0.72rem;color:var(--text-muted);margin:8px 0 0;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px">' +
+    __('simple.upload_size_note', '💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.') + '</p>' +
     '<div class="simple-info-section" style="margin-top:20px;text-align:left">' +
     '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information (optional)') + '</h3>' +
     '<div class="form-group"><label>' + __('simple.info_name', 'Full Name') + '</label>' +
@@ -460,14 +462,6 @@ function renderWatermarkStep(body) {
     nameEl.textContent = __('simple.using_file').replace('{name}', simpleFile.name);
     var cardForm = body.querySelector('.card-form');
     if (cardForm) cardForm.insertBefore(nameEl, cardForm.firstChild);
-  }
-  // Add capacity hint below secret file section
-  var secretStatus = document.getElementById('swm-secret-status');
-  if (secretStatus) {
-    var hint = document.createElement('p');
-    hint.style.cssText = 'font-size:0.7rem;color:var(--text-muted);margin-top:6px;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px';
-    hint.textContent = __('wm.secret_size_note', '💡 The secret image must be smaller than the cover image. Select a cover image first to see available capacity below.');
-    secretStatus.parentNode.insertBefore(hint, secretStatus.nextSibling);
   }
 }
 

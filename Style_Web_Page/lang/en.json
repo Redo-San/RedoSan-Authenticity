@@ -225,6 +225,7 @@
   "simple.pro_mode_btn": "⚙️ Professional",
   "simple.upload_title": "Upload Your File",
   "simple.upload_desc": "Select a photo, audio, video, or document to get started.",
+  "simple.upload_size_note": "💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.",
   "simple.drop_text": "Click to browse or drag & drop",
   "simple.ai_title": "What kind of image is this?",
   "simple.ai_desc": "This helps us choose the right tools for your image.",
