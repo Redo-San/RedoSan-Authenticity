@@ -23,7 +23,8 @@
 <link rel="canonical" href="https://redo-san.github.io/RedoSan-Authenticity/">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="stylesheet" href="Style_Web_Page/style.css">
-<link rel="stylesheet" href="Style_Web_Page/responsive.css">
+<link rel="stylesheet" href="Style_Web_Page/responsive.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="Style_Web_Page/responsive.css"></noscript>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -38,10 +39,10 @@
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
 }
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0" integrity="sha384-TcLTgu6flPhnZ5dfHnHimsxNFjYWN0povfGgnOvgPJKbZe6IbuoC2ociiatSHl9E" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" integrity="sha512-pUhApVQtLbnpLtJn6DuzDD5o2xtmLJnJ7oBoMsBnzOkVkpqofGLGPaBJ6ayD2zQe3lCgCibhJBi4cj5wAxwVKA==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU=" crossorigin="anonymous" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0" integrity="sha384-TcLTgu6flPhnZ5dfHnHimsxNFjYWN0povfGgnOvgPJKbZe6IbuoC2ociiatSHl9E" crossorigin="anonymous" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" integrity="sha512-pUhApVQtLbnpLtJn6DuzDD5o2xtmLJnJ7oBoMsBnzOkVkpqofGLGPaBJ6ayD2zQe3lCgCibhJBi4cj5wAxwVKA==" crossorigin="anonymous" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous" defer></script>
 </head>
 <body>
 <!-- Mode Selection Overlay -->
@@ -723,21 +724,21 @@
 <button id="music-btn" class="music-btn" onclick="toggleMusic()" title="Play Music" aria-label="Toggle Music">🎵</button>
 <div id="music-credit" class="music-credit">RedoSan</div>
 
-<script src="Style_Web_Page/i18n.js"></script>
-<script src="Style_Web_Page/shared.js"></script>
-<script src="Style_Web_Page/navigation.js"></script>
-<script src="Watermark/utils.js"></script>
-<script src="Watermark/watermark_core.js"></script>
-<script src="Pixel_Injection/watermark_core_advanced.js"></script>
-<script src="Pixel_Injection/watermark_advanced_ui.js"></script>
-<script src="Pixel_Injection/pixel_injection.js"></script>
-<script src="Watermark/watermark.js"></script>
-<script src="Fingerprint/hashing.js"></script>
-<script src="Fingerprint/fingerprint_ui.js"></script>
-<script src="Metadata/metadata.js"></script>
-<script src="Timestamp/timestamp.js"></script>
-<script src="Style_Web_Page/simplified.js"></script>
-<script src="Style_Web_Page/certificate.js"></script>
+<script src="Style_Web_Page/i18n.js" defer></script>
+<script src="Style_Web_Page/shared.js" defer></script>
+<script src="Style_Web_Page/navigation.js" defer></script>
+<script src="Watermark/utils.js" defer></script>
+<script src="Watermark/watermark_core.js" defer></script>
+<script src="Pixel_Injection/watermark_core_advanced.js" defer></script>
+<script src="Pixel_Injection/watermark_advanced_ui.js" defer></script>
+<script src="Pixel_Injection/pixel_injection.js" defer></script>
+<script src="Watermark/watermark.js" defer></script>
+<script src="Fingerprint/hashing.js" defer></script>
+<script src="Fingerprint/fingerprint_ui.js" defer></script>
+<script src="Metadata/metadata.js" defer></script>
+<script src="Timestamp/timestamp.js" defer></script>
+<script src="Style_Web_Page/simplified.js" defer></script>
+<script src="Style_Web_Page/certificate.js" defer></script>
 <script>
 // C2PA boot loader — shows spinner + auto-retries once the module+CDN finish loading.
 (function() {
