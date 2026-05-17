@@ -277,6 +277,17 @@ function restoreUploadFileInfo() {
 function simpleFileSelected(input) {
   var file = input.files ? input.files[0] : input;
   if (!file) return;
+  if (isDangerousFile(file)) {
+    alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.'));
+    if (input && input.tagName === 'INPUT') { input.value = ''; }
+    return;
+  }
+  var acceptEl = document.getElementById('simpleFileInput');
+  if (acceptEl && acceptEl.getAttribute('accept') && !matchesAccept(file, acceptEl.getAttribute('accept'))) {
+    alert(__('shared.wrong_type', 'Please select a valid file type for this tool.'));
+    if (input && input.tagName === 'INPUT') { input.value = ''; }
+    return;
+  }
   simpleFile = file;
   var type = detectFileType(file);
   var dz = document.getElementById('simpleDropZone');

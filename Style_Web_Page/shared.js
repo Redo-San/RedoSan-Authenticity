@@ -1,5 +1,51 @@
 // ── Shared utilities used by all features ──
 
+var BLOCKED_EXTS = ['.exe','.bat','.cmd','.com','.msi','.scr','.pif',
+  '.vbs','.vbe','.js','.jse','.wsf','.wsh','.ps1','.psm1','.psd1',
+  '.py','.pyc','.rb','.pl','.sh','.bash','.dll','.sys','.ocx',
+  '.app','.jar','.msu','.msp','.reg','.inf','.gadget','.cpl','.mst',
+  '.hta','.ws','.vb','.vba','.swf','.action'];
+
+function isDangerousFile(file) {
+  var name = file.name.toLowerCase();
+  for (var i = 0; i < BLOCKED_EXTS.length; i++) {
+    if (name.endsWith(BLOCKED_EXTS[i])) return true;
+  }
+  return false;
+}
+
+function matchesAccept(file, acceptAttr) {
+  if (!acceptAttr) return true;
+  var name = file.name.toLowerCase();
+  var type = file.type.toLowerCase();
+  var rules = acceptAttr.split(',');
+  for (var i = 0; i < rules.length; i++) {
+    var r = rules[i].trim();
+    if (r.endsWith('/*') && type.startsWith(r.split('/')[0] + '/')) return true;
+    else if (r.indexOf('/') !== -1 && type === r) return true;
+    else if (r.startsWith('.') && name.endsWith(r)) return true;
+  }
+  return false;
+}
+
+function validateFileInput(input) {
+  if (!input || !input.files || !input.files.length) return true;
+  var file = input.files[0];
+  if (!file) return true;
+  if (isDangerousFile(file)) {
+    alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.') || 'This file type is not allowed for security reasons.');
+    input.value = '';
+    return false;
+  }
+  var accept = input.getAttribute('accept');
+  if (accept && !matchesAccept(file, accept)) {
+    alert(__('shared.wrong_type', 'Please select a valid file type for this tool.') || 'Please select a valid file type for this tool.');
+    input.value = '';
+    return false;
+  }
+  return true;
+}
+
 function escHtml(s) {
   if (s == null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -11,7 +57,24 @@ function setStatus(msg, cls) {
 }
 setStatus('Ready - JS mode', 'success');
 
-function getFile(id) { return document.getElementById(id).files[0]; }
+function getFile(id) {
+  var input = document.getElementById(id);
+  if (input && input.files && input.files.length) {
+    var file = input.files[0];
+    if (isDangerousFile(file)) {
+      alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.'));
+      input.value = '';
+      return null;
+    }
+    var accept = input.getAttribute('accept');
+    if (accept && !matchesAccept(file, accept)) {
+      alert(__('shared.wrong_type', 'Please select a valid file type for this tool.'));
+      input.value = '';
+      return null;
+    }
+  }
+  return input ? input.files[0] : undefined;
+}
 function getVal(id) { return document.getElementById(id).value; }
 function spinner(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
 function showResult(resultId, outputId, dlId) { document.getElementById(resultId).style.display = 'block'; }
@@ -110,6 +173,7 @@ function initDropZones() {
     dz.addEventListener('click', e => { if (e.target === dz || e.target.classList.contains('dz-icon') || e.target.classList.contains('dz-text')) input.click(); });
     function updateFile() {
       if (input.files && input.files.length) {
+        if (!validateFileInput(input)) { input.value = ''; fileDiv.textContent = ''; dz.classList.remove('has-file'); return; }
         dz.classList.add('has-file');
         fileDiv.textContent = '📄 ' + input.files[0].name;
       } else {
@@ -126,6 +190,7 @@ function initDropZones() {
         const dt = new DataTransfer();
         for (const f of e.dataTransfer.files) dt.items.add(f);
         input.files = dt.files;
+        if (!validateFileInput(input)) { input.value = ''; dt.items.clear(); input.files = dt.files; dz.classList.remove('has-file'); fileDiv.textContent = ''; return; }
         updateFile();
         input.dispatchEvent(new Event('change', { bubbles: true }));
       }
