@@ -15,12 +15,17 @@ var simpleUserInfo = {
   music: { spotify: '', appleMusic: '', youtubeMusic: '', soundcloud: '', bandcamp: '' }
 };
 
+function setBodyOverflow(disable) {
+  document.body.style.overflow = disable ? 'hidden' : '';
+}
+
 function initMode() {
-  // Mode overlay is always shown on first load
+  setBodyOverflow(true);
 }
 
 function setMode(mode) {
   document.getElementById('modeSelect').style.display = 'none';
+  setBodyOverflow(false);
   history.pushState({ modeSet: mode }, '', window.location.pathname.replace(/\/+$/, '') + '/');
   if (mode === 'simplified') {
     document.getElementById('mainNav').style.display = 'none';
@@ -36,6 +41,7 @@ function setMode(mode) {
 function switchMode() {
   // Show mode overlay without page reload (keeps music playing)
   document.getElementById('modeSelect').style.display = '';
+  setBodyOverflow(true);
   document.getElementById('simplifiedMode').style.display = 'none';
   document.getElementById('mainNav').style.display = '';
   document.getElementById('sidebar').style.display = '';
@@ -49,6 +55,7 @@ function switchMode() {
 function showModeSelect() {
   // Show mode overlay without page reload (keeps music playing)
   document.getElementById('modeSelect').style.display = '';
+  setBodyOverflow(true);
   document.getElementById('simplifiedMode').style.display = 'none';
   document.getElementById('mainNav').style.display = 'none';
   document.getElementById('sidebar').style.display = 'none';
