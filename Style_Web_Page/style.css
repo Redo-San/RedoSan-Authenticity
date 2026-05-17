@@ -5,7 +5,7 @@
   --card: #1A1A2E;
   --card-hover: #252540;
   --text: #E8E8F0;
-  --text-muted: #8888A0;
+  --text-muted: #9B9BB5;
   --border: #2A2A45;
   --success: #00E676;
   --danger: #FF5252;
@@ -16,7 +16,7 @@
   --card: #FFFFFF;
   --card-hover: #EEEEF5;
   --text: #1A1A2E;
-  --text-muted: #8888A0;
+  --text-muted: #6B6B85;
   --border: #D0D0E0;
   --success: #00C853;
   --danger: #FF1744;
@@ -123,7 +123,7 @@ nav .logo { display:flex; align-items:center; }
 }
 .badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; margin-left: auto; }
 .badge-success { background: rgba(0,230,118,.15); color: var(--success); }
-.badge-muted { background: rgba(136,136,160,.15); color: var(--text-muted); }
+.badge-muted { background: rgba(155,155,181,.15); color: var(--text-muted); }
 .badge-warning { background: rgba(255,193,7,.15); color: #ffc107; }
 .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite; margin: 12px auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
