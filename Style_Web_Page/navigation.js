@@ -72,10 +72,15 @@ function handleHashNav() {
 }
 // Initialize first history state
 function initNav() {
-  if (!history.state || !history.state.page) {
-    history.replaceState({ page: 'home' }, '', window.location.pathname.replace(/\/+$/, '') + '/');
-  }
   handleHashNav();
+  if (!history.state) {
+    var page = 'home';
+    var hash = window.location.hash;
+    if (hash && hash.indexOf('#/') === 0) page = hash.replace('#/', '');
+    var url = window.location.pathname.replace(/\/+$/, '') + '/';
+    if (page !== 'home') url += '#/' + page;
+    history.replaceState({ page: page }, '', url);
+  }
 }
 document.addEventListener('DOMContentLoaded', initNav);
 // Also run immediately if DOM already loaded
