@@ -47,7 +47,11 @@ async function selectFile(prompt) {
   while (true) {
     const raw = await ask(c('cyan', prompt));
     const file = raw.trim().replace(/^["']|["']$/g, '');
-    const absPath = path.resolve(file);
+    // Convert MSYS2 paths on Windows (/f/... → F:\...)
+    const converted = (process.platform === 'win32' && /^\/[a-zA-Z]\//.test(file))
+      ? file[1].toUpperCase() + ':\\' + file.slice(3)
+      : file;
+    const absPath = path.resolve(converted);
     if (fs.existsSync(absPath)) return absPath;
     console.log(c('red', '✗ File not found. Try again.'));
   }
