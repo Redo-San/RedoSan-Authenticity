@@ -17,13 +17,16 @@ program
   .addHelpText('after', `
 Examples:
   $ redosan fingerprint image.png
-  $ redosan fingerprint image.png --algo sha256
+  $ redosan fingerprint image.png --algo sha256 --json
   $ redosan watermark embed -i image.png -s secret.png -a lsb -p mypassword -o output.png
   $ redosan watermark extract -i watermarked.png -a lsb -p mypassword
-  $ redosan metadata image.jpg
   $ redosan metadata image.jpg --json
   $ redosan timestamp create image.png -o proof.ots
-  $ redosan timestamp verify image.png -p proof.ots
+  $ redosan timestamp verify image.png -o proof.ots
+  $ redosan c2pa sign image.png --claim "Created by Me" -o manifest.json
+  $ redosan c2pa read image.jpg
+  $ redosan pixel-injection embed -i image.png -s secret.txt -o output.png -a enhanced_lsb
+  $ redosan upgrade proof.ots -o upgraded.ots
 
 All processing is 100% local — nothing is uploaded to any server.
 `);
@@ -94,6 +97,62 @@ program
   .action(async (action, filePath, opts) => {
     const { runTimestamp } = require('./commands/timestamp');
     await runTimestamp(action, filePath, opts);
+  });
+
+// ── C2PA command ──
+program
+  .command('c2pa')
+  .description('Sign, read, or verify C2PA provenance metadata')
+  .argument('<action>', 'Action: sign, read, verify')
+  .argument('<file>', 'Path to the file')
+  .option('-o, --output <file>', 'Output file path')
+  .option('--claim <text>', 'Claim (e.g. "Created by XYZ")')
+  .option('--title <text>', 'Content title')
+  .option('--author <text>', 'Author name')
+  .action(async (action, filePath, opts) => {
+    const { runC2pa } = require('./commands/c2pa');
+    await runC2pa(action, filePath, opts);
+  });
+
+// ── Pixel Injection command ──
+program
+  .command('pixel-injection')
+  .description('Advanced spatial/frequency/DL watermark algorithms (23 algorithms)')
+  .argument('<action>', 'Action: embed, extract')
+  .requiredOption('-i, --image <file>', 'Input image')
+  .option('-s, --secret <file>', 'Secret file to embed')
+  .requiredOption('-o, --output <file>', 'Output file path')
+  .option('-p, --password <pass>', 'Password')
+  .option('-a, --algo <type>', 'Algorithm: ' + [
+    'enhanced_lsb','adaptive_lsb','multi_channel_lsb','random_lsb',
+    'dct','dwt','dft','hybrid_dct_dwt',
+    'vine','pixel_seal','nullguard','shallow_diffuse','diffusion_based',
+    'imagewmark','meta_seal','stardustmark','invisimark','elevenlikes',
+  ].join(', '))
+  .action(async (action, opts) => {
+    const { runPixelInjection } = require('./commands/pixel_injection');
+    await runPixelInjection(action, opts);
+  });
+
+// ── Upgrade command (standalone) ──
+program
+  .command('upgrade')
+  .description('Upgrade an incomplete .ots timestamp proof via calendar aggregator')
+  .argument('<file>', 'Path to .ots proof file')
+  .option('-o, --output <file>', 'Output file path')
+  .action(async (filePath, opts) => {
+    const { upgradeOts } = require('./commands/timestamp');
+    const { readFileBytes } = require('./utils');
+    try {
+      const data = readFileBytes(filePath);
+      const upgraded = await upgradeOts(data);
+      const outPath = opts.output ? path.resolve(opts.output) : filePath;
+      fs.writeFileSync(outPath, Buffer.from(upgraded));
+      console.log(`Upgraded .ots proof saved to: ${outPath} (${upgraded.length} bytes)`);
+    } catch (err) {
+      console.error(`Upgrade failed: ${err.message}`);
+      process.exit(1);
+    }
   });
 
 program.parse(process.argv);

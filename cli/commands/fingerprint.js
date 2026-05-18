@@ -101,10 +101,24 @@ async function runFingerprint(filePath, opts) {
     const webAlgos = { 'SHA-1': 'SHA-1', 'SHA-256': 'SHA-256', 'SHA-384': 'SHA-384', 'SHA-512': 'SHA-512' };
 
     if (!opts.algo || opts.algo === 'all') {
-      // Run all algorithms (same as simplified mode)
+      // Run ALL algorithms
+      hashes['SHA-1'] = await hashNode('sha1', data); await yieldLoop();
       hashes['SHA-256'] = await hashNode('sha256', data); await yieldLoop();
+      hashes['SHA-384'] = await hashNode('sha384', data); await yieldLoop();
       hashes['SHA-512'] = await hashNode('sha512', data); await yieldLoop();
-      try { hashes['BLAKE3'] = await globalThis.blake3(data); } catch(e) { console.error(`BLAKE3: ${e.message}`); }
+      try { hashes['SHA-224'] = await globalThis.sha224(data); } catch(e) {} await yieldLoop();
+      try { hashes['SHA-3_224'] = globalThis.sha3_224(data); } catch(e) {} await yieldLoop();
+      try { hashes['SHA-3_256'] = globalThis.sha3_256(data); } catch(e) {} await yieldLoop();
+      try { hashes['SHA-3_384'] = globalThis.sha3_384(data); } catch(e) {} await yieldLoop();
+      try { hashes['SHA-3_512'] = globalThis.sha3_512(data); } catch(e) {} await yieldLoop();
+      try { hashes['BLAKE2b'] = await globalThis.blake2b(data); } catch(e) {} await yieldLoop();
+      try { hashes['BLAKE2s'] = await globalThis.blake2s(data); } catch(e) {} await yieldLoop();
+      try { hashes['BLAKE3'] = await globalThis.blake3(data); } catch(e) {} await yieldLoop();
+      try { hashes['MD2'] = globalThis.md2(data); } catch(e) {} await yieldLoop();
+      try { hashes['MD4'] = globalThis.md4(data); } catch(e) {} await yieldLoop();
+      try { hashes['MD5'] = globalThis.md5(data); } catch(e) {} await yieldLoop();
+      try { hashes['RIPEMD-160'] = globalThis.ripemd160(data); } catch(e) {} await yieldLoop();
+      try { hashes['Whirlpool'] = globalThis.whirlpool(data); } catch(e) {} await yieldLoop();
     } else {
       const target = algoMap[opts.algo.toLowerCase()];
       if (!target) {
