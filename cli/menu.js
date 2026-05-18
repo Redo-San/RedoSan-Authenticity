@@ -33,6 +33,20 @@ function ask(question) {
   return new Promise(resolve => rl.question(question, resolve));
 }
 
+function cleanPath(raw) {
+  return raw.trim().replace(/^["']|["']$/g, '');
+}
+
+function resolvePath(raw) {
+  const cleaned = cleanPath(raw || '');
+  if (!cleaned) return '';
+  // Convert MSYS2 paths on Windows (/f/... → F:\...)
+  const converted = (process.platform === 'win32' && /^\/[a-zA-Z]\//.test(cleaned))
+    ? cleaned[1].toUpperCase() + ':\\' + cleaned.slice(3)
+    : cleaned;
+  return path.resolve(converted);
+}
+
 function run(args) {
   return new Promise((resolve, reject) => {
     const cp = require('child_process').spawn('node', [CLI, ...args], {
@@ -46,13 +60,8 @@ function run(args) {
 async function selectFile(prompt) {
   while (true) {
     const raw = await ask(c('cyan', prompt));
-    const file = raw.trim().replace(/^["']|["']$/g, '');
-    // Convert MSYS2 paths on Windows (/f/... → F:\...)
-    const converted = (process.platform === 'win32' && /^\/[a-zA-Z]\//.test(file))
-      ? file[1].toUpperCase() + ':\\' + file.slice(3)
-      : file;
-    const absPath = path.resolve(converted);
-    if (fs.existsSync(absPath)) return absPath;
+    const absPath = resolvePath(raw);
+    if (absPath && fs.existsSync(absPath)) return absPath;
     console.log(c('red', '✗ File not found. Try again.'));
   }
 }
@@ -144,13 +153,23 @@ async function menuWmEmbed() {
   console.log(c('bright', '── Watermark Embed ──'));
   const image = await selectFile('Cover image path > ');
   const secret = await ask(c('cyan', 'Secret file path (Enter = none): '));
-  const output = await ask(c('cyan', 'Output image path > '));
+  const secretPath = secret.trim() ? resolvePath(secret) : '';
+  if (secret.trim() && !fs.existsSync(secretPath)) {
+    console.log(c('red', '✗ Secret file not found.'));
+    await ask('Press Enter...');
+    return;
+  }
+  const outputRaw = await ask(c('cyan', 'Output image path (Enter = output.png): '));
+  let out = resolvePath(outputRaw) || path.resolve('output.png');
+  if (fs.existsSync(out) && fs.statSync(out).isDirectory()) {
+    out = path.join(out, 'output.png');
+  }
   console.log(c('dim', 'Algorithm (Enter = lsb):'));
   console.log('  lsb, dct, random_lsb, neural_lsb, zero_bit, multi_bit, forensic, fragile, imatag');
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
-  const args = ['watermark', 'embed', '-i', image, '-o', output.trim(), '-a', (algo.trim() || 'lsb')];
-  if (secret.trim()) args.push('-s', secret.trim());
+  const args = ['watermark', 'embed', '-i', image, '-o', out, '-a', (algo.trim() || 'lsb')];
+  if (secretPath) args.push('-s', secretPath);
   if (pass.trim()) args.push('-p', pass.trim());
   await run(args);
   await ask('Press Enter...');
@@ -163,10 +182,11 @@ async function menuWmExtract() {
   console.log(c('dim', 'Algorithm (Enter = lsb):'));
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
-  const output = await ask(c('cyan', 'Output file path (Enter = print to screen): '));
+  const outputRaw = await ask(c('cyan', 'Output file path (Enter = print to screen): '));
+  const out = resolvePath(outputRaw);
   const args = ['watermark', 'extract', '-i', image, '-a', (algo.trim() || 'lsb')];
   if (pass.trim()) args.push('-p', pass.trim());
-  if (output.trim()) args.push('-o', output.trim());
+  if (out) args.push('-o', out);
   await run(args);
   await ask('Press Enter...');
 }
@@ -183,9 +203,10 @@ async function menuTsCreate() {
   console.clear();
   console.log(c('bright', '── Timestamp Create ──'));
   const file = await selectFile('File path > ');
-  const output = await ask(c('cyan', 'Output .ots path (Enter = file.ots): '));
+  const outputRaw = await ask(c('cyan', 'Output .ots path (Enter = file.ots): '));
+  const out = resolvePath(outputRaw);
   const args = ['timestamp', 'create', file];
-  if (output.trim()) args.push('-o', output.trim());
+  if (out) args.push('-o', out);
   await run(args);
   await ask('Press Enter...');
 }
@@ -194,9 +215,10 @@ async function menuTsVerify() {
   console.clear();
   console.log(c('bright', '── Timestamp Verify ──'));
   const file = await selectFile('Original file path > ');
-  const proof = await ask(c('cyan', '.ots proof file path (Enter = file.ots): '));
+  const proofRaw = await ask(c('cyan', '.ots proof file path (Enter = file.ots): '));
+  const proof = resolvePath(proofRaw);
   const args = ['timestamp', 'verify', file];
-  if (proof.trim()) args.push('-o', proof.trim());
+  if (proof) args.push('-o', proof);
   await run(args);
   await ask('Press Enter...');
 }
@@ -207,11 +229,12 @@ async function menuC2paSign() {
   const file = await selectFile('File path > ');
   const claim = await ask(c('cyan', 'Claim text (Enter = none): '));
   const author = await ask(c('cyan', 'Author (Enter = none): '));
-  const output = await ask(c('cyan', 'Output JSON path (Enter = file.c2pa.json): '));
+  const outputRaw = await ask(c('cyan', 'Output JSON path (Enter = file.c2pa.json): '));
+  const out = resolvePath(outputRaw);
   const args = ['c2pa', 'sign', file];
   if (claim.trim()) args.push('--claim', claim.trim());
   if (author.trim()) args.push('--author', author.trim());
-  if (output.trim()) args.push('-o', output.trim());
+  if (out) args.push('-o', out);
   await run(args);
   await ask('Press Enter...');
 }
@@ -229,13 +252,23 @@ async function menuPiEmbed() {
   console.log(c('bright', '── Pixel Injection Embed ──'));
   const image = await selectFile('Image path > ');
   const secret = await ask(c('cyan', 'Message / secret file path > '));
-  const output = await ask(c('cyan', 'Output image path > '));
+  const secretPath = secret.trim() ? resolvePath(secret) : '';
+  if (secret.trim() && !fs.existsSync(secretPath)) {
+    console.log(c('red', '✗ Secret file not found.'));
+    await ask('Press Enter...');
+    return;
+  }
+  const outputRaw = await ask(c('cyan', 'Output image path (Enter = output.png): '));
+  let out = resolvePath(outputRaw) || path.resolve('output.png');
+  if (fs.existsSync(out) && fs.statSync(out).isDirectory()) {
+    out = path.join(out, 'output.png');
+  }
   console.log(c('dim', 'Algorithm (Enter = enhanced_lsb):'));
   console.log('  enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal');
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
-  const args = ['pixel-injection', 'embed', '-i', image, '-o', output.trim(), '-a', (algo.trim() || 'enhanced_lsb')];
-  if (secret.trim()) args.push('-s', secret.trim());
+  const args = ['pixel-injection', 'embed', '-i', image, '-o', out, '-a', (algo.trim() || 'enhanced_lsb')];
+  if (secretPath) args.push('-s', secretPath);
   if (pass.trim()) args.push('-p', pass.trim());
   await run(args);
   await ask('Press Enter...');
@@ -248,10 +281,11 @@ async function menuPiExtract() {
   console.log(c('dim', 'Algorithm (Enter = enhanced_lsb):'));
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
-  const output = await ask(c('cyan', 'Output path (Enter = print to screen): '));
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = print to screen): '));
+  const out = resolvePath(outputRaw);
   const args = ['pixel-injection', 'extract', '-i', image, '-a', (algo.trim() || 'enhanced_lsb')];
   if (pass.trim()) args.push('-p', pass.trim());
-  if (output.trim()) args.push('-o', output.trim());
+  if (out) args.push('-o', out);
   await run(args);
   await ask('Press Enter...');
 }
