@@ -123,25 +123,49 @@ npm link    # makes 'redosan' available globally
 
 | Command | Description |
 |---------|-------------|
-| `redosan fingerprint <file>` | Generate cryptographic hashes (SHA-256, SHA-512, BLAKE3) + perceptual image hashes |
-| `redosan watermark embed -i <image> -o <output>` | Embed an invisible LSB watermark |
-| `redosan watermark extract -i <image>` | Extract a hidden watermark |
+| `redosan fingerprint <file>` | Generate cryptographic hashes — 17 algorithms (SHA-1/224/256/384/512, SHA-3-224/256/384/512, BLAKE2b/2s/3, MD2/4/5, RIPEMD-160, Whirlpool) + perceptual image hashes (aHash/dHash/pHash/wHash) |
+| `redosan watermark embed -i <img> -o <out>` | Embed watermark — 9 core algorithms (LSB, DCT, Random LSB, Latent DCT, Zero-bit, Multi-bit, Forensic, Fragile, Imatag) |
+| `redosan watermark extract -i <img>` | Extract watermark from image |
+| `redosan pixel-injection embed -i <img> -o <out>` | Advanced embedding — 18+ spatial/frequency/DL/professional algorithms (enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal, nullguard, and more) |
+| `redosan pixel-injection extract -i <img>` | Extract from advanced algorithms |
+| `redosan c2pa sign <file>` | Sign with C2PA provenance metadata (ECDSA P-256) |
+| `redosan c2pa read <file>` | Read C2PA manifests from JPEG/PNG |
+| `redosan c2pa verify <file>` | Verify C2PA digital signatures |
 | `redosan metadata <file>` | Read EXIF, dimensions, format info |
 | `redosan timestamp create <file>` | Create an OpenTimestamps `.ots` proof |
 | `redosan timestamp verify <file>` | Verify file integrity against an `.ots` proof |
+| `redosan upgrade <file>` | Upgrade incomplete `.ots` proof via calendar aggregator |
 
 #### Examples
 
 ```bash
-# Windows (PowerShell)
-redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
-redosan watermark embed -i cover.png -o output.png -a lsb -p "mypassword"
-redosan metadata image.jpg
+# All algorithms fingerprint (17 hashes + perceptual)
+redosan fingerprint photo.png --json -o hashes.json
 
-# Linux / macOS
-redosan fingerprint ~/Desktop/photo.png --json -o hashes.json
+# Single algorithm
+redosan fingerprint doc.pdf --algo sha256
+
+# Watermark with DCT (type 2)
+redosan watermark embed -i cover.png -s secret.txt -o output.png -a dct -p "mypassword"
+
+# Watermark with all core algorithms available:
+# lsb (1), dct (2), random_lsb (3), neural_lsb (4), zero_bit (5),
+# multi_bit (6), forensic (7), fragile (8), imatag (9)
+
+# Advanced pixel injection
+redosan pixel-injection embed -i image.png -s message.txt -o output.png -a enhanced_lsb
+
+# C2PA provenance signing
+redosan c2pa sign document.pdf --claim "Created by Me" --author "Name" -o manifest.json
+redosan c2pa read image.jpg
+
+# Timestamp
 redosan timestamp create document.pdf -o proof.ots
 redosan timestamp verify document.pdf -o proof.ots
+
+# Windows (PowerShell) paths
+redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
+redosan watermark embed -i cover.png -o output.png -a lsb -p "mypassword"
 ```
 
 > **Note:** On Linux, install system dependencies for the `canvas` module:  
