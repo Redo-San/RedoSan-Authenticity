@@ -159,7 +159,22 @@ function renderProgress() {
 function simpleNext() {
   var step = simpleSteps[simpleStep];
   if (step.id === 'upload' && !simpleFile) return;
-  if (step.id === 'upload') saveSimpleUserInfo();
+  if (step.id === 'upload') {
+    saveSimpleUserInfo();
+    if (!simpleUserInfo.name || !simpleUserInfo.email || !simpleUserInfo.phone || !simpleUserInfo.website) {
+      var infoSection = document.querySelector('.simple-info-section');
+      if (infoSection) {
+        var existingErr = infoSection.querySelector('.simple-info-error');
+        if (existingErr) existingErr.remove();
+        var err = document.createElement('p');
+        err.className = 'simple-info-error';
+        err.style.cssText = 'font-size:0.8rem;color:var(--danger);margin:8px 0 0;text-align:left';
+        err.textContent = __('simple.info_required', 'Please fill in all required fields: Name, Email, Phone, Website.');
+        infoSection.appendChild(err);
+      }
+      return;
+    }
+  }
   // Timestamp/fingerprint must complete before advancing
   if ((step.id === 'timestamp' || step.id === 'fingerprint') && !simpleStepDone) return;
   if (step.id === 'done') { restartSimple(); return; }
@@ -196,15 +211,15 @@ function renderUpload(body) {
     '<p style="font-size:0.7rem;color:var(--danger);margin:6px 0 0;padding:4px 8px;background:rgba(220,53,69,.08);border-radius:6px">' +
     __('simple.usage_warning', '⚠️ This tool is for lawful use only. Uploading illegal or harmful content is strictly prohibited. All processing is local — nothing is stored or sent to any server.') + '</p>' +
     '<div class="simple-info-section" style="margin-top:20px;text-align:left">' +
-    '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information (optional)') + '</h3>' +
-    '<div class="form-group"><label>' + __('simple.info_name', 'Full Name') + '</label>' +
-    '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' + __('simple.info_name_ph', 'e.g. John Doe') + '" value="' + escHtml(simpleUserInfo.name) + '"></div>' +
-    '<div class="form-group"><label>' + __('simple.info_email', 'Email') + '</label>' +
-    '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' + __('simple.info_email_ph', 'e.g. john@example.com') + '" value="' + escHtml(simpleUserInfo.email) + '"></div>' +
-    '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + '</label>' +
-    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. +1 234 567 890') + '" value="' + escHtml(simpleUserInfo.phone) + '"></div>' +
-    '<div class="form-group"><label>' + __('simple.info_website', 'Website') + '</label>' +
-    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '"></div>' +
+    '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information') + '</h3>' +
+    '<div class="form-group"><label>' + __('simple.info_name', 'Full Name') + ' <span style="color:var(--danger)">*</span></label>' +
+    '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' + __('simple.info_name_ph', 'e.g. John Doe') + '" value="' + escHtml(simpleUserInfo.name) + '" required></div>' +
+    '<div class="form-group"><label>' + __('simple.info_email', 'Email') + ' <span style="color:var(--danger)">*</span></label>' +
+    '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' + __('simple.info_email_ph', 'e.g. john@example.com') + '" value="' + escHtml(simpleUserInfo.email) + '" required></div>' +
+    '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + ' <span style="color:var(--danger)">*</span></label>' +
+    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. +1 234 567 890') + '" value="' + escHtml(simpleUserInfo.phone) + '" required></div>' +
+    '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
+    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required></div>' +
     '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
     '<div class="simple-social-grid">' +
     '<input type="url" id="sinfo-tiktok" placeholder="TikTok URL" value="' + escHtml(socialVal.tiktok || '') + '">' +

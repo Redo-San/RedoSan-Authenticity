@@ -302,7 +302,7 @@
   "simple.type_document": "document",
   "simple.type_other": "other",
 
-  "simple.info_title": "Owner Information (optional)",
+  "simple.info_title": "Owner Information",
   "simple.info_name": "Full Name",
   "simple.info_name_ph": "e.g. John Doe",
   "simple.info_email": "Email",
@@ -314,6 +314,7 @@
   "simple.info_social": "Social Links",
   "simple.info_artist": "I am an artist / musician",
   "simple.info_music": "Music Platforms",
+  "simple.info_required": "Please fill in all required fields: Name, Email, Phone, Website.",
   "simple.cert_title": "Digital Passport",
   "simple.cert_desc": "Download a signed document with all results, image preview, and QR verification code.",
 
