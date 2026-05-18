@@ -15,7 +15,7 @@ async function readMetadata(file) {
     } catch(e) {
         result.error = e.message;
         return result;
-    }
+    } 
 
     if (data[0] === 0xFF && data[1] === 0xD8) {
         var exif = parseJPEGExif(data);
