@@ -635,61 +635,63 @@ function runPixelInjectStep() {
   var msg = document.getElementById('spi-message').value;
   var pass = document.getElementById('spi-password').value;
 
-  // Populate hidden professional form fields
-  var fileInput = document.getElementById('pi-image');
-  if (fileInput) {
-    var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleFile.type }) : simpleFile;
-    if (srcFile) {
-      var dt = new DataTransfer();
-      dt.items.add(srcFile);
-      fileInput.files = dt.files;
-      fileInput.dispatchEvent(new Event('change'));
-    }
-  }
-  var catSelect = document.getElementById('pi-category');
-  if (catSelect) { catSelect.value = cat; catSelect.dispatchEvent(new Event('change')); }
-  // Sync algorithm selection
-  var algoSelect = document.getElementById('pi-algorithm');
-  var srcAlgo = document.getElementById('spi-algorithm');
-  if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
-  var msgInput = document.getElementById('pi-message');
-  if (msgInput) msgInput.value = msg;
-  var passInput = document.getElementById('pi-password');
-  if (passInput) passInput.value = pass;
-
   var btn = document.getElementById('spi-btn');
   btn.disabled = true; btn.textContent = __('simple.injecting');
 
   if (window.switchPiTab) window.switchPiTab('embed');
 
-  var promise = window.handlePixelInjection();
-  if (promise && promise.then) {
-    promise.then(function() {
-      btn.textContent = __('simple.injected');
-      simpleResults['pixel-injection'] = true;
-      var piOutput = document.getElementById('pi-output');
-      var piDownload = document.getElementById('pi-download');
-      if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
-      if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
-      if (piDownload) {
-        var piLink = piDownload.querySelector('a');
-        if (piLink) simpleResults.piFinalUrl = piLink.href;
+  // Defer to next tick so the browser renders the button state first
+  setTimeout(function() {
+    // Populate hidden professional form fields
+    var fileInput = document.getElementById('pi-image');
+    if (fileInput) {
+      var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleFile.type }) : simpleFile;
+      if (srcFile) {
+        var dt = new DataTransfer();
+        dt.items.add(srcFile);
+        fileInput.files = dt.files;
+        fileInput.dispatchEvent(new Event('change'));
       }
-      var resultDiv = document.getElementById('spi-result');
-      if (resultDiv) {
-        resultDiv.innerHTML = '<div class="simple-pi-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-          __('simple.pi_done', 'Secret message injected successfully. Download available on the final page.') + '</div>';
-      }
-      setTimeout(function() {
-        simpleStepDone = true;
-        document.getElementById('simpleNextBtn').disabled = false;
-        simpleNext();
-      }, 1500);
-    }).catch(function() {
-      btn.textContent = __('simple.failed_retry');
-      btn.disabled = false;
-    });
-  }
+    }
+    var catSelect = document.getElementById('pi-category');
+    if (catSelect) { catSelect.value = cat; catSelect.dispatchEvent(new Event('change')); }
+    var algoSelect = document.getElementById('pi-algorithm');
+    var srcAlgo = document.getElementById('spi-algorithm');
+    if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
+    var msgInput = document.getElementById('pi-message');
+    if (msgInput) msgInput.value = msg;
+    var passInput = document.getElementById('pi-password');
+    if (passInput) passInput.value = pass;
+
+    var promise = window.handlePixelInjection();
+    if (promise && promise.then) {
+      promise.then(function() {
+        btn.textContent = __('simple.injected');
+        simpleResults['pixel-injection'] = true;
+        var piOutput = document.getElementById('pi-output');
+        var piDownload = document.getElementById('pi-download');
+        if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
+        if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
+        if (piDownload) {
+          var piLink = piDownload.querySelector('a');
+          if (piLink) simpleResults.piFinalUrl = piLink.href;
+        }
+        var resultDiv = document.getElementById('spi-result');
+        if (resultDiv) {
+          resultDiv.innerHTML = '<div class="simple-pi-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+            __('simple.pi_done', 'Secret message injected successfully. Download available on the final page.') + '</div>';
+        }
+        setTimeout(function() {
+          simpleStepDone = true;
+          document.getElementById('simpleNextBtn').disabled = false;
+          simpleNext();
+        }, 1500);
+      }).catch(function() {
+        btn.textContent = __('simple.failed_retry');
+        btn.disabled = false;
+      });
+    }
+  }, 50);
 }
 
 function renderTimestampStep(body) {
@@ -750,27 +752,30 @@ function runFingerprintStep() {
     var evt = new Event('change');
     fileInput.dispatchEvent(evt);
   }
-  var promise = window.handleFingerprint();
-  if (promise && promise.then) {
-    promise.then(function() {
-      var resultDiv = document.getElementById('sfp-result');
-      var fpOutput = document.getElementById('fp-output');
-      if (resultDiv) {
-        resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-          __('simple.fp_done', 'Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.') + '</div>';
-      }
-      simpleResults.fingerprint = true;
-      if (fpOutput) {
-        simpleResults.fpHtml = fpOutput.innerHTML;
-        simpleResults.fpResult = window._fpResult || null;
-      }
-      simpleStepDone = true;
-      document.getElementById('simpleNextBtn').disabled = false;
-    }).catch(function(e) {
-      var resultDiv = document.getElementById('sfp-result');
-      if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.fp_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
-    });
-  }
+  // Defer to next tick so the browser renders the spinner first
+  setTimeout(function() {
+    var promise = window.handleFingerprint();
+    if (promise && promise.then) {
+      promise.then(function() {
+        var resultDiv = document.getElementById('sfp-result');
+        var fpOutput = document.getElementById('fp-output');
+        if (resultDiv) {
+          resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+            __('simple.fp_done', 'Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.') + '</div>';
+        }
+        simpleResults.fingerprint = true;
+        if (fpOutput) {
+          simpleResults.fpHtml = fpOutput.innerHTML;
+          simpleResults.fpResult = window._fpResult || null;
+        }
+        simpleStepDone = true;
+        document.getElementById('simpleNextBtn').disabled = false;
+      }).catch(function(e) {
+        var resultDiv = document.getElementById('sfp-result');
+        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.fp_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
+      });
+    }
+  }, 50);
 }
 
 function renderDone(body) {
