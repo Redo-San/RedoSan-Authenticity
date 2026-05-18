@@ -762,6 +762,53 @@ async function fingerprintFile(file) {
     return result;
 }
 
+// ── Fast fingerprint for simplified mode (fewer algorithms, yields between each) ──
+async function fastFingerprint(file) {
+    var buf = await file.arrayBuffer();
+    var data = new Uint8Array(buf);
+    var name = file.name;
+    var ext = name.substring(name.lastIndexOf('.')).toLowerCase();
+    var imgExts = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.tif', '.webp'];
+
+    var hashes = {};
+    async function hashAlgo(algo, d) {
+        var h = await crypto.subtle.digest(algo, d);
+        return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    }
+
+    hashes['SHA-256'] = await hashAlgo('SHA-256', data);
+    hashes['SHA-512'] = await hashAlgo('SHA-512', data);
+    await new Promise(function(r) { setTimeout(r, 0); });
+    try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
+
+    var result = {
+        file_info: { file_name: name, file_size_bytes: data.length },
+        hashes: hashes,
+        perceptual_hashes: {}
+    };
+
+    if (imgExts.includes(ext)) {
+        try {
+            var loaded = await loadImage(new Blob([data]));
+            var imgData = loaded.imgData;
+            var small = resizeImageData(imgData, 32);
+            result.perceptual_hashes = {
+                ahash: ahash(small),
+                dhash: dhash(small),
+                phash: phash(small)
+            };
+            result.file_info.width = loaded.w;
+            result.file_info.height = loaded.h;
+            result.file_info.format = ext.replace('.', '').toUpperCase();
+        } catch(e) {
+            result.file_info.image_error = e.message;
+        }
+    }
+
+    return result;
+}
+window.fastFingerprint = fastFingerprint;
+
 // ── BLAKE3 self-verify at load time ──
 (async function(){
   try {

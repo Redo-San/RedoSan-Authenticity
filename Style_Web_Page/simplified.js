@@ -754,26 +754,45 @@ function runFingerprintStep() {
   }
   // Defer to next tick so the browser renders the spinner first
   setTimeout(function() {
-    var promise = window.handleFingerprint();
-    if (promise && promise.then) {
-      promise.then(function() {
+    // Use fast fingerprint for simplified mode (fewer algorithms, less blocking)
+    if (window.fastFingerprint) {
+      window.fastFingerprint(simpleFile).then(function(result) {
         var resultDiv = document.getElementById('sfp-result');
-        var fpOutput = document.getElementById('fp-output');
         if (resultDiv) {
           resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
             __('simple.fp_done', 'Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.') + '</div>';
         }
         simpleResults.fingerprint = true;
-        if (fpOutput) {
-          simpleResults.fpHtml = fpOutput.innerHTML;
-          simpleResults.fpResult = window._fpResult || null;
-        }
+        simpleResults.fpResult = result;
+        window._fpResult = result;
         simpleStepDone = true;
         document.getElementById('simpleNextBtn').disabled = false;
       }).catch(function(e) {
         var resultDiv = document.getElementById('sfp-result');
         if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.fp_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
       });
+    } else {
+      var promise = window.handleFingerprint();
+      if (promise && promise.then) {
+        promise.then(function() {
+          var resultDiv = document.getElementById('sfp-result');
+          var fpOutput = document.getElementById('fp-output');
+          if (resultDiv) {
+            resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+              __('simple.fp_done', 'Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.') + '</div>';
+          }
+          simpleResults.fingerprint = true;
+          if (fpOutput) {
+            simpleResults.fpHtml = fpOutput.innerHTML;
+            simpleResults.fpResult = window._fpResult || null;
+          }
+          simpleStepDone = true;
+          document.getElementById('simpleNextBtn').disabled = false;
+        }).catch(function(e) {
+          var resultDiv = document.getElementById('sfp-result');
+          if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.fp_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
+        });
+      }
     }
   }, 50);
 }
