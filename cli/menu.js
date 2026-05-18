@@ -33,9 +33,9 @@ function ask(question) {
   return new Promise(resolve => rl.question(question, resolve));
 }
 
-function run(cmd) {
+function run(args) {
   return new Promise((resolve, reject) => {
-    const cp = require('child_process').spawn('node', [CLI, ...cmd.split(' ')], {
+    const cp = require('child_process').spawn('node', [CLI, ...args], {
       stdio: 'inherit',
       cwd: path.dirname(CLI),
     });
@@ -45,8 +45,9 @@ function run(cmd) {
 
 async function selectFile(prompt) {
   while (true) {
-    const file = await ask(c('cyan', prompt));
-    const absPath = path.resolve(file.trim());
+    const raw = await ask(c('cyan', prompt));
+    const file = raw.trim().replace(/^["']|["']$/g, '');
+    const absPath = path.resolve(file);
     if (fs.existsSync(absPath)) return absPath;
     console.log(c('red', '✗ File not found. Try again.'));
   }
@@ -105,7 +106,9 @@ async function menuFingerprint() {
   console.log(c('dim', 'Choose algorithm (Enter = all):'));
   console.log('  sha256, sha512, blake3, md5, sha1, all');
   const algo = await ask(c('cyan', '> '));
-  await run(`fingerprint "${file}"${algo.trim() && algo !== 'all' ? ` --algo ${algo.trim()}` : ''}`);
+  const args = ['fingerprint', file];
+  if (algo.trim() && algo !== 'all') args.push('--algo', algo.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
@@ -119,10 +122,10 @@ async function menuWmEmbed() {
   console.log('  lsb, dct, random_lsb, neural_lsb, zero_bit, multi_bit, forensic, fragile, imatag');
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
-  let cmd = `watermark embed -i "${image}" -o "${output.trim()}" -a ${(algo.trim() || 'lsb')}`;
-  if (secret.trim()) cmd += ` -s "${secret.trim()}"`;
-  if (pass.trim()) cmd += ` -p "${pass.trim()}"`;
-  await run(cmd);
+  const args = ['watermark', 'embed', '-i', image, '-o', output.trim(), '-a', (algo.trim() || 'lsb')];
+  if (secret.trim()) args.push('-s', secret.trim());
+  if (pass.trim()) args.push('-p', pass.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
@@ -134,10 +137,10 @@ async function menuWmExtract() {
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
   const output = await ask(c('cyan', 'Output file path (Enter = print to screen): '));
-  let cmd = `watermark extract -i "${image}" -a ${(algo.trim() || 'lsb')}`;
-  if (pass.trim()) cmd += ` -p "${pass.trim()}"`;
-  if (output.trim()) cmd += ` -o "${output.trim()}"`;
-  await run(cmd);
+  const args = ['watermark', 'extract', '-i', image, '-a', (algo.trim() || 'lsb')];
+  if (pass.trim()) args.push('-p', pass.trim());
+  if (output.trim()) args.push('-o', output.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
@@ -145,7 +148,7 @@ async function menuMetadata() {
   console.clear();
   console.log(c('bright', '── Metadata ──'));
   const file = await selectFile('File path > ');
-  await run(`metadata "${file}" --json`);
+  await run(['metadata', file, '--json']);
   await ask('Press Enter...');
 }
 
@@ -154,7 +157,9 @@ async function menuTsCreate() {
   console.log(c('bright', '── Timestamp Create ──'));
   const file = await selectFile('File path > ');
   const output = await ask(c('cyan', 'Output .ots path (Enter = file.ots): '));
-  await run(`timestamp create "${file}"${output.trim() ? ` -o "${output.trim()}"` : ''}`);
+  const args = ['timestamp', 'create', file];
+  if (output.trim()) args.push('-o', output.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
@@ -163,7 +168,9 @@ async function menuTsVerify() {
   console.log(c('bright', '── Timestamp Verify ──'));
   const file = await selectFile('Original file path > ');
   const proof = await ask(c('cyan', '.ots proof file path (Enter = file.ots): '));
-  await run(`timestamp verify "${file}"${proof.trim() ? ` -o "${proof.trim()}"` : ''}`);
+  const args = ['timestamp', 'verify', file];
+  if (proof.trim()) args.push('-o', proof.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
@@ -174,11 +181,11 @@ async function menuC2paSign() {
   const claim = await ask(c('cyan', 'Claim text (Enter = none): '));
   const author = await ask(c('cyan', 'Author (Enter = none): '));
   const output = await ask(c('cyan', 'Output JSON path (Enter = file.c2pa.json): '));
-  let cmd = `c2pa sign "${file}"`;
-  if (claim.trim()) cmd += ` --claim "${claim.trim()}"`;
-  if (author.trim()) cmd += ` --author "${author.trim()}"`;
-  if (output.trim()) cmd += ` -o "${output.trim()}"`;
-  await run(cmd);
+  const args = ['c2pa', 'sign', file];
+  if (claim.trim()) args.push('--claim', claim.trim());
+  if (author.trim()) args.push('--author', author.trim());
+  if (output.trim()) args.push('-o', output.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
@@ -186,7 +193,7 @@ async function menuC2paRead() {
   console.clear();
   console.log(c('bright', '── C2PA Read ──'));
   const file = await selectFile('File path > ');
-  await run(`c2pa read "${file}"`);
+  await run(['c2pa', 'read', file]);
   await ask('Press Enter...');
 }
 
@@ -200,10 +207,10 @@ async function menuPiEmbed() {
   console.log('  enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal');
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
-  let cmd = `pixel-injection embed -i "${image}" -o "${output.trim()}" -a ${(algo.trim() || 'enhanced_lsb')}`;
-  if (secret.trim()) cmd += ` -s "${secret.trim()}"`;
-  if (pass.trim()) cmd += ` -p "${pass.trim()}"`;
-  await run(cmd);
+  const args = ['pixel-injection', 'embed', '-i', image, '-o', output.trim(), '-a', (algo.trim() || 'enhanced_lsb')];
+  if (secret.trim()) args.push('-s', secret.trim());
+  if (pass.trim()) args.push('-p', pass.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
@@ -215,10 +222,10 @@ async function menuPiExtract() {
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
   const output = await ask(c('cyan', 'Output path (Enter = print to screen): '));
-  let cmd = `pixel-injection extract -i "${image}" -a ${(algo.trim() || 'enhanced_lsb')}`;
-  if (pass.trim()) cmd += ` -p "${pass.trim()}"`;
-  if (output.trim()) cmd += ` -o "${output.trim()}"`;
-  await run(cmd);
+  const args = ['pixel-injection', 'extract', '-i', image, '-a', (algo.trim() || 'enhanced_lsb')];
+  if (pass.trim()) args.push('-p', pass.trim());
+  if (output.trim()) args.push('-o', output.trim());
+  await run(args);
   await ask('Press Enter...');
 }
 
