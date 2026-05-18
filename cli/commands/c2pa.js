@@ -6,7 +6,7 @@
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
-const { readFileBytes, getFileInfo, fmtSize } = require('../utils');
+const { readFileBytes, getFileInfo, fmtSize, validateFile } = require('../utils');
 
 // ── Embedded C2PA test credentials (from C2PA/c2pa.js) ──
 const C2PA_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
@@ -141,6 +141,12 @@ async function runC2pa(action, filePath, opts) {
   try {
     const absPath = path.resolve(filePath);
     if (!fs.existsSync(absPath)) { console.error('File not found'); process.exit(1); }
+    const allowDangerous = opts.allowDangerous || process.argv.includes('--allow-dangerous');
+    try { validateFile(absPath, { allowDangerous }); } catch (e) {
+      console.error(`Validation failed: ${e.message}`);
+      if (e.message.includes('Blocked dangerous file type')) console.error('Use --allow-dangerous to bypass');
+      process.exit(1);
+    }
 
     if (action === 'sign') await doSign(absPath, opts);
     else if (action === 'read') await doRead(absPath, opts);

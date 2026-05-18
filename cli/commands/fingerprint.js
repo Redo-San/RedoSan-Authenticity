@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, hashNode } = require('../utils');
+const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, hashNode, validateFile } = require('../utils');
 
 // ── Load existing hashing.js and patch crypto.subtle for Node.js ──
 // We create a minimal browser-like environment so the existing code works as-is
@@ -81,7 +81,16 @@ async function runFingerprint(filePath, opts) {
   const absPath = path.resolve(filePath);
 
   try {
-    const data = readFileBytes(absPath);
+    var data;
+    try {
+      data = validateFile(absPath, { allowDangerous: opts.allowDangerous || process.argv.includes('--allow-dangerous') });
+    } catch (e) {
+      console.error(`Validation failed: ${e.message}`);
+      if (e.message.includes('Blocked dangerous file type')) {
+        console.error('Use --allow-dangerous to bypass file validation');
+      }
+      process.exit(1);
+    }
     const info = getFileInfo(filePath);
     const imgExts = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.tif', '.webp'];
 

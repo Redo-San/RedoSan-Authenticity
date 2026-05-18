@@ -5,7 +5,7 @@
 
 const path = require('path');
 const crypto = require('crypto');
-const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData } = require('../utils');
+const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, validateFile } = require('../utils');
 
 // Patch crypto.subtle for Node.js
 if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
@@ -34,8 +34,14 @@ require(metadataPath);
 
 async function runMetadata(filePath, opts) {
   const absPath = path.resolve(filePath);
+  const allowDangerous = opts.allowDangerous || process.argv.includes('--allow-dangerous');
 
   try {
+    try { validateFile(absPath, { allowDangerous }); } catch (e) {
+      console.error(`Validation failed: ${e.message}`);
+      if (e.message.includes('Blocked dangerous file type')) console.error('Use --allow-dangerous to bypass');
+      process.exit(1);
+    }
     const data = readFileBytes(absPath);
     const info = getFileInfo(filePath);
 

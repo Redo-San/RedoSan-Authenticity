@@ -7,7 +7,7 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const { createCanvas, loadImage, ImageData } = require('canvas');
-const { readFileBytes, getFileInfo, fmtSize, saveImageData, loadImageData } = require('../utils');
+const { readFileBytes, getFileInfo, fmtSize, saveImageData, loadImageData, validateFile } = require('../utils');
 
 // ── Patch browser APIs for Node.js ──
 const mockDocument = {
@@ -168,6 +168,24 @@ async function runWatermark(mode, opts) {
     if (!imageFile) { console.error('Error: --image (-i) is required'); process.exit(1); }
 
     const absPath = path.resolve(imageFile);
+    const allowDangerous = opts.allowDangerous || process.argv.includes('--allow-dangerous');
+    try {
+      validateFile(absPath, { allowDangerous });
+    } catch (e) {
+      console.error(`Validation failed for image: ${e.message}`);
+      if (e.message.includes('Blocked dangerous file type')) {
+        console.error('Use --allow-dangerous to bypass file validation');
+      }
+      process.exit(1);
+    }
+    if (opts.secret) {
+      try {
+        validateFile(path.resolve(opts.secret), { allowDangerous });
+      } catch (e) {
+        console.error(`Validation failed for secret: ${e.message}`);
+        process.exit(1);
+      }
+    }
     const info = getFileInfo(imageFile);
     const algoName = (opts.algo || 'lsb').toLowerCase();
     const isAdvanced = ADVANCED_ALGOS.includes(algoName);

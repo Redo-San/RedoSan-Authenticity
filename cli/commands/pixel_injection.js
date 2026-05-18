@@ -7,7 +7,7 @@ const { createCanvas, loadImage, ImageData } = require('canvas');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
-const { readFileBytes, getFileInfo } = require('../utils');
+const { readFileBytes, getFileInfo, validateFile } = require('../utils');
 
 // Patch browser APIs
 const mockDocument = {
@@ -37,6 +37,17 @@ async function runPixelInjection(mode, opts) {
   const imageFile = opts.image;
   if (!imageFile) { console.error('--image (-i) required'); process.exit(1); }
   const absPath = path.resolve(imageFile);
+  const allowDangerous = opts.allowDangerous || process.argv.includes('--allow-dangerous');
+  try { validateFile(absPath, { allowDangerous }); } catch (e) {
+    console.error(`Validation failed: ${e.message}`);
+    if (e.message.includes('Blocked dangerous file type')) console.error('Use --allow-dangerous to bypass');
+    process.exit(1);
+  }
+  if (opts.secret) {
+    try { validateFile(path.resolve(opts.secret), { allowDangerous }); } catch (e) {
+      console.error(`Validation failed for secret: ${e.message}`); process.exit(1);
+    }
+  }
   const info = getFileInfo(imageFile);
   const algoName = (opts.algo || 'dct').toLowerCase();
   const password = opts.password || '';

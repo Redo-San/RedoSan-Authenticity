@@ -14,6 +14,7 @@ program
   .name('redosan')
   .description('Digital authenticity tools — fingerprint, watermark, metadata, timestamp')
   .version('1.0.0')
+  .option('--allow-dangerous', 'Skip file validation (allow blocked extensions, bypass magic bytes check)')
   .addHelpText('after', `
 Examples:
   $ redosan fingerprint image.png
