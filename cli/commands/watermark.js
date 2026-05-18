@@ -231,8 +231,8 @@ function bitsToBytes(bits) {
 
 function passwordToSeed(pw) {
   if (!pw) return 42;
-  const hash = crypto.createHash('sha256').update(pw).digest();
-  return hash.readUInt32BE(0);
+  const key = crypto.pbkdf2Sync(pw, 'redosan-salt', 100000, 4, 'sha256');
+  return key.readUInt32BE(0);
 }
 
 module.exports = { runWatermark };
