@@ -107,7 +107,32 @@ Select your preferred mode on startup (saved to localStorage for next visit):
 
 A Node.js CLI is available for automation and offline use. Requires **Node.js 18+**.
 
-#### Installation
+#### 🖱️ Quick Start (No Commands Needed)
+
+Double-click the file for your system:
+
+| Windows | Linux / macOS |
+|---------|---------------|
+| **`start.bat`** | **`start.sh`** (`chmod +x start.sh` first) |
+
+An interactive menu will open — just choose an option number, enter file paths when prompted, and the tool does the rest.
+
+```
+╔══════════════════════════════════════╗
+║     RedoSan Authenticity CLI         ║
+╚══════════════════════════════════════╝
+
+Choose an option:
+  1  Fingerprint file
+  2  Embed watermark
+  3  Extract watermark
+  ...
+  0  Exit
+```
+
+#### ⌨️ Command Line (For Power Users)
+
+##### Installation
 
 ```bash
 # Clone the repo

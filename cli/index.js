@@ -16,6 +16,8 @@ program
   .version('1.0.0')
   .option('--allow-dangerous', 'Skip file validation (allow blocked extensions, bypass magic bytes check)')
   .addHelpText('after', `
+Quick start (no commands): double-click start.bat (Windows) or start.sh (Linux/macOS)
+  
 Examples:
   $ redosan fingerprint image.png
   $ redosan fingerprint image.png --algo sha256 --json
