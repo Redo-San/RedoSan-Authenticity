@@ -109,6 +109,29 @@ async function menuFingerprint() {
   const args = ['fingerprint', file];
   if (algo.trim() && algo !== 'all') args.push('--algo', algo.trim());
   await run(args);
+
+  // Ask to save
+  console.log();
+  console.log(c('yellow', 'Save result?'));
+  console.log('  ' + c('green', '1') + '  Save as JSON');
+  console.log('  ' + c('green', '2') + '  Save as TXT');
+  console.log('  ' + c('green', '0') + '  Skip');
+  const fmt = await ask(c('cyan', '> '));
+  if (fmt.trim() === '1' || fmt.trim() === '2') {
+    const def = file + (fmt.trim() === '1' ? '.json' : '.fingerprint.txt');
+    const out = await ask(c('cyan', `Output path (Enter = ${path.basename(def)}): `));
+    const outPath = out.trim() || def;
+    const saveArgs = ['fingerprint', file, '-o', outPath];
+    if (algo.trim() && algo !== 'all') saveArgs.push('--algo', algo.trim());
+    if (fmt.trim() === '1') saveArgs.push('--json');
+    try {
+      await run(saveArgs);
+      console.log(c('green', `✓ Saved to ${outPath}`));
+    } catch (e) {
+      console.log(c('red', `✗ Save failed: ${e.message}`));
+    }
+  }
+
   await ask('Press Enter...');
 }
 
