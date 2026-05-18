@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+// ── RedoSan Authenticity CLI ──
+// Command-line interface for digital authenticity tools
+
+'use strict';
+
+const { Command } = require('commander');
+const path = require('path');
+const fs = require('fs');
+
+const program = new Command();
+
+program
+  .name('redosan')
+  .description('Digital authenticity tools — fingerprint, watermark, metadata, timestamp')
+  .version('1.0.0')
+  .addHelpText('after', `
+Examples:
+  $ redosan fingerprint image.png
+  $ redosan fingerprint image.png --algo sha256
+  $ redosan watermark embed -i image.png -s secret.png -a lsb -p mypassword -o output.png
+  $ redosan watermark extract -i watermarked.png -a lsb -p mypassword
+  $ redosan metadata image.jpg
+  $ redosan metadata image.jpg --json
+  $ redosan timestamp create image.png -o proof.ots
+  $ redosan timestamp verify image.png -p proof.ots
+
+All processing is 100% local — nothing is uploaded to any server.
+`);
+
+// ── Fingerprint command ──
+program
+  .command('fingerprint')
+  .description('Generate cryptographic fingerprints (hashes) for a file')
+  .argument('<file>', 'Path to the file to fingerprint')
+  .option('-a, --algo <type>', 'Specific algorithm: sha1, sha256, sha384, sha512, sha3, blake2b, blake3, md5, ripemd160, whirlpool, all (default)')
+  .option('-j, --json', 'Output as JSON')
+  .option('-o, --output <file>', 'Save results to a file')
+  .action(async (filePath, opts) => {
+    const { runFingerprint } = require('./commands/fingerprint');
+    await runFingerprint(filePath, opts);
+  });
+
+// ── Watermark command ──
+program
+  .command('watermark')
+  .description('Embed or extract invisible watermarks in images')
+  .option('-i, --image <file>', 'Input cover image')
+  .option('-s, --secret <file>', 'Secret file to embed (embed mode)')
+  .option('-o, --output <file>', 'Output file path')
+  .option('-p, --password <pass>', 'Password for algorithms 1-4,6-7,9')
+  .option('-a, --algo <type>', 'Algorithm: lsb, dct, dwt, zero_bit, multi_bit, forensic, fragile, imatag, auto (default: lsb)')
+  .addCommand(
+    new Command('embed')
+      .description('Embed a watermark into an image')
+      .requiredOption('-i, --image <file>', 'Cover image')
+      .option('-s, --secret <file>', 'Secret file to embed')
+      .requiredOption('-o, --output <file>', 'Output image path')
+      .option('-p, --password <pass>', 'Password')
+      .option('-a, --algo <type>', 'Algorithm (default: lsb)')
+      .action(async (opts) => {
+        const { runWatermark } = require('./commands/watermark');
+        await runWatermark('embed', opts);
+      })
+  )
+  .addCommand(
+    new Command('extract')
+      .description('Extract a watermark from an image')
+      .requiredOption('-i, --image <file>', 'Watermarked image')
+      .option('-o, --output <file>', 'Extracted data output path')
+      .option('-p, --password <pass>', 'Password')
+      .option('-a, --algo <type>', 'Algorithm (default: lsb)')
+      .action(async (opts) => {
+        const { runWatermark } = require('./commands/watermark');
+        await runWatermark('extract', opts);
+      })
+  );
+
+// ── Metadata command ──
+program
+  .command('metadata')
+  .description('Read metadata (EXIF, dimensions, format) from an image')
+  .argument('<file>', 'Path to the image file')
+  .option('-j, --json', 'Output as JSON')
+  .option('-o, --output <file>', 'Save results to a file')
+  .action(async (filePath, opts) => {
+    const { runMetadata } = require('./commands/metadata');
+    await runMetadata(filePath, opts);
+  });
+
+// ── Timestamp command ──
+program
+  .command('timestamp')
+  .description('Create or verify OpenTimestamps (.ots) proofs')
+  .argument('<action>', 'Action: create or verify')
+  .argument('<file>', 'Path to the file')
+  .option('-o, --output <file>', 'Output .ots file (create) or .ots proof file (verify)')
+  .option('-f, --file2 <file>', 'Original file (verify mode)')
+  .action(async (action, filePath, opts) => {
+    const { runTimestamp } = require('./commands/timestamp');
+    await runTimestamp(action, filePath, opts);
+  });
+
+program.parse(process.argv);

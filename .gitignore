@@ -1,78 +1,20 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-dist/
-build/
-*.egg
-.eggs/
+# Node.js
+node_modules/
+cli/node_modules/
 
-# Environment
-.env
-venv/
-.venv/
+# Platform-specific
+*.exe
+*.dmg
+*.deb
+*.rpm
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# Test files
+cli/test_output/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Project specific
-*.sha1.txt
-*.sha256.txt
-*.sha512.txt
-*.ots
-*_stego.*
-*_watermarked.*
-debug_redosan_log.txt
-redosan_debug.log
-
-# Desktop version (removed from GitHub, kept locally)
-RedoSan_Authenticity.py
-RedoSan_Authenticity_gui.py
-RedoSan_Authenticity.bat
-RedoSan_Authenticity_gui.bat
-RedoSan_Authenticity.sh
-RedoSan_Authenticity.vbs
-RedoSan_Authenticity_dragdrop.vbs
-Run_Online.bat
-Run_Online_GUI.bat
-redosan_online.py
-redosan_online_gui.py
-setup.bat
-setup_venv.bat
-setup_sendto.ps1
-install.py
-gui_parts/
-modules/
-web/
-pyproject.toml
-requirements.txt
-.keys/
-_archive/
-c2patool.exe
-
-# C2PA custom WASM build output
-C2PA/c2pa-custom/pkg/
-C2PA/c2pa-custom/target/
-c2patool
-openstego.jar
-
-# C2PA sample certs
-c2pa_certs.pem
-c2pa_private.key
-
-# Installer build output
-installer_output/
-
-# PyInstaller output
-dist/
-build/
-*.spec
-c2patool.exe
+# Editor
+.vscode/
+.idea/
