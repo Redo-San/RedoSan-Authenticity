@@ -94,12 +94,60 @@ All payload types 1-7, 9 use format: `[32-bit length] + [XOR-encrypted [0xAA, 0x
 
 ## Usage
 
-Just visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.github.io/RedoSan-Authenticity/)** — no installation required.
+### 🌐 Web App (No Installation)
+
+Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.github.io/RedoSan-Authenticity/)** — just open in any browser.
 
 Select your preferred mode on startup (saved to localStorage for next visit):
 
 - **Simplified Mode** — Upload a file and follow the step wizard. The tool auto-detects your file type (image, audio, video, document) and builds the appropriate pipeline.
 - **Professional Mode** — Use the sidebar to access each tool directly with full control over parameters.
+
+### 💻 CLI (Cross-Platform)
+
+A Node.js CLI is available for automation and offline use. Requires **Node.js 18+**.
+
+#### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/Redo-San/RedoSan-Authenticity.git
+cd RedoSan-Authenticity
+
+# Install dependencies & register the CLI
+npm install
+npm link    # makes 'redosan' available globally
+```
+
+#### Commands
+
+| Command | Description |
+|---------|-------------|
+| `redosan fingerprint <file>` | Generate cryptographic hashes (SHA-256, SHA-512, BLAKE3) + perceptual image hashes |
+| `redosan watermark embed -i <image> -o <output>` | Embed an invisible LSB watermark |
+| `redosan watermark extract -i <image>` | Extract a hidden watermark |
+| `redosan metadata <file>` | Read EXIF, dimensions, format info |
+| `redosan timestamp create <file>` | Create an OpenTimestamps `.ots` proof |
+| `redosan timestamp verify <file>` | Verify file integrity against an `.ots` proof |
+
+#### Examples
+
+```bash
+# Windows (PowerShell)
+redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
+redosan watermark embed -i cover.png -o output.png -a lsb -p "mypassword"
+redosan metadata image.jpg
+
+# Linux / macOS
+redosan fingerprint ~/Desktop/photo.png --json -o hashes.json
+redosan timestamp create document.pdf -o proof.ots
+redosan timestamp verify document.pdf -o proof.ots
+```
+
+> **Note:** On Linux, install system dependencies for the `canvas` module:  
+> `sudo apt install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`  
+> On macOS: `brew install pkg-config cairo pango libpng jpeg giflib librsvg`  
+> Windows binaries are bundled — no extra setup required.
 
 ---
 
