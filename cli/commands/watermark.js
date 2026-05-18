@@ -5,20 +5,24 @@
 
 const path = require('path');
 const crypto = require('crypto');
-const { createCanvas, loadImage } = require('canvas');
 const fs = require('fs');
+const { createCanvas, loadImage } = require('canvas');
 const { readFileBytes, getFileInfo, fmtSize } = require('../utils');
 
 // ── Patch browser APIs for Node.js ──
 
-// Patch document.createElement('canvas')
+// Patch document with createElement and addEventListener (for DOMContentLoaded guard)
 const mockDocument = {
   createElement: function(tag) {
     if (tag === 'canvas') {
       return createCanvas(1, 1);
     }
     throw new Error(`createElement('${tag}') not supported in CLI`);
-  }
+  },
+  addEventListener: function() {}, // no-op for CLI
+  getElementById: function() { return null; },
+  querySelector: function() { return null; },
+  querySelectorAll: function() { return []; },
 };
 globalThis.document = mockDocument;
 
@@ -34,13 +38,23 @@ if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
   };
 }
 
-// Load existing watermark_core.js (uses patched document/crypto)
-const corePath = path.join(__dirname, '..', 'Watermark', 'watermark_core.js');
-require(corePath);
+// Polyfill window for browser JS files
+if (typeof globalThis.window === 'undefined') {
+  globalThis.window = globalThis;
+}
 
-// Load watermark UI handler
-const wmPath = path.join(__dirname, '..', 'Watermark', 'watermark.js');
-require(wmPath);
+// Load watermark_core.js using vm.runInThisContext so functions become global
+const vm = require('vm');
+
+// Pre-declare module-level constants that watermark_core.js expects
+globalThis.LSB_MAX_BITS = 100000;
+
+const coreSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Watermark', 'watermark_core.js'), 'utf8');
+vm.runInThisContext(coreSrc, { filename: 'watermark_core.js' });
+
+// Load watermark UI handler (safe with no-op document polyfills)
+const wmSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Watermark', 'watermark.js'), 'utf8');
+vm.runInThisContext(wmSrc, { filename: 'watermark.js' });
 
 // ── Algorithm map ──
 const ALGO_MAP = {
@@ -82,6 +96,8 @@ async function runWatermark(mode, opts) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       const imgData = ctx.getImageData(0, 0, img.width, img.height);
+      imgData.w = img.width;
+      imgData.h = img.height;
 
       // Embed algorithm
       const algoFn = `wm${algoNum}_embed`;
@@ -137,6 +153,8 @@ async function runWatermark(mode, opts) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       const imgData = ctx.getImageData(0, 0, img.width, img.height);
+      imgData.w = img.width;
+      imgData.h = img.height;
 
       // Extract algorithm
       const extractFn = `wm${algoNum}_extract`;
@@ -152,6 +170,11 @@ async function runWatermark(mode, opts) {
         extracted = globalThis[extractFn](imgData, seed);
       } else {
         extracted = globalThis[extractFn](imgData, password);
+      }
+
+      // Convert string of bits to array (wm1_extract returns a string like "1010...")
+      if (typeof extracted === 'string') {
+        extracted = extracted.split('').map(Number);
       }
 
       // Output extracted data

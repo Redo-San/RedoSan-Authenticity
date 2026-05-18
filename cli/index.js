@@ -45,11 +45,6 @@ program
 program
   .command('watermark')
   .description('Embed or extract invisible watermarks in images')
-  .option('-i, --image <file>', 'Input cover image')
-  .option('-s, --secret <file>', 'Secret file to embed (embed mode)')
-  .option('-o, --output <file>', 'Output file path')
-  .option('-p, --password <pass>', 'Password for algorithms 1-4,6-7,9')
-  .option('-a, --algo <type>', 'Algorithm: lsb, dct, dwt, zero_bit, multi_bit, forensic, fragile, imatag, auto (default: lsb)')
   .addCommand(
     new Command('embed')
       .description('Embed a watermark into an image')

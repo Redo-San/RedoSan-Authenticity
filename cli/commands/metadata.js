@@ -19,12 +19,17 @@ if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
   };
 }
 
+// Polyfill window for browser JS files
+if (typeof globalThis.window === 'undefined') {
+  globalThis.window = globalThis;
+}
+
 // Load loadImage from hashing.js (needed by metadata.js)
-const hashingPath = path.join(__dirname, '..', 'Fingerprint', 'hashing.js');
+const hashingPath = path.join(__dirname, '..', '..', 'Fingerprint', 'hashing.js');
 require(hashingPath);
 
 // Load metadata reading functions
-const metadataPath = path.join(__dirname, '..', 'Metadata', 'metadata.js');
+const metadataPath = path.join(__dirname, '..', '..', 'Metadata', 'metadata.js');
 require(metadataPath);
 
 async function runMetadata(filePath, opts) {

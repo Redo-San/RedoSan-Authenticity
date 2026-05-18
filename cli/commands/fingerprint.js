@@ -3,6 +3,7 @@
 
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, hashNode } = require('../utils');
 
@@ -30,9 +31,48 @@ if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
   };
 }
 
-// Now require the existing hashing.js — it will use our patched crypto
-const hashingPath = path.join(__dirname, '..', 'Fingerprint', 'hashing.js');
-require(hashingPath);
+// Polyfill window for hashing.js (uses window.fastFingerprint = ...)
+if (typeof globalThis.window === 'undefined') {
+  globalThis.window = globalThis;
+}
+
+// Polyfill document.createElement('canvas') for perceptual hash resize
+const { createCanvas, loadImage: nodeLoadImage } = require('canvas');
+if (typeof globalThis.document === 'undefined') {
+  globalThis.document = {
+    createElement: function(tag) {
+      if (tag === 'canvas') return createCanvas(1, 1);
+      throw new Error(`createElement('${tag}') not supported in CLI`);
+    }
+  };
+}
+
+// Polyfill loadImage for hashing.js (used by perceptual hashes)
+// shared.js defines loadImage(file) -> { imgData, w, h }
+if (typeof globalThis.loadImage === 'undefined') {
+  globalThis.loadImage = async function(blobOrBuffer) {
+    let buf;
+    if (blobOrBuffer instanceof Blob) {
+      buf = Buffer.from(await blobOrBuffer.arrayBuffer());
+    } else if (blobOrBuffer instanceof ArrayBuffer) {
+      buf = Buffer.from(blobOrBuffer);
+    } else {
+      buf = blobOrBuffer;
+    }
+    const img = await nodeLoadImage(buf);
+    const c = createCanvas(img.width, img.height);
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const imgData = ctx.getImageData(0, 0, img.width, img.height);
+    return { imgData: imgData, w: img.width, h: img.height };
+  };
+}
+
+// Use vm.runInThisContext to load hashing.js so its top-level vars/functions become global
+// This is needed because require() scopes everything to the module
+const vm = require('vm');
+const hashingSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Fingerprint', 'hashing.js'), 'utf8');
+vm.runInThisContext(hashingSrc, { filename: 'hashing.js' });
 
 // After loading, all functions are available on global scope or window-like object
 // hashing.js attaches: sha3_224, sha3_256, sha3_384, sha3_512, blake2b, blake2s, sha224, md2, md4, md5, ripemd160, blake3, whirlpool, fingerprintFile, fastFingerprint, loadImage, resizeImageData, ahash, dhash, phash, whash
@@ -90,12 +130,20 @@ async function runFingerprint(filePath, opts) {
     const perceptual = {};
     if (imgExts.includes(info.ext)) {
       try {
-        const imgData = await loadImageData(absPath);
-        const small = globalThis.resizeImageData(imgData, 32);
-        perceptual.ahash = globalThis.ahash(small);
-        perceptual.dhash = globalThis.dhash(small);
-        perceptual.phash = globalThis.phash(small);
-        try { perceptual.whash = globalThis.whash(small); } catch(e) {}
+        const img = await nodeLoadImage(absPath);
+        const c = createCanvas(32, 32);
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, 32, 32);
+        const small = ctx.getImageData(0, 0, 32, 32);
+        // Add w/h properties like the browser version
+        small.w = 32; small.h = 32;
+        // Convert ImageData.data to format expected by ahash/dhash/phash
+        // These functions expect imgData.data as a flat array with RGBA values
+        const imgDataForHash = { data: small.data, w: 32, h: 32 };
+        perceptual.ahash = globalThis.ahash(imgDataForHash);
+        perceptual.dhash = globalThis.dhash(imgDataForHash);
+        perceptual.phash = globalThis.phash(imgDataForHash);
+        try { perceptual.whash = globalThis.whash(imgDataForHash); } catch(e) {}
       } catch(e) {
         console.error(`Perceptual hash error: ${e.message}`);
       }
