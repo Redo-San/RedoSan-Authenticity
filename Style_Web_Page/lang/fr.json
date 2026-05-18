@@ -208,6 +208,8 @@
   "simple.embed_failed": "Échec de l'intégration",
   "simple.ts_failed": "Échec de l'horodatage : {msg}",
   "simple.fp_failed": "Échec de l'empreinte : {msg}",
+  "simple.fp_done": "Empreinte numérique générée avec succès. Tous les hachages sont disponibles dans le certificat.",
+  "simple.pi_done": "Message secret injecté avec succès. Téléchargement disponible sur la page finale.",
 
   "page.about": "<h2>À propos de RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> est un outil d'authenticité numérique open-source qui fonctionne entièrement dans votre navigateur. Aucun fichier n'est jamais téléchargé sur aucun serveur — tout traitement se produit côté client.</p><p>Nous fournissons une suite complète d'outils pour la forensique numérique et la vérification des médias :</p><ul><li><strong>Filigranage</strong> — 9 algorithmes incluant LSB, DCT, DWT, style neuronal et filigrane forensique</li><li><strong>Empreinte</strong> — Hachage cryptographique (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) et hachage d'image perceptuel</li><li><strong>Métadonnées</strong> — Lire EXIF, dimensions, format et mode couleur des images</li><li><strong>Horodatage</strong> — Hachage SHA-256 avec support de vérification OpenTimestamps</li></ul><p>Construit avec la confidentialité comme principe fondamental. Vos fichiers ne quittent jamais votre appareil.</p>",
 

@@ -208,6 +208,8 @@
   "simple.embed_failed": "Einbetten fehlgeschlagen",
   "simple.ts_failed": "Zeitstempel fehlgeschlagen: {msg}",
   "simple.fp_failed": "Fingerabdruck fehlgeschlagen: {msg}",
+  "simple.fp_done": "Digitaler Fingerabdruck erfolgreich generiert. Alle Hashes sind im Zertifikat verfügbar.",
+  "simple.pi_done": "Geheime Nachricht erfolgreich injiziert. Download auf der letzten Seite verfügbar.",
 
   "page.about": "<h2>Über RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> ist ein Open-Source-Digital-Authentizitätstool, das vollständig in Ihrem Browser läuft. Es werden niemals Dateien auf einen Server hochgeladen — alle Verarbeitungen finden clientseitig statt.</p><p>Wir bieten eine umfassende Suite von Tools für digitale Forensik und Medienverifizierung:</p><ul><li><strong>Wasserzeichen</strong> — 9 Algorithmen einschließlich LSB, DCT, DWT, Neural-Style und forensische Wasserzeichen</li><li><strong>Fingerabdruck</strong> — Kryptografisches Hashing (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) und Wahrnehmungsbild-Hashing</li><li><strong>Metadaten</strong> — EXIF, Abmessungen, Format und Farbmodus aus Bildern lesen</li><li><strong>Zeitstempel</strong> — SHA-256 Hashing mit OpenTimestamps-Verifizierungsunterstützung</li></ul><p>Gebaut mit Datenschutz als Kernprinzip. Ihre Dateien verlassen niemals Ihr Gerät.</p>",
 

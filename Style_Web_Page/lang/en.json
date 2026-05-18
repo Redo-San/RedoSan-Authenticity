@@ -294,6 +294,8 @@
   "simple.embed_failed": "Embedding failed",
   "simple.ts_failed": "Timestamp failed: {msg}",
   "simple.fp_failed": "Fingerprint failed: {msg}",
+  "simple.fp_done": "Digital fingerprint generated successfully. All hashes are complete and available in the certificate.",
+  "simple.pi_done": "Secret message injected successfully. Download available on the final page.",
   "simple.type_image": "image",
   "simple.type_audio": "audio",
   "simple.type_video": "video",

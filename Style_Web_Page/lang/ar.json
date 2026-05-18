@@ -286,6 +286,8 @@
   "simple.embed_failed": "فشل التضمين",
   "simple.ts_failed": "فشل الطابع الزمني: {msg}",
   "simple.fp_failed": "فشلت البصمة: {msg}",
+  "simple.fp_done": "تم إنشاء البصمة الرقمية بنجاح. جميع الـ hashes متاحة في الشهادة.",
+  "simple.pi_done": "تم حقن الرسالة السرية بنجاح. التحميل متاح في الصفحة الأخيرة.",
   "simple.type_image": "صورة",
   "simple.type_audio": "صوت",
   "simple.type_video": "فيديو",

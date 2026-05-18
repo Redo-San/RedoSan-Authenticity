@@ -169,6 +169,8 @@
   "simple.embed_failed": "埋め込みに失敗しました",
   "simple.ts_failed": "タイムスタンプ失敗：{msg}",
   "simple.fp_failed": "フィンガープリント失敗：{msg}",
+  "simple.fp_done": "デジタルフィンガープリントが正常に生成されました。すべてのハッシュは証明書で利用可能です。",
+  "simple.pi_done": "秘密メッセージが正常に注入されました。最終ページでダウンロード可能です。",
 
   "search.placeholder": "検索...",
   "search.heading": "検索結果",

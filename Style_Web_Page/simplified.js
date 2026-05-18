@@ -667,7 +667,6 @@ function runPixelInjectStep() {
     promise.then(function() {
       btn.textContent = __('simple.injected');
       simpleResults['pixel-injection'] = true;
-      var resultDiv = document.getElementById('spi-result');
       var piOutput = document.getElementById('pi-output');
       var piDownload = document.getElementById('pi-download');
       if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
@@ -676,8 +675,10 @@ function runPixelInjectStep() {
         var piLink = piDownload.querySelector('a');
         if (piLink) simpleResults.piFinalUrl = piLink.href;
       }
-      if (resultDiv && piOutput && piOutput.innerHTML) {
-        resultDiv.innerHTML = '<div class="simple-pi-result" style="text-align:left;max-height:400px;overflow-y:auto;padding:12px;background:var(--bg);border-radius:8px;margin-top:12px">' + piOutput.innerHTML + '</div>';
+      var resultDiv = document.getElementById('spi-result');
+      if (resultDiv) {
+        resultDiv.innerHTML = '<div class="simple-pi-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+          __('simple.pi_done', 'Secret message injected successfully. Download available on the final page.') + '</div>';
       }
       setTimeout(function() {
         simpleStepDone = true;
@@ -734,7 +735,7 @@ function renderFingerprintStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' + __('simple.fp_title') + '</h2><p>' + __('simple.fp_desc') + '</p>' +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 12px;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.fp_processing_note', '⏳ Computing multiple hash algorithms (SHA-2, SHA-3, BLAKE, MD, RIPEMD, Whirlpool) and perceptual hashes. This may take a moment for large files.') + '</p>' +
+    __('simple.fp_processing_note', '⏳ Computing multiple hash algorithms. This may take a moment for large files.') + '</p>' +
     '<div id="sfp-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
   runFingerprintStep();
 }
@@ -754,8 +755,9 @@ function runFingerprintStep() {
     promise.then(function() {
       var resultDiv = document.getElementById('sfp-result');
       var fpOutput = document.getElementById('fp-output');
-      if (resultDiv && fpOutput && fpOutput.innerHTML) {
-        resultDiv.innerHTML = '<div class="simple-fp-result" style="text-align:left;max-height:400px;overflow-y:auto;padding:12px;background:var(--bg);border-radius:8px;margin-top:12px">' + fpOutput.innerHTML + '</div>';
+      if (resultDiv) {
+        resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+          __('simple.fp_done', 'Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.') + '</div>';
       }
       simpleResults.fingerprint = true;
       if (fpOutput) {

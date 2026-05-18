@@ -169,6 +169,8 @@
   "simple.embed_failed": "삽입 실패",
   "simple.ts_failed": "타임스탬프 실패: {msg}",
   "simple.fp_failed": "지문 실패: {msg}",
+  "simple.fp_done": "디지털 지문이 성공적으로 생성되었습니다. 모든 해시는 인증서에서 확인할 수 있습니다.",
+  "simple.pi_done": "비밀 메시지가 성공적으로 주입되었습니다. 마지막 페이지에서 다운로드 가능합니다.",
 
   "search.placeholder": "검색...",
   "search.heading": "검색 결과",

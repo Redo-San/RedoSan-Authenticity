@@ -703,32 +703,35 @@ async function fingerprintFile(file) {
         return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     }
 
-    hashes['SHA-1'] = await hashAlgo('SHA-1', data);
-    hashes['SHA-256'] = await hashAlgo('SHA-256', data);
-    hashes['SHA-384'] = await hashAlgo('SHA-384', data);
-    hashes['SHA-512'] = await hashAlgo('SHA-512', data);
+    // Yield between hash algorithms to keep UI responsive
+    async function yieldLoop() { await new Promise(function(r) { setTimeout(r, 0); }); }
+
+    hashes['SHA-1'] = await hashAlgo('SHA-1', data); await yieldLoop();
+    hashes['SHA-256'] = await hashAlgo('SHA-256', data); await yieldLoop();
+    hashes['SHA-384'] = await hashAlgo('SHA-384', data); await yieldLoop();
+    hashes['SHA-512'] = await hashAlgo('SHA-512', data); await yieldLoop();
 
     try {
-        hashes['SHA-3_224'] = sha3_224(data);
-        hashes['SHA-3_256'] = sha3_256(data);
-        hashes['SHA-3_384'] = sha3_384(data);
-        hashes['SHA-3_512'] = sha3_512(data);
+        hashes['SHA-3_224'] = sha3_224(data); await yieldLoop();
+        hashes['SHA-3_256'] = sha3_256(data); await yieldLoop();
+        hashes['SHA-3_384'] = sha3_384(data); await yieldLoop();
+        hashes['SHA-3_512'] = sha3_512(data); await yieldLoop();
     } catch(e) { console.error('SHA-3 error:', e); }
 
     try {
-        hashes['BLAKE2b'] = await blake2b(data);
-        hashes['BLAKE2s'] = await blake2s(data);
+        hashes['BLAKE2b'] = await blake2b(data); await yieldLoop();
+        hashes['BLAKE2s'] = await blake2s(data); await yieldLoop();
     } catch(e) { console.error('BLAKE2 error:', e); }
 
-    try { hashes['SHA-224'] = await sha224(data); } catch(e) {}
+    try { hashes['SHA-224'] = await sha224(data); await yieldLoop(); } catch(e) {}
 
-    try { hashes['MD2'] = md2(data); } catch(e) {}
-    try { hashes['MD4'] = md4(data); } catch(e) {}
-    try { hashes['MD5'] = md5(data); } catch(e) {}
+    try { hashes['MD2'] = md2(data); await yieldLoop(); } catch(e) {}
+    try { hashes['MD4'] = md4(data); await yieldLoop(); } catch(e) {}
+    try { hashes['MD5'] = md5(data); await yieldLoop(); } catch(e) {}
 
-    try { hashes['RIPEMD-160'] = ripemd160(data); } catch(e) {}
-    try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
-    try { hashes['Whirlpool'] = await whirlpool(data); } catch(e) {}
+    try { hashes['RIPEMD-160'] = ripemd160(data); await yieldLoop(); } catch(e) {}
+    try { hashes['BLAKE3'] = await blake3(data); await yieldLoop(); } catch(e) {}
+    try { hashes['Whirlpool'] = await whirlpool(data); await yieldLoop(); } catch(e) {}
 
     var result = {
         file_info: { file_name: name, file_size_bytes: data.length },

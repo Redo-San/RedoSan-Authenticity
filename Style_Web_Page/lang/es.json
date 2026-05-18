@@ -208,6 +208,8 @@
   "simple.embed_failed": "Incrustación fallida",
   "simple.ts_failed": "Marca de tiempo fallida: {msg}",
   "simple.fp_failed": "Huella fallida: {msg}",
+  "simple.fp_done": "Huella digital generada exitosamente. Todos los hashes están disponibles en el certificado.",
+  "simple.pi_done": "Mensaje secreto inyectado exitosamente. Descarga disponible en la página final.",
 
   "page.about": "<h2>Acerca de RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> es una herramienta de autenticidad digital de código abierto que se ejecuta completamente en su navegador. Nunca se suben archivos a ningún servidor — todo procesamiento ocurre del lado del cliente.</p><p>Proporcionamos una suite completa de herramientas para forense digital y verificación de medios:</p><ul><li><strong>Marcado de Agua</strong> — 9 algoritmos incluyendo LSB, DCT, DWT, estilo neuronal y marcado de agua forense</li><li><strong>Huella Digital</strong> — Hash criptográfico (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) y hash de imagen perceptual</li><li><strong>Metadatos</strong> — Leer EXIF, dimensiones, formato y modo de color de imágenes</li><li><strong>Marcado de Tiempo</strong> — Hash SHA-256 con soporte de verificación OpenTimestamps</li></ul><p>Construido con la privacidad como principio fundamental. Sus archivos nunca dejan su dispositivo.</p>",
 

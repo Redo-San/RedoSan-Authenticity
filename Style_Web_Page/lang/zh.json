@@ -208,6 +208,8 @@
   "simple.embed_failed": "嵌入失败",
   "simple.ts_failed": "时间戳失败：{msg}",
   "simple.fp_failed": "指纹失败：{msg}",
+  "simple.fp_done": "数字指纹生成成功。所有哈希值均可在证书中查看。",
+  "simple.pi_done": "秘密消息注入成功。可在最后一页下载。",
 
   "page.about": "<h2>关于RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong>是一个完全在浏览器中运行的开源数字真实性工具。没有任何文件上传到任何服务器 — 所有处理都在客户端进行。</p><p>我们为数字取证和媒体验证提供全面的工具套件：</p><ul><li><strong>水印</strong> — 9种算法，包括LSB、DCT、DWT、神经风格和取证水印</li><li><strong>指纹</strong> — 加密哈希（SHA-1/2/3、BLAKE2/3、MD5、RIPEMD-160、Whirlpool）和感知图像哈希</li><li><strong>元数据</strong> — 从图像读取EXIF、尺寸、格式和颜色模式</li><li><strong>时间戳</strong> — SHA-256哈希，支持OpenTimestamps验证</li></ul><p>以隐私为核心原则构建。您的文件永远不会离开您的设备。</p>",
 
