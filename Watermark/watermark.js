@@ -3,7 +3,7 @@
 async function watermarkEmbed(type, imageFile, secretFile, password) {
     if (type !== 5 && type !== 8 && (!password || !password.trim()))
         return { ok: false, error: 'Password is required for this algorithm' };
-    const [imgResult, secretBuf] = await Promise.all([loadImage(imageFile), secretFile.arrayBuffer()]);
+    const [imgResult, secretBuf] = await Promise.all([loadImage(imageFile), secretFile.arrayBuffer()]); 
     const secret = new Uint8Array(secretBuf);
     const { imgData, canvas, w, h } = imgResult;
     
