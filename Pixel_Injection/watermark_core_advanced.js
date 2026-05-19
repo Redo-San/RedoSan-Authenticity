@@ -2343,8 +2343,44 @@ class WatermarkCore {
     
     // Enhanced LSB extraction
     extractEnhancedLSB(watermarkedImageData) {
-        // Use the same extraction as regular LSB for now
-        return this.extractLSB(watermarkedImageData);
+        const data = watermarkedImageData.data;
+        const width = watermarkedImageData.width;
+        const height = watermarkedImageData.height;
+        const complexityMap = this.calculateComplexityMap(data, width, height);
+        let binaryMessage = '';
+        let extractedChars = [];
+
+        for (let y = 0; y < height && extractedChars.length <= 1000; y++) {
+            for (let x = 0; x < width && extractedChars.length <= 1000; x++) {
+                const pixelIndex = (y * width + x) * 4;
+                const complexity = complexityMap[y][x];
+                const channels = complexity > 0.7 ? 4 : 3;
+                const strength = complexity > 0.5 ? 2 : 1;
+
+                for (let channel = 0; channel < channels; channel++) {
+                    const bit = (data[pixelIndex + channel] >> strength) & 1;
+                    binaryMessage += bit;
+                }
+
+                if (binaryMessage.length >= 8) {
+                    const byte = binaryMessage.substring(0, 8);
+                    const charCode = parseInt(byte, 2);
+                    if (charCode === 0 || charCode > 255) break;
+                    if (charCode >= 32 && charCode <= 126) {
+                        extractedChars.push(String.fromCharCode(charCode));
+                    }
+                    binaryMessage = binaryMessage.substring(8);
+                }
+            }
+        }
+
+        const result = extractedChars.join('');
+        // Deduplicate repetition code (every other char)
+        let deduped = '';
+        for (let i = 0; i < result.length; i += 2) {
+            deduped += result[i];
+        }
+        return deduped.length > 0 ? deduped : 'No readable message found';
     }
     
     // Multi-channel LSB extraction
