@@ -418,3 +418,13 @@ function initDropZones() {
   });
 }
 document.addEventListener('DOMContentLoaded', () => { initTheme(); initDropZones(); });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/RedoSan-Authenticity/sw.js').then(function(reg) {
+      console.log('[SW] Registered scope:', reg.scope);
+    }, function(err) {
+      console.warn('[SW] Registration failed:', err);
+    });
+  });
+}
