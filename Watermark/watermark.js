@@ -25,6 +25,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     if (type === 1) {
         if (payloadBits.length > maxPixels) return { ok: false, error: `Image too small: need ${payloadBits.length} bits, have ${maxPixels}` };
         wm1_embed(imgData, payloadBits);
+        imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: `Type 1 (Spatial LSB): ${secret.length} bytes hidden` };
     }
@@ -66,6 +67,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         if (payloadBits.length > maxPixels) return { ok: false, error: `Image too small` };
         const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
         wm3_embed(imgData, payloadBits, keyVal);
+        imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: `Type 3 (Neural SS): ${secret.length} bytes hidden` };
     }
@@ -73,6 +75,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     else if (type === 6) {
         if (payloadBits.length > maxPixels * 2 / 3) return { ok: false, error: `Image too small` };
         wm6_embed(imgData, payloadBits);
+        imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: `Type 6 (Multi-bit): ${secret.length} bytes hidden (2-bit LSB)` };
     }
@@ -80,6 +83,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     else if (type === 8) {
         if (512 > maxPixels) return { ok: false, error: 'Image too small (need at least 171 pixels for 512-bit hash)' };
         await wm8_embed(imgData, secret, key);
+        imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: 'Type 8 (Fragile): SHA-256 integrity hash embedded' };
     }
