@@ -1028,6 +1028,12 @@ window.switchPiTab = function(tab) {
         btn.classList.remove('active');
     });
     document.querySelector(`[data-pi-tab="${tab}"]`).classList.add('active');
+
+    // Hide previous results when switching away from embed
+    var resultDiv = document.getElementById('pi-result');
+    if (resultDiv && tab !== 'embed') {
+        resultDiv.style.display = 'none';
+    }
 };
 
 window.handlePixelInjection = function() {
