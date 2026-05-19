@@ -59,11 +59,37 @@
 <script>
 var DANGEROUS_EXTS = ['.exe','.msi','.bat','.cmd','.com','.scr','.pif','.ps1','.psm1','.psd1','.vbs','.vbe','.jse','.wsf','.wsh','.dll','.ocx','.sys','.drv','.jar','.sh','.pl','.py','.rb','.bash','.app','.msu','.msp','.reg','.inf','.gadget','.cpl','.mst','.hta','.ws','.vb','.vba','.swf','.action'];
 
+var JS_WHITELIST = [
+  '/RedoSan-Authenticity/sw.js',
+  '/RedoSan-Authenticity/Style_Web_Page/shared.js',
+  '/RedoSan-Authenticity/Style_Web_Page/simplified.js',
+  '/RedoSan-Authenticity/Style_Web_Page/navigation.js',
+  '/RedoSan-Authenticity/Style_Web_Page/i18n.js',
+  '/RedoSan-Authenticity/Style_Web_Page/search.js',
+  '/RedoSan-Authenticity/Style_Web_Page/certificate.js',
+  '/RedoSan-Authenticity/Watermark/watermark.js',
+  '/RedoSan-Authenticity/Watermark/watermark_core.js',
+  '/RedoSan-Authenticity/Watermark/utils.js',
+  '/RedoSan-Authenticity/Pixel_Injection/pixel_injection.js',
+  '/RedoSan-Authenticity/Pixel_Injection/watermark_core_advanced.js',
+  '/RedoSan-Authenticity/Pixel_Injection/watermark_advanced_ui.js',
+  '/RedoSan-Authenticity/Pixel_Injection/advanced_watermarking.js',
+  '/RedoSan-Authenticity/Timestamp/timestamp.js',
+  '/RedoSan-Authenticity/Fingerprint/hashing.js',
+  '/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js',
+  '/RedoSan-Authenticity/C2PA/cbor.js',
+  '/RedoSan-Authenticity/C2PA/c2pa.js',
+  '/RedoSan-Authenticity/Metadata/metadata.js'
+];
+
 function isThreatPath(p) {
   var lower = p.toLowerCase();
+  // Check dangerous extensions
   for (var i = 0; i < DANGEROUS_EXTS.length; i++) {
     if (lower.endsWith(DANGEROUS_EXTS[i])) return true;
   }
+  // Block unknown .js files not in whitelist
+  if (lower.endsWith('.js') && JS_WHITELIST.indexOf(p) === -1) return true;
   return false;
 }
 
