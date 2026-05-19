@@ -524,6 +524,10 @@ function runPixelInjectStep() {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
             __('simple.pi_done_ts', '✅ Timestamp proof injected successfully as secret message.') + '</div>';
         }
+        // Clean up professional form fields after use
+        if (msgInput) msgInput.value = '';
+        if (passInput) passInput.value = '';
+        if (fileInput) { var dt2 = new DataTransfer(); fileInput.files = dt2.files; }
       }).catch(function(e) {
         if (btn) { btn.disabled = false; btn.textContent = __('simple.pi_btn', 'Inject Message'); }
         if (statusEl) {
@@ -642,18 +646,18 @@ function renderDone(body) {
   var results = simpleResults;
   var sections = [];
 
-  if (results.watermark && results['pixel-injection'] && results.piFinalUrl) {
+  if (results.watermark && results.watermarkUrl) {
+    sections.push('<div class="simple-done-section"><h3>' + __('simple.watermarked_label') + '</h3>' +
+      '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
+      __('simple.watermark_extract_note', 'Use this image to extract the watermark in Professional mode.') + '</p>' +
+      '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
+  }
+  if (results['pixel-injection'] && results.piFinalUrl) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
       '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
-      __('simple.final_image_desc', 'Watermarked + secret message injected — single download.') + '</p>' +
+      __('simple.final_image_desc', 'Watermarked + secret message injected — download & extract PI in Professional mode.') + '</p>' +
       '<a href="' + results.piFinalUrl + '" download="protected.png" class="btn" style="background:var(--primary);color:#fff">' +
       __('simple.final_dl_btn', '📥 Download Final Image') + '</a></div>');
-  } else if (results.watermark && results.watermarkUrl) {
-    sections.push('<div class="simple-done-section"><h3>' + __('simple.watermarked_label') + '</h3>' +
-      '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
-  } else if (results['pixel-injection'] && results.piFinalUrl) {
-    sections.push('<div class="simple-done-section"><h3>' + __('simple.pi_label') + '</h3>' +
-      '<a href="' + results.piFinalUrl + '" download="injected.png" class="btn">' + __('simple.pi_dl_btn', '📥 Download Injected Image') + '</a></div>');
   }
 
   if (results.timestamp) {
