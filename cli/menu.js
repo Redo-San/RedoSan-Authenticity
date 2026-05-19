@@ -37,14 +37,19 @@ function cleanPath(raw) {
   return raw.trim().replace(/^["']|["']$/g, '');
 }
 
-function resolvePath(raw) {
+function resolvePath(raw, defaultName) {
   const cleaned = cleanPath(raw || '');
-  if (!cleaned) return '';
+  if (!cleaned) return defaultName ? path.resolve(defaultName) : '';
   // Convert MSYS2 paths on Windows (/f/... → F:\...)
   const converted = (process.platform === 'win32' && /^\/[a-zA-Z]\//.test(cleaned))
     ? cleaned[1].toUpperCase() + ':\\' + cleaned.slice(3)
     : cleaned;
-  return path.resolve(converted);
+  const resolved = path.resolve(converted);
+  // If it's an existing directory, append default filename
+  if (defaultName && fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+    return path.join(resolved, defaultName);
+  }
+  return resolved;
 }
 
 function run(args) {
@@ -61,7 +66,13 @@ async function selectFile(prompt) {
   while (true) {
     const raw = await ask(c('cyan', prompt));
     const absPath = resolvePath(raw);
-    if (absPath && fs.existsSync(absPath)) return absPath;
+    if (absPath && fs.existsSync(absPath)) {
+      if (fs.statSync(absPath).isDirectory()) {
+        console.log(c('red', '✗ Expected a file, not a directory.'));
+        continue;
+      }
+      return absPath;
+    }
     console.log(c('red', '✗ File not found. Try again.'));
   }
 }
@@ -160,10 +171,7 @@ async function menuWmEmbed() {
     return;
   }
   const outputRaw = await ask(c('cyan', 'Output image path (Enter = output.png): '));
-  let out = resolvePath(outputRaw) || path.resolve('output.png');
-  if (fs.existsSync(out) && fs.statSync(out).isDirectory()) {
-    out = path.join(out, 'output.png');
-  }
+  const out = resolvePath(outputRaw, 'output.png');
   console.log(c('dim', 'Algorithm (Enter = lsb):'));
   console.log('  lsb, dct, random_lsb, neural_lsb, zero_bit, multi_bit, forensic, fragile, imatag');
   const algo = await ask(c('cyan', '> '));
@@ -204,7 +212,7 @@ async function menuTsCreate() {
   console.log(c('bright', '── Timestamp Create ──'));
   const file = await selectFile('File path > ');
   const outputRaw = await ask(c('cyan', 'Output .ots path (Enter = file.ots): '));
-  const out = resolvePath(outputRaw);
+  const out = resolvePath(outputRaw, path.basename(file) + '.ots');
   const args = ['timestamp', 'create', file];
   if (out) args.push('-o', out);
   await run(args);
@@ -216,7 +224,7 @@ async function menuTsVerify() {
   console.log(c('bright', '── Timestamp Verify ──'));
   const file = await selectFile('Original file path > ');
   const proofRaw = await ask(c('cyan', '.ots proof file path (Enter = file.ots): '));
-  const proof = resolvePath(proofRaw);
+  const proof = resolvePath(proofRaw, path.basename(file) + '.ots');
   const args = ['timestamp', 'verify', file];
   if (proof) args.push('-o', proof);
   await run(args);
@@ -230,7 +238,7 @@ async function menuC2paSign() {
   const claim = await ask(c('cyan', 'Claim text (Enter = none): '));
   const author = await ask(c('cyan', 'Author (Enter = none): '));
   const outputRaw = await ask(c('cyan', 'Output JSON path (Enter = file.c2pa.json): '));
-  const out = resolvePath(outputRaw);
+  const out = resolvePath(outputRaw, path.basename(file) + '.c2pa.json');
   const args = ['c2pa', 'sign', file];
   if (claim.trim()) args.push('--claim', claim.trim());
   if (author.trim()) args.push('--author', author.trim());
@@ -259,10 +267,7 @@ async function menuPiEmbed() {
     return;
   }
   const outputRaw = await ask(c('cyan', 'Output image path (Enter = output.png): '));
-  let out = resolvePath(outputRaw) || path.resolve('output.png');
-  if (fs.existsSync(out) && fs.statSync(out).isDirectory()) {
-    out = path.join(out, 'output.png');
-  }
+  const out = resolvePath(outputRaw, 'output.png');
   console.log(c('dim', 'Algorithm (Enter = enhanced_lsb):'));
   console.log('  enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal');
   const algo = await ask(c('cyan', '> '));
