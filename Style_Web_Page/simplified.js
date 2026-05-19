@@ -127,8 +127,7 @@ function renderStep() {
   // Manage Next button: hidden for action-required steps, disabled until done for others
   simpleStepDone = false;
   if (['watermark', 'pixel-injection'].indexOf(step.id) >= 0) {
-    nextBtn.style.display = '';
-    nextBtn.disabled = true;
+    nextBtn.style.display = 'none';
   } else {
     nextBtn.style.display = '';
     nextBtn.disabled = step.id === 'upload' ? !simpleFile : step.id === 'done' ? false : true;
@@ -385,15 +384,16 @@ function renderWatermarkStep(body) {
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
     __('simple.wm_fp_payload', '🔐 The fingerprint hash will be embedded as the secret message.') + '</p>' +
     '</div>' +
-    '<div id="swm-status" style="margin-top:12px"><div class="spinner" style="display:inline-block;margin:8px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
-  // Auto-start embedding
-  setTimeout(runWatermarkStep, 300);
+    '<button class="btn" onclick="runWatermarkStep()" id="swm-btn">' + __('simple.watermark_btn', 'Embed Watermark') + '</button>' +
+    '<div id="swm-status"></div></div>';
 }
 
 function runWatermarkStep() {
   var algo = parseInt(document.getElementById('swm-type').value);
   var pass = document.getElementById('swm-password').value || '';
   var statusEl = document.getElementById('swm-status');
+  var btn = document.getElementById('swm-btn');
+  if (btn) { btn.disabled = true; btn.textContent = __('simple.embedding', 'Embedding...'); }
 
   // Create a Blob from fingerprint result as the secret payload
   var fpText = '';
@@ -411,18 +411,23 @@ function runWatermarkStep() {
       simpleResults.watermarkBlob = result.data;
       simpleResults.watermarkUrl = URL.createObjectURL(result.data);
       simpleStepDone = true;
-      document.getElementById('simpleNextBtn').disabled = false;
+      var nextBtn = document.getElementById('simpleNextBtn');
+      nextBtn.disabled = false;
+      nextBtn.style.display = '';
+      if (btn) { btn.textContent = '✅ ' + __('simple.watermarked_short', 'Watermarked'); }
       if (statusEl) {
         statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
           __('simple.wm_done', '✅ Watermark embedded successfully using fingerprint hash.') + '</div>';
       }
     } else {
+      if (btn) { btn.disabled = false; btn.textContent = __('simple.watermark_btn', 'Embed Watermark'); }
       if (statusEl) {
         statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
           escapeHtml(result.error || __('simple.embed_failed')) + '</div>';
       }
     }
   }).catch(function(e) {
+    if (btn) { btn.disabled = false; btn.textContent = __('simple.watermark_btn', 'Embed Watermark'); }
     if (statusEl) {
       statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
         escapeHtml(e.message) + '</div>';
@@ -447,7 +452,8 @@ function renderPixelInjectStep(body) {
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
     __('simple.pi_ts_payload', '⏱️ The timestamp proof will be injected as the secret message.') + '</p>' +
     '</div>' +
-    '<div id="spi-status" style="margin-top:12px"><div class="spinner" style="display:inline-block;margin:8px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
+    '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' + __('simple.pi_btn', 'Inject Message') + '</button>' +
+    '<div id="spi-status"></div></div>';
 
   // Copy category and algorithm options from professional mode
   var srcCat = document.getElementById('pi-category');
@@ -463,15 +469,14 @@ function renderPixelInjectStep(body) {
     });
     dstCat.dispatchEvent(new Event('change'));
   }
-
-  // Auto-start injection
-  setTimeout(runPixelInjectStep, 300);
 }
 
 function runPixelInjectStep() {
   var cat = document.getElementById('spi-category').value;
   var pass = document.getElementById('spi-password').value;
   var statusEl = document.getElementById('spi-status');
+  var btn = document.getElementById('spi-btn');
+  if (btn) { btn.disabled = true; btn.textContent = __('simple.injecting', 'Injecting...'); }
 
   // Use timestamp result as the message
   var tsMessage = simpleResults.tsResult || '';
@@ -513,12 +518,16 @@ function runPixelInjectStep() {
           if (piLink) simpleResults.piFinalUrl = piLink.href;
         }
         simpleStepDone = true;
-        document.getElementById('simpleNextBtn').disabled = false;
+        var nextBtn = document.getElementById('simpleNextBtn');
+        nextBtn.disabled = false;
+        nextBtn.style.display = '';
+        if (btn) { btn.textContent = '✅ ' + __('simple.injected', 'Injected'); }
         if (statusEl) {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
             __('simple.pi_done_ts', '✅ Timestamp proof injected successfully as secret message.') + '</div>';
         }
       }).catch(function(e) {
+        if (btn) { btn.disabled = false; btn.textContent = __('simple.pi_btn', 'Inject Message'); }
         if (statusEl) {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
             escapeHtml(e && e.message ? e.message : __('simple.pi_failed', 'Injection failed')) + '</div>';
