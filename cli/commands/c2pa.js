@@ -251,8 +251,8 @@ function findJPEGMarker(buf, marker) {
 
 // ── PNG: embed C2PA as custom 'c2pa' chunk before IEND ──
 function embedC2PAPNG(pngBuf, manifestBuf) {
-  const iendIdx = findPNGChunk(pngBuf, 'IEND');
-  if (iendIdx < 0) throw new Error('PNG IEND chunk not found');
+  const idatIdx = findPNGChunk(pngBuf, 'IDAT');
+  if (idatIdx < 0) throw new Error('PNG IDAT chunk not found');
 
   // Build c2pa chunk: 4-byte length + 'c2pa' + data + 4-byte CRC
   const chunkType = Buffer.from('c2pa', 'ascii');
@@ -265,10 +265,11 @@ function embedC2PAPNG(pngBuf, manifestBuf) {
   manifestBuf.copy(chunk, 8);
   chunk.writeUInt32BE(crcVal, 8 + chunkLen);
 
+  // Insert before first IDAT (PNG spec: ancillary chunks before IDAT, only text after)
   return Buffer.concat([
-    pngBuf.slice(0, iendIdx),
+    pngBuf.slice(0, idatIdx),
     chunk,
-    pngBuf.slice(iendIdx),
+    pngBuf.slice(idatIdx),
   ]);
 }
 

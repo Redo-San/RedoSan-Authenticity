@@ -7,7 +7,7 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const { createCanvas, loadImage, ImageData } = require('canvas');
-const { readFileBytes, getFileInfo, fmtSize, saveImageData, loadImageData, validateFile } = require('../utils');
+const { readFileBytes, getFileInfo, fmtSize, saveImageData, loadImageData, validateFile, stripC2PA } = require('../utils');
 
 // ── Patch browser APIs for Node.js ──
 const mockDocument = {
@@ -199,8 +199,10 @@ async function runWatermark(mode, opts) {
       process.exit(1);
     }
 
-    // Load image
-    const img = await loadImage(absPath);
+    // Load image (strip c2pa chunks first — canvas can't handle them)
+    const rawBuf = readFileBytes(absPath);
+    const cleanBuf = stripC2PA(rawBuf);
+    const img = await loadImage(cleanBuf);
     const canvas = createCanvas(img.width, img.height);
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);

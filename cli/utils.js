@@ -301,4 +301,21 @@ module.exports = {
   hasDangerousContent,
   checkDocumentThreats,
   checkFileStructure,
+  stripC2PA,
 };
+
+/**
+ * Strip c2pa chunks from PNG buffer (canvas native can't handle them)
+ */
+function stripC2PA(buf) {
+  if (buf[1] !== 0x50 || buf[2] !== 0x4E || buf[3] !== 0x47) return buf;
+  const parts = [buf.slice(0, 8)];
+  let i = 8;
+  while (i <= buf.length - 12) {
+    const len = buf.readUInt32BE(i);
+    const name = buf.slice(i+4, i+8).toString('ascii');
+    if (name !== 'c2pa') parts.push(buf.slice(i, i + 12 + len));
+    i += 12 + len;
+  }
+  return Buffer.concat(parts);
+}
