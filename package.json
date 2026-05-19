@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node cli/index.js",
     "link": "npm link",
-    "test": "node --test --test-concurrency=1 --test-timeout=300000 test/utils.test.js test/fingerprint.test.js test/metadata.test.js test/watermark.test.js test/pixel_injection.test.js test/c2pa.test.js --test-force-exit"
+    "test": "node --test --test-concurrency=1 --test-timeout=300000 --test-force-exit test/utils.test.js test/fingerprint.test.js test/metadata.test.js test/watermark.test.js test/pixel_injection.test.js test/c2pa.test.js"
   },
   "keywords": ["watermark", "fingerprint", "hash", "c2pa", "metadata", "timestamp", "steganography"],
   "license": "MIT",
