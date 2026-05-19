@@ -15,14 +15,15 @@ function readFileBytes(filePath) {
   if (!fs.existsSync(absPath)) {
     throw new Error(`File not found: ${absPath}`);
   }
-  return new Uint8Array(fs.readFileSync(absPath));
+  return fs.readFileSync(absPath);
 }
 
 /**
  * Read a file and return as ArrayBuffer
  */
 function readFileArrayBuffer(filePath) {
-  return readFileBytes(filePath).buffer;
+  const buf = readFileBytes(filePath);
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length);
 }
 
 /**
@@ -184,7 +185,7 @@ function isDangerousExt(fileName) {
 function checkMagicBytes(data, mimeType) {
   const expected = MAGIC_BYTES[mimeType];
   if (!expected) return true;
-  const arr = new Uint8Array(data.buffer || data);
+  const arr = data instanceof Uint8Array ? data : new Uint8Array(data);
   if (typeof expected === 'function') return expected(arr);
   for (let m = 0; m < expected.length; m++) {
     const sig = expected[m];

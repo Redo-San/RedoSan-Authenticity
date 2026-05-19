@@ -106,7 +106,8 @@ function findC2PAInFile(filePath) {
   } else if (ext === '.png') {
     // PNG: look for c2pa chunk
     const marker = Buffer.from('c2pa');
-    for (let i = 8; i < data.length - 12; i++) {
+    let i = 8;
+    while (i <= data.length - 12) {
       const chunkLen = (data[i] << 24) | (data[i+1] << 16) | (data[i+2] << 8) | data[i+3];
       let match = true;
       for (let j = 0; j < 4; j++) {
@@ -178,14 +179,124 @@ async function doSign(absPath, opts) {
   };
 
   const signedManifest = JSON.stringify(manifest, null, 2);
-  const output = opts.output ? path.resolve(opts.output) : absPath + '.c2pa.json';
-  fs.writeFileSync(output, signedManifest);
+  const manifestBuf = Buffer.from(signedManifest, 'utf-8');
 
-  console.log(`C2PA manifest signed`);
-  console.log(`File: ${info.name}`);
+  // Determine output image path
+  const output = opts.output ? path.resolve(opts.output) : absPath;
+
+  // Embed C2PA manifest into image
+  const ext = path.extname(absPath).toLowerCase();
+  let outputData;
+
+  if (ext === '.jpg' || ext === '.jpeg') {
+    outputData = embedC2PAJPEG(data, manifestBuf);
+  } else if (ext === '.png') {
+    outputData = embedC2PAPNG(data, manifestBuf);
+  } else {
+    // For unsupported formats, just save the JSON manifest separately
+    const jsonOut = output.replace(/\.\w+$/, '') + '.c2pa.json';
+    fs.writeFileSync(jsonOut, signedManifest);
+    console.log(`C2PA manifest signed (not embedded — ${ext} not supported)`);
+    console.log(`Manifest: ${jsonOut}`);
+    console.log(`File: ${info.name}`);
+    console.log(`SHA-256: ${fileHash}`);
+    console.log(`Signature: ${signature.length} bytes (ES256)`);
+    return;
+  }
+
+  fs.writeFileSync(output, outputData);
+
+  console.log(`C2PA manifest embedded`);
+  console.log(`File: ${output}`);
   console.log(`SHA-256: ${fileHash}`);
-  console.log(`Manifest: ${output}`);
   console.log(`Signature: ${signature.length} bytes (ES256)`);
+}
+
+// ── JPEG: embed C2PA as APP11 (0xFFEB) segment before SOS ──
+function embedC2PAJPEG(jpegBuf, manifestBuf) {
+  // Find SOS marker (0xFFDA) — insert APP11 before it
+  const sosIdx = findJPEGMarker(jpegBuf, 0xDA);
+  if (sosIdx < 0) throw new Error('JPEG SOS marker not found');
+
+  // Build C2PA payload: 'c2pa\x00' + 4-byte big-endian length + manifest
+  const c2paHeader = Buffer.concat([
+    Buffer.from('c2pa\x00', 'utf-8'),
+    Buffer.alloc(4),
+    manifestBuf,
+  ]);
+  c2paHeader.writeUInt32BE(manifestBuf.length, 5); // 4-byte length after 'c2pa\0'
+
+  // Build APP11 segment: FF EB + 2-byte big-endian segment length (including length field) + payload
+  const segLen = c2paHeader.length + 2; // +2 for the length field itself
+  const app11 = Buffer.alloc(2 + segLen);
+  app11[0] = 0xFF;
+  app11[1] = 0xEB;
+  app11.writeUInt16BE(segLen, 2);
+  c2paHeader.copy(app11, 4);
+
+  // Insert before SOS
+  return Buffer.concat([
+    jpegBuf.slice(0, sosIdx),
+    app11,
+    jpegBuf.slice(sosIdx),
+  ]);
+}
+
+function findJPEGMarker(buf, marker) {
+  for (let i = 0; i < buf.length - 1; i++) {
+    if (buf[i] === 0xFF && buf[i+1] === marker) return i;
+  }
+  return -1;
+}
+
+// ── PNG: embed C2PA as custom 'c2pa' chunk before IEND ──
+function embedC2PAPNG(pngBuf, manifestBuf) {
+  const iendIdx = findPNGChunk(pngBuf, 'IEND');
+  if (iendIdx < 0) throw new Error('PNG IEND chunk not found');
+
+  // Build c2pa chunk: 4-byte length + 'c2pa' + data + 4-byte CRC
+  const chunkType = Buffer.from('c2pa', 'ascii');
+  const chunkLen = manifestBuf.length;
+  const crcInput = Buffer.concat([chunkType, manifestBuf]);
+  const crcVal = crc32(crcInput);
+  const chunk = Buffer.alloc(12 + chunkLen);
+  chunk.writeUInt32BE(chunkLen, 0);
+  chunkType.copy(chunk, 4);
+  manifestBuf.copy(chunk, 8);
+  chunk.writeUInt32BE(crcVal, 8 + chunkLen);
+
+  return Buffer.concat([
+    pngBuf.slice(0, iendIdx),
+    chunk,
+    pngBuf.slice(iendIdx),
+  ]);
+}
+
+function findPNGChunk(buf, name) {
+  const nameBytes = Buffer.from(name, 'ascii');
+  let i = 8;
+  while (i <= buf.length - 12) {
+    const chunkLen = buf.readUInt32BE(i);
+    let match = true;
+    for (let j = 0; j < 4; j++) {
+      if (buf[i+4+j] !== nameBytes[j]) { match = false; break; }
+    }
+    if (match) return i;
+    i += 12 + chunkLen;
+  }
+  return -1;
+}
+
+// Simple CRC32 for PNG chunk
+function crc32(buf) {
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) {
+    crc ^= buf[i];
+    for (let j = 0; j < 8; j++) {
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+    }
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
 async function doRead(absPath, opts) {
