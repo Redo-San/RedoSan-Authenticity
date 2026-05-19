@@ -3,7 +3,7 @@
 var simpleFile = null;
 var simpleBuf = null;
 var simpleType = null;
-var simpleIsAI = false;
+
 var simpleStep = 0;
 var simpleSteps = [];
 var simpleResults = {};
@@ -85,16 +85,14 @@ function detectFileType(file) {
   return 'other';
 }
 
-function buildSteps(type, isAI) {
+function buildSteps(type) {
   var s = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
+  s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
+  s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
   if (type === 'image') {
-    s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
-    if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
   }
-  s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
-  s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
   s.push({ id: 'done', label: __('simple.step_done', 'Done') });
   return s;
 }
@@ -103,7 +101,7 @@ function buildSteps(type, isAI) {
 
 function initSimplified() {
   simpleFile = null; simpleBuf = null; simpleType = null;
-  simpleIsAI = false; simpleStep = 0; simpleSteps = [];
+  simpleStep = 0; simpleSteps = [];
   simpleResults = {};
   simpleUserInfo = {
     name: '', email: '', phone: '', website: '',
@@ -128,15 +126,14 @@ function renderStep() {
   nextBtn.textContent = isLast ? __('simple.start_over') : __('simple.next_btn');
   // Manage Next button: hidden for action-required steps, disabled until done for others
   simpleStepDone = false;
-  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection'].indexOf(step.id) >= 0) {
-    nextBtn.style.display = 'none';
+  if (['watermark', 'pixel-injection'].indexOf(step.id) >= 0) {
+    nextBtn.style.display = '';
+    nextBtn.disabled = true;
   } else {
     nextBtn.style.display = '';
     nextBtn.disabled = step.id === 'upload' ? !simpleFile : step.id === 'done' ? false : true;
   }
   if (step.id === 'upload') renderUpload(body);
-  else if (step.id === 'ai-question') renderAiQuestion(body);
-  else if (step.id === 'c2pa') renderC2paStep(body);
   else if (step.id === 'watermark') renderWatermarkStep(body);
   else if (step.id === 'pixel-injection') renderPixelInjectStep(body);
   else if (step.id === 'timestamp') renderTimestampStep(body);
@@ -175,8 +172,8 @@ function simpleNext() {
       return;
     }
   }
-  // Timestamp/fingerprint must complete before advancing
-  if ((step.id === 'timestamp' || step.id === 'fingerprint') && !simpleStepDone) return;
+  // Auto-run steps must complete before advancing
+  if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection') && !simpleStepDone) return;
   if (step.id === 'done') { restartSimple(); return; }
   simpleStep++;
   if (simpleStep >= simpleSteps.length) simpleStep = simpleSteps.length - 1;
@@ -358,304 +355,129 @@ async function simpleFileSelected(input) {
   reader.onload = function(e) { simpleBuf = e.target.result; };
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
-  if (type === 'image') {
-    simpleSteps = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }, { id: 'ai-question', label: __('simple.step_type', 'Type') }];
-  } else {
-    simpleSteps = buildSteps(type, false);
-  }
+  simpleSteps = buildSteps(type);
   // Reset step position
   simpleStep = 0;
   renderStep();
 }
 
-function renderAiQuestion(body) {
-  body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.ai_title') + '</h2><p>' + __('simple.ai_desc') + '</p>' +
-    '<div class="simple-ai-options">' +
-    '<div class="simple-ai-card" onclick="chooseAi(false)"><span class="ai-icon">📸</span><h3>' + __('simple.ai_regular') + '</h3><p>' + __('simple.ai_regular_desc') + '</p></div>' +
-    '<div class="simple-ai-card" onclick="chooseAi(true)"><span class="ai-icon">🤖</span><h3>' + __('simple.ai_generated') + '</h3><p>' + __('simple.ai_generated_desc') + '</p></div>' +
-    '</div></div>';
-}
-
-function chooseAi(isAI) {
-  simpleIsAI = isAI;
-  simpleSteps = buildSteps('image', isAI);
-  simpleStep = simpleSteps.findIndex(function(s) { return s.id === (isAI ? 'c2pa' : 'watermark'); });
-  renderStep();
-}
-
-function renderC2paStep(body) {
-  body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.c2pa_title') + '</h2><p>' + __('simple.c2pa_desc') + '</p>' +
-    '<div class="form-group"><label>' + __('simple.c2pa_content_label') + '</label>' +
-    '<div class="c2pa-type-card" style="margin-bottom:8px">' +
-    '<div class="c2pa-type-header"><input type="checkbox" id="sc2pa-ai" checked disabled>' +
-    '<label for="sc2pa-ai">' + __('simple.c2pa_ai_label') + '</label></div></div></div>' +
-    '<div class="form-group"><label>' + __('simple.c2pa_social_label') + '</label>' +
-    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_instagram') + '" id="sc2pa-instagram">' +
-    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_twitter') + '" id="sc2pa-twitter">' +
-    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_website') + '" id="sc2pa-website"></div>' +
-    '<button class="btn" onclick="runC2paStep()" id="sc2pa-btn">' + __('simple.c2pa_btn') + '</button>' +
-    '<div id="sc2pa-result"></div></div>';
-}
-
-function runC2paStep() {
-  if (!window.handleC2paWrite) return;
-  // Populate the real C2PA write form with simplified values, then call handleC2paWrite
-  // Set AI checkbox in the real C2PA write tab
-  var aiCheckbox = document.querySelector('#c2pa-write input[value="c2pa.ai_generated"]');
-  if (aiCheckbox) aiCheckbox.checked = true;
-  var insta = document.getElementById('sc2pa-instagram');
-  var twitter = document.getElementById('sc2pa-twitter');
-  var website = document.getElementById('sc2pa-website');
-  var realInsta = document.querySelector('.c2pa-link[placeholder*="Instagram"]');
-  var realTwitter = document.querySelector('.c2pa-link[placeholder*="Twitter"]');
-  var realWebsite = document.querySelector('.c2pa-link[placeholder*="Website"]');
-  if (realInsta && insta.value) realInsta.value = insta.value;
-  if (realTwitter && twitter.value) realTwitter.value = twitter.value;
-  if (realWebsite && website.value) realWebsite.value = website.value;
-  // Set the file input
-  var fileInput = document.getElementById('c2pa-write-file');
-  if (fileInput && simpleFile) {
-    var dt = new DataTransfer();
-    dt.items.add(simpleFile);
-    fileInput.files = dt.files;
-    // Trigger file drop zone update
-    var evt = new Event('change');
-    fileInput.dispatchEvent(evt);
-  }
-  var btn = document.getElementById('sc2pa-btn');
-  btn.disabled = true; btn.textContent = __('simple.signing');
-  handleC2paWrite().then(function() {
-    btn.textContent = __('simple.signed');
-    simpleResults.c2pa = true;
-    // Wait a moment then go next
-    setTimeout(simpleNext, 1000);
-  }).catch(function() {
-    btn.textContent = __('simple.failed_retry');
-    btn.disabled = false;
-  });
-}
-
 function renderWatermarkStep(body) {
-  // Copy professional form HTML directly
-  var embed = document.getElementById('wm-embed');
-  var html = embed ? embed.innerHTML : '';
-  // Rename IDs to avoid conflicts with hidden #app
-  html = html.replace(/\bid="wm-/g, 'id="swm-');
-  // Remove onchange handlers that reference old IDs
-  html = html.replace(/ onchange="[^"]*"/g, '');
-
+  var usingName = simpleFile ? simpleFile.name : '';
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.watermark_title') + '</h2>' +
-    '<p>' + __('simple.watermark_desc') + '</p>' +
-    '<div class="card-form" style="text-align:left">' + html + '</div></div>';
-
-  // Override button
-  var btn = document.getElementById('swm-btn');
-  if (btn) {
-    btn.onclick = runWatermarkStep;
-    btn.textContent = __('simple.watermark_btn');
-  }
-
-  // Use professional drop zone setup (same as shared.js)
-  if (window.initDropZones) initDropZones();
-  // Ensure clicking anywhere in a form-group opens the file dialog
-  body.querySelectorAll('.form-group').forEach(function(g) {
-    var fi = g.querySelector('input[type="file"]');
-    if (fi) g.addEventListener('click', function(e) { if (e.target !== fi) fi.click(); });
-  });
-  // Force update drop zone display on file selection
-  body.querySelectorAll('input[type="file"]').forEach(function(inp) {
-    inp.addEventListener('change', function() {
-      var dz = this.closest('.file-drop-zone');
-      if (!dz) return;
-      var fd = dz.querySelector('.dz-file');
-      if (this.files && this.files.length) {
-        dz.classList.add('has-file');
-        if (fd) fd.textContent = '📄 ' + this.files[0].name;
-      } else {
-        dz.classList.remove('has-file');
-        if (fd) fd.textContent = '';
-      }
-    });
-  });
-  // Restore numeric algorithm values (English only — scientific names)
-  var typeSelect = document.getElementById('swm-type');
-  if (typeSelect) {
-    typeSelect.innerHTML =
-      '<option value="1">1. Spatial LSB</option>' +
-      '<option value="2">2. Frequency DCT</option>' +
-      '<option value="3">3. Neural SS</option>' +
-      '<option value="4">4. Latent DCT</option>' +
-      '<option value="5">5. Zero-bit</option>' +
-      '<option value="6">6. Multi-bit</option>' +
-      '<option value="7">7. Forensic</option>' +
-      '<option value="8">8. Fragile</option>' +
-      '<option value="9">9. Imatag-style</option>';
-  }
-  // Hide cover image field (already uploaded in step 1) and show file name instead
-  var imgGroup = document.getElementById('swm-image');
-  if (imgGroup) {
-    var group = imgGroup.closest('.form-group');
-    if (group) group.style.display = 'none';
-  }
-  // Pre-populate cover image with the file from step 1
-  if (simpleFile) {
-    var imgInput = document.getElementById('swm-image');
-    if (imgInput) {
-      var dt = new DataTransfer();
-      dt.items.add(simpleFile);
-      imgInput.files = dt.files;
-      imgInput.dispatchEvent(new Event('change'));
-    }
-    // Show file name indicator
-    var nameEl = document.createElement('p');
-    nameEl.style.cssText = 'font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left';
-    nameEl.textContent = __('simple.using_file').replace('{name}', simpleFile.name);
-    var cardForm = body.querySelector('.card-form');
-    if (cardForm) cardForm.insertBefore(nameEl, cardForm.firstChild);
-  }
+    '<div class="simple-card"><h2>' + __('simple.watermark_title') + '</h2><p>' + __('simple.watermark_desc') + '</p>' +
+    '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">' +
+    __('simple.using_file').replace('{name}', escapeHtml(usingName)) + '</p>' +
+    '<div class="card-form" style="text-align:left">' +
+    '<div class="form-group"><label>' + __('simple.wm_algo_label', 'Algorithm') + '</label>' +
+    '<select id="swm-type">' +
+    '  <option value="1">1. Spatial LSB</option>' +
+    '  <option value="2">2. Frequency DCT</option>' +
+    '  <option value="3">3. Neural SS</option>' +
+    '  <option value="4">4. Latent DCT</option>' +
+    '  <option value="5">5. Zero-bit</option>' +
+    '  <option value="6">6. Multi-bit</option>' +
+    '  <option value="7">7. Forensic</option>' +
+    '  <option value="8">8. Fragile</option>' +
+    '  <option value="9">9. Imatag-style</option>' +
+    '</select></div>' +
+    '<div class="form-group"><label>' + __('simple.wm_pass_label', 'Password') + '</label>' +
+    '<input type="password" id="swm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
+    '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
+    __('simple.wm_fp_payload', '🔐 The fingerprint hash will be embedded as the secret message.') + '</p>' +
+    '</div>' +
+    '<div id="swm-status" style="margin-top:12px"><div class="spinner" style="display:inline-block;margin:8px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
+  // Auto-start embedding
+  setTimeout(runWatermarkStep, 300);
 }
 
 function runWatermarkStep() {
   var algo = parseInt(document.getElementById('swm-type').value);
   var pass = document.getElementById('swm-password').value || '';
-  var secretFileInput = document.getElementById('swm-secret');
-  var hasSecret = secretFileInput && secretFileInput.files && secretFileInput.files[0];
-  // Validate: algorithms 1-4, 6-7, 9 require password + secret file
-  if (algo !== 5 && algo !== 8) {
-    if (!pass) { alert(__('simple.pw_required')); return; }
-    if (!hasSecret) { alert(__('simple.secret_required')); return; }
+  var statusEl = document.getElementById('swm-status');
+
+  // Create a Blob from fingerprint result as the secret payload
+  var fpText = '';
+  if (simpleResults.fpResult) {
+    fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
   }
-  var secretFile = hasSecret ? secretFileInput.files[0] : simpleFile;
-  var btn = document.getElementById('swm-btn');
-  btn.disabled = true; btn.textContent = __('simple.embedding');
+  if (fpText.length > 65536) fpText = fpText.slice(0, 65536);
+  var secretBlob = new Blob([fpText], { type: 'text/plain' });
+  var secretFile = new File([secretBlob], 'fingerprint.txt', { type: 'text/plain' });
 
   watermarkEmbed(algo, simpleFile, secretFile, pass).then(function(result) {
     if (result.ok) {
-      btn.textContent = __('simple.watermarked');
       simpleResults.watermark = true;
       simpleResults.watermarkAlgo = algo;
-      var algoNames = ['','Spatial LSB','Frequency DCT','Neural SS','Latent DCT','Zero-bit','Multi-bit','Forensic','Fragile','Imatag-style'];
-      simpleResults.watermarkAlgoName = algoNames[algo] || 'Algorithm ' + algo;
       simpleResults.watermarkBlob = result.data;
       simpleResults.watermarkUrl = URL.createObjectURL(result.data);
-      var wmOut = document.getElementById('wm-output');
-      if (wmOut && wmOut.textContent) simpleResults.watermarkResult = wmOut.textContent;
-      setTimeout(simpleNext, 1200);
+      simpleStepDone = true;
+      document.getElementById('simpleNextBtn').disabled = false;
+      if (statusEl) {
+        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+          __('simple.wm_done', '✅ Watermark embedded successfully using fingerprint hash.') + '</div>';
+      }
     } else {
-      btn.textContent = __('simple.failed_retry');
-      btn.disabled = false;
-      alert(result.error || __('simple.embed_failed'));
+      if (statusEl) {
+        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          escapeHtml(result.error || __('simple.embed_failed')) + '</div>';
+      }
     }
   }).catch(function(e) {
-    btn.textContent = __('simple.failed_retry');
-    btn.disabled = false;
-    alert(e.message);
+    if (statusEl) {
+      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        escapeHtml(e.message) + '</div>';
+    }
   });
 }
 
 function renderPixelInjectStep(body) {
-  // Copy professional pi-embed HTML directly
-  var piEmbed = document.getElementById('pi-embed');
-  var html = piEmbed ? piEmbed.innerHTML : '';
-  html = html.replace(/\bid="pi-/g, 'id="spi-');
-  html = html.replace(/ onchange="[^"]*"/g, '');
-  html = html.replace(/ onclick="[^"]*"/g, '');
-
+  var usingName = simpleFile ? simpleFile.name : '';
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.pi_title') + '</h2>' +
-    '<p>' + __('simple.pi_desc') + '</p>' +
-    '<div class="card-form" style="text-align:left">' + html + '</div>' +
-    '<div id="spi-result"></div></div>';
+    '<div class="simple-card"><h2>' + __('simple.pi_title') + '</h2><p>' + __('simple.pi_desc') + '</p>' +
+    '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">' +
+    __('simple.using_file').replace('{name}', escapeHtml(usingName)) +
+    (simpleResults.watermarkBlob ? ' (' + __('simple.watermarked_short', 'watermarked') + ')' : '') + '</p>' +
+    '<div class="card-form" style="text-align:left">' +
+    '<div class="form-group"><label>' + __('simple.pi_cat_label', 'Category') + '</label>' +
+    '<select id="spi-category"></select></div>' +
+    '<div class="form-group"><label>' + __('simple.pi_algo_label', 'Algorithm') + '</label>' +
+    '<select id="spi-algorithm"></select></div>' +
+    '<div class="form-group"><label>Password</label>' +
+    '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
+    '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
+    __('simple.pi_ts_payload', '⏱️ The timestamp proof will be injected as the secret message.') + '</p>' +
+    '</div>' +
+    '<div id="spi-status" style="margin-top:12px"><div class="spinner" style="display:inline-block;margin:8px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
 
-  // Clear any default values (must start empty)
-  var msgEl = document.getElementById('spi-message');
-  if (msgEl) msgEl.value = '';
-  var passEl = document.getElementById('spi-password');
-  if (passEl) passEl.value = '';
-
-  // Copy algorithm options from professional mode (populated dynamically)
+  // Copy category and algorithm options from professional mode
+  var srcCat = document.getElementById('pi-category');
+  var dstCat = document.getElementById('spi-category');
   var srcAlgo = document.getElementById('pi-algorithm');
   var dstAlgo = document.getElementById('spi-algorithm');
-  if (srcAlgo && dstAlgo) {
-    dstAlgo.innerHTML = srcAlgo.innerHTML;
-    // Sync category changes to keep algorithm list updated
-    var srcCat = document.getElementById('pi-category');
-    var dstCat = document.getElementById('spi-category');
-    if (srcCat && dstCat) {
-      dstCat.addEventListener('change', function() {
-        srcCat.value = this.value;
-        srcCat.dispatchEvent(new Event('change'));
-        dstAlgo.innerHTML = srcAlgo.innerHTML;
-      });
-    }
+  if (srcCat && dstCat && srcAlgo && dstAlgo) {
+    dstCat.innerHTML = srcCat.innerHTML;
+    dstCat.addEventListener('change', function() {
+      srcCat.value = this.value;
+      srcCat.dispatchEvent(new Event('change'));
+      dstAlgo.innerHTML = srcAlgo.innerHTML;
+    });
+    dstCat.dispatchEvent(new Event('change'));
   }
 
-  // Hide advanced options button
-  var advBtn = document.getElementById('spi-advanced-btn');
-  if (advBtn) advBtn.style.display = 'none';
-  var advOpts = document.getElementById('spi-advanced-options');
-  if (advOpts) advOpts.style.display = 'none';
-
-  // Override button
-  var btn = document.getElementById('spi-btn');
-  if (btn) {
-    btn.onclick = runPixelInjectStep;
-    btn.textContent = __('simple.pi_btn');
-  }
-
-  // Use professional drop zone setup (same as shared.js)
-  if (window.initDropZones) initDropZones();
-  // Ensure clicking anywhere in a form-group opens the file dialog
-  body.querySelectorAll('.form-group').forEach(function(g) {
-    var fi = g.querySelector('input[type="file"]');
-    if (fi) g.addEventListener('click', function(e) { if (e.target !== fi) fi.click(); });
-  });
-  // Hide image input (already uploaded in step 1)
-  var imgGroup = document.getElementById('spi-image');
-  if (imgGroup) {
-    var group = imgGroup.closest('.form-group');
-    if (group) group.style.display = 'none';
-  }
-  // Pre-populate image input with the file from step 1 or watermarked result
-  if (simpleFile) {
-    var imgInput = document.getElementById('spi-image');
-    if (imgInput) {
-      var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleFile.type }) : simpleFile;
-      var dt = new DataTransfer();
-      dt.items.add(srcFile);
-      imgInput.files = dt.files;
-      imgInput.dispatchEvent(new Event('change'));
-    }
-    // Show file name indicator
-    var nameEl = document.createElement('p');
-    nameEl.style.cssText = 'font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left';
-    nameEl.textContent = __('simple.using_file').replace('{name}', simpleFile.name) + (simpleResults.watermarkBlob ? ' (' + __('simple.watermarked', 'watermarked') + ')' : '');
-    var cardForm = body.querySelector('.card-form');
-    if (cardForm) cardForm.insertBefore(nameEl, cardForm.firstChild);
-  }
-  // Style the message field as required
-  var msgField = document.getElementById('spi-message');
-  if (msgField) {
-    msgField.style.cssText = 'width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.85rem;resize:vertical;min-height:70px';
-    msgField.required = true;
-    msgField.placeholder = __('simple.pi_msg_ph', 'Enter your secret message (required)');
-  }
+  // Auto-start injection
+  setTimeout(runPixelInjectStep, 300);
 }
 
 function runPixelInjectStep() {
   var cat = document.getElementById('spi-category').value;
-  var msg = document.getElementById('spi-message').value;
   var pass = document.getElementById('spi-password').value;
+  var statusEl = document.getElementById('spi-status');
 
-  var btn = document.getElementById('spi-btn');
-  btn.disabled = true; btn.textContent = __('simple.injecting');
+  // Use timestamp result as the message
+  var tsMessage = simpleResults.tsResult || '';
 
   if (window.switchPiTab) window.switchPiTab('embed');
 
-  // Defer to next tick so the browser renders the button state first
   setTimeout(function() {
     // Populate hidden professional form fields
     var fileInput = document.getElementById('pi-image');
@@ -674,14 +496,13 @@ function runPixelInjectStep() {
     var srcAlgo = document.getElementById('spi-algorithm');
     if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
     var msgInput = document.getElementById('pi-message');
-    if (msgInput) msgInput.value = msg;
+    if (msgInput) msgInput.value = tsMessage;
     var passInput = document.getElementById('pi-password');
     if (passInput) passInput.value = pass;
 
     var promise = window.handlePixelInjection();
     if (promise && promise.then) {
       promise.then(function() {
-        btn.textContent = __('simple.injected');
         simpleResults['pixel-injection'] = true;
         var piOutput = document.getElementById('pi-output');
         var piDownload = document.getElementById('pi-download');
@@ -691,19 +512,17 @@ function runPixelInjectStep() {
           var piLink = piDownload.querySelector('a');
           if (piLink) simpleResults.piFinalUrl = piLink.href;
         }
-        var resultDiv = document.getElementById('spi-result');
-        if (resultDiv) {
-          resultDiv.innerHTML = '<div class="simple-pi-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-            __('simple.pi_done', 'Secret message injected successfully. Download available on the final page.') + '</div>';
+        simpleStepDone = true;
+        document.getElementById('simpleNextBtn').disabled = false;
+        if (statusEl) {
+          statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+            __('simple.pi_done_ts', '✅ Timestamp proof injected successfully as secret message.') + '</div>';
         }
-        setTimeout(function() {
-          simpleStepDone = true;
-          document.getElementById('simpleNextBtn').disabled = false;
-          simpleNext();
-        }, 1500);
-      }).catch(function() {
-        btn.textContent = __('simple.failed_retry');
-        btn.disabled = false;
+      }).catch(function(e) {
+        if (statusEl) {
+          statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+            escapeHtml(e && e.message ? e.message : __('simple.pi_failed', 'Injection failed')) + '</div>';
+        }
       });
     }
   }, 50);
@@ -843,10 +662,6 @@ function renderDone(body) {
     fpHtml += '<button class="btn" onclick="setupFpDownload();showDownloadModal()">' + __('simple.fp_dl_btn') + '</button>';
     fpHtml += '</div></div>';
     sections.push(fpHtml);
-  }
-
-  if (results.c2pa) {
-    sections.push('<div class="simple-done-section"><h3>' + __('simple.c2pa_label') + '</h3><p>' + __('simple.c2pa_done_desc') + '</p></div>');
   }
 
   // Certificate download section
