@@ -3,6 +3,7 @@
 var simpleFile = null;
 var simpleBuf = null;
 var simpleType = null;
+var simpleIsAI = false;
 
 var simpleStep = 0;
 var simpleSteps = [];
@@ -104,14 +105,16 @@ function detectFileType(file) {
   return 'other';
 }
 
-function buildSteps(type) {
+function buildSteps(type, isAI) {
   var s = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
-  s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-  s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
   if (type === 'image') {
+    s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
+    if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
   }
+  s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
+  s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
   s.push({ id: 'done', label: __('simple.step_done', 'Done') });
   return s;
 }
@@ -120,7 +123,7 @@ function buildSteps(type) {
 
 function initSimplified() {
   simpleFile = null; simpleBuf = null; simpleType = null;
-  simpleStep = 0; simpleSteps = [];
+  simpleIsAI = false; simpleStep = 0; simpleSteps = [];
   simpleResults = {};
   simpleUserInfo = {
     name: '', email: '', phone: '', website: '',
@@ -145,13 +148,15 @@ function renderStep() {
   nextBtn.textContent = isLast ? __('simple.start_over') : __('simple.next_btn');
   // Manage Next button: hidden for action-required steps, disabled until done for others
   simpleStepDone = false;
-  if (['watermark', 'pixel-injection'].indexOf(step.id) >= 0) {
+  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection'].indexOf(step.id) >= 0) {
     nextBtn.style.display = 'none';
   } else {
     nextBtn.style.display = '';
     nextBtn.disabled = step.id === 'upload' ? !simpleFile : step.id === 'done' ? false : true;
   }
   if (step.id === 'upload') renderUpload(body);
+  else if (step.id === 'ai-question') renderAiQuestion(body);
+  else if (step.id === 'c2pa') renderC2paStep(body);
   else if (step.id === 'watermark') renderWatermarkStep(body);
   else if (step.id === 'pixel-injection') renderPixelInjectStep(body);
   else if (step.id === 'timestamp') renderTimestampStep(body);
@@ -191,7 +196,7 @@ function simpleNext() {
     }
   }
   // Auto-run steps must complete before advancing
-  if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection') && !simpleStepDone) return;
+  if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa') && !simpleStepDone) return;
   if (step.id === 'done') { restartSimple(); return; }
   simpleStep++;
   if (simpleStep >= simpleSteps.length) simpleStep = simpleSteps.length - 1;
@@ -373,10 +378,81 @@ async function simpleFileSelected(input) {
   reader.onload = function(e) { simpleBuf = e.target.result; };
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
-  simpleSteps = buildSteps(type);
+  if (type === 'image') {
+    simpleSteps = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }, { id: 'ai-question', label: __('simple.step_type', 'Type') }];
+  } else {
+    simpleSteps = buildSteps(type, false);
+  }
   // Reset step position
   simpleStep = 0;
   renderStep();
+}
+
+function renderAiQuestion(body) {
+  body.innerHTML =
+    '<div class="simple-card"><h2>' + __('simple.ai_title') + '</h2><p>' + __('simple.ai_desc') + '</p>' +
+    '<div class="simple-ai-options">' +
+    '<div class="simple-ai-card" onclick="chooseAi(false)"><span class="ai-icon">📸</span><h3>' + __('simple.ai_regular') + '</h3><p>' + __('simple.ai_regular_desc') + '</p></div>' +
+    '<div class="simple-ai-card" onclick="chooseAi(true)"><span class="ai-icon">🤖</span><h3>' + __('simple.ai_generated') + '</h3><p>' + __('simple.ai_generated_desc') + '</p></div>' +
+    '</div></div>';
+}
+
+function chooseAi(isAI) {
+  simpleIsAI = isAI;
+  simpleSteps = buildSteps('image', isAI);
+  simpleStep = simpleSteps.findIndex(function(s) { return s.id === (isAI ? 'c2pa' : 'watermark'); });
+  renderStep();
+}
+
+function renderC2paStep(body) {
+  body.innerHTML =
+    '<div class="simple-card"><h2>' + __('simple.c2pa_title') + '</h2><p>' + __('simple.c2pa_desc') + '</p>' +
+    '<div class="form-group"><label>' + __('simple.c2pa_content_label') + '</label>' +
+    '<div class="c2pa-type-card" style="margin-bottom:8px">' +
+    '<div class="c2pa-type-header"><input type="checkbox" id="sc2pa-ai" checked disabled>' +
+    '<label for="sc2pa-ai">' + __('simple.c2pa_ai_label') + '</label></div></div></div>' +
+    '<div class="form-group"><label>' + __('simple.c2pa_social_label') + '</label>' +
+    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_instagram') + '" id="sc2pa-instagram">' +
+    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_twitter') + '" id="sc2pa-twitter">' +
+    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_website') + '" id="sc2pa-website"></div>' +
+    '<button class="btn" onclick="runC2paStep()" id="sc2pa-btn">' + __('simple.c2pa_btn') + '</button>' +
+    '<div id="sc2pa-result"></div></div>';
+}
+
+function runC2paStep() {
+  if (!window.handleC2paWrite) return;
+  var aiCheckbox = document.querySelector('#c2pa-write input[value="c2pa.ai_generated"]');
+  if (aiCheckbox) aiCheckbox.checked = true;
+  var insta = document.getElementById('sc2pa-instagram');
+  var twitter = document.getElementById('sc2pa-twitter');
+  var website = document.getElementById('sc2pa-website');
+  var realInsta = document.querySelector('.c2pa-link[placeholder*="Instagram"]');
+  var realTwitter = document.querySelector('.c2pa-link[placeholder*="Twitter"]');
+  var realWebsite = document.querySelector('.c2pa-link[placeholder*="Website"]');
+  if (realInsta && insta.value) realInsta.value = insta.value;
+  if (realTwitter && twitter.value) realTwitter.value = twitter.value;
+  if (realWebsite && website.value) realWebsite.value = website.value;
+  var fileInput = document.getElementById('c2pa-write-file');
+  if (fileInput && simpleFile) {
+    var dt = new DataTransfer();
+    dt.items.add(simpleFile);
+    fileInput.files = dt.files;
+    var evt = new Event('change');
+    fileInput.dispatchEvent(evt);
+  }
+  var btn = document.getElementById('sc2pa-btn');
+  btn.disabled = true; btn.textContent = __('simple.signing');
+  handleC2paWrite().then(function() {
+    btn.textContent = __('simple.signed');
+    simpleResults.c2pa = true;
+    simpleStepDone = true;
+    var nextBtn = document.getElementById('simpleNextBtn');
+    nextBtn.disabled = false;
+    nextBtn.style.display = '';
+  }).catch(function() {
+    btn.textContent = __('simple.failed_retry');
+    btn.disabled = false;
+  });
 }
 
 function renderWatermarkStep(body) {
@@ -698,8 +774,12 @@ function renderDone(body) {
     sections.push(fpHtml);
   }
 
+  if (results.c2pa) {
+    sections.push('<div class="simple-done-section"><h3>' + __('simple.c2pa_label') + '</h3><p>' + __('simple.c2pa_done_desc') + '</p></div>');
+  }
+
   // Certificate download section
-  var hasAnyResult = results.watermark || results['pixel-injection'] || results.timestamp || results.fingerprint;
+  var hasAnyResult = results.watermark || results['pixel-injection'] || results.timestamp || results.fingerprint || results.c2pa;
   if (hasAnyResult) {
     sections.push('<div class="simple-done-section simple-cert-section">' +
       '<h3>' + __('simple.cert_title', 'Digital Passport') + '</h3>' +
