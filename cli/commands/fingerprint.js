@@ -68,11 +68,19 @@ if (typeof globalThis.loadImage === 'undefined') {
   };
 }
 
-// Use vm.runInThisContext to load hashing.js so its top-level vars/functions become global
-// This is needed because require() scopes everything to the module
+// Suppress BLAKE3 self-check console.log at load time
 const vm = require('vm');
-const hashingSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Fingerprint', 'hashing.js'), 'utf8');
-vm.runInThisContext(hashingSrc, { filename: 'hashing.js' });
+const _origLog = console.log;
+const _origWarn = console.warn;
+console.log = function() {};
+console.warn = function() {};
+try {
+  const hashingSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Fingerprint', 'hashing.js'), 'utf8');
+  vm.runInThisContext(hashingSrc, { filename: 'hashing.js' });
+} finally {
+  console.log = _origLog;
+  console.warn = _origWarn;
+}
 
 // After loading, all functions are available on global scope or window-like object
 // hashing.js attaches: sha3_224, sha3_256, sha3_384, sha3_512, blake2b, blake2s, sha224, md2, md4, md5, ripemd160, blake3, whirlpool, fingerprintFile, fastFingerprint, loadImage, resizeImageData, ahash, dhash, phash, whash
