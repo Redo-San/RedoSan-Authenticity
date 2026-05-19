@@ -306,15 +306,30 @@ async function menuPiExtract() {
   console.clear();
   console.log(c('bright', '── Pixel Injection Extract ──'));
   const image = await selectFile('Image path > ');
-  console.log(c('dim', 'Algorithm (Enter = enhanced_lsb):'));
+  console.log(c('dim', 'Algorithm (Enter = auto-detect all):'));
+  console.log('  enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal');
   const algo = await ask(c('cyan', '> '));
   const pass = await ask(c('yellow', 'Password > '));
   const outputRaw = await ask(c('cyan', 'Output path (Enter = print to screen): '));
   const out = resolvePath(outputRaw);
-  const args = ['pixel-injection', 'extract', '-i', image, '-a', (algo.trim() || 'enhanced_lsb')];
-  if (pass.trim()) args.push('-p', pass.trim());
-  if (out) args.push('-o', out);
-  await run(args);
+
+  const algos = algo.trim() ? [algo.trim()] : ['enhanced_lsb', 'adaptive_lsb', 'dct', 'dwt', 'dft', 'hybrid_dct_dwt', 'vine', 'pixel_seal'];
+  let found = false;
+  for (const a of algos) {
+    const args = ['pixel-injection', 'extract', '-i', image, '-a', a];
+    if (pass.trim()) args.push('-p', pass.trim());
+    if (out) args.push('-o', out);
+    try {
+      await run(args);
+      found = true;
+      if (!algo.trim()) console.log(c('green', `  ✓ Algorithm: ${a}`));
+      break; // stop on first success
+    } catch (e) {
+      if (!algo.trim()) continue; // try next algo in auto mode
+    }
+  }
+  if (!found) console.log(c('red', '✗ No watermark found with any algorithm.'));
+
   await ask('Press Enter...');
 }
 
