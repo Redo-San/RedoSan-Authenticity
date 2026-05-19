@@ -446,6 +446,23 @@ async function handleAutoDetect() {
   btn.disabled = false; spinner('wm-spinner', false);
 }
 
+// ── Password visibility toggles ──
+function toggleWmPassword() {
+  var pwGroup = document.getElementById('wm-password-group');
+  if (!pwGroup) return;
+  var typeSelect = document.getElementById('wm-type');
+  var type = typeSelect ? parseInt(typeSelect.value) : 1;
+  pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
+}
+
+function toggleWmExtractPassword() {
+  var pwGroup = document.getElementById('wm-password-ex-group');
+  if (!pwGroup) return;
+  var typeSelect = document.getElementById('wm-type-ex');
+  var type = typeSelect ? parseInt(typeSelect.value) : 1;
+  pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
+}
+
 // ── Live capacity updates ──
 document.addEventListener('DOMContentLoaded', function() {
   var imgInput = document.getElementById('wm-image');
@@ -454,4 +471,13 @@ document.addEventListener('DOMContentLoaded', function() {
   if (imgInput) imgInput.addEventListener('change', updateCapacity);
   if (secretInput) secretInput.addEventListener('change', updateCapacity);
   if (typeSelect) typeSelect.addEventListener('change', updateCapacity);
+  
+  toggleWmPassword();
+  toggleWmExtractPassword();
+  
+  var embedType = document.getElementById('wm-type');
+  if (embedType) embedType.addEventListener('change', toggleWmPassword);
+  
+  var extractType = document.getElementById('wm-type-ex');
+  if (extractType) extractType.addEventListener('change', toggleWmExtractPassword);
 });

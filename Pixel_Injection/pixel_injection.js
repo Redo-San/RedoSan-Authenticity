@@ -77,6 +77,7 @@ class PixelInjection {
     setupPixelInjectionUI() {
         this.updatePiAlgorithms();
         this.updateExtractAlgorithms();
+        this.toggleExtractPiPassword();
         
         const categorySelect = document.getElementById('pi-category');
         if (categorySelect) {
@@ -85,9 +86,20 @@ class PixelInjection {
             });
         }
         
+        const algorithmSelect = document.getElementById('pi-algorithm');
+        if (algorithmSelect) {
+            algorithmSelect.addEventListener('change', () => {
+                this.currentAlgorithm = algorithmSelect.value;
+                this.updatePiOptions();
+                this.togglePiPassword();
+            });
+        }
+        
         const extractAlgorithmSelect = document.getElementById('pi-extract-algorithm');
         if (extractAlgorithmSelect) {
-            extractAlgorithmSelect.addEventListener('change', () => {});
+            extractAlgorithmSelect.addEventListener('change', () => {
+                this.toggleExtractPiPassword();
+            });
         }
     }
     
@@ -116,6 +128,31 @@ class PixelInjection {
         
         if (algorithmSelect) {
             algorithmSelect.value = this.currentAlgorithm;
+        }
+        this.togglePiPassword();
+    }
+    
+    togglePiPassword() {
+        const group = document.getElementById('pi-password-group');
+        if (!group) return;
+        if (this.currentAlgorithm === 'random_lsb') {
+            group.style.display = 'block';
+            group.style.visibility = 'visible';
+        } else {
+            group.style.display = 'none';
+        }
+    }
+    
+    toggleExtractPiPassword() {
+        const group = document.getElementById('pi-extract-password-group');
+        if (!group) return;
+        const extractSelect = document.getElementById('pi-extract-algorithm');
+        const algo = extractSelect ? extractSelect.value : '';
+        if (algo === 'random_lsb') {
+            group.style.display = 'block';
+            group.style.visibility = 'visible';
+        } else {
+            group.style.display = 'none';
         }
     }
     
