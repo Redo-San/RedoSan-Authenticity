@@ -262,7 +262,7 @@
           <p style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px" data-i18n="wm.secret_size_note">💡 The secret image must be smaller than the cover image. Select a cover image first to see available capacity below.</p>
           <p id="wm-secret-status" style="font-size:0.75rem;margin-top:2px"></p>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="wm-password-group">
           <label for="wm-password" data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
 <input type="password" id="wm-password" name="wm-password" placeholder="Enter password" required>
         </div>
@@ -287,7 +287,7 @@
           <label for="wm-image-ex" data-i18n="wm.image_ex_label">Stego image</label>
 <input type="file" id="wm-image-ex" name="wm-image-ex" accept="image/png,image/jpeg">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="wm-password-ex-group">
           <label for="wm-password-ex" data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
 <input type="password" id="wm-password-ex" name="wm-password-ex" placeholder="Enter password" required>
         </div>
@@ -365,7 +365,7 @@
           <label for="pi-message" data-i18n="pi.message_label">Message</label>
 <textarea id="pi-message" name="pi-message" placeholder="Enter your secret message..." rows="3"></textarea>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="pi-password-group">
           <label for="pi-password" data-i18n="pi.password_label">Password (optional)</label>
 <input type="password" id="pi-password" name="pi-password" placeholder="Enter password for encryption">
         </div>
@@ -389,7 +389,7 @@
             <!-- Options will be populated dynamically -->
           </select>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="pi-extract-password-group">
           <label for="pi-extract-password" data-i18n="pi.password_label">Password (if required)</label>
 <input type="password" id="pi-extract-password" name="pi-extract-password" placeholder="Enter password for decryption">
         </div>

@@ -461,7 +461,7 @@ function renderPixelInjectStep(body) {
     '<select id="spi-category"></select></div>' +
     '<div class="form-group"><label>' + __('simple.pi_algo_label', 'Algorithm') + '</label>' +
     '<select id="spi-algorithm"></select></div>' +
-    '<div class="form-group"><label>Password</label>' +
+    '<div class="form-group" id="spi-password-group"><label>Password</label>' +
     '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
     __('simple.pi_ts_payload', '⏱️ The timestamp proof will be injected as the secret message.') + '</p>' +
@@ -484,6 +484,9 @@ function renderPixelInjectStep(body) {
       '<option value="hybrid_dct_dwt">Hybrid DCT-DWT</option>';
     dstAlgo.value = 'dct';
   }
+  
+  var spiGroup = document.getElementById('spi-password-group');
+  if (spiGroup) spiGroup.style.display = 'none';
 }
 
 function runPixelInjectStep() {
