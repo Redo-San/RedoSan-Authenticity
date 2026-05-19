@@ -503,6 +503,12 @@ function runPixelInjectStep() {
     var passInput = document.getElementById('pi-password');
     if (passInput) passInput.value = pass;
 
+    function cleanupPiFields() {
+      if (msgInput) msgInput.value = '';
+      if (passInput) passInput.value = '';
+      if (fileInput) { var dt2 = new DataTransfer(); fileInput.files = dt2.files; }
+    }
+
     var promise = window.handlePixelInjection();
     if (promise && promise.then) {
       promise.then(function() {
@@ -519,21 +525,20 @@ function runPixelInjectStep() {
         var nextBtn = document.getElementById('simpleNextBtn');
         nextBtn.disabled = false;
         nextBtn.style.display = '';
+
         if (btn) { btn.textContent = '✅ ' + __('simple.injected', 'Injected'); }
         if (statusEl) {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
             __('simple.pi_done_ts', '✅ Timestamp proof injected successfully as secret message.') + '</div>';
         }
-        // Clean up professional form fields after use
-        if (msgInput) msgInput.value = '';
-        if (passInput) passInput.value = '';
-        if (fileInput) { var dt2 = new DataTransfer(); fileInput.files = dt2.files; }
       }).catch(function(e) {
         if (btn) { btn.disabled = false; btn.textContent = __('simple.pi_btn', 'Inject Message'); }
         if (statusEl) {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
             escapeHtml(e && e.message ? e.message : __('simple.pi_failed', 'Injection failed')) + '</div>';
         }
+      }).then(function() {
+        cleanupPiFields();
       });
     }
   }, 50);

@@ -47,6 +47,17 @@ class PixelInjection {
             }
         };
         
+        this.extractMap = {
+            enhanced_lsb: 'extractEnhancedLSB', adaptive_lsb: 'extractLSB',
+            multi_channel_lsb: 'extractMultiChannelLSB', random_lsb: 'extractRandomLSB',
+            dct: 'extractDCT', dwt: 'extractDWT', dft: 'extractDFT',
+            hybrid_dct_dwt: 'extractDCT',
+            vine: 'extractVINE', pixel_seal: 'extractPixelSeal',
+            nullguard: 'extractNullGuard', shallow_diffuse: 'extractShallowDiffuse',
+            diffusion_based: 'extractLSB',
+            imagewmark: 'extractImageWMark', meta_seal: 'extractMetaSeal',
+            stardustmark: 'extractLSB', invisimark: 'extractLSB', elevenlikes: 'extractLSB',
+        };
         this.initializeEventListeners();
         this.updatePiAlgorithms();
     }
@@ -501,43 +512,27 @@ class PixelInjection {
             
             // Initialize extractedMessage variable
             let extractedMessage;
-            
-            // Check if algorithm exists and is a function
-            if (!this.core[algorithm] || typeof this.core[algorithm] !== 'function') {
-                if (!this.core.algorithms[algorithm]) {
-                    if (this.core.detection && this.core.detection[algorithm]) {
-                        extractedMessage = await this.core.detection[algorithm](imageData);
-                    } else {
-                        const extractionMethod = `extract${algorithm.charAt(0).toUpperCase() + algorithm.slice(1).replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())}`;
-                        if (this.core[extractionMethod] && typeof this.core[extractionMethod] === 'function') {
-                            extractedMessage = await this.core[extractionMethod](imageData);
-                        } else {
-                            throw new Error(`Extraction algorithm ${algorithm} is not available`);
-                        }
-                    }
+
+            // Try extract map first, then detection/convention, finally blind decoding
+            const extractMethodName = this.extractMap[algorithm];
+            if (extractMethodName && typeof this.core[extractMethodName] === 'function') {
+                if (algorithm === 'random_lsb') {
+                    extractedMessage = await this.core[extractMethodName](imageData, password);
                 } else {
-                    const coreAlgorithm = this.core.algorithms[algorithm];
-                    if (typeof coreAlgorithm !== 'function') {
-                        throw new Error(`Extraction algorithm ${algorithm} is not a function`);
-                    }
-                    extractedMessage = await coreAlgorithm(imageData, '', password, options);
+                    extractedMessage = await this.core[extractMethodName](imageData);
                 }
+            } else if (this.core.detection && this.core.detection[algorithm]) {
+                extractedMessage = await this.core.detection[algorithm](imageData);
+            } else if (this.core[algorithm] && typeof this.core[algorithm] === 'function') {
+                extractedMessage = await this.core[algorithm](imageData, '', password, options);
             } else {
-                try {
-                    extractedMessage = await this.core[algorithm](imageData, '', password, options);
-                } catch (extractError) {
-                    if (this.core.algorithms[algorithm]) {
-                        extractedMessage = await this.core.algorithms[algorithm](imageData, '', password, options);
-                    } else if (this.core.detection && this.core.detection[algorithm]) {
-                        extractedMessage = await this.core.detection[algorithm](imageData);
-                    } else {
-                        const extractionMethod = `extract${algorithm.charAt(0).toUpperCase() + algorithm.slice(1).replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())}`;
-                        if (this.core[extractionMethod] && typeof this.core[extractionMethod] === 'function') {
-                            extractedMessage = await this.core[extractionMethod](imageData);
-                        } else {
-                            extractedMessage = await this.core.detection.blind_decoding(imageData, algorithm, options);
-                        }
-                    }
+                const extractionMethod = `extract${algorithm.charAt(0).toUpperCase() + algorithm.slice(1).replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())}`;
+                if (this.core[extractionMethod] && typeof this.core[extractionMethod] === 'function') {
+                    extractedMessage = await this.core[extractionMethod](imageData);
+                } else if (this.core.detection && this.core.detection.blind_decoding) {
+                    extractedMessage = await this.core.detection.blind_decoding(imageData, algorithm, options);
+                } else {
+                    throw new Error(`Extraction algorithm ${algorithm} is not available`);
                 }
             }
             
