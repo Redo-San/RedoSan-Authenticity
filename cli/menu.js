@@ -68,7 +68,30 @@ async function selectFile(prompt) {
     const absPath = resolvePath(raw);
     if (absPath && fs.existsSync(absPath)) {
       if (fs.statSync(absPath).isDirectory()) {
-        console.log(c('red', '✗ Expected a file, not a directory.'));
+        // Show directory contents, let user pick
+        const items = fs.readdirSync(absPath).filter(f => {
+          try { return fs.statSync(path.join(absPath, f)).isFile(); } catch(e) { return false; }
+        }).sort();
+        if (items.length === 0) {
+          console.log(c('yellow', '(empty directory, no files found)'));
+          continue;
+        }
+        console.log(c('dim', 'Files in ' + absPath + ':'));
+        const maxShow = 40;
+        const show = items.slice(0, maxShow);
+        for (let i = 0; i < show.length; i++) {
+          console.log(`  ${c('green', String(i + 1).padStart(2, ' '))}  ${show[i]}`);
+        }
+        if (items.length > maxShow) {
+          console.log(c('dim', `  ... and ${items.length - maxShow} more`));
+        }
+        const pick = await ask(c('yellow', 'Pick a file (0 to cancel): '));
+        const idx = parseInt(pick.trim(), 10);
+        if (idx === 0) continue;
+        if (idx >= 1 && idx <= show.length) {
+          return path.join(absPath, show[idx - 1]);
+        }
+        console.log(c('red', 'Invalid choice.'));
         continue;
       }
       return absPath;
@@ -237,8 +260,8 @@ async function menuC2paSign() {
   const file = await selectFile('File path > ');
   const claim = await ask(c('cyan', 'Claim text (Enter = none): '));
   const author = await ask(c('cyan', 'Author (Enter = none): '));
-  const outputRaw = await ask(c('cyan', 'Output JSON path (Enter = file.c2pa.json): '));
-  const out = resolvePath(outputRaw, path.basename(file) + '.c2pa.json');
+  const outputRaw = await ask(c('cyan', 'Output image path (Enter = overwrite original): '));
+  const out = resolvePath(outputRaw);
   const args = ['c2pa', 'sign', file];
   if (claim.trim()) args.push('--claim', claim.trim());
   if (author.trim()) args.push('--author', author.trim());
