@@ -373,10 +373,8 @@ function renderWatermarkStep(body) {
     '  <option value="2">2. Frequency DCT</option>' +
     '  <option value="3">3. Neural SS</option>' +
     '  <option value="4">4. Latent DCT</option>' +
-    '  <option value="5">5. Zero-bit</option>' +
     '  <option value="6">6. Multi-bit</option>' +
     '  <option value="7">7. Forensic</option>' +
-    '  <option value="8">8. Fragile</option>' +
     '  <option value="9">9. Imatag-style</option>' +
     '</select></div>' +
     '<div class="form-group"><label>' + __('simple.wm_pass_label', 'Password') + '</label>' +
