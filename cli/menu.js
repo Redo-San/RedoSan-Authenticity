@@ -150,9 +150,7 @@ async function menuFingerprint() {
   console.clear();
   console.log(c('bright', '── Fingerprint ──'));
   const file = await selectFile('Enter file path > ');
-  console.log(c('dim', 'Choose algorithm (Enter = all):'));
-  console.log('  sha256, sha512, blake3, md5, sha1, all');
-  const algo = await ask(c('cyan', '> '));
+  const algo = await pickAlgorithm('Algorithm (Enter = all):', ['sha256', 'sha512', 'blake3', 'md5', 'sha1', 'sha224', 'sha384', 'sha3_224', 'sha3_256', 'sha3_384', 'sha3_512', 'blake2b', 'blake2s', 'md2', 'md4', 'ripemd160', 'whirlpool'], 'all');
   const args = ['fingerprint', file];
   if (algo.trim() && algo !== 'all') args.push('--algo', algo.trim());
   await run(args);
@@ -195,9 +193,7 @@ async function menuWmEmbed() {
   }
   const outputRaw = await ask(c('cyan', 'Output image path (Enter = output.png): '));
   const out = resolvePath(outputRaw, 'output.png');
-  console.log(c('dim', 'Algorithm (Enter = lsb):'));
-  console.log('  lsb, dct, random_lsb, neural_lsb, zero_bit, multi_bit, forensic, fragile, imatag');
-  const algo = await ask(c('cyan', '> '));
+  const algo = await pickAlgorithm('Algorithm:', ['lsb', 'dct', 'random_lsb', 'neural_lsb', 'zero_bit', 'multi_bit', 'forensic', 'fragile', 'imatag'], 'lsb');
   const pass = await ask(c('yellow', 'Password > '));
   const args = ['watermark', 'embed', '-i', image, '-o', out, '-a', (algo.trim() || 'lsb')];
   if (secretPath) args.push('-s', secretPath);
@@ -210,8 +206,7 @@ async function menuWmExtract() {
   console.clear();
   console.log(c('bright', '── Watermark Extract ──'));
   const image = await selectFile('Watermarked image path > ');
-  console.log(c('dim', 'Algorithm (Enter = lsb):'));
-  const algo = await ask(c('cyan', '> '));
+  const algo = await pickAlgorithm('Algorithm:', ['lsb', 'dct', 'random_lsb', 'neural_lsb', 'zero_bit', 'multi_bit', 'forensic', 'fragile', 'imatag'], 'lsb');
   const pass = await ask(c('yellow', 'Password > '));
   const outputRaw = await ask(c('cyan', 'Output file path (Enter = print to screen): '));
   const out = resolvePath(outputRaw);
@@ -278,6 +273,17 @@ async function menuC2paRead() {
   await ask('Press Enter...');
 }
 
+async function pickAlgorithm(title, algos, defaultAlgo) {
+  console.log(c('dim', title));
+  for (let i = 0; i < algos.length; i++) {
+    console.log(`  ${c('green', String(i + 1).padStart(2, ' '))}  ${algos[i]}`);
+  }
+  const raw = await ask(c('cyan', `Choice (1-${algos.length}, Enter = ${defaultAlgo}): `));
+  const n = parseInt(raw.trim(), 10);
+  if (n >= 1 && n <= algos.length) return algos[n - 1];
+  return defaultAlgo;
+}
+
 async function menuPiEmbed() {
   console.clear();
   console.log(c('bright', '── Pixel Injection Embed ──'));
@@ -291,11 +297,9 @@ async function menuPiEmbed() {
   }
   const outputRaw = await ask(c('cyan', 'Output image path (Enter = output.png): '));
   const out = resolvePath(outputRaw, 'output.png');
-  console.log(c('dim', 'Algorithm (Enter = enhanced_lsb):'));
-  console.log('  enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal');
-  const algo = await ask(c('cyan', '> '));
+  const algo = await pickAlgorithm('Algorithm:', ['enhanced_lsb', 'adaptive_lsb', 'dct', 'dwt', 'dft', 'hybrid_dct_dwt', 'vine', 'pixel_seal'], 'enhanced_lsb');
   const pass = await ask(c('yellow', 'Password > '));
-  const args = ['pixel-injection', 'embed', '-i', image, '-o', out, '-a', (algo.trim() || 'enhanced_lsb')];
+  const args = ['pixel-injection', 'embed', '-i', image, '-o', out, '-a', algo];
   if (secretPath) args.push('-s', secretPath);
   if (pass.trim()) args.push('-p', pass.trim());
   await run(args);
