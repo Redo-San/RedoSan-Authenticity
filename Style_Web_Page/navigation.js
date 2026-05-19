@@ -47,6 +47,7 @@ window.addEventListener('popstate', function(e) {
   document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
   // Mode overlay → re-show the selection screen
   if (!state || state.modeOverlay) {
+    if (typeof resetProfessionalForms === 'function') resetProfessionalForms();
     document.documentElement.style.overflow = 'hidden';
     document.getElementById('modeSelect').style.display = '';
     document.getElementById('simplifiedMode').style.display = 'none';

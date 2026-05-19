@@ -48,7 +48,25 @@ function setMode(mode) {
   }
 }
 
+function resetProfessionalForms() {
+  // Clear all file inputs in professional mode
+  document.querySelectorAll('#app input[type="file"]').forEach(function(el) {
+    var dt = new DataTransfer();
+    el.files = dt.files;
+  });
+  // Clear all text/password inputs and textareas
+  document.querySelectorAll('#app input[type="text"], #app input[type="password"], #app input[type="search"], #app textarea').forEach(function(el) {
+    el.value = '';
+  });
+  // Hide all result/output sections
+  ['wm-result', 'pi-result', 'fp-result', 'md-result', 'ts-result', 'c2pa-read-result', 'c2pa-write-result', 'c2pa-verify-result'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
 function switchMode() {
+  resetProfessionalForms();
   // Show mode overlay without page reload (keeps music playing)
   document.getElementById('modeSelect').style.display = '';
   setBodyOverflow(true);
@@ -63,6 +81,7 @@ function switchMode() {
 }
 
 function showModeSelect() {
+  resetProfessionalForms();
   // Show mode overlay without page reload (keeps music playing)
   document.getElementById('modeSelect').style.display = '';
   setBodyOverflow(true);
