@@ -187,40 +187,38 @@ class WatermarkCore {
     // 3. Robust DCT Watermarking with advanced techniques
     dct(imageData, message, password = null, options = {}) {
         const blockSize = 8;
-        const strength = options.strength || 0.1;
+        const K = (options && options.strength) || 15;
         const width = imageData.width;
         const height = imageData.height;
         const data = new Uint8ClampedArray(imageData.data);
         
-        // Enhanced message encoding with redundancy and error correction
-        const encodedMessage = this.encodeMessage(message);
-        let messageIndex = 0;
+        // Encode message with redundancy (each bit × 3 for majority-vote correction)
+        const encoded = this.encodeMessage(message);
+        let bitIdx = 0;
         
-        // Process 8x8 blocks with advanced embedding
-        for (let y = 0; y < height - blockSize + 1; y += blockSize) {
-            for (let x = 0; x < width - blockSize + 1; x += blockSize) {
-                if (messageIndex >= encodedMessage.length) break;
-                
+        // Embed one bit per 8×8 block using coefficient pair comparison
+        for (let y = 0; y < height - blockSize + 1 && bitIdx < encoded.length; y += blockSize) {
+            for (let x = 0; x < width - blockSize + 1 && bitIdx < encoded.length; x += blockSize) {
                 const block = this.extractBlock(data, x, y, width, blockSize);
                 const dctBlock = this.applyDCT(block);
                 
-                // Advanced coefficient selection and modification
-                const embedPositions = this.selectOptimalCoefficients(dctBlock, strength);
+                // Read bit: 0 → c[5,2] > c[4,3], 1 → c[4,3] > c[5,2]
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                const bit = parseInt(encoded[bitIdx++]);
+                const diff = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
                 
-                for (const [i, j, weight] of embedPositions) {
-                    if (messageIndex < encodedMessage.length) {
-                        const bit = parseInt(encodedMessage[messageIndex++]);
-                        // Convert 1D array to 2D access
-                        const index = i * 8 + j;
-                        if (index < dctBlock.length) {
-                            const coefficient = dctBlock[index];
-                            const modified = this.modifyCoefficient(coefficient, bit, weight * strength);
-                            dctBlock[index] = modified;
-                        }
+                if (bit === 0) {
+                    if (dctBlock[idxB] >= dctBlock[idxA]) {
+                        dctBlock[idxA] += diff + K;
+                        dctBlock[idxB] -= diff + K;
+                    }
+                } else {
+                    if (dctBlock[idxA] >= dctBlock[idxB]) {
+                        dctBlock[idxB] += diff + K;
+                        dctBlock[idxA] -= diff + K;
                     }
                 }
                 
-                // Apply inverse DCT with error correction
                 const watermarkedBlock = this.applyInverseDCT(dctBlock);
                 this.putBlock(data, watermarkedBlock, x, y, width);
             }
@@ -634,20 +632,6 @@ class WatermarkCore {
         }
     }
     
-    // Real DCT extraction
-    extractDCT(watermarkedImageData) {
-        const { data, width, height } = watermarkedImageData;
-        const w = width, h = height;
-        const Y = new Float64Array(w * h);
-        for (let i = 0; i < w * h; i++) {
-            Y[i] = 0.299 * data[i*4] + 0.587 * data[i*4+1] + 0.114 * data[i*4+2];
-        }
-        const bits = extractFromDCT(Y, w, h, 100000);
-        const str = this.binaryToString(bits);
-        const nullIdx = str.indexOf('\0');
-        return nullIdx >= 0 ? str.substring(0, nullIdx) : str;
-    }
-    
     // Real DWT extraction (simplified — reads from LH/HL/HH bands)
     extractDWT(watermarkedImageData) {
         const { data, width, height } = watermarkedImageData;
@@ -770,6 +754,17 @@ class WatermarkCore {
             str += String.fromCharCode(parseInt(byte, 2));
         }
         return str;
+    }
+
+    // Decode redundancy (each bit repeated `factor` times → majority vote)
+    decodeRedundancy(bits, factor = 3) {
+        let decoded = '';
+        for (let i = 0; i + factor <= bits.length; i += factor) {
+            const chunk = bits.substr(i, factor);
+            const ones = chunk.split('1').length - 1;
+            decoded += ones > factor / 2 ? '1' : '0';
+        }
+        return decoded;
     }
     
     // CRC32 calculation
@@ -1827,26 +1822,24 @@ class WatermarkCore {
     
     // Extract block from image data
     extractBlock(data, x, y, width, blockSize) {
-        const block = Array(blockSize).fill().map(() => Array(blockSize).fill(0));
-        
+        const block = new Array(blockSize * blockSize);
         for (let i = 0; i < blockSize; i++) {
             for (let j = 0; j < blockSize; j++) {
                 const pixelIndex = ((y + i) * width + (x + j)) * 4;
-                block[i][j] = data[pixelIndex];
+                block[i * blockSize + j] = data[pixelIndex];
             }
         }
-        
         return block;
     }
     
-    // Put block back to image data
+    // Put block back to image data (red channel only)
     putBlock(data, block, x, y, width) {
-        const blockSize = block.length;
-        
+        const blockSize = Math.round(Math.sqrt(block.length));
         for (let i = 0; i < blockSize; i++) {
             for (let j = 0; j < blockSize; j++) {
                 const pixelIndex = ((y + i) * width + (x + j)) * 4;
-                data[pixelIndex] = block[i][j];
+                const val = Math.max(0, Math.min(255, Math.round(block[i * blockSize + j])));
+                data[pixelIndex] = val;
             }
         }
     }
@@ -2294,9 +2287,29 @@ class WatermarkCore {
         return this.dct(imageData, message, strength);
     }
     
-    extractDCT(watermarkedImageData) {
-        // Extract message from DCT watermarked image
-        return 'extracted_message';
+    extractDCT(watermarkedImageData, password = null, options = {}) {
+        const blockSize = 8;
+        const width = watermarkedImageData.width;
+        const height = watermarkedImageData.height;
+        const data = watermarkedImageData.data;
+        let bits = '';
+
+        for (let y = 0; y < height - blockSize + 1; y += blockSize) {
+            for (let x = 0; x < width - blockSize + 1; x += blockSize) {
+                const block = this.extractBlock(data, x, y, width, blockSize);
+                const dctBlock = this.applyDCT(block);
+
+                // Extract bit from coefficient pair comparison
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                bits += dctBlock[idxA] > dctBlock[idxB] ? 0 : 1;
+            }
+        }
+
+        // Decode redundancy (each bit repeated 3 times → majority vote)
+        const decoded = this.decodeRedundancy(bits, 3);
+        const str = this.binaryToString(decoded);
+        const pipeIdx = str.indexOf('|');
+        return pipeIdx >= 0 ? str.substring(0, pipeIdx) : str;
     }
     
     extractDWT(watermarkedImageData) {
