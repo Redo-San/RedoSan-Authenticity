@@ -369,11 +369,8 @@ function renderWatermarkStep(body) {
     '<div class="card-form" style="text-align:left">' +
     '<div class="form-group"><label>' + __('simple.wm_algo_label', 'Algorithm') + '</label>' +
     '<select id="swm-type">' +
-    '  <option value="1">1. Spatial LSB</option>' +
     '  <option value="2">2. Frequency DCT</option>' +
-    '  <option value="3">3. Neural SS</option>' +
     '  <option value="4">4. Latent DCT</option>' +
-    '  <option value="6">6. Multi-bit</option>' +
     '  <option value="7">7. Forensic</option>' +
     '  <option value="9">9. Imatag-style</option>' +
     '</select></div>' +
@@ -453,19 +450,20 @@ function renderPixelInjectStep(body) {
     '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' + __('simple.pi_btn', 'Inject Message') + '</button>' +
     '<div id="spi-status"></div></div>';
 
-  // Copy category and algorithm options from professional mode
-  var srcCat = document.getElementById('pi-category');
+  // Set category + algorithm options for simplified PI (frequency-based only — strongest)
   var dstCat = document.getElementById('spi-category');
-  var srcAlgo = document.getElementById('pi-algorithm');
   var dstAlgo = document.getElementById('spi-algorithm');
-  if (srcCat && dstCat && srcAlgo && dstAlgo) {
-    dstCat.innerHTML = srcCat.innerHTML;
-    dstCat.addEventListener('change', function() {
-      srcCat.value = this.value;
-      srcCat.dispatchEvent(new Event('change'));
-      dstAlgo.innerHTML = srcAlgo.innerHTML;
-    });
-    dstCat.dispatchEvent(new Event('change'));
+  var srcCat = document.getElementById('pi-category');
+  var srcAlgo = document.getElementById('pi-algorithm');
+  if (dstCat && dstAlgo) {
+    dstCat.innerHTML = '<option value="frequency">Frequency</option>';
+    dstCat.value = 'frequency';
+    dstAlgo.innerHTML =
+      '<option value="dct">Robust DCT</option>' +
+      '<option value="dwt">Multi-resolution DWT</option>' +
+      '<option value="dft">Rotation-resistant DFT</option>' +
+      '<option value="hybrid_dct_dwt">Hybrid DCT-DWT</option>';
+    dstAlgo.value = 'dct';
   }
 }
 
