@@ -104,6 +104,7 @@ async function runPixelInjection(mode, opts) {
       }
     } else {
       console.log('No watermark found.');
+      process.exit(1);
     }
   }
 }
