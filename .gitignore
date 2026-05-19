@@ -17,6 +17,7 @@ venv/
 
 # Test files
 cli/test_output/
+test/tmp/
 
 # OS
 .DS_Store

@@ -24,13 +24,22 @@ if (typeof globalThis.window === 'undefined') {
   globalThis.window = globalThis;
 }
 
-// Load loadImage from hashing.js (needed by metadata.js)
-const hashingPath = path.join(__dirname, '..', '..', 'Fingerprint', 'hashing.js');
-require(hashingPath);
+// Suppress BLAKE3 self-check console.log at load time
+const _origLog = console.log;
+const _origWarn = console.warn;
+console.log = function() {};
+console.warn = function() {};
+try {
+  const hashingPath = path.join(__dirname, '..', '..', 'Fingerprint', 'hashing.js');
+  require(hashingPath);
 
-// Load metadata reading functions
-const metadataPath = path.join(__dirname, '..', '..', 'Metadata', 'metadata.js');
-require(metadataPath);
+  // Load metadata reading functions
+  const metadataPath = path.join(__dirname, '..', '..', 'Metadata', 'metadata.js');
+  require(metadataPath);
+} finally {
+  console.log = _origLog;
+  console.warn = _origWarn;
+}
 
 async function runMetadata(filePath, opts) {
   const absPath = path.resolve(filePath);

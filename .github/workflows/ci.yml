@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: ["beta-release"]
+  pull_request:
+    branches: ["beta-release"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install system deps (canvas)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
+      - name: Install npm deps
+        run: npm ci
+      - name: Run tests
+        run: npm test -- --timeout=60000
