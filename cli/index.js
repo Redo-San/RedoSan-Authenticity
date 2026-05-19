@@ -124,7 +124,7 @@ program
   .argument('<action>', 'Action: embed, extract')
   .requiredOption('-i, --image <file>', 'Input image')
   .option('-s, --secret <file>', 'Secret file to embed')
-  .requiredOption('-o, --output <file>', 'Output file path')
+  .option('-o, --output <file>', 'Output file path (omit to print to screen for extract)')
   .option('-p, --password <pass>', 'Password')
   .option('-a, --algo <type>', 'Algorithm: ' + [
     'enhanced_lsb','adaptive_lsb','multi_channel_lsb','random_lsb',

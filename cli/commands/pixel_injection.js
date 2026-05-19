@@ -7,7 +7,7 @@ const { createCanvas, loadImage, ImageData } = require('canvas');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
-const { readFileBytes, getFileInfo, validateFile } = require('../utils');
+const { readFileBytes, getFileInfo, validateFile, stripC2PA } = require('../utils');
 
 // Patch browser APIs
 const mockDocument = {
@@ -58,7 +58,10 @@ async function runPixelInjection(mode, opts) {
     process.exit(1);
   }
 
-  const img = await loadImage(absPath);
+  // Strip c2pa chunks if present (canvas loadImage can't handle them)
+  const rawBuf = readFileBytes(absPath);
+  const cleanBuf = stripC2PA(rawBuf);
+  const img = await loadImage(cleanBuf);
   const canvas = createCanvas(img.width, img.height);
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, 0, 0);
