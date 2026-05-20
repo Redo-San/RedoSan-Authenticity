@@ -57,7 +57,12 @@ self.addEventListener('fetch', function(event) {
   // 2. Block unknown .js files not in whitelist
   var isUnknownJs = lower.endsWith('.js') && JS_WHITELIST.indexOf(path) === -1;
 
-  if (isDangerous || isUnknownJs) {
+  // 3. Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
+  var decodedLower = decodeURIComponent(lower);
+  var hasEmbeddedUrl = decodedLower.includes('://') ||
+    (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decodedLower) && !decodedLower.startsWith('//'));
+
+  if (isDangerous || isUnknownJs || hasEmbeddedUrl) {
     event.respondWith(
       new Response(threatPage(path), {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -67,7 +72,7 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // 3. Protect logo images from direct URL access / hotlinking
+  // 4. Protect logo images from direct URL access / hotlinking
   if ((lower.endsWith('/logo.png') || lower.endsWith('/logo-black.png')) && event.request.mode === 'navigate') {
     event.respondWith(
       new Response(logoBlockPage(), {
