@@ -109,12 +109,15 @@ function buildSteps(type, isAI) {
   var s = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
   if (type === 'image') {
     s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
-    if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
+    s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
+    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
+    if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
+  } else {
+    s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
+    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
   }
-  s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
-  s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
   s.push({ id: 'done', label: __('simple.step_done', 'Done') });
   return s;
 }
@@ -400,7 +403,7 @@ function renderAiQuestion(body) {
 function chooseAi(isAI) {
   simpleIsAI = isAI;
   simpleSteps = buildSteps('image', isAI);
-  simpleStep = simpleSteps.findIndex(function(s) { return s.id === (isAI ? 'c2pa' : 'watermark'); });
+  simpleStep = simpleSteps.findIndex(function(s) { return s.id === 'fingerprint'; });
   renderStep();
 }
 
@@ -419,7 +422,7 @@ function renderC2paStep(body) {
     '<div id="sc2pa-result"></div></div>';
 }
 
-function runC2paStep() {
+async function runC2paStep() {
   if (!window.handleC2paWrite) return;
   var aiCheckbox = document.querySelector('#c2pa-write input[value="c2pa.ai_generated"]');
   if (aiCheckbox) aiCheckbox.checked = true;
@@ -432,10 +435,18 @@ function runC2paStep() {
   if (realInsta && insta.value) realInsta.value = insta.value;
   if (realTwitter && twitter.value) realTwitter.value = twitter.value;
   if (realWebsite && website.value) realWebsite.value = website.value;
+  // Use the PI output as the image to sign (or watermark if PI not done)
+  var srcBlob, fname;
+  if (simpleResults.piFinalUrl && !simpleResults.piFinalBlob) {
+    simpleResults.piFinalBlob = await fetch(simpleResults.piFinalUrl).then(function(r) { return r.blob(); });
+  }
+  srcBlob = simpleResults.piFinalBlob || simpleResults.watermarkBlob;
+  fname = simpleFile ? simpleFile.name : 'image.png';
+  var srcFile = srcBlob ? new File([srcBlob], fname, { type: 'image/png' }) : simpleFile;
   var fileInput = document.getElementById('c2pa-write-file');
-  if (fileInput && simpleFile) {
+  if (fileInput && srcFile) {
     var dt = new DataTransfer();
-    dt.items.add(simpleFile);
+    dt.items.add(srcFile);
     fileInput.files = dt.files;
     var evt = new Event('change');
     fileInput.dispatchEvent(evt);
@@ -445,6 +456,12 @@ function runC2paStep() {
   handleC2paWrite().then(function() {
     btn.textContent = __('simple.signed');
     simpleResults.c2pa = true;
+    // Capture the C2PA signed blob URL from the download link
+    var c2paOutput = document.getElementById('c2pa-write-output');
+    if (c2paOutput) {
+      var dlLink = c2paOutput.querySelector('a[download]');
+      if (dlLink) simpleResults.c2paUrl = dlLink.href;
+    }
     simpleStepDone = true;
     var nextBtn = document.getElementById('simpleNextBtn');
     nextBtn.disabled = false;
@@ -747,7 +764,13 @@ function renderDone(body) {
   var results = simpleResults;
   var sections = [];
 
-  if (results['pixel-injection'] && results.piFinalUrl) {
+  if (results.c2pa && results.c2paUrl) {
+    sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
+      '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
+      __('simple.c2pa_final_desc', 'C2PA-signed — watermark + timestamp injected + AI provenance.') + '</p>' +
+      '<a href="' + results.c2paUrl + '" download="signed.png" class="btn" style="background:var(--primary);color:#fff">' +
+      __('simple.final_dl_btn', '📥 Download Final Image') + '</a></div>');
+  } else if (results['pixel-injection'] && results.piFinalUrl) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
       '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
       __('simple.final_image_desc', 'Watermark + secret message — one image. Use Professional mode to extract both.') + '</p>' +
@@ -774,7 +797,7 @@ function renderDone(body) {
     sections.push(fpHtml);
   }
 
-  if (results.c2pa) {
+  if (results.c2pa && !results.c2paUrl) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.c2pa_label') + '</h3><p>' + __('simple.c2pa_done_desc') + '</p></div>');
   }
 
