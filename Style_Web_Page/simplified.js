@@ -197,6 +197,17 @@ function simpleNext() {
       }
       return;
     }
+    // Deeper field validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(simpleUserInfo.email)) {
+      var warn = document.getElementById('sinfo-email-warn');
+      if (warn) warn.style.display = 'block';
+      return;
+    }
+    if (simpleUserInfo.website === 'https://' || !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(simpleUserInfo.website)) {
+      var warn = document.getElementById('sinfo-website-warn');
+      if (warn) warn.style.display = 'block';
+      return;
+    }
   }
   // Auto-run steps must complete before advancing
   if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa') && !simpleStepDone) return;
@@ -422,6 +433,11 @@ function updatePhoneMaxLength() {
   if (el.value.length > maxLen) el.value = el.value.slice(0, maxLen);
 }
 
+function prefixHttps(el) {
+  if (!el.value || el.value === 'https://') { el.value = 'https://'; }
+  el.setSelectionRange(el.value.length, el.value.length);
+}
+
 function validateUrlInput(el) {
   var warn = document.getElementById('sinfo-website-warn');
   if (!el.value) { if (warn) warn.style.display = 'none'; return; }
@@ -500,7 +516,7 @@ function renderUpload(body) {
     '</div>' +
     '<span id="sinfo-phone-warn" class="simple-field-warn" style="display:none">' + __('simple.phone_digits_only', 'Please enter numbers only') + '</span></div>' +
     '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
-    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required maxlength="30" oninput="validateUrlInput(this)">' +
+    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website || 'https://') + '" required maxlength="30" oninput="validateUrlInput(this)" onfocus="prefixHttps(this)">' +
     '<span id="sinfo-website-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL (e.g. https://example.com)') + '</span></div>' +
     '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
     '<div class="simple-social-grid">' +
