@@ -245,10 +245,10 @@ function renderUpload(body) {
     '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required></div>' +
     '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
     '<div class="simple-social-grid">' +
-    '<input type="url" id="sinfo-tiktok" placeholder="TikTok URL" value="' + escHtml(socialVal.tiktok || '') + '">' +
-    '<input type="url" id="sinfo-facebook" placeholder="Facebook URL" value="' + escHtml(socialVal.facebook || '') + '">' +
-    '<input type="url" id="sinfo-instagram" placeholder="Instagram URL" value="' + escHtml(socialVal.instagram || '') + '">' +
-    '<input type="url" id="sinfo-youtube" placeholder="YouTube URL" value="' + escHtml(socialVal.youtube || '') + '">' +
+    '<input type="url" id="sinfo-tiktok" placeholder="' + __('simple.ph_tiktok', 'TikTok URL') + '" value="' + escHtml(socialVal.tiktok || '') + '">' +
+    '<input type="url" id="sinfo-facebook" placeholder="' + __('simple.ph_facebook', 'Facebook URL') + '" value="' + escHtml(socialVal.facebook || '') + '">' +
+    '<input type="url" id="sinfo-instagram" placeholder="' + __('simple.ph_instagram', 'Instagram URL') + '" value="' + escHtml(socialVal.instagram || '') + '">' +
+    '<input type="url" id="sinfo-youtube" placeholder="' + __('simple.ph_youtube', 'YouTube URL') + '" value="' + escHtml(socialVal.youtube || '') + '">' +
     '</div>' +
     '<label class="simple-artist-check" style="display:flex;align-items:center;gap:8px;margin:14px 0 8px;cursor:pointer;font-size:0.9rem">' +
     '<input type="checkbox" id="sinfo-isArtist"' + (simpleUserInfo.isArtist ? ' checked' : '') + ' onchange="toggleArtistFields()"> ' +
@@ -257,11 +257,11 @@ function renderUpload(body) {
     '<div id="sinfo-artist-fields" style="display:' + (simpleUserInfo.isArtist ? '' : 'none') + '">' +
     '<h4 style="font-size:0.9rem;margin:0 0 8px;color:var(--text-muted)">' + __('simple.info_music', 'Music Platforms') + '</h4>' +
     '<div class="simple-social-grid">' +
-    '<input type="url" id="sinfo-spotify" placeholder="Spotify URL" value="' + escHtml(musicVal.spotify || '') + '">' +
-    '<input type="url" id="sinfo-applemusic" placeholder="Apple Music URL" value="' + escHtml(musicVal.appleMusic || '') + '">' +
-    '<input type="url" id="sinfo-ytmusic" placeholder="YouTube Music URL" value="' + escHtml(musicVal.youtubeMusic || '') + '">' +
-    '<input type="url" id="sinfo-soundcloud" placeholder="SoundCloud URL" value="' + escHtml(musicVal.soundcloud || '') + '">' +
-    '<input type="url" id="sinfo-bandcamp" placeholder="Bandcamp URL" value="' + escHtml(musicVal.bandcamp || '') + '">' +
+    '<input type="url" id="sinfo-spotify" placeholder="' + __('simple.ph_spotify', 'Spotify URL') + '" value="' + escHtml(musicVal.spotify || '') + '">' +
+    '<input type="url" id="sinfo-applemusic" placeholder="' + __('simple.ph_applemusic', 'Apple Music URL') + '" value="' + escHtml(musicVal.appleMusic || '') + '">' +
+    '<input type="url" id="sinfo-ytmusic" placeholder="' + __('simple.ph_ytmusic', 'YouTube Music URL') + '" value="' + escHtml(musicVal.youtubeMusic || '') + '">' +
+    '<input type="url" id="sinfo-soundcloud" placeholder="' + __('simple.ph_soundcloud', 'SoundCloud URL') + '" value="' + escHtml(musicVal.soundcloud || '') + '">' +
+    '<input type="url" id="sinfo-bandcamp" placeholder="' + __('simple.ph_bandcamp', 'Bandcamp URL') + '" value="' + escHtml(musicVal.bandcamp || '') + '">' +
     '</div></div></div></div>';
   setupSimpleDropZone();
   if (simpleFile) restoreUploadFileInfo();
@@ -467,15 +467,15 @@ function renderC2paStep(body) {
       '<input type="url" class="sc2pa-link" data-platform="facebook" placeholder="' + __('simple.c2pa_facebook', 'Facebook URL') + '" id="sc2pa-link-facebook">' +
       '<input type="url" class="sc2pa-link" data-platform="tiktok" placeholder="' + __('simple.c2pa_tiktok', 'TikTok URL') + '" id="sc2pa-link-tiktok">' +
       '<input type="url" class="sc2pa-link" data-platform="youtube" placeholder="' + __('simple.c2pa_youtube', 'YouTube URL') + '" id="sc2pa-link-youtube">' +
-      '<input type="url" class="sc2pa-link" data-platform="website" placeholder="Website URL" id="sc2pa-link-website">' +
+      '<input type="url" class="sc2pa-link" data-platform="website" placeholder="' + __('simple.c2pa_website', 'Website URL') + '" id="sc2pa-link-website">' +
     '</div></div>' +
     // Music links
     '<div class="form-group"><span>' + __('simple.c2pa_music_label', 'Music Streaming (optional)') + '</span>' +
     '<div class="c2pa-links-grid">' +
-      '<input type="url" class="sc2pa-link" data-platform="spotify" placeholder="Spotify URL" id="sc2pa-link-spotify">' +
-      '<input type="url" class="sc2pa-link" data-platform="applemusic" placeholder="Apple Music URL" id="sc2pa-link-applemusic">' +
-      '<input type="url" class="sc2pa-link" data-platform="soundcloud" placeholder="SoundCloud URL" id="sc2pa-link-soundcloud">' +
-      '<input type="url" class="sc2pa-link" data-platform="bandcamp" placeholder="Bandcamp URL" id="sc2pa-link-bandcamp">' +
+      '<input type="url" class="sc2pa-link" data-platform="spotify" placeholder="' + __('simple.c2pa_spotify', 'Spotify URL') + '" id="sc2pa-link-spotify">' +
+      '<input type="url" class="sc2pa-link" data-platform="applemusic" placeholder="' + __('simple.c2pa_applemusic', 'Apple Music URL') + '" id="sc2pa-link-applemusic">' +
+      '<input type="url" class="sc2pa-link" data-platform="soundcloud" placeholder="' + __('simple.c2pa_soundcloud', 'SoundCloud URL') + '" id="sc2pa-link-soundcloud">' +
+      '<input type="url" class="sc2pa-link" data-platform="bandcamp" placeholder="' + __('simple.c2pa_bandcamp', 'Bandcamp URL') + '" id="sc2pa-link-bandcamp">' +
     '</div></div>' +
     '<button class="btn" onclick="runC2paStep()" id="sc2pa-btn">' + __('simple.c2pa_btn') + '</button>' +
     '<div id="sc2pa-result"></div></div>';
