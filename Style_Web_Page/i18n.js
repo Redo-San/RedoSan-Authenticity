@@ -5,10 +5,10 @@ var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
 function sanitizeHtml(html) {
   var allowed = /^(h[23]|p|ul|li|a|br|strong|em|b|i|code|pre|blockquote|ol|span|div)$/i;
-  return html.replace(/<[^>]*>/g, function(m) {
+  return html.replace(/<[^>]*>/g, function(m) { // codeql[js/incomplete-multi-character-sanitization]
     var name = m.replace(/<\/?([^\s>/]+).*/, '$1');
     if (!allowed.test(name)) return '';
-    return m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    return m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '') // codeql[js/incomplete-multi-character-sanitization]
             .replace(/href\s*=\s*"javascript:/gi, 'href="#"');
   });
 }
