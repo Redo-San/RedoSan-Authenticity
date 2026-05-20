@@ -433,6 +433,13 @@ function updatePhoneMaxLength() {
   if (el.value.length > maxLen) el.value = el.value.slice(0, maxLen);
 }
 
+function validateSocialInput(el) {
+  var warn = document.getElementById(el.id + '-warn');
+  if (!el.value) { if (warn) warn.style.display = 'none'; return; }
+  var ok = /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(el.value);
+  if (warn) warn.style.display = ok ? 'none' : 'block';
+}
+
 function prefixHttps(el) {
   if (!el.value || el.value === 'https://') { el.value = 'https://'; }
   el.setSelectionRange(el.value.length, el.value.length);
@@ -520,10 +527,10 @@ function renderUpload(body) {
     '<span id="sinfo-website-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL (e.g. https://example.com)') + '</span></div>' +
     '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
     '<div class="simple-social-grid">' +
-    '<input type="url" id="sinfo-tiktok" placeholder="' + __('simple.ph_tiktok', 'TikTok URL') + '" value="' + escHtml(socialVal.tiktok || '') + '">' +
-    '<input type="url" id="sinfo-facebook" placeholder="' + __('simple.ph_facebook', 'Facebook URL') + '" value="' + escHtml(socialVal.facebook || '') + '">' +
-    '<input type="url" id="sinfo-instagram" placeholder="' + __('simple.ph_instagram', 'Instagram URL') + '" value="' + escHtml(socialVal.instagram || '') + '">' +
-    '<input type="url" id="sinfo-youtube" placeholder="' + __('simple.ph_youtube', 'YouTube URL') + '" value="' + escHtml(socialVal.youtube || '') + '">' +
+    '<div><input type="url" id="sinfo-tiktok" placeholder="' + __('simple.ph_tiktok', 'TikTok URL') + '" value="' + escHtml(socialVal.tiktok || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-tiktok-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+    '<div><input type="url" id="sinfo-facebook" placeholder="' + __('simple.ph_facebook', 'Facebook URL') + '" value="' + escHtml(socialVal.facebook || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-facebook-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+    '<div><input type="url" id="sinfo-instagram" placeholder="' + __('simple.ph_instagram', 'Instagram URL') + '" value="' + escHtml(socialVal.instagram || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-instagram-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+    '<div><input type="url" id="sinfo-youtube" placeholder="' + __('simple.ph_youtube', 'YouTube URL') + '" value="' + escHtml(socialVal.youtube || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-youtube-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
     '</div>' +
     '<label class="simple-artist-check" style="display:flex;align-items:center;gap:8px;margin:14px 0 8px;cursor:pointer;font-size:0.9rem">' +
     '<input type="checkbox" id="sinfo-isArtist"' + (simpleUserInfo.isArtist ? ' checked' : '') + ' onchange="toggleArtistFields()"> ' +
@@ -532,11 +539,11 @@ function renderUpload(body) {
     '<div id="sinfo-artist-fields" style="display:' + (simpleUserInfo.isArtist ? '' : 'none') + '">' +
     '<h4 style="font-size:0.9rem;margin:0 0 8px;color:var(--text-muted)">' + __('simple.info_music', 'Music Platforms') + '</h4>' +
     '<div class="simple-social-grid">' +
-    '<input type="url" id="sinfo-spotify" placeholder="' + __('simple.ph_spotify', 'Spotify URL') + '" value="' + escHtml(musicVal.spotify || '') + '">' +
-    '<input type="url" id="sinfo-applemusic" placeholder="' + __('simple.ph_applemusic', 'Apple Music URL') + '" value="' + escHtml(musicVal.appleMusic || '') + '">' +
-    '<input type="url" id="sinfo-ytmusic" placeholder="' + __('simple.ph_ytmusic', 'YouTube Music URL') + '" value="' + escHtml(musicVal.youtubeMusic || '') + '">' +
-    '<input type="url" id="sinfo-soundcloud" placeholder="' + __('simple.ph_soundcloud', 'SoundCloud URL') + '" value="' + escHtml(musicVal.soundcloud || '') + '">' +
-    '<input type="url" id="sinfo-bandcamp" placeholder="' + __('simple.ph_bandcamp', 'Bandcamp URL') + '" value="' + escHtml(musicVal.bandcamp || '') + '">' +
+    '<div><input type="url" id="sinfo-spotify" placeholder="' + __('simple.ph_spotify', 'Spotify URL') + '" value="' + escHtml(musicVal.spotify || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-spotify-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+    '<div><input type="url" id="sinfo-applemusic" placeholder="' + __('simple.ph_applemusic', 'Apple Music URL') + '" value="' + escHtml(musicVal.appleMusic || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-applemusic-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+    '<div><input type="url" id="sinfo-ytmusic" placeholder="' + __('simple.ph_ytmusic', 'YouTube Music URL') + '" value="' + escHtml(musicVal.youtubeMusic || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-ytmusic-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+    '<div><input type="url" id="sinfo-soundcloud" placeholder="' + __('simple.ph_soundcloud', 'SoundCloud URL') + '" value="' + escHtml(musicVal.soundcloud || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-soundcloud-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+    '<div><input type="url" id="sinfo-bandcamp" placeholder="' + __('simple.ph_bandcamp', 'Bandcamp URL') + '" value="' + escHtml(musicVal.bandcamp || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-bandcamp-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
     '</div></div></div></div>';
   setupSimpleDropZone();
   if (simpleFile) restoreUploadFileInfo();
