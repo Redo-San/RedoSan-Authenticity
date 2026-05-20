@@ -268,7 +268,38 @@ var COUNTRY_CODES = [
   { code: 'AF', dial: '+93', name: 'Afghanistan' }
 ];
 
+function getCountryFromTimezone() {
+  try {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!tz) return null;
+    var map = {
+      'Asia/Riyadh': 'SA', 'Asia/Dubai': 'AE', 'Asia/Kuwait': 'KW',
+      'Asia/Qatar': 'QA', 'Asia/Bahrain': 'BH', 'Asia/Muscat': 'OM',
+      'Asia/Baghdad': 'IQ', 'Asia/Amman': 'JO', 'Asia/Beirut': 'LB',
+      'Asia/Damascus': 'SY', 'Asia/Aden': 'YE', 'Asia/Khartoum': 'SD',
+      'Africa/Tripoli': 'LY', 'Africa/Tunis': 'TN', 'Africa/Algiers': 'DZ',
+      'Africa/Casablanca': 'MA', 'Europe/Istanbul': 'TR',
+      'Asia/Hebron': 'PS', 'Asia/Gaza': 'PS',
+      'America/New_York': 'US', 'America/Chicago': 'US',
+      'America/Denver': 'US', 'America/Los_Angeles': 'US',
+      'America/Toronto': 'CA', 'America/Vancouver': 'CA',
+      'Europe/London': 'GB', 'Australia/Sydney': 'AU',
+      'Asia/Kolkata': 'IN', 'Asia/Shanghai': 'CN', 'Asia/Tokyo': 'JP',
+      'Asia/Seoul': 'KR', 'Europe/Paris': 'FR', 'Europe/Berlin': 'DE',
+      'Europe/Rome': 'IT', 'Europe/Madrid': 'ES', 'Europe/Amsterdam': 'NL',
+      'Europe/Moscow': 'RU', 'America/Sao_Paulo': 'BR',
+      'Asia/Karachi': 'PK', 'Asia/Dhaka': 'BD', 'Asia/Jakarta': 'ID',
+      'Asia/Kuala_Lumpur': 'MY', 'Asia/Singapore': 'SG',
+      'Asia/Bangkok': 'TH', 'Asia/Manila': 'PH', 'Africa/Lagos': 'NG',
+      'Africa/Johannesburg': 'ZA', 'Africa/Nairobi': 'KE',
+      'Asia/Tehran': 'IR', 'Asia/Kabul': 'AF'
+    };
+    return map[tz] || null;
+  } catch(e) { return null; }
+}
+
 function getDefaultPhoneCode() {
+  // 1. Try from browser language (e.g. ar-SA → SA)
   try {
     var lang = navigator.language || navigator.userLanguage || '';
     var parts = lang.split('-');
@@ -278,7 +309,25 @@ function getDefaultPhoneCode() {
       }
     }
   } catch(e) {}
-  return COUNTRY_CODES[0]; // default to Saudi Arabia
+  // 2. Try from timezone (e.g. Asia/Riyadh → SA)
+  var tzCountry = getCountryFromTimezone();
+  if (tzCountry) {
+    for (var j = 0; j < COUNTRY_CODES.length; j++) {
+      if (COUNTRY_CODES[j].code === tzCountry) return COUNTRY_CODES[j];
+    }
+  }
+  // 3. Fallback to first entry
+  return COUNTRY_CODES[0];
+}
+
+function validatePhoneInput(el) {
+  var warn = document.getElementById('sinfo-phone-warn');
+  if (/[^\d]/.test(el.value)) {
+    el.value = el.value.replace(/\D/g, '');
+    if (warn) warn.style.display = 'block';
+  } else {
+    if (warn) warn.style.display = 'none';
+  }
 }
 
 function phoneCodeOptionsHtml(selected) {
@@ -315,8 +364,9 @@ function renderUpload(body) {
     '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + ' <span style="color:var(--danger)">*</span></label>' +
     '<div class="simple-phone-group">' +
     '<select id="sinfo-phonecode">' + phoneCodeOptionsHtml(simpleUserInfo.phoneCode) + '</select>' +
-    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. 5x xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="this.value=this.value.replace(/\\D/g,\'\')">' +
-    '</div></div>' +
+    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. 5xx xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="validatePhoneInput(this)">' +
+    '</div>' +
+    '<span id="sinfo-phone-warn" class="simple-field-warn" style="display:none">' + __('simple.phone_digits_only', 'Please enter numbers only') + '</span></div>' +
     '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required></div>' +
     '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +

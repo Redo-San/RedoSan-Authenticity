@@ -737,6 +737,8 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   .simple-phone-group select { width: 100%; }
 }
 
+.simple-field-warn { font-size: 0.75rem; color: var(--danger); margin-top: 2px; display: block; }
+
 /* ── Certificate section (done page) ── */
 .simple-cert-section { text-align: center; border: 2px solid var(--primary); }
 .simple-cert-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
