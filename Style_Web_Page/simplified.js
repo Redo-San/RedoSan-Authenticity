@@ -445,7 +445,7 @@ function phoneCodeOptionsHtml(selected) {
   }
   for (var i = 0; i < COUNTRY_CODES.length; i++) {
     var c = COUNTRY_CODES[i];
-    html += '<option value="' + c.dial + '"' + (c.dial === selected ? ' selected' : '') + '>' + c.code + ' ' + c.dial + ' (' + c.len + ' ' + __('simple.digits', 'digits') + ')</option>';
+    html += '<option value="' + c.dial + '"' + (c.dial === selected ? ' selected' : '') + '>' + c.code + ' ' + c.dial + '</option>';
   }
   return html;
 }
