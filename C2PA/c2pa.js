@@ -594,6 +594,7 @@ window.handleC2paWrite = async function() {
     `;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
+    if (window._c2paSignedUrl) URL.revokeObjectURL(window._c2paSignedUrl);
     window._c2paSignedUrl = url;
     return { ok: true, url: url };
   } catch (err) {

@@ -263,7 +263,9 @@ async function handleWatermarkEmbed() {
   try {
     const result = await watermarkEmbed(type, imgFile, secretFile, pw);
     if (result.ok) {
+      if (window._wmLastBlobUrl) URL.revokeObjectURL(window._wmLastBlobUrl);
       const imgUrl = URL.createObjectURL(result.data);
+      window._wmLastBlobUrl = imgUrl;
       dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">' + __('wm.download_btn') + '</a>';
       setText('wm-output', result.msg);
     } else {

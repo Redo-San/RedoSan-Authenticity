@@ -89,6 +89,10 @@ async function handleOtsCreate() {
 
   var file = fileInput.files[0];
   if (!file) { setText('ts-output', __('shared.select_file', 'Please select a file')); resultDiv.style.display = 'block'; return; }
+  
+  // Validate file before processing
+  if (typeof validateFileInput === 'function' && !(await validateFileInput(fileInput))) { setText('ts-output', __('shared.invalid_file', 'Invalid or dangerous file')); resultDiv.style.display = 'block'; btn.disabled = false; return; }
+  file = fileInput.files[0];
 
   btn.disabled = true; spinner('ts-spinner', true);
   output.innerHTML = ''; dlContainer.innerHTML = '';

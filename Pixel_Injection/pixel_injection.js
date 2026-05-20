@@ -408,6 +408,12 @@ class PixelInjection {
             return;
         }
         
+        // Validate file before processing
+        if (typeof validateFileInput === 'function' && !(await validateFileInput(imageInput))) {
+            this.showMessage('Invalid or dangerous file type', 'error');
+            return;
+        }
+        
         const file = imageInput.files[0];
         const message = messageInput.value;
         const password = passwordInput.value;
@@ -529,6 +535,12 @@ class PixelInjection {
             return;
         }
         
+        // Validate file before processing
+        if (typeof validateFileInput === 'function' && !(await validateFileInput(imageInput))) {
+            this.showMessage('Invalid or dangerous file type', 'error');
+            return;
+        }
+        
         const file = imageInput.files[0];
         const algorithm = algorithmSelect.value === 'auto' ? this.currentAlgorithm : algorithmSelect.value;
         const password = passwordInput.value;
@@ -608,6 +620,12 @@ class PixelInjection {
             return;
         }
         
+        // Validate file before processing
+        if (typeof validateFileInput === 'function' && !(await validateFileInput(imageInput))) {
+            this.showMessage('Invalid or dangerous file type', 'error');
+            return;
+        }
+        
         const file = imageInput.files[0];
         
         try {
@@ -640,10 +658,12 @@ class PixelInjection {
     getAdvancedOptions() {
         const options = {};
         const optionsContainer = document.getElementById('pi-options-container');
+        const reserved = ['__proto__', 'constructor', 'prototype'];
         
         if (optionsContainer) {
             const inputs = optionsContainer.querySelectorAll('input, select');
             inputs.forEach(input => {
+                if (reserved.indexOf(input.id) >= 0) return;
                 if (input.type === 'checkbox') {
                     options[input.id] = input.checked;
                 } else if (input.type === 'range') {
@@ -735,7 +755,7 @@ class PixelInjection {
         
         // If the result is not actually an embedded message but ImageData from embedding
         // we need to try to extract the message differently
-        if (typeof extractedMessage === 'object' && extractedMessage.width && extractedMessage.height) {
+        if (typeof imageData === 'object' && imageData.width && imageData.height) {
             // This looks like an ImageData result from embedding algorithm
             // Try to extract message from LSB
             return this.extractLSBMessage(imageData);

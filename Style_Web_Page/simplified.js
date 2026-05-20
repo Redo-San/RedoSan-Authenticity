@@ -209,6 +209,16 @@ function simpleNext() {
       if (warn) warn.style.display = 'block';
       return;
     }
+    // Validate social/music URLs at submission time
+    var socialFields = ['sinfo-tiktok','sinfo-facebook','sinfo-instagram','sinfo-youtube','sinfo-spotify','sinfo-applemusic','sinfo-ytmusic','sinfo-soundcloud','sinfo-bandcamp'];
+    for (var si = 0; si < socialFields.length; si++) {
+      var fld = document.getElementById(socialFields[si]);
+      if (fld && fld.value && !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(fld.value)) {
+        var w = document.getElementById(socialFields[si] + '-warn');
+        if (w) w.style.display = 'block';
+        return;
+      }
+    }
   }
   // Auto-run steps must complete before advancing
   if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa') && !simpleStepDone) return;
@@ -818,6 +828,18 @@ async function runC2paStep() {
     }
     return;
   }
+  // Validate C2PA social/music links before signing
+  var c2paLinks = document.querySelectorAll('.sc2pa-link');
+  var urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+  for (var ci = 0; ci < c2paLinks.length; ci++) {
+    if (c2paLinks[ci].value && !urlRegex.test(c2paLinks[ci].value)) {
+      var warnId = c2paLinks[ci].id + '-warn';
+      var warn = document.getElementById(warnId);
+      if (warn) warn.style.display = 'block';
+      hideProgress();
+      return;
+    }
+  }
   // 1. Sync content type checkboxes
   var typeCards = document.querySelectorAll('#sc2pa-write-types .c2pa-type-card[data-form-type]');
   typeCards.forEach(function(card) {
@@ -861,8 +883,6 @@ async function runC2paStep() {
     var dt = new DataTransfer();
     dt.items.add(srcFile);
     fileInput.files = dt.files;
-    var evt = new Event('change');
-    fileInput.dispatchEvent(evt);
   }
   var btn = document.getElementById('sc2pa-btn');
   btn.disabled = true; btn.textContent = __('simple.signing');

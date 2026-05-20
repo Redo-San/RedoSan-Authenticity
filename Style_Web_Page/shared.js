@@ -312,8 +312,7 @@ function downloadBlobSimple(blob, fileName) {
 function downloadBlob(blob, name, containerId) {
   const url = URL.createObjectURL(blob);
   const safe = escHtml(name);
-  const attrSafe = name.replace(/"/g, '&quot;');
-  // codeql[js/xss-through-dom] — url is safe, name is HTML-escaped
+  const attrSafe = escHtml(name);
   document.getElementById(containerId).innerHTML += '<a href="' + url + '" download="' + attrSafe + '" class="btn" style="margin:4px">' + __('shared.download') + ' ' + safe + '</a> ';
 }
 
@@ -353,7 +352,7 @@ async function sha256Hex(data) {
 }
 
 function pack32(v) { return new Uint8Array([(v>>24)&255,(v>>16)&255,(v>>8)&255,v&255]); }
-function unpack32(b) { return (b[0]<<24)|(b[1]<<16)|(b[2]<<8)|b[3]; }
+function unpack32(b) { return ((b[0]<<24)>>>0)|(b[1]<<16)|(b[2]<<8)|b[3]; }
 
 // ── Theme Toggle ──
 function setTheme(theme) {
@@ -412,7 +411,6 @@ function initDropZones() {
         input.files = dt.files;
         if (input.files[0] && !(await validateFileInput(input))) { clearInputFiles(input); dz.classList.remove('has-file'); fileDiv.textContent = ''; return; }
         updateFile();
-        input.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
     if (input.files && input.files.length) updateFile();
