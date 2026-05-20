@@ -244,6 +244,8 @@
   "simple.c2pa_youtube": "رابط YouTube",
   "simple.c2pa_music_label": "البث الموسيقي (اختياري)",
   "simple.c2pa_btn": "توقيع C2PA ومتابعة →",
+  "simple.c2pa_failed": "فشل توقيع C2PA. تحقق من وحدة التحكم للحصول على التفاصيل.",
+  "simple.c2pa_no_module": "وحدة C2PA لم يتم تحميلها. تحقق من اتصال الإنترنت وأعد التحميل.",
   "simple.watermark_title": "العلامة المائية الرقمية",
   "simple.watermark_desc": "تضمين علامة مائية غير مرئية لحماية صورتك.",
   "simple.watermark_btn": "تضمين العلامة المائية ومتابعة →",

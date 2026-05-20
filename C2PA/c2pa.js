@@ -593,12 +593,15 @@ window.handleC2paWrite = async function() {
     `;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
+    window._c2paSignedUrl = url;
+    return { ok: true, url: url };
   } catch (err) {
     console.error('C2PA write error:', err);
     // codeql[js/xss-through-dom] — err.message is escaped
     output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(err.message)}<br><small>${__('c2pa.check_console', 'Check console for details.')}</small></div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
+    return { ok: false, error: err.message };
   }
 };
 
