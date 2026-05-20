@@ -91,9 +91,17 @@ function isThreatPath(p) {
   // Block unknown .js files not in whitelist
   if (lower.endsWith('.js') && JS_WHITELIST.indexOf(p) === -1) return true;
   // Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
-  var decoded = decodeURIComponent(lower);
-  if (decoded.includes('://')) return true;
-  if (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decoded) && !decoded.startsWith('//')) return true;
+  // Catches single, double, and triple URL-encoded variants
+  var decoded = decodeURIComponent(p);
+  var decodedLower = decoded.toLowerCase();
+  // Second decode for triple-encoding (e.g., %25252F → %2F)
+  var decoded2;
+  try { decoded2 = decodeURIComponent(decodedLower); } catch(e) { decoded2 = ''; }
+  if (decodedLower.includes('://') || decoded2.includes('://')) return true;
+  if (decodedLower.includes('%3a%2f%2f') || decoded2.includes('%3a%2f%2f')) return true;
+  if (decodedLower.includes('%2f%2f') || decoded2.includes('%2f%2f')) return true;
+  if (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decodedLower) && !decodedLower.startsWith('//')) return true;
+  if (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decoded2) && !decoded2.startsWith('//')) return true;
   return false;
 }
 

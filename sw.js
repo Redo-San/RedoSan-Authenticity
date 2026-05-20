@@ -58,9 +58,17 @@ self.addEventListener('fetch', function(event) {
   var isUnknownJs = lower.endsWith('.js') && JS_WHITELIST.indexOf(path) === -1;
 
   // 3. Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
-  var decodedLower = decodeURIComponent(lower);
-  var hasEmbeddedUrl = decodedLower.includes('://') ||
-    (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decodedLower) && !decodedLower.startsWith('//'));
+  // Catches single, double, and triple URL-encoded variants
+  var decoded = decodeURIComponent(path);  // decode before toLowerCase to preserve hex case
+  var decodedLower = decoded.toLowerCase();
+  // Second decode for triple-encoding (e.g., %25252F → %2F)
+  var decoded2;
+  try { decoded2 = decodeURIComponent(decodedLower); } catch(e) { decoded2 = ''; }
+  var hasEmbeddedUrl = decodedLower.includes('://') || decoded2.includes('://') ||
+    decodedLower.includes('%3a%2f%2f') || decoded2.includes('%3a%2f%2f') ||
+    decodedLower.includes('%2f%2f') || decoded2.includes('%2f%2f') ||
+    (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decodedLower) && !decodedLower.startsWith('//')) ||
+    (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decoded2) && !decoded2.startsWith('//'));
 
   if (isDangerous || isUnknownJs || hasEmbeddedUrl) {
     event.respondWith(
