@@ -45,6 +45,18 @@
 </nav>
 
 <main class="container" id="main-content">
+  <div class="error-page" id="staticFallback">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Page Not Found</h1>
+    <p class="error-desc">The page you're looking for doesn't exist or has been moved.</p>
+    <div class="error-links">
+      <a href="/RedoSan-Authenticity/">Home</a>
+      <a href="/RedoSan-Authenticity/#watermark">Watermark</a>
+      <a href="/RedoSan-Authenticity/#fingerprint">Fingerprint</a>
+      <a href="/RedoSan-Authenticity/#metadata">Metadata</a>
+      <a href="/RedoSan-Authenticity/#timestamp">Timestamp</a>
+    </div>
+  </div>
 </main>
 
 <footer>
@@ -121,6 +133,8 @@ function showThreatPage(path) {
 }
 
 function show404Page() {
+  var fb = document.getElementById('staticFallback');
+  if (fb) fb.style.display = 'none';
   document.getElementById('main-content').innerHTML =
     '<div class="error-page">' +
     '<div class="error-code">404</div>' +

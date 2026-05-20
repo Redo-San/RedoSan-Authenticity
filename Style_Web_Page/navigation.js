@@ -22,6 +22,25 @@ document.querySelectorAll('.card[data-page]').forEach(c => {
   c.addEventListener('click', e => { e.preventDefault(); showPage(c.dataset.page); });
 });
 
+var PAGE_TITLES = {
+  home: 'RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool',
+  watermark: 'Digital Watermark — RedoSan Authenticity',
+  'pixel-injection': 'Pixel Injection — RedoSan Authenticity',
+  fingerprint: 'Fingerprint &amp; Image Hashing — RedoSan Authenticity',
+  metadata: 'Metadata &amp; EXIF Reader — RedoSan Authenticity',
+  timestamp: 'Timestamp &amp; OTS Verification — RedoSan Authenticity',
+  c2pa: 'C2PA Content Provenance — RedoSan Authenticity'
+};
+var PAGE_DESCS = {
+  home: 'Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded.',
+  watermark: 'Embed and extract digital watermarks in images using LSB, DCT, DWT, and neural-style algorithms. Free online tool.',
+  'pixel-injection': 'Advanced pixel injection for steganography with 20+ algorithms including enhanced LSB, DCT, and DWT. Free online tool.',
+  fingerprint: 'Calculate cryptographic fingerprints (SHA-256, BLAKE3, MD5) and perceptual image hashes. Free online tool.',
+  metadata: 'Read EXIF metadata, dimensions, format, and color mode from images. Free online tool.',
+  timestamp: 'Create SHA-256 hashes and verify with OpenTimestamps. Free online tool.',
+  c2pa: 'Read and write C2PA content provenance metadata for images. Free online tool.'
+};
+
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
@@ -29,6 +48,11 @@ function showPage(name) {
   if (page) page.classList.add('active');
   const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
   if (nav) nav.classList.add('active');
+  if (name && PAGE_TITLES[name]) { document.title = PAGE_TITLES[name]; }
+  if (name && PAGE_DESCS[name]) {
+    var m = document.querySelector('meta[name="description"]');
+    if (m) m.setAttribute('content', PAGE_DESCS[name]);
+  }
   if (name === 'timestamp') { if (typeof switchOtsTab === 'function') switchOtsTab('create'); }
   var isProfessional = document.getElementById('mainNav') && document.getElementById('mainNav').style.display !== 'none';
   if (isProfessional) {
