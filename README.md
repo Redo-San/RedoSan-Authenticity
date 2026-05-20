@@ -4,7 +4,8 @@
   <img src="https://img.shields.io/github/downloads/Redo-San/RedoSan-Authenticity/total?style=flat-square&label=Downloads&color=orange" alt="Downloads">
   <img src="https://img.shields.io/github/deployments/Redo-San/RedoSan-Authenticity/github-pages?style=flat-square&label=Pages&color=6C5CE7" alt="GitHub Pages">
   <a href="https://redo-san.github.io/RedoSan-Authenticity/"><img src="https://img.shields.io/badge/Try%20Online-GitHub%20Pages-6C5CE7?style=flat-square&logo=github&logoColor=white" alt="Try Online"></a>
-  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square&logo=node.js" alt="Node">
+  <img src="https://img.shields.io/github/actions/workflow/status/Redo-San/RedoSan-Authenticity/ci.yml?branch=beta-release&style=flat-square&label=CI&logo=github" alt="CI">
+  <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square&logo=node.js" alt="Node">
   <img src="https://img.shields.io/badge/100%25-Client%20Side-FAB972?style=flat-square" alt="Client Side">
 </p>
 
@@ -30,7 +31,7 @@
 
 | Feature | Description |
 |---------|-------------|
-| **Dual Mode UI** | Simplified step wizard for beginners + Professional full-tool interface with sidebar navigation |
+| **Dual Mode UI** | Simplified step wizard with smart AI/rephoto branching + Professional full-tool interface with sidebar navigation |
 | **Watermark** | 9 core algorithms (LSB, DCT, Neural SS, Latent DCT, Zero-bit, Multi-bit, Forensic, Fragile, Imatag) + 4 perceptual hash detection modes |
 | **Pixel Injection** | 23 advanced algorithms across spatial, frequency, deep learning, and professional domains |
 | **C2PA Provenance** | Sign JPEG/PNG with C2PA metadata (ECDSA P-256), read and verify manifests |
@@ -38,6 +39,8 @@
 | **Metadata** | Full EXIF reader, image dimensions, format detection, audio/video metadata |
 | **Timestamp** | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade |
 | **CLI** | Cross-platform Node.js CLI with interactive menu and direct command mode |
+| **Security Threat Blocker** | Service Worker + 404 page blocks dangerous file extensions and unknown `.js` scripts |
+| **Digital Passport** | Generate PDF, DOCX, or EPUB certificates with QR code verification |
 
 ---
 
@@ -47,10 +50,10 @@
 
 Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.github.io/RedoSan-Authenticity/)** in any modern browser. Choose your mode on startup:
 
-- **Simplified Mode** — Upload a file and follow the step wizard (upload → fingerprint → timestamp → watermark → pixel injection → done)
+- **Simplified Mode** — Upload a file and follow the smart step wizard: upload → type selection (photo / AI) → fingerprint → timestamp → watermark → pixel injection → C2PA (AI only) → done
 - **Professional Mode** — Full sidebar access to all tools with granular parameter control
 
-### 💻 CLI (Node.js 18+)
+### 💻 CLI (Node.js 20+)
 
 #### 🖱️ Interactive Menu (No Commands Needed)
 
@@ -200,6 +203,9 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 │  │  │ C2PA     │ │Timestamp │ │ Metadata / Other │  │    │
 │  │  │(APP11)   │ │(OTS)     │ │                  │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
+│  ├──────────────────────────────────────────────────┤    │
+│  │         Security Threat Blocker (SW + 404)        │    │
+│  │   Blocks dangerous extensions + unknown .js files │    │
 │  └──────────────────────────────────────────────────┘    │
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐    │
@@ -212,9 +218,10 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 ### Key Design Decisions
 
 - **100% client-side** — All crypto, hashing, and embedding happens in-browser or via CLI; no data ever leaves your machine
+- **Dual language UI** — Full Arabic and English interface with real-time switching via `i18n` system; `data-i18n` attributes for static text, `__(key, fallback)` for dynamic content
 - **`vm.runInThisContext`** over `require()` — Browser JS files use top-level `function`/`var` declarations; Node.js loads them via `vm.runInThisContext(src, { filename })` with polyfilled browser APIs
 - **PBKDF2 password derivation** — 100k iterations via `crypto.pbkdf2Sync` for watermark payload encryption
-- **C2PA JPEG APP11 / PNG chunk** — C2PA metadata embedded in JPEG APP11 marker or PNG `c2pa` chunk before IDAT; verified with ECDSA P-256
+- **C2PA JPEG APP11 / PNG chunk** — C2PA metadata embedded in JPEG APP11 marker or PNG `c2pa` chunk before IDAT; verified with ECDSA P-256. In Simplified Mode, C2PA signing is the final step wrapping the watermarked + pixel-injected output.
 - **OpenTimestamps** — Merkle tree proof creation and verification via Bitcoin blockchain calendar aggregation
 - **Coefficient pair comparison for DCT** — `c[5,2]` vs `c[4,3]` comparison (K=15) replaces LSB-in-DCT for PNG-safe robust watermarking
 - **×3 redundancy with majority voting** — Each message bit repeated 3×; decoder corrects 1 bit error per triplet (98.6% accuracy)
@@ -230,6 +237,29 @@ Before processing any file, the CLI applies 6-layer validation:
 6. **Size limits** — Enforces reasonable file size bounds
 
 Bypass with `--allow-dangerous` for testing trusted files.
+
+---
+
+## 🛡️ Security Threat Blocker
+
+The web app includes a two-layer security system:
+
+1. **Service Worker** (`sw.js`) — Intercepts all HTTP requests; blocks file downloads with dangerous extensions (`.exe`, `.bat`, `.ps1`, `.py`, `.jar`, etc.) and rejects unknown `.js` files not in the whitelist
+2. **Enhanced 404 page** (`404.html`) — Same threat detection as the Service Worker, providing fallback protection when the SW is inactive
+
+Both maintain an identical JS whitelist (20 known files) — any script not in the whitelist returns a 403 threat warning page.
+
+---
+
+## 🧪 Testing
+
+The CLI includes a test suite using `node:test` (zero external dependencies):
+
+```bash
+npm test
+```
+
+65 tests across 6 files covering fingerprint (8), metadata (5), watermark (4), pixel-injection (5), C2PA (3), and utilities (40). Runs with `--test-concurrency=1` for resource-heavy operations. CI runs on Node.js 20 and 22 via GitHub Actions with `actions/checkout@v6` and `actions/setup-node@v6`.
 
 ---
 
@@ -249,7 +279,9 @@ Bypass with `--allow-dangerous` for testing trusted files.
 |-----------|-----------|
 | **UI** | Vanilla HTML/CSS/JS (no frameworks) |
 | **Icons** | Font Awesome 5 |
-| **CLI** | Node.js 18+, Commander.js |
+| **CLI** | Node.js 20+, Commander.js |
+| **Testing** | `node:test` (65 tests, zero dependencies) |
+| **CI** | GitHub Actions (Node 20/22 matrix) |
 | **PDF Export** | jsPDF |
 | **DOCX Export** | docx |
 | **QR Codes** | QRious |
