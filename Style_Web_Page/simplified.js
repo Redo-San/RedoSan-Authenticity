@@ -410,38 +410,112 @@ function chooseAi(isAI) {
 function renderC2paStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' + __('simple.c2pa_title') + '</h2><p>' + __('simple.c2pa_desc') + '</p>' +
-    '<div class="form-group"><label>' + __('simple.c2pa_content_label') + '</label>' +
-    '<div class="c2pa-type-card" style="margin-bottom:8px">' +
-    '<div class="c2pa-type-header"><input type="checkbox" id="sc2pa-ai" checked disabled>' +
-    '<label for="sc2pa-ai">' + __('simple.c2pa_ai_label') + '</label></div></div></div>' +
-    '<div class="form-group"><label>' + __('simple.c2pa_social_label') + '</label>' +
-    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_instagram') + '" id="sc2pa-instagram">' +
-    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_twitter') + '" id="sc2pa-twitter">' +
-    '<input class="c2pa-link" placeholder="' + __('simple.c2pa_website') + '" id="sc2pa-website"></div>' +
+    '<div id="sc2pa-content" style="text-align:left">' +
+    // Content type cards
+    '<div class="form-group"><span>' + __('c2pa.content_type_label') + '</span>' +
+    '<div id="sc2pa-write-types">' +
+    '<div class="c2pa-type-card" data-form-type="create">' +
+      '<label class="c2pa-type-header" for="sc2pa-create">' +
+        '<input type="checkbox" id="sc2pa-create" value="create">' +
+        '<span class="c2pa-type-name">' + __('c2pa.type_digital') + '</span></label>' +
+      '<div class="c2pa-type-fields">' +
+        '<input type="text" class="sc2pa-field" data-field="title" data-type="create" placeholder="' + __('c2pa.title_label') + '">' +
+        '<input type="text" class="sc2pa-field" data-field="author" data-type="create" placeholder="' + __('c2pa.author_label') + '">' +
+      '</div></div>' +
+    '<div class="c2pa-type-card" data-form-type="edit">' +
+      '<label class="c2pa-type-header" for="sc2pa-edit">' +
+        '<input type="checkbox" id="sc2pa-edit" value="edit">' +
+        '<span class="c2pa-type-name">' + __('c2pa.type_edited') + '</span></label>' +
+      '<div class="c2pa-type-fields">' +
+        '<input type="text" class="sc2pa-field" data-field="title" data-type="edit" placeholder="' + __('c2pa.title_label') + '">' +
+        '<input type="text" class="sc2pa-field" data-field="author" data-type="edit" placeholder="' + __('c2pa.author_label') + '">' +
+      '</div></div>' +
+    '<div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">' +
+      '<label class="c2pa-type-header" for="sc2pa-ai">' +
+        '<input type="checkbox" id="sc2pa-ai" value="ai" checked>' +
+        '<span class="c2pa-type-name">' + __('c2pa.type_ai') + '</span></label>' +
+      '<div class="c2pa-type-fields">' +
+        '<input type="text" class="sc2pa-field" data-field="title" data-type="ai" placeholder="' + __('c2pa.title_label') + '">' +
+        '<input type="text" class="sc2pa-field" data-field="author" data-type="ai" placeholder="' + __('c2pa.author_label') + '">' +
+      '</div></div>' +
+    '<div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">' +
+      '<label class="c2pa-type-header" for="sc2pa-capture">' +
+        '<input type="checkbox" id="sc2pa-capture" value="capture">' +
+        '<span class="c2pa-type-name">' + __('c2pa.type_capture') + '</span></label>' +
+      '<div class="c2pa-type-fields">' +
+        '<input type="text" class="sc2pa-field" data-field="title" data-type="capture" placeholder="' + __('c2pa.title_label') + '">' +
+        '<input type="text" class="sc2pa-field" data-field="author" data-type="capture" placeholder="' + __('c2pa.author_label') + '">' +
+      '</div></div>' +
+    '<div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">' +
+      '<label class="c2pa-type-header" for="sc2pa-composite">' +
+        '<input type="checkbox" id="sc2pa-composite" value="composite">' +
+        '<span class="c2pa-type-name">' + __('c2pa.type_composite') + '</span></label>' +
+      '<div class="c2pa-type-fields">' +
+        '<input type="text" class="sc2pa-field" data-field="title" data-type="composite" placeholder="' + __('c2pa.title_label') + '">' +
+        '<input type="text" class="sc2pa-field" data-field="author" data-type="composite" placeholder="' + __('c2pa.author_label') + '">' +
+      '</div></div>' +
+    '<div class="c2pa-type-card dnt-card">' +
+      '<label class="c2pa-type-header" for="sc2pa-dnt">' +
+        '<input type="checkbox" id="sc2pa-dnt">' +
+        '<span class="c2pa-type-name">' + __('c2pa.type_dnt') + '</span></label></div>' +
+    '</div></div>' +
+    // Social links
+    '<div class="form-group"><span>' + __('simple.c2pa_social_label') + '</span>' +
+    '<div class="c2pa-links-grid">' +
+      '<input type="url" class="sc2pa-link" data-platform="instagram" placeholder="' + __('simple.c2pa_instagram', 'Instagram URL') + '" id="sc2pa-link-instagram">' +
+      '<input type="url" class="sc2pa-link" data-platform="twitter" placeholder="' + __('simple.c2pa_twitter', 'Twitter / X URL') + '" id="sc2pa-link-twitter">' +
+      '<input type="url" class="sc2pa-link" data-platform="facebook" placeholder="' + __('simple.c2pa_facebook', 'Facebook URL') + '" id="sc2pa-link-facebook">' +
+      '<input type="url" class="sc2pa-link" data-platform="tiktok" placeholder="' + __('simple.c2pa_tiktok', 'TikTok URL') + '" id="sc2pa-link-tiktok">' +
+      '<input type="url" class="sc2pa-link" data-platform="youtube" placeholder="' + __('simple.c2pa_youtube', 'YouTube URL') + '" id="sc2pa-link-youtube">' +
+      '<input type="url" class="sc2pa-link" data-platform="website" placeholder="Website URL" id="sc2pa-link-website">' +
+    '</div></div>' +
+    // Music links
+    '<div class="form-group"><span>' + __('simple.c2pa_music_label', 'Music Streaming (optional)') + '</span>' +
+    '<div class="c2pa-links-grid">' +
+      '<input type="url" class="sc2pa-link" data-platform="spotify" placeholder="Spotify URL" id="sc2pa-link-spotify">' +
+      '<input type="url" class="sc2pa-link" data-platform="applemusic" placeholder="Apple Music URL" id="sc2pa-link-applemusic">' +
+      '<input type="url" class="sc2pa-link" data-platform="soundcloud" placeholder="SoundCloud URL" id="sc2pa-link-soundcloud">' +
+      '<input type="url" class="sc2pa-link" data-platform="bandcamp" placeholder="Bandcamp URL" id="sc2pa-link-bandcamp">' +
+    '</div></div>' +
     '<button class="btn" onclick="runC2paStep()" id="sc2pa-btn">' + __('simple.c2pa_btn') + '</button>' +
     '<div id="sc2pa-result"></div></div>';
 }
 
 async function runC2paStep() {
   if (!window.handleC2paWrite) return;
-  var aiCheckbox = document.querySelector('#c2pa-write input[value="c2pa.ai_generated"]');
-  if (aiCheckbox) aiCheckbox.checked = true;
-  var insta = document.getElementById('sc2pa-instagram');
-  var twitter = document.getElementById('sc2pa-twitter');
-  var website = document.getElementById('sc2pa-website');
-  var realInsta = document.querySelector('.c2pa-link[placeholder*="Instagram"]');
-  var realTwitter = document.querySelector('.c2pa-link[placeholder*="Twitter"]');
-  var realWebsite = document.querySelector('.c2pa-link[placeholder*="Website"]');
-  if (realInsta && insta.value) realInsta.value = insta.value;
-  if (realTwitter && twitter.value) realTwitter.value = twitter.value;
-  if (realWebsite && website.value) realWebsite.value = website.value;
-  // Use the PI output as the image to sign (or watermark if PI not done)
-  var srcBlob, fname;
+  // 1. Sync content type checkboxes
+  var typeCards = document.querySelectorAll('#sc2pa-write-types .c2pa-type-card[data-form-type]');
+  typeCards.forEach(function(card) {
+    var ft = card.dataset.formType;
+    var simpleCb = card.querySelector('input[type="checkbox"]');
+    var profCb = document.getElementById('c2pa-write-' + ft);
+    if (profCb && simpleCb) profCb.checked = simpleCb.checked;
+  });
+  // DNT checkbox (no data-form-type)
+  var simpleDnt = document.getElementById('sc2pa-dnt');
+  var profDnt = document.getElementById('c2pa-write-dnt');
+  if (profDnt && simpleDnt) profDnt.checked = simpleDnt.checked;
+  // 2. Sync content type fields (title/author)
+  var simpleFields = document.querySelectorAll('.sc2pa-field');
+  simpleFields.forEach(function(f) {
+    var type = f.dataset.type;
+    var fname = f.dataset.field;
+    var profF = document.getElementById('c2pa-field-' + type + '-' + fname);
+    if (profF) profF.value = f.value;
+  });
+  // 3. Sync social & music links
+  var simpleLinks = document.querySelectorAll('.sc2pa-link');
+  simpleLinks.forEach(function(link) {
+    var platform = link.dataset.platform;
+    var profLink = document.getElementById('c2pa-link-' + platform);
+    if (profLink) profLink.value = link.value;
+  });
+  // 4. Use the PI output as the image to sign (or watermark if PI not done)
   if (simpleResults.piFinalUrl && !simpleResults.piFinalBlob) {
     simpleResults.piFinalBlob = await fetch(simpleResults.piFinalUrl).then(function(r) { return r.blob(); });
   }
-  srcBlob = simpleResults.piFinalBlob || simpleResults.watermarkBlob;
-  fname = simpleFile ? simpleFile.name : 'image.png';
+  var srcBlob = simpleResults.piFinalBlob || simpleResults.watermarkBlob;
+  var fname = simpleFile ? simpleFile.name : 'image.png';
   var srcFile = srcBlob ? new File([srcBlob], fname, { type: 'image/png' }) : simpleFile;
   var fileInput = document.getElementById('c2pa-write-file');
   if (fileInput && srcFile) {
