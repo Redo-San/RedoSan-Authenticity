@@ -482,7 +482,7 @@ function renderUpload(body) {
     '<div class="simple-info-section" style="margin-top:20px;text-align:left">' +
     '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information') + '</h3>' +
     '<div class="form-group"><label>' + __('simple.info_name', 'Full Name') + ' <span style="color:var(--danger)">*</span></label>' +
-    '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' + __('simple.info_name_ph', 'e.g. John Doe') + '" value="' + escHtml(simpleUserInfo.name) + '" required></div>' +
+    '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' + __('simple.info_name_ph', 'e.g. John Doe') + '" value="' + escHtml(simpleUserInfo.name) + '" required maxlength="25"></div>' +
     '<div class="form-group"><label>' + __('simple.info_email', 'Email') + ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' + __('simple.info_email_ph', 'e.g. john@example.com') + '" value="' + escHtml(simpleUserInfo.email) + '" required maxlength="20" oninput="validateEmailInput(this)">' +
     '<span id="sinfo-email-warn" class="simple-field-warn" style="display:none">' + __('simple.email_invalid', 'Please enter a valid email address') + '</span></div>' +
