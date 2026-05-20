@@ -482,7 +482,15 @@ function renderC2paStep(body) {
 }
 
 async function runC2paStep() {
-  if (!window.handleC2paWrite) return;
+  var btn = document.getElementById('sc2pa-btn');
+  var statusEl = document.getElementById('sc2pa-result');
+  if (!window.handleC2paWrite) {
+    if (statusEl) {
+      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
+        __('simple.c2pa_no_module', 'C2PA module not loaded. Check internet connection and refresh.') + '</div>';
+    }
+    return;
+  }
   // 1. Sync content type checkboxes
   var typeCards = document.querySelectorAll('#sc2pa-write-types .c2pa-type-card[data-form-type]');
   typeCards.forEach(function(card) {
@@ -512,7 +520,11 @@ async function runC2paStep() {
   });
   // 4. Use the PI output as the image to sign (or watermark if PI not done)
   if (simpleResults.piFinalUrl && !simpleResults.piFinalBlob) {
-    simpleResults.piFinalBlob = await fetch(simpleResults.piFinalUrl).then(function(r) { return r.blob(); });
+    try {
+      simpleResults.piFinalBlob = await fetch(simpleResults.piFinalUrl).then(function(r) { return r.blob(); });
+    } catch (e) {
+      // blob URL expired, fall back to watermark blob
+    }
   }
   var srcBlob = simpleResults.piFinalBlob || simpleResults.watermarkBlob;
   var fname = simpleFile ? simpleFile.name : 'image.png';
@@ -527,22 +539,26 @@ async function runC2paStep() {
   }
   var btn = document.getElementById('sc2pa-btn');
   btn.disabled = true; btn.textContent = __('simple.signing');
-  handleC2paWrite().then(function() {
-    btn.textContent = __('simple.signed');
-    simpleResults.c2pa = true;
-    // Capture the C2PA signed blob URL from the download link
-    var c2paOutput = document.getElementById('c2pa-write-output');
-    if (c2paOutput) {
-      var dlLink = c2paOutput.querySelector('a[download]');
-      if (dlLink) simpleResults.c2paUrl = dlLink.href;
+  var statusEl = document.getElementById('sc2pa-result');
+  handleC2paWrite().then(function(result) {
+    if (result && result.ok) {
+      btn.textContent = __('simple.signed');
+      simpleResults.c2pa = true;
+      simpleResults.c2paUrl = window._c2paSignedUrl || '';
+      simpleStepDone = true;
+      var nextBtn = document.getElementById('simpleNextBtn');
+      nextBtn.disabled = false;
+      nextBtn.style.display = '';
+      if (statusEl) statusEl.innerHTML = '';
+    } else {
+      var errMsg = (result && result.error) || __('simple.c2pa_failed', 'C2PA signing failed');
+      btn.textContent = __('simple.failed_retry');
+      btn.disabled = false;
+      if (statusEl) {
+        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
+          escapeHtml(errMsg) + '</div>';
+      }
     }
-    simpleStepDone = true;
-    var nextBtn = document.getElementById('simpleNextBtn');
-    nextBtn.disabled = false;
-    nextBtn.style.display = '';
-  }).catch(function() {
-    btn.textContent = __('simple.failed_retry');
-    btn.disabled = false;
   });
 }
 

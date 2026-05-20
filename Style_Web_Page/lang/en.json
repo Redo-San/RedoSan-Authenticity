@@ -247,6 +247,8 @@
   "simple.c2pa_youtube": "YouTube URL",
   "simple.c2pa_music_label": "Music Streaming (optional)",
   "simple.c2pa_btn": "Sign C2PA & Continue →",
+  "simple.c2pa_failed": "C2PA signing failed. Check console for details.",
+  "simple.c2pa_no_module": "C2PA module not loaded. Check internet connection and refresh.",
   "simple.watermark_title": "Digital Watermark",
   "simple.watermark_desc": "Embed an invisible watermark to protect your image.",
   "simple.watermark_btn": "Embed Watermark & Continue →",
