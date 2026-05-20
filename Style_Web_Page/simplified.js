@@ -445,6 +445,48 @@ function prefixHttps(el) {
   el.setSelectionRange(el.value.length, el.value.length);
 }
 
+// ── Progress bar ──
+function showProgress() {
+  var el = document.getElementById('simpleProgressBar');
+  if (el) el.style.display = '';
+}
+function hideProgress() {
+  var el = document.getElementById('simpleProgressBar');
+  if (el) { el.style.display = 'none'; }
+}
+
+// ── Clear data ──
+function clearSimpleData() {
+  if (!confirm(__('simple.clear_confirm', 'Clear all data? Your current progress will be lost.'))) return;
+  localStorage.removeItem('simpleUserInfo');
+  localStorage.removeItem('simpleFileData');
+  if (simpleResults) {
+    Object.keys(simpleResults).forEach(function(k) {
+      if (k.indexOf('Url') > 0) { try { URL.revokeObjectURL(simpleResults[k]); } catch(e) {} }
+    });
+  }
+  initSimplified();
+}
+
+// ── Lightbox ──
+function openLightbox(src) {
+  var img = document.getElementById('lightboxImg');
+  var box = document.getElementById('lightbox');
+  if (img && box) { img.src = src; box.style.display = ''; }
+}
+function closeLightbox() {
+  var box = document.getElementById('lightbox');
+  if (box) box.style.display = 'none';
+}
+
+// ── C2PA link validation ──
+function validateC2paLink(el) {
+  var warn = document.getElementById(el.id + '-warn');
+  if (!el.value) { if (warn) warn.style.display = 'none'; return; }
+  var ok = /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(el.value);
+  if (warn) warn.style.display = ok ? 'none' : 'block';
+}
+
 function validateUrlInput(el) {
   var warn = document.getElementById('sinfo-website-warn');
   if (!el.value) { if (warn) warn.style.display = 'none'; return; }
@@ -745,26 +787,27 @@ function renderC2paStep(body) {
     // Social links
     '<div class="form-group"><span>' + __('simple.c2pa_social_label') + '</span>' +
     '<div class="c2pa-links-grid">' +
-      '<input type="url" class="sc2pa-link" data-platform="instagram" placeholder="' + __('simple.c2pa_instagram', 'Instagram URL') + '" id="sc2pa-link-instagram">' +
-      '<input type="url" class="sc2pa-link" data-platform="twitter" placeholder="' + __('simple.c2pa_twitter', 'Twitter / X URL') + '" id="sc2pa-link-twitter">' +
-      '<input type="url" class="sc2pa-link" data-platform="facebook" placeholder="' + __('simple.c2pa_facebook', 'Facebook URL') + '" id="sc2pa-link-facebook">' +
-      '<input type="url" class="sc2pa-link" data-platform="tiktok" placeholder="' + __('simple.c2pa_tiktok', 'TikTok URL') + '" id="sc2pa-link-tiktok">' +
-      '<input type="url" class="sc2pa-link" data-platform="youtube" placeholder="' + __('simple.c2pa_youtube', 'YouTube URL') + '" id="sc2pa-link-youtube">' +
-      '<input type="url" class="sc2pa-link" data-platform="website" placeholder="' + __('simple.c2pa_website', 'Website URL') + '" id="sc2pa-link-website">' +
+      '<div><input type="url" class="sc2pa-link" data-platform="instagram" placeholder="' + __('simple.c2pa_instagram', 'Instagram URL') + '" id="sc2pa-link-instagram" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-instagram-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="twitter" placeholder="' + __('simple.c2pa_twitter', 'Twitter / X URL') + '" id="sc2pa-link-twitter" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-twitter-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="facebook" placeholder="' + __('simple.c2pa_facebook', 'Facebook URL') + '" id="sc2pa-link-facebook" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-facebook-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="tiktok" placeholder="' + __('simple.c2pa_tiktok', 'TikTok URL') + '" id="sc2pa-link-tiktok" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-tiktok-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="youtube" placeholder="' + __('simple.c2pa_youtube', 'YouTube URL') + '" id="sc2pa-link-youtube" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-youtube-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="website" placeholder="' + __('simple.c2pa_website', 'Website URL') + '" id="sc2pa-link-website" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-website-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
     '</div></div>' +
     // Music links
     '<div class="form-group"><span>' + __('simple.c2pa_music_label', 'Music Streaming (optional)') + '</span>' +
     '<div class="c2pa-links-grid">' +
-      '<input type="url" class="sc2pa-link" data-platform="spotify" placeholder="' + __('simple.c2pa_spotify', 'Spotify URL') + '" id="sc2pa-link-spotify">' +
-      '<input type="url" class="sc2pa-link" data-platform="applemusic" placeholder="' + __('simple.c2pa_applemusic', 'Apple Music URL') + '" id="sc2pa-link-applemusic">' +
-      '<input type="url" class="sc2pa-link" data-platform="soundcloud" placeholder="' + __('simple.c2pa_soundcloud', 'SoundCloud URL') + '" id="sc2pa-link-soundcloud">' +
-      '<input type="url" class="sc2pa-link" data-platform="bandcamp" placeholder="' + __('simple.c2pa_bandcamp', 'Bandcamp URL') + '" id="sc2pa-link-bandcamp">' +
+      '<div><input type="url" class="sc2pa-link" data-platform="spotify" placeholder="' + __('simple.c2pa_spotify', 'Spotify URL') + '" id="sc2pa-link-spotify" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-spotify-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="applemusic" placeholder="' + __('simple.c2pa_applemusic', 'Apple Music URL') + '" id="sc2pa-link-applemusic" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-applemusic-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="soundcloud" placeholder="' + __('simple.c2pa_soundcloud', 'SoundCloud URL') + '" id="sc2pa-link-soundcloud" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-soundcloud-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
+      '<div><input type="url" class="sc2pa-link" data-platform="bandcamp" placeholder="' + __('simple.c2pa_bandcamp', 'Bandcamp URL') + '" id="sc2pa-link-bandcamp" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-bandcamp-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
     '</div></div>' +
     '<button class="btn" onclick="runC2paStep()" id="sc2pa-btn">' + __('simple.c2pa_btn') + '</button>' +
     '<div id="sc2pa-result"></div></div>';
 }
 
 async function runC2paStep() {
+  showProgress();
   var btn = document.getElementById('sc2pa-btn');
   var statusEl = document.getElementById('sc2pa-result');
   if (!window.handleC2paWrite) {
@@ -869,6 +912,7 @@ function renderWatermarkStep(body) {
 }
 
 function runWatermarkStep() {
+  showProgress();
   var algo = parseInt(document.getElementById('swm-type').value);
   var pass = document.getElementById('swm-password').value || '';
   var statusEl = document.getElementById('swm-status');
@@ -899,63 +943,20 @@ function runWatermarkStep() {
         statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
           __('simple.wm_done', '✅ Watermark embedded successfully using fingerprint hash.') + '</div>';
       }
+      hideProgress();
     } else {
+      hideProgress();
       if (btn) { btn.disabled = false; btn.textContent = __('simple.watermark_btn', 'Embed Watermark'); }
       if (statusEl) {
         statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
           escapeHtml(result.error || __('simple.embed_failed')) + '</div>';
       }
     }
-  }).catch(function(e) {
-    if (btn) { btn.disabled = false; btn.textContent = __('simple.watermark_btn', 'Embed Watermark'); }
-    if (statusEl) {
-      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-        escapeHtml(e.message) + '</div>';
-    }
   });
 }
 
-function renderPixelInjectStep(body) {
-  var usingName = simpleFile ? simpleFile.name : '';
-  body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.pi_title') + '</h2><p>' + __('simple.pi_desc') + '</p>' +
-    '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">' +
-    __('simple.using_file').replace('{name}', escapeHtml(usingName)) +
-    (simpleResults.watermarkBlob ? ' (' + __('simple.watermarked_short', 'watermarked') + ')' : '') + '</p>' +
-    '<div class="card-form" style="text-align:left">' +
-    '<div class="form-group"><label>' + __('simple.pi_cat_label', 'Category') + '</label>' +
-    '<select id="spi-category"></select></div>' +
-    '<div class="form-group"><label>' + __('simple.pi_algo_label', 'Algorithm') + '</label>' +
-    '<select id="spi-algorithm"></select></div>' +
-    '<div class="form-group" id="spi-password-group"><label>Password</label>' +
-    '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
-    '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.pi_ts_payload', '⏱️ The timestamp proof will be injected as the secret message.') + '</p>' +
-    '</div>' +
-    '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' + __('simple.pi_btn', 'Inject Message') + '</button>' +
-    '<div id="spi-status"></div></div>';
-
-  // Set category + algorithm options for simplified PI (frequency-based only — strongest)
-  var dstCat = document.getElementById('spi-category');
-  var dstAlgo = document.getElementById('spi-algorithm');
-  var srcCat = document.getElementById('pi-category');
-  var srcAlgo = document.getElementById('pi-algorithm');
-  if (dstCat && dstAlgo) {
-    dstCat.innerHTML = '<option value="frequency">Frequency</option>';
-    dstCat.value = 'frequency';
-    dstAlgo.innerHTML =
-      '<option value="dct">Robust DCT</option>' +
-      '<option value="dwt">Multi-resolution DWT</option>' +
-      '<option value="dft">Rotation-resistant DFT</option>' +
-      '<option value="hybrid_dct_dwt">Hybrid DCT-DWT</option>';
-    dstAlgo.value = 'dct';
-  }
-  
-  var spiGroup = document.getElementById('spi-password-group');
-  if (spiGroup) spiGroup.style.display = 'none';
-}
-
 function runPixelInjectStep() {
+  showProgress();
   var cat = document.getElementById('spi-category').value;
   var pass = document.getElementById('spi-password').value;
   var statusEl = document.getElementById('spi-status');
@@ -1017,7 +1018,9 @@ function runPixelInjectStep() {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
             __('simple.pi_done_ts', '✅ Timestamp proof injected successfully as secret message.') + '</div>';
         }
+        hideProgress();
       }).catch(function(e) {
+        hideProgress();
         if (btn) { btn.disabled = false; btn.textContent = __('simple.pi_btn', 'Inject Message'); }
         if (statusEl) {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
@@ -1141,16 +1144,19 @@ function renderDone(body) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
       '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
       __('simple.c2pa_final_desc', 'C2PA-signed — watermark + timestamp injected + AI provenance.') + '</p>' +
+      '<img src="' + results.c2paUrl + '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
       '<a href="' + results.c2paUrl + '" download="signed.png" class="btn" style="background:var(--primary);color:#fff">' +
       __('simple.final_dl_btn', '📥 Download Final Image') + '</a></div>');
   } else if (results['pixel-injection'] && results.piFinalUrl) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
       '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
       __('simple.final_image_desc', 'Watermark + secret message — one image. Use Professional mode to extract both.') + '</p>' +
+      '<img src="' + results.piFinalUrl + '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
       '<a href="' + results.piFinalUrl + '" download="protected.png" class="btn" style="background:var(--primary);color:#fff">' +
       __('simple.final_dl_btn', '📥 Download Final Image') + '</a></div>');
   } else if (results.watermark && results.watermarkUrl) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.watermarked_label') + '</h3>' +
+      '<img src="' + results.watermarkUrl + '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
       '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
   }
 
