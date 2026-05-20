@@ -90,6 +90,10 @@ function isThreatPath(p) {
   }
   // Block unknown .js files not in whitelist
   if (lower.endsWith('.js') && JS_WHITELIST.indexOf(p) === -1) return true;
+  // Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
+  var decoded = decodeURIComponent(lower);
+  if (decoded.includes('://')) return true;
+  if (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decoded) && !decoded.startsWith('//')) return true;
   return false;
 }
 
