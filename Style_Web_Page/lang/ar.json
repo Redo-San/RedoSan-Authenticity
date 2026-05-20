@@ -308,6 +308,8 @@
   "simple.info_phone": "الهاتف",
   "simple.info_phone_ph": "مثال: 5xx xxx xxxx",
   "simple.phone_digits_only": "يرجى إدخال أرقام فقط",
+  "simple.select_country": "اختر الدولة",
+  "simple.digits": "أرقام",
   "simple.info_website": "الموقع الإلكتروني",
   "simple.info_website_ph": "مثال: https://example.com",
   "simple.info_social": "روابط التواصل",

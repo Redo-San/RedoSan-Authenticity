@@ -220,52 +220,52 @@ function restartSimple() {
 // ── Country code data ──
 
 var COUNTRY_CODES = [
-  { code: 'SA', dial: '+966', name: 'السعودية' },
-  { code: 'AE', dial: '+971', name: 'الإمارات' },
-  { code: 'EG', dial: '+20', name: 'مصر' },
-  { code: 'KW', dial: '+965', name: 'الكويت' },
-  { code: 'QA', dial: '+974', name: 'قطر' },
-  { code: 'BH', dial: '+973', name: 'البحرين' },
-  { code: 'OM', dial: '+968', name: 'عمان' },
-  { code: 'IQ', dial: '+964', name: 'العراق' },
-  { code: 'JO', dial: '+962', name: 'الأردن' },
-  { code: 'LB', dial: '+961', name: 'لبنان' },
-  { code: 'PS', dial: '+970', name: 'فلسطين' },
-  { code: 'SY', dial: '+963', name: 'سوريا' },
-  { code: 'YE', dial: '+967', name: 'اليمن' },
-  { code: 'SD', dial: '+249', name: 'السودان' },
-  { code: 'LY', dial: '+218', name: 'ليبيا' },
-  { code: 'TN', dial: '+216', name: 'تونس' },
-  { code: 'DZ', dial: '+213', name: 'الجزائر' },
-  { code: 'MA', dial: '+212', name: 'المغرب' },
-  { code: 'TR', dial: '+90', name: 'تركيا' },
-  { code: 'US', dial: '+1', name: 'USA' },
-  { code: 'GB', dial: '+44', name: 'UK' },
-  { code: 'CA', dial: '+1', name: 'Canada' },
-  { code: 'AU', dial: '+61', name: 'Australia' },
-  { code: 'IN', dial: '+91', name: 'India' },
-  { code: 'CN', dial: '+86', name: 'China' },
-  { code: 'JP', dial: '+81', name: 'Japan' },
-  { code: 'KR', dial: '+82', name: 'South Korea' },
-  { code: 'FR', dial: '+33', name: 'France' },
-  { code: 'DE', dial: '+49', name: 'Germany' },
-  { code: 'IT', dial: '+39', name: 'Italy' },
-  { code: 'ES', dial: '+34', name: 'Spain' },
-  { code: 'NL', dial: '+31', name: 'Netherlands' },
-  { code: 'RU', dial: '+7', name: 'Russia' },
-  { code: 'BR', dial: '+55', name: 'Brazil' },
-  { code: 'PK', dial: '+92', name: 'Pakistan' },
-  { code: 'BD', dial: '+880', name: 'Bangladesh' },
-  { code: 'ID', dial: '+62', name: 'Indonesia' },
-  { code: 'MY', dial: '+60', name: 'Malaysia' },
-  { code: 'SG', dial: '+65', name: 'Singapore' },
-  { code: 'TH', dial: '+66', name: 'Thailand' },
-  { code: 'PH', dial: '+63', name: 'Philippines' },
-  { code: 'NG', dial: '+234', name: 'Nigeria' },
-  { code: 'ZA', dial: '+27', name: 'South Africa' },
-  { code: 'KE', dial: '+254', name: 'Kenya' },
-  { code: 'IR', dial: '+98', name: 'Iran' },
-  { code: 'AF', dial: '+93', name: 'Afghanistan' }
+  { code: 'SA', dial: '+966', name: 'السعودية', len: 9 },
+  { code: 'AE', dial: '+971', name: 'الإمارات', len: 9 },
+  { code: 'EG', dial: '+20', name: 'مصر', len: 10 },
+  { code: 'KW', dial: '+965', name: 'الكويت', len: 8 },
+  { code: 'QA', dial: '+974', name: 'قطر', len: 8 },
+  { code: 'BH', dial: '+973', name: 'البحرين', len: 8 },
+  { code: 'OM', dial: '+968', name: 'عمان', len: 8 },
+  { code: 'IQ', dial: '+964', name: 'العراق', len: 10 },
+  { code: 'JO', dial: '+962', name: 'الأردن', len: 9 },
+  { code: 'LB', dial: '+961', name: 'لبنان', len: 8 },
+  { code: 'PS', dial: '+970', name: 'فلسطين', len: 9 },
+  { code: 'SY', dial: '+963', name: 'سوريا', len: 9 },
+  { code: 'YE', dial: '+967', name: 'اليمن', len: 9 },
+  { code: 'SD', dial: '+249', name: 'السودان', len: 9 },
+  { code: 'LY', dial: '+218', name: 'ليبيا', len: 9 },
+  { code: 'TN', dial: '+216', name: 'تونس', len: 8 },
+  { code: 'DZ', dial: '+213', name: 'الجزائر', len: 9 },
+  { code: 'MA', dial: '+212', name: 'المغرب', len: 9 },
+  { code: 'TR', dial: '+90', name: 'تركيا', len: 10 },
+  { code: 'US', dial: '+1', name: 'USA', len: 10 },
+  { code: 'GB', dial: '+44', name: 'UK', len: 10 },
+  { code: 'CA', dial: '+1', name: 'Canada', len: 10 },
+  { code: 'AU', dial: '+61', name: 'Australia', len: 9 },
+  { code: 'IN', dial: '+91', name: 'India', len: 10 },
+  { code: 'CN', dial: '+86', name: 'China', len: 11 },
+  { code: 'JP', dial: '+81', name: 'Japan', len: 10 },
+  { code: 'KR', dial: '+82', name: 'South Korea', len: 10 },
+  { code: 'FR', dial: '+33', name: 'France', len: 9 },
+  { code: 'DE', dial: '+49', name: 'Germany', len: 10 },
+  { code: 'IT', dial: '+39', name: 'Italy', len: 10 },
+  { code: 'ES', dial: '+34', name: 'Spain', len: 9 },
+  { code: 'NL', dial: '+31', name: 'Netherlands', len: 9 },
+  { code: 'RU', dial: '+7', name: 'Russia', len: 10 },
+  { code: 'BR', dial: '+55', name: 'Brazil', len: 10 },
+  { code: 'PK', dial: '+92', name: 'Pakistan', len: 10 },
+  { code: 'BD', dial: '+880', name: 'Bangladesh', len: 10 },
+  { code: 'ID', dial: '+62', name: 'Indonesia', len: 10 },
+  { code: 'MY', dial: '+60', name: 'Malaysia', len: 9 },
+  { code: 'SG', dial: '+65', name: 'Singapore', len: 8 },
+  { code: 'TH', dial: '+66', name: 'Thailand', len: 9 },
+  { code: 'PH', dial: '+63', name: 'Philippines', len: 10 },
+  { code: 'NG', dial: '+234', name: 'Nigeria', len: 10 },
+  { code: 'ZA', dial: '+27', name: 'South Africa', len: 9 },
+  { code: 'KE', dial: '+254', name: 'Kenya', len: 9 },
+  { code: 'IR', dial: '+98', name: 'Iran', len: 10 },
+  { code: 'AF', dial: '+93', name: 'Afghanistan', len: 9 }
 ];
 
 function getCountryFromLocale() {
@@ -409,21 +409,43 @@ function getDefaultPhoneCode() {
   return null;
 }
 
+function updatePhoneMaxLength() {
+  var el = document.getElementById('sinfo-phone');
+  var code = document.getElementById('sinfo-phonecode');
+  if (!el || !code) return;
+  var dial = code.value;
+  var maxLen = 15; // ITU max
+  for (var i = 0; i < COUNTRY_CODES.length; i++) {
+    if (COUNTRY_CODES[i].dial === dial) { maxLen = COUNTRY_CODES[i].len; break; }
+  }
+  el.maxLength = maxLen;
+  if (el.value.length > maxLen) el.value = el.value.slice(0, maxLen);
+}
+
 function validatePhoneInput(el) {
   var warn = document.getElementById('sinfo-phone-warn');
+  // Remove non-digits
   if (/[^\d]/.test(el.value)) {
     el.value = el.value.replace(/\D/g, '');
     if (warn) warn.style.display = 'block';
   } else {
     if (warn) warn.style.display = 'none';
   }
+  // Enforce maxlength
+  if (el.maxLength && el.value.length > el.maxLength) {
+    el.value = el.value.slice(0, el.maxLength);
+  }
 }
 
 function phoneCodeOptionsHtml(selected) {
   var html = '';
+  // Placeholder when no country auto-detected
+  if (!selected) {
+    html += '<option value="" disabled selected style="color:var(--text-muted)">—— ' + __('simple.select_country', 'Select country') + ' ——</option>';
+  }
   for (var i = 0; i < COUNTRY_CODES.length; i++) {
     var c = COUNTRY_CODES[i];
-    html += '<option value="' + c.dial + '"' + (c.dial === selected ? ' selected' : '') + '>' + c.code + ' ' + c.dial + '</option>';
+    html += '<option value="' + c.dial + '"' + (c.dial === selected ? ' selected' : '') + '>' + c.code + ' ' + c.dial + ' (' + c.len + ' ' + __('simple.digits', 'digits') + ')</option>';
   }
   return html;
 }
@@ -457,8 +479,8 @@ function renderUpload(body) {
     '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' + __('simple.info_email_ph', 'e.g. john@example.com') + '" value="' + escHtml(simpleUserInfo.email) + '" required></div>' +
     '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + ' <span style="color:var(--danger)">*</span></label>' +
     '<div class="simple-phone-group">' +
-    '<select id="sinfo-phonecode">' + phoneCodeOptionsHtml(simpleUserInfo.phoneCode) + '</select>' +
-    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. 5xx xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="validatePhoneInput(this)">' +
+    '<select id="sinfo-phonecode" onchange="updatePhoneMaxLength()">' + phoneCodeOptionsHtml(simpleUserInfo.phoneCode) + '</select>' +
+    '<input type="tel" id="sinfo-phone" class="simple-info-field" maxlength="15" placeholder="' + __('simple.info_phone_ph', 'e.g. 5xx xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="validatePhoneInput(this)">' +
     '</div>' +
     '<span id="sinfo-phone-warn" class="simple-field-warn" style="display:none">' + __('simple.phone_digits_only', 'Please enter numbers only') + '</span></div>' +
     '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
