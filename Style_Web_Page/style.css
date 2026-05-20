@@ -522,6 +522,8 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   background: var(--card);
 }
 .simple-top-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.simple-logo-link { display: flex; align-items: center; margin-right: 4px; }
+.simple-logo { height: 24px; width: 80px; }
 .simple-top-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .simple-mode-switch {
   background: none; border: 1px solid var(--border); border-radius: 8px;
