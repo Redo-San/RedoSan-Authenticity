@@ -57,7 +57,7 @@
 </footer>
 
 <script>
-var DANGEROUS_EXTS = ['.exe','.msi','.bat','.cmd','.com','.scr','.pif','.ps1','.psm1','.psd1','.vbs','.vbe','.jse','.wsf','.wsh','.dll','.ocx','.sys','.drv','.jar','.sh','.pl','.py','.rb','.bash','.app','.msu','.msp','.reg','.inf','.gadget','.cpl','.mst','.hta','.ws','.vb','.vba','.swf','.action'];
+var DANGEROUS_EXTS = ['.exe','.msi','.bat','.cmd','.com','.scr','.pif','.ps1','.psm1','.psd1','.vbs','.vbe','.jse','.wsf','.wsh','.dll','.ocx','.sys','.drv','.jar','.sh','.pl','.py','.rb','.bash','.app','.msu','.msp','.reg','.inf','.gadget','.cpl','.mst','.hta','.ws','.vb','.vba','.swf','.action','.elf','.so','.ko','.deb','.rpm','.run','.lua','.tcl','.awk','.apk','.flatpak','.snap','.appimage'];
 
 var JS_WHITELIST = [
   '/RedoSan-Authenticity/sw.js',
@@ -115,7 +115,7 @@ function showThreatPage(path) {
     '<div class="threat-path">' + path.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
     '<p class="threat-desc">&#x1F512; RedoSan Authenticity is a client-side digital authenticity tool and does <strong>not</strong> serve executable files or scripts. If you received this link from someone, it is likely a scam or phishing attempt.</p>' +
     '<a href="/RedoSan-Authenticity/" class="threat-btn">Return to Safety</a>' +
-    '<div class="threat-exts">Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py and more</div>' +
+    '<div class="threat-exts">Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk and more</div>' +
     '<div class="threat-note">If you believe this is a mistake, please report it on <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" style="color:#6C5CE7" target="_blank" rel="noopener">GitHub Issues</a>.</div>' +
     '</div>';
 }
