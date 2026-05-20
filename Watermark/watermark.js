@@ -66,7 +66,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     
     else if (type === 3) {
         if (payloadBits.length > maxPixels) return { ok: false, error: `Image too small` };
-        const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
+        const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
         wm3_embed(imgData, payloadBits, keyVal);
         imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
@@ -100,12 +100,12 @@ async function watermarkExtract(type, imageFile, password) {
     
     var key = password ? await pw_key(password) : new Uint8Array(0);
     
-    const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
+    const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
     
     function extractData(bitsStr) {
         if (bitsStr.length < 32) return { data: null, reason: 'no-data' };
         var dlen = parseInt(bitsStr.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > Math.min(w * h * 3 / 8, 100000)) return { data: null, reason: 'no-data' };
+        if (isNaN(dlen) || dlen <= 0 || dlen > Math.min(w * h * 3 / 8, 100000)) return { data: null, reason: 'no-data' };
         if (bitsStr.length < 32 + dlen * 8) return { data: null, reason: 'no-data' };
         const enc = from_bits(bitsStr.substr(32, dlen * 8));
         const dec = xor_bytes(enc, key);
@@ -281,7 +281,7 @@ async function updateCapacity() {
   const secretStatusEl = document.getElementById('wm-secret-status');
   const imgFile = await getFile('wm-image');
   if (!imgFile) { capEl.textContent = ''; secretStatusEl.textContent = ''; return; }
-  const type = parseInt(getVal('wm-type') || '1');
+  const type = parseInt(getVal('wm-type') || '1', 10);
   try {
     const loaded = await loadImage(imgFile);
     const { w, h } = loaded;
@@ -454,15 +454,14 @@ function toggleWmPassword() {
   var pwGroup = document.getElementById('wm-password-group');
   if (!pwGroup) return;
   var typeSelect = document.getElementById('wm-type');
-  var type = typeSelect ? parseInt(typeSelect.value) : 1;
+  var type = typeSelect ? parseInt(typeSelect.value, 10) : 1;
   pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
 }
 
 function toggleWmExtractPassword() {
   var pwGroup = document.getElementById('wm-password-ex-group');
-  if (!pwGroup) return;
-  var typeSelect = document.getElementById('wm-type-ex');
-  var type = typeSelect ? parseInt(typeSelect.value) : 1;
+  var typeSelect = document.getElementById('wm-type');
+  var type = typeSelect ? parseInt(typeSelect.value, 10) : 1;
   pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
 }
 
