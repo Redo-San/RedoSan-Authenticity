@@ -315,7 +315,7 @@ function renderUpload(body) {
     '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + ' <span style="color:var(--danger)">*</span></label>' +
     '<div class="simple-phone-group">' +
     '<select id="sinfo-phonecode">' + phoneCodeOptionsHtml(simpleUserInfo.phoneCode) + '</select>' +
-    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. 5x xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="this.value=this.value.replace(/\\D/g,'')">' +
+    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. 5x xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="this.value=this.value.replace(/\\D/g,\'\')">' +
     '</div></div>' +
     '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required></div>' +
