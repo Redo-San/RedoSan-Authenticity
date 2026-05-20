@@ -204,8 +204,8 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 │  │  │(APP11)   │ │(OTS)     │ │                  │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  ├──────────────────────────────────────────────────┤    │
-│  │         Security Threat Blocker (SW + 404)        │    │
-│  │   Blocks dangerous extensions + unknown .js files │    │
+│  │        Security Threat Blocker (SW + 404)        │    │
+│  │  Blocks dangerous extensions + unknown .js files │    │
 │  └──────────────────────────────────────────────────┘    │
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐    │
