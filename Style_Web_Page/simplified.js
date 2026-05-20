@@ -422,6 +422,13 @@ function updatePhoneMaxLength() {
   if (el.value.length > maxLen) el.value = el.value.slice(0, maxLen);
 }
 
+function validateUrlInput(el) {
+  var warn = document.getElementById('sinfo-website-warn');
+  if (!el.value) { if (warn) warn.style.display = 'none'; return; }
+  var ok = /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(el.value);
+  if (warn) warn.style.display = ok ? 'none' : 'block';
+}
+
 function validateEmailInput(el) {
   var warn = document.getElementById('sinfo-email-warn');
   if (!el.value) { if (warn) warn.style.display = 'none'; return; }
@@ -493,7 +500,8 @@ function renderUpload(body) {
     '</div>' +
     '<span id="sinfo-phone-warn" class="simple-field-warn" style="display:none">' + __('simple.phone_digits_only', 'Please enter numbers only') + '</span></div>' +
     '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
-    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required></div>' +
+    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required maxlength="30" oninput="validateUrlInput(this)">' +
+    '<span id="sinfo-website-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL (e.g. https://example.com)') + '</span></div>' +
     '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
     '<div class="simple-social-grid">' +
     '<input type="url" id="sinfo-tiktok" placeholder="' + __('simple.ph_tiktok', 'TikTok URL') + '" value="' + escHtml(socialVal.tiktok || '') + '">' +
