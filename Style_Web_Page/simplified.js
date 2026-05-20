@@ -269,10 +269,15 @@ var COUNTRY_CODES = [
 ];
 
 function getCountryFromLocale() {
-  try {
-    // 1. Try Intl locale (OS-level, most accurate for region)
-    var loc = Intl.DateTimeFormat().resolvedOptions().locale || '';
-    var parts = loc.split('-');
+  // Try all Intl APIs for region code detection
+  // Intl.NumberFormat usually returns the most accurate locale (OS-level)
+  var locales = [];
+  try { locales.push(Intl.NumberFormat().resolvedOptions().locale); } catch(e) {}
+  try { locales.push(Intl.DateTimeFormat().resolvedOptions().locale); } catch(e) {}
+  try { locales.push(Intl.Collator().resolvedOptions().locale); } catch(e) {}
+  for (var li = 0; li < locales.length; li++) {
+    if (!locales[li]) continue;
+    var parts = locales[li].split('-');
     for (var k = parts.length - 1; k >= 0; k--) {
       if (parts[k].length === 2 && /^[A-Za-z]{2}$/.test(parts[k])) {
         var code = parts[k].toUpperCase();
@@ -281,7 +286,7 @@ function getCountryFromLocale() {
         }
       }
     }
-  } catch(e) {}
+  }
   return null;
 }
 
@@ -289,60 +294,88 @@ function getCountryFromTimezone() {
   try {
     var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (!tz) return null;
-    // Comprehensive timezone → country mapping
-    var map = {
-      'Asia/Riyadh':'SA','Asia/Dubai':'AE','Asia/Kuwait':'KW',
-      'Asia/Qatar':'QA','Asia/Bahrain':'BH','Asia/Muscat':'OM',
-      'Asia/Baghdad':'IQ','Asia/Amman':'JO','Asia/Beirut':'LB',
-      'Asia/Damascus':'SY','Asia/Aden':'YE','Asia/Khartoum':'SD',
-      'Africa/Tripoli':'LY','Africa/Tunis':'TN','Africa/Algiers':'DZ',
-      'Africa/Casablanca':'MA','Africa/Cairo':'EG','Africa/Khartoum':'SD',
-      'Europe/Istanbul':'TR','Asia/Hebron':'PS','Asia/Gaza':'PS',
-      'America/New_York':'US','America/Chicago':'US','America/Denver':'US',
-      'America/Los_Angeles':'US','America/Phoenix':'US','America/Anchorage':'US',
-      'America/Honolulu':'US','America/Toronto':'CA','America/Vancouver':'CA',
-      'America/Montreal':'CA','America/Edmonton':'CA','America/Winnipeg':'CA',
-      'Europe/London':'GB','Europe/Paris':'FR','Europe/Berlin':'DE',
-      'Europe/Rome':'IT','Europe/Madrid':'ES','Europe/Amsterdam':'NL',
-      'Europe/Stockholm':'SE','Europe/Oslo':'NO','Europe/Copenhagen':'DK',
-      'Europe/Helsinki':'FI','Europe/Dublin':'IE','Europe/Vienna':'AT',
-      'Europe/Brussels':'BE','Europe/Zurich':'CH','Europe/Prague':'CZ',
-      'Europe/Warsaw':'PL','Europe/Budapest':'HU','Europe/Athens':'GR',
-      'Europe/Lisbon':'PT','Europe/Moscow':'RU','Europe/Kiev':'UA',
-      'Australia/Sydney':'AU','Australia/Melbourne':'AU','Australia/Brisbane':'AU',
-      'Australia/Perth':'AU','Australia/Adelaide':'AU','Pacific/Auckland':'NZ',
-      'Asia/Kolkata':'IN','Asia/Shanghai':'CN','Asia/Beijing':'CN',
-      'Asia/Tokyo':'JP','Asia/Seoul':'KR','Asia/Singapore':'SG',
-      'Asia/Hong_Kong':'HK','Asia/Taipei':'TW','Asia/Kuala_Lumpur':'MY',
-      'Asia/Bangkok':'TH','Asia/Manila':'PH','Asia/Jakarta':'ID',
-      'Asia/Ho_Chi_Minh':'VN','Asia/Yangon':'MM','Asia/Karachi':'PK',
-      'Asia/Dhaka':'BD','Asia/Kathmandu':'NP','Asia/Colombo':'LK',
-      'Asia/Tehran':'IR','Asia/Baghdad':'IQ','Asia/Jerusalem':'IL',
-      'Asia/Kabul':'AF','Asia/Tashkent':'UZ','Asia/Almaty':'KZ',
-      'Africa/Lagos':'NG','Africa/Johannesburg':'ZA','Africa/Nairobi':'KE',
-      'Africa/Accra':'GH','Africa/Addis_Ababa':'ET','Africa/Dar_es_Salaam':'TZ',
-      'Africa/Kampala':'UG','Africa/Lusaka':'ZM','Africa/Harare':'ZW',
-      'America/Sao_Paulo':'BR','America/Buenos_Aires':'AR','America/Santiago':'CL',
-      'America/Bogota':'CO','America/Lima':'PE','America/Mexico_City':'MX',
-      'America/Panama':'PA','America/Caracas':'VE','America/Argentina/Buenos_Aires':'AR'
+    // Extract city name from timezone (last component)
+    var parts = tz.split('/');
+    var city = parts[parts.length - 1];
+    // Comprehensive IANA city → country code mapping
+    // Generated from zone1970.tab — covers 300+ canonical timezones
+    var tzCity = {
+      'Adak':'US','Adelaide':'AU','Algiers':'DZ','Almaty':'KZ','Amman':'JO',
+      'Anadyr':'RU','Anchorage':'US','Andorra':'AD','Apia':'WS','Aqtau':'KZ',
+      'Aqtobe':'KZ','Araguaina':'BR','Ashgabat':'TM','Astrakhan':'RU',
+      'Asuncion':'PY','Athens':'GR','Atyrau':'KZ','Auckland':'NZ','Azores':'PT',
+      'Baghdad':'IQ','Bahia':'BR','Bahia_Banderas':'MX','Baku':'AZ','Bangkok':'TH',
+      'Barbados':'BB','Barnaul':'RU','Beirut':'LB','Belem':'BR','Belgrade':'RS',
+      'Belize':'BZ','Berlin':'DE','Bermuda':'BM','Beulah':'US','Bishkek':'KG',
+      'Bissau':'GW','Boa_Vista':'BR','Bogota':'CO','Boise':'US','Bougainville':'PG',
+      'Brisbane':'AU','Broken_Hill':'AU','Brussels':'BE','Bucharest':'RO',
+      'Budapest':'HU','Buenos_Aires':'AR','Cairo':'EG','Cambridge_Bay':'CA',
+      'Campo_Grande':'BR','Canary':'ES','Cancun':'MX','Cape_Verde':'CV',
+      'Caracas':'VE','Casablanca':'MA','Catamarca':'AR','Cayenne':'GF',
+      'Center':'US','Ceuta':'ES','Chagos':'IO','Chatham':'NZ','Chicago':'US',
+      'Chihuahua':'MX','Chisinau':'MD','Chita':'RU','Ciudad_Juarez':'MX',
+      'Colombo':'LK','Cordoba':'AR','Costa_Rica':'CR','Coyhaique':'CL',
+      'Cuiaba':'BR','Damascus':'SY','Danmarkshavn':'GL','Darwin':'AU',
+      'Dawson':'CA','Dawson_Creek':'CA','Denver':'US','Detroit':'US','Dhaka':'BD',
+      'Dili':'TL','Dubai':'AE','Dublin':'IE','Dushanbe':'TJ','Easter':'CL',
+      'Edmonton':'CA','Efate':'VU','Eirunepe':'BR','El_Aaiun':'EH',
+      'El_Salvador':'SV','Eucla':'AU','Fakaofo':'TK','Famagusta':'CY',
+      'Faroe':'FO','Fiji':'FJ','Fort_Nelson':'CA','Fortaleza':'BR',
+      'Galapagos':'EC','Gambier':'PF','Gaza':'PS','Gibraltar':'GI',
+      'Glace_Bay':'CA','Goose_Bay':'CA','Grand_Turk':'TC','Guadalcanal':'SB',
+      'Guam':'GU','Guatemala':'GT','Guayaquil':'EC','Guyana':'GY','Halifax':'CA',
+      'Havana':'CU','Hebron':'PS','Helsinki':'FI','Hermosillo':'MX',
+      'Ho_Chi_Minh':'VN','Hobart':'AU','Hong_Kong':'HK','Honolulu':'US',
+      'Hovd':'MN','Indianapolis':'US','Inuvik':'CA','Iqaluit':'CA',
+      'Irkutsk':'RU','Istanbul':'TR','Jakarta':'ID','Jamaica':'JM',
+      'Jayapura':'ID','Jerusalem':'IL','Johannesburg':'ZA','Juba':'SS',
+      'Jujuy':'AR','Juneau':'US','Kabul':'AF','Kaliningrad':'RU',
+      'Kamchatka':'RU','Kanton':'KI','Karachi':'PK','Kathmandu':'NP',
+      'Khandyga':'RU','Khartoum':'SD','Kiritimati':'KI','Kirov':'RU',
+      'Knox':'US','Kolkata':'IN','Krasnoyarsk':'RU','Kuching':'MY',
+      'Kwajalein':'MH','Kyiv':'UA','La_Paz':'BO','La_Rioja':'AR','Lagos':'NG',
+      'Lima':'PE','Lindeman':'AU','Lisbon':'PT','London':'GB','Lord_Howe':'AU',
+      'Los_Angeles':'US','Louisville':'US','Macau':'MO','Maceio':'BR',
+      'Macquarie':'AU','Madeira':'PT','Madrid':'ES','Magadan':'RU',
+      'Makassar':'ID','Maldives':'MV','Malta':'MT','Managua':'NI','Manaus':'BR',
+      'Manila':'PH','Maputo':'MZ','Marengo':'US','Marquesas':'PF',
+      'Martinique':'MQ','Matamoros':'MX','Mauritius':'MU','Mazatlan':'MX',
+      'Melbourne':'AU','Mendoza':'AR','Menominee':'US','Merida':'MX',
+      'Metlakatla':'US','Mexico_City':'MX','Minsk':'BY','Miquelon':'PM',
+      'Moncton':'CA','Monrovia':'LR','Monterrey':'MX','Montevideo':'UY',
+      'Monticello':'US','Moscow':'RU','Nairobi':'KE','Nauru':'NR',
+      'Ndjamena':'TD','New_Salem':'US','New_York':'US','Nicosia':'CY',
+      'Niue':'NU','Nome':'US','Norfolk':'NF','Noronha':'BR','Noumea':'NC',
+      'Novokuznetsk':'RU','Novosibirsk':'RU','Nuuk':'GL','Ojinaga':'MX',
+      'Omsk':'RU','Oral':'KZ','Palau':'PW','Panama':'PA','Paramaribo':'SR',
+      'Paris':'FR','Perth':'AU','Petersburg':'US','Phoenix':'US','Pitcairn':'PN',
+      'Pontianak':'ID','Port_Moresby':'PG','Port-au-Prince':'HT',
+      'Porto_Velho':'BR','Prague':'CZ','Puerto_Rico':'PR','Punta_Arenas':'CL',
+      'Pyongyang':'KP','Qatar':'QA','Qostanay':'KZ','Qyzylorda':'KZ',
+      'Rankin_Inlet':'CA','Rarotonga':'CK','Recife':'BR','Regina':'CA',
+      'Resolute':'CA','Riga':'LV','Rio_Branco':'BR','Rio_Gallegos':'AR',
+      'Riyadh':'SA','Rome':'IT','Sakhalin':'RU','Salta':'AR','Samara':'RU',
+      'Samarkand':'UZ','San_Juan':'AR','San_Luis':'AR','Santarem':'BR',
+      'Santiago':'CL','Santo_Domingo':'DO','Sao_Paulo':'BR','Sao_Tome':'ST',
+      'Saratov':'RU','Scoresbysund':'GL','Seoul':'KR','Shanghai':'CN',
+      'Simferopol':'RU','Singapore':'SG','Sitka':'US','Sofia':'BG',
+      'Srednekolymsk':'RU','St_Johns':'CA','Stanley':'FK',
+      'Swift_Current':'CA','Sydney':'AU','Tahiti':'PF','Taipei':'TW',
+      'Tallinn':'EE','Tarawa':'KI','Tashkent':'UZ','Tbilisi':'GE',
+      'Tegucigalpa':'HN','Tehran':'IR','Tell_City':'US','Thimphu':'BT',
+      'Thule':'GL','Tijuana':'MX','Tirane':'AL','Tokyo':'JP','Tomsk':'RU',
+      'Tongatapu':'TO','Toronto':'CA','Tripoli':'LY','Tucuman':'AR',
+      'Tunis':'TN','Ulaanbaatar':'MN','Ulyanovsk':'RU','Urumqi':'CN',
+      'Ushuaia':'AR','Ust-Nera':'RU','Vancouver':'CA','Vevay':'US',
+      'Vienna':'AT','Vilnius':'LT','Vincennes':'US','Vladivostok':'RU',
+      'Volgograd':'RU','Warsaw':'PL','Whitehorse':'CA','Winamac':'US',
+      'Windhoek':'NA','Winnipeg':'CA','Yakutat':'US','Yakutsk':'RU',
+      'Yangon':'MM','Yekaterinburg':'RU','Yerevan':'AM','Zurich':'CH'
     };
-    var code = map[tz];
+    var code = tzCity[city];
     if (code) {
       for (var i = 0; i < COUNTRY_CODES.length; i++) {
         if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
-      }
-    }
-    // Try partial match for tz like "America/Argentina/Salta"
-    var parts = tz.split('/');
-    if (parts.length >= 2) {
-      // Look for continent/city in map by checking each entry key prefix
-      var continent = parts[0];
-      for (var key in map) {
-        if (key.indexOf(continent + '/') === 0) {
-          for (var j = 0; j < COUNTRY_CODES.length; j++) {
-            if (COUNTRY_CODES[j].code === map[key]) return COUNTRY_CODES[j];
-          }
-        }
       }
     }
   } catch(e) {}
@@ -351,26 +384,28 @@ function getCountryFromTimezone() {
 
 function getDefaultPhoneCode() {
   var c;
-  // 1. Try Intl locale (OS-level, includes region)
+  // 1. Try Intl APIs (NumberFormat, DateTimeFormat, Collator)
   c = getCountryFromLocale();
   if (c) return c;
-  // 2. Try from navigator.language
+  // 2. Try navigator.languages (user's ordered preference list)
   try {
-    var lang = navigator.language || navigator.userLanguage || '';
-    var parts = lang.split('-');
-    for (var p = 0; p < parts.length; p++) {
-      if (parts[p].length === 2 && /^[A-Za-z]{2}$/.test(parts[p])) {
-        var code = parts[p].toUpperCase();
-        for (var i = 0; i < COUNTRY_CODES.length; i++) {
-          if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+    var langs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+    for (var l = 0; l < langs.length; l++) {
+      var parts = langs[l].split('-');
+      for (var p = 0; p < parts.length; p++) {
+        if (parts[p].length === 2 && /^[A-Za-z]{2}$/.test(parts[p])) {
+          var code = parts[p].toUpperCase();
+          for (var i = 0; i < COUNTRY_CODES.length; i++) {
+            if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+          }
         }
       }
     }
   } catch(e) {}
-  // 3. Try from timezone
+  // 3. Try from timezone (300+ IANA zones mapped to country codes)
   c = getCountryFromTimezone();
   if (c) return c;
-  // 4. Fallback — pick nothing, let user choose
+  // 4. Fallback — leave unselected, let user choose
   return null;
 }
 
