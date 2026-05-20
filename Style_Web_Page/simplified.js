@@ -268,56 +268,110 @@ var COUNTRY_CODES = [
   { code: 'AF', dial: '+93', name: 'Afghanistan' }
 ];
 
+function getCountryFromLocale() {
+  try {
+    // 1. Try Intl locale (OS-level, most accurate for region)
+    var loc = Intl.DateTimeFormat().resolvedOptions().locale || '';
+    var parts = loc.split('-');
+    for (var k = parts.length - 1; k >= 0; k--) {
+      if (parts[k].length === 2 && /^[A-Za-z]{2}$/.test(parts[k])) {
+        var code = parts[k].toUpperCase();
+        for (var i = 0; i < COUNTRY_CODES.length; i++) {
+          if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+        }
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
 function getCountryFromTimezone() {
   try {
     var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (!tz) return null;
+    // Comprehensive timezone → country mapping
     var map = {
-      'Asia/Riyadh': 'SA', 'Asia/Dubai': 'AE', 'Asia/Kuwait': 'KW',
-      'Asia/Qatar': 'QA', 'Asia/Bahrain': 'BH', 'Asia/Muscat': 'OM',
-      'Asia/Baghdad': 'IQ', 'Asia/Amman': 'JO', 'Asia/Beirut': 'LB',
-      'Asia/Damascus': 'SY', 'Asia/Aden': 'YE', 'Asia/Khartoum': 'SD',
-      'Africa/Tripoli': 'LY', 'Africa/Tunis': 'TN', 'Africa/Algiers': 'DZ',
-      'Africa/Casablanca': 'MA', 'Europe/Istanbul': 'TR',
-      'Asia/Hebron': 'PS', 'Asia/Gaza': 'PS',
-      'America/New_York': 'US', 'America/Chicago': 'US',
-      'America/Denver': 'US', 'America/Los_Angeles': 'US',
-      'America/Toronto': 'CA', 'America/Vancouver': 'CA',
-      'Europe/London': 'GB', 'Australia/Sydney': 'AU',
-      'Asia/Kolkata': 'IN', 'Asia/Shanghai': 'CN', 'Asia/Tokyo': 'JP',
-      'Asia/Seoul': 'KR', 'Europe/Paris': 'FR', 'Europe/Berlin': 'DE',
-      'Europe/Rome': 'IT', 'Europe/Madrid': 'ES', 'Europe/Amsterdam': 'NL',
-      'Europe/Moscow': 'RU', 'America/Sao_Paulo': 'BR',
-      'Asia/Karachi': 'PK', 'Asia/Dhaka': 'BD', 'Asia/Jakarta': 'ID',
-      'Asia/Kuala_Lumpur': 'MY', 'Asia/Singapore': 'SG',
-      'Asia/Bangkok': 'TH', 'Asia/Manila': 'PH', 'Africa/Lagos': 'NG',
-      'Africa/Johannesburg': 'ZA', 'Africa/Nairobi': 'KE',
-      'Asia/Tehran': 'IR', 'Asia/Kabul': 'AF'
+      'Asia/Riyadh':'SA','Asia/Dubai':'AE','Asia/Kuwait':'KW',
+      'Asia/Qatar':'QA','Asia/Bahrain':'BH','Asia/Muscat':'OM',
+      'Asia/Baghdad':'IQ','Asia/Amman':'JO','Asia/Beirut':'LB',
+      'Asia/Damascus':'SY','Asia/Aden':'YE','Asia/Khartoum':'SD',
+      'Africa/Tripoli':'LY','Africa/Tunis':'TN','Africa/Algiers':'DZ',
+      'Africa/Casablanca':'MA','Africa/Cairo':'EG','Africa/Khartoum':'SD',
+      'Europe/Istanbul':'TR','Asia/Hebron':'PS','Asia/Gaza':'PS',
+      'America/New_York':'US','America/Chicago':'US','America/Denver':'US',
+      'America/Los_Angeles':'US','America/Phoenix':'US','America/Anchorage':'US',
+      'America/Honolulu':'US','America/Toronto':'CA','America/Vancouver':'CA',
+      'America/Montreal':'CA','America/Edmonton':'CA','America/Winnipeg':'CA',
+      'Europe/London':'GB','Europe/Paris':'FR','Europe/Berlin':'DE',
+      'Europe/Rome':'IT','Europe/Madrid':'ES','Europe/Amsterdam':'NL',
+      'Europe/Stockholm':'SE','Europe/Oslo':'NO','Europe/Copenhagen':'DK',
+      'Europe/Helsinki':'FI','Europe/Dublin':'IE','Europe/Vienna':'AT',
+      'Europe/Brussels':'BE','Europe/Zurich':'CH','Europe/Prague':'CZ',
+      'Europe/Warsaw':'PL','Europe/Budapest':'HU','Europe/Athens':'GR',
+      'Europe/Lisbon':'PT','Europe/Moscow':'RU','Europe/Kiev':'UA',
+      'Australia/Sydney':'AU','Australia/Melbourne':'AU','Australia/Brisbane':'AU',
+      'Australia/Perth':'AU','Australia/Adelaide':'AU','Pacific/Auckland':'NZ',
+      'Asia/Kolkata':'IN','Asia/Shanghai':'CN','Asia/Beijing':'CN',
+      'Asia/Tokyo':'JP','Asia/Seoul':'KR','Asia/Singapore':'SG',
+      'Asia/Hong_Kong':'HK','Asia/Taipei':'TW','Asia/Kuala_Lumpur':'MY',
+      'Asia/Bangkok':'TH','Asia/Manila':'PH','Asia/Jakarta':'ID',
+      'Asia/Ho_Chi_Minh':'VN','Asia/Yangon':'MM','Asia/Karachi':'PK',
+      'Asia/Dhaka':'BD','Asia/Kathmandu':'NP','Asia/Colombo':'LK',
+      'Asia/Tehran':'IR','Asia/Baghdad':'IQ','Asia/Jerusalem':'IL',
+      'Asia/Kabul':'AF','Asia/Tashkent':'UZ','Asia/Almaty':'KZ',
+      'Africa/Lagos':'NG','Africa/Johannesburg':'ZA','Africa/Nairobi':'KE',
+      'Africa/Accra':'GH','Africa/Addis_Ababa':'ET','Africa/Dar_es_Salaam':'TZ',
+      'Africa/Kampala':'UG','Africa/Lusaka':'ZM','Africa/Harare':'ZW',
+      'America/Sao_Paulo':'BR','America/Buenos_Aires':'AR','America/Santiago':'CL',
+      'America/Bogota':'CO','America/Lima':'PE','America/Mexico_City':'MX',
+      'America/Panama':'PA','America/Caracas':'VE','America/Argentina/Buenos_Aires':'AR'
     };
-    return map[tz] || null;
-  } catch(e) { return null; }
-}
-
-function getDefaultPhoneCode() {
-  // 1. Try from browser language (e.g. ar-SA → SA)
-  try {
-    var lang = navigator.language || navigator.userLanguage || '';
-    var parts = lang.split('-');
-    if (parts.length > 1 && parts[1].length === 2) {
+    var code = map[tz];
+    if (code) {
       for (var i = 0; i < COUNTRY_CODES.length; i++) {
-        if (COUNTRY_CODES[i].code === parts[1].toUpperCase()) return COUNTRY_CODES[i];
+        if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+      }
+    }
+    // Try partial match for tz like "America/Argentina/Salta"
+    var parts = tz.split('/');
+    if (parts.length >= 2) {
+      // Look for continent/city in map by checking each entry key prefix
+      var continent = parts[0];
+      for (var key in map) {
+        if (key.indexOf(continent + '/') === 0) {
+          for (var j = 0; j < COUNTRY_CODES.length; j++) {
+            if (COUNTRY_CODES[j].code === map[key]) return COUNTRY_CODES[j];
+          }
+        }
       }
     }
   } catch(e) {}
-  // 2. Try from timezone (e.g. Asia/Riyadh → SA)
-  var tzCountry = getCountryFromTimezone();
-  if (tzCountry) {
-    for (var j = 0; j < COUNTRY_CODES.length; j++) {
-      if (COUNTRY_CODES[j].code === tzCountry) return COUNTRY_CODES[j];
+  return null;
+}
+
+function getDefaultPhoneCode() {
+  var c;
+  // 1. Try Intl locale (OS-level, includes region)
+  c = getCountryFromLocale();
+  if (c) return c;
+  // 2. Try from navigator.language
+  try {
+    var lang = navigator.language || navigator.userLanguage || '';
+    var parts = lang.split('-');
+    for (var p = 0; p < parts.length; p++) {
+      if (parts[p].length === 2 && /^[A-Za-z]{2}$/.test(parts[p])) {
+        var code = parts[p].toUpperCase();
+        for (var i = 0; i < COUNTRY_CODES.length; i++) {
+          if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+        }
+      }
     }
-  }
-  // 3. Fallback to first entry
-  return COUNTRY_CODES[0];
+  } catch(e) {}
+  // 3. Try from timezone
+  c = getCountryFromTimezone();
+  if (c) return c;
+  // 4. Fallback — pick nothing, let user choose
+  return null;
 }
 
 function validatePhoneInput(el) {
@@ -344,6 +398,11 @@ function phoneCodeOptionsHtml(selected) {
 function renderUpload(body) {
   var socialVal = simpleUserInfo.social || {};
   var musicVal = simpleUserInfo.music || {};
+  // Auto-detect country code on first visit
+  if (!simpleUserInfo.phoneCode) {
+    var detected = getDefaultPhoneCode();
+    if (detected) simpleUserInfo.phoneCode = detected.dial;
+  }
   body.innerHTML =
     '<div class="simple-card"><h2>' + __('simple.upload_title') + '</h2><p>' + __('simple.upload_desc') + '</p>' +
     '<div class="simple-upload-zone" id="simpleDropZone" onclick="document.getElementById(\'simpleFileInput\').click()">' +
