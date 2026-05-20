@@ -309,6 +309,7 @@
   "simple.info_phone_ph": "مثال: 5xx xxx xxxx",
   "simple.phone_digits_only": "يرجى إدخال أرقام فقط",
   "simple.email_invalid": "يرجى إدخال بريد إلكتروني صحيح",
+  "simple.url_invalid": "يرجى إدخال رابط صحيح (مثال: https://example.com)",
   "simple.select_country": "اختر الدولة",
   "simple.digits": "أرقام",
   "simple.info_website": "الموقع الإلكتروني",
