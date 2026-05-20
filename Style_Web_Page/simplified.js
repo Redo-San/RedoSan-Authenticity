@@ -452,7 +452,7 @@ function validateSocialInput(el) {
 }
 
 function prefixHttps(el) {
-  if (!el.value || el.value === 'https://') { el.value = 'https://'; }
+  if (!el.value || !/^https?:\/\//i.test(el.value)) { el.value = 'https://'; }
   el.setSelectionRange(el.value.length, el.value.length);
 }
 
@@ -612,7 +612,8 @@ function saveSimpleUserInfo() {
   simpleUserInfo.name = (document.getElementById('sinfo-name') || {}).value || '';
   simpleUserInfo.email = (document.getElementById('sinfo-email') || {}).value || '';
   simpleUserInfo.phoneCode = (document.getElementById('sinfo-phonecode') || {}).value || '';
-  simpleUserInfo.phone = (document.getElementById('sinfo-phone') || {}).value || '';
+  var phone = (document.getElementById('sinfo-phone') || {}).value || '';
+  simpleUserInfo.phone = phone.replace(/\D/g, '').slice(0, 15);
   simpleUserInfo.website = (document.getElementById('sinfo-website') || {}).value || '';
   simpleUserInfo.social = {
     tiktok: (document.getElementById('sinfo-tiktok') || {}).value || '',
