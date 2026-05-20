@@ -14,7 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^12.1.0",
-    "canvas": "^2.11.2"
+    "canvas": "^3.2.3"
   },
   "overrides": {
     "@mapbox/node-pre-gyp": "2.0.3",
