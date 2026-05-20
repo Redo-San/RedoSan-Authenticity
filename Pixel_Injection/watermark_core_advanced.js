@@ -75,7 +75,7 @@ class WatermarkCore {
                 const channels = complexity > 0.7 ? 4 : 3; // More channels in complex areas
                 
                 for (let channel = 0; channel < channels && messageIndex < binaryMessage.length; channel++) {
-                    const bit = parseInt(binaryMessage[messageIndex++]);
+                    const bit = parseInt(binaryMessage[messageIndex++], 2);
                     const strength = complexity > 0.5 ? 2 : 1; // Stronger in complex areas
                     const mask = ~(1 << strength);
                     data[pixelIndex + channel] = (data[pixelIndex + channel] & mask) | (bit << strength);
@@ -105,7 +105,7 @@ class WatermarkCore {
                 const strategy = this.chooseEmbeddingStrategy(x, y, characteristics);
                 
                 for (let channel = 0; channel < 3 && messageIndex < binaryMessage.length; channel++) {
-                    const bit = parseInt(binaryMessage[messageIndex++]);
+                    const bit = parseInt(binaryMessage[messageIndex++], 2);
                     data[pixelIndex + channel] = strategy.embed(data[pixelIndex + channel], bit);
                 }
             }
@@ -135,7 +135,7 @@ class WatermarkCore {
                 // Embed in different channels based on position
                 const channel = (x + y) % 3;
                 if (messageIndex < binaryMessage.length) {
-                    const bit = parseInt(binaryMessage[messageIndex++]);
+                    const bit = parseInt(binaryMessage[messageIndex++], 2);
                     data[pixelIndex + channel] = (data[pixelIndex + channel] & 0xFE) | bit;
                 }
             }
@@ -175,7 +175,7 @@ class WatermarkCore {
         for (const pos of positions) {
             if (messageIndex < binaryMessage.length) {
                 const pixelIndex = (pos.y * width + pos.x) * 4;
-                const bit = parseInt(binaryMessage[messageIndex++]);
+                const bit = parseInt(binaryMessage[messageIndex++], 2);
                 data[pixelIndex + pos.channel] = (data[pixelIndex + pos.channel] & 0xFE) | bit;
             }
         }
@@ -205,7 +205,7 @@ class WatermarkCore {
                 
                 // Read bit: 0 → c[5,2] > c[4,3], 1 → c[4,3] > c[5,2]
                 const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
-                const bit = parseInt(encoded[bitIdx++]);
+                const bit = parseInt(encoded[bitIdx++], 2);
                 const diff = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
                 
                 if (bit === 0) {
@@ -249,7 +249,7 @@ class WatermarkCore {
             
             for (let i = 0; i < coeffs.length && messageIndex < encodedMessage.length; i++) {
                 coeffs[i] = this.embedInCoefficient(coeffs[i], 
-                    parseInt(encodedMessage[messageIndex++]));
+                    parseInt(encodedMessage[messageIndex++], 2));
             }
         }
         
@@ -277,7 +277,7 @@ class WatermarkCore {
             for (let x = 0; x < width; x++) {
                 const freqIndex = y * width + x;
                 if (messageIndex < encodedMessage.length) {
-                    const bit = parseInt(encodedMessage[messageIndex++]);
+                    const bit = parseInt(encodedMessage[messageIndex++], 2);
                     spectrum[freqIndex] = this.modulatePhase(spectrum[freqIndex], bit, phaseModulation[freqIndex]);
                 }
             }
@@ -319,7 +319,7 @@ class WatermarkCore {
                 // Embed in robust mid-frequency coefficients
                 for (let i = 1; i < 7 && messageIndex < dctLength; i++) {
                     for (let j = 1; j < 7 && messageIndex < dctLength; j++) {
-                        const bit = parseInt(encodedMessage[messageIndex++]);
+                        const bit = parseInt(encodedMessage[messageIndex++], 2);
                         // Convert 2D access to 1D for dctBlock array
                         const index = i * 8 + j;
                         if (index < dctBlock.length) {
@@ -345,7 +345,7 @@ class WatermarkCore {
             
             for (const [band, coeffs] of Object.entries(dwtDistribution)) {
                 for (let i = 0; i < coeffs.length; i++) {
-                    coeffs[i] = this.embedInCoefficient(coeffs[i], parseInt(remainingMessage[i % remainingMessage.length]));
+                    coeffs[i] = this.embedInCoefficient(coeffs[i], parseInt(remainingMessage[i % remainingMessage.length], 2));
                 }
             }
             
@@ -380,7 +380,7 @@ class WatermarkCore {
                 const pixelIndex = (y * width + x) * 4;
                 
                 if (messageIndex < encodedMessage.length) {
-                    const bit = parseInt(encodedMessage[messageIndex++]);
+                    const bit = parseInt(encodedMessage[messageIndex++], 2);
                     
                     // Apply adversarial embedding with perceptual masking
                     for (let c = 0; c < 3; c++) {
@@ -414,7 +414,7 @@ class WatermarkCore {
                 const pixelIndex = (y * width + x) * 4;
                 
                 if (messageIndex < encodedMessage.length) {
-                    const bit = parseInt(encodedMessage[messageIndex]);
+                    const bit = parseInt(encodedMessage[messageIndex], 2);
                     
                     // Apply JND-based masking for imperceptibility
                     for (let c = 0; c < 3; c++) {
@@ -449,7 +449,7 @@ class WatermarkCore {
             // Embed in null space regions
             for (const pixel of pixels) {
                 if (messageIndex < encodedMessage.length) {
-                    const bit = parseInt(encodedMessage[messageIndex++]);
+                    const bit = parseInt(encodedMessage[messageIndex++], 2);
                     const pixelIndex = pixel * 4;
                     
                     for (let c = 0; c < 3; c++) {
@@ -484,7 +484,7 @@ class WatermarkCore {
                 const patternValue = diffusionPattern[y * width + x];
                 
                 if (Math.abs(patternValue) > 0.3 && messageIndex < binaryMessage.length) {
-                    const bit = parseInt(binaryMessage[messageIndex++]);
+                    const bit = parseInt(binaryMessage[messageIndex++], 2);
                     
                     // Apply shallow diffusion embedding
                     for (let c = 0; c < 3; c++) {
@@ -599,7 +599,7 @@ class WatermarkCore {
                 const pixelIndex = (y * width + x) * 4;
                 
                 if (messageIndex < encodedMessage.length) {
-                    const bit = parseInt(encodedMessage[messageIndex++]);
+                    const bit = parseInt(encodedMessage[messageIndex++], 2);
                     const modification = diffusionPattern[messageIndex % diffusionPattern.length];
                     
                     for (let c = 0; c < 3; c++) {
@@ -1046,7 +1046,7 @@ class WatermarkCore {
     generateTamperMarkers(message) {
         const markers = [];
         for (let i = 0; i < message.length; i++) {
-            markers.push(parseInt(message[i]) % 4);
+            markers.push(parseInt(message[i], 10) % 4);
         }
         return markers;
     }
@@ -2337,7 +2337,7 @@ class WatermarkCore {
                 const charCode = parseInt(byte, 2);
                 
                 // Stop if we encounter null terminator or invalid character
-                if (charCode === 0 || charCode > 255) break;
+                if (charCode > 255) break;
                 
                 // Only add valid printable characters
                 if (charCode >= 32 && charCode <= 126) {
@@ -2379,7 +2379,7 @@ class WatermarkCore {
                 if (binaryMessage.length >= 8) {
                     const byte = binaryMessage.substring(0, 8);
                     const charCode = parseInt(byte, 2);
-                    if (charCode === 0 || charCode > 255) break;
+                    if (charCode > 255) break;
                     if (charCode >= 32 && charCode <= 126) {
                         extractedChars.push(String.fromCharCode(charCode));
                     }
@@ -2421,7 +2421,7 @@ class WatermarkCore {
                     const charCode = parseInt(byte, 2);
                     
                     // Stop if we encounter null terminator or invalid character
-                    if (charCode === 0 || charCode > 255) break;
+                    if (charCode > 255) break;
                     
                     // Only add valid printable characters
                     if (charCode >= 32 && charCode <= 126) {
@@ -2477,7 +2477,7 @@ class WatermarkCore {
                 const charCode = parseInt(byte, 2);
                 
                 // Stop if we encounter null terminator or invalid character
-                if (charCode === 0 || charCode > 255) break;
+                if (charCode > 255) break;
                 
                 // Only add valid printable characters
                 if (charCode >= 32 && charCode <= 126) {

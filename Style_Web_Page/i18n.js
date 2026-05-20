@@ -3,6 +3,14 @@
 var i18n = { lang: 'en', data: {} };
 var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
+function sanitizeHtml(html) {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\s+on\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/javascript\s*:/gi, 'blocked:');
+}
+
 // Browser language fallback mapping
 
 // Fallback language mapping for browser language
@@ -117,12 +125,13 @@ function applyLang() {
     mBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
 
+  var richHtmlKeys = ['page.about', 'page.privacy', 'page.contact', 'page.social'];
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.getAttribute('data-i18n');
     var text = i18n.data[key];
     if (text === undefined) return;
-    if (key.startsWith('page.') || key.startsWith('contact.') || key.startsWith('social.')) {
-      el.innerHTML = text;
+    if (richHtmlKeys.indexOf(key) >= 0) {
+      el.innerHTML = sanitizeHtml(text);
     } else {
       el.textContent = text;
     }
@@ -152,7 +161,7 @@ function applyLang() {
   var dzText = i18n.data['shared.drop_file'];
   if (dzText) {
     document.querySelectorAll('.dz-text').forEach(function(el) {
-      el.innerHTML = dzText;
+      el.innerHTML = sanitizeHtml(dzText);
     });
   }
 

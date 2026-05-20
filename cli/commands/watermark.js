@@ -152,7 +152,7 @@ function makePayload(secretData, key) {
 function extractPayload(bitsStr, key) {
   if (bitsStr.length < 32) return null;
   const dlen = parseInt(bitsStr.substr(0, 32), 2);
-  if (dlen <= 0 || dlen > 100000) return null;
+  if (isNaN(dlen) || dlen <= 0 || dlen > 100000) return null;
   if (bitsStr.length < 32 + dlen * 8) return null;
   const enc = bitsFromStr(bitsStr.substr(32, dlen * 8));
   const dec = xorBytes(enc, key);
@@ -231,7 +231,7 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
   const maxPixels = w * h * 3;
   const secretData = secretFile ? readFileBytes(secretFile) : null;
   const key = await deriveKey(password);
-  const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
+  const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
 
   if (isAdvanced) {
     // ── Advanced algorithms via WatermarkCore ──
@@ -329,7 +329,7 @@ async function doExtract(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanc
   const outputFile = opts.output;
   const { w, h } = imgData;
   const key = await deriveKey(password);
-  const keyVal = key.length ? key.reduce((a,b) => (a*31 + b) | 0, 0) : 12345;
+  const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
 
   if (isAdvanced) {
     if (!watermarkCore) { console.error('WatermarkCore not available'); process.exit(1); }

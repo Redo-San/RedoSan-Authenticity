@@ -510,7 +510,7 @@ class PixelInjection {
             <div style="text-align: center; margin-bottom: 15px;">
                 <h5 style="color: var(--primary); margin-bottom: 10px;">Detection Results</h5>
                 <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
-                    <pre style="text-align: left; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem;">${JSON.stringify(result, null, 2)}</pre>
+                    <pre style="text-align: left; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem;">${escHtml(JSON.stringify(result, null, 2))}</pre>
                 </div>
             </div>
         `;
@@ -658,18 +658,20 @@ class PixelInjection {
     getAdvancedOptions() {
         const options = {};
         const optionsContainer = document.getElementById('pi-options-container');
-        const reserved = ['__proto__', 'constructor', 'prototype'];
         
         if (optionsContainer) {
             const inputs = optionsContainer.querySelectorAll('input, select');
             inputs.forEach(input => {
-                if (reserved.indexOf(input.id) >= 0) return;
+                var key = input.id;
+                var lkey = key.toLowerCase();
+                if (lkey === '__proto__' || lkey === 'constructor' || lkey === 'prototype') return;
                 if (input.type === 'checkbox') {
-                    options[input.id] = input.checked;
-                } else if (input.type === 'range') {
-                    options[input.id] = parseFloat(input.value);
+                    options[key] = input.checked;
+                } else if (input.type === 'number' || input.type === 'range') {
+                    var val = parseFloat(input.value);
+                    if (!isNaN(val)) options[key] = val;
                 } else {
-                    options[input.id] = input.value;
+                    options[key] = input.value;
                 }
             });
         }
@@ -779,8 +781,7 @@ class PixelInjection {
                 const byte = binaryMessage.substring(0, 8);
                 const charCode = parseInt(byte, 2);
                 
-                // Stop if we encounter null terminator or invalid character
-                if (charCode === 0) break;
+                // Stop if we encounter null terminator
                 
                 // Only add valid printable characters
                 if (charCode >= 32 && charCode <= 126) {

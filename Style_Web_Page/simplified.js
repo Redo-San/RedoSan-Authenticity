@@ -935,7 +935,7 @@ function renderWatermarkStep(body) {
 
 function runWatermarkStep() {
   showProgress();
-  var algo = parseInt(document.getElementById('swm-type').value);
+  var algo = parseInt(document.getElementById('swm-type').value, 10);
   var pass = document.getElementById('swm-password').value || '';
   var statusEl = document.getElementById('swm-status');
   var btn = document.getElementById('swm-btn');

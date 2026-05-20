@@ -92,7 +92,7 @@ function embedInDCT(Y, w, h, payloadBits, strength) {
         const dct = dct8x8(block);
         for (const [u, v] of MID) {
             if (bidx >= payloadBits.length) break;
-            const bit = parseInt(payloadBits[bidx]);
+            const bit = parseInt(payloadBits[bidx], 2);
             dct[u][v] = bit === 1 ? Math.abs(dct[u][v]) + strength : -Math.abs(dct[u][v]) - strength;
             bidx++;
         }
@@ -130,9 +130,9 @@ function wm1_embed(imgData, payloadBits) {
     for (let y = 0; y < h && idx < payloadBits.length; y++) {
         for (let x = 0; x < w && idx < payloadBits.length; x++) {
             const i = (y * w + x) * 4;
-            if (idx < payloadBits.length) { data[i] = (data[i] & ~1) | parseInt(payloadBits[idx]); idx++; }
-            if (idx < payloadBits.length) { data[i+1] = (data[i+1] & ~1) | parseInt(payloadBits[idx]); idx++; }
-            if (idx < payloadBits.length) { data[i+2] = (data[i+2] & ~1) | parseInt(payloadBits[idx]); idx++; }
+            if (idx < payloadBits.length) { data[i] = (data[i] & ~1) | parseInt(payloadBits[idx], 2); idx++; }
+            if (idx < payloadBits.length) { data[i+1] = (data[i+1] & ~1) | parseInt(payloadBits[idx], 2); idx++; }
+            if (idx < payloadBits.length) { data[i+2] = (data[i+2] & ~1) | parseInt(payloadBits[idx], 2); idx++; }
         }
     }
     return imgData;
@@ -170,9 +170,9 @@ function wm3_embed(imgData, payloadBits, seed) {
     for (const pi of order) {
         if (idx >= payloadBits.length) break;
         const i = pi * 4;
-        if (idx < payloadBits.length) { data[i] = (data[i] & ~1) | parseInt(payloadBits[idx]); idx++; }
-        if (idx < payloadBits.length) { data[i+1] = (data[i+1] & ~1) | parseInt(payloadBits[idx]); idx++; }
-        if (idx < payloadBits.length) { data[i+2] = (data[i+2] & ~1) | parseInt(payloadBits[idx]); idx++; }
+        if (idx < payloadBits.length) { data[i] = (data[i] & ~1) | parseInt(payloadBits[idx], 2); idx++; }
+        if (idx < payloadBits.length) { data[i+1] = (data[i+1] & ~1) | parseInt(payloadBits[idx], 2); idx++; }
+        if (idx < payloadBits.length) { data[i+2] = (data[i+2] & ~1) | parseInt(payloadBits[idx], 2); idx++; }
     }
     return imgData;
 }
@@ -201,15 +201,15 @@ function wm6_embed(imgData, payloadBits) {
         for (let x = 0; x < w && idx < payloadBits.length; x++) {
             const i = (y * w + x) * 4;
             if (idx < payloadBits.length) {
-                const b1 = parseInt(payloadBits[idx]), b2 = idx+1 < payloadBits.length ? parseInt(payloadBits[idx+1]) : 0;
+                const b1 = parseInt(payloadBits[idx], 2), b2 = idx+1 < payloadBits.length ? parseInt(payloadBits[idx+1], 2) : 0;
                 data[i] = (data[i] & ~3) | (b1 << 1 | b2); idx += 2;
             }
             if (idx < payloadBits.length) {
-                const b1 = parseInt(payloadBits[idx]), b2 = idx+1 < payloadBits.length ? parseInt(payloadBits[idx+1]) : 0;
+                const b1 = parseInt(payloadBits[idx], 2), b2 = idx+1 < payloadBits.length ? parseInt(payloadBits[idx+1], 2) : 0;
                 data[i+1] = (data[i+1] & ~3) | (b1 << 1 | b2); idx += 2;
             }
             if (idx < payloadBits.length) {
-                const b1 = parseInt(payloadBits[idx]), b2 = idx+1 < payloadBits.length ? parseInt(payloadBits[idx+1]) : 0;
+                const b1 = parseInt(payloadBits[idx], 2), b2 = idx+1 < payloadBits.length ? parseInt(payloadBits[idx+1], 2) : 0;
                 data[i+2] = (data[i+2] & ~3) | (b1 << 1 | b2); idx += 2;
             }
         }

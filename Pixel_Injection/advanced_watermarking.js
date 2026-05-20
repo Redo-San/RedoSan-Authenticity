@@ -60,7 +60,7 @@ class AdvancedWatermarking {
                 // Embed in RGB channels with spread spectrum
                 for (let channel = 0; channel < 3 && messageIndex < binaryMessage.length; channel++) {
                     data[pixelIndex + channel] = (data[pixelIndex + channel] & 0xFE) | 
-                        parseInt(binaryMessage[messageIndex++]);
+                        parseInt(binaryMessage[messageIndex++], 2);
                 }
             }
         }
@@ -97,7 +97,7 @@ class AdvancedWatermarking {
                 
                 for (const [i, j] of embedPositions) {
                     if (messageIndex < binaryMessage.length) {
-                        const bit = parseInt(binaryMessage[messageIndex++]);
+                        const bit = parseInt(binaryMessage[messageIndex++], 2);
                         dctBlock[i][j] = this.modifyCoefficient(dctBlock[i][j], bit, strength);
                     }
                 }
@@ -132,7 +132,7 @@ class AdvancedWatermarking {
             const bandCoeffs = waveletCoeffs[band];
             for (let i = 0; i < bandCoeffs.length && messageIndex < binaryMessage.length; i++) {
                 bandCoeffs[i] = this.embedInCoefficient(bandCoeffs[i], 
-                    parseInt(binaryMessage[messageIndex++]));
+                    parseInt(binaryMessage[messageIndex++], 2));
             }
         }
         
@@ -160,7 +160,7 @@ class AdvancedWatermarking {
         // Apply watermark with perceptual masking
         for (let i = 0; i < data.length; i += 4) {
             if (i / 4 < binaryMessage.length) {
-                const bit = parseInt(binaryMessage[i / 4]);
+                const bit = parseInt(binaryMessage[i / 4], 2);
                 data[i] = this.applyPerceptualMask(data[i], bit, noisePattern[i / 4]);
                 data[i + 1] = this.applyPerceptualMask(data[i + 1], bit, noisePattern[i / 4]);
                 data[i + 2] = this.applyPerceptualMask(data[i + 2], bit, noisePattern[i / 4]);
@@ -185,7 +185,7 @@ class AdvancedWatermarking {
             for (let x = 0; x < width; x++) {
                 const pixelIndex = (y * width + x) * 4;
                 const messageIndex = (y * width + x) % binaryMessage.length;
-                const bit = parseInt(binaryMessage[messageIndex]);
+                const bit = parseInt(binaryMessage[messageIndex], 2);
                 
                 // Apply JND masking for imperceptibility
                 const jndMask = this.calculateJNDMask(data, pixelIndex, x, y);
