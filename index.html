@@ -117,9 +117,11 @@
         <a href="#" onclick="switchLang('ja'); return false;" class="lang-option" data-lang="ja">日本語</a>
         <a href="#" onclick="switchLang('ko'); return false;" class="lang-option" data-lang="ko">한국어</a>
         </div>
+        <button class="simple-clear-btn" onclick="clearSimpleData()" title="Clear all data" id="simpleClearBtn">🗑️</button>
       </div>
     </div>
   </div>
+  <div class="simple-progress-bar" id="simpleProgressBar" style="display:none"><div class="spb-fill"></div></div>
   <div class="simple-progress" id="simpleProgress"></div>
   <div class="simple-body" id="simpleBody">
     <div class="simple-loading" data-i18n="simple.loading">Loading...</div>
@@ -862,5 +864,11 @@ document.addEventListener('click', function startMusic() {
   document.removeEventListener('click', startMusic);
 });
 </script>
+
+<!-- Lightbox overlay -->
+<div id="lightbox" class="lightbox" style="display:none" onclick="closeLightbox()">
+  <span class="lightbox-close">&times;</span>
+  <img class="lightbox-img" id="lightboxImg" alt="">
+</div>
 </body>
 </html>

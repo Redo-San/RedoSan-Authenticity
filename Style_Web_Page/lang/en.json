@@ -316,6 +316,7 @@
   "simple.info_phone": "Phone",
   "simple.info_phone_ph": "e.g. 5xx xxx xxxx",
   "simple.phone_digits_only": "Please enter numbers only",
+  "simple.clear_confirm": "Clear all data? Your current progress will be lost.",
   "simple.email_invalid": "Please enter a valid email address",
   "simple.url_invalid": "Please enter a valid URL (e.g. https://example.com)",
   "simple.select_country": "Select country",
