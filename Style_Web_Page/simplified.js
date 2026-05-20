@@ -10,7 +10,7 @@ var simpleSteps = [];
 var simpleResults = {};
 var simpleStepDone = false;
 var simpleUserInfo = {
-  name: '', email: '', phone: '', website: '',
+  name: '', email: '', phone: '', phoneCode: '', website: '',
   social: { tiktok: '', facebook: '', instagram: '', youtube: '' },
   isArtist: false,
   music: { spotify: '', appleMusic: '', youtubeMusic: '', soundcloud: '', bandcamp: '' }
@@ -129,7 +129,7 @@ function initSimplified() {
   simpleIsAI = false; simpleStep = 0; simpleSteps = [];
   simpleResults = {};
   simpleUserInfo = {
-    name: '', email: '', phone: '', website: '',
+    name: '', email: '', phone: '', phoneCode: '', website: '',
     social: { tiktok: '', facebook: '', instagram: '', youtube: '' },
     isArtist: false,
     music: { spotify: '', appleMusic: '', youtubeMusic: '', soundcloud: '', bandcamp: '' }
@@ -217,6 +217,79 @@ function restartSimple() {
   initSimplified();
 }
 
+// ── Country code data ──
+
+var COUNTRY_CODES = [
+  { code: 'SA', dial: '+966', name: 'السعودية' },
+  { code: 'AE', dial: '+971', name: 'الإمارات' },
+  { code: 'EG', dial: '+20', name: 'مصر' },
+  { code: 'KW', dial: '+965', name: 'الكويت' },
+  { code: 'QA', dial: '+974', name: 'قطر' },
+  { code: 'BH', dial: '+973', name: 'البحرين' },
+  { code: 'OM', dial: '+968', name: 'عمان' },
+  { code: 'IQ', dial: '+964', name: 'العراق' },
+  { code: 'JO', dial: '+962', name: 'الأردن' },
+  { code: 'LB', dial: '+961', name: 'لبنان' },
+  { code: 'PS', dial: '+970', name: 'فلسطين' },
+  { code: 'SY', dial: '+963', name: 'سوريا' },
+  { code: 'YE', dial: '+967', name: 'اليمن' },
+  { code: 'SD', dial: '+249', name: 'السودان' },
+  { code: 'LY', dial: '+218', name: 'ليبيا' },
+  { code: 'TN', dial: '+216', name: 'تونس' },
+  { code: 'DZ', dial: '+213', name: 'الجزائر' },
+  { code: 'MA', dial: '+212', name: 'المغرب' },
+  { code: 'TR', dial: '+90', name: 'تركيا' },
+  { code: 'US', dial: '+1', name: 'USA' },
+  { code: 'GB', dial: '+44', name: 'UK' },
+  { code: 'CA', dial: '+1', name: 'Canada' },
+  { code: 'AU', dial: '+61', name: 'Australia' },
+  { code: 'IN', dial: '+91', name: 'India' },
+  { code: 'CN', dial: '+86', name: 'China' },
+  { code: 'JP', dial: '+81', name: 'Japan' },
+  { code: 'KR', dial: '+82', name: 'South Korea' },
+  { code: 'FR', dial: '+33', name: 'France' },
+  { code: 'DE', dial: '+49', name: 'Germany' },
+  { code: 'IT', dial: '+39', name: 'Italy' },
+  { code: 'ES', dial: '+34', name: 'Spain' },
+  { code: 'NL', dial: '+31', name: 'Netherlands' },
+  { code: 'RU', dial: '+7', name: 'Russia' },
+  { code: 'BR', dial: '+55', name: 'Brazil' },
+  { code: 'PK', dial: '+92', name: 'Pakistan' },
+  { code: 'BD', dial: '+880', name: 'Bangladesh' },
+  { code: 'ID', dial: '+62', name: 'Indonesia' },
+  { code: 'MY', dial: '+60', name: 'Malaysia' },
+  { code: 'SG', dial: '+65', name: 'Singapore' },
+  { code: 'TH', dial: '+66', name: 'Thailand' },
+  { code: 'PH', dial: '+63', name: 'Philippines' },
+  { code: 'NG', dial: '+234', name: 'Nigeria' },
+  { code: 'ZA', dial: '+27', name: 'South Africa' },
+  { code: 'KE', dial: '+254', name: 'Kenya' },
+  { code: 'IR', dial: '+98', name: 'Iran' },
+  { code: 'AF', dial: '+93', name: 'Afghanistan' }
+];
+
+function getDefaultPhoneCode() {
+  try {
+    var lang = navigator.language || navigator.userLanguage || '';
+    var parts = lang.split('-');
+    if (parts.length > 1 && parts[1].length === 2) {
+      for (var i = 0; i < COUNTRY_CODES.length; i++) {
+        if (COUNTRY_CODES[i].code === parts[1].toUpperCase()) return COUNTRY_CODES[i];
+      }
+    }
+  } catch(e) {}
+  return COUNTRY_CODES[0]; // default to Saudi Arabia
+}
+
+function phoneCodeOptionsHtml(selected) {
+  var html = '';
+  for (var i = 0; i < COUNTRY_CODES.length; i++) {
+    var c = COUNTRY_CODES[i];
+    html += '<option value="' + c.dial + '"' + (c.dial === selected ? ' selected' : '') + '>' + c.code + ' ' + c.dial + '</option>';
+  }
+  return html;
+}
+
 // ── Step renderers ──
 
 function renderUpload(body) {
@@ -240,7 +313,10 @@ function renderUpload(body) {
     '<div class="form-group"><label>' + __('simple.info_email', 'Email') + ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' + __('simple.info_email_ph', 'e.g. john@example.com') + '" value="' + escHtml(simpleUserInfo.email) + '" required></div>' +
     '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + ' <span style="color:var(--danger)">*</span></label>' +
-    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. +1 234 567 890') + '" value="' + escHtml(simpleUserInfo.phone) + '" required></div>' +
+    '<div class="simple-phone-group">' +
+    '<select id="sinfo-phonecode">' + phoneCodeOptionsHtml(simpleUserInfo.phoneCode) + '</select>' +
+    '<input type="tel" id="sinfo-phone" class="simple-info-field" placeholder="' + __('simple.info_phone_ph', 'e.g. 5x xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="this.value=this.value.replace(/\\D/g,'')">' +
+    '</div></div>' +
     '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website) + '" required></div>' +
     '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
@@ -276,6 +352,7 @@ function toggleArtistFields() {
 function saveSimpleUserInfo() {
   simpleUserInfo.name = (document.getElementById('sinfo-name') || {}).value || '';
   simpleUserInfo.email = (document.getElementById('sinfo-email') || {}).value || '';
+  simpleUserInfo.phoneCode = (document.getElementById('sinfo-phonecode') || {}).value || '';
   simpleUserInfo.phone = (document.getElementById('sinfo-phone') || {}).value || '';
   simpleUserInfo.website = (document.getElementById('sinfo-website') || {}).value || '';
   simpleUserInfo.social = {

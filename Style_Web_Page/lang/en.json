@@ -314,7 +314,7 @@
   "simple.info_email": "Email",
   "simple.info_email_ph": "e.g. john@example.com",
   "simple.info_phone": "Phone",
-  "simple.info_phone_ph": "e.g. +1 234 567 890",
+  "simple.info_phone_ph": "e.g. 5xx xxx xxxx",
   "simple.info_website": "Website",
   "simple.info_website_ph": "e.g. https://example.com",
   "simple.info_social": "Social Links",
