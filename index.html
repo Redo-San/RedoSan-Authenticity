@@ -699,13 +699,27 @@
         </div>
       </div>
 
-      <!-- Manual results (paste from other sections) -->
+      <!-- Result files (upload from other sections) -->
       <div class="form-group">
-        <label data-i18n="cert.results_label">Tool Results (paste from other sections)</label>
-        <textarea id="cert-result-wm" class="cert-textarea" placeholder="Watermark result (optional)" rows="2"></textarea>
-        <textarea id="cert-result-pi" class="cert-textarea" placeholder="Pixel injection result (optional)" rows="2" style="margin-top:6px"></textarea>
-        <textarea id="cert-result-fp" class="cert-textarea" placeholder="Fingerprint result (optional)" rows="2" style="margin-top:6px"></textarea>
-        <textarea id="cert-result-ts" class="cert-textarea" placeholder="Timestamp result (optional)" rows="2" style="margin-top:6px"></textarea>
+        <label data-i18n="cert.results_label">Tool Results (upload from other sections)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+          <div>
+            <label for="cert-result-wm" style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:2px" data-i18n="cert.wm_label">Watermarked image</label>
+            <input type="file" id="cert-result-wm" accept="image/png,image/jpeg">
+          </div>
+          <div>
+            <label for="cert-result-pi" style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:2px" data-i18n="cert.pi_label">Pixel-injected image</label>
+            <input type="file" id="cert-result-pi" accept="image/png,image/jpeg">
+          </div>
+          <div>
+            <label for="cert-result-fp" style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:2px" data-i18n="cert.fp_label">Fingerprint file (.json, .txt)</label>
+            <input type="file" id="cert-result-fp" accept=".json,.txt">
+          </div>
+          <div>
+            <label for="cert-result-ts" style="font-size:0.72rem;color:var(--text-muted);display:block;margin-bottom:2px" data-i18n="cert.ts_label">Timestamp file (.ots)</label>
+            <input type="file" id="cert-result-ts" accept=".ots">
+          </div>
+        </div>
       </div>
 
       <!-- Generate button -->

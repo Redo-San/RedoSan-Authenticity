@@ -216,14 +216,20 @@ async function downloadCertPDF(data) {
     doc.text('Watermark', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text('Algorithm: ' + (data.watermarkAlgo || 'Embedded'), margin, y); y += 4;
+    doc.text('Algorithm: ' + (data.watermarkAlgo || 'Uploaded file'), margin, y); y += 4;
+    if (data.watermarkUrl) {
+      // Show watermarked image thumbnail
+      var wmImgH = 60;
+      var wmImgW = wmImgH;
+      checkPage(wmImgH + 8);
+      doc.addImage(data.watermarkUrl, 'PNG', margin, y, wmImgW, wmImgH);
+      y += wmImgH + 4;
+    }
     if (data.watermarkResult) {
       doc.setFontSize(7);
       var wmLines = doc.splitTextToSize(data.watermarkResult, pageW);
       doc.text(wmLines, margin, y);
       y += wmLines.length * 3.5;
-    } else {
-      doc.text('Watermark embedded successfully.', margin, y); y += 4;
     }
     y += 2;
   }
@@ -236,13 +242,19 @@ async function downloadCertPDF(data) {
     doc.text('Pixel Injection', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
+    if (data.piFileDataUrl) {
+      // Show pixel-injected image thumbnail
+      var piImgH = 60;
+      var piImgW = piImgH;
+      checkPage(piImgH + 8);
+      doc.addImage(data.piFileDataUrl, 'PNG', margin, y, piImgW, piImgH);
+      y += piImgH + 4;
+    }
     if (data.piResultHtml) {
       var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       var piLines = doc.splitTextToSize(piText, pageW);
       doc.text(piLines, margin, y);
       y += piLines.length * 3.5;
-    } else {
-      doc.text('Message injected successfully.', margin, y); y += 4;
     }
     y += 2;
   }
@@ -440,11 +452,12 @@ async function downloadCertDOCX(data) {
   // 4. Watermark
   if (data.watermark) {
     addHeading('Watermark', 2);
-    addLabelValue('Algorithm', data.watermarkAlgo || 'Embedded');
+    addLabelValue('Algorithm', data.watermarkAlgo || 'Uploaded file');
+    if (data.watermarkUrl) {
+      addImage(data.watermarkUrl, 150, 150);
+    }
     if (data.watermarkResult) {
       addBody(data.watermarkResult);
-    } else {
-      addBody('Watermark embedded successfully.');
     }
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
@@ -452,11 +465,12 @@ async function downloadCertDOCX(data) {
   // 5. Pixel Injection
   if (data.pixelInjection) {
     addHeading('Pixel Injection', 2);
+    if (data.piFileDataUrl) {
+      addImage(data.piFileDataUrl, 150, 150);
+    }
     if (data.piResultHtml) {
       var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       addBody(piText);
-    } else {
-      addBody('Message injected successfully.');
     }
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
@@ -606,8 +620,8 @@ async function downloadCertEPUB(data) {
 
     (imgBase64 ? '<div class="img-wrapper"><img src="images/photo.' + (data.file.type === 'image/png' ? 'png' : 'jpg') + '" alt="Original Image"/></div>' : '') +
 
-    (data.watermark ? '<h2>Watermark</h2><p><strong>Algorithm:</strong> ' + escHtml(data.watermarkAlgo || 'Embedded') + '</p><pre>' + escHtml(data.watermarkResult || 'Watermark embedded successfully.') + '</pre>' : '') +
-    (data.pixelInjection ? '<h2>Pixel Injection</h2><pre>' + escHtml(data.piResultHtml ? data.piResultHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : 'Message injected successfully.') + '</pre>' : '') +
+    (data.watermark ? '<h2>Watermark</h2><p><strong>File:</strong> ' + escHtml(data.watermarkAlgo || 'Uploaded') + '</p>' + (data.watermarkUrl ? '<div class="img-wrapper"><img src="images/watermarked.png" alt="Watermarked Image"/></div>' : '') + '<pre>' + escHtml(data.watermarkResult || 'Watermark uploaded.') + '</pre>' : '') +
+    (data.pixelInjection ? '<h2>Pixel Injection</h2>' + (data.piFileDataUrl ? '<div class="img-wrapper"><img src="images/pixel_injected.png" alt="Pixel-injected Image"/></div>' : '') + '<pre>' + escHtml(data.piResultHtml ? data.piResultHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : 'Pixel injection uploaded.') + '</pre>' : '') +
     (data.timestamp ? '<h2>Timestamp</h2><pre>' + escHtml(data.tsResult || 'Timestamp created successfully.') + '</pre>' : '') +
 
     fpSection +
@@ -651,6 +665,12 @@ async function downloadCertEPUB(data) {
     var imgExt = data.file.type === 'image/png' ? 'png' : 'jpg';
     manifestItems.push({ id: 'img', href: 'images/photo.' + imgExt, mt: data.file.type || 'image/jpeg' });
   }
+  if (data.watermarkUrl) {
+    manifestItems.push({ id: 'wm_img', href: 'images/watermarked.png', mt: 'image/png' });
+  }
+  if (data.piFileDataUrl) {
+    manifestItems.push({ id: 'pi_img', href: 'images/pixel_injected.png', mt: 'image/png' });
+  }
   manifestItems.push({ id: 'qr', href: 'images/qr.png', mt: 'image/png' });
 
   var spineItems = manifestItems.filter(function(m) { return m.mt === 'application/xhtml+xml'; });
@@ -688,6 +708,14 @@ async function downloadCertEPUB(data) {
   if (data.file.dataUrl) {
     var imgExt = data.file.type === 'image/png' ? 'png' : 'jpg';
     zip.folder('OEBPS').folder('images').file('photo.' + imgExt, imgBase64, { base64: true });
+  }
+  if (data.watermarkUrl) {
+    var wmBase64 = data.watermarkUrl.indexOf('base64,') > -1 ? data.watermarkUrl.split(',')[1] : '';
+    if (wmBase64) zip.folder('OEBPS').folder('images').file('watermarked.png', wmBase64, { base64: true });
+  }
+  if (data.piFileDataUrl) {
+    var piBase64 = data.piFileDataUrl.indexOf('base64,') > -1 ? data.piFileDataUrl.split(',')[1] : '';
+    if (piBase64) zip.folder('OEBPS').folder('images').file('pixel_injected.png', piBase64, { base64: true });
   }
   zip.folder('OEBPS').folder('images').file('qr.png', qrBase64, { base64: true });
 
@@ -745,10 +773,42 @@ async function generateProfessionalCert() {
     var buf = null;
     if (file) { buf = await file.arrayBuffer(); }
 
-    var wmText = getValOrEmpty('cert-result-wm');
-    var piText = getValOrEmpty('cert-result-pi');
-    var fpText = getValOrEmpty('cert-result-fp');
-    var tsText = getValOrEmpty('cert-result-ts');
+    // Read result files
+    function getFileFrom(id) {
+      var el = document.getElementById(id);
+      return el && el.files && el.files[0] ? el.files[0] : null;
+    }
+
+    async function readFileAsText(f) {
+      if (!f) return '';
+      return new Promise(function(resolve) {
+        var r = new FileReader();
+        r.onload = function(e) { resolve(e.target.result); };
+        r.onerror = function() { resolve(''); };
+        r.readAsText(f);
+      });
+    }
+
+    async function readFileAsDataUrl(f) {
+      if (!f) return null;
+      return new Promise(function(resolve) {
+        var r = new FileReader();
+        r.onload = function(e) { resolve(e.target.result); };
+        r.onerror = function() { resolve(null); };
+        r.readAsDataURL(f);
+      });
+    }
+
+    var wmFile = getFileFrom('cert-result-wm');
+    var piFile = getFileFrom('cert-result-pi');
+    var fpFile = getFileFrom('cert-result-fp');
+    var tsFile = getFileFrom('cert-result-ts');
+
+    var wmDataUrl = wmFile ? await readFileAsDataUrl(wmFile) : null;
+    var piDataUrl = piFile ? await readFileAsDataUrl(piFile) : null;
+    var fpText = fpFile ? await readFileAsText(fpFile) : '';
+    var tsName = tsFile ? tsFile.name : '';
+    var tsSize = tsFile ? tsFile.size : 0;
 
     _certData = {
       generatedAt: new Date().toISOString(),
@@ -773,19 +833,21 @@ async function generateProfessionalCert() {
         }
       },
       file: { name: file ? file.name : '', size: file ? file.size : 0, type: file ? file.type : '', width: 0, height: 0, dataUrl: null, hash: '' },
-      watermark: !!wmText,
-      watermarkUrl: null,
-      watermarkAlgo: '',
-      watermarkResult: wmText,
-      pixelInjection: !!piText,
-      piResultHtml: piText,
-      timestamp: !!tsText,
-      tsResult: tsText,
-      fingerprint: !!fpText,
-      fpResult: fpText ? { hashes: {}, perceptual_hashes: {}, raw: fpText } : null
+      watermark: !!wmFile,
+      watermarkUrl: wmDataUrl || null,
+      watermarkAlgo: wmFile ? wmFile.name : '',
+      watermarkResult: wmFile ? ('Watermarked image: ' + wmFile.name + ' (' + fmtSize(wmFile.size) + ')') : '',
+      pixelInjection: !!piFile,
+      piResultHtml: piFile ? ('Pixel-injected image: ' + piFile.name + ' (' + fmtSize(piFile.size) + ')') : '',
+      piFileDataUrl: piDataUrl || null,
+      timestamp: !!tsFile,
+      tsResult: tsFile ? ('Timestamp file: ' + tsName + ' (' + fmtSize(tsSize) + ')') : '',
+      fingerprint: !!fpFile,
+      fpResult: fpText ? { hashes: {}, perceptual_hashes: {}, raw: fpText } : null,
+      fpFileName: fpFile ? fpFile.name : ''
     };
 
-    // Image dimensions + hash
+    // Main image dimensions + hash
     if (buf && file) {
       var dataUrl = bufToDataURL(buf, file.type);
       var dims = await loadImageDimensions(dataUrl);
@@ -831,10 +893,7 @@ function resetProfessionalCert() {
     'cert-result-wm', 'cert-result-pi', 'cert-result-fp', 'cert-result-ts'];
   ids.forEach(function(id) {
     var el = document.getElementById(id);
-    if (el) {
-      if (el.type === 'file') el.value = '';
-      else el.value = '';
-    }
+    if (el) { el.value = ''; }
   });
   var dlSection = document.getElementById('cert-download-section');
   if (dlSection) dlSection.style.display = 'none';
