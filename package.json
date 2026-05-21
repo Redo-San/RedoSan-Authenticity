@@ -8,16 +8,29 @@
   "scripts": {
     "start": "node cli/index.js",
     "link": "npm link",
-    "test": "node --test --test-concurrency=1 --test-timeout=300000 --test-force-exit test/utils.test.js test/fingerprint.test.js test/metadata.test.js test/watermark.test.js test/pixel_injection.test.js test/c2pa.test.js"
+    "test": "node --test --test-concurrency=1 --test-timeout=300000 --test-force-exit test/utils.test.js test/fingerprint.test.js test/metadata.test.js test/watermark.test.js test/pixel_injection.test.js test/c2pa.test.js",
+    "coverage": "c8 node --test --test-concurrency=1 --test-timeout=300000 --test-force-exit test/utils.test.js test/fingerprint.test.js test/metadata.test.js test/watermark.test.js test/pixel_injection.test.js test/c2pa.test.js",
+    "coverage:report": "c8 report --reporter=text --reporter=lcov"
   },
-  "keywords": ["watermark", "fingerprint", "hash", "c2pa", "metadata", "timestamp", "steganography"],
+  "keywords": [
+    "watermark",
+    "fingerprint",
+    "hash",
+    "c2pa",
+    "metadata",
+    "timestamp",
+    "steganography"
+  ],
   "license": "MIT",
   "dependencies": {
-    "commander": "^14.0.3",
-    "canvas": "^3.2.3"
+    "canvas": "^3.2.3",
+    "commander": "^14.0.3"
   },
   "overrides": {
     "@mapbox/node-pre-gyp": "2.0.3",
     "tar": "7.5.15"
+  },
+  "devDependencies": {
+    "c8": "^11.0.0"
   }
 }

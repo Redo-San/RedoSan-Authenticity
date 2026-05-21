@@ -1,0 +1,40 @@
+security:
+  - sw.js
+  - 404.html
+  - cli/utils.js
+  - Style_Web_Page/shared.js
+  - .github/workflows/codeql-analysis.yml
+  - .github/workflows/ci.yml
+
+watermark:
+  - Watermark/**/*
+
+pixel-injection:
+  - Pixel_Injection/**/*
+
+fingerprint:
+  - Fingerprint/**/*
+
+metadata:
+  - Metadata/**/*
+
+c2pa:
+  - C2PA/**/*
+
+timestamp:
+  - Timestamp/**/*
+
+CLI:
+  - cli/**/*
+
+i18n:
+  - Style_Web_Page/lang/**/*
+  - Style_Web_Page/i18n.js
+
+UI:
+  - Style_Web_Page/*.js
+  - index.html
+  - Style_Web_Page/style.css
+
+tests:
+  - test/**/*
