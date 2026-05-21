@@ -216,15 +216,7 @@ async function downloadCertPDF(data) {
     doc.text('Watermark', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text('Algorithm: ' + (data.watermarkAlgo || 'Uploaded file'), margin, y); y += 4;
-    if (data.watermarkUrl) {
-      // Show watermarked image thumbnail
-      var wmImgH = 60;
-      var wmImgW = wmImgH;
-      checkPage(wmImgH + 8);
-      doc.addImage(data.watermarkUrl, 'PNG', margin, y, wmImgW, wmImgH);
-      y += wmImgH + 4;
-    }
+    doc.text('Result file: ' + (data.watermarkAlgo || 'Uploaded'), margin, y); y += 4;
     if (data.watermarkResult) {
       doc.setFontSize(7);
       var wmLines = doc.splitTextToSize(data.watermarkResult, pageW);
@@ -242,14 +234,7 @@ async function downloadCertPDF(data) {
     doc.text('Pixel Injection', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    if (data.piFileDataUrl) {
-      // Show pixel-injected image thumbnail
-      var piImgH = 60;
-      var piImgW = piImgH;
-      checkPage(piImgH + 8);
-      doc.addImage(data.piFileDataUrl, 'PNG', margin, y, piImgW, piImgH);
-      y += piImgH + 4;
-    }
+    doc.text('Result file: ' + (data.watermarkAlgo || 'Uploaded'), margin, y); y += 4;  // reuse watermarkAlgo for filename
     if (data.piResultHtml) {
       var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       var piLines = doc.splitTextToSize(piText, pageW);
@@ -452,10 +437,7 @@ async function downloadCertDOCX(data) {
   // 4. Watermark
   if (data.watermark) {
     addHeading('Watermark', 2);
-    addLabelValue('Algorithm', data.watermarkAlgo || 'Uploaded file');
-    if (data.watermarkUrl) {
-      addImage(data.watermarkUrl, 150, 150);
-    }
+    addLabelValue('Result file', data.watermarkAlgo || 'Uploaded');
     if (data.watermarkResult) {
       addBody(data.watermarkResult);
     }
@@ -465,9 +447,7 @@ async function downloadCertDOCX(data) {
   // 5. Pixel Injection
   if (data.pixelInjection) {
     addHeading('Pixel Injection', 2);
-    if (data.piFileDataUrl) {
-      addImage(data.piFileDataUrl, 150, 150);
-    }
+    addLabelValue('Result file', data.watermarkAlgo || 'Uploaded');
     if (data.piResultHtml) {
       var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       addBody(piText);
@@ -620,8 +600,8 @@ async function downloadCertEPUB(data) {
 
     (imgBase64 ? '<div class="img-wrapper"><img src="images/photo.' + (data.file.type === 'image/png' ? 'png' : 'jpg') + '" alt="Original Image"/></div>' : '') +
 
-    (data.watermark ? '<h2>Watermark</h2><p><strong>File:</strong> ' + escHtml(data.watermarkAlgo || 'Uploaded') + '</p>' + (data.watermarkUrl ? '<div class="img-wrapper"><img src="images/watermarked.png" alt="Watermarked Image"/></div>' : '') + '<pre>' + escHtml(data.watermarkResult || 'Watermark uploaded.') + '</pre>' : '') +
-    (data.pixelInjection ? '<h2>Pixel Injection</h2>' + (data.piFileDataUrl ? '<div class="img-wrapper"><img src="images/pixel_injected.png" alt="Pixel-injected Image"/></div>' : '') + '<pre>' + escHtml(data.piResultHtml ? data.piResultHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : 'Pixel injection uploaded.') + '</pre>' : '') +
+    (data.watermark ? '<h2>Watermark</h2><p><strong>Result file:</strong> ' + escHtml(data.watermarkAlgo || 'Uploaded') + '</p><pre>' + escHtml(data.watermarkResult || 'Watermark result uploaded.') + '</pre>' : '') +
+    (data.pixelInjection ? '<h2>Pixel Injection</h2><p><strong>Result file:</strong> ' + escHtml(data.watermarkAlgo || 'Uploaded') + '</p><pre>' + escHtml(data.piResultHtml ? data.piResultHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : 'Pixel injection result uploaded.') + '</pre>' : '') +
     (data.timestamp ? '<h2>Timestamp</h2><pre>' + escHtml(data.tsResult || 'Timestamp created successfully.') + '</pre>' : '') +
 
     fpSection +
@@ -665,12 +645,6 @@ async function downloadCertEPUB(data) {
     var imgExt = data.file.type === 'image/png' ? 'png' : 'jpg';
     manifestItems.push({ id: 'img', href: 'images/photo.' + imgExt, mt: data.file.type || 'image/jpeg' });
   }
-  if (data.watermarkUrl) {
-    manifestItems.push({ id: 'wm_img', href: 'images/watermarked.png', mt: 'image/png' });
-  }
-  if (data.piFileDataUrl) {
-    manifestItems.push({ id: 'pi_img', href: 'images/pixel_injected.png', mt: 'image/png' });
-  }
   manifestItems.push({ id: 'qr', href: 'images/qr.png', mt: 'image/png' });
 
   var spineItems = manifestItems.filter(function(m) { return m.mt === 'application/xhtml+xml'; });
@@ -708,14 +682,6 @@ async function downloadCertEPUB(data) {
   if (data.file.dataUrl) {
     var imgExt = data.file.type === 'image/png' ? 'png' : 'jpg';
     zip.folder('OEBPS').folder('images').file('photo.' + imgExt, imgBase64, { base64: true });
-  }
-  if (data.watermarkUrl) {
-    var wmBase64 = data.watermarkUrl.indexOf('base64,') > -1 ? data.watermarkUrl.split(',')[1] : '';
-    if (wmBase64) zip.folder('OEBPS').folder('images').file('watermarked.png', wmBase64, { base64: true });
-  }
-  if (data.piFileDataUrl) {
-    var piBase64 = data.piFileDataUrl.indexOf('base64,') > -1 ? data.piFileDataUrl.split(',')[1] : '';
-    if (piBase64) zip.folder('OEBPS').folder('images').file('pixel_injected.png', piBase64, { base64: true });
   }
   zip.folder('OEBPS').folder('images').file('qr.png', qrBase64, { base64: true });
 
@@ -804,8 +770,8 @@ async function generateProfessionalCert() {
     var fpFile = getFileFrom('cert-result-fp');
     var tsFile = getFileFrom('cert-result-ts');
 
-    var wmDataUrl = wmFile ? await readFileAsDataUrl(wmFile) : null;
-    var piDataUrl = piFile ? await readFileAsDataUrl(piFile) : null;
+    var wmText = wmFile ? await readFileAsText(wmFile) : '';
+    var piText = piFile ? await readFileAsText(piFile) : '';
     var fpText = fpFile ? await readFileAsText(fpFile) : '';
     var tsName = tsFile ? tsFile.name : '';
     var tsSize = tsFile ? tsFile.size : 0;
@@ -834,12 +800,12 @@ async function generateProfessionalCert() {
       },
       file: { name: file ? file.name : '', size: file ? file.size : 0, type: file ? file.type : '', width: 0, height: 0, dataUrl: null, hash: '' },
       watermark: !!wmFile,
-      watermarkUrl: wmDataUrl || null,
+      watermarkUrl: null,
       watermarkAlgo: wmFile ? wmFile.name : '',
-      watermarkResult: wmFile ? ('Watermarked image: ' + wmFile.name + ' (' + fmtSize(wmFile.size) + ')') : '',
+      watermarkResult: wmText,
       pixelInjection: !!piFile,
-      piResultHtml: piFile ? ('Pixel-injected image: ' + piFile.name + ' (' + fmtSize(piFile.size) + ')') : '',
-      piFileDataUrl: piDataUrl || null,
+      piResultHtml: piText,
+      piFileDataUrl: null,
       timestamp: !!tsFile,
       tsResult: tsFile ? ('Timestamp file: ' + tsName + ' (' + fmtSize(tsSize) + ')') : '',
       fingerprint: !!fpFile,
