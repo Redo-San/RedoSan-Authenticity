@@ -95,6 +95,12 @@
         <p data-i18n="mode.professional_desc">Full access to all tools with advanced options</p>
       </div>
     </div>
+    <div class="mode-links">
+      <a href="#" data-page="about" onclick="showStaticPage('about');return false" data-i18n="nav.about">About</a>
+      <a href="#" data-page="privacy" onclick="showStaticPage('privacy');return false" data-i18n="nav.privacy">Privacy</a>
+      <a href="#" data-page="contact" onclick="showStaticPage('contact');return false" data-i18n="nav.contact">Contact</a>
+      <a href="#" data-page="social" onclick="showStaticPage('social');return false" data-i18n="nav.social">Social</a>
+    </div>
   </div>
 </div>
 
@@ -743,6 +749,9 @@
 
 <!-- About -->
 <section id="page-about" class="page">
+  <div style="margin-bottom:12px">
+    <a href="#" onclick="history.back();return false;" class="back-btn" title="Back"><span class="back-arrow">←</span> Back</a>
+  </div>
   <div class="static-page" data-i18n="page.about">
     <h2>About RedoSan Authenticity</h2>
     <p><strong>RedoSan Authenticity</strong> is an open-source digital authenticity tool that runs entirely in your browser. No files are ever uploaded to any server — all processing happens client-side.</p>
@@ -759,6 +768,9 @@
 
 <!-- Privacy -->
 <section id="page-privacy" class="page">
+  <div style="margin-bottom:12px">
+    <a href="#" onclick="history.back();return false;" class="back-btn" title="Back"><span class="back-arrow">←</span> Back</a>
+  </div>
   <div class="static-page" data-i18n="page.privacy">
     <h2>Privacy Policy</h2>
     <p><strong>Your data stays on your device.</strong> RedoSan Authenticity is a 100% client-side application. All processing is done in your browser using JavaScript. No files, metadata, or any other data are transmitted to any server.</p>
@@ -773,6 +785,9 @@
 
 <!-- Contact -->
 <section id="page-contact" class="page">
+  <div style="margin-bottom:12px">
+    <a href="#" onclick="history.back();return false;" class="back-btn" title="Back"><span class="back-arrow">←</span> Back</a>
+  </div>
   <div class="static-page">
     <h2 data-i18n="nav.contact">Contact Us</h2>
     <p data-i18n="page.contact">Have questions, suggestions, or found a bug? We'd love to hear from you.</p>
@@ -793,6 +808,9 @@
 
 <!-- Social -->
 <section id="page-social" class="page">
+  <div style="margin-bottom:12px">
+    <a href="#" onclick="history.back();return false;" class="back-btn" title="Back"><span class="back-arrow">←</span> Back</a>
+  </div>
   <div class="static-page">
     <h2 data-i18n="nav.social">Follow Us</h2>
     <p data-i18n="page.social">Stay connected and follow RedoSan on social media.</p>
