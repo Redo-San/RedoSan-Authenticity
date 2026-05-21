@@ -749,6 +749,12 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .cert-btn { min-width: 100px; min-height: 44px; font-size: 0.85rem; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: opacity .2s; }
 .cert-btn:hover { opacity: .85; }
 .cert-btn:disabled { opacity: .5; cursor: not-allowed; }
+.cert-textarea { width: 100%; box-sizing: border-box; resize: vertical; font-size: 0.8rem; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-family: inherit; }
+.cert-textarea:focus { border-color: var(--primary); outline: none; }
+.cert-field { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.8rem; }
+.cert-field:focus { border-color: var(--primary); outline: none; }
+.cert-link { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-size: 0.8rem; }
+.cert-link:focus { border-color: var(--primary); outline: none; }
 
 @media (max-width: 480px) {
   .simple-social-grid { grid-template-columns: 1fr; }

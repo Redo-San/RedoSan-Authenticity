@@ -718,6 +718,8 @@ async function downloadCert(format, btn) {
 
 // ── Professional Mode Certificate ──
 
+var _certData = null;
+
 function getValOrEmpty(id) {
   var el = document.getElementById(id);
   return el ? el.value.trim() : '';
@@ -728,133 +730,114 @@ function getUrlOrEmpty(id) {
   return val || '';
 }
 
-async function collectProfessionalCertData() {
-  var fileInput = document.getElementById('cert-file');
-  var file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-  var buf = null;
-  if (file) {
-    buf = await file.arrayBuffer();
-  }
-
-  var data = {
-    generatedAt: new Date().toISOString(),
-    generator: 'RedoSan Authenticity',
-    user: {
-      name: getValOrEmpty('cert-name'),
-      email: getValOrEmpty('cert-email'),
-      phone: getValOrEmpty('cert-phone'),
-      website: getValOrEmpty('cert-website'),
-      social: {
-        tiktok: getUrlOrEmpty('cert-social-tiktok'),
-        facebook: getUrlOrEmpty('cert-social-facebook'),
-        instagram: getUrlOrEmpty('cert-social-instagram'),
-        youtube: getUrlOrEmpty('cert-social-youtube')
-      },
-      isArtist: false,
-      music: {
-        spotify: getUrlOrEmpty('cert-music-spotify'),
-        appleMusic: getUrlOrEmpty('cert-music-applemusic'),
-        soundcloud: getUrlOrEmpty('cert-music-soundcloud'),
-        bandcamp: getUrlOrEmpty('cert-music-bandcamp')
-      }
-    },
-    file: {
-      name: file ? file.name : '',
-      size: file ? file.size : 0,
-      type: file ? file.type : '',
-      width: 0,
-      height: 0,
-      dataUrl: null,
-      hash: ''
-    },
-    watermark: false,
-    watermarkUrl: null,
-    watermarkAlgo: '',
-    watermarkResult: '',
-    pixelInjection: false,
-    piResultHtml: '',
-    timestamp: false,
-    tsResult: '',
-    fingerprint: false,
-    fpResult: null
-  };
-
-  // Collect results from professional mode sections
-  function readResult(id) {
-    var el = document.getElementById(id);
-    if (!el) return '';
-    return el.textContent || el.innerText || '';
-  }
-
-  // Watermark
-  var wmOutput = readResult('wm-output');
-  if (wmOutput) {
-    data.watermark = true;
-    data.watermarkResult = wmOutput;
-    var wmType = document.getElementById('wm-type');
-    if (wmType) data.watermarkAlgo = wmType.options[wmType.selectedIndex] ? wmType.options[wmType.selectedIndex].text : '';
-  }
-
-  // Pixel injection
-  var piOutput = readResult('pi-output');
-  if (piOutput) {
-    data.pixelInjection = true;
-    data.piResultHtml = piOutput;
-  }
-
-  // Timestamp
-  var tsOutput = readResult('ots-output');
-  if (tsOutput) {
-    data.timestamp = true;
-    data.tsResult = tsOutput;
-  }
-
-  // Fingerprint
-  var fpOutput = readResult('fp-output');
-  if (fpOutput) {
-    data.fingerprint = true;
-    data.fpResult = { hashes: {}, perceptual_hashes: {} };
-    data.fpResult.raw = fpOutput;
-  }
-
-  // Metadata
-  var metaOutput = readResult('meta-output');
-  if (metaOutput) {
-    if (!data.fpResult) data.fpResult = { hashes: {}, perceptual_hashes: {} };
-    data.fpResult.metadata = metaOutput;
-  }
-
-  // Image dimensions
-  if (buf && file) {
-    var dataUrl = bufToDataURL(buf, file.type);
-    var dims = await loadImageDimensions(dataUrl);
-    data.file.width = dims.width;
-    data.file.height = dims.height;
-    data.file.dataUrl = dataUrl;
-    data.file.hash = await getFileHashSha256(buf);
-  }
-
-  return data;
-}
-
-async function handleProfessionalCert(format, btn) {
+async function generateProfessionalCert() {
+  var btn = document.getElementById('cert-gen-btn');
   var spinner = document.getElementById('cert-spinner');
   var status = document.getElementById('cert-status');
-  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+  var dlSection = document.getElementById('cert-download-section');
   if (spinner) spinner.style.display = 'block';
-  if (status) status.textContent = 'Collecting data...';
+  if (status) status.textContent = 'Generating certificate...';
+  if (btn) btn.disabled = true;
+
   try {
-    var data = await collectProfessionalCertData();
-    if (status) status.textContent = 'Generating ' + format.toUpperCase() + '...';
-    if (format === 'pdf') await downloadCertPDF(data);
-    else if (format === 'docx') await downloadCertDOCX(data);
-    else if (format === 'epub') await downloadCertEPUB(data);
-    if (status) status.textContent = format.toUpperCase() + ' downloaded successfully.';
+    var fileInput = document.getElementById('cert-file');
+    var file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+    var buf = null;
+    if (file) { buf = await file.arrayBuffer(); }
+
+    var wmText = getValOrEmpty('cert-result-wm');
+    var piText = getValOrEmpty('cert-result-pi');
+    var fpText = getValOrEmpty('cert-result-fp');
+    var tsText = getValOrEmpty('cert-result-ts');
+
+    _certData = {
+      generatedAt: new Date().toISOString(),
+      generator: 'RedoSan Authenticity',
+      user: {
+        name: getValOrEmpty('cert-name'),
+        email: getValOrEmpty('cert-email'),
+        phone: getValOrEmpty('cert-phone'),
+        website: getValOrEmpty('cert-website'),
+        social: {
+          tiktok: getUrlOrEmpty('cert-social-tiktok'),
+          facebook: getUrlOrEmpty('cert-social-facebook'),
+          instagram: getUrlOrEmpty('cert-social-instagram'),
+          youtube: getUrlOrEmpty('cert-social-youtube')
+        },
+        isArtist: false,
+        music: {
+          spotify: getUrlOrEmpty('cert-music-spotify'),
+          appleMusic: getUrlOrEmpty('cert-music-applemusic'),
+          soundcloud: getUrlOrEmpty('cert-music-soundcloud'),
+          bandcamp: getUrlOrEmpty('cert-music-bandcamp')
+        }
+      },
+      file: { name: file ? file.name : '', size: file ? file.size : 0, type: file ? file.type : '', width: 0, height: 0, dataUrl: null, hash: '' },
+      watermark: !!wmText,
+      watermarkUrl: null,
+      watermarkAlgo: '',
+      watermarkResult: wmText,
+      pixelInjection: !!piText,
+      piResultHtml: piText,
+      timestamp: !!tsText,
+      tsResult: tsText,
+      fingerprint: !!fpText,
+      fpResult: fpText ? { hashes: {}, perceptual_hashes: {}, raw: fpText } : null
+    };
+
+    // Image dimensions + hash
+    if (buf && file) {
+      var dataUrl = bufToDataURL(buf, file.type);
+      var dims = await loadImageDimensions(dataUrl);
+      _certData.file.width = dims.width;
+      _certData.file.height = dims.height;
+      _certData.file.dataUrl = dataUrl;
+      _certData.file.hash = await getFileHashSha256(buf);
+    }
+
+    if (status) status.textContent = 'Certificate generated successfully!';
+    if (dlSection) dlSection.style.display = 'block';
   } catch (e) {
     console.error('Certificate generation failed:', e);
     if (status) status.textContent = 'Error: ' + e.message;
     alert('Failed to generate certificate: ' + e.message);
   }
+
   if (spinner) spinner.style.display = 'none';
-  if (btn) { btn.disabled = false; btn.textContent = format.toUpperCase(); }
+  if (btn) btn.disabled = false;
+}
+
+async function downloadProfessionalCert(format) {
+  if (!_certData) { alert('Please generate the certificate first.'); return; }
+  var status = document.getElementById('cert-status');
+  if (status) status.textContent = 'Generating ' + format.toUpperCase() + '...';
+  try {
+    if (format === 'pdf') await downloadCertPDF(_certData);
+    else if (format === 'docx') await downloadCertDOCX(_certData);
+    else if (format === 'epub') await downloadCertEPUB(_certData);
+    if (status) status.textContent = format.toUpperCase() + ' downloaded successfully.';
+  } catch (e) {
+    console.error('Download failed:', e);
+    if (status) status.textContent = 'Error: ' + e.message;
+    alert('Failed to download: ' + e.message);
+  }
+}
+
+function resetProfessionalCert() {
+  _certData = null;
+  var ids = ['cert-file', 'cert-name', 'cert-email', 'cert-phone', 'cert-website',
+    'cert-social-tiktok', 'cert-social-facebook', 'cert-social-instagram', 'cert-social-youtube',
+    'cert-music-spotify', 'cert-music-applemusic', 'cert-music-soundcloud', 'cert-music-bandcamp',
+    'cert-result-wm', 'cert-result-pi', 'cert-result-fp', 'cert-result-ts'];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      if (el.type === 'file') el.value = '';
+      else el.value = '';
+    }
+  });
+  var dlSection = document.getElementById('cert-download-section');
+  if (dlSection) dlSection.style.display = 'none';
+  var status = document.getElementById('cert-status');
+  if (status) status.textContent = '';
 }

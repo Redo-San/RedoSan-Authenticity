@@ -657,7 +657,7 @@
     </div>
     <div class="card-form">
       <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px" data-i18n="cert.desc">
-        Generate a signed Digital Passport PDF, DOCX, or EPUB containing your image, user info, and results from other tools. Upload an image, fill in your details, and download your certificate.
+        Generate a signed Digital Passport PDF, DOCX, or EPUB with your image, user info, and results from other tools. Paste your results below, then click Generate.
       </p>
 
       <!-- Image upload -->
@@ -699,14 +699,30 @@
         </div>
       </div>
 
-      <!-- Download buttons -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
-        <button class="btn" onclick="handleProfessionalCert('pdf', this)" style="background:#d32f2f;color:#fff;flex:1;min-width:100px">📄 PDF</button>
-        <button class="btn" onclick="handleProfessionalCert('docx', this)" style="background:#2b579a;color:#fff;flex:1;min-width:100px">📝 DOCX</button>
-        <button class="btn" onclick="handleProfessionalCert('epub', this)" style="background:#7ab55c;color:#fff;flex:1;min-width:100px">📖 EPUB</button>
+      <!-- Manual results (paste from other sections) -->
+      <div class="form-group">
+        <label data-i18n="cert.results_label">Tool Results (paste from other sections)</label>
+        <textarea id="cert-result-wm" class="cert-textarea" placeholder="Watermark result (optional)" rows="2"></textarea>
+        <textarea id="cert-result-pi" class="cert-textarea" placeholder="Pixel injection result (optional)" rows="2" style="margin-top:6px"></textarea>
+        <textarea id="cert-result-fp" class="cert-textarea" placeholder="Fingerprint result (optional)" rows="2" style="margin-top:6px"></textarea>
+        <textarea id="cert-result-ts" class="cert-textarea" placeholder="Timestamp result (optional)" rows="2" style="margin-top:6px"></textarea>
       </div>
+
+      <!-- Generate button -->
+      <button class="btn btn-primary" onclick="generateProfessionalCert()" id="cert-gen-btn" style="width:100%;padding:12px;font-size:1rem">⚡ Generate Digital Passport</button>
       <div class="spinner" id="cert-spinner"></div>
       <p id="cert-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;text-align:center"></p>
+
+      <!-- Download buttons (shown after generation) -->
+      <div id="cert-download-section" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <p style="font-size:0.85rem;margin-bottom:10px;text-align:center" data-i18n="cert.download_label">Certificate ready! Choose a format:</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" onclick="downloadProfessionalCert('pdf')" style="background:#d32f2f;color:#fff;flex:1;min-width:100px">📄 PDF</button>
+          <button class="btn" onclick="downloadProfessionalCert('docx')" style="background:#2b579a;color:#fff;flex:1;min-width:100px">📝 DOCX</button>
+          <button class="btn" onclick="downloadProfessionalCert('epub')" style="background:#7ab55c;color:#fff;flex:1;min-width:100px">📖 EPUB</button>
+        </div>
+        <button class="btn" onclick="resetProfessionalCert()" style="margin-top:12px;width:100%;background:transparent;color:var(--text-muted);border:1px solid var(--border)" data-i18n="cert.reset_btn">↻ Start Over</button>
+      </div>
     </div>
   </section>
 </main>
