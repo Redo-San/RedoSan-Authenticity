@@ -28,6 +28,13 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
+      - name: Run coverage
+        run: npm run coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          directory: ./coverage
+          fail_ci_if_error: false
       - name: npm audit
         run: npm audit
         continue-on-error: true
