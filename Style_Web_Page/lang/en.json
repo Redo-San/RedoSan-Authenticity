@@ -13,6 +13,7 @@
   "sidebar.metadata": "Metadata",
   "sidebar.timestamp": "Timestamp",
   "sidebar.c2pa": "C2PA Provenance",
+  "sidebar.certificate": "Digital Passport",
   "sidebar.switch_mode": "🔀 Switch Mode",
   "sidebar.usage_warning": "⚠️ Lawful use only. Illegal/harmful content is prohibited. All processing is 100% local.",
 
@@ -29,6 +30,8 @@
   "card.timestamp.desc": "SHA-256 hashing + OTS hash verification",
   "card.c2pa.title": "C2PA Provenance",
   "card.c2pa.desc": "Read & write content provenance metadata",
+  "card.certificate.title": "Digital Passport",
+  "card.certificate.desc": "Generate signed PDF/DOCX/EPUB certificate",
 
   "mode.title": "Choose your experience",
   "mode.simplified_title": "✨ Simplified Mode",
@@ -212,6 +215,13 @@
   "c2pa.no_data_found": "No C2PA data found",
   "c2pa.no_data_desc": "This file does not contain any C2PA provenance metadata.",
   "c2pa.no_data_desc_alt": "This file has no C2PA provenance metadata.",
+
+  "cert.heading": "Digital Passport",
+  "cert.desc": "Generate a signed Digital Passport PDF, DOCX, or EPUB containing your image, user info, and results from other tools. Upload an image, fill in your details, and download your certificate.",
+  "cert.image_label": "Image",
+  "cert.user_info_label": "Your Information (optional)",
+  "cert.social_label": "Social Links (optional)",
+  "cert.music_label": "Music Links (optional)",
   "c2pa.no_manifests_title": "No C2PA manifests",
   "c2pa.no_manifests_desc": "The file has C2PA data but no readable manifests.",
   "c2pa.no_manifests": "No manifests found",
