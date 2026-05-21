@@ -29,7 +29,8 @@ var PAGE_TITLES = {
   fingerprint: 'Fingerprint &amp; Image Hashing — RedoSan Authenticity',
   metadata: 'Metadata &amp; EXIF Reader — RedoSan Authenticity',
   timestamp: 'Timestamp &amp; OTS Verification — RedoSan Authenticity',
-  c2pa: 'C2PA Content Provenance — RedoSan Authenticity'
+  c2pa: 'C2PA Content Provenance — RedoSan Authenticity',
+  certificate: 'Digital Passport Certificate — RedoSan Authenticity'
 };
 var PAGE_DESCS = {
   home: 'Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded.',
@@ -38,7 +39,8 @@ var PAGE_DESCS = {
   fingerprint: 'Calculate cryptographic fingerprints (SHA-256, BLAKE3, MD5) and perceptual image hashes. Free online tool.',
   metadata: 'Read EXIF metadata, dimensions, format, and color mode from images. Free online tool.',
   timestamp: 'Create SHA-256 hashes and verify with OpenTimestamps. Free online tool.',
-  c2pa: 'Read and write C2PA content provenance metadata for images. Free online tool.'
+  c2pa: 'Read and write C2PA content provenance metadata for images. Free online tool.',
+  certificate: 'Generate a signed Digital Passport PDF, DOCX, or EPUB with image, user info, and authenticity results. Free online tool.'
 };
 
 function showPage(name) {

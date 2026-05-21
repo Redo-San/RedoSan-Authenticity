@@ -196,6 +196,7 @@
   <a href="#" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
   <a href="#" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
   <a href="#" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
+  <a href="#" data-page="certificate" data-i18n="sidebar.certificate">Digital Passport</a>
   <div class="sidebar-divider"></div>
   <a href="#" onclick="showModeSelect(); return false;" class="sidebar-mode-switch" data-i18n="sidebar.switch_mode">🔀 Switch Mode</a>
 </div>
@@ -236,6 +237,11 @@
           <div class="icon">✨</div>
           <h3 data-i18n="card.c2pa.title">C2PA Provenance</h3>
           <p data-i18n="card.c2pa.desc">Read & write content provenance metadata</p>
+        </a>
+        <a href="#" data-page="certificate" class="card">
+          <div class="icon">📜</div>
+          <h3 data-i18n="card.certificate.title">Digital Passport</h3>
+          <p data-i18n="card.certificate.desc">Generate signed PDF/DOCX/EPUB certificate</p>
         </a>
       </div>
     </div>
@@ -640,6 +646,67 @@
     </div>
     <div id="c2pa-verify-result" style="display:none;margin-top:16px">
       <div class="result" id="c2pa-verify-output"></div>
+    </div>
+  </section>
+
+  <!-- Certificate / Digital Passport -->
+  <section id="page-certificate" class="page">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <a href="#" onclick="showPage('home');return false;" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
+      <h2 style="margin-bottom:0" data-i18n="cert.heading">Digital Passport</h2>
+    </div>
+    <div class="card-form">
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px" data-i18n="cert.desc">
+        Generate a signed Digital Passport PDF, DOCX, or EPUB containing your image, user info, and results from other tools. Upload an image, fill in your details, and download your certificate.
+      </p>
+
+      <!-- Image upload -->
+      <div class="form-group">
+        <label for="cert-file" data-i18n="cert.image_label">Image</label>
+        <input type="file" id="cert-file" name="cert-file" accept="image/png,image/jpeg,image/bmp,image/tiff,image/webp">
+      </div>
+
+      <!-- User info -->
+      <div class="form-group">
+        <label data-i18n="cert.user_info_label">Your Information (optional)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input type="text" id="cert-name" class="cert-field" placeholder="Name" maxlength="25">
+          <input type="email" id="cert-email" class="cert-field" placeholder="Email" maxlength="20">
+          <input type="tel" id="cert-phone" class="cert-field" placeholder="Phone" maxlength="15">
+          <input type="url" id="cert-website" class="cert-field" placeholder="Website URL" maxlength="30">
+        </div>
+      </div>
+
+      <!-- Social links -->
+      <div class="form-group">
+        <label data-i18n="cert.social_label">Social Links (optional)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input type="url" id="cert-social-tiktok" class="cert-link" placeholder="TikTok URL" maxlength="80">
+          <input type="url" id="cert-social-facebook" class="cert-link" placeholder="Facebook URL" maxlength="80">
+          <input type="url" id="cert-social-instagram" class="cert-link" placeholder="Instagram URL" maxlength="80">
+          <input type="url" id="cert-social-youtube" class="cert-link" placeholder="YouTube URL" maxlength="80">
+        </div>
+      </div>
+
+      <!-- Music links -->
+      <div class="form-group" id="cert-music-group">
+        <label data-i18n="cert.music_label">Music Links (optional)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input type="url" id="cert-music-spotify" class="cert-link" placeholder="Spotify URL" maxlength="80">
+          <input type="url" id="cert-music-applemusic" class="cert-link" placeholder="Apple Music URL" maxlength="80">
+          <input type="url" id="cert-music-soundcloud" class="cert-link" placeholder="SoundCloud URL" maxlength="80">
+          <input type="url" id="cert-music-bandcamp" class="cert-link" placeholder="Bandcamp URL" maxlength="80">
+        </div>
+      </div>
+
+      <!-- Download buttons -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+        <button class="btn" onclick="handleProfessionalCert('pdf', this)" style="background:#d32f2f;color:#fff;flex:1;min-width:100px">📄 PDF</button>
+        <button class="btn" onclick="handleProfessionalCert('docx', this)" style="background:#2b579a;color:#fff;flex:1;min-width:100px">📝 DOCX</button>
+        <button class="btn" onclick="handleProfessionalCert('epub', this)" style="background:#7ab55c;color:#fff;flex:1;min-width:100px">📖 EPUB</button>
+      </div>
+      <div class="spinner" id="cert-spinner"></div>
+      <p id="cert-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;text-align:center"></p>
     </div>
   </section>
 </main>
