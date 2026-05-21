@@ -11,11 +11,17 @@ function closeSidebar() {
 }
 
 // ── Page navigation ──
-document.querySelectorAll('.nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .simple-nav-links a[data-page]').forEach(a => {
+document.querySelectorAll('.nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page]').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
     showPage(a.dataset.page);
     if (a.closest('.sidebar')) closeSidebar();
+  });
+});
+document.querySelectorAll('.simple-nav-links a[data-page]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    showStaticPage(a.dataset.page);
   });
 });
 document.querySelectorAll('.card[data-page]').forEach(c => {
@@ -66,49 +72,82 @@ function showPage(name) {
   }
 }
 
+// Show a static page (about/privacy/contact/social) from the mode overlay or simplified mode
+function showStaticPage(name) {
+  // Hide mode overlay
+  var modeSelect = document.getElementById('modeSelect');
+  if (modeSelect) modeSelect.style.display = 'none';
+  // Hide simplified mode
+  var simplifiedMode = document.getElementById('simplifiedMode');
+  if (simplifiedMode) simplifiedMode.style.display = 'none';
+  // Hide professional nav/app
+  var mainNav = document.getElementById('mainNav');
+  if (mainNav) mainNav.style.display = 'none';
+  var app = document.getElementById('app');
+  if (app) app.style.display = 'none';
+  var sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.style.display = 'none';
+  var sidebarOverlay = document.getElementById('sidebarOverlay');
+  if (sidebarOverlay) sidebarOverlay.style.display = 'none';
+  var footer = document.getElementById('mainFooter');
+  if (footer) footer.style.display = 'none';
+
+  document.documentElement.style.overflow = '';
+  showPage(name);
+  history.pushState({ staticPage: name, fromOverlay: true }, '', '#/' + name);
+}
+
+function hideAllExcept(keep) {
+  var ids = ['modeSelect', 'simplifiedMode', 'mainNav', 'app', 'sidebar', 'sidebarOverlay', 'mainFooter'];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = (id === keep) ? '' : 'none';
+  });
+}
+
 window.addEventListener('popstate', function(e) {
   var state = e.state;
-  // Always hide simplified mode unless we explicitly restore it below
-  var showSimplified = false;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
+
+  // Static page from overlay/simplified → restore the mode overlay
+  if (state && state.staticPage) {
+    hideAllExcept(null);
+    document.getElementById('modeSelect').style.display = '';
+    document.documentElement.style.overflow = 'hidden';
+    return;
+  }
+
   // Mode overlay → re-show the selection screen
   if (!state || state.modeOverlay) {
     if (typeof resetProfessionalForms === 'function') resetProfessionalForms();
     document.documentElement.style.overflow = 'hidden';
-    document.getElementById('modeSelect').style.display = '';
-    document.getElementById('simplifiedMode').style.display = 'none';
-    document.getElementById('mainNav').style.display = '';
-    document.getElementById('sidebar').style.display = '';
+    hideAllExcept('modeSelect');
     document.getElementById('sidebarOverlay').style.display = 'none';
-    document.getElementById('app').style.display = '';
-    document.getElementById('mainFooter').style.display = '';
     return;
   }
+
   // Within-a-mode → restore the correct mode
   if (state.modeSet) {
     document.documentElement.style.overflow = '';
     document.getElementById('modeSelect').style.display = 'none';
     document.getElementById('sidebarOverlay').style.display = 'none';
     if (state.modeSet === 'simplified') {
-      document.getElementById('mainNav').style.display = 'none';
-      document.getElementById('sidebar').style.display = 'none';
+      hideAllExcept('simplifiedMode');
       document.getElementById('sidebarOverlay').style.display = 'none';
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('mainFooter').style.display = 'none';
-      document.getElementById('simplifiedMode').style.display = '';
     } else {
-      document.getElementById('simplifiedMode').style.display = 'none';
-      document.getElementById('mainNav').style.display = '';
-      document.getElementById('sidebar').style.display = '';
+      hideAllExcept('mainNav');
       document.getElementById('app').style.display = '';
+      document.getElementById('sidebar').style.display = '';
       document.getElementById('mainFooter').style.display = '';
+      document.getElementById('simplifiedMode').style.display = 'none';
     }
     var home = document.getElementById('page-home');
     if (home) home.classList.add('active');
     return;
   }
-  // Page state (professional mode navigation) — hide simplified mode
+
+  // Page state (professional mode navigation)
   document.documentElement.style.overflow = '';
   document.getElementById('modeSelect').style.display = 'none';
   document.getElementById('simplifiedMode').style.display = 'none';
@@ -118,10 +157,9 @@ window.addEventListener('popstate', function(e) {
   var navItem = document.querySelector('.sidebar a[data-page="' + targetPage + '"]');
   if (navItem) navItem.classList.add('active');
   if (el && el.closest('#app') && document.getElementById('mainNav').style.display === 'none') {
-    document.getElementById('mainNav').style.display = '';
-    document.getElementById('sidebar').style.display = '';
+    hideAllExcept('mainNav');
     document.getElementById('app').style.display = '';
-    document.getElementById('simplifiedMode').style.display = 'none';
+    document.getElementById('sidebar').style.display = '';
   }
 });
 
