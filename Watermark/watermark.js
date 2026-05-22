@@ -243,6 +243,7 @@ async function handleWatermarkEmbed() {
   const pw = getVal('wm-password');
   const imgFile = await getFile('wm-image');
   if (!imgFile) { setText('wm-output', __('wm.err_select_image')); resultDiv.style.display = 'block'; return; }
+  if (!(await validateFileInput(document.getElementById('wm-image')))) { return; }
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
     setText('wm-output', __('wm.err_pw_required'));
@@ -253,6 +254,10 @@ async function handleWatermarkEmbed() {
   if (type !== 5 && type !== 8 && !secretFile) {
     setText('wm-output', __('wm.err_select_secret').replace('{type}', type));
     resultDiv.style.display = 'block'; return;
+  }
+  if (secretFile) {
+    var secretInput = document.getElementById('wm-secret');
+    if (secretInput && !(await validateFileInput(secretInput))) { return; }
   }
   if (!secretFile) secretFile = imgFile;
 
@@ -378,6 +383,7 @@ async function handleWatermarkExtract() {
   const pw = getVal('wm-password-ex');
   const imgFile = await getFile('wm-image-ex');
   if (!imgFile) { setText('wm-output', __('wm.err_select_stego')); resultDiv.style.display = 'block'; return; }
+  if (!(await validateFileInput(document.getElementById('wm-image-ex')))) { return; }
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
     setText('wm-output', __('wm.err_pw_required'));
@@ -436,6 +442,7 @@ async function handleAutoDetect() {
   const pw = getVal('wm-password-ex');
   const imgFile = await getFile('wm-image-ex');
   if (!imgFile) { alert(__('wm.detect_select_image')); return; }
+  if (!(await validateFileInput(document.getElementById('wm-image-ex')))) { return; }
 
   btn.disabled = true; spinner('wm-spinner', true);
   document.getElementById('wm-output').textContent = __('wm.detect_scanning');
