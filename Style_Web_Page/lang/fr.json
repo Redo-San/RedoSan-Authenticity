@@ -77,7 +77,7 @@
   "pi.detection": "Détection & Analyse",
   "pi.algorithm_label": "Algorithme",
   "pi.image_label": "Image",
-  "pi.message_label": "Message",
+  "pi.message_label": "Fichier secret",
   "pi.password_label": "Mot de passe (optionnel)",
   "pi.advanced_options": "Options Avancées",
   "pi.show_advanced": "Afficher les Options Avancées",
