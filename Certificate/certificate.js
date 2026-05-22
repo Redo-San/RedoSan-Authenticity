@@ -898,8 +898,14 @@ async function downloadProfessionalCert(format) {
   var status = document.getElementById('cert-status');
   if (status) status.textContent = 'Generating ' + format.toUpperCase() + '...';
   try {
-    if (format === 'pdf') await downloadCertPDF(_certData);
-    else if (format === 'docx') await downloadCertDOCX(_certData);
+    if (format === 'pdf') {
+      if (typeof jspdf === 'undefined') throw new Error('PDF library (jspdf) did not load. Try disabling ad blockers or check your internet connection.');
+      await downloadCertPDF(_certData);
+    }
+    else if (format === 'docx') {
+      if (typeof QRious === 'undefined') throw new Error('QR library (QRious) did not load. Try disabling ad blockers or check your internet connection.');
+      await downloadCertDOCX(_certData);
+    }
     else if (format === 'epub') await downloadCertEPUB(_certData);
     if (status) status.textContent = format.toUpperCase() + ' downloaded successfully.';
   } catch (e) {
