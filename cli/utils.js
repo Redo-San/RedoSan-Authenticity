@@ -242,6 +242,34 @@ function checkFileStructure(data, ext) {
   return { safe: true };
 }
 
+const DANGEROUS_MAGIC = [
+  { sig: [0x4D, 0x5A], name: 'PE executable (exe/dll/sys)' },
+  { sig: [0x7F, 0x45, 0x4C, 0x46], name: 'ELF executable' },
+  { sig: [0xCA, 0xFE, 0xBA, 0xBE], name: 'Mach-O executable' },
+  { sig: [0xFE, 0xED, 0xFA, 0xCE], name: 'Mach-O executable' },
+  { sig: [0xCE, 0xFA, 0xED, 0xFE], name: 'Mach-O executable' },
+  { sig: [0xCF, 0xFA, 0xED, 0xFE], name: 'Mach-O x86_64' },
+  { sig: [0x4D, 0x53, 0x43, 0x46], name: 'CAB archive' },
+];
+
+function hasDangerousMagic(buf) {
+  for (var i = 0; i < DANGEROUS_MAGIC.length; i++) {
+    var sig = DANGEROUS_MAGIC[i].sig;
+    var match = true;
+    for (var j = 0; j < sig.length; j++) {
+      if (buf[j] !== sig[j]) { match = false; break; }
+    }
+    if (match) return DANGEROUS_MAGIC[i].name;
+  }
+  if (buf[0] === 0x23 && buf[1] === 0x21) return 'script with shebang';
+  return null;
+}
+
+function fileHasExt(fileName) {
+  var dot = fileName.lastIndexOf('.');
+  return dot > 0 && dot < fileName.length - 1;
+}
+
 function validateFile(filePath, options) {
   const opts = options || {};
   const absPath = path.resolve(filePath);
@@ -253,6 +281,15 @@ function validateFile(filePath, options) {
   // 1. Extension blocklist
   if (!opts.allowDangerous && isDangerousExt(fileName)) {
     throw new Error(`Blocked dangerous file type: ${ext} (${fileName}). Use --allow-dangerous to override.`);
+  }
+
+  // 1b. Check files without extension by magic bytes
+  if (!opts.allowDangerous && !fileHasExt(fileName)) {
+    var raw = fs.readFileSync(absPath).slice(0, 64);
+    var magic = hasDangerousMagic(raw);
+    if (magic) {
+      throw new Error(`Blocked dangerous file type detected by magic bytes: ${magic} (${fileName}). Use --allow-dangerous to override.`);
+    }
   }
 
   const data = fs.readFileSync(absPath);
