@@ -14,6 +14,7 @@
   "sidebar.timestamp": "Timestamp",
   "sidebar.c2pa": "C2PA Provenance",
   "sidebar.certificate": "Digital Passport",
+  "sidebar.converter": "File Converter",
   "sidebar.switch_mode": "🔀 Switch Mode",
   "sidebar.usage_warning": "⚠️ Lawful use only. Illegal/harmful content is prohibited. All processing is 100% local.",
 
@@ -32,6 +33,8 @@
   "card.c2pa.desc": "Read & write content provenance metadata",
   "card.certificate.title": "Digital Passport",
   "card.certificate.desc": "Generate signed PDF/DOCX/EPUB certificate",
+  "card.converter.title": "File Converter",
+  "card.converter.desc": "Convert images between PNG, JPEG, WebP and more",
 
   "mode.title": "Choose your experience",
   "mode.simplified_title": "✨ Simplified Mode",
@@ -235,6 +238,21 @@
   "c2pa.no_manifests": "No manifests found",
   "c2pa.verified": "Verified",
   "c2pa.view_details": "View Full Details",
+
+  "conv.heading": "File Converter",
+  "conv.file_label": "Select a file",
+  "conv.submit": "Convert",
+  "conv.converting": "Converting...",
+  "conv.success": "Conversion complete!",
+  "conv.error": "Error: ",
+  "conv.download": "Download",
+  "conv.detected": "Detected: ",
+  "conv.file": "File: ",
+  "conv.format_label": "Convert to:",
+  "conv.unknown_type": "Unsupported file type. Please select an image, audio, video, or document file.",
+  "conv.unsupported": "Unsupported file type",
+  "conv.audio_limited": "Audio conversion is limited in browser. Try WAV format.",
+  "conv.video_limited": "Video conversion is limited in browser. Use dedicated video editing software.",
 
   "simple.loading": "Loading...",
   "simple.prev_btn": "← Previous",

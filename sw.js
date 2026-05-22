@@ -39,7 +39,8 @@ var JS_WHITELIST = [
   '/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js',
   '/RedoSan-Authenticity/C2PA/cbor.js',
   '/RedoSan-Authenticity/C2PA/c2pa.js',
-  '/RedoSan-Authenticity/Metadata/metadata.js'
+  '/RedoSan-Authenticity/Metadata/metadata.js',
+  '/RedoSan-Authenticity/Converter/converter.js'
 ];
 
 self.addEventListener('install', function() {

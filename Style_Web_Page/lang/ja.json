@@ -13,6 +13,7 @@
   "sidebar.metadata": "メタデータ",
   "sidebar.timestamp": "タイムスタンプ",
   "sidebar.c2pa": "C2PA証明",
+  "sidebar.converter": "ファイル変換",
   "sidebar.switch_mode": "🔀 モード切替",
 
   "home.tagline": "オンライン認証ツール — 100%ブラウザベース。サーバーにアップロードされるデータはありません。",
@@ -28,6 +29,8 @@
   "card.timestamp.desc": "SHA-256ハッシュ + OTSタイムスタンプ",
   "card.c2pa.title": "C2PA証明",
   "card.c2pa.desc": "コンテンツ証明メタデータの読み取りと書き込み",
+  "card.converter.title": "ファイル変換",
+  "card.converter.desc": "PNG、JPEG、WebPなどの画像形式を変換",
 
   "mode.title": "エクスペリエンスを選択",
   "mode.simplified_title": "✨ 簡易モード",

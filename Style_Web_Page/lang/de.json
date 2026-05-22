@@ -13,6 +13,7 @@
   "sidebar.metadata": "Metadaten",
   "sidebar.timestamp": "Zeitstempel",
   "sidebar.c2pa": "C2PA-Herkunft",
+  "sidebar.converter": "Dateikonverter",
   "sidebar.switch_mode": "🔀 Modus Wechseln",
 
   "home.tagline": "Online-Digital-Authentizitätstool — 100% browserbasiert. Nichts wird auf einen Server hochgeladen.",
@@ -28,6 +29,8 @@
   "card.timestamp.desc": "SHA-256 Hashing + OTS Hash-Verifizierung",
   "card.c2pa.title": "C2PA-Herkunft",
   "card.c2pa.desc": "Herkunftsmetadaten von Inhalten lesen und schreiben",
+  "card.converter.title": "Dateikonverter",
+  "card.converter.desc": "Bilder zwischen PNG, JPEG, WebP und mehr konvertieren",
 
   "mode.title": "Wählen Sie Ihre Erfahrung",
   "mode.simplified_title": "✨ Vereinfachter Modus",

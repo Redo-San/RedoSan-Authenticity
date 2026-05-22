@@ -13,6 +13,7 @@
   "sidebar.metadata": "元数据",
   "sidebar.timestamp": "时间戳",
   "sidebar.c2pa": "C2PA来源",
+  "sidebar.converter": "文件转换器",
   "sidebar.switch_mode": "🔀 切换模式",
 
   "home.tagline": "在线数字真实性工具 — 100%基于浏览器。没有任何内容上传到任何服务器。",
@@ -28,6 +29,8 @@
   "card.timestamp.desc": "SHA-256哈希 + OTS哈希验证",
   "card.c2pa.title": "C2PA来源",
   "card.c2pa.desc": "读取和写入内容来源元数据",
+  "card.converter.title": "文件转换器",
+  "card.converter.desc": "在PNG、JPEG、WebP等格式之间转换图像",
 
   "mode.title": "选择您的体验",
   "mode.simplified_title": "✨ 简化模式",

@@ -13,6 +13,7 @@
   "sidebar.metadata": "Métadonnées",
   "sidebar.timestamp": "Horodatage",
   "sidebar.c2pa": "Provenance C2PA",
+  "sidebar.converter": "Convertisseur de Fichiers",
   "sidebar.switch_mode": "🔀 Changer de Mode",
 
   "home.tagline": "Outil d'authenticité numérique en ligne — 100% basé sur navigateur. Rien n'est téléchargé sur aucun serveur.",
@@ -28,6 +29,8 @@
   "card.timestamp.desc": "Hachage SHA-256 + vérification de hachage OTS",
   "card.c2pa.title": "Provenance C2PA",
   "card.c2pa.desc": "Lire et écrire des métadonnées de provenance de contenu",
+  "card.converter.title": "Convertisseur de Fichiers",
+  "card.converter.desc": "Convertir des images entre PNG, JPEG, WebP et plus",
 
   "mode.title": "Choisissez votre expérience",
   "mode.simplified_title": "✨ Mode Simplifié",
