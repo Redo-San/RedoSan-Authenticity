@@ -25,36 +25,7 @@ function convGetFormats(type) {
 }
 
 function convAudioFormats() {
-  var fmts = ['wav', 'aiff', 'au', 'raw'];
-  if (typeof MediaRecorder === 'undefined') return fmts;
-  var candidates = [
-    { mime: 'audio/webm; codecs=opus', ext: 'ogg' },
-    { mime: 'audio/webm', ext: 'ogg' },
-    { mime: 'audio/ogg; codecs=opus', ext: 'ogg' },
-    { mime: 'audio/ogg', ext: 'ogg' },
-    { mime: 'audio/opus', ext: 'opus' },
-    { mime: 'audio/mpeg', ext: 'mp3' },
-    { mime: 'audio/mpeg; codecs=mp3', ext: 'mp3' },
-    { mime: 'audio/mp3', ext: 'mp3' },
-    { mime: 'audio/mp4; codecs=aac', ext: 'm4a' },
-    { mime: 'audio/mp4', ext: 'm4a' },
-    { mime: 'audio/aac', ext: 'm4a' },
-    { mime: 'audio/x-m4a', ext: 'm4a' },
-    { mime: 'audio/3gpp', ext: 'aac' },
-    { mime: 'audio/3gpp2', ext: 'aac' },
-    { mime: 'audio/flac', ext: 'flac' },
-    { mime: 'audio/x-flac', ext: 'flac' },
-    { mime: 'audio/amr', ext: 'amr' },
-    { mime: 'audio/amr-wb', ext: 'amr' }
-  ];
-  for (var i = 0; i < candidates.length; i++) {
-    if (MediaRecorder.isTypeSupported(candidates[i].mime)) {
-      var dup = false;
-      for (var j = 0; j < fmts.length; j++) { if (fmts[j] === candidates[i].ext) { dup = true; break; } }
-      if (!dup) fmts.push(candidates[i].ext);
-    }
-  }
-  return fmts;
+  return ['wav', 'aiff', 'au', 'raw', 'mp3', 'ogg', 'opus', 'm4a', 'aac', 'flac', 'amr'];
 }
 
 function convGetFormatLabel(fmt) {
@@ -227,21 +198,17 @@ async function convAudio(file, format) {
     amr: ['audio/amr', 'audio/amr-wb']
   };
   var extMap = { ogg: 'ogg', opus: 'opus', mp3: 'mp3', m4a: 'm4a', aac: 'aac', flac: 'flac', amr: 'amr' };
-  var mimeList = audioMimeMap[format];
-  var chosenMime = '';
-  if (mimeList) {
-    for (var mi = 0; mi < mimeList.length; mi++) {
-      if (MediaRecorder.isTypeSupported(mimeList[mi])) { chosenMime = mimeList[mi]; break; }
-    }
-  }
-  if (chosenMime) {
-    return await convAudioEncode(audioCtx, audioBuf, chosenMime, extMap[format]);
+  var mimeList = audioMimeMap[format] || [];
+  for (var mi = 0; mi < mimeList.length; mi++) {
+    try {
+      return await convAudioEncode(audioCtx, audioBuf, mimeList[mi], extMap[format] || format);
+    } catch(e) {}
   }
   if (format === 'mp3' && typeof lamejs !== 'undefined') {
     return await convAudioToMp3(audioCtx, audioBuf);
   }
   audioCtx.close();
-  throw new Error(__('conv.audio_limited', 'Audio conversion is limited in browser. Try WAV format.'));
+  throw new Error(__('conv.audio_limited', 'Audio conversion is not supported in this browser. Try WAV or MP3 format.'));
 }
 
 function convAudioEncode(audioCtx, audioBuf, mimeType, ext) {
