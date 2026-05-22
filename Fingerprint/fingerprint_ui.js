@@ -311,7 +311,6 @@ async function handleFingerprint() {
   try {
     const result = await fingerprintFile(file);
     window._fpResult = result;
-    window._originalFile = file;
 
     let html = '<table class="meta-table">';
     html += '<tr><td>' + __('fp.label_file', 'File') + '</td><td>' + escHtml(result.file_info.file_name) + '</td></tr>';

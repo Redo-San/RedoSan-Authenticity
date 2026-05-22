@@ -733,13 +733,11 @@ async function generateProfessionalCert() {
   if (btn) btn.disabled = true;
 
   try {
-    // Auto-populate image from global
     var fileInput = document.getElementById('cert-file');
-    var file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : window._originalFile || null;
+    var file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
     var buf = null;
-    if (file && file instanceof File) { buf = await file.arrayBuffer(); }
+    if (file) { buf = await file.arrayBuffer(); }
 
-    // Read result files (with global fallback)
     function getFileFrom(id) {
       var el = document.getElementById(id);
       return el && el.files && el.files[0] ? el.files[0] : null;
@@ -755,73 +753,47 @@ async function generateProfessionalCert() {
       });
     }
 
-    // Watermark: uploaded file or window._wmResult
+    // Watermark: uploaded file only
     var wmFile = getFileFrom('cert-result-wm');
-    var wmGlobal = window._wmResult;
-    var wmText = '';
-    var wmFileName = '';
-    if (wmFile) {
-      wmText = await readFileAsText(wmFile);
-      wmFileName = wmFile.name;
-    } else if (wmGlobal) {
-      wmFileName = wmGlobal.algorithmName || '';
-      var wmParts = [];
-      if (wmGlobal.algorithmName) wmParts.push('Algorithm: ' + wmGlobal.algorithmName);
-      if (wmGlobal.imageName) wmParts.push('Image: ' + wmGlobal.imageName);
-      if (wmGlobal.secretName) wmParts.push('Secret: ' + wmGlobal.secretName);
-      if (wmGlobal.message) wmParts.push('Message: ' + wmGlobal.message);
-      if (wmGlobal.password) wmParts.push('Password: ' + wmGlobal.password);
-      if (wmGlobal.timestamp) wmParts.push('Timestamp: ' + wmGlobal.timestamp);
-      wmText = wmParts.join('\n');
-    }
+    var wmText = wmFile ? await readFileAsText(wmFile) : '';
+    var wmFileName = wmFile ? wmFile.name : '';
 
-    // PI: uploaded file or window._piResult
+    // PI: uploaded file only
     var piFile = getFileFrom('cert-result-pi');
-    var piGlobal = window._piResult;
-    var piText = '';
-    var piFileName = '';
-    if (piFile) {
-      piText = await readFileAsText(piFile);
-      piFileName = piFile.name;
-    } else if (piGlobal && piGlobal.type === 'embed') {
-      piFileName = piGlobal.secretFile || piGlobal.algorithm || '';
-      var piParts = [];
-      if (piGlobal.algorithm) piParts.push('Algorithm: ' + piGlobal.algorithm);
-      if (piGlobal.category) piParts.push('Category: ' + piGlobal.category);
-      if (piGlobal.secretFile) piParts.push('Secret file: ' + piGlobal.secretFile);
-      if (piGlobal.dimensions) piParts.push('Dimensions: ' + piGlobal.dimensions);
-      if (piGlobal.password) piParts.push('Password: ' + piGlobal.password);
-      if (piGlobal.timestamp) piParts.push('Timestamp: ' + piGlobal.timestamp);
-      piText = 'Pixel Injection completed\n\n' + piParts.join('\n');
-    } else if (piGlobal && piGlobal.type === 'extract') {
-      piFileName = piGlobal.algorithm || '';
-      var piParts2 = [];
-      if (piGlobal.algorithm) piParts2.push('Algorithm: ' + piGlobal.algorithm);
-      if (piGlobal.category) piParts2.push('Category: ' + piGlobal.category);
-      if (piGlobal.extractedMessage) piParts2.push('Extracted: ' + piGlobal.extractedMessage);
-      if (piGlobal.password) piParts2.push('Password: ' + piGlobal.password);
-      if (piGlobal.timestamp) piParts2.push('Timestamp: ' + piGlobal.timestamp);
-      piText = 'Pixel Extraction completed\n\n' + piParts2.join('\n');
-    }
+    var piText = piFile ? await readFileAsText(piFile) : '';
+    var piFileName = piFile ? piFile.name : '';
 
-    // Fingerprint: uploaded file or window._fpResult
+    // Fingerprint: uploaded file only
     var fpFile = getFileFrom('cert-result-fp');
-    var fpGlobal = window._fpResult;
-    var fpText = '';
+    var fpText = fpFile ? await readFileAsText(fpFile) : '';
     var fpResultData = null;
-    if (fpFile) {
-      fpText = await readFileAsText(fpFile);
-      // Try to parse uploaded JSON fingerprint
-      try { fpResultData = JSON.parse(fpText); } catch(e) { fpResultData = { hashes: {}, perceptual_hashes: {}, raw: fpText }; }
-    } else if (fpGlobal) {
-      fpResultData = fpGlobal;
-      fpText = JSON.stringify(fpGlobal, null, 2);
-    }
-    // Ensure hashes/perceptual_hashes are extracted
-    if (fpResultData && (!fpResultData.hashes || Object.keys(fpResultData.hashes).length === 0)) {
-      fpResultData.hashes = fpResultData.hashes || {};
-      fpResultData.perceptual_hashes = fpResultData.perceptual_hashes || {};
-      fpResultData.raw = fpResultData.raw || fpText;
+    if (fpText) {
+      try { fpResultData = JSON.parse(fpText); } catch(e) {
+        fpResultData = { hashes: {}, perceptual_hashes: {}, raw: fpText };
+        var fpLines = fpText.split('\n');
+        var curSection = '';
+        for (var fli = 0; fli < fpLines.length; fli++) {
+          var line = fpLines[fli].trim();
+          if (line.indexOf('--- Hashes ---') >= 0) { curSection = 'hashes'; continue; }
+          if (line.indexOf('--- Perceptual Hashes ---') >= 0) { curSection = 'phash'; continue; }
+          if (curSection === 'hashes') {
+            var hc = line.indexOf(':');
+            if (hc > 0) {
+              var hk = line.substring(0, hc).trim();
+              var hv = line.substring(hc + 1).trim();
+              if (hk && hv) fpResultData.hashes[hk] = hv;
+            }
+          }
+          if (curSection === 'phash') {
+            var pc = line.indexOf(':');
+            if (pc > 0) {
+              var pk = line.substring(0, pc).trim();
+              var pv = line.substring(pc + 1).trim();
+              if (pk && pv) fpResultData.perceptual_hashes[pk] = pv;
+            }
+          }
+        }
+      }
     }
 
     // Timestamp: uploaded file only
