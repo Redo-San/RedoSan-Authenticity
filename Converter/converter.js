@@ -25,13 +25,14 @@ function convGetFormats(type) {
 }
 
 function convAudioFormats() {
-  var fmts = ['wav'];
+  var fmts = ['wav', 'aiff'];
   if (typeof MediaRecorder === 'undefined') return fmts;
   var candidates = [
     { mime: 'audio/webm; codecs=opus', ext: 'ogg' },
     { mime: 'audio/webm', ext: 'ogg' },
     { mime: 'audio/ogg; codecs=opus', ext: 'ogg' },
     { mime: 'audio/ogg', ext: 'ogg' },
+    { mime: 'audio/opus', ext: 'opus' },
     { mime: 'audio/mpeg', ext: 'mp3' },
     { mime: 'audio/mpeg; codecs=mp3', ext: 'mp3' },
     { mime: 'audio/mp3', ext: 'mp3' },
@@ -39,8 +40,12 @@ function convAudioFormats() {
     { mime: 'audio/mp4', ext: 'm4a' },
     { mime: 'audio/aac', ext: 'm4a' },
     { mime: 'audio/x-m4a', ext: 'm4a' },
+    { mime: 'audio/3gpp', ext: 'aac' },
+    { mime: 'audio/3gpp2', ext: 'aac' },
     { mime: 'audio/flac', ext: 'flac' },
-    { mime: 'audio/x-flac', ext: 'flac' }
+    { mime: 'audio/x-flac', ext: 'flac' },
+    { mime: 'audio/amr', ext: 'amr' },
+    { mime: 'audio/amr-wb', ext: 'amr' }
   ];
   for (var i = 0; i < candidates.length; i++) {
     if (MediaRecorder.isTypeSupported(candidates[i].mime)) {
@@ -54,7 +59,7 @@ function convAudioFormats() {
 
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
-    wav: 'WAV', mp3: 'MP3', ogg: 'OGG', m4a: 'M4A', flac: 'FLAC',
+    wav: 'WAV', aiff: 'AIFF', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
     mp4: 'MP4', webm: 'WebM',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
     json: 'JSON', xml: 'XML', csv: 'CSV' };
@@ -187,20 +192,28 @@ async function convAudio(file, format) {
   var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') await audioCtx.resume();
   var audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
-  if (format === 'wav') {
+  if (format === 'wav' || format === 'aiff') {
     var numChannels = audioBuf.numberOfChannels;
     var sampleRate = audioBuf.sampleRate;
-    var wavBuf = convEncodeWav(audioBuf, numChannels, sampleRate);
+    if (format === 'wav') {
+      var wavBuf = convEncodeWav(audioBuf, numChannels, sampleRate);
+      audioCtx.close();
+      return { blob: new Blob([wavBuf], { type: 'audio/wav' }), ext: 'wav' };
+    }
+    var aiffBuf = convEncodeAiff(audioBuf, numChannels, sampleRate);
     audioCtx.close();
-    return { blob: new Blob([wavBuf], { type: 'audio/wav' }), ext: 'wav' };
+    return { blob: new Blob([aiffBuf], { type: 'audio/aiff' }), ext: 'aiff' };
   }
   var audioMimeMap = {
     ogg: ['audio/webm; codecs=opus', 'audio/webm', 'audio/ogg; codecs=opus', 'audio/ogg'],
+    opus: ['audio/webm; codecs=opus', 'audio/opus', 'audio/ogg; codecs=opus'],
     mp3: ['audio/mpeg', 'audio/mpeg; codecs=mp3', 'audio/mp3'],
     m4a: ['audio/mp4; codecs=aac', 'audio/mp4', 'audio/aac', 'audio/x-m4a'],
-    flac: ['audio/flac', 'audio/x-flac']
+    aac: ['audio/aac', 'audio/mp4; codecs=aac', 'audio/3gpp', 'audio/3gpp2'],
+    flac: ['audio/flac', 'audio/x-flac'],
+    amr: ['audio/amr', 'audio/amr-wb']
   };
-  var extMap = { ogg: 'ogg', mp3: 'mp3', m4a: 'm4a', flac: 'flac' };
+  var extMap = { ogg: 'ogg', opus: 'opus', mp3: 'mp3', m4a: 'm4a', aac: 'aac', flac: 'flac', amr: 'amr' };
   var mimeList = audioMimeMap[format];
   var chosenMime = '';
   if (mimeList) {
@@ -268,6 +281,57 @@ function convEncodeWav(audioBuffer, numChannels, sampleRate) {
       sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
       view.setInt16(offset, sample, true);
       offset += 2;
+    }
+  }
+  return buffer;
+}
+
+function convExtended80(val, view, off) {
+  if (val === 0 || !isFinite(val)) { for (var i = 0; i < 10; i++) view.setUint8(off + i, 0); return; }
+  var sign = val < 0 ? 1 : 0;
+  val = Math.abs(val);
+  var exp = Math.floor(Math.log2(val));
+  var mant = val / Math.pow(2, exp);
+  var biasedExp = exp + 16383;
+  view.setUint16(off, (sign << 15) | biasedExp, false);
+  var frac = mant - 1;
+  var scaled = frac * 2147483648;
+  var hi = Math.floor(scaled);
+  var lo = Math.round((scaled - hi) * 4294967296);
+  view.setUint32(off + 2, hi, false);
+  view.setUint32(off + 6, lo, false);
+}
+
+function convEncodeAiff(audioBuffer, numChannels, sampleRate) {
+  var length = audioBuffer.length;
+  var bytesPerSample = 2;
+  var sampleSize = bytesPerSample * 8;
+  var dataSize = length * numChannels * bytesPerSample;
+  var commSize = 18;
+  var ssndSize = 8 + dataSize;
+  var totalSize = 4 + 4 + 4 + 4 + commSize + 4 + ssndSize;
+  var buffer = new ArrayBuffer(totalSize);
+  var view = new DataView(buffer);
+  var pos = 0;
+  function wStr(s) { for (var i = 0; i < s.length; i++) view.setUint8(pos++, s.charCodeAt(i)); }
+  wStr('FORM');
+  view.setUint32(4, totalSize - 8, false); pos += 4;
+  wStr('AIFF');
+  wStr('COMM');
+  view.setUint32(pos, commSize, false); pos += 4;
+  view.setUint16(pos, numChannels, false); pos += 2;
+  view.setUint32(pos, length, false); pos += 4;
+  view.setUint16(pos, sampleSize, false); pos += 2;
+  convExtended80(sampleRate, view, pos); pos += 10;
+  wStr('SSND');
+  view.setUint32(pos, ssndSize, false); pos += 4;
+  view.setUint32(pos, 0, false); pos += 4;
+  view.setUint32(pos, 0, false); pos += 4;
+  for (var i = 0; i < length; i++) {
+    for (var ch = 0; ch < numChannels; ch++) {
+      var sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
+      sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+      view.setInt16(pos, sample, false); pos += 2;
     }
   }
   return buffer;
