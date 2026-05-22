@@ -17,16 +17,37 @@ function convDetectType(file) {
 function convGetFormats(type) {
   switch (type) {
     case 'image': return ['png', 'jpeg', 'webp', 'bmp', 'gif'];
-    case 'audio': return ['wav'];
+    case 'audio': return convAudioFormats();
     case 'video': return ['mp4', 'webm'];
     case 'document': return ['txt', 'html', 'md', 'pdf', 'docx', 'json', 'xml', 'csv'];
     default: return [];
   }
 }
 
+function convAudioFormats() {
+  var fmts = ['wav'];
+  if (typeof MediaRecorder === 'undefined') return fmts;
+  var candidates = [
+    { mime: 'audio/webm; codecs=opus', ext: 'ogg' },
+    { mime: 'audio/ogg; codecs=opus', ext: 'ogg' },
+    { mime: 'audio/mpeg', ext: 'mp3' },
+    { mime: 'audio/mp4; codecs=aac', ext: 'm4a' },
+    { mime: 'audio/flac', ext: 'flac' }
+  ];
+  for (var i = 0; i < candidates.length; i++) {
+    if (MediaRecorder.isTypeSupported(candidates[i].mime)) {
+      var dup = false;
+      for (var j = 0; j < fmts.length; j++) { if (fmts[j] === candidates[i].ext) { dup = true; break; } }
+      if (!dup) fmts.push(candidates[i].ext);
+    }
+  }
+  return fmts;
+}
+
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
-    wav: 'WAV', mp4: 'MP4', webm: 'WebM',
+    wav: 'WAV', mp3: 'MP3', ogg: 'OGG', m4a: 'M4A', flac: 'FLAC',
+    mp4: 'MP4', webm: 'WebM',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
     json: 'JSON', xml: 'XML', csv: 'CSV' };
   return labels[fmt] || fmt.toUpperCase();
@@ -152,18 +173,48 @@ async function convImage(file, format) {
 }
 
 async function convAudio(file, format) {
+  var buf = await file.arrayBuffer();
+  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  var audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
   if (format === 'wav') {
-    var buf = await file.arrayBuffer();
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
     var numChannels = audioBuf.numberOfChannels;
     var sampleRate = audioBuf.sampleRate;
-    var length = audioBuf.length;
     var wavBuf = convEncodeWav(audioBuf, numChannels, sampleRate);
     audioCtx.close();
     return { blob: new Blob([wavBuf], { type: 'audio/wav' }), ext: 'wav' };
   }
-  throw new Error(__('conv.audio_limited', 'Audio conversion is limited in browser. Try WAV format.'));
+  var mimeMap = { ogg: 'audio/webm; codecs=opus', mp3: 'audio/mpeg', m4a: 'audio/mp4; codecs=aac', flac: 'audio/flac' };
+  var extMap = { ogg: 'ogg', mp3: 'mp3', m4a: 'm4a', flac: 'flac' };
+  var mime = mimeMap[format];
+  if (!mime || !MediaRecorder.isTypeSupported(mime)) {
+    audioCtx.close();
+    throw new Error(__('conv.audio_limited', 'Audio conversion is limited in browser. Try WAV format.'));
+  }
+  return await convAudioEncode(audioCtx, audioBuf, mime, extMap[format]);
+}
+
+function convAudioEncode(audioCtx, audioBuf, mimeType, ext) {
+  return new Promise(function(resolve, reject) {
+    var source = audioCtx.createBufferSource();
+    source.buffer = audioBuf;
+    var dest = audioCtx.createMediaStreamDestination();
+    source.connect(dest);
+    var chunks = [];
+    var recorder = new MediaRecorder(dest.stream, { mimeType: mimeType });
+    recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = function() {
+      var blob = new Blob(chunks, { type: mimeType });
+      audioCtx.close();
+      resolve({ blob: blob, ext: ext });
+    };
+    recorder.onerror = function() { audioCtx.close(); reject(new Error('Encoding failed')); };
+    recorder.start();
+    source.start(0);
+    setTimeout(function() {
+      if (recorder.state === 'recording') recorder.stop();
+    }, audioBuf.duration * 1000 + 200);
+  });
 }
 
 function convEncodeWav(audioBuffer, numChannels, sampleRate) {
