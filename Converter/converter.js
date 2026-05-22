@@ -18,7 +18,7 @@ function convGetFormats(type) {
   switch (type) {
     case 'image': return ['png', 'jpeg', 'webp', 'bmp', 'gif'];
     case 'audio': return convAudioFormats();
-    case 'video': return ['mp4', 'webm'];
+    case 'video': return convVideoFormats();
     case 'document': return ['txt', 'html', 'md', 'pdf', 'docx', 'json', 'xml', 'csv'];
     default: return [];
   }
@@ -28,10 +28,14 @@ function convAudioFormats() {
   return ['wav', 'aiff', 'au', 'raw', 'mp3', 'ogg', 'opus', 'm4a', 'aac', 'flac', 'amr'];
 }
 
+function convVideoFormats() {
+  return ['mp4', 'webm', 'mkv', 'mov', 'avi', 'ogg', 'mpeg', '3gp', 'wmv', 'flv', 'gif'];
+}
+
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
     wav: 'WAV', aiff: 'AIFF', au: 'AU', raw: 'RAW', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
-    mp4: 'MP4', webm: 'WebM',
+    mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
     json: 'JSON', xml: 'XML', csv: 'CSV' };
   return labels[fmt] || fmt.toUpperCase();
@@ -406,7 +410,164 @@ function convEncodeRaw(audioBuffer, numChannels) {
 }
 
 async function convVideo(file, format) {
-  throw new Error(__('conv.video_limited', 'Video conversion is limited in browser. Use dedicated video editing software.'));
+  if (format === 'gif') return await convVideoToGif(file);
+  var videoMimeMap = {
+    mp4: ['video/mp4; codecs=h264', 'video/mp4; codecs=avc1', 'video/mp4', 'video/x-mp4'],
+    webm: ['video/webm; codecs=vp9', 'video/webm; codecs=vp8', 'video/webm'],
+    mkv: ['video/x-matroska; codecs=vp9', 'video/x-matroska; codecs=vp8', 'video/x-matroska; codecs=h264', 'video/x-matroska', 'video/webm'],
+    mov: ['video/quicktime', 'video/mp4', 'video/x-m4v'],
+    avi: ['video/x-msvideo', 'video/avi'],
+    ogg: ['video/ogg; codecs=theora', 'video/ogg'],
+    mpeg: ['video/mpeg', 'video/mp2t'],
+    '3gp': ['video/3gpp', 'video/3gpp2'],
+    wmv: ['video/x-ms-wmv'],
+    flv: ['video/x-flv']
+  };
+  var extMap = { mp4: 'mp4', webm: 'webm', mkv: 'mkv', mov: 'mov', avi: 'avi', ogg: 'ogg', mpeg: 'mpeg', '3gp': '3gp', wmv: 'wmv', flv: 'flv' };
+  var mimeList = videoMimeMap[format] || [];
+  if (mimeList.length === 0) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
+  var url = URL.createObjectURL(file);
+  try {
+    var video = await convLoadVideo(url);
+    await video.play();
+    var stream = video.captureStream();
+    for (var mi = 0; mi < mimeList.length; mi++) {
+      try {
+        var result = await convVideoEncode(stream, mimeList[mi], extMap[format], video.duration);
+        video.pause();
+        return result;
+      } catch(e) {}
+    }
+    video.pause();
+    throw new Error(__('conv.video_limited', 'Video encoding not supported in this browser.'));
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function convLoadVideo(url) {
+  return new Promise(function(resolve, reject) {
+    var v = document.createElement('video');
+    v.muted = true;
+    v.playsInline = true;
+    v.onloadedmetadata = function() { v.currentTime = 0; resolve(v); };
+    v.onerror = function() { reject(new Error('Failed to load video')); };
+    v.src = url;
+  });
+}
+
+function convVideoEncode(stream, mimeType, ext, duration) {
+  return new Promise(function(resolve, reject) {
+    var chunks = [];
+    var recorder;
+    try { recorder = new MediaRecorder(stream, { mimeType: mimeType }); } catch(e) { reject(e); return; }
+    recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = function() { resolve({ blob: new Blob(chunks, { type: mimeType }), ext: ext }); };
+    recorder.onerror = function() { reject(new Error('Encoding failed')); };
+    recorder.start();
+    setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration * 1000 + 500);
+  });
+}
+
+function convGifEncode(frames, delayCs, w, h) {
+  var data = [];
+  function put(b) { data.push(b); }
+  function putS(v) { put(v & 0xFF); put((v >> 8) & 0xFF); }
+  function putStr(s) { for (var i = 0; i < s.length; i++) put(s.charCodeAt(i)); }
+  putStr('GIF89a');
+  putS(w); putS(h);
+  put(0xF7); put(0); put(0);
+  for (var i = 0; i < frames.length; i++) {
+    put(0x21); put(0xF9); put(4); put(0x00); putS(delayCs); put(0); put(0x00);
+    put(0x2C); putS(0); putS(0); putS(w); putS(h); put(0x00);
+    var rgba = frames[i];
+    var len = w * h;
+    var indices = new Uint8Array(len);
+    var minCodeSize = 8;
+    for (var j = 0; j < len; j++) {
+      var r = rgba[j * 4], g = rgba[j * 4 + 1], b = rgba[j * 4 + 2];
+      indices[j] = (((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)) % 256;
+    }
+    put(minCodeSize);
+    var compressed = convGifLzw(indices, minCodeSize);
+    putS(compressed.length);
+    for (var k = 0; k < compressed.length; k++) put(compressed[k]);
+    put(0x00);
+  }
+  put(0x3B);
+  return new Uint8Array(data);
+}
+
+function convGifLzw(indices, minCodeSize) {
+  var clearCode = 1 << minCodeSize;
+  var eoiCode = clearCode + 1;
+  var codeSize = minCodeSize + 1;
+  var dict = {};
+  var nextCode = eoiCode + 1;
+  var result = [];
+  var bitBuf = 0, bitCount = 0;
+  function outCode(code) {
+    bitBuf |= (code << bitCount);
+    bitCount += codeSize;
+    while (bitCount >= 8) { result.push(bitBuf & 0xFF); bitBuf >>= 8; bitCount -= 8; }
+  }
+  outCode(clearCode);
+  var s = [];
+  for (var i = 0; i < indices.length; i++) {
+    var c = indices[i];
+    var sc = s.concat([c]);
+    var key = sc.join(',');
+    if (dict[key] !== undefined) { s = sc; continue; }
+    outCode(s.length === 1 ? s[0] : dict[s.join(',')]);
+    if (nextCode < 4096) { dict[key] = nextCode++; }
+    if (nextCode > (1 << codeSize) && codeSize < 12) codeSize++;
+    s = [c];
+  }
+  if (s.length > 0) outCode(s.length === 1 ? s[0] : dict[s.join(',')]);
+  outCode(eoiCode);
+  if (bitCount > 0) result.push(bitBuf & 0xFF);
+  return result;
+}
+
+function convVideoToGif(file) {
+  return new Promise(function(resolve, reject) {
+    var url = URL.createObjectURL(file);
+    var v = document.createElement('video');
+    v.muted = true; v.playsInline = true;
+    v.onloadedmetadata = function() {
+      var w = Math.min(v.videoWidth, 320), h = Math.min(v.videoHeight, 240);
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      var dur = v.duration;
+      var fps = 10;
+      var totalFrames = Math.min(Math.round(dur * fps), 50);
+      var interval = dur / totalFrames;
+      var frames = [], frameNum = 0;
+      function capture() {
+        if (frameNum >= totalFrames) {
+          v.pause(); URL.revokeObjectURL(url);
+          try {
+            var gifData = convGifEncode(frames, Math.round(interval * 100), w, h);
+            resolve({ blob: new Blob([gifData], { type: 'image/gif' }), ext: 'gif' });
+          } catch(e) { reject(e); }
+          return;
+        }
+        v.currentTime = frameNum * interval;
+      }
+      v.onseeked = function() {
+        ctx.drawImage(v, 0, 0, w, h);
+        frames.push(ctx.getImageData(0, 0, w, h).data.slice(0));
+        frameNum++;
+        capture();
+      };
+      v.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
+      capture();
+    };
+    v.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
+    v.src = url;
+    v.load();
+  });
 }
 
 async function convDocument(file, format) {
