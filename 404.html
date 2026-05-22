@@ -9,6 +9,8 @@
 <link rel="canonical" href="https://redo-san.github.io/RedoSan-Authenticity/404.html">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="stylesheet" href="Style_Web_Page/style.css">
+<script src="Style_Web_Page/i18n.js" defer></script>
+<script src="Style_Web_Page/shared.js" defer></script>
 <style>
 .threat-container { max-width:600px; margin:0 auto; padding:40px 20px; text-align:center; }
 .threat-icon { font-size:72px; margin-bottom:20px; }
@@ -34,6 +36,13 @@
       <div class="logo-img logo-white" role="img" aria-label="RedoSan"></div>
       <div class="logo-img logo-black" role="img" aria-label="RedoSan"></div>
     </a>
+    <div class="nav-search" id="navSearch">
+      <input type="text" id="searchInput" name="searchInput" placeholder="Search..." aria-label="Search" onkeydown="if(event.key==='Enter')siteSearch()" onfocus="this.parentElement.classList.add('focused')" onblur="this.parentElement.classList.remove('focused')">
+      <button class="search-btn" onclick="siteSearch()" aria-label="Search"></button>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+    <button class="theme-btn mode-switch-btn" onclick="showModeSelect()" title="Switch Mode" aria-label="Switch Mode">🔀</button>
   </div>
   <div class="nav-links">
     <a href="/RedoSan-Authenticity/">Home</a>
@@ -41,6 +50,19 @@
     <a href="/RedoSan-Authenticity/#fingerprint">Fingerprint</a>
     <a href="/RedoSan-Authenticity/#metadata">Metadata</a>
     <a href="/RedoSan-Authenticity/#timestamp">Timestamp</a>
+    <div class="lang-dropdown">
+      <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">English</button>
+      <div class="lang-menu" id="langMenu">
+        <a href="#" onclick="switchLang('en'); return false;" class="lang-option" data-lang="en">English</a>
+        <a href="#" onclick="switchLang('ar'); return false;" class="lang-option" data-lang="ar">العربية</a>
+        <a href="#" onclick="switchLang('fr'); return false;" class="lang-option" data-lang="fr">Français</a>
+        <a href="#" onclick="switchLang('de'); return false;" class="lang-option" data-lang="de">Deutsch</a>
+        <a href="#" onclick="switchLang('es'); return false;" class="lang-option" data-lang="es">Español</a>
+        <a href="#" onclick="switchLang('zh'); return false;" class="lang-option" data-lang="zh">中文</a>
+        <a href="#" onclick="switchLang('ja'); return false;" class="lang-option" data-lang="ja">日本語</a>
+        <a href="#" onclick="switchLang('ko'); return false;" class="lang-option" data-lang="ko">한국어</a>
+      </div>
+    </div>
   </div>
 </nav>
 
