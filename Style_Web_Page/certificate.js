@@ -776,14 +776,47 @@ async function generateProfessionalCert() {
     var tsName = tsFile ? tsFile.name : '';
     var tsSize = tsFile ? tsFile.size : 0;
 
+    // Validate required fields
+    var cname = getValOrEmpty('cert-name');
+    var cemail = getValOrEmpty('cert-email');
+    var cphoneCode = (document.getElementById('cert-phonecode') || {}).value || '';
+    var cphoneRaw = getValOrEmpty('cert-phone');
+    var cphone = cphoneRaw.replace(/\D/g, '').slice(0, 15);
+    var cwebsite = getValOrEmpty('cert-website');
+
+    if (!cname || !cemail || !cphone || !cwebsite) {
+      if (status) status.textContent = 'Please fill in all required fields: Name, Email, Phone, Website.';
+      if (spinner) spinner.style.display = 'none';
+      if (btn) btn.disabled = false;
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cemail)) {
+      var ew = document.getElementById('cert-email-warn');
+      if (ew) ew.style.display = 'block';
+      if (status) status.textContent = '';
+      if (spinner) spinner.style.display = 'none';
+      if (btn) btn.disabled = false;
+      return;
+    }
+    if (cwebsite === 'https://' || !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(cwebsite)) {
+      var ww = document.getElementById('cert-website-warn');
+      if (ww) ww.style.display = 'block';
+      if (status) status.textContent = '';
+      if (spinner) spinner.style.display = 'none';
+      if (btn) btn.disabled = false;
+      return;
+    }
+
     _certData = {
       generatedAt: new Date().toISOString(),
       generator: 'RedoSan Authenticity',
       user: {
-        name: getValOrEmpty('cert-name'),
-        email: getValOrEmpty('cert-email'),
-        phone: getValOrEmpty('cert-phone'),
-        website: getValOrEmpty('cert-website'),
+        name: cname,
+        email: cemail,
+        phone: cphoneCode + cphone,
+        phoneCode: cphoneCode,
+        phone: cphone,
+        website: cwebsite,
         social: {
           tiktok: getUrlOrEmpty('cert-social-tiktok'),
           facebook: getUrlOrEmpty('cert-social-facebook'),
@@ -794,8 +827,8 @@ async function generateProfessionalCert() {
         music: {
           spotify: getUrlOrEmpty('cert-music-spotify'),
           appleMusic: getUrlOrEmpty('cert-music-applemusic'),
-          soundcloud: getUrlOrEmpty('cert-music-soundcloud'),
-          bandcamp: getUrlOrEmpty('cert-music-bandcamp')
+          youtubeMusic: getUrlOrEmpty('cert-music-ytmusic'),
+          soundcloud: getUrlOrEmpty('cert-music-soundcloud')
         }
       },
       file: { name: file ? file.name : '', size: file ? file.size : 0, type: file ? file.type : '', width: 0, height: 0, dataUrl: null, hash: '' },
@@ -851,18 +884,58 @@ async function downloadProfessionalCert(format) {
   }
 }
 
+function initCertPhoneCode() {
+  var sel = document.getElementById('cert-phonecode');
+  if (!sel) return;
+  // Build options
+  var html = '<option value="">' + __('simple.select_country', 'Select country') + '</option>';
+  for (var i = 0; i < COUNTRY_CODES.length; i++) {
+    html += '<option value="' + COUNTRY_CODES[i].dial + '">' + COUNTRY_CODES[i].name + ' (' + COUNTRY_CODES[i].dial + ')</option>';
+  }
+  sel.innerHTML = html;
+  // Auto-detect
+  if (typeof getDefaultPhoneCode === 'function') {
+    var detected = getDefaultPhoneCode();
+    if (detected) { sel.value = detected.dial; }
+  }
+  if (typeof updatePhoneMaxLength === 'function') updatePhoneMaxLength();
+}
+
+function toggleCertMusicFields() {
+  var cb = document.getElementById('cert-show-music');
+  var fields = document.getElementById('cert-music-fields');
+  if (fields) fields.style.display = cb && cb.checked ? '' : 'none';
+}
+
 function resetProfessionalCert() {
   _certData = null;
   var ids = ['cert-file', 'cert-name', 'cert-email', 'cert-phone', 'cert-website',
     'cert-social-tiktok', 'cert-social-facebook', 'cert-social-instagram', 'cert-social-youtube',
-    'cert-music-spotify', 'cert-music-applemusic', 'cert-music-soundcloud', 'cert-music-bandcamp',
+    'cert-music-spotify', 'cert-music-applemusic', 'cert-music-ytmusic', 'cert-music-soundcloud',
     'cert-result-wm', 'cert-result-pi', 'cert-result-fp', 'cert-result-ts'];
   ids.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) { el.value = ''; }
   });
+  var phonecode = document.getElementById('cert-phonecode');
+  if (phonecode) { phonecode.value = ''; }
+  var showMusic = document.getElementById('cert-show-music');
+  if (showMusic) { showMusic.checked = false; }
+  var musicFields = document.getElementById('cert-music-fields');
+  if (musicFields) musicFields.style.display = 'none';
   var dlSection = document.getElementById('cert-download-section');
   if (dlSection) dlSection.style.display = 'none';
   var status = document.getElementById('cert-status');
   if (status) status.textContent = '';
+  // Re-init phone code detection
+  initCertPhoneCode();
+}
+
+// Init phone code on DOM ready
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCertPhoneCode);
+  } else {
+    initCertPhoneCode();
+  }
 }
