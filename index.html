@@ -677,7 +677,7 @@
         <label data-i18n="cert.user_info_label">Your Information <span style="color:var(--danger)">*</span></label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div><input type="text" id="cert-name" class="cert-field" placeholder="Name" required maxlength="25"></div>
-          <div><input type="email" id="cert-email" class="cert-field" placeholder="Email" required maxlength="20" oninput="validateEmailInput(this)">
+          <div><input type="email" id="cert-email" class="cert-field" placeholder="Email" required maxlength="40" oninput="validateEmailInput(this)">
           <span id="cert-email-warn" class="simple-field-warn" style="display:none">Please enter a valid email address</span></div>
           <div><div class="simple-phone-group">
             <select id="cert-phonecode" onchange="updatePhoneMaxLength()"></select>
