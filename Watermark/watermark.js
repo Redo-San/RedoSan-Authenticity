@@ -244,6 +244,7 @@ async function handleWatermarkEmbed() {
   const imgFile = await getFile('wm-image');
   if (!imgFile) { setText('wm-output', __('wm.err_select_image')); resultDiv.style.display = 'block'; return; }
   if (!(await validateFileInput(document.getElementById('wm-image')))) { return; }
+  window._originalFile = window._originalFile || imgFile;
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
     setText('wm-output', __('wm.err_pw_required'));

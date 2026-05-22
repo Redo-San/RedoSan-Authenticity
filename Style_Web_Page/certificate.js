@@ -216,7 +216,7 @@ async function downloadCertPDF(data) {
     doc.text('Watermark', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text('Result file: ' + (data.watermarkAlgo || 'Uploaded'), margin, y); y += 4;
+    doc.text('Result: ' + (data.watermarkAlgo || 'Completed'), margin, y); y += 4;
     if (data.watermarkResult) {
       doc.setFontSize(7);
       var wmLines = doc.splitTextToSize(data.watermarkResult, pageW);
@@ -234,10 +234,10 @@ async function downloadCertPDF(data) {
     doc.text('Pixel Injection', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text('Result file: ' + (data.watermarkAlgo || 'Uploaded'), margin, y); y += 4;  // reuse watermarkAlgo for filename
+    doc.text('Result: Completed', margin, y); y += 4;
     if (data.piResultHtml) {
-      var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      var piLines = doc.splitTextToSize(piText, pageW);
+      doc.setFontSize(7);
+      var piLines = doc.splitTextToSize(data.piResultHtml, pageW);
       doc.text(piLines, margin, y);
       y += piLines.length * 3.5;
     }
@@ -437,7 +437,7 @@ async function downloadCertDOCX(data) {
   // 4. Watermark
   if (data.watermark) {
     addHeading('Watermark', 2);
-    addLabelValue('Result file', data.watermarkAlgo || 'Uploaded');
+    addLabelValue('Result', data.watermarkAlgo || 'Completed');
     if (data.watermarkResult) {
       addBody(data.watermarkResult);
     }
@@ -447,10 +447,9 @@ async function downloadCertDOCX(data) {
   // 5. Pixel Injection
   if (data.pixelInjection) {
     addHeading('Pixel Injection', 2);
-    addLabelValue('Result file', data.watermarkAlgo || 'Uploaded');
+    addLabelValue('Result', 'Completed');
     if (data.piResultHtml) {
-      var piText = data.piResultHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      addBody(piText);
+      addBody(data.piResultHtml);
     }
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
@@ -600,8 +599,8 @@ async function downloadCertEPUB(data) {
 
     (imgBase64 ? '<div class="img-wrapper"><img src="images/photo.' + (data.file.type === 'image/png' ? 'png' : 'jpg') + '" alt="Original Image"/></div>' : '') +
 
-    (data.watermark ? '<h2>Watermark</h2><p><strong>Result file:</strong> ' + escHtml(data.watermarkAlgo || 'Uploaded') + '</p><pre>' + escHtml(data.watermarkResult || 'Watermark result uploaded.') + '</pre>' : '') +
-    (data.pixelInjection ? '<h2>Pixel Injection</h2><p><strong>Result file:</strong> ' + escHtml(data.watermarkAlgo || 'Uploaded') + '</p><pre>' + escHtml(data.piResultHtml ? data.piResultHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : 'Pixel injection result uploaded.') + '</pre>' : '') +
+    (data.watermark ? '<h2>Watermark</h2><p><strong>Result:</strong> ' + escHtml(data.watermarkAlgo || 'Completed') + '</p><pre>' + escHtml(data.watermarkResult || '') + '</pre>' : '') +
+    (data.pixelInjection ? '<h2>Pixel Injection</h2><p><strong>Result:</strong> Completed</p><pre>' + escHtml(data.piResultHtml || '') + '</pre>' : '') +
     (data.timestamp ? '<h2>Timestamp</h2><pre>' + escHtml(data.tsResult || 'Timestamp created successfully.') + '</pre>' : '') +
 
     fpSection +
@@ -734,12 +733,13 @@ async function generateProfessionalCert() {
   if (btn) btn.disabled = true;
 
   try {
+    // Auto-populate image from global
     var fileInput = document.getElementById('cert-file');
-    var file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+    var file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : window._originalFile || null;
     var buf = null;
-    if (file) { buf = await file.arrayBuffer(); }
+    if (file && file instanceof File) { buf = await file.arrayBuffer(); }
 
-    // Read result files
+    // Read result files (with global fallback)
     function getFileFrom(id) {
       var el = document.getElementById(id);
       return el && el.files && el.files[0] ? el.files[0] : null;
@@ -755,24 +755,77 @@ async function generateProfessionalCert() {
       });
     }
 
-    async function readFileAsDataUrl(f) {
-      if (!f) return null;
-      return new Promise(function(resolve) {
-        var r = new FileReader();
-        r.onload = function(e) { resolve(e.target.result); };
-        r.onerror = function() { resolve(null); };
-        r.readAsDataURL(f);
-      });
+    // Watermark: uploaded file or window._wmResult
+    var wmFile = getFileFrom('cert-result-wm');
+    var wmGlobal = window._wmResult;
+    var wmText = '';
+    var wmFileName = '';
+    if (wmFile) {
+      wmText = await readFileAsText(wmFile);
+      wmFileName = wmFile.name;
+    } else if (wmGlobal) {
+      wmFileName = wmGlobal.algorithmName || '';
+      var wmParts = [];
+      if (wmGlobal.algorithmName) wmParts.push('Algorithm: ' + wmGlobal.algorithmName);
+      if (wmGlobal.imageName) wmParts.push('Image: ' + wmGlobal.imageName);
+      if (wmGlobal.secretName) wmParts.push('Secret: ' + wmGlobal.secretName);
+      if (wmGlobal.message) wmParts.push('Message: ' + wmGlobal.message);
+      if (wmGlobal.password) wmParts.push('Password: ' + wmGlobal.password);
+      if (wmGlobal.timestamp) wmParts.push('Timestamp: ' + wmGlobal.timestamp);
+      wmText = wmParts.join('\n');
     }
 
-    var wmFile = getFileFrom('cert-result-wm');
+    // PI: uploaded file or window._piResult
     var piFile = getFileFrom('cert-result-pi');
-    var fpFile = getFileFrom('cert-result-fp');
-    var tsFile = getFileFrom('cert-result-ts');
+    var piGlobal = window._piResult;
+    var piText = '';
+    var piFileName = '';
+    if (piFile) {
+      piText = await readFileAsText(piFile);
+      piFileName = piFile.name;
+    } else if (piGlobal && piGlobal.type === 'embed') {
+      piFileName = piGlobal.secretFile || piGlobal.algorithm || '';
+      var piParts = [];
+      if (piGlobal.algorithm) piParts.push('Algorithm: ' + piGlobal.algorithm);
+      if (piGlobal.category) piParts.push('Category: ' + piGlobal.category);
+      if (piGlobal.secretFile) piParts.push('Secret file: ' + piGlobal.secretFile);
+      if (piGlobal.dimensions) piParts.push('Dimensions: ' + piGlobal.dimensions);
+      if (piGlobal.password) piParts.push('Password: ' + piGlobal.password);
+      if (piGlobal.timestamp) piParts.push('Timestamp: ' + piGlobal.timestamp);
+      piText = 'Pixel Injection completed\n\n' + piParts.join('\n');
+    } else if (piGlobal && piGlobal.type === 'extract') {
+      piFileName = piGlobal.algorithm || '';
+      var piParts2 = [];
+      if (piGlobal.algorithm) piParts2.push('Algorithm: ' + piGlobal.algorithm);
+      if (piGlobal.category) piParts2.push('Category: ' + piGlobal.category);
+      if (piGlobal.extractedMessage) piParts2.push('Extracted: ' + piGlobal.extractedMessage);
+      if (piGlobal.password) piParts2.push('Password: ' + piGlobal.password);
+      if (piGlobal.timestamp) piParts2.push('Timestamp: ' + piGlobal.timestamp);
+      piText = 'Pixel Extraction completed\n\n' + piParts2.join('\n');
+    }
 
-    var wmText = wmFile ? await readFileAsText(wmFile) : '';
-    var piText = piFile ? await readFileAsText(piFile) : '';
-    var fpText = fpFile ? await readFileAsText(fpFile) : '';
+    // Fingerprint: uploaded file or window._fpResult
+    var fpFile = getFileFrom('cert-result-fp');
+    var fpGlobal = window._fpResult;
+    var fpText = '';
+    var fpResultData = null;
+    if (fpFile) {
+      fpText = await readFileAsText(fpFile);
+      // Try to parse uploaded JSON fingerprint
+      try { fpResultData = JSON.parse(fpText); } catch(e) { fpResultData = { hashes: {}, perceptual_hashes: {}, raw: fpText }; }
+    } else if (fpGlobal) {
+      fpResultData = fpGlobal;
+      fpText = JSON.stringify(fpGlobal, null, 2);
+    }
+    // Ensure hashes/perceptual_hashes are extracted
+    if (fpResultData && (!fpResultData.hashes || Object.keys(fpResultData.hashes).length === 0)) {
+      fpResultData.hashes = fpResultData.hashes || {};
+      fpResultData.perceptual_hashes = fpResultData.perceptual_hashes || {};
+      fpResultData.raw = fpResultData.raw || fpText;
+    }
+
+    // Timestamp: uploaded file only
+    var tsFile = getFileFrom('cert-result-ts');
     var tsName = tsFile ? tsFile.name : '';
     var tsSize = tsFile ? tsFile.size : 0;
 
@@ -831,19 +884,19 @@ async function generateProfessionalCert() {
           soundcloud: getUrlOrEmpty('cert-music-soundcloud')
         }
       },
-      file: { name: file ? file.name : '', size: file ? file.size : 0, type: file ? file.type : '', width: 0, height: 0, dataUrl: null, hash: '' },
-      watermark: !!wmFile,
+      file: { name: file ? (file.name || '') : '', size: file ? file.size : 0, type: file ? file.type : '', width: 0, height: 0, dataUrl: null, hash: '' },
+      watermark: !!(wmFile || wmGlobal),
       watermarkUrl: null,
-      watermarkAlgo: wmFile ? wmFile.name : '',
+      watermarkAlgo: wmFileName,
       watermarkResult: wmText,
-      pixelInjection: !!piFile,
+      pixelInjection: !!(piFile || piGlobal),
       piResultHtml: piText,
       piFileDataUrl: null,
       timestamp: !!tsFile,
       tsResult: tsFile ? ('Timestamp file: ' + tsName + ' (' + fmtSize(tsSize) + ')') : '',
-      fingerprint: !!fpFile,
-      fpResult: fpText ? { hashes: {}, perceptual_hashes: {}, raw: fpText } : null,
-      fpFileName: fpFile ? fpFile.name : ''
+      fingerprint: !!(fpFile || fpGlobal),
+      fpResult: fpResultData,
+      fpFileName: fpFile ? fpFile.name : (fpGlobal ? (fpGlobal.file_info ? fpGlobal.file_info.file_name : '') : '')
     };
 
     // Main image dimensions + hash
