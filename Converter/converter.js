@@ -25,7 +25,7 @@ function convGetFormats(type) {
 }
 
 function convAudioFormats() {
-  var fmts = ['wav', 'aiff'];
+  var fmts = ['wav', 'aiff', 'mp3'];
   if (typeof MediaRecorder === 'undefined') return fmts;
   var candidates = [
     { mime: 'audio/webm; codecs=opus', ext: 'ogg' },
@@ -225,11 +225,14 @@ async function convAudio(file, format) {
       if (MediaRecorder.isTypeSupported(mimeList[mi])) { chosenMime = mimeList[mi]; break; }
     }
   }
-  if (!chosenMime) {
-    audioCtx.close();
-    throw new Error(__('conv.audio_limited', 'Audio conversion is limited in browser. Try WAV format.'));
+  if (chosenMime) {
+    return await convAudioEncode(audioCtx, audioBuf, chosenMime, extMap[format]);
   }
-  return await convAudioEncode(audioCtx, audioBuf, chosenMime, extMap[format]);
+  if (format === 'mp3' && typeof lamejs !== 'undefined') {
+    return await convAudioToMp3(audioCtx, audioBuf);
+  }
+  audioCtx.close();
+  throw new Error(__('conv.audio_limited', 'Audio conversion is limited in browser. Try WAV format.'));
 }
 
 function convAudioEncode(audioCtx, audioBuf, mimeType, ext) {
@@ -252,6 +255,56 @@ function convAudioEncode(audioCtx, audioBuf, mimeType, ext) {
     setTimeout(function() {
       if (recorder.state === 'recording') recorder.stop();
     }, audioBuf.duration * 1000 + 200);
+  });
+}
+
+function convAudioToMp3(audioCtx, audioBuf) {
+  return new Promise(function(resolve, reject) {
+    try {
+      var numChannels = Math.min(audioBuf.numberOfChannels, 2);
+      var sampleRate = audioBuf.sampleRate;
+      var bitrate = 128;
+      var mp3enc = new lamejs.Mp3Encoder(numChannels, sampleRate, bitrate);
+      var mp3Data = [];
+      var length = audioBuf.length;
+      var blockSize = 1152;
+      function floatToInt16(val) {
+        var s = Math.max(-1, Math.min(1, val));
+        return s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      if (numChannels === 1) {
+        var samples = audioBuf.getChannelData(0);
+        for (var i = 0; i < length; i += blockSize) {
+          var end = Math.min(i + blockSize, length);
+          var chunk = new Int16Array(end - i);
+          for (var j = i; j < end; j++) chunk[j - i] = floatToInt16(samples[j]);
+          var buf = mp3enc.encodeBuffer(chunk);
+          if (buf.length > 0) mp3Data.push(buf);
+        }
+      } else {
+        var left = audioBuf.getChannelData(0);
+        var right = numChannels > 1 ? audioBuf.getChannelData(1) : left;
+        for (var i = 0; i < length; i += blockSize) {
+          var end = Math.min(i + blockSize, length);
+          var lChunk = new Int16Array(end - i);
+          var rChunk = new Int16Array(end - i);
+          for (var j = i; j < end; j++) {
+            lChunk[j - i] = floatToInt16(left[j]);
+            rChunk[j - i] = floatToInt16(right[j]);
+          }
+          var buf = mp3enc.encodeBuffer(lChunk, rChunk);
+          if (buf.length > 0) mp3Data.push(buf);
+        }
+      }
+      var lastBuf = mp3enc.flush();
+      if (lastBuf.length > 0) mp3Data.push(lastBuf);
+      var blob = new Blob(mp3Data, { type: 'audio/mpeg' });
+      audioCtx.close();
+      resolve({ blob: blob, ext: 'mp3' });
+    } catch (e) {
+      audioCtx.close();
+      reject(e);
+    }
   });
 }
 
