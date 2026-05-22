@@ -50,19 +50,37 @@ function handleConvFile() {
   var typeLabel = { image: 'Image', audio: 'Audio', video: 'Video', document: 'Document', unknown: 'Unknown' }[_convType] || 'Unknown';
   document.getElementById('conv-file-type').textContent = __('conv.detected', 'Detected: ') + typeLabel;
   document.getElementById('conv-file-name').textContent = __('conv.file', 'File: ') + _convFile.name;
-  var html = '<label>' + __('conv.format_label', 'Convert to:') + '</label><select id="conv-format">';
-  for (var i = 0; i < _convFormats.length; i++) {
-    html += '<option value="' + _convFormats[i] + '">' + convGetFormatLabel(_convFormats[i]) + '</option>';
-  }
-  html += '</select>';
   if (_convType === 'unknown') {
-    html = '<p style="color:var(--danger)">' + __('conv.unknown_type', 'Unsupported file type. Please select an image, audio, video, or document file.') + '</p>';
-    opts.innerHTML = html;
+    opts.innerHTML = '<p style="color:var(--danger)">' + __('conv.unknown_type', 'Unsupported file type. Please select an image, audio, video, or document file.') + '</p>';
+    opts.style.display = 'block';
+    document.getElementById('conv-btn').style.display = 'none';
     return;
   }
+  var html = '<label style="margin-bottom:8px;display:block;font-size:0.8rem;color:var(--text-muted)">' + __('conv.format_label', 'Convert to:') + '</label>';
+  html += '<div id="conv-format-grid" style="display:flex;flex-wrap:wrap;gap:8px">';
+  for (var i = 0; i < _convFormats.length; i++) {
+    var active = i === 0 ? ' active' : '';
+    html += '<button type="button" class="tab-btn btn' + active + '" data-fmt="' + _convFormats[i] + '" onclick="convSelectFormat(this)">' + convGetFormatLabel(_convFormats[i]) + '</button>';
+  }
+  html += '</div>';
   opts.innerHTML = html;
   opts.style.display = 'block';
   document.getElementById('conv-btn').style.display = 'inline-block';
+}
+
+function convSelectFormat(el) {
+  var grid = document.getElementById('conv-format-grid');
+  if (!grid) return;
+  var btns = grid.querySelectorAll('.tab-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+  el.classList.add('active');
+}
+
+function convGetSelectedFormat() {
+  var grid = document.getElementById('conv-format-grid');
+  if (!grid) return '';
+  var active = grid.querySelector('.tab-btn.active');
+  return active ? active.getAttribute('data-fmt') : '';
 }
 
 async function handleConvConvert() {
@@ -78,7 +96,8 @@ async function handleConvConvert() {
   outDiv.style.display = 'none';
   dl.innerHTML = '';
   try {
-    var format = document.getElementById('conv-format').value;
+    var format = convGetSelectedFormat();
+    if (!format) { throw new Error('No format selected'); }
     var result = await convRun(_convFile, _convType, format);
     if (result) {
       var ext = result.ext || format;
