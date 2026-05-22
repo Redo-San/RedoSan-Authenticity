@@ -516,7 +516,7 @@ function wmToHTML(r) {
   return h;
 }
 
-function downloadWatermark(format) {
+async function downloadWatermark(format) {
   closeDownloadModal();
   var r = window._wmResult;
   if (!r) return;
