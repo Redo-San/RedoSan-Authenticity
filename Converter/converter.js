@@ -4,6 +4,7 @@ var CONV_IMG_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', 
 var CONV_AUDIO_EXTS = ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma', '.opus'];
 var CONV_VIDEO_EXTS = ['.mp4', '.webm', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.m4v'];
 var CONV_DOC_EXTS = ['.txt', '.md', '.html', '.htm', '.csv', '.json', '.xml', '.pdf', '.doc', '.docx', '.rtf', '.odt'];
+var CONV_SUB_EXTS = ['.srt', '.vtt', '.ass', '.ssa', '.sub', '.sbv', '.smi', '.lrc', '.ttml', '.dfxp', '.mpl2', '.pjs', '.rt'];
 
 function convDetectType(file) {
   var name = file.name.toLowerCase();
@@ -11,6 +12,7 @@ function convDetectType(file) {
   for (var i = 0; i < CONV_AUDIO_EXTS.length; i++) { if (name.endsWith(CONV_AUDIO_EXTS[i])) return 'audio'; }
   for (var i = 0; i < CONV_VIDEO_EXTS.length; i++) { if (name.endsWith(CONV_VIDEO_EXTS[i])) return 'video'; }
   for (var i = 0; i < CONV_DOC_EXTS.length; i++) { if (name.endsWith(CONV_DOC_EXTS[i])) return 'document'; }
+  for (var i = 0; i < CONV_SUB_EXTS.length; i++) { if (name.endsWith(CONV_SUB_EXTS[i])) return 'subtitle'; }
   return 'unknown';
 }
 
@@ -20,6 +22,7 @@ function convGetFormats(type) {
     case 'audio': return convAudioFormats();
     case 'video': return convVideoFormats();
     case 'document': return ['txt', 'html', 'md', 'pdf', 'docx', 'json', 'xml', 'csv'];
+    case 'subtitle': return convSubFormats();
     default: return [];
   }
 }
@@ -32,12 +35,17 @@ function convVideoFormats() {
   return ['mp4', 'webm', 'mkv', 'mov', 'avi', 'mpeg', '3gp', 'wmv', 'flv', 'gif'];
 }
 
+function convSubFormats() {
+  return ['srt', 'vtt', 'ass', 'sub', 'sbv', 'txt', 'lrc', 'ttml'];
+}
+
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
     wav: 'WAV', aiff: 'AIFF', au: 'AU', raw: 'RAW', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
     mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
-    json: 'JSON', xml: 'XML', csv: 'CSV' };
+    json: 'JSON', xml: 'XML', csv: 'CSV',
+    srt: 'SRT', vtt: 'VTT', ass: 'ASS', sub: 'SUB', sbv: 'SBV', lrc: 'LRC', ttml: 'TTML' };
   return labels[fmt] || fmt.toUpperCase();
 }
 
@@ -59,7 +67,7 @@ function handleConvFile() {
   _convType = convDetectType(_convFile);
   _convFormats = convGetFormats(_convType);
   var srcExt = _convFile.name.split('.').pop().toLowerCase();
-  var extMap = { jpg: 'jpeg', jpeg: 'jpg', tiff: 'tif', tif: 'tiff', htm: 'html' };
+  var extMap = { jpg: 'jpeg', jpeg: 'jpg', tiff: 'tif', tif: 'tiff', htm: 'html', ssa: 'ass', dfxp: 'ttml' };
   var skip = [srcExt, extMap[srcExt] || ''];
   _convFormats = _convFormats.filter(function(f) { return skip.indexOf(f) === -1; });
   var typeLabel = { image: 'Image', audio: 'Audio', video: 'Video', document: 'Document', unknown: 'Unknown' }[_convType] || 'Unknown';
@@ -136,6 +144,7 @@ async function convRun(file, type, format) {
     case 'audio': return await convAudio(file, format);
     case 'video': return await convVideo(file, format);
     case 'document': return await convDocument(file, format);
+    case 'subtitle': return await convSubtitle(file, format);
     default: throw new Error(__('conv.unsupported', 'Unsupported file type'));
   }
 }
@@ -567,6 +576,258 @@ function convVideoToGif(file) {
     v.src = url;
     v.load();
   });
+}
+
+// ── Subtitle Converter ──
+function convSubCue(start, end, text) { return { start: start, end: end, text: text }; }
+
+function convSubParse(text, ext) {
+  var cues = [];
+  switch (ext) {
+    case 'srt': {
+      var blocks = text.split(/\n\s*\n/);
+      for (var b = 0; b < blocks.length; b++) {
+        var lines = blocks[b].trim().split('\n');
+        if (lines.length < 2) continue;
+        var timeMatch = lines[1] ? lines[1].match(/(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/) : null;
+        if (!timeMatch) {
+          timeMatch = lines[0].match(/(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/);
+          if (!timeMatch) continue;
+          lines = lines.slice(0);
+        }
+        var start = (+timeMatch[1])*3600000 + (+timeMatch[2])*60000 + (+timeMatch[3])*1000 + (+timeMatch[4]);
+        var end = (+timeMatch[5])*3600000 + (+timeMatch[6])*60000 + (+timeMatch[7])*1000 + (+timeMatch[8]);
+        var textIdx = timeMatch === lines[0].match ? 1 : 2;
+        var txt = lines.slice(textIdx).join('\n');
+        cues.push(convSubCue(start, end, txt));
+      }
+      break;
+    }
+    case 'vtt': {
+      var parts = text.split(/\n\s*\n/);
+      for (var i = 0; i < parts.length; i++) {
+        var lines = parts[i].trim().split('\n');
+        if (lines.length < 2 || lines[0] === 'WEBVTT' || lines[0].startsWith('NOTE')) continue;
+        var timeMatch = lines[0].match(/(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})\.(\d{3})/) ||
+          lines[0].match(/(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})/);
+        if (!timeMatch) continue;
+        var start, end;
+        if (timeMatch.length === 9) {
+          start = (+timeMatch[1])*3600000 + (+timeMatch[2])*60000 + (+timeMatch[3])*1000 + (+timeMatch[4]);
+          end = (+timeMatch[5])*3600000 + (+timeMatch[6])*60000 + (+timeMatch[7])*1000 + (+timeMatch[8]);
+        } else {
+          start = (+timeMatch[1])*60000 + (+timeMatch[2])*1000 + (+timeMatch[3]);
+          end = (+timeMatch[4])*60000 + (+timeMatch[5])*1000 + (+timeMatch[6]);
+        }
+        cues.push(convSubCue(start, end, lines.slice(1).join('\n')));
+      }
+      break;
+    }
+    case 'ass': case 'ssa': {
+      var inEvents = false;
+      var fmtLine = null;
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
+        var l = lines[i].trim();
+        if (l === '[Events]') { inEvents = true; continue; }
+        if (l.startsWith('[')) { inEvents = false; continue; }
+        if (inEvents && l.startsWith('Format:')) { fmtLine = l.substring(7).split(',').map(function(s) { return s.trim(); }); }
+        if (inEvents && l.startsWith('Dialogue:')) {
+          var parts = l.substring(9).split(',');
+          if (!fmtLine) continue;
+          var idx = {};
+          for (var f = 0; f < fmtLine.length; f++) idx[fmtLine[f].toLowerCase()] = f;
+          if (idx.start === undefined || idx.end === undefined || idx.text === undefined) continue;
+          function toMs(t) {
+            var m = t.match(/(\d+):(\d+):(\d+)\.(\d+)/);
+            if (!m) return 0;
+            return (+m[1])*3600000 + (+m[2])*60000 + (+m[3])*1000 + (+m[4])*10;
+          }
+          var txt = parts.slice(idx.text).join(',').replace(/\\N/g, '\n').replace(/{[^}]*}/g, '');
+          cues.push(convSubCue(toMs(parts[idx.start]), toMs(parts[idx.end]), txt));
+        }
+      }
+      break;
+    }
+    case 'sub': {
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
+        var m = lines[i].match(/\{(\d+)\}\{(\d+)\}(.*)/);
+        if (m) {
+          var fps = 23.976;
+          cues.push(convSubCue(Math.round(+m[1]/fps*1000), Math.round(+m[2]/fps*1000), m[3].trim()));
+        }
+      }
+      break;
+    }
+    case 'sbv': {
+      var blocks = text.split(/\n\s*\n/);
+      for (var i = 0; i < blocks.length; i++) {
+        var lines = blocks[i].trim().split('\n');
+        if (lines.length < 2) continue;
+        var tm = lines[0].match(/(\d+):(\d+):(\d+)\.(\d+),(\d+):(\d+):(\d+)\.(\d+)/);
+        if (!tm) continue;
+        cues.push(convSubCue((+tm[1])*3600000+(+tm[2])*60000+(+tm[3])*1000+(+tm[4]), (+tm[5])*3600000+(+tm[6])*60000+(+tm[7])*1000+(+tm[8]), lines.slice(1).join('\n')));
+      }
+      break;
+    }
+    case 'lrc': {
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
+        var m = lines[i].match(/\[(\d+):(\d+)\.(\d+)\](.*)/);
+        if (m) {
+          var start = (+m[1])*60000 + (+m[2])*1000 + (+m[3])*10;
+          cues.push(convSubCue(start, start + 5000, m[3].trim()));
+        }
+      }
+      break;
+    }
+    case 'ttml': case 'dfxp': {
+      var m;
+      var re = /<p[^>]*begin=["']([^"']+)["'][^>]*end=["']([^"']+)["'][^>]*>(.*?)<\/p>/g;
+      while ((m = re.exec(text)) !== null) {
+        function ttmlToMs(t) {
+          if (t.indexOf(':') > -1) {
+            var p = t.split(':');
+            if (p.length === 3) return (+p[0])*3600000 + (+p[1])*60000 + parseFloat(p[2])*1000;
+            return (+p[0])*60000 + parseFloat(p[1])*1000;
+          }
+          return parseFloat(t.replace('s',''))*1000;
+        }
+        var txt = m[3].replace(/<[^>]+>/g, '').trim();
+        cues.push(convSubCue(ttmlToMs(m[1]), ttmlToMs(m[2]), txt));
+      }
+      break;
+    }
+    default: {
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].trim()) cues.push(convSubCue(i*1000, (i+1)*1000, lines[i].trim()));
+      }
+    }
+  }
+  return cues;
+}
+
+function convSubFormatTime(ms) {
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
+  var ms2 = ms % 1000;
+  return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+','+(ms2+'').padStart(3,'0');
+}
+
+function convSubFormatTimeVtt(ms) {
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
+  var ms2 = ms % 1000;
+  return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+'.'+(ms2+'').padStart(3,'0');
+}
+
+function convSubFormatAss(ms) {
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
+  var cs = Math.floor((ms % 1000) / 10);
+  return (h+'').padStart(1,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+'.'+(cs+'').padStart(2,'0');
+}
+
+function convSubWriteSrt(cues) {
+  var out = '';
+  for (var i = 0; i < cues.length; i++) {
+    out += (i+1)+'\n' + convSubFormatTime(cues[i].start) + ' --> ' + convSubFormatTime(cues[i].end) + '\n' + cues[i].text + '\n\n';
+  }
+  return out;
+}
+
+function convSubWriteVtt(cues) {
+  var out = 'WEBVTT\n\n';
+  for (var i = 0; i < cues.length; i++) {
+    out += convSubFormatTimeVtt(cues[i].start) + ' --> ' + convSubFormatTimeVtt(cues[i].end) + '\n' + cues[i].text + '\n\n';
+  }
+  return out;
+}
+
+function convSubWriteAss(cues) {
+  var out = '[Script Info]\nScriptType: v4.00+\nWrapStyle: 0\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n';
+  for (var i = 0; i < cues.length; i++) {
+    var txt = cues[i].text.replace(/\n/g, '\\N');
+    out += 'Dialogue: 0,' + convSubFormatAss(cues[i].start) + ',' + convSubFormatAss(cues[i].end) + ',Default,,0,0,0,,' + txt + '\n';
+  }
+  return out;
+}
+
+function convSubWriteSub(cues) {
+  var out = '';
+  var fps = 23.976;
+  for (var i = 0; i < cues.length; i++) {
+    var startFr = Math.round(cues[i].start / 1000 * fps);
+    var endFr = Math.round(cues[i].end / 1000 * fps);
+    out += '{' + startFr + '}{' + endFr + '}' + cues[i].text + '\n';
+  }
+  return out;
+}
+
+function convSubWriteSbv(cues) {
+  var out = '';
+  for (var i = 0; i < cues.length; i++) {
+    function sbvTime(ms) {
+      var h = Math.floor(ms / 3600000);
+      var m = Math.floor((ms % 3600000) / 60000);
+      var s = Math.floor((ms % 60000) / 1000);
+      var ms2 = ms % 1000;
+      return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+'.'+(ms2+'').padStart(3,'0');
+    }
+    out += sbvTime(cues[i].start) + ',' + sbvTime(cues[i].end) + '\n' + cues[i].text + '\n\n';
+  }
+  return out;
+}
+
+function convSubWriteLrc(cues) {
+  var out = '';
+  for (var i = 0; i < cues.length; i++) {
+    var m = Math.floor(cues[i].start / 60000);
+    var s = Math.floor((cues[i].start % 60000) / 1000);
+    var cs = Math.floor((cues[i].start % 1000) / 10);
+    out += '[' + (m+'').padStart(2,'0') + ':' + (s+'').padStart(2,'0') + '.' + (cs+'').padStart(2,'0') + ']' + cues[i].text.split('\n')[0] + '\n';
+  }
+  return out;
+}
+
+function convSubWriteTtml(cues) {
+  var out = '<?xml version="1.0" encoding="UTF-8"?>\n<tt xmlns="http://www.w3.org/ns/ttml">\n<body>\n<div>\n';
+  for (var i = 0; i < cues.length; i++) {
+    function ttmlTime(ms) {
+      var h = Math.floor(ms / 3600000);
+      var m = Math.floor((ms % 3600000) / 60000);
+      var s = (ms % 60000) / 1000;
+      return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+s.toFixed(3);
+    }
+    out += '  <p begin="' + ttmlTime(cues[i].start) + '" end="' + ttmlTime(cues[i].end) + '">' + escXml(cues[i].text) + '</p>\n';
+  }
+  out += '</div>\n</body>\n</tt>';
+  return out;
+}
+
+function convSubWriteTxt(cues) {
+  var out = '';
+  for (var i = 0; i < cues.length; i++) out += cues[i].text + '\n';
+  return out;
+}
+
+async function convSubtitle(file, format) {
+  var text = await file.text();
+  var ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'ssa') ext = 'ass';
+  if (ext === 'dfxp') ext = 'ttml';
+  var cues = convSubParse(text, ext);
+  var writers = { srt: convSubWriteSrt, vtt: convSubWriteVtt, ass: convSubWriteAss, sub: convSubWriteSub, sbv: convSubWriteSbv, txt: convSubWriteTxt, lrc: convSubWriteLrc, ttml: convSubWriteTtml };
+  var mimeMap = { srt: 'text/plain', vtt: 'text/vtt', ass: 'text/plain', sub: 'text/plain', sbv: 'text/plain', txt: 'text/plain', lrc: 'text/plain', ttml: 'application/ttml+xml' };
+  var writer = writers[format];
+  if (!writer) throw new Error('Unsupported subtitle format');
+  var outText = writer(cues);
+  return { blob: new Blob([outText], { type: mimeMap[format] || 'text/plain' }), ext: format };
 }
 
 async function convDocument(file, format) {
