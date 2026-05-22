@@ -478,7 +478,7 @@ function toggleWmPassword() {
 
 function toggleWmExtractPassword() {
   var pwGroup = document.getElementById('wm-password-ex-group');
-  var typeSelect = document.getElementById('wm-type');
+  var typeSelect = document.getElementById('wm-type-ex');
   var type = typeSelect ? parseInt(typeSelect.value, 10) : 1;
   pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
 }
