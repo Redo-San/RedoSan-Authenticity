@@ -975,6 +975,58 @@ function runWatermarkStep() {
   });
 }
 
+function renderPixelInjectStep(body) {
+  var usingName = simpleFile ? simpleFile.name : '';
+  var catOpts = '';
+  var cats = window.pixelInjection && window.pixelInjection.algorithms
+    ? window.pixelInjection.algorithms : { spatial: { enhanced_lsb: { name: 'Enhanced LSB' } } };
+  var catKeys = Object.keys(cats);
+  for (var ci = 0; ci < catKeys.length; ci++) {
+    if (catKeys[ci] === 'detection') continue;
+    var label = catKeys[ci].charAt(0).toUpperCase() + catKeys[ci].slice(1).replace(/_/g, ' ');
+    catOpts += '<option value="' + catKeys[ci] + '">' + label + '</option>';
+  }
+  var defaultCat = catKeys[0] === 'detection' ? (catKeys[1] || catKeys[0]) : catKeys[0];
+  var algoOpts = getPiAlgoOptions(cats, defaultCat);
+
+  body.innerHTML =
+    '<div class="simple-card"><h2>' + __('simple.pi_title') + '</h2><p>' + __('simple.pi_desc') + '</p>' +
+    '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">' +
+    __('simple.using_file').replace('{name}', escapeHtml(usingName)) + '</p>' +
+    '<div class="card-form" style="text-align:left">' +
+    '<div class="form-group"><label>' + __('simple.pi_category_label', 'Category') + '</label>' +
+    '<select id="spi-category" onchange="updateSpiAlgorithms()">' + catOpts + '</select></div>' +
+    '<div class="form-group"><label>' + __('simple.pi_algo_label', 'Algorithm') + '</label>' +
+    '<select id="spi-algorithm">' + algoOpts + '</select></div>' +
+    '<div class="form-group"><label>' + __('simple.wm_pass_label', 'Password') + '</label>' +
+    '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
+    '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
+    __('simple.pi_ts_info', '⏱ The timestamp proof will be injected as the secret message.') + '</p>' +
+    '</div>' +
+    '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' + __('simple.pi_btn', 'Inject Message') + '</button>' +
+    '<div id="spi-status"></div></div>';
+}
+
+function getPiAlgoOptions(cats, cat) {
+  var algos = cats[cat] || {};
+  var keys = Object.keys(algos);
+  var opts = '';
+  for (var i = 0; i < keys.length; i++) {
+    var algo = algos[keys[i]];
+    opts += '<option value="' + keys[i] + '">' + (algo.name || keys[i]) + '</option>';
+  }
+  return opts;
+}
+
+function updateSpiAlgorithms() {
+  var sel = document.getElementById('spi-category');
+  var algoSel = document.getElementById('spi-algorithm');
+  if (!sel || !algoSel) return;
+  var cats = window.pixelInjection && window.pixelInjection.algorithms;
+  if (!cats) return;
+  algoSel.innerHTML = getPiAlgoOptions(cats, sel.value);
+}
+
 function runPixelInjectStep() {
   showProgress();
   var cat = document.getElementById('spi-category').value;
