@@ -53,6 +53,8 @@ function convGetFormatLabel(fmt) {
   return labels[fmt] || fmt.toUpperCase();
 }
 
+function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
 var _convFile = null;
 var _convType = '';
 var _convFormats = [];
@@ -124,7 +126,7 @@ async function handleConvConvert() {
       var ext = result.ext || format;
       var url = URL.createObjectURL(result.blob);
       var outName = _convFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
-      dl.innerHTML = '<a href="' + url + '" download="' + outName + '" class="btn">' + __('conv.download', 'Download') + ' (' + outName + ')</a>';
+      dl.innerHTML = '<a href="' + url + '" download="' + escAttr(outName) + '" class="btn">' + __('conv.download', 'Download') + ' (' + escHtml(outName) + ')</a>';
       outDiv.style.display = 'block';
       status.textContent = __('conv.success', 'Conversion complete!');
     }
@@ -275,7 +277,7 @@ async function convDocument(file, format) {
 }
 
 function convDocToTxt(text) {
-  var clean = text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  var clean = text.replace(/<\/?[^>]+(>|$)/g, '').replace(/\s+/g, ' ').trim();
   return { blob: new Blob([clean], { type: 'text/plain' }), ext: 'txt' };
 }
 
@@ -346,11 +348,11 @@ function convDocToCsv(text, fileName) {
       var keys = Object.keys(parsed[0]);
       var csv = keys.join(',') + '\n';
       for (var i = 0; i < parsed.length; i++) {
-        csv += keys.map(function(k) { var v = parsed[i][k]; return v != null ? String(v).replace(/,/g, '\\,') : ''; }).join(',') + '\n';
+        csv += keys.map(function(k) { var v = parsed[i][k]; return v != null ? String(v).replace(/\\/g, '\\\\').replace(/,/g, '\\,') : ''; }).join(',') + '\n';
       }
       return { blob: new Blob([csv], { type: 'text/csv' }), ext: 'csv' };
     }
   } catch(e) {}
-  var lines = text.split('\n').map(function(l) { return l.replace(/,/g, '\\,'); });
+  var lines = text.split('\n').map(function(l) { return l.replace(/\\/g, '\\\\').replace(/,/g, '\\,'); });
   return { blob: new Blob([lines.join('\n')], { type: 'text/csv' }), ext: 'csv' };
 }
