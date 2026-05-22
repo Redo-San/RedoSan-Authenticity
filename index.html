@@ -286,12 +286,12 @@
         </div>
         <div class="form-group" id="wm-secret-group">
            <label for="wm-secret" data-i18n="wm.secret_label">Secret file</label>
-<input type="file" id="wm-secret" name="wm-secret" accept="image/png,image/jpeg">
-          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="wm.secret_hint">Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores this.</p>
-          <p style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px" data-i18n="wm.secret_size_note">💡 The secret image must be smaller than the cover image. Select a cover image first to see available capacity below.</p>
+<input type="file" id="wm-secret" name="wm-secret" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.xml,.json,.md,.epub,.rtf,.odt,.ods,.odp,.zip">
+           <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="wm.secret_hint">Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores this.</p>
+           <p style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px" data-i18n="wm.secret_size_note">💡 The secret file must be smaller than the cover image. Select a cover image first to see available capacity below.</p>
           <p id="wm-secret-status" style="font-size:0.75rem;margin-top:2px"></p>
         </div>
-        <div class="form-group" id="wm-password-group">
+        <div class="form-group" id="wm-password-group" style="display:none">
           <label for="wm-password" data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
 <input type="password" id="wm-password" name="wm-password" placeholder="Enter password" required>
         </div>
@@ -316,7 +316,7 @@
           <label for="wm-image-ex" data-i18n="wm.image_ex_label">Stego image</label>
 <input type="file" id="wm-image-ex" name="wm-image-ex" accept="image/png,image/jpeg">
         </div>
-        <div class="form-group" id="wm-password-ex-group">
+        <div class="form-group" id="wm-password-ex-group" style="display:none">
           <label for="wm-password-ex" data-i18n="wm.password_label">Password (required for algorithms 1-4,6-7,9)</label>
 <input type="password" id="wm-password-ex" name="wm-password-ex" placeholder="Enter password" required>
         </div>
