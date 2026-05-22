@@ -201,6 +201,51 @@ function clearInputFiles(input) {
   }
 }
 
+// Magic signatures of dangerous file types (for files without extension)
+var DANGEROUS_MAGIC = [
+  { sig: [0x4D, 0x5A], name: 'PE executable (exe/dll/sys)' },
+  { sig: [0x7F, 0x45, 0x4C, 0x46], name: 'ELF executable' },
+  { sig: [0xCA, 0xFE, 0xBA, 0xBE], name: 'Mach-O executable' },
+  { sig: [0xFE, 0xED, 0xFA, 0xCE], name: 'Mach-O executable' },
+  { sig: [0xCE, 0xFA, 0xED, 0xFE], name: 'Mach-O executable' },
+  { sig: [0xCF, 0xFA, 0xED, 0xFE], name: 'Mach-O x86_64' },
+  { sig: [0x4D, 0x53, 0x43, 0x46], name: 'CAB archive' },
+];
+
+function hasDangerousMagic(buf) {
+  for (var i = 0; i < DANGEROUS_MAGIC.length; i++) {
+    var sig = DANGEROUS_MAGIC[i].sig;
+    var match = true;
+    for (var j = 0; j < sig.length; j++) {
+      if (buf[j] !== sig[j]) { match = false; break; }
+    }
+    if (match) return DANGEROUS_MAGIC[i].name;
+  }
+  // Check for shebang (#!) indicating a script
+  if (buf[0] === 0x23 && buf[1] === 0x21) return 'script with shebang';
+  return null;
+}
+
+function fileHasExtension(file) {
+  var name = file.name || '';
+  var dot = name.lastIndexOf('.');
+  return dot > 0 && dot < name.length - 1;
+}
+
+function detectDangerousMagic(input) {
+  return new Promise(function(resolve) {
+    if (!input || !input.files || !input.files.length) { resolve(false); return; }
+    var file = input.files[0];
+    if (!file) { resolve(false); return; }
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      resolve(hasDangerousMagic(new Uint8Array(reader.result)));
+    };
+    reader.onerror = function() { resolve(false); };
+    reader.readAsArrayBuffer(file.slice(0, 64));
+  });
+}
+
 async function validateFileInput(input) {
   if (!input || !input.files || !input.files.length) return true;
   var file = input.files[0];
@@ -209,6 +254,15 @@ async function validateFileInput(input) {
     alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.') || 'This file type is not allowed for security reasons.');
     clearInputFiles(input);
     return false;
+  }
+  // Detect dangerous file types by magic bytes when file has no extension
+  if (!fileHasExtension(file)) {
+    var dangerDetected = await detectDangerousMagic(input);
+    if (dangerDetected) {
+      alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.') || 'This file type is not allowed for security reasons.');
+      clearInputFiles(input);
+      return false;
+    }
   }
   var accept = input.getAttribute('accept');
   if (accept && !matchesAccept(file, accept)) {
