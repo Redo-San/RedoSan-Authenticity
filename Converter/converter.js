@@ -29,10 +29,18 @@ function convAudioFormats() {
   if (typeof MediaRecorder === 'undefined') return fmts;
   var candidates = [
     { mime: 'audio/webm; codecs=opus', ext: 'ogg' },
+    { mime: 'audio/webm', ext: 'ogg' },
     { mime: 'audio/ogg; codecs=opus', ext: 'ogg' },
+    { mime: 'audio/ogg', ext: 'ogg' },
     { mime: 'audio/mpeg', ext: 'mp3' },
+    { mime: 'audio/mpeg; codecs=mp3', ext: 'mp3' },
+    { mime: 'audio/mp3', ext: 'mp3' },
     { mime: 'audio/mp4; codecs=aac', ext: 'm4a' },
-    { mime: 'audio/flac', ext: 'flac' }
+    { mime: 'audio/mp4', ext: 'm4a' },
+    { mime: 'audio/aac', ext: 'm4a' },
+    { mime: 'audio/x-m4a', ext: 'm4a' },
+    { mime: 'audio/flac', ext: 'flac' },
+    { mime: 'audio/x-flac', ext: 'flac' }
   ];
   for (var i = 0; i < candidates.length; i++) {
     if (MediaRecorder.isTypeSupported(candidates[i].mime)) {
@@ -186,14 +194,25 @@ async function convAudio(file, format) {
     audioCtx.close();
     return { blob: new Blob([wavBuf], { type: 'audio/wav' }), ext: 'wav' };
   }
-  var mimeMap = { ogg: 'audio/webm; codecs=opus', mp3: 'audio/mpeg', m4a: 'audio/mp4; codecs=aac', flac: 'audio/flac' };
+  var audioMimeMap = {
+    ogg: ['audio/webm; codecs=opus', 'audio/webm', 'audio/ogg; codecs=opus', 'audio/ogg'],
+    mp3: ['audio/mpeg', 'audio/mpeg; codecs=mp3', 'audio/mp3'],
+    m4a: ['audio/mp4; codecs=aac', 'audio/mp4', 'audio/aac', 'audio/x-m4a'],
+    flac: ['audio/flac', 'audio/x-flac']
+  };
   var extMap = { ogg: 'ogg', mp3: 'mp3', m4a: 'm4a', flac: 'flac' };
-  var mime = mimeMap[format];
-  if (!mime || !MediaRecorder.isTypeSupported(mime)) {
+  var mimeList = audioMimeMap[format];
+  var chosenMime = '';
+  if (mimeList) {
+    for (var mi = 0; mi < mimeList.length; mi++) {
+      if (MediaRecorder.isTypeSupported(mimeList[mi])) { chosenMime = mimeList[mi]; break; }
+    }
+  }
+  if (!chosenMime) {
     audioCtx.close();
     throw new Error(__('conv.audio_limited', 'Audio conversion is limited in browser. Try WAV format.'));
   }
-  return await convAudioEncode(audioCtx, audioBuf, mime, extMap[format]);
+  return await convAudioEncode(audioCtx, audioBuf, chosenMime, extMap[format]);
 }
 
 function convAudioEncode(audioCtx, audioBuf, mimeType, ext) {
