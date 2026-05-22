@@ -428,7 +428,7 @@ class PixelInjection {
         } else if (messageTextInput && messageTextInput.value) {
             message = messageTextInput.value;
         } else {
-            this.showMessage('Please enter a message or select a secret document file', 'error');
+            this.showMessage('Please select a secret document file', 'error');
             return;
         }
         this._secretFileName = secretFileName;
