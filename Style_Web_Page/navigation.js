@@ -62,6 +62,7 @@ function showPage(name) {
     if (m) m.setAttribute('content', PAGE_DESCS[name]);
   }
   if (name === 'timestamp') { if (typeof switchOtsTab === 'function') switchOtsTab('create'); }
+  if (name === 'certificate') { if (typeof initCertPhoneCode === 'function') initCertPhoneCode(); }
   var isProfessional = document.getElementById('mainNav') && document.getElementById('mainNav').style.display !== 'none';
   if (isProfessional) {
     if (name && name !== 'home') {
