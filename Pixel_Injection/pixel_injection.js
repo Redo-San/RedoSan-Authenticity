@@ -1178,7 +1178,7 @@ function piToHTML(r) {
   return h;
 }
 
-function downloadPixelInjection(format) {
+async function downloadPixelInjection(format) {
   closeDownloadModal();
   var r = window._piResult;
   if (!r) return;
