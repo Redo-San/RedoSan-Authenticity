@@ -395,7 +395,8 @@ class PixelInjection {
     
     async handlePixelInjection() {
         const imageInput = document.getElementById('pi-image');
-        const messageFileInput = document.getElementById('pi-message');
+        const messageFileInput = document.getElementById('pi-secret-file');
+        const messageTextInput = document.getElementById('pi-message');
         const passwordInput = document.getElementById('pi-password');
         
         if (!imageInput.files.length) {
@@ -403,10 +404,34 @@ class PixelInjection {
             return;
         }
         
-        if (!messageFileInput.files || !messageFileInput.files.length) {
-            this.showMessage('Please select a secret document file', 'error');
+        // Determine message source: secret file or textarea
+        var message, secretFileName = '';
+        if (messageFileInput && messageFileInput.files && messageFileInput.files.length) {
+            // Validate secret document file
+            if (typeof validateFileInput === 'function' && !(await validateFileInput(messageFileInput))) {
+                this.showMessage('Invalid or dangerous secret file', 'error');
+                return;
+            }
+            var secretFile = messageFileInput.files[0];
+            secretFileName = secretFile.name;
+            var secretText = await new Promise(function(resolve) {
+                var r = new FileReader();
+                r.onload = function(e) { resolve(e.target.result); };
+                r.onerror = function() { resolve(''); };
+                r.readAsText(secretFile);
+            });
+            if (!secretText) {
+                this.showMessage('Failed to read secret file content', 'error');
+                return;
+            }
+            message = secretText;
+        } else if (messageTextInput && messageTextInput.value) {
+            message = messageTextInput.value;
+        } else {
+            this.showMessage('Please enter a message or select a secret document file', 'error');
             return;
         }
+        this._secretFileName = secretFileName;
         
         // Validate file before processing
         if (typeof validateFileInput === 'function' && !(await validateFileInput(imageInput))) {
@@ -414,30 +439,8 @@ class PixelInjection {
             return;
         }
         
-        // Validate secret document file
-        if (typeof validateFileInput === 'function' && !(await validateFileInput(messageFileInput))) {
-            this.showMessage('Invalid or dangerous secret file', 'error');
-            return;
-        }
-        
         const file = imageInput.files[0];
-        const secretFile = messageFileInput.files[0];
         const password = passwordInput.value;
-        
-        // Read secret file content as text
-        var secretFileName = secretFile.name;
-        var secretText = await new Promise(function(resolve) {
-            var r = new FileReader();
-            r.onload = function(e) { resolve(e.target.result); };
-            r.onerror = function() { resolve(''); };
-            r.readAsText(secretFile);
-        });
-        if (!secretText) {
-            this.showMessage('Failed to read secret file content', 'error');
-            return;
-        }
-        this._secretFileName = secretFileName;
-        const message = secretText;
         
         try {
             // Show loading state
@@ -785,7 +788,7 @@ class PixelInjection {
                 <div style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted);">
                     Algorithm: ${algoName}<br>
                     Category: ${this.currentCategory}<br>
-                    Secret file: ${escHtml(this._secretFileName || '')}
+                    ${this._secretFileName ? 'Secret file: ' + escHtml(this._secretFileName) : ''}
                 </div>
             </div>
         `;
