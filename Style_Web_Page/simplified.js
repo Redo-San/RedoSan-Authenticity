@@ -1006,12 +1006,18 @@ function runPixelInjectStep() {
     var srcAlgo = document.getElementById('spi-algorithm');
     if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
     var msgInput = document.getElementById('pi-message');
-    if (msgInput) msgInput.value = tsMessage;
+    if (msgInput && tsMessage) {
+      var tsBlob = new Blob([tsMessage], { type: 'text/plain' });
+      var tsFile = new File([tsBlob], 'timestamp_proof.txt', { type: 'text/plain' });
+      var dtMsg = new DataTransfer();
+      dtMsg.items.add(tsFile);
+      msgInput.files = dtMsg.files;
+    }
     var passInput = document.getElementById('pi-password');
     if (passInput) passInput.value = pass;
 
     function cleanupPiFields() {
-      if (msgInput) msgInput.value = '';
+      if (msgInput) { var dt3 = new DataTransfer(); msgInput.files = dt3.files; }
       if (passInput) passInput.value = '';
       if (fileInput) { var dt2 = new DataTransfer(); fileInput.files = dt2.files; }
     }

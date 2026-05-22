@@ -391,8 +391,9 @@
 <input type="file" id="pi-image" name="pi-image" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff">
         </div>
         <div class="form-group">
-          <label for="pi-message" data-i18n="pi.message_label">Message</label>
-<textarea id="pi-message" name="pi-message" placeholder="Enter your secret message..." rows="3"></textarea>
+          <label for="pi-message" data-i18n="pi.message_label">Secret file</label>
+<input type="file" id="pi-message" name="pi-message" accept=".pdf,.doc,.docx,.txt,.csv,.xml,.json,.md">
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="pi.secret_hint">Document file to embed as secret message</p>
         </div>
         <div class="form-group" id="pi-password-group">
           <label for="pi-password" data-i18n="pi.password_label">Password (optional)</label>

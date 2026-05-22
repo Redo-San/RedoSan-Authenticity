@@ -395,7 +395,7 @@ class PixelInjection {
     
     async handlePixelInjection() {
         const imageInput = document.getElementById('pi-image');
-        const messageInput = document.getElementById('pi-message');
+        const messageFileInput = document.getElementById('pi-message');
         const passwordInput = document.getElementById('pi-password');
         
         if (!imageInput.files.length) {
@@ -403,8 +403,8 @@ class PixelInjection {
             return;
         }
         
-        if (!messageInput.value) {
-            this.showMessage('Please enter a message to embed', 'error');
+        if (!messageFileInput.files || !messageFileInput.files.length) {
+            this.showMessage('Please select a secret document file', 'error');
             return;
         }
         
@@ -414,9 +414,30 @@ class PixelInjection {
             return;
         }
         
+        // Validate secret document file
+        if (typeof validateFileInput === 'function' && !(await validateFileInput(messageFileInput))) {
+            this.showMessage('Invalid or dangerous secret file', 'error');
+            return;
+        }
+        
         const file = imageInput.files[0];
-        const message = messageInput.value;
+        const secretFile = messageFileInput.files[0];
         const password = passwordInput.value;
+        
+        // Read secret file content as text
+        var secretFileName = secretFile.name;
+        var secretText = await new Promise(function(resolve) {
+            var r = new FileReader();
+            r.onload = function(e) { resolve(e.target.result); };
+            r.onerror = function() { resolve(''); };
+            r.readAsText(secretFile);
+        });
+        if (!secretText) {
+            this.showMessage('Failed to read secret file content', 'error');
+            return;
+        }
+        this._secretFileName = secretFileName;
+        const message = secretText;
         
         try {
             // Show loading state
@@ -734,9 +755,10 @@ class PixelInjection {
         // Store result for multi-format download
         var algoName = this.algorithms && this.algorithms[this.currentCategory] && this.algorithms[this.currentCategory][this.currentAlgorithm]
           ? this.algorithms[this.currentCategory][this.currentAlgorithm].name : this.currentAlgorithm;
+        var secretFileName = this._secretFileName || '';
         window._piResult = {
           type: 'embed', category: this.currentCategory, algorithm: algoName,
-          message: this.message || document.getElementById('pi-message').value,
+          secretFile: secretFileName,
           password: (document.getElementById('pi-password') || {}).value ? '****' : '',
           dimensions: this.watermarkedImage.width + 'x' + this.watermarkedImage.height,
           timestamp: new Date().toISOString()
@@ -762,7 +784,8 @@ class PixelInjection {
                 <img src="${canvas.toDataURL('image/png')}" style="max-width: 100%; border: 1px solid var(--border); border-radius: var(--radius);">
                 <div style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted);">
                     Algorithm: ${algoName}<br>
-                    Category: ${this.currentCategory}
+                    Category: ${this.currentCategory}<br>
+                    Secret file: ${escHtml(this._secretFileName || '')}
                 </div>
             </div>
         `;
