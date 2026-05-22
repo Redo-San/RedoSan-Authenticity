@@ -13,6 +13,7 @@
   "sidebar.metadata": "메타데이터",
   "sidebar.timestamp": "타임스탬프",
   "sidebar.c2pa": "C2PA 출처",
+  "sidebar.converter": "파일 변환기",
   "sidebar.switch_mode": "🔀 모드 전환",
 
   "home.tagline": "온라인 디지털 인증 도구 — 100% 브라우저 기반. 서버에 업로드되는 데이터가 없습니다.",
@@ -28,6 +29,8 @@
   "card.timestamp.desc": "SHA-256 해시 + OTS 타임스탬프",
   "card.c2pa.title": "C2PA 출처",
   "card.c2pa.desc": "콘텐츠 출처 메타데이터 읽기 및 쓰기",
+  "card.converter.title": "파일 변환기",
+  "card.converter.desc": "PNG, JPEG, WebP 등 이미지 형식 변환",
 
   "mode.title": "경험 선택",
   "mode.simplified_title": "✨ 간편 모드",

@@ -14,6 +14,7 @@
   "sidebar.timestamp": "الطابع الزمني",
   "sidebar.c2pa": "C2PA المصدر",
   "sidebar.certificate": "جواز السفر الرقمي",
+  "sidebar.converter": "محول الملفات",
   "sidebar.switch_mode": "🔀 تبديل الوضع",
 
   "home.tagline": "أداة أصالة رقمية عبر الإنترنت — تعمل بالكامل في المتصفح. لا يتم رفع أي ملف إلى أي خادم.",
@@ -31,6 +32,8 @@
   "card.c2pa.desc": "قراءة وكتابة بيانات مصدر المحتوى",
   "card.certificate.title": "جواز السفر الرقمي",
   "card.certificate.desc": "إنشاء شهادة PDF/DOCX/EPUB موقعة",
+  "card.converter.title": "محول الملفات",
+  "card.converter.desc": "تحويل الصور بين PNG و JPEG و WebP والمزيد",
 
   "mode.title": "اختر تجربتك",
   "mode.simplified_title": "✨ الوضع المبسط",
@@ -233,6 +236,21 @@
   "c2pa.no_manifests": "لم يتم العثور على بيانات",
   "c2pa.verified": "تم التحقق",
   "c2pa.view_details": "عرض التفاصيل الكاملة",
+
+  "conv.heading": "محول الملفات",
+  "conv.file_label": "اختر ملفًا",
+  "conv.submit": "تحويل",
+  "conv.converting": "جارٍ التحويل...",
+  "conv.success": "اكتمل التحويل!",
+  "conv.error": "خطأ: ",
+  "conv.download": "تحميل",
+  "conv.detected": "تم الكشف: ",
+  "conv.file": "الملف: ",
+  "conv.format_label": "تحويل إلى:",
+  "conv.unknown_type": "نوع ملف غير مدعوم. الرجاء اختيار صورة أو صوت أو فيديو أو مستند.",
+  "conv.unsupported": "نوع ملف غير مدعوم",
+  "conv.audio_limited": "تحويل الصوت محدود في المتصفح. جرب تنسيق WAV.",
+  "conv.video_limited": "تحويل الفيديو محدود في المتصفح. استخدم برنامج تحرير فيديو مخصص.",
 
   "simple.loading": "جارٍ التحميل...",
   "simple.prev_btn": "← السابق",
