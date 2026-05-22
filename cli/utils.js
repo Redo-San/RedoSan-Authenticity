@@ -113,7 +113,8 @@ const BLOCKED_EXTS = ['.exe','.bat','.cmd','.com','.msi','.scr','.pif',
   '.vbs','.vbe','.js','.jse','.wsf','.wsh','.ps1','.psm1','.psd1',
   '.py','.pyc','.rb','.pl','.sh','.bash','.dll','.sys','.ocx',
   '.app','.jar','.msu','.msp','.reg','.inf','.gadget','.cpl','.mst',
-  '.hta','.ws','.vb','.vba','.swf','.action','.epub','.xps','.oxps'];
+  '.hta','.ws','.vb','.vba','.swf','.action','.epub','.xps','.oxps',
+  '.xls','.xlsx','.ppt','.pptx','.rtf','.odt','.ods','.odp','.zip'];
 
 const MAGIC_BYTES = {
   'image/png':       [[0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A]],

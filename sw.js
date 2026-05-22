@@ -9,6 +9,7 @@ var DANGEROUS_EXTS = [
   '.jar','.sh','.pl','.py','.rb','.bash','.app',
   '.msu','.msp','.reg','.inf','.gadget','.cpl','.mst',
   '.hta','.ws','.vb','.vba','.swf','.action',
+  '.xls','.xlsx','.ppt','.pptx','.rtf','.odt','.ods','.odp','.zip',
   // Linux-specific
   '.elf','.so','.ko',
   '.deb','.rpm','.run',
