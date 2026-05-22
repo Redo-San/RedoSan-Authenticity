@@ -83,6 +83,10 @@ function handleConvFile() {
   _convFile = input.files[0];
   _convType = convDetectType(_convFile);
   _convFormats = convGetFormats(_convType);
+  var srcExt = _convFile.name.split('.').pop().toLowerCase();
+  var extMap = { jpg: 'jpeg', jpeg: 'jpg', tiff: 'tif', tif: 'tiff', htm: 'html' };
+  var skip = [srcExt, extMap[srcExt] || ''];
+  _convFormats = _convFormats.filter(function(f) { return skip.indexOf(f) === -1; });
   var typeLabel = { image: 'Image', audio: 'Audio', video: 'Video', document: 'Document', unknown: 'Unknown' }[_convType] || 'Unknown';
   document.getElementById('conv-file-type').textContent = __('conv.detected', 'Detected: ') + typeLabel;
   document.getElementById('conv-file-name').textContent = __('conv.file', 'File: ') + _convFile.name;
