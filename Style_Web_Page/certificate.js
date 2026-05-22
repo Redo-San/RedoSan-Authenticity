@@ -887,10 +887,11 @@ async function downloadProfessionalCert(format) {
 function initCertPhoneCode() {
   var sel = document.getElementById('cert-phonecode');
   if (!sel) return;
-  // Build options
-  var html = '<option value="">' + __('simple.select_country', 'Select country') + '</option>';
+  // Build options — same format as simplified mode (country code + dial)
+  var html = '<option value="">—— ' + __('simple.select_country', 'Select country') + ' ——</option>';
   for (var i = 0; i < COUNTRY_CODES.length; i++) {
-    html += '<option value="' + COUNTRY_CODES[i].dial + '">' + COUNTRY_CODES[i].name + ' (' + COUNTRY_CODES[i].dial + ')</option>';
+    var c = COUNTRY_CODES[i];
+    html += '<option value="' + c.dial + '">' + c.code + ' ' + c.dial + '</option>';
   }
   sel.innerHTML = html;
   // Auto-detect

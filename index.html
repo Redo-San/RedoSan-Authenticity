@@ -707,9 +707,11 @@
       <!-- Music links -->
       <div class="form-group" id="cert-music-group">
         <label data-i18n="cert.music_label">Music Links (optional)</label>
-        <label style="display:flex;align-items:center;gap:8px;margin:8px 0;cursor:pointer;font-size:0.85rem">
-          <input type="checkbox" id="cert-show-music" onchange="toggleCertMusicFields()"> Add music platform links
-        </label>
+        <div style="margin:8px 0">
+          <label class="cert-music-toggle">
+            <input type="checkbox" id="cert-show-music" onchange="toggleCertMusicFields()"> Add music platform links
+          </label>
+        </div>
         <div id="cert-music-fields" style="display:none">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div><input type="url" id="cert-music-spotify" class="cert-link" placeholder="Spotify URL" maxlength="80" oninput="validateSocialInput(this)">
