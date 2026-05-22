@@ -25,7 +25,7 @@ function convGetFormats(type) {
 }
 
 function convAudioFormats() {
-  var fmts = ['wav', 'aiff', 'mp3'];
+  var fmts = ['wav', 'aiff', 'au', 'raw'];
   if (typeof MediaRecorder === 'undefined') return fmts;
   var candidates = [
     { mime: 'audio/webm; codecs=opus', ext: 'ogg' },
@@ -59,7 +59,7 @@ function convAudioFormats() {
 
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
-    wav: 'WAV', aiff: 'AIFF', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
+    wav: 'WAV', aiff: 'AIFF', au: 'AU', raw: 'RAW', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
     mp4: 'MP4', webm: 'WebM',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
     json: 'JSON', xml: 'XML', csv: 'CSV' };
@@ -196,17 +196,26 @@ async function convAudio(file, format) {
   var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') await audioCtx.resume();
   var audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
-  if (format === 'wav' || format === 'aiff') {
+  if (format === 'wav' || format === 'aiff' || format === 'au' || format === 'raw') {
     var numChannels = audioBuf.numberOfChannels;
     var sampleRate = audioBuf.sampleRate;
-    if (format === 'wav') {
-      var wavBuf = convEncodeWav(audioBuf, numChannels, sampleRate);
-      audioCtx.close();
-      return { blob: new Blob([wavBuf], { type: 'audio/wav' }), ext: 'wav' };
+    var buf, mime, ext;
+    switch (format) {
+      case 'wav':
+        buf = convEncodeWav(audioBuf, numChannels, sampleRate);
+        mime = 'audio/wav'; ext = 'wav'; break;
+      case 'aiff':
+        buf = convEncodeAiff(audioBuf, numChannels, sampleRate);
+        mime = 'audio/aiff'; ext = 'aiff'; break;
+      case 'au':
+        buf = convEncodeAu(audioBuf, numChannels, sampleRate);
+        mime = 'audio/basic'; ext = 'au'; break;
+      case 'raw':
+        buf = convEncodeRaw(audioBuf, numChannels);
+        mime = 'audio/L8'; ext = 'raw'; break;
     }
-    var aiffBuf = convEncodeAiff(audioBuf, numChannels, sampleRate);
     audioCtx.close();
-    return { blob: new Blob([aiffBuf], { type: 'audio/aiff' }), ext: 'aiff' };
+    return { blob: new Blob([buf], { type: mime }), ext: ext };
   }
   var audioMimeMap = {
     ogg: ['audio/webm; codecs=opus', 'audio/webm', 'audio/ogg; codecs=opus', 'audio/ogg'],
@@ -389,6 +398,41 @@ function convEncodeAiff(audioBuffer, numChannels, sampleRate) {
       var sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
       sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
       view.setInt16(pos, sample, false); pos += 2;
+    }
+  }
+  return buffer;
+}
+
+function convEncodeAu(audioBuffer, numChannels, sampleRate) {
+  var length = audioBuffer.length;
+  var dataSize = length * numChannels * 2;
+  var headerSize = 24;
+  var buffer = new ArrayBuffer(headerSize + dataSize);
+  var view = new DataView(buffer);
+  view.setUint32(0, 0x2E736E64, false); // ".snd"
+  view.setUint32(4, headerSize, false);
+  view.setUint32(8, 0xFFFFFFFF, false);
+  view.setUint32(12, 3, false); // 16-bit linear PCM
+  view.setUint32(16, sampleRate, false);
+  view.setUint32(20, numChannels, false);
+  for (var i = 0, off = headerSize; i < length; i++) {
+    for (var ch = 0; ch < numChannels; ch++) {
+      var s = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, false); off += 2;
+    }
+  }
+  return buffer;
+}
+
+function convEncodeRaw(audioBuffer, numChannels) {
+  var length = audioBuffer.length;
+  var dataSize = length * numChannels * 2;
+  var buffer = new ArrayBuffer(dataSize);
+  var view = new DataView(buffer);
+  for (var i = 0, off = 0; i < length; i++) {
+    for (var ch = 0; ch < numChannels; ch++) {
+      var s = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true); off += 2;
     }
   }
   return buffer;
