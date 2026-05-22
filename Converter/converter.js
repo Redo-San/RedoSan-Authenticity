@@ -29,7 +29,7 @@ function convAudioFormats() {
 }
 
 function convVideoFormats() {
-  return ['mp4', 'webm', 'mkv', 'mov', 'avi', 'ogg', 'mpeg', '3gp', 'wmv', 'flv', 'gif'];
+  return ['mp4', 'webm', 'mkv', 'mov', 'avi', 'mpeg', '3gp', 'wmv', 'flv', 'gif'];
 }
 
 function convGetFormatLabel(fmt) {
@@ -417,13 +417,12 @@ async function convVideo(file, format) {
     mkv: ['video/x-matroska; codecs=vp9', 'video/x-matroska; codecs=vp8', 'video/x-matroska; codecs=h264', 'video/x-matroska', 'video/webm'],
     mov: ['video/quicktime', 'video/mp4', 'video/x-m4v'],
     avi: ['video/x-msvideo', 'video/avi'],
-    ogg: ['video/ogg; codecs=theora', 'video/ogg'],
     mpeg: ['video/mpeg', 'video/mp2t'],
     '3gp': ['video/3gpp', 'video/3gpp2'],
     wmv: ['video/x-ms-wmv'],
     flv: ['video/x-flv']
   };
-  var extMap = { mp4: 'mp4', webm: 'webm', mkv: 'mkv', mov: 'mov', avi: 'avi', ogg: 'ogg', mpeg: 'mpeg', '3gp': '3gp', wmv: 'wmv', flv: 'flv' };
+  var extMap = { mp4: 'mp4', webm: 'webm', mkv: 'mkv', mov: 'mov', avi: 'avi', mpeg: 'mpeg', '3gp': '3gp', wmv: 'wmv', flv: 'flv' };
   var mimeList = videoMimeMap[format] || [];
   if (mimeList.length === 0) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
   var url = URL.createObjectURL(file);
