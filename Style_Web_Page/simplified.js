@@ -432,8 +432,9 @@ function getDefaultPhoneCode() {
 }
 
 function updatePhoneMaxLength() {
-  var el = document.getElementById('sinfo-phone');
-  var code = document.getElementById('sinfo-phonecode');
+  // Try cert fields first, fall back to simplified fields
+  var el = document.getElementById('cert-phone') || document.getElementById('sinfo-phone');
+  var code = document.getElementById('cert-phonecode') || document.getElementById('sinfo-phonecode');
   if (!el || !code) return;
   var dial = code.value;
   var maxLen = 15; // ITU max
@@ -499,30 +500,27 @@ function validateC2paLink(el) {
 }
 
 function validateUrlInput(el) {
-  var warn = document.getElementById('sinfo-website-warn');
+  var warn = document.getElementById(el.id + '-warn');
   if (!el.value) { if (warn) warn.style.display = 'none'; return; }
   var ok = /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(el.value);
   if (warn) warn.style.display = ok ? 'none' : 'block';
 }
 
 function validateEmailInput(el) {
-  var warn = document.getElementById('sinfo-email-warn');
+  var warn = document.getElementById(el.id + '-warn');
   if (!el.value) { if (warn) warn.style.display = 'none'; return; }
-  // Simple but robust email regex
   var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value);
   if (warn) warn.style.display = ok ? 'none' : 'block';
 }
 
 function validatePhoneInput(el) {
-  var warn = document.getElementById('sinfo-phone-warn');
-  // Remove non-digits
+  var warn = document.getElementById(el.id + '-warn');
   if (/[^\d]/.test(el.value)) {
     el.value = el.value.replace(/\D/g, '');
     if (warn) warn.style.display = 'block';
   } else {
     if (warn) warn.style.display = 'none';
   }
-  // Enforce maxlength
   if (el.maxLength && el.value.length > el.maxLength) {
     el.value = el.value.slice(0, el.maxLength);
   }
