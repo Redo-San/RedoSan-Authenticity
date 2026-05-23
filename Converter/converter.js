@@ -454,21 +454,44 @@ var _convFfmpeg = null;
 
 async function convVideo(file, format) {
   if (format === 'gif') return await convVideoToGif(file);
-  console.log('FFmpeg available:', typeof FFmpeg !== 'undefined');
   try {
     return await convVideoNative(file, format);
   } catch(e) {
-    console.log('Native error:', e.message);
-    if (typeof FFmpeg !== 'undefined') {
+    // Try loading FFmpeg dynamically from CDN if not available
+    if (typeof FFmpeg === 'undefined') {
       try {
-        return await convVideoFfmpeg(file, format);
+        await convLoadFfmpeg();
       } catch(e2) {
-        console.error('ffmpeg error:', e2);
-        throw e2;
+        throw e;
       }
     }
-    throw e;
+    try {
+      return await convVideoFfmpeg(file, format);
+    } catch(e2) {
+      throw e2;
+    }
   }
+}
+
+function convLoadFfmpeg() {
+  return new Promise(function(resolve, reject) {
+    var urls = [
+      'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js',
+      'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'
+    ];
+    function tryLoad(i) {
+      if (i >= urls.length) { reject(new Error('Failed to load FFmpeg')); return; }
+      var s = document.createElement('script');
+      s.src = urls[i];
+      s.onload = function() {
+        if (typeof FFmpeg !== 'undefined') { resolve(); return; }
+        tryLoad(i + 1);
+      };
+      s.onerror = function() { tryLoad(i + 1); };
+      document.head.appendChild(s);
+    }
+    tryLoad(0);
+  });
 }
 
 async function convVideoNative(file, format) {
