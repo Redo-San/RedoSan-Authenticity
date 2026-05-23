@@ -460,9 +460,7 @@ async function convVideo(file, format) {
     if (typeof FFmpeg !== 'undefined') {
       try {
         return await convVideoFfmpeg(file, format);
-      } catch(e2) {
-        throw e2;
-      }
+      } catch(e2) {}
     }
     throw e;
   }
@@ -564,21 +562,12 @@ async function convVideoFfmpeg(file, format) {
   ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
   convSetProgress(20);
 
-  // Phase 1: try stream copy (fast remux)
-  var runArgs = ['-nostdin', '-y', '-i', inName, '-c', 'copy', '-map', '0', outName];
+  // Single run with format-specific codecs (stream copy attempt skipped to avoid ffmpeg.wasm "one command at a time" limitation)
+  var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
   await ff.run.apply(ff, runArgs);
-  var files = ff.FS('readdir', '/');
-  if (files.indexOf(outName) === -1) {
-    // Phase 2: re-encode with format-specific codecs
-    if (status) status.textContent = __('conv.converting', 'Converting...');
-    convSetProgress(20);
-    ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
-    runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
-    await ff.run.apply(ff, runArgs);
-    files = ff.FS('readdir', '/');
-  }
 
   convSetProgress(90);
+  var files = ff.FS('readdir', '/');
   if (files.indexOf(outName) === -1) {
     ff.FS('unlink', inName);
     throw new Error(__('conv.video_limited', 'Video conversion failed. The codec may not be supported.'));
