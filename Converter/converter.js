@@ -460,7 +460,10 @@ async function convVideo(file, format) {
     if (typeof FFmpeg !== 'undefined') {
       try {
         return await convVideoFfmpeg(file, format);
-      } catch(e2) {}
+      } catch(e2) {
+        console.error('ffmpeg error:', e2);
+        throw e2;
+      }
     }
     throw e;
   }
@@ -543,16 +546,17 @@ async function convVideoFfmpeg(file, format) {
   if (!fmt) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
   var status = document.getElementById('conv-status');
   if (status) status.textContent = __('conv.loading_decoder', 'Loading video decoder...');
-  var ff = _convFfmpeg;
-  if (!ff) {
-    convSetProgress(-1);
-    ff = FFmpeg.createFFmpeg({
-      corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
-      mainName: 'main',
-      log: false
-    });
+  convSetProgress(-1);
+  var ff = FFmpeg.createFFmpeg({
+    corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
+    mainName: 'main',
+    log: true
+  });
+  try {
     await ff.load();
-    _convFfmpeg = ff;
+  } catch(e) {
+    _convFfmpeg = null;
+    throw e;
   }
   if (status) status.textContent = __('conv.converting', 'Converting...');
   convSetProgress(10);
@@ -562,7 +566,6 @@ async function convVideoFfmpeg(file, format) {
   ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
   convSetProgress(20);
 
-  // Single run with format-specific codecs (stream copy attempt skipped to avoid ffmpeg.wasm "one command at a time" limitation)
   var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
   await ff.run.apply(ff, runArgs);
 
@@ -570,12 +573,14 @@ async function convVideoFfmpeg(file, format) {
   var files = ff.FS('readdir', '/');
   if (files.indexOf(outName) === -1) {
     ff.FS('unlink', inName);
+    _convFfmpeg = null;
     throw new Error(__('conv.video_limited', 'Video conversion failed. The codec may not be supported.'));
   }
   var data = ff.FS('readFile', outName);
   convSetProgress(95);
   ff.FS('unlink', inName);
   ff.FS('unlink', outName);
+  _convFfmpeg = null;
   return { blob: new Blob([data.buffer], { type: 'video/' + fmt.ext }), ext: fmt.ext };
 }
 
