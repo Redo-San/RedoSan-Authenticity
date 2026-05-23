@@ -32,7 +32,7 @@ function convAudioFormats() {
 }
 
 function convVideoFormats() {
-  return ['mp4', 'webm', 'mkv', 'mov', 'avi', 'mpeg', '3gp', 'wmv', 'flv', 'gif'];
+  return ['wav', 'aiff', 'au', 'raw', 'mp3', 'ogg', 'opus', 'm4a', 'aac', 'flac', 'amr'];
 }
 
 function convSubFormats() {
@@ -42,7 +42,7 @@ function convSubFormats() {
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
     wav: 'WAV', aiff: 'AIFF', au: 'AU', raw: 'RAW', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
-    mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV',
+    mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV', gif: 'GIF',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
     json: 'JSON', xml: 'XML', csv: 'CSV',
     srt: 'SRT', vtt: 'VTT', ass: 'ASS', sub: 'SUB', sbv: 'SBV', lrc: 'LRC', ttml: 'TTML' };
@@ -452,21 +452,62 @@ function convEncodeRaw(audioBuffer, numChannels) {
 
 
 async function convVideo(file, format) {
-  if (format === 'gif') return await convVideoToGif(file);
-  var nativeErr;
   try {
-    return await convVideoNative(file, format);
+    return await convAudio(file, format);
   } catch(e) {
-    nativeErr = e;
-  }
-  try {
-    return await convVideoFfmpeg(file, format);
-  } catch(e2) {
-    if (typeof FFmpeg === 'undefined') {
-      throw new Error(__('conv.video_limited', 'Video conversion unavailable in this browser. Try a desktop browser.'));
+    try {
+      return await convVideoToAudioFfmpeg(file, format);
+    } catch(e2) {
+      if (typeof FFmpeg === 'undefined') {
+        throw new Error(__('conv.video_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.'));
+      }
+      throw new Error(e.message + ' | ' + e2.message);
     }
-    throw new Error((nativeErr ? nativeErr.message + ' | ' : '') + e2.message);
   }
+}
+
+async function convVideoToAudioFfmpeg(file, format) {
+  var audioExtractArgs = {
+    wav:  { ext: 'wav',  args: ['-vn', '-c:a', 'pcm_s16le'] },
+    aiff: { ext: 'aiff', args: ['-vn', '-c:a', 'pcm_s16le', '-f', 'aiff'] },
+    au:   { ext: 'au',   args: ['-vn', '-c:a', 'pcm_s16be', '-f', 'au'] },
+    raw:  { ext: 'raw',  args: ['-vn', '-c:a', 'pcm_s16le', '-f', 's16le'] },
+    mp3:  { ext: 'mp3',  args: ['-vn', '-c:a', 'libmp3lame', '-q:a', '2'] },
+    ogg:  { ext: 'ogg',  args: ['-vn', '-c:a', 'libvorbis', '-q:a', '5'] },
+    opus: { ext: 'opus', args: ['-vn', '-c:a', 'libopus', '-b:a', '96k'] },
+    m4a:  { ext: 'm4a',  args: ['-vn', '-c:a', 'aac', '-b:a', '128k'] },
+    aac:  { ext: 'aac',  args: ['-vn', '-c:a', 'aac', '-b:a', '128k', '-f', 'adts'] },
+    flac: { ext: 'flac', args: ['-vn', '-c:a', 'flac'] },
+    amr:  { ext: 'amr',  args: ['-vn', '-c:a', 'libopencore_amrnb', '-ar', '8000', '-ac', '1'] }
+  };
+  var fmt = audioExtractArgs[format];
+  if (!fmt) throw new Error(__('conv.audio_limited', 'Audio format not supported.'));
+  if (typeof FFmpeg === 'undefined') throw new Error('FFmpeg library not loaded');
+  var corePath = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
+  var ff = FFmpeg.createFFmpeg({ corePath: corePath, mainName: 'main', log: true });
+  ff.setProgress(function(p) { convSetProgress(20 + Math.round(p.ratio * 70)); });
+  var status = document.getElementById('conv-status');
+  if (status) status.textContent = __('conv.loading_decoder', 'Loading audio decoder...');
+  convSetProgress(-1);
+  try { await ff.load(); } catch(e) { throw e; }
+  if (status) status.textContent = __('conv.converting', 'Extracting audio...');
+  convSetProgress(10);
+  var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+  var inName = 'input.' + ext;
+  var outName = 'output.' + fmt.ext;
+  var fileData = await convReadFileAsUint8(file);
+  ff.FS('writeFile', inName, fileData);
+  convSetProgress(20);
+  var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
+  try { await ff.run.apply(ff, runArgs); } catch(e) { ff.FS('unlink', inName); throw e; }
+  convSetProgress(90);
+  var files = ff.FS('readdir', '/');
+  if (files.indexOf(outName) === -1) { ff.FS('unlink', inName); throw new Error(__('conv.audio_limited', 'Audio extraction failed.')); }
+  var data = ff.FS('readFile', outName);
+  convSetProgress(95);
+  ff.FS('unlink', inName);
+  ff.FS('unlink', outName);
+  return { blob: new Blob([data.buffer], { type: 'audio/' + fmt.ext }), ext: fmt.ext };
 }
 
 async function convReadFileAsUint8(file) {
