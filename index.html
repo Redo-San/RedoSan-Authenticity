@@ -795,6 +795,9 @@
       <button class="btn" id="conv-btn" onclick="handleConvConvert()" style="display:none;margin-top:12px" data-i18n="conv.submit">Convert</button>
       <span id="conv-spinner" class="spinner" style="display:none;margin-left:8px"></span>
       <p id="conv-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:8px"></p>
+      <div id="conv-progress" style="display:none;margin-top:6px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+        <div id="conv-progress-fill" style="height:100%;width:0;background:var(--primary);border-radius:2px;transition:width .3s"></div>
+      </div>
     </div>
     <div id="conv-output" style="display:none;margin-top:16px">
       <div id="conv-download" style="text-align:center"></div>
