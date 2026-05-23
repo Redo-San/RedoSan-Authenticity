@@ -50,6 +50,11 @@ function convGetFormatLabel(fmt) {
 }
 
 function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function convStripHtml(s) {
+  var d = document.createElement('div');
+  d.innerHTML = String(s);
+  return (d.textContent || d.innerText || '').trim();
+}
 function convYield() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
 var _convFile = null;
@@ -1065,7 +1070,7 @@ function convSubParse(text, ext) {
           }
           return parseFloat(t.replace('s',''))*1000;
         }
-        var txt = m[3].replace(/<[^>]+>/g, '').trim();
+        var txt = convStripHtml(m[3]);
         cues.push(convSubCue(ttmlToMs(m[1]), ttmlToMs(m[2]), txt));
       }
       break;
