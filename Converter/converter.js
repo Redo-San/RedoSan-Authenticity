@@ -418,8 +418,21 @@ function convEncodeRaw(audioBuffer, numChannels) {
   return buffer;
 }
 
+var _convFfmpeg = null;
+
 async function convVideo(file, format) {
   if (format === 'gif') return await convVideoToGif(file);
+  try {
+    return await convVideoNative(file, format);
+  } catch(e) {
+    if (e.message.indexOf('code 4') !== -1 && typeof FFmpeg !== 'undefined') {
+      return await convVideoFfmpeg(file, format);
+    }
+    throw e;
+  }
+}
+
+async function convVideoNative(file, format) {
   var videoMimeMap = {
     mp4: ['video/mp4; codecs=h264', 'video/mp4; codecs=avc1', 'video/mp4', 'video/x-mp4'],
     webm: ['video/webm; codecs=vp9', 'video/webm; codecs=vp8', 'video/webm'],
@@ -440,7 +453,6 @@ async function convVideo(file, format) {
     var w = video.videoWidth || 640;
     var h = video.videoHeight || 480;
     video.play().catch(function(){});
-    // Try video.captureStream first (includes audio)
     var stream = null;
     if (typeof video.captureStream === 'function') {
       try {
@@ -449,7 +461,6 @@ async function convVideo(file, format) {
           stream = null;
       } catch(e) { stream = null; }
     }
-    // Fallback: canvas.captureStream (video only)
     if (!stream) {
       var canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
@@ -480,6 +491,44 @@ async function convVideo(file, format) {
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+async function convVideoFfmpeg(file, format) {
+  var ffmpegArgs = {
+    mp4:  { ext: 'mp4',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
+    webm: { ext: 'webm', args: ['-c:v', 'libvpx', '-b:v', '1M', '-c:a', 'libvorbis'] },
+    mkv:  { ext: 'mkv',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
+    mov:  { ext: 'mov',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
+    avi:  { ext: 'avi',  args: ['-c:v', 'mpeg4', '-q:v', '5', '-c:a', 'mp3'] },
+    mpeg: { ext: 'mpg',  args: ['-c:v', 'mpeg2video', '-q:v', '5', '-c:a', 'mp2'] },
+    '3gp': { ext: '3gp',  args: ['-c:v', 'h263', '-b:v', '512k', '-c:a', 'amr_nb', '-ar', '8000'] },
+    wmv:  { ext: 'wmv',  args: ['-c:v', 'wmv2', '-b:v', '1M', '-c:a', 'wmav2'] },
+    flv:  { ext: 'flv',  args: ['-c:v', 'flv', '-b:v', '1M', '-c:a', 'mp3'] }
+  };
+  var fmt = ffmpegArgs[format];
+  if (!fmt) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
+  var status = document.getElementById('conv-status');
+  if (status) status.textContent = __('conv.loading_decoder', 'Loading video decoder...');
+  var ff = _convFfmpeg;
+  if (!ff) {
+    ff = FFmpeg.createFFmpeg({
+      corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.9.8/dist/ffmpeg-core.js',
+      log: false
+    });
+    await ff.load();
+    _convFfmpeg = ff;
+  }
+  if (status) status.textContent = __('conv.converting', 'Converting...');
+  var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+  var inName = 'input.' + ext;
+  var outName = 'output.' + fmt.ext;
+  ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
+  var runArgs = ['-i', inName].concat(fmt.args).concat([outName]);
+  await ff.run.apply(ff, runArgs);
+  var data = ff.FS('readFile', outName);
+  ff.FS('unlink', inName);
+  ff.FS('unlink', outName);
+  return { blob: new Blob([data.buffer], { type: 'video/' + fmt.ext }), ext: fmt.ext };
 }
 
 function convLoadVideo(url) {

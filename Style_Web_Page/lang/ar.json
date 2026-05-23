@@ -241,6 +241,7 @@
   "conv.file_label": "اختر ملفًا",
   "conv.submit": "تحويل",
   "conv.converting": "جارٍ التحويل...",
+  "conv.loading_decoder": "جارٍ تحميل مفكك تشفير الفيديو...",
   "conv.success": "اكتمل التحويل!",
   "conv.error": "خطأ: ",
   "conv.download": "تحميل",
