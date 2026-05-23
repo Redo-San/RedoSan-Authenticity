@@ -629,22 +629,27 @@ function convGifEncode(frames, delayCs, w, h) {
   function putS(v) { put(v & 0xFF); put((v >> 8) & 0xFF); }
   function putStr(s) { for (var i = 0; i < s.length; i++) put(s.charCodeAt(i)); }
 
-  // Build global color palette from all frames
-  var palette = [];
-  var palIndex = {};
-  var palMax = 256;
+  // Collect color frequencies across all frames, reduce to 5-bit
+  var freq = {};
   for (var fi = 0; fi < frames.length; fi++) {
     var rgba = frames[fi];
     for (var j = 0; j < w * h; j++) {
       var ri = rgba[j * 4] >> 3, gi = rgba[j * 4 + 1] >> 3, bi = rgba[j * 4 + 2] >> 3;
       var key = ri + ',' + gi + ',' + bi;
-      if (palIndex[key] === undefined) {
-        if (palette.length < palMax) {
-          palette.push([(ri << 3) | (ri >> 2), (gi << 3) | (gi >> 2), (bi << 3) | (bi >> 2)]);
-          palIndex[key] = palette.length - 1;
-        }
-      }
+      freq[key] = (freq[key] || 0) + 1;
     }
+  }
+
+  // Sort by frequency, take top 256
+  var sorted = Object.keys(freq).sort(function(a, b) { return freq[b] - freq[a]; });
+  var maxColors = Math.min(sorted.length, 256);
+  var palette = [];
+  var palIndex = {};
+  for (var i = 0; i < maxColors; i++) {
+    var parts = sorted[i].split(',');
+    var ri = +parts[0], gi = +parts[1], bi = +parts[2];
+    palette.push([(ri << 3) | (ri >> 2), (gi << 3) | (gi >> 2), (bi << 3) | (bi >> 2)]);
+    palIndex[sorted[i]] = i;
   }
 
   // Pad palette to power of 2
@@ -675,10 +680,10 @@ function convGifEncode(frames, delayCs, w, h) {
       var ri = r >> 3, gi = g >> 3, bi = b >> 3;
       var key = ri + ',' + gi + ',' + bi;
       var idx = palIndex[key];
-      if (idx !== undefined && idx < palSize) {
+      if (idx !== undefined && idx < maxColors) {
         frameIndices[j] = idx;
       } else {
-        // Nearest color search for colors beyond palette
+        // Nearest color in palette using 8-bit values
         var best = 0, bestDist = Infinity;
         for (var pi2 = 0; pi2 < palette.length; pi2++) {
           var dr = r - palette[pi2][0], dg = g - palette[pi2][1], db = b - palette[pi2][2];
@@ -747,10 +752,11 @@ function convVideoToGif(file) {
       var ctx = canvas.getContext('2d', { willReadFrequently: true });
       var dur = v.duration;
       var fps = 10;
-      var totalFrames = Math.min(Math.round(dur * fps), 50);
+      var totalFrames = Math.min(Math.max(Math.round(dur * fps), 1), 50);
       var interval = dur / totalFrames;
+      if (dur <= 0 || !isFinite(dur)) { URL.revokeObjectURL(url); reject(new Error('Invalid video duration')); return; }
       var frames = [], frameNum = 0;
-      function capture() {
+      function captureSeek() {
         if (frameNum >= totalFrames) {
           v.pause(); URL.revokeObjectURL(url);
           convSetProgress(95);
@@ -760,17 +766,26 @@ function convVideoToGif(file) {
           } catch(e) { reject(e); }
           return;
         }
-        convSetProgress(Math.round(frameNum / totalFrames * 90));
         v.currentTime = frameNum * interval;
       }
       v.onseeked = function() {
+        requestAnimationFrame(function() {
+          ctx.drawImage(v, 0, 0, w, h);
+          frames.push(ctx.getImageData(0, 0, w, h).data.slice(0));
+          frameNum++;
+          convSetProgress(Math.round(frameNum / totalFrames * 90));
+          captureSeek();
+        });
+      };
+      v.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
+      // Start: capture first frame (video already at time 0 after load)
+      requestAnimationFrame(function() {
         ctx.drawImage(v, 0, 0, w, h);
         frames.push(ctx.getImageData(0, 0, w, h).data.slice(0));
         frameNum++;
-        capture();
-      };
-      v.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
-      capture();
+        convSetProgress(Math.round(frameNum / totalFrames * 90));
+        captureSeek();
+      });
     };
     v.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
     v.src = url;
