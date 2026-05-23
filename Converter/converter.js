@@ -492,14 +492,9 @@ async function convVideoFfmpeg(file, format) {
   convSetProgress(-1);
 
   var corePath = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
-  var ffmpegLibUrls = [
-    'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js',
-    'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'
-  ];
-
-  var workerCode = 'var _ff=null;function _tryLoadUrl(e){try{importScripts(e)}catch(e){return false}return typeof FFmpeg!="undefined"}var _libLoaded=false;for(var _i=0;_i<(' + JSON.stringify(ffmpegLibUrls) + ').length;_i++){if(_tryLoadUrl((' + JSON.stringify(ffmpegLibUrls) + ')[_i])){_libLoaded=true;break}}if(!_libLoaded)throw new Error("Failed to load FFmpeg");self.onmessage=async function(e){var msg=e.data;try{if(msg.type==="load"){_ff=FFmpeg.createFFmpeg({corePath:msg.corePath,mainName:"main",log:true});_ff.setLogger(function(m){self.postMessage({type:"log",message:m})});_ff.setProgress(function(p){self.postMessage({type:"progress",progress:p.ratio})});await _ff.load();self.postMessage({id:msg.id,type:"loaded"})}else if(msg.type==="exec"){_ff.FS("writeFile",msg.inName,new Uint8Array(msg.fileData));var args=["-nostdin","-y","-i",msg.inName].concat(msg.fmtArgs).concat([msg.outName]);try{_ff.run.apply(_ff,args)}catch(e){}var data=_ff.FS("readFile",msg.outName);_ff.FS("unlink",msg.inName);_ff.FS("unlink",msg.outName);self.postMessage({id:msg.id,type:"result",data:data.buffer,ext:msg.ext},[data.buffer])}}catch(e){self.postMessage({id:msg.id,type:"error",message:e.message})}};';
-  var workerBlob = new Blob([workerCode], { type: 'application/javascript' });
-  var workerUrl = URL.createObjectURL(workerBlob);
+  var workerUrl = window.location.href.indexOf('file://') === 0
+    ? 'https://redo-san.github.io/RedoSan-Authenticity/Converter/ffmpeg-worker.js'
+    : 'Converter/ffmpeg-worker.js';
   var worker = new Worker(workerUrl);
 
   function convFfmpegSend(data) {
@@ -522,12 +517,10 @@ async function convVideoFfmpeg(file, format) {
     if (e.data.type === 'progress') convSetProgress(20 + Math.round(e.data.progress * 70));
   });
 
-  if (status) status.textContent = __('conv.loading_decoder', 'Loading video decoder...');
   try {
     await convFfmpegSend({ type: 'load', corePath: corePath });
   } catch(e) {
     worker.terminate();
-    URL.revokeObjectURL(workerUrl);
     throw e;
   }
   if (status) status.textContent = __('conv.converting', 'Converting...');
@@ -543,12 +536,10 @@ async function convVideoFfmpeg(file, format) {
     result = await convFfmpegSend({ type: 'exec', inName: inName, outName: outName, fmtArgs: fmt.args, fileData: fileData.buffer });
   } catch(e) {
     worker.terminate();
-    URL.revokeObjectURL(workerUrl);
     throw e;
   }
 
   worker.terminate();
-  URL.revokeObjectURL(workerUrl);
   convSetProgress(95);
   return { blob: new Blob([result.data], { type: 'video/' + fmt.ext }), ext: fmt.ext };
 }
