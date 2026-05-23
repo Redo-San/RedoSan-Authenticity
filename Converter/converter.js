@@ -124,9 +124,21 @@ async function handleConvConvert() {
     var result = await convRun(_convFile, _convType, format);
     if (result) {
       var ext = result.ext || format;
-      var url = URL.createObjectURL(result.blob);
       var outName = _convFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
-      dl.innerHTML = '<a href="' + url + '" download="' + escAttr(outName) + '" class="btn">' + __('conv.download', 'Download') + ' (' + escHtml(outName) + ')</a>';
+      var a = document.createElement('a');
+      a.textContent = __('conv.download', 'Download') + ' (' + escHtml(outName) + ')';
+      a.className = 'btn';
+      a.onclick = function() {
+        var blobUrl = URL.createObjectURL(result.blob);
+        var tmp = document.createElement('a');
+        tmp.href = blobUrl;
+        tmp.download = outName;
+        document.body.appendChild(tmp);
+        tmp.click();
+        document.body.removeChild(tmp);
+        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+      };
+      dl.appendChild(a);
       outDiv.style.display = 'block';
       status.textContent = __('conv.success', 'Conversion complete!');
     }
