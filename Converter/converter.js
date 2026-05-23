@@ -497,13 +497,22 @@ async function convVideoFfmpeg(file, format) {
     : 'Converter/ffmpeg-worker.js';
   var worker = new Worker(workerUrl);
 
-  function convFfmpegSend(data) {
+  function convFfmpegSend(data, timeoutMs) {
+    timeoutMs = timeoutMs || 120000;
     return new Promise(function(resolve, reject) {
       var id = Math.random().toString(36).substr(2);
       data.id = id;
+      var timedOut = false;
+      var timer = setTimeout(function() {
+        timedOut = true;
+        worker.removeEventListener('message', handler);
+        reject(new Error('FFmpeg worker timed out after ' + (timeoutMs / 1000) + 's'));
+      }, timeoutMs);
       function handler(e) {
+        if (timedOut) return;
         var m = e.data;
         if (m.id !== id) return;
+        clearTimeout(timer);
         worker.removeEventListener('message', handler);
         if (m.type === 'error') reject(new Error(m.message));
         else resolve(m);
@@ -518,7 +527,14 @@ async function convVideoFfmpeg(file, format) {
   });
 
   try {
-    await convFfmpegSend({ type: 'load', corePath: corePath });
+    await convFfmpegSend({
+      type: 'load',
+      corePath: corePath,
+      libUrls: [
+        'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js',
+        'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'
+      ]
+    });
   } catch(e) {
     worker.terminate();
     throw e;
