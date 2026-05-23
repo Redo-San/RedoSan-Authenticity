@@ -628,22 +628,74 @@ function convGifEncode(frames, delayCs, w, h) {
   function put(b) { data.push(b); }
   function putS(v) { put(v & 0xFF); put((v >> 8) & 0xFF); }
   function putStr(s) { for (var i = 0; i < s.length; i++) put(s.charCodeAt(i)); }
+
+  // Build global color palette from all frames
+  var palette = [];
+  var palIndex = {};
+  var palMax = 256;
+  for (var fi = 0; fi < frames.length; fi++) {
+    var rgba = frames[fi];
+    for (var j = 0; j < w * h; j++) {
+      var ri = rgba[j * 4] >> 3, gi = rgba[j * 4 + 1] >> 3, bi = rgba[j * 4 + 2] >> 3;
+      var key = ri + ',' + gi + ',' + bi;
+      if (palIndex[key] === undefined) {
+        if (palette.length < palMax) {
+          palette.push([(ri << 3) | (ri >> 2), (gi << 3) | (gi >> 2), (bi << 3) | (bi >> 2)]);
+          palIndex[key] = palette.length - 1;
+        }
+      }
+    }
+  }
+
+  // Pad palette to power of 2
+  var palSize = 1;
+  while (palSize < palette.length) palSize <<= 1;
+  while (palette.length < palSize) palette.push([0, 0, 0]);
+
+  var minCodeSize = 1;
+  while ((1 << minCodeSize) < palSize) minCodeSize++;
+  if (minCodeSize < 2) minCodeSize = 2;
+
+  // Write header + logical screen descriptor + global color table
   putStr('GIF89a');
   putS(w); putS(h);
-  put(0xF7); put(0); put(0);
-  for (var i = 0; i < frames.length; i++) {
+  put(0xF0 | ((Math.log2(palSize) - 1) & 0x07));
+  put(0); put(0);
+  for (var pi = 0; pi < palette.length; pi++) {
+    put(palette[pi][0]); put(palette[pi][1]); put(palette[pi][2]);
+  }
+
+  // Re-map pixels to palette indices using nearest color
+  var indices = [];
+  for (var fi = 0; fi < frames.length; fi++) {
+    var rgba = frames[fi];
+    var frameIndices = new Uint8Array(w * h);
+    for (var j = 0; j < w * h; j++) {
+      var r = rgba[j * 4], g = rgba[j * 4 + 1], b = rgba[j * 4 + 2];
+      var ri = r >> 3, gi = g >> 3, bi = b >> 3;
+      var key = ri + ',' + gi + ',' + bi;
+      var idx = palIndex[key];
+      if (idx !== undefined && idx < palSize) {
+        frameIndices[j] = idx;
+      } else {
+        // Nearest color search for colors beyond palette
+        var best = 0, bestDist = Infinity;
+        for (var pi2 = 0; pi2 < palette.length; pi2++) {
+          var dr = r - palette[pi2][0], dg = g - palette[pi2][1], db = b - palette[pi2][2];
+          var dist = dr * dr + dg * dg + db * db;
+          if (dist < bestDist) { bestDist = dist; best = pi2; }
+        }
+        frameIndices[j] = best;
+      }
+    }
+    indices.push(frameIndices);
+  }
+
+  for (var fi = 0; fi < frames.length; fi++) {
     put(0x21); put(0xF9); put(4); put(0x00); putS(delayCs); put(0); put(0x00);
     put(0x2C); putS(0); putS(0); putS(w); putS(h); put(0x00);
-    var rgba = frames[i];
-    var len = w * h;
-    var indices = new Uint8Array(len);
-    var minCodeSize = 8;
-    for (var j = 0; j < len; j++) {
-      var r = rgba[j * 4], g = rgba[j * 4 + 1], b = rgba[j * 4 + 2];
-      indices[j] = (((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)) % 256;
-    }
     put(minCodeSize);
-    var compressed = convGifLzw(indices, minCodeSize);
+    var compressed = convGifLzw(indices[fi], minCodeSize);
     putS(compressed.length);
     for (var k = 0; k < compressed.length; k++) put(compressed[k]);
     put(0x00);
@@ -692,7 +744,7 @@ function convVideoToGif(file) {
       var w = Math.min(v.videoWidth, 320), h = Math.min(v.videoHeight, 240);
       var canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
-      var ctx = canvas.getContext('2d');
+      var ctx = canvas.getContext('2d', { willReadFrequently: true });
       var dur = v.duration;
       var fps = 10;
       var totalFrames = Math.min(Math.round(dur * fps), 50);
