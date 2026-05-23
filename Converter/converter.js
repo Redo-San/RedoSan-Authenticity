@@ -437,8 +437,37 @@ async function convVideo(file, format) {
   var url = URL.createObjectURL(file);
   try {
     var video = await convLoadVideo(url);
-    await video.play();
-    var stream = video.captureStream();
+    var w = video.videoWidth || 640;
+    var h = video.videoHeight || 480;
+    video.play().catch(function(){});
+    // Try video.captureStream first (includes audio)
+    var stream = null;
+    if (typeof video.captureStream === 'function') {
+      try {
+        stream = video.captureStream();
+        if (!stream || !stream.getVideoTracks || !stream.getVideoTracks().length)
+          stream = null;
+      } catch(e) { stream = null; }
+    }
+    // Fallback: canvas.captureStream (video only)
+    if (!stream) {
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      var drawFrame = function() {
+        if (!video.paused) ctx.drawImage(video, 0, 0, w, h);
+        requestAnimationFrame(drawFrame);
+      };
+      drawFrame();
+      try { stream = canvas.captureStream(30); } catch(e) {
+        video.pause();
+        throw new Error(__('conv.video_limited', 'Video encoding not supported in this browser.'));
+      }
+      if (!stream || !stream.getVideoTracks || !stream.getVideoTracks().length) {
+        video.pause();
+        throw new Error(__('conv.video_limited', 'Video encoding not supported in this browser.'));
+      }
+    }
     for (var mi = 0; mi < mimeList.length; mi++) {
       try {
         var result = await convVideoEncode(stream, mimeList[mi], extMap[format], video.duration);
@@ -458,9 +487,22 @@ function convLoadVideo(url) {
     var v = document.createElement('video');
     v.muted = true;
     v.playsInline = true;
-    v.onloadedmetadata = function() { v.currentTime = 0; resolve(v); };
-    v.onerror = function() { reject(new Error('Failed to load video')); };
+    v.preload = 'auto';
+    var resolved = false;
+    function done() {
+      if (resolved) return;
+      resolved = true;
+      resolve(v);
+    }
+    v.onloadedmetadata = done;
+    v.oncanplay = done;
+    v.onerror = function() {
+      var msg = 'Failed to load video';
+      if (v.error) msg += ' (code ' + v.error.code + ')';
+      reject(new Error(msg));
+    };
     v.src = url;
+    v.load();
   });
 }
 
