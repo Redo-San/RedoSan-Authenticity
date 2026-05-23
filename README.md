@@ -40,6 +40,7 @@
 | **Timestamp** | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade |
 | **CLI** | Cross-platform Node.js CLI with interactive menu and direct command mode |
 | **Security Threat Blocker** | Service Worker + 404 page blocks dangerous file extensions and unknown `.js` scripts |
+| **File Converter** | Browser-side image (PNG/JPEG/WebP/BMP/GIF), audio (11 formats), video→audio, document, and subtitle conversion |
 | **Digital Passport** | Generate PDF, DOCX, or EPUB certificates with QR code verification |
 
 ---
@@ -155,6 +156,18 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 **Encryption:** PBKDF2-derived key via `pw_key(password)` with 100k iterations  
 **Redundancy:** ×3 repetition code with majority voting (corrects 1 error/triplet)
 
+## 🗜️ File Converter
+
+The File Converter auto-detects file type (image, audio, video, document, subtitle) and offers browser-side conversion:
+
+| Category | Input Formats | Output Formats |
+|----------|--------------|----------------|
+| **Image** | PNG, JPEG, WebP, BMP, GIF, TIFF, SVG, ICO | PNG, JPEG, WebP, BMP, GIF (Canvas-based) |
+| **Audio** | MP3, WAV, OGG, AAC, FLAC, M4A, WMA, OPUS | WAV, AIFF, AU, RAW (pure-JS PCM), MP3 (lamejs), OGG, OPUS, M4A, AAC, FLAC, AMR (MediaRecorder) |
+| **Video→Audio** | MP4, WebM, AVI, MOV, MKV, FLV, WMV, M4V | Same 11 audio formats (capture + ffmpeg.wasm fallback) |
+| **Document** | TXT, MD, HTML, CSV, JSON, XML, PDF, DOC, DOCX, RTF, ODT | TXT, HTML, MD, PDF, DOCX, JSON, XML, CSV |
+| **Subtitle** | SRT, VTT, ASS, SSA, SUB, SBV, SMI, LRC, TTML, DFXP, MPL2, PJS, RT | SRT, VTT, ASS, SUB, SBV, TXT, LRC, TTML |
+
 ### 23 Advanced Pixel Injection Algorithms
 
 | Algorithm | Domain | Key Technique |
@@ -200,8 +213,14 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 │  │  │(9 algos) │ │(23 algos)│ │ (17+4 algos)     │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
-│  │  │ C2PA     │ │Timestamp │ │ Metadata / Other │  │    │
-│  │  │(APP11)   │ │(OTS)     │ │                  │  │    │
+│  │  │ C2PA     │ │Timestamp │ │ File Converter   │  │    │
+│  │  │(APP11)   │ │(OTS)     │ │(image/audio/     │  │    │
+│  │  │          │ │          │ │ video→audio/doc/ │  │    │
+│  │  │          │ │          │ │ subtitle)         │  │    │
+│  │  │          │ │          │ │ + ffmpeg.wasm    │  │    │
+│  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
+│  │  │ Metadata │ │          │ │                  │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  ├──────────────────────────────────────────────────┤    │
 │  │        Security Threat Blocker (SW + 404)        │    │
@@ -280,7 +299,7 @@ npm test
 | **UI** | Vanilla HTML/CSS/JS (no frameworks) |
 | **Icons** | Font Awesome 5 |
 | **CLI** | Node.js 20+, Commander.js |
-| **Testing** | `node:test` (65 tests, zero dependencies) |
+| **Testing** | `node:test` (65 tests across 6 files, zero dependencies) |
 | **CI** | GitHub Actions (Node 20/22 matrix) |
 | **PDF Export** | jsPDF |
 | **DOCX Export** | docx |
@@ -288,6 +307,8 @@ npm test
 | **ZIP** | JSZip |
 | **C2PA** | Custom ECDSA P-256 implementation |
 | **Canvas (CLI)** | `canvas` node package |
+| **Audio Encoding** | Pure-JS PCM (WAV/AIFF/AU/RAW), lamejs (MP3), MediaRecorder (OGG/OPUS/M4A/AAC/FLAC/AMR) |
+| **Video→Audio** | Browser capture (playbackRate-accelerated) + ffmpeg.wasm v0.11.6 (core-st) fallback |
 
 ---
 
