@@ -453,14 +453,19 @@ function convEncodeRaw(audioBuffer, numChannels) {
 
 async function convVideo(file, format) {
   if (format === 'gif') return await convVideoToGif(file);
+  var nativeErr;
   try {
     return await convVideoNative(file, format);
   } catch(e) {
-    try {
-      return await convVideoFfmpeg(file, format);
-    } catch(e2) {
-      throw e2;
+    nativeErr = e;
+  }
+  try {
+    return await convVideoFfmpeg(file, format);
+  } catch(e2) {
+    if (typeof FFmpeg === 'undefined') {
+      throw new Error(__('conv.video_limited', 'Video conversion unavailable in this browser. Try a desktop browser.'));
     }
+    throw new Error((nativeErr ? nativeErr.message + ' | ' : '') + e2.message);
   }
 }
 
@@ -528,7 +533,7 @@ async function convVideoFfmpeg(file, format) {
   convSetProgress(95);
   ff.FS('unlink', inName);
   ff.FS('unlink', outName);
-  return { blob: new Blob([data.buffer], { type: 'video/' + fmt.ext }), ext: fmt.ext };
+  return { blob: new Blob([data.buffer], { type: mimeMap[format] || 'video/' + fmt.ext }), ext: fmt.ext };
 }
 
 async function convVideoNative(file, format) {
@@ -544,6 +549,7 @@ async function convVideoNative(file, format) {
     flv: ['video/x-flv']
   };
   var extMap = { mp4: 'mp4', webm: 'webm', mkv: 'mkv', mov: 'mov', avi: 'avi', mpeg: 'mpeg', '3gp': '3gp', wmv: 'wmv', flv: 'flv' };
+  var mimeMap = { mp4: 'video/mp4', webm: 'video/webm', mkv: 'video/x-matroska', mov: 'video/quicktime', avi: 'video/avi', mpeg: 'video/mpeg', '3gp': 'video/3gpp', wmv: 'video/x-ms-wmv', flv: 'video/x-flv' };
   var mimeList = videoMimeMap[format] || [];
   if (mimeList.length === 0) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
   var url = URL.createObjectURL(file);
@@ -553,30 +559,29 @@ async function convVideoNative(file, format) {
     var h = video.videoHeight || 480;
     video.play().catch(function(){});
     var stream = null;
-    if (typeof video.captureStream === 'function') {
-      try {
-        stream = video.captureStream();
+    try {
+      if (video.captureStream && typeof video.captureStream === 'function') {
+        stream = video.captureStream(30);
         if (!stream || !stream.getVideoTracks || !stream.getVideoTracks().length)
           stream = null;
+      }
+    } catch(e) { stream = null; }
+    if (!stream) {
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        var drawFrame = function() {
+          if (!video.paused) ctx.drawImage(video, 0, 0, w, h);
+          requestAnimationFrame(drawFrame);
+        };
+        drawFrame();
+        stream = canvas.captureStream(30);
       } catch(e) { stream = null; }
     }
     if (!stream) {
-      var canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      var drawFrame = function() {
-        if (!video.paused) ctx.drawImage(video, 0, 0, w, h);
-        requestAnimationFrame(drawFrame);
-      };
-      drawFrame();
-      try { stream = canvas.captureStream(30); } catch(e) {
-        video.pause();
-        throw new Error(__('conv.video_limited', 'Video encoding not supported in this browser.'));
-      }
-      if (!stream || !stream.getVideoTracks || !stream.getVideoTracks().length) {
-        video.pause();
-        throw new Error(__('conv.video_limited', 'Video encoding not supported in this browser.'));
-      }
+      video.pause();
+      throw new Error('captureStream unsupported');
     }
     for (var mi = 0; mi < mimeList.length; mi++) {
       try {
