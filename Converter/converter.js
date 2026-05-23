@@ -450,15 +450,13 @@ function convEncodeRaw(audioBuffer, numChannels) {
   return buffer;
 }
 
-var _convFfmpeg = null;
 
 async function convVideo(file, format) {
   if (format === 'gif') return await convVideoToGif(file);
   try {
     return await convVideoNative(file, format);
   } catch(e) {
-    // Try loading FFmpeg dynamically from CDN if not available
-    if (typeof FFmpeg === 'undefined') {
+    if (typeof FFmpegWASM === 'undefined') {
       try {
         await convLoadFfmpeg();
       } catch(e2) {
@@ -476,21 +474,30 @@ async function convVideo(file, format) {
 function convLoadFfmpeg() {
   return new Promise(function(resolve, reject) {
     var urls = [
-      'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js',
-      'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'
+      'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js',
+      'https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js'
     ];
     function tryLoad(i) {
       if (i >= urls.length) { reject(new Error('Failed to load FFmpeg')); return; }
       var s = document.createElement('script');
       s.src = urls[i];
       s.onload = function() {
-        if (typeof FFmpeg !== 'undefined') { resolve(); return; }
+        if (typeof FFmpegWASM !== 'undefined') { resolve(); return; }
         tryLoad(i + 1);
       };
       s.onerror = function() { tryLoad(i + 1); };
       document.head.appendChild(s);
     }
     tryLoad(0);
+  });
+}
+
+async function convReadFileAsUint8(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() { resolve(new Uint8Array(reader.result)); };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
   });
 }
 
@@ -572,15 +579,18 @@ async function convVideoFfmpeg(file, format) {
   var status = document.getElementById('conv-status');
   if (status) status.textContent = __('conv.loading_decoder', 'Loading video decoder...');
   convSetProgress(-1);
-  var ff = FFmpeg.createFFmpeg({
-    corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
-    mainName: 'main',
-    log: true
+
+  var ff = new FFmpegWASM.FFmpeg();
+  ff.on('progress', function(p) {
+    convSetProgress(20 + Math.round(p.progress * 70));
   });
+  ff.on('log', function(m) {
+    if (m.type === 'fferr') console.log('[ffmpeg] ' + m.message);
+  });
+  var corePath = 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
   try {
-    await ff.load();
+    await ff.load({ corePath: corePath, mainName: 'main' });
   } catch(e) {
-    _convFfmpeg = null;
     throw e;
   }
   if (status) status.textContent = __('conv.converting', 'Converting...');
@@ -588,25 +598,35 @@ async function convVideoFfmpeg(file, format) {
   var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
   var inName = 'input.' + ext;
   var outName = 'output.' + fmt.ext;
-  ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
+  var fileData = await convReadFileAsUint8(file);
+  await ff.writeFile(inName, fileData);
   convSetProgress(20);
 
   var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
-  await ff.run.apply(ff, runArgs);
+  try {
+    await ff.exec(runArgs, -1);
+  } catch(e) {
+    await ff.deleteFile(inName);
+    ff.terminate();
+    throw e;
+  }
 
   convSetProgress(90);
-  var files = ff.FS('readdir', '/');
-  if (files.indexOf(outName) === -1) {
-    ff.FS('unlink', inName);
-    _convFfmpeg = null;
+  ff.off('progress');
+  ff.off('log');
+  var data;
+  try {
+    data = await ff.readFile(outName);
+  } catch(e) {
+    await ff.deleteFile(inName);
+    ff.terminate();
     throw new Error(__('conv.video_limited', 'Video conversion failed. The codec may not be supported.'));
   }
-  var data = ff.FS('readFile', outName);
   convSetProgress(95);
-  ff.FS('unlink', inName);
-  ff.FS('unlink', outName);
-  _convFfmpeg = null;
-  return { blob: new Blob([data.buffer], { type: 'video/' + fmt.ext }), ext: fmt.ext };
+  try { await ff.deleteFile(inName); } catch(e) {}
+  try { await ff.deleteFile(outName); } catch(e) {}
+  ff.terminate();
+  return { blob: new Blob([data], { type: 'video/' + fmt.ext }), ext: fmt.ext };
 }
 
 function convLoadVideo(url) {
