@@ -559,9 +559,26 @@ async function convVideoFfmpeg(file, format) {
   var outName = 'output.' + fmt.ext;
   ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
   convSetProgress(20);
-  var runArgs = ['-i', inName].concat(fmt.args).concat([outName]);
+
+  // Phase 1: try stream copy (fast remux)
+  var runArgs = ['-nostdin', '-y', '-i', inName, '-c', 'copy', '-map', '0', outName];
   await ff.run.apply(ff, runArgs);
+  var files = ff.FS('readdir', '/');
+  if (files.indexOf(outName) === -1) {
+    // Phase 2: re-encode with format-specific codecs
+    if (status) status.textContent = __('conv.converting', 'Converting...');
+    convSetProgress(20);
+    ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
+    runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
+    await ff.run.apply(ff, runArgs);
+    files = ff.FS('readdir', '/');
+  }
+
   convSetProgress(90);
+  if (files.indexOf(outName) === -1) {
+    ff.FS('unlink', inName);
+    throw new Error(__('conv.video_limited', 'Video conversion failed. The codec may not be supported.'));
+  }
   var data = ff.FS('readFile', outName);
   convSetProgress(95);
   ff.FS('unlink', inName);
