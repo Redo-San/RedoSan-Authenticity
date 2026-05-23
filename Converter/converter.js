@@ -457,8 +457,10 @@ async function convVideo(file, format) {
   try {
     return await convVideoNative(file, format);
   } catch(e) {
-    if (typeof FFmpeg !== 'undefined' && (e.message.indexOf('code 4') !== -1 || e.message.indexOf('encoding not supported') !== -1)) {
-      return await convVideoFfmpeg(file, format);
+    if (typeof FFmpeg !== 'undefined') {
+      try {
+        return await convVideoFfmpeg(file, format);
+      } catch(e2) {}
     }
     throw e;
   }
