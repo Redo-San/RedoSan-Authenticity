@@ -544,10 +544,7 @@ async function convVideoFfmpeg(file, format) {
   var ff = _convFfmpeg;
   if (!ff) {
     convSetProgress(-1);
-    ff = FFmpeg.createFFmpeg({
-      corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.9.0/dist/ffmpeg-core.js',
-      log: false
-    });
+    ff = FFmpeg.createFFmpeg({ log: false });
     await ff.load();
     _convFfmpeg = ff;
   }
