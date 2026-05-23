@@ -216,7 +216,7 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 │  │  │ C2PA     │ │Timestamp │ │ File Converter   │  │    │
 │  │  │(APP11)   │ │(OTS)     │ │(image/audio/     │  │    │
 │  │  │          │ │          │ │ video→audio/doc/ │  │    │
-│  │  │          │ │          │ │ subtitle)         │  │    │
+│  │  │          │ │          │ │ subtitle)        │  │    │
 │  │  │          │ │          │ │ + ffmpeg.wasm    │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
