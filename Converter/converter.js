@@ -50,6 +50,7 @@ function convGetFormatLabel(fmt) {
 }
 
 function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function convYield() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
 var _convFile = null;
 var _convType = '';
@@ -457,7 +458,7 @@ function convTimeout(promise, ms) {
 
 async function convVideo(file, format) {
   try {
-    return await convTimeout(convAudio(file, format), 15000);
+    return await convTimeout(convAudio(file, format), 5000);
   } catch(e) {
     var status = document.getElementById('conv-status');
     if (status) status.textContent = __('conv.converting', 'Extracting audio from video...');
@@ -548,8 +549,10 @@ async function convVideoToAudioCapture(file, format) {
         };
         recorder.onerror = function() { cleanup(); reject(new Error('Recording failed')); };
         recorder.start();
+        var rate = 2;
+        try { video.playbackRate = rate; } catch(e) { rate = 1; }
         video.play().catch(function(err) { cleanup(); reject(new Error('Playback: ' + err.message)); });
-        setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration * 1000 + 1000);
+        setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration / rate * 1000 + 1000);
       }
       tryMime(0);
     };
@@ -592,6 +595,7 @@ async function convVideoToAudioFfmpeg(file, format) {
   ff.FS('writeFile', inName, fileData);
   convSetProgress(20);
   var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
+  await convYield();
   try { await ff.run.apply(ff, runArgs); } catch(e) { ff.FS('unlink', inName); throw e; }
   convSetProgress(90);
   var files = ff.FS('readdir', '/');
@@ -650,6 +654,7 @@ async function convVideoFfmpeg(file, format) {
   convSetProgress(20);
 
   var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
+  await convYield();
   try {
     await ff.run.apply(ff, runArgs);
   } catch(e) {
