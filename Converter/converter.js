@@ -451,19 +451,147 @@ function convEncodeRaw(audioBuffer, numChannels) {
 }
 
 
+function convTimeout(promise, ms) {
+  return Promise.race([promise, new Promise(function(_, reject) { setTimeout(function() { reject(new Error('Timeout')); }, ms); })]);
+}
+
 async function convVideo(file, format) {
   try {
-    return await convAudio(file, format);
+    return await convTimeout(convAudio(file, format), 15000);
   } catch(e) {
+    var status = document.getElementById('conv-status');
+    if (status) status.textContent = __('conv.converting', 'Extracting audio from video...');
+    convSetProgress(-1);
     try {
-      return await convVideoToAudioFfmpeg(file, format);
+      return await convVideoToAudioCapture(file, format);
     } catch(e2) {
-      if (typeof FFmpeg === 'undefined') {
-        throw new Error(__('conv.video_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.'));
+      try {
+        return await convVideoToAudioFfmpeg(file, format);
+      } catch(e3) {
+        if (typeof FFmpeg === 'undefined') {
+          throw new Error(__('conv.video_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.'));
+        }
+        throw new Error(e.message + ' | ' + e2.message + ' | ' + e3.message);
       }
-      throw new Error(e.message + ' | ' + e2.message);
     }
   }
+}
+
+async function convVideoToAudioCapture(file, format) {
+  var isPcm = ['wav', 'aiff', 'au', 'raw'].indexOf(format) !== -1;
+  if (isPcm) return await convVideoToAudioPcm(file, format);
+  var mimePrefs = {
+    mp3: ['audio/mpeg', 'audio/webm; codecs=opus', 'audio/mp4'],
+    ogg: ['audio/webm; codecs=opus', 'audio/ogg; codecs=opus', 'audio/ogg'],
+    opus: ['audio/webm; codecs=opus', 'audio/opus', 'audio/ogg'],
+    m4a: ['audio/mp4; codecs=aac', 'audio/mp4', 'audio/aac', 'audio/x-m4a'],
+    aac: ['audio/aac', 'audio/mp4; codecs=aac', 'audio/mp4'],
+    flac: ['audio/flac', 'audio/webm; codecs=opus'],
+    amr: ['audio/amr', 'audio/webm; codecs=opus']
+  };
+  var prefs = mimePrefs[format] || ['audio/webm; codecs=opus', 'audio/mp4'];
+  var url = URL.createObjectURL(file);
+  return new Promise(function(resolve, reject) {
+    var video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.onloadedmetadata = function() {
+      var duration = video.duration || 30;
+      var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var streamDest = audioCtx.createMediaStreamDestination();
+      var source = audioCtx.createMediaElementSource(video);
+      source.connect(streamDest);
+      var stopped = false;
+      function cleanup() { if (stopped) return; stopped = true; URL.revokeObjectURL(url); video.pause(); video.remove(); audioCtx.close(); }
+      function tryMime(idx) {
+        if (idx >= prefs.length) { cleanup(); reject(new Error('No supported audio format')); return; }
+        var mime = prefs[idx];
+        var recorder;
+        try { recorder = new MediaRecorder(streamDest.stream, { mimeType: mime }); }
+        catch(e) { tryMime(idx + 1); return; }
+        var chunks = [];
+        recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = function() {
+          cleanup();
+          var blob = new Blob(chunks, { type: recorder.mimeType });
+          resolve({ blob: blob, ext: format });
+        };
+        recorder.onerror = function() { cleanup(); reject(new Error('Recording failed')); };
+        recorder.start();
+        video.play().catch(function(err) { cleanup(); reject(new Error('Playback: ' + err.message)); });
+        setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration * 1000 + 1500);
+      }
+      tryMime(0);
+    };
+    video.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
+    video.src = url;
+    video.load();
+  });
+}
+
+async function convVideoToAudioPcm(file, format) {
+  var url = URL.createObjectURL(file);
+  return new Promise(function(resolve, reject) {
+    var video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.onloadedmetadata = function() {
+      var duration = video.duration || 30;
+      var sampleRate = 44100;
+      var numChannels = 2;
+      var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var source = audioCtx.createMediaElementSource(video);
+      var processor = audioCtx.createScriptProcessor(4096, numChannels, numChannels);
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+      var allSamples = [];
+      processor.onaudioprocess = function(e) {
+        var frame = [];
+        for (var c = 0; c < e.inputBuffer.numberOfChannels; c++)
+          frame.push(new Float32Array(e.inputBuffer.getChannelData(c)));
+        allSamples.push(frame);
+      };
+      var playStart = Date.now();
+      video.play().catch(function(err) { cleanup(); reject(new Error('Playback: ' + err.message)); });
+      var timer = setInterval(function() {
+        if (video.ended || Date.now() - playStart > (duration + 2) * 1000) {
+          clearInterval(timer);
+          processor.disconnect();
+          video.pause();
+          URL.revokeObjectURL(url);
+          var totalLen = allSamples.reduce(function(s, f) { return s + f[0].length; }, 0);
+          var numCh = allSamples.length > 0 ? allSamples[0].length : 1;
+          var buf = audioCtx.createBuffer(numCh, totalLen, sampleRate);
+          var off = 0;
+          for (var fi = 0; fi < allSamples.length; fi++) {
+            for (var c = 0; c < numCh; c++) {
+              var data = buf.getChannelData(c);
+              var src = allSamples[fi][Math.min(c, allSamples[fi].length - 1)];
+              data.set(src, off);
+            }
+            off += allSamples[fi][0].length;
+          }
+          audioCtx.close();
+          var result;
+          switch (format) {
+            case 'wav': result = convEncodeWav(buf, numCh, sampleRate); break;
+            case 'aiff': result = convEncodeAiff(buf, numCh, sampleRate); break;
+            case 'au': result = convEncodeAu(buf, numCh, sampleRate); break;
+            case 'raw': result = convEncodeRaw(buf, numCh); break;
+          }
+          var mimeMap = { wav: 'audio/wav', aiff: 'audio/aiff', au: 'audio/basic', raw: 'audio/L8' };
+          resolve({ blob: new Blob([result], { type: mimeMap[format] }), ext: format });
+        }
+      }, 500);
+    };
+    video.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
+    video.src = url;
+    video.load();
+  });
 }
 
 async function convVideoToAudioFfmpeg(file, format) {
