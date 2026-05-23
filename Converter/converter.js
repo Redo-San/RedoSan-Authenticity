@@ -454,9 +454,11 @@ var _convFfmpeg = null;
 
 async function convVideo(file, format) {
   if (format === 'gif') return await convVideoToGif(file);
+  console.log('FFmpeg available:', typeof FFmpeg !== 'undefined');
   try {
     return await convVideoNative(file, format);
   } catch(e) {
+    console.log('Native error:', e.message);
     if (typeof FFmpeg !== 'undefined') {
       try {
         return await convVideoFfmpeg(file, format);
