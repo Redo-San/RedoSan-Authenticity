@@ -243,6 +243,7 @@
   "conv.file_label": "Select a file",
   "conv.submit": "Convert",
   "conv.converting": "Converting...",
+  "conv.loading_decoder": "Loading video decoder...",
   "conv.success": "Conversion complete!",
   "conv.error": "Error: ",
   "conv.download": "Download",
