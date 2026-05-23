@@ -7,6 +7,7 @@
 /* ── Safe area & iOS scroll helpers ── */
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overscroll-behavior: none;
 } 
 .sidebar, .result, .search-results, .nav-search .search-results {
   -webkit-overflow-scrolling: touch;
@@ -324,10 +325,12 @@ body {
 }
 
 /* ── Nav items alignment on tight screens ── */
-@media (max-width: 374px) {
-  .nav-left .theme-btn:not(.mode-switch-btn) { display: none; }
+@media (max-width: 767px) {
+  .nav-left .mode-switch-btn { display: none; }
 }
-
+@media (max-width: 374px) {
+  .nav-left .theme-btn { display: none; }
+}
 /* ═══════════════════════════════════════════════
    ── Foldable & tri-fold device support ──
    Covers: cover screens (320-412px), inner displays
@@ -343,7 +346,7 @@ body {
   .sp-line { min-width: 5px; }
 }
 @media (max-width: 323px) {
-  .nav-left .lang-btn { display: none; }
+  .nav-left .lang-btn, .nav-left .nav-search { display: none; }
   .simple-top-right .lang-btn { display: none; }
 }
 
