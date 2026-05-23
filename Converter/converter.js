@@ -587,7 +587,7 @@ async function convVideoFfmpeg(file, format) {
   ff.on('log', function(m) {
     if (m.type === 'fferr') console.log('[ffmpeg] ' + m.message);
   });
-  var corePath = 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
+  var corePath = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
   try {
     await ff.load({ corePath: corePath, mainName: 'main' });
   } catch(e) {
@@ -604,7 +604,7 @@ async function convVideoFfmpeg(file, format) {
 
   var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
   try {
-    await ff.exec(runArgs, -1);
+    await ff.exec(runArgs);
   } catch(e) {
     await ff.deleteFile(inName);
     ff.terminate();
