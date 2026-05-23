@@ -546,6 +546,7 @@ async function convVideoFfmpeg(file, format) {
     convSetProgress(-1);
     ff = FFmpeg.createFFmpeg({
       corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
+      mainName: 'main',
       log: false
     });
     await ff.load();
