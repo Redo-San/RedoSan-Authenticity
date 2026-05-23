@@ -490,6 +490,7 @@ async function convVideoToAudioCapture(file, format) {
     video.playsInline = true;
     video.preload = 'auto';
     video.onloadedmetadata = function() {
+      try {
       var duration = video.duration || 30;
       var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -559,6 +560,7 @@ async function convVideoToAudioCapture(file, format) {
         setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration / rate * 1000 + 1000);
       }
       tryMime(0);
+    } catch(e) { URL.revokeObjectURL(url); reject(e); }
     };
     video.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
     video.src = url;
@@ -589,7 +591,7 @@ async function convVideoToAudioFfmpeg(file, format) {
   var status = document.getElementById('conv-status');
   if (status) status.textContent = __('conv.loading_decoder', 'Loading audio decoder...');
   convSetProgress(-1);
-  try { await ff.load(); } catch(e) { throw e; }
+  try { await convTimeout(ff.load(), 30000); } catch(e) { throw new Error(__('conv.audio_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.')); }
   if (status) status.textContent = __('conv.converting', 'Extracting audio...');
   convSetProgress(10);
   var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
@@ -635,7 +637,7 @@ async function convVideoFfmpeg(file, format) {
   var fmt = ffmpegArgs[format];
   if (!fmt) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
   var status = document.getElementById('conv-status');
-  if (status) status.textContent = __('conv.loading_decoder', 'Loading video decoder...');
+  if (status) status.textContent = __('conv.loading_video_decoder', 'Loading video decoder...');
   convSetProgress(-1);
 
   if (typeof FFmpeg === 'undefined') throw new Error('FFmpeg library not loaded');
