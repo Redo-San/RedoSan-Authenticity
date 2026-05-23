@@ -588,9 +588,25 @@ async function convVideoFfmpeg(file, format) {
     if (m.type === 'fferr') console.log('[ffmpeg] ' + m.message);
   });
   var corePath = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
+  var workerUrls = [
+    'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/umd/814.ffmpeg.js',
+    'https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd/814.ffmpeg.js'
+  ];
+  var classWorkerURL = null;
+  for (var i = 0; i < workerUrls.length; i++) {
+    try {
+      var resp = await fetch(workerUrls[i]);
+      if (!resp.ok) continue;
+      var code = await resp.text();
+      classWorkerURL = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
+      break;
+    } catch(e) { continue; }
+  }
+  if (!classWorkerURL) throw new Error('Failed to load FFmpeg worker');
   try {
-    await ff.load({ corePath: corePath, mainName: 'main' });
+    await ff.load({ corePath: corePath, mainName: 'main', classWorkerURL: classWorkerURL });
   } catch(e) {
+    URL.revokeObjectURL(classWorkerURL);
     throw e;
   }
   if (status) status.textContent = __('conv.converting', 'Converting...');
@@ -607,6 +623,7 @@ async function convVideoFfmpeg(file, format) {
     await ff.exec(runArgs);
   } catch(e) {
     await ff.deleteFile(inName);
+    URL.revokeObjectURL(classWorkerURL);
     ff.terminate();
     throw e;
   }
@@ -619,12 +636,14 @@ async function convVideoFfmpeg(file, format) {
     data = await ff.readFile(outName);
   } catch(e) {
     await ff.deleteFile(inName);
+    URL.revokeObjectURL(classWorkerURL);
     ff.terminate();
     throw new Error(__('conv.video_limited', 'Video conversion failed. The codec may not be supported.'));
   }
   convSetProgress(95);
   try { await ff.deleteFile(inName); } catch(e) {}
   try { await ff.deleteFile(outName); } catch(e) {}
+  URL.revokeObjectURL(classWorkerURL);
   ff.terminate();
   return { blob: new Blob([data], { type: 'video/' + fmt.ext }), ext: fmt.ext };
 }
