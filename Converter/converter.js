@@ -460,7 +460,9 @@ async function convVideo(file, format) {
     if (typeof FFmpeg !== 'undefined') {
       try {
         return await convVideoFfmpeg(file, format);
-      } catch(e2) {}
+      } catch(e2) {
+        throw e2;
+      }
     }
     throw e;
   }
@@ -534,10 +536,10 @@ async function convVideoFfmpeg(file, format) {
     mkv:  { ext: 'mkv',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
     mov:  { ext: 'mov',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
     avi:  { ext: 'avi',  args: ['-c:v', 'mpeg4', '-q:v', '5', '-c:a', 'mp3'] },
-    mpeg: { ext: 'mpg',  args: ['-c:v', 'mpeg2video', '-q:v', '5', '-c:a', 'mp2'] },
-    '3gp': { ext: '3gp',  args: ['-c:v', 'h263', '-b:v', '512k', '-c:a', 'amr_nb', '-ar', '8000'] },
-    wmv:  { ext: 'wmv',  args: ['-c:v', 'wmv2', '-b:v', '1M', '-c:a', 'wmav2'] },
-    flv:  { ext: 'flv',  args: ['-c:v', 'flv', '-b:v', '1M', '-c:a', 'mp3'] }
+    mpeg: { ext: 'mpg',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
+    '3gp': { ext: '3gp',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
+    wmv:  { ext: 'wmv',  args: ['-c:v', 'mpeg4', '-q:v', '5', '-c:a', 'mp3'] },
+    flv:  { ext: 'flv',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] }
   };
   var fmt = ffmpegArgs[format];
   if (!fmt) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
