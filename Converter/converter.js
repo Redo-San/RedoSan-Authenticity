@@ -491,45 +491,13 @@ async function convVideoFfmpeg(file, format) {
   if (status) status.textContent = __('conv.loading_decoder', 'Loading video decoder...');
   convSetProgress(-1);
 
+  if (typeof FFmpeg === 'undefined') throw new Error('FFmpeg library not loaded');
   var corePath = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
-  var workerUrl = window.location.href.indexOf('file://') === 0
-    ? 'https://redo-san.github.io/RedoSan-Authenticity/Converter/ffmpeg-worker.js'
-    : 'Converter/ffmpeg-worker.js';
-  var worker = new Worker(workerUrl);
-
-  function convFfmpegSend(data, timeoutMs) {
-    timeoutMs = timeoutMs || 120000;
-    return new Promise(function(resolve, reject) {
-      var id = Math.random().toString(36).substr(2);
-      data.id = id;
-      var timedOut = false;
-      var timer = setTimeout(function() {
-        timedOut = true;
-        worker.removeEventListener('message', handler);
-        reject(new Error('FFmpeg worker timed out after ' + (timeoutMs / 1000) + 's'));
-      }, timeoutMs);
-      function handler(e) {
-        if (timedOut) return;
-        var m = e.data;
-        if (m.id !== id) return;
-        clearTimeout(timer);
-        worker.removeEventListener('message', handler);
-        if (m.type === 'error') reject(new Error(m.message));
-        else resolve(m);
-      }
-      worker.addEventListener('message', handler);
-      worker.postMessage(data);
-    });
-  }
-
-  worker.addEventListener('message', function(e) {
-    if (e.data.type === 'progress') convSetProgress(20 + Math.round(e.data.progress * 70));
-  });
-
+  var ff = FFmpeg.createFFmpeg({ corePath: corePath, mainName: 'main', log: true });
+  ff.setProgress(function(p) { convSetProgress(20 + Math.round(p.ratio * 70)); });
   try {
-    await convFfmpegSend({ type: 'load', corePath: corePath });
+    await ff.load();
   } catch(e) {
-    worker.terminate();
     throw e;
   }
   if (status) status.textContent = __('conv.converting', 'Converting...');
@@ -539,18 +507,28 @@ async function convVideoFfmpeg(file, format) {
   var inName = 'input.' + ext;
   var outName = 'output.' + fmt.ext;
   var fileData = await convReadFileAsUint8(file);
+  ff.FS('writeFile', inName, fileData);
+  convSetProgress(20);
 
-  var result;
+  var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
   try {
-    result = await convFfmpegSend({ type: 'exec', inName: inName, outName: outName, fmtArgs: fmt.args, fileData: fileData.buffer });
+    await ff.run.apply(ff, runArgs);
   } catch(e) {
-    worker.terminate();
+    ff.FS('unlink', inName);
     throw e;
   }
 
-  worker.terminate();
+  convSetProgress(90);
+  var files = ff.FS('readdir', '/');
+  if (files.indexOf(outName) === -1) {
+    ff.FS('unlink', inName);
+    throw new Error(__('conv.video_limited', 'Video conversion failed. The codec may not be supported.'));
+  }
+  var data = ff.FS('readFile', outName);
   convSetProgress(95);
-  return { blob: new Blob([result.data], { type: 'video/' + fmt.ext }), ext: fmt.ext };
+  ff.FS('unlink', inName);
+  ff.FS('unlink', outName);
+  return { blob: new Blob([data.buffer], { type: 'video/' + fmt.ext }), ext: fmt.ext };
 }
 
 async function convVideoNative(file, format) {
