@@ -527,14 +527,7 @@ async function convVideoFfmpeg(file, format) {
   });
 
   try {
-    await convFfmpegSend({
-      type: 'load',
-      corePath: corePath,
-      libUrls: [
-        'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js',
-        'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'
-      ]
-    });
+    await convFfmpegSend({ type: 'load', corePath: corePath });
   } catch(e) {
     worker.terminate();
     throw e;

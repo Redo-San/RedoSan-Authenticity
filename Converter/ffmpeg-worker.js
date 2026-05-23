@@ -1,28 +1,11 @@
+importScripts('ffmpeg.min.js');
+
 var _ff = null;
 
 self.onmessage = async function(e) {
   var msg = e.data;
   try {
     if (msg.type === 'load') {
-      if (typeof FFmpeg === 'undefined') {
-        var loaded = false;
-        var urls = msg.libUrls || [
-          'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js',
-          'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'
-        ];
-        for (var i = 0; i < urls.length; i++) {
-          try {
-            var resp = await fetch(urls[i]);
-            if (!resp.ok) continue;
-            var code = await resp.text();
-            var blob = new Blob([code], { type: 'application/javascript' });
-            var blobUrl = URL.createObjectURL(blob);
-            try { importScripts(blobUrl); } finally { URL.revokeObjectURL(blobUrl); }
-            if (typeof FFmpeg !== 'undefined') { loaded = true; break; }
-          } catch(e) {}
-        }
-        if (!loaded) throw new Error('Failed to load FFmpeg library');
-      }
       _ff = FFmpeg.createFFmpeg({
         corePath: msg.corePath,
         mainName: 'main',
