@@ -457,23 +457,27 @@ function convTimeout(promise, ms) {
 }
 
 async function convVideo(file, format) {
-  try {
-    return await convTimeout(convAudio(file, format), 5000);
-  } catch(e) {
-    var status = document.getElementById('conv-status');
-    if (status) status.textContent = __('conv.converting', 'Extracting audio from video...');
-    convSetProgress(-1);
+  var videoContainers = ['mp4','webm','avi','mov','mkv','flv','wmv','m4v','3gp','mpeg','mpg','ogv','ts','mts','m2ts'];
+  var ext = file.name.split('.').pop().toLowerCase();
+  var isVideoExt = videoContainers.indexOf(ext) !== -1;
+  if (!isVideoExt) {
     try {
-      return await convVideoToAudioCapture(file, format);
-    } catch(e2) {
-      try {
-        return await convVideoToAudioFfmpeg(file, format);
-      } catch(e3) {
-        if (typeof FFmpeg === 'undefined') {
-          throw new Error(__('conv.video_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.'));
-        }
-        throw new Error(e.message + ' | ' + e2.message + ' | ' + e3.message);
+      return await convTimeout(convAudio(file, format), 5000);
+    } catch(e) {}
+  }
+  var status = document.getElementById('conv-status');
+  if (status) status.textContent = __('conv.converting', 'Extracting audio from video...');
+  convSetProgress(-1);
+  try {
+    return await convVideoToAudioCapture(file, format);
+  } catch(e2) {
+    try {
+      return await convVideoToAudioFfmpeg(file, format);
+    } catch(e3) {
+      if (typeof FFmpeg === 'undefined') {
+        throw new Error(__('conv.video_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.'));
       }
+      throw new Error(e.message + ' | ' + e2.message + ' | ' + e3.message);
     }
   }
 }
@@ -549,8 +553,8 @@ async function convVideoToAudioCapture(file, format) {
         };
         recorder.onerror = function() { cleanup(); reject(new Error('Recording failed')); };
         recorder.start();
-        var rate = 2;
-        try { video.playbackRate = rate; } catch(e) { rate = 1; }
+        var rate = 4;
+        try { video.playbackRate = rate; } catch(e) { try { rate = 2; video.playbackRate = rate; } catch(e2) { rate = 1; } }
         video.play().catch(function(err) { cleanup(); reject(new Error('Playback: ' + err.message)); });
         setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration / rate * 1000 + 1000);
       }

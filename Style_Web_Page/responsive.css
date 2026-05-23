@@ -326,7 +326,10 @@ body {
 
 /* ── Nav items alignment on tight screens ── */
 @media (max-width: 767px) {
-  .nav-left .mode-switch-btn { display: none; }
+  .nav-left .theme-btn, .nav-left .mode-switch-btn { display: none; }
+}
+@media (max-width: 323px) {
+  .nav-left .nav-search { display: none; }
 }
 @media (max-width: 374px) {
   .nav-left .theme-btn { display: none; }
