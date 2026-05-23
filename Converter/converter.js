@@ -49,7 +49,7 @@ function convGetFormatLabel(fmt) {
   return labels[fmt] || fmt.toUpperCase();
 }
 
-function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 var _convFile = null;
 var _convType = '';
