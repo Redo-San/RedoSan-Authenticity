@@ -23,6 +23,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "acorn": "^8.16.0",
     "canvas": "^3.2.3",
     "commander": "^14.0.3"
   },
