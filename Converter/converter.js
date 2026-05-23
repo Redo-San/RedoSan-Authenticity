@@ -55,6 +55,24 @@ var _convFile = null;
 var _convType = '';
 var _convFormats = [];
 
+function convSetProgress(pct) {
+  var bar = document.getElementById('conv-progress');
+  var fill = document.getElementById('conv-progress-fill');
+  if (!bar || !fill) return;
+  if (pct < 0) {
+    bar.style.display = 'block';
+    fill.style.width = '30%';
+    fill.style.animation = 'conv-progress-indeterminate 1.5s ease-in-out infinite';
+  } else {
+    fill.style.animation = 'none';
+    fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+    bar.style.display = 'block';
+    if (pct >= 100) {
+      setTimeout(function() { bar.style.display = 'none'; }, 600);
+    }
+  }
+}
+
 function handleConvFile() {
   var input = document.getElementById('conv-file');
   var opts = document.getElementById('conv-options');
@@ -116,12 +134,14 @@ async function handleConvConvert() {
   btn.disabled = true;
   spinner.style.display = 'inline-block';
   status.textContent = __('conv.converting', 'Converting...');
+  convSetProgress(-1);
   outDiv.style.display = 'none';
   dl.innerHTML = '';
   try {
     var format = convGetSelectedFormat();
     if (!format) { throw new Error('No format selected'); }
     var result = await convRun(_convFile, _convType, format);
+    convSetProgress(100);
     if (result) {
       var ext = result.ext || format;
       var outName = _convFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
@@ -523,6 +543,7 @@ async function convVideoFfmpeg(file, format) {
   if (status) status.textContent = __('conv.loading_decoder', 'Loading video decoder...');
   var ff = _convFfmpeg;
   if (!ff) {
+    convSetProgress(-1);
     ff = FFmpeg.createFFmpeg({
       corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.9.8/dist/ffmpeg-core.js',
       log: false
@@ -531,13 +552,17 @@ async function convVideoFfmpeg(file, format) {
     _convFfmpeg = ff;
   }
   if (status) status.textContent = __('conv.converting', 'Converting...');
+  convSetProgress(10);
   var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
   var inName = 'input.' + ext;
   var outName = 'output.' + fmt.ext;
   ff.FS('writeFile', inName, await FFmpeg.fetchFile(file));
+  convSetProgress(20);
   var runArgs = ['-i', inName].concat(fmt.args).concat([outName]);
   await ff.run.apply(ff, runArgs);
+  convSetProgress(90);
   var data = ff.FS('readFile', outName);
+  convSetProgress(95);
   ff.FS('unlink', inName);
   ff.FS('unlink', outName);
   return { blob: new Blob([data.buffer], { type: 'video/' + fmt.ext }), ext: fmt.ext };
@@ -658,12 +683,14 @@ function convVideoToGif(file) {
       function capture() {
         if (frameNum >= totalFrames) {
           v.pause(); URL.revokeObjectURL(url);
+          convSetProgress(95);
           try {
             var gifData = convGifEncode(frames, Math.round(interval * 100), w, h);
             resolve({ blob: new Blob([gifData], { type: 'image/gif' }), ext: 'gif' });
           } catch(e) { reject(e); }
           return;
         }
+        convSetProgress(Math.round(frameNum / totalFrames * 90));
         v.currentTime = frameNum * interval;
       }
       v.onseeked = function() {
