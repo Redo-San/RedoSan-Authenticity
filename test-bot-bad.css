@@ -1,0 +1,7 @@
+.duplicate {}
+.duplicate { color: red; }
+
+#invalidHex { color: #ggg; }
+
+.a { color: blue; }
+.b { color: blue; }
