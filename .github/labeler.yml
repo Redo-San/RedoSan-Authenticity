@@ -1,23 +1,11 @@
-# Auto-label PRs by changed paths
-converter:
-  - Converter/**/*
-c2pa:
-  - C2PA/**/*
-certificate:
-  - Certificate/**/*
-fingerprint:
-  - Fingerprint/**/*
-metadata:
-  - Metadata/**/*
-timestamp:
-  - Timestamp/**/*
-watermark:
-  - Watermark/**/*
-cli:
-  - cli/**/*
-i18n:
-  - Style_Web_Page/lang/**/*
-css:
-  - Style_Web_Page/*.css
-ci:
-  - .github/workflows/**/*
+converter: Converter/**/*
+c2pa: C2PA/**/*
+certificate: Certificate/**/*
+fingerprint: Fingerprint/**/*
+metadata: Metadata/**/*
+timestamp: Timestamp/**/*
+watermark: Watermark/**/*
+cli: cli/**/*
+i18n: Style_Web_Page/lang/**/*
+css: Style_Web_Page/*.css
+ci: .github/workflows/**/*
