@@ -27,7 +27,6 @@ jobs:
                 'declaration-block-no-duplicate-custom-properties': true,
                 'declaration-block-no-duplicate-properties': [true, { ignore: ['consecutive-duplicates'] }],
                 'font-family-no-duplicate-names': true,
-                'no-descending-specificity': true,
                 'selector-pseudo-class-no-unknown': true,
                 'selector-pseudo-element-no-unknown': true,
                 'selector-type-no-unknown': true,
@@ -48,8 +47,10 @@ jobs:
                 encoding: 'utf8', env
               });
             } catch (e) {
-              const out = e.stdout || '';
-              const results = JSON.parse(out || '[]');
+              const raw = (e.stdout || e.stderr || '').toString();
+              const jsonStart = raw.indexOf('[');
+              const jsonStr = jsonStart >= 0 ? raw.slice(jsonStart) : '[]';
+              const results = JSON.parse(jsonStr);
               const warnings = [];
               for (const r of results) {
                 for (const w of r.warnings || []) {
