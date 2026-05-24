@@ -237,12 +237,12 @@
   "lang.name.ja": "日本語",
   "lang.name.ko": "한국어",
   "sidebar": {
-    "certificate": "Digitales Reisepass",
+    "certificate": "Digitaler Reisepass",
     "usage_warning": "⚠️ Nur gesetzmäßige Nutzung. Illegale/schädliche Inhalte sind verboten. Alle Verarbeitungen erfolgen lokal."
   },
   "card": {
     "certificate": {
-      "title": "Digitales Reisepass",
+      "title": "Digitaler Reisepass",
       "desc": "Generiere ein signiertes PDF/DOCX/EPUB-Zertifikat"
     }
   },
@@ -281,14 +281,14 @@
     "select_both": "Bitte wählen Sie sowohl die Originaldatei als auch ihre .ots-Beweisdatei aus",
     "created_success": "✓ Vollständige .ots-Zeitstempel mit Blockchain-Beweis erstellt!\n\nSHA-256: {hash}\nGröße: {size} Bytes\n\nDiese .ots-Datei enthält einen Merkle-Beweis vom OpenTimestamps-Kalender-Aggregator. Überprüfen Sie ihn jederzeit mit dem Reiter \"Überprüfen\".",
     "created_warning": "SHA-256: {hash}\n\n⚠ Kalender-Aggregator nicht erreichbar. Erstellte unvollständige .ots-Zeitstempel ({size} Bytes, Standardformat).\n\nUm einen Blockchain-Beweis anzuhängen, führen Sie einen der folgenden Befehle aus:\n\n{commands}",
-    "verified_match": "✓ Überprüft! Hash stimmt mit dem .ots-Beweis überein.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256:  {otsHash}\n\nDie Datei wurde nicht geändert, seit der Zeitstempel erstellt wurde.",
-    "verified_mismatch": "✗ Hash-Ungleichheit! Die Datei wurde geändert.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256:  {otsHash}\n\nDie Datei wurde geändert, seit der Zeitstempel erstellt wurde.",
+    "verified_match": "✓ Überprüft! Hash stimmt mit dem .ots-Beweis überein.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256:  {otsHash}\n\nDie Datei wurde seit der Erstellung des Zeitstempels nicht geändert.",
+    "verified_mismatch": "✗ Hash-Ungleichheit! Die Datei wurde geändert.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256:  {otsHash}\n\nDie Datei wurde seit der Erstellung des Zeitstempels geändert.",
     "option1_title": "Option 1 — OpenTimestamps-Website (einfachste Methode):",
     "option1_step1": "1. Gehen Sie zu https://opentimestamps.org",
     "option1_step2": "2. Ziehen Sie die Datei \"{name}.ots\" auf die Seite",
-    "option1_step3": "3. Klicken Sie auf \"Zeitstempel\", um den vollständigen .ots-Zeitstempel mit Blockchain-Beweis zu erhalten",
+    "option1_step3": "3. Klicken Sie auf \"Zeitstempel\", um einen vollständigen .ots-Zeitstempel mit Blockchain-Beweis zu erhalten",
     "option2_title": "Option 2 — Offizielle CLI:",
-    "option3_title": "Option 3 — PowerShell (roher Hash, 32 Bytes):"
+    "option3_title": "Option 3 — PowerShell (roher Hash, 32 Bytes nur):"
   },
   "c2pa": {
     "action_created": "📄 Erstellt",
@@ -329,8 +329,8 @@
     "view_details": "Vollständige Details anzeigen"
   },
   "cert": {
-    "heading": "Digitales Reisepass",
-    "desc": "Erstellen Sie ein signiertes Digitales Reisepass-PDF, DOCX oder EPUB mit Ihrem Bild, Benutzerinformationen und Ergebnissen aus anderen Tools. Fügen Sie Ihre Ergebnisse unten hinzu und klicken Sie auf \"Erstellen\".",
+    "heading": "Digitaler Reisepass",
+    "desc": "Erstellen Sie ein signiertes Digitalpass-PDF, DOCX oder EPUB mit Ihrem Bild, Benutzerinformationen und Ergebnissen aus anderen Tools. Fügen Sie Ihre Ergebnisse unten hinzu und klicken Sie auf Erstellen.",
     "image_label": "Bild",
     "user_info_label": "Ihre Informationen",
     "social_label": "Soziale Links (optional)",
@@ -340,8 +340,8 @@
     "pi_label": "Pixel-Injektions-Ergebnisdatei",
     "fp_label": "Fingerabdruck-Datei (.json, .txt)",
     "ts_label": "Zeitstempel-Datei (.ots)",
-    "download_label": "Zertifikat bereit! Wählen Sie ein Format:",
-    "reset_btn": "↻ Neu starten"
+    "download_label": "Zertifikat bereit! Wählen Sie ein Format aus:",
+    "reset_btn": "↻ Von vorne beginnen"
   },
   "conv": {
     "heading": "Dateikonverter",
@@ -354,7 +354,7 @@
     "download": "Herunterladen",
     "detected": "Erkannt: ",
     "file": "Datei: ",
-    "format_label": "In konvertieren:",
+    "format_label": "In folgendes Format konvertieren:",
     "unknown_type": "Nicht unterstützter Dateityp. Bitte wählen Sie ein Bild, Audio, Video oder Dokument aus.",
     "unsupported": "Nicht unterstützter Dateityp",
     "audio_limited": "Audio-Konvertierung ist im Browser eingeschränkt. Versuchen Sie es mit dem WAV-Format.",
@@ -368,11 +368,11 @@
     "c2pa_youtube": "YouTube-URL",
     "c2pa_music_label": "Musik-Streaming (optional)",
     "c2pa_failed": "C2PA-Signierung fehlgeschlagen. Überprüfen Sie die Konsole auf Details.",
-    "c2pa_no_module": "C2PA-Modul nicht geladen. Überprüfen Sie Ihre Internetverbindung und aktualisieren Sie.",
+    "c2pa_no_module": "C2PA-Modul nicht geladen. Überprüfen Sie Ihre Internetverbindung und aktualisieren Sie die Seite.",
     "pi_msg_ph": "Geben Sie Ihre geheime Nachricht ein (erforderlich)",
-    "final_image_title": "✅ Endgültiges Bild",
+    "final_image_title": "✅ Fertiges Bild",
     "final_image_desc": "Wasserzeichen + geheime Nachricht eingefügt — einziges Herunterladen.",
-    "final_dl_btn": "📥 Endgültiges Bild herunterladen",
+    "final_dl_btn": "📥 Fertiges Bild herunterladen",
     "pi_dl_btn": "📥 Eingefügtes Bild herunterladen",
     "step_upload": "Hochladen",
     "step_type": "Typ",
@@ -395,7 +395,7 @@
     "info_phone": "Telefon",
     "info_phone_ph": "z.B. 5xx xxx xxxx",
     "phone_digits_only": "Bitte geben Sie nur Zahlen ein",
-    "clear_confirm": "Alle Daten löschen? Ihr aktueller Fortschritt wird verloren gehen.",
+    "clear_confirm": "Alle Daten löschen? Ihr aktuelles Fortschritt wird verloren gehen.",
     "email_invalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
     "url_invalid": "Bitte geben Sie eine gültige URL ein (z.B. https://example.com)",
     "select_country": "Land auswählen",
@@ -403,10 +403,10 @@
     "info_website": "Website",
     "info_website_ph": "z.B. https://example.com",
     "info_social": "Soziale Links",
-    "info_artist": "Ich bin ein Künstler/Musiker",
+    "info_artist": "Ich bin Künstler/Musiker",
     "info_music": "Musik-Plattformen",
     "info_required": "Bitte füllen Sie alle erforderlichen Felder aus: Name, E-Mail, Telefon, Website.",
-    "cert_title": "Digitales Reisepass",
+    "cert_title": "Digitaler Reisepass",
     "cert_desc": "Laden Sie ein signiertes Dokument mit allen Ergebnissen, Bildvorschau und QR-Verifizierungscode herunter."
   },
   "shared": {
@@ -419,10 +419,10 @@
     "failed_load_image": "Bild konnte nicht geladen werden",
     "dangerous_file": "Dieser Dateityp ist aus Sicherheitsgründen nicht erlaubt.",
     "wrong_type": "Bitte wählen Sie einen gültigen Dateityp für dieses Tool aus.",
-    "corrupt_file": "Diese Datei scheint korrupt oder hat ein falsches Format.",
+    "corrupt_file": "Diese Datei scheint beschädigt oder hat ein falsches Format.",
     "dangerous_content": "Diese Datei enthält potenziell gefährlichen eingebetteten Code (Skripte, Ereignishandler) und ist nicht erlaubt.",
-    "dangerous_document": "Dieses Dokument enthält potenziell gefährliche Funktionen (eingebettetes JavaScript, Auto-Ausführen von Aktionen, externe Starts, eingebettete Dateien) und ist nicht erlaubt.",
-    "bad_structure": "Diese Datei scheint verdächtige Daten nach ihrem gültigen Bildinhalt zu haben. Bitte exportieren Sie die Datei erneut aus einem sauberen Bildeditor."
+    "dangerous_document": "Dieses Dokument enthält potenziell gefährliche Funktionen (eingebetteter JavaScript, Auto-Ausführen von Aktionen, externe Starts, eingebettete Dateien) und ist nicht erlaubt.",
+    "bad_structure": "Diese Datei scheint verdächtige Daten nach ihrem gültigen Bildinhalt zu enthalten. Bitte exportieren Sie die Datei erneut aus einem sauberen Bildeditor."
   },
   "test": {
     "translate": "Dies ist ein Test-Übersetzungs-Schlüssel"
