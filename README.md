@@ -340,3 +340,5 @@ npm link
 ---
 
 <p align="center">Built by <a href="https://github.com/Redo-San">Redo_San</a></p>
+<!-- test-new-bots-intentionally-unique-12345 -->
+TODO: Add installation instructions for Windows users
