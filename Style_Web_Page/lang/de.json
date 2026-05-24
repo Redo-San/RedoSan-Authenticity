@@ -221,6 +221,7 @@
   "search.results_for": "Ergebnisse für \"{query}\":",
   "search.hint": "Versuchen Sie: wasserzeichen, fingerabdruck, metadaten, zeitstempel",
   "dl.title": "Fingerabdruck Herunterladen",
+  "dl.inapp_alert": "Bitte öffne diese Seite in Safari oder Chrome, um Dateien herunterzuladen. Tippe auf das Browsermenü (⋯) und wähle \"Im Browser öffnen\".",
   "dl.subtitle": "Wählen Sie ein Format:",
   "lang.switch": "English",
   "lang.current": "Aktuelle Sprache",

@@ -408,6 +408,7 @@
   "shared.bad_structure": "This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.",
 
   "dl.title": "Download Fingerprint",
+  "dl.inapp_alert": "Please open this page in Safari or Chrome to download files. Tap the browser menu (⋯) and select \"Open in Browser\".",
   "dl.subtitle": "Choose a format:",
 
   "lang.switch": "العربية",
