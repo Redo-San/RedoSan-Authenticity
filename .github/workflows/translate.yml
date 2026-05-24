@@ -3,7 +3,7 @@ name: AI i18n Translation
 on:
   push:
     branches: ["beta-release"]
-    paths:
+    paths: 
       - "Style_Web_Page/lang/en.json"
 
 permissions:
