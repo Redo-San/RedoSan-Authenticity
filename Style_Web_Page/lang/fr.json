@@ -221,6 +221,7 @@
   "search.results_for": "Résultats pour \"{query}\":",
   "search.hint": "Essayez de chercher : filigrane, empreinte, métadonnées, horodatage",
   "dl.title": "Télécharger l'Empreinte",
+  "dl.inapp_alert": "Veuillez ouvrir cette page dans Safari ou Chrome pour télécharger des fichiers. Appuyez sur le menu du navigateur (⋯) et sélectionnez \"Ouvrir dans le navigateur\".",
   "dl.subtitle": "Choisissez un format :",
   "lang.switch": "English",
   "lang.current": "Langue actuelle",

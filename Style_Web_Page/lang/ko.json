@@ -182,6 +182,7 @@
   "search.hint": "예: 워터마크, 지문, 메타데이터, 타임스탬프",
 
   "dl.title": "지문 다운로드",
+  "dl.inapp_alert": "파일을 다운로드하려면 Safari 또는 Chrome에서 이 페이지를 여세요. 브라우저 메뉴(⋯)를 누르고 \"브라우저에서 열기\"를 선택하세요.",
   "dl.subtitle": "포맷 선택:",
 
   "lang.switch": "English",

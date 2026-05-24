@@ -359,9 +359,29 @@ function __(key, fallback) { return (i18n && i18n.data && i18n.data[key]) || fal
 
 function downloadBlobSimple(blob, fileName) {
   var url = URL.createObjectURL(blob);
+  if (isInAppBrowser()) {
+    var win = window.open(url, '_blank');
+    if (!win || win.closed) {
+      alert(__('dl.inapp_alert', 'Please open this page in Safari or Chrome to download files. Tap the browser menu (⋯) and select "Open in Browser".'));
+      window.location.href = url;
+    }
+    setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+    return;
+  }
   var a = document.createElement('a');
   a.href = url; a.download = fileName; a.click();
   URL.revokeObjectURL(url);
+}
+
+function isInAppBrowser() {
+  var ua = navigator.userAgent || '';
+  var vendor = navigator.vendor || '';
+  if (/TikTok|musical_ly/i.test(ua)) return true;
+  if (/Instagram/i.test(ua) && !/Chrome|Safari/i.test(ua)) return true;
+  if (/FBAN|FBAV|Facebook/i.test(ua)) return true;
+  if (/wv|WebView/i.test(ua)) return true;
+  if (/Line\//i.test(ua)) return true;
+  return false;
 }
 
 function downloadBlob(blob, name, containerId) {

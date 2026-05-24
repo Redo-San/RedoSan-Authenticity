@@ -221,6 +221,7 @@
   "search.results_for": "Resultados para \"{query}\":",
   "search.hint": "Intente buscar: marca de agua, huella, metadatos, marca de tiempo",
   "dl.title": "Descargar Huella Digital",
+  "dl.inapp_alert": "Abre esta página en Safari o Chrome para descargar archivos. Toca el menú del navegador (⋯) y selecciona \"Abrir en el navegador\".",
   "dl.subtitle": "Elija un formato:",
   "lang.switch": "English",
   "lang.current": "Idioma actual",

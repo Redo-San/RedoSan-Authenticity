@@ -221,6 +221,7 @@
   "search.results_for": "\"{query}\" 的结果：",
   "search.hint": "尝试搜索：水印, 指纹, 元数据, 时间戳",
   "dl.title": "下载指纹",
+  "dl.inapp_alert": "请在 Safari 或 Chrome 中打开此页面以下载文件。点击浏览器菜单 (⋯) 并选择"在浏览器中打开"。",
   "dl.subtitle": "选择格式：",
   "lang.switch": "English",
   "lang.current": "当前语言",
