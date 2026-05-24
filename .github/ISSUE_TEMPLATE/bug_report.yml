@@ -1,0 +1,50 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: [type/bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to report a bug.
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      description: Which page were you on?
+      placeholder: e.g. https://redo-san.github.io/RedoSan-Authenticity/#watermark
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect to happen?
+      placeholder: When I click X, nothing happens...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this?
+      placeholder: 1. Go to... 2. Click... 3. See error
+    validations:
+      required: true
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      description: Which browser were you using?
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console logs
+      description: Paste any errors from browser DevTools (F12 → Console)
+      render: text
