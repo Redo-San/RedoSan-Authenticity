@@ -17,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
+      - name: Run lychee
+        id: lychee
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
         with:
           fail: false
           args: >-
@@ -26,34 +28,26 @@ jobs:
             --exclude 'http://localhost*'
             --exclude 'https://img.shields.io/*'
             .
-          format: json
-          output: /tmp/lychee-report.json
-      - uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+      - name: Report broken links
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         with:
           script: |
             const fs = require('fs');
-            const path = '/tmp/lychee-report.json';
-            if (!fs.existsSync(path)) {
-              console.log('No lychee report found.');
-              return;
-            }
+            const files = ['/tmp/lychee/out.md', 'lychee/out.md', 'results.md']
+              .filter(f => fs.existsSync(f));
 
-            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
-            const results = report.failures || report.results || report || [];
-            const failures = Array.isArray(results)
-              ? results.filter(r => r.status && r.status !== 200)
-              : [];
+            const output = files.length > 0
+              ? fs.readFileSync(files[0], 'utf8').trim()
+              : 'No report file found.';
 
-            if (failures.length === 0) {
+            const hasBroken = /🔗|broken|error/i.test(output) && !/no broken|all good|0 broken/i.test(output);
+
+            if (!hasBroken) {
               console.log('No broken links found.');
               return;
             }
 
-            const lines = failures.map(f =>
-              '- [' + (f.url || f.uri) + '](' + (f.url || f.uri) + ') in `' + (f.source || f.file || 'unknown') + '`'
-            );
-            const body = '## Broken Links Found\n\n' + lines.join('\n') +
-              '\n\n_Generated on ' + new Date().toISOString().split('T')[0] + '_';
+            const body = '## Broken Links Report\n\n```\n' + output.slice(0, 5000) + '\n```\n\n_Generated on ' + new Date().toISOString().split('T')[0] + '_';
 
             const { data: issues } = await github.rest.issues.listForRepo({
               ...context.repo, state: 'open', labels: 'type/broken-links'
