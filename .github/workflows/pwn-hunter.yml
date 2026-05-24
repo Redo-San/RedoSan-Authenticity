@@ -10,7 +10,6 @@ on:
 permissions:
   contents: read
   security-events: write
-  pull-requests: write
 
 jobs:
   scan:
@@ -23,10 +22,11 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Run pwn-hunter
-        uses: TreRB/gh-actions-pwn-hunter@ec87f5ded0d20a634b5380dfd8d4ea6da9e4a63d
+      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5
         with:
-          args: --sarif --output results.sarif
+          go-version: '1.26'
+      - name: Run pwn-hunter scan
+        run: go run github.com/TreRB/gh-actions-pwn-hunter@latest scan local . --sarif --output results.sarif
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@03e4368ac7daa2bd82b3e85262f3bf87ee112f57 # v3
         with:
