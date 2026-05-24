@@ -13,8 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
-      - name: Check spelling
-        uses: codespell-project/actions-codespell@406322ec52dd7b48881548bb0d9e3a9ed2fefb1c # v2
+      - uses: codespell-project/actions-codespell@4848b4c0f038a77b5a64504a5e93b8fae962bc66 # v2
         with:
           check_filenames: true
           skip: .git,*.json,node_modules,./Style_Web_Page/lang/*.json
