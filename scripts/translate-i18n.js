@@ -11,8 +11,7 @@
  * Environment variables (required for --apply):
  *   ANTHROPIC_API_KEY, OPENAI_API_KEY, GROQ_API_KEY, or GOOGLE_API_KEY
  *
- * Default model: groq/llama-3.3-70b-versatile (cheapest ~$0.002/run)
- * Override with: DEEPINFRA_API_KEY + MODEL=meta-llama/Meta-Llama-3-70B-Instruct
+ * Default model: llama-3.3-70b-versatile (Groq - free, no credit card required)
  */
 
 var fs = require('fs');
@@ -86,8 +85,8 @@ function deepMerge(base, overlay) {
 async function translateViaAI(texts, targetLang) {
   var apiKey = process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY ||
                process.env.GROQ_API_KEY || process.env.GOOGLE_API_KEY;
-  var model = process.env.MODEL || 'deepseek-chat';
-  var apiBase = process.env.OPENAI_API_BASE || 'https://api.deepseek.com';
+  var model = process.env.MODEL || 'llama-3.3-70b-versatile';
+  var apiBase = process.env.OPENAI_API_BASE || 'https://api.groq.com/openai';
 
   if (!apiKey) throw new Error('No API key found. Set OPENAI_API_KEY.');
 
