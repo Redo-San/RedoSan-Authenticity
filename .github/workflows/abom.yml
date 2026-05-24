@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
+      - name: Install abom
+        run: go install github.com/JulietSecurity/abom@v0.2.1
       - name: Run abom scan
-        uses: JulietSecurity/abom@949aae195800a9de12067797cd0c84be6f2557b9 # v0.2.1
-        with:
-          args: --output json --check
+        run: abom scan --output json --check .
