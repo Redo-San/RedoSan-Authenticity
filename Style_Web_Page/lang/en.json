@@ -422,5 +422,6 @@
   "lang.name.es": "Español",
   "lang.name.zh": "中文",
   "lang.name.ja": "日本語",
-  "lang.name.ko": "한국어"
+  "lang.name.ko": "한국어",
+  "_test_bot": "Test key for AI translation workflow"
 }
