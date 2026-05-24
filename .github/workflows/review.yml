@@ -1,6 +1,6 @@
 name: AI Code Review
 
-on: 
+on:
   pull_request:
     branches: ["beta-release"]
 
