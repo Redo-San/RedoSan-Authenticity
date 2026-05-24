@@ -25,6 +25,8 @@ jobs:
             api.groq.com:443
             github.com:443
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - name: Translate missing keys
         run: node scripts/translate-i18n.js --apply
         env:
@@ -35,5 +37,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add Style_Web_Page/lang/
           if git diff --cached --quiet; then echo "No changes"; else git commit -m "auto: translate new i18n keys" && git push; fi
