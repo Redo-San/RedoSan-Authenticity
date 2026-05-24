@@ -1,0 +1,85 @@
+name: TODO Issue Creator
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  todos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const PATTERN = /(?:TODO|FIXME|HACK|NOTE)\s*:\s*(.+)/gi;
+            const EXCLUDE_DIRS = ['node_modules', '.git', '.github'];
+            const EXCLUDE_FILES = ['package-lock.json', '*.min.js'];
+
+            function walk(dir) {
+              const entries = fs.readdirSync(dir, { withFileTypes: true });
+              const results = [];
+              for (const entry of entries) {
+                const full = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                  if (!EXCLUDE_DIRS.includes(entry.name) && !entry.name.startsWith('.')) {
+                    results.push(...walk(full));
+                  }
+                } else if (entry.isFile()) {
+                  if (EXCLUDE_FILES.some(p => {
+                    if (p.endsWith('*')) return entry.name.endsWith(p.slice(1));
+                    return entry.name === p;
+                  })) continue;
+                  try {
+                    const content = fs.readFileSync(full, 'utf8');
+                    let match;
+                    while ((match = PATTERN.exec(content)) !== null) {
+                      const line = content.slice(0, match.index).split('\n').length;
+                      results.push({
+                        file: full,
+                        line,
+                        text: match[1].trim()
+                      });
+                    }
+                  } catch {}
+                }
+              }
+              return results;
+            }
+
+            const todos = walk('.');
+
+            if (todos.length === 0) {
+              console.log('No TODO/FIXME/HACK/NOTE comments found.');
+              return;
+            }
+
+            for (const todo of todos) {
+              const title = `TODO: ${todo.text}`;
+              const body = `**File:** \`${todo.file}\`\n**Line:** ${todo.line}\n\n> ${todo.text}\n\n_Discovered by automated TODO scanner._`;
+
+              const { data: existing } = await github.rest.issues.listForRepo({
+                ...context.repo,
+                state: 'open',
+                labels: 'type/todo'
+              });
+
+              const dup = existing.find(i => i.body && i.body.includes(todo.file) && i.body.includes(`Line: ${todo.line}`));
+              if (dup) continue;
+
+              await github.rest.issues.create({
+                ...context.repo,
+                title: title.slice(0, 256),
+                body,
+                labels: ['type/todo']
+              });
+            }
+
+            console.log(`Created ${todos.length} TODO issue(s).`);

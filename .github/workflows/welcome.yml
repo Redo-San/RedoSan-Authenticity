@@ -1,0 +1,69 @@
+name: Welcome
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  welcome:
+    if: github.actor != 'github-actions[bot]' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const author = context.payload.sender.login;
+            const isIssue = !!context.payload.issue;
+            const num = isIssue
+              ? context.payload.issue.number
+              : context.payload.pull_request.number;
+            const type = isIssue ? 'issue' : 'pull request';
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              ...context.repo,
+              creator: author,
+              state: 'all',
+              per_page: 1
+            });
+
+            const { data: prs } = await github.rest.pulls.list({
+              ...context.repo,
+              state: 'all',
+              head: `user:${author}`,
+              per_page: 1
+            });
+
+            const isFirst = issues.length === 0 && prs.length === 0;
+
+            if (!isFirst) return;
+
+            const item = isIssue ? context.payload.issue : context.payload.pull_request;
+            const isBug = item.labels && item.labels.some(l => l.name === 'bug');
+
+            const body = `👋 Welcome @${author}!
+
+Thank you for your first contribution to **${context.repo.repo}**${
+              isBug ? ' and for reporting this bug' : ''
+            }! 🎉
+
+Here are some helpful resources:
+- Check our [README](https://github.com/${context.repo.owner}/${context.repo.repo}#readme) for guidelines
+- Our team will review your ${type} as soon as possible`;
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: num,
+              body
+            });
+
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: num,
+              labels: ['first-interaction']
+            });

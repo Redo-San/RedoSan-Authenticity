@@ -1,0 +1,80 @@
+name: PR Title Lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const TYPES = ['feat', 'fix', 'chore', 'docs', 'style', 'refactor', 'perf', 'test', 'ci', 'build', 'revert'];
+            const PATTERN = new RegExp(`^(${TYPES.join('|')})(\\(\\w+\\))?!?:\\s.+`);
+            const URL = 'https://www.conventionalcommits.org/';
+
+            const title = context.payload.pull_request.title;
+            const num = context.issue.number;
+
+            if (PATTERN.test(title)) {
+              const { data: comments } = await github.rest.issues.listComments({
+                ...context.repo,
+                issue_number: num
+              });
+              const botComments = comments.filter(c =>
+                c.user.type === 'Bot' && c.body.includes('PR Title Lint')
+              );
+              for (const c of botComments) {
+                await github.rest.issues.deleteComment({
+                  ...context.repo,
+                  comment_id: c.id
+                });
+              }
+              return;
+            }
+
+            const body = `## ⚠️ PR Title Lint
+
+The PR title does not follow [Conventional Commits](${URL}).
+
+**Expected format:** \`type(scope): description\`
+
+**Example:** \`fix(auth): resolve login timeout\`
+
+**Valid types:** ${TYPES.join(', ')}
+
+**Current title:** \`${title}\``;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo,
+              issue_number: num
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('PR Title Lint')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: num,
+                body
+              });
+            }
+
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: num,
+              labels: ['title-needs-fix']
+            }).catch(() => {});
