@@ -48,16 +48,19 @@ jobs:
 
             const item = isIssue ? context.payload.issue : context.payload.pull_request;
             const isBug = item.labels && item.labels.some(l => l.name === 'bug');
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
 
-            const body = `👋 Welcome @${author}!
-
-Thank you for your first contribution to **${context.repo.repo}**${
-              isBug ? ' and for reporting this bug' : ''
-            }! 🎉
-
-Here are some helpful resources:
-- Check our [README](https://github.com/${context.repo.owner}/${context.repo.repo}#readme) for guidelines
-- Our team will review your ${type} as soon as possible`;
+            const lines = [
+              '👋 Welcome @' + author + '!',
+              '',
+              'Thank you for your first contribution to **' + repo + '**' + (isBug ? ' and for reporting this bug' : '') + '! 🎉',
+              '',
+              'Here are some helpful resources:',
+              '- Check our [README](https://github.com/' + owner + '/' + repo + '#readme) for guidelines',
+              '- Our team will review your ' + type + ' as soon as possible'
+            ];
+            const body = lines.join('\n');
 
             await github.rest.issues.createComment({
               ...context.repo,
