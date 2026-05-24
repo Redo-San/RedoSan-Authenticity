@@ -1,0 +1,68 @@
+name: PR Size Label
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const SIZE_LABELS = ['size/small', 'size/medium', 'size/large'];
+
+            const pr = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: context.issue.number
+            });
+
+            const total = pr.data.additions + pr.data.deletions;
+            let label;
+            if (total < 50) {
+              label = 'size/small';
+            } else if (total < 300) {
+              label = 'size/medium';
+            } else {
+              label = 'size/large';
+            }
+
+            const { data: allLabels } = await github.rest.issues.listLabelsOnIssue({
+              ...context.repo,
+              issue_number: context.issue.number
+            });
+
+            for (const l of allLabels) {
+              if (SIZE_LABELS.includes(l.name) && l.name !== label) {
+                await github.rest.issues.removeLabel({
+                  ...context.repo,
+                  issue_number: context.issue.number,
+                  name: l.name
+                }).catch(() => {});
+              }
+            }
+
+            const names = allLabels.map(l => l.name);
+            if (!names.includes(label)) {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: context.issue.number,
+                labels: [label]
+              }).catch(async () => {
+                await github.rest.issues.createLabel({
+                  ...context.repo,
+                  name: label,
+                  color: total < 50 ? 'bfe5bf' : total < 300 ? 'fef2c0' : 'f9d0c4',
+                  description: total < 50 ? 'Small PR (< 50 lines)' : total < 300 ? 'Medium PR (50-299 lines)' : 'Large PR (300+ lines)'
+                });
+                await github.rest.issues.addLabels({
+                  ...context.repo,
+                  issue_number: context.issue.number,
+                  labels: [label]
+                });
+              });
+            }
