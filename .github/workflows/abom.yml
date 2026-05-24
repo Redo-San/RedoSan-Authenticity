@@ -22,7 +22,8 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - name: Run abom scan
-        uses: JulietSecurity/abom@949aae195800a9de12067797cd0c84be6f2557b9 # v0.2.1
+      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5
         with:
-          args: --output json --check
+          go-version: '1.26'
+      - name: Run abom scan
+        run: go run github.com/julietsecurity/abom@v0.2.1 scan --output json --check .
