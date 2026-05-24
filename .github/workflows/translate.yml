@@ -20,8 +20,8 @@ jobs:
         run: node scripts/translate-i18n.js --apply
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_BASE: https://api.deepseek.com
-          MODEL: deepseek-chat
+          OPENAI_API_BASE: https://api.groq.com/openai
+          MODEL: llama-3.3-70b-versatile
       - name: Commit translations
         run: |
           git config user.name "github-actions[bot]"
