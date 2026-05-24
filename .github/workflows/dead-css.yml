@@ -17,7 +17,7 @@ jobs:
       - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const exec = require('child_process').execSync;
+            const run = require('child_process').execSync;
             const fs = require('fs');
 
             const config = JSON.stringify({
@@ -30,7 +30,7 @@ jobs:
             fs.writeFileSync('/tmp/purgecss-config.json', config);
 
             try {
-              const out = exec('npx purgecss --config /tmp/purgecss-config.json --json 2>/dev/null || true', {
+              const out = run('npx purgecss --config /tmp/purgecss-config.json --json 2>/dev/null || true', {
                 encoding: 'utf8'
               });
               const results = JSON.parse(out.trim() || '[]');

@@ -16,7 +16,7 @@ jobs:
       - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const exec = require('child_process').execSync;
+            const run = require('child_process').execSync;
             const fs = require('fs');
 
             const config = JSON.stringify({
@@ -34,13 +34,13 @@ jobs:
 
             fs.writeFileSync('/tmp/htmlhintrc.json', config);
 
-            const files = exec('find . -name "*.html" -not -path "*/node_modules/*"', { encoding: 'utf8' })
+            const files = run('find . -name "*.html" -not -path "*/node_modules/*"', { encoding: 'utf8' })
               .trim().split('\n').filter(Boolean);
 
             if (files.length === 0) return;
 
             try {
-              exec('npx htmlhint --config /tmp/htmlhintrc.json --format json ' + files.join(' '), {
+              run('npx htmlhint --config /tmp/htmlhintrc.json --format json ' + files.join(' '), {
                 encoding: 'utf8'
               });
             } catch (e) {

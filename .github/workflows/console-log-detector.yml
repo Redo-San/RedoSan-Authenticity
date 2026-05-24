@@ -18,10 +18,10 @@ jobs:
       - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const exec = require('child_process').execSync;
+            const run = require('child_process').execSync;
             const base = context.payload.pull_request.base.sha || 'origin/beta-release';
 
-            const diff = exec('git diff ' + base + '...HEAD -- "*.js" "*.html" "*.css"', { encoding: 'utf8' });
+            const diff = run('git diff ' + base + '...HEAD -- "*.js" "*.html" "*.css"', { encoding: 'utf8' });
 
             const lines = [];
             const re = /^\+\s*(.*console\.log\s*\(.*)/gm;
