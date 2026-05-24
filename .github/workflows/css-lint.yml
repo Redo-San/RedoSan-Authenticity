@@ -16,7 +16,7 @@ jobs:
       - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const exec = require('child_process').execSync;
+            const run = require('child_process').execSync;
             const fs = require('fs');
 
             const rules = JSON.stringify({
@@ -37,14 +37,14 @@ jobs:
 
             fs.writeFileSync('/tmp/stylelintrc.json', rules);
 
-            const files = exec('find . -name "*.css" -not -path "*/node_modules/*"', { encoding: 'utf8' })
+            const files = run('find . -name "*.css" -not -path "*/node_modules/*"', { encoding: 'utf8' })
               .trim().split('\n').filter(Boolean);
 
             if (files.length === 0) return;
 
             const env = Object.assign({}, process.env);
             try {
-              exec('npx stylelint --config /tmp/stylelintrc.json --formatter json ' + files.join(' '), {
+              run('npx stylelint --config /tmp/stylelintrc.json --formatter json ' + files.join(' '), {
                 encoding: 'utf8', env
               });
             } catch (e) {

@@ -19,7 +19,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const exec = require('child_process').execSync;
+            const run = require('child_process').execSync;
             const base = context.payload.pull_request.base.sha || 'origin/beta-release';
 
             const BUDGET = {
@@ -29,7 +29,7 @@ jobs:
               '.json': 200 * 1024
             };
 
-            const diff = exec('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD', { encoding: 'utf8' });
+            const diff = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD', { encoding: 'utf8' });
             const files = diff.trim().split('\n').filter(Boolean);
             const over = [];
 
