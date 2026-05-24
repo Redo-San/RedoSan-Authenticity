@@ -1,0 +1,3 @@
+# Workflow files require owner review
+.github/workflows/ @Redo-San
+.github/CODEOWNERS @Redo-San
