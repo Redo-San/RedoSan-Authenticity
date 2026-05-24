@@ -243,7 +243,7 @@
   "card": {
     "certificate": {
       "title": "Pasaporte Digital",
-      "desc": "Generar certificado PDF/DOCX/EPUB firmado"
+      "desc": "Generar certificado firmado PDF/DOCX/EPUB"
     }
   },
   "wm": {
@@ -267,7 +267,7 @@
     "results_btn": "Descargar Resultados"
   },
   "md": {
-    "select_image": "Por favor, seleccione una imagen",
+    "select_image": "Por favor seleccione una imagen",
     "download_json": "Descargar JSON",
     "label_file": "Archivo",
     "label_size": "Tamaño",
@@ -278,7 +278,7 @@
     "label_error": "Error"
   },
   "ts": {
-    "select_both": "Por favor, seleccione ambos el archivo original y su prueba .ots",
+    "select_both": "Por favor seleccione ambos el archivo original y su prueba .ots",
     "created_success": "✓ .ots de marca de tiempo completo creado con atestación de blockchain!\n\nSHA-256: {hash}\nTamaño: {size} bytes\n\nEste archivo .ots incluye prueba de merkle del agregador de calendario de OpenTimestamps. Verifíquelo en cualquier momento utilizando la pestaña Verificar.",
     "created_warning": "SHA-256: {hash}\n\n⚠ Agregador de calendario no accesible. Creó una marca de tiempo .ots incompleta ({size} bytes, formato estándar).\n\nPara adjuntar una atestación de blockchain, ejecute uno de los siguientes comandos:\n\n{commands}",
     "verified_match": "✓ Verificado! El hash coincide con la prueba .ots.\n\nSHA-256 del archivo: {fileHash}\nSHA-256 de .ots:  {otsHash}\n\nEl archivo no ha cambiado desde que se creó la marca de tiempo.",
@@ -304,15 +304,15 @@
     "valid": "Válido",
     "trusted": "Confiado",
     "unknown": "Desconocido",
-    "select_image": "Por favor, seleccione una imagen",
-    "select_content_type": "Por favor, seleccione al menos un tipo de contenido",
+    "select_image": "Por favor seleccione una imagen",
+    "select_content_type": "Por favor seleccione al menos un tipo de contenido",
     "format_label": "Formato",
     "claim_generator": "Generador de reclamos",
     "instance_id": "ID de instancia",
     "claim_version": "Versión de reclamo",
     "untitled": "Sin título",
     "unnamed": "Sin nombre",
-    "unknown_gen": "Desconocido",
+    "unknown_gen": "Generador desconocido",
     "error_label": "Error:",
     "check_console": "Verifique la consola para obtener más detalles.",
     "success_title": "¡Éxito!",
@@ -330,18 +330,18 @@
   },
   "cert": {
     "heading": "Pasaporte Digital",
-    "desc": "Generar un Pasaporte Digital firmado PDF, DOCX o EPUB con su imagen, información de usuario y resultados de otras herramientas. Pegue sus resultados a continuación, luego haga clic en Generar.",
+    "desc": "Generar un pasaporte digital firmado PDF, DOCX o EPUB con su imagen, información de usuario y resultados de otras herramientas. Pegue sus resultados a continuación y haga clic en Generar.",
     "image_label": "Imagen",
     "user_info_label": "Su información",
     "social_label": "Enlaces sociales (opcional)",
     "music_label": "Enlaces de música (opcional)",
-    "results_label": "Resultados de herramientas (cargar desde otras secciones)",
+    "results_label": "Resultados de herramientas (subir desde otras secciones)",
     "wm_label": "Archivo de resultado de marca de agua",
     "pi_label": "Archivo de resultado de inyección de píxeles",
     "fp_label": "Archivo de huella dactilar (.json, .txt)",
     "ts_label": "Archivo de marca de tiempo (.ots)",
-    "download_label": "Certificado listo! Elija un formato:",
-    "reset_btn": "↻ Volver a empezar"
+    "download_label": "Certificado listo. Elija un formato:",
+    "reset_btn": "↻ Reiniciar"
   },
   "conv": {
     "heading": "Convertidor de archivos",
@@ -349,7 +349,7 @@
     "submit": "Convertir",
     "converting": "Converting...",
     "loading_decoder": "Cargando decodificador de audio...",
-    "success": "Conversión completa!",
+    "success": "Conversión completa",
     "error": "Error: ",
     "download": "Descargar",
     "detected": "Detectado: ",
@@ -357,7 +357,7 @@
     "format_label": "Convertir a:",
     "unknown_type": "Tipo de archivo no compatible. Por favor, seleccione un archivo de imagen, audio, video o documento.",
     "unsupported": "Tipo de archivo no compatible",
-    "audio_limited": "La conversión de audio está limitada en el navegador. Intente con el formato WAV.",
+    "audio_limited": "La conversión de audio está limitada en el navegador. Intente con formato WAV.",
     "video_limited": "La conversión de video está limitada en el navegador. Utilice software de edición de video dedicado."
   },
   "simple": {
@@ -389,9 +389,9 @@
     "type_other": "otro",
     "info_title": "Información del propietario",
     "info_name": "Nombre completo",
-    "info_name_ph": "por ejemplo, John Doe",
+    "info_name_ph": "por ejemplo, Juan Pérez",
     "info_email": "Correo electrónico",
-    "info_email_ph": "por ejemplo, john@example.com",
+    "info_email_ph": "por ejemplo, juan@example.com",
     "info_phone": "Teléfono",
     "info_phone_ph": "por ejemplo, 5xx xxx xxxx",
     "phone_digits_only": "Por favor, ingrese solo números",
@@ -422,6 +422,6 @@
     "corrupt_file": "Este archivo parece estar dañado o tiene un formato incorrecto.",
     "dangerous_content": "Este archivo contiene código incrustado potencialmente peligroso (scripts, controladores de eventos) y no está permitido.",
     "dangerous_document": "Este documento contiene características potencialmente peligrosas (JavaScript incrustado, acciones de autoejecución, lanzamientos externos, archivos incrustados) y no está permitido.",
-    "bad_structure": "Este archivo parece tener datos sospechosos agregados después de su contenido de imagen válido. Por favor, vuelva a exportar el archivo desde un editor de imágenes limpio."
+    "bad_structure": "Este archivo parece tener datos sospechosos agregados después de su contenido de imagen válido. Por favor, vuelva a exportar el archivo desde un editor de imagen limpio."
   }
 }
