@@ -1,0 +1,85 @@
+name: File Size Budget
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const exec = require('child_process').execSync;
+            const base = context.payload.pull_request.base.sha || 'origin/beta-release';
+
+            const BUDGET = {
+              '.js': 300 * 1024,
+              '.css': 100 * 1024,
+              '.html': 300 * 1024,
+              '.json': 200 * 1024
+            };
+
+            const diff = exec('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD', { encoding: 'utf8' });
+            const files = diff.trim().split('\n').filter(Boolean);
+            const over = [];
+
+            for (const file of files) {
+              const ext = file.slice(file.lastIndexOf('.'));
+              const limit = BUDGET[ext];
+              if (!limit) continue;
+              if (!fs.existsSync(file)) continue;
+              const stat = fs.statSync(file);
+              if (stat.size > limit) {
+                over.push({
+                  file,
+                  size: stat.size,
+                  limit,
+                  pct: Math.round(stat.size / limit * 100)
+                });
+              }
+            }
+
+            const num = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: num
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('File Size Budget')
+            );
+
+            if (over.length === 0) {
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  ...context.repo, comment_id: existing.id
+                });
+              }
+              return;
+            }
+
+            const rows = over.map(f =>
+              '| `' + f.file + '` | ' + (f.size / 1024).toFixed(1) + ' KB | ' + (f.limit / 1024).toFixed(0) + ' KB | ' + f.pct + '% |'
+            );
+
+            const body = '## File Size Budget\n\nThe following file(s) exceed the size budget:\n\n' +
+              '| File | Size | Limit | Used |\n|------|------|-------|------|\n' + rows.join('\n') +
+              '\n\nPlease consider optimizing or splitting these files.';
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: num, body
+              });
+            }

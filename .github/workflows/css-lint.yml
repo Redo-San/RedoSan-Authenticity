@@ -1,0 +1,83 @@
+name: CSS Lint
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const exec = require('child_process').execSync;
+            const fs = require('fs');
+
+            const rules = JSON.stringify({
+              rules: {
+                'color-no-invalid-hex': true,
+                'block-no-empty': true,
+                'no-duplicate-selectors': true,
+                'declaration-block-no-duplicate-custom-properties': true,
+                'declaration-block-no-duplicate-properties': [true, { ignore: ['consecutive-duplicates'] }],
+                'font-family-no-duplicate-names': true,
+                'no-descending-specificity': true,
+                'selector-pseudo-class-no-unknown': true,
+                'selector-pseudo-element-no-unknown': true,
+                'selector-type-no-unknown': true,
+                'unit-no-unknown': true
+              }
+            });
+
+            fs.writeFileSync('/tmp/stylelintrc.json', rules);
+
+            const files = exec('find . -name "*.css" -not -path "*/node_modules/*"', { encoding: 'utf8' })
+              .trim().split('\n').filter(Boolean);
+
+            if (files.length === 0) return;
+
+            const env = Object.assign({}, process.env);
+            try {
+              exec('npx stylelint --config /tmp/stylelintrc.json --formatter json ' + files.join(' '), {
+                encoding: 'utf8', env
+              });
+            } catch (e) {
+              const out = e.stdout || '';
+              const results = JSON.parse(out || '[]');
+              const warnings = [];
+              for (const r of results) {
+                for (const w of r.warnings || []) {
+                  warnings.push('- `' + r.source + ':' + w.line + '`  ' + w.text);
+                }
+              }
+
+              if (warnings.length === 0) return;
+
+              const num = context.issue.number;
+              const body = '## CSS Lint\n\nFound ' + warnings.length + ' issue(s):\n\n' +
+                warnings.slice(0, 30).join('\n') +
+                (warnings.length > 30 ? '\n\n... and ' + (warnings.length - 30) + ' more issues.' : '');
+
+              const { data: comments } = await github.rest.issues.listComments({
+                ...context.repo, issue_number: num
+              });
+              const existing = comments.find(c =>
+                c.user.type === 'Bot' && c.body.includes('CSS Lint')
+              );
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  ...context.repo, comment_id: existing.id, body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  ...context.repo, issue_number: num, body
+                });
+              }
+            }

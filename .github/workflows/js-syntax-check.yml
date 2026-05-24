@@ -1,0 +1,70 @@
+name: JS Syntax Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const exec = require('child_process').execSync;
+            const base = context.payload.pull_request.base.sha || 'origin/beta-release';
+
+            const diff = exec('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js"', { encoding: 'utf8' });
+            const files = diff.trim().split('\n').filter(Boolean);
+
+            if (files.length === 0) {
+              console.log('No JS files changed.');
+              return;
+            }
+
+            const errors = [];
+            for (const file of files) {
+              try {
+                exec('node --check "' + file + '"', { encoding: 'utf8' });
+              } catch (e) {
+                errors.push('- `' + file + '`: ' + (e.stderr || e.message).trim().split('\n')[0]);
+              }
+            }
+
+            const num = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: num
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('JS Syntax Check')
+            );
+
+            let body;
+            if (errors.length === 0) {
+              body = '## JS Syntax Check\n\n✅ All ' + files.length + ' changed JS file(s) passed syntax check.';
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  ...context.repo, comment_id: existing.id
+                });
+              }
+              return;
+            }
+
+            body = '## JS Syntax Check\n\nFound syntax error(s) in ' + errors.length + ' file(s):\n\n' + errors.join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: num, body
+              });
+            }

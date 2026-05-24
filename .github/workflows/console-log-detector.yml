@@ -1,0 +1,63 @@
+name: Console.log Detector
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const exec = require('child_process').execSync;
+            const base = context.payload.pull_request.base.sha || 'origin/beta-release';
+
+            const diff = exec('git diff ' + base + '...HEAD -- "*.js" "*.html" "*.css"', { encoding: 'utf8' });
+
+            const lines = [];
+            const re = /^\+\s*(.*console\.log\s*\(.*)/gm;
+            let match;
+            while ((match = re.exec(diff)) !== null) {
+              lines.push(match[1].trim());
+            }
+
+            const num = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: num
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Console.log Detector')
+            );
+
+            if (lines.length === 0) {
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  ...context.repo, comment_id: existing.id
+                });
+              }
+              return;
+            }
+
+            const body = '## Console.log Detector\n\nFound `console.log` statement(s) in this PR:\n\n```js\n' +
+              lines.slice(0, 10).join('\n') +
+              (lines.length > 10 ? '\n... and ' + (lines.length - 10) + ' more' : '') +
+              '\n```\n\nPlease remove them before merging.';
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: num, body
+              });
+            }

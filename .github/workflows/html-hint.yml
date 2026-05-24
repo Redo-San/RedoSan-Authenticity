@@ -1,0 +1,79 @@
+name: HTML Hint
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  hint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const exec = require('child_process').execSync;
+            const fs = require('fs');
+
+            const config = JSON.stringify({
+              'tagname-lowercase': true,
+              'attr-lowercase': true,
+              'attr-value-double-quotes': true,
+              'doctype-first': false,
+              'tag-pair': true,
+              'spec-char-escape': true,
+              'id-unique': true,
+              'src-not-empty': true,
+              'alt-require': true,
+              'title-require': true
+            });
+
+            fs.writeFileSync('/tmp/htmlhintrc.json', config);
+
+            const files = exec('find . -name "*.html" -not -path "*/node_modules/*"', { encoding: 'utf8' })
+              .trim().split('\n').filter(Boolean);
+
+            if (files.length === 0) return;
+
+            try {
+              exec('npx htmlhint --config /tmp/htmlhintrc.json --format json ' + files.join(' '), {
+                encoding: 'utf8'
+              });
+            } catch (e) {
+              const out = e.stdout || '';
+              const results = JSON.parse(out || '[]');
+              const warnings = [];
+              for (const r of results) {
+                for (const msg of r.messages || []) {
+                  warnings.push('- `' + r.file + ':' + msg.line + '`  ' + msg.message);
+                }
+              }
+
+              if (warnings.length === 0) return;
+
+              const num = context.issue.number;
+              const body = '## HTML Hint\n\nFound ' + warnings.length + ' issue(s):\n\n' +
+                warnings.slice(0, 30).join('\n') +
+                (warnings.length > 30 ? '\n\n... and ' + (warnings.length - 30) + ' more issues.' : '');
+
+              const { data: comments } = await github.rest.issues.listComments({
+                ...context.repo, issue_number: num
+              });
+              const existing = comments.find(c =>
+                c.user.type === 'Bot' && c.body.includes('HTML Hint')
+              );
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  ...context.repo, comment_id: existing.id, body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  ...context.repo, issue_number: num, body
+                });
+              }
+            }
