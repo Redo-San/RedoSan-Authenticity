@@ -6,20 +6,16 @@ on:
 
 permissions:
   contents: read
-  checks: write
   pull-requests: write
-  issues: write
 
 jobs:
-  codespy:
+  review:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
-      - name: CodeSpy Review
-        uses: khezen/codespy@v0.4.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_BASE: https://api.deepseek.com
-          DEFAULT_MODEL: openai/deepseek-chat
+      - name: Run AI Code Review
+        uses: Redo-San/RedoSan-Authenticity/.github/actions/ai-review@beta-release
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

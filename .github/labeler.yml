@@ -1,23 +1,23 @@
-# Auto-label PRs by changed paths
+# Auto-label PRs by changed paths (actions/labeler v5)
 converter:
-  - Converter/**/*
+  - any: ['Converter/**/*']
 c2pa:
-  - C2PA/**/*
+  - any: ['C2PA/**/*']
 certificate:
-  - Certificate/**/*
+  - any: ['Certificate/**/*']
 fingerprint:
-  - Fingerprint/**/*
+  - any: ['Fingerprint/**/*']
 metadata:
-  - Metadata/**/*
+  - any: ['Metadata/**/*']
 timestamp:
-  - Timestamp/**/*
+  - any: ['Timestamp/**/*']
 watermark:
-  - Watermark/**/*
+  - any: ['Watermark/**/*']
 cli:
-  - cli/**/*
+  - any: ['cli/**/*']
 i18n:
-  - Style_Web_Page/lang/**/*
+  - any: ['Style_Web_Page/lang/**/*']
 css:
-  - Style_Web_Page/*.css
+  - any: ['Style_Web_Page/*.css']
 ci:
-  - .github/workflows/**/*
+  - any: ['.github/workflows/**/*']
