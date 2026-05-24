@@ -22,7 +22,7 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const PATTERN = /(?:TODO|FIXME|HACK|NOTE)\s*:\s*(.+)/gi;
+            const PATTERN = /(?:TODO|FIXME|HACK|NOTE)\s*:\s*(.+)/g;
             const EXCLUDE_DIRS = ['node_modules', '.git', '.github'];
             const EXCLUDE_FILES = ['package-lock.json', '*.min.js'];
 
