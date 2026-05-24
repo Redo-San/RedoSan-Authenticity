@@ -1,0 +1,33 @@
+name: Pwn Request Scanner
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [beta-release]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Run pwn-hunter
+        uses: TreRB/gh-actions-pwn-hunter@ec87f5ded0d20a634b5380dfd8d4ea6da9e4a63d
+        with:
+          args: --sarif --output results.sarif
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@03e4368ac7daa2bd82b3e85262f3bf87ee112f57 # v3
+        with:
+          sarif_file: results.sarif
