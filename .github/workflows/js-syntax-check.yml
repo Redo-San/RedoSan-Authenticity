@@ -18,10 +18,10 @@ jobs:
       - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const exec = require('child_process').execSync;
+            const run = require('child_process').execSync;
             const base = context.payload.pull_request.base.sha || 'origin/beta-release';
 
-            const diff = exec('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js"', { encoding: 'utf8' });
+            const diff = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js"', { encoding: 'utf8' });
             const files = diff.trim().split('\n').filter(Boolean);
 
             if (files.length === 0) {
@@ -32,7 +32,7 @@ jobs:
             const errors = [];
             for (const file of files) {
               try {
-                exec('node --check "' + file + '"', { encoding: 'utf8' });
+                run('node --check "' + file + '"', { encoding: 'utf8' });
               } catch (e) {
                 errors.push('- `' + file + '`: ' + (e.stderr || e.message).trim().split('\n')[0]);
               }
