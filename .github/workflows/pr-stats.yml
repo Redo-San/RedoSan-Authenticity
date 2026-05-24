@@ -1,0 +1,65 @@
+name: PR Stats
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  stats:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              ...context.repo, pull_number: context.issue.number
+            });
+
+            const { data: commits } = await github.rest.pulls.listCommits({
+              ...context.repo, pull_number: context.issue.number
+            });
+
+            const { data: files } = await github.rest.pulls.listFiles({
+              ...context.repo, pull_number: context.issue.number
+            });
+
+            const stats = {
+              files: pr.data.changed_files,
+              additions: pr.data.additions,
+              deletions: pr.data.deletions,
+              commits: commits.length,
+              net: pr.data.additions - pr.data.deletions
+            };
+
+            const fileSummary = files.slice(0, 10).map(f =>
+              '- `' + f.filename + '` (+' + f.additions + '/-' + f.deletions + ')'
+            ).join('\n');
+
+            const msg = '## PR Statistics\n\n' +
+              '| Metric | Value |\n|--------|-------|\n' +
+              '| Files changed | ' + stats.files + ' |\n' +
+              '| Additions | ' + stats.additions + ' |\n' +
+              '| Deletions | ' + stats.deletions + ' |\n' +
+              '| Net change | ' + (stats.net >= 0 ? '+' : '') + stats.net + ' |\n' +
+              '| Commits | ' + stats.commits + ' |\n\n' +
+              (fileSummary ? '**Changed files:**\n' + fileSummary + '\n' : '');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body && c.body.includes('PR Statistics')
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body: msg
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: context.issue.number, body: msg
+              });
+            }

@@ -1,0 +1,41 @@
+name: Lock Closed Issues
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const daysOld = 30;
+            const cutoff = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000).toISOString();
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              ...context.repo,
+              state: 'closed',
+              sort: 'updated',
+              direction: 'asc',
+              per_page: 100
+            });
+
+            let locked = 0;
+            for (const issue of issues) {
+              if (issue.locked) continue;
+              if (issue.pull_request) continue;
+              if (new Date(issue.updated_at) > cutoff) continue;
+              await github.rest.issues.lock({
+                ...context.repo, issue_number: issue.number,
+                lock_reason: 'resolved'
+              }).catch(() => {});
+              locked++;
+            }
+
+            console.log('Locked ' + locked + ' closed issue(s) older than ' + daysOld + ' days.');

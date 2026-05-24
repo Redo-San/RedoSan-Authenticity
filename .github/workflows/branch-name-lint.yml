@@ -1,0 +1,54 @@
+name: Branch Name Lint
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  lint:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const num = context.issue.number;
+            const PREFIXES = ['feat/', 'feature/', 'fix/', 'bugfix/', 'chore/', 'docs/', 'refactor/', 'test/', 'ci/', 'release/'];
+
+            const allowed = PREFIXES.some(p => branch.startsWith(p));
+            if (allowed) {
+              const { data: comments } = await github.rest.issues.listComments({
+                ...context.repo, issue_number: num
+              });
+              for (const c of comments) {
+                if (c.user.type === 'Bot' && c.body.includes('Branch Name Lint')) {
+                  await github.rest.issues.deleteComment({
+                    ...context.repo, comment_id: c.id
+                  });
+                }
+              }
+              return;
+            }
+
+            const msg = '## WARNING: Branch Name Lint\n\nThe branch name `' + branch + '` does not follow the naming convention.\n\n**Expected:** `type/description`\n**Examples:** `feat/add-login`, `fix/typo`, `chore/update-deps`\n**Valid prefixes:** ' + PREFIXES.join(', ');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: num
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Branch Name Lint')
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body: msg
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: num, body: msg
+              });
+            }
