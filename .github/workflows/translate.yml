@@ -1,6 +1,6 @@
 name: AI i18n Translation
 
-on:
+on: 
   push:
     branches: ["beta-release"]
     paths: 
