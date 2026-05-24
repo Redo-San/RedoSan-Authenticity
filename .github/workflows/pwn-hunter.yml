@@ -27,8 +27,4 @@ jobs:
           go-version: '1.26'
       - name: Run pwn-hunter scan
         continue-on-error: true
-        run: go run github.com/TreRB/gh-actions-pwn-hunter@latest scan local . --sarif > results.sarif
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@03e4368ac7daa2bd82b3e85262f3bf87ee112f57 # v3
-        with:
-          sarif_file: results.sarif
+        run: go run github.com/TreRB/gh-actions-pwn-hunter@latest scan local .
