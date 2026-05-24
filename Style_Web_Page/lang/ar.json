@@ -4,7 +4,6 @@
   "nav.contact": "اتصل بنا",
   "nav.social": "التواصل",
   "nav.back": "رجوع",
-
   "sidebar.title": "القائمة",
   "sidebar.home": "الرئيسية",
   "sidebar.watermark": "العلامة المائية",
@@ -16,7 +15,6 @@
   "sidebar.certificate": "جواز السفر الرقمي",
   "sidebar.converter": "محول الملفات",
   "sidebar.switch_mode": "🔀 تبديل الوضع",
-
   "home.tagline": "أداة أصالة رقمية عبر الإنترنت — تعمل بالكامل في المتصفح. لا يتم رفع أي ملف إلى أي خادم.",
   "card.watermark.title": "علامة مائية",
   "card.watermark.desc": "9 خوارزميات: LSB و DCT و DWT والمزيد",
@@ -34,13 +32,11 @@
   "card.certificate.desc": "إنشاء شهادة PDF/DOCX/EPUB موقعة",
   "card.converter.title": "محول الملفات",
   "card.converter.desc": "تحويل الصور بين PNG و JPEG و WebP والمزيد",
-
   "mode.title": "اختر تجربتك",
   "mode.simplified_title": "✨ الوضع المبسط",
   "mode.simplified_desc": "معالج خطوة بخطوة — ارفع ملفًا واتبع الدليل",
   "mode.professional_title": "⚙️ الوضع المحترف",
   "mode.professional_desc": "الوصول الكامل لجميع الأدوات مع خيارات متقدمة",
-
   "wm.heading": "العلامة المائية الرقمية",
   "wm.embed_btn": "تضمين",
   "wm.extract_btn": "استخراج",
@@ -70,14 +66,12 @@
   "wm.detect_tip": "تلميح: اختر الخوارزمية أعلاه واضغط على استخراج العلامة المائية لتحميل البيانات.",
   "wm.detect_error": "خطأ في الكشف: {msg}",
   "wm.type_label": "النوع {type}",
-
   "wm.capacity_label": "السعة: ~{bytes} بايت{s}{suffix} ({w}×{h} صورة)",
   "wm.chrominance_suffix": " (تكرار الكرومينانس)",
   "wm.redundant_suffix": " (مكرر x3)",
   "wm.secret_status_max": "الحجم الأقصى السري: ~{bytes} بايت",
   "wm.secret_status_ok": "✓ الملف السري: {size} بايت — يناسب السعة",
   "wm.secret_status_exceed": "✗ الملف السري: {size} بايت — يتجاوز السعة بـ {excess} بايت",
-
   "pi.heading": "حقن البكسل المتقدم",
   "pi.embed_btn": "تضمين",
   "pi.extract_btn": "استخراج",
@@ -100,7 +94,6 @@
   "pi.extract_submit": "استخراج الرسالة",
   "pi.analyze_image_label": "الصورة للتحليل",
   "pi.analyze_submit": "تحليل الصورة",
-
   "algo.1": "LSB المكاني",
   "algo.2": "DCT الترددي",
   "algo.3": "العصبي SS",
@@ -110,7 +103,6 @@
   "algo.7": "الطب الشرعي",
   "algo.8": "الهش",
   "algo.9": "Imatag-style",
-
   "fp.heading": "بصمة الملف",
   "fp.file_label": "الملف",
   "fp.submit": "إنشاء البصمة",
@@ -123,7 +115,6 @@
   "fp.other_label": "أخرى",
   "fp.perceptual_label": "الإدراكية (بصمات الصور)",
   "fp.results_btn": "تحميل النتائج",
-
   "md.heading": "قارئ البيانات الوصفية",
   "md.file_label": "ملف الصورة",
   "md.desc": "يقرأ EXIF والأبعاد والتنسيق ووضع الألوان. جميع المعالجة بلغة JavaScript نقية.",
@@ -137,7 +128,6 @@
   "md.label_format": "التنسيق",
   "md.label_exif": "EXIF",
   "md.label_error": "خطأ",
-
   "ts.heading": "OpenTimestamps (.ots)",
   "ts.ots_create_btn": "إنشاء .ots",
   "ts.ots_verify_btn": "التحقق .ots",
@@ -160,7 +150,6 @@
   "ts.option1_step3": "3. انقر على \"Stamp\" للحصول على .ots كامل مع إثبات blockchain",
   "ts.option2_title": "الخيار 2 — واجهة الأوامر الرسمية:",
   "ts.option3_title": "الخيار 3 — PowerShell (إرسال التجزئة الخام، 32 بايت فقط):",
-
   "c2pa.heading": "C2PA مصدر المحتوى",
   "c2pa.read_btn": "قراءة",
   "c2pa.write_btn": "توقيع",
@@ -182,7 +171,6 @@
   "c2pa.ingredient_label": "المكونات المصدر (اختياري)",
   "c2pa.write_submit": "توقيع بـ C2PA",
   "c2pa.write_note": "يستخدم شهادة C2PA اختبارية. هذا مناسب لأغراض التطوير والاختبار.",
-
   "cert.heading": "جواز السفر الرقمي",
   "cert.desc": "قم بإنشاء جواز سفر رقمي بصيغة PDF أو DOCX أو EPUB مع صورتك ومعلوماتك ونتائج الأدوات الأخرى. الصق نتائجك أدناه، ثم انقر على إنشاء.",
   "cert.image_label": "الصورة",
@@ -236,7 +224,6 @@
   "c2pa.no_manifests": "لم يتم العثور على بيانات",
   "c2pa.verified": "تم التحقق",
   "c2pa.view_details": "عرض التفاصيل الكاملة",
-
   "conv.heading": "محول الملفات",
   "conv.file_label": "اختر ملفًا",
   "conv.submit": "تحويل",
@@ -252,7 +239,6 @@
   "conv.unsupported": "نوع ملف غير مدعوم",
   "conv.audio_limited": "تحويل الصوت محدود في المتصفح. جرب تنسيق WAV.",
   "conv.video_limited": "تحويل الفيديو محدود في المتصفح. استخدم برنامج تحرير فيديو مخصص.",
-
   "simple.loading": "جارٍ التحميل...",
   "simple.prev_btn": "← السابق",
   "simple.next_btn": "التالي →",
@@ -335,7 +321,6 @@
   "simple.type_video": "فيديو",
   "simple.type_document": "مستند",
   "simple.type_other": "آخر",
-
   "simple.info_title": "معلومات المالك",
   "simple.info_name": "الاسم الكامل",
   "simple.info_name_ph": "مثال: أحمد محمد",
@@ -367,33 +352,24 @@
   "simple.c2pa_applemusic": "رابط Apple Music",
   "simple.c2pa_soundcloud": "رابط SoundCloud",
   "simple.c2pa_bandcamp": "رابط Bandcamp",
-
   "page.about": "<h2>عن RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> هي أداة أصالة رقمية مفتوحة المصدر تعمل بالكامل في متصفحك. لا يتم رفع أي ملفات إلى أي خادم — جميع المعالجة تحدث على جهازك.</p><p>نوفر مجموعة شاملة من الأدوات للطب الشرعي الرقمي والتحقق من الوسائط:</p><ul><li><strong>العلامة المائية</strong> — 9 خوارزميات تشمل LSB و DCT و DWT والعلامة المائية العصبية والطب الشرعي</li><li><strong>البصمة</strong> — التجزئة التشفيرية (SHA-1/2/3 و BLAKE2/3 و MD5 و RIPEMD-160 و Whirlpool) وبصمات الصور الإدراكية</li><li><strong>البيانات الوصفية</strong> — قراءة EXIF والأبعاد والتنسيق ووضع الألوان من الصور</li><li><strong>الطابع الزمني</strong> — تجزئة SHA-256 مع دعم التحقق من OpenTimestamps</li></ul><p>بُنيت مع الخصوصية كمبدأ أساسي. ملفاتك لا تغادر جهازك أبدًا.</p>",
-
   "page.privacy": "<h2>سياسة الخصوصية</h2><p><strong>بياناتك تبقى على جهازك.</strong> RedoSan Authenticity هو تطبيق يعمل بالكامل على جهاز العميل. جميع المعالجة تتم في متصفحك باستخدام JavaScript. لا يتم إرسال أي ملفات أو بيانات وصفية أو أي بيانات أخرى إلى أي خادم.</p><h3>ما نجمعه</h3><p>لا شيء. لا نقوم بجمع أو تخزين أو إرسال أي بيانات شخصية أو ملفات أو تحليلات. يعمل التطبيق بالكامل على GitHub Pages ولا يوجد خادم خلفي.</p><h3>مكتبات الطرف الثالث</h3><p>نقوم بتحميل مكتبات JavaScript من شبكات توصيل المحتوى (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> و <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) لوظائف تصدير PDF و DOCX. قد يكون لشبكات CDN هذه سجلاتها وتحليلاتها الخاصة. لا تتم مشاركة أي بيانات من ملفاتك مع هذه الخدمات.</p><h3>التغييرات</h3><p>قد يتم تحديث هذه السياسة من وقت لآخر. الاستمرار في استخدام الأداة يشكل قبولاً للسياسة الحالية.</p>",
-
   "page.contact": "<h2>اتصل بنا</h2><p>هل لديك أسئلة أو اقتراحات أو وجدت خطأ؟ يسعدنا سماع رأيك.</p>",
-
   "page.social": "<h2>تابعنا</h2><p>ابق على اتصال وتابع RedoSan على وسائل التواصل الاجتماعي.</p>",
-
   "contact.github_issues": "مشكلات GitHub",
   "contact.github_issues_desc": "أبلغ عن الأخطاء واطلب الميزات",
   "contact.github_profile": "ملف GitHub",
   "contact.github_profile_desc": "تابع المطور على GitHub",
-
   "social.github": "GitHub",
   "social.github_handle": "@Redo-San",
   "social.repo": "المستودع",
   "social.repo_handle": "RedoSan-Authenticity",
-
   "footer.copyright": "يعمل بالكامل في المتصفح • لا شيء يغادر جهازك",
-
   "search.placeholder": "ابحث في الميزات...",
   "search.heading": "نتائج البحث",
   "search.no_results": "لم يتم العثور على نتائج لـ \"{query}\".",
   "search.results_for": "نتائج لـ \"{query}\":",
   "search.hint": "جرب البحث عن: علامة مائية، بصمة، بيانات وصفية، طابع زمني",
-
   "shared.download": "تحميل",
   "shared.drop_file": "أسقط الملف هنا أو <strong>تصفح</strong>",
   "shared.select_file": "الرجاء تحديد ملف",
@@ -401,10 +377,8 @@
   "shared.error_prefix": "خطأ: ",
   "shared.lang_title": "الحالية: {lang}\nانقر لتغيير اللغة",
   "shared.failed_load_image": "فشل تحميل الصورة",
-
   "dl.title": "تحميل البصمة",
   "dl.subtitle": "اختر الصيغة:",
-
   "lang.switch": "English",
   "lang.current": "اللغة الحالية",
   "lang.select": "اختر اللغة",
@@ -417,5 +391,34 @@
   "lang.name.es": "Español",
   "lang.name.zh": "中文",
   "lang.name.ja": "اليابانية",
-  "lang.name.ko": "الكورية"
+  "lang.name.ko": "الكورية",
+  "sidebar": {
+    "usage_warning": "⚠️ الاستخدام القانوني فقط. المحتوى غير القانوني / المضر ممنوع. جميع المعالجات هي 100% محلية."
+  },
+  "pi": {
+    "secret_hint": "ملف الوثيقة لتضمين رسالة سرية"
+  },
+  "simple": {
+    "upload_size_note": "💡 لتركيب العلامة المائية ، استخدم صورة غلاف كبيرة (على سبيل المثال 1920×1080) حتى يكون هناك سعة كافية لتضمين صورة سرية.",
+    "usage_warning": "⚠️ هذا الأداة للاستخدام القانوني فقط. تحميل المحتوى غير القانوني أو المضر ممنوع بشكل صارم. جميع المعالجات محلية — لا يتم تخزين أو إرسال أي شيء إلى الخادم.",
+    "pi_msg_ph": "أدخل رسالتك السرية (مطلوبة)",
+    "final_image_title": "✅ الصورة النهائية",
+    "final_image_desc": "مائية + رسالة سرية محقونة — تحميل واحد.",
+    "final_dl_btn": "📥 تحميل الصورة النهائية",
+    "pi_dl_btn": "📥 تحميل الصورة المحقونة",
+    "info_required": "الرجاء ملء جميع الحقول المطلوبة: الاسم ، البريد الإلكتروني ، الهاتف ، الموقع.",
+    "cert_title": "جواز سفر رقمي",
+    "cert_desc": "تحميل وثيقة موقعة تحتوي على جميع النتائج و معاينة الصورة و رمز التحقق QR."
+  },
+  "shared": {
+    "dangerous_file": "نوع الملف هذا غير مسموح به لأسباب أمنية.",
+    "wrong_type": "الرجاء اختيار نوع ملف صالح لهذا الأداة.",
+    "corrupt_file": "يبدو أن هذا الملف تالف أو له تنسيق غير صحيح.",
+    "dangerous_content": "يحتوي هذا الملف على رمز تضمين محتمل الخطر (السكريبتات ، معالجات الأحداث) ولا يسمح به.",
+    "dangerous_document": "يحتوي هذا المستند على ميزات محتملة الخطر (جافا سكريبت مدمجة ، إجراءات التنفيذ التلقائي ، عمليات الإطلاق الخارجية ، الملفات المضمنة) ولا يسمح به.",
+    "bad_structure": "يبدو أن هذا الملف يحتوي على بيانات مشبوهة مضافة بعد محتواه الصورة الصالح. الرجاء إعادة تصدير الملف من محرر صورة نظيف."
+  },
+  "test": {
+    "translate": "هذا هو مفتاح ترجمة اختبار"
+  }
 }
