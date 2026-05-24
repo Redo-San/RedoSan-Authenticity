@@ -1,0 +1,32 @@
+name: AI i18n Translation
+
+on:
+  push:
+    branches: ["beta-release"]
+    paths:
+      - "Style_Web_Page/lang/en.json"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+      - name: Translate missing keys
+        run: node scripts/translate-i18n.js --apply
+        env:
+          # Pick ONE API key. Cheapest: Groq (free tier, ~$0.002/run)
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          MODEL: groq/llama-3.3-70b-versatile
+          # Alternative: GOOGLE_API_KEY + MODEL=gemini/gemini-2.0-flash
+          # Alternative: OPENAI_API_KEY + MODEL=openai/gpt-4o-mini
+      - name: Commit translations
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Style_Web_Page/lang/
+          if git diff --cached --quiet; then echo "No changes"; else git commit -m "auto: translate new i18n keys" && git push; fi
