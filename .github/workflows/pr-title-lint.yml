@@ -6,75 +6,49 @@ on:
 
 permissions:
   pull-requests: write
+  issues: write
+  contents: read
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const TYPES = ['feat', 'fix', 'chore', 'docs', 'style', 'refactor', 'perf', 'test', 'ci', 'build', 'revert'];
-            const PATTERN = new RegExp(`^(${TYPES.join('|')})(\\(\\w+\\))?!?:\\s.+`);
-            const URL = 'https://www.conventionalcommits.org/';
-
+            const TYPES = ['feat','fix','chore','docs','style','refactor','perf','test','ci','build','revert'];
+            const RE = new RegExp('^('+TYPES.join('|')+')(\\(\\w+\\))?!?:\\s.+');
             const title = context.payload.pull_request.title;
             const num = context.issue.number;
 
-            if (PATTERN.test(title)) {
+            if (RE.test(title)) {
               const { data: comments } = await github.rest.issues.listComments({
-                ...context.repo,
-                issue_number: num
+                ...context.repo, issue_number: num
               });
-              const botComments = comments.filter(c =>
-                c.user.type === 'Bot' && c.body.includes('PR Title Lint')
-              );
-              for (const c of botComments) {
-                await github.rest.issues.deleteComment({
-                  ...context.repo,
-                  comment_id: c.id
-                });
+              for (const c of comments) {
+                if (c.user.type === 'Bot' && c.body.includes('PR Title Lint')) {
+                  await github.rest.issues.deleteComment({
+                    ...context.repo, comment_id: c.id
+                  });
+                }
               }
               return;
             }
 
-            const body = `## ⚠️ PR Title Lint
-
-The PR title does not follow [Conventional Commits](${URL}).
-
-**Expected format:** \`type(scope): description\`
-
-**Example:** \`fix(auth): resolve login timeout\`
-
-**Valid types:** ${TYPES.join(', ')}
-
-**Current title:** \`${title}\``;
+            const body = '## WARNING: PR Title Lint\n\nThe PR title does not follow Conventional Commits.\n\n**Expected:** `type(scope): description`\n**Example:** `fix(auth): resolve login timeout`\n**Valid types:** '+TYPES.join(', ')+'\n\n**Current title:** `'+title+'`';
 
             const { data: comments } = await github.rest.issues.listComments({
-              ...context.repo,
-              issue_number: num
+              ...context.repo, issue_number: num
             });
-
             const existing = comments.find(c =>
               c.user.type === 'Bot' && c.body.includes('PR Title Lint')
             );
-
             if (existing) {
               await github.rest.issues.updateComment({
-                ...context.repo,
-                comment_id: existing.id,
-                body
+                ...context.repo, comment_id: existing.id, body
               });
             } else {
               await github.rest.issues.createComment({
-                ...context.repo,
-                issue_number: num,
-                body
+                ...context.repo, issue_number: num, body
               });
             }
-
-            await github.rest.issues.addLabels({
-              ...context.repo,
-              issue_number: num,
-              labels: ['title-needs-fix']
-            }).catch(() => {});
