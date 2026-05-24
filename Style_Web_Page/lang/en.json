@@ -254,6 +254,7 @@
   "conv.unsupported": "Unsupported file type",
   "conv.audio_limited": "Audio conversion is limited in browser. Try WAV format.",
   "conv.video_limited": "Video conversion is limited in browser. Use dedicated video editing software.",
+  "conv.test_key": "This is a test key for cross-ref checker.",
 
   "simple.loading": "Loading...",
   "simple.prev_btn": "← Previous",
