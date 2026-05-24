@@ -1,0 +1,116 @@
+name: Cross-Reference Checker
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  pull-requests: write
+
+jobs:
+  check:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+      - name: Run cross-reference checks
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        with:
+          script: |
+            const execSync = require('child_process').execSync;
+            const fs = require('fs');
+
+            const base = context.payload.pull_request.base.sha;
+            const head = context.payload.pull_request.head.sha;
+            const changed = execSync(`git diff --name-only ${base}..${head}`, {encoding:'utf8'}).trim().split('\n').filter(Boolean);
+
+            const issues = [];
+
+            // ── Helper: read file safely ──
+            function read(p) {
+              try { return fs.readFileSync(p, 'utf8'); } catch { return ''; }
+            }
+
+            // ── Helper: post warning comment ──
+            function warn(msg) {
+              issues.push(msg);
+              console.log('WARN: ' + msg);
+            }
+
+            // ── 1. New JS file → whitelist check ──
+            const newJs = changed.filter(f => /^[A-Z][a-zA-Z]*\/.+\.js$/.test(f) && !f.includes('ffmpeg') && !f.includes('node_modules'));
+            const swContent = read('sw.js');
+            const notFoundContent = read('404.html');
+            for (const js of newJs) {
+              const entry = '/RedoSan-Authenticity/' + js.replace(/\\/g, '/');
+              if (!entry.includes('ffmpeg')) {
+                if (!swContent.includes(entry)) warn(`CrossRef: \`${js}\` missing from \`sw.js\` JS_WHITELIST`);
+                if (!notFoundContent.includes(entry)) warn(`CrossRef: \`${js}\` missing from \`404.html\` JS_WHITELIST`);
+              }
+              // converter-specific extra checks
+              if (js === 'Converter/converter.js') {
+                if (!read('Style_Web_Page/navigation.js').includes("'converter'")) warn(`CrossRef: \`converter\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
+                if (!read('index.html').includes('id="page-converter"')) warn(`CrossRef: \`<section id="page-converter">\` missing from \`index.html\``);
+                if (!read('index.html').includes('data-page="converter"')) warn(`CrossRef: \`data-page="converter"\` sidebar/card link missing from \`index.html\``);
+              }
+            }
+
+            // ── 2. en.json → lang key sync ──
+            if (changed.some(f => f === 'Style_Web_Page/lang/en.json')) {
+              const en = JSON.parse(read('Style_Web_Page/lang/en.json'));
+              const enKeys = Object.keys(en).sort();
+              const langDir = 'Style_Web_Page/lang';
+              const langFiles = fs.readdirSync(langDir).filter(f => f.endsWith('.json') && f !== 'en.json');
+              for (const lf of langFiles) {
+                const other = JSON.parse(read(langDir + '/' + lf));
+                const otherKeys = Object.keys(other).sort();
+                const missing = enKeys.filter(k => !otherKeys.includes(k));
+                if (missing.length > 0) warn(`CrossRef: \`${lf}\` missing keys: ${missing.slice(0,10).join(', ')}${missing.length>10?` (+${missing.length-10} more)`:''}`);
+              }
+            }
+
+            // ── 3. Workflow FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 check ──
+            const wfDir = '.github/workflows';
+            const newWfs = changed.filter(f => f.startsWith(wfDir) && f.endsWith('.yml'));
+            for (const wf of newWfs) {
+              const content = read(wf);
+              if (!content.includes('FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true')) {
+                warn(`CrossRef: \`${wf}\` missing \`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true\``);
+              }
+            }
+
+            // ── 4. New page section → sidebar + card + navigation ──
+            if (changed.some(f => f === 'index.html')) {
+              const html = read('index.html');
+              const sections = [...html.matchAll(/id="page-([a-z-]+)"/g)].map(m => m[1]);
+              const nav = read('Style_Web_Page/navigation.js');
+              for (const s of sections) {
+                if (['home','about','privacy','contact','social','search'].includes(s)) continue;
+                if (!html.includes(`data-page="${s}"`)) warn(`CrossRef: \`data-page="${s}"\` missing from sidebar/card in \`index.html\``);
+                if (!nav.includes(`'${s}'`)) warn(`CrossRef: \`${s}\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
+              }
+            }
+
+            // ── Report ──
+            if (issues.length === 0) {
+              console.log('✅ All cross-references OK');
+              return;
+            }
+
+            const body = '## Cross-Reference Checker\n\nThe following cross-references may need attention:\n\n' +
+              issues.map(i => '- ' + i).join('\n') +
+              '\n\n_If these are false positives, resolve manually._';
+
+            const num = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({...context.repo, issue_number: num});
+            for (const c of comments) {
+              if (c.user.type === 'Bot' && c.body.includes('Cross-Reference Checker')) {
+                await github.rest.issues.deleteComment({...context.repo, comment_id: c.id});
+              }
+            }
+            await github.rest.issues.createComment({...context.repo, issue_number: num, body});
