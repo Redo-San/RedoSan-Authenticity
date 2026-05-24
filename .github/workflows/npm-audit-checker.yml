@@ -1,0 +1,85 @@
+name: npm audit Checker
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Run npm audit
+        id: audit
+        run: |
+          npm audit --json 2>&1 || true
+        continue-on-error: true
+      - name: Report findings
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        with:
+          script: |
+            const fs = require('fs');
+            const run = require('child_process').execSync;
+            const base = context.payload.pull_request.base.sha;
+
+            const changed = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "package.json" "package-lock.json"', { encoding: 'utf8' })
+              .trim().split('\n').filter(Boolean);
+
+            if (changed.length === 0) {
+              console.log('No package files changed. Skipping audit report.');
+              return;
+            }
+
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync('/tmp/audit.json', 'utf8'));
+            } catch {
+              const auditOut = run('npm audit --json 2>&1; exit 0', { encoding: 'utf8' });
+              try { report = JSON.parse(auditOut); } catch { report = { metadata: { vulnerabilities: {} } }; }
+            }
+
+            const vulns = report?.metadata?.vulnerabilities || {};
+            const total = Object.values(vulns).reduce((a, b) => a + b, 0);
+
+            const num = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ ...context.repo, issue_number: num });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes('npm audit Checker'));
+
+            if (total === 0 && (!report?.vulnerabilities || Object.keys(report.vulnerabilities).length === 0)) {
+              if (existing) await github.rest.issues.deleteComment({ ...context.repo, comment_id: existing.id });
+              console.log('✅ No vulnerabilities found.');
+              return;
+            }
+
+            const table = '| Severity | Count |\n|----------|------|\n' +
+              ['critical', 'high', 'moderate', 'low'].map(s => `| ${s} | ${vulns[s] || 0} |`).join('\n') +
+              '\n\n**Total:** ' + total + ' vulnerabilities';
+
+            let top = '';
+            if (report?.vulnerabilities) {
+              top = '\n\n**Top findings (up to 5):**\n\n' +
+                Object.entries(report.vulnerabilities).slice(0, 5).map(([pkg, v]) =>
+                  '- `' + pkg + '`: ' + (v.severity || 'unknown') + ' — ' + (v.via?.map?.(x => typeof x === 'string' ? x : x.source).filter(Boolean).join(', ') || '')
+                ).join('\n');
+            }
+
+            const body = '## 🛡️ npm audit Checker\n\n' + table + top +
+              '\n\n_Run `npm audit fix` locally to address._';
+
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: num, body });
+            }

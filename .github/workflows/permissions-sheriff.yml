@@ -1,0 +1,77 @@
+name: Permissions Sheriff
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        with:
+          script: |
+            const run = require('child_process').execSync;
+            const fs = require('fs');
+            const base = context.payload.pull_request.base.sha;
+
+            const changed = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- ".github/workflows/*.yml"', { encoding: 'utf8' })
+              .trim().split('\n').filter(Boolean);
+
+            const riskyPerms = ['contents: write', 'actions: write', 'security-events: write', 'deployments: write',
+              'packages: write', 'id-token: write'];
+
+            const warnings = [];
+
+            for (const file of changed) {
+              const content = fs.readFileSync(file, 'utf8');
+              const permMatch = content.match(/permissions:\s*\n([\s\S]*?)(?=\n\w|$)/);
+              if (!permMatch) {
+                warnings.push({ file, msg: 'No `permissions:` block found — defaults to write-all (unsafe)' });
+                continue;
+              }
+              const perms = permMatch[1].toLowerCase();
+              for (const rp of riskyPerms) {
+                if (perms.includes(rp)) {
+                  const lines = content.split('\n');
+                  const lineIdx = lines.findIndex(l => l.toLowerCase().includes(rp));
+                  warnings.push({ file, msg: 'Contains `' + rp + '` at line ~' + (lineIdx + 1) });
+                }
+              }
+            }
+
+            if (changed.length === 0) {
+              console.log('No workflow files changed.');
+              return;
+            }
+
+            const num = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ ...context.repo, issue_number: num });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes('Permissions Sheriff'));
+
+            if (warnings.length === 0) {
+              if (existing) await github.rest.issues.deleteComment({ ...context.repo, comment_id: existing.id });
+              console.log('✅ All workflow permissions follow least-privilege.');
+              return;
+            }
+
+            let body = '## 👮 Permissions Sheriff\n\nRisk permissions found in changed workflow files:\n\n' +
+              warnings.map(w => '- `' + w.file + '`: ' + w.msg).join('\n') +
+              '\n\n**Recommendation:** Use granular `permissions:` with only what each job needs. ' +
+              'Reference: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token';
+
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: num, body });
+            }
