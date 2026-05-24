@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-This project is currently in **beta**. Only the latest release receives security updates.
+Only the latest release receives security updates.
 
 | Version | Supported |
 |---------|-----------|
@@ -11,41 +11,43 @@ This project is currently in **beta**. Only the latest release receives security
 
 ## Reporting a Vulnerability
 
-We take security vulnerabilities seriously. If you discover a security issue, please report it privately.
-
 **Do not open a public GitHub issue for security vulnerabilities.**
 
 ### How to Report
 
-1. **Email**: [redosan@artlover.com](mailto:redosan@artlover.com)
-2. **GitHub Private Vulnerability Reporting**: Visit the repository's Security tab and use the "Report a vulnerability" feature.
+1. **GitHub Private Vulnerability Reporting**: Visit the repository's **Security** tab → "Report a vulnerability"
+2. **Email**: [redosan@artlover.com](mailto:redosan@artlover.com)
 
-Please include the following details:
-
-- Description of the vulnerability
-- Steps to reproduce
-- Affected version(s)
-- Potential impact
-- Any suggested fix (if available)
+Include: description, steps to reproduce, affected version, impact, and suggested fix (if any).
 
 ### Response Timeline
 
-- **Acknowledgement**: Within 48 hours of receiving your report
+- **Acknowledgement**: Within 48 hours
 - **Initial assessment**: Within 5 business days
-- **Fix timeline**: Depends on severity, typically 7-30 days for critical issues
+- **Fix timeline**: 7-30 days depending on severity
 
 ## Security Practices
 
 ### For Users
 
-- Always use the latest version by visiting the official GitHub Pages site
-- Verify you are on the correct URL: `https://redo-san.github.io/RedoSan-Authenticity/`
-- No files are uploaded — all processing is client-side JavaScript
-- Review the source code in the repository if you have concerns
+- Verify the URL: `https://redo-san.github.io/RedoSan-Authenticity/`
+- All processing is **client-side** — no files leave your device
+- Review the source code if you have concerns
+
+### Automated Checks (CI)
+
+This repository runs the following security bots on every pull request:
+
+- **Secret Scanner**: Detects hardcoded API keys, tokens, and private keys in diffs
+- **Permissions Sheriff**: Audits GitHub Actions workflow permissions for least-privilege
+- **npm audit Checker**: Scans dependencies for known vulnerabilities
+- **Cross-Reference Checker**: Validates file references (whitelists, navigation, i18n keys)
+- **CodeQL**: Semantic code analysis for security vulnerabilities
+- **Dependency Graph**: Tracks dependency supply chain
 
 ### For Developers
 
-- Avoid hardcoding credentials or tokens in source code
-- Never commit sensitive files (.env, keys, certificates) to the repository
-- Validate user-supplied files before processing
-- Keep JavaScript dependencies up to date
+- Never commit secrets, tokens, or certificates to the repository
+- Use repository secrets and variables for sensitive values
+- Validate all user-supplied files before processing
+- Keep dependencies up to date (`npm audit fix`)
