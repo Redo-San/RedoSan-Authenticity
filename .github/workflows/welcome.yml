@@ -38,7 +38,7 @@ jobs:
             const { data: prs } = await github.rest.pulls.list({
               ...context.repo,
               state: 'all',
-              head: `user:${author}`,
+              creator: author,
               per_page: 1
             });
 
