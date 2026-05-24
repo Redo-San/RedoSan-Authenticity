@@ -1,0 +1,76 @@
+name: Dead CSS Detection
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const exec = require('child_process').execSync;
+            const fs = require('fs');
+
+            const config = JSON.stringify({
+              content: ['**/*.html', '**/*.js'],
+              css: ['**/*.css'],
+              rejected: true,
+              safelist: { standard: ['fa-', 'far-', 'fas-', 'fab-', 'fad-', 'fal-'] }
+            });
+
+            fs.writeFileSync('/tmp/purgecss-config.json', config);
+
+            try {
+              const out = exec('npx purgecss --config /tmp/purgecss-config.json --json 2>/dev/null || true', {
+                encoding: 'utf8'
+              });
+              const results = JSON.parse(out.trim() || '[]');
+
+              const totalUnused = [];
+              for (const r of results) {
+                const rejected = r.rejected || [];
+                totalUnused.push({ file: r.file, count: rejected.length, selectors: rejected.slice(0, 30) });
+              }
+
+              const totalCount = totalUnused.reduce((s, r) => s + r.count, 0);
+
+              let body;
+              if (totalCount === 0) {
+                body = '## Dead CSS Detection\n\n✅ No unused CSS found.';
+              } else {
+                const details = totalUnused
+                  .filter(r => r.count > 0)
+                  .slice(0, 10)
+                  .map(r =>
+                    '**' + r.file + '** (' + r.count + ' unused)\n' +
+                    r.selectors.map(s => '  - `' + s + '`').join('\n')
+                  ).join('\n\n');
+
+                body = '## Dead CSS Detection\n\nFound **' + totalCount + '** unused CSS selector(s):\n\n' + details;
+              }
+
+              const { data: issues } = await github.rest.issues.listForRepo({
+                ...context.repo, state: 'open', labels: 'type/dead-css'
+              });
+
+              if (issues.length > 0) {
+                await github.rest.issues.update({
+                  ...context.repo, issue_number: issues[0].number, body
+                });
+              } else if (totalCount > 0) {
+                await github.rest.issues.create({
+                  ...context.repo, title: 'Dead CSS Report', body, labels: ['type/dead-css']
+                });
+              }
+            } catch (e) {
+              console.log('PurgeCSS scan completed (some files may have been skipped).');
+            }

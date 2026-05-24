@@ -1,0 +1,63 @@
+name: Prettier Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const exec = require('child_process').execSync;
+            const base = context.payload.pull_request.base.sha || 'origin/beta-release';
+
+            const diff = exec('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js" "*.css" "*.html" "*.json"', { encoding: 'utf8' });
+            const files = diff.trim().split('\n').filter(Boolean);
+
+            if (files.length === 0) {
+              console.log('No files to check.');
+              return;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Prettier Check')
+            );
+
+            try {
+              exec('npx prettier --check ' + files.join(' '), { encoding: 'utf8', stdio: 'pipe' });
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  ...context.repo, comment_id: existing.id
+                });
+              }
+            } catch (e) {
+              const unformatted = e.stdout || '';
+              const list = unformatted.trim().split('\n').filter(Boolean).slice(0, 20);
+
+              const body = '## Prettier Check\n\nFound ' + list.length + ' unformatted file(s):\n\n' +
+                list.map(f => '- `' + f.replace('[warn] ', '').replace(' (code)', '').trim() + '`').join('\n') +
+                '\n\nRun `npx prettier --write ' + files.join(' ') + '` to fix.';
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  ...context.repo, comment_id: existing.id, body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  ...context.repo, issue_number: context.issue.number, body
+                });
+              }
+            }
