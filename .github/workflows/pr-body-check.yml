@@ -1,0 +1,44 @@
+name: PR Body Check
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  check:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const body = (context.payload.pull_request.body || '').trim();
+            const num = context.issue.number;
+
+            if (body.length > 20) {
+              const { data: comments } = await github.rest.issues.listComments({
+                ...context.repo, issue_number: num
+              });
+              for (const c of comments) {
+                if (c.user.type === 'Bot' && c.body.includes('PR Body Check')) {
+                  await github.rest.issues.deleteComment({
+                    ...context.repo, comment_id: c.id
+                  });
+                }
+              }
+              return;
+            }
+
+            const msg = '## WARNING: PR Body Check\n\nThe PR description is empty or too short. Please add a meaningful description explaining what this PR does and why.\n\n**Tip:** Include the problem, solution, and any testing notes.';
+
+            await github.rest.issues.createComment({
+              ...context.repo, issue_number: num, body: msg
+            });
+
+            await github.rest.issues.addLabels({
+              ...context.repo, issue_number: num, labels: ['body-needs-fix']
+            }).catch(() => {});

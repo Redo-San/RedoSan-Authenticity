@@ -1,0 +1,54 @@
+name: Issue Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  label:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = (context.payload.issue.title || '').toLowerCase();
+            const body = (context.payload.issue.body || '').toLowerCase();
+            const text = title + ' ' + body;
+            const num = context.issue.number;
+            const labelsToAdd = [];
+
+            const bugWords = ['bug', 'fix', 'error', 'crash', 'broken', 'issue', 'wrong', 'incorrect', 'fails'];
+            const enhancementWords = ['feature', 'request', 'enhancement', 'suggestion', 'improve', 'new', 'add', 'want'];
+            const questionWords = ['question', 'help', 'how to', 'usage', 'what is', 'confused'];
+            const docsWords = ['docs', 'documentation', 'readme', 'typo', 'spelling', 'doc'];
+
+            const config = [
+              { words: bugWords, label: 'type/bug', existing: ['bug'] },
+              { words: enhancementWords, label: 'type/enhancement', existing: ['enhancement'] },
+              { words: questionWords, label: 'type/question', existing: ['question'] },
+              { words: docsWords, label: 'type/docs', existing: ['documentation', 'docs'] }
+            ];
+
+            for (const rule of config) {
+              const match = rule.words.some(w => text.includes(w));
+              if (match) labelsToAdd.push(rule.label);
+            }
+
+            if (labelsToAdd.length === 0) return;
+
+            for (const label of labelsToAdd) {
+              await github.rest.issues.addLabels({
+                ...context.repo, issue_number: num, labels: [label]
+              }).catch(async () => {
+                await github.rest.issues.createLabel({
+                  ...context.repo, name: label, color: '6C5CE7'
+                }).catch(() => {});
+                await github.rest.issues.addLabels({
+                  ...context.repo, issue_number: num, labels: [label]
+                }).catch(() => {});
+              });
+            }
