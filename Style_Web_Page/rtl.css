@@ -103,18 +103,15 @@ input[type="file"] {
 
 /* Fix width issues */
 body { 
-  max-width: 100vw; 
-  overflow-x: hidden; 
-  width: 100vw;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
 }
 .container { 
   max-width: 720px; 
   width: 100%;
   padding: 32px 20px;
   box-sizing: border-box;
-}
-html {
-  overflow-x: hidden;
 }
 main {
   width: 100%;
