@@ -84,11 +84,12 @@ function deepMerge(base, overlay) {
 }
 
 async function translateViaAI(texts, targetLang) {
-  var apiKey = process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY ||
+  var apiKey = process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY ||
                process.env.GROQ_API_KEY || process.env.GOOGLE_API_KEY;
-  var model = process.env.MODEL || 'groq/llama-3.3-70b-versatile';
+  var model = process.env.MODEL || 'deepseek-chat';
+  var apiBase = process.env.OPENAI_API_BASE || 'https://api.deepseek.com';
 
-  if (!apiKey) throw new Error('No API key found. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, GROQ_API_KEY, or GOOGLE_API_KEY.');
+  if (!apiKey) throw new Error('No API key found. Set OPENAI_API_KEY.');
 
   var provider, endpoint, headers;
   if (process.env.ANTHROPIC_API_KEY) {
@@ -96,11 +97,6 @@ async function translateViaAI(texts, targetLang) {
     endpoint = 'https://api.anthropic.com/v1/messages';
     headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
     model = model.replace('anthropic/', '');
-  } else if (process.env.OPENAI_API_KEY) {
-    provider = 'openai';
-    endpoint = 'https://api.openai.com/v1/chat/completions';
-    headers = { 'authorization': 'Bearer ' + apiKey, 'content-type': 'application/json' };
-    model = model.replace('openai/', '');
   } else if (process.env.GROQ_API_KEY) {
     provider = 'openai';
     endpoint = 'https://api.groq.com/openai/v1/chat/completions';
@@ -110,6 +106,10 @@ async function translateViaAI(texts, targetLang) {
     provider = 'google';
     endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + model.replace('gemini/', '') + ':generateContent?key=' + apiKey;
     headers = { 'content-type': 'application/json' };
+  } else {
+    provider = 'openai';
+    endpoint = apiBase.replace(/\/+$/, '') + '/v1/chat/completions';
+    headers = { 'authorization': 'Bearer ' + apiKey, 'content-type': 'application/json' };
   }
 
   var lines = Object.entries(texts).map(function(e) { return e[0] + ' = ' + JSON.stringify(e[1]); }).join('\n');

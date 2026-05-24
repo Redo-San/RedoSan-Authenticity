@@ -20,19 +20,6 @@ jobs:
         uses: khezen/codespy@v0.4.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # --- REQUIRED: configure one provider ---
-          # 1) Groq (free tier) — cheapest
-          #    DEFAULT_MODEL: groq/llama-3.3-70b-versatile
-          #    GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          #
-          # 2) Google Gemini (free tier)
-          #    DEFAULT_MODEL: gemini/gemini-2.0-flash
-          #    GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          #
-          # 3) OpenAI (paid)
-          #    DEFAULT_MODEL: openai/gpt-4o-mini
-          #    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          #
-          # 4) Anthropic Claude (paid)
-          #    DEFAULT_MODEL: anthropic/claude-sonnet-4-20250514
-          #    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_BASE: https://api.deepseek.com
+          DEFAULT_MODEL: openai/deepseek-chat
