@@ -3,7 +3,7 @@
  * AI-powered i18n translation helper.
  * Translates missing keys from en.json into all other language files.
  *
- * Usage:
+ * Usage: 
  *   node scripts/translate-i18n.js              # dry-run: show missing keys
  *   node scripts/translate-i18n.js --apply      # apply translations via AI
  *   node scripts/translate-i18n.js --apply --dry-run  # show what would be sent to AI
