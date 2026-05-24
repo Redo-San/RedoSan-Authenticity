@@ -1,40 +1,23 @@
-security:
-  - sw.js
-  - 404.html
-  - cli/utils.js
-  - Style_Web_Page/shared.js
-  - .github/workflows/codeql-analysis.yml
-  - .github/workflows/ci.yml
-
-watermark:
-  - Watermark/**/*
-
-pixel-injection:
-  - Pixel_Injection/**/*
-
-fingerprint:
-  - Fingerprint/**/*
-
-metadata:
-  - Metadata/**/*
-
+# Auto-label PRs by changed paths
+converter:
+  - Converter/**/*
 c2pa:
   - C2PA/**/*
-
+certificate:
+  - Certificate/**/*
+fingerprint:
+  - Fingerprint/**/*
+metadata:
+  - Metadata/**/*
 timestamp:
   - Timestamp/**/*
-
-CLI:
+watermark:
+  - Watermark/**/*
+cli:
   - cli/**/*
-
 i18n:
   - Style_Web_Page/lang/**/*
-  - Style_Web_Page/i18n.js
-
-UI:
-  - Style_Web_Page/*.js
-  - index.html
-  - Style_Web_Page/style.css
-
-tests:
-  - test/**/*
+css:
+  - Style_Web_Page/*.css
+ci:
+  - .github/workflows/**/*
