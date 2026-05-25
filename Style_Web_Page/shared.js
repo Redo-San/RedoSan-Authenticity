@@ -516,21 +516,81 @@ function checkAutomation() {
   return { score: Math.min(Math.max(score, 0), 100), signals: signals, isAutomated: score >= 40 };
 }
 
-function showBotOverlay() {
+function showBotOverlay(reason) {
   var o = document.getElementById('botBlockOverlay');
   if (!o) return;
   var lang = document.documentElement.getAttribute('lang') || 'en';
   var isAr = lang === 'ar';
-  o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم رفض الوصول' : '🚫 Access Denied';
-  o.querySelector('.bot-block-text').textContent = isAr
-    ? 'تم اكتشاف متصفح آلي / بدون واجهة. تطبيق RedoSan Authenticity مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة (Puppeteer, Selenium, Playwright) وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في GitHub.'
-    : 'Automated / headless browser detected. RedoSan Authenticity is intended for human users only. Please disable automation tools (Puppeteer, Selenium, Playwright, etc.) and reload the page.\n\nIf you believe this is an error, please report it on GitHub.';
+  if (reason === 'vpn') {
+    o.querySelector('.bot-block-icon').textContent = '🔒';
+    o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم اكتشاف VPN / بروكسي' : '🚫 VPN / Proxy Detected';
+    o.querySelector('.bot-block-text').textContent = isAr
+      ? 'تم اكتشاف أنك تستخدم VPN أو بروكسي. تطبيق RedoSan Authenticity يتطلب اتصالاً مباشراً للأمان. يرجى تعطيل VPN وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في GitHub.'
+      : 'A VPN or proxy was detected. RedoSan Authenticity requires a direct connection for security. Please disable your VPN and reload the page.\n\nIf you believe this is an error, please report it on GitHub.';
+  } else {
+    o.querySelector('.bot-block-icon').textContent = '🛡️';
+    o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم رفض الوصول' : '🚫 Access Denied';
+    o.querySelector('.bot-block-text').textContent = isAr
+      ? 'تم اكتشاف متصفح آلي / بدون واجهة. تطبيق RedoSan Authenticity مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة (Puppeteer, Selenium, Playwright) وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في GitHub.'
+      : 'Automated / headless browser detected. RedoSan Authenticity is intended for human users only. Please disable automation tools (Puppeteer, Selenium, Playwright, etc.) and reload the page.\n\nIf you believe this is an error, please report it on GitHub.';
+  }
   o.classList.add('active');
+}
+
+// ── Async VPN detection via WebRTC leak + is-vpn list ──
+function detectWebRTCIPs() {
+  return new Promise(function(resolve) {
+    var ips = [], done = false, timer = setTimeout(function() {
+      if (!done) { done = true; resolve(ips); }
+    }, 3000);
+    try {
+      var pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      pc.createDataChannel('');
+      pc.createOffer().then(function(d) { return pc.setLocalDescription(d); }).catch(function(){});
+      pc.onicecandidate = function(e) {
+        if (!e || !e.candidate) {
+          if (!done) { done = true; clearTimeout(timer); try { pc.close(); } catch(ex) {} resolve(ips); }
+          return;
+        }
+        var m = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
+        if (m && ips.indexOf(m[1]) === -1) ips.push(m[1]);
+      };
+    } catch(e) {
+      if (!done) { done = true; clearTimeout(timer); resolve(ips); }
+    }
+  });
+}
+
+async function startAsyncVPNDetection() {
+  if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) return;
+  var ips = await detectWebRTCIPs();
+  if (ips.length === 0) return;
+  var publicIPs = [];
+  for (var i = 0; i < ips.length; i++) {
+    if (!/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(ips[i]))
+      publicIPs.push(ips[i]);
+  }
+  // 2+ unique public IPs via WebRTC = VPN leak
+  if (publicIPs.length >= 2) {
+    REDOSAN_BOT_CHECK = { score: 60, signals: ['webrtc_vpn'], isAutomated: true };
+    showBotOverlay('vpn'); return;
+  }
+  // Check against is-vpn IP range list (loaded on demand from CDN)
+  try {
+    var vpnMod = await import('https://cdn.jsdelivr.net/gh/josephrocca/is-vpn@v0.0.3/mod.js');
+    for (var j = 0; j < publicIPs.length; j++) {
+      if (vpnMod.isVpn(publicIPs[j])) {
+        REDOSAN_BOT_CHECK = { score: 55, signals: ['vpn_ip:' + publicIPs[j]], isAutomated: true };
+        showBotOverlay('vpn'); return;
+      }
+    }
+  } catch(e) { /* is-vpn CDN unavailable — skip */ }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   REDOSAN_BOT_CHECK = checkAutomation();
   if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) showBotOverlay();
+  else startAsyncVPNDetection();
   initTheme();
   initDropZones();
 });
