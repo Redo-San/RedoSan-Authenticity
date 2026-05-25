@@ -267,7 +267,7 @@
   "simple.prev_btn": "← Previous",
   "simple.next_btn": "Next →",
   "simple.start_over": "Start Over",
-  "simple.pro_mode_btn": "⚙️ Professional",
+  "simple.pro_mode_btn": "⚙️",
   "simple.upload_title": "Upload Your File",
   "simple.upload_desc": "Select a photo, audio, video, or document to get started.",
   "simple.upload_size_note": "💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.",
