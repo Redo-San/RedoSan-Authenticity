@@ -1,7 +1,7 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 
 var ASSISTANT_KB = [
-  { id:'welcome', patterns:['hi','hello','hey','مرحبا','السلام عليكم','hi there','good morning','good evening'],
+  { id:'welcome', patterns:['hi','hello','hey','مرحبا','مرحبًا','مرحبا بك','السلام عليكم','وعليكم السلام','hi there','good morning','good evening','good day'],
     contexts:[], response:{ en:'👋 Hello! I\'m your RedoSan Assistant. I can help you with all the tools here.\n\nTry asking me:\n• How does watermarking work?\n• What is file fingerprinting?\n• How to create a timestamp?\n• Privacy & security\n\nWhat would you like to know?',
     ar:'👋 مرحباً! أنا مساعد RedoSan. يمكنني مساعدتك في جميع الأدوات هنا.\n\nجرب أن تسألني:\n• كيف تعمل العلامة المائية؟\n• ما هي بصمة الملف؟\n• كيف ينشئ الطابع الزمني؟\n• الخصوصية والأمان\n\nماذا تريد أن تعرف؟' },
     suggestions:{ en:['How does watermarking work?','What is fingerprinting?','How to timestamp?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','كيف ينشئ الطابع الزمني؟']}},
@@ -183,13 +183,14 @@ function getCurrentContext() {
 }
 
 function assistantTokenize(t) {
-  return t.toLowerCase().replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, '').split(/\s+/).filter(Boolean);
+  return t.toLowerCase().replace(/[\u064B-\u0652]/g, '').replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, '').split(/\s+/).filter(Boolean);
 }
 
 function matchAssistantIntent(input) {
   var lang = getAssistantLang();
   var tokens = assistantTokenize(input);
   if (tokens.length === 0) return null;
+  var normInput = input.toLowerCase().replace(/[\u064B-\u0652]/g, '');
 
   var bestScore = 0;
   var bestMatch = null;
@@ -197,8 +198,8 @@ function matchAssistantIntent(input) {
   for (var i = 0; i < ASSISTANT_KB.length; i++) {
     var intent = ASSISTANT_KB[i];
     for (var j = 0; j < intent.patterns.length; j++) {
-      var pattern = intent.patterns[j].toLowerCase();
-      var patternTokens = pattern.split(/\s+/);
+      var normPattern = intent.patterns[j].toLowerCase().replace(/[\u064B-\u0652]/g, '');
+      var patternTokens = normPattern.split(/\s+/);
       var overlap = 0;
       for (var k = 0; k < patternTokens.length; k++) {
         for (var l = 0; l < tokens.length; l++) {
@@ -207,9 +208,8 @@ function matchAssistantIntent(input) {
       }
       var maxLen = Math.max(patternTokens.length, tokens.length);
       var score = maxLen > 0 ? overlap / maxLen : 0;
-      var lowerInput = input.toLowerCase();
-      if (lowerInput.includes(pattern)) {
-        score = Math.max(score, 0.6 + (pattern.length / Math.max(lowerInput.length, 1)) * 0.3);
+      if (normInput.includes(normPattern)) {
+        score = Math.max(score, 0.6 + (normPattern.length / Math.max(normInput.length, 1)) * 0.3);
       }
       if (score > bestScore) {
         bestScore = score;
