@@ -251,7 +251,7 @@
         <a href="#" data-page="audio-watermark" class="card">
           <div class="icon">🎵</div>
           <h3 data-i18n="card.audio_watermark.title">Audio Watermark</h3>
-          <p data-i18n="card.audio_watermark.desc">Hide secrets in WAV: LSB, Echo Hiding, QIM</p>
+          <p data-i18n="card.audio_watermark.desc">Hide secrets in WAV: LSB, Phase Coding, Echo Hiding, DSSS, QIM, DWT, Patchwork, DCT</p>
         </a>
         <a href="#" data-page="pixel-injection" class="card">
           <div class="icon">🔬</div>
@@ -386,7 +386,13 @@
           <label for="awm-type" data-i18n="wm.algo_label">Algorithm</label>
           <select id="awm-type" name="awm-type" onchange="toggleAwmPassword();updateAwmCapacity()">
             <option value="1">1. LSB Audio</option>
-            <option value="2">2. Group Mean Modulation</option>
+            <option value="2">2. Phase Coding</option>
+            <option value="3">3. Echo Hiding</option>
+            <option value="4">4. Spread Spectrum (DSSS)</option>
+            <option value="5">5. QIM</option>
+            <option value="6">6. DWT (Haar Wavelet)</option>
+            <option value="7">7. Patchwork</option>
+            <option value="8">8. DCT-based</option>
           </select>
         </div>
         <div class="form-group">
@@ -413,8 +419,13 @@
           <label for="awm-type-ex" data-i18n="wm.algo_label">Algorithm</label>
           <select id="awm-type-ex" name="awm-type-ex" onchange="toggleAwmPasswordEx()">
             <option value="1">1. LSB Audio</option>
-            <option value="2">2. Group Mean Modulation</option>
-            <option value="3">3. QIM</option>
+            <option value="2">2. Phase Coding</option>
+            <option value="3">3. Echo Hiding</option>
+            <option value="4">4. Spread Spectrum (DSSS)</option>
+            <option value="5">5. QIM</option>
+            <option value="6">6. DWT (Haar Wavelet)</option>
+            <option value="7">7. Patchwork</option>
+            <option value="8">8. DCT-based</option>
           </select>
         </div>
         <div class="form-group">

@@ -11,13 +11,13 @@ function switchAwmTab(mode) {
 // ── Password toggle ──
 function toggleAwmPassword() {
     var t = parseInt(document.getElementById('awm-type').value);
-    document.getElementById('awm-password-group').style.display = (t === 4) ? 'none' : '';
-    document.getElementById('awm-strength-group').style.display = (t === 3) ? '' : 'none';
+    document.getElementById('awm-password-group').style.display = '';
+    document.getElementById('awm-strength-group').style.display = (t === 5 || t === 6 || t === 8) ? '' : 'none';
 }
 function toggleAwmPasswordEx() {
     var t = parseInt(document.getElementById('awm-type-ex').value);
-    document.getElementById('awm-password-ex-group').style.display = (t === 4) ? 'none' : '';
-    document.getElementById('awm-strength-ex-group').style.display = (t === 3) ? '' : 'none';
+    document.getElementById('awm-password-ex-group').style.display = '';
+    document.getElementById('awm-strength-ex-group').style.display = (t === 5 || t === 6 || t === 8) ? '' : 'none';
 }
 
 // ── Capacity update ──
@@ -28,17 +28,11 @@ function updateAwmCapacity() {
     var t = parseInt(document.getElementById('awm-type').value);
     var msg = document.getElementById('awm-secret').value;
     var msgBytes = new TextEncoder().encode(msg).length;
-    var estSeconds = 0;
-    if (t === 1) { // LSB - 1 bit per sample
-        estSeconds = Math.ceil(msgBytes * 8 / 44100);
-        capEl.textContent = 'LSB: ~1 bit/sample | Message: ' + msgBytes + ' bytes = ' + (msgBytes*8) + ' bits | Need ~' + estSeconds + 's audio at 44.1kHz';
-    } else if (t === 2) { // Echo Hiding - 1 bit per 4096 samples
-        estSeconds = Math.ceil(msgBytes * 8 * 4096 / 44100);
-        capEl.textContent = 'Echo Hiding: ~1 bit/4096 samples | Message: ' + (msgBytes*8) + ' bits | Need ~' + estSeconds + 's audio at 44.1kHz';
-    } else if (t === 3) { // QIM - 1 bit per sample
-        estSeconds = Math.ceil(msgBytes * 8 / 44100);
-        capEl.textContent = 'QIM: ~1 bit/sample | Message: ' + (msgBytes*8) + ' bits | Need ~' + estSeconds + 's audio at 44.1kHz';
-    }
+    var descs = {1:'LSB: ~1 bit/sample',2:'Phase Coding: ~1 bit/sample',3:'Echo Hiding: ~1 bit/'+AWM3_FRAME+' samples x3 reps',4:'DSSS: ~1 bit/'+(AWM4_FRAME>>1)+' frames',5:'QIM: ~1 bit/sample',6:'DWT Haar: ~1 bit/1024 coefs',7:'Patchwork: ~1 bit/'+(AWM7_FRAME>>1)+' frames x5 reps',8:'DCT: ~1 bit/'+(AWM8_FRAME>>1)+' frames'};
+    var mult = {1:1, 2:1, 3:AWM3_FRAME*3, 4:AWM4_FRAME>>1, 5:1, 6:1024, 7:AWM7_FRAME*5>>1, 8:AWM8_FRAME>>1};
+    var m = mult[t] || 1;
+    var estSeconds = Math.ceil(msgBytes * 8 * m / 44100);
+    capEl.textContent = (descs[t]||'') + ' | Message: ' + (msgBytes*8) + ' bits | Need ~' + estSeconds + 's audio at 44.1kHz';
 }
 
 // ── Embed ──
@@ -49,7 +43,7 @@ async function handleAwmEmbed() {
     var password = document.getElementById('awm-password').value;
     if (!audioFile) return alert('Please select an audio file');
     if (!secret || !secret.trim()) return alert('Please enter a secret message');
-    if (type !== 4 && (!password || !password.trim())) return alert('Password is required');
+    if (!password || !password.trim()) return alert('Password is required');
     var spinner = document.getElementById('awm-spinner');
     var resultDiv = document.getElementById('awm-result');
     var output = document.getElementById('awm-output');
@@ -58,29 +52,36 @@ async function handleAwmEmbed() {
     spinner.style.display = 'block';
     try {
         var info = await awLoadAudio(audioFile);
-        var key = type !== 4 ? await pw_key(password) : new Uint8Array(0);
+        var key = await pw_key(password);
         var secretBytes = new TextEncoder().encode(secret.trim());
         var payloadBits = awFormatPayload(secretBytes, key);
         var maxBits = 0;
-        if (type === 1) maxBits = info.samples.length;
-        else if (type === 2) maxBits = aw2_maxBits(info.samples.length, info.sr);
-        else if (type === 3) maxBits = info.samples.length;
+        var names = {1:'LSB Audio',2:'Phase Coding',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'};
+        var maxFns = {2:aw2_maxBits,3:aw3_maxBits,4:aw4_maxBits,6:aw6_maxBits,7:aw7_maxBits,8:aw8_maxBits};
+        if (type === 1 || type === 5) maxBits = info.samples.length;
+        else if (maxFns[type]) maxBits = maxFns[type](info.samples.length, info.sr);
         if (payloadBits.length > maxBits)
-            throw new Error('Message too long for this audio file. Need ' + payloadBits.length + ' bits, have ' + maxBits + ' (' + (type===2?'echo hiding':'') + ')');
+            throw new Error('Message too long. Need ' + payloadBits.length + ' bits, max ' + maxBits + ' for ' + (names[type]||'this algorithm'));
         var modified;
-        if (type === 1) {
-            modified = aw1_embed(new Int16Array(info.samples), payloadBits);
-        } else if (type === 2) {
-            modified = aw2_embed(new Int16Array(info.samples), payloadBits, info.sr);
-        } else if (type === 3) {
+        var s16 = new Int16Array(info.samples);
+        if (type === 1) modified = aw1_embed(s16, payloadBits);
+        else if (type === 2) modified = aw2_embed(s16, payloadBits, info.sr);
+        else if (type === 3) modified = aw3_embed(s16, payloadBits, info.sr);
+        else if (type === 4) modified = aw4_embed(s16, payloadBits, info.sr);
+        else if (type === 5) {
             var strength = parseInt(document.getElementById('awm-strength').value) || 500;
-            modified = aw3_embed(new Int16Array(info.samples), payloadBits, strength);
-        } else {
-            throw new Error('Invalid algorithm type');
+            modified = aw5_embed(s16, payloadBits, strength);
+        } else if (type === 6) {
+            var strength = parseInt(document.getElementById('awm-strength').value) || 300;
+            modified = aw6_embed(s16, payloadBits, strength);
+        } else if (type === 7) {
+            modified = aw7_embed(s16, payloadBits, info.sr);
+        } else if (type === 8) {
+            var strength = parseInt(document.getElementById('awm-strength').value) || 400;
+            modified = aw8_embed(s16, payloadBits, strength);
         }
         var wavBuf = awWriteWav(modified, info.sr, info.ch, info.raw, info.bps);
         var blob = new Blob([wavBuf], { type: 'audio/wav' });
-        var names = {1:'LSB Audio',2:'Echo Hiding',3:'QIM'};
         output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark embedded successfully!</strong><br>Algorithm: ' + names[type] + '<br>File: ' + audioFile.name + '<br>Sample Rate: ' + info.sr + ' Hz<br>Channels: ' + info.ch + '<br>Hidden: ' + secretBytes.length + ' bytes (' + secret.trim().length + ' chars)</div>';
         downloadDiv.innerHTML = '<a href="' + URL.createObjectURL(blob) + '" download="watermarked_' + audioFile.name.replace(/\.[^.]+$/, '.wav') + '" class="btn">⬇ Download Watermarked WAV</a>';
         window._awmResult = { blob: blob, originalName: audioFile.name, type: type, algorithm: names[type] };
@@ -99,7 +100,7 @@ async function handleAwmExtract() {
     var audioFile = document.getElementById('awm-audio-ex').files[0];
     var password = document.getElementById('awm-password-ex').value;
     if (!audioFile) return alert('Please select a watermarked audio file');
-    if (type !== 4 && (!password || !password.trim())) return alert('Password is required');
+    if (!password || !password.trim()) return alert('Password is required');
     var spinner = document.getElementById('awm-spinner');
     var resultDiv = document.getElementById('awm-result');
     var output = document.getElementById('awm-output');
@@ -108,17 +109,23 @@ async function handleAwmExtract() {
     spinner.style.display = 'block';
     try {
         var info = await awLoadAudio(audioFile);
-        var key = type !== 4 ? await pw_key(password) : new Uint8Array(0);
+        var key = await pw_key(password);
         var bitsStr = '';
-        if (type === 1) {
-            bitsStr = aw1_extract(info.samples, info.samples.length);
-        } else if (type === 2) {
-            bitsStr = aw2_extract(info.samples, info.sr, 1000);
-        } else if (type === 3) {
+        if (type === 1) bitsStr = aw1_extract(info.samples, info.samples.length);
+        else if (type === 2) bitsStr = aw2_extract(info.samples, info.sr);
+        else if (type === 3) bitsStr = aw3_extract(info.samples, info.sr);
+        else if (type === 4) bitsStr = aw4_extract(info.samples, info.sr);
+        else if (type === 5) {
             var strength = parseInt(document.getElementById('awm-strength-ex').value) || 500;
-            bitsStr = aw3_extract(info.samples, info.samples.length, strength);
-        } else {
-            throw new Error('Invalid algorithm type');
+            bitsStr = aw5_extract(info.samples, info.samples.length, strength);
+        } else if (type === 6) {
+            var strength = parseInt(document.getElementById('awm-strength-ex').value) || 300;
+            bitsStr = aw6_extract(info.samples, info.samples.length, strength);
+        } else if (type === 7) {
+            bitsStr = aw7_extract(info.samples, info.sr);
+        } else if (type === 8) {
+            var strength = parseInt(document.getElementById('awm-strength-ex').value) || 400;
+            bitsStr = aw8_extract(info.samples, info.samples.length, strength);
         }
         var result = awExtractPayload(bitsStr, key);
         if (result === 'bad-password') {
