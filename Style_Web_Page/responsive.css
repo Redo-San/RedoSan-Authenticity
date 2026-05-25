@@ -269,6 +269,7 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
 @media (max-width: 480px) {
   section, .page > .card-form { margin-bottom: 14px; }
   .hero { padding: 32px 0; }
+  .simple-top .simple-nav-links { display: none; }
 }
 
 /* ── Adequate tap target spacing on mobile ── */
