@@ -137,11 +137,11 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
 @media (max-width: 767px) {
   .nav-search input { font-size: 0.75rem; }
   .nav-search { width: 140px; }
-  .nav-search.focused { width: 180px; }
+  .nav-search.focused { width: 140px; }
 }
 @media (max-width: 480px) {
   .nav-search { width: 120px; }
-  .nav-search.focused { width: 150px; }
+  .nav-search.focused { width: 120px; }
   .nav-search .search-results {
     width: calc(100vw - 24px);
     left: 0;
@@ -150,7 +150,7 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
 }
 @media (max-width: 359px) {
   .nav-search { width: 80px; }
-  .nav-search.focused { width: 130px; }
+  .nav-search.focused { width: 80px; }
   .nav-search .search-results {
     width: calc(100vw - 24px);
     left: -4px;
