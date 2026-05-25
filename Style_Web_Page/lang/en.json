@@ -423,5 +423,19 @@
   "lang.name.es": "Español",
   "lang.name.zh": "中文",
   "lang.name.ja": "日本語",
-  "lang.name.ko": "한국어"
+  "lang.name.ko": "한국어",
+
+  "ast.title": "🤖 RedoSan Assistant",
+  "ast.placeholder": "Type your question...",
+  "ast.clear": "Clear chat",
+  "ast.close": "Close",
+  "ast.help": "Ask me about watermarking, fingerprinting, timestamping, C2PA, and more!",
+  "ast.context_watermark": "I see you're on the **Watermark** page. Need help with it?",
+  "ast.context_pixel": "I see you're on the **Pixel Injection** page. Need help with it?",
+  "ast.context_fingerprint": "I see you're on the **Fingerprint** page. Need help with it?",
+  "ast.context_metadata": "I see you're on the **Metadata** page. Need help with it?",
+  "ast.context_timestamp": "I see you're on the **Timestamp** page. Need help with it?",
+  "ast.context_c2pa": "I see you're on the **C2PA** page. Need help with it?",
+  "ast.context_certificate": "I see you're on the **Digital Passport** page. Need help with it?",
+  "ast.context_converter": "I see you're on the **File Converter** page. Need help with it?"
 }
