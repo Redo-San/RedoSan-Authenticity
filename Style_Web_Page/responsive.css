@@ -7,7 +7,6 @@
 /* ── Safe area & iOS scroll helpers ── */
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  overscroll-behavior: none;
 }
 /* Prevent iOS zoom on input focus — minimum 16px on all form elements */
 input, select, textarea, button, .btn, .lang-btn, .tab-btn, .theme-btn, .simple-mode-switch {
@@ -300,7 +299,7 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
 /* ── Mode selection overlay: scroll fix & sizing on mobile ── */
 @media (max-width: 480px) {
   .mode-select-overlay { padding: 12px; justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .mode-select-box { padding: 56px 16px 32px; }
+  .mode-select-box { padding: 0 16px 32px; }
   .mode-select-box h1 { font-size: 1.3rem; }
   .mode-subtitle { font-size: 0.82rem; margin-bottom: 20px; }
   .mode-tagline { font-size: 0.76rem; margin-bottom: 20px; }
@@ -318,7 +317,7 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
 }
 @media (max-width: 360px) {
   .mode-select-overlay { padding: 8px; }
-  .mode-select-box { padding: 52px 10px 24px; }
+  .mode-select-box { padding: 0 10px 24px; }
   .mode-select-box h1 { font-size: 1.1rem; }
   .mode-tagline { font-size: 0.7rem; margin-bottom: 16px; }
   .mode-logo { width: 48px; height: 48px; }
