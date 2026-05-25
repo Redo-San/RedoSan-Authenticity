@@ -594,48 +594,47 @@ function showDiagnostics() {
   console.log('%c║  🔐 RedoSan Security Layer Status     ║', 'color:#6C5CE7;font-weight:bold');
   console.log('%c╚═══════════════════════════════════════╝', 'color:#6C5CE7;font-weight:bold');
   console.log('%cLayer 1 — Bot/Automation:', style + 'color:#FFA500', 'score=' + REDOSAN_BOT_CHECK.score, '| blocked=' + REDOSAN_BOT_CHECK.isAutomated, '| signals=[' + REDOSAN_BOT_CHECK.signals.join(',') + ']');
-  console.log('→ To test: __testBotDetect() in console');
   console.log('%cLayer 2 — WebRTC VPN Leak:', style + 'color:#2196F3', '(async, runs after page load)');
-  console.log('→ To test: __testVPNDetect() in console');
   console.log('%cLayer 3 — is-vpn IP list:', style + 'color:#4CAF50', '(CDN, runs after WebRTC)');
-  console.log('→ To test: __testVPNList("X.X.X.X") in console');
+  console.log('%cDebug mode: add ?debug to URL for test helpers (__testBotDetect, __testVPNDetect, etc.)', 'color:#888');
 }
 
-window.__testBotDetect = function() {
-  REDOSAN_BOT_CHECK = { score: 100, signals: ['manual_test'], isAutomated: true };
-  showBotOverlay();
-  console.log('%c🛡️ Bot overlay triggered (manual test)', 'color:#FF5252;font-weight:bold');
-};
-
-window.__testVPNDetect = function() {
-  REDOSAN_BOT_CHECK = { score: 60, signals: ['webrtc_vpn_test'], isAutomated: true };
-  showBotOverlay('vpn');
-  console.log('%c🔒 VPN overlay triggered (manual test)', 'color:#FF5252;font-weight:bold');
-};
-
-window.__testWebRTC = async function() {
-  console.log('%c🔍 Scanning WebRTC IPs...', 'color:#2196F3');
-  var ips = await detectWebRTCIPs();
-  console.log('IPs found:', ips.length ? ips.join(', ') : '(none — WebRTC likely disabled)');
-  var publicIPs = ips.filter(function(ip) {
-    return !/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(ip);
-  });
-  console.log('Public IPs:', publicIPs.length ? publicIPs.join(', ') : '(none)');
-  if (publicIPs.length >= 2) console.log('%c⚠️ Multiple public IPs = VPN leak!', 'color:#FF5252');
-  return ips;
-};
-
-window.__testVPNList = async function(ip) {
-  if (!ip) { console.log('Usage: __testVPNList("X.X.X.X")'); return; }
-  console.log('%c🔍 Checking IP ' + ip + ' against VPN list...', 'color:#4CAF50');
-  try {
-    var mod = await import('https://cdn.jsdelivr.net/gh/josephrocca/is-vpn@v0.0.3/mod.js');
-    var result = mod.isVpn(ip);
-    console.log('isVpn("' + ip + '") = ' + result, result ? '(VPN/datacenter)' : '(not in list)');
-  } catch(e) {
-    console.log('is-vpn CDN unavailable:', e.message);
-  }
-};
+// Test helpers — only register when ?debug is in the URL
+if (window.location && window.location.search && window.location.search.indexOf('debug') !== -1) {
+  window.__testBotDetect = function() {
+    REDOSAN_BOT_CHECK = { score: 100, signals: ['manual_test'], isAutomated: true };
+    showBotOverlay();
+    console.log('%c🛡️ Bot overlay triggered (manual test)', 'color:#FF5252;font-weight:bold');
+  };
+  window.__testVPNDetect = function() {
+    REDOSAN_BOT_CHECK = { score: 60, signals: ['webrtc_vpn_test'], isAutomated: true };
+    showBotOverlay('vpn');
+    console.log('%c🔒 VPN overlay triggered (manual test)', 'color:#FF5252;font-weight:bold');
+  };
+  window.__testWebRTC = async function() {
+    console.log('%c🔍 Scanning WebRTC IPs...', 'color:#2196F3');
+    var ips = await detectWebRTCIPs();
+    console.log('IPs found:', ips.length ? ips.join(', ') : '(none — WebRTC likely disabled)');
+    var publicIPs = ips.filter(function(ip) {
+      return !/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(ip);
+    });
+    console.log('Public IPs:', publicIPs.length ? publicIPs.join(', ') : '(none)');
+    if (publicIPs.length >= 2) console.log('%c⚠️ Multiple public IPs = VPN leak!', 'color:#FF5252');
+    return ips;
+  };
+  window.__testVPNList = async function(ip) {
+    if (!ip) { console.log('Usage: __testVPNList("X.X.X.X")'); return; }
+    console.log('%c🔍 Checking IP ' + ip + ' against VPN list...', 'color:#4CAF50');
+    try {
+      var mod = await import('https://cdn.jsdelivr.net/gh/josephrocca/is-vpn@v0.0.3/mod.js');
+      var result = mod.isVpn(ip);
+      console.log('isVpn("' + ip + '") = ' + result, result ? '(VPN/datacenter)' : '(not in list)');
+    } catch(e) {
+      console.log('is-vpn CDN unavailable:', e.message);
+    }
+  };
+  console.log('%c🔧 Debug test helpers registered. Try: __testBotDetect(), __testVPNDetect(), __testWebRTC(), __testVPNList("X.X.X.X")', 'color:#FFA500;font-weight:bold');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   REDOSAN_BOT_CHECK = checkAutomation();
