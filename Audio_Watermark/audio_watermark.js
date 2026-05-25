@@ -20,6 +20,18 @@ function toggleAwmPasswordEx() {
     document.getElementById('awm-strength-ex-group').style.display = (t === 5 || t === 6 || t === 8) ? '' : 'none';
 }
 
+// ── File upload for secret message ──
+function loadAwmFile(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('awm-secret').value = e.target.result;
+        updateAwmCapacity();
+    };
+    reader.readAsText(file);
+}
+
 // ── Capacity update ──
 function updateAwmCapacity() {
     var f = document.getElementById('awm-audio');
@@ -43,7 +55,6 @@ async function handleAwmEmbed() {
     var password = document.getElementById('awm-password').value;
     if (!audioFile) return alert('Please select an audio file');
     if (!secret || !secret.trim()) return alert('Please enter a secret message');
-    if (!password || !password.trim()) return alert('Password is required');
     var spinner = document.getElementById('awm-spinner');
     var resultDiv = document.getElementById('awm-result');
     var output = document.getElementById('awm-output');
@@ -52,8 +63,7 @@ async function handleAwmEmbed() {
     spinner.style.display = 'block';
     try {
         var info = await awLoadAudio(audioFile);
-        var key = await pw_key(password);
-        var secretBytes = new TextEncoder().encode(secret.trim());
+        var key = password && password.trim() ? await pw_key(password) : new Uint8Array(0);
         var payloadBits = awFormatPayload(secretBytes, key);
         var maxBits = 0;
         var names = {1:'LSB Audio',2:'Phase Coding',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'};
@@ -100,7 +110,6 @@ async function handleAwmExtract() {
     var audioFile = document.getElementById('awm-audio-ex').files[0];
     var password = document.getElementById('awm-password-ex').value;
     if (!audioFile) return alert('Please select a watermarked audio file');
-    if (!password || !password.trim()) return alert('Password is required');
     var spinner = document.getElementById('awm-spinner');
     var resultDiv = document.getElementById('awm-result');
     var output = document.getElementById('awm-output');
@@ -109,7 +118,7 @@ async function handleAwmExtract() {
     spinner.style.display = 'block';
     try {
         var info = await awLoadAudio(audioFile);
-        var key = await pw_key(password);
+        var key = password && password.trim() ? await pw_key(password) : new Uint8Array(0);
         var bitsStr = '';
         if (type === 1) bitsStr = aw1_extract(info.samples, info.samples.length);
         else if (type === 2) bitsStr = aw2_extract(info.samples, info.sr);
