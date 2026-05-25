@@ -278,15 +278,15 @@
     "label_error": "Erreur"
   },
   "ts": {
-    "select_both": "Veuillez sélectionner à la fois le fichier d'origine et son preuve .ots",
-    "created_success": "✓ .ots de timestamp complet créé avec une attestation de blockchain !\n\nSHA-256 : {hash}\nTaille : {size} bytes\n\nCe fichier .ots inclut une preuve de merkle de l'agrégateur de calendrier OpenTimestamps. Vérifiez-le à tout moment en utilisant l'onglet Vérifier.",
-    "created_warning": "SHA-256 : {hash}\n\n⚠ L'agrégateur de calendrier est inaccessible. Un fichier de timestamp .ots incomplet a été créé ({size} bytes, format standard).\n\nPour attacher une attestation de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
-    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier n'a pas été modifié depuis la création du timestamp.",
-    "verified_mismatch": "✗ Hachage en erreur ! Le fichier a été modifié.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier a été modifié depuis la création du timestamp.",
+    "select_both": "Veuillez sélectionner à la fois le fichier d'origine et sa preuve .ots",
+    "created_success": "✓ Preuve de timestamp .ots complète créée avec attestation de blockchain !\n\nSHA-256 : {hash}\nTaille : {size} bytes\n\nCe fichier .ots inclut une preuve de Merkle de l'agrégateur de calendrier OpenTimestamps. Vérifiez-le à tout moment en utilisant l'onglet Vérifier.",
+    "created_warning": "SHA-256 : {hash}\n\n⚠ L'agrégateur de calendrier est inaccessible. Preuve de timestamp .ots incomplète créée ({size} bytes, format standard).\n\nPour attacher une preuve de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
+    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nSHA-256 du fichier : {fileHash}\nSHA-256 de .ots : {otsHash}\n\nLe fichier n'a pas changé depuis la création du timestamp.",
+    "verified_mismatch": "✗ Correspondance de hachage ! Le fichier a été modifié.\n\nSHA-256 du fichier : {fileHash}\nSHA-256 de .ots : {otsHash}\n\nLe fichier a changé depuis la création du timestamp.",
     "option1_title": "Option 1 — Site Web OpenTimestamps (le plus simple) :",
     "option1_step1": "1. Allez sur https://opentimestamps.org",
-    "option1_step2": "2. Faites glisser et déposez \"{name}.ots\" sur la page",
-    "option1_step3": "3. Cliquez sur \"Stamp\" pour obtenir un .ots complet avec une preuve de blockchain",
+    "option1_step2": "2. Déposez \"{name}.ots\" sur la page",
+    "option1_step3": "3. Cliquez sur \"Stamp\" pour obtenir une preuve .ots complète avec preuve de blockchain",
     "option2_title": "Option 2 — CLI officiel :",
     "option3_title": "Option 3 — PowerShell (soumettre le hachage brut, 32 bytes uniquement) :"
   },
@@ -321,7 +321,7 @@
     "download_report": "Télécharger le rapport C2PA",
     "no_data_found": "Aucune donnée C2PA trouvée",
     "no_data_desc": "Ce fichier ne contient aucune métadonnée de provenance C2PA.",
-    "no_data_desc_alt": "Ce fichier n'a pas de métadonnée de provenance C2PA.",
+    "no_data_desc_alt": "Ce fichier n'a pas de métadonnées de provenance C2PA.",
     "no_manifests_title": "Aucun manifeste C2PA",
     "no_manifests_desc": "Le fichier contient des données C2PA mais aucun manifeste lisible.",
     "no_manifests": "Aucun manifeste trouvé",
@@ -335,13 +335,13 @@
     "user_info_label": "Vos informations",
     "social_label": "Liens sociaux (facultatif)",
     "music_label": "Liens de musique (facultatif)",
-    "results_label": "Résultats de l'outil (téléchargement à partir d'autres sections)",
+    "results_label": "Résultats de l'outil (télécharger à partir d'autres sections)",
     "wm_label": "Fichier de résultat de filigrane",
     "pi_label": "Fichier de résultat d'injection de pixels",
     "fp_label": "Fichier d'empreinte (json, txt)",
     "ts_label": "Fichier de timestamp (.ots)",
     "download_label": "Certificat prêt ! Choisissez un format :",
-    "reset_btn": "↻ Recommencer"
+    "reset_btn": "↻ Réinitialiser"
   },
   "conv": {
     "heading": "Convertisseur de fichiers",
@@ -361,14 +361,14 @@
     "video_limited": "La conversion vidéo est limitée dans le navigateur. Utilisez un logiciel de montage vidéo dédié."
   },
   "simple": {
-    "upload_size_note": "💡 Pour le filigrane, utilisez une grande image de couverture (par exemple 1920×1080) pour qu'il y ait suffisamment de capacité pour intégrer une image secrète.",
+    "upload_size_note": "💡 Pour la filigrane, utilisez une grande image de couverture (par exemple 1920×1080) pour qu'il y ait suffisamment de capacité pour intégrer une image secrète.",
     "usage_warning": "⚠️ Cet outil est destiné à une utilisation légale uniquement. Le téléchargement de contenu illégal ou nuisible est strictement interdit. Tous les traitements sont effectués localement — rien n'est stocké ou envoyé à un serveur.",
     "c2pa_facebook": "URL Facebook",
     "c2pa_tiktok": "URL TikTok",
     "c2pa_youtube": "URL YouTube",
-    "c2pa_music_label": "Diffusion de musique (facultatif)",
-    "c2pa_failed": "La signature C2PA a échoué. Vérifiez la console pour plus de détails.",
-    "c2pa_no_module": "Le module C2PA n'est pas chargé. Vérifiez votre connexion Internet et actualisez.",
+    "c2pa_music_label": "Plateformes de streaming de musique (facultatif)",
+    "c2pa_failed": "Échec de la signature C2PA. Vérifiez la console pour plus de détails.",
+    "c2pa_no_module": "Module C2PA non chargé. Vérifiez votre connexion Internet et actualisez.",
     "pi_msg_ph": "Entrez votre message secret (obligatoire)",
     "final_image_title": "✅ Image finale",
     "final_image_desc": "Filigranée + message secret injecté — téléchargement unique.",
@@ -411,7 +411,7 @@
   },
   "shared": {
     "download": "Télécharger",
-    "drop_file": "Déposer le fichier ici ou <strong>parcourir</strong>",
+    "drop_file": "Déposer un fichier ici ou <strong>parcourir</strong>",
     "select_file": "Veuillez sélectionner un fichier",
     "processing": "Traitement en cours...",
     "error_prefix": "Erreur : ",
@@ -422,9 +422,24 @@
     "corrupt_file": "Ce fichier semble être corrompu ou avoir un format incorrect.",
     "dangerous_content": "Ce fichier contient du code intégré potentiellement dangereux (scripts, gestionnaires d'événements) et n'est pas autorisé.",
     "dangerous_document": "Ce document contient des fonctionnalités potentiellement dangereuses (JavaScript intégré, actions d'exécution automatique, lancement de fichiers externes, fichiers intégrés) et n'est pas autorisé.",
-    "bad_structure": "Ce fichier semble avoir des données suspectes ajoutées après son contenu d'image valide. Veuillez réexporter le fichier à partir d'un éditeur d'image propre."
+    "bad_structure": "Ce fichier semble avoir des données suspectes ajoutées après son contenu d'image valide. Veuillez réexporter le fichier à partir d'un éditeur d'images propre."
   },
   "test": {
     "translate": "Ceci est une clé de traduction de test"
+  },
+  "ast": {
+    "title": "🤖 Assistant RedoSan",
+    "placeholder": "Tapez votre question...",
+    "clear": "Effacer la conversation",
+    "close": "Fermer",
+    "help": "Demandez-moi des informations sur la filigrane, l'empreinte, le timestamp, le C2PA, etc. !",
+    "context_watermark": "Je vois que vous êtes sur la page **Filigrane**. Avez-vous besoin d'aide ?",
+    "context_pixel": "Je vois que vous êtes sur la page **Injection de pixels**. Avez-vous besoin d'aide ?",
+    "context_fingerprint": "Je vois que vous êtes sur la page **Empreinte**. Avez-vous besoin d'aide ?",
+    "context_metadata": "Je vois que vous êtes sur la page **Métadonnées**. Avez-vous besoin d'aide ?",
+    "context_timestamp": "Je vois que vous êtes sur la page **Timestamp**. Avez-vous besoin d'aide ?",
+    "context_c2pa": "Je vois que vous êtes sur la page **C2PA**. Avez-vous besoin d'aide ?",
+    "context_certificate": "Je vois que vous êtes sur la page **Passeport numérique**. Avez-vous besoin d'aide ?",
+    "context_converter": "Je vois que vous êtes sur la page **Convertisseur de fichiers**. Avez-vous besoin d'aide ?"
   }
 }
