@@ -224,6 +224,7 @@
   </div>
   <a href="#" class="active" data-page="home" data-i18n="sidebar.home">Home</a>
   <a href="#" data-page="watermark" data-i18n="sidebar.watermark">Digital Watermark</a>
+  <a href="#" data-page="audio-watermark" data-i18n="sidebar.audio_watermark">Audio Watermark</a>
   <a href="#" data-page="pixel-injection" data-i18n="sidebar.pixel_injection">Pixel Injection</a>
   <a href="#" data-page="fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
   <a href="#" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
@@ -246,6 +247,11 @@
           <div class="icon">💧</div>
           <h3 data-i18n="card.watermark.title">Digital Watermark</h3>
           <p data-i18n="card.watermark.desc">9 algorithms: LSB, DCT, DWT and more</p>
+        </a>
+        <a href="#" data-page="audio-watermark" class="card">
+          <div class="icon">🎵</div>
+          <h3 data-i18n="card.audio_watermark.title">Audio Watermark</h3>
+          <p data-i18n="card.audio_watermark.desc">Hide secrets in WAV: LSB, Echo Hiding, QIM</p>
         </a>
         <a href="#" data-page="pixel-injection" class="card">
           <div class="icon">🔬</div>
@@ -361,6 +367,75 @@
     <div id="wm-result" style="display:none;margin-top:16px">
       <div class="result" id="wm-output"></div>
       <div id="wm-download" style="margin-top:12px;text-align:center"></div>
+    </div>
+  </section>
+
+  <!-- Audio Watermark -->
+  <section id="page-audio-watermark" class="page">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <a href="#" onclick="showPage('home');return false;" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
+      <h2 style="margin-bottom:0" data-i18n="awm.heading">Audio Watermarking</h2>
+    </div>
+    <div class="card-form">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn tab-btn active" data-awm-tab="embed" onclick="switchAwmTab('embed')" data-i18n="wm.embed_btn">Embed</button>
+        <button class="btn tab-btn" data-awm-tab="extract" onclick="switchAwmTab('extract')" data-i18n="wm.extract_btn">Extract</button>
+      </div>
+      <div id="awm-embed">
+        <div class="form-group">
+          <label for="awm-type" data-i18n="wm.algo_label">Algorithm</label>
+          <select id="awm-type" name="awm-type" onchange="toggleAwmPassword();updateAwmCapacity()">
+            <option value="1">1. LSB Audio</option>
+            <option value="2">2. Group Mean Modulation</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="awm-audio" data-i18n="awm.audio_label">Audio file (WAV recommended)</label>
+          <input type="file" id="awm-audio" name="awm-audio" accept="audio/*" onchange="updateAwmCapacity()">
+          <p id="awm-capacity" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px"></p>
+        </div>
+        <div class="form-group">
+          <label for="awm-secret" data-i18n="awm.secret_label">Secret message</label>
+          <textarea id="awm-secret" name="awm-secret" rows="3" placeholder="Type your hidden message here..." oninput="updateAwmCapacity()" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border,#ddd);background:var(--bg-input,#fafafa);color:var(--text,#333);resize:vertical"></textarea>
+        </div>
+        <div class="form-group" id="awm-password-group">
+          <label for="awm-password" data-i18n="wm.password_label">Password</label>
+          <input type="password" id="awm-password" name="awm-password" placeholder="Enter password" required>
+        </div>
+        <div class="form-group" id="awm-strength-group">
+          <label for="awm-strength">QIM Strength <span id="awm-strength-val">500</span></label>
+          <input type="range" id="awm-strength" min="100" max="3000" value="500" step="100" oninput="document.getElementById('awm-strength-val').textContent=this.value">
+        </div>
+        <button class="btn" onclick="handleAwmEmbed()" id="awm-btn" data-i18n="wm.embed_submit">Embed Watermark</button>
+      </div>
+      <div id="awm-extract" style="display:none">
+        <div class="form-group">
+          <label for="awm-type-ex" data-i18n="wm.algo_label">Algorithm</label>
+          <select id="awm-type-ex" name="awm-type-ex" onchange="toggleAwmPasswordEx()">
+            <option value="1">1. LSB Audio</option>
+            <option value="2">2. Group Mean Modulation</option>
+            <option value="3">3. QIM</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="awm-audio-ex" data-i18n="awm.audio_label">Watermarked audio file</label>
+          <input type="file" id="awm-audio-ex" name="awm-audio-ex" accept="audio/*">
+        </div>
+        <div class="form-group" id="awm-password-ex-group">
+          <label for="awm-password-ex" data-i18n="wm.password_label">Password</label>
+          <input type="password" id="awm-password-ex" name="awm-password-ex" placeholder="Enter password" required>
+        </div>
+        <div class="form-group" id="awm-strength-ex-group">
+          <label for="awm-strength-ex">QIM Strength <span id="awm-strength-ex-val">500</span></label>
+          <input type="range" id="awm-strength-ex" min="100" max="3000" value="500" step="100" oninput="document.getElementById('awm-strength-ex-val').textContent=this.value">
+        </div>
+        <button class="btn" onclick="handleAwmExtract()" id="awm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
+      </div>
+      <div class="spinner" id="awm-spinner"></div>
+    </div>
+    <div id="awm-result" style="display:none;margin-top:16px">
+      <div class="result" id="awm-output"></div>
+      <div id="awm-download" style="margin-top:12px;text-align:center"></div>
     </div>
   </section>
 
@@ -1013,6 +1088,8 @@
 <script src="Assistant/assistant.js" defer></script>
 <script src="Style_Web_Page/navigation.js" defer></script>
 <script src="Watermark/utils.js" defer></script>
+<script src="Audio_Watermark/audio_watermark_core.js" defer></script>
+<script src="Audio_Watermark/audio_watermark.js" defer></script>
 <script src="Watermark/watermark_core.js" defer></script>
 <script src="Pixel_Injection/watermark_core_advanced.js" defer></script>
 <script src="Pixel_Injection/watermark_advanced_ui.js" defer></script>

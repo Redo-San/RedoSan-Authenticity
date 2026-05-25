@@ -31,6 +31,7 @@ document.querySelectorAll('.card[data-page]').forEach(c => {
 var PAGE_TITLES = {
   home: 'RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool',
   watermark: 'Digital Watermark — RedoSan Authenticity',
+  'audio-watermark': 'Audio Watermark — RedoSan Authenticity',
   'pixel-injection': 'Pixel Injection — RedoSan Authenticity',
   fingerprint: 'Fingerprint &amp; Image Hashing — RedoSan Authenticity',
   metadata: 'Metadata &amp; EXIF Reader — RedoSan Authenticity',
@@ -42,6 +43,7 @@ var PAGE_TITLES = {
 var PAGE_DESCS = {
   home: 'Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded.',
   watermark: 'Embed and extract digital watermarks in images using LSB, DCT, DWT, and neural-style algorithms. Free online tool.',
+  'audio-watermark': 'Embed and extract hidden messages in WAV audio files using LSB, Echo Hiding, and QIM algorithms. 100% browser-based.',
   'pixel-injection': 'Advanced pixel injection for steganography with 20+ algorithms including enhanced LSB, DCT, and DWT. Free online tool.',
   fingerprint: 'Calculate cryptographic fingerprints (SHA-256, BLAKE3, MD5) and perceptual image hashes. Free online tool.',
   metadata: 'Read EXIF metadata, dimensions, format, and color mode from images. Free online tool.',
