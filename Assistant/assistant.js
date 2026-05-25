@@ -361,8 +361,8 @@ function addMessage(text, role) {
   var content = document.createElement('div');
   content.className = 'ast-content';
   content.textContent = '';
-  // Parse markdown-like bold
-  var formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+  var formatted = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
   content.innerHTML = formatted;
   div.appendChild(content);
   msgArea.appendChild(div);
