@@ -271,14 +271,11 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
   section, .page > .card-form { margin-bottom: 14px; }
   .hero { padding: 32px 0; }
 }
+
 /* ── Adequate tap target spacing on mobile ── */
 @media (max-width: 767px) {
   .card-form .form-group { margin-bottom: 14px; }
   .card-form .btn + .btn { margin-top: 8px; }
-  .mode-cards { gap: 12px; }
-  .mode-card { padding: 20px 16px; }
-  .mode-links { gap: 16px; }
-  .mode-links a { padding: 6px 0; display: inline-block; }
   .lang-option { padding: 10px 14px; min-height: 44px; display: flex; align-items: center; }
   .sidebar a, .sidebar .sidebar-item { min-height: 44px; display: flex; align-items: center; padding: 10px 16px; }
   .error-links a { min-height: 44px; display: inline-flex; align-items: center; padding: 8px 14px; }
@@ -298,6 +295,34 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
   .result { font-size: 0.75rem; }
   .nav-search input { font-size: 16px; }
   .footer-copy { font-size: 0.78rem; }
+}
+
+/* ── Mode selection overlay: scroll fix & sizing on mobile ── */
+@media (max-width: 480px) {
+  .mode-select-overlay { padding: 12px; justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .mode-select-box { padding: 56px 16px 32px; }
+  .mode-select-box h1 { font-size: 1.3rem; }
+  .mode-subtitle { font-size: 0.82rem; margin-bottom: 20px; }
+  .mode-tagline { font-size: 0.76rem; margin-bottom: 20px; }
+  .mode-logo { width: 56px; height: 56px; }
+  .mode-cards { flex-direction: column; gap: 12px; }
+  .mode-card { padding: 16px; }
+  .mode-card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .mode-card h3 { font-size: 0.9rem; }
+  .mode-card p { font-size: 0.76rem; }
+  .mode-links { gap: 12px; }
+  .mode-links a { font-size: 0.76rem; padding: 8px 0; display: inline-block; }
+  .mode-social { gap: 8px; }
+  .mode-social a { font-size: 0.72rem; }
+  .mode-select-bar { padding: 6px 10px; }
+}
+@media (max-width: 360px) {
+  .mode-select-overlay { padding: 8px; }
+  .mode-select-box { padding: 52px 10px 24px; }
+  .mode-select-box h1 { font-size: 1.1rem; }
+  .mode-tagline { font-size: 0.7rem; margin-bottom: 16px; }
+  .mode-logo { width: 48px; height: 48px; }
+  .mode-card { padding: 12px; }
 }
 
 /* ── Clamp-based fluid typography for modern browsers ── */
