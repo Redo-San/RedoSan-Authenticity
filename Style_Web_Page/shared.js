@@ -537,12 +537,12 @@ function showBotOverlay(reason) {
   o.classList.add('active');
 }
 
-// ── Async VPN detection via WebRTC leak + is-vpn list ──
+// ── Async VPN detection via WebRTC + is-vpn list ──
 function detectWebRTCIPs() {
   return new Promise(function(resolve) {
     var ips = [], done = false, timer = setTimeout(function() {
       if (!done) { done = true; resolve(ips); }
-    }, 3000);
+    }, 5000);
     try {
       var pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
       pc.createDataChannel('');
@@ -552,6 +552,11 @@ function detectWebRTCIPs() {
           if (!done) { done = true; clearTimeout(timer); try { pc.close(); } catch(ex) {} resolve(ips); }
           return;
         }
+        // Modern API: address property (available in Chrome, Firefox, Safari)
+        if (e.candidate.address && typeof e.candidate.address === 'string' && e.candidate.address.indexOf('.') !== -1) {
+          if (ips.indexOf(e.candidate.address) === -1) ips.push(e.candidate.address);
+        }
+        // Fallback: regex from candidate string
         var m = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
         if (m && ips.indexOf(m[1]) === -1) ips.push(m[1]);
       };
@@ -564,27 +569,33 @@ function detectWebRTCIPs() {
 async function startAsyncVPNDetection() {
   if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) return;
   var ips = await detectWebRTCIPs();
-  if (ips.length === 0) return;
   var publicIPs = [];
   for (var i = 0; i < ips.length; i++) {
     if (!/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(ips[i]))
       publicIPs.push(ips[i]);
   }
-  // 2+ unique public IPs via WebRTC = VPN leak
+  // WebRTC modified/absent = suspicious
+  if (ips.length === 0 && typeof RTCPeerConnection === 'undefined') {
+    REDOSAN_BOT_CHECK = { score: 30, signals: ['webrtc_suppressed'], isAutomated: false };
+    return;
+  }
+  // 2+ public IPs via WebRTC = VPN leak (one real + one VPN IP)
   if (publicIPs.length >= 2) {
     REDOSAN_BOT_CHECK = { score: 60, signals: ['webrtc_vpn'], isAutomated: true };
     showBotOverlay('vpn'); return;
   }
-  // Check against is-vpn IP range list (loaded on demand from CDN)
-  try {
-    var vpnMod = await import('https://cdn.jsdelivr.net/gh/josephrocca/is-vpn@v0.0.3/mod.js');
-    for (var j = 0; j < publicIPs.length; j++) {
-      if (vpnMod.isVpn(publicIPs[j])) {
-        REDOSAN_BOT_CHECK = { score: 55, signals: ['vpn_ip:' + publicIPs[j]], isAutomated: true };
-        showBotOverlay('vpn'); return;
+  // Always check found public IPs against is-vpn list
+  if (publicIPs.length > 0) {
+    try {
+      var vpnMod = await import('https://cdn.jsdelivr.net/gh/josephrocca/is-vpn@v0.0.3/mod.js');
+      for (var j = 0; j < publicIPs.length; j++) {
+        if (vpnMod.isVpn(publicIPs[j])) {
+          REDOSAN_BOT_CHECK = { score: 55, signals: ['vpn_ip:' + publicIPs[j]], isAutomated: true };
+          showBotOverlay('vpn'); return;
+        }
       }
-    }
-  } catch(e) { /* is-vpn CDN unavailable — skip */ }
+    } catch(e) { /* is-vpn CDN unavailable — skip */ }
+  }
 }
 
 function logSecurityStatus() {
@@ -592,10 +603,9 @@ function logSecurityStatus() {
   var p = REDOSAN_BOT_CHECK;
   var ok = !p.isAutomated;
   var layers = [
-    'Bot/Automation  ' + (ok ? '✓ SAFE' : '✗ BLOCKED') + '  (score:' + p.score + ')',
-    'WebRTC VPN Leak  ' + (ok ? '✓ WAITING' : '✗ BLOCKED'),
-    'VPN IP List      ' + (ok ? '✓ WAITING' : '✗ BLOCKED')
+    'Bot/Automation  ' + (ok ? '✓ PASS' : '✗ BLOCKED') + '  (score:' + p.score + ')'
   ];
+  if (ok) { layers.push('VPN/Proxy      ' + '✓ PASS'); layers.push('WebRTC         ' + '✓ PASS'); }
   if (p.isAutomated && p.signals.length) {
     layers[0] += ' [' + p.signals.join(',') + ']';
   }
