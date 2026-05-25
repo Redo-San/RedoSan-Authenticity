@@ -488,16 +488,16 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .mode-select-overlay {
   position: fixed; inset: 0; z-index: 9999;
   background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex; flex-direction: column; align-items: center;
   padding: 24px; overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 .mode-select-bar {
   display: flex; align-items: center; justify-content: flex-end; gap: 12px;
-  padding: 12px 24px;
+  padding: 12px 24px; width: 100%; flex-shrink: 0;
 }
 .mode-select-box {
   max-width: 520px; width: 100%; text-align: center;
-  padding: 0 0 40px;
+  padding: 0 0 40px; margin: auto;
 }
 .mode-logo-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
 .mode-logo { width: 72px; height: 72px; border-radius: 50%; background: var(--card); padding: 4px; background-size: contain; background-repeat: no-repeat; background-position: center; background-origin: content-box; }
