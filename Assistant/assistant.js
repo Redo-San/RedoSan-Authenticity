@@ -187,8 +187,8 @@ var ASSISTANT_KB = [
     suggestions:{ en:['How does watermarking work?','What is fingerprinting?','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','ما هو C2PA؟']}},
 
   { id:'who_is_redosan', patterns:['who is redosan','what is redosan','من هو ريدو سان','من هو ريدوسان','ريدو سان','redosan','tell me about redosan','about redosan','creator','developer','who made this','who created','من صنع هذا','المطور','المنشئ','صاحب الموقع'],
-    contexts:[], response:{ en:'**RedoSan** is the developer behind **RedoSan Authenticity**.\n\nGitHub: https://github.com/Redo-San\nEmail: redo.san@hotmail.com\nTelegram: https://t.me/RedoSan\n\nRedoSan builds open-source tools focused on digital authenticity, watermarking, and steganography — all running 100% in your browser.\n\nThe name **"RedoSan"** is a digital identity representing a commitment to authenticity, transparency, and open-source values.',
-    ar:'**RedoSan** هو المطور الذي يقف وراء **RedoSan Authenticity**.\n\nGitHub: https://github.com/Redo-San\nEmail: redo.san@hotmail.com\nTelegram: https://t.me/RedoSan\n\nRedoSan يبني أدوات مفتوحة المصدر تركز على الأصالة الرقمية، العلامات المائية، والإخفاء الرقمي — كلها تعمل 100% في متصفحك.\n\nالاسم **"RedoSan"** هو هوية رقمية تمثل التزاماً بالأصالة والشفافية وقيم المصدر المفتوح.'},
+    contexts:[], response:{ en:'**RedoSan** is the developer behind **RedoSan Authenticity**.\n\nGitHub: https://github.com/Redo-San\n\nRedoSan builds open-source tools focused on digital authenticity, watermarking, and steganography — all running 100% in your browser.\n\nThe name **"RedoSan"** is a digital identity representing a commitment to authenticity, transparency, and open-source values.',
+    ar:'**RedoSan** هو المطور الذي يقف وراء **RedoSan Authenticity**.\n\nGitHub: https://github.com/Redo-San\n\nRedoSan يبني أدوات مفتوحة المصدر تركز على الأصالة الرقمية، العلامات المائية، والإخفاء الرقمي — كلها تعمل 100% في متصفحك.\n\nالاسم **"RedoSan"** هو هوية رقمية تمثل التزاماً بالأصالة والشفافية وقيم المصدر المفتوح.'},
     suggestions:{ en:['What is this tool?','Open source','Contact'], ar:['ما هذه الأداة؟','مفتوح المصدر','اتصل بنا']}}
 ];
 
