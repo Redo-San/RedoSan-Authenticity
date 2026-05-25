@@ -478,6 +478,9 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .footer-links a { color:var(--text-muted); text-decoration:none; font-size:0.82rem; cursor:pointer; }
 .footer-links a:hover { color:var(--primary); }
 .footer-copy { color:var(--text-muted); font-size:0.78rem; }
+.footer-social { display:flex; justify-content:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+.footer-social a { color:var(--text-muted); text-decoration:none; font-size:0.78rem; padding:4px 8px; border-radius:6px; transition:color .2s,background .2s; }
+.footer-social a:hover { color:var(--primary); background:var(--card-hover); }
 
 /* ── Mode selection overlay ── */
 .mode-select-overlay {
