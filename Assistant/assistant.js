@@ -279,8 +279,12 @@ function clearChatHistory() {
 
 // ── UI ──
 var ASSISTANT_OPEN = false;
+var ASSISTANT_TOGGLE_LOCK = false;
 
 function toggleAssistant() {
+  if (ASSISTANT_TOGGLE_LOCK) return;
+  ASSISTANT_TOGGLE_LOCK = true;
+  setTimeout(function() { ASSISTANT_TOGGLE_LOCK = false; }, 300);
   var panel = document.getElementById('assistantPanel');
   var bubble = document.getElementById('assistantBubble');
   if (!panel || !bubble) return;
@@ -445,7 +449,6 @@ function initAssistant() {
   var bubble = document.getElementById('assistantBubble');
   if (bubble) {
     bubble.setAttribute('aria-label', lang === 'ar' ? 'فتح المساعد' : 'Open assistant');
-    bubble.addEventListener('click', toggleAssistant);
     bubble.addEventListener('touchend', function(e) {
       e.preventDefault();
       toggleAssistant();
