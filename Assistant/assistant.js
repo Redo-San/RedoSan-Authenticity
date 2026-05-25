@@ -245,7 +245,6 @@ function assistantTokenize(t) {
 
 // ── Intelligent intent matcher ──
 function matchAssistantIntent(input) {
-  var lang = getAssistantLang();
   var tokens = assistantTokenize(input);
   if (tokens.length === 0) return null;
   var normalized = normalizeArabic(input.toLowerCase());
@@ -309,25 +308,29 @@ function matchAssistantIntent(input) {
   return bestScore >= 0.28 ? bestMatch : null;
 }
 
-function getAssistantResponse(intent) {
-  var lang = getAssistantLang();
+function getResponseLang(inputText) {
+  return inputText && /[\u0600-\u06FF]/.test(inputText) ? 'ar' : getAssistantLang();
+}
+
+function getAssistantResponse(intent, lang) {
+  if (!lang) lang = getAssistantLang();
   if (intent && intent.response) {
     return intent.response[lang] || intent.response.en || '';
   }
   return ASSISTANT_FALLBACK[lang] || ASSISTANT_FALLBACK.en;
 }
 
-function getAssistantSuggestions(intent) {
-  var lang = getAssistantLang();
+function getAssistantSuggestions(intent, lang) {
+  if (!lang) lang = getAssistantLang();
   if (intent && intent.suggestions) {
     return intent.suggestions[lang] || intent.suggestions.en || [];
   }
   return [];
 }
 
-function getContextualSuggestions() {
+function getContextualSuggestions(lang) {
+  if (!lang) lang = getAssistantLang();
   var ctx = getCurrentContext();
-  var lang = getAssistantLang();
 
   var defaults = {
     en: ['How to watermark?', 'What is fingerprint?', 'Privacy & Security'],
@@ -405,11 +408,11 @@ function showInitialGreeting() {
   } : ASSISTANT_GREETING;
 
   addMessage((initialMsg[lang] || initialMsg.en), 'bot');
-  var suggestions = ctx ? getContextualSuggestions() : getAssistantSuggestions(ASSISTANT_KB[0]);
-  showSuggestions(suggestions);
+  var suggestions = ctx ? getContextualSuggestions(lang) : getAssistantSuggestions(ASSISTANT_KB[0], lang);
+  showSuggestions(suggestions, lang);
 }
 
-function showSuggestions(suggestions) {
+function showSuggestions(suggestions, lang) {
   var container = document.getElementById('assistantSuggestions');
   if (!container) return;
   container.innerHTML = '';
@@ -422,16 +425,16 @@ function showSuggestions(suggestions) {
     var chip = document.createElement('button');
     chip.className = 'ast-chip';
     chip.textContent = suggestions[i];
-    chip.onclick = function(s) { return function() {
+    chip.onclick = function(s, l) { return function() {
       document.getElementById('assistantSuggestions').style.display = 'none';
       addMessage(s, 'user');
       var matched = matchAssistantIntent(s);
       setTimeout(function() {
-        addMessage(getAssistantResponse(matched), 'bot');
-        var sug = matched ? getAssistantSuggestions(matched) : getContextualSuggestions();
-        showSuggestions(sug.length > 0 ? sug : getContextualSuggestions());
+        addMessage(getAssistantResponse(matched, l), 'bot');
+        var sug = matched ? getAssistantSuggestions(matched, l) : getContextualSuggestions(l);
+        showSuggestions(sug.length > 0 ? sug : getContextualSuggestions(l), l);
       }, 300);
-    };}(suggestions[i]);
+    };}(suggestions[i], lang || getAssistantLang());
     container.appendChild(chip);
   }
 }
@@ -485,14 +488,14 @@ function sendAssistantMessage(text) {
   // Simulate processing delay
   setTimeout(function() {
     if (typing.parentNode) typing.remove();
-    var lang = getAssistantLang();
+    var respLang = getResponseLang(text);
     var matched = matchAssistantIntent(text);
-    var response = getAssistantResponse(matched);
+    var response = getAssistantResponse(matched, respLang);
     addMessage(response, 'bot');
     var suggestions = matched
-      ? getAssistantSuggestions(matched)
-      : getContextualSuggestions();
-    showSuggestions(suggestions.length > 0 ? suggestions : getContextualSuggestions());
+      ? getAssistantSuggestions(matched, respLang)
+      : getContextualSuggestions(respLang);
+    showSuggestions(suggestions.length > 0 ? suggestions : getContextualSuggestions(respLang), respLang);
     history.push({ role: 'bot', text: response });
     saveChatHistory(history);
   }, 400 + Math.random() * 400);
