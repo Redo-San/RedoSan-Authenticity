@@ -583,7 +583,7 @@ function logSecurityStatus() {
   }
   console.log('%c🔐 RedoSan Security', 'font-size:16px;font-weight:700;color:#6C5CE7');
   for (var i = 0; i < layers.length; i++) {
-    var c = layers[i].indexOf('SAFE') !== -1 || layers[i].indexOf('WAITING') !== -1 ? '#4CAF50' : '#FF5252';
+    var c = layers[i].indexOf('✗') === -1 ? '#4CAF50' : '#FF5252';
     console.log('%c  ' + layers[i], 'color:' + c + ';font-size:13px');
   }
 }
