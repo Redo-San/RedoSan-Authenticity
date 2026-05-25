@@ -446,6 +446,10 @@ function initAssistant() {
   if (bubble) {
     bubble.setAttribute('aria-label', lang === 'ar' ? 'فتح المساعد' : 'Open assistant');
     bubble.addEventListener('click', toggleAssistant);
+    bubble.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      toggleAssistant();
+    });
   }
 
   var sendBtn = document.querySelector('.ast-send-btn');
