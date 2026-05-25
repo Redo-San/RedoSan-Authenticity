@@ -285,15 +285,18 @@ function toggleAssistant() {
   var bubble = document.getElementById('assistantBubble');
   if (!panel || !bubble) return;
   ASSISTANT_OPEN = !ASSISTANT_OPEN;
-  panel.classList.toggle('open', ASSISTANT_OPEN);
-  bubble.style.display = ASSISTANT_OPEN ? 'none' : 'flex';
   if (ASSISTANT_OPEN) {
+    panel.classList.add('open');
+    bubble.style.display = 'none';
     var msgArea = document.getElementById('assistantMessages');
     if (msgArea && msgArea.children.length === 0) {
       showInitialGreeting();
     }
     var input = document.getElementById('assistantInput');
     if (input) setTimeout(function() { input.focus(); }, 300);
+  } else {
+    panel.classList.remove('open');
+    bubble.style.display = '';
   }
 }
 
