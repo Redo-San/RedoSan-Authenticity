@@ -273,7 +273,7 @@ nav .logo { display:flex; align-items:center; }
   .hero h1 { font-size: 1.8rem; }
   .sidebar { width:220px; left:-240px; }
   .nav-search.focused { width:140px; }
-  .nav-search .search-results { width:calc(100vw - 40px); left:0; }
+  .nav-search .search-results { width:calc(100vw - 40px); left:auto; right:0; }
   .error-code { font-size:5rem; }
 }
 .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200; align-items:center; justify-content:center; }
