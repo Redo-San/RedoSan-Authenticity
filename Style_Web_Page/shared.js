@@ -521,37 +521,23 @@ function showBotOverlay(reason) {
   if (!o) return;
   var lang = document.documentElement.getAttribute('lang') || 'en';
   var isAr = lang === 'ar';
-  // Remove any old dismiss button
-  var oldBtn = o.querySelector('.bot-block-dismiss');
-  if (oldBtn) oldBtn.remove();
-  var oldLink = o.querySelector('.bot-block-link');
   if (reason === 'vpn') {
     o.querySelector('.bot-block-icon').textContent = '🔒';
     o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم اكتشاف VPN / بروكسي' : '🚫 VPN / Proxy Detected';
     o.querySelector('.bot-block-text').textContent = isAr
-      ? 'تم اكتشاف أنك تستخدم VPN أو بروكسي. تطبيق RedoSan Authenticity يتطلب اتصالاً مباشراً للأمان.\n\nإذا كنت مستخدماً حقيقياً، يمكنك تجاوز هذا التحذير.'
-      : 'A VPN or proxy was detected. RedoSan Authenticity requires a direct connection for security.\n\nIf you are a real user, you may dismiss this warning.';
-    var dismiss = document.createElement('button');
-    dismiss.className = 'bot-block-dismiss';
-    dismiss.textContent = isAr ? '👤 أنا مستخدم حقيقي - متابعة' : '👤 I\'m a real user - Continue';
-    dismiss.onclick = function() {
-      o.classList.remove('active');
-      try { sessionStorage.setItem('redosan_vpn_dismissed', '1'); } catch(e) {}
-    };
-    if (oldLink) oldLink.style.display = 'none';
-    o.querySelector('.bot-block-content').appendChild(dismiss);
+      ? 'تم اكتشاف تسرب IP عبر WebRTC يشير إلى استخدام VPN أو بروكسي. يرجى تعطيل VPN وإعادة تحميل الصفحة.'
+      : 'A WebRTC IP leak was detected indicating VPN or proxy usage. Please disable your VPN and reload the page.';
   } else {
     o.querySelector('.bot-block-icon').textContent = '🛡️';
     o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم رفض الوصول' : '🚫 Access Denied';
     o.querySelector('.bot-block-text').textContent = isAr
-      ? 'تم اكتشاف متصفح آلي / بدون واجهة. تطبيق RedoSan Authenticity مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة (Puppeteer, Selenium, Playwright) وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في GitHub.'
-      : 'Automated / headless browser detected. RedoSan Authenticity is intended for human users only. Please disable automation tools (Puppeteer, Selenium, Playwright, etc.) and reload the page.\n\nIf you believe this is an error, please report it on GitHub.';
-    if (oldLink) oldLink.style.display = '';
+      ? 'تم اكتشاف متصفح آلي / بدون واجهة. التطبيق مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة وإعادة تحميل الصفحة.'
+      : 'Automated / headless browser detected. Please disable automation tools and reload the page.';
   }
   o.classList.add('active');
 }
 
-// ── Async VPN detection via WebRTC + is-vpn list ──
+// ── Async VPN detection via WebRTC leak ──
 function detectWebRTCIPs() {
   return new Promise(function(resolve) {
     var ips = [], done = false, timer = setTimeout(function() {
@@ -588,31 +574,15 @@ async function startAsyncVPNDetection() {
     if (!/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(ips[i]))
       publicIPs.push(ips[i]);
   }
-  // WebRTC modified/absent = suspicious
-  if (ips.length === 0 && typeof RTCPeerConnection === 'undefined') {
-    REDOSAN_BOT_CHECK = { score: 30, signals: ['webrtc_suppressed'], isAutomated: false };
+  // WebRTC modified/absent = note it
+  if (ips.length === 0) {
+    if (typeof RTCPeerConnection === 'undefined') REDOSAN_BOT_CHECK = { score: 30, signals: ['webrtc_suppressed'], isAutomated: false };
     return;
   }
-  // Skip VPN overlay if user already dismissed it this session
-  var vpnDismissed = false;
-  try { vpnDismissed = sessionStorage.getItem('redosan_vpn_dismissed') === '1'; } catch(e) {}
-  if (vpnDismissed) return;
-  // 2+ public IPs via WebRTC = VPN leak (one real + one VPN IP)
+  // 2+ public IPs via WebRTC = VPN leak (real IP leaked alongside VPN IP)
   if (publicIPs.length >= 2) {
     REDOSAN_BOT_CHECK = { score: 60, signals: ['webrtc_vpn'], isAutomated: true };
-    showBotOverlay('vpn'); return;
-  }
-  // Always check found public IPs against is-vpn list
-  if (publicIPs.length > 0) {
-    try {
-      var vpnMod = await import('https://cdn.jsdelivr.net/gh/josephrocca/is-vpn@v0.0.3/mod.js');
-      for (var j = 0; j < publicIPs.length; j++) {
-        if (vpnMod.isVpn(publicIPs[j])) {
-          REDOSAN_BOT_CHECK = { score: 55, signals: ['vpn_ip:' + publicIPs[j]], isAutomated: true };
-          showBotOverlay('vpn'); return;
-        }
-      }
-    } catch(e) { /* is-vpn CDN unavailable — skip */ }
+    showBotOverlay('vpn');
   }
 }
 
