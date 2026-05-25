@@ -1,17 +1,17 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 
 var ASSISTANT_KB = [
-  { id:'welcome', patterns:['hi','hello','hey','مرحبا','مرحبًا','مرحبا بك','السلام عليكم','وعليكم السلام','hi there','good morning','good evening','good day'],
+  { id:'welcome', patterns:['hi','hello','hey','helo','helloo','مرحبا','مرحبًا','مرحبا بك','السلام عليكم','وعليكم السلام','السلامو عليكم','هلا','اهلا','hi there','good morning','good evening','good day','gud morning','morning','evening','howdy','yo','sup'],
     contexts:[], response:{ en:'👋 Hello! I\'m your RedoSan Assistant. I can help you with all the tools here.\n\nTry asking me:\n• How does watermarking work?\n• What is file fingerprinting?\n• How to create a timestamp?\n• Privacy & security\n\nWhat would you like to know?',
     ar:'👋 مرحباً! أنا مساعد RedoSan. يمكنني مساعدتك في جميع الأدوات هنا.\n\nجرب أن تسألني:\n• كيف تعمل العلامة المائية؟\n• ما هي بصمة الملف؟\n• كيف ينشئ الطابع الزمني؟\n• الخصوصية والأمان\n\nماذا تريد أن تعرف؟' },
     suggestions:{ en:['How does watermarking work?','What is fingerprinting?','How to timestamp?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','كيف ينشئ الطابع الزمني؟']}},
 
-  { id:'thanks', patterns:['thanks','thank you','شكرا','شكراً','thx','thank'],
+  { id:'thanks', patterns:['thanks','thank you','thankyou','شكرا','شكراً','شكرا جزيلا','جزاك الله خيرا','thx','thank','appreciate','much appreciated','my gratitude','tq','merci','danke'],
     contexts:[], response:{ en:'You\'re welcome! 😊 Let me know if you need anything else.',
     ar:'العفو! 😊 أخبرني إذا احتجت أي شيء آخر.' },
     suggestions:{ en:['How does watermarking work?','Privacy & Security','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','الخصوصية والأمان','ما هو C2PA؟']}},
 
-  { id:'privacy', patterns:['privacy','security','safe','secure','upload','server','private','data stored','is it safe','your privacy','local','browser','خصوصية','أمان','آمن','خادم','مرفوع'],
+  { id:'privacy', patterns:['privacy','security','safe','secure','upload','server','private','data stored','is it safe','your privacy','local','browser','data protection','is my data safe','do you store','end to end','encrypt','خصوصية','أمان','آمن','خادم','مرفوع','هل البيانات آمنة','هل موقعك آمن','الخصوصية'],
     contexts:[], response:{ en:'🔒 **Your files never leave your device.**\n\nAll processing happens 100% in your browser using JavaScript. No files, metadata, or any other data are transmitted to any server.\n\nWe load some libraries from CDNs (for PDF/DOCX export), but your file data is never shared with them.\n\nThe source code is open-source on GitHub — you can audit it yourself.',
     ar:'🔒 **ملفاتك لا تغادر جهازك أبداً.**\n\nجميع المعالجة تتم 100% في متصفحك باستخدام JavaScript. لا يتم إرسال أي ملفات أو بيانات وصفية أو أي بيانات أخرى إلى أي خادم.\n\nنقوم بتحميل بعض المكتبات من CDNs (لتصدير PDF/DOCX)، لكن بيانات ملفاتك لا تتم مشاركتها معهم أبداً.\n\nالكود المصدري مفتوح على GitHub — يمكنك مراجعته بنفسك.' },
     suggestions:{ en:['How does watermarking work?','What is OpenTimestamps?','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','ما هو OpenTimestamps؟','ما هو C2PA؟']}},
@@ -126,7 +126,7 @@ var ASSISTANT_KB = [
     ar:'**محول الملفات** يحول بين صيغ مختلفة:\n\n🖼️ **الصور:** PNG, JPEG, WebP, BMP, GIF, TIFF\n🎵 **الصوت:** MP3, WAV, OGG, FLAC\n🎬 **الفيديو:** MP4, WebM, AVI\n📄 **المستندات:** PDF, DOCX, TXT, HTML, CSV, JSON, XML, MD\n\nفقط ارفع ملفاً واختر الصيغة المطلوبة. كل التحويل يتم في متصفحك.' },
     suggestions:{ en:['How to convert?','Supported formats','Image conversion'], ar:['كيفية التحويل؟','الصيغ المدعومة','تحويل الصور']}},
 
-  { id:'help', patterns:['help','what can you help','i need help','help me','how to use','how do i','what tools','show tools','what can i do','مساعدة','ساعدني','كيف أستخدم','ما الأدوات','ماذا يمكنني أن أفعل'],
+  { id:'help', patterns:['help','what can you help','i need help','help me','how to use','how do i','what tools','show tools','what can i do','options','features','capabilities','what are the tools','what do you do','all tools','list tools','مساعدة','ساعدني','كيف أستخدم','ما الأدوات','ماذا يمكنني أن أفعل','الخيارات','الميزات','الإمكانيات','عرض الأدوات'],
     contexts:[], response:{ en:'Here\'s what I can help you with:\n\n💧 **Digital Watermark** — Hide data in images\n🔬 **Pixel Injection** — Advanced steganography\n🔍 **Fingerprint** — Hash files (SHA, BLAKE3, etc.)\n📋 **Metadata** — Read EXIF & image info\n🕒 **Timestamp** — OpenTimestamps proofs\n✨ **C2PA** — Content provenance\n📜 **Digital Passport** — Signed certificates\n🔄 **File Converter** — Change formats\n🔒 **Privacy** — How your data is handled\n\nJust type your question! Or click one of the suggested questions below.',
     ar:'إليك ما يمكنني مساعدتك به:\n\n💧 **العلامة المائية الرقمية** — إخفاء البيانات في الصور\n🔬 **حقن البكسل** — إخفاء متقدم\n🔍 **البصمة الرقمية** — تجزئة الملفات (SHA, BLAKE3, إلخ)\n📋 **البيانات الوصفية** — قراءة EXIF ومعلومات الصورة\n🕒 **الطابع الزمني** — إثباتات OpenTimestamps\n✨ **C2PA** — مصدر المحتوى\n📜 **جواز السفر الرقمي** — شهادات موقعة\n🔄 **محول الملفات** — تغيير الصيغ\n🔒 **الخصوصية** — كيفية معالجة بياناتك\n\nفقط اكتب سؤالك! أو انقر على أحد الأسئلة المقترحة أدناه.' },
     suggestions:{ en:['How does watermarking work?','What is fingerprinting?','Privacy & Security','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','الخصوصية والأمان','ما هو C2PA؟']}},
@@ -141,7 +141,7 @@ var ASSISTANT_KB = [
     ar:'**الوضع المحترف** يمنحك وصولاً كاملاً لجميع الأدوات مع صفحات فردية لكل ميزة.\n\nيمكنك استخدام أي أداة بأي ترتيب:\n• العلامة المائية → تضمين أو استخراج\n• حقن البكسل → تضمين أو استخراج أو تحليل\n• البصمة الرقمية → إنشاء تجزئات\n• البيانات الوصفية → قراءة EXIF\n• الطابع الزمني → إنشاء أو تحقق .ots\n• C2PA → قراءة أو توقيع أو تحقق\n• جواز السفر الرقمي → إنشاء شهادات\n• محول الملفات → تحويل الصيغ\n\n💡 انتقل بين الأدوات باستخدام الشريط الجانبي أو البطاقات في الصفحة الرئيسية.' },
     suggestions:{ en:['How to switch to simplified?','What tools are available?','Privacy & Security'], ar:['كيفية التبديل إلى المبسط؟','ما الأدوات المتاحة؟','الخصوصية والأمان']}},
 
-  { id:'opensource', patterns:['open source','github','source code','contribute','license','gpl','code','repository','مفتوح المصدر','github','المصدر','المستودع','رخصة'],
+  { id:'opensource', patterns:['open source','github','source code','contribute','license','gpl','code','repository','fork','pull request','issues','bug report','feature request','مفتوح المصدر','github','المصدر','المستودع','رخصة','مساهمة','المساهمة','تطوير','طلب ميزة'],
     contexts:[], response:{ en:'RedoSan Authenticity is **open-source** under the **GPL license**.\n\n🔗 **GitHub:** https://github.com/Redo-San/RedoSan-Authenticity\n\nYou can:\n• View the source code\n• Report bugs via Issues\n• Suggest features\n• Fork and contribute\n\nThe project is built with vanilla JavaScript — no frameworks, no build tools needed.',
     ar:'RedoSan Authenticity هي **مفتوحة المصدر** تحت **رخصة GPL**.\n\n🔗 **GitHub:** https://github.com/Redo-San/RedoSan-Authenticity\n\nيمكنك:\n• عرض الكود المصدري\n• الإبلاغ عن الأخطاء عبر Issues\n• اقتراح ميزات\n• عمل Fork والمساهمة\n\nالمشروع مبني بـ JavaScript نقية — لا أطر عمل، لا أدوات بناء مطلوبة.' },
     suggestions:{ en:['Privacy & Security','How does watermarking work?','What is C2PA?'], ar:['الخصوصية والأمان','كيف تعمل العلامة المائية؟','ما هو C2PA؟']}},
@@ -154,6 +154,36 @@ var ASSISTANT_KB = [
   { id:'search', patterns:['search','find','looking for','where is','how to find','بحث','أين','أبحث عن'],
     contexts:[], response:{ en:'You can use the **search bar** in the top navigation! Just type a keyword like "watermark", "fingerprint", "sha256", "timestamp", "c2pa" and press Enter.\n\nOr you can ask me directly — what are you looking for?',
     ar:'يمكنك استخدام **شريط البحث** في الشريط العلوي! فقط اكتب كلمة مثل "علامة مائية"، "بصمة"، "طابع زمني" واضغط Enter.\n\nأو يمكنك سؤالي مباشرة — ما الذي تبحث عنه؟' },
+    suggestions:{ en:['How does watermarking work?','What is fingerprinting?','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','ما هو C2PA؟']}},
+
+  { id:'getting_started', patterns:['how to use','getting started','get started','beginner','tutorial','guide','walkthrough','start here','how do i start','كيف أستخدم','ابدأ','المبتدئين','دليل','شرح','كيف أبدا'],
+    contexts:[], response:{ en:'**Getting Started with RedoSan Authenticity:**\n\nThis tool runs entirely in your browser — no installation needed.\n\n1. Choose **Simplified Mode** for a step-by-step wizard, or **Professional Mode** for full access\n2. Upload an image file\n3. Select a tool: **Watermark**, **Pixel Injection**, **Fingerprint**, **Metadata**, **Timestamp**, **C2PA**, **Digital Passport**, or **File Converter**\n4. Follow the on-screen instructions\n\n💡 Start with **Simplified Mode** if you\'re new!',
+    ar:'**بدء استخدام RedoSan Authenticity:**\n\nهذه الأداة تعمل بالكامل في متصفحك — لا حاجة للتثبيت.\n\n1. اختر **الوضع المبسط** للمعالجة خطوة بخطوة، أو **الوضع المحترف** للوصول الكامل\n2. ارفع ملف صورة\n3. اختر أداة: **العلامة المائية**، **حقن البكسل**، **البصمة**، **البيانات الوصفية**، **الطابع الزمني**، **C2PA**، **جواز السفر الرقمي**، أو **محول الملفات**\n4. اتبع التعليمات على الشاشة\n\n💡 ابدأ بـ **الوضع المبسط** إذا كنت جديداً!'},
+    suggestions:{ en:['What is Simplified Mode?','What tools are available?','Privacy & Security'], ar:['ما هو الوضع المبسط؟','ما الأدوات المتاحة؟','الخصوصية والأمان']}},
+
+  { id:'algorithm_choice', patterns:['what algorithm','best algorithm','which algorithm','recommended algorithm','algorithm comparison','choose algorithm','what algorithm to use','أي خوارزمية','أفضل خوارزمية','اختيار الخوارزمية','مقارنة الخوارزميات'],
+    contexts:[], response:{ en:'**Choosing an Algorithm:**\n\n💧 **Watermark (9 algorithms):**\n• Algorithm 1 (LSB) — Simplest, least robust\n• Algorithm 4 (Latent DCT) — Good balance of capacity & robustness\n• Algorithm 9 (Imatag-style) — Best for copyright\n\n🔬 **Pixel Injection (20+ algorithms):**\n• **Spatial LSB** — Good for beginners\n• **Frequency DCT/DWT** — More robust, better for important data\n• **Deep Learning** — Advanced, experimental\n\n💡 For copyright protection → Watermark. For secret communication → Pixel Injection.',
+    ar:'**اختيار الخوارزمية:**\n\n💧 **العلامة المائية (9 خوارزميات):**\n• الخوارزمية 1 (LSB) — الأبسط، الأقل متانة\n• الخوارزمية 4 (Latent DCT) — توازن جيد بين السعة والمتانة\n• الخوارزمية 9 (Imatag-style) — الأفضل لحقوق النشر\n\n🔬 **حقن البكسل (20+ خوارزمية):**\n• **Spatial LSB** — جيد للمبتدئين\n• **Frequency DCT/DWT** — أكثر متانة، أفضل للبيانات المهمة\n• **Deep Learning** — متقدم، تجريبي\n\n💡 لحماية حقوق النشر → العلامة المائية. للتواصل السري → حقن البكسل.'},
+    suggestions:{ en:['How does watermarking work?','How does pixel injection work?','Watermark vs Pixel Injection'], ar:['كيف تعمل العلامة المائية؟','كيف يعمل حقن البكسل؟','العلامة المائية vs حقن البكسل']}},
+
+  { id:'free_opensource', patterns:['is it free','how much','pricing','cost','paid','premium','subscription','free vs paid','مجاني','السعر','التكلفة','مدفوع','اشتراك','هل هو مجاني'],
+    contexts:[], response:{ en:'RedoSan Authenticity is **100% free and open-source** under the GPL license.\n\n✅ No paid plans\n✅ No premium features\n✅ No subscriptions\n✅ No hidden costs\n\nAll features are available to everyone. The source code is on GitHub for anyone to audit, modify, and share.',
+    ar:'RedoSan Authenticity **مجانية 100% ومفتوحة المصدر** تحت رخصة GPL.\n\n✅ لا خطط مدفوعة\n✅ لا ميزات مميزة\n✅ لا اشتراكات\n✅ لا تكاليف خفية\n\nجميع الميزات متاحة للجميع. الكود المصدري على GitHub يمكن لأي شخص مراجعته وتعديله ومشاركته.'},
+    suggestions:{ en:['What is this tool?','Open source','Privacy & Security'], ar:['ما هذه الأداة؟','مفتوح المصدر','الخصوصية والأمان']}},
+
+  { id:'mobile_support', patterns:['mobile','phone','tablet','android','ios','iphone','ipad','mobile support','mobile friendly','works on phone','does it work on','جوال','هاتف',' tablet','ios','أندرويد','يدعم الجوال'],
+    contexts:[], response:{ en:'**RedoSan Authenticity works on mobile devices** since all processing is done in your browser.\n\nHowever, some features (like Pixel Injection with large images or C2PA signing) may be slower on mobile due to memory limitations.\n\n📱 The Professional mode works on mobile, and the **Simplified Mode** is optimized for smaller screens.',
+    ar:'**RedoSan Authenticity يعمل على الأجهزة المحمولة** لأن جميع المعالجة تتم في متصفحك.\n\nومع ذلك، بعض الميزات (مثل حقن البكسل مع الصور الكبيرة أو توقيع C2PA) قد تكون أبطأ على الجوال بسبب محدودية الذاكرة.\n\n📱 الوضع المحترف يعمل على الجوال، و **الوضع المبسط** محسّن للشاشات الصغيرة.'},
+    suggestions:{ en:['How to use Professional mode?','What is Simplified Mode?','File size limits'], ar:['كيفية استخدام الوضع المحترف؟','ما هو الوضع المبسط؟','حدود حجم الملف']}},
+
+  { id:'file_limits', patterns:['file size','size limit','max file','file too large','maximum size','large file','memory','limit','big image','حجم الملف','حد الحجم','الملف كبير','الحد الأقصى','ذاكرة'],
+    contexts:[], response:{ en:'**File size limits depend on your device\'s memory, not on RedoSan.**\n\n📸 **Images:** Any size works, but very large images (>20MP) may be slow\n🔍 **Fingerprint:** Works on files up to several GB (streaming hash)\n🔬 **Pixel Injection:** Works better with smaller images (<10MB)\n🔄 **Converter:** Depends on the format — audio/video conversion is memory-intensive\n\n💡 For best results, use images under 10MB on mobile and under 50MB on desktop.',
+    ar:'**حدود حجم الملف تعتمد على ذاكرة جهازك، وليس على RedoSan.**\n\n📸 **الصور:** أي حجم يعمل، لكن الصور الكبيرة جداً (>20MP) قد تكون بطيئة\n🔍 **البصمة:** يعمل على ملفات حتى عدة GB (تجزئة تدفقية)\n🔬 **حقن البكسل:** يعمل بشكل أفضل مع الصور الصغيرة (<10MB)\n🔄 **المحول:** يعتمد على الصيغة — تحويل الصوت/الفيديو يستهلك ذاكرة\n\n💡 لأفضل النتائج، استخدم صوراً أقل من 10MB على الجوال وأقل من 50MB على الحاسوب.'},
+    suggestions:{ en:['What tools are available?','Is it free?','Mobile support'], ar:['ما الأدوات المتاحة؟','هل هو مجاني؟','دعم الجوال']}},
+
+  { id:'smalltalk', patterns:['how are you','how r u','how you doing','whats up','wassup','what\'s up','howdy','good to see you','nice to meet','كيف حالك','كيفك','كيف الحال','الحمد لله','بخير','how is it going','whats new'],
+    contexts:[], response:{ en:'I\'m doing great, thanks for asking! 😊\n\nI\'m here to help you with:\n💧 Digital Watermark\n🔬 Pixel Injection\n🔍 Fingerprinting\n📋 Metadata reading\n🕒 Timestamps\n✨ C2PA\n📜 Digital Passport\n🔄 File Converter\n\nWhat would you like to explore?',
+    ar:'أنا بخير، شكراً لسؤالك! 😊\n\nأنا هنا لمساعدتك في:\n💧 العلامة المائية الرقمية\n🔬 حقن البكسل\n🔍 البصمة الرقمية\n📋 قراءة البيانات الوصفية\n🕒 الطوابع الزمنية\n✨ C2PA\n📜 جواز السفر الرقمي\n🔄 محول الملفات\n\nماذا تريد أن تستكشف؟'},
     suggestions:{ en:['How does watermarking work?','What is fingerprinting?','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','ما هو C2PA؟']}}
 ];
 
@@ -182,15 +212,39 @@ function getCurrentContext() {
   return id.replace('page-', '');
 }
 
-function assistantTokenize(t) {
-  return t.toLowerCase().replace(/[\u064B-\u0652]/g, '').replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, '').split(/\s+/).filter(Boolean);
+// ── Arabic text normalization ──
+function normalizeArabic(t) {
+  return t.replace(/[أإآ]/g, 'ا').replace(/[ة]/g, 'ه').replace(/[ى]/g, 'ي').replace(/[ـ]/g, '').replace(/[\u064B-\u0652]/g, '');
 }
 
+// ── Levenshtein distance (typo tolerance) ──
+function levenshtein(a, b) {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  var m = [];
+  for (var i = 0; i <= b.length; i++) m[i] = [i];
+  for (var j = 0; j <= a.length; j++) m[0][j] = j;
+  for (var i = 1; i <= b.length; i++) {
+    for (var j = 1; j <= a.length; j++) {
+      var cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
+      m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + cost);
+    }
+  }
+  return m[b.length][a.length];
+}
+
+// ── Tokenizer with Arabic normalization ──
+function assistantTokenize(t) {
+  return normalizeArabic(t.toLowerCase()).replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, '').split(/\s+/).filter(Boolean);
+}
+
+// ── Intelligent intent matcher ──
 function matchAssistantIntent(input) {
   var lang = getAssistantLang();
   var tokens = assistantTokenize(input);
   if (tokens.length === 0) return null;
-  var normInput = input.toLowerCase().replace(/[\u064B-\u0652]/g, '');
+  var normalized = normalizeArabic(input.toLowerCase());
+  var FUZZY_THRESHOLD = 0.72;
 
   var bestScore = 0;
   var bestMatch = null;
@@ -198,26 +252,56 @@ function matchAssistantIntent(input) {
   for (var i = 0; i < ASSISTANT_KB.length; i++) {
     var intent = ASSISTANT_KB[i];
     for (var j = 0; j < intent.patterns.length; j++) {
-      var normPattern = intent.patterns[j].toLowerCase().replace(/[\u064B-\u0652]/g, '');
+      var normPattern = normalizeArabic(intent.patterns[j].toLowerCase());
       var patternTokens = normPattern.split(/\s+/);
-      var overlap = 0;
+      if (patternTokens.length === 0) continue;
+
+      // Exact phrase match → 100% confidence
+      if (normalized === normPattern) { return intent; }
+
+      // Token-level matching
+      var exactMatches = 0;
+      var fuzzyMatches = 0;
+      var union = {};
+      var inTokens = {};
+
+      for (var k = 0; k < tokens.length; k++) union[tokens[k]] = true;
+      for (var k = 0; k < patternTokens.length; k++) union[patternTokens[k]] = true;
+      for (var k = 0; k < tokens.length; k++) inTokens[tokens[k]] = true;
+
       for (var k = 0; k < patternTokens.length; k++) {
-        for (var l = 0; l < tokens.length; l++) {
-          if (patternTokens[k] === tokens[l]) { overlap++; break; }
+        if (inTokens[patternTokens[k]]) {
+          exactMatches++;
+        } else {
+          for (var l = 0; l < tokens.length; l++) {
+            var maxL = Math.max(patternTokens[k].length, tokens[l].length);
+            if (maxL === 0) continue;
+            if (1 - levenshtein(patternTokens[k], tokens[l]) / maxL >= FUZZY_THRESHOLD) {
+              fuzzyMatches++;
+              break;
+            }
+          }
         }
       }
-      var maxLen = Math.max(patternTokens.length, tokens.length);
-      var score = maxLen > 0 ? overlap / maxLen : 0;
-      if (normInput.includes(normPattern)) {
-        score = Math.max(score, 0.6 + (normPattern.length / Math.max(normInput.length, 1)) * 0.3);
+
+      var matchedTokens = exactMatches + fuzzyMatches;
+      var unionSize = Object.keys(union).length;
+      var jaccard = unionSize > 0 ? matchedTokens / unionSize : 0;
+      var coverage = patternTokens.length > 0 ? matchedTokens / patternTokens.length : 0;
+      var score = jaccard * 0.3 + coverage * 0.7;
+
+      // Substring bonus
+      if (normalized.includes(normPattern)) {
+        score = Math.max(score, 0.5 + (normPattern.length / Math.max(normalized.length, 1)) * 0.4);
       }
+
       if (score > bestScore) {
         bestScore = score;
         bestMatch = intent;
       }
     }
   }
-  return bestScore >= 0.3 ? bestMatch : null;
+  return bestScore >= 0.28 ? bestMatch : null;
 }
 
 function getAssistantResponse(intent) {
