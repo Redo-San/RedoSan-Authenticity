@@ -2,8 +2,8 @@
 
 var ASSISTANT_KB = [
   { id:'welcome', patterns:['hi','hello','hey','helo','helloo','مرحبا','مرحبًا','مرحبا بك','السلام عليكم','وعليكم السلام','السلامو عليكم','هلا','اهلا','hi there','good morning','good evening','good day','gud morning','morning','evening','howdy','yo','sup'],
-    contexts:[], response:{ en:'👋 Hello! I\'m your RedoSan Assistant. I can help you with all the tools here.\n\nTry asking me:\n• How does watermarking work?\n• What is file fingerprinting?\n• How to create a timestamp?\n• Privacy & security\n\nWhat would you like to know?',
-    ar:'👋 مرحباً! أنا مساعد RedoSan. يمكنني مساعدتك في جميع الأدوات هنا.\n\nجرب أن تسألني:\n• كيف تعمل العلامة المائية؟\n• ما هي بصمة الملف؟\n• كيف ينشئ الطابع الزمني؟\n• الخصوصية والأمان\n\nماذا تريد أن تعرف؟' },
+    contexts:[], response:{ en:'👋 Hello! I\'m **Raido** 🤖, your AI assistant for RedoSan tools. I can help you with all the tools here.\n\nTry asking me:\n• How does watermarking work?\n• What is file fingerprinting?\n• How to create a timestamp?\n• Privacy & security\n\nWhat would you like to know?',
+    ar:'👋 مرحباً! أنا **رايدو (Raido)** 🤖، مساعدك الذكي لأدوات RedoSan. يمكنني مساعدتك في جميع الأدوات هنا.\n\nجرب أن تسألني:\n• كيف تعمل العلامة المائية؟\n• ما هي بصمة الملف؟\n• كيف ينشئ الطابع الزمني؟\n• الخصوصية والأمان\n\nماذا تريد أن تعرف؟' },
     suggestions:{ en:['How does watermarking work?','What is fingerprinting?','How to timestamp?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','كيف ينشئ الطابع الزمني؟']}},
 
   { id:'thanks', patterns:['thanks','thank you','thankyou','شكرا','شكراً','شكرا جزيلا','جزاك الله خيرا','thx','thank','appreciate','much appreciated','my gratitude','tq','merci','danke'],
@@ -203,7 +203,7 @@ var ASSISTANT_FALLBACK = {
 };
 
 var ASSISTANT_GREETING = {
-  en: '👋 Welcome! I\'m your RedoSan assistant. Ask me anything about the tools!',
+  en: '👋 Welcome! I\'m Raido 🤖, your AI assistant. Ask me anything about the tools!',
   ar: '👋 أهلاً بك! أنا مساعد RedoSan. اسألني عن أي شيء بخصوص الأدوات!'
 };
 
@@ -518,7 +518,7 @@ function initAssistant() {
 
   // Update i18n labels
   var title = document.querySelector('.ast-title');
-  if (title) title.textContent = lang === 'ar' ? '🤖 مساعد RedoSan' : '🤖 RedoSan Assistant';
+  if (title) title.textContent = lang === 'ar' ? '🤖 رايدو (Raido)' : '🤖 Raido';
 
   var input = document.getElementById('assistantInput');
   if (input) input.placeholder = lang === 'ar' ? 'اكتب سؤالك هنا...' : 'Type your question...';
