@@ -1080,3 +1080,9 @@ html[dir="rtl"] .ast-msg-user { align-self: flex-start; }
 .bot-block-text { font-size: 16px; line-height: 1.7; color: var(--text-muted); margin-bottom: 24px; }
 .bot-block-link { color: var(--primary); text-decoration: underline; font-size: 14px; cursor: pointer; }
 .bot-block-link:hover { color: var(--primary-dark); }
+.bot-block-dismiss {
+  display: inline-block; margin-top: 8px; padding: 10px 24px;
+  background: var(--primary); color: #fff; border: none; border-radius: 8px;
+  font-size: 15px; cursor: pointer; transition: opacity .2s;
+}
+.bot-block-dismiss:hover { opacity: .85; }

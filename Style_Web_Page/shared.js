@@ -521,18 +521,32 @@ function showBotOverlay(reason) {
   if (!o) return;
   var lang = document.documentElement.getAttribute('lang') || 'en';
   var isAr = lang === 'ar';
+  // Remove any old dismiss button
+  var oldBtn = o.querySelector('.bot-block-dismiss');
+  if (oldBtn) oldBtn.remove();
+  var oldLink = o.querySelector('.bot-block-link');
   if (reason === 'vpn') {
     o.querySelector('.bot-block-icon').textContent = '🔒';
     o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم اكتشاف VPN / بروكسي' : '🚫 VPN / Proxy Detected';
     o.querySelector('.bot-block-text').textContent = isAr
-      ? 'تم اكتشاف أنك تستخدم VPN أو بروكسي. تطبيق RedoSan Authenticity يتطلب اتصالاً مباشراً للأمان. يرجى تعطيل VPN وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في GitHub.'
-      : 'A VPN or proxy was detected. RedoSan Authenticity requires a direct connection for security. Please disable your VPN and reload the page.\n\nIf you believe this is an error, please report it on GitHub.';
+      ? 'تم اكتشاف أنك تستخدم VPN أو بروكسي. تطبيق RedoSan Authenticity يتطلب اتصالاً مباشراً للأمان.\n\nإذا كنت مستخدماً حقيقياً، يمكنك تجاوز هذا التحذير.'
+      : 'A VPN or proxy was detected. RedoSan Authenticity requires a direct connection for security.\n\nIf you are a real user, you may dismiss this warning.';
+    var dismiss = document.createElement('button');
+    dismiss.className = 'bot-block-dismiss';
+    dismiss.textContent = isAr ? '👤 أنا مستخدم حقيقي - متابعة' : '👤 I\'m a real user - Continue';
+    dismiss.onclick = function() {
+      o.classList.remove('active');
+      try { sessionStorage.setItem('redosan_vpn_dismissed', '1'); } catch(e) {}
+    };
+    if (oldLink) oldLink.style.display = 'none';
+    o.querySelector('.bot-block-content').appendChild(dismiss);
   } else {
     o.querySelector('.bot-block-icon').textContent = '🛡️';
     o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم رفض الوصول' : '🚫 Access Denied';
     o.querySelector('.bot-block-text').textContent = isAr
       ? 'تم اكتشاف متصفح آلي / بدون واجهة. تطبيق RedoSan Authenticity مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة (Puppeteer, Selenium, Playwright) وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في GitHub.'
       : 'Automated / headless browser detected. RedoSan Authenticity is intended for human users only. Please disable automation tools (Puppeteer, Selenium, Playwright, etc.) and reload the page.\n\nIf you believe this is an error, please report it on GitHub.';
+    if (oldLink) oldLink.style.display = '';
   }
   o.classList.add('active');
 }
@@ -579,6 +593,10 @@ async function startAsyncVPNDetection() {
     REDOSAN_BOT_CHECK = { score: 30, signals: ['webrtc_suppressed'], isAutomated: false };
     return;
   }
+  // Skip VPN overlay if user already dismissed it this session
+  var vpnDismissed = false;
+  try { vpnDismissed = sessionStorage.getItem('redosan_vpn_dismissed') === '1'; } catch(e) {}
+  if (vpnDismissed) return;
   // 2+ public IPs via WebRTC = VPN leak (one real + one VPN IP)
   if (publicIPs.length >= 2) {
     REDOSAN_BOT_CHECK = { score: 60, signals: ['webrtc_vpn'], isAutomated: true };
