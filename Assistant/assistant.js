@@ -423,13 +423,41 @@ function initAssistant() {
   if (input) input.placeholder = lang === 'ar' ? 'اكتب سؤالك هنا...' : 'Type your question...';
 
   var clearBtn = document.querySelector('.ast-clear-btn');
-  if (clearBtn) clearBtn.title = lang === 'ar' ? 'مسح المحادثة' : 'Clear chat';
+  if (clearBtn) {
+    clearBtn.title = lang === 'ar' ? 'مسح المحادثة' : 'Clear chat';
+    clearBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('assistantMessages').innerHTML = '';
+      clearChatHistory();
+      document.getElementById('assistantSuggestions').style.display = 'none';
+    });
+  }
 
   var closeBtn = document.querySelector('.ast-close-btn');
-  if (closeBtn) closeBtn.title = lang === 'ar' ? 'إغلاق' : 'Close';
+  if (closeBtn) {
+    closeBtn.title = lang === 'ar' ? 'إغلاق' : 'Close';
+    closeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleAssistant();
+    });
+  }
 
   var bubble = document.getElementById('assistantBubble');
-  if (bubble) bubble.setAttribute('aria-label', lang === 'ar' ? 'فتح المساعد' : 'Open assistant');
+  if (bubble) {
+    bubble.setAttribute('aria-label', lang === 'ar' ? 'فتح المساعد' : 'Open assistant');
+    bubble.addEventListener('click', toggleAssistant);
+  }
+
+  var sendBtn = document.querySelector('.ast-send-btn');
+  if (sendBtn) sendBtn.addEventListener('click', sendAssistantMessage);
+
+  if (input) {
+    input.addEventListener('keydown', handleAssistantKeydown);
+    input.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+    });
+  }
 
   // Show greeting after short delay
   setTimeout(showInitialGreeting, 1000);
