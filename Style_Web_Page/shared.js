@@ -587,10 +587,30 @@ async function startAsyncVPNDetection() {
   } catch(e) { /* is-vpn CDN unavailable — skip */ }
 }
 
+function logSecurityStatus() {
+  if (!REDOSAN_BOT_CHECK) return;
+  var p = REDOSAN_BOT_CHECK;
+  var ok = !p.isAutomated;
+  var layers = [
+    'Bot/Automation  ' + (ok ? '✓ SAFE' : '✗ BLOCKED') + '  (score:' + p.score + ')',
+    'WebRTC VPN Leak  ' + (ok ? '✓ WAITING' : '✗ BLOCKED'),
+    'VPN IP List      ' + (ok ? '✓ WAITING' : '✗ BLOCKED')
+  ];
+  if (p.isAutomated && p.signals.length) {
+    layers[0] += ' [' + p.signals.join(',') + ']';
+  }
+  console.log('%c🔐 RedoSan Security', 'font-size:16px;font-weight:700;color:#6C5CE7');
+  for (var i = 0; i < layers.length; i++) {
+    var c = layers[i].indexOf('SAFE') !== -1 || layers[i].indexOf('WAITING') !== -1 ? '#4CAF50' : '#FF5252';
+    console.log('%c  ' + layers[i], 'color:' + c + ';font-size:13px');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   REDOSAN_BOT_CHECK = checkAutomation();
   if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) showBotOverlay();
   else startAsyncVPNDetection();
+  logSecurityStatus();
   initTheme();
   initDropZones();
 });
