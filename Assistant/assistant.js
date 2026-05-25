@@ -410,103 +410,23 @@ function handleAssistantKeydown(e) {
 }
 
 function initAssistant() {
-  if (document.getElementById('assistantBubble')) return;
-  if (!document.body) { setTimeout(initAssistant, 100); return; }
-
-  // Create bubble
-  var bubble = document.createElement('div');
-  bubble.id = 'assistantBubble';
-  bubble.className = 'ast-bubble';
-  bubble.setAttribute('role', 'button');
-  bubble.setAttribute('aria-label', 'Open assistant');
-  bubble.setAttribute('tabindex', '0');
-  bubble.onclick = toggleAssistant;
-
-  var bubbleIcon = document.createElement('span');
-  bubbleIcon.textContent = '💬';
-  bubble.appendChild(bubbleIcon);
-
-  // Create panel
-  var panel = document.createElement('div');
-  panel.id = 'assistantPanel';
-  panel.className = 'ast-panel';
-
-  // Header
-  var header = document.createElement('div');
-  header.className = 'ast-header';
-  var headerTitle = document.createElement('span');
-  headerTitle.className = 'ast-title';
   var lang = getAssistantLang();
-  headerTitle.textContent = lang === 'ar' ? '🤖 مساعد RedoSan' : '🤖 RedoSan Assistant';
-  var headerActions = document.createElement('div');
-  headerActions.className = 'ast-header-actions';
 
-  var clearBtn = document.createElement('button');
-  clearBtn.className = 'ast-clear-btn';
-  clearBtn.textContent = '🗑️';
-  clearBtn.title = lang === 'ar' ? 'مسح المحادثة' : 'Clear chat';
-  clearBtn.onclick = function(e) {
-    e.stopPropagation();
-    var msgArea = document.getElementById('assistantMessages');
-    if (msgArea) msgArea.innerHTML = '';
-    clearChatHistory();
-    document.getElementById('assistantSuggestions').style.display = 'none';
-  };
+  // Update i18n labels
+  var title = document.querySelector('.ast-title');
+  if (title) title.textContent = lang === 'ar' ? '🤖 مساعد RedoSan' : '🤖 RedoSan Assistant';
 
-  var closeBtn = document.createElement('button');
-  closeBtn.className = 'ast-close-btn';
-  closeBtn.innerHTML = '&times;';
-  closeBtn.title = lang === 'ar' ? 'إغلاق' : 'Close';
-  closeBtn.onclick = function(e) {
-    e.stopPropagation();
-    toggleAssistant();
-  };
+  var input = document.getElementById('assistantInput');
+  if (input) input.placeholder = lang === 'ar' ? 'اكتب سؤالك هنا...' : 'Type your question...';
 
-  headerActions.appendChild(clearBtn);
-  headerActions.appendChild(closeBtn);
-  header.appendChild(headerTitle);
-  header.appendChild(headerActions);
+  var clearBtn = document.querySelector('.ast-clear-btn');
+  if (clearBtn) clearBtn.title = lang === 'ar' ? 'مسح المحادثة' : 'Clear chat';
 
-  // Messages area
-  var messages = document.createElement('div');
-  messages.id = 'assistantMessages';
-  messages.className = 'ast-messages';
+  var closeBtn = document.querySelector('.ast-close-btn');
+  if (closeBtn) closeBtn.title = lang === 'ar' ? 'إغلاق' : 'Close';
 
-  // Suggestions
-  var suggestions = document.createElement('div');
-  suggestions.id = 'assistantSuggestions';
-  suggestions.className = 'ast-suggestions';
-
-  // Input area
-  var inputArea = document.createElement('div');
-  inputArea.className = 'ast-input-area';
-
-  var inputEl = document.createElement('textarea');
-  inputEl.id = 'assistantInput';
-  inputEl.className = 'ast-input';
-  inputEl.placeholder = lang === 'ar' ? 'اكتب سؤالك هنا...' : 'Type your question...';
-  inputEl.rows = 1;
-  inputEl.onkeydown = handleAssistantKeydown;
-  inputEl.oninput = function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 80) + 'px';
-  };
-
-  var sendBtn = document.createElement('button');
-  sendBtn.className = 'ast-send-btn';
-  sendBtn.textContent = '➤';
-  sendBtn.onclick = function() { sendAssistantMessage(); };
-
-  inputArea.appendChild(inputEl);
-  inputArea.appendChild(sendBtn);
-
-  panel.appendChild(header);
-  panel.appendChild(messages);
-  panel.appendChild(suggestions);
-  panel.appendChild(inputArea);
-
-  document.body.appendChild(bubble);
-  document.body.appendChild(panel);
+  var bubble = document.getElementById('assistantBubble');
+  if (bubble) bubble.setAttribute('aria-label', lang === 'ar' ? 'فتح المساعد' : 'Open assistant');
 
   // Show greeting after short delay
   setTimeout(showInitialGreeting, 1000);
