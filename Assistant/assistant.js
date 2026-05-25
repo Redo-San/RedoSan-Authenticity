@@ -184,7 +184,12 @@ var ASSISTANT_KB = [
   { id:'smalltalk', patterns:['how are you','how r u','how you doing','whats up','wassup','what\'s up','howdy','good to see you','nice to meet','كيف حالك','كيفك','كيف الحال','الحمد لله','بخير','how is it going','whats new'],
     contexts:[], response:{ en:'I\'m doing great, thanks for asking! 😊\n\nI\'m here to help you with:\n💧 Digital Watermark\n🔬 Pixel Injection\n🔍 Fingerprinting\n📋 Metadata reading\n🕒 Timestamps\n✨ C2PA\n📜 Digital Passport\n🔄 File Converter\n\nWhat would you like to explore?',
     ar:'أنا بخير، شكراً لسؤالك! 😊\n\nأنا هنا لمساعدتك في:\n💧 العلامة المائية الرقمية\n🔬 حقن البكسل\n🔍 البصمة الرقمية\n📋 قراءة البيانات الوصفية\n🕒 الطوابع الزمنية\n✨ C2PA\n📜 جواز السفر الرقمي\n🔄 محول الملفات\n\nماذا تريد أن تستكشف؟'},
-    suggestions:{ en:['How does watermarking work?','What is fingerprinting?','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','ما هو C2PA؟']}}
+    suggestions:{ en:['How does watermarking work?','What is fingerprinting?','What is C2PA?'], ar:['كيف تعمل العلامة المائية؟','ما هي البصمة الرقمية؟','ما هو C2PA؟']}},
+
+  { id:'who_is_redosan', patterns:['who is redosan','what is redosan','من هو ريدو سان','من هو ريدوسان','ريدو سان','redosan','tell me about redosan','about redosan','creator','developer','who made this','who created','من صنع هذا','المطور','المنشئ','صاحب الموقع'],
+    contexts:[], response:{ en:'**RedoSan** is the developer behind **RedoSan Authenticity**.\n\nGitHub: https://github.com/Redo-San\nEmail: redo.san@hotmail.com\nTelegram: https://t.me/RedoSan\n\nRedoSan builds open-source tools focused on digital authenticity, watermarking, and steganography — all running 100% in your browser.\n\nThe name **"RedoSan"** is a digital identity representing a commitment to authenticity, transparency, and open-source values.',
+    ar:'**RedoSan** هو المطور الذي يقف وراء **RedoSan Authenticity**.\n\nGitHub: https://github.com/Redo-San\nEmail: redo.san@hotmail.com\nTelegram: https://t.me/RedoSan\n\nRedoSan يبني أدوات مفتوحة المصدر تركز على الأصالة الرقمية، العلامات المائية، والإخفاء الرقمي — كلها تعمل 100% في متصفحك.\n\nالاسم **"RedoSan"** هو هوية رقمية تمثل التزاماً بالأصالة والشفافية وقيم المصدر المفتوح.'},
+    suggestions:{ en:['What is this tool?','Open source','Contact'], ar:['ما هذه الأداة؟','مفتوح المصدر','اتصل بنا']}}
 ];
 
 var ASSISTANT_FALLBACK = {
