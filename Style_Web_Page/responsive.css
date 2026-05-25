@@ -8,7 +8,18 @@
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   overscroll-behavior: none;
-} 
+}
+/* Prevent iOS zoom on input focus — minimum 16px on all form elements */
+input, select, textarea, button, .btn, .lang-btn, .tab-btn, .theme-btn, .simple-mode-switch {
+  font-size: 16px;
+}
+/* Remove tap highlight and 300ms delay on touch devices */
+a, button, .btn, .mode-card, .card, .tab-btn, .dl-option, .lang-option, .sidebar-close,
+.social-card, .search-result-item, .c2pa-type-card, .badge, .ast-bubble, .bot-block-link,
+input, select, textarea, label, .file-drop-zone, .contact-card {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
 .sidebar, .result, .search-results, .nav-search .search-results {
   -webkit-overflow-scrolling: touch;
 }
@@ -258,6 +269,18 @@ body {
   section, .page > .card-form { margin-bottom: 14px; }
   .hero { padding: 32px 0; }
 }
+/* ── Adequate tap target spacing on mobile ── */
+@media (max-width: 767px) {
+  .card-form .form-group { margin-bottom: 14px; }
+  .card-form .btn + .btn { margin-top: 8px; }
+  .mode-cards { gap: 12px; }
+  .mode-card { padding: 20px 16px; }
+  .mode-links { gap: 16px; }
+  .mode-links a { padding: 6px 0; display: inline-block; }
+  .lang-option { padding: 10px 14px; min-height: 44px; display: flex; align-items: center; }
+  .sidebar a, .sidebar .sidebar-item { min-height: 44px; display: flex; align-items: center; padding: 10px 16px; }
+  .error-links a { min-height: 44px; display: inline-flex; align-items: center; padding: 8px 14px; }
+}
 @media (min-width: 481px) and (max-width: 767px) {
   .hero { padding: 44px 0; }
 }
@@ -268,7 +291,11 @@ body {
   .card .icon { font-size: 1.5rem; }
   .card h3 { font-size: 0.9rem; }
   .card p { font-size: 0.75rem; }
-  .badge { font-size: 0.65rem; padding: 2px 10px; }
+  .badge { font-size: 0.72rem; padding: 4px 12px; min-height: 28px; display: inline-flex; align-items: center; }
+  /* Ensure minimum readable sizes */
+  .result { font-size: 0.75rem; }
+  .nav-search input { font-size: 16px; }
+  .footer-copy { font-size: 0.78rem; }
 }
 
 /* ── Clamp-based fluid typography for modern browsers ── */
@@ -296,11 +323,12 @@ body {
 
 /* ── Theme toggle & lang dropdown compact on small nav ── */
 @media (max-width: 767px) {
-  .theme-btn { width: 28px; height: 28px; font-size: 0.85rem; }
-  .lang-btn { font-size: 0.75rem; padding: 4px 8px; min-width: 56px; }
-  nav .logo-img { height: 24px; }
-  nav { padding: 8px 12px; gap: 6px; }
-  .nav-left { gap: 6px; }
+  .theme-btn { width: 44px; height: 44px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+  .lang-btn { font-size: 0.85rem; padding: 10px 12px; min-width: 56px; min-height: 44px; display: flex; align-items: center; }
+  .mode-switch-btn { min-height: 44px; display: flex; align-items: center; }
+  nav .logo-img { height: 28px; }
+  nav { padding: 8px 12px; gap: 8px; }
+  .nav-left { gap: 8px; }
 }
 
 /* ── Card-form heading on small screens ── */
