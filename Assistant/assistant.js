@@ -411,6 +411,7 @@ function handleAssistantKeydown(e) {
 
 function initAssistant() {
   if (document.getElementById('assistantBubble')) return;
+  if (!document.body) { setTimeout(initAssistant, 100); return; }
 
   // Create bubble
   var bubble = document.createElement('div');
@@ -512,8 +513,11 @@ function initAssistant() {
 }
 
 // Auto-init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAssistant);
-} else {
-  initAssistant();
+function ready(fn) {
+  if (document.readyState !== 'loading') {
+    fn();
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
+  }
 }
+ready(initAssistant);
