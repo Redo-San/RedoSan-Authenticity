@@ -129,6 +129,8 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
   footer { padding: 16px 12px; margin-top: 24px; }
   .footer-links { flex-direction: column; gap: 8px; }
   .footer-links a { font-size: 0.78rem; }
+  .footer-social { gap: 6px; }
+  .footer-social a { font-size: 0.72rem; padding: 6px 8px; }
   .footer-copy { font-size: 0.72rem; }
 }
 
