@@ -843,7 +843,9 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .ast-bubble {
   position: fixed;
   bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   left: 24px;
+  left: calc(24px + env(safe-area-inset-left, 0px));
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -871,11 +873,13 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 .ast-panel {
   position: fixed;
   bottom: 90px;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   left: 24px;
+  left: calc(24px + env(safe-area-inset-left, 0px));
   width: 360px;
-  max-width: calc(100vw - 48px);
+  max-width: calc(100vw - 48px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
   height: 480px;
-  max-height: calc(100vh - 140px);
+  max-height: calc(100vh - 140px - env(safe-area-inset-bottom, 0px));
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
