@@ -1059,20 +1059,20 @@ document.addEventListener('click', function startMusic() {
 </div>
 
 <!-- Floating AI Assistant -->
-<div id="assistantBubble" class="ast-bubble" role="button" aria-label="Open assistant" tabindex="0" onclick="toggleAssistant()"><span>💬</span></div>
+<div id="assistantBubble" class="ast-bubble" role="button" aria-label="Open assistant" tabindex="0"><span>💬</span></div>
 <div id="assistantPanel" class="ast-panel">
   <div class="ast-header">
     <span class="ast-title">🤖 RedoSan Assistant</span>
     <div class="ast-header-actions">
-      <button class="ast-clear-btn" title="Clear chat" onclick="event.stopPropagation();document.getElementById('assistantMessages').innerHTML='';clearChatHistory();document.getElementById('assistantSuggestions').style.display='none'">🗑️</button>
-      <button class="ast-close-btn" title="Close" onclick="event.stopPropagation();toggleAssistant()">&times;</button>
+      <button class="ast-clear-btn" title="Clear chat">🗑️</button>
+      <button class="ast-close-btn" title="Close">&times;</button>
     </div>
   </div>
   <div id="assistantMessages" class="ast-messages"></div>
   <div id="assistantSuggestions" class="ast-suggestions"></div>
   <div class="ast-input-area">
-    <textarea id="assistantInput" class="ast-input" placeholder="Type your question..." rows="1" onkeydown="handleAssistantKeydown(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
-    <button class="ast-send-btn" onclick="sendAssistantMessage()">➤</button>
+    <textarea id="assistantInput" class="ast-input" placeholder="Type your question..." rows="1"></textarea>
+    <button class="ast-send-btn">➤</button>
   </div>
 </div>
 
