@@ -248,6 +248,31 @@ function assistantTokenize(t) {
   return normalizeArabic(t.toLowerCase()).replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, '').split(/\s+/).filter(Boolean);
 }
 
+// ── Bot / Automation Detection (100% client-side, zero server) ──
+var ASSISTANT_BOT_CHECK = null;
+
+function checkAutomation() {
+  var score = 0, signals = [];
+  try {
+    if (navigator.webdriver === true) { score += 35; signals.push('webdriver'); }
+    if (window.callPhantom || window._phantom || window.__nightmare) { score += 50; signals.push('legacy_automation'); }
+    try { if (document.documentElement.getAttribute('webdriver') === 'true') { score += 35; signals.push('webdriver_attr'); } } catch(e) {}
+    if (navigator.plugins && navigator.plugins.length === 0) { score += 10; signals.push('no_plugins'); }
+    if (!navigator.languages || navigator.languages.length <= 1) { score += 5; signals.push('few_languages'); }
+    var ua = (navigator.userAgent || '').toLowerCase();
+    var plat = (navigator.platform || '').toLowerCase();
+    if ((ua.includes('windows') && (plat.includes('linux') || plat.includes('x11') || plat.includes('mac'))) ||
+        (ua.includes('mac') && (plat.includes('linux') || plat.includes('win'))) ||
+        (ua.includes('linux') && (plat.includes('win') || plat.includes('mac')))) {
+      score += 20; signals.push('platform_mismatch');
+    }
+    var sw = window.screen.width || 0, sh = window.screen.height || 0;
+    if (sw < 640 || sh < 480 || (sw === 0 && sh === 0)) { score += 10; signals.push('bad_res:' + sw + 'x' + sh); }
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id === undefined) { score += 10; signals.push('headless_chrome'); }
+  } catch(e) {}
+  return { score: Math.min(Math.max(score, 0), 100), signals: signals, isAutomated: score >= 40 };
+}
+
 // ── Intelligent intent matcher ──
 function matchAssistantIntent(input) {
   var tokens = assistantTokenize(input);
@@ -401,12 +426,20 @@ function toggleAssistant() {
   }
 }
 
+var ASSISTANT_BOT_WARN = {
+  en:'⚠️ **Automated / headless browser detected.**\n\nRedoSan Authenticity is intended for human users. Please disable automation tools (Puppeteer, Selenium, Playwright, etc.) and reload the page.\n\nIf you believe this is an error, report it at:\nhttps://github.com/Redo-San/RedoSan-Authenticity/issues',
+  ar:'⚠️ **تم اكتشاف متصفح آلي / بدون واجهة.**\n\nRedoSan Authenticity مخصصة للمستخدمين البشريين. يرجى تعطيل أدوات الأتمتة (Puppeteer, Selenium, Playwright, إلخ) وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في:\nhttps://github.com/Redo-San/RedoSan-Authenticity/issues'
+};
+
 function showInitialGreeting() {
   var msgArea = document.getElementById('assistantMessages');
   if (!msgArea) return;
-  var ctx = getCurrentContext();
   var lang = getAssistantLang();
-
+  if (ASSISTANT_BOT_CHECK && ASSISTANT_BOT_CHECK.isAutomated) {
+    addMessage(ASSISTANT_BOT_WARN[lang] || ASSISTANT_BOT_WARN.en, 'bot');
+    return;
+  }
+  var ctx = getCurrentContext();
   var initialMsg = ctx ? {
     en: '👋 Hi! I see you\'re on the **' + ctx.replace('-', ' ') + '** page. Need help with it?',
     ar: '👋 مرحباً! أراك في صفحة **' + (ctx === 'pixel-injection' ? 'حقن البكسل' : ctx === 'watermark' ? 'العلامة المائية' : ctx === 'fingerprint' ? 'البصمة' : ctx === 'metadata' ? 'البيانات الوصفية' : ctx === 'timestamp' ? 'الطابع الزمني' : ctx === 'c2pa' ? 'C2PA' : ctx === 'certificate' ? 'جواز السفر الرقمي' : ctx === 'converter' ? 'محول الملفات' : ctx) + '**. هل تحتاج مساعدة بها؟'
@@ -468,6 +501,11 @@ function addMessage(text, role) {
 }
 
 function sendAssistantMessage(text) {
+  if (ASSISTANT_BOT_CHECK && ASSISTANT_BOT_CHECK.isAutomated) {
+    var lang = getAssistantLang();
+    addMessage(ASSISTANT_BOT_WARN[lang] || ASSISTANT_BOT_WARN.en, 'bot');
+    return;
+  }
   var input = document.getElementById('assistantInput');
   if (!text || text.trim() === '') {
     text = input ? input.value.trim() : '';
@@ -515,6 +553,7 @@ function handleAssistantKeydown(e) {
 
 function initAssistant() {
   var lang = getAssistantLang();
+  ASSISTANT_BOT_CHECK = checkAutomation();
 
   // Update i18n labels
   var title = document.querySelector('.ast-title');
