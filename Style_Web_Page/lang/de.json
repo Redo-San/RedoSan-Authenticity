@@ -239,7 +239,7 @@
   "lang.name.ko": "한국어",
   "sidebar": {
     "certificate": "Digitaler Reisepass",
-    "usage_warning": "⚠️ Nur gesetzmäßige Nutzung. Illegale/schädliche Inhalte sind verboten. Alle Verarbeitungen erfolgen 100% lokal.",
+    "usage_warning": "⚠️ Nur gesetzmäßige Nutzung. Illegale/schädliche Inhalte sind verboten. Alle Verarbeitungen erfolgen lokal.",
     "audio_watermark": "Audio-Wasserzeichen"
   },
   "card": {
@@ -256,12 +256,12 @@
     "capacity_label": "Kapazität: ~{bytes} Byte{s}{suffix} ({w}×{h} Bild)",
     "chrominance_suffix": " (Chrominanzen redundant)",
     "redundant_suffix": " (redundant x3)",
-    "secret_status_max": "Maximale Geheimgröße: ~{bytes} Bytes",
+    "secret_status_max": "Maximale Geheimnachricht-Größe: ~{bytes} Bytes",
     "secret_status_ok": "✓ Geheimdatei: {size} Bytes — passt innerhalb der Kapazität",
     "secret_status_exceed": "✗ Geheimdatei: {size} Bytes — überschreitet die Kapazität um {excess} Bytes"
   },
   "pi": {
-    "secret_hint": "Dokumentdatei, die als geheime Nachricht eingebettet werden soll"
+    "secret_hint": "Dokument-Datei, die als geheime Nachricht eingebettet werden soll"
   },
   "fp": {
     "label_file": "Datei",
@@ -284,15 +284,15 @@
     "label_error": "Fehler"
   },
   "ts": {
-    "select_both": "Bitte sowohl die Originaldatei als auch ihre .ots-Beweisdatei auswählen",
-    "created_success": "✓ Vollständige .ots-Zeitstempel mit Blockchain-Beweis erstellt!\n\nSHA-256: {hash}\nGröße: {size} Bytes\n\nDiese .ots-Datei enthält einen Merkle-Beweis vom OpenTimestamps-Kalender-Aggregator. Überprüfen Sie ihn jederzeit mit dem Reiter \"Überprüfen\".",
-    "created_warning": "SHA-256: {hash}\n\n⚠ Kalender-Aggregator nicht erreichbar. Erstelle eine unvollständige .ots-Zeitstempel ({size} Bytes, Standardformat).\n\nUm einen Blockchain-Beweis anzuhängen, führen Sie einen der folgenden Befehle aus:\n\n{commands}",
+    "select_both": "Bitte sowohl die Original-Datei als auch die .ots-Beweis-Datei auswählen",
+    "created_success": "✓ Vollständige .ots-Zeitstempel mit Blockchain-Beweis erstellt!\n\nSHA-256: {hash}\nGröße: {size} Bytes\n\nDiese .ots-Datei enthält einen Merkle-Beweis vom OpenTimestamps-Kalender-Aggregator. Überprüfen Sie ihn jederzeit mit dem Verify-Tab.",
+    "created_warning": "SHA-256: {hash}\n\n⚠ Kalender-Aggregator nicht erreichbar. Erstelle eine unvollständige .ots-Zeitstempel ({size} Bytes, Standard-Format).\n\nUm eine Blockchain-Beweis zu erstellen, führen Sie einen der folgenden Befehle aus:\n\n{commands}",
     "verified_match": "✓ Überprüft! Hash stimmt mit dem .ots-Beweis überein.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256: {otsHash}\n\nDie Datei wurde seit der Erstellung des Zeitstempels nicht geändert.",
     "verified_mismatch": "✗ Hash-Ungleichheit! Die Datei wurde geändert.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256: {otsHash}\n\nDie Datei wurde seit der Erstellung des Zeitstempels geändert.",
     "option1_title": "Option 1 — OpenTimestamps-Website (einfachste Methode):",
     "option1_step1": "1. Gehe zu https://opentimestamps.org",
-    "option1_step2": "2. Ziehe und lasse die Datei \"{name}.ots\" auf die Seite fallen",
-    "option1_step3": "3. Klicke auf \"Stamp\" um einen vollständigen .ots-Zeitstempel mit Blockchain-Beweis zu erhalten",
+    "option1_step2": "2. Ziehe und lasse die \"{name}.ots\"-Datei auf die Seite fallen",
+    "option1_step3": "3. Klicke auf \"Stamp\" um eine vollständige .ots-Datei mit Blockchain-Beweis zu erhalten",
     "option2_title": "Option 2 — Offizielle CLI:",
     "option3_title": "Option 3 — PowerShell (roher Hash, 32 Bytes nur):"
   },
@@ -320,7 +320,7 @@
     "unnamed": "Ohne Namen",
     "unknown_gen": "Unbekannt",
     "error_label": "Fehler:",
-    "check_console": "Überprüfe die Konsole auf Details.",
+    "check_console": "Überprüfe die Konsole für Details.",
     "success_title": "Erfolg!",
     "success_message": "Bild mit C2PA-Herkunfts-Metadaten signiert.",
     "download_signed": "Signiertes Bild herunterladen",
@@ -336,7 +336,7 @@
   },
   "cert": {
     "heading": "Digitaler Reisepass",
-    "desc": "Erstelle einen signierten Digitalen Reisepass im PDF-, DOCX- oder EPUB-Format mit deinem Bild, Benutzerinformationen und Ergebnissen aus anderen Tools. Füge deine Ergebnisse unten hinzu und klicke auf \"Erstellen\".",
+    "desc": "Erstelle einen signierten Digitalen Reisepass als PDF, DOCX oder EPUB mit deinem Bild, Benutzerinformationen und Ergebnissen aus anderen Tools. Füge deine Ergebnisse unten hinzu und klicke auf Erstellen.",
     "image_label": "Bild",
     "user_info_label": "Deine Informationen",
     "social_label": "Soziale Links (optional)",
@@ -361,24 +361,24 @@
     "detected": "Erkannt: ",
     "file": "Datei: ",
     "format_label": "In folgendes Format konvertieren:",
-    "unknown_type": "Nicht unterstützter Dateityp. Bitte wähle ein Bild-, Audio-, Video- oder Dokument-Datei aus.",
+    "unknown_type": "Nicht unterstützter Dateityp. Bitte wähle ein Bild, Audio, Video oder Dokument aus.",
     "unsupported": "Nicht unterstützter Dateityp",
     "audio_limited": "Audio-Konvertierung ist im Browser eingeschränkt. Versuche es mit dem WAV-Format.",
     "video_limited": "Video-Konvertierung ist im Browser eingeschränkt. Verwende eine dedizierte Video-Bearbeitungs-Software."
   },
   "simple": {
     "upload_size_note": "💡 Für das Wasserzeichen verwenden Sie bitte ein großes Cover-Bild (z.B. 1920×1080), damit genug Kapazität vorhanden ist, um ein geheimes Bild einzubetten.",
-    "usage_warning": "⚠️ Dieses Tool ist nur für gesetzmäßige Nutzung bestimmt. Das Hochladen von illegalen oder schädlichen Inhalten ist streng verboten. Alle Verarbeitungen erfolgen lokal — nichts wird gespeichert oder an einen Server gesendet.",
+    "usage_warning": "⚠️ Dieses Tool ist nur für gesetzmäßige Nutzung. Das Hochladen von illegalen oder schädlichen Inhalten ist streng verboten. Alle Verarbeitungen erfolgen lokal — nichts wird gespeichert oder an einen Server gesendet.",
     "c2pa_facebook": "Facebook-URL",
     "c2pa_tiktok": "TikTok-URL",
     "c2pa_youtube": "YouTube-URL",
     "c2pa_music_label": "Musik-Streaming (optional)",
-    "c2pa_failed": "C2PA-Signierung fehlgeschlagen. Überprüfe die Konsole auf Details.",
+    "c2pa_failed": "C2PA-Signierung fehlgeschlagen. Überprüfe die Konsole für Details.",
     "c2pa_no_module": "C2PA-Modul nicht geladen. Überprüfe die Internetverbindung und aktualisiere.",
     "pi_msg_ph": "Gib deine geheime Nachricht ein (erforderlich)",
-    "final_image_title": "✅ Finales Bild",
+    "final_image_title": "✅ Endgültiges Bild",
     "final_image_desc": "Wasserzeichen + geheime Nachricht eingefügt — einziges Herunterladen.",
-    "final_dl_btn": "📥 Finales Bild herunterladen",
+    "final_dl_btn": "📥 Endgültiges Bild herunterladen",
     "pi_dl_btn": "📥 Eingefügtes Bild herunterladen",
     "step_upload": "Hochladen",
     "step_type": "Typ",
@@ -400,7 +400,7 @@
     "info_email_ph": "z.B. hans@example.com",
     "info_phone": "Telefon",
     "info_phone_ph": "z.B. 5xx xxx xxxx",
-    "phone_digits_only": "Bitte gib nur Zahlen ein",
+    "phone_digits_only": "Bitte nur Zahlen eingeben",
     "clear_confirm": "Alle Daten löschen? Dein aktueller Fortschritt wird verloren.",
     "email_invalid": "Bitte gib eine gültige E-Mail-Adresse ein",
     "url_invalid": "Bitte gib eine gültige URL ein (z.B. https://example.com)",
@@ -417,7 +417,7 @@
   },
   "shared": {
     "download": "Herunterladen",
-    "drop_file": "Datei hier ablegen oder <strong>durchsuchen</strong>",
+    "drop_file": "Datei hier ablegen oder <strong> durchsuchen</strong>",
     "select_file": "Bitte eine Datei auswählen",
     "processing": "Verarbeite...",
     "error_prefix": "Fehler: ",
