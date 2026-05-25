@@ -364,10 +364,9 @@ function addMessage(text, role) {
 }
 
 function sendAssistantMessage(text) {
-  if (!text || text.trim() === '') return;
   var input = document.getElementById('assistantInput');
-  if (!text._isChip) {
-    text = input ? input.value.trim() : text.trim();
+  if (!text || text.trim() === '') {
+    text = input ? input.value.trim() : '';
     if (!text) return;
     if (input) input.value = '';
   }
