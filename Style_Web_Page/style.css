@@ -1061,16 +1061,12 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   40% { transform: scale(1); opacity: 1; }
 }
 
-html[dir="rtl"] .ast-bubble { left: auto; right: 24px; }
-html[dir="rtl"] .ast-panel { left: auto; right: 24px; }
 html[dir="rtl"] .ast-msg-bot { align-self: flex-end; }
 html[dir="rtl"] .ast-msg-user { align-self: flex-start; }
 
 @media (max-width: 480px) {
   .ast-bubble { width: 44px; height: 44px; font-size: 1.15rem; bottom: 16px; left: 16px; }
-  html[dir="rtl"] .ast-bubble { left: auto; right: 16px; }
   .ast-panel { bottom: 70px; left: 8px; width: calc(100vw - 16px); height: calc(100vh - 120px); }
-  html[dir="rtl"] .ast-panel { left: auto; right: 8px; }
   .ast-header { padding: 10px 12px; }
   .ast-title { font-size: 0.82rem; }
   .ast-messages { padding: 8px 10px; }
