@@ -34,6 +34,8 @@
   "mode.simplified_desc": "逐步向导 — 上传文件并按照指南操作",
   "mode.professional_title": "⚙️ 专业模式",
   "mode.professional_desc": "完全访问所有工具和高级选项",
+  "mode.tagline": "免费开源的数字真实性套件 — 水印、文件指纹、元数据读取、时间戳。100%在浏览器中运行。",
+
   "wm.heading": "数字水印",
   "wm.embed_btn": "嵌入",
   "wm.extract_btn": "提取",

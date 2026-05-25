@@ -43,13 +43,26 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "RedoSan Authenticity",
-  "description": "Online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% client-side.",
+  "description": "Free, open-source digital authenticity suite for watermarking images, verifying file fingerprints (SHA-256, BLAKE3), reading metadata/EXIF, and creating OpenTimestamps proofs. 100% client-side, no uploads.",
   "url": "https://redo-san.github.io/RedoSan-Authenticity/",
   "applicationCategory": "Multimedia",
+  "applicationSubCategory": "DigitalAuthenticity",
   "operatingSystem": "Web Browser",
   "browserRequirements": "Requires JavaScript",
-  "author": { "@type": "Person", "name": "Redo_San" },
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  "author": { "@type": "Person", "name": "Redo_San", "url": "https://github.com/Redo-San" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" },
+  "featureList": [
+    "Digital watermarking (LSB, DCT, DWT)",
+    "Pixel injection steganography",
+    "File fingerprinting (SHA-256, SHA-512, BLAKE3, perceptual hash)",
+    "Metadata / EXIF reader",
+    "OpenTimestamps proof generation and verification",
+    "C2PA content provenance",
+    "File format converter",
+    "Digital passport certificate generation"
+  ],
+  "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style_Web_Page/logo.png",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html"
 }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU=" crossorigin="anonymous"></script>
@@ -81,8 +94,9 @@
         <div class="mode-logo logo-white" role="img" aria-label="RedoSan"></div>
         <div class="mode-logo logo-black" role="img" aria-label="RedoSan"></div>
       </div>
-    <h2 class="mode-heading">RedoSan Authenticity</h2>
+    <h1 class="mode-heading">RedoSan Authenticity</h1>
     <p class="mode-subtitle" data-i18n="mode.title">Choose your experience</p>
+    <p class="mode-tagline" data-i18n="mode.tagline">Free, open-source digital authenticity suite — watermark images, verify file fingerprints, read metadata, and create timestamps. 100% in your browser, nothing uploaded.</p>
     <div class="mode-cards">
       <div class="mode-card mode-card-simple" onclick="setMode('simplified')">
         <div class="mode-card-icon">✨</div>

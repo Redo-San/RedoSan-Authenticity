@@ -501,6 +501,7 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
 [data-theme="dark"] .mode-logo.logo-black { display: none; }
 .mode-select-box h1 { font-size: 1.6rem; margin: 0 0 4px; }
 .mode-subtitle { color: var(--text-muted); margin: 0 0 28px; font-size: 0.95rem; }
+.mode-tagline { max-width:520px; margin: -20px auto 28px; font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
 .mode-cards { display: flex; gap: 16px; margin-bottom: 20px; }
 .mode-card {
   flex: 1; padding: 28px 20px; border-radius: var(--radius);
