@@ -1,5 +1,5 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
-
+ 
 var ASSISTANT_KB = [
   { id:'welcome', patterns:['hi','hello','hey','helo','helloo','مرحبا','مرحبًا','مرحبا بك','السلام عليكم','وعليكم السلام','السلامو عليكم','هلا','اهلا','hi there','good morning','good evening','good day','gud morning','morning','evening','howdy','yo','sup'],
     contexts:[], response:{ en:'👋 Hello! I\'m **Raido** 🤖, your AI assistant for RedoSan tools. I can help you with all the tools here.\n\nTry asking me:\n• How does watermarking work?\n• What is file fingerprinting?\n• How to create a timestamp?\n• Privacy & security\n\nWhat would you like to know?',
