@@ -516,28 +516,20 @@ function checkAutomation() {
   return { score: Math.min(Math.max(score, 0), 100), signals: signals, isAutomated: score >= 40 };
 }
 
-function showBotOverlay(reason) {
+function showBotOverlay() {
   var o = document.getElementById('botBlockOverlay');
   if (!o) return;
   var lang = document.documentElement.getAttribute('lang') || 'en';
   var isAr = lang === 'ar';
-  if (reason === 'vpn') {
-    o.querySelector('.bot-block-icon').textContent = '🔒';
-    o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم اكتشاف VPN / بروكسي' : '🚫 VPN / Proxy Detected';
-    o.querySelector('.bot-block-text').textContent = isAr
-      ? 'تم اكتشاف تسرب IP عبر WebRTC يشير إلى استخدام VPN أو بروكسي. يرجى تعطيل VPN وإعادة تحميل الصفحة.'
-      : 'A WebRTC IP leak was detected indicating VPN or proxy usage. Please disable your VPN and reload the page.';
-  } else {
-    o.querySelector('.bot-block-icon').textContent = '🛡️';
-    o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم رفض الوصول' : '🚫 Access Denied';
-    o.querySelector('.bot-block-text').textContent = isAr
-      ? 'تم اكتشاف متصفح آلي / بدون واجهة. التطبيق مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة وإعادة تحميل الصفحة.'
-      : 'Automated / headless browser detected. Please disable automation tools and reload the page.';
-  }
+  o.querySelector('.bot-block-icon').textContent = '🛡️';
+  o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم رفض الوصول' : '🚫 Access Denied';
+  o.querySelector('.bot-block-text').textContent = isAr
+    ? 'تم اكتشاف متصفح آلي / بدون واجهة. التطبيق مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة وإعادة تحميل الصفحة.'
+    : 'Automated / headless browser detected. Please disable automation tools and reload the page.';
   o.classList.add('active');
 }
 
-// ── Async VPN detection via WebRTC leak ──
+// ── Async VPN diagnostic (no blocking — client-side detection is unreliable) ──
 function detectWebRTCIPs() {
   return new Promise(function(resolve) {
     var ips = [], done = false, timer = setTimeout(function() {
@@ -552,11 +544,9 @@ function detectWebRTCIPs() {
           if (!done) { done = true; clearTimeout(timer); try { pc.close(); } catch(ex) {} resolve(ips); }
           return;
         }
-        // Modern API: address property (available in Chrome, Firefox, Safari)
         if (e.candidate.address && typeof e.candidate.address === 'string' && e.candidate.address.indexOf('.') !== -1) {
           if (ips.indexOf(e.candidate.address) === -1) ips.push(e.candidate.address);
         }
-        // Fallback: regex from candidate string
         var m = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
         if (m && ips.indexOf(m[1]) === -1) ips.push(m[1]);
       };
@@ -574,15 +564,10 @@ async function startAsyncVPNDetection() {
     if (!/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(ips[i]))
       publicIPs.push(ips[i]);
   }
-  // WebRTC modified/absent = note it
-  if (ips.length === 0) {
-    if (typeof RTCPeerConnection === 'undefined') REDOSAN_BOT_CHECK = { score: 30, signals: ['webrtc_suppressed'], isAutomated: false };
-    return;
-  }
-  // 2+ public IPs via WebRTC = VPN leak (real IP leaked alongside VPN IP)
-  if (publicIPs.length >= 2) {
-    REDOSAN_BOT_CHECK = { score: 60, signals: ['webrtc_vpn'], isAutomated: true };
-    showBotOverlay('vpn');
+  // Diagnostic only — WebRTC-based VPN detection is unreliable client-side
+  // (false positives from CGNAT, multi-homed networks, IPv4/IPv6 dual-stack)
+  if (ips.length === 0 && typeof RTCPeerConnection === 'undefined') {
+    REDOSAN_BOT_CHECK = { score: 10, signals: ['webrtc_unavailable'], isAutomated: false };
   }
 }
 
@@ -593,8 +578,7 @@ function logSecurityStatus() {
   var layers = [
     'Bot/Automation  ' + (ok ? '✓ PASS' : '✗ BLOCKED') + '  (score:' + p.score + ')'
   ];
-  if (ok) { layers.push('VPN/Proxy      ' + '✓ PASS'); layers.push('WebRTC         ' + '✓ PASS'); }
-  if (p.isAutomated && p.signals.length) {
+  if (p.signals.length) {
     layers[0] += ' [' + p.signals.join(',') + ']';
   }
   console.log('%c🔐 RedoSan Security', 'font-size:16px;font-weight:700;color:#6C5CE7');
@@ -607,7 +591,7 @@ function logSecurityStatus() {
 document.addEventListener('DOMContentLoaded', () => {
   REDOSAN_BOT_CHECK = checkAutomation();
   if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) showBotOverlay();
-  else startAsyncVPNDetection();
+  startAsyncVPNDetection();
   logSecurityStatus();
   initTheme();
   initDropZones();
