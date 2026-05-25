@@ -401,17 +401,14 @@
           <input type="file" id="awm-audio" name="awm-audio" accept="audio/*" onchange="updateAwmCapacity()">
           <p id="awm-capacity" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px"></p>
         </div>
-        <div class="form-group">
-          <label>Secret message</label>
-          <div style="display:flex;gap:8px;margin-bottom:6px">
-            <input type="file" id="awm-file" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.md" style="flex:1;padding:4px;font-size:0.8rem" onchange="loadAwmFile(event)">
-            <button class="btn btn-sm" onclick="document.getElementById('awm-file').value='';document.getElementById('awm-secret').value='';updateAwmCapacity()" style="padding:4px 10px;font-size:0.75rem" type="button">✕</button>
-          </div>
-          <textarea id="awm-secret" name="awm-secret" rows="3" placeholder="Type a secret message or upload a file above..." oninput="updateAwmCapacity()" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border,#ddd);background:var(--bg-input,#fafafa);color:var(--text,#333);resize:vertical"></textarea>
+        <div class="form-group" id="awm-file-group">
+          <label for="awm-file">Secret document</label>
+          <input type="file" id="awm-file" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.md" onchange="loadAwmFile(event)">
+          <p id="awm-file-name" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px"></p>
         </div>
         <div class="form-group" id="awm-password-group">
-          <label for="awm-password">Password <span style="font-weight:400;color:var(--text-muted);font-size:0.72rem">(optional — leave empty for no encryption)</span></label>
-          <input type="password" id="awm-password" name="awm-password" placeholder="Enter password">
+          <label for="awm-password">Password</label>
+          <input type="password" id="awm-password" name="awm-password" placeholder="Enter password" required>
         </div>
         <div class="form-group" id="awm-strength-group">
           <label for="awm-strength">QIM Strength <span id="awm-strength-val">500</span></label>
@@ -438,8 +435,8 @@
           <input type="file" id="awm-audio-ex" name="awm-audio-ex" accept="audio/*">
         </div>
         <div class="form-group" id="awm-password-ex-group">
-          <label for="awm-password-ex">Password <span style="font-weight:400;color:var(--text-muted);font-size:0.72rem">(leave empty if no encryption used)</span></label>
-          <input type="password" id="awm-password-ex" name="awm-password-ex" placeholder="Enter password">
+          <label for="awm-password-ex">Password</label>
+          <input type="password" id="awm-password-ex" name="awm-password-ex" placeholder="Enter password" required>
         </div>
         <div class="form-group" id="awm-strength-ex-group">
           <label for="awm-strength-ex">QIM Strength <span id="awm-strength-ex-val">500</span></label>
