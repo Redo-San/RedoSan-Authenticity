@@ -408,19 +408,6 @@ body {
 }
 
 /* ── Floating AI Assistant (mobile) ── */
-@media (max-width: 480px) {
-  .ast-bubble { width: 44px; height: 44px; font-size: 1.15rem; bottom: 16px; left: 16px; touch-action: manipulation; }
-  .ast-panel { bottom: 70px; left: 8px; width: calc(100vw - 16px); height: calc(100vh - 120px); }
-  .ast-header { padding: 10px 12px; }
-  .ast-title { font-size: 0.82rem; }
-  .ast-messages { padding: 8px 10px; }
-  .ast-content { font-size: 0.78rem; }
-  .ast-input-area { padding: 6px 10px 10px; }
-}
-/* ── Assistant safe area (iOS notch/home indicator) ── */
-@supports (padding: env(safe-area-inset-bottom)) {
-  @media (max-width: 480px) {
-    .ast-bubble { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: calc(16px + env(safe-area-inset-left, 0px)); }
-    .ast-panel { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); left: calc(8px + env(safe-area-inset-left, 0px)); width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); height: calc(100vh - 120px - env(safe-area-inset-bottom, 0px)); }
-  }
+@media (max-width: 768px) {
+  .ast-bubble, .ast-panel { display: none !important; }
 }
