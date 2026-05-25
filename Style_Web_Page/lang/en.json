@@ -41,6 +41,7 @@
   "mode.simplified_desc": "Step-by-step wizard — upload a file and follow the guide",
   "mode.professional_title": "⚙️ Professional Mode",
   "mode.professional_desc": "Full access to all tools with advanced options",
+  "mode.tagline": "Free, open-source digital authenticity suite — watermark images, verify file fingerprints, read metadata, and create timestamps. 100% in your browser.",
 
   "wm.heading": "Digital Watermarking",
   "wm.embed_btn": "Embed",

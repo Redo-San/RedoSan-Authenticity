@@ -34,6 +34,8 @@
   "mode.simplified_desc": "Schritt-für-Schritt-Assistent — Datei hochladen und der Anleitung folgen",
   "mode.professional_title": "⚙️ Professioneller Modus",
   "mode.professional_desc": "Vollzugriff auf alle Tools mit erweiterten Optionen",
+  "mode.tagline": "Kostenlose Open-Source-Suite für digitale Authentizität — Wasserzeichen, Datei-Fingerabdruck, Metadatenlesen, Zeitstempel. 100% im Browser.",
+
   "wm.heading": "Digitales Wasserzeichen",
   "wm.embed_btn": "Einbetten",
   "wm.extract_btn": "Extrahieren",
