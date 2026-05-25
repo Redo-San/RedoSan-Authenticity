@@ -409,7 +409,7 @@ body {
 
 /* ── Floating AI Assistant (mobile) ── */
 @media (max-width: 480px) {
-  .ast-bubble { width: 44px; height: 44px; font-size: 1.15rem; bottom: 16px; left: 16px; }
+  .ast-bubble { width: 44px; height: 44px; font-size: 1.15rem; bottom: 16px; left: 16px; touch-action: manipulation; }
   .ast-panel { bottom: 70px; left: 8px; width: calc(100vw - 16px); height: calc(100vh - 120px); }
   .ast-header { padding: 10px 12px; }
   .ast-title { font-size: 0.82rem; }
