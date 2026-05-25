@@ -271,6 +271,7 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
   .hero { padding: 32px 0; }
   .simple-top .simple-nav-links { display: none; }
   .simple-top { justify-content: space-between; }
+  .simple-top-left { gap: 4px; }
   .simple-mode-switch {
     width: 44px; height: 44px; padding: 0;
     font-size: 1.3rem; justify-content: center;
