@@ -491,7 +491,49 @@ function initDropZones() {
     if (input.files && input.files.length) updateFile();
   });
 }
-document.addEventListener('DOMContentLoaded', () => { initTheme(); initDropZones(); });
+// ── Bot / Automation Detection (100% client-side) ──
+var REDOSAN_BOT_CHECK = null;
+
+function checkAutomation() {
+  var score = 0, signals = [];
+  try {
+    if (navigator.webdriver === true) { score += 35; signals.push('webdriver'); }
+    if (window.callPhantom || window._phantom || window.__nightmare) { score += 50; signals.push('legacy_automation'); }
+    try { if (document.documentElement.getAttribute('webdriver') === 'true') { score += 35; signals.push('webdriver_attr'); } } catch(e) {}
+    if (navigator.plugins && navigator.plugins.length === 0) { score += 10; signals.push('no_plugins'); }
+    if (!navigator.languages || navigator.languages.length <= 1) { score += 5; signals.push('few_languages'); }
+    var ua = (navigator.userAgent || '').toLowerCase();
+    var plat = (navigator.platform || '').toLowerCase();
+    if ((ua.includes('windows') && (plat.includes('linux') || plat.includes('x11') || plat.includes('mac'))) ||
+        (ua.includes('mac') && (plat.includes('linux') || plat.includes('win'))) ||
+        (ua.includes('linux') && (plat.includes('win') || plat.includes('mac')))) {
+      score += 20; signals.push('platform_mismatch');
+    }
+    var sw = window.screen.width || 0, sh = window.screen.height || 0;
+    if (sw < 640 || sh < 480 || (sw === 0 && sh === 0)) { score += 10; signals.push('bad_res:' + sw + 'x' + sh); }
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id === undefined) { score += 10; signals.push('headless_chrome'); }
+  } catch(e) {}
+  return { score: Math.min(Math.max(score, 0), 100), signals: signals, isAutomated: score >= 40 };
+}
+
+function showBotOverlay() {
+  var o = document.getElementById('botBlockOverlay');
+  if (!o) return;
+  var lang = document.documentElement.getAttribute('lang') || 'en';
+  var isAr = lang === 'ar';
+  o.querySelector('.bot-block-title').textContent = isAr ? '🚫 تم رفض الوصول' : '🚫 Access Denied';
+  o.querySelector('.bot-block-text').textContent = isAr
+    ? 'تم اكتشاف متصفح آلي / بدون واجهة. تطبيق RedoSan Authenticity مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة (Puppeteer, Selenium, Playwright) وإعادة تحميل الصفحة.\n\nإذا كنت تعتقد أن هذا خطأ، أبلغ عنه في GitHub.'
+    : 'Automated / headless browser detected. RedoSan Authenticity is intended for human users only. Please disable automation tools (Puppeteer, Selenium, Playwright, etc.) and reload the page.\n\nIf you believe this is an error, please report it on GitHub.';
+  o.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  REDOSAN_BOT_CHECK = checkAutomation();
+  if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) showBotOverlay();
+  initTheme();
+  initDropZones();
+});
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
