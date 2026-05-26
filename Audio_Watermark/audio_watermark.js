@@ -177,13 +177,10 @@ async function handleAwmExtract() {
         var bitsStr = '';
         var detectedAlgo = '';
         if (type === 0) {
-            var autoResult = await awmAutoDetect(info, key, spinner, prog, progFill, progText);
-            if (autoResult) {
-                resultDiv.style.display = '';
-                spinner.style.display = 'none';
-                return;
-            }
-            throw new Error('No watermark detected with any algorithm. Try a different password or file.');
+            var found = await awmMultiDetect(info, key, spinner, prog, progFill, progText);
+            resultDiv.style.display = '';
+            spinner.style.display = 'none';
+            return;
         } else if (type === 8) {
             spinner.style.display = 'none';
             prog.style.display = 'flex';
@@ -209,15 +206,17 @@ async function handleAwmExtract() {
         }
         prog.style.display = 'none';
         spinner.style.display = 'none';
-        var result = awExtractPayload(bitsStr, key);
-        if (result === 'bad-password') {
-            output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>Wrong password or no watermark found</div>';
-        } else if (!result) {
-            output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>No watermark data found. Try a different algorithm.</div>';
-        } else {
-            var decoded = new TextDecoder().decode(result);
-            var algoName = detectedAlgo || ({1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'})[type] || 'Unknown';
-            output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark extracted!</strong><br>Algorithm: ' + algoName + '<br><br><strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(decoded) + '</pre></div>';
+        if (type !== 0) {
+            var result = awExtractPayload(bitsStr, key);
+            if (result === 'bad-password') {
+                output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>Wrong password or no watermark found</div>';
+            } else if (!result) {
+                output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>No watermark data found. Try a different algorithm.</div>';
+            } else {
+                var decoded = new TextDecoder().decode(result);
+                var algoName = detectedAlgo || ({1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'})[type] || 'Unknown';
+                output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark extracted!</strong><br>Algorithm: ' + algoName + '<br><br><strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(decoded) + '</pre></div>';
+            }
         }
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
@@ -231,51 +230,70 @@ async function handleAwmExtract() {
     prog.style.display = 'none';
 }
 
-async function awmAutoDetect(info, key, spinner, prog, progFill, progText) {
+async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
+    var output = document.getElementById('awm-output');
+    var downloadDiv = document.getElementById('awm-download');
+    var resultDiv = document.getElementById('awm-result');
+    spinner.style.display = 'none';
+    prog.style.display = 'flex';
+    var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'};
     var algos = [
         { id: 8, name: 'DCT-based', fn: function() {
             return aw8_extract_async(info.samples, info.samples.length, 400, function(pct) {
                 progFill.style.width = (pct * 100) + '%';
-                progText.textContent = Math.round(pct * 100) + '%';
+                progText.textContent = 'DCT-based (' + Math.round(pct * 100) + '%)';
             });
         }},
         { id: 2, name: 'FFT-QIM', fn: function() { return aw2_extract(info.samples, info.sr); }},
         { id: 3, name: 'Echo Hiding', fn: function() { return aw3_extract(info.samples, info.sr); }},
-        { id: 4, name: 'Spread Spectrum (DSSS)', fn: function() { return aw4_extract(info.samples, info.sr); }},
-        { id: 6, name: 'DWT (Haar Wavelet)', fn: function() { return aw6_extract(info.samples, info.samples.length, 300); }},
+        { id: 4, name: 'DSSS', fn: function() { return aw4_extract(info.samples, info.sr); }},
+        { id: 6, name: 'DWT', fn: function() { return aw6_extract(info.samples, info.samples.length, 300); }},
         { id: 7, name: 'Patchwork', fn: function() { return aw7_extract(info.samples, info.sr); }},
         { id: 1, name: 'LSB Audio', fn: function() { return aw1_extract(info.samples, info.samples.length); }},
         { id: 5, name: 'QIM', fn: function() { return aw5_extract(info.samples, info.samples.length, 500); }}
     ];
-    spinner.style.display = 'none';
-    prog.style.display = 'flex';
-    var output = document.getElementById('awm-output');
-    var downloadDiv = document.getElementById('awm-download');
-    var resultDiv = document.getElementById('awm-result');
+    var found = [];
+    var seen = {};
     for (var i = 0; i < algos.length; i++) {
         var a = algos[i];
         progFill.style.width = '0%';
-        progText.textContent = a.name + ' (0%)';
+        progText.textContent = a.name + ' (scanning... )';
         var bitsStr;
         try {
             bitsStr = await a.fn();
-        } catch (e) {
-            continue;
-        }
+        } catch (e) { continue; }
         if (!bitsStr || bitsStr.length < 32) continue;
         var result = awExtractPayload(bitsStr, key);
         if (result && result !== 'bad-password') {
             var decoded = new TextDecoder().decode(result);
-            prog.style.display = 'none';
-            output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark extracted!</strong><br>Algorithm: ' + a.name + ' (auto-detected)<br><br><strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(decoded) + '</pre></div>';
-            downloadDiv.innerHTML = '';
-            resultDiv.style.display = '';
-            document.getElementById('awm-type-ex').value = a.id;
-            return true;
+            var dedupKey = result.length + ':' + (decoded.substring(0, 100));
+            if (!seen[dedupKey]) {
+                seen[dedupKey] = true;
+                found.push({ algo: a.id, name: a.name, decoded: decoded });
+            }
         }
     }
     prog.style.display = 'none';
-    return false;
+    if (found.length === 0) {
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>No watermark detected with any algorithm. Try a different password or file.</div>';
+        downloadDiv.innerHTML = '';
+        resultDiv.style.display = '';
+        return false;
+    }
+    var html = '';
+    for (var j = 0; j < found.length; j++) {
+        var f = found[j];
+        var icon = j === 0 ? '✅' : '🔷';
+        html += '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">' + icon + '</span>' +
+            '<strong>Watermark #' + (j + 1) + '</strong><br>Algorithm: ' + f.name + ' (auto-detected)<br><br>' +
+            '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(f.decoded) + '</pre></div>';
+    }
+    output.innerHTML = html;
+    downloadDiv.innerHTML = '';
+    resultDiv.style.display = '';
+    // Set dropdown to first found algo
+    document.getElementById('awm-type-ex').value = found[0].algo;
+    return true;
 }
 
 function escapeHtml(s) {
