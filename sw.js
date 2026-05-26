@@ -44,7 +44,8 @@ var JS_WHITELIST = [
   '/RedoSan-Authenticity/Converter/ffmpeg-worker.js',
   '/RedoSan-Authenticity/Converter/ffmpeg.min.js',
   '/RedoSan-Authenticity/Audio_Watermark/audio_watermark_core.js',
-  '/RedoSan-Authenticity/Audio_Watermark/audio_watermark.js'
+  '/RedoSan-Authenticity/Audio_Watermark/audio_watermark.js',
+  '/RedoSan-Authenticity/Assistant/assistant.js'
 ];
 
 self.addEventListener('install', function() {
