@@ -1056,18 +1056,26 @@ async function runAudioWatermarkStep() {
     if (tsBits.length > tsMax) throw new Error('Timestamp message too long for algorithm ' + tsAlgo);
     var s16 = new Int16Array(info.samples);
     var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
+    // Robust (transform-domain) first, fragile (time-domain) second
+    var robust = [2,3,4,6,7,8], fragile = [1,5];
+    var firstAlgo = fpAlgo, secondAlgo = tsAlgo;
+    var firstName = 'fingerprint', secondName = 'timestamp';
+    if (robust.indexOf(tsAlgo) >= 0 && fragile.indexOf(fpAlgo) >= 0) {
+      firstAlgo = tsAlgo; secondAlgo = fpAlgo;
+      firstName = 'timestamp'; secondName = 'fingerprint';
+    }
     progContainer.style.display = '';
     progFill.style.width = '0%';
-    progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (0%)';
-    s16 = await embedAlgo(fpAlgo, new Int16Array(s16), fpBits, info.sr, strength, function(pct) {
+    progText.textContent = 'Embedding ' + firstName + ' with ' + algoNames[firstAlgo] + ' (0%)';
+    s16 = await embedAlgo(firstAlgo, new Int16Array(s16), firstAlgo === fpAlgo ? fpBits : tsBits, info.sr, strength, function(pct) {
       progFill.style.width = (pct * 50) + '%';
-      progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (' + Math.round(pct * 100) + '%)';
+      progText.textContent = 'Embedding ' + firstName + ' with ' + algoNames[firstAlgo] + ' (' + Math.round(pct * 100) + '%)';
     });
     progFill.style.width = '50%';
-    progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (0%)';
-    s16 = await embedAlgo(tsAlgo, new Int16Array(s16), tsBits, info.sr, strength, function(pct) {
+    progText.textContent = 'Embedding ' + secondName + ' with ' + algoNames[secondAlgo] + ' (0%)';
+    s16 = await embedAlgo(secondAlgo, new Int16Array(s16), secondAlgo === fpAlgo ? fpBits : tsBits, info.sr, strength, function(pct) {
       progFill.style.width = (50 + pct * 50) + '%';
-      progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (' + Math.round(pct * 100) + '%)';
+      progText.textContent = 'Embedding ' + secondName + ' with ' + algoNames[secondAlgo] + ' (' + Math.round(pct * 100) + '%)';
     });
     progFill.style.width = '100%';
     progText.textContent = 'Finalizing...';
@@ -1086,7 +1094,8 @@ async function runAudioWatermarkStep() {
     if (btn) { btn.textContent = '✅ Watermarked'; }
     if (statusEl) {
       statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-        '✅ Audio watermarked with two layers! Fingerprint: ' + algoNames[fpAlgo] + ', Timestamp: ' + algoNames[tsAlgo] + '.</div>';
+        '✅ Audio watermarked with two layers! Fingerprint: ' + algoNames[fpAlgo] + ', Timestamp: ' + algoNames[tsAlgo] + '.<br>' +
+        'Embed order: ' + algoNames[firstAlgo] + ' (' + firstName + ') → ' + algoNames[secondAlgo] + ' (' + secondName + ').</div>';
     }
     var nextBtn = document.getElementById('simpleNextBtn');
     nextBtn.disabled = false;
