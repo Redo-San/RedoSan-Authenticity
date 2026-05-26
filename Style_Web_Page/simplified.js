@@ -997,15 +997,15 @@ function renderAudioWatermarkStep(body) {
     '<select id="sawm-fp-type">' +
     '  <option value="1">1. LSB Audio</option>' +
     '  <option value="2">2. FFT-QIM</option>' +
-    '  <option value="5">5. QIM</option>' +
-    '  <option value="6">6. DWT (Haar Wavelet)</option>' +
-    '  <option value="8" selected>8. DCT-based (Recommended)</option>' +
+    '  <option value="5">3. QIM</option>' +
+    '  <option value="6">4. DWT (Haar Wavelet)</option>' +
+    '  <option value="8" selected>5. DCT-based (Recommended)</option>' +
     '</select></div>' +
     '<div class="form-group"><label>Algorithm for Timestamp</label>' +
     '<select id="sawm-ts-type">' +
-    '  <option value="2">2. FFT-QIM</option>' +
-    '  <option value="6">6. DWT (Haar Wavelet)</option>' +
-    '  <option value="8" selected>8. DCT-based (Recommended)</option>' +
+    '  <option value="2">1. FFT-QIM</option>' +
+    '  <option value="6">2. DWT (Haar Wavelet)</option>' +
+    '  <option value="8" selected>3. DCT-based (Recommended)</option>' +
     '</select></div>' +
     '<div class="form-group"><label>Password</label>' +
     '<input type="password" id="sawm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
