@@ -18,6 +18,7 @@ venv/
 # Test files
 cli/test_output/
 test/tmp/
+Tests/AudioWatermark/tmp/
 coverage/
 
 # OS
