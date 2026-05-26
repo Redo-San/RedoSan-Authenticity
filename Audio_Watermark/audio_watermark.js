@@ -236,6 +236,8 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
     var resultDiv = document.getElementById('awm-result');
     spinner.style.display = 'none';
     prog.style.display = 'flex';
+    var detectSamples = info.samples.length > 500000 ? info.samples.subarray(0, 500000) : info.samples;
+    var detectLen = detectSamples.length;
     var algos = [
         { id: 8, name: 'DCT-based', fn: function() {
             return aw8_extract_async(info.samples, info.samples.length, 400, function(pct) {
@@ -244,25 +246,25 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
             });
         }},
         { id: 2, name: 'FFT-QIM', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw2_extract(info.samples, info.sr));
+            r(aw2_extract(detectSamples, info.sr));
         }, 0); }); }},
         { id: 3, name: 'Echo Hiding', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw3_extract(info.samples, info.sr));
+            r(aw3_extract(detectSamples, info.sr));
         }, 0); }); }},
         { id: 4, name: 'DSSS', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw4_extract(info.samples, info.sr));
+            r(aw4_extract(detectSamples, info.sr));
         }, 0); }); }},
         { id: 6, name: 'DWT', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw6_extract(info.samples, info.samples.length, 300));
+            r(aw6_extract(detectSamples, detectLen, 300));
         }, 0); }); }},
         { id: 7, name: 'Patchwork', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw7_extract(info.samples, info.sr));
+            r(aw7_extract(detectSamples, info.sr));
         }, 0); }); }},
         { id: 1, name: 'LSB Audio', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw1_extract(info.samples, info.samples.length));
+            r(aw1_extract(detectSamples, detectLen));
         }, 0); }); }},
         { id: 5, name: 'QIM', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw5_extract(info.samples, info.samples.length, 500));
+            r(aw5_extract(detectSamples, detectLen, 500));
         }, 0); }); }}
     ];
     var found = [];
