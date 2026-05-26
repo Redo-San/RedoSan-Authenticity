@@ -149,16 +149,20 @@ function aw1_embed(s16, bitsStr) {
     return s16;
 }
 function aw1_extract(s16, maxBits) {
-    let b = '';
     const limit = Math.min(s16.length, maxBits || s16.length * 8, 400032);
+    const out = new Array(limit);
+    let needed = 0;
     for (let i = 0; i < limit; i++) {
-        b += s16[i] & 1;
-        if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
-            if (dlen > 0 && dlen < 50000 && b.length >= 32 + dlen * 8) break;
-        }
+        out[i] = s16[i] & 1;
+        if (needed) { if (i + 1 >= needed) break; continue; }
+        if (i < 31) continue;
+        let h = '';
+        for (let k = 0; k < 32; k++) h += out[k];
+        const dlen = parseInt(h, 2);
+        if (dlen > 0 && dlen < 50000) needed = 32 + dlen * 8;
     }
-    return b;
+    const end = needed || limit;
+    return end === limit ? out.join('') : out.slice(0, end).join('');
 }
 
 // ── Algorithm 2: FFT-QIM (Frequency-domain magnitude QIM, replaces broken Phase Coding) ──
@@ -481,16 +485,20 @@ function aw5_embed(s16, bitsStr, strength) {
 function aw5_extract(s16, numBits, strength) {
     const S = Math.max(100, Math.min(5000, strength || 500));
     const limit = Math.min(s16.length, numBits || s16.length, 400032);
-    let b = '';
+    const out = new Array(limit);
+    let needed = 0;
     for (let i = 0; i < limit; i++) {
         const q = Math.round(s16[i] / S);
-        b += (q & 1) === 0 ? '0' : '1';
-        if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
-            if (dlen > 0 && dlen < 50000 && b.length >= 32 + dlen * 8) break;
-        }
+        out[i] = (q & 1) === 0 ? '0' : '1';
+        if (needed) { if (i + 1 >= needed) break; continue; }
+        if (i < 31) continue;
+        let h = '';
+        for (let k = 0; k < 32; k++) h += out[k];
+        const dlen = parseInt(h, 2);
+        if (dlen > 0 && dlen < 50000) needed = 32 + dlen * 8;
     }
-    return b;
+    const end = needed || limit;
+    return end === limit ? out.join('') : out.slice(0, end).join('');
 }
 
 // ── Algorithm 6: DWT (Haar Wavelet) ──
