@@ -145,7 +145,7 @@ function aw1_embed(s16, bitsStr) {
 }
 function aw1_extract(s16, maxBits) {
     let b = '';
-    const limit = Math.min(s16.length, maxBits || s16.length * 8);
+    const limit = Math.min(s16.length, maxBits || s16.length * 8, 400032);
     for (let i = 0; i < limit; i++) {
         b += s16[i] & 1;
         if (b.length >= 32) {
@@ -475,7 +475,7 @@ function aw5_embed(s16, bitsStr, strength) {
 }
 function aw5_extract(s16, numBits, strength) {
     const S = Math.max(100, Math.min(5000, strength || 500));
-    const limit = Math.min(s16.length, numBits || s16.length);
+    const limit = Math.min(s16.length, numBits || s16.length, 400032);
     let b = '';
     for (let i = 0; i < limit; i++) {
         const q = Math.round(s16[i] / S);
