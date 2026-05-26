@@ -265,10 +265,12 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
             r(aw5_extract(info.samples, info.samples.length, 500));
         }, 0); }); }}
     ];
+    var found = [];
+    var seen = {};
     for (var i = 0; i < algos.length; i++) {
         var a = algos[i];
         progFill.style.width = '0%';
-        progFill.style.background = 'var(--progress-fill,#2196f3)';
+        progFill.style.background = '';
         progText.textContent = '🔍 ' + a.name + ' (scanning...)';
         await new Promise(function(r) { setTimeout(r, 16); });
         var bitsStr;
@@ -286,24 +288,36 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
             continue;
         }
         var decoded = new TextDecoder().decode(result);
+        var dedupKey = result.length + ':' + (decoded.substring(0, 100));
+        if (!seen[dedupKey]) {
+            seen[dedupKey] = true;
+            found.push({ algo: a.id, name: a.name, decoded: decoded });
+        }
         progFill.style.width = '100%';
         progFill.style.background = '#4caf50';
         progText.textContent = '✅ ' + a.name + ': watermark found!';
-        await new Promise(function(r) { setTimeout(r, 300); });
-        prog.style.display = 'none';
-        output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span>' +
-            '<strong>Watermark Found!</strong><br>Algorithm: ' + a.name + ' (auto-detected)<br><br>' +
-            '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(decoded) + '</pre></div>';
-        downloadDiv.innerHTML = '';
-        resultDiv.style.display = '';
-        document.getElementById('awm-type-ex').value = a.id;
-        return true;
+        await new Promise(function(r) { setTimeout(r, 200); });
     }
     prog.style.display = 'none';
-    output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>No watermark detected with any algorithm. Try a different password or file.</div>';
+    if (found.length === 0) {
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>No watermark detected with any algorithm. Try a different password or file.</div>';
+        downloadDiv.innerHTML = '';
+        resultDiv.style.display = '';
+        return false;
+    }
+    var html = '';
+    for (var j = 0; j < found.length; j++) {
+        var f = found[j];
+        var icon = j === 0 ? '✅' : '🔷';
+        html += '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">' + icon + '</span>' +
+            '<strong>Watermark #' + (j + 1) + '</strong><br>Algorithm: ' + f.name + ' (auto-detected)<br><br>' +
+            '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(f.decoded) + '</pre></div>';
+    }
+    output.innerHTML = html;
     downloadDiv.innerHTML = '';
     resultDiv.style.display = '';
-    return false;
+    document.getElementById('awm-type-ex').value = found[0].algo;
+    return true;
 }
 
 function escapeHtml(s) {
