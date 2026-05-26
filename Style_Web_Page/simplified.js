@@ -115,6 +115,10 @@ function buildSteps(type, isAI) {
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
     if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
+  } else if (type === 'audio') {
+    s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
+    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
+    s.push({ id: 'audio-watermark', label: 'Audio Watermark' });
   } else {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
     s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
@@ -152,7 +156,7 @@ function renderStep() {
   nextBtn.textContent = isLast ? __('simple.start_over') : __('simple.next_btn');
   // Manage Next button: hidden for action-required steps, disabled until done for others
   simpleStepDone = false;
-  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection'].indexOf(step.id) >= 0) {
+  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection', 'audio-watermark'].indexOf(step.id) >= 0) {
     nextBtn.style.display = 'none';
   } else {
     nextBtn.style.display = '';
@@ -164,6 +168,7 @@ function renderStep() {
   else if (step.id === 'watermark') renderWatermarkStep(body);
   else if (step.id === 'pixel-injection') renderPixelInjectStep(body);
   else if (step.id === 'timestamp') renderTimestampStep(body);
+  else if (step.id === 'audio-watermark') renderAudioWatermarkStep(body);
   else if (step.id === 'fingerprint') renderFingerprintStep(body);
   else if (step.id === 'done') renderDone(body);
   document.getElementById('simpleStepCounter').textContent =
@@ -975,6 +980,147 @@ function runWatermarkStep() {
   });
 }
 
+function renderAudioWatermarkStep(body) {
+  var usingName = simpleFile ? simpleFile.name : '';
+  var fpSummary = '';
+  if (simpleResults.fpResult && simpleResults.fpResult.hashes) {
+    var h = simpleResults.fpResult.hashes;
+    fpSummary = 'SHA-256: ' + (h['SHA-256'] || '').substring(0, 20) + '… SHA-512: ' + (h['SHA-512'] || '').substring(0, 12) + '…';
+    if (h['BLAKE3']) fpSummary += ' BLAKE3: ' + h['BLAKE3'].substring(0, 12) + '…';
+  }
+  var tsSummary = simpleResults.tsResult ? simpleResults.tsResult.substring(0, 100).replace(/\n/g, ' ') : '';
+  body.innerHTML =
+    '<div class="simple-card"><h2>Audio Watermarking</h2><p>Embed both the fingerprint and timestamp as hidden watermarks in your audio. Choose one algorithm for each.</p>' +
+    '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">Using: ' + escapeHtml(usingName) + '</p>' +
+    '<div class="card-form" style="text-align:left">' +
+    '<div class="form-group"><label>Algorithm for Fingerprint <span style="font-size:0.72rem;color:var(--text-muted)">(high capacity)</span></label>' +
+    '<select id="sawm-fp-type">' +
+    '  <option value="8">8. DCT-based (Recommended)</option>' +
+    '  <option value="1">1. LSB Audio</option>' +
+    '  <option value="2">2. FFT-QIM</option>' +
+    '  <option value="5">5. QIM</option>' +
+    '  <option value="6">6. DWT (Haar Wavelet)</option>' +
+    '</select></div>' +
+    '<div class="form-group"><label>Algorithm for Timestamp</label>' +
+    '<select id="sawm-ts-type">' +
+    '  <option value="3">3. Echo Hiding</option>' +
+    '  <option value="4">4. Spread Spectrum (DSSS)</option>' +
+    '  <option value="7">7. Patchwork</option>' +
+    '  <option value="8">8. DCT-based</option>' +
+    '</select></div>' +
+    '<div class="form-group"><label>Password</label>' +
+    '<input type="password" id="sawm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
+    '<div class="form-group" id="sawm-strength-group">' +
+    '<label>Strength <span id="sawm-strength-val">400</span></label>' +
+    '<input type="range" id="sawm-strength" min="100" max="3000" value="400" step="100" oninput="document.getElementById(\'sawm-strength-val\').textContent=this.value"></div>' +
+    '<div style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px;text-align:left">' +
+    '<p><strong>🔐 Fingerprint payload:</strong><br><span style="word-break:break-all">' + escapeHtml(fpSummary) + '</span></p>' +
+    '<p style="margin-top:6px"><strong>🕒 Timestamp payload:</strong><br><span style="word-break:break-all">' + escapeHtml(tsSummary) + '</span></p>' +
+    '<p style="margin-top:6px">Your audio will be watermarked with both layers simultaneously.</p></div>' +
+    '</div>' +
+    '<button class="btn" onclick="runAudioWatermarkStep()" id="sawm-btn">Embed Both Watermarks</button>' +
+    '<div id="sawm-status"></div>' +
+    '<div id="sawm-progress" style="display:none;margin-top:12px">' +
+    '<div style="display:flex;align-items:center;gap:8px">' +
+    '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">' +
+    '<div id="sawm-progress-fill" style="height:100%;width:0%;background:var(--primary);border-radius:3px;transition:width .15s ease"></div></div>' +
+    '<span id="sawm-progress-text" style="font-size:0.75rem;color:var(--text-muted);min-width:3em;text-align:right">0%</span></div></div></div>';
+}
+
+async function runAudioWatermarkStep() {
+  var fpAlgo = parseInt(document.getElementById('sawm-fp-type').value);
+  var tsAlgo = parseInt(document.getElementById('sawm-ts-type').value);
+  var pass = document.getElementById('sawm-password').value || '';
+  var strength = parseInt(document.getElementById('sawm-strength').value) || 400;
+  if (!pass) { alert('Password is required'); return; }
+  showProgress();
+  var statusEl = document.getElementById('sawm-status');
+  var btn = document.getElementById('sawm-btn');
+  var progContainer = document.getElementById('sawm-progress');
+  var progFill = document.getElementById('sawm-progress-fill');
+  var progText = document.getElementById('sawm-progress-text');
+  if (btn) { btn.disabled = true; btn.textContent = 'Embedding...'; }
+  try {
+    var info = await awLoadAudio(simpleFile);
+    var key = await pw_key(pass);
+    var fpText = '';
+    if (simpleResults.fpResult) {
+      fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
+    }
+    var fpBytes = new TextEncoder().encode(fpText.substring(0, 100000));
+    var fpBits = awFormatPayload(fpBytes, key);
+    var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
+    var tsBits = awFormatPayload(tsBytes, key);
+    var fpMax = algoMaxBits(fpAlgo, info.samples.length, info.sr);
+    var tsMax = algoMaxBits(tsAlgo, info.samples.length, info.sr);
+    if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax + '. Try a different algorithm (e.g., LSB or DCT).');
+    if (tsBits.length > tsMax) throw new Error('Timestamp message too long for algorithm ' + tsAlgo);
+    var s16 = new Int16Array(info.samples);
+    var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
+    progContainer.style.display = '';
+    progFill.style.width = '0%';
+    progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (0%)';
+    s16 = await embedAlgo(fpAlgo, new Int16Array(s16), fpBits, info.sr, strength, function(pct) {
+      progFill.style.width = (pct * 50) + '%';
+      progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (' + Math.round(pct * 100) + '%)';
+    });
+    progFill.style.width = '50%';
+    progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (0%)';
+    s16 = await embedAlgo(tsAlgo, new Int16Array(s16), tsBits, info.sr, strength, function(pct) {
+      progFill.style.width = (50 + pct * 50) + '%';
+      progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (' + Math.round(pct * 100) + '%)';
+    });
+    progFill.style.width = '100%';
+    progText.textContent = 'Finalizing...';
+    var wavBuf = awWriteWav(s16, info.sr, info.ch, info.raw, info.bps);
+    var blob = new Blob([wavBuf], { type: 'audio/wav' });
+    simpleResults.audioWatermark = true;
+    simpleResults.audioWatermarkBlob = blob;
+    simpleResults.audioWatermarkUrl = URL.createObjectURL(blob);
+    simpleResults.audioWatermarkFpAlgo = fpAlgo;
+    simpleResults.audioWatermarkTsAlgo = tsAlgo;
+    var origName = simpleFile.name.replace(/\.[^.]+$/, '');
+    simpleResults.audioWatermarkFilename = origName + '_protected.wav';
+    progContainer.style.display = 'none';
+    hideProgress();
+    simpleStepDone = true;
+    if (btn) { btn.textContent = '✅ Watermarked'; }
+    if (statusEl) {
+      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+        '✅ Audio watermarked with two layers! Fingerprint: ' + algoNames[fpAlgo] + ', Timestamp: ' + algoNames[tsAlgo] + '.</div>';
+    }
+    var nextBtn = document.getElementById('simpleNextBtn');
+    nextBtn.disabled = false;
+    nextBtn.style.display = '';
+  } catch (e) {
+    hideProgress();
+    if (progContainer) progContainer.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = 'Embed Both Watermarks'; }
+    if (statusEl) {
+      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        escapeHtml(e.message) + '</div>';
+    }
+  }
+}
+
+function algoMaxBits(algo, audioLen, sr) {
+  if (algo === 1 || algo === 5) return audioLen;
+  var fns = {2:aw2_maxBits,3:aw3_maxBits,4:aw4_maxBits,6:aw6_maxBits,7:aw7_maxBits,8:aw8_maxBits};
+  return fns[algo] ? fns[algo](audioLen, sr) : 0;
+}
+
+async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
+  if (algo === 1) return aw1_embed(s16, bitsStr);
+  else if (algo === 2) return aw2_embed(s16, bitsStr, sr);
+  else if (algo === 3) return aw3_embed(s16, bitsStr, sr);
+  else if (algo === 4) return aw4_embed(s16, bitsStr, sr);
+  else if (algo === 5) return aw5_embed(s16, bitsStr, strength);
+  else if (algo === 6) return aw6_embed(s16, bitsStr, strength);
+  else if (algo === 7) return aw7_embed(s16, bitsStr, sr);
+  else if (algo === 8) return await aw8_embed_async(s16, bitsStr, strength, onProgress);
+  throw new Error('Unknown algorithm: ' + algo);
+}
+
 function renderPixelInjectStep(body) {
   var usingName = simpleFile ? simpleFile.name : '';
   var catOpts = '';
@@ -1232,6 +1378,18 @@ function renderDone(body) {
       '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
   }
 
+  if (results.audioWatermark && results.audioWatermarkUrl) {
+    var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
+    var fpName = algoNames[results.audioWatermarkFpAlgo] || 'Algo ' + results.audioWatermarkFpAlgo;
+    var tsName = algoNames[results.audioWatermarkTsAlgo] || 'Algo ' + results.audioWatermarkTsAlgo;
+    sections.push('<div class="simple-done-section"><h3>Protected Audio</h3>' +
+      '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
+      'Fingerprint: <strong>' + fpName + '</strong> &nbsp;|&nbsp; Timestamp: <strong>' + tsName + '</strong></p>' +
+      '<audio controls style="width:100%;max-width:400px;display:block;margin-bottom:10px">' +
+      '<source src="' + results.audioWatermarkUrl + '" type="audio/wav"></audio>' +
+      '<a href="' + results.audioWatermarkUrl + '" download="' + escapeHtml(results.audioWatermarkFilename || 'protected_audio.wav') + '" class="btn" style="background:var(--primary);color:#fff">📥 Download Protected Audio</a></div>');
+  }
+
   if (results.timestamp) {
     var tsHtml = '<div class="simple-done-section"><h3>' + __('simple.ts_label') + '</h3>';
     if (results.tsResult) tsHtml += '<pre style="white-space:pre-wrap;font-size:0.78rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' + escapeHtml(results.tsResult) + '</pre>';
@@ -1253,7 +1411,7 @@ function renderDone(body) {
   }
 
   // Certificate download section
-  var hasAnyResult = results.watermark || results['pixel-injection'] || results.timestamp || results.fingerprint || results.c2pa;
+  var hasAnyResult = results.watermark || results['pixel-injection'] || results.audioWatermark || results.timestamp || results.fingerprint || results.c2pa;
   if (hasAnyResult) {
     sections.push('<div class="simple-done-section simple-cert-section">' +
       '<h3>' + __('simple.cert_title', 'Digital Passport') + '</h3>' +
