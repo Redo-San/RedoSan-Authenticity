@@ -192,7 +192,7 @@ async function handleAwmExtract() {
         } else {
             if (type === 1) bitsStr = aw1_extract(info.samples, info.samples.length);
             else if (type === 2) bitsStr = aw2_extract(info.samples, info.sr);
-            else if (type === 3) bitsStr = aw3_extract(info.samples, info.sr);
+            else if (type === 3) bitsStr = await aw3_extract(info.samples, info.sr);
             else if (type === 4) bitsStr = aw4_extract(info.samples, info.sr);
             else if (type === 5) {
                 var strength = parseInt(document.getElementById('awm-strength-ex').value) || 500;
@@ -246,9 +246,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
         { id: 2, name: 'FFT-QIM', fn: function() { return new Promise(function(r) { setTimeout(function() {
             r(aw2_extract(info.samples, info.sr));
         }, 0); }); }},
-        { id: 3, name: 'Echo Hiding', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw3_extract(info.samples, info.sr));
-        }, 0); }); }},
+        { id: 3, name: 'Echo Hiding', fn: function() { return aw3_extract(info.samples, info.sr); }},
         { id: 4, name: 'DSSS', fn: function() { return new Promise(function(r) { setTimeout(function() {
             r(aw4_extract(info.samples, info.sr));
         }, 0); }); }},

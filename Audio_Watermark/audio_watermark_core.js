@@ -274,34 +274,42 @@ function aw3_extract(s16, sr, numBits) {
     const totalFrames = Math.floor((s16.length - F) / SHIFT) + 1;
     const maxPossible = Math.floor(totalFrames / REPS);
     const maxDetectBits = Math.min(numBits || maxPossible, maxPossible);
+    const limit = Math.min(totalFrames, maxDetectBits * REPS);
+    const BATCH = 64;
     const votes = [];
-    for (let f = 0; f < totalFrames && votes.length < maxDetectBits * REPS; f++) {
-        const off = f * SHIFT;
-        const re = new Float64Array(F);
-        const im = new Float64Array(F);
-        for (let i = 0; i < F; i++) re[i] = s16[off + i];
-        awFft(re, im);
-        for (let i = 0; i < F; i++) {
-            const mag = re[i]*re[i] + im[i]*im[i];
-            re[i] = Math.log(1 + mag);
-            im[i] = 0;
+    let f = 0;
+    function next() {
+        const end = Math.min(f + BATCH, limit);
+        for (; f < end; f++) {
+            const off = f * SHIFT;
+            const re = new Float64Array(F);
+            const im = new Float64Array(F);
+            for (let i = 0; i < F; i++) re[i] = s16[off + i];
+            awFft(re, im);
+            for (let i = 0; i < F; i++) {
+                const mag = re[i]*re[i] + im[i]*im[i];
+                re[i] = Math.log(1 + mag);
+                im[i] = 0;
+            }
+            awIfft(re, im);
+            const c0 = Math.abs(re[d0]);
+            const c1 = Math.abs(re[d1]);
+            votes.push(c0 > c1 ? '0' : '1');
         }
-        awIfft(re, im);
-        const c0 = Math.abs(re[d0]);
-        const c1 = Math.abs(re[d1]);
-        votes.push(c0 > c1 ? '0' : '1');
-    }
-    let b = '';
-    for (let i = 0; i < votes.length; i += REPS) {
-        const chunk = votes.slice(i, i + REPS);
-        const zeros = chunk.filter(x => x === '0').length;
-        b += zeros >= Math.ceil(REPS / 2) ? '0' : '1';
-        if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
-            if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
+        if (f < limit) return new Promise(function(r) { setTimeout(function() { r(next()); }, 0); });
+        let b = '';
+        for (let i = 0; i < votes.length; i += REPS) {
+            const chunk = votes.slice(i, i + REPS);
+            const zeros = chunk.filter(function(x) { return x === '0'; }).length;
+            b += zeros >= Math.ceil(REPS / 2) ? '0' : '1';
+            if (b.length >= 32) {
+                const dlen = parseInt(b.substring(0, 32), 2);
+                if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
+            }
         }
+        return b;
     }
-    return b;
+    return next();
 }
 function aw3_maxBits(audioLen, sr) {
     const F = AWM3_FRAME, SHIFT = F >> 1, REPS = AWM3_REPS;
