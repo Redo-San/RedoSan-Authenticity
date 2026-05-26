@@ -543,15 +543,16 @@ function awHaarInv(coeff, origLen) {
     return out;
 }
 function aw6_embed(s16, bitsStr, strength) {
-    const S = Math.max(50, Math.min(2000, strength || 300));
+    const S = Math.max(20, Math.min(200, strength || 100));
     const SEG = 1024;
     const segs = Math.min(Math.floor(s16.length / SEG), bitsStr.length);
     for (let seg = 0; seg < segs; seg++) {
         const off = seg * SEG;
         const coeff = awHaarFwd(s16.subarray(off, off + SEG));
         const bit = bitsStr[seg];
-        const startIdx = SEG >> 2;
-        for (let j = startIdx; j < SEG && (j - startIdx) < 256; j++) {
+        const startIdx = SEG >> 1;
+        const endIdx = startIdx + 64;
+        for (let j = startIdx; j < endIdx; j++) {
             let q = Math.round(coeff[j] / S);
             if (bit === '0') { if ((q & 1) !== 0) q += q >= 0 ? 1 : -1; }
             else { if ((q & 1) === 0) q += q >= 0 ? 1 : -1; }
@@ -564,20 +565,21 @@ function aw6_embed(s16, bitsStr, strength) {
     return s16;
 }
 function aw6_extract(s16, numBits, strength) {
-    const S = Math.max(50, Math.min(2000, strength || 300));
+    const S = Math.max(20, Math.min(200, strength || 100));
     const SEG = 1024;
     const segs = Math.min(Math.floor(s16.length / SEG), numBits || 1000);
     let b = '';
     for (let seg = 0; seg < segs; seg++) {
         const off = seg * SEG;
         const coeff = awHaarFwd(s16.subarray(off, off + SEG));
-        const startIdx = SEG >> 2;
+        const startIdx = SEG >> 1;
+        const endIdx = startIdx + 64;
         let sum = 0;
-        for (let j = startIdx; j < SEG && (j - startIdx) < 256; j++) {
+        for (let j = startIdx; j < endIdx; j++) {
             const q = Math.round(coeff[j] / S);
             sum += (q & 1);
         }
-        b += sum > 128 ? '1' : '0';
+        b += sum > 32 ? '1' : '0';
         if (b.length >= 32) {
             const dlen = parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;

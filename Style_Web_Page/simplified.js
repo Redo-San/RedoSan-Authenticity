@@ -1123,7 +1123,7 @@ async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
   else if (algo === 3) return aw3_embed(s16, bitsStr, sr);
   else if (algo === 4) return aw4_embed(s16, bitsStr, sr);
   else if (algo === 5) return aw5_embed(s16, bitsStr, strength);
-  else if (algo === 6) return aw6_embed(s16, bitsStr, strength);
+  else if (algo === 6) return aw6_embed(s16, bitsStr, Math.min(strength, 200));
   else if (algo === 7) return aw7_embed(s16, bitsStr, sr);
   else if (algo === 8) return await aw8_embed_async(s16, bitsStr, strength, onProgress);
   throw new Error('Unknown algorithm: ' + algo);
