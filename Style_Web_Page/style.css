@@ -139,6 +139,10 @@ nav .logo { display:flex; align-items:center; }
 .badge-warning { background: rgba(255,193,7,.15); color: #ffc107; }
 .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite; margin: 12px auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.awm-progress { display: flex; align-items: center; gap: 10px; }
+.awm-progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.awm-progress-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 3px; transition: width .15s ease; }
+.awm-progress-text { font-size: 0.75rem; color: var(--text-muted); min-width: 3em; text-align: right; }
 
 .c2pa-type-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .c2pa-type-card {
