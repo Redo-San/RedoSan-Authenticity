@@ -91,17 +91,21 @@ async function handleAwmEmbed() {
     if (!password || !password.trim()) return alert('Password is required');
     var secretBytes = _awmSecretBytes;
     var spinner = document.getElementById('awm-spinner');
+    var prog = document.getElementById('awm-progress');
+    var progFill = document.getElementById('awm-progress-fill');
+    var progText = document.getElementById('awm-progress-text');
     var resultDiv = document.getElementById('awm-result');
     var output = document.getElementById('awm-output');
     var downloadDiv = document.getElementById('awm-download');
     resultDiv.style.display = 'none';
     spinner.style.display = 'block';
+    prog.style.display = 'none';
     try {
         var info = await awLoadAudio(audioFile);
         var key = await pw_key(password);
         var payloadBits = awFormatPayload(secretBytes, key);
         var maxBits = 0;
-        var names = {1:'LSB Audio',2:'Phase Coding',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'};
+        var names = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'};
         var maxFns = {2:aw2_maxBits,3:aw3_maxBits,4:aw4_maxBits,6:aw6_maxBits,7:aw7_maxBits,8:aw8_maxBits};
         if (type === 1 || type === 5) maxBits = info.samples.length;
         else if (maxFns[type]) maxBits = maxFns[type](info.samples.length, info.sr);
@@ -109,22 +113,31 @@ async function handleAwmEmbed() {
             throw new Error('Message too long. Need ' + payloadBits.length + ' bits, max ' + maxBits + ' for ' + (names[type]||'this algorithm'));
         var modified;
         var s16 = new Int16Array(info.samples);
-        if (type === 1) modified = aw1_embed(s16, payloadBits);
-        else if (type === 2) modified = aw2_embed(s16, payloadBits, info.sr);
-        else if (type === 3) modified = aw3_embed(s16, payloadBits, info.sr);
-        else if (type === 4) modified = aw4_embed(s16, payloadBits, info.sr);
-        else if (type === 5) {
-            var strength = parseInt(document.getElementById('awm-strength').value) || 500;
-            modified = aw5_embed(s16, payloadBits, strength);
-        } else if (type === 6) {
-            var strength = parseInt(document.getElementById('awm-strength').value) || 300;
-            modified = aw6_embed(s16, payloadBits, strength);
-        } else if (type === 7) {
-            modified = aw7_embed(s16, payloadBits, info.sr);
-        } else if (type === 8) {
+        if (type === 8) {
+            spinner.style.display = 'none';
+            prog.style.display = 'flex';
             var strength = parseInt(document.getElementById('awm-strength').value) || 400;
-            modified = aw8_embed(s16, payloadBits, strength);
+            modified = await aw8_embed_async(s16, payloadBits, strength, function(pct) {
+                progFill.style.width = (pct * 100) + '%';
+                progText.textContent = Math.round(pct * 100) + '%';
+            });
+        } else {
+            if (type === 1) modified = aw1_embed(s16, payloadBits);
+            else if (type === 2) modified = aw2_embed(s16, payloadBits, info.sr);
+            else if (type === 3) modified = aw3_embed(s16, payloadBits, info.sr);
+            else if (type === 4) modified = aw4_embed(s16, payloadBits, info.sr);
+            else if (type === 5) {
+                var strength = parseInt(document.getElementById('awm-strength').value) || 500;
+                modified = aw5_embed(s16, payloadBits, strength);
+            } else if (type === 6) {
+                var strength = parseInt(document.getElementById('awm-strength').value) || 300;
+                modified = aw6_embed(s16, payloadBits, strength);
+            } else if (type === 7) {
+                modified = aw7_embed(s16, payloadBits, info.sr);
+            }
         }
+        prog.style.display = 'none';
+        spinner.style.display = 'none';
         var wavBuf = awWriteWav(modified, info.sr, info.ch, info.raw, info.bps);
         var blob = new Blob([wavBuf], { type: 'audio/wav' });
         output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark embedded successfully!</strong><br>Algorithm: ' + names[type] + '<br>File: ' + escapeHtml(audioFile.name) + '<br>Sample Rate: ' + info.sr + ' Hz<br>Channels: ' + info.ch + '<br>Hidden: ' + secretBytes.length + ' bytes</div>';
@@ -132,11 +145,13 @@ async function handleAwmEmbed() {
         window._awmResult = { blob: blob, originalName: audioFile.name, type: type, algorithm: names[type] };
         resultDiv.style.display = '';
     } catch (e) {
+        prog.style.display = 'none';
         output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }
     spinner.style.display = 'none';
+    prog.style.display = 'none';
 }
 
 // ── Extract ──
@@ -147,31 +162,44 @@ async function handleAwmExtract() {
     if (!audioFile) return alert('Please select a watermarked audio file');
     if (!password || !password.trim()) return alert('Password is required');
     var spinner = document.getElementById('awm-spinner');
+    var prog = document.getElementById('awm-progress');
+    var progFill = document.getElementById('awm-progress-fill');
+    var progText = document.getElementById('awm-progress-text');
     var resultDiv = document.getElementById('awm-result');
     var output = document.getElementById('awm-output');
     var downloadDiv = document.getElementById('awm-download');
     resultDiv.style.display = 'none';
     spinner.style.display = 'block';
+    prog.style.display = 'none';
     try {
         var info = await awLoadAudio(audioFile);
         var key = await pw_key(password);
         var bitsStr = '';
-        if (type === 1) bitsStr = aw1_extract(info.samples, info.samples.length);
-        else if (type === 2) bitsStr = aw2_extract(info.samples, info.sr);
-        else if (type === 3) bitsStr = aw3_extract(info.samples, info.sr);
-        else if (type === 4) bitsStr = aw4_extract(info.samples, info.sr);
-        else if (type === 5) {
-            var strength = parseInt(document.getElementById('awm-strength-ex').value) || 500;
-            bitsStr = aw5_extract(info.samples, info.samples.length, strength);
-        } else if (type === 6) {
-            var strength = parseInt(document.getElementById('awm-strength-ex').value) || 300;
-            bitsStr = aw6_extract(info.samples, info.samples.length, strength);
-        } else if (type === 7) {
-            bitsStr = aw7_extract(info.samples, info.sr);
-        } else if (type === 8) {
+        if (type === 8) {
+            spinner.style.display = 'none';
+            prog.style.display = 'flex';
             var strength = parseInt(document.getElementById('awm-strength-ex').value) || 400;
-            bitsStr = aw8_extract(info.samples, info.samples.length, strength);
+            bitsStr = await aw8_extract_async(info.samples, info.samples.length, strength, function(pct) {
+                progFill.style.width = (pct * 100) + '%';
+                progText.textContent = Math.round(pct * 100) + '%';
+            });
+        } else {
+            if (type === 1) bitsStr = aw1_extract(info.samples, info.samples.length);
+            else if (type === 2) bitsStr = aw2_extract(info.samples, info.sr);
+            else if (type === 3) bitsStr = aw3_extract(info.samples, info.sr);
+            else if (type === 4) bitsStr = aw4_extract(info.samples, info.sr);
+            else if (type === 5) {
+                var strength = parseInt(document.getElementById('awm-strength-ex').value) || 500;
+                bitsStr = aw5_extract(info.samples, info.samples.length, strength);
+            } else if (type === 6) {
+                var strength = parseInt(document.getElementById('awm-strength-ex').value) || 300;
+                bitsStr = aw6_extract(info.samples, info.samples.length, strength);
+            } else if (type === 7) {
+                bitsStr = aw7_extract(info.samples, info.sr);
+            }
         }
+        prog.style.display = 'none';
+        spinner.style.display = 'none';
         var result = awExtractPayload(bitsStr, key);
         if (result === 'bad-password') {
             output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>Wrong password or no watermark found</div>';
@@ -184,11 +212,13 @@ async function handleAwmExtract() {
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     } catch (e) {
+        prog.style.display = 'none';
         output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }
     spinner.style.display = 'none';
+    prog.style.display = 'none';
 }
 
 function escapeHtml(s) {
