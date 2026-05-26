@@ -127,12 +127,12 @@ async function handleAwmEmbed() {
         }
         var wavBuf = awWriteWav(modified, info.sr, info.ch, info.raw, info.bps);
         var blob = new Blob([wavBuf], { type: 'audio/wav' });
-        output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark embedded successfully!</strong><br>Algorithm: ' + names[type] + '<br>File: ' + audioFile.name + '<br>Sample Rate: ' + info.sr + ' Hz<br>Channels: ' + info.ch + '<br>Hidden: ' + secretBytes.length + ' bytes</div>';
-        downloadDiv.innerHTML = '<a href="' + URL.createObjectURL(blob) + '" download="watermarked_' + audioFile.name.replace(/\.[^.]+$/, '.wav') + '" class="btn">⬇ Download Watermarked WAV</a>';
+        output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark embedded successfully!</strong><br>Algorithm: ' + names[type] + '<br>File: ' + escapeHtml(audioFile.name) + '<br>Sample Rate: ' + info.sr + ' Hz<br>Channels: ' + info.ch + '<br>Hidden: ' + secretBytes.length + ' bytes</div>';
+        downloadDiv.innerHTML = '<a href="' + URL.createObjectURL(blob) + '" download="watermarked_' + escapeHtml(audioFile.name).replace(/\.[^.]+$/, '.wav') + '" class="btn">⬇ Download Watermarked WAV</a>';
         window._awmResult = { blob: blob, originalName: audioFile.name, type: type, algorithm: names[type] };
         resultDiv.style.display = '';
     } catch (e) {
-        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + e.message + '</div>';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }
@@ -184,7 +184,7 @@ async function handleAwmExtract() {
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     } catch (e) {
-        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + e.message + '</div>';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }
