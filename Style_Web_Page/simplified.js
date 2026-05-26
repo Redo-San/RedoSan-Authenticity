@@ -995,18 +995,17 @@ function renderAudioWatermarkStep(body) {
     '<div class="card-form" style="text-align:left">' +
     '<div class="form-group"><label>Algorithm for Fingerprint <span style="font-size:0.72rem;color:var(--text-muted)">(high capacity)</span></label>' +
     '<select id="sawm-fp-type">' +
-    '  <option value="8">8. DCT-based (Recommended)</option>' +
     '  <option value="1">1. LSB Audio</option>' +
     '  <option value="2">2. FFT-QIM</option>' +
     '  <option value="5">5. QIM</option>' +
     '  <option value="6">6. DWT (Haar Wavelet)</option>' +
+    '  <option value="8" selected>8. DCT-based (Recommended)</option>' +
     '</select></div>' +
     '<div class="form-group"><label>Algorithm for Timestamp</label>' +
     '<select id="sawm-ts-type">' +
-    '  <option value="3">3. Echo Hiding</option>' +
-    '  <option value="4">4. Spread Spectrum (DSSS)</option>' +
-    '  <option value="7">7. Patchwork</option>' +
-    '  <option value="8">8. DCT-based</option>' +
+    '  <option value="2">2. FFT-QIM</option>' +
+    '  <option value="6">6. DWT (Haar Wavelet)</option>' +
+    '  <option value="8" selected>8. DCT-based (Recommended)</option>' +
     '</select></div>' +
     '<div class="form-group"><label>Password</label>' +
     '<input type="password" id="sawm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
