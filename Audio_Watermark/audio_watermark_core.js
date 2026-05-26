@@ -518,8 +518,9 @@ function awHaarFwd(signal) {
     let h = n;
     while (h > 1) {
         h >>= 1;
+        const snap = out.slice();
         for (let i = 0; i < h; i++) {
-            const a = out[i * 2], b = out[i * 2 + 1];
+            const a = snap[i * 2], b = snap[i * 2 + 1];
             out[i] = (a + b) / 2;
             out[i + h] = (a - b) / 2;
         }
