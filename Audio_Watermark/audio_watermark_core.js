@@ -79,12 +79,17 @@ async function awLoadAudio(file) {
 // ── FFT (radix-2, in-place) ──
 function awFft(re, im) {
     const n = re.length;
+    if (n < 2) return;
     let j = 0;
     for (let i = 0; i < n - 1; i++) {
         if (i < j) { [re[i],re[j]]=[re[j],re[i]]; [im[i],im[j]]=[im[j],im[i]]; }
         let k = n >> 1;
-        while (k <= j) { j -= k; k >>= 1; }
-        j += k;
+        while (k) {
+            if (!(k & j)) break;
+            j ^= k;
+            k >>= 1;
+        }
+        j |= k;
     }
     for (let len = 2; len <= n; len <<= 1) {
         const ang = 2 * Math.PI / len;
@@ -758,7 +763,7 @@ function aw8_extract(s16, numBits, strength) {
 function aw8_maxBits(audioLen, sr) {
     return Math.floor(audioLen / AWM8_FRAME);
 }
-async function aw8_embed_async(s16, bitsStr, strength, onProgress) {
+function aw8_embed_async(s16, bitsStr, strength, onProgress) {
     const S = Math.max(50, Math.min(3000, strength || 400));
     const F = AWM8_FRAME, CHIPS = AWM8_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
@@ -767,67 +772,67 @@ async function aw8_embed_async(s16, bitsStr, strength, onProgress) {
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
-    const BATCH = 16;
-    for (let batch = 0; batch < effectiveBits; batch += BATCH) {
-        const end = Math.min(batch + BATCH, effectiveBits);
-        for (let f = batch; f < end; f++) {
-            const off = f * F;
-            const frame = new Float64Array(F);
-            for (let i = 0; i < F; i++) frame[i] = s16[off + i];
-            const dct = awDct(frame);
-            const bit = bitsStr[f];
-            const chipStart = LO + (f * step) % (usable - CHIPS);
-            for (let c = 0; c < CHIPS; c++) {
-                const idx = chipStart + c;
-                let q = Math.round(dct[idx] / S);
-                if (bit === '0') { if ((q & 1) !== 0) q += q >= 0 ? 1 : -1; }
-                else { if ((q & 1) === 0) q += q >= 0 ? 1 : -1; }
-                dct[idx] = q * S;
+    const BATCH = 32;
+    return new Promise(function(resolve) {
+        var pos = 0;
+        function processBatch() {
+            var until = Math.min(pos + BATCH, effectiveBits);
+            for (var f = pos; f < until; f++) {
+                var off = f * F;
+                var frame = new Float64Array(F);
+                for (var i = 0; i < F; i++) frame[i] = s16[off + i];
+                var dct = awDct(frame);
+                var bit = bitsStr[f];
+                var chipStart = LO + (f * step) % (usable - CHIPS);
+                for (var c = 0; c < CHIPS; c++) {
+                    var idx = chipStart + c;
+                    var q = Math.round(dct[idx] / S);
+                    if (bit === '0') { if ((q & 1) !== 0) q += q >= 0 ? 1 : -1; }
+                    else { if ((q & 1) === 0) q += q >= 0 ? 1 : -1; }
+                    dct[idx] = q * S;
+                }
+                var reconstructed = awIdct(dct);
+                for (var i = 0; i < F; i++)
+                    s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(reconstructed[i])));
             }
-            const reconstructed = awIdct(dct);
-            for (let i = 0; i < F; i++)
-                s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(reconstructed[i])));
+            pos = until;
+            if (onProgress) onProgress(Math.min(1, pos / effectiveBits));
+            if (pos >= effectiveBits) { resolve(s16); return; }
+            requestAnimationFrame(processBatch);
         }
-        if (onProgress) onProgress(Math.min(1, end / effectiveBits));
-        if (end < effectiveBits) await new Promise(r => setTimeout(r, 0));
-    }
-    return s16;
+        requestAnimationFrame(processBatch);
+    });
 }
-async function aw8_extract_async(s16, numBits, strength, onProgress) {
+function aw8_extract_async(s16, numBits, strength, onProgress) {
     const S = Math.max(50, Math.min(3000, strength || 400));
     const F = AWM8_FRAME, CHIPS = AWM8_CHIPS;
-    const totalFrames = Math.floor(s16.length / F);
-    const maxBits = Math.min(numBits || totalFrames, totalFrames);
     const LO = Math.floor(F * 0.10);
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
+    const totalFrames = Math.floor(s16.length / F);
+    const maxBits = Math.min(numBits || totalFrames, totalFrames);
+    const limitBits = Math.min(maxBits, 5000);
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
-    const MAX_EXTRACT_FRAMES = 5000;
-    const limitBits = Math.min(maxBits, MAX_EXTRACT_FRAMES);
+    if (onProgress) onProgress(0);
     let b = '';
-    const BATCH = 8;
-    for (let batch = 0; batch < limitBits; batch += BATCH) {
-        const end = Math.min(batch + BATCH, limitBits);
-        for (let f = batch; f < end; f++) {
-            const off = f * F;
-            const frame = new Float64Array(F);
-            for (let i = 0; i < F; i++) frame[i] = s16[off + i];
-            const dct = awDct(frame);
-            const chipStart = LO + (f * step) % (usable - CHIPS);
-            let ones = 0;
-            for (let c = 0; c < CHIPS; c++) {
-                const idx = chipStart + c;
-                const q = Math.round(dct[idx] / S);
-                if (q & 1) ones++;
-            }
-            b += ones > CHIPS / 2 ? '1' : '0';
-            if (b.length >= 32) {
-                const dlen = parseInt(b.substring(0, 32), 2);
-                if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
-            }
+    for (let f = 0; f < limitBits; f++) {
+        const off = f * F;
+        const frame = new Float64Array(F);
+        for (let i = 0; i < F; i++) frame[i] = s16[off + i];
+        const dct = awDct(frame);
+        const chipStart = LO + (f * step) % (usable - CHIPS);
+        let ones = 0;
+        for (let c = 0; c < CHIPS; c++) {
+            const idx = chipStart + c;
+            const q = Math.round(dct[idx] / S);
+            if (q & 1) ones++;
         }
-        if (onProgress) onProgress(Math.min(1, batch / limitBits));
-        await new Promise(r => setTimeout(r, 0));
+        b += ones > CHIPS / 2 ? '1' : '0';
+        if (b.length >= 32) {
+            const dlen = parseInt(b.substring(0, 32), 2);
+            if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
+        }
     }
-    return b;
+    if (onProgress) onProgress(1);
+    return Promise.resolve(b);
 }

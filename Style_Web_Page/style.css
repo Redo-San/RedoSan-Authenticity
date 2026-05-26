@@ -141,7 +141,7 @@ nav .logo { display:flex; align-items:center; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .awm-progress { display: flex; align-items: center; gap: 10px; }
 .awm-progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.awm-progress-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 3px; transition: width .15s ease; }
+.awm-progress-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 3px; }
 .awm-progress-text { font-size: 0.75rem; color: var(--text-muted); min-width: 3em; text-align: right; }
 
 .c2pa-type-grid { display: flex; flex-wrap: wrap; gap: 8px; }
