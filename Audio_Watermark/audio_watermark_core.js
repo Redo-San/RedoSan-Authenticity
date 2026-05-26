@@ -580,14 +580,18 @@ function awDctInit(N) {
 }
 function awDct(signal) {
     const N = signal.length;
-    awDctInit(N);
-    const { T, scale0, scale } = _awDctCos;
+    const half = N >> 1;
+    const re = new Float64Array(N), im = new Float64Array(N);
+    for (let i = 0; i < half; i++) {
+        re[i] = signal[2 * i];
+        re[N - 1 - i] = signal[2 * i + 1];
+    }
+    awFft(re, im);
     const X = new Float64Array(N);
+    const scale0 = 1 / Math.sqrt(N), scale = Math.sqrt(2 / N);
     for (let k = 0; k < N; k++) {
-        let sum = 0;
-        const off = k * N;
-        for (let n = 0; n < N; n++) sum += signal[n] * T[off + n];
-        X[k] = k === 0 ? sum * scale0 : sum * scale;
+        const theta = Math.PI * k / (2 * N);
+        X[k] = (re[k] * Math.cos(theta) - im[k] * Math.sin(theta)) * (k === 0 ? scale0 : scale);
     }
     return X;
 }
