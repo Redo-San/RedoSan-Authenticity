@@ -385,7 +385,7 @@
       <div id="awm-embed">
         <div class="form-group">
           <label for="awm-type" data-i18n="wm.algo_label">Algorithm</label>
-          <select id="awm-type" name="awm-type" onchange="toggleAwmPassword();updateAwmCapacity()">
+          <select id="awm-type" name="awm-type" onchange="toggleAwmPassword();updateAwmCapacity();toggleAwmInput()">
             <option value="1">1. LSB Audio</option>
             <option value="2">2. Phase Coding</option>
             <option value="3">3. Echo Hiding</option>
@@ -402,9 +402,14 @@
           <p id="awm-capacity" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px"></p>
         </div>
         <div class="form-group" id="awm-file-group">
-          <label for="awm-file">Secret document</label>
+          <label for="awm-file" id="awm-file-label">Secret document</label>
           <input type="file" id="awm-file" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.md" onchange="loadAwmFile(event)">
           <p id="awm-file-name" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px"></p>
+        </div>
+        <div class="form-group" id="awm-text-group" style="display:none">
+          <label for="awm-text">Secret message</label>
+          <textarea id="awm-text" rows="3" maxlength="500" placeholder="Enter short secret message (limited capacity for this algorithm)" oninput="updateAwmCapacity()"></textarea>
+          <p id="awm-text-info" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px"></p>
         </div>
         <div class="form-group" id="awm-password-group">
           <label for="awm-password">Password</label>

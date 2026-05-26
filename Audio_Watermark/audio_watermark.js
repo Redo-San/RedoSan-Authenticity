@@ -16,6 +16,21 @@ function toggleAwmPassword() {
     document.getElementById('awm-password-group').style.display = '';
     document.getElementById('awm-strength-group').style.display = (t === 5 || t === 6 || t === 8) ? '' : 'none';
 }
+function toggleAwmInput() {
+    var t = parseInt(document.getElementById('awm-type').value);
+    var fileGroup = document.getElementById('awm-file-group');
+    var textGroup = document.getElementById('awm-text-group');
+    var isLowCapacity = (t === 3 || t === 4 || t === 7);
+    fileGroup.style.display = isLowCapacity ? 'none' : '';
+    textGroup.style.display = isLowCapacity ? '' : 'none';
+    if (isLowCapacity) {
+        _awmSecretBytes = null;
+        updateAwmCapacity();
+    } else {
+        var fi = document.getElementById('awm-file');
+        if (fi.files && fi.files[0]) loadAwmFile({target:fi});
+    }
+}
 function toggleAwmPasswordEx() {
     var t = parseInt(document.getElementById('awm-type-ex').value);
     document.getElementById('awm-password-ex-group').style.display = '';
@@ -41,7 +56,16 @@ function updateAwmCapacity() {
     var capEl = document.getElementById('awm-capacity');
     if (!f || !f.files || !f.files[0]) { capEl.textContent = ''; return; }
     var t = parseInt(document.getElementById('awm-type').value);
-    var msgBytes = _awmSecretBytes || new Uint8Array(0);
+    var isLowCapacity = (t === 3 || t === 4 || t === 7);
+    var msgBytes;
+    if (isLowCapacity) {
+        var txt = document.getElementById('awm-text').value;
+        msgBytes = txt ? new TextEncoder().encode(txt.substring(0, 1000)) : new Uint8Array(0);
+        _awmSecretBytes = msgBytes;
+        document.getElementById('awm-text-info').textContent = msgBytes.length + ' bytes / ~' + (msgBytes.length*8) + ' bits';
+    } else {
+        msgBytes = _awmSecretBytes || new Uint8Array(0);
+    }
     var byteLen = msgBytes.length;
     var descs = {1:'LSB: ~1 bit/sample',2:'Phase Coding: ~1 bit/sample',3:'Echo Hiding: ~1 bit/'+AWM3_FRAME+' samples x3 reps',4:'DSSS: ~1 bit/'+(AWM4_FRAME>>1)+' frames',5:'QIM: ~1 bit/sample',6:'DWT Haar: ~1 bit/1024 coefs',7:'Patchwork: ~1 bit/'+(AWM7_FRAME>>1)+' frames x5 reps',8:'DCT: ~1 bit/'+(AWM8_FRAME>>1)+' frames'};
     var mult = {1:1, 2:1, 3:AWM3_FRAME*3, 4:AWM4_FRAME>>1, 5:1, 6:1024, 7:AWM7_FRAME*5>>1, 8:AWM8_FRAME>>1};
@@ -56,7 +80,14 @@ async function handleAwmEmbed() {
     var audioFile = document.getElementById('awm-audio').files[0];
     var password = document.getElementById('awm-password').value;
     if (!audioFile) return alert('Please select an audio file');
-    if (!_awmSecretBytes) return alert('Please upload a secret document');
+    var isLowCapacity = (type === 3 || type === 4 || type === 7);
+    if (!isLowCapacity) {
+        if (!_awmSecretBytes) return alert('Please upload a secret document');
+    } else {
+        var txtVal = document.getElementById('awm-text').value;
+        if (!txtVal || !txtVal.trim()) return alert('Please enter a secret message');
+        _awmSecretBytes = new TextEncoder().encode(txtVal.trim());
+    }
     if (!password || !password.trim()) return alert('Password is required');
     var secretBytes = _awmSecretBytes;
     var spinner = document.getElementById('awm-spinner');
