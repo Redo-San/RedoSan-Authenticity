@@ -50,11 +50,7 @@ function awWriteWav(mono, sr, ch, rawData, bps) {
     v.setUint16(34,bpsOut,true); w(36,'data'); v.setUint32(40,dataSize,true);
     for (let i = 0; i < frames; i++) {
         for (let c = 0; c < ch; c++) {
-            let val;
-            if (c === 0 && i < mono.length) val = mono[i];
-            else if (rawData && i * ch + c < rawData.length) val = rawData[i * ch + c];
-            else if (i < mono.length) val = mono[i];
-            else val = 0;
+            const val = i < mono.length ? mono[i] : 0;
             v.setInt16(44 + (i * ch + c) * 2, Math.max(-32768, Math.min(32767, val||0)), true);
         }
     }
@@ -544,7 +540,7 @@ function awHaarInv(coeff, origLen) {
     return out;
 }
 function aw6_embed(s16, bitsStr, strength) {
-    const S = Math.max(20, Math.min(200, strength || 100));
+    const S = Math.max(20, Math.min(100, strength || 80));
     const SEG = 1024;
     const segs = Math.min(Math.floor(s16.length / SEG), bitsStr.length);
     for (let seg = 0; seg < segs; seg++) {
@@ -566,7 +562,7 @@ function aw6_embed(s16, bitsStr, strength) {
     return s16;
 }
 function aw6_extract(s16, numBits, strength) {
-    const S = Math.max(20, Math.min(200, strength || 100));
+    const S = Math.max(20, Math.min(100, strength || 80));
     const SEG = 1024;
     const segs = Math.min(Math.floor(s16.length / SEG), numBits || 1000);
     let b = '';
@@ -580,7 +576,7 @@ function aw6_extract(s16, numBits, strength) {
             const q = Math.round(coeff[j] / S);
             sum += (q & 1);
         }
-        b += sum > 32 ? '1' : '0';
+        b += sum > 31 ? '1' : '0';
         if (b.length >= 32) {
             const dlen = parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
