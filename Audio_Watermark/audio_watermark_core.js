@@ -798,10 +798,12 @@ async function aw8_extract_async(s16, numBits, strength, onProgress) {
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
+    const MAX_EXTRACT_FRAMES = 5000;
+    const limitBits = Math.min(maxBits, MAX_EXTRACT_FRAMES);
     let b = '';
-    const BATCH = 32;
-    for (let batch = 0; batch < maxBits && b.length < 500; batch += BATCH) {
-        const end = Math.min(batch + BATCH, maxBits);
+    const BATCH = 8;
+    for (let batch = 0; batch < limitBits; batch += BATCH) {
+        const end = Math.min(batch + BATCH, limitBits);
         for (let f = batch; f < end; f++) {
             const off = f * F;
             const frame = new Float64Array(F);
@@ -820,7 +822,7 @@ async function aw8_extract_async(s16, numBits, strength, onProgress) {
                 if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
             }
         }
-        if (onProgress) onProgress(Math.min(1, batch / maxBits));
+        if (onProgress) onProgress(Math.min(1, batch / limitBits));
         await new Promise(r => setTimeout(r, 0));
     }
     return b;
