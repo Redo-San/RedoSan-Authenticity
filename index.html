@@ -449,6 +449,7 @@
           <input type="range" id="awm-strength-ex" min="100" max="3000" value="400" step="100" oninput="document.getElementById('awm-strength-ex-val').textContent=this.value">
         </div>
         <button class="btn" onclick="handleAwmExtract()" id="awm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
+        <button class="btn" onclick="awmSelfTest()" style="margin-top:8px;background:var(--accent);font-size:0.8rem">🔬 Self-Test</button>
       </div>
       <div class="spinner" id="awm-spinner"></div>
       <div class="awm-progress" id="awm-progress" style="display:none;margin:12px 0">
