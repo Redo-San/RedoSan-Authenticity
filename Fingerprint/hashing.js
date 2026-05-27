@@ -763,7 +763,7 @@ async function fingerprintFile(file) {
     return result;
 }
 
-// ── Fast fingerprint for simplified mode (fewer algorithms, yields between each) ──
+// ── Fast fingerprint for simplified mode (computes all hashes) ──
 async function fastFingerprint(file) {
     var buf = await file.arrayBuffer();
     var data = new Uint8Array(buf);
@@ -777,10 +777,30 @@ async function fastFingerprint(file) {
         return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     }
 
-    hashes['SHA-256'] = await hashAlgo('SHA-256', data);
-    hashes['SHA-512'] = await hashAlgo('SHA-512', data);
-    await new Promise(function(r) { setTimeout(r, 0); });
-    try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
+    async function yieldLoop() { await new Promise(function(r) { setTimeout(r, 0); }); }
+
+    hashes['SHA-1'] = await hashAlgo('SHA-1', data); await yieldLoop();
+    hashes['SHA-256'] = await hashAlgo('SHA-256', data); await yieldLoop();
+    hashes['SHA-384'] = await hashAlgo('SHA-384', data); await yieldLoop();
+    hashes['SHA-512'] = await hashAlgo('SHA-512', data); await yieldLoop();
+
+    try {
+        hashes['SHA-3_224'] = sha3_224(data); await yieldLoop();
+        hashes['SHA-3_256'] = sha3_256(data); await yieldLoop();
+        hashes['SHA-3_384'] = sha3_384(data); await yieldLoop();
+        hashes['SHA-3_512'] = sha3_512(data); await yieldLoop();
+    } catch(e) { console.error('SHA-3 error:', e); }
+
+    try {
+        hashes['BLAKE2b'] = await blake2b(data); await yieldLoop();
+        hashes['BLAKE2s'] = await blake2s(data); await yieldLoop();
+    } catch(e) { console.error('BLAKE2 error:', e); }
+
+    try { hashes['SHA-224'] = await sha224(data); await yieldLoop(); } catch(e) {}
+    try { hashes['MD5'] = md5(data); await yieldLoop(); } catch(e) {}
+    try { hashes['RIPEMD-160'] = ripemd160(data); await yieldLoop(); } catch(e) {}
+    try { hashes['BLAKE3'] = await blake3(data); await yieldLoop(); } catch(e) {}
+    try { hashes['Whirlpool'] = await whirlpool(data); await yieldLoop(); } catch(e) {}
 
     var result = {
         file_info: { file_name: name, file_size_bytes: data.length },
@@ -798,6 +818,7 @@ async function fastFingerprint(file) {
                 dhash: dhash(small),
                 phash: phash(small)
             };
+            try { result.perceptual_hashes.whash = whash(small); } catch(e) { console.error('whash error:', e); }
             result.file_info.width = loaded.w;
             result.file_info.height = loaded.h;
             result.file_info.format = ext.replace('.', '').toUpperCase();
@@ -809,6 +830,46 @@ async function fastFingerprint(file) {
     return result;
 }
 window.fastFingerprint = fastFingerprint;
+
+// ── Trim fingerprint JSON payload to fit within maxBits ──
+function trimFingerprintPayload(fpResult, maxBytes) {
+    var orderedKeys = [
+        'SHA-256', 'SHA-512', 'BLAKE3', 'SHA-1', 'SHA-384',
+        'SHA-3_256', 'BLAKE2b', 'SHA-224', 'SHA-3_224', 'BLAKE2s',
+        'SHA-3_384', 'SHA-3_512', 'RIPEMD-160', 'Whirlpool', 'MD5'
+    ];
+    var trimmed = { file_info: {}, hashes: {}, perceptual_hashes: {} };
+    if (fpResult.file_info.width) trimmed.file_info.width = fpResult.file_info.width;
+    if (fpResult.file_info.height) trimmed.file_info.height = fpResult.file_info.height;
+    if (fpResult.file_info.format) trimmed.file_info.format = fpResult.file_info.format;
+    for (var i = 0; i < orderedKeys.length; i++) {
+        if (!fpResult.hashes[orderedKeys[i]]) continue;
+        trimmed.hashes[orderedKeys[i]] = fpResult.hashes[orderedKeys[i]];
+        var json = JSON.stringify(trimmed);
+        if (new TextEncoder().encode(json).length > maxBytes) {
+            delete trimmed.hashes[orderedKeys[i]];
+            break;
+        }
+    }
+    // Always include perceptual hashes if space
+    if (fpResult.perceptual_hashes) {
+        var withPerceptual = JSON.parse(JSON.stringify(trimmed));
+        withPerceptual.perceptual_hashes = {};
+        for (var pk in fpResult.perceptual_hashes) {
+            withPerceptual.perceptual_hashes[pk] = fpResult.perceptual_hashes[pk];
+            var pj = JSON.stringify(withPerceptual);
+            if (new TextEncoder().encode(pj).length > maxBytes) {
+                delete withPerceptual.perceptual_hashes[pk];
+                break;
+            }
+        }
+        if (Object.keys(withPerceptual.perceptual_hashes).length > 0) {
+            trimmed.perceptual_hashes = withPerceptual.perceptual_hashes;
+        }
+    }
+    return trimmed;
+}
+window.trimFingerprintPayload = trimFingerprintPayload;
 
 // ── BLAKE3 self-verify at load time ──
 (async function(){

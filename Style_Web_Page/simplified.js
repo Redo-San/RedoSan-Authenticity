@@ -944,14 +944,19 @@ function runWatermarkStep() {
   var btn = document.getElementById('swm-btn');
   if (btn) { btn.disabled = true; btn.textContent = __('simple.embedding', 'Embedding...'); }
 
-  // Create a Blob from fingerprint result as the secret payload
-  var fpText = '';
-  if (simpleResults.fpResult) {
-    fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
+  // Smart fingerprint payload: embed all hashes, trimmed to capacity if needed
+  var secretFile;
+  if (simpleResults.fpResult && typeof trimFingerprintPayload === 'function') {
+    var trimmed = trimFingerprintPayload(simpleResults.fpResult, 60000);
+    secretFile = new File([JSON.stringify(trimmed)], 'fingerprint.txt', { type: 'text/plain' });
+  } else {
+    var fpText = '';
+    if (simpleResults.fpResult) {
+      fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
+    }
+    if (fpText.length > 65536) fpText = fpText.slice(0, 65536);
+    secretFile = new File([fpText], 'fingerprint.txt', { type: 'text/plain' });
   }
-  if (fpText.length > 65536) fpText = fpText.slice(0, 65536);
-  var secretBlob = new Blob([fpText], { type: 'text/plain' });
-  var secretFile = new File([secretBlob], 'fingerprint.txt', { type: 'text/plain' });
 
   watermarkEmbed(algo, simpleFile, secretFile, pass).then(function(result) {
     if (result.ok) {
@@ -985,8 +990,16 @@ function renderAudioWatermarkStep(body) {
   var fpSummary = '';
   if (simpleResults.fpResult && simpleResults.fpResult.hashes) {
     var h = simpleResults.fpResult.hashes;
-    fpSummary = 'SHA-256: ' + (h['SHA-256'] || '').substring(0, 20) + '… SHA-512: ' + (h['SHA-512'] || '').substring(0, 12) + '…';
-    if (h['BLAKE3']) fpSummary += ' BLAKE3: ' + h['BLAKE3'].substring(0, 12) + '…';
+    var hashKeys = Object.keys(h);
+    var hashCount = hashKeys.length;
+    fpSummary = hashCount + ' hashes (';
+    var shortList = ['SHA-256','SHA-512','BLAKE3','SHA-1'];
+    for (var si = 0; si < shortList.length; si++) {
+      if (h[shortList[si]]) {
+        fpSummary += shortList[si] + ': ' + h[shortList[si]].substring(0, 8) + '… ';
+      }
+    }
+    fpSummary = fpSummary.trim() + ')';
   }
   var tsSummary = simpleResults.tsResult ? simpleResults.tsResult.substring(0, 100).replace(/\n/g, ' ') : '';
   body.innerHTML =
@@ -1042,18 +1055,26 @@ async function runAudioWatermarkStep() {
   try {
     var info = await awLoadAudio(simpleFile);
     var key = await pw_key(pass);
-    var fpText = '';
-    if (simpleResults.fpResult) {
-      fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
-    }
-    var fpBytes = new TextEncoder().encode(fpText.substring(0, 100000));
-    var fpBits = awFormatPayload(fpBytes, key);
-    var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
-    var tsBits = awFormatPayload(tsBytes, key);
     var fpMax = algoMaxBits(fpAlgo, info.samples.length, info.sr);
     var tsMax = algoMaxBits(tsAlgo, info.samples.length, info.sr);
-    if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax + '. Try a different algorithm (e.g., LSB or DCT).');
+    var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
+    var tsBits = awFormatPayload(tsBytes, key);
     if (tsBits.length > tsMax) throw new Error('Timestamp message too long for algorithm ' + tsAlgo);
+    // Build fingerprint payload trimmed to fit available capacity
+    var fpBytes;
+    if (simpleResults.fpResult && typeof trimFingerprintPayload === 'function') {
+      var maxFpBytes = Math.floor((fpMax - 48) / 8);
+      var trimmed = trimFingerprintPayload(simpleResults.fpResult, maxFpBytes);
+      fpBytes = new TextEncoder().encode(JSON.stringify(trimmed));
+    } else {
+      var fpText = '';
+      if (simpleResults.fpResult) {
+        fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
+      }
+      fpBytes = new TextEncoder().encode(fpText.substring(0, 100000));
+    }
+    var fpBits = awFormatPayload(fpBytes, key);
+    if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax);
     var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
     progContainer.style.display = '';
     progFill.style.width = '0%';
