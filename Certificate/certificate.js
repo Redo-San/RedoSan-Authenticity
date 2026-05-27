@@ -204,7 +204,8 @@ async function downloadCertPDF(data) {
   // Embed image
   if (img) {
     checkPage(imgH + 8);
-    doc.addImage(img, 'PNG', (pw - imgW) / 2, y, imgW, imgH);
+    var imgFmt = data.file.type === 'image/png' ? 'PNG' : 'JPEG';
+    doc.addImage(img, imgFmt, (pw - imgW) / 2, y, imgW, imgH);
     y += imgH + 6;
   }
 
