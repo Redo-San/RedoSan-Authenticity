@@ -93,7 +93,7 @@ function blake2bCompress(h, m, counter, final) {
     for (var i = 0; i < 8; i++) h[i] = (h[i] ^ v[i] ^ v[i+8]) & 0xFFFFFFFFFFFFFFFFn;
 }
 async function blake2b(data) {
-    var outLen = 64;
+    var outLen = 64, _bi = 0;
     var h = B2IV.slice();
     h[0] ^= 0x01010000n ^ BigInt(outLen);
     var offset = 0, counter = 0;
@@ -103,6 +103,7 @@ async function blake2b(data) {
         for (var i = 0; i < 16; i++) m[i] = blake2bLoad64(data, offset + i * 8);
         blake2bCompress(h, m, counter, false);
         offset += 128;
+        if (++_bi % 4000 === 0) await new Promise(function(r) { setTimeout(r, 0); });
     }
     var last = new Uint8Array(128);
     last.fill(0);
@@ -154,7 +155,7 @@ function b2s_compress(h,m,counter,final){
 }
 function b2s_load32(d,o){return d[o]|(d[o+1]<<8)|(d[o+2]<<16)|(d[o+3]<<24);}
 async function blake2s(data){
-  var outLen=32,h=B2S_IV.slice();
+  var outLen=32,h=B2S_IV.slice(),_ci=0;
   h[0]^=0x01010000^outLen;
   var offset=0,counter=0;
   while(offset+64<=data.length){
@@ -163,6 +164,7 @@ async function blake2s(data){
     for(var i=0;i<16;i++)m[i]=b2s_load32(data,offset+i*4);
     b2s_compress(h,m,counter,false);
     offset+=64;
+    if(++_ci%8000===0) await new Promise(function(r){setTimeout(r,0);});
   }
   var last=new Uint8Array(64);last.fill(0);
   var rem=data.length-offset;
@@ -780,15 +782,15 @@ async function fastFingerprint(file, onProgress) {
     function yieldHeavy() { return new Promise(function(r) { setTimeout(r, 8); }); }
     function setProg(msg) { if (onProgress) onProgress(msg); }
 
+    // Each hash yields via setTimeout so the browser can paint the spinner
     setProg('SHA-1…');
-    hashes['SHA-1'] = await hashAlgo('SHA-1', data);
+    hashes['SHA-1'] = await hashAlgo('SHA-1', data); await yieldHeavy();
     setProg('SHA-256…');
-    hashes['SHA-256'] = await hashAlgo('SHA-256', data);
+    hashes['SHA-256'] = await hashAlgo('SHA-256', data); await yieldHeavy();
     setProg('SHA-384…');
-    hashes['SHA-384'] = await hashAlgo('SHA-384', data);
+    hashes['SHA-384'] = await hashAlgo('SHA-384', data); await yieldHeavy();
     setProg('SHA-512…');
-    hashes['SHA-512'] = await hashAlgo('SHA-512', data);
-    await yieldHeavy();
+    hashes['SHA-512'] = await hashAlgo('SHA-512', data); await yieldHeavy();
 
     try {
         setProg('SHA-3 (224)…');
