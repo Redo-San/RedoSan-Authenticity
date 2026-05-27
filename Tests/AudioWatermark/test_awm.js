@@ -10,6 +10,7 @@ global.window = global;
 global.window.crypto = global.crypto;
 global.document = { createElement: () => ({ appendChild: () => {}, innerHTML: '' }) };
 global.Int16Array = Int16Array;
+global.requestAnimationFrame = function(cb) { return setTimeout(cb, 0); };
 
 const utils = fs.readFileSync(path.join(__dirname, '..', '..', 'Watermark', 'utils.js'), 'utf8');
 const core = fs.readFileSync(path.join(__dirname, '..', '..', 'Audio_Watermark', 'audio_watermark_core.js'), 'utf8');
@@ -48,9 +49,9 @@ async function run() {
         { id:1, name:'LSB Audio',   msg:M.huge,  embed:(s,p)=>aw1_embed(s,p), extract:(s,n)=>aw1_extract(s,n), maxBits:(l)=>l },
         { id:2, name:'FFT-QIM',     msg:M.small,  embed:(s,p)=>aw2_embed(s,p,SR), extract:(s,n)=>aw2_extract(s,SR,n), maxBits:(l)=>aw2_maxBits(l,SR) },
         { id:3, name:'Echo Hiding', msg:M.tiny,   embed:(s,p)=>aw3_embed(s,p,SR), extract:(s,n)=>aw3_extract(s,SR,n), maxBits:(l)=>aw3_maxBits(l,SR) },
-        { id:5, name:'QIM',         msg:M.huge,   embed:(s,p)=>aw5_embed(s,p,500), extract:(s,n)=>aw5_extract(s,n,500), maxBits:(l)=>l },
-        { id:6, name:'DWT (Haar)',  msg:M.medium, embed:(s,p)=>aw6_embed(s,p,300), extract:(s,n)=>aw6_extract(s,n,300), maxBits:(l)=>aw6_maxBits(l,SR) },
-        { id:8, name:'DCT-based',   msg:M.medium, embed:(s,p)=>aw8_embed(s,p,400), extract:(s,n)=>aw8_extract(s,n,400), maxBits:(l)=>aw8_maxBits(l,SR) }
+        { id:5, name:'QIM',         msg:M.huge,   embed:(s,p)=>aw5_embed(s,p,SR), extract:(s,n)=>aw5_extract(s,SR,n), maxBits:(l)=>l },
+        { id:6, name:'DWT (Haar)',  msg:M.medium, embed:(s,p)=>aw6_embed(s,p,SR), extract:(s,n)=>aw6_extract(s,SR,n), maxBits:(l)=>aw6_maxBits(l,SR) },
+        { id:8, name:'DCT-based',   msg:M.medium, embed:async (s,p)=>await aw8_embed_async(s,p,SR), extract:async (s,n)=>await aw8_extract_async(s,SR,n), maxBits:(l)=>aw8_maxBits(l,SR) }
     ];
 
     const audio = [
@@ -86,9 +87,9 @@ async function run() {
             let status, detail, snrVal = 0;
 
             try {
-                const mod = algo.embed(new Int16Array(orig), payload);
+                const mod = await algo.embed(new Int16Array(orig), payload);
                 snrVal = snr(orig, mod);
-                const bits = algo.extract(mod, Math.max(payload.length, 5000));
+                const bits = await algo.extract(mod, Math.max(payload.length, 5000));
                 const result = awExtractPayload(bits, key);
 
                 if (!result) { status = '❌'; detail = 'No watermark'; }
