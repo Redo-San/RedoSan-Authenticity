@@ -1334,7 +1334,7 @@ function renderFingerprintStep(body) {
     '<div class="simple-card"><h2>' + __('simple.fp_title') + '</h2><p>' + __('simple.fp_desc') + '</p>' +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 12px;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
     __('simple.fp_processing_note', '⏳ Computing multiple hash algorithms. This may take a moment for large files.') + '</p>' +
-    '<div id="sfp-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
+    '<div id="sfp-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p id="sfp-status">' + __('simple.processing') + '</p></div></div>';
   runFingerprintStep();
 }
 
@@ -1350,9 +1350,11 @@ function runFingerprintStep() {
   }
   // Defer to next tick so the browser renders the spinner first
   setTimeout(function() {
-    // Use fast fingerprint for simplified mode (fewer algorithms, less blocking)
     if (window.fastFingerprint) {
-      window.fastFingerprint(simpleFile).then(function(result) {
+      var statusEl = document.getElementById('sfp-status');
+      window.fastFingerprint(simpleFile, function(msg) {
+        if (statusEl) statusEl.textContent = msg || '';
+      }).then(function(result) {
         var resultDiv = document.getElementById('sfp-result');
         if (resultDiv) {
           resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +

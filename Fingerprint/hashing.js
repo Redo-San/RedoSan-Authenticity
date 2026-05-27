@@ -764,7 +764,7 @@ async function fingerprintFile(file) {
 }
 
 // ── Fast fingerprint for simplified mode (computes all hashes) ──
-async function fastFingerprint(file) {
+async function fastFingerprint(file, onProgress) {
     var buf = await file.arrayBuffer();
     var data = new Uint8Array(buf);
     var name = file.name;
@@ -777,30 +777,52 @@ async function fastFingerprint(file) {
         return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     }
 
-    async function yieldLoop() { await new Promise(function(r) { setTimeout(r, 0); }); }
+    function yieldHeavy() { return new Promise(function(r) { setTimeout(r, 8); }); }
+    function setProg(msg) { if (onProgress) onProgress(msg); }
 
-    hashes['SHA-1'] = await hashAlgo('SHA-1', data); await yieldLoop();
-    hashes['SHA-256'] = await hashAlgo('SHA-256', data); await yieldLoop();
-    hashes['SHA-384'] = await hashAlgo('SHA-384', data); await yieldLoop();
-    hashes['SHA-512'] = await hashAlgo('SHA-512', data); await yieldLoop();
+    setProg('SHA-1…');
+    hashes['SHA-1'] = await hashAlgo('SHA-1', data);
+    setProg('SHA-256…');
+    hashes['SHA-256'] = await hashAlgo('SHA-256', data);
+    setProg('SHA-384…');
+    hashes['SHA-384'] = await hashAlgo('SHA-384', data);
+    setProg('SHA-512…');
+    hashes['SHA-512'] = await hashAlgo('SHA-512', data);
+    await yieldHeavy();
 
     try {
-        hashes['SHA-3_224'] = sha3_224(data); await yieldLoop();
-        hashes['SHA-3_256'] = sha3_256(data); await yieldLoop();
-        hashes['SHA-3_384'] = sha3_384(data); await yieldLoop();
-        hashes['SHA-3_512'] = sha3_512(data); await yieldLoop();
+        setProg('SHA-3 (224)…');
+        hashes['SHA-3_224'] = sha3_224(data); await yieldHeavy();
+        setProg('SHA-3 (256)…');
+        hashes['SHA-3_256'] = sha3_256(data); await yieldHeavy();
+        setProg('SHA-3 (384)…');
+        hashes['SHA-3_384'] = sha3_384(data); await yieldHeavy();
+        setProg('SHA-3 (512)…');
+        hashes['SHA-3_512'] = sha3_512(data); await yieldHeavy();
     } catch(e) { console.error('SHA-3 error:', e); }
 
     try {
-        hashes['BLAKE2b'] = await blake2b(data); await yieldLoop();
-        hashes['BLAKE2s'] = await blake2s(data); await yieldLoop();
+        setProg('BLAKE2b…');
+        hashes['BLAKE2b'] = await blake2b(data); await yieldHeavy();
+        setProg('BLAKE2s…');
+        hashes['BLAKE2s'] = await blake2s(data); await yieldHeavy();
     } catch(e) { console.error('BLAKE2 error:', e); }
 
-    try { hashes['SHA-224'] = await sha224(data); await yieldLoop(); } catch(e) {}
-    try { hashes['MD5'] = md5(data); await yieldLoop(); } catch(e) {}
-    try { hashes['RIPEMD-160'] = ripemd160(data); await yieldLoop(); } catch(e) {}
-    try { hashes['BLAKE3'] = await blake3(data); await yieldLoop(); } catch(e) {}
-    try { hashes['Whirlpool'] = await whirlpool(data); await yieldLoop(); } catch(e) {}
+    setProg('SHA-224…');
+    try { hashes['SHA-224'] = await sha224(data); } catch(e) {}
+    await yieldHeavy();
+    setProg('MD5…');
+    try { hashes['MD5'] = md5(data); } catch(e) {}
+    await yieldHeavy();
+    setProg('RIPEMD-160…');
+    try { hashes['RIPEMD-160'] = ripemd160(data); } catch(e) {}
+    await yieldHeavy();
+    setProg('BLAKE3…');
+    try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
+    await yieldHeavy();
+    setProg('Whirlpool…');
+    try { hashes['Whirlpool'] = await whirlpool(data); } catch(e) {}
+    await yieldHeavy();
 
     var result = {
         file_info: { file_name: name, file_size_bytes: data.length },
@@ -810,15 +832,18 @@ async function fastFingerprint(file) {
 
     if (imgExts.includes(ext)) {
         try {
+            setProg('Loading image…');
             var loaded = await loadImage(new Blob([data]));
             var imgData = loaded.imgData;
             var small = resizeImageData(imgData, 32);
-            result.perceptual_hashes = {
-                ahash: ahash(small),
-                dhash: dhash(small),
-                phash: phash(small)
-            };
-            try { result.perceptual_hashes.whash = whash(small); } catch(e) { console.error('whash error:', e); }
+            await yieldHeavy();
+            setProg('ahash…');
+            result.perceptual_hashes.ahash = ahash(small); await yieldHeavy();
+            setProg('dhash…');
+            result.perceptual_hashes.dhash = dhash(small); await yieldHeavy();
+            setProg('phash…');
+            result.perceptual_hashes.phash = phash(small); await yieldHeavy();
+            try { setProg('whash…'); result.perceptual_hashes.whash = whash(small); await yieldHeavy(); } catch(e) { console.error('whash error:', e); }
             result.file_info.width = loaded.w;
             result.file_info.height = loaded.h;
             result.file_info.format = ext.replace('.', '').toUpperCase();
@@ -827,6 +852,7 @@ async function fastFingerprint(file) {
         }
     }
 
+    setProg('');
     return result;
 }
 window.fastFingerprint = fastFingerprint;
