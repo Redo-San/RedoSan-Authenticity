@@ -36,12 +36,13 @@ function keccakF(st) {
         st[0] ^= SHA3_RC[r*2]; st[1] ^= SHA3_RC[r*2+1];
     }
 }
-function sha3(data, bits) {
+async function sha3(data, bits) {
     var rate = 1600 - bits*2, r = rate>>3, lanes = rate/64|0, st = new Uint32Array(50);
-    var i = 0;
+    var i = 0, _sc = 0;
     for (; i+r <= data.length; i += r) {
         for (var j = 0; j < r; j++) { var half = j&4?1:0; st[(j>>3)*2+half] ^= (data[i+j])<<((j&3)<<3); }
         keccakF(st);
+        if (++_sc % 200 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
     }
     var rem = data.length - i;
     for (var j = 0; j < rem; j++) { var half = j&4?1:0; st[(j>>3)*2+half] ^= (data[i+j])<<((j&3)<<3); }
@@ -52,10 +53,10 @@ function sha3(data, bits) {
     for (var j = 0; j < outBytes; j++) result[j] = (st[(j>>3)*2+(j&4?1:0)] >> ((j&3)<<3)) & 0xFF;
     return Array.from(result).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
 }
-var sha3_224 = function(d) { return sha3(d, 224); };
-var sha3_256 = function(d) { return sha3(d, 256); };
-var sha3_384 = function(d) { return sha3(d, 384); };
-var sha3_512 = function(d) { return sha3(d, 512); };
+var sha3_224 = async function(d) { return await sha3(d, 224); };
+var sha3_256 = async function(d) { return await sha3(d, 256); };
+var sha3_384 = async function(d) { return await sha3(d, 384); };
+var sha3_512 = async function(d) { return await sha3(d, 512); };
 
 // ── BLAKE2b (64-byte digest) ──
 var B2IV = [0x6a09e667f3bcc908n,0xbb67ae8584caa73bn,0x3c6ef372fe94f82bn,0xa54ff53a5f1d36f1n,0x510e527fade682d1n,0x9b05688c2b3e6c1fn,0x1f83d9abfb41bd6bn,0x5be0cd19137e2179n];
@@ -300,7 +301,7 @@ function resizeImageData(imgData, targetSize) {
 }
 
 // ── Minimal MD5 implementation ──
-function md5(data) {
+async function md5(data) {
     var s = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
     function F(x,y,z) { return (x & y) | (~x & z); }
     function G(x,y,z) { return (x & z) | (y & ~z); }
@@ -317,7 +318,9 @@ function md5(data) {
     for (var i = 0; i < data.length; i++) msg[i] = data[i];
     msg[data.length] = 0x80;
     new DataView(msg.buffer).setUint32(msg.length - 8, origLen, true);
+    var _mc = 0;
     for (var off = 0; off < msg.length; off += 64) {
+        if (++_mc % 4000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
         var w = new Array(16);
         for (var i = 0; i < 16; i++) w[i] = new DataView(msg.buffer).getUint32(off + i*4, true);
         var a = s[0], b = s[1], c = s[2], d = s[3];
@@ -345,8 +348,8 @@ function md5(data) {
     return r;
 }
 
-// ── SHA-224 (proper implementation with correct IV) ──
-function sha224(data) {
+// ── SHA-224 ──
+async function sha224(data) {
   var K = new Uint32Array([
     0x428A2F98,0x71374491,0xB5C0FBCF,0xE9B5DBA5,0x3956C25B,0x59F111F1,0x923F82A4,0xAB1C5ED5,
     0xD807AA98,0x12835B01,0x243185BE,0x550C7DC3,0x72BE5D74,0x80DEB1FE,0x9BDC06A7,0xC19BF174,
@@ -365,7 +368,9 @@ function sha224(data) {
   m.set(data); m[len] = 0x80;
   var dv = new DataView(m.buffer, m.byteOffset, m.byteLength);
   dv.setUint32(ml - 4, bits, false);
+  var _sc224 = 0;
   for (var off = 0; off < ml; off += 64) {
+    if (++_sc224 % 4000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
     var W = new Uint32Array(64);
     for (var t = 0; t < 16; t++) W[t] = dv.getUint32(off + t * 4, false);
     for (var t = 16; t < 64; t++) {
@@ -471,7 +476,7 @@ function md4(data) {
 }
 
 // ── RIPEMD-160 ──
-function ripemd160(data) {
+async function ripemd160(data) {
     function rot(x,n){return(x<<n)|(x>>>(32-n));}
     function f1(x,y,z){return x^y^z;}
     function f2(x,y,z){return(x&y)|(~x&z);}
@@ -490,7 +495,9 @@ function ripemd160(data) {
     var lb=new ArrayBuffer(8);new DataView(lb).setUint32(0,origLen,true);new DataView(lb).setUint32(4,0,true);
     pad=new Uint8Array([...pad,...new Uint8Array(lb)]);
     var h0=0x67452301,h1=0xefcdab89,h2=0x98badcfe,h3=0x10325476,h4=0xc3d2e1f0;
+    var _rc = 0;
     for(var i=0;i<pad.length;i+=64){
+        if (++_rc % 2000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
         var X=new Array(16);
         for(var j=0;j<16;j++)X[j]=pad[i+j*4]|(pad[i+j*4+1]<<8)|(pad[i+j*4+2]<<16)|(pad[i+j*4+3]<<24);
         var A=h0,B=h1,C=h2,D=h3,E=h4,Ap=h0,Bp=h1,Cp=h2,Dp=h3,Ep=h4;
@@ -670,8 +677,8 @@ var WP_RC=[];
 (function(){
   for(var i=0;i<10;i++){var rc=new Uint8Array(8);for(var j=0;j<8;j++)rc[j]=WP_SBOX[(8*i+j)%256];WP_RC.push(rc);}
 })();
-function whirlpool(data){
-  var bits=data.length*8;
+async function whirlpool(data){
+  var bits=data.length*8, _wc=0;
   var padLen=(32-((data.length+1)%64)+64)%64;
   var ml=data.length+1+padLen+32;
   var m=new Uint8Array(ml);
@@ -684,6 +691,7 @@ function whirlpool(data){
   m[lenOff+30]=(bits>>>8)&0xFF;m[lenOff+31]=bits&0xFF;
   var H=new Uint8Array(64);
   for(var off=0;off<ml;off+=64){
+    if (++_wc % 4000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
     var blk=m.subarray(off,off+64);
     var K=new Uint8Array(H);
     var enc=wp_cipher(blk,K);
@@ -715,10 +723,10 @@ async function fingerprintFile(file) {
     hashes['SHA-512'] = await hashAlgo('SHA-512', data); await yieldLoop();
 
     try {
-        hashes['SHA-3_224'] = sha3_224(data); await yieldLoop();
-        hashes['SHA-3_256'] = sha3_256(data); await yieldLoop();
-        hashes['SHA-3_384'] = sha3_384(data); await yieldLoop();
-        hashes['SHA-3_512'] = sha3_512(data); await yieldLoop();
+        hashes['SHA-3_224'] = await sha3_224(data); await yieldLoop();
+        hashes['SHA-3_256'] = await sha3_256(data); await yieldLoop();
+        hashes['SHA-3_384'] = await sha3_384(data); await yieldLoop();
+        hashes['SHA-3_512'] = await sha3_512(data); await yieldLoop();
     } catch(e) { console.error('SHA-3 error:', e); }
 
     try {
@@ -730,9 +738,9 @@ async function fingerprintFile(file) {
 
     try { hashes['MD2'] = md2(data); await yieldLoop(); } catch(e) {}
     try { hashes['MD4'] = md4(data); await yieldLoop(); } catch(e) {}
-    try { hashes['MD5'] = md5(data); await yieldLoop(); } catch(e) {}
+    try { hashes['MD5'] = await md5(data); await yieldLoop(); } catch(e) {}
 
-    try { hashes['RIPEMD-160'] = ripemd160(data); await yieldLoop(); } catch(e) {}
+    try { hashes['RIPEMD-160'] = await ripemd160(data); await yieldLoop(); } catch(e) {}
     try { hashes['BLAKE3'] = await blake3(data); await yieldLoop(); } catch(e) {}
     try { hashes['Whirlpool'] = await whirlpool(data); await yieldLoop(); } catch(e) {}
 
@@ -794,13 +802,13 @@ async function fastFingerprint(file, onProgress) {
 
     try {
         setProg('SHA-3 (224)…');
-        hashes['SHA-3_224'] = sha3_224(data); await yieldHeavy();
+        hashes['SHA-3_224'] = await sha3_224(data); await yieldHeavy();
         setProg('SHA-3 (256)…');
-        hashes['SHA-3_256'] = sha3_256(data); await yieldHeavy();
+        hashes['SHA-3_256'] = await sha3_256(data); await yieldHeavy();
         setProg('SHA-3 (384)…');
-        hashes['SHA-3_384'] = sha3_384(data); await yieldHeavy();
+        hashes['SHA-3_384'] = await sha3_384(data); await yieldHeavy();
         setProg('SHA-3 (512)…');
-        hashes['SHA-3_512'] = sha3_512(data); await yieldHeavy();
+        hashes['SHA-3_512'] = await sha3_512(data); await yieldHeavy();
     } catch(e) { console.error('SHA-3 error:', e); }
 
     try {
@@ -814,10 +822,10 @@ async function fastFingerprint(file, onProgress) {
     try { hashes['SHA-224'] = await sha224(data); } catch(e) {}
     await yieldHeavy();
     setProg('MD5…');
-    try { hashes['MD5'] = md5(data); } catch(e) {}
+    try { hashes['MD5'] = await md5(data); } catch(e) {}
     await yieldHeavy();
     setProg('RIPEMD-160…');
-    try { hashes['RIPEMD-160'] = ripemd160(data); } catch(e) {}
+    try { hashes['RIPEMD-160'] = await ripemd160(data); } catch(e) {}
     await yieldHeavy();
     setProg('BLAKE3…');
     try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
