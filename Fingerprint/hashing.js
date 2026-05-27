@@ -1,4 +1,11 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+// ── Yield helper: no-op in Web Workers, setTimeout on main thread ──
+function maybeYield() {
+  // No yield needed in Web Worker (no DOM to paint)
+  if (typeof window === 'undefined') return Promise.resolve();
+  return new Promise(function(r) { setTimeout(r, 0); });
+}
+
 // ── All hashing algorithms (pure JS, no UI) ──
 
 // ── SHA-3 (fast 32-bit pair arithmetic, no BigInt) ──
@@ -42,7 +49,7 @@ async function sha3(data, bits) {
     for (; i+r <= data.length; i += r) {
         for (var j = 0; j < r; j++) { var half = j&4?1:0; st[(j>>3)*2+half] ^= (data[i+j])<<((j&3)<<3); }
         keccakF(st);
-        if (++_sc % 200 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
+        if (++_sc % 200 === 0) await maybeYield();
     }
     var rem = data.length - i;
     for (var j = 0; j < rem; j++) { var half = j&4?1:0; st[(j>>3)*2+half] ^= (data[i+j])<<((j&3)<<3); }
@@ -104,7 +111,7 @@ async function blake2b(data) {
         for (var i = 0; i < 16; i++) m[i] = blake2bLoad64(data, offset + i * 8);
         blake2bCompress(h, m, counter, false);
         offset += 128;
-        if (++_bi % 4000 === 0) await new Promise(function(r) { setTimeout(r, 0); });
+        if (++_bi % 4000 === 0) await maybeYield();
     }
     var last = new Uint8Array(128);
     last.fill(0);
@@ -165,7 +172,7 @@ async function blake2s(data){
     for(var i=0;i<16;i++)m[i]=b2s_load32(data,offset+i*4);
     b2s_compress(h,m,counter,false);
     offset+=64;
-    if(++_ci%8000===0) await new Promise(function(r){setTimeout(r,0);});
+    if(++_ci%8000===0) await maybeYield();
   }
   var last=new Uint8Array(64);last.fill(0);
   var rem=data.length-offset;
@@ -320,7 +327,7 @@ async function md5(data) {
     new DataView(msg.buffer).setUint32(msg.length - 8, origLen, true);
     var _mc = 0;
     for (var off = 0; off < msg.length; off += 64) {
-        if (++_mc % 4000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
+        if (++_mc % 4000 === 0) await maybeYield();
         var w = new Array(16);
         for (var i = 0; i < 16; i++) w[i] = new DataView(msg.buffer).getUint32(off + i*4, true);
         var a = s[0], b = s[1], c = s[2], d = s[3];
@@ -370,7 +377,7 @@ async function sha224(data) {
   dv.setUint32(ml - 4, bits, false);
   var _sc224 = 0;
   for (var off = 0; off < ml; off += 64) {
-    if (++_sc224 % 4000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
+    if (++_sc224 % 4000 === 0) await maybeYield();
     var W = new Uint32Array(64);
     for (var t = 0; t < 16; t++) W[t] = dv.getUint32(off + t * 4, false);
     for (var t = 16; t < 64; t++) {
@@ -497,7 +504,7 @@ async function ripemd160(data) {
     var h0=0x67452301,h1=0xefcdab89,h2=0x98badcfe,h3=0x10325476,h4=0xc3d2e1f0;
     var _rc = 0;
     for(var i=0;i<pad.length;i+=64){
-        if (++_rc % 2000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
+        if (++_rc % 2000 === 0) await maybeYield();
         var X=new Array(16);
         for(var j=0;j<16;j++)X[j]=pad[i+j*4]|(pad[i+j*4+1]<<8)|(pad[i+j*4+2]<<16)|(pad[i+j*4+3]<<24);
         var A=h0,B=h1,C=h2,D=h3,E=h4,Ap=h0,Bp=h1,Cp=h2,Dp=h3,Ep=h4;
@@ -691,7 +698,7 @@ async function whirlpool(data){
   m[lenOff+30]=(bits>>>8)&0xFF;m[lenOff+31]=bits&0xFF;
   var H=new Uint8Array(64);
   for(var off=0;off<ml;off+=64){
-    if (++_wc % 4000 === 0) await new Promise(function(rr) { setTimeout(rr, 0); });
+    if (++_wc % 4000 === 0) await maybeYield();
     var blk=m.subarray(off,off+64);
     var K=new Uint8Array(H);
     var enc=wp_cipher(blk,K);
@@ -714,35 +721,14 @@ async function fingerprintFile(file) {
         return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     }
 
-    // Yield between hash algorithms to keep UI responsive
-    async function yieldLoop() { await new Promise(function(r) { setTimeout(r, 0); }); }
-
-    hashes['SHA-1'] = await hashAlgo('SHA-1', data); await yieldLoop();
-    hashes['SHA-256'] = await hashAlgo('SHA-256', data); await yieldLoop();
-    hashes['SHA-384'] = await hashAlgo('SHA-384', data); await yieldLoop();
-    hashes['SHA-512'] = await hashAlgo('SHA-512', data); await yieldLoop();
-
-    try {
-        hashes['SHA-3_224'] = await sha3_224(data); await yieldLoop();
-        hashes['SHA-3_256'] = await sha3_256(data); await yieldLoop();
-        hashes['SHA-3_384'] = await sha3_384(data); await yieldLoop();
-        hashes['SHA-3_512'] = await sha3_512(data); await yieldLoop();
-    } catch(e) { console.error('SHA-3 error:', e); }
-
-    try {
-        hashes['BLAKE2b'] = await blake2b(data); await yieldLoop();
-        hashes['BLAKE2s'] = await blake2s(data); await yieldLoop();
-    } catch(e) { console.error('BLAKE2 error:', e); }
-
-    try { hashes['SHA-224'] = await sha224(data); await yieldLoop(); } catch(e) {}
-
-    try { hashes['MD2'] = md2(data); await yieldLoop(); } catch(e) {}
-    try { hashes['MD4'] = md4(data); await yieldLoop(); } catch(e) {}
-    try { hashes['MD5'] = await md5(data); await yieldLoop(); } catch(e) {}
-
-    try { hashes['RIPEMD-160'] = await ripemd160(data); await yieldLoop(); } catch(e) {}
-    try { hashes['BLAKE3'] = await blake3(data); await yieldLoop(); } catch(e) {}
-    try { hashes['Whirlpool'] = await whirlpool(data); await yieldLoop(); } catch(e) {}
+    // Step 1: Fast WebCrypto hashes + BLAKE3 (no freezing)
+    hashes['SHA-1'] = await hashAlgo('SHA-1', data);
+    hashes['SHA-256'] = await hashAlgo('SHA-256', data);
+    hashes['SHA-384'] = await hashAlgo('SHA-384', data);
+    hashes['SHA-512'] = await hashAlgo('SHA-512', data);
+    try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
+    try { hashes['MD2'] = md2(data); } catch(e) {}
+    try { hashes['MD4'] = md4(data); } catch(e) {}
 
     var result = {
         file_info: { file_name: name, file_size_bytes: data.length },
@@ -750,31 +736,61 @@ async function fingerprintFile(file) {
         perceptual_hashes: {}
     };
 
+    // Step 2: Perceptual hashes for images
     if (imgExts.includes(ext)) {
         try {
             var loaded = await loadImage(new Blob([data]));
             var imgData = loaded.imgData;
             var small = resizeImageData(imgData, 32);
+            await maybeYield();
             result.perceptual_hashes = {
                 ahash: ahash(small),
                 dhash: dhash(small),
                 phash: phash(small)
             };
-            try { result.perceptual_hashes.whash = whash(small); } catch(e) { console.error('whash error:', e); }
+            try { result.perceptual_hashes.whash = whash(small); } catch(e) {}
             result.file_info.width = loaded.w;
             result.file_info.height = loaded.h;
             result.file_info.format = ext.replace('.', '').toUpperCase();
-        } catch(e) {
-            result.file_info.image_error = e.message;
-            console.error('Perceptual hash error:', e);
-        }
+        } catch(e) { result.file_info.image_error = e.message; }
+    }
+
+    // Step 3: Background worker for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
+    if (typeof Worker !== 'undefined' && typeof window !== 'undefined') {
+        try {
+            var w = new Worker('data:application/javascript,' + encodeURIComponent(
+                'self.importScripts("' + location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '') + '/Fingerprint/hashing.js' + '");' +
+                'self.onmessage=async function(e){var msg=e.data;if(msg.type!=="compute-remaining")return;var d=new Uint8Array(msg.buf);var h={};' +
+                'try{h["SHA-3_224"]=await sha3_224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_224"});' +
+                'try{h["SHA-3_256"]=await sha3_256(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_256"});' +
+                'try{h["SHA-3_384"]=await sha3_384(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_384"});' +
+                'try{h["SHA-3_512"]=await sha3_512(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_512"});' +
+                'try{h["BLAKE2b"]=await blake2b(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2b"});' +
+                'try{h["BLAKE2s"]=await blake2s(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2s"});' +
+                'try{h["SHA-224"]=await sha224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-224"});' +
+                'try{h["MD5"]=await md5(d);}catch(e){}self.postMessage({type:"p",key:"MD5"});' +
+                'try{h["RIPEMD-160"]=await ripemd160(d);}catch(e){}self.postMessage({type:"p",key:"RIPEMD-160"});' +
+                'try{h["Whirlpool"]=await whirlpool(d);}catch(e){}self.postMessage({type:"p",key:"Whirlpool"});' +
+                'self.postMessage({type:"done",hashes:h});}'
+            ));
+            w.postMessage({ type: 'compute-remaining', buf: buf }, [buf]);
+            w.onmessage = function(ev) {
+                var m = ev.data;
+                if (m.type === 'done') {
+                    Object.assign(result.hashes, m.hashes);
+                    if (window._fpResult) Object.assign(window._fpResult.hashes, m.hashes);
+                    w.terminate();
+                }
+            };
+            w.onerror = function() { w.terminate(); };
+        } catch(e) { console.warn('Background worker unavailable:', e); }
     }
 
     return result;
 }
 
-// ── Fast fingerprint for simplified mode (computes all hashes) ──
-async function fastFingerprint(file, onProgress) {
+// ── Fast fingerprint for simplified mode (fast hashes + background worker for the rest) ──
+async function fastFingerprint(file, onProgress, onRemainingHashes) {
     var buf = await file.arrayBuffer();
     var data = new Uint8Array(buf);
     var name = file.name;
@@ -786,53 +802,19 @@ async function fastFingerprint(file, onProgress) {
         var h = await crypto.subtle.digest(algo, d);
         return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     }
-
-    function yieldHeavy() { return new Promise(function(r) { setTimeout(r, 8); }); }
     function setProg(msg) { if (onProgress) onProgress(msg); }
 
-    // Each hash yields via setTimeout so the browser can paint the spinner
+    // Phase 1: WebCrypto (truly async, fast, no freeze)
     setProg('SHA-1…');
-    hashes['SHA-1'] = await hashAlgo('SHA-1', data); await yieldHeavy();
+    hashes['SHA-1'] = await hashAlgo('SHA-1', data);
     setProg('SHA-256…');
-    hashes['SHA-256'] = await hashAlgo('SHA-256', data); await yieldHeavy();
+    hashes['SHA-256'] = await hashAlgo('SHA-256', data);
     setProg('SHA-384…');
-    hashes['SHA-384'] = await hashAlgo('SHA-384', data); await yieldHeavy();
+    hashes['SHA-384'] = await hashAlgo('SHA-384', data);
     setProg('SHA-512…');
-    hashes['SHA-512'] = await hashAlgo('SHA-512', data); await yieldHeavy();
-
-    try {
-        setProg('SHA-3 (224)…');
-        hashes['SHA-3_224'] = await sha3_224(data); await yieldHeavy();
-        setProg('SHA-3 (256)…');
-        hashes['SHA-3_256'] = await sha3_256(data); await yieldHeavy();
-        setProg('SHA-3 (384)…');
-        hashes['SHA-3_384'] = await sha3_384(data); await yieldHeavy();
-        setProg('SHA-3 (512)…');
-        hashes['SHA-3_512'] = await sha3_512(data); await yieldHeavy();
-    } catch(e) { console.error('SHA-3 error:', e); }
-
-    try {
-        setProg('BLAKE2b…');
-        hashes['BLAKE2b'] = await blake2b(data); await yieldHeavy();
-        setProg('BLAKE2s…');
-        hashes['BLAKE2s'] = await blake2s(data); await yieldHeavy();
-    } catch(e) { console.error('BLAKE2 error:', e); }
-
-    setProg('SHA-224…');
-    try { hashes['SHA-224'] = await sha224(data); } catch(e) {}
-    await yieldHeavy();
-    setProg('MD5…');
-    try { hashes['MD5'] = await md5(data); } catch(e) {}
-    await yieldHeavy();
-    setProg('RIPEMD-160…');
-    try { hashes['RIPEMD-160'] = await ripemd160(data); } catch(e) {}
-    await yieldHeavy();
+    hashes['SHA-512'] = await hashAlgo('SHA-512', data);
     setProg('BLAKE3…');
     try { hashes['BLAKE3'] = await blake3(data); } catch(e) {}
-    await yieldHeavy();
-    setProg('Whirlpool…');
-    try { hashes['Whirlpool'] = await whirlpool(data); } catch(e) {}
-    await yieldHeavy();
 
     var result = {
         file_info: { file_name: name, file_size_bytes: data.length },
@@ -840,29 +822,62 @@ async function fastFingerprint(file, onProgress) {
         perceptual_hashes: {}
     };
 
+    // Perceptual hashes for images
     if (imgExts.includes(ext)) {
         try {
             setProg('Loading image…');
             var loaded = await loadImage(new Blob([data]));
             var imgData = loaded.imgData;
             var small = resizeImageData(imgData, 32);
-            await yieldHeavy();
+            await maybeYield();
             setProg('ahash…');
-            result.perceptual_hashes.ahash = ahash(small); await yieldHeavy();
+            result.perceptual_hashes.ahash = ahash(small); await maybeYield();
             setProg('dhash…');
-            result.perceptual_hashes.dhash = dhash(small); await yieldHeavy();
+            result.perceptual_hashes.dhash = dhash(small); await maybeYield();
             setProg('phash…');
-            result.perceptual_hashes.phash = phash(small); await yieldHeavy();
-            try { setProg('whash…'); result.perceptual_hashes.whash = whash(small); await yieldHeavy(); } catch(e) { console.error('whash error:', e); }
+            result.perceptual_hashes.phash = phash(small); await maybeYield();
+            try { setProg('whash…'); result.perceptual_hashes.whash = whash(small); await maybeYield(); } catch(e) {}
             result.file_info.width = loaded.w;
             result.file_info.height = loaded.h;
             result.file_info.format = ext.replace('.', '').toUpperCase();
-        } catch(e) {
-            result.file_info.image_error = e.message;
-        }
+        } catch(e) { result.file_info.image_error = e.message; }
     }
 
     setProg('');
+
+    // Phase 2: Background worker for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
+    if (typeof onRemainingHashes === 'function' && typeof Worker !== 'undefined' && typeof window !== 'undefined') {
+        try {
+            var w = new Worker('data:application/javascript,' + encodeURIComponent(
+                'self.importScripts("' + location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '') + '/Fingerprint/hashing.js' + '");' +
+                'self.onmessage=async function(e){var msg=e.data;if(msg.type!=="compute-remaining")return;var d=new Uint8Array(msg.buf);var h={};' +
+                'try{h["SHA-3_224"]=await sha3_224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_224"});' +
+                'try{h["SHA-3_256"]=await sha3_256(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_256"});' +
+                'try{h["SHA-3_384"]=await sha3_384(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_384"});' +
+                'try{h["SHA-3_512"]=await sha3_512(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_512"});' +
+                'try{h["BLAKE2b"]=await blake2b(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2b"});' +
+                'try{h["BLAKE2s"]=await blake2s(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2s"});' +
+                'try{h["SHA-224"]=await sha224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-224"});' +
+                'try{h["MD5"]=await md5(d);}catch(e){}self.postMessage({type:"p",key:"MD5"});' +
+                'try{h["RIPEMD-160"]=await ripemd160(d);}catch(e){}self.postMessage({type:"p",key:"RIPEMD-160"});' +
+                'try{h["Whirlpool"]=await whirlpool(d);}catch(e){}self.postMessage({type:"p",key:"Whirlpool"});' +
+                'self.postMessage({type:"done",hashes:h});}'
+            ));
+            w.postMessage({ type: 'compute-remaining', buf: buf }, [buf]);
+            w.onmessage = function(ev) {
+                var m = ev.data;
+                if (m.type === 'p') {
+                    if (onProgress) onProgress(m.key + '…');
+                } else if (m.type === 'done') {
+                    if (onProgress) onProgress('');
+                    onRemainingHashes(m.hashes);
+                    w.terminate();
+                }
+            };
+            w.onerror = function() { w.terminate(); };
+        } catch(e) { console.warn('Background worker unavailable:', e); }
+    }
+
     return result;
 }
 window.fastFingerprint = fastFingerprint;
