@@ -313,3 +313,86 @@ function escapeHtml(s) {
     d.appendChild(document.createTextNode(s));
     return d.innerHTML;
 }
+
+// ── Self-test diagnostic ──
+async function awmSelfTest() {
+    var output = document.getElementById('awm-output');
+    var downloadDiv = document.getElementById('awm-download');
+    var resultDiv = document.getElementById('awm-result');
+    var spinner = document.getElementById('awm-spinner');
+    var prog = document.getElementById('awm-progress');
+    resultDiv.style.display = 'none';
+    spinner.style.display = 'block';
+    prog.style.display = 'none';
+    await new Promise(function(r) { setTimeout(r, 16); });
+
+    try {
+        // Create synthetic 5-second audio
+        var sr = 44100;
+        var len = sr * 5;
+        var buf = new ArrayBuffer(44 + len * 2);
+        var v = new DataView(buf);
+        v.setUint8(0, 0x52); v.setUint8(1, 0x49); v.setUint8(2, 0x46); v.setUint8(3, 0x46);
+        v.setUint32(4, 36 + len * 2, true);
+        v.setUint8(8, 0x57); v.setUint8(9, 0x41); v.setUint8(10, 0x56); v.setUint8(11, 0x45);
+        v.setUint8(12, 0x66); v.setUint8(13, 0x6D); v.setUint8(14, 0x74); v.setUint8(15, 0x20);
+        v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+        v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true);
+        v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+        v.setUint8(36, 0x64); v.setUint8(37, 0x61); v.setUint8(38, 0x74); v.setUint8(39, 0x61);
+        v.setUint32(40, len * 2, true);
+        for (var i = 0; i < len; i++) {
+            v.setInt16(44 + i * 2, Math.round(8000 * Math.sin(2 * Math.PI * 440 * i / sr)), true);
+        }
+
+        var info = awReadWavRaw(buf);
+        var PASS = 'diagnostic';
+        var MSG = 'SELF_TEST_OK';
+        var key = await pw_key(PASS);
+        var payload = awFormatPayload(new TextEncoder().encode(MSG), key);
+        var s16 = new Int16Array(info.samples);
+
+        var results = [];
+        var algos = [
+            { id: 1, name: 'LSB', embed: function() { return aw1_embed(new Int16Array(s16), payload); },
+              extract: function(m) { return aw1_extract(m, m.length); } },
+            { id: 2, name: 'FFT-QIM', embed: function() { return aw2_embed(new Int16Array(s16), payload, sr); },
+              extract: function(m) { return aw2_extract(m, sr, m.length); } },
+            { id: 5, name: 'QIM', embed: function() { return aw5_embed(new Int16Array(s16), payload, sr); },
+              extract: function(m) { return aw5_extract(m, sr, m.length); } },
+            { id: 6, name: 'DWT', embed: function() { return aw6_embed(new Int16Array(s16), payload, sr); },
+              extract: function(m) { return aw6_extract(m, sr, m.length); } },
+            { id: 8, name: 'DCT', embed: async function() { return await aw8_embed_async(new Int16Array(s16), payload, sr); },
+              extract: async function(m) { return await aw8_extract_async(m, sr, m.length); } }
+        ];
+        for (var a = 0; a < algos.length; a++) {
+            var algo = algos[a];
+            try {
+                var maxB = algo.id === 1 || algo.id === 5 ? s16.length : Math.floor(s16.length / (algo.id === 8 ? 1024 : algo.id === 6 ? 1024 : 2048));
+                if (payload.length > maxB) { results.push(algo.name + ': SKIP'); continue; }
+                var modified = await algo.embed();
+                var bits = await algo.extract(modified);
+                var r = (bits && bits.length >= 32) ? awExtractPayload(bits, key) : null;
+                if (r && r !== 'bad-password') {
+                    results.push(algo.name + ': ✅');
+                } else {
+                    var d = bits ? parseInt(bits.substring(0, 32), 2) : -1;
+                    results.push(algo.name + ': ❌ (dlen=' + d + ')');
+                }
+            } catch (e) {
+                results.push(algo.name + ': 💥 ' + e.message.substring(0, 30));
+            }
+        }
+        spinner.style.display = 'none';
+        var html = '<div class="result-success"><span class="result-icon">🔬</span><strong>Self-Test Results</strong><br><br>' +
+            results.join('<br>') + '<br><br><em>All ✅ means the watermark code works in this browser.</em></div>';
+        output.innerHTML = html;
+        downloadDiv.innerHTML = '';
+        resultDiv.style.display = '';
+    } catch (e) {
+        spinner.style.display = 'none';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>Self-test error: ' + escapeHtml(e.message) + '</div>';
+        downloadDiv.innerHTML = '';
+        resultDiv.style.display = '';
+    }
+}
