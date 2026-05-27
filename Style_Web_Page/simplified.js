@@ -1050,7 +1050,6 @@ async function runAudioWatermarkStep() {
     var fpBits = awFormatPayload(fpBytes, key);
     var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
     var tsBits = awFormatPayload(tsBytes, key);
-    var halfSamples = info.samples.length >> 1;
     var fpMax = algoMaxBits(fpAlgo, info.samples.length, info.sr);
     var tsMax = algoMaxBits(tsAlgo, info.samples.length, info.sr);
     if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax + '. Try a different algorithm (e.g., LSB or DCT).');
@@ -1061,7 +1060,7 @@ async function runAudioWatermarkStep() {
 
     // ── Zero-interference dual embed ──
     // Stereo: fingerprint in left channel, timestamp in right channel
-    // Mono:   fingerprint in first half, timestamp in second half
+    // Mono:   duplicate to both virtual channels → stereo
     var isStereo = info.ch >= 2 && info.raw && info.raw.length >= info.samples.length * 2;
     var leftSamples = new Int16Array(info.samples);
     var rightSamples;
@@ -1069,27 +1068,17 @@ async function runAudioWatermarkStep() {
       rightSamples = new Int16Array(info.samples.length);
       for (var ri = 0; ri < info.samples.length; ri++) rightSamples[ri] = info.raw[ri * info.ch + 1];
     } else {
-      // Mono: split audio into two halves (rounded to nearest frame boundary)
-      var frameSize = Math.max(1, fpAlgo === 1 || fpAlgo === 5 ? 1 : fpAlgo === 6 ? 1024 : fpAlgo === 8 ? 1024 : 2048);
-      var splitPoint = Math.floor(info.samples.length / (frameSize * 2)) * frameSize;
-      if (splitPoint < frameSize) splitPoint = Math.floor(info.samples.length / 2);
-      rightSamples = info.samples.slice(splitPoint);
-      leftSamples = info.samples.slice(0, splitPoint);
-      // Adjust capacity to half
-      fpMax = algoMaxBits(fpAlgo, leftSamples.length, info.sr);
-      tsMax = algoMaxBits(tsAlgo, rightSamples.length, info.sr);
-      if (fpBits.length > fpMax) throw new Error('Fingerprint message too long (mono split). Need ' + fpBits.length + ' bits, max ' + fpMax);
-      if (tsBits.length > tsMax) throw new Error('Timestamp message too long (mono split). Need ' + tsBits.length + ' bits, max ' + tsMax);
+      rightSamples = new Int16Array(info.samples);
     }
 
-    progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (left ' + (isStereo ? 'channel' : 'half') + ', 0%)';
+    progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (left channel, 0%)';
     var fpModified = await embedAlgo(fpAlgo, new Int16Array(leftSamples), fpBits, info.sr, strength, function(pct) {
       progFill.style.width = (pct * 50) + '%';
       progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (' + Math.round(pct * 100) + '%)';
     });
     progFill.style.width = '50%';
     await new Promise(function(r) { setTimeout(r, 50); });
-    progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (right ' + (isStereo ? 'channel' : 'half') + ', 0%)';
+    progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (right channel, 0%)';
     var tsModified = await embedAlgo(tsAlgo, new Int16Array(rightSamples), tsBits, info.sr, strength, function(pct) {
       progFill.style.width = (50 + pct * 50) + '%';
       progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (' + Math.round(pct * 100) + '%)';
@@ -1097,16 +1086,7 @@ async function runAudioWatermarkStep() {
     progFill.style.width = '100%';
     progText.textContent = 'Finalizing...';
 
-    var wavBuf;
-    if (isStereo) {
-      wavBuf = awWriteWav([fpModified, tsModified], info.sr, 2);
-    } else {
-      // Concatenate: fp on left (first half), ts on right (second half)
-      var concat = new Int16Array(fpModified.length + tsModified.length);
-      concat.set(fpModified, 0);
-      concat.set(tsModified, fpModified.length);
-      wavBuf = awWriteWav(concat, info.sr, 1);
-    }
+    var wavBuf = awWriteWav([fpModified, tsModified], info.sr, 2);
     var blob = new Blob([wavBuf], { type: 'audio/wav' });
     simpleResults.audioWatermark = true;
     simpleResults.audioWatermarkBlob = blob;
