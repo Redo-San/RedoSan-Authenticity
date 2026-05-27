@@ -116,8 +116,7 @@ async function handleAwmEmbed() {
         if (type === 8) {
             spinner.style.display = 'none';
             prog.style.display = 'flex';
-            var strength = parseInt(document.getElementById('awm-strength').value) || 400;
-            modified = await aw8_embed_async(s16, payloadBits, strength, function(pct) {
+            modified = await aw8_embed_async(s16, payloadBits, info.sr, function(pct) {
                 progFill.style.width = (pct * 100) + '%';
                 progText.textContent = Math.round(pct * 100) + '%';
             });
@@ -126,15 +125,9 @@ async function handleAwmEmbed() {
             else if (type === 2) modified = aw2_embed(s16, payloadBits, info.sr);
             else if (type === 3) modified = aw3_embed(s16, payloadBits, info.sr);
             else if (type === 4) modified = aw4_embed(s16, payloadBits, info.sr);
-            else if (type === 5) {
-                var strength = parseInt(document.getElementById('awm-strength').value) || 500;
-                modified = aw5_embed(s16, payloadBits, strength);
-            } else if (type === 6) {
-                var strength = parseInt(document.getElementById('awm-strength').value) || 300;
-                modified = aw6_embed(s16, payloadBits, strength);
-            } else if (type === 7) {
-                modified = aw7_embed(s16, payloadBits, info.sr);
-            }
+            else if (type === 5) modified = aw5_embed(s16, payloadBits, info.sr);
+            else if (type === 6) modified = aw6_embed(s16, payloadBits, info.sr);
+            else if (type === 7) modified = aw7_embed(s16, payloadBits, info.sr);
         }
         prog.style.display = 'none';
         spinner.style.display = 'none';
@@ -184,8 +177,7 @@ async function handleAwmExtract() {
         } else if (type === 8) {
             spinner.style.display = 'none';
             prog.style.display = 'flex';
-            var strength = parseInt(document.getElementById('awm-strength-ex').value) || 400;
-            bitsStr = await aw8_extract_async(info.samples, info.samples.length, strength, function(pct) {
+            bitsStr = await aw8_extract_async(info.samples, info.sr, info.samples.length, function(pct) {
                 progFill.style.width = (pct * 100) + '%';
                 progText.textContent = Math.round(pct * 100) + '%';
             });
@@ -195,11 +187,9 @@ async function handleAwmExtract() {
             else if (type === 3) bitsStr = await aw3_extract(info.samples, info.sr);
             else if (type === 4) bitsStr = aw4_extract(info.samples, info.sr);
             else if (type === 5) {
-                var strength = parseInt(document.getElementById('awm-strength-ex').value) || 500;
-                bitsStr = aw5_extract(info.samples, info.samples.length, strength);
+                bitsStr = aw5_extract(info.samples, info.sr, info.samples.length);
             } else if (type === 6) {
-                var strength = parseInt(document.getElementById('awm-strength-ex').value) || 300;
-                bitsStr = aw6_extract(info.samples, info.samples.length, strength);
+                bitsStr = aw6_extract(info.samples, info.sr, info.samples.length);
             } else if (type === 7) {
                 bitsStr = aw7_extract(info.samples, info.sr);
             }
@@ -238,7 +228,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
     prog.style.display = 'flex';
     var algos = [
         { id: 8, name: 'DCT-based', fn: function() {
-            return aw8_extract_async(info.samples, info.samples.length, 400, function(pct) {
+            return aw8_extract_async(info.samples, info.sr, info.samples.length, function(pct) {
                 progFill.style.width = (pct * 100) + '%';
                 progText.textContent = '🔍 DCT-based (' + Math.round(pct * 100) + '%)';
             });
@@ -251,7 +241,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
             r(aw4_extract(info.samples, info.sr));
         }, 0); }); }},
         { id: 6, name: 'DWT', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw6_extract(info.samples, info.samples.length, 300));
+            r(aw6_extract(info.samples, info.sr, info.samples.length));
         }, 0); }); }},
         { id: 7, name: 'Patchwork', fn: function() { return new Promise(function(r) { setTimeout(function() {
             r(aw7_extract(info.samples, info.sr));
@@ -260,7 +250,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
             r(aw1_extract(info.samples, info.samples.length));
         }, 0); }); }},
         { id: 5, name: 'QIM', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw5_extract(info.samples, info.samples.length, 500));
+            r(aw5_extract(info.samples, info.sr, info.samples.length));
         }, 0); }); }}
     ];
     var found = [];
