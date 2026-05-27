@@ -382,6 +382,9 @@ function aw4_extract(s16, sr, numBits) {
     }
     return b;
 }
+function aw4_maxBits(audioLen, sr) {
+    return Math.floor(audioLen / AWM4_FRAME);
+}
 
 // ── Algorithm 5: QIM (sample-domain quantization index modulation) ──
 // One sample = one bit; S is derived from sample rate.
