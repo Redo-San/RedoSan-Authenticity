@@ -695,13 +695,31 @@ async function downloadCertEPUB(data) {
 
 // ── Main download dispatcher ──
 
+function ensureLib(name, url) {
+  return new Promise(function(resolve, reject) {
+    if (name === 'jspdf' && typeof jspdf !== 'undefined') return resolve();
+    if (name === 'QRious' && typeof QRious !== 'undefined') return resolve();
+    var s = document.createElement('script');
+    s.src = url;
+    s.crossOrigin = 'anonymous';
+    s.onload = function() { resolve(); };
+    s.onerror = function() { reject(new Error('Failed to load ' + name + ' from ' + url)); };
+    document.head.appendChild(s);
+  });
+}
+
 async function downloadCert(format, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
   try {
     var data = await collectCertData();
-    if (format === 'pdf') await downloadCertPDF(data);
-    else if (format === 'docx') await downloadCertDOCX(data);
-    else if (format === 'epub') await downloadCertEPUB(data);
+    if (format === 'pdf') {
+      await ensureLib('jspdf', 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      await downloadCertPDF(data);
+    } else if (format === 'docx' || format === 'epub') {
+      await ensureLib('QRious', 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js');
+      if (format === 'docx') await downloadCertDOCX(data);
+      else await downloadCertEPUB(data);
+    }
   } catch (e) {
     console.error('Certificate generation failed:', e);
     alert('Failed to generate certificate: ' + e.message);
