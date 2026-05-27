@@ -1088,6 +1088,7 @@ async function runAudioWatermarkStep() {
       progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (' + Math.round(pct * 100) + '%)';
     });
     progFill.style.width = '50%';
+    await new Promise(function(r) { setTimeout(r, 50); });
     progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (right ' + (isStereo ? 'channel' : 'half') + ', 0%)';
     var tsModified = await embedAlgo(tsAlgo, new Int16Array(rightSamples), tsBits, info.sr, strength, function(pct) {
       progFill.style.width = (50 + pct * 50) + '%';

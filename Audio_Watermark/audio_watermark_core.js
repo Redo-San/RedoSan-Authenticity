@@ -735,7 +735,7 @@ function aw8_embed_async(s16, bitsStr, sr, onProgress) {
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
-    const BATCH = 32;
+    const BATCH = 8;
     return new Promise(function(resolve) {
         var pos = 0;
         function processBatch() {
