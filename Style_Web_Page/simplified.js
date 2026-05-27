@@ -1050,36 +1050,62 @@ async function runAudioWatermarkStep() {
     var fpBits = awFormatPayload(fpBytes, key);
     var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
     var tsBits = awFormatPayload(tsBytes, key);
+    var halfSamples = info.samples.length >> 1;
     var fpMax = algoMaxBits(fpAlgo, info.samples.length, info.sr);
     var tsMax = algoMaxBits(tsAlgo, info.samples.length, info.sr);
     if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax + '. Try a different algorithm (e.g., LSB or DCT).');
     if (tsBits.length > tsMax) throw new Error('Timestamp message too long for algorithm ' + tsAlgo);
-    var s16 = new Int16Array(info.samples);
     var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
-    // Robust (transform-domain) first, fragile (time-domain) second
-    var robust = [2,3,4,6,7,8], fragile = [1,5];
-    var firstAlgo = fpAlgo, secondAlgo = tsAlgo;
-    var firstName = 'fingerprint', secondName = 'timestamp';
-    if (robust.indexOf(tsAlgo) >= 0 && fragile.indexOf(fpAlgo) >= 0) {
-      firstAlgo = tsAlgo; secondAlgo = fpAlgo;
-      firstName = 'timestamp'; secondName = 'fingerprint';
-    }
     progContainer.style.display = '';
     progFill.style.width = '0%';
-    progText.textContent = 'Embedding ' + firstName + ' with ' + algoNames[firstAlgo] + ' (0%)';
-    s16 = await embedAlgo(firstAlgo, new Int16Array(s16), firstAlgo === fpAlgo ? fpBits : tsBits, info.sr, strength, function(pct) {
+
+    // ── Zero-interference dual embed ──
+    // Stereo: fingerprint in left channel, timestamp in right channel
+    // Mono:   fingerprint in first half, timestamp in second half
+    var isStereo = info.ch >= 2 && info.raw && info.raw.length >= info.samples.length * 2;
+    var leftSamples = new Int16Array(info.samples);
+    var rightSamples;
+    if (isStereo) {
+      rightSamples = new Int16Array(info.samples.length);
+      for (var ri = 0; ri < info.samples.length; ri++) rightSamples[ri] = info.raw[ri * info.ch + 1];
+    } else {
+      // Mono: split audio into two halves (rounded to nearest frame boundary)
+      var frameSize = Math.max(1, fpAlgo === 1 || fpAlgo === 5 ? 1 : fpAlgo === 6 ? 1024 : fpAlgo === 8 ? 1024 : 2048);
+      var splitPoint = Math.floor(info.samples.length / (frameSize * 2)) * frameSize;
+      if (splitPoint < frameSize) splitPoint = Math.floor(info.samples.length / 2);
+      rightSamples = info.samples.slice(splitPoint);
+      leftSamples = info.samples.slice(0, splitPoint);
+      // Adjust capacity to half
+      fpMax = algoMaxBits(fpAlgo, leftSamples.length, info.sr);
+      tsMax = algoMaxBits(tsAlgo, rightSamples.length, info.sr);
+      if (fpBits.length > fpMax) throw new Error('Fingerprint message too long (mono split). Need ' + fpBits.length + ' bits, max ' + fpMax);
+      if (tsBits.length > tsMax) throw new Error('Timestamp message too long (mono split). Need ' + tsBits.length + ' bits, max ' + tsMax);
+    }
+
+    progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (left ' + (isStereo ? 'channel' : 'half') + ', 0%)';
+    var fpModified = await embedAlgo(fpAlgo, new Int16Array(leftSamples), fpBits, info.sr, strength, function(pct) {
       progFill.style.width = (pct * 50) + '%';
-      progText.textContent = 'Embedding ' + firstName + ' with ' + algoNames[firstAlgo] + ' (' + Math.round(pct * 100) + '%)';
+      progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (' + Math.round(pct * 100) + '%)';
     });
     progFill.style.width = '50%';
-    progText.textContent = 'Embedding ' + secondName + ' with ' + algoNames[secondAlgo] + ' (0%)';
-    s16 = await embedAlgo(secondAlgo, new Int16Array(s16), secondAlgo === fpAlgo ? fpBits : tsBits, info.sr, strength, function(pct) {
+    progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (right ' + (isStereo ? 'channel' : 'half') + ', 0%)';
+    var tsModified = await embedAlgo(tsAlgo, new Int16Array(rightSamples), tsBits, info.sr, strength, function(pct) {
       progFill.style.width = (50 + pct * 50) + '%';
-      progText.textContent = 'Embedding ' + secondName + ' with ' + algoNames[secondAlgo] + ' (' + Math.round(pct * 100) + '%)';
+      progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (' + Math.round(pct * 100) + '%)';
     });
     progFill.style.width = '100%';
     progText.textContent = 'Finalizing...';
-    var wavBuf = awWriteWav(s16, info.sr, info.ch, info.raw, info.bps);
+
+    var wavBuf;
+    if (isStereo) {
+      wavBuf = awWriteWav([fpModified, tsModified], info.sr, 2);
+    } else {
+      // Concatenate: fp on left (first half), ts on right (second half)
+      var concat = new Int16Array(fpModified.length + tsModified.length);
+      concat.set(fpModified, 0);
+      concat.set(tsModified, fpModified.length);
+      wavBuf = awWriteWav(concat, info.sr, 1);
+    }
     var blob = new Blob([wavBuf], { type: 'audio/wav' });
     simpleResults.audioWatermark = true;
     simpleResults.audioWatermarkBlob = blob;
@@ -1093,9 +1119,12 @@ async function runAudioWatermarkStep() {
     simpleStepDone = true;
     if (btn) { btn.textContent = '✅ Watermarked'; }
     if (statusEl) {
+      var chMode = isStereo ? 'separate channels' : 'split halves';
       statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-        '✅ Audio watermarked with two layers! Fingerprint: ' + algoNames[fpAlgo] + ', Timestamp: ' + algoNames[tsAlgo] + '.<br>' +
-        'Embed order: ' + algoNames[firstAlgo] + ' (' + firstName + ') → ' + algoNames[secondAlgo] + ' (' + secondName + ').</div>';
+        '✅ Audio watermarked with two non-interfering layers!<br>' +
+        'Fingerprint: ' + algoNames[fpAlgo] + ' (' + (isStereo ? 'left channel' : 'first half') + ')<br>' +
+        'Timestamp: ' + algoNames[tsAlgo] + ' (' + (isStereo ? 'right channel' : 'second half') + ')<br>' +
+        'Mode: ' + chMode + ' — zero interference.</div>';
     }
     var nextBtn = document.getElementById('simpleNextBtn');
     nextBtn.disabled = false;

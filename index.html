@@ -449,6 +449,36 @@
           <input type="range" id="awm-strength-ex" min="100" max="3000" value="400" step="100" oninput="document.getElementById('awm-strength-ex-val').textContent=this.value">
         </div>
         <button class="btn" onclick="handleAwmExtract()" id="awm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
+        <details style="margin-top:12px;border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+          <summary style="cursor:pointer;font-size:0.82rem;color:var(--text-muted)">🔬 Dual Extract (for simplified mode protected audio)</summary>
+          <div style="margin-top:8px;text-align:left">
+            <div class="form-group">
+              <label style="font-size:0.75rem">Fingerprint (left ch) algorithm</label>
+              <select id="awm-dual-fp-algo" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">
+                <option value="8">DCT-based (Recommended)</option>
+                <option value="1">LSB Audio</option>
+                <option value="2">FFT-QIM</option>
+                <option value="3">Echo Hiding</option>
+                <option value="5">QIM</option>
+                <option value="6">DWT (Haar Wavelet)</option>
+                <option value="7">Patchwork</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="font-size:0.75rem">Timestamp (right ch) algorithm</label>
+              <select id="awm-dual-ts-algo" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">
+                <option value="6">DWT (Haar Wavelet) (Recommended)</option>
+                <option value="1">LSB Audio</option>
+                <option value="2">FFT-QIM</option>
+                <option value="3">Echo Hiding</option>
+                <option value="5">QIM</option>
+                <option value="7">Patchwork</option>
+                <option value="8">DCT-based</option>
+              </select>
+            </div>
+            <button class="btn" onclick="awmDualExtract()" style="width:100%;font-size:0.82rem">Extract Both Watermarks</button>
+          </div>
+        </details>
         <button class="btn" onclick="awmSelfTest()" style="margin-top:8px;background:var(--accent);font-size:0.8rem">🔬 Self-Test</button>
       </div>
       <div class="spinner" id="awm-spinner"></div>

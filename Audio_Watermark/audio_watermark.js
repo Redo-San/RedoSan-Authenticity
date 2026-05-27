@@ -226,65 +226,79 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
     var resultDiv = document.getElementById('awm-result');
     spinner.style.display = 'none';
     prog.style.display = 'flex';
-    var algos = [
+
+    // Build right-channel samples for stereo dual-watermark detection
+    var rightSamples = null;
+    if (info.ch >= 2 && info.raw && info.raw.length >= info.samples.length * 2) {
+        rightSamples = new Int16Array(info.samples.length);
+        for (var ri = 0; ri < info.samples.length; ri++) rightSamples[ri] = info.raw[ri * info.ch + 1];
+    }
+
+    function makeAlgos(src) { return [
         { id: 8, name: 'DCT-based', fn: function() {
-            return aw8_extract_async(info.samples, info.sr, info.samples.length, function(pct) {
+            return aw8_extract_async(src, info.sr, src.length, function(pct) {
                 progFill.style.width = (pct * 100) + '%';
                 progText.textContent = '🔍 DCT-based (' + Math.round(pct * 100) + '%)';
             });
         }},
         { id: 2, name: 'FFT-QIM', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw2_extract(info.samples, info.sr));
+            r(aw2_extract(src, info.sr));
         }, 0); }); }},
-        { id: 3, name: 'Echo Hiding', fn: function() { return aw3_extract(info.samples, info.sr); }},
+        { id: 3, name: 'Echo Hiding', fn: function() { return aw3_extract(src, info.sr); }},
         { id: 4, name: 'DSSS', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw4_extract(info.samples, info.sr));
+            r(aw4_extract(src, info.sr));
         }, 0); }); }},
         { id: 6, name: 'DWT', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw6_extract(info.samples, info.sr, info.samples.length));
+            r(aw6_extract(src, info.sr, src.length));
         }, 0); }); }},
         { id: 7, name: 'Patchwork', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw7_extract(info.samples, info.sr));
+            r(aw7_extract(src, info.sr));
         }, 0); }); }},
         { id: 1, name: 'LSB Audio', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw1_extract(info.samples, info.samples.length));
+            r(aw1_extract(src, src.length));
         }, 0); }); }},
         { id: 5, name: 'QIM', fn: function() { return new Promise(function(r) { setTimeout(function() {
-            r(aw5_extract(info.samples, info.sr, info.samples.length));
+            r(aw5_extract(src, info.sr, src.length));
         }, 0); }); }}
-    ];
+    ]; }
+
+    var channels = [{ src: info.samples, label: 'Left Ch' }];
+    if (rightSamples) channels.push({ src: rightSamples, label: 'Right Ch' });
+
     var found = [];
     var seen = {};
-    for (var i = 0; i < algos.length; i++) {
-        var a = algos[i];
-        progFill.style.width = '0%';
-        progFill.style.background = '';
-        progText.textContent = '🔍 ' + a.name + ' (scanning...)';
-        await new Promise(function(r) { setTimeout(r, 16); });
-        var bitsStr;
-        try {
-            bitsStr = await a.fn();
-        } catch (e) { continue; }
-        await new Promise(function(r) { setTimeout(r, 0); });
-        if (!bitsStr || bitsStr.length < 32) {
-            progText.textContent = '❌ ' + a.name + ': not found';
-            continue;
+    for (var ci = 0; ci < channels.length; ci++) {
+        var ch = channels[ci];
+        var algos = makeAlgos(ch.src);
+        for (var i = 0; i < algos.length; i++) {
+            var a = algos[i];
+            progFill.style.width = '0%';
+            progFill.style.background = '';
+            progText.textContent = '🔍 ' + a.name + ' (' + ch.label + ', scanning...)';
+            await new Promise(function(r) { setTimeout(r, 16); });
+            var bitsStr;
+            try {
+                bitsStr = await a.fn();
+            } catch (e) { continue; }
+            await new Promise(function(r) { setTimeout(r, 0); });
+            if (!bitsStr || bitsStr.length < 32) {
+                continue;
+            }
+            var result = awExtractPayload(bitsStr, key);
+            if (!result || result === 'bad-password') {
+                continue;
+            }
+            var decoded = new TextDecoder().decode(result);
+            var dedupKey = result.length + ':' + (decoded.substring(0, 100));
+            if (!seen[dedupKey]) {
+                seen[dedupKey] = true;
+                found.push({ algo: a.id, name: a.name, decoded: decoded, channel: ch.label });
+            }
+            progFill.style.width = '100%';
+            progFill.style.background = '#4caf50';
+            progText.textContent = '✅ ' + a.name + ' (' + ch.label + '): watermark found!';
+            await new Promise(function(r) { setTimeout(r, 200); });
         }
-        var result = awExtractPayload(bitsStr, key);
-        if (!result || result === 'bad-password') {
-            progText.textContent = '❌ ' + a.name + ': not found';
-            continue;
-        }
-        var decoded = new TextDecoder().decode(result);
-        var dedupKey = result.length + ':' + (decoded.substring(0, 100));
-        if (!seen[dedupKey]) {
-            seen[dedupKey] = true;
-            found.push({ algo: a.id, name: a.name, decoded: decoded });
-        }
-        progFill.style.width = '100%';
-        progFill.style.background = '#4caf50';
-        progText.textContent = '✅ ' + a.name + ': watermark found!';
-        await new Promise(function(r) { setTimeout(r, 200); });
     }
     prog.style.display = 'none';
     if (found.length === 0) {
@@ -298,7 +312,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
         var f = found[j];
         var icon = j === 0 ? '✅' : '🔷';
         html += '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">' + icon + '</span>' +
-            '<strong>Watermark #' + (j + 1) + '</strong><br>Algorithm: ' + f.name + ' (auto-detected)<br><br>' +
+            '<strong>Watermark #' + (j + 1) + '</strong><br>Algorithm: ' + f.name + ' (auto-detected, ' + f.channel + ')<br><br>' +
             '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(f.decoded) + '</pre></div>';
     }
     output.innerHTML = html;
@@ -312,6 +326,118 @@ function escapeHtml(s) {
     var d = document.createElement('div');
     d.appendChild(document.createTextNode(s));
     return d.innerHTML;
+}
+
+// ── Dual extract (for simplified-mode protected audio) ──
+async function awmDualExtract() {
+    var audioFile = document.getElementById('awm-audio-ex').files[0];
+    var password = document.getElementById('awm-password-ex').value;
+    var fpAlgo = parseInt(document.getElementById('awm-dual-fp-algo').value);
+    var tsAlgo = parseInt(document.getElementById('awm-dual-ts-algo').value);
+    if (!audioFile) return alert('Please select a watermarked audio file');
+    if (!password || !password.trim()) return alert('Password is required');
+    var spinner = document.getElementById('awm-spinner');
+    var prog = document.getElementById('awm-progress');
+    var progFill = document.getElementById('awm-progress-fill');
+    var progText = document.getElementById('awm-progress-text');
+    var resultDiv = document.getElementById('awm-result');
+    var output = document.getElementById('awm-output');
+    var downloadDiv = document.getElementById('awm-download');
+    resultDiv.style.display = 'none';
+    spinner.style.display = 'block';
+    prog.style.display = 'none';
+    try {
+        var info = await awLoadAudio(audioFile);
+        var key = await pw_key(password);
+        var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
+        var leftSrc = info.samples;
+        var rightSrc = null;
+
+        if (info.ch >= 2 && info.raw && info.raw.length >= info.samples.length * 2) {
+            rightSrc = new Int16Array(info.samples.length);
+            for (var ri = 0; ri < info.samples.length; ri++) rightSrc[ri] = info.raw[ri * info.ch + 1];
+        } else {
+            // Mono: fingerprint in first half, timestamp in second half
+            var frameSize = Math.max(1, fpAlgo === 1 || fpAlgo === 5 ? 1 : fpAlgo === 6 ? 1024 : 2048);
+            var splitPoint = Math.floor(info.samples.length / (frameSize * 2)) * frameSize;
+            if (splitPoint < frameSize) splitPoint = Math.floor(info.samples.length / 2);
+            rightSrc = info.samples.slice(splitPoint);
+            leftSrc = info.samples.slice(0, splitPoint);
+        }
+
+        spinner.style.display = 'none';
+        prog.style.display = 'flex';
+
+        var results = [];
+        var extractors = [
+            { algo: fpAlgo, name: algoNames[fpAlgo], label: 'Fingerprint', src: leftSrc,
+              fn: function(s,a) {
+                  if (a === 1) return aw1_extract(s, s.length);
+                  if (a === 2) return aw2_extract(s, info.sr);
+                  if (a === 3) return aw3_extract(s, info.sr);
+                  if (a === 4) return aw4_extract(s, info.sr);
+                  if (a === 5) return aw5_extract(s, info.sr, s.length);
+                  if (a === 6) return aw6_extract(s, info.sr, s.length);
+                  if (a === 7) return aw7_extract(s, info.sr);
+                  if (a === 8) return aw8_extract_async(s, info.sr, s.length);
+                  return '';
+              }},
+            { algo: tsAlgo, name: algoNames[tsAlgo], label: 'Timestamp', src: rightSrc,
+              fn: function(s,a) {
+                  if (a === 1) return aw1_extract(s, s.length);
+                  if (a === 2) return aw2_extract(s, info.sr);
+                  if (a === 3) return aw3_extract(s, info.sr);
+                  if (a === 4) return aw4_extract(s, info.sr);
+                  if (a === 5) return aw5_extract(s, info.sr, s.length);
+                  if (a === 6) return aw6_extract(s, info.sr, s.length);
+                  if (a === 7) return aw7_extract(s, info.sr);
+                  if (a === 8) return aw8_extract_async(s, info.sr, s.length);
+                  return '';
+              }}
+        ];
+        for (var ei = 0; ei < extractors.length; ei++) {
+            var ex = extractors[ei];
+            progFill.style.width = '0%';
+            progText.textContent = '🔍 ' + ex.label + ' (' + ex.name + ')...';
+            await new Promise(function(r) { setTimeout(r, 16); });
+            var bitsStr = await ex.fn(ex.src, ex.algo);
+            if (!bitsStr || bitsStr.length < 32) {
+                results.push({ label: ex.label, name: ex.name, error: 'not found' });
+                continue;
+            }
+            var r = awExtractPayload(bitsStr, key);
+            if (!r || r === 'bad-password') {
+                results.push({ label: ex.label, name: ex.name, error: r === 'bad-password' ? 'wrong password' : 'not found' });
+                continue;
+            }
+            var decoded = new TextDecoder().decode(r);
+            results.push({ label: ex.label, name: ex.name, decoded: decoded });
+        }
+        prog.style.display = 'none';
+        var html = '';
+        for (var rj = 0; rj < results.length; rj++) {
+            var res = results[rj];
+            if (res.decoded) {
+                html += '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">✅</span>' +
+                    '<strong>' + res.label + '</strong><br>Algorithm: ' + res.name + '<br>' +
+                    '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(res.decoded) + '</pre></div>';
+            } else {
+                html += '<div class="result-error" style="margin-bottom:12px"><span class="result-icon">❌</span>' +
+                    '<strong>' + res.label + '</strong><br>Algorithm: ' + res.name + '<br>' +
+                    res.error + '</div>';
+            }
+        }
+        output.innerHTML = html || '<div class="result-error">❌ No watermarks found.</div>';
+        downloadDiv.innerHTML = '';
+        resultDiv.style.display = '';
+    } catch (e) {
+        prog.style.display = 'none';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
+        downloadDiv.innerHTML = '';
+        resultDiv.style.display = '';
+    }
+    spinner.style.display = 'none';
+    prog.style.display = 'none';
 }
 
 // ── Self-test diagnostic ──
@@ -383,6 +509,45 @@ async function awmSelfTest() {
                 results.push(algo.name + ': 💥 ' + e.message.substring(0, 30));
             }
         }
+
+        // ── Dual-watermark self-test (stereo channel separation) ──
+        results.push('<br><strong>Dual-watermark test:</strong>');
+        var fpAlgo = 8, tsAlgo = 6;
+        var fpMaxB = Math.floor(s16.length / 1024);
+        var tsMaxB = Math.floor(s16.length / 1024);
+        var fpBits2 = awFormatPayload(new TextEncoder().encode('DUAL_FP_TEST'), key);
+        var tsBits2 = awFormatPayload(new TextEncoder().encode('DUAL_TS_TEST'), key);
+        if (fpBits2.length <= fpMaxB && tsBits2.length <= tsMaxB) {
+            try {
+                // Create stereo test: left = DCT, right = DWT
+                var stereoLen = s16.length;
+                var leftDual = await aw8_embed_async(new Int16Array(s16), fpBits2, sr);
+                var rightDual = await aw6_embed(new Int16Array(s16), tsBits2, sr);
+                var stereoBuf = awWriteWav([leftDual, rightDual], sr, 2);
+
+                // Read back
+                var stereoInfo = awReadWavRaw(stereoBuf);
+                var rightCh = new Int16Array(stereoLen);
+                for (var si = 0; si < stereoLen; si++) rightCh[si] = stereoInfo.raw[si * 2 + 1];
+
+                var fpBitsOut = await aw8_extract_async(stereoInfo.samples, sr, stereoLen);
+                var fpR = (fpBitsOut && fpBitsOut.length >= 32) ? awExtractPayload(fpBitsOut, key) : null;
+                var fpOk = fpR && fpR !== 'bad-password' && new TextDecoder().decode(fpR) === 'DUAL_FP_TEST';
+
+                var tsBitsOut = await aw6_extract(rightCh, sr, stereoLen);
+                var tsR = (tsBitsOut && tsBitsOut.length >= 32) ? awExtractPayload(tsBitsOut, key) : null;
+                var tsOk = tsR && tsR !== 'bad-password' && new TextDecoder().decode(tsR) === 'DUAL_TS_TEST';
+
+                results.push('Dual (DCT left + DWT right): ' + (fpOk && tsOk ? '✅' : '❌'));
+                if (!fpOk) results.push('  FP: ' + (fpR ? new TextDecoder().decode(fpR).substring(0, 20) : 'null'));
+                if (!tsOk) results.push('  TS: ' + (tsR ? new TextDecoder().decode(tsR).substring(0, 20) : 'null'));
+            } catch (e) {
+                results.push('Dual: 💥 ' + e.message.substring(0, 40));
+            }
+        } else {
+            results.push('Dual: SKIP (payload too large for 5s)');
+        }
+
         spinner.style.display = 'none';
         var html = '<div class="result-success"><span class="result-icon">🔬</span><strong>Self-Test Results</strong><br><br>' +
             results.join('<br>') + '<br><br><em>All ✅ means the watermark code works in this browser.</em></div>';

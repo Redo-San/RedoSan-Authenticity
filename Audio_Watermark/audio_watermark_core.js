@@ -38,7 +38,9 @@ function awReadWavRaw(buf) {
 }
 function awWriteWav(mono, sr, ch, rawData, bps) {
     const bpsOut = 16, ba = ch * (bpsOut / 8);
-    const frames = Math.max(rawData ? Math.floor(rawData.length / ch) : mono.length, mono.length);
+    const isDual = Array.isArray(mono);
+    const frames = isDual ? mono[0].length
+        : Math.max(rawData ? Math.floor(rawData.length / ch) : mono.length, mono.length);
     const dataSize = frames * ba;
     const buf = new ArrayBuffer(44 + dataSize);
     const v = new DataView(buf);
@@ -50,11 +52,34 @@ function awWriteWav(mono, sr, ch, rawData, bps) {
     v.setUint16(34,bpsOut,true); w(36,'data'); v.setUint32(40,dataSize,true);
     for (let i = 0; i < frames; i++) {
         for (let c = 0; c < ch; c++) {
-            const val = i < mono.length ? mono[i] : 0;
+            let val;
+            if (isDual) {
+                val = i < mono[c].length ? mono[c][i] : 0;
+            } else {
+                val = i < mono.length ? mono[i] : 0;
+            }
             v.setInt16(44 + (i * ch + c) * 2, Math.max(-32768, Math.min(32767, val||0)), true);
         }
     }
     return buf;
+}
+
+function awReadRightChannel(buf) {
+    const v = new DataView(buf);
+    let off = 12, fmt = null, dataOff = 0, dataSize = 0;
+    while (off < buf.byteLength) {
+        const id = String.fromCharCode(v.getUint8(off),v.getUint8(off+1),v.getUint8(off+2),v.getUint8(off+3));
+        const sz = v.getUint32(off+4, true);
+        if (id === 'fmt ') { fmt = { ch: v.getUint16(off+10, true), bps: v.getUint16(off+22, true) }; }
+        else if (id === 'data') { dataOff = off + 8; dataSize = sz; }
+        off += 8 + sz; if (sz % 2) off++;
+    }
+    if (!fmt || fmt.ch < 2) return null;
+    const totalSamples = Math.floor(dataSize / (fmt.bps / 8));
+    const monoLen = Math.floor(totalSamples / fmt.ch);
+    const r = new Int16Array(monoLen);
+    for (let i = 0; i < monoLen; i++) r[i] = v.getInt16(dataOff + (i * fmt.ch + 1) * 2, true);
+    return r;
 }
 async function awLoadAudio(file) {
     const buf = await file.arrayBuffer();
