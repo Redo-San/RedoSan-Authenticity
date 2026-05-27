@@ -357,8 +357,7 @@ async function awmDualExtract() {
             rightSrc = new Int16Array(info.samples.length);
             for (var ri = 0; ri < info.samples.length; ri++) rightSrc[ri] = info.raw[ri * info.ch + 1];
         } else {
-            // Mono: fingerprint in first half, timestamp in second half
-            var frameSize = Math.max(1, fpAlgo === 1 || fpAlgo === 5 ? 1 : fpAlgo === 6 ? 1024 : 2048);
+            var frameSize = fpAlgo && fpAlgo > 0 ? (fpAlgo === 1 || fpAlgo === 5 ? 1 : fpAlgo === 6 ? 1024 : 2048) : 1024;
             var splitPoint = Math.floor(info.samples.length / (frameSize * 2)) * frameSize;
             if (splitPoint < frameSize) splitPoint = Math.floor(info.samples.length / 2);
             rightSrc = info.samples.slice(splitPoint);
@@ -368,63 +367,41 @@ async function awmDualExtract() {
         spinner.style.display = 'none';
         prog.style.display = 'flex';
 
-        var results = [];
-        var extractors = [
-            { algo: fpAlgo, name: algoNames[fpAlgo], label: 'Fingerprint', src: leftSrc,
-              fn: function(s,a) {
-                  if (a === 1) return aw1_extract(s, s.length);
-                  if (a === 2) return aw2_extract(s, info.sr);
-                  if (a === 3) return aw3_extract(s, info.sr);
-                  if (a === 4) return aw4_extract(s, info.sr);
-                  if (a === 5) return aw5_extract(s, info.sr, s.length);
-                  if (a === 6) return aw6_extract(s, info.sr, s.length);
-                  if (a === 7) return aw7_extract(s, info.sr);
-                  if (a === 8) return aw8_extract_async(s, info.sr, s.length);
-                  return '';
-              }},
-            { algo: tsAlgo, name: algoNames[tsAlgo], label: 'Timestamp', src: rightSrc,
-              fn: function(s,a) {
-                  if (a === 1) return aw1_extract(s, s.length);
-                  if (a === 2) return aw2_extract(s, info.sr);
-                  if (a === 3) return aw3_extract(s, info.sr);
-                  if (a === 4) return aw4_extract(s, info.sr);
-                  if (a === 5) return aw5_extract(s, info.sr, s.length);
-                  if (a === 6) return aw6_extract(s, info.sr, s.length);
-                  if (a === 7) return aw7_extract(s, info.sr);
-                  if (a === 8) return aw8_extract_async(s, info.sr, s.length);
-                  return '';
-              }}
-        ];
-        for (var ei = 0; ei < extractors.length; ei++) {
-            var ex = extractors[ei];
-            progFill.style.width = '0%';
-            progText.textContent = '🔍 ' + ex.label + ' (' + ex.name + ')...';
-            await new Promise(function(r) { setTimeout(r, 16); });
-            var bitsStr = await ex.fn(ex.src, ex.algo);
-            if (!bitsStr || bitsStr.length < 32) {
-                results.push({ label: ex.label, name: ex.name, error: 'not found' });
-                continue;
+        function tryExtract(src, algo, label) {
+            if (algo === 0) {
+                // Auto detect: try all algorithms that are valid for this channel
+                var candidates = label === 'Timestamp' ? [2, 6, 8] : [1, 2, 3, 5, 6, 7, 8];
+                return tryExtractAuto(src, key, info.sr, candidates);
             }
-            var r = awExtractPayload(bitsStr, key);
-            if (!r || r === 'bad-password') {
-                results.push({ label: ex.label, name: ex.name, error: r === 'bad-password' ? 'wrong password' : 'not found' });
-                continue;
-            }
-            var decoded = new TextDecoder().decode(r);
-            results.push({ label: ex.label, name: ex.name, decoded: decoded });
+            return tryExtractSingle(src, algo, key, info.sr, algoNames[algo] || ('Algo ' + algo));
         }
+
+        var results = [];
+
+        progText.textContent = '🔍 Scanning left channel (fingerprint)...';
+        await new Promise(function(r) { setTimeout(r, 16); });
+        var fpResult = await tryExtract(leftSrc, fpAlgo, 'Fingerprint');
+        results.push({ label: 'Fingerprint (left)', result: fpResult });
+
+        if (rightSrc) {
+            progText.textContent = '🔍 Scanning right channel (timestamp)...';
+            await new Promise(function(r) { setTimeout(r, 16); });
+            var tsResult = await tryExtract(rightSrc, tsAlgo, 'Timestamp');
+            results.push({ label: 'Timestamp (right)', result: tsResult });
+        }
+
         prog.style.display = 'none';
         var html = '';
         for (var rj = 0; rj < results.length; rj++) {
-            var res = results[rj];
-            if (res.decoded) {
+            var res2 = results[rj].result;
+            if (res2 && res2.decoded) {
                 html += '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">✅</span>' +
-                    '<strong>' + res.label + '</strong><br>Algorithm: ' + res.name + '<br>' +
-                    '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(res.decoded) + '</pre></div>';
+                    '<strong>' + results[rj].label + '</strong><br>Algorithm: ' + res2.algorithm + '<br>' +
+                    '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(res2.decoded) + '</pre></div>';
             } else {
                 html += '<div class="result-error" style="margin-bottom:12px"><span class="result-icon">❌</span>' +
-                    '<strong>' + res.label + '</strong><br>Algorithm: ' + res.name + '<br>' +
-                    res.error + '</div>';
+                    '<strong>' + results[rj].label + '</strong><br>' +
+                    (res2 ? res2.error : 'not found') + '</div>';
             }
         }
         output.innerHTML = html || '<div class="result-error">❌ No watermarks found.</div>';
@@ -438,6 +415,32 @@ async function awmDualExtract() {
     }
     spinner.style.display = 'none';
     prog.style.display = 'none';
+}
+
+function tryExtractSingle(src, algo, key, sr, algoName) {
+    var bitsStr;
+    if (algo === 1) bitsStr = aw1_extract(src, src.length);
+    else if (algo === 2) bitsStr = aw2_extract(src, sr);
+    else if (algo === 3) bitsStr = aw3_extract(src, sr);
+    else if (algo === 4) bitsStr = aw4_extract(src, sr);
+    else if (algo === 5) bitsStr = aw5_extract(src, sr, src.length);
+    else if (algo === 6) bitsStr = aw6_extract(src, sr, src.length);
+    else if (algo === 7) bitsStr = aw7_extract(src, sr);
+    else if (algo === 8) bitsStr = aw8_extract_async(src, sr, src.length);
+    if (!bitsStr || bitsStr.length < 32) return null;
+    var r = awExtractPayload(bitsStr, key);
+    if (!r || r === 'bad-password') return null;
+    return { decoded: new TextDecoder().decode(r), algorithm: algoName };
+}
+
+async function tryExtractAuto(src, key, sr, candidates) {
+    for (var ci = 0; ci < candidates.length; ci++) {
+        var a = candidates[ci];
+        var names = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
+        var r = await tryExtractSingle(src, a, key, sr, names[a] || ('Algo ' + a));
+        if (r && r.decoded) return r;
+    }
+    return null;
 }
 
 // ── Self-test diagnostic ──

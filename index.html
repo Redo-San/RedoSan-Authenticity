@@ -455,6 +455,7 @@
             <div class="form-group">
               <label style="font-size:0.75rem">Fingerprint (left ch) algorithm</label>
               <select id="awm-dual-fp-algo" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">
+                <option value="0">🔍 Auto Detect</option>
                 <option value="8">DCT-based (Recommended)</option>
                 <option value="1">LSB Audio</option>
                 <option value="2">FFT-QIM</option>
@@ -467,12 +468,9 @@
             <div class="form-group">
               <label style="font-size:0.75rem">Timestamp (right ch) algorithm</label>
               <select id="awm-dual-ts-algo" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">
+                <option value="0">🔍 Auto Detect</option>
                 <option value="6">DWT (Haar Wavelet) (Recommended)</option>
-                <option value="1">LSB Audio</option>
                 <option value="2">FFT-QIM</option>
-                <option value="3">Echo Hiding</option>
-                <option value="5">QIM</option>
-                <option value="7">Patchwork</option>
                 <option value="8">DCT-based</option>
               </select>
             </div>
