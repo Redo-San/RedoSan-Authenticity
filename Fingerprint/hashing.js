@@ -847,6 +847,7 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
 
     // Phase 2: Background worker for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
     if (typeof onRemainingHashes === 'function' && typeof Worker !== 'undefined' && typeof window !== 'undefined') {
+        window._fpWorkerPromise = new Promise(function(workerResolve) {
         try {
             var w = new Worker('data:application/javascript,' + encodeURIComponent(
                 'self.importScripts("' + location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '') + '/Fingerprint/hashing.js' + '");' +
@@ -871,11 +872,15 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
                 } else if (m.type === 'done') {
                     if (onProgress) onProgress('');
                     onRemainingHashes(m.hashes);
+                    workerResolve();
                     w.terminate();
                 }
             };
-            w.onerror = function() { w.terminate(); };
-        } catch(e) { console.warn('Background worker unavailable:', e); }
+            w.onerror = function() { workerResolve(); w.terminate(); };
+        } catch(e) { console.warn('Background worker unavailable:', e); workerResolve(); }
+        });
+    } else {
+        window._fpWorkerPromise = Promise.resolve();
     }
 
     return result;
