@@ -34,6 +34,11 @@ async function getFileHashSha256(buf) {
 }
 
 async function collectCertData() {
+  // Let UI breathe before heavy certificate generation
+  await new Promise(function(r) { setTimeout(r, 30); });
+  // Wait for background worker to finish computing all hashes
+  if (window._fpWorkerPromise) await window._fpWorkerPromise;
+  // Re-read results in case worker updated them
   var info = window.simpleUserInfo || {};
   var file = window.simpleFile;
   var buf = window.simpleBuf;
@@ -298,6 +303,7 @@ async function downloadCertPDF(data) {
         }
       }
       y += 1;
+      await new Promise(function(r) { setTimeout(r, 0); });
     }
     // Perceptual hashes
     if (data.fpResult.perceptual_hashes) {
@@ -329,6 +335,7 @@ async function downloadCertPDF(data) {
   var lines = doc.splitTextToSize(qrContent, pageW);
   doc.text(lines, margin, y);
 
+  await new Promise(function(r) { setTimeout(r, 0); });
   doc.save('RedoSan_Digital_Passport.pdf');
 }
 
@@ -489,6 +496,7 @@ async function downloadCertDOCX(data) {
         var v = data.fpResult.hashes[fam.keys[ki]];
         if (v) addLabelValue(fam.keys[ki], v);
       }
+      await new Promise(function(r) { setTimeout(r, 0); });
     }
     // Perceptual hashes
     if (data.fpResult.perceptual_hashes) {
@@ -511,6 +519,7 @@ async function downloadCertDOCX(data) {
   addImage(qrDataUrl, 150, 150);
   children.push(new docx.Paragraph({ spacing: { after: 100 } }));
 
+  await new Promise(function(r) { setTimeout(r, 0); });
   var docObj = new docx.Document({ sections: [{ children: children }] });
   var blob = await docx.Packer.toBlob(docObj);
   var url = URL.createObjectURL(blob);
@@ -571,6 +580,7 @@ async function downloadCertEPUB(data) {
         if (v) fpSection += '<tr><td><strong>' + escHtml(fam.keys[ki]) + '</strong></td><td style="font-size:0.7em;word-break:break-all">' + escHtml(v) + '</td></tr>';
       }
       fpSection += '</table>';
+      await new Promise(function(r) { setTimeout(r, 0); });
     }
     if (data.fpResult.perceptual_hashes) {
       for (var pk in data.fpResult.perceptual_hashes) {
@@ -685,6 +695,7 @@ async function downloadCertEPUB(data) {
   }
   zip.folder('OEBPS').folder('images').file('qr.png', qrBase64, { base64: true });
 
+  await new Promise(function(r) { setTimeout(r, 0); });
   var blob = await zip.generateAsync({ type: 'blob' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
