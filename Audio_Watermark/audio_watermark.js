@@ -281,7 +281,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
                 bitsStr = await a.fn();
             } catch (e) { continue; }
             await new Promise(function(r) { setTimeout(r, 0); });
-            if (!bitsStr || bitsStr.length < 32) {
+            if (typeof bitsStr !== 'string' || bitsStr.length < 32) {
                 continue;
             }
             var result = awExtractPayload(bitsStr, key);
@@ -417,17 +417,17 @@ async function awmDualExtract() {
     prog.style.display = 'none';
 }
 
-function tryExtractSingle(src, algo, key, sr, algoName) {
+async function tryExtractSingle(src, algo, key, sr, algoName) {
     var bitsStr;
-    if (algo === 1) bitsStr = aw1_extract(src, src.length);
-    else if (algo === 2) bitsStr = aw2_extract(src, sr);
-    else if (algo === 3) bitsStr = aw3_extract(src, sr);
-    else if (algo === 4) bitsStr = aw4_extract(src, sr);
-    else if (algo === 5) bitsStr = aw5_extract(src, sr, src.length);
-    else if (algo === 6) bitsStr = aw6_extract(src, sr, src.length);
-    else if (algo === 7) bitsStr = aw7_extract(src, sr);
-    else if (algo === 8) bitsStr = aw8_extract_async(src, sr, src.length);
-    if (!bitsStr || bitsStr.length < 32) return null;
+    if (algo === 1) bitsStr = await aw1_extract(src, src.length);
+    else if (algo === 2) bitsStr = await aw2_extract(src, sr);
+    else if (algo === 3) bitsStr = await aw3_extract(src, sr);
+    else if (algo === 4) bitsStr = await aw4_extract(src, sr);
+    else if (algo === 5) bitsStr = await aw5_extract(src, sr, src.length);
+    else if (algo === 6) bitsStr = await aw6_extract(src, sr, src.length);
+    else if (algo === 7) bitsStr = await aw7_extract(src, sr);
+    else if (algo === 8) bitsStr = await aw8_extract_async(src, sr, src.length);
+    if (typeof bitsStr !== 'string' || bitsStr.length < 32) return null;
     var r = awExtractPayload(bitsStr, key);
     if (!r || r === 'bad-password') return null;
     return { decoded: new TextDecoder().decode(r), algorithm: algoName };

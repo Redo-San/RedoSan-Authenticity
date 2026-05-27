@@ -153,7 +153,7 @@ function awFormatPayload(secretBytes, key) {
     return bits(full);
 }
 function awExtractPayload(bitsStr, key) {
-    if (bitsStr.length < 32) return null;
+    if (typeof bitsStr !== 'string' || bitsStr.length < 32) return null;
     const dlen = parseInt(bitsStr.substring(0, 32), 2);
     if (!dlen || dlen < 2 || dlen > 100000 || bitsStr.length < 32 + dlen * 8) return null;
     const data = from_bits(bitsStr.substring(0, 32 + dlen * 8));
