@@ -36,9 +36,7 @@ async function getFileHashSha256(buf) {
 async function collectCertData() {
   // Let UI breathe before heavy certificate generation
   await new Promise(function(r) { setTimeout(r, 30); });
-  // Wait for background worker to finish computing all hashes
-  if (window._fpWorkerPromise) await window._fpWorkerPromise;
-  // Re-read results in case worker updated them
+  // Worker may still be computing extra hashes — proceed with available hashes
   var info = window.simpleUserInfo || {};
   var file = window.simpleFile;
   var buf = window.simpleBuf;
@@ -336,6 +334,7 @@ async function downloadCertPDF(data) {
   doc.text(lines, margin, y);
 
   await new Promise(function(r) { setTimeout(r, 0); });
+  await new Promise(function(r) { setTimeout(r, 50); });
   doc.save('RedoSan_Digital_Passport.pdf');
 }
 
@@ -722,6 +721,7 @@ function ensureLib(name, url) {
 
 async function downloadCert(format, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+  await new Promise(function(r) { setTimeout(r, 30); });
   try {
     var data = await collectCertData();
     if (format === 'pdf') {

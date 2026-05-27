@@ -757,36 +757,64 @@ async function fingerprintFile(file) {
 
     // Step 3: Background worker for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
     if (typeof Worker !== 'undefined' && typeof window !== 'undefined') {
-        try {
-            var w = new Worker('data:application/javascript,' + encodeURIComponent(
-                'self.importScripts("' + location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '') + '/Fingerprint/hashing.js' + '");' +
-                'self.onmessage=async function(e){var msg=e.data;if(msg.type!=="compute-remaining")return;var d=new Uint8Array(msg.buf);var h={};' +
-                'try{h["SHA-3_224"]=await sha3_224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_224"});' +
-                'try{h["SHA-3_256"]=await sha3_256(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_256"});' +
-                'try{h["SHA-3_384"]=await sha3_384(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_384"});' +
-                'try{h["SHA-3_512"]=await sha3_512(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_512"});' +
-                'try{h["BLAKE2b"]=await blake2b(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2b"});' +
-                'try{h["BLAKE2s"]=await blake2s(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2s"});' +
-                'try{h["SHA-224"]=await sha224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-224"});' +
-                'try{h["MD5"]=await md5(d);}catch(e){}self.postMessage({type:"p",key:"MD5"});' +
-                'try{h["RIPEMD-160"]=await ripemd160(d);}catch(e){}self.postMessage({type:"p",key:"RIPEMD-160"});' +
-                'try{h["Whirlpool"]=await whirlpool(d);}catch(e){}self.postMessage({type:"p",key:"Whirlpool"});' +
-                'self.postMessage({type:"done",hashes:h});}'
-            ));
-            w.postMessage({ type: 'compute-remaining', buf: buf }, [buf]);
-            w.onmessage = function(ev) {
-                var m = ev.data;
-                if (m.type === 'done') {
-                    Object.assign(result.hashes, m.hashes);
-                    if (window._fpResult) Object.assign(window._fpResult.hashes, m.hashes);
-                    w.terminate();
-                }
-            };
-            w.onerror = function() { w.terminate(); };
-        } catch(e) { console.warn('Background worker unavailable:', e); }
+        startBackgroundWorker(result.hashes, buf, null, function(extraHashes) {
+            if (window._fpResult) Object.assign(window._fpResult.hashes, extraHashes);
+        });
     }
 
     return result;
+}
+
+// ── Background worker: fetch hashing.js and create self-contained worker ──
+function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
+    return new Promise(function(resolve) {
+        try {
+            var scriptTag = document.querySelector('script[src*="hashing.js"]');
+            var hashingUrl = scriptTag ? scriptTag.src : '';
+            if (!hashingUrl) {
+                hashingUrl = location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '') + '/Fingerprint/hashing.js';
+            }
+            fetch(hashingUrl).then(function(resp) {
+                if (!resp.ok) throw new Error('fetch failed');
+                return resp.text();
+            }).then(function(hashingCode) {
+                var workerCode = hashingCode + '\n' +
+                    'self.onmessage=async function(e){var msg=e.data;if(msg.type!=="compute-remaining")return;var d=new Uint8Array(msg.buf);var h={};' +
+                    'try{h["SHA-3_224"]=await sha3_224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_224"});' +
+                    'try{h["SHA-3_256"]=await sha3_256(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_256"});' +
+                    'try{h["SHA-3_384"]=await sha3_384(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_384"});' +
+                    'try{h["SHA-3_512"]=await sha3_512(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_512"});' +
+                    'try{h["BLAKE2b"]=await blake2b(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2b"});' +
+                    'try{h["BLAKE2s"]=await blake2s(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2s"});' +
+                    'try{h["SHA-224"]=await sha224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-224"});' +
+                    'try{h["MD5"]=await md5(d);}catch(e){}self.postMessage({type:"p",key:"MD5"});' +
+                    'try{h["RIPEMD-160"]=await ripemd160(d);}catch(e){}self.postMessage({type:"p",key:"RIPEMD-160"});' +
+                    'try{h["Whirlpool"]=await whirlpool(d);}catch(e){}self.postMessage({type:"p",key:"Whirlpool"});' +
+                    'self.postMessage({type:"done",hashes:h});}';
+                var blob = new Blob([workerCode], { type: 'application/javascript' });
+                var workerUrl = URL.createObjectURL(blob);
+                var w = new Worker(workerUrl);
+                w.postMessage({ type: 'compute-remaining', buf: fileBuf }, [fileBuf]);
+                w.onmessage = function(ev) {
+                    var m = ev.data;
+                    if (m.type === 'p') {
+                        if (onProgress) onProgress(m.key + '…');
+                    } else if (m.type === 'done') {
+                        if (onProgress) onProgress('');
+                        if (onComplete) onComplete(m.hashes);
+                        Object.assign(hashesObj, m.hashes);
+                        resolve();
+                        w.terminate();
+                        URL.revokeObjectURL(workerUrl);
+                    }
+                };
+                w.onerror = function() { resolve(); w.terminate(); URL.revokeObjectURL(workerUrl); };
+            }).catch(function(e) {
+                console.warn('Background worker init failed:', e);
+                resolve();
+            });
+        } catch(e) { console.warn('Background worker unavailable:', e); resolve(); }
+    });
 }
 
 // ── Fast fingerprint for simplified mode (fast hashes + background worker for the rest) ──
@@ -847,38 +875,7 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
 
     // Phase 2: Background worker for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
     if (typeof onRemainingHashes === 'function' && typeof Worker !== 'undefined' && typeof window !== 'undefined') {
-        window._fpWorkerPromise = new Promise(function(workerResolve) {
-        try {
-            var w = new Worker('data:application/javascript,' + encodeURIComponent(
-                'self.importScripts("' + location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '') + '/Fingerprint/hashing.js' + '");' +
-                'self.onmessage=async function(e){var msg=e.data;if(msg.type!=="compute-remaining")return;var d=new Uint8Array(msg.buf);var h={};' +
-                'try{h["SHA-3_224"]=await sha3_224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_224"});' +
-                'try{h["SHA-3_256"]=await sha3_256(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_256"});' +
-                'try{h["SHA-3_384"]=await sha3_384(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_384"});' +
-                'try{h["SHA-3_512"]=await sha3_512(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_512"});' +
-                'try{h["BLAKE2b"]=await blake2b(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2b"});' +
-                'try{h["BLAKE2s"]=await blake2s(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2s"});' +
-                'try{h["SHA-224"]=await sha224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-224"});' +
-                'try{h["MD5"]=await md5(d);}catch(e){}self.postMessage({type:"p",key:"MD5"});' +
-                'try{h["RIPEMD-160"]=await ripemd160(d);}catch(e){}self.postMessage({type:"p",key:"RIPEMD-160"});' +
-                'try{h["Whirlpool"]=await whirlpool(d);}catch(e){}self.postMessage({type:"p",key:"Whirlpool"});' +
-                'self.postMessage({type:"done",hashes:h});}'
-            ));
-            w.postMessage({ type: 'compute-remaining', buf: buf }, [buf]);
-            w.onmessage = function(ev) {
-                var m = ev.data;
-                if (m.type === 'p') {
-                    if (onProgress) onProgress(m.key + '…');
-                } else if (m.type === 'done') {
-                    if (onProgress) onProgress('');
-                    onRemainingHashes(m.hashes);
-                    workerResolve();
-                    w.terminate();
-                }
-            };
-            w.onerror = function() { workerResolve(); w.terminate(); };
-        } catch(e) { console.warn('Background worker unavailable:', e); workerResolve(); }
-        });
+        window._fpWorkerPromise = startBackgroundWorker(result.hashes, buf, onProgress, onRemainingHashes);
     } else {
         window._fpWorkerPromise = Promise.resolve();
     }
