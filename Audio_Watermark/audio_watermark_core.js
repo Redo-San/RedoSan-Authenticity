@@ -402,14 +402,27 @@ function aw5_embed(s16, bitsStr, sr) {
 }
 function aw5_extract(s16, sr, numBits) {
     const S = Math.round((sr || 44100) / 100);
-    const limit = Math.min(s16.length, numBits || s16.length);
-    let b = '';
-    for (let i = 0; i < limit; i++) {
-        const q = Math.round(s16[i] / S);
-        b += (q & 1) === 0 ? '0' : '1';
-        if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
-            if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
+    const maxScan = Math.min(s16.length, numBits || s16.length, 100000);
+    let b = '', h32 = '';
+    for (let i = 0; i < maxScan; i++) {
+        const bit = (Math.round(s16[i] / S) & 1) === 0 ? '0' : '1';
+        b += bit;
+        if (i < 32) h32 += bit;
+        if (b.length === 32) {
+            const dlen = parseInt(h32, 2);
+            if (dlen > 0 && dlen < 500) break;
+        }
+    }
+    if (b.length >= 32) {
+        const dlen = parseInt(h32, 2);
+        if (dlen > 0 && dlen < 500) {
+            const need = 32 + dlen * 8;
+            if (b.length < need) {
+                for (let i = b.length; i < Math.min(maxScan, need); i++) {
+                    const bit = (Math.round(s16[i] / S) & 1) === 0 ? '0' : '1';
+                    b += bit;
+                }
+            }
         }
     }
     return b;
@@ -474,9 +487,9 @@ function aw6_embed(s16, bitsStr, sr) {
 function aw6_extract(s16, sr, numBits) {
     const S = Math.max(30, Math.min(150, Math.round((sr || 44100) / 400)));
     const SEG = 1024;
-    const segs = Math.min(Math.floor(s16.length / SEG), numBits || 1000);
+    const maxSegs = Math.min(Math.floor(s16.length / SEG), numBits || 1000, 5000);
     let b = '';
-    for (let seg = 0; seg < segs; seg++) {
+    for (let seg = 0; seg < maxSegs; seg++) {
         const off = seg * SEG;
         const coeff = awHaarFwd(s16.subarray(off, off + SEG));
         const startIdx = SEG >> 1;
@@ -487,9 +500,29 @@ function aw6_extract(s16, sr, numBits) {
             sum += (q & 1);
         }
         b += sum > 31 ? '1' : '0';
-        if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
-            if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
+        if (b.length === 32) {
+            const dlen = parseInt(b, 2);
+            if (dlen > 0 && dlen < 500) break;
+        }
+    }
+    if (b.length >= 32) {
+        const dlen = parseInt(b.substring(0, 32), 2);
+        if (dlen > 0 && dlen < 500) {
+            const need = 32 + dlen * 8;
+            if (b.length < need) {
+                for (let seg = b.length; seg < Math.min(maxSegs, need); seg++) {
+                    const off = seg * SEG;
+                    const coeff = awHaarFwd(s16.subarray(off, off + SEG));
+                    const startIdx = SEG >> 1;
+                    const endIdx = startIdx + 64;
+                    let sum = 0;
+                    for (let j = startIdx; j < endIdx; j++) {
+                        const q = Math.round(coeff[j] / S);
+                        sum += (q & 1);
+                    }
+                    b += sum > 31 ? '1' : '0';
+                }
+            }
         }
     }
     return b;
