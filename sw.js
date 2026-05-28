@@ -47,7 +47,8 @@ var JS_WHITELIST = [
   '/RedoSan-Authenticity/Audio_Watermark/audio_watermark.js',
   '/RedoSan-Authenticity/Assistant/assistant.js',
   '/RedoSan-Authenticity/vendor/jspdf.umd.min.js',
-  '/RedoSan-Authenticity/vendor/qrious.min.js'
+  '/RedoSan-Authenticity/vendor/qrious.min.js',
+  '/RedoSan-Authenticity/vendor/jszip.min.js'
 ];
 
 self.addEventListener('install', function() {
