@@ -33,31 +33,10 @@ async function getFileHashSha256(buf) {
   return Array.from(arr).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
-// Fallback: compute missing hashes on demand (if worker failed)
-async function ensureAllHashes() {
-  var fpResult = window.simpleResults && window.simpleResults.fpResult;
-  if (!fpResult || !fpResult.hashes) return;
-  var h = fpResult.hashes;
-  var buf = window.simpleBuf;
-  if (!buf) return;
-  var d = new Uint8Array(buf);
-  var tasks = [
-    ['SHA-3_224', sha3_224], ['SHA-3_256', sha3_256], ['SHA-3_384', sha3_384], ['SHA-3_512', sha3_512],
-    ['BLAKE2b', blake2b], ['BLAKE2s', blake2s], ['SHA-224', sha224],
-    ['MD5', md5], ['RIPEMD-160', ripemd160], ['Whirlpool', whirlpool]
-  ];
-  for (var i = 0; i < tasks.length; i++) {
-    var key = tasks[i][0], fn = tasks[i][1];
-    if (!h[key]) {
-      try { h[key] = await fn(d); } catch (e) { h[key] = 'error:' + e.message; }
-    }
-    await new Promise(function(r) { setTimeout(r, 0); });
-  }
-}
-
 async function collectCertData() {
   await new Promise(function(r) { setTimeout(r, 30); });
-  await ensureAllHashes();
+  // If background slow hashes still running, wait for them (fast if already done)
+  if (window._pendingSlowHashes) await window._pendingSlowHashes;
   var info = window.simpleUserInfo || {};
   var file = window.simpleFile;
   var buf = window.simpleBuf;
