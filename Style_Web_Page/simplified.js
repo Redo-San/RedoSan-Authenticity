@@ -1352,9 +1352,18 @@ function runFingerprintStep() {
   setTimeout(function() {
     if (window.fastFingerprint) {
       var statusEl = document.getElementById('sfp-status');
+      var _fpResultRef = null;
+      var _fpPendingHashes = {};
       window.fastFingerprint(simpleFile, function(msg) {
         if (statusEl) statusEl.textContent = msg || '';
+      }, function(extraHashes) {
+        if (_fpResultRef) {
+          Object.assign(_fpResultRef.hashes, extraHashes);
+        }
+        Object.assign(_fpPendingHashes, extraHashes);
       }).then(function(result) {
+        _fpResultRef = result;
+        Object.assign(result.hashes, _fpPendingHashes);
         var resultDiv = document.getElementById('sfp-result');
         if (resultDiv) {
           resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
