@@ -73,21 +73,10 @@ async function getFileHashSha256(buf) {
 
 var CT_AGGREGATORS = [
   'https://a.pool.opentimestamps.org/digest',
-  'https://b.pool.opentimestamps.org/digest',
-  'https://alice.btc.calendar.opentimestamps.org/digest',
-  'https://bob.btc.calendar.opentimestamps.org/digest'
+  'https://b.pool.opentimestamps.org/digest'
 ];
 
 var OTS_HEADER_MAGIC = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
-
-async function connectivityCheck() {
-  try {
-    var r = await fetch('https://api.github.com', { method: 'HEAD', mode: 'cors' });
-    return r.ok ? 'ok' : 'http-' + r.status;
-  } catch (e) {
-    return e.message;
-  }
-}
 
 async function submitCertTransparency(certJson) {
   try {
@@ -121,17 +110,11 @@ async function submitCertTransparency(certJson) {
     }
     throw lastErr;
   } catch (e) {
-    var diag = '';
-    if (!(location && location.protocol === 'file:')) diag = await connectivityCheck();
     var friendlyMsg = e.message;
     if (location && location.protocol === 'file:') {
       friendlyMsg = 'Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.';
     } else if (e.message === 'Failed to fetch' || e.name === 'TypeError') {
-      if (diag !== 'ok') {
-        friendlyMsg = 'Cannot connect to external servers. Check your network, firewall, or Content-Security-Policy headers.';
-      } else {
-        friendlyMsg = 'OpenTimestamps calendar servers are unreachable from your network. Some providers block cryptocurrency services. Use CLI: node cli timestamp create';
-      }
+      friendlyMsg = 'Timestamps servers are unreachable from your network. The OpenTimestamps calendar servers may be blocked by your ISP or hosting provider. To timestamp, use the CLI: node cli timestamp create';
     }
     return {
       submitted: false,
