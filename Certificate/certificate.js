@@ -708,7 +708,8 @@ async function downloadCertEPUB(data) {
 
 function ensureLib(name) {
   // Try same-origin first (vendor/), then CDN fallbacks
-  var base = location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '').replace('/Certificate', '');
+  var base = (location.pathname.substring(0, location.pathname.lastIndexOf('/')) || '/').replace(/\/+$/, '');
+  base = location.origin + base;
   var urls = name === 'jspdf'
     ? [base + '/vendor/jspdf.umd.min.js',
        'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
@@ -723,11 +724,11 @@ function ensureLib(name) {
     if (name === 'QRious' && typeof QRious !== 'undefined') return resolve();
     var lastErr = null, idx = 0;
     function tryNext() {
-      if (idx >= urls.length) return reject(new Error('Failed to load ' + name + ' (tried ' + urls.length + ' sources): ' + (lastErr ? lastErr.message : 'unknown')));
+      if (idx >= urls.length) return reject(new Error('Failed to load ' + name + ' (tried ' + urls.length + ' sources)'));
       var s = document.createElement('script');
       s.src = urls[idx++];
       s.onload = function() { resolve(); };
-      s.onerror = function(e) { lastErr = e; setTimeout(tryNext, 500); };
+      s.onerror = function() { lastErr = new Error('onerror'); setTimeout(tryNext, 1000); };
       document.head.appendChild(s);
     }
     tryNext();
