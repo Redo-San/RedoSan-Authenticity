@@ -36,6 +36,7 @@ var PAGE_TITLES = {
   fingerprint: 'Fingerprint &amp; Image Hashing — RedoSan Authenticity',
   metadata: 'Metadata &amp; EXIF Reader — RedoSan Authenticity',
   timestamp: 'Timestamp &amp; OTS Verification — RedoSan Authenticity',
+  did: 'Decentralized Identity (DID) — RedoSan Authenticity',
   c2pa: 'C2PA Content Provenance — RedoSan Authenticity',
   certificate: 'Digital Passport Certificate — RedoSan Authenticity',
   converter: 'File Converter — RedoSan Authenticity'
@@ -48,6 +49,7 @@ var PAGE_DESCS = {
   fingerprint: 'Calculate cryptographic fingerprints (SHA-256, BLAKE3, MD5) and perceptual image hashes. Free online tool.',
   metadata: 'Read EXIF metadata, dimensions, format, and color mode from images. Free online tool.',
   timestamp: 'Create SHA-256 hashes and verify with OpenTimestamps. Free online tool.',
+  did: 'Generate a Decentralized Identifier (DID) and sign file fingerprints to prove content authorship. Free online tool.',
   c2pa: 'Read and write C2PA content provenance metadata for images. Free online tool.',
   certificate: 'Generate a signed Digital Passport PDF, DOCX, or EPUB with image, user info, and authenticity results. Free online tool.',
   converter: 'Convert images, audio, and documents between formats. Free online file converter.'
@@ -69,11 +71,13 @@ function showPage(name) {
   if (name === 'certificate') { if (typeof initCertPhoneCode === 'function') initCertPhoneCode(); }
   var isProfessional = document.getElementById('mainNav') && document.getElementById('mainNav').style.display !== 'none';
   if (isProfessional) {
-    if (name && name !== 'home') {
-      history.pushState({ page: name }, '', '#/' + name);
-    } else {
-      history.pushState({ page: 'home' }, '', window.location.pathname.replace(/\/+$/, '') + '/');
-    }
+    try {
+      if (name && name !== 'home') {
+        history.pushState({ page: name }, '', '#/' + name);
+      } else {
+        history.pushState({ page: 'home' }, '', window.location.pathname.replace(/\/+$/, '') + '/');
+      }
+    } catch(e) {}
   }
 }
 
@@ -99,7 +103,7 @@ function showStaticPage(name) {
 
   document.documentElement.style.overflow = '';
   showPage(name);
-  history.pushState({ staticPage: name, fromOverlay: true }, '', '#/' + name);
+  try { history.pushState({ staticPage: name, fromOverlay: true }, '', '#/' + name); } catch(e) {}
 }
 
 function hideAllExcept(keep) {
@@ -189,7 +193,7 @@ function handleHashNav() {
 function initNav() {
   handleHashNav();
   if (!history.state || !history.state.modeOverlay) {
-    history.replaceState({ modeOverlay: true }, '', window.location.pathname.replace(/\/+$/, '') + '/');
+    try { history.replaceState({ modeOverlay: true }, '', window.location.pathname.replace(/\/+$/, '') + '/'); } catch(e) {}
   }
 }
 // Run only via DOMContentLoaded to avoid double execution with defer scripts

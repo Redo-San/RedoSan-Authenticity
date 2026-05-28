@@ -119,6 +119,12 @@ nav .logo { display:flex; align-items:center; }
   border-radius: 8px; color: var(--text); font-size: 0.9rem; outline: none; transition: .2s;
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+/* DID algorithm selectors — match form-group select but compact for inline use */
+#did-algo-select, #sdid-algo-select {
+  padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font-size: 0.85rem; cursor: pointer; outline: none;
+}
+#did-algo-select:focus, #sdid-algo-select:focus { border-color: var(--primary); }
 .btn {
   display: inline-block; padding: 10px 28px; background: var(--primary); color: #fff;
   border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: .2s;
