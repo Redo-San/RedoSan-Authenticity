@@ -405,15 +405,23 @@ async function handleWatermarkExtract() {
   try {
     const result = await watermarkExtract(type, imgFile, pw);
     if (result.ok) {
-      let text = result.msg + '\n';
+      let textParts = [result.msg];
       dl.innerHTML = '';
       var extractedFiles = {};
       if (result.files) {
         for (const [name, data] of Object.entries(result.files)) {
-          text += '\n  ' + name + ': ' + __('wm.extracted');
+          textParts.push(name + ': ' + __('wm.extracted'));
           const blob = new Blob([data], { type: 'application/octet-stream' });
           downloadBlob(blob, name, 'wm-download');
           extractedFiles[name] = data.length + ' bytes';
+          // Try to display text content inline
+          try {
+            var contentStr = new TextDecoder().decode(data);
+            if (contentStr.length > 0 && contentStr.length < 5000) {
+              textParts.push('<pre style="font-size:0.75rem;background:var(--bg);color:var(--text);padding:10px;border-radius:6px;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:6px 0">' +
+                escHtml(contentStr) + '</pre>');
+            }
+          } catch(e) {}
         }
       }
       window._wmResult = {
@@ -424,7 +432,7 @@ async function handleWatermarkExtract() {
       window._currentDownloadHandler = downloadWatermark;
       document.getElementById('dl-modal-title').textContent = 'Download Watermark Result';
       dl.innerHTML += '<br><button onclick="showDownloadModal()" class="btn" style="margin-top:8px">' + __('fp.results_btn', 'Download Results') + '</button>';
-      setText('wm-output', text);
+      output.innerHTML = textParts.join('\n');
     } else {
       let errMsg = __('wm.error_prefix').replace('{msg}', wmErr(result.error));
       if (pw && pw.trim()) {
