@@ -143,7 +143,7 @@ async function collectCertData() {
     watermarkAlgo: results.watermarkAlgoName || '',
     watermarkResult: results.watermarkResult || '',
     pixelInjection: !!results['pixel-injection'],
-    piResultHtml: results.piResultHtml || '',
+    piResultHtml: stripHtml(results.piResultHtml || ''),
     timestamp: !!results.timestamp,
     tsResult: results.tsResult || '',
     fingerprint: !!results.fingerprint,
@@ -233,6 +233,14 @@ function fmtSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function stripHtml(s) {
+  if (!s) return '';
+  return s.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, function(m) {
+    var e = { '&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'" };
+    return e[m] || ' ';
+  }).replace(/\s+/g, ' ').trim();
 }
 
 function escHtml(s) {
@@ -1148,9 +1156,9 @@ async function generateProfessionalCert() {
       watermark: !!(wmFile || wmGlobal),
       watermarkUrl: null,
       watermarkAlgo: wmFileName,
-      watermarkResult: wmText,
+      watermarkResult: stripHtml(wmText),
       pixelInjection: !!(piFile || piGlobal),
-      piResultHtml: piText,
+      piResultHtml: stripHtml(piText),
       piFileDataUrl: null,
       timestamp: !!tsFile,
       tsResult: tsFile ? ('Timestamp file: ' + tsName + ' (' + fmtSize(tsSize) + ')') : '',
