@@ -498,9 +498,7 @@ async function downloadCertPDF(data) {
     doc.setFontSize(6);
     doc.text('SHA-256: ' + data.ct.hash, margin, y); y += 3;
     if (data.ct.pending) {
-      doc.text('Status: Pending', margin, y); y += 3;
-      doc.text('To complete: download the .ots proof and run:', margin, y); y += 3;
-      doc.text('  ots upgrade certificate.ots', margin, y); y += 3;
+      // hash only, no status text
     } else {
       doc.text('Logged: ' + (data.ct.timestamp || '').replace('T', ' ').substring(0, 19), margin, y); y += 3;
       var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
@@ -735,8 +733,7 @@ async function downloadCertDOCX(data) {
     addHeading('Certificate Transparency', 2);
     addLabelValue('SHA-256', data.ct.hash);
     if (data.ct.pending) {
-      addLabelValue('Status', 'Pending');
-      addBody('To complete: download the .ots proof and run: ots upgrade certificate.ots');
+      // hash only, no status text
     } else {
       addLabelValue('Logged', (data.ct.timestamp || '').replace('T', ' ').substring(0, 19));
       var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
@@ -872,7 +869,7 @@ async function downloadCertEPUB(data) {
       '<h2>Certificate Transparency</h2><table>' +
       '<tr><td><strong>SHA-256</strong></td><td style="font-size:0.6em;word-break:break-all">' + escHtml(data.ct.hash) + '</td></tr>' +
       (data.ct.pending ?
-        '<tr><td><strong>Status</strong></td><td>Pending — run: <code>ots upgrade certificate.ots</code></td></tr>' :
+        '' :
         '<tr><td><strong>Logged</strong></td><td>' + escHtml((data.ct.timestamp || '').replace('T', ' ').substring(0, 19)) + '</td></tr>' +
         '<tr><td><strong>Log</strong></td><td>' + escHtml((data.ct.aggregator || 'OTS').replace('https://', '').split('/')[0] || 'OTS calendar') + '</td></tr>') +
       '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>' :
