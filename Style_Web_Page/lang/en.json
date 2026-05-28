@@ -373,7 +373,10 @@
   "simple.info_music": "Music Platforms",
   "simple.info_required": "Please fill in all required fields: Name, Email, Phone, Website.",
   "simple.cert_title": "Digital Passport",
-  "simple.cert_desc": "Download a signed document with all results, image preview, and QR verification code.",
+  "simple.cert_desc_image": "Download a signed document with all results, image preview, and QR verification code.",
+  "simple.cert_desc_audio": "Download a signed document with all results, audio player preview, and QR verification code.",
+  "simple.cert_desc_video": "Download a signed document with all results, video preview, and QR verification code.",
+  "simple.cert_desc_other": "Download a signed document with all results and QR verification code.",
 
   "page.about": "<h2>About RedoSan Authenticity</h2><p><strong>RedoSan Authenticity</strong> is an open-source digital authenticity tool that runs entirely in your browser. No files are ever uploaded to any server — all processing happens client-side.</p><p>We provide a comprehensive suite of tools for digital forensics and media verification:</p><ul><li><strong>Watermarking</strong> — 9 algorithms including LSB, DCT, DWT, neural-style, and forensic watermarking</li><li><strong>Fingerprinting</strong> — Cryptographic hashing (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) and perceptual image hashing</li><li><strong>Metadata</strong> — Read EXIF, dimensions, format, and color mode from images</li><li><strong>Timestamping</strong> — SHA-256 hashing with OpenTimestamps verification support</li></ul><p>Built with privacy as a core principle. Your files never leave your device.</p>",
 
