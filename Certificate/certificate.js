@@ -237,7 +237,7 @@ function fmtSize(bytes) {
 
 function stripHtml(s) {
   if (!s) return '';
-  return s.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, function(m) {
+  return s.replace(/[<>]/g, ' ').replace(/&[^;]+;/g, function(m) {
     var e = { '&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'" };
     return e[m] || ' ';
   }).replace(/\s+/g, ' ').trim();
