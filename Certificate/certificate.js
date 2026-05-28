@@ -719,9 +719,33 @@ function ensureLib(name, url) {
   });
 }
 
+// ── Loading overlay (CSS spinner survives sync freeze) ──
+var _certOverlay = null;
+function showCertOverlay() {
+  if (_certOverlay) return;
+  var o = document.createElement('div');
+  o.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999';
+  o.innerHTML =
+    '<div class="cert-spinner" style="border:5px solid rgba(255,255,255,0.2);border-top:5px solid #d32f2f;border-radius:50%;width:50px;height:50px;animation:certSpin 0.9s linear infinite"></div>' +
+    '<div style="color:#fff;font:18px/1.4 sans-serif;margin-top:16px">Generating certificate…</div>' +
+    '<div style="color:rgba(255,255,255,0.65);font:13px/1.4 sans-serif;margin-top:6px">Please wait, this may take up to 30 seconds</div>';
+  document.body.appendChild(o);
+  _certOverlay = o;
+  if (!document.getElementById('cert-spin-style')) {
+    var s = document.createElement('style');
+    s.id = 'cert-spin-style';
+    s.textContent = '@keyframes certSpin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(s);
+  }
+}
+function hideCertOverlay() {
+  if (_certOverlay) { _certOverlay.remove(); _certOverlay = null; }
+}
+
 async function downloadCert(format, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
   await new Promise(function(r) { setTimeout(r, 30); });
+  showCertOverlay();
   try {
     var data = await collectCertData();
     if (format === 'pdf') {
@@ -736,6 +760,7 @@ async function downloadCert(format, btn) {
     console.error('Certificate generation failed:', e);
     alert('Failed to generate certificate: ' + e.message);
   }
+  hideCertOverlay();
   if (btn) { btn.disabled = false; btn.textContent = format.toUpperCase(); }
 }
 
