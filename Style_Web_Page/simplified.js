@@ -1463,10 +1463,18 @@ function renderDone(body) {
   // Certificate download section
   var hasAnyResult = results.watermark || results['pixel-injection'] || results.audioWatermark || results.timestamp || results.fingerprint || results.c2pa;
   if (hasAnyResult) {
+    var certType = simpleType || 'other';
+    var certDescKey = 'simple.cert_desc_' + certType;
+    var certDescFallback = {
+      image: 'Download a signed document with all results, image preview, and QR verification code.',
+      audio: 'Download a signed document with all results, audio player preview, and QR verification code.',
+      video: 'Download a signed document with all results, video preview, and QR verification code.',
+      other: 'Download a signed document with all results and QR verification code.'
+    }[certType];
     sections.push('<div class="simple-done-section simple-cert-section">' +
       '<h3>' + __('simple.cert_title', 'Digital Passport') + '</h3>' +
       '<p style="font-size:0.82rem;color:var(--text-muted);margin:4px 0 12px">' +
-      __('simple.cert_desc', 'Download a signed document with all results, image preview, and QR verification code.') + '</p>' +
+      __(certDescKey, certDescFallback) + '</p>' +
       '<div class="simple-cert-btns">' +
       '<button class="btn cert-btn" onclick="downloadCert(\'pdf\', this)" style="background:#d32f2f;color:#fff">📄 PDF</button>' +
       '<button class="btn cert-btn" onclick="downloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
