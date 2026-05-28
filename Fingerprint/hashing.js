@@ -882,7 +882,7 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
 
     return result;
 }
-window.fastFingerprint = fastFingerprint;
+if (typeof window !== 'undefined') window.fastFingerprint = fastFingerprint;
 
 // ── Trim fingerprint JSON payload to fit within maxBits ──
 function trimFingerprintPayload(fpResult, maxBytes) {
@@ -922,7 +922,7 @@ function trimFingerprintPayload(fpResult, maxBytes) {
     }
     return trimmed;
 }
-window.trimFingerprintPayload = trimFingerprintPayload;
+if (typeof window !== 'undefined') window.trimFingerprintPayload = trimFingerprintPayload;
 
 // ── BLAKE3 self-verify at load time ──
 (async function(){
