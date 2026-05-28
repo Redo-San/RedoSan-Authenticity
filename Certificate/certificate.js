@@ -111,9 +111,12 @@ async function submitCertTransparency(certJson) {
     }
     throw lastErr;
   } catch (e) {
+    var friendlyMsg = e.message;
+    if (location && location.protocol === 'file:') friendlyMsg = 'Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.';
+    else if (e.message === 'Failed to fetch' || e.name === 'TypeError') friendlyMsg = 'Timestamp server unreachable. Check your internet connection or try again later.';
     return {
       submitted: false,
-      error: e.message,
+      error: friendlyMsg,
       timestamp: new Date().toISOString()
     };
   }
