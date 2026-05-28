@@ -334,8 +334,15 @@ async function downloadCertPDF(data) {
   doc.text(lines, margin, y);
 
   await new Promise(function(r) { setTimeout(r, 0); });
-  await new Promise(function(r) { setTimeout(r, 50); });
-  doc.save('RedoSan_Digital_Passport.pdf');
+  var blob = doc.output('blob');
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'RedoSan_Digital_Passport.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }
 
 // ── DOCX Certificate ──
@@ -525,8 +532,10 @@ async function downloadCertDOCX(data) {
   var a = document.createElement('a');
   a.href = url;
   a.download = 'RedoSan_Digital_Passport.docx';
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }
 
 // ── EPUB Certificate ──
@@ -700,8 +709,10 @@ async function downloadCertEPUB(data) {
   var a = document.createElement('a');
   a.href = url;
   a.download = 'RedoSan_Digital_Passport.epub';
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }
 
 // ── Main download dispatcher ──
