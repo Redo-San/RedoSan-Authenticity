@@ -707,11 +707,15 @@ async function downloadCertEPUB(data) {
 // ── Main download dispatcher ──
 
 function ensureLib(name) {
+  // Try same-origin first (vendor/), then CDN fallbacks
+  var base = location.href.substring(0, location.href.lastIndexOf('/')).replace('/Style_Web_Page', '').replace('/Certificate', '');
   var urls = name === 'jspdf'
-    ? ['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    ? [base + '/vendor/jspdf.umd.min.js',
+       'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
        'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
        'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js']
-    : ['https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js',
+    : [base + '/vendor/qrious.min.js',
+       'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js',
        'https://unpkg.com/qrious@4.0.2/dist/qrious.min.js',
        'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js'];
   return new Promise(function(resolve, reject) {
@@ -719,10 +723,9 @@ function ensureLib(name) {
     if (name === 'QRious' && typeof QRious !== 'undefined') return resolve();
     var lastErr = null, idx = 0;
     function tryNext() {
-      if (idx >= urls.length) return reject(new Error('Failed to load ' + name + ' (tried ' + urls.length + ' CDNs): ' + (lastErr ? lastErr.message : 'unknown')));
+      if (idx >= urls.length) return reject(new Error('Failed to load ' + name + ' (tried ' + urls.length + ' sources): ' + (lastErr ? lastErr.message : 'unknown')));
       var s = document.createElement('script');
       s.src = urls[idx++];
-      s.crossOrigin = 'anonymous';
       s.onload = function() { resolve(); };
       s.onerror = function(e) { lastErr = e; setTimeout(tryNext, 500); };
       document.head.appendChild(s);
