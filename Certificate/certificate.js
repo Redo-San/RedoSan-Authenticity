@@ -71,10 +71,56 @@ async function getFileHashSha256(buf) {
   return Array.from(arr).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
+var CT_AGGREGATORS = [
+  'https://a.pool.opentimestamps.org/digest',
+  'https://b.pool.opentimestamps.org/digest'
+];
+
+var OTS_HEADER_MAGIC = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+
+async function submitCertTransparency(certJson) {
+  try {
+    var enc = new TextEncoder().encode(certJson);
+    var hashBuf = await crypto.subtle.digest('SHA-256', enc);
+    var hashBytes = new Uint8Array(hashBuf);
+    // Build minimal .ots body: header + version + SHA-256 tag + 32-byte hash
+    var body = OTS_HEADER_MAGIC.slice();
+    body.push(1); // version varuint
+    body.push(0x08); // SHA-256 op tag
+    for (var i = 0; i < 32; i++) body.push(hashBytes[i]);
+    var otsBytes = new Uint8Array(body);
+    var lastErr;
+    for (var ui = 0; ui < CT_AGGREGATORS.length; ui++) {
+      try {
+        var resp = await fetch(CT_AGGREGATORS[ui], {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: otsBytes
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        var upgraded = new Uint8Array(await resp.arrayBuffer());
+        var ctBase64 = btoa(String.fromCharCode.apply(null, upgraded));
+        return {
+          submitted: true,
+          aggregator: CT_AGGREGATORS[ui],
+          otsProof: ctBase64,
+          hash: Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(''),
+          timestamp: new Date().toISOString()
+        };
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr;
+  } catch (e) {
+    return {
+      submitted: false,
+      error: e.message,
+      timestamp: new Date().toISOString()
+    };
+  }
+}
+
 async function collectCertData() {
-  // Let UI breathe before heavy certificate generation
   await new Promise(function(r) { setTimeout(r, 30); });
-  // Worker computes remaining hashes in background during earlier steps
   var info = window.simpleUserInfo || {};
   var file = window.simpleFile;
   var buf = window.simpleBuf;
@@ -101,9 +147,11 @@ async function collectCertData() {
     timestamp: !!results.timestamp,
     tsResult: results.tsResult || '',
     fingerprint: !!results.fingerprint,
-    fpResult: results.fpResult || null
+    fpResult: results.fpResult || null,
+    didSig: results.didSig || (window._didSig || null),
+    didIdentity: results.didIdentity || (window._didKeypair ? window._didKeypair.did : ''),
+    ct: { submitted: false }
   };
-  // Get image dimensions
   if (buf && file) {
     var dataUrl = bufToDataURL(buf, file.type);
     var dims = await loadImageDimensions(dataUrl);
@@ -111,6 +159,15 @@ async function collectCertData() {
     data.file.height = dims.height;
     data.file.dataUrl = dataUrl;
     data.file.hash = await getFileHashSha256(buf);
+  }
+  // Submit to transparency log (fire-and-forget with 10s timeout)
+  try {
+    var ctPromise = submitCertTransparency(JSON.stringify(data));
+    var timeoutPromise = new Promise(function(_, rej) { setTimeout(function() { rej(new Error('CT submission timed out')); }, 10000); });
+    var ctResult = await Promise.race([ctPromise, timeoutPromise]);
+    data.ct = ctResult;
+  } catch (e) {
+    data.ct = { submitted: false, error: e.message, timestamp: new Date().toISOString() };
   }
   return data;
 }
@@ -136,6 +193,12 @@ function buildQRVerificationJSON(data) {
         qr.fp['ph_' + key] = data.fpResult.perceptual_hashes[key];
       }
     }
+  }
+  if (data.didSig && data.didSig.did) {
+    qr.did = data.didSig.did.substring(0, 60);
+    if (data.didSig.signature) qr.sig = data.didSig.signature.substring(0, 20) + '...';
+  } else if (data.didIdentity) {
+    qr.did = data.didIdentity.substring(0, 60);
   }
   qr.wm = data.watermark ? 1 : 0;
   qr.pi = data.pixelInjection ? 1 : 0;
@@ -353,7 +416,55 @@ async function downloadCertPDF(data) {
     }
   }
 
-  // ── 7. QR Verification Code ──
+  // ── 7. DID Signature ──
+  if (data.didSig && data.didSig.did) {
+    checkPage(20);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('Decentralized Identity (DID)', margin, y); y += 5;
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(7);
+    doc.text('DID: ' + data.didSig.did, margin, y); y += 3.5;
+    doc.text('Algorithm: ' + (data.didSig.algorithm || 'Ed25519'), margin, y); y += 3.5;
+    doc.text('Signed: ' + (data.didSig.timestamp || '').replace('T', ' ').substring(0, 19), margin, y); y += 3.5;
+    doc.setFontSize(6);
+    var sigLines = doc.splitTextToSize('Signature: ' + (data.didSig.signature || ''), pageW);
+    doc.text(sigLines, margin, y);
+    y += sigLines.length * 3 + 4;
+  } else if (data.didIdentity) {
+    checkPage(10);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('DID Identity', margin, y); y += 5;
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(7);
+    doc.text('DID: ' + data.didIdentity, margin, y); y += 4;
+  }
+
+  // ── 8. Certificate Transparency ──
+  if (data.ct && data.ct.submitted && data.ct.hash) {
+    checkPage(12);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text('Certificate Transparency', margin, y); y += 4.5;
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(6);
+    doc.text('SHA-256: ' + data.ct.hash, margin, y); y += 3;
+    doc.text('Logged: ' + (data.ct.timestamp || '').replace('T', ' ').substring(0, 19), margin, y); y += 3;
+    var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
+    doc.text('Transparency log: ' + shortAgg, margin, y); y += 3;
+    doc.text('Verifiable at: https://opentimestamps.org', margin, y); y += 6;
+  } else if (data.ct) {
+    checkPage(8);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text('Certificate Transparency', margin, y); y += 4.5;
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(6);
+    doc.text('Status: ' + (data.ct.submitted ? 'Submitted' : 'Unavailable — ' + (data.ct.error || 'offline')), margin, y); y += 4;
+  }
+
+  // ── 9. QR Verification Code ──
   checkPage(qrSize + 20);
   y += 4;
   doc.setFontSize(12);
@@ -552,7 +663,36 @@ async function downloadCertDOCX(data) {
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
 
-  // 8. QR Verification Code
+  // 8. DID Signature
+  if (data.didSig && data.didSig.did) {
+    addHeading('Decentralized Identity (DID)', 2);
+    addLabelValue('DID', data.didSig.did);
+    addLabelValue('Algorithm', data.didSig.algorithm || 'Ed25519');
+    addLabelValue('Signed', (data.didSig.timestamp || '').replace('T', ' ').substring(0, 19));
+    addLabelValue('Signature', (data.didSig.signature || '').substring(0, 64) + '...');
+    children.push(new docx.Paragraph({ spacing: { after: 200 } }));
+  } else if (data.didIdentity) {
+    addHeading('DID Identity', 2);
+    addLabelValue('DID', data.didIdentity);
+    children.push(new docx.Paragraph({ spacing: { after: 200 } }));
+  }
+
+  // 9. Certificate Transparency
+  if (data.ct && data.ct.submitted && data.ct.hash) {
+    addHeading('Certificate Transparency', 2);
+    addLabelValue('SHA-256', data.ct.hash);
+    addLabelValue('Logged', (data.ct.timestamp || '').replace('T', ' ').substring(0, 19));
+    var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
+    addLabelValue('Transparency log', shortAgg);
+    addBody('Verifiable at: https://opentimestamps.org');
+    children.push(new docx.Paragraph({ spacing: { after: 100 } }));
+  } else if (data.ct) {
+    addHeading('Certificate Transparency', 2);
+    addBody('Status: ' + (data.ct.submitted ? 'Submitted' : 'Unavailable — ' + (data.ct.error || 'offline')));
+    children.push(new docx.Paragraph({ spacing: { after: 100 } }));
+  }
+
+  // 10. QR Verification Code
   var qrVerData = buildQRVerificationJSON(data);
   var docHash = await getDocHash(qrVerData);
   var qrContent = JSON.stringify({ data: JSON.parse(qrVerData), hash: docHash });
@@ -661,6 +801,22 @@ async function downloadCertEPUB(data) {
     (data.timestamp ? '<h2>Timestamp</h2><pre>' + escHtml(data.tsResult || 'Timestamp created successfully.') + '</pre>' : '') +
 
     fpSection +
+
+    (data.didSig && data.didSig.did ?
+      '<h2>Decentralized Identity (DID)</h2><table>' +
+      '<tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">' + escHtml(data.didSig.did) + '</td></tr>' +
+      '<tr><td><strong>Algorithm</strong></td><td>' + escHtml(data.didSig.algorithm || 'Ed25519') + '</td></tr>' +
+      '<tr><td><strong>Signed</strong></td><td>' + escHtml((data.didSig.timestamp || '').replace('T', ' ').substring(0, 19)) + '</td></tr>' +
+      '<tr><td><strong>Signature</strong></td><td style="font-size:0.6em;word-break:break-all">' + escHtml((data.didSig.signature || '').substring(0, 64) + '...') + '</td></tr></table>' :
+      (data.didIdentity ? '<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">' + escHtml(data.didIdentity) + '</td></tr></table>' : '')) +
+
+    (data.ct && data.ct.submitted && data.ct.hash ?
+      '<h2>Certificate Transparency</h2><table>' +
+      '<tr><td><strong>SHA-256</strong></td><td style="font-size:0.6em;word-break:break-all">' + escHtml(data.ct.hash) + '</td></tr>' +
+      '<tr><td><strong>Logged</strong></td><td>' + escHtml((data.ct.timestamp || '').replace('T', ' ').substring(0, 19)) + '</td></tr>' +
+      '<tr><td><strong>Log</strong></td><td>' + escHtml((data.ct.aggregator || 'OTS').replace('https://', '').split('/')[0] || 'OTS calendar') + '</td></tr>' +
+      '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>' :
+      (data.ct ? '<h2>Certificate Transparency</h2><p>Status: ' + escHtml(data.ct.submitted ? 'Submitted' : 'Unavailable — ' + (data.ct.error || 'offline')) + '</p>' : '')) +
 
     '<h2>Verification QR Code</h2>' +
     '<p>Scan this QR code to verify the document contents.</p>' +
@@ -920,6 +1076,14 @@ async function generateProfessionalCert() {
       }
     }
 
+    // DID Identity: uploaded file only
+    var didFile = getFileFrom('cert-result-did');
+    var didText = didFile ? await readFileAsText(didFile) : '';
+    var didUploadData = null;
+    if (didText) {
+      try { didUploadData = JSON.parse(didText); } catch(e) { didUploadData = { raw: didText }; }
+    }
+
     // Timestamp: uploaded file only
     var tsFile = getFileFrom('cert-result-ts');
     var tsName = tsFile ? tsFile.name : '';
@@ -992,8 +1156,20 @@ async function generateProfessionalCert() {
       tsResult: tsFile ? ('Timestamp file: ' + tsName + ' (' + fmtSize(tsSize) + ')') : '',
       fingerprint: !!(fpFile || fpGlobal),
       fpResult: fpResultData,
-      fpFileName: fpFile ? fpFile.name : (fpGlobal ? (fpGlobal.file_info ? fpGlobal.file_info.file_name : '') : '')
+      fpFileName: fpFile ? fpFile.name : (fpGlobal ? (fpGlobal.file_info ? fpGlobal.file_info.file_name : '') : ''),
+      didSig: window._didSig || (didUploadData && didUploadData.signature ? didUploadData.signature : null),
+      didIdentity: (window._didKeypair ? window._didKeypair.did : '') || (didUploadData ? didUploadData.did : ''),
+      ct: { submitted: false }
     };
+    // Submit to transparency log
+    try {
+      var ctPromise = submitCertTransparency(JSON.stringify(_certData));
+      var ctTimeout = new Promise(function(_, rej) { setTimeout(function() { rej(new Error('CT submission timed out')); }, 10000); });
+      var ctResult = await Promise.race([ctPromise, ctTimeout]);
+      _certData.ct = ctResult;
+    } catch (e) {
+      _certData.ct = { submitted: false, error: e.message, timestamp: new Date().toISOString() };
+    }
 
     // Main image dimensions + hash
     if (buf && file) {
@@ -1068,7 +1244,7 @@ function resetProfessionalCert() {
   var ids = ['cert-file', 'cert-name', 'cert-email', 'cert-phone', 'cert-website',
     'cert-social-tiktok', 'cert-social-facebook', 'cert-social-instagram', 'cert-social-youtube',
     'cert-music-spotify', 'cert-music-applemusic', 'cert-music-ytmusic', 'cert-music-soundcloud',
-    'cert-result-wm', 'cert-result-pi', 'cert-result-fp', 'cert-result-ts'];
+    'cert-result-wm', 'cert-result-pi', 'cert-result-fp', 'cert-result-ts', 'cert-result-did'];
   ids.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) { el.value = ''; }

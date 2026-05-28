@@ -28,7 +28,7 @@ function initMode() {
 function setMode(mode) {
   document.getElementById('modeSelect').style.display = 'none';
   setBodyOverflow(false);
-  history.pushState({ modeSet: mode }, '', window.location.pathname.replace(/\/+$/, '') + '/');
+  try { history.pushState({ modeSet: mode }, '', window.location.pathname.replace(/\/+$/, '') + '/'); } catch(e) {}
   if (mode === 'simplified') {
     document.getElementById('mainNav').style.display = 'none';
     document.getElementById('sidebar').style.display = 'none';
@@ -112,16 +112,19 @@ function buildSteps(type, isAI) {
     s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
     s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
+    s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
     if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
   } else if (type === 'audio') {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
     s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
+    s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
     s.push({ id: 'audio-watermark', label: 'Audio Watermark' });
   } else {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
     s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
+    s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
   }
   s.push({ id: 'done', label: __('simple.step_done', 'Done') });
   return s;
@@ -156,7 +159,7 @@ function renderStep() {
   nextBtn.textContent = isLast ? __('simple.start_over') : __('simple.next_btn');
   // Manage Next button: hidden for action-required steps, disabled until done for others
   simpleStepDone = false;
-  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection', 'audio-watermark'].indexOf(step.id) >= 0) {
+  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection', 'audio-watermark', 'did-sign'].indexOf(step.id) >= 0) {
     nextBtn.style.display = 'none';
   } else {
     nextBtn.style.display = '';
@@ -170,6 +173,7 @@ function renderStep() {
   else if (step.id === 'timestamp') renderTimestampStep(body);
   else if (step.id === 'audio-watermark') renderAudioWatermarkStep(body);
   else if (step.id === 'fingerprint') renderFingerprintStep(body);
+  else if (step.id === 'did-sign') renderDIDStep(body);
   else if (step.id === 'done') renderDone(body);
   document.getElementById('simpleStepCounter').textContent =
     __('simple.step_of', 'Step {current} of {total}').replace('{current}', simpleStep + 1).replace('{total}', simpleSteps.length);
@@ -226,7 +230,7 @@ function simpleNext() {
     }
   }
   // Auto-run steps must complete before advancing
-  if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa') && !simpleStepDone) return;
+  if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa' || step.id === 'did-sign') && !simpleStepDone) return;
   if (step.id === 'done') { restartSimple(); return; }
   simpleStep++;
   if (simpleStep >= simpleSteps.length) simpleStep = simpleSteps.length - 1;
@@ -936,6 +940,38 @@ function renderWatermarkStep(body) {
     '<div id="swm-status"></div></div>';
 }
 
+// Build combined fingerprint + DID payload, trimmed to fit maxBytes
+function buildCombinedPayload(fpResult, didSig, maxBytes) {
+  var didStr = '';
+  if (didSig) {
+    didStr = '\n---DIDSIG---\n' + JSON.stringify(didSig);
+  }
+  var didBytes = new TextEncoder().encode(didStr).length;
+  var fpMaxBytes = maxBytes - didBytes;
+  if (fpMaxBytes < 100) fpMaxBytes = 100;
+  if (fpResult && typeof trimFingerprintPayload === 'function') {
+    var trimmed = trimFingerprintPayload(fpResult, fpMaxBytes);
+    var combined = JSON.stringify(trimmed) + didStr;
+    // If combined exceeds maxBytes even after trimming, drop DID
+    if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
+      combined = JSON.stringify(trimmed);
+    }
+    return combined;
+  }
+  var fpText = '';
+  if (fpResult) {
+    fpText = typeof fpResult === 'string' ? fpResult : JSON.stringify(fpResult, null, 2);
+  }
+  var available = maxBytes - didBytes;
+  if (available < 50) available = 50;
+  fpText = fpText.substring(0, available);
+  var combined = fpText + didStr;
+  if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
+    combined = fpText;
+  }
+  return combined;
+}
+
 function runWatermarkStep() {
   showProgress();
   var algo = parseInt(document.getElementById('swm-type').value, 10);
@@ -944,19 +980,9 @@ function runWatermarkStep() {
   var btn = document.getElementById('swm-btn');
   if (btn) { btn.disabled = true; btn.textContent = __('simple.embedding', 'Embedding...'); }
 
-  // Smart fingerprint payload: embed all hashes, trimmed to capacity if needed
-  var secretFile;
-  if (simpleResults.fpResult && typeof trimFingerprintPayload === 'function') {
-    var trimmed = trimFingerprintPayload(simpleResults.fpResult, 60000);
-    secretFile = new File([JSON.stringify(trimmed)], 'fingerprint.txt', { type: 'text/plain' });
-  } else {
-    var fpText = '';
-    if (simpleResults.fpResult) {
-      fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
-    }
-    if (fpText.length > 65536) fpText = fpText.slice(0, 65536);
-    secretFile = new File([fpText], 'fingerprint.txt', { type: 'text/plain' });
-  }
+  // Build combined payload: fingerprint + DID signature
+  var payloadStr = buildCombinedPayload(simpleResults.fpResult, simpleResults.didSig, 60000);
+  var secretFile = new File([payloadStr], 'fingerprint.txt', { type: 'text/plain' });
 
   watermarkEmbed(algo, simpleFile, secretFile, pass).then(function(result) {
     if (result.ok) {
@@ -1060,21 +1086,12 @@ async function runAudioWatermarkStep() {
     var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
     var tsBits = awFormatPayload(tsBytes, key);
     if (tsBits.length > tsMax) throw new Error('Timestamp message too long for algorithm ' + tsAlgo);
-    // Build fingerprint payload trimmed to fit available capacity
-    var fpBytes;
-    if (simpleResults.fpResult && typeof trimFingerprintPayload === 'function') {
-      var maxFpBytes = Math.floor((fpMax - 48) / 8);
-      var trimmed = trimFingerprintPayload(simpleResults.fpResult, maxFpBytes);
-      fpBytes = new TextEncoder().encode(JSON.stringify(trimmed));
-    } else {
-      var fpText = '';
-      if (simpleResults.fpResult) {
-        fpText = typeof simpleResults.fpResult === 'string' ? simpleResults.fpResult : JSON.stringify(simpleResults.fpResult, null, 2);
-      }
-      fpBytes = new TextEncoder().encode(fpText.substring(0, 100000));
-    }
+    // Build combined payload: fingerprint + DID signature, trimmed to fit
+    var maxPayloadBytes = Math.floor((fpMax - 48) / 8);
+    var combinedStr = buildCombinedPayload(simpleResults.fpResult, simpleResults.didSig, maxPayloadBytes);
+    var fpBytes = new TextEncoder().encode(combinedStr);
     var fpBits = awFormatPayload(fpBytes, key);
-    if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax);
+    if (fpBits.length > fpMax) throw new Error('Fingerprint + DID message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax);
     var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
     progContainer.style.display = '';
     progFill.style.width = '0%';
@@ -1404,6 +1421,112 @@ function runFingerprintStep() {
   }, 50);
 }
 
+function renderDIDStep(body) {
+  var hasKeys = didLoadKeys() !== null;
+  var algos = didGetAlgorithmList();
+  var algoOpts = '';
+  for (var ai = 0; ai < algos.length; ai++) {
+    var label = algos[ai];
+    if (algos[ai] === 'Ed25519') label += ' (fast, 64-byte sig)';
+    else if (algos[ai] === 'P-256') label += ' (widely compatible)';
+    else if (algos[ai] === 'RSA-2048') label += ' (256-byte sig)';
+    else if (algos[ai] === 'RSA-4096') label += ' (512-byte sig)';
+    algoOpts += '<option value="' + algos[ai] + '">' + label + '</option>';
+  }
+  body.innerHTML =
+    '<div class="simple-card"><h2>' + __('simple.did_title', 'Decentralized Identity') + '</h2><p>' + __('simple.did_desc', 'Sign your file fingerprint with a Decentralized Identifier (DID). This cryptographically proves you created this content.') + '</p>' +
+    '<div style="text-align:left">' +
+    '<div id="sdid-status-area">' +
+    (hasKeys ? '<p style="font-size:0.82rem;color:var(--text-muted);margin:8px 0">' + __('simple.did_keys_exist', 'Existing DID identity found. You can Sign or Generate a new one.') + '</p>' :
+     '<p style="font-size:0.82rem;color:var(--text-muted);margin:8px 0">' + __('simple.did_no_keys', 'No DID identity found. Generate a new one below.') + '</p>') +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap">' +
+    '<label for="sdid-algo-select" style="font-size:0.82rem;font-weight:600">' + __('did.algo_label', 'Algorithm:') + '</label>' +
+    '<select id="sdid-algo-select">' + algoOpts + '</select></div>' +
+    '<button class="btn" onclick="runDIDStepGenerate()" id="sdid-gen-btn" style="margin-right:8px">' +
+    __('simple.did_gen_btn', '🔑 Generate DID Identity') + '</button>' +
+    '<button class="btn" onclick="runDIDStepSign()" id="sdid-sign-btn"' + (hasKeys ? '' : ' disabled') + '>' +
+    __('simple.did_sign_btn', '✍️ Sign &amp; Verify') + '</button>' +
+    '<div id="sdid-result" style="margin-top:12px"></div>' +
+    '<div id="sdid-status" style="margin-top:8px;font-size:0.82rem;color:var(--text-muted)"></div>' +
+    '</div></div>';
+}
+
+async function runDIDStepGenerate() {
+  var statusEl = document.getElementById('sdid-result');
+  var genBtn = document.getElementById('sdid-gen-btn');
+  var signBtn = document.getElementById('sdid-sign-btn');
+  var algoSelect = document.getElementById('sdid-algo-select');
+  var algo = algoSelect ? algoSelect.value : 'Ed25519';
+  if (statusEl) statusEl.innerHTML = '<div class="spinner" style="display:inline-block;margin:8px auto"></div><p style="font-size:0.82rem;color:var(--text-muted)">' + __('simple.did_generating', 'Generating DID keypair...') + '</p>';
+  try {
+    var kp = await didGenerateKeypair(algo);
+    didStoreKeys(kp.did, kp.privJwk, kp.algorithm);
+    window._didKeypair = kp;
+    if (statusEl) {
+      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
+        __('simple.did_generated', '✅ DID identity generated successfully!') + '<br><span style="font-size:0.75rem;word-break:break-all">' + kp.did + '</span></div>';
+    }
+    if (signBtn) signBtn.disabled = false;
+    simpleResults.didIdentity = kp.did;
+  } catch (e) {
+    if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+      __('simple.did_failed', '❌ DID generation failed: {msg}').replace('{msg}', escapeHtml(e.message)) + '</div>';
+  }
+}
+
+async function runDIDStepSign() {
+  var statusEl = document.getElementById('sdid-result');
+  var signBtn = document.getElementById('sdid-sign-btn');
+  var genBtn = document.getElementById('sdid-gen-btn');
+  if (!window._didKeypair) {
+    var stored = didLoadKeys();
+    if (stored) {
+      window._didKeypair = await didImportSignKey(stored);
+    } else {
+      if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        __('simple.did_no_keys_err', 'Please generate a DID identity first.') + '</div>';
+      return;
+    }
+  }
+  if (!simpleResults.fpResult) {
+    if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+      __('simple.did_no_fp', 'No fingerprint found. Please complete the Fingerprint step first.') + '</div>';
+    return;
+  }
+  if (statusEl) statusEl.innerHTML = '<div class="spinner" style="display:inline-block;margin:8px auto"></div><p style="font-size:0.82rem;color:var(--text-muted)">' + __('simple.did_signing', 'Signing fingerprint...') + '</p>';
+  try {
+    var fpJson = JSON.stringify(simpleResults.fpResult.hashes || {});
+    var sigBytes = await didSign(window._didKeypair, fpJson);
+    var sigBase64 = didSigToBase64(sigBytes);
+    simpleResults.didSig = {
+      did: window._didKeypair.did,
+      algorithm: window._didKeypair.algorithm,
+      signature: sigBase64,
+      signedData: 'fingerprint_hashes',
+      timestamp: new Date().toISOString()
+    };
+    var verifyOk = await didVerify(window._didKeypair.publicKey, sigBytes, fpJson, window._didKeypair.algorithm);
+    if (statusEl) {
+      if (verifyOk) {
+        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
+          __('simple.did_signed_success', '✅ Fingerprint signed and verified successfully!') + '<br>' +
+          '<span style="font-size:0.75rem;word-break:break-all">DID: ' + window._didKeypair.did + '</span><br>' +
+          '<span style="font-size:0.72rem;color:var(--text-muted)">' + __('simple.did_sig_algorithm', 'Algorithm: {algo}').replace('{algo}', window._didKeypair.algorithm) + '</span></div>';
+      } else {
+        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          __('simple.did_verify_failed', '❌ Signature verification failed. Please regenerate your identity.') + '</div>';
+      }
+    }
+    simpleStepDone = true;
+    var nextBtn = document.getElementById('simpleNextBtn');
+    if (nextBtn) { nextBtn.disabled = false; nextBtn.style.display = ''; }
+  } catch (e) {
+    if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+      __('simple.did_failed', '❌ DID signing failed: {msg}').replace('{msg}', escapeHtml(e.message)) + '</div>';
+  }
+}
+
 function renderDone(body) {
   var results = simpleResults;
   var sections = [];
@@ -1460,8 +1583,25 @@ function renderDone(body) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.c2pa_label') + '</h3><p>' + __('simple.c2pa_done_desc') + '</p></div>');
   }
 
+  if (results.didSig || results.didIdentity) {
+    var didHtml = '<div class="simple-done-section"><h3>' + __('simple.did_title', 'Decentralized Identity') + '</h3>';
+    if (results.didSig) {
+      didHtml += '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.75rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' +
+        'DID: ' + escapeHtml(results.didSig.did) + '\n' +
+        'Algorithm: ' + escapeHtml(results.didSig.algorithm || 'Ed25519') + '\n' +
+        'Signed: ' + escapeHtml((results.didSig.timestamp || '').replace('T', ' ').substring(0, 19)) + '</pre>';
+    } else if (results.didIdentity) {
+      didHtml += '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.75rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' +
+        'DID: ' + escapeHtml(results.didIdentity) + '</pre>';
+    }
+    didHtml += '<div style="margin-top:12px">';
+    didHtml += '<button class="btn" onclick="setupDidDownload();showDownloadModal()">' + __('simple.did_dl_btn', '📥 Download DID') + '</button>';
+    didHtml += '</div></div>';
+    sections.push(didHtml);
+  }
+
   // Certificate download section
-  var hasAnyResult = results.watermark || results['pixel-injection'] || results.audioWatermark || results.timestamp || results.fingerprint || results.c2pa;
+  var hasAnyResult = results.watermark || results['pixel-injection'] || results.audioWatermark || results.timestamp || results.fingerprint || results.c2pa || results.didSig;
   if (hasAnyResult) {
     var certType = simpleType || 'other';
     var certDescKey = 'simple.cert_desc_' + certType;
@@ -1499,6 +1639,22 @@ function setupFpDownload() {
   window._currentDownloadHandler = downloadFingerprint;
   document.getElementById('dl-modal-title').textContent = __('dl.title');
   if (!window._fpResult && simpleResults.fpResult) window._fpResult = simpleResults.fpResult;
+}
+
+function setupDidDownload() {
+  window._currentDownloadHandler = downloadDID;
+  document.getElementById('dl-modal-title').textContent = __('dl.title', 'Download') + ' — DID';
+  // Ensure window._didKeypair is available for download converters
+  if (!window._didKeypair && simpleResults.didIdentity && typeof didLoadKeys === 'function') {
+    var stored = didLoadKeys();
+    if (stored && typeof didImportSignKey === 'function') {
+      didImportSignKey(stored).then(function(kp) {
+        window._didKeypair = kp;
+        window._didSig = simpleResults.didSig || window._didSig || null;
+      });
+    }
+  }
+  if (simpleResults.didSig && !window._didSig) window._didSig = simpleResults.didSig;
 }
 
 function toggleSimpleLangDropdown() {
