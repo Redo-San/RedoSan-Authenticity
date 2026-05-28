@@ -636,7 +636,10 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   .mode-cards { flex-direction: column; }
   .simple-ai-options { flex-direction: column; }
   .simple-top { padding: 6px 10px; flex-wrap: wrap; gap: 6px; }
-  .simple-progress { font-size: 0.65rem; padding: 4px 10px; overflow-x: auto; gap: 2px; }
+  .simple-progress { font-size: 0.65rem; padding: 4px 6px; overflow-x: auto; gap: 2px; width:100%; box-sizing:border-box; }
+  .sp-step { white-space: normal; flex-shrink: 1; gap: 3px; }
+  .sp-dot { width: 18px; height: 18px; font-size: 0.5rem; flex-shrink: 0; }
+  .sp-line { width: 12px; margin: 0 2px; }
   .simple-top-right .lang-btn { padding: 10px 8px; font-size: 0.8rem; min-height: 44px; }
   .simple-top-left .theme-btn { width: 44px; height: 44px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
   .simple-body { padding: 20px 12px; }
