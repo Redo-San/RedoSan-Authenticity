@@ -18,6 +18,44 @@ function bufToDataURL(buf, mime) {
   return 'data:' + (mime || 'application/octet-stream') + ';base64,' + bufToBase64(buf);
 }
 
+function hasNonLatinChars(str) {
+  return /[^\u0000-\u00ff]/.test(str);
+}
+
+// Render text with non-Latin chars (Arabic, etc.) as a canvas image for PDF
+function addTextSafe(doc, text, x, y, maxWidthMm, fontSizePt) {
+  if (!hasNonLatinChars(text)) {
+    doc.text(text, x, y);
+    return;
+  }
+  // Render to canvas and embed as PNG
+  var dpr = window.devicePixelRatio || 1;
+  var fontSizePx = fontSizePt * 4/3;
+  var lineHeightPx = fontSizePx * 1.35;
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  ctx.font = fontSizePx + 'px sans-serif';
+  var textW = ctx.measureText(text).width;
+  var maxW = (maxWidthMm || 180) * 3.78;
+  var w = Math.min(textW, maxW);
+  var h = lineHeightPx;
+  canvas.width = Math.ceil(w * dpr);
+  canvas.height = Math.ceil(h * dpr);
+  ctx.scale(dpr, dpr);
+  ctx.font = fontSizePx + 'px sans-serif';
+  ctx.fillStyle = '#000';
+  ctx.textBaseline = 'top';
+  if (textW > maxW) {
+    while (ctx.measureText(text + '…').width > maxW && text.length > 0) text = text.slice(0, -1);
+    text += '…';
+  }
+  ctx.fillText(text, 0, 0);
+  var url = canvas.toDataURL('image/png');
+  var imgW = w / 3.78;
+  var imgH = h / 3.78;
+  doc.addImage(url, 'PNG', x, y, imgW, imgH);
+}
+
 function loadImageDimensions(dataUrl) {
   return new Promise(function(resolve) {
     var img = new Image();
@@ -184,10 +222,10 @@ async function downloadCertPDF(data) {
     doc.text('Owner', margin, y); y += 5;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    if (data.user.name) { doc.text('Name: ' + data.user.name, margin, y); y += 4; }
-    if (data.user.email) { doc.text('Email: ' + data.user.email, margin, y); y += 4; }
-    if (data.user.phone) { doc.text('Phone: ' + data.user.phone, margin, y); y += 4; }
-    if (data.user.website) { doc.text('Website: ' + data.user.website, margin, y); y += 4; }
+    if (data.user.name) { addTextSafe(doc, 'Name: ' + data.user.name, margin, y, pageW, 9); y += 4; }
+    if (data.user.email) { addTextSafe(doc, 'Email: ' + data.user.email, margin, y, pageW, 9); y += 4; }
+    if (data.user.phone) { addTextSafe(doc, 'Phone: ' + data.user.phone, margin, y, pageW, 9); y += 4; }
+    if (data.user.website) { addTextSafe(doc, 'Website: ' + data.user.website, margin, y, pageW, 9); y += 4; }
     y += 2;
   }
 
@@ -198,7 +236,7 @@ async function downloadCertPDF(data) {
   doc.text('File Information', margin, y); y += 5;
   doc.setFont(undefined, 'normal');
   doc.setFontSize(9);
-  doc.text('Name: ' + data.file.name, margin, y); y += 4;
+  addTextSafe(doc, 'Name: ' + data.file.name, margin, y, pageW, 9); y += 4;
   doc.text('Size: ' + fmtSize(data.file.size), margin, y); y += 4;
   if (data.file.width) doc.text('Dimensions: ' + data.file.width + ' x ' + data.file.height + ' px', margin, y); y += (data.file.width ? 4 : 0);
   if (data.file.hash) doc.text('SHA-256: ' + data.file.hash, margin, y); y += (data.file.hash ? 4 : 0);
