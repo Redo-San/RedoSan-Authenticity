@@ -1374,8 +1374,6 @@ function runFingerprintStep() {
         window._fpResult = result;
         simpleStepDone = true;
         document.getElementById('simpleNextBtn').disabled = false;
-        // Compute remaining slow hashes in background (main thread, with yields)
-        window._pendingSlowHashes = computeSlowHashes(result.hashes, simpleBuf, statusEl);
       }).catch(function(e) {
         var resultDiv = document.getElementById('sfp-result');
         if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.fp_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
@@ -1487,26 +1485,6 @@ function renderDone(body) {
   body.innerHTML = mainHtml;
   document.getElementById('simplePrevBtn').style.display = 'none';
   document.getElementById('simpleNextBtn').textContent = __('simple.start_over');
-}
-
-// Compute slow hashes in background with time-based yields (no Worker)
-async function computeSlowHashes(hashesObj, buf, statusEl) {
-  if (!buf) return;
-  var d = new Uint8Array(buf);
-  var tasks = [
-    ['SHA-3_224', sha3_224], ['SHA-3_256', sha3_256], ['SHA-3_384', sha3_384], ['SHA-3_512', sha3_512],
-    ['BLAKE2b', blake2b], ['BLAKE2s', blake2s], ['SHA-224', sha224],
-    ['MD5', md5], ['RIPEMD-160', ripemd160], ['Whirlpool', whirlpool]
-  ];
-  for (var i = 0; i < tasks.length; i++) {
-    var key = tasks[i][0], fn = tasks[i][1];
-    if (hashesObj[key]) continue;
-    if (statusEl) statusEl.textContent = key + '…';
-    try { hashesObj[key] = await fn(d); } catch (e) { hashesObj[key] = 'error:' + e.message; }
-    await new Promise(function(r) { setTimeout(r, 0); });
-  }
-  if (statusEl) statusEl.textContent = '';
-  window._pendingSlowHashes = null;
 }
 
 function setupFpDownload() {
