@@ -118,7 +118,7 @@ async function submitCertTransparency(certJson) {
     if (location && location.protocol === 'file:') {
       friendlyMsg = 'Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.';
     } else if (e.message === 'Failed to fetch' || e.name === 'TypeError') {
-      friendlyMsg = 'Timestamps servers unreachable from your network. To enable CT in the browser, add these to your CSP connect-src: https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com';
+      friendlyMsg = 'All OpenTimestamps calendar servers are unreachable from your network. Use the CLI: node cli timestamp create';
     }
     return {
       submitted: false,
