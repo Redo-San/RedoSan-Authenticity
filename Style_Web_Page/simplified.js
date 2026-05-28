@@ -559,7 +559,7 @@ function renderUpload(body) {
     '<div class="simple-upload-zone" id="simpleDropZone" onclick="document.getElementById(\'simpleFileInput\').click()">' +
     '<div class="dz-icon">📂</div>' +
     '<div class="dz-text">' + __('simple.drop_text') + '</div></div>' +
-    '<input type="file" id="simpleFileInput" style="display:none" accept="image/*,audio/*,video/*,.pdf" onchange="simpleFileSelected(this)">' +
+    '<input type="file" id="simpleFileInput" style="display:none" accept="image/*,video/*,.pdf,.mp3,.wav,.ogg,.aac,.wma,.flac,.m4a,.opus,.webm,.aiff,.au,.amr,.mid,.midi" onchange="simpleFileSelected(this)">' +
     '<div id="simpleFileInfo"></div>' +
     '<p style="font-size:0.72rem;color:var(--text-muted);margin:8px 0 0;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px">' +
     __('simple.upload_size_note', '💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.') + '</p>' +
