@@ -179,7 +179,7 @@ function renderProgress() {
   var el = document.getElementById('simpleProgress');
   el.innerHTML = simpleSteps.map(function(s, i) {
     var cls = i === simpleStep ? 'sp-active' : i < simpleStep ? 'sp-done' : '';
-    return '<div class="sp-step ' + cls + '"><div class="sp-dot"></div><span>' + s.label + '</span></div>';
+    return '<div class="sp-step ' + cls + '"><div class="sp-dot"></div><span class="sp-step-text">' + s.label + '</span></div>';
   }).join('<div class="sp-line"></div>');
 }
 
