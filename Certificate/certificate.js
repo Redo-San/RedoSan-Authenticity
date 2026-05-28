@@ -149,10 +149,10 @@ async function downloadCertPDF(data) {
   var pageW = pw - 2 * margin;
   var img, dims, imgW, imgH, qrDataUrl, qrSize = 50;
 
-  // Load image
-  if (data.file.dataUrl) {
+  // Load image (only for actual images)
+  if (data.file.dataUrl && data.file.width && data.file.height) {
     img = data.file.dataUrl;
-    dims = { w: data.file.width || 1, h: data.file.height || 1 };
+    dims = { w: data.file.width, h: data.file.height };
     imgW = pageW;
     imgH = imgW * dims.h / dims.w;
     if (imgH > 120) { imgH = 120; imgW = imgH * dims.w / dims.h; }
