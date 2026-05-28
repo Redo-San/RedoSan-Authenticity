@@ -1,13 +1,9 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
-// ── Yield helper: time-based (~15ms CPU threshold), no-op in Web Workers ──
-var _lastYield = Date.now();
+// ── Yield helper: no-op in Web Workers, setTimeout on main thread ──
 function maybeYield() {
+  // No yield needed in Web Worker (no DOM to paint)
   if (typeof window === 'undefined') return Promise.resolve();
-  if (Date.now() - _lastYield > 15) {
-    _lastYield = Date.now();
-    return new Promise(function(r) { setTimeout(r, 0); });
-  }
-  return Promise.resolve();
+  return new Promise(function(r) { setTimeout(r, 0); });
 }
 
 // ── All hashing algorithms (pure JS, no UI) ──
