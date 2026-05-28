@@ -1442,7 +1442,7 @@ function renderDone(body) {
 
   if (results.timestamp) {
     var tsHtml = '<div class="simple-done-section"><h3>' + __('simple.ts_label') + '</h3>';
-    if (results.tsResult) tsHtml += '<pre style="white-space:pre-wrap;font-size:0.78rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' + escapeHtml(results.tsResult) + '</pre>';
+    if (results.tsResult) tsHtml += '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.78rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' + escapeHtml(results.tsResult) + '</pre>';
     if (results.tsHtml) tsHtml += '<div style="margin-top:8px">' + results.tsHtml + '</div>';
     tsHtml += '</div>';
     sections.push(tsHtml);
