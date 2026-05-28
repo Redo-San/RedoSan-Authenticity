@@ -706,16 +706,28 @@ async function downloadCertEPUB(data) {
 
 // ── Main download dispatcher ──
 
-function ensureLib(name, url) {
+function ensureLib(name) {
+  var urls = name === 'jspdf'
+    ? ['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+       'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
+       'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js']
+    : ['https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js',
+       'https://unpkg.com/qrious@4.0.2/dist/qrious.min.js',
+       'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js'];
   return new Promise(function(resolve, reject) {
     if (name === 'jspdf' && typeof jspdf !== 'undefined') return resolve();
     if (name === 'QRious' && typeof QRious !== 'undefined') return resolve();
-    var s = document.createElement('script');
-    s.src = url;
-    s.crossOrigin = 'anonymous';
-    s.onload = function() { resolve(); };
-    s.onerror = function() { reject(new Error('Failed to load ' + name + ' from ' + url)); };
-    document.head.appendChild(s);
+    var lastErr = null, idx = 0;
+    function tryNext() {
+      if (idx >= urls.length) return reject(new Error('Failed to load ' + name + ' (tried ' + urls.length + ' CDNs): ' + (lastErr ? lastErr.message : 'unknown')));
+      var s = document.createElement('script');
+      s.src = urls[idx++];
+      s.crossOrigin = 'anonymous';
+      s.onload = function() { resolve(); };
+      s.onerror = function(e) { lastErr = e; setTimeout(tryNext, 500); };
+      document.head.appendChild(s);
+    }
+    tryNext();
   });
 }
 
@@ -749,10 +761,10 @@ async function downloadCert(format, btn) {
   try {
     var data = await collectCertData();
     if (format === 'pdf') {
-      await ensureLib('jspdf', 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      await ensureLib('jspdf');
       await downloadCertPDF(data);
     } else if (format === 'docx' || format === 'epub') {
-      await ensureLib('QRious', 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js');
+      await ensureLib('QRious');
       if (format === 'docx') await downloadCertDOCX(data);
       else await downloadCertEPUB(data);
     }
