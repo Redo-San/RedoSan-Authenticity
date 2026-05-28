@@ -36,10 +36,7 @@ async function getFileHashSha256(buf) {
 async function collectCertData() {
   // Let UI breathe before heavy certificate generation
   await new Promise(function(r) { setTimeout(r, 30); });
-  // Wait for background worker to finish computing remaining hashes
-  if (window._fpWorkerPromise) {
-    await window._fpWorkerPromise;
-  }
+  // Worker computes remaining hashes in background during earlier steps
   var info = window.simpleUserInfo || {};
   var file = window.simpleFile;
   var buf = window.simpleBuf;

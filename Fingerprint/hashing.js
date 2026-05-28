@@ -755,12 +755,15 @@ async function fingerprintFile(file) {
         } catch(e) { result.file_info.image_error = e.message; }
     }
 
-    // Step 3: Background worker for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
+    // Step 3: Background worker + main thread fallback for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
     if (typeof Worker !== 'undefined' && typeof window !== 'undefined') {
         startBackgroundWorker(result.hashes, buf, null, function(extraHashes) {
             if (window._fpResult) Object.assign(window._fpResult.hashes, extraHashes);
         });
     }
+    computeRemainingHashes(result.hashes, buf).catch(function(e) {
+        console.warn('Main-thread hash compute error:', e);
+    });
 
     return result;
 }
@@ -815,6 +818,35 @@ function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
             });
         } catch(e) { console.warn('Background worker unavailable:', e); resolve(); }
     });
+}
+
+// ── Compute remaining hashes on main thread (fallback when Worker unavailable) ──
+async function computeRemainingHashes(hashesObj, buf, onProgress, onComplete) {
+    var data = new Uint8Array(buf);
+    var extra = {};
+    function setProg(msg) { if (onProgress) onProgress(msg); }
+
+    var fns = [
+        {key:'SHA-3_224', fn:sha3_224},
+        {key:'SHA-3_256', fn:sha3_256},
+        {key:'SHA-3_384', fn:sha3_384},
+        {key:'SHA-3_512', fn:sha3_512},
+        {key:'BLAKE2b', fn:blake2b},
+        {key:'BLAKE2s', fn:blake2s},
+        {key:'SHA-224', fn:sha224},
+        {key:'MD5', fn:md5},
+        {key:'RIPEMD-160', fn:ripemd160},
+        {key:'Whirlpool', fn:whirlpool}
+    ];
+    for (var i = 0; i < fns.length; i++) {
+        setProg(fns[i].key + '…');
+        try { extra[fns[i].key] = await fns[i].fn(data); } catch(e) {}
+        await maybeYield();
+    }
+    setProg('');
+    Object.assign(hashesObj, extra);
+    if (typeof onComplete === 'function') onComplete(extra);
+    return extra;
 }
 
 // ── Fast fingerprint for simplified mode (fast hashes + background worker for the rest) ──
@@ -873,12 +905,14 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
 
     setProg('');
 
-    // Phase 2: Background worker for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
-    if (typeof onRemainingHashes === 'function' && typeof Worker !== 'undefined' && typeof window !== 'undefined') {
+    // Phase 2: Start worker (fast path) AND main thread fallback (slow but guaranteed)
+    window._fpWorkerPromise = Promise.resolve();
+    if (typeof Worker !== 'undefined' && typeof window !== 'undefined') {
         window._fpWorkerPromise = startBackgroundWorker(result.hashes, buf, onProgress, onRemainingHashes);
-    } else {
-        window._fpWorkerPromise = Promise.resolve();
     }
+    // Main thread fallback runs concurrently — whichever finishes first populates result
+    computeRemainingHashes(result.hashes, buf, onProgress, onRemainingHashes)
+        .catch(function(e) { console.warn('Main-thread hash compute error:', e); });
 
     return result;
 }
