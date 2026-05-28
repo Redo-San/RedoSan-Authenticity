@@ -49,7 +49,8 @@ var JS_WHITELIST = [
   '/RedoSan-Authenticity/Assistant/assistant.js',
   '/RedoSan-Authenticity/vendor/jspdf.umd.min.js',
   '/RedoSan-Authenticity/vendor/qrious.min.js',
-  '/RedoSan-Authenticity/vendor/jszip.min.js'
+  '/RedoSan-Authenticity/vendor/jszip.min.js',
+  '/RedoSan-Authenticity/vendor/opentimestamps.min.js'
 ];
 
 self.addEventListener('install', function() {

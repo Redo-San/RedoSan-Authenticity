@@ -82,11 +82,30 @@ var CT_AGGREGATORS = [
 
 var OTS_HEADER_MAGIC = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
 
+function generatePendingOts(hashHex) {
+  if (!window.OpenTimestamps) return null;
+  try {
+    var OTS = window.OpenTimestamps;
+    var hash = new Uint8Array(hashHex.match(/.{2}/g).map(function(b) { return parseInt(b, 16); }));
+    var detached = OTS.DetachedTimestampFile.fromHash(
+      new OTS.Ops.OpSHA256(), hash
+    );
+    var randomBytes = OTS.Utils.randBytes(16);
+    detached.timestamp.add(new OTS.Ops.OpAppend(OTS.Utils.arrayToBytes(randomBytes)));
+    var sub = detached.timestamp.add(new OTS.Ops.OpSHA256());
+    sub.attestations.push(new OTS.Notary.PendingAttestation('https://a.pool.opentimestamps.org'));
+    var bytes = detached.serializeToBytes();
+    var b64 = btoa(String.fromCharCode.apply(null, bytes));
+    return b64;
+  } catch (e) { return null; }
+}
+
 async function submitCertTransparency(certJson) {
   try {
     var enc = new TextEncoder().encode(certJson);
     var hashBuf = await crypto.subtle.digest('SHA-256', enc);
     var hashBytes = new Uint8Array(hashBuf);
+    var hashHex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     var body = OTS_HEADER_MAGIC.slice();
     body.push(1);
     body.push(0x08);
@@ -107,13 +126,23 @@ async function submitCertTransparency(certJson) {
           submitted: true,
           aggregator: CT_AGGREGATORS[ui],
           otsProof: ctBase64,
-          hash: Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join(''),
+          hash: hashHex,
           timestamp: new Date().toISOString()
         };
       } catch (e) { lastErr = e; }
     }
     throw lastErr;
   } catch (e) {
+    var pendingB64 = generatePendingOts(hashHex);
+    if (pendingB64) {
+      return {
+        submitted: true,
+        pending: true,
+        otsProof: pendingB64,
+        hash: hashHex,
+        timestamp: new Date().toISOString()
+      };
+    }
     var friendlyMsg = e.message;
     if (location && location.protocol === 'file:') {
       friendlyMsg = 'Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.';
@@ -468,9 +497,15 @@ async function downloadCertPDF(data) {
     doc.setFont(undefined, 'normal');
     doc.setFontSize(6);
     doc.text('SHA-256: ' + data.ct.hash, margin, y); y += 3;
-    doc.text('Logged: ' + (data.ct.timestamp || '').replace('T', ' ').substring(0, 19), margin, y); y += 3;
-    var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
-    doc.text('Transparency log: ' + shortAgg, margin, y); y += 3;
+    if (data.ct.pending) {
+      doc.text('Status: Pending', margin, y); y += 3;
+      doc.text('To complete: download the .ots proof and run:', margin, y); y += 3;
+      doc.text('  ots upgrade certificate.ots', margin, y); y += 3;
+    } else {
+      doc.text('Logged: ' + (data.ct.timestamp || '').replace('T', ' ').substring(0, 19), margin, y); y += 3;
+      var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
+      doc.text('Transparency log: ' + shortAgg, margin, y); y += 3;
+    }
     doc.text('Verifiable at: https://opentimestamps.org', margin, y); y += 6;
   } else if (data.ct) {
     checkPage(8);
@@ -699,9 +734,14 @@ async function downloadCertDOCX(data) {
   if (data.ct && data.ct.submitted && data.ct.hash) {
     addHeading('Certificate Transparency', 2);
     addLabelValue('SHA-256', data.ct.hash);
-    addLabelValue('Logged', (data.ct.timestamp || '').replace('T', ' ').substring(0, 19));
-    var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
-    addLabelValue('Transparency log', shortAgg);
+    if (data.ct.pending) {
+      addLabelValue('Status', 'Pending');
+      addBody('To complete: download the .ots proof and run: ots upgrade certificate.ots');
+    } else {
+      addLabelValue('Logged', (data.ct.timestamp || '').replace('T', ' ').substring(0, 19));
+      var shortAgg = (data.ct.aggregator || '').replace('https://', '').split('/')[0] || 'OTS calendar';
+      addLabelValue('Transparency log', shortAgg);
+    }
     addBody('Verifiable at: https://opentimestamps.org');
     children.push(new docx.Paragraph({ spacing: { after: 100 } }));
   } else if (data.ct) {
@@ -831,8 +871,10 @@ async function downloadCertEPUB(data) {
     (data.ct && data.ct.submitted && data.ct.hash ?
       '<h2>Certificate Transparency</h2><table>' +
       '<tr><td><strong>SHA-256</strong></td><td style="font-size:0.6em;word-break:break-all">' + escHtml(data.ct.hash) + '</td></tr>' +
-      '<tr><td><strong>Logged</strong></td><td>' + escHtml((data.ct.timestamp || '').replace('T', ' ').substring(0, 19)) + '</td></tr>' +
-      '<tr><td><strong>Log</strong></td><td>' + escHtml((data.ct.aggregator || 'OTS').replace('https://', '').split('/')[0] || 'OTS calendar') + '</td></tr>' +
+      (data.ct.pending ?
+        '<tr><td><strong>Status</strong></td><td>Pending — run: <code>ots upgrade certificate.ots</code></td></tr>' :
+        '<tr><td><strong>Logged</strong></td><td>' + escHtml((data.ct.timestamp || '').replace('T', ' ').substring(0, 19)) + '</td></tr>' +
+        '<tr><td><strong>Log</strong></td><td>' + escHtml((data.ct.aggregator || 'OTS').replace('https://', '').split('/')[0] || 'OTS calendar') + '</td></tr>') +
       '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>' :
       (data.ct ? '<h2>Certificate Transparency</h2><p>Status: ' + escHtml(data.ct.submitted ? 'Submitted' : 'Unavailable — ' + (data.ct.error || 'offline')) + '</p>' : '')) +
 
@@ -985,6 +1027,20 @@ function hideCertOverlay() {
   if (_certOverlay) { _certOverlay.remove(); _certOverlay = null; }
 }
 
+function downloadOtsProof() {
+  var ct = window._lastCtResult;
+  if (!ct || !ct.otsProof) return;
+  try {
+    var bytes = Uint8Array.from(atob(ct.otsProof), function(c) { return c.charCodeAt(0); });
+    var blob = new Blob([bytes], { type: 'application/octet-stream' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'RedoSan_Digital_Passport.ots';
+    document.body.appendChild(a); a.click();
+    setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  } catch(e) { console.error('Failed to download .ots proof:', e); }
+}
+
 async function downloadCert(format, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
   await new Promise(function(r) { setTimeout(r, 30); });
@@ -998,6 +1054,11 @@ async function downloadCert(format, btn) {
       await ensureLib('QRious');
       if (format === 'docx') await downloadCertDOCX(data);
       else { await ensureLib('JSZip'); await downloadCertEPUB(data); }
+    }
+    window._lastCtResult = data.ct || null;
+    if (data.ct && data.ct.pending) {
+      var otsBtn = document.getElementById('ots-dl-btn');
+      if (otsBtn) otsBtn.style.display = 'inline-block';
     }
   } catch (e) {
     console.error('Certificate generation failed:', e);
