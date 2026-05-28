@@ -410,6 +410,7 @@ body {
 @media (max-width: 359px) {
   .simple-progress { gap: 1px; padding: 3px 4px; }
   .sp-step { font-size: 0.55rem; padding: 2px 2px; gap: 2px; }
+  .sp-step-text { max-width: 40px; }
   .sp-dot { width: 14px; height: 14px; font-size: 0.45rem; }
   .sp-line { min-width: 5px; width: 8px; margin: 0 1px; }
 }
