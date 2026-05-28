@@ -1053,7 +1053,7 @@ async function downloadCert(format, btn) {
       else { await ensureLib('JSZip'); await downloadCertEPUB(data); }
     }
     window._lastCtResult = data.ct || null;
-    if (data.ct && data.ct.pending) {
+    if (data.ct && data.ct.otsProof) {
       var otsBtn = document.getElementById('ots-dl-btn');
       if (otsBtn) otsBtn.style.display = 'inline-block';
     }
