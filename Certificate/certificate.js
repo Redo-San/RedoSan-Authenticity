@@ -73,7 +73,11 @@ async function getFileHashSha256(buf) {
 
 var CT_AGGREGATORS = [
   'https://a.pool.opentimestamps.org/digest',
-  'https://b.pool.opentimestamps.org/digest'
+  'https://b.pool.opentimestamps.org/digest',
+  'https://alice.btc.calendar.opentimestamps.org/digest',
+  'https://bob.btc.calendar.opentimestamps.org/digest',
+  'https://finney.calendar.eternitywall.com/digest',
+  'https://a.pool.eternitywall.com/digest'
 ];
 
 var OTS_HEADER_MAGIC = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
@@ -114,7 +118,7 @@ async function submitCertTransparency(certJson) {
     if (location && location.protocol === 'file:') {
       friendlyMsg = 'Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.';
     } else if (e.message === 'Failed to fetch' || e.name === 'TypeError') {
-      friendlyMsg = 'Timestamps servers are unreachable from your network. The OpenTimestamps calendar servers may be blocked by your ISP or hosting provider. To timestamp, use the CLI: node cli timestamp create';
+      friendlyMsg = 'Timestamps servers unreachable from your network. To enable CT in the browser, add these to your CSP connect-src: https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com';
     }
     return {
       submitted: false,
