@@ -240,7 +240,8 @@ function fmtSize(bytes) {
 
 function stripHtml(s) {
   if (!s) return '';
-  return s.replace(/[<>]/g, ' ').replace(/&[^;]+;/g, function(m) {
+  do { var p = s; s = s.replace(/<[^>]*>/g, ''); } while (s !== p);
+  return s.replace(/&[^;]+;/g, function(m) {
     var e = { '&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'" };
     return e[m] || ' ';
   }).replace(/\s+/g, ' ').trim();
