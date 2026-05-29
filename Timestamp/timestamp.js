@@ -103,17 +103,18 @@ async function handleOtsCreate() {
     var hashBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
     var hex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 
-    // Try aggregator: send just the 32-byte hash (avoids 64-byte size limit)
     var otsBytes;
     var complete = false;
     try {
       var resp = await upgradeOts(hashBytes);
-      // Aggregator returns serialized timestamp (without magic header).
-      // Response format: version(1) | SHA-256_op(1) | hash(32) | calendar_ops[...]
-      // Prepend magic to make valid .ots file:
-      otsBytes = new Uint8Array(OTS_HEADER.length + resp.length);
-      otsBytes.set(new Uint8Array(OTS_HEADER));
-      otsBytes.set(resp, OTS_HEADER.length);
+      // Aggregator returns serialized timestamp (timestamp ops only).
+      // Build full .ots: magic + version + SHA-256 tag + file hash + calendar response
+      otsBytes = new Uint8Array(OTS_HEADER.length + 1 + 1 + 32 + resp.length);
+      otsBytes.set(new Uint8Array(OTS_HEADER), 0);
+      otsBytes[OTS_HEADER.length] = 1;
+      otsBytes[OTS_HEADER.length + 1] = 0x08;
+      otsBytes.set(hashBytes, OTS_HEADER.length + 2);
+      otsBytes.set(resp, OTS_HEADER.length + 2 + 32);
       complete = true;
     } catch (e) {
       // Aggregator unreachable — build incomplete .ots as fallback
