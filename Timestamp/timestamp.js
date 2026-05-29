@@ -49,17 +49,21 @@ async function upgradeOts(bytes) {
   var lastErr;
   for (var url of OTS_AGGREGATORS) {
     try {
+      var ac = new AbortController();
+      var to = setTimeout(function() { ac.abort(); }, 15000);
       var resp = await fetch(url, {
         method: 'POST',
-        // Use x-www-form-urlencoded to avoid CORS preflight (simple content-type).
-        // Aggregator ignores Content-Type — only reads raw body bytes.
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: bytes
+        body: bytes,
+        signal: ac.signal
       });
+      clearTimeout(to);
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       return new Uint8Array(await resp.arrayBuffer());
     } catch (e) { lastErr = e; }
   }
+  throw lastErr;
+}
   throw lastErr;
 }
 
