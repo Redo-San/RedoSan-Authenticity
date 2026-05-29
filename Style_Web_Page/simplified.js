@@ -992,7 +992,7 @@ function runWatermarkStep() {
       simpleResults.watermarkAlgoName = wmNames[algo] || 'Type ' + algo;
       simpleResults.watermarkBlob = result.data;
       simpleResults.watermarkUrl = URL.createObjectURL(result.data);
-      simpleResults.watermarkResult = result.msg || '';
+      simpleResults.watermarkResult = result.msg ? result.msg.replace(/^Type\s+\d+\s+\([^)]+\):\s*/, '') : '';
       simpleStepDone = true;
       var nextBtn = document.getElementById('simpleNextBtn');
       nextBtn.disabled = false;
