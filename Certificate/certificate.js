@@ -93,7 +93,7 @@ function generatePendingOts(hashHex) {
     var randomBytes = OTS.Utils.randBytes(16);
     var t1 = detached.timestamp.add(new OTS.Ops.OpAppend(OTS.Utils.arrayToBytes(randomBytes)));
     var sub = t1.add(new OTS.Ops.OpSHA256());
-    sub.attestations.push(new OTS.Notary.PendingAttestation('https://a.pool.opentimestamps.org'));
+    sub.attestations.push(new OTS.Notary.PendingAttestation('https://a.pool.opentimestamps.org/digest'));
     var bytes = detached.serializeToBytes();
     var b64 = btoa(String.fromCharCode.apply(null, bytes));
     return b64;
@@ -105,22 +105,24 @@ async function submitCertTransparency(fileBuf) {
     var hashBuf = await crypto.subtle.digest('SHA-256', fileBuf);
     var hashBytes = new Uint8Array(hashBuf);
     var hashHex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-    var body = OTS_HEADER_MAGIC.slice();
-    body.push(1);
-    body.push(0x08);
-    for (var i = 0; i < 32; i++) body.push(hashBytes[i]);
-    var otsBytes = new Uint8Array(body);
     var lastErr;
     for (var ui = 0; ui < CT_AGGREGATORS.length; ui++) {
       try {
         var resp = await fetch(CT_AGGREGATORS[ui], {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: otsBytes
+          body: hashBytes
         });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        var upgraded = new Uint8Array(await resp.arrayBuffer());
-        var ctBase64 = btoa(String.fromCharCode.apply(null, upgraded));
+        var calResp = new Uint8Array(await resp.arrayBuffer());
+        // Build full .ots: magic + version + SHA-256 tag + file hash + calendar response
+        var fullOts = new Uint8Array(31 + 1 + 1 + 32 + calResp.length);
+        fullOts.set(new Uint8Array(OTS_HEADER_MAGIC), 0);
+        fullOts[31] = 1;
+        fullOts[32] = 0x08;
+        fullOts.set(hashBytes, 33);
+        fullOts.set(calResp, 65);
+        var ctBase64 = btoa(String.fromCharCode.apply(null, fullOts));
         return {
           submitted: true,
           aggregator: CT_AGGREGATORS[ui],
