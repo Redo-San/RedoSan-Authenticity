@@ -980,8 +980,8 @@ function runWatermarkStep() {
   var btn = document.getElementById('swm-btn');
   if (btn) { btn.disabled = true; btn.textContent = __('simple.embedding', 'Embedding...'); }
 
-  // Build combined payload: fingerprint + DID signature
-  var payloadStr = buildCombinedPayload(simpleResults.fpResult, simpleResults.didSig, 60000);
+  // Embed fingerprint only
+  var payloadStr = JSON.stringify(simpleResults.fpResult || {});
   var secretFile = new File([payloadStr], 'fingerprint.txt', { type: 'text/plain' });
 
   watermarkEmbed(algo, simpleFile, secretFile, pass).then(function(result) {
@@ -1203,7 +1203,7 @@ function renderPixelInjectStep(body) {
     '<div class="form-group"><label>' + __('simple.wm_pass_label', 'Password') + '</label>' +
     '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.pi_ts_info', '⏱ The timestamp proof will be injected as the secret message.') + '</p>' +
+    __('simple.pi_did_info', '🆔 The DID signature will be injected as the secret message.') + '</p>' +
     '</div>' +
     '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' + __('simple.pi_btn', 'Inject Message') + '</button>' +
     '<div id="spi-status"></div></div>';
@@ -1237,8 +1237,8 @@ function runPixelInjectStep() {
   var btn = document.getElementById('spi-btn');
   if (btn) { btn.disabled = true; btn.textContent = __('simple.injecting', 'Injecting...'); }
 
-  // Use timestamp result as the message
-  var tsMessage = simpleResults.tsResult || '';
+  // Use DID signature as the message
+  var didMessage = simpleResults.didSig ? 'DID Signature:\n' + JSON.stringify(simpleResults.didSig, null, 2) : '';
 
   if (window.switchPiTab) window.switchPiTab('embed');
 
@@ -1260,7 +1260,7 @@ function runPixelInjectStep() {
     var srcAlgo = document.getElementById('spi-algorithm');
     if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
     var msgInput = document.getElementById('pi-message');
-    if (msgInput) msgInput.value = tsMessage;
+    if (msgInput) msgInput.value = didMessage;
     var passInput = document.getElementById('pi-password');
     if (passInput) passInput.value = pass;
 
@@ -1317,12 +1317,34 @@ function renderTimestampStep(body) {
 function runTimestampStep() {
   if (!window.handleOtsCreate) return;
   var fileInput = document.getElementById('ts-create-file');
-  if (fileInput && simpleFile) {
-    var dt = new DataTransfer();
-    dt.items.add(simpleFile);
-    fileInput.files = dt.files;
-    var evt = new Event('change');
-    fileInput.dispatchEvent(evt);
+  if (fileInput) {
+    // Use final output (watermarked + injected) for images; fallback to original
+    (async function() {
+      try {
+        if (simpleType === 'image' && simpleResults.piFinalUrl) {
+          var resp = await fetch(simpleResults.piFinalUrl);
+          var blob = await resp.blob();
+          var finalFile = new File([blob], simpleFile.name, { type: simpleFile.type });
+          var dt = new DataTransfer();
+          dt.items.add(finalFile);
+          fileInput.files = dt.files;
+        } else if (simpleFile) {
+          var dt = new DataTransfer();
+          dt.items.add(simpleFile);
+          fileInput.files = dt.files;
+        }
+        var evt = new Event('change');
+        fileInput.dispatchEvent(evt);
+      } catch(e) {
+        if (simpleFile) {
+          var dt = new DataTransfer();
+          dt.items.add(simpleFile);
+          fileInput.files = dt.files;
+          var evt = new Event('change');
+          fileInput.dispatchEvent(evt);
+        }
+      }
+    })();
   }
   var promise = window.handleOtsCreate();
   if (promise && promise.then) {
