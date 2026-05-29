@@ -305,6 +305,7 @@
   "simple.watermark_dl_btn": "Download Watermarked Image",
   "simple.pi_title": "Pixel Injection",
   "simple.pi_desc": "Hide a secret message in the image pixels.",
+  "simple.pi_fp_info": "🔐 The fingerprint + DID signature will be injected as the secret message.",
   "simple.pi_btn": "Inject & Continue →",
   "simple.pi_msg_ph": "Enter your secret message (required)",
   "simple.final_image_title": "✅ Final Image",
