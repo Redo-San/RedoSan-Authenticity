@@ -111,10 +111,10 @@ function buildSteps(type, isAI) {
   if (type === 'image') {
     s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
+    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
   } else if (type === 'audio') {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
