@@ -393,6 +393,7 @@
   "simple.did_generated": "✅ DID identity generated successfully!",
   "simple.did_failed": "❌ DID signing failed: {msg}",
   "simple.did_no_keys_err": "Please generate a DID identity first.",
+  "simple.did_stored_keys_invalid": "Stored DID keys are invalid. Please generate a new identity.",
   "simple.did_no_fp": "No fingerprint found. Please complete the Fingerprint step first.",
   "simple.did_signing": "Signing fingerprint...",
   "simple.did_signed_success": "✅ Fingerprint signed and verified successfully!",
