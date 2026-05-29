@@ -1290,7 +1290,7 @@ function runPixelInjectStep() {
         if (btn) { btn.textContent = '✅ ' + __('simple.injected', 'Injected'); }
         if (statusEl) {
           statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-            __('simple.pi_done_ts', '✅ Timestamp proof injected successfully as secret message.') + '</div>';
+            __('simple.pi_done_did', '✅ DID signature injected successfully as secret message.') + '</div>';
         }
         hideProgress();
       }).catch(function(e) {

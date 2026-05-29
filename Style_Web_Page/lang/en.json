@@ -352,6 +352,7 @@
   "simple.fp_failed": "Fingerprint failed: {msg}",
   "simple.fp_done": "Digital fingerprint generated successfully. All hashes are complete and available in the certificate.",
   "simple.pi_done": "Secret message injected successfully. Download available on the final page.",
+  "simple.pi_done_did": "✅ DID signature injected successfully as secret message.",
   "simple.type_image": "image",
   "simple.type_audio": "audio",
   "simple.type_video": "video",
