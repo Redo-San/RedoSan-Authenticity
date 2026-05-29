@@ -118,9 +118,9 @@ function buildSteps(type, isAI) {
     s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
   } else if (type === 'audio') {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
     s.push({ id: 'audio-watermark', label: 'Audio Watermark' });
+    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
   } else {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
     s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
@@ -1335,10 +1335,12 @@ async function runTimestampStep() {
   if (!window.handleOtsCreate) return;
   var fileInput = document.getElementById('ts-create-file');
   if (fileInput) {
-    // Use final output (C2PA > injected > original) depending on available steps
+    // Use final output (C2PA/audio > injected > original) depending on available steps
     try {
-      var srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl || null;
-      if (simpleType === 'image' && srcUrl) {
+      var srcUrl = null;
+      if (simpleType === 'image') srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl;
+      else if (simpleType === 'audio') srcUrl = simpleResults.audioWatermarkUrl;
+      if (srcUrl) {
         var blob;
         if (srcUrl.indexOf('blob:') === 0) {
           var resp = await fetch(srcUrl);
