@@ -114,8 +114,8 @@ function buildSteps(type, isAI) {
     s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
+    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
   } else if (type === 'audio') {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
     s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
@@ -1332,10 +1332,11 @@ function runTimestampStep() {
   if (!window.handleOtsCreate) return;
   var fileInput = document.getElementById('ts-create-file');
   if (fileInput) {
-    // Use final output (watermarked + injected) for images; fallback to original
+    // Use final output (C2PA > injected > original) depending on available steps
     try {
-      if (simpleType === 'image' && simpleResults.piFinalUrl) {
-        var blob = dataUrlToBlob(simpleResults.piFinalUrl);
+      var srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl || null;
+      if (simpleType === 'image' && srcUrl) {
+        var blob = dataUrlToBlob(srcUrl);
         if (blob) {
           var finalFile = new File([blob], simpleFile.name, { type: simpleFile.type });
           var dt = new DataTransfer();
