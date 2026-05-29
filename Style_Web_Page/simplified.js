@@ -111,19 +111,16 @@ function buildSteps(type, isAI) {
   if (type === 'image') {
     s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
     s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
     s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
     if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
   } else if (type === 'audio') {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
     s.push({ id: 'audio-watermark', label: 'Audio Watermark' });
   } else {
     s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
     s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
   }
   s.push({ id: 'done', label: __('simple.step_done', 'Done') });
@@ -230,7 +227,7 @@ function simpleNext() {
     }
   }
   // Auto-run steps must complete before advancing
-  if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa' || step.id === 'did-sign') && !simpleStepDone) return;
+  if ((step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa' || step.id === 'did-sign') && !simpleStepDone) return;
   if (step.id === 'done') { restartSimple(); return; }
   simpleStep++;
   if (simpleStep >= simpleSteps.length) simpleStep = simpleSteps.length - 1;
@@ -972,6 +969,24 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
   return combined;
 }
 
+// Auto-generate OTS timestamp for the final output file
+async function autoTimestampFinalBlob(blob) {
+  try {
+    var buf = await blob.arrayBuffer();
+    var hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    var hashBytes = new Uint8Array(hashBuf);
+    var hashHex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    simpleResults.tsResult = 'SHA-256: ' + hashHex + '\nGenerated: ' + new Date().toISOString();
+    var ctResult = await submitCertTransparency(buf);
+    if (ctResult && ctResult.otsProof) {
+      var otsB64 = ctResult.otsProof;
+      simpleResults.otsBase64 = otsB64;
+      simpleResults.tsHtml = '<a href="data:application/octet-stream;base64,' + otsB64 + '" download="' + (simpleFile ? simpleFile.name : 'output') + '.ots">Download .ots</a>';
+    }
+    simpleResults.timestamp = true;
+  } catch (e) { console.error('autoTimestampFinalBlob:', e); }
+}
+
 function runWatermarkStep() {
   showProgress();
   var algo = parseInt(document.getElementById('swm-type').value, 10);
@@ -1083,7 +1098,8 @@ async function runAudioWatermarkStep() {
     var key = await pw_key(pass);
     var fpMax = algoMaxBits(fpAlgo, info.samples.length, info.sr);
     var tsMax = algoMaxBits(tsAlgo, info.samples.length, info.sr);
-    var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
+    var embedMsg = buildCombinedPayload(simpleResults.fpResult, simpleResults.didSig, 50000) || 'No timestamp';
+    var tsBytes = new TextEncoder().encode(embedMsg);
     var tsBits = awFormatPayload(tsBytes, key);
     if (tsBits.length > tsMax) throw new Error('Timestamp message too long for algorithm ' + tsAlgo);
     // Build combined payload: fingerprint + DID signature, trimmed to fit
@@ -1127,6 +1143,7 @@ async function runAudioWatermarkStep() {
     var wavBuf = awWriteWav([fpModified, tsModified], info.sr, 2);
     var blob = new Blob([wavBuf], { type: 'audio/wav' });
     simpleResults.audioWatermark = true;
+    autoTimestampFinalBlob(blob);
     simpleResults.audioWatermarkBlob = blob;
     simpleResults.audioWatermarkUrl = URL.createObjectURL(blob);
     simpleResults.audioWatermarkFpAlgo = fpAlgo;
@@ -1203,7 +1220,7 @@ function renderPixelInjectStep(body) {
     '<div class="form-group"><label>' + __('simple.wm_pass_label', 'Password') + '</label>' +
     '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.pi_ts_info', '⏱ The timestamp proof will be injected as the secret message.') + '</p>' +
+    __('simple.pi_fp_info', '🔐 The fingerprint + DID signature will be injected as the secret message.') + '</p>' +
     '</div>' +
     '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' + __('simple.pi_btn', 'Inject Message') + '</button>' +
     '<div id="spi-status"></div></div>';
@@ -1237,8 +1254,8 @@ function runPixelInjectStep() {
   var btn = document.getElementById('spi-btn');
   if (btn) { btn.disabled = true; btn.textContent = __('simple.injecting', 'Injecting...'); }
 
-  // Use timestamp result as the message
-  var tsMessage = simpleResults.tsResult || '';
+  // Use combined fingerprint + DID signature as the message
+  var embedMsg = buildCombinedPayload(simpleResults.fpResult, simpleResults.didSig, 100000) || JSON.stringify(simpleResults.fpResult || {});
 
   if (window.switchPiTab) window.switchPiTab('embed');
 
@@ -1260,7 +1277,7 @@ function runPixelInjectStep() {
     var srcAlgo = document.getElementById('spi-algorithm');
     if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
     var msgInput = document.getElementById('pi-message');
-    if (msgInput) msgInput.value = tsMessage;
+    if (msgInput) msgInput.value = embedMsg;
     var passInput = document.getElementById('pi-password');
     if (passInput) passInput.value = pass;
 
@@ -1274,6 +1291,16 @@ function runPixelInjectStep() {
     if (promise && promise.then) {
       promise.then(function() {
         simpleResults['pixel-injection'] = true;
+        // Auto-timestamp the final watermarked+injected output
+        var piLink = document.getElementById('pi-download');
+        if (piLink) {
+          var a = piLink.querySelector('a');
+          if (a && a.href) {
+            fetch(a.href).then(function(r) { return r.blob(); }).then(function(b) {
+              autoTimestampFinalBlob(b);
+            }).catch(function(e) { console.error('auto-timestamp pi:', e); });
+          }
+        }
         var piOutput = document.getElementById('pi-output');
         var piDownload = document.getElementById('pi-download');
         if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
@@ -1528,6 +1555,10 @@ async function runDIDStepSign() {
       }
     }
     simpleStepDone = true;
+    // Auto-timestamp the original file for "other" types (no watermark/inject step)
+    if (simpleType !== 'image' && simpleType !== 'audio' && simpleFile) {
+      autoTimestampFinalBlob(simpleFile);
+    }
     var nextBtn = document.getElementById('simpleNextBtn');
     if (nextBtn) nextBtn.disabled = false;
   } catch (e) {
