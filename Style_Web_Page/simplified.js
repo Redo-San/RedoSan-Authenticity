@@ -1482,7 +1482,16 @@ async function runDIDStepSign() {
   if (!window._didKeypair) {
     var stored = didLoadKeys();
     if (stored) {
-      window._didKeypair = await didImportSignKey(stored);
+      try {
+        window._didKeypair = await didImportSignKey(stored);
+      } catch (e) {
+        didClearKeys();
+        if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          __('simple.did_stored_keys_invalid', 'Stored DID keys are invalid. Please generate a new identity.') + '</div>';
+        var signBtn = document.getElementById('sdid-sign-btn');
+        if (signBtn) signBtn.disabled = true;
+        return;
+      }
     } else {
       if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
         __('simple.did_no_keys_err', 'Please generate a DID identity first.') + '</div>';
