@@ -877,7 +877,14 @@ async function runC2paStep() {
   });
   // 4. Use the PI output as the image to sign (or watermark if PI not done)
   if (simpleResults.piFinalUrl && !simpleResults.piFinalBlob) {
-    simpleResults.piFinalBlob = dataUrlToBlob(simpleResults.piFinalUrl);
+    if (simpleResults.piFinalUrl.indexOf('blob:') === 0) {
+      try {
+        var resp = await fetch(simpleResults.piFinalUrl);
+        simpleResults.piFinalBlob = await resp.blob();
+      } catch(e) {}
+    } else {
+      simpleResults.piFinalBlob = dataUrlToBlob(simpleResults.piFinalUrl);
+    }
   }
   var srcBlob = simpleResults.piFinalBlob || simpleResults.watermarkBlob;
   var fname = simpleFile ? simpleFile.name : 'image.png';
@@ -1324,7 +1331,7 @@ function dataUrlToBlob(dataUrl) {
   } catch(e) { return null; }
 }
 
-function runTimestampStep() {
+async function runTimestampStep() {
   if (!window.handleOtsCreate) return;
   var fileInput = document.getElementById('ts-create-file');
   if (fileInput) {
@@ -1332,7 +1339,13 @@ function runTimestampStep() {
     try {
       var srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl || null;
       if (simpleType === 'image' && srcUrl) {
-        var blob = dataUrlToBlob(srcUrl);
+        var blob;
+        if (srcUrl.indexOf('blob:') === 0) {
+          var resp = await fetch(srcUrl);
+          blob = await resp.blob();
+        } else {
+          blob = dataUrlToBlob(srcUrl);
+        }
         if (blob) {
           var finalFile = new File([blob], simpleFile.name, { type: simpleFile.type });
           var dt = new DataTransfer();
