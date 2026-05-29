@@ -1314,37 +1314,47 @@ function renderTimestampStep(body) {
   runTimestampStep();
 }
 
+function dataUrlToBlob(dataUrl) {
+  try {
+    var parts = dataUrl.split(',');
+    var mime = parts[0].match(/:(.*?);/)[1];
+    var raw = atob(parts[1]);
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  } catch(e) { return null; }
+}
+
 function runTimestampStep() {
   if (!window.handleOtsCreate) return;
   var fileInput = document.getElementById('ts-create-file');
   if (fileInput) {
     // Use final output (watermarked + injected) for images; fallback to original
-    (async function() {
-      try {
-        if (simpleType === 'image' && simpleResults.piFinalUrl) {
-          var resp = await fetch(simpleResults.piFinalUrl);
-          var blob = await resp.blob();
+    try {
+      if (simpleType === 'image' && simpleResults.piFinalUrl) {
+        var blob = dataUrlToBlob(simpleResults.piFinalUrl);
+        if (blob) {
           var finalFile = new File([blob], simpleFile.name, { type: simpleFile.type });
           var dt = new DataTransfer();
           dt.items.add(finalFile);
           fileInput.files = dt.files;
-        } else if (simpleFile) {
-          var dt = new DataTransfer();
-          dt.items.add(simpleFile);
-          fileInput.files = dt.files;
         }
+      } else if (simpleFile) {
+        var dt = new DataTransfer();
+        dt.items.add(simpleFile);
+        fileInput.files = dt.files;
+      }
+      var evt = new Event('change');
+      fileInput.dispatchEvent(evt);
+    } catch(e) {
+      if (simpleFile) {
+        var dt = new DataTransfer();
+        dt.items.add(simpleFile);
+        fileInput.files = dt.files;
         var evt = new Event('change');
         fileInput.dispatchEvent(evt);
-      } catch(e) {
-        if (simpleFile) {
-          var dt = new DataTransfer();
-          dt.items.add(simpleFile);
-          fileInput.files = dt.files;
-          var evt = new Event('change');
-          fileInput.dispatchEvent(evt);
-        }
       }
-    })();
+    }
   }
   var promise = window.handleOtsCreate();
   if (promise && promise.then) {
