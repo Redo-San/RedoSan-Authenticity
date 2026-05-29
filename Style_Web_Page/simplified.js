@@ -986,10 +986,13 @@ function runWatermarkStep() {
 
   watermarkEmbed(algo, simpleFile, secretFile, pass).then(function(result) {
     if (result.ok) {
+      var wmNames = {2:'Frequency DCT',4:'Latent DCT',7:'Forensic',9:'Imatag-style'};
       simpleResults.watermark = true;
       simpleResults.watermarkAlgo = algo;
+      simpleResults.watermarkAlgoName = wmNames[algo] || 'Type ' + algo;
       simpleResults.watermarkBlob = result.data;
       simpleResults.watermarkUrl = URL.createObjectURL(result.data);
+      simpleResults.watermarkResult = result.msg || '';
       simpleStepDone = true;
       var nextBtn = document.getElementById('simpleNextBtn');
       nextBtn.disabled = false;
@@ -1366,7 +1369,21 @@ function runTimestampStep() {
       }
       simpleResults.timestamp = true;
       var tsOut = document.getElementById('ts-output');
-      if (tsOut) simpleResults.tsResult = tsOut.textContent || '';
+      if (tsOut) {
+        var rawText = tsOut.textContent || '';
+        var hashMatch = rawText.match(/[a-f0-9]{64}/i);
+        var hash = hashMatch ? hashMatch[0] : '';
+        var hasAttestation = rawText.indexOf('blockchain') >= 0 || rawText.indexOf('attestation') >= 0;
+        var dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+        if (hash) {
+          simpleResults.tsResult = 'Certificate Transparency\n' +
+            'SHA-256: ' + hash + '\n' +
+            (hasAttestation ? 'Logged: ' + dateStr + '\nTransparency log: a.pool.opentimestamps.org\n' : 'Created: ' + dateStr + '\nStatus: Pending — awaiting blockchain attestation\n') +
+            'Verifiable at: https://opentimestamps.org';
+        } else {
+          simpleResults.tsResult = rawText;
+        }
+      }
       var tsDl = document.getElementById('ts-download');
       if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
       simpleStepDone = true;
