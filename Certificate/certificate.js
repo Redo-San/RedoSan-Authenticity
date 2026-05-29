@@ -100,10 +100,9 @@ function generatePendingOts(hashHex) {
   } catch (e) { return null; }
 }
 
-async function submitCertTransparency(certJson) {
+async function submitCertTransparency(fileBuf) {
   try {
-    var enc = new TextEncoder().encode(certJson);
-    var hashBuf = await crypto.subtle.digest('SHA-256', enc);
+    var hashBuf = await crypto.subtle.digest('SHA-256', fileBuf);
     var hashBytes = new Uint8Array(hashBuf);
     var hashHex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     var body = OTS_HEADER_MAGIC.slice();
@@ -198,13 +197,13 @@ async function collectCertData() {
     data.file.dataUrl = dataUrl;
     data.file.hash = await getFileHashSha256(buf);
   }
-  // Submit to transparency log (fire-and-forget with 10s timeout)
+  // Submit ORIGINAL FILE to transparency log (fire-and-forget with 10s timeout)
   try {
-    var originalJson = JSON.stringify(data);
-    var ctPromise = submitCertTransparency(originalJson);
+    var fileData = buf || new Uint8Array();
+    var ctPromise = submitCertTransparency(fileData);
     var timeoutPromise = new Promise(function(_, rej) { setTimeout(function() { rej(new Error('CT submission timed out')); }, 10000); });
     var ctResult = await Promise.race([ctPromise, timeoutPromise]);
-    ctResult.originalData = originalJson;
+    ctResult.originalFileHash = data.file.hash || '';
     data.ct = ctResult;
   } catch (e) {
     data.ct = { submitted: false, error: e.message, timestamp: new Date().toISOString() };
@@ -545,6 +544,7 @@ async function downloadCertPDF(data) {
   a.click();
   document.body.removeChild(a);
   setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  return blob;
 }
 
 // ── DOCX Certificate ──
@@ -771,6 +771,7 @@ async function downloadCertDOCX(data) {
   a.click();
   document.body.removeChild(a);
   setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  return blob;
 }
 
 // ── EPUB Certificate ──
@@ -966,6 +967,25 @@ async function downloadCertEPUB(data) {
   a.click();
   document.body.removeChild(a);
   setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  return blob;
+}
+
+async function stampCertFile(blob, format) {
+  try {
+    var buf = await blob.arrayBuffer();
+    var hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    var hashBytes = new Uint8Array(hashBuf);
+    var hashHex = Array.from(hashBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    var pendingB64 = generatePendingOts(hashHex);
+    if (pendingB64) {
+      window._certCtResult = {
+        submitted: true, pending: true, otsProof: pendingB64, hash: hashHex,
+        format: format, timestamp: new Date().toISOString()
+      };
+      var certOtsBtn = document.getElementById('cert-ots-dl-btn');
+      if (certOtsBtn) certOtsBtn.style.display = 'inline-block';
+    }
+  } catch(e) { console.error('Failed to stamp certificate file:', e); }
 }
 
 // ── Main download dispatcher ──
@@ -1026,6 +1046,20 @@ function hideCertOverlay() {
   if (_certOverlay) { _certOverlay.remove(); _certOverlay = null; }
 }
 
+function downloadCertOtsProof() {
+  var ct = window._certCtResult;
+  if (!ct || !ct.otsProof) return;
+  try {
+    var bytes = Uint8Array.from(atob(ct.otsProof), function(c) { return c.charCodeAt(0); });
+    var blob = new Blob([bytes], { type: 'application/octet-stream' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'RedoSan_Digital_Passport.' + (ct.format || 'pdf') + '.ots';
+    document.body.appendChild(a); a.click();
+    setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  } catch(e) { console.error('Failed to download cert .ots proof:', e); }
+}
+
 function downloadOtsProof() {
   var ct = window._lastCtResult;
   if (!ct || !ct.otsProof) return;
@@ -1040,18 +1074,7 @@ function downloadOtsProof() {
   } catch(e) { console.error('Failed to download .ots proof:', e); }
 }
 
-function downloadCertDataJson() {
-  var ct = window._lastCtResult;
-  if (!ct || !ct.originalData) return;
-  try {
-    var blob = new Blob([ct.originalData], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url; a.download = 'RedoSan_Certificate_Data.json';
-    document.body.appendChild(a); a.click();
-    setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-  } catch(e) { console.error('Failed to download cert data JSON:', e); }
-}
+
 
 async function downloadCert(format, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
@@ -1059,20 +1082,23 @@ async function downloadCert(format, btn) {
   showCertOverlay();
   try {
     var data = await collectCertData();
+    var certBlob;
     if (format === 'pdf') {
       await ensureLib('jspdf');
-      await downloadCertPDF(data);
+      certBlob = await downloadCertPDF(data);
     } else if (format === 'docx' || format === 'epub') {
       await ensureLib('QRious');
-      if (format === 'docx') await downloadCertDOCX(data);
-      else { await ensureLib('JSZip'); await downloadCertEPUB(data); }
+      if (format === 'docx') certBlob = await downloadCertDOCX(data);
+      else { await ensureLib('JSZip'); certBlob = await downloadCertEPUB(data); }
+    }
+    // Stamp the certificate file itself
+    if (certBlob) {
+      stampCertFile(certBlob, format);
     }
     window._lastCtResult = data.ct || null;
     if (data.ct && data.ct.otsProof) {
       var otsBtn = document.getElementById('ots-dl-btn');
       if (otsBtn) otsBtn.style.display = 'inline-block';
-      var dataBtn = document.getElementById('cert-data-dl-btn');
-      if (dataBtn) dataBtn.style.display = 'inline-block';
     }
   } catch (e) {
     console.error('Certificate generation failed:', e);
@@ -1254,11 +1280,13 @@ async function generateProfessionalCert() {
       didIdentity: (window._didKeypair ? window._didKeypair.did : '') || (didUploadData ? didUploadData.did : ''),
       ct: { submitted: false }
     };
-    // Submit to transparency log
+    // Submit ORIGINAL FILE to transparency log
     try {
-      var ctPromise = submitCertTransparency(JSON.stringify(_certData));
+      var fileData = buf || new Uint8Array();
+      var ctPromise = submitCertTransparency(fileData);
       var ctTimeout = new Promise(function(_, rej) { setTimeout(function() { rej(new Error('CT submission timed out')); }, 10000); });
       var ctResult = await Promise.race([ctPromise, ctTimeout]);
+      ctResult.originalFileHash = _certData.file.hash || '';
       _certData.ct = ctResult;
     } catch (e) {
       _certData.ct = { submitted: false, error: e.message, timestamp: new Date().toISOString() };
@@ -1290,16 +1318,18 @@ async function downloadProfessionalCert(format) {
   if (!_certData) { alert('Please generate the certificate first.'); return; }
   var status = document.getElementById('cert-status');
   if (status) status.textContent = 'Generating ' + format.toUpperCase() + '...';
+  var certBlob;
   try {
     if (format === 'pdf') {
       if (typeof jspdf === 'undefined') throw new Error('PDF library (jspdf) did not load. Try disabling ad blockers or check your internet connection.');
-      await downloadCertPDF(_certData);
+      certBlob = await downloadCertPDF(_certData);
     }
     else if (format === 'docx') {
       if (typeof QRious === 'undefined') throw new Error('QR library (QRious) did not load. Try disabling ad blockers or check your internet connection.');
-      await downloadCertDOCX(_certData);
+      certBlob = await downloadCertDOCX(_certData);
     }
-    else if (format === 'epub') await downloadCertEPUB(_certData);
+    else if (format === 'epub') certBlob = await downloadCertEPUB(_certData);
+    if (certBlob) stampCertFile(certBlob, format);
     if (status) status.textContent = format.toUpperCase() + ' downloaded successfully.';
   } catch (e) {
     console.error('Download failed:', e);
