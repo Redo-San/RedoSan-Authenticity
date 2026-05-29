@@ -91,8 +91,8 @@ function generatePendingOts(hashHex) {
       new OTS.Ops.OpSHA256(), hash
     );
     var randomBytes = OTS.Utils.randBytes(16);
-    detached.timestamp.add(new OTS.Ops.OpAppend(OTS.Utils.arrayToBytes(randomBytes)));
-    var sub = detached.timestamp.add(new OTS.Ops.OpSHA256());
+    var t1 = detached.timestamp.add(new OTS.Ops.OpAppend(OTS.Utils.arrayToBytes(randomBytes)));
+    var sub = t1.add(new OTS.Ops.OpSHA256());
     sub.attestations.push(new OTS.Notary.PendingAttestation('https://a.pool.opentimestamps.org'));
     var bytes = detached.serializeToBytes();
     var b64 = btoa(String.fromCharCode.apply(null, bytes));
