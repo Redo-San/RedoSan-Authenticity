@@ -1035,7 +1035,7 @@ function renderAudioWatermarkStep(body) {
   }
   var tsSummary = simpleResults.tsResult ? simpleResults.tsResult.substring(0, 100).replace(/\n/g, ' ') : '';
   body.innerHTML =
-    '<div class="simple-card"><h2>Audio Watermarking</h2><p>Embed both the fingerprint and timestamp as hidden watermarks in your audio. Choose one algorithm for each.</p>' +
+    '<div class="simple-card"><h2>Audio Watermarking</h2><p>Embed both the fingerprint and DID signature as hidden watermarks in your audio. Choose one algorithm for each.</p>' +
     '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">Using: ' + escapeHtml(usingName) + '</p>' +
     '<div class="card-form" style="text-align:left">' +
     '<div class="form-group"><label>Algorithm for Fingerprint <span style="font-size:0.72rem;color:var(--text-muted)">(high capacity)</span></label>' +
@@ -1046,7 +1046,7 @@ function renderAudioWatermarkStep(body) {
     '  <option value="6">4. DWT (Haar Wavelet)</option>' +
     '  <option value="8" selected>5. DCT-based (Recommended)</option>' +
     '</select></div>' +
-    '<div class="form-group"><label>Algorithm for Timestamp</label>' +
+    '<div class="form-group"><label>Algorithm for DID Signature (right channel)</label>' +
     '<select id="sawm-ts-type">' +
     '  <option value="2">1. FFT-QIM</option>' +
     '  <option value="6">2. DWT (Haar Wavelet)</option>' +
@@ -1089,21 +1089,22 @@ async function runAudioWatermarkStep() {
     var key = await pw_key(pass);
     var fpMax = algoMaxBits(fpAlgo, info.samples.length, info.sr);
     var tsMax = algoMaxBits(tsAlgo, info.samples.length, info.sr);
-    var tsBytes = new TextEncoder().encode((simpleResults.tsResult || 'No timestamp').substring(0, 50000));
+    // Right channel: embed DID signature
+    var didMsg = JSON.stringify(simpleResults.didSig || {});
+    var tsBytes = new TextEncoder().encode(didMsg);
     var tsBits = awFormatPayload(tsBytes, key);
-    if (tsBits.length > tsMax) throw new Error('Timestamp message too long for algorithm ' + tsAlgo);
-    // Build combined payload: fingerprint + DID signature, trimmed to fit
-    var maxPayloadBytes = Math.floor((fpMax - 48) / 8);
-    var combinedStr = buildCombinedPayload(simpleResults.fpResult, simpleResults.didSig, maxPayloadBytes);
-    var fpBytes = new TextEncoder().encode(combinedStr);
+    if (tsBits.length > tsMax) throw new Error('DID message too long for algorithm ' + tsAlgo);
+    // Left channel: embed fingerprint only
+    var fpPayload = JSON.stringify(simpleResults.fpResult || {});
+    var fpBytes = new TextEncoder().encode(fpPayload);
     var fpBits = awFormatPayload(fpBytes, key);
-    if (fpBits.length > fpMax) throw new Error('Fingerprint + DID message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax);
+    if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax);
     var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
     progContainer.style.display = '';
     progFill.style.width = '0%';
 
     // ── Zero-interference dual embed ──
-    // Stereo: fingerprint in left channel, timestamp in right channel
+    // Stereo: fingerprint in left channel, DID signature in right channel
     // Mono:   duplicate to both virtual channels → stereo
     var isStereo = info.ch >= 2 && info.raw && info.raw.length >= info.samples.length * 2;
     var leftSamples = new Int16Array(info.samples);
@@ -1125,7 +1126,7 @@ async function runAudioWatermarkStep() {
     progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (right channel, 0%)';
     var tsModified = await embedAlgo(tsAlgo, new Int16Array(rightSamples), tsBits, info.sr, strength, function(pct) {
       progFill.style.width = (50 + pct * 50) + '%';
-      progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (' + Math.round(pct * 100) + '%)';
+      progText.textContent = 'Embedding DID signature with ' + algoNames[tsAlgo] + ' (' + Math.round(pct * 100) + '%)';
     });
     progFill.style.width = '100%';
     progText.textContent = 'Finalizing...';
@@ -1148,7 +1149,7 @@ async function runAudioWatermarkStep() {
       statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
         '✅ Audio watermarked with two non-interfering layers!<br>' +
         'Fingerprint: ' + algoNames[fpAlgo] + ' (' + (isStereo ? 'left channel' : 'first half') + ')<br>' +
-        'Timestamp: ' + algoNames[tsAlgo] + ' (' + (isStereo ? 'right channel' : 'second half') + ')<br>' +
+        'DID Signature: ' + algoNames[tsAlgo] + ' (' + (isStereo ? 'right channel' : 'second half') + ')<br>' +
         'Mode: ' + chMode + ' — zero interference.</div>';
     }
     var nextBtn = document.getElementById('simpleNextBtn');
