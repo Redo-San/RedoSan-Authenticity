@@ -159,7 +159,7 @@ function renderStep() {
   nextBtn.textContent = isLast ? __('simple.start_over') : __('simple.next_btn');
   // Manage Next button: hidden for action-required steps, disabled until done for others
   simpleStepDone = false;
-  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection', 'audio-watermark', 'did-sign'].indexOf(step.id) >= 0) {
+  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection', 'audio-watermark'].indexOf(step.id) >= 0) {
     nextBtn.style.display = 'none';
   } else {
     nextBtn.style.display = '';
@@ -1520,7 +1520,7 @@ async function runDIDStepSign() {
     }
     simpleStepDone = true;
     var nextBtn = document.getElementById('simpleNextBtn');
-    if (nextBtn) { nextBtn.disabled = false; nextBtn.style.display = ''; }
+    if (nextBtn) nextBtn.disabled = false;
   } catch (e) {
     if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
       __('simple.did_failed', '❌ DID signing failed: {msg}').replace('{msg}', escapeHtml(e.message)) + '</div>';

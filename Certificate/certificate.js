@@ -108,11 +108,15 @@ async function submitCertTransparency(fileBuf) {
     var lastErr;
     for (var ui = 0; ui < CT_AGGREGATORS.length; ui++) {
       try {
+        var ac = new AbortController();
+        var to = setTimeout(function() { ac.abort(); }, 15000);
         var resp = await fetch(CT_AGGREGATORS[ui], {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: hashBytes
+          body: hashBytes,
+          signal: ac.signal
         });
+        clearTimeout(to);
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         var calResp = new Uint8Array(await resp.arrayBuffer());
         // Build full .ots: magic + version + SHA-256 tag + file hash + calendar response
