@@ -1620,6 +1620,7 @@ function renderDone(body) {
       '<button class="btn cert-btn" onclick="downloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
       '<button class="btn cert-btn" onclick="downloadCert(\'epub\', this)" style="background:#7ab55c;color:#fff">📖 EPUB</button>' +
       '<button class="btn cert-btn" id="ots-dl-btn" onclick="downloadOtsProof()" style="background:#555;color:#fff;display:none;margin-top:8px">⛓️ Download .OTS Proof</button>' +
+      '<button class="btn cert-btn" id="cert-data-dl-btn" onclick="downloadCertDataJson()" style="background:#444;color:#fff;display:none;margin-top:8px">📄 Download Cert Data (JSON)</button>' +
       '</div></div>');
   }
 

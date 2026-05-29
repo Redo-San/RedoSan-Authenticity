@@ -200,9 +200,11 @@ async function collectCertData() {
   }
   // Submit to transparency log (fire-and-forget with 10s timeout)
   try {
-    var ctPromise = submitCertTransparency(JSON.stringify(data));
+    var originalJson = JSON.stringify(data);
+    var ctPromise = submitCertTransparency(originalJson);
     var timeoutPromise = new Promise(function(_, rej) { setTimeout(function() { rej(new Error('CT submission timed out')); }, 10000); });
     var ctResult = await Promise.race([ctPromise, timeoutPromise]);
+    ctResult.originalData = originalJson;
     data.ct = ctResult;
   } catch (e) {
     data.ct = { submitted: false, error: e.message, timestamp: new Date().toISOString() };
@@ -1038,6 +1040,19 @@ function downloadOtsProof() {
   } catch(e) { console.error('Failed to download .ots proof:', e); }
 }
 
+function downloadCertDataJson() {
+  var ct = window._lastCtResult;
+  if (!ct || !ct.originalData) return;
+  try {
+    var blob = new Blob([ct.originalData], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'RedoSan_Certificate_Data.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  } catch(e) { console.error('Failed to download cert data JSON:', e); }
+}
+
 async function downloadCert(format, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
   await new Promise(function(r) { setTimeout(r, 30); });
@@ -1056,6 +1071,8 @@ async function downloadCert(format, btn) {
     if (data.ct && data.ct.otsProof) {
       var otsBtn = document.getElementById('ots-dl-btn');
       if (otsBtn) otsBtn.style.display = 'inline-block';
+      var dataBtn = document.getElementById('cert-data-dl-btn');
+      if (dataBtn) dataBtn.style.display = 'inline-block';
     }
   } catch (e) {
     console.error('Certificate generation failed:', e);
