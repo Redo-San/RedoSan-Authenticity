@@ -64,8 +64,6 @@ async function upgradeOts(bytes) {
   }
   throw lastErr;
 }
-  throw lastErr;
-}
 
 function getOtsUpgradeCommand(fileName) {
   var escaped = fileName.replace(/'/g, "'\\''");
