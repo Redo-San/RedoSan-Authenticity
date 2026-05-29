@@ -877,11 +877,7 @@ async function runC2paStep() {
   });
   // 4. Use the PI output as the image to sign (or watermark if PI not done)
   if (simpleResults.piFinalUrl && !simpleResults.piFinalBlob) {
-    try {
-      simpleResults.piFinalBlob = await fetch(simpleResults.piFinalUrl).then(function(r) { return r.blob(); });
-    } catch (e) {
-      // blob URL expired, fall back to watermark blob
-    }
+    simpleResults.piFinalBlob = dataUrlToBlob(simpleResults.piFinalUrl);
   }
   var srcBlob = simpleResults.piFinalBlob || simpleResults.watermarkBlob;
   var fname = simpleFile ? simpleFile.name : 'image.png';
