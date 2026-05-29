@@ -1628,8 +1628,7 @@ function renderDone(body) {
       '<button class="btn cert-btn" onclick="downloadCert(\'pdf\', this)" style="background:#d32f2f;color:#fff">📄 PDF</button>' +
       '<button class="btn cert-btn" onclick="downloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
       '<button class="btn cert-btn" onclick="downloadCert(\'epub\', this)" style="background:#7ab55c;color:#fff">📖 EPUB</button>' +
-      '<button class="btn cert-btn" id="ots-dl-btn" onclick="downloadOtsProof()" style="background:#555;color:#fff;display:none;margin-top:8px">⛓️ File .OTS Proof</button>' +
-      '<button class="btn cert-btn" id="cert-ots-dl-btn" onclick="downloadCertOtsProof()" style="background:#666;color:#fff;display:none;margin-top:8px;margin-left:4px">🛡️ Certificate .OTS Proof</button>' +
+      '<button class="btn cert-btn" id="cert-ots-dl-btn" onclick="downloadCertOtsProof()" style="background:#666;color:#fff;display:none;margin-top:8px">🛡️ Certificate .OTS Proof</button>' +
       '</div></div>');
   }
 
