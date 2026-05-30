@@ -508,5 +508,20 @@
   "did.download_pub": "Exportar Clave Pública",
   "did.fp_file_label": "Archivo JSON de huella digital (opcional)",
   "did.dl_btn": "📥 Descargar",
-  "did.prompt_sign": "👉 Ahora haga clic en ✍️ Firmar Huella para firmar su archivo."
+  "did.prompt_sign": "👉 Ahora haga clic en ✍️ Firmar Huella para firmar su archivo.",
+
+  "c2pa.social_label": "Redes Sociales (opcional)",
+  "c2pa.music_label": "Streaming de Música (opcional)",
+  "c2pa.read_file_label": "Imagen con datos C2PA",
+  "c2pa.write_desc": "Firme una imagen con metadatos de procedencia C2PA usando un certificado de prueba. Seleccione el tipo de contenido y agregue detalles opcionales.",
+  "c2pa.read_submit": "Leer Datos C2PA",
+  "c2pa.content_type_label": "Opciones de Contenido",
+  "c2pa.type_digital": "Creado Digitalmente",
+  "c2pa.type_edited": "Editado / Modificado",
+  "c2pa.type_ai": "Generado por IA",
+  "c2pa.type_capture": "Capturado Digitalmente",
+  "c2pa.type_composite": "Compuesto",
+  "c2pa.type_dnt": "No Entrenar IA",
+  "c2pa.image_label": "Imagen a firmar",
+  "c2pa.download_btn": "Descargar Resultados"
 }

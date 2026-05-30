@@ -269,5 +269,20 @@
   "did.download_pub": "공개 키 내보내기",
   "did.fp_file_label": "지문 JSON 파일 (선택 사항)",
   "did.dl_btn": "📥 다운로드",
-  "did.prompt_sign": "👉 지금 ✍️ 지문 서명을 클릭하여 파일에 서명하세요."
+  "did.prompt_sign": "👉 지금 ✍️ 지문 서명을 클릭하여 파일에 서명하세요.",
+
+  "c2pa.social_label": "소셜 링크 (선택 사항)",
+  "c2pa.music_label": "음악 스트리밍 (선택 사항)",
+  "c2pa.read_file_label": "C2PA 데이터가 있는 이미지",
+  "c2pa.write_desc": "테스트 인증서를 사용하여 C2PA 출처 메타데이터로 이미지에 서명합니다. 콘텐츠 유형을 선택하고 선택적 세부 정보를 추가하세요.",
+  "c2pa.read_submit": "C2PA 데이터 읽기",
+  "c2pa.content_type_label": "콘텐츠 옵션",
+  "c2pa.type_digital": "디지털 생성",
+  "c2pa.type_edited": "편집/수정됨",
+  "c2pa.type_ai": "AI 생성",
+  "c2pa.type_capture": "디지털 캡처",
+  "c2pa.type_composite": "합성",
+  "c2pa.type_dnt": "AI 학습 금지",
+  "c2pa.image_label": "서명할 이미지",
+  "c2pa.download_btn": "결과 다운로드"
 }

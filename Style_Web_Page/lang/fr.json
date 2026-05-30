@@ -527,5 +527,20 @@
   "did.download_pub": "Exporter la Clé Publique",
   "did.fp_file_label": "Fichier JSON d'empreinte (optionnel)",
   "did.dl_btn": "📥 Télécharger",
-  "did.prompt_sign": "👉 Cliquez maintenant sur ✍️ Signer l'Empreinte pour signer votre fichier."
+  "did.prompt_sign": "👉 Cliquez maintenant sur ✍️ Signer l'Empreinte pour signer votre fichier.",
+
+  "c2pa.social_label": "Liens Sociaux (optionnel)",
+  "c2pa.music_label": "Streaming Musical (optionnel)",
+  "c2pa.read_file_label": "Image avec données C2PA",
+  "c2pa.write_desc": "Signez une image avec des métadonnées de provenance C2PA à l'aide d'un certificat de test. Sélectionnez le type de contenu et ajoutez des détails optionnels.",
+  "c2pa.read_submit": "Lire les Données C2PA",
+  "c2pa.content_type_label": "Options de Contenu",
+  "c2pa.type_digital": "Créé Numériquement",
+  "c2pa.type_edited": "Édité / Modifié",
+  "c2pa.type_ai": "Généré par IA",
+  "c2pa.type_capture": "Capturé Numériquement",
+  "c2pa.type_composite": "Composite",
+  "c2pa.type_dnt": "Ne Pas Entraîner l'IA",
+  "c2pa.image_label": "Image à signer",
+  "c2pa.download_btn": "Télécharger les Résultats"
 }

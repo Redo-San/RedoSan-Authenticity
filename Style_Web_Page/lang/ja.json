@@ -269,5 +269,20 @@
   "did.download_pub": "公開鍵をエクスポート",
   "did.fp_file_label": "フィンガープリントJSONファイル（オプション）",
   "did.dl_btn": "📥 ダウンロード",
-  "did.prompt_sign": "👉 今すぐ ✍️ フィンガープリントに署名 をクリックしてファイルに署名してください。"
+  "did.prompt_sign": "👉 今すぐ ✍️ フィンガープリントに署名 をクリックしてファイルに署名してください。",
+
+  "c2pa.social_label": "ソーシャルリンク（オプション）",
+  "c2pa.music_label": "音楽ストリーミング（オプション）",
+  "c2pa.read_file_label": "C2PAデータを含む画像",
+  "c2pa.write_desc": "テスト証明書を使用して、C2PA provenanceメタデータで画像に署名します。コンテンツタイプを選択し、オプションの詳細を追加します。",
+  "c2pa.read_submit": "C2PAデータを読み取る",
+  "c2pa.content_type_label": "コンテンツオプション",
+  "c2pa.type_digital": "デジタル作成",
+  "c2pa.type_edited": "編集済み",
+  "c2pa.type_ai": "AI生成",
+  "c2pa.type_capture": "デジタル撮影",
+  "c2pa.type_composite": "合成",
+  "c2pa.type_dnt": "AIを学習させない",
+  "c2pa.image_label": "署名する画像",
+  "c2pa.download_btn": "結果をダウンロード"
 }
