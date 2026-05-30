@@ -337,7 +337,8 @@ async function runAudioWatermark(action, filePath, opts) {
     const bits = bytesToBits(fullPayload);
 
     const outBuf = impl.embed(wav, bits);
-    const outPath = opts.output ? path.resolve(opts.output) : path.resolve('output.wav');
+    let outPath = opts.output ? path.resolve(opts.output) : path.resolve('output.wav');
+    if (fs.existsSync(outPath) && fs.statSync(outPath).isDirectory()) outPath = path.join(outPath, path.basename(filePath) + '-watermarked.wav');
     fs.writeFileSync(outPath, outBuf);
     console.log(`Audio watermark embedded (algorithm: ${algo}, ${msgBuf.length} bytes)`);
     console.log(`Output: ${outPath}`);
@@ -355,8 +356,10 @@ async function runAudioWatermark(action, filePath, opts) {
       if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB) {
         const msg = dec.slice(2).toString('utf-8').replace(/\0+$/, '');
         if (opts.output) {
-          fs.writeFileSync(path.resolve(opts.output), msg);
-          console.log(`Extracted message saved to: ${path.resolve(opts.output)}`);
+          let outPath = path.resolve(opts.output);
+          if (fs.existsSync(outPath) && fs.statSync(outPath).isDirectory()) outPath = path.join(outPath, 'extracted.txt');
+          fs.writeFileSync(outPath, msg);
+          console.log(`Extracted message saved to: ${outPath}`);
         } else {
           console.log(`Extracted message: ${msg}`);
         }
