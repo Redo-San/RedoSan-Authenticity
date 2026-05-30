@@ -200,5 +200,5 @@
   "lang.name.ja": "日本語",
   "lang.name.ko": "한국어",
 
-  "footer.copyright": "100% 브라우저 기반 • 장치에서 데이터가 전송되지 않습니다"
-}
+  "footer.copyright": "100% 브라우저 기반 • 장치에서 데이터가 전송되지 않습니다",
+  "shared.english_filename": "파일 이름은 영문자만 사용할 수 있습니다 (A-Z, 0-9, 하이픈, 밑줄, 점). 파일 이름을 바꾸고 다시 시도해주세요."

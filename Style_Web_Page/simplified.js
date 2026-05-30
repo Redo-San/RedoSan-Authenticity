@@ -680,6 +680,11 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === 'INPUT') { input.value = ''; }
     return;
   }
+  if (!isEnglishFilename(file.name)) {
+    alert(__('shared.english_filename', 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.') || 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.');
+    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    return;
+  }
   var acceptEl = document.getElementById('simpleFileInput');
   if (acceptEl && acceptEl.getAttribute('accept') && !matchesAccept(file, acceptEl.getAttribute('accept'))) {
     alert(__('shared.wrong_type', 'Please select a valid file type for this tool.'));

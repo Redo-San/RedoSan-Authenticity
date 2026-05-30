@@ -193,6 +193,10 @@ function matchesAccept(file, acceptAttr) {
   return false;
 }
 
+function isEnglishFilename(filename) {
+  return /^[\x20-\x7E]+$/.test(filename);
+}
+
 function clearInputFiles(input) {
   try { input.value = ''; } catch(e) {}
   if (input.files && input.files.length) {
@@ -255,6 +259,11 @@ async function validateFileInput(input) {
     clearInputFiles(input);
     return false;
   }
+  if (!isEnglishFilename(file.name)) {
+    alert(__('shared.english_filename', 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.') || 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.');
+    clearInputFiles(input);
+    return false;
+  }
   // Detect dangerous file types by magic bytes when file has no extension
   if (!fileHasExtension(file)) {
     var dangerDetected = await detectDangerousMagic(input);
@@ -314,6 +323,11 @@ async function getFile(id) {
     var file = input.files[0];
     if (isDangerousFile(file)) {
       alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.'));
+      input.value = '';
+      return null;
+    }
+    if (!isEnglishFilename(file.name)) {
+      alert(__('shared.english_filename', 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.') || 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.');
       input.value = '';
       return null;
     }
