@@ -486,4 +486,13 @@
   "simple.pi_did_info": "🆔 Die DID-Signatur wird als geheime Nachricht injiziert.",
   "simple.pi_category_label": "Kategorie",
   "simple.pi_algo_label": "Algorithmus",
-  "simple.wm_pass_label": "Passwort"
+  "simple.wm_pass_label": "Passwort",
+  "simple.final_image_title": "✅ Endgültiges Bild",
+  "simple.final_image_desc": "Wasserzeichen + geheime Nachricht — ein Bild. Verwenden Sie den Profi-Modus, um beide zu extrahieren.",
+  "simple.final_dl_btn": "📥 Endgültiges Bild Herunterladen",
+  "simple.c2pa_final_desc": "C2PA-signiert — Wasserzeichen + Zeitstempel injiziert + KI-Herkunft.",
+  "simple.cert_title": "Digitaler Pass",
+  "simple.cert_desc_image": "Laden Sie ein signiertes Dokument mit allen Ergebnissen, Bildvorschau und QR-Verifizierungscode herunter.",
+  "simple.cert_desc_audio": "Laden Sie ein signiertes Dokument mit allen Ergebnissen, Audioplayer-Vorschau und QR-Verifizierungscode herunter.",
+  "simple.cert_desc_video": "Laden Sie ein signiertes Dokument mit allen Ergebnissen, Videovorschau und QR-Verifizierungscode herunter.",
+  "simple.cert_desc_other": "Laden Sie ein signiertes Dokument mit allen Ergebnissen und QR-Verifizierungscode herunter."

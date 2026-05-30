@@ -228,4 +228,13 @@
   "simple.pi_did_info": "🆔 DID 서명이 비밀 메시지로 주입됩니다.",
   "simple.pi_category_label": "카테고리",
   "simple.pi_algo_label": "알고리즘",
-  "simple.wm_pass_label": "비밀번호"
+  "simple.wm_pass_label": "비밀번호",
+  "simple.final_image_title": "✅ 최종 이미지",
+  "simple.final_image_desc": "워터마크 + 비밀 메시지 — 하나의 이미지. 전문가 모드를 사용하여 둘 다 추출하세요.",
+  "simple.final_dl_btn": "📥 최종 이미지 다운로드",
+  "simple.c2pa_final_desc": "C2PA 서명됨 — 워터마크 + 타임스탬프 주입 + AI 출처.",
+  "simple.cert_title": "디지털 여권",
+  "simple.cert_desc_image": "모든 결과, 이미지 미리보기 및 QR 확인 코드가 포함된 서명된 문서를 다운로드합니다.",
+  "simple.cert_desc_audio": "모든 결과, 오디오 플레이어 미리보기 및 QR 확인 코드가 포함된 서명된 문서를 다운로드합니다.",
+  "simple.cert_desc_video": "모든 결과, 비디오 미리보기 및 QR 확인 코드가 포함된 서명된 문서를 다운로드합니다.",
+  "simple.cert_desc_other": "모든 결과 및 QR 확인 코드가 포함된 서명된 문서를 다운로드합니다."

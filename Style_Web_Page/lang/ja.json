@@ -228,4 +228,13 @@
   "simple.pi_did_info": "🆔 DID署名が秘密メッセージとして注入されます。",
   "simple.pi_category_label": "カテゴリ",
   "simple.pi_algo_label": "アルゴリズム",
-  "simple.wm_pass_label": "パスワード"
+  "simple.wm_pass_label": "パスワード",
+  "simple.final_image_title": "✅ 最終画像",
+  "simple.final_image_desc": "透かし + 秘密メッセージ — 1枚の画像。両方を抽出するにはプロフェッショナルモードを使用してください。",
+  "simple.final_dl_btn": "📥 最終画像をダウンロード",
+  "simple.c2pa_final_desc": "C2PA署名済み — 透かし + タイムスタンプ注入 + AI出所。",
+  "simple.cert_title": "デジタルパスポート",
+  "simple.cert_desc_image": "すべての結果、画像プレビュー、QR検証コードを含む署名済み文書をダウンロードします。",
+  "simple.cert_desc_audio": "すべての結果、オーディオプレーヤープレビュー、QR検証コードを含む署名済み文書をダウンロードします。",
+  "simple.cert_desc_video": "すべての結果、ビデオプレビュー、QR検証コードを含む署名済み文書をダウンロードします。",
+  "simple.cert_desc_other": "すべての結果とQR検証コードを含む署名済み文書をダウンロードします。"

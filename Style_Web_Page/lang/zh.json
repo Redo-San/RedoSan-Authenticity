@@ -456,4 +456,13 @@
   "simple.pi_did_info": "🆔 DID 签名将作为秘密消息注入。",
   "simple.pi_category_label": "类别",
   "simple.pi_algo_label": "算法",
-  "simple.wm_pass_label": "密码"
+  "simple.wm_pass_label": "密码",
+  "simple.final_image_title": "✅ 最终图像",
+  "simple.final_image_desc": "水印 + 秘密消息 — 单张图像。使用专业模式提取两者。",
+  "simple.final_dl_btn": "📥 下载最终图像",
+  "simple.c2pa_final_desc": "C2PA 签名 — 水印 + 时间戳注入 + AI 来源。",
+  "simple.cert_title": "数字护照",
+  "simple.cert_desc_image": "下载签名文档，包含所有结果、图像预览和二维码验证码。",
+  "simple.cert_desc_audio": "下载签名文档，包含所有结果、音频播放器预览和二维码验证码。",
+  "simple.cert_desc_video": "下载签名文档，包含所有结果、视频预览和二维码验证码。",
+  "simple.cert_desc_other": "下载签名文档，包含所有结果和二维码验证码。"
