@@ -14,6 +14,7 @@
   "sidebar.timestamp": "タイムスタンプ",
   "sidebar.c2pa": "C2PA証明",
   "sidebar.converter": "ファイル変換",
+  "sidebar.did": "DID ID",
 
   "home.tagline": "オンライン認証ツール — 100%ブラウザベース。サーバーにアップロードされるデータはありません。",
   "card.watermark.title": "透かし",

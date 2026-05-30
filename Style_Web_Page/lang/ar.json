@@ -15,6 +15,7 @@
   "sidebar.c2pa": "C2PA المصدر",
   "sidebar.certificate": "جواز السفر الرقمي",
   "sidebar.converter": "محول الملفات",
+  "sidebar.did": "هوية DID",
   "home.tagline": "أداة أصالة رقمية عبر الإنترنت — تعمل بالكامل في المتصفح. لا يتم رفع أي ملف إلى أي خادم.",
   "card.watermark.title": "علامة مائية",
   "card.watermark.desc": "9 خوارزميات: LSB و DCT و DWT والمزيد",
