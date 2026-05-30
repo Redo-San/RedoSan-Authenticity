@@ -523,5 +523,21 @@
   "c2pa.type_composite": "Compuesto",
   "c2pa.type_dnt": "No Entrenar IA",
   "c2pa.image_label": "Imagen a firmar",
-  "c2pa.download_btn": "Descargar Resultados"
+  "c2pa.download_btn": "Descargar Resultados",
+
+  "cert.heading": "Pasaporte Digital",
+  "cert.desc": "Genere un Pasaporte Digital firmado en PDF, DOCX o EPUB con su imagen, información del usuario y resultados de otras herramientas. Pegue sus resultados abajo, luego haga clic en Generar.",
+  "cert.image_label": "Imagen",
+  "cert.user_info_label": "Su Información *",
+  "cert.social_label": "Redes Sociales (opcional)",
+  "cert.music_label": "Enlaces de Música (opcional)",
+  "cert.music_links_checkbox": "Agregar enlaces de plataformas musicales",
+  "cert.results_label": "Resultados de Herramientas (subir de otras secciones)",
+  "cert.wm_label": "Archivo de marca de agua",
+  "cert.pi_label": "Archivo de inyección de píxeles",
+  "cert.fp_label": "Archivo de huella digital (.json, .txt)",
+  "cert.ts_label": "Archivo de sello de tiempo (.ots)",
+  "cert.did_label": "Resultado de identidad DID (.json, .txt)",
+  "cert.download_label": "¡Certificado listo! Elija un formato:",
+  "cert.reset_btn": "↻ Empezar de Nuevo"
 }

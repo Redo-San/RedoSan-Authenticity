@@ -235,7 +235,7 @@
   "cert.heading": "Digital Passport",
   "cert.desc": "Generate a signed Digital Passport PDF, DOCX, or EPUB with your image, user info, and results from other tools. Paste your results below, then click Generate.",
   "cert.image_label": "Image",
-  "cert.user_info_label": "Your Information",
+  "cert.user_info_label": "Your Information *",
   "cert.social_label": "Social Links (optional)",
   "cert.music_label": "Music Links (optional)",
   "cert.results_label": "Tool Results (upload from other sections)",

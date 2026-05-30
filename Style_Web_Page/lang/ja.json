@@ -284,5 +284,21 @@
   "c2pa.type_composite": "合成",
   "c2pa.type_dnt": "AIを学習させない",
   "c2pa.image_label": "署名する画像",
-  "c2pa.download_btn": "結果をダウンロード"
+  "c2pa.download_btn": "結果をダウンロード",
+
+  "cert.heading": "デジタルパスポート",
+  "cert.desc": "画像、ユーザー情報、その他のツールの結果を含む署名済みデジタルパスポート（PDF、DOCX、EPUB）を生成します。以下に結果を貼り付けて、[生成]をクリックします。",
+  "cert.image_label": "画像",
+  "cert.user_info_label": "お客様の情報 *",
+  "cert.social_label": "ソーシャルリンク（オプション）",
+  "cert.music_label": "音楽リンク（オプション）",
+  "cert.music_links_checkbox": "音楽プラットフォームリンクを追加",
+  "cert.results_label": "ツール結果（他のセクションからアップロード）",
+  "cert.wm_label": "透かし結果ファイル",
+  "cert.pi_label": "ピクセル注入結果ファイル",
+  "cert.fp_label": "フィンガープリントファイル (.json, .txt)",
+  "cert.ts_label": "タイムスタンプファイル (.ots)",
+  "cert.did_label": "DID ID結果 (.json, .txt)",
+  "cert.download_label": "証明書の準備ができました！形式を選択：",
+  "cert.reset_btn": "↻ 最初からやり直す"
 }

@@ -512,5 +512,21 @@
   "c2pa.type_composite": "合成",
   "c2pa.type_dnt": "禁止训练 AI",
   "c2pa.image_label": "要签名的图像",
-  "c2pa.download_btn": "下载结果"
+  "c2pa.download_btn": "下载结果",
+
+  "cert.heading": "数字护照",
+  "cert.desc": "生成带有您图像、用户信息和其他工具结果的签名数字护照 PDF、DOCX 或 EPUB。在下方粘贴您的结果，然后单击生成。",
+  "cert.image_label": "图像",
+  "cert.user_info_label": "您的信息 *",
+  "cert.social_label": "社交链接（可选）",
+  "cert.music_label": "音乐链接（可选）",
+  "cert.music_links_checkbox": "添加音乐平台链接",
+  "cert.results_label": "工具结果（从其他部分上传）",
+  "cert.wm_label": "水印结果文件",
+  "cert.pi_label": "像素注入结果文件",
+  "cert.fp_label": "指纹文件 (.json, .txt)",
+  "cert.ts_label": "时间戳文件 (.ots)",
+  "cert.did_label": "DID 身份结果 (.json, .txt)",
+  "cert.download_label": "证书已就绪！选择格式：",
+  "cert.reset_btn": "↻ 重新开始"
 }
