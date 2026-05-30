@@ -12,7 +12,7 @@ const program = new Command();
 
 program
   .name('redosan')
-  .description('Digital authenticity tools — fingerprint, watermark, metadata, timestamp')
+  .description('Digital authenticity tools — fingerprint, watermark, audio-watermark, metadata, timestamp, did, certificate, converter')
   .version('1.0.0')
   .option('--allow-dangerous', 'Skip file validation (allow blocked extensions, bypass magic bytes check)')
   .addHelpText('after', `
@@ -23,12 +23,18 @@ Examples:
   $ redosan fingerprint image.png --algo sha256 --json
   $ redosan watermark embed -i image.png -s secret.png -a lsb -p mypassword -o output.png
   $ redosan watermark extract -i watermarked.png -a lsb -p mypassword
+  $ redosan audio-watermark embed audio.wav -m "secret" -o output.wav
+  $ redosan audio-watermark extract audio.wav -p mypassword
   $ redosan metadata image.jpg --json
   $ redosan timestamp create image.png -o proof.ots
   $ redosan timestamp verify image.png -o proof.ots
   $ redosan c2pa sign image.png --claim "Created by Me" -o manifest.json
   $ redosan c2pa read image.jpg
   $ redosan pixel-injection embed -i image.png -s secret.txt -o output.png -a enhanced_lsb
+  $ redosan did generate --algo Ed25519
+  $ redosan did sign fingerprint.json
+  $ redosan certificate fingerprint.json -o passport.pdf --format pdf
+  $ redosan converter image.png -f webp
   $ redosan upgrade proof.ots -o upgraded.ots
 
 All processing is 100% local — nothing is uploaded to any server.
@@ -135,6 +141,57 @@ program
   .action(async (action, opts) => {
     const { runPixelInjection } = require('./commands/pixel_injection');
     await runPixelInjection(action, opts);
+  });
+
+// ── Audio Watermark command ──
+program
+  .command('audio-watermark')
+  .description('Embed or extract watermarks in WAV audio files')
+  .argument('<action>', 'Action: embed, extract')
+  .argument('<file>', 'Path to audio file (WAV)')
+  .option('-m, --message <text>', 'Secret message (embed only)')
+  .option('-o, --output <file>', 'Output file path')
+  .option('-p, --password <pass>', 'Password')
+  .action(async (action, filePath, opts) => {
+    const { runAudioWatermark } = require('./commands/audio_watermark');
+    await runAudioWatermark(action, filePath, opts);
+  });
+
+// ── DID Identity command ──
+program
+  .command('did')
+  .description('Generate DID keypair or sign a file fingerprint')
+  .argument('<action>', 'Action: generate, sign')
+  .argument('[file]', 'File to sign (sign mode)')
+  .option('--algo <type>', 'Key algorithm: Ed25519, P-256 (generate mode)')
+  .option('-o, --output <file>', 'Output path')
+  .action(async (action, file, opts) => {
+    const { runDid } = require('./commands/did');
+    await runDid(action, file, opts);
+  });
+
+// ── Certificate command ──
+program
+  .command('certificate')
+  .description('Generate a Digital Passport certificate from a fingerprint JSON')
+  .argument('<file>', 'Fingerprint JSON file')
+  .option('-o, --output <file>', 'Output file path')
+  .option('--format <type>', 'Output format: pdf, docx, epub (default: pdf)')
+  .action(async (filePath, opts) => {
+    const { runCertificate } = require('./commands/certificate');
+    await runCertificate(filePath, opts);
+  });
+
+// ── Converter command ──
+program
+  .command('converter')
+  .description('Convert image/audio files between formats')
+  .argument('<file>', 'Input file path')
+  .option('-f, --format <type>', 'Target format (png, jpg, webp, mp3, etc.)')
+  .option('-o, --output <file>', 'Output file path')
+  .action(async (filePath, opts) => {
+    const { runConverter } = require('./commands/converter');
+    await runConverter(filePath, opts);
   });
 
 // ── Upgrade command (standalone) ──
