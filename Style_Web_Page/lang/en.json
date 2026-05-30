@@ -276,6 +276,7 @@
   "simple.upload_desc": "Select a photo, audio, video, or document to get started.",
   "simple.upload_size_note": "💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.",
   "simple.usage_warning": "⚠️ This tool is for lawful use only. Uploading illegal or harmful content is strictly prohibited. All processing is local — nothing is stored or sent to any server.",
+  "simple.fp_processing_note": "⏳ Computing multiple hash algorithms. This may take a moment for large files.",
   "simple.drop_text": "Click to browse or drag & drop",
   "simple.ai_title": "What kind of image is this?",
   "simple.ai_desc": "This helps us choose the right tools for your image.",
