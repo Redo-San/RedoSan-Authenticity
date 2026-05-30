@@ -442,4 +442,5 @@
   },
   "shared.english_filename": "El nombre del archivo solo debe contener caracteres en inglés (A-Z, 0-9, guiones, guiones bajos, puntos). Cambie el nombre del archivo e intente de nuevo.",
   "simple.upload_size_note": "💡 Para marcar agua, utilice una imagen de portada grande (por ejemplo, 1920×1080) para que haya suficiente capacidad para incrustar una imagen secreta.",
-  "simple.usage_warning": "⚠️ Esta herramienta es para uso lícito solo. Subir contenido ilegal o perjudicial está estrictamente prohibido. Todo el procesamiento es local — nada se almacena ni se envía a ningún servidor."
+  "simple.usage_warning": "⚠️ Esta herramienta es para uso lícito solo. Subir contenido ilegal o perjudicial está estrictamente prohibido. Todo el procesamiento es local — nada se almacena ni se envía a ningún servidor.",
+  "simple.fp_processing_note": "⏳ Calculando múltiples algoritmos de hash. Esto puede tomar un momento para archivos grandes."
