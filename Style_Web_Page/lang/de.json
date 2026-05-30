@@ -13,7 +13,6 @@
   "sidebar.timestamp": "Zeitstempel",
   "sidebar.c2pa": "C2PA-Herkunft",
   "sidebar.converter": "Dateikonverter",
-  "sidebar.switch_mode": "🔀 Modus Wechseln",
   "home.tagline": "Online-Digital-Authentizitätstool — 100% browserbasiert. Nichts wird auf einen Server hochgeladen.",
   "card.watermark.title": "Wasserzeichen",
   "card.watermark.desc": "9 Algorithmen: LSB, DCT, DWT und mehr",
