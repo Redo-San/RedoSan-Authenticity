@@ -483,4 +483,7 @@
   "simple.did_dl_btn": "📥 Télécharger DID",
   "simple.did_stored_keys_invalid": "Les clés DID stockées sont invalides. Veuillez générer une nouvelle identité.",
   "simple.wm_fp_payload": "🔐 Le hachage de l'empreinte sera intégré comme message secret.",
-  "simple.pi_did_info": "🆔 La signature DID sera injectée comme message secret."
+  "simple.pi_did_info": "🆔 La signature DID sera injectée comme message secret.",
+  "simple.pi_category_label": "Catégorie",
+  "simple.pi_algo_label": "Algorithme",
+  "simple.wm_pass_label": "Mot de passe"
