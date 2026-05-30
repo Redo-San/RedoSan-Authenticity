@@ -463,4 +463,5 @@
   "simple.did_identity_verified": "✅ Identidad verificada",
   "simple.did_dl_btn": "📥 Descargar DID",
   "simple.did_stored_keys_invalid": "Las claves DID almacenadas no son válidas. Genere una nueva identidad.",
-  "simple.wm_fp_payload": "🔐 El hash de la huella digital se incrustará como mensaje secreto."
+  "simple.wm_fp_payload": "🔐 El hash de la huella digital se incrustará como mensaje secreto.",
+  "simple.pi_did_info": "🆔 La firma DID se inyectará como mensaje secreto."
