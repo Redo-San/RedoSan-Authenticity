@@ -527,5 +527,20 @@
   "did.download_pub": "Öffentlichen Schlüssel Exportieren",
   "did.fp_file_label": "Fingerabdruck-JSON-Datei (optional)",
   "did.dl_btn": "📥 Herunterladen",
-  "did.prompt_sign": "👉 Klicken Sie jetzt auf ✍️ Fingerabdruck Signieren, um Ihre Datei zu signieren."
+  "did.prompt_sign": "👉 Klicken Sie jetzt auf ✍️ Fingerabdruck Signieren, um Ihre Datei zu signieren.",
+
+  "c2pa.social_label": "Soziale Links (optional)",
+  "c2pa.music_label": "Musik-Streaming (optional)",
+  "c2pa.read_file_label": "Bild mit C2PA-Daten",
+  "c2pa.write_desc": "Signieren Sie ein Bild mit C2PA-Herkunftsmetadaten mit einem Testzertifikat. Wählen Sie den Inhaltstyp und fügen Sie optionale Details hinzu.",
+  "c2pa.read_submit": "C2PA-Daten Lesen",
+  "c2pa.content_type_label": "Inhaltsoptionen",
+  "c2pa.type_digital": "Digital Erstellt",
+  "c2pa.type_edited": "Bearbeitet / Modifiziert",
+  "c2pa.type_ai": "KI-Generiert",
+  "c2pa.type_capture": "Digital Aufgenommen",
+  "c2pa.type_composite": "Zusammengesetzt",
+  "c2pa.type_dnt": "KI Nicht Trainieren",
+  "c2pa.image_label": "Zu signierendes Bild",
+  "c2pa.download_btn": "Ergebnisse Herunterladen"
 }

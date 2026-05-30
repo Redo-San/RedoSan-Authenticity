@@ -578,5 +578,20 @@
   "did.download_pub": "تصدير المفتاح العام",
   "did.fp_file_label": "ملف البصمة JSON (اختياري)",
   "did.dl_btn": "📥 تحميل",
-  "did.prompt_sign": "👉 الآن انقر على ✍️ توقيع البصمة لتوقيع ملفك."
+  "did.prompt_sign": "👉 الآن انقر على ✍️ توقيع البصمة لتوقيع ملفك.",
+
+  "c2pa.social_label": "روابط التواصل (اختياري)",
+  "c2pa.music_label": "بث الموسيقى (اختياري)",
+  "c2pa.read_file_label": "صورة مع بيانات C2PA",
+  "c2pa.write_desc": "قم بتوقيع صورة باستخدام بيانات C2PA باستخدام شهادة اختبار. اختر نوع المحتوى وأضف التفاصيل الاختيارية.",
+  "c2pa.read_submit": "قراءة بيانات C2PA",
+  "c2pa.content_type_label": "خيارات المحتوى",
+  "c2pa.type_digital": "تم إنشاؤه رقميًا",
+  "c2pa.type_edited": "تم التعديل",
+  "c2pa.type_ai": "تم إنشاؤه بالذكاء الاصطناعي",
+  "c2pa.type_capture": "تم التقاطه رقميًا",
+  "c2pa.type_composite": "مركب",
+  "c2pa.type_dnt": "لا تدرب الذكاء الاصطناعي",
+  "c2pa.image_label": "الصورة المراد توقيعها",
+  "c2pa.download_btn": "تحميل النتائج"
 }

@@ -497,5 +497,20 @@
   "did.download_pub": "导出公钥",
   "did.fp_file_label": "指纹 JSON 文件（可选）",
   "did.dl_btn": "📥 下载",
-  "did.prompt_sign": "👉 现在点击 ✍️ 签署指纹 来签署您的文件。"
+  "did.prompt_sign": "👉 现在点击 ✍️ 签署指纹 来签署您的文件。",
+
+  "c2pa.social_label": "社交链接（可选）",
+  "c2pa.music_label": "音乐流媒体（可选）",
+  "c2pa.read_file_label": "包含 C2PA 数据的图像",
+  "c2pa.write_desc": "使用测试证书签署带有 C2PA 来源元数据的图像。选择内容类型并添加可选详细信息。",
+  "c2pa.read_submit": "读取 C2PA 数据",
+  "c2pa.content_type_label": "内容选项",
+  "c2pa.type_digital": "数字创建",
+  "c2pa.type_edited": "已编辑/修改",
+  "c2pa.type_ai": "AI 生成",
+  "c2pa.type_capture": "数字捕获",
+  "c2pa.type_composite": "合成",
+  "c2pa.type_dnt": "禁止训练 AI",
+  "c2pa.image_label": "要签名的图像",
+  "c2pa.download_btn": "下载结果"
 }
