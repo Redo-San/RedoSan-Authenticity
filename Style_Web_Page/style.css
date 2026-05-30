@@ -68,9 +68,10 @@ nav .logo { display:flex; align-items:center; }
 .sidebar {
   position:fixed; top:0; left:-280px; width:260px; height:100vh;
   background:var(--card); border-right:1px solid var(--border);
-  z-index:300; transition:left .3s ease; overflow-y:auto;
+  z-index:300; transition:left .3s ease; overflow-y:auto; -webkit-overflow-scrolling:touch;
   display:flex; flex-direction:column; padding-top:14px;
 }
+body.no-scroll { overflow:hidden; }
 .sidebar.open { left:0; }
 .sidebar-header {
   display:flex; align-items:center; justify-content:space-between;
