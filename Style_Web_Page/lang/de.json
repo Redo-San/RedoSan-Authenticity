@@ -542,5 +542,21 @@
   "c2pa.type_composite": "Zusammengesetzt",
   "c2pa.type_dnt": "KI Nicht Trainieren",
   "c2pa.image_label": "Zu signierendes Bild",
-  "c2pa.download_btn": "Ergebnisse Herunterladen"
+  "c2pa.download_btn": "Ergebnisse Herunterladen",
+
+  "cert.heading": "Digitaler Pass",
+  "cert.desc": "Generieren Sie einen signierten Digitalen Pass als PDF, DOCX oder EPUB mit Ihrem Bild, Benutzerinformationen und Ergebnissen anderer Tools. Fügen Sie Ihre Ergebnisse unten ein und klicken Sie dann auf Generieren.",
+  "cert.image_label": "Bild",
+  "cert.user_info_label": "Ihre Informationen *",
+  "cert.social_label": "Soziale Links (optional)",
+  "cert.music_label": "Musik-Links (optional)",
+  "cert.music_links_checkbox": "Musikplattform-Links hinzufügen",
+  "cert.results_label": "Tool-Ergebnisse (aus anderen Bereichen hochladen)",
+  "cert.wm_label": "Wasserzeichen-Ergebnisdatei",
+  "cert.pi_label": "Pixel-Injektions-Ergebnisdatei",
+  "cert.fp_label": "Fingerabdruck-Datei (.json, .txt)",
+  "cert.ts_label": "Zeitstempel-Datei (.ots)",
+  "cert.did_label": "DID-Identitätsergebnis (.json, .txt)",
+  "cert.download_label": "Zertifikat bereit! Wählen Sie ein Format:",
+  "cert.reset_btn": "↻ Neu Starten"
 }

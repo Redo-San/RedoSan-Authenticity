@@ -284,5 +284,21 @@
   "c2pa.type_composite": "합성",
   "c2pa.type_dnt": "AI 학습 금지",
   "c2pa.image_label": "서명할 이미지",
-  "c2pa.download_btn": "결과 다운로드"
+  "c2pa.download_btn": "결과 다운로드",
+
+  "cert.heading": "디지털 여권",
+  "cert.desc": "이미지, 사용자 정보 및 기타 도구의 결과와 함께 서명된 디지털 여권(PDF, DOCX, EPUB)을 생성합니다. 아래에 결과를 붙여넣은 다음 생성을 클릭하세요.",
+  "cert.image_label": "이미지",
+  "cert.user_info_label": "내 정보 *",
+  "cert.social_label": "소셜 링크 (선택 사항)",
+  "cert.music_label": "음악 링크 (선택 사항)",
+  "cert.music_links_checkbox": "음악 플랫폼 링크 추가",
+  "cert.results_label": "도구 결과 (다른 섹션에서 업로드)",
+  "cert.wm_label": "워터마크 결과 파일",
+  "cert.pi_label": "픽셀 주입 결과 파일",
+  "cert.fp_label": "지문 파일 (.json, .txt)",
+  "cert.ts_label": "타임스탬프 파일 (.ots)",
+  "cert.did_label": "DID ID 결과 (.json, .txt)",
+  "cert.download_label": "인증서 준비 완료! 형식 선택:",
+  "cert.reset_btn": "↻ 다시 시작"
 }
