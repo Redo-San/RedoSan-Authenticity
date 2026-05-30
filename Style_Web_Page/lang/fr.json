@@ -486,4 +486,13 @@
   "simple.pi_did_info": "🆔 La signature DID sera injectée comme message secret.",
   "simple.pi_category_label": "Catégorie",
   "simple.pi_algo_label": "Algorithme",
-  "simple.wm_pass_label": "Mot de passe"
+  "simple.wm_pass_label": "Mot de passe",
+  "simple.final_image_title": "✅ Image Finale",
+  "simple.final_image_desc": "Filigrane + message secret — une seule image. Utilisez le mode professionnel pour extraire les deux.",
+  "simple.final_dl_btn": "📥 Télécharger l'Image Finale",
+  "simple.c2pa_final_desc": "Signé C2PA — filigrane + horodatage injecté + provenance IA.",
+  "simple.cert_title": "Passeport Numérique",
+  "simple.cert_desc_image": "Téléchargez un document signé avec tous les résultats, un aperçu de l'image et un code QR de vérification.",
+  "simple.cert_desc_audio": "Téléchargez un document signé avec tous les résultats, un lecteur audio et un code QR de vérification.",
+  "simple.cert_desc_video": "Téléchargez un document signé avec tous les résultats, un aperçu vidéo et un code QR de vérification.",
+  "simple.cert_desc_other": "Téléchargez un document signé avec tous les résultats et un code QR de vérification."

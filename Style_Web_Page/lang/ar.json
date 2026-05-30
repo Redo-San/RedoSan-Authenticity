@@ -538,4 +538,13 @@
   "simple.pi_did_info": "🆔 سيتم حقن توقيع DID كرسالة سرية.",
   "simple.pi_category_label": "الفئة",
   "simple.pi_algo_label": "الخوارزمية",
-  "simple.wm_pass_label": "كلمة المرور"
+  "simple.wm_pass_label": "كلمة المرور",
+  "simple.final_image_title": "✅ الصورة النهائية",
+  "simple.final_image_desc": "العلامة المائية + الرسالة السرية — صورة واحدة. استخدم الوضع الاحترافي لاستخراجهما معًا.",
+  "simple.final_dl_btn": "📥 تحميل الصورة النهائية",
+  "simple.c2pa_final_desc": "موقعة C2PA — العلامة المائية + الطابع الزمني المحقون + مصدر الذكاء الاصطناعي.",
+  "simple.cert_title": "جواز السفر الرقمي",
+  "simple.cert_desc_image": "حمّل وثيقة موقعة مع جميع النتائج ومعاينة الصورة ورمز QR للتحقق.",
+  "simple.cert_desc_audio": "حمّل وثيقة موقعة مع جميع النتائج ومشغل الصوت ورمز QR للتحقق.",
+  "simple.cert_desc_video": "حمّل وثيقة موقعة مع جميع النتائج ومعاينة الفيديو ورمز QR للتحقق.",
+  "simple.cert_desc_other": "حمّل وثيقة موقعة مع جميع النتائج ورمز QR للتحقق."

@@ -467,4 +467,13 @@
   "simple.pi_did_info": "🆔 La firma DID se inyectará como mensaje secreto.",
   "simple.pi_category_label": "Categoría",
   "simple.pi_algo_label": "Algoritmo",
-  "simple.wm_pass_label": "Contraseña"
+  "simple.wm_pass_label": "Contraseña",
+  "simple.final_image_title": "✅ Imagen Final",
+  "simple.final_image_desc": "Marca de agua + mensaje secreto — una imagen. Use el modo profesional para extraer ambos.",
+  "simple.final_dl_btn": "📥 Descargar Imagen Final",
+  "simple.c2pa_final_desc": "Firmado C2PA — marca de agua + sello de tiempo inyectado + procedencia IA.",
+  "simple.cert_title": "Pasaporte Digital",
+  "simple.cert_desc_image": "Descargue un documento firmado con todos los resultados, vista previa de imagen y código QR de verificación.",
+  "simple.cert_desc_audio": "Descargue un documento firmado con todos los resultados, reproductor de audio y código QR de verificación.",
+  "simple.cert_desc_video": "Descargue un documento firmado con todos los resultados, vista previa de video y código QR de verificación.",
+  "simple.cert_desc_other": "Descargue un documento firmado con todos los resultados y código QR de verificación."
