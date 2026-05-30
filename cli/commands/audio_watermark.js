@@ -332,7 +332,9 @@ async function runAudioWatermark(action, filePath, opts) {
     const header = Buffer.from([0xAA, 0xBB]);
     const payload = Buffer.concat([header, msgBuf]);
     const enc = xorBytes(payload, key);
-    const bits = bytesToBits(enc);
+    const lenBuf = Buffer.from(pack16(2 + msgBuf.length));
+    const fullPayload = Buffer.concat([lenBuf, enc]);
+    const bits = bytesToBits(fullPayload);
 
     const outBuf = impl.embed(wav, bits);
     const outPath = opts.output ? path.resolve(opts.output) : path.resolve('output.wav');
