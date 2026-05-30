@@ -451,4 +451,5 @@
   "simple.did_sig_algorithm": "算法：{algo}",
   "simple.did_identity_verified": "✅ 身份已验证",
   "simple.did_dl_btn": "📥 下载 DID",
-  "simple.did_stored_keys_invalid": "存储的 DID 密钥无效。请生成一个新的身份。"
+  "simple.did_stored_keys_invalid": "存储的 DID 密钥无效。请生成一个新的身份。",
+  "simple.wm_fp_payload": "🔐 指纹哈希将作为秘密消息嵌入。"

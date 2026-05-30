@@ -481,4 +481,5 @@
   "simple.did_sig_algorithm": "Algorithmus: {algo}",
   "simple.did_identity_verified": "✅ Identität verifiziert",
   "simple.did_dl_btn": "📥 DID herunterladen",
-  "simple.did_stored_keys_invalid": "Gespeicherte DID-Schlüssel sind ungültig. Bitte generieren Sie eine neue Identität."
+  "simple.did_stored_keys_invalid": "Gespeicherte DID-Schlüssel sind ungültig. Bitte generieren Sie eine neue Identität.",
+  "simple.wm_fp_payload": "🔐 Der Fingerabdruck-Hash wird als geheime Nachricht eingebettet."

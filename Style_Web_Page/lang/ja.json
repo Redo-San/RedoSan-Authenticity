@@ -223,4 +223,5 @@
   "simple.did_sig_algorithm": "アルゴリズム：{algo}",
   "simple.did_identity_verified": "✅ IDが確認されました",
   "simple.did_dl_btn": "📥 DIDをダウンロード",
-  "simple.did_stored_keys_invalid": "保存されたDIDキーが無効です。新しいIDを生成してください。"
+  "simple.did_stored_keys_invalid": "保存されたDIDキーが無効です。新しいIDを生成してください。",
+  "simple.wm_fp_payload": "🔐 指紋ハッシュが秘密メッセージとして埋め込まれます。"
