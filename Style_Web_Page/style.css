@@ -483,9 +483,6 @@ html[dir="rtl"] .back-btn:hover .back-arrow {
 .c2pa-manifest-list { list-style: none; padding: 0; margin: 4px 0; }
 .c2pa-manifest-list li { font-size: 0.78rem; padding: 2px 0; color: var(--text-muted); }
 
-.sidebar-divider { height: 1px; background: var(--border); margin: 8px 16px; }
-.sidebar-mode-switch { opacity: 0.7; font-size: 0.85rem !important; }
-.sidebar-mode-switch:hover { opacity: 1; }
 
 footer { text-align:center; padding:24px; border-top:1px solid var(--border); margin-top:40px; }
 .footer-links { display:flex; justify-content:center; gap:16px; margin-bottom:10px; flex-wrap:wrap; }

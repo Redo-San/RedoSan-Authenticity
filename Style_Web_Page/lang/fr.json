@@ -13,7 +13,6 @@
   "sidebar.timestamp": "Horodatage",
   "sidebar.c2pa": "Provenance C2PA",
   "sidebar.converter": "Convertisseur de Fichiers",
-  "sidebar.switch_mode": "🔀 Changer de Mode",
   "home.tagline": "Outil d'authenticité numérique en ligne — 100% basé sur navigateur. Rien n'est téléchargé sur aucun serveur.",
   "card.watermark.title": "Filigrane",
   "card.watermark.desc": "9 algorithmes : LSB, DCT, DWT et plus",

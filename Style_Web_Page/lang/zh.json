@@ -13,7 +13,6 @@
   "sidebar.timestamp": "时间戳",
   "sidebar.c2pa": "C2PA来源",
   "sidebar.converter": "文件转换器",
-  "sidebar.switch_mode": "🔀 切换模式",
   "home.tagline": "在线数字真实性工具 — 100%基于浏览器。没有任何内容上传到任何服务器。",
   "card.watermark.title": "水印",
   "card.watermark.desc": "9种算法：LSB、DCT、DWT等",
