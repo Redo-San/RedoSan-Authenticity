@@ -346,6 +346,7 @@
         <div class="form-group">
           <label for="wm-type-ex" data-i18n="wm.algo_label">Algorithm</label>
 <select id="wm-type-ex" name="wm-type-ex">
+            <option value="0" selected>Auto Detect</option>
             <option value="1">1. Spatial LSB</option>
             <option value="2">2. Frequency DCT</option>
             <option value="3">3. Neural SS</option>
@@ -366,7 +367,6 @@
 <input type="password" id="wm-password-ex" name="wm-password-ex" placeholder="Enter password" required>
         </div>
         <button class="btn" onclick="handleWatermarkExtract()" id="wm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
-        <button class="btn" onclick="handleAutoDetect()" id="wm-detect-btn" style="margin-top:8px;background:var(--accent2,#00b894)">Auto Detect Algorithm</button>
       </div>
       <div class="spinner" id="wm-spinner"></div>
     </div>

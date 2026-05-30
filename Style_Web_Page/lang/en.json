@@ -73,6 +73,7 @@
   "wm.detect_select_image": "Please select a stego image first",
   "wm.detect_scanning": "Scanning all algorithms...",
   "wm.detect_no_match": "No watermark detected with any algorithm. Try without password or check if the image is watermarked.",
+  "wm.detect_found": "Detected algorithm: {algo}",
   "wm.detect_results": "Detection Results: Found {count} matching algorithm(s)",
   "wm.detect_tip": "Tip: Switch to the algorithm above and click Extract Watermark to download the data.",
   "wm.detect_error": "Detection error: {msg}",

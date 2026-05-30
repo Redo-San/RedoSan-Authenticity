@@ -379,13 +379,13 @@ async function handleWatermarkExtract() {
   const output = document.getElementById('wm-output');
   const dl = document.getElementById('wm-download');
 
-  const type = parseInt(getVal('wm-type-ex'));
+  let type = parseInt(getVal('wm-type-ex'));
   const pw = getVal('wm-password-ex');
   const imgFile = await getFile('wm-image-ex');
   if (!imgFile) { setText('wm-output', __('wm.err_select_stego')); resultDiv.style.display = 'block'; return; }
   if (!(await validateFileInput(document.getElementById('wm-image-ex')))) { return; }
 
-  if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
+  if (type !== 0 && type !== 5 && type !== 8 && (!pw || !pw.trim())) {
     setText('wm-output', __('wm.err_pw_required'));
     resultDiv.style.display = 'block'; return;
   }
@@ -403,6 +403,20 @@ async function handleWatermarkExtract() {
   }
 
   try {
+    if (type === 0) {
+      setText('wm-output', __('wm.detect_scanning', 'Scanning for watermark algorithm...'));
+      const found = await detectWatermarkAlgorithm(imgFile, pw);
+      if (found.length === 0) {
+        setText('wm-output', __('wm.detect_no_match', 'No watermark detected with any known algorithm.'));
+        resultDiv.style.display = 'block';
+        btn.disabled = false; spinner('wm-spinner', false);
+        return;
+      }
+      const priority = [8, 9, 4, 7, 2, 1, 3, 6, 5];
+      found.sort((a, b) => priority.indexOf(a.type) - priority.indexOf(b.type));
+      type = found[0].type;
+      setText('wm-output', __('wm.detect_found', 'Detected algorithm: {algo}').replace('{algo}', __('algo.' + type, 'Type ' + type)) + '...');
+    }
     const result = await watermarkExtract(type, imgFile, pw);
     if (result.ok) {
       let textParts = [result.msg];
@@ -414,7 +428,6 @@ async function handleWatermarkExtract() {
           const blob = new Blob([data], { type: 'application/octet-stream' });
           downloadBlob(blob, name, 'wm-download');
           extractedFiles[name] = data.length + ' bytes';
-          // Try to display text content inline
           try {
             var contentStr = new TextDecoder().decode(data);
             if (contentStr.length > 0 && contentStr.length < 5000) {
@@ -445,43 +458,6 @@ async function handleWatermarkExtract() {
   btn.disabled = false; spinner('wm-spinner', false);
 }
 
-async function handleAutoDetect() {
-  const btn = document.getElementById('wm-detect-btn');
-  const pw = getVal('wm-password-ex');
-  const imgFile = await getFile('wm-image-ex');
-  if (!imgFile) { alert(__('wm.detect_select_image')); return; }
-  if (!(await validateFileInput(document.getElementById('wm-image-ex')))) { return; }
-
-  btn.disabled = true; spinner('wm-spinner', true);
-  document.getElementById('wm-output').textContent = __('wm.detect_scanning');
-
-  try {
-    const found = await detectWatermarkAlgorithm(imgFile, pw);
-    const resultDiv = document.getElementById('wm-result');
-    const output = document.getElementById('wm-output');
-    const dl = document.getElementById('wm-download');
-    resultDiv.style.display = 'block'; dl.innerHTML = '';
-
-    if (found.length === 0) {
-      setText('wm-output', __('wm.detect_no_match'));
-    } else {
-      const priority = [8, 9, 4, 7, 2, 1, 3, 6, 5];
-      found.sort((a, b) => priority.indexOf(a.type) - priority.indexOf(b.type));
-      let html = __('wm.detect_results').replace('{count}', found.length) + '\n';
-      for (const r of found) {
-        const size = r.msg.match(/(\d+) bytes/);
-        const suffix = size ? ` (${size[1]} bytes)` : '';
-        html += '\n  ' + __('wm.type_label').replace('{type}', r.type) + ' (' + __('algo.' + r.type) + ')' + suffix;
-      }
-      html += '\n\n' + __('wm.detect_tip');
-      const sel = document.getElementById('wm-type-ex');
-      if (sel && found[0].type && found[0].type !== 5) sel.value = found[0].type;
-      setText('wm-output', html);
-    }
-  } catch(e) { setText('wm-output', __('wm.detect_error').replace('{msg}', e.message)); }
-  btn.disabled = false; spinner('wm-spinner', false);
-}
-
 // ── Password visibility toggles ──
 function toggleWmPassword() {
   var pwGroup = document.getElementById('wm-password-group');
@@ -494,7 +470,7 @@ function toggleWmPassword() {
 function toggleWmExtractPassword() {
   var pwGroup = document.getElementById('wm-password-ex-group');
   var typeSelect = document.getElementById('wm-type-ex');
-  var type = typeSelect ? parseInt(typeSelect.value, 10) : 1;
+  var type = typeSelect ? parseInt(typeSelect.value, 10) : 0;
   pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
 }
 
