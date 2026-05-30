@@ -109,16 +109,21 @@ async function mainMenu() {
     console.log();
     console.log(c('yellow', 'Choose an option:'));
     console.log();
-    console.log('  ' + c('green', '1') + '  Fingerprint file (hash a file)');
-    console.log('  ' + c('green', '2') + '  Embed watermark');
-    console.log('  ' + c('green', '3') + '  Extract watermark');
-    console.log('  ' + c('green', '4') + '  View metadata (EXIF / dimensions)');
-    console.log('  ' + c('green', '5') + '  Timestamp (create .ots proof)');
-    console.log('  ' + c('green', '6') + '  Timestamp (verify .ots proof)');
-    console.log('  ' + c('green', '7') + '  C2PA Sign (provenance)');
-    console.log('  ' + c('green', '8') + '  C2PA Read');
-    console.log('  ' + c('green', '9') + '  Pixel Injection (embed)');
-    console.log('  ' + c('green', '10') + ' Pixel Injection (extract)');
+    console.log('  ' + c('green', '1') + '  Fingerprint file');
+    console.log('  ' + c('green', '2') + '  Watermark (embed)');
+    console.log('  ' + c('green', '3') + '  Watermark (extract)');
+    console.log('  ' + c('green', '4') + '  Audio Watermark (embed)');
+    console.log('  ' + c('green', '5') + '  Audio Watermark (extract)');
+    console.log('  ' + c('green', '6') + '  View metadata (EXIF / dimensions)');
+    console.log('  ' + c('green', '7') + '  Timestamp (create .ots proof)');
+    console.log('  ' + c('green', '8') + '  Timestamp (verify .ots proof)');
+    console.log('  ' + c('green', '9') + '  C2PA Sign (provenance)');
+    console.log('  ' + c('green', '10') + ' C2PA Read');
+    console.log('  ' + c('green', '11') + ' Pixel Injection (embed)');
+    console.log('  ' + c('green', '12') + ' Pixel Injection (extract)');
+    console.log('  ' + c('green', '13') + ' DID Identity');
+    console.log('  ' + c('green', '14') + ' Digital Passport');
+    console.log('  ' + c('green', '15') + ' File Converter');
     console.log('  ' + c('green', '0') + '  Exit');
     console.log();
 
@@ -129,13 +134,18 @@ async function mainMenu() {
         case '1': await menuFingerprint(); break;
         case '2': await menuWmEmbed(); break;
         case '3': await menuWmExtract(); break;
-        case '4': await menuMetadata(); break;
-        case '5': await menuTsCreate(); break;
-        case '6': await menuTsVerify(); break;
-        case '7': await menuC2paSign(); break;
-        case '8': await menuC2paRead(); break;
-        case '9': await menuPiEmbed(); break;
-        case '10': await menuPiExtract(); break;
+        case '4': await runAwmEmbed(); break;
+        case '5': await runAwmExtract(); break;
+        case '6': await menuMetadata(); break;
+        case '7': await menuTsCreate(); break;
+        case '8': await menuTsVerify(); break;
+        case '9': await menuC2paSign(); break;
+        case '10': await menuC2paRead(); break;
+        case '11': await menuPiEmbed(); break;
+        case '12': await menuPiExtract(); break;
+        case '13': await menuDid(); break;
+        case '14': await menuCertificate(); break;
+        case '15': await menuConverter(); break;
         case '0': console.log(c('green', 'Goodbye!')); rl.close(); return;
         default: console.log(c('red', 'Invalid choice')); await ask('Press Enter...');
       }
@@ -334,6 +344,77 @@ async function menuPiExtract() {
   }
   if (!found) console.log(c('red', '✗ No watermark found with any algorithm.'));
 
+  await ask('Press Enter...');
+}
+
+async function runAwmEmbed() {
+  console.clear();
+  console.log(c('bright', '── Audio Watermark Embed ──'));
+  const audio = await selectFile('Audio file path (WAV) > ');
+  const msg = await ask(c('cyan', 'Secret message > '));
+  const pass = await ask(c('yellow', 'Password > '));
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = output.wav): '));
+  const out = resolvePath(outputRaw, 'output.wav');
+  const args = ['audio-watermark', 'embed', audio, '-m', msg, '-o', out];
+  if (pass.trim()) args.push('-p', pass.trim());
+  await run(args);
+  await ask('Press Enter...');
+}
+
+async function runAwmExtract() {
+  console.clear();
+  console.log(c('bright', '── Audio Watermark Extract ──'));
+  const audio = await selectFile('Watermarked audio path (WAV) > ');
+  const pass = await ask(c('yellow', 'Password > '));
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = print to screen): '));
+  const out = resolvePath(outputRaw);
+  const args = ['audio-watermark', 'extract', audio];
+  if (pass.trim()) args.push('-p', pass.trim());
+  if (out) args.push('-o', out);
+  await run(args);
+  await ask('Press Enter...');
+}
+
+async function menuDid() {
+  console.clear();
+  console.log(c('bright', '── DID Identity ──'));
+  console.log(c('dim', '1) Generate new DID keypair'));
+  console.log(c('dim', '2) Sign a file with existing DID'));
+  const sub = await ask(c('cyan', '> '));
+  if (sub.trim() === '1') {
+    const algo = await ask(c('cyan', 'Algorithm (Ed25519/P-256, Enter = Ed25519): '));
+    const args = ['did', 'generate', '--algo', algo.trim() || 'Ed25519'];
+    await run(args);
+  } else if (sub.trim() === '2') {
+    const file = await selectFile('Fingerprint JSON or file to sign > ');
+    const args = ['did', 'sign', file];
+    await run(args);
+  }
+  await ask('Press Enter...');
+}
+
+async function menuCertificate() {
+  console.clear();
+  console.log(c('bright', '── Digital Passport ──'));
+  const file = await selectFile('Fingerprint JSON file > ');
+  const format = await ask(c('cyan', 'Format (pdf/docx/epub, Enter = pdf): '));
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = passport.pdf): '));
+  const out = resolvePath(outputRaw, 'passport.pdf');
+  const args = ['certificate', file, '-o', out, '--format', format.trim() || 'pdf'];
+  await run(args);
+  await ask('Press Enter...');
+}
+
+async function menuConverter() {
+  console.clear();
+  console.log(c('bright', '── File Converter ──'));
+  const input = await selectFile('Input file > ');
+  const fmt = await ask(c('cyan', 'Target format (e.g. png, jpg, webp, mp3): '));
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = auto): '));
+  const out = resolvePath(outputRaw);
+  const args = ['converter', input, '-f', fmt];
+  if (out) args.push('-o', out);
+  await run(args);
   await ask('Press Enter...');
 }
 
