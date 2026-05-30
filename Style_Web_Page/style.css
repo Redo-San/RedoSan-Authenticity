@@ -337,6 +337,7 @@ nav .logo { display:flex; align-items:center; }
 }
 .theme-btn:hover { background:var(--card-hover); color:var(--text); border-color:var(--primary); }
 #themeToggle { position: fixed; top: 76px; right: 12px; z-index: 999; background: var(--card); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+html[dir="rtl"] #themeToggle { right: auto; left: 12px; }
 
 /* ── File Drop Zone ── */
 .file-drop-zone {
