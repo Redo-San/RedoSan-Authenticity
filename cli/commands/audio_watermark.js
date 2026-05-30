@@ -349,9 +349,8 @@ async function runAudioWatermark(action, filePath, opts) {
     for (let offset = 0; offset + 16 < bits.length; offset += 8) {
       const dlen = parseInt(bits.substring(offset, offset + 16), 2);
       if (isNaN(dlen) || dlen <= 0 || dlen > 5000) continue;
-      const totalLen = dlen * 8 + offset;
-      if (bits.length < totalLen) continue;
-      const enc = bitsToBytes(bits.substring(offset, totalLen));
+      if (bits.length < offset + 16 + dlen * 8) continue;
+      const enc = bitsToBytes(bits.substring(offset + 16, offset + 16 + dlen * 8));
       const dec = xorBytes(enc, key);
       if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB) {
         const msg = dec.slice(2).toString('utf-8').replace(/\0+$/, '');
