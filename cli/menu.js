@@ -113,7 +113,7 @@ async function mainMenu() {
     console.log('  ' + c('green', '2') + '  Watermark (embed)');
     console.log('  ' + c('green', '3') + '  Watermark (extract)');
     console.log('  ' + c('green', '4') + '  Audio Watermark (embed)');
-    console.log('  ' + c('green', '5') + '  Audio Watermark (extract)');
+    console.log('  ' + c('green', '5') + '  Audio Watermark (extract)  — save as TXT / JSON');
     console.log('  ' + c('green', '6') + '  View metadata (EXIF / dimensions)');
     console.log('  ' + c('green', '7') + '  Timestamp (create .ots proof)');
     console.log('  ' + c('green', '8') + '  Timestamp (verify .ots proof)');
@@ -368,12 +368,43 @@ async function runAwmExtract() {
   const audio = await selectFile('Watermarked audio path (WAV) > ');
   const pass = await ask(c('yellow', 'Password > '));
   const algo = await pickAlgorithm('Algorithm:', ['lsb', 'phase_coding', 'echo_hiding', 'dsss', 'qim', 'dwt', 'patchwork', 'dct'], 'lsb');
-  const outputRaw = await ask(c('cyan', 'Output path (Enter = print to screen): '));
-  const out = resolvePath(outputRaw);
-  const args = ['audio-watermark', 'extract', audio, '-a', algo];
-  if (pass.trim()) args.push('-p', pass.trim());
-  if (out) args.push('-o', out);
-  await run(args);
+
+  function buildArgs(out) {
+    const a = ['audio-watermark', 'extract', audio, '-a', algo];
+    if (pass.trim()) a.push('-p', pass.trim());
+    if (out) a.push('-o', out);
+    return a;
+  }
+
+  // First run — print to screen
+  try {
+    await run(buildArgs(''));
+  } catch (e) {
+    await ask('Press Enter...');
+    return;
+  }
+  console.log();
+
+  // Ask to save
+  console.log(c('yellow', 'Save result?'));
+  console.log('  ' + c('green', '1') + '  Save as TXT');
+  console.log('  ' + c('green', '2') + '  Save as JSON');
+  console.log('  ' + c('green', '0') + '  Skip');
+  const fmt = await ask(c('cyan', '> '));
+  if (fmt.trim() === '1' || fmt.trim() === '2') {
+    const isJson = fmt.trim() === '2';
+    const def = path.basename(audio) + (isJson ? '.json' : '.txt');
+    const out = await ask(c('cyan', `Output path (Enter = ${def}): `));
+    const outPath = out.trim() || path.join('.', def);
+    try {
+      const saveArgs = buildArgs(outPath);
+      if (isJson) saveArgs.push('--json');
+      await run(saveArgs);
+      console.log(c('green', `✓ Saved to ${outPath}`));
+    } catch (e) {
+      console.log(c('red', `✗ Save failed: ${e.message}`));
+    }
+  }
   await ask('Press Enter...');
 }
 

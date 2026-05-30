@@ -355,13 +355,25 @@ async function runAudioWatermark(action, filePath, opts) {
       const dec = xorBytes(enc, key);
       if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB) {
         const msg = dec.slice(2).toString('utf-8').replace(/\0+$/, '');
-        if (opts.output) {
-          let outPath = path.resolve(opts.output);
-          if (fs.existsSync(outPath) && fs.statSync(outPath).isDirectory()) outPath = path.join(outPath, 'extracted.txt');
-          fs.writeFileSync(outPath, msg);
-          console.log(`Extracted message saved to: ${outPath}`);
+        if (opts.json) {
+          const json = JSON.stringify({ algorithm: algo, message: msg, length: msg.length, status: 'ok' }, null, 2);
+          if (opts.output) {
+            let outPath = path.resolve(opts.output);
+            if (fs.existsSync(outPath) && fs.statSync(outPath).isDirectory()) outPath = path.join(outPath, 'extracted.json');
+            fs.writeFileSync(outPath, json);
+            console.log(`Extracted message saved to: ${outPath}`);
+          } else {
+            console.log(json);
+          }
         } else {
-          console.log(`Extracted message: ${msg}`);
+          if (opts.output) {
+            let outPath = path.resolve(opts.output);
+            if (fs.existsSync(outPath) && fs.statSync(outPath).isDirectory()) outPath = path.join(outPath, 'extracted.txt');
+            fs.writeFileSync(outPath, msg);
+            console.log(`Extracted message saved to: ${outPath}`);
+          } else {
+            console.log(`Extracted message: ${msg}`);
+          }
         }
         return;
       }
