@@ -439,5 +439,6 @@
     "context_c2pa": "Veo que está en la página **C2PA**. ¿Necesita ayuda con eso?",
     "context_certificate": "Veo que está en la página **Pasaporte Digital**. ¿Necesita ayuda con eso?",
     "context_converter": "Veo que está en la página **Convertidor de archivos**. ¿Necesita ayuda con eso?"
-  }
+  },
+  "shared.english_filename": "El nombre del archivo solo debe contener caracteres en inglés (A-Z, 0-9, guiones, guiones bajos, puntos). Cambie el nombre del archivo e intente de nuevo."
 }

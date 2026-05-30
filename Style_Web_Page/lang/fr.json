@@ -453,6 +453,8 @@
     "context_converter": "Je vois que vous êtes sur la page **Convertisseur de fichiers**. Avez-vous besoin d'aide ?",
     "context_audio_watermark": "Je vois que vous êtes sur la page **Filigrane audio**. Avez-vous besoin d'aide ?"
   },
+  "shared.english_filename": "Le nom du fichier doit contenir uniquement des caractères anglais (A-Z, 0-9, tirets, underscores, points). Veuillez renommer le fichier et réessayer.",
+
   "awm": {
     "heading": "Filigranage audio",
     "audio_label": "Fichier audio (WAV recommandé)",

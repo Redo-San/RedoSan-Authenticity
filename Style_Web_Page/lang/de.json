@@ -453,6 +453,8 @@
     "context_converter": "Ich sehe, dass du auf der **Datei-Konverter**-Seite bist. Brauchst du Hilfe damit?",
     "context_audio_watermark": "Ich sehe, dass du auf der **Audio-Wasserzeichen**-Seite bist. Brauchst du Hilfe damit?"
   },
+  "shared.english_filename": "Der Dateiname darf nur englische Zeichen enthalten (A-Z, 0-9, Bindestriche, Unterstriche, Punkte). Bitte benennen Sie die Datei um und versuchen Sie es erneut.",
+
   "awm": {
     "heading": "Audio-Wasserzeichen",
     "audio_label": "Audio-Datei (WAV empfohlen)",
