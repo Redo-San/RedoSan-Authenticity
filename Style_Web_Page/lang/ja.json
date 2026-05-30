@@ -225,4 +225,7 @@
   "simple.did_dl_btn": "📥 DIDをダウンロード",
   "simple.did_stored_keys_invalid": "保存されたDIDキーが無効です。新しいIDを生成してください。",
   "simple.wm_fp_payload": "🔐 指紋ハッシュが秘密メッセージとして埋め込まれます。",
-  "simple.pi_did_info": "🆔 DID署名が秘密メッセージとして注入されます。"
+  "simple.pi_did_info": "🆔 DID署名が秘密メッセージとして注入されます。",
+  "simple.pi_category_label": "カテゴリ",
+  "simple.pi_algo_label": "アルゴリズム",
+  "simple.wm_pass_label": "パスワード"

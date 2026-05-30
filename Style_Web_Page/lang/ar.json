@@ -535,4 +535,7 @@
     "prompt_sign": "👉 الآن انقر على ✍️ التوقيع على البصمة لتوقيع ملفك."
   },
   "simple.wm_fp_payload": "🔐 سيتم تضمين تجزئة البصمة كرسالة سرية.",
-  "simple.pi_did_info": "🆔 سيتم حقن توقيع DID كرسالة سرية."
+  "simple.pi_did_info": "🆔 سيتم حقن توقيع DID كرسالة سرية.",
+  "simple.pi_category_label": "الفئة",
+  "simple.pi_algo_label": "الخوارزمية",
+  "simple.wm_pass_label": "كلمة المرور"

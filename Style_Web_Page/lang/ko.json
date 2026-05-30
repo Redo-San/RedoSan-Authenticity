@@ -225,4 +225,7 @@
   "simple.did_dl_btn": "📥 DID 다운로드",
   "simple.did_stored_keys_invalid": "저장된 DID 키가 유효하지 않습니다. 새 ID를 생성하세요.",
   "simple.wm_fp_payload": "🔐 지문 해시가 비밀 메시지로 삽입됩니다.",
-  "simple.pi_did_info": "🆔 DID 서명이 비밀 메시지로 주입됩니다."
+  "simple.pi_did_info": "🆔 DID 서명이 비밀 메시지로 주입됩니다.",
+  "simple.pi_category_label": "카테고리",
+  "simple.pi_algo_label": "알고리즘",
+  "simple.wm_pass_label": "비밀번호"
