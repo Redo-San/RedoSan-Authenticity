@@ -47,6 +47,7 @@
   "wm.extract_submit": "提取水印",
   "wm.secret_label": "秘密文件（要隐藏的数据）",
   "wm.secret_hint": "算法 1-4、6-9 需要。类型 5（零位）忽略此项。",
+  "wm.secret_size_note": "💡 秘密文件必须小于封面图像。请先选择封面图像以查看下面的可用容量。",
   "wm.err_pw_required": "此算法需要密码",
   "wm.err_select_image": "请选择一张图片",
   "wm.err_select_stego": "请选择隐写图像",

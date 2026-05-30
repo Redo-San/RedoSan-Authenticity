@@ -46,6 +46,7 @@
   "wm.extract_submit": "Wasserzeichen Extrahieren",
   "wm.secret_label": "Geheime Datei (zu versteckende Daten)",
   "wm.secret_hint": "Erforderlich für Algorithmen 1-4, 6-9. Typ 5 (Zero-bit) ignoriert dies.",
+  "wm.secret_size_note": "💡 Die geheime Datei muss kleiner als das Cover-Bild sein. Wählen Sie zuerst ein Cover-Bild aus, um die verfügbare Kapazität unten zu sehen.",
   "wm.err_pw_required": "Passwort für diesen Algorithmus erforderlich",
   "wm.err_select_image": "Bitte wählen Sie ein Bild",
   "wm.err_select_stego": "Bitte wählen Sie ein Stego-Bild",

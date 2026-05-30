@@ -50,6 +50,7 @@
   "wm.extract_submit": "워터마크 추출",
   "wm.secret_label": "비밀 파일 (숨길 데이터)",
   "wm.secret_hint": "알고리즘 1-4,6-9 필요. 유형 5(제로비트)는 무시합니다.",
+  "wm.secret_size_note": "💡 비밀 파일은 커버 이미지보다 작아야 합니다. 먼저 커버 이미지를 선택하여 아래에서 사용 가능한 용량을 확인하세요.",
   "wm.err_pw_required": "이 알고리즘에는 비밀번호가 필요합니다",
   "wm.err_select_image": "이미지를 선택하세요",
   "wm.err_select_stego": "스테고 이미지를 선택하세요",

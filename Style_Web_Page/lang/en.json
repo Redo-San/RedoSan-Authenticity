@@ -59,6 +59,7 @@
   "wm.extract_submit": "Extract Watermark",
   "wm.secret_label": "Secret file (data to hide)",
   "wm.secret_hint": "Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores this.",
+  "wm.secret_size_note": "💡 The secret file must be smaller than the cover image. Select a cover image first to see available capacity below.",
   "wm.err_pw_required": "Password is required for this algorithm",
   "wm.err_select_image": "Please select an image",
   "wm.err_select_stego": "Please select a stego image",

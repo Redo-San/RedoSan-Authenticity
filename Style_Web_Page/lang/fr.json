@@ -46,6 +46,7 @@
   "wm.extract_submit": "Extraire le Filigrane",
   "wm.secret_label": "Fichier secret (données à cacher)",
   "wm.secret_hint": "Requis pour les algorithmes 1-4, 6-9. Le type 5 (Zero-bit) l'ignore.",
+  "wm.secret_size_note": "💡 Le fichier secret doit être plus petit que l'image de couverture. Sélectionnez d'abord une image de couverture pour voir la capacité disponible ci-dessous.",
   "wm.err_pw_required": "Mot de passe requis pour cet algorithme",
   "wm.err_select_image": "Veuillez sélectionner une image",
   "wm.err_select_stego": "Veuillez sélectionner une image stégo",
