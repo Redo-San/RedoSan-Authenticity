@@ -481,4 +481,5 @@
   "simple.did_sig_algorithm": "Algorithme : {algo}",
   "simple.did_identity_verified": "✅ Identité vérifiée",
   "simple.did_dl_btn": "📥 Télécharger DID",
-  "simple.did_stored_keys_invalid": "Les clés DID stockées sont invalides. Veuillez générer une nouvelle identité."
+  "simple.did_stored_keys_invalid": "Les clés DID stockées sont invalides. Veuillez générer une nouvelle identité.",
+  "simple.wm_fp_payload": "🔐 Le hachage de l'empreinte sera intégré comme message secret."
