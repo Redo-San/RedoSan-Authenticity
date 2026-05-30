@@ -46,6 +46,7 @@
   "wm.extract_submit": "Extraer Marca de Agua",
   "wm.secret_label": "Archivo secreto (datos a ocultar)",
   "wm.secret_hint": "Requerido para algoritmos 1-4, 6-9. El tipo 5 (Zero-bit) lo ignora.",
+  "wm.secret_size_note": "💡 El archivo secreto debe ser más pequeño que la imagen de portada. Seleccione una imagen de portada primero para ver la capacidad disponible abajo.",
   "wm.err_pw_required": "Se requiere contraseña para este algoritmo",
   "wm.err_select_image": "Seleccione una imagen",
   "wm.err_select_stego": "Seleccione una imagen estego",
