@@ -152,6 +152,7 @@ program
   .option('-m, --message <text>', 'Secret message (embed only)')
   .option('-o, --output <file>', 'Output file path')
   .option('-p, --password <pass>', 'Password')
+  .option('-a, --algo <type>', 'Algorithm: lsb, phase_coding, echo_hiding, dsss, qim, dwt, patchwork, dct (default: lsb)')
   .action(async (action, filePath, opts) => {
     const { runAudioWatermark } = require('./commands/audio_watermark');
     await runAudioWatermark(action, filePath, opts);
