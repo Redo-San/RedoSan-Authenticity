@@ -459,5 +459,6 @@
     "heading": "Audio-Wasserzeichen",
     "audio_label": "Audio-Datei (WAV empfohlen)",
     "secret_label": "Geheime Nachricht"
-  }
-}
+  },
+  "simple.upload_size_note": "💡 Für das Wasserzeichen verwenden Sie bitte ein großes Cover-Bild (z.B. 1920×1080), damit genug Kapazität vorhanden ist, um ein geheimes Bild einzubetten.",
+  "simple.usage_warning": "⚠️ Dieses Tool ist nur für gesetzmäßige Nutzung. Das Hochladen von illegalen oder schädlichen Inhalten ist streng verboten. Alle Verarbeitungen erfolgen lokal — nichts wird gespeichert oder an einen Server gesendet."
