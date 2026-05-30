@@ -353,9 +353,10 @@ async function runAwmEmbed() {
   const audio = await selectFile('Audio file path (WAV) > ');
   const msg = await ask(c('cyan', 'Secret message > '));
   const pass = await ask(c('yellow', 'Password > '));
+  const algo = await pickAlgorithm('Algorithm:', ['lsb', 'phase_coding', 'echo_hiding', 'dsss', 'qim', 'dwt', 'patchwork', 'dct'], 'lsb');
   const outputRaw = await ask(c('cyan', 'Output path (Enter = output.wav): '));
   const out = resolvePath(outputRaw, 'output.wav');
-  const args = ['audio-watermark', 'embed', audio, '-m', msg, '-o', out];
+  const args = ['audio-watermark', 'embed', audio, '-m', msg, '-o', out, '-a', algo];
   if (pass.trim()) args.push('-p', pass.trim());
   await run(args);
   await ask('Press Enter...');
@@ -366,9 +367,10 @@ async function runAwmExtract() {
   console.log(c('bright', '── Audio Watermark Extract ──'));
   const audio = await selectFile('Watermarked audio path (WAV) > ');
   const pass = await ask(c('yellow', 'Password > '));
+  const algo = await pickAlgorithm('Algorithm:', ['lsb', 'phase_coding', 'echo_hiding', 'dsss', 'qim', 'dwt', 'patchwork', 'dct'], 'lsb');
   const outputRaw = await ask(c('cyan', 'Output path (Enter = print to screen): '));
   const out = resolvePath(outputRaw);
-  const args = ['audio-watermark', 'extract', audio];
+  const args = ['audio-watermark', 'extract', audio, '-a', algo];
   if (pass.trim()) args.push('-p', pass.trim());
   if (out) args.push('-o', out);
   await run(args);
