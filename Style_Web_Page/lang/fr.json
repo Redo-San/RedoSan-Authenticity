@@ -459,5 +459,6 @@
     "heading": "Filigranage audio",
     "audio_label": "Fichier audio (WAV recommandé)",
     "secret_label": "Message secret"
-  }
-}
+  },
+  "simple.upload_size_note": "💡 Pour la filigrane, utilisez une grande image de couverture (par exemple 1920×1080) pour qu'il y ait suffisamment de capacité pour intégrer une image secrète.",
+  "simple.usage_warning": "⚠️ Cet outil est destiné à une utilisation légale uniquement. Le téléchargement de contenu illégal ou nuisible est strictement interdit. Tous les traitements sont effectués localement — rien n'est stocké ou envoyé à un serveur."
