@@ -31,13 +31,11 @@
 /* Language dropdown */
 .lang-dropdown { 
   direction: ltr; 
-  max-width: 150px;
 }
 .lang-menu { 
-  left: 0; 
-  right: auto; 
+  right: 0; 
+  left: auto; 
   min-width: 140px;
-  max-width: 150px;
 }
 
 /* Content alignment */
@@ -126,7 +124,7 @@ main {
   direction: rtl; 
 }
 .lang-btn { 
-  min-width: 100px; 
+  min-width: 80px; 
 }
 
 /* Back arrow flip for RTL */
