@@ -408,21 +408,21 @@
           <p id="awm-capacity" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px"></p>
         </div>
         <div class="form-group" id="awm-file-group">
-          <label for="awm-file" id="awm-file-label">Secret document</label>
+          <label for="awm-file" id="awm-file-label" data-i18n="awm.secret_file_label">Secret document</label>
           <input type="file" id="awm-file" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.md" onchange="loadAwmFile(event)">
           <p id="awm-file-name" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px"></p>
         </div>
         <div class="form-group" id="awm-text-group" style="display:none">
-          <label for="awm-text">Secret message</label>
+          <label for="awm-text" data-i18n="awm.msg_label">Secret message</label>
           <textarea id="awm-text" rows="3" maxlength="500" placeholder="Enter short secret message (limited capacity for this algorithm)" oninput="updateAwmCapacity()"></textarea>
           <p id="awm-text-info" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px"></p>
         </div>
         <div class="form-group" id="awm-password-group">
-          <label for="awm-password">Password</label>
+          <label for="awm-password" data-i18n="awm.password_label">Password</label>
           <input type="password" id="awm-password" name="awm-password" placeholder="Enter password" required>
         </div>
         <div class="form-group" id="awm-strength-group">
-          <label for="awm-strength">QIM Strength <span id="awm-strength-val">500</span></label>
+          <label for="awm-strength" data-i18n="awm.strength_label">QIM Strength <span id="awm-strength-val">500</span></label>
           <input type="range" id="awm-strength" min="100" max="3000" value="500" step="100" oninput="document.getElementById('awm-strength-val').textContent=this.value">
         </div>
         <button class="btn" onclick="handleAwmEmbed()" id="awm-btn" data-i18n="wm.embed_submit">Embed Watermark</button>
@@ -447,19 +447,19 @@
           <input type="file" id="awm-audio-ex" name="awm-audio-ex" accept="audio/*">
         </div>
         <div class="form-group" id="awm-password-ex-group">
-          <label for="awm-password-ex">Password</label>
+          <label for="awm-password-ex" data-i18n="awm.password_label">Password</label>
           <input type="password" id="awm-password-ex" name="awm-password-ex" placeholder="Enter password" required>
         </div>
         <div class="form-group" id="awm-strength-ex-group">
-          <label for="awm-strength-ex">QIM Strength <span id="awm-strength-ex-val">400</span></label>
+          <label for="awm-strength-ex" data-i18n="awm.strength_label">QIM Strength <span id="awm-strength-ex-val">400</span></label>
           <input type="range" id="awm-strength-ex" min="100" max="3000" value="400" step="100" oninput="document.getElementById('awm-strength-ex-val').textContent=this.value">
         </div>
         <button class="btn" onclick="handleAwmExtract()" id="awm-btn-ex" data-i18n="wm.extract_submit">Extract Watermark</button>
         <details style="margin-top:12px;border:1px solid var(--border);border-radius:8px;padding:8px 12px">
-          <summary style="cursor:pointer;font-size:0.82rem;color:var(--text-muted)">🔬 Dual Extract (for simplified mode protected audio)</summary>
+          <summary style="cursor:pointer;font-size:0.82rem;color:var(--text-muted)" data-i18n="awm.dual_extract_label">🔬 Dual Extract (for simplified mode protected audio)</summary>
           <div style="margin-top:8px;text-align:left">
             <div class="form-group">
-              <label style="font-size:0.75rem">Fingerprint (left ch) algorithm</label>
+              <label style="font-size:0.75rem" data-i18n="awm.fp_algo_label">Fingerprint (left ch) algorithm</label>
               <select id="awm-dual-fp-algo" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">
                 <option value="0">🔍 Auto Detect</option>
                 <option value="8">DCT-based (Recommended)</option>
@@ -472,7 +472,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label style="font-size:0.75rem">Timestamp (right ch) algorithm</label>
+              <label style="font-size:0.75rem" data-i18n="awm.ts_algo_label">Timestamp (right ch) algorithm</label>
               <select id="awm-dual-ts-algo" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">
                 <option value="0">🔍 Auto Detect</option>
                 <option value="6">DWT (Haar Wavelet) (Recommended)</option>
@@ -480,10 +480,10 @@
                 <option value="8">DCT-based</option>
               </select>
             </div>
-            <button class="btn" onclick="awmDualExtract()" style="width:100%;font-size:0.82rem">Extract Both Watermarks</button>
+            <button class="btn" onclick="awmDualExtract()" style="width:100%;font-size:0.82rem" data-i18n="awm.dual_extract_btn">Extract Both Watermarks</button>
           </div>
         </details>
-        <button class="btn" onclick="awmSelfTest()" style="margin-top:8px;background:var(--accent);font-size:0.8rem">🔬 Self-Test</button>
+        <button class="btn" onclick="awmSelfTest()" style="margin-top:8px;background:var(--accent);font-size:0.8rem" data-i18n="awm.self_test_btn">🔬 Self-Test</button>
       </div>
       <div class="spinner" id="awm-spinner"></div>
       <div class="awm-progress" id="awm-progress" style="display:none;margin:12px 0">
