@@ -39,11 +39,11 @@
     <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">🌙</button>
   </div>
   <div class="nav-links">
-    <a href="/RedoSan-Authenticity/">Home</a>
-    <a href="/RedoSan-Authenticity/#watermark">Watermark</a>
-    <a href="/RedoSan-Authenticity/#fingerprint">Fingerprint</a>
-    <a href="/RedoSan-Authenticity/#metadata">Metadata</a>
-    <a href="/RedoSan-Authenticity/#timestamp">Timestamp</a>
+    <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
+    <a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark">Watermark</a>
+    <a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
+    <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>
+    <a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
     <div class="lang-dropdown">
       <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">English</button>
       <div class="lang-menu" id="langMenu">
@@ -63,25 +63,25 @@
 <main class="container" id="main-content">
   <div class="error-page" id="staticFallback">
     <div class="error-code">404</div>
-    <h1 class="error-title">Page Not Found</h1>
-    <p class="error-desc">The page you're looking for doesn't exist or has been moved.</p>
+    <h1 class="error-title" data-i18n="404.title">Page Not Found</h1>
+    <p class="error-desc" data-i18n="404.desc">The page you're looking for doesn't exist or has been moved.</p>
     <div class="error-links">
-      <a href="/RedoSan-Authenticity/">Home</a>
-      <a href="/RedoSan-Authenticity/#watermark">Watermark</a>
-      <a href="/RedoSan-Authenticity/#fingerprint">Fingerprint</a>
-      <a href="/RedoSan-Authenticity/#metadata">Metadata</a>
-      <a href="/RedoSan-Authenticity/#timestamp">Timestamp</a>
+      <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
+      <a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark">Watermark</a>
+      <a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
+      <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>
+      <a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
     </div>
   </div>
 </main>
 
 <footer>
   <div class="footer-links">
-    <a href="/RedoSan-Authenticity/">Home</a>
+    <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
     <a href="https://github.com/Redo-San" target="_blank" rel="noopener">GitHub</a>
-    <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener">Report Issue</a>
+    <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" data-i18n="404.report_issue">Report Issue</a>
   </div>
-  <div class="footer-copy">RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves your device</div>
+  <div class="footer-copy">RedoSan Authenticity &mdash; <span data-i18n="footer.copyright">100% browser-based &bull; Nothing leaves your device</span></div>
 </footer>
 
 <script>
@@ -141,13 +141,13 @@ function showThreatPage(path) {
   document.getElementById('main-content').innerHTML =
     '<div class="threat-container">' +
     '<div class="threat-icon">&#x26A0;&#xFE0F;</div>' +
-    '<h1 class="threat-title">Security Threat Blocked</h1>' +
-    '<p class="threat-desc">This URL appears to be a malicious file disguised as a legitimate resource.</p>' +
+    '<h1 class="threat-title" data-i18n="threat.title">Security Threat Blocked</h1>' +
+    '<p class="threat-desc" data-i18n="threat.desc">This URL appears to be a malicious file disguised as a legitimate resource.</p>' +
     '<div class="threat-path">' + path.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
-    '<p class="threat-desc">&#x1F512; RedoSan Authenticity is a client-side digital authenticity tool and does <strong>not</strong> serve executable files or scripts. If you received this link from someone, it is likely a scam or phishing attempt.</p>' +
-    '<a href="/RedoSan-Authenticity/" class="threat-btn">Return to Safety</a>' +
-    '<div class="threat-exts">Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk and more</div>' +
-    '<div class="threat-note">If you believe this is a mistake, please report it on <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" style="color:#6C5CE7" target="_blank" rel="noopener">GitHub Issues</a>.</div>' +
+    '<p class="threat-desc" data-i18n="threat.desc2">🔒 RedoSan Authenticity is a client-side digital authenticity tool and does not serve executable files or scripts. If you received this link from someone, it is likely a scam or phishing attempt.</p>' +
+    '<a href="/RedoSan-Authenticity/" class="threat-btn" data-i18n="threat.btn">Return to Safety</a>' +
+    '<div class="threat-exts" data-i18n="threat.exts">Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk and more</div>' +
+    '<div class="threat-note"><span data-i18n="threat.note">If you believe this is a mistake, please report it on</span> <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" style="color:#6C5CE7" target="_blank" rel="noopener" data-i18n="threat.note_link">GitHub Issues</a>.</div>' +
     '</div>';
 }
 
@@ -157,18 +157,18 @@ function show404Page() {
   document.getElementById('main-content').innerHTML =
     '<div class="error-page">' +
     '<div class="error-code">404</div>' +
-    '<h1 class="error-title">Page Not Found</h1>' +
-    '<p class="error-desc">The page you\'re looking for doesn\'t exist or has been moved. Try searching below or use the navigation.</p>' +
+    '<h1 class="error-title" data-i18n="404.title">Page Not Found</h1>' +
+    '<p class="error-desc" data-i18n="404.desc_search">The page you\'re looking for doesn\'t exist or has been moved. Try searching below or use the navigation.</p>' +
     '<div class="error-search">' +
-    '<input type="text" id="errorSearchInput" placeholder="Search the site..." aria-label="Search">' +
+    '<input type="text" id="errorSearchInput" data-i18n-placeholder="404.search_placeholder" placeholder="Search the site..." aria-label="Search">' +
     '</div>' +
     '<div class="error-links">' +
-    '<a href="/RedoSan-Authenticity/">Home</a>' +
-    '<a href="/RedoSan-Authenticity/#watermark">Watermark</a>' +
-    '<a href="/RedoSan-Authenticity/#fingerprint">Fingerprint</a>' +
-    '<a href="/RedoSan-Authenticity/#metadata">Metadata</a>' +
-    '<a href="/RedoSan-Authenticity/#timestamp">Timestamp</a>' +
-    '<a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener">Report Issue</a>' +
+    '<a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>' +
+    '<a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark">Watermark</a>' +
+    '<a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>' +
+    '<a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>' +
+    '<a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>' +
+    '<a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" data-i18n="404.report_issue">Report Issue</a>' +
     '</div>' +
     '</div>';
 

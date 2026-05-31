@@ -320,5 +320,19 @@
   "cert.ts_label": "타임스탬프 파일 (.ots)",
   "cert.did_label": "DID ID 결과 (.json, .txt)",
   "cert.download_label": "인증서 준비 완료! 형식 선택:",
-  "cert.reset_btn": "↻ 다시 시작"
+  "cert.reset_btn": "↻ 다시 시작",
+  "404.page_title": "404 — Page Not Found | RedoSan Authenticity",
+  "404.title": "Page Not Found",
+  "404.desc": "The page you're looking for doesn't exist or has been moved.",
+  "404.desc_search": "The page you're looking for doesn't exist or has been moved. Try searching below or use the navigation.",
+  "404.search_placeholder": "Search the site...",
+  "404.report_issue": "Report Issue",
+  "threat.page_title": "⚠️ Threat Blocked — RedoSan Authenticity",
+  "threat.title": "Security Threat Blocked",
+  "threat.desc": "This URL appears to be a malicious file disguised as a legitimate resource.",
+  "threat.desc2": "🔒 RedoSan Authenticity is a client-side digital authenticity tool and does not serve executable files or scripts. If you received this link from someone, it is likely a scam or phishing attempt.",
+  "threat.btn": "Return to Safety",
+  "threat.exts": "Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk and more",
+  "threat.note": "If you believe this is a mistake, please report it on",
+  "threat.note_link": "GitHub Issues"
 }
