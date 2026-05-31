@@ -143,14 +143,14 @@
   "c2pa.read_desc": "Lee metadatos de procedencia C2PA de imágenes. Muestra manifiestos, aserciones, acciones, ingredientes e información de firma.",
   "c2pa.read_file_label": "Imagen con datos C2PA",
   "c2pa.read_submit": "Leer Datos C2PA",
-  "c2pa.write_desc": "Firme una imagen con metadatos de procedencia C2PA usando un certificado de prueba. Seleccione el tipo de contenido y añada detalles opcionales.",
-  "c2pa.content_type_label": "Tipo de Contenido",
+  "c2pa.write_desc": "Firme una imagen con metadatos de procedencia C2PA usando un certificado de prueba. Seleccione el tipo de contenido y agregue detalles opcionales.",
+  "c2pa.content_type_label": "Opciones de Contenido",
   "c2pa.type_digital": "Creado Digitalmente",
   "c2pa.type_edited": "Editado / Modificado",
   "c2pa.type_ai": "Generado por IA",
   "c2pa.type_capture": "Capturado Digitalmente",
   "c2pa.type_composite": "Compuesto",
-  "c2pa.type_dnt": "No Entrenar",
+  "c2pa.type_dnt": "No Entrenar IA",
   "c2pa.title_label": "Título (opcional)",
   "c2pa.author_label": "Creador (opcional)",
   "c2pa.image_label": "Imagen a firmar",
@@ -259,13 +259,22 @@
   "lang.name.ja": "日本語",
   "lang.name.ko": "한국어",
   "sidebar": {
-    "certificate": "Pasaporte Digital",
-    "usage_warning": "⚠️ Uso lícito solo. Contenido ilegal o perjudicial está prohibido. Todo el procesamiento es 100% local."
+    "certificate": "Pasaporte digital",
+    "usage_warning": "⚠️ Solo uso lícito. Contenido ilegal o perjudicial está prohibido. Todo el procesamiento es 100% local.",
+    "audio_watermark": "Marca de agua de audio"
   },
   "card": {
     "certificate": {
-      "title": "Pasaporte Digital",
-      "desc": "Generar certificado PDF/DOCX/EPUB firmado"
+      "title": "Pasaporte digital",
+      "desc": "Generar certificado firmado PDF/DOCX/EPUB"
+    },
+    "audio_watermark": {
+      "title": "Marca de agua de audio",
+      "desc": "Ocultar secretos en WAV: LSB, GMM, QIM"
+    },
+    "did": {
+      "title": "Identidad DID",
+      "desc": "ID descentralizado + firma criptográfica"
     }
   },
   "wm": {
@@ -273,8 +282,9 @@
     "chrominance_suffix": " (crominancia redundante)",
     "redundant_suffix": " (redundante x3)",
     "secret_status_max": "Tamaño máximo de secreto: ~{bytes} bytes",
-    "secret_status_ok": "✓ Archivo secreto: {size} bytes — cabe dentro de la capacidad",
-    "secret_status_exceed": "✗ Archivo secreto: {size} bytes — excede la capacidad en {excess} bytes"
+    "secret_status_ok": "✓ Archivo secreto: {size} bytes — se ajusta dentro de la capacidad",
+    "secret_status_exceed": "✗ Archivo secreto: {size} bytes — excede la capacidad en {excess} bytes",
+    "detect_found": "Algoritmo detectado: {algo}"
   },
   "fp": {
     "label_file": "Archivo",
@@ -283,7 +293,7 @@
     "label_format": "Formato",
     "other_label": "Otro",
     "perceptual_label": "Perceptual (hashes de imagen)",
-    "results_btn": "Descargar Resultados"
+    "results_btn": "Descargar resultados"
   },
   "md": {
     "select_image": "Por favor, seleccione una imagen",
@@ -298,10 +308,10 @@
   },
   "ts": {
     "select_both": "Por favor, seleccione ambos el archivo original y su prueba .ots",
-    "created_success": "✓ ¡Marcador de tiempo .ots completo creado con atestación de blockchain!\n\nSHA-256: {hash}\nTamaño: {size} bytes\n\nEste archivo .ots incluye prueba de merkle del agregador de calendario de OpenTimestamps. Verifíquelo en cualquier momento utilizando la pestaña Verificar.",
-    "created_warning": "SHA-256: {hash}\n\n⚠ El agregador de calendario no es accesible. Se creó un marcador de tiempo .ots incompleto ({size} bytes, formato estándar).\n\nPara adjuntar una atestación de blockchain, ejecute uno de los siguientes comandos:\n\n{commands}",
-    "verified_match": "✓ ¡Verificado! El hash coincide con la prueba .ots.\n\nSHA-256 del archivo: {fileHash}\nSHA-256 de .ots:  {otsHash}\n\nEl archivo no ha cambiado desde que se creó el marcador de tiempo.",
-    "verified_mismatch": "✗ ¡Hash NO COINCIDE! El archivo ha sido modificado.\n\nSHA-256 del archivo: {fileHash}\nSHA-256 de .ots:  {otsHash}\n\nEl archivo ha cambiado desde que se creó el marcador de tiempo.",
+    "created_success": "✓ .ots de marca de tiempo completo creado con atestación de blockchain!\n\nSHA-256: {hash}\nTamaño: {size} bytes\n\nEste archivo .ots incluye prueba de Merkle del agregador de calendario OpenTimestamps. Verifíquelo en cualquier momento utilizando la pestaña Verificar.",
+    "created_warning": "SHA-256: {hash}\n\n⚠ Agregador de calendario no accesible. Se creó un .ots de marca de tiempo incompleto ({size} bytes, formato estándar).\n\nPara adjuntar una atestación de blockchain, ejecute uno de los siguientes comandos:\n\n{commands}",
+    "verified_match": "✓ Verificado! El hash coincide con la prueba .ots.\n\nSHA-256 del archivo: {fileHash}\nSHA-256 de .ots: {otsHash}\n\nEl archivo no ha cambiado desde que se creó la marca de tiempo.",
+    "verified_mismatch": "✗ Hash NO COINCIDE! El archivo ha sido modificado.\n\nSHA-256 del archivo: {fileHash}\nSHA-256 de .ots: {otsHash}\n\nEl archivo ha cambiado desde que se creó la marca de tiempo.",
     "option1_title": "Opción 1 — Sitio web de OpenTimestamps (más fácil):",
     "option1_step1": "1. Vaya a https://opentimestamps.org",
     "option1_step2": "2. Arrastre y suelte \"{name}.ots\" en la página",
@@ -368,7 +378,7 @@
     "submit": "Convertir",
     "converting": "Converting...",
     "loading_decoder": "Cargando decodificador de audio...",
-    "success": "Conversión completa",
+    "success": "Conversión completa!",
     "error": "Error: ",
     "download": "Descargar",
     "detected": "Detectado: ",
@@ -392,13 +402,13 @@
     "final_image_title": "✅ Imagen final",
     "final_image_desc": "Imagen con marca de agua + mensaje secreto incrustado — una sola descarga.",
     "final_dl_btn": "📥 Descargar imagen final",
-    "pi_dl_btn": "📥 Descargar imagen incrustada",
+    "pi_dl_btn": "📥 Descargar imagen inyectada",
     "step_upload": "Subir",
     "step_type": "Tipo",
     "step_c2pa": "C2PA",
     "step_watermark": "Marca de agua",
     "step_inject": "Inyectar",
-    "step_timestamp": "Marcador de tiempo",
+    "step_timestamp": "Marca de tiempo",
     "step_fingerprint": "Huella dactilar",
     "step_done": "Hecho",
     "type_image": "imagen",
@@ -408,25 +418,27 @@
     "type_other": "otro",
     "info_title": "Información del propietario",
     "info_name": "Nombre completo",
-    "info_name_ph": "por ejemplo, Juan Pérez",
+    "info_name_ph": "p. ej. John Doe",
     "info_email": "Correo electrónico",
-    "info_email_ph": "por ejemplo, juan@example.com",
+    "info_email_ph": "p. ej. john@example.com",
     "info_phone": "Teléfono",
-    "info_phone_ph": "por ejemplo, 5xx xxx xxxx",
+    "info_phone_ph": "p. ej. 5xx xxx xxxx",
     "phone_digits_only": "Por favor, ingrese solo números",
     "clear_confirm": "¿Borrar todos los datos? Se perderá el progreso actual.",
     "email_invalid": "Por favor, ingrese una dirección de correo electrónico válida",
-    "url_invalid": "Por favor, ingrese una URL válida (por ejemplo, https://example.com)",
+    "url_invalid": "Por favor, ingrese una URL válida (p. ej. https://example.com)",
     "select_country": "Seleccione país",
     "digits": "dígitos",
     "info_website": "Sitio web",
-    "info_website_ph": "por ejemplo, https://example.com",
+    "info_website_ph": "p. ej. https://example.com",
     "info_social": "Enlaces sociales",
-    "info_artist": "Soy un artista / músico",
+    "info_artist": "Soy un artista/músico",
     "info_music": "Plataformas de música",
     "info_required": "Por favor, complete todos los campos requeridos: Nombre, Correo electrónico, Teléfono, Sitio web.",
     "cert_title": "Pasaporte Digital",
-    "cert_desc": "Descargue un documento firmado con todos los resultados, vista previa de la imagen y código de verificación QR."
+    "cert_desc": "Descargue un documento firmado con todos los resultados, vista previa de la imagen y código de verificación QR.",
+    "step_did": "Firma DID",
+    "pi_done_did": "✅ Firma DID inyectada con éxito como mensaje secreto."
   },
   "shared": {
     "download": "Descargar",
@@ -435,7 +447,7 @@
     "processing": "Procesando...",
     "error_prefix": "Error: ",
     "lang_title": "Actual: {lang}\nHaga clic para cambiar el idioma",
-    "failed_load_image": "Falló la carga de la imagen",
+    "failed_load_image": "No se pudo cargar la imagen",
     "dangerous_file": "Este tipo de archivo no está permitido por razones de seguridad.",
     "wrong_type": "Por favor, seleccione un tipo de archivo válido para esta herramienta.",
     "corrupt_file": "Este archivo parece estar dañado o tiene un formato incorrecto.",
@@ -448,15 +460,16 @@
     "placeholder": "Escriba su pregunta...",
     "clear": "Borrar chat",
     "close": "Cerrar",
-    "help": "Pregúnteme sobre marca de agua, huella dactilar, marcador de tiempo, C2PA y más.",
+    "help": "Pregúnteme sobre marca de agua, huella dactilar, marca de tiempo, C2PA y más!",
     "context_watermark": "Veo que está en la página **Marca de agua**. ¿Necesita ayuda con eso?",
     "context_pixel": "Veo que está en la página **Inyección de píxeles**. ¿Necesita ayuda con eso?",
     "context_fingerprint": "Veo que está en la página **Huella dactilar**. ¿Necesita ayuda con eso?",
     "context_metadata": "Veo que está en la página **Metadatos**. ¿Necesita ayuda con eso?",
-    "context_timestamp": "Veo que está en la página **Marcador de tiempo**. ¿Necesita ayuda con eso?",
+    "context_timestamp": "Veo que está en la página **Marca de tiempo**. ¿Necesita ayuda con eso?",
     "context_c2pa": "Veo que está en la página **C2PA**. ¿Necesita ayuda con eso?",
-    "context_certificate": "Veo que está en la página **Pasaporte Digital**. ¿Necesita ayuda con eso?",
-    "context_converter": "Veo que está en la página **Convertidor de archivos**. ¿Necesita ayuda con eso?"
+    "context_certificate": "Veo que está en la página **Pasaporte digital**. ¿Necesita ayuda con eso?",
+    "context_converter": "Veo que está en la página **Convertidor de archivos**. ¿Necesita ayuda con eso?",
+    "context_audio_watermark": "Veo que está en la página **Marca de agua de audio**. ¿Necesita ayuda con eso?"
   },
   "shared.english_filename": "El nombre del archivo solo debe contener caracteres en inglés (A-Z, 0-9, guiones, guiones bajos, puntos). Cambie el nombre del archivo e intente de nuevo.",
   "simple.upload_size_note": "💡 Para marcar agua, utilice una imagen de portada grande (por ejemplo, 1920×1080) para que haya suficiente capacidad para incrustar una imagen secreta.",
@@ -495,7 +508,6 @@
   "simple.cert_desc_audio": "Descargue un documento firmado con todos los resultados, reproductor de audio y código QR de verificación.",
   "simple.cert_desc_video": "Descargue un documento firmado con todos los resultados, vista previa de video y código QR de verificación.",
   "simple.cert_desc_other": "Descargue un documento firmado con todos los resultados y código QR de verificación.",
-
   "did.heading": "Identidad Descentralizada (DID)",
   "did.desc": "Genere un par de claves DID (Identificador Descentralizado) y firme criptográficamente las huellas digitales de su archivo para demostrar que usted creó este contenido.",
   "did.gen_btn": "🔑 Generar Identidad DID",
@@ -526,22 +538,8 @@
   "did.fp_file_label": "Archivo JSON de huella digital (opcional)",
   "did.dl_btn": "📥 Descargar",
   "did.prompt_sign": "👉 Ahora haga clic en ✍️ Firmar Huella para firmar su archivo.",
-
   "c2pa.social_label": "Redes Sociales (opcional)",
   "c2pa.music_label": "Streaming de Música (opcional)",
-  "c2pa.read_file_label": "Imagen con datos C2PA",
-  "c2pa.write_desc": "Firme una imagen con metadatos de procedencia C2PA usando un certificado de prueba. Seleccione el tipo de contenido y agregue detalles opcionales.",
-  "c2pa.read_submit": "Leer Datos C2PA",
-  "c2pa.content_type_label": "Opciones de Contenido",
-  "c2pa.type_digital": "Creado Digitalmente",
-  "c2pa.type_edited": "Editado / Modificado",
-  "c2pa.type_ai": "Generado por IA",
-  "c2pa.type_capture": "Capturado Digitalmente",
-  "c2pa.type_composite": "Compuesto",
-  "c2pa.type_dnt": "No Entrenar IA",
-  "c2pa.image_label": "Imagen a firmar",
-  "c2pa.download_btn": "Descargar Resultados",
-
   "cert.heading": "Pasaporte Digital",
   "cert.desc": "Genere un Pasaporte Digital firmado en PDF, DOCX o EPUB con su imagen, información del usuario y resultados de otras herramientas. Pegue sus resultados abajo, luego haga clic en Generar.",
   "cert.image_label": "Imagen",
