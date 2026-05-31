@@ -175,10 +175,28 @@ program
 // ── Certificate command ──
 program
   .command('certificate')
-  .description('Generate a Digital Passport certificate from a fingerprint JSON')
-  .argument('<file>', 'Fingerprint JSON file')
+  .description('Generate a Digital Passport certificate from an image and identity data')
+  .argument('<file>', 'Image file to certify (or fingerprint JSON)')
   .option('-o, --output <file>', 'Output file path')
   .option('--format <type>', 'Output format: pdf, docx, epub (default: pdf)')
+  .option('--name <text>', 'Owner name')
+  .option('--email <text>', 'Owner email')
+  .option('--phone-code <text>', 'Country code (e.g., +1)')
+  .option('--phone <text>', 'Phone number')
+  .option('--website <url>', 'Website URL')
+  .option('--social-tiktok <url>', 'TikTok URL')
+  .option('--social-facebook <url>', 'Facebook URL')
+  .option('--social-instagram <url>', 'Instagram URL')
+  .option('--social-youtube <url>', 'YouTube URL')
+  .option('--music-spotify <url>', 'Spotify URL')
+  .option('--music-applemusic <url>', 'Apple Music URL')
+  .option('--music-ytmusic <url>', 'YouTube Music URL')
+  .option('--music-soundcloud <url>', 'SoundCloud URL')
+  .option('--watermark <file>', 'Watermark result file')
+  .option('--pixel-injection <file>', 'Pixel injection result file')
+  .option('--fingerprint <file>', 'Fingerprint JSON file')
+  .option('--did <file>', 'DID identity JSON file')
+  .option('--timestamp <file>', 'Timestamp .ots file')
   .action(async (filePath, opts) => {
     const { runCertificate } = require('./commands/certificate');
     await runCertificate(filePath, opts);
