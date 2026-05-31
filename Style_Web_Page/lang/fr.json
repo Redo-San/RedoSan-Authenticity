@@ -267,7 +267,7 @@
   "card": {
     "certificate": {
       "title": "Passeport numérique",
-      "desc": "Générer un certificat signé PDF/DOCX/EPUB"
+      "desc": "Générer un certificat PDF/DOCX/EPUB signé"
     },
     "audio_watermark": {
       "title": "Filigrane audio",
@@ -310,13 +310,13 @@
   "ts": {
     "select_both": "Veuillez sélectionner à la fois le fichier d'origine et sa preuve .ots",
     "created_success": "✓ .ots de timestamp complet créé avec attestation de blockchain !\n\nSHA-256 : {hash}\nTaille : {size} octets\n\nCe fichier .ots inclut une preuve de Merkle de l'agrégateur de calendrier OpenTimestamps. Vérifiez-le à tout moment en utilisant l'onglet Vérifier.",
-    "created_warning": "SHA-256 : {hash}\n\n⚠ L'agrégateur de calendrier est inaccessible. Un .ots de timestamp incomplet a été créé ({size} octets, format standard).\n\nPour attacher une preuve de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
-    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 de .ots : {otsHash}\n\nLe fichier n'a pas été modifié depuis la création du timestamp.",
-    "verified_mismatch": "✗ Hachage INCONNU ! Le fichier a été modifié.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 de .ots : {otsHash}\n\nLe fichier a changé depuis la création du timestamp.",
+    "created_warning": "SHA-256 : {hash}\n\n⚠ Agrégateur de calendrier inaccessible. Créé un .ots de timestamp incomplet ({size} octets, format standard).\n\nPour attacher une attestation de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
+    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier n'a pas changé depuis la création du timestamp.",
+    "verified_mismatch": "✗ Hachage INCONNU ! Le fichier a été modifié.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier a changé depuis la création du timestamp.",
     "option1_title": "Option 1 — Site Web OpenTimestamps (le plus simple) :",
     "option1_step1": "1. Allez sur https://opentimestamps.org",
     "option1_step2": "2. Faites glisser et déposez \"{name}.ots\" sur la page",
-    "option1_step3": "3. Cliquez sur \"Stamp\" pour obtenir un .ots complet avec une preuve de blockchain",
+    "option1_step3": "3. Cliquez sur \"Stamp\" pour obtenir un .ots complet avec preuve de blockchain",
     "option2_title": "Option 2 — CLI officiel :",
     "option3_title": "Option 3 — PowerShell (soumettre le hachage brut, 32 octets uniquement) :"
   },
@@ -353,7 +353,7 @@
     "no_data_desc": "Ce fichier ne contient aucune métadonnée de provenance C2PA.",
     "no_data_desc_alt": "Ce fichier n'a pas de métadonnée de provenance C2PA.",
     "no_manifests_title": "Aucun manifeste C2PA",
-    "no_manifests_desc": "Le fichier a des données C2PA, mais aucun manifeste lisible.",
+    "no_manifests_desc": "Le fichier a des données C2PA mais aucun manifeste lisible.",
     "no_manifests": "Aucun manifeste trouvé",
     "verified": "Vérifié",
     "view_details": "Voir les détails complets"
@@ -378,7 +378,7 @@
     "heading": "Convertisseur de fichiers",
     "file_label": "Sélectionner un fichier",
     "submit": "Convertir",
-    "converting": "Conversion...",
+    "converting": "Conversion en cours...",
     "loading_decoder": "Chargement du décodeur audio...",
     "success": "Conversion terminée !",
     "error": "Erreur : ",
@@ -399,7 +399,7 @@
     "c2pa_youtube": "URL YouTube",
     "c2pa_music_label": "Diffusion de musique (facultatif)",
     "c2pa_failed": "La signature C2PA a échoué. Vérifiez la console pour plus de détails.",
-    "c2pa_no_module": "Le module C2PA n'est pas chargé. Vérifiez votre connexion Internet et actualisez.",
+    "c2pa_no_module": "Module C2PA non chargé. Vérifiez votre connexion Internet et actualisez.",
     "pi_msg_ph": "Entrez votre message secret (obligatoire)",
     "final_image_title": "✅ Image finale",
     "final_image_desc": "Filigranée + message secret injecté — téléchargement unique.",
@@ -426,7 +426,7 @@
     "info_phone": "Téléphone",
     "info_phone_ph": "par exemple, 5xx xxx xxxx",
     "phone_digits_only": "Veuillez entrer uniquement des chiffres",
-    "clear_confirm": "Effacer toutes les données ? Vos progrès actuels seront perdus.",
+    "clear_confirm": "Effacer toutes les données ? Votre progression actuelle sera perdue.",
     "email_invalid": "Veuillez entrer une adresse de courriel valide",
     "url_invalid": "Veuillez entrer une URL valide (par exemple, https://example.com)",
     "select_country": "Sélectionner un pays",
@@ -450,7 +450,7 @@
     "download": "Télécharger",
     "drop_file": "Déposer un fichier ici ou <strong>parcourir</strong>",
     "select_file": "Veuillez sélectionner un fichier",
-    "processing": "Traitement...",
+    "processing": "Traitement en cours...",
     "error_prefix": "Erreur : ",
     "lang_title": "Actuel : {lang}\nCliquez pour changer de langue",
     "failed_load_image": "Échec du chargement de l'image",
@@ -458,7 +458,7 @@
     "wrong_type": "Veuillez sélectionner un type de fichier valide pour cet outil.",
     "corrupt_file": "Ce fichier semble être corrompu ou avoir un format incorrect.",
     "dangerous_content": "Ce fichier contient du code intégré potentiellement dangereux (scripts, gestionnaires d'événements) et n'est pas autorisé.",
-    "dangerous_document": "Ce document contient des fonctionnalités potentiellement dangereuses (JavaScript intégré, actions d'exécution automatique, lancement de fichiers externes, fichiers intégrés) et n'est pas autorisé.",
+    "dangerous_document": "Ce document contient des fonctionnalités potentiellement dangereuses (JavaScript intégré, actions d'exécution automatique, lancement externe, fichiers intégrés) et n'est pas autorisé.",
     "bad_structure": "Ce fichier semble avoir des données suspectes ajoutées après son contenu d'image valide. Veuillez réexporter le fichier à partir d'un éditeur d'images propre."
   },
   "test": {
