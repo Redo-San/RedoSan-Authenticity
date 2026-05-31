@@ -92,29 +92,18 @@ async function runPixelInjection(mode, opts) {
     };
     const method = extractMap[algoName] || 'extractLSB';
     let result;
-    if (typeof core[method] === 'function') {
-      result = core[method](imageData, password);
-    } else if (typeof core.detection?.blind_decoding === 'function') {
-      result = core.detection.blind_decoding(imageData, algoName, { password });
-    } else {
-      result = null;
-    }
-    
+    if (typeof core[method] === 'function') result = core[method](imageData, password);
+    else result = core.blind_decoding(imageData, algoName, password);
     if (result && result !== 'No readable message found') {
       const buf = Buffer.from(result, 'utf-8');
       if (outputFile) {
-        let finalPath = path.resolve(outputFile);
-        const stats = fs.existsSync(finalPath) ? fs.statSync(finalPath) : null;
-        if (stats && stats.isDirectory()) {
-          finalPath = path.join(finalPath, `extracted_${Date.now()}.txt`);
-        }
-        fs.writeFileSync(finalPath, buf);
-        console.log(`✓ Extracted (${result.length} chars): ${finalPath}`);
+        fs.writeFileSync(path.resolve(outputFile), buf);
+        console.log(`Extracted (${result.length} chars): ${outputFile}`);
       } else {
-        console.log(`✓ Extracted: ${result}`);
+        console.log(`Extracted: ${result}`);
       }
     } else {
-      console.log('✗ No watermark found with any algorithm.');
+      console.log('No watermark found.');
       process.exit(1);
     }
   }
