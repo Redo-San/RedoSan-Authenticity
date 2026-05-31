@@ -185,6 +185,16 @@ function handleHashNav() {
   var params = new URLSearchParams(window.location.search);
   var sq = params.get('search');
   if (sq) {
+    // Dismiss mode overlay if visible
+    var modeSelect = document.getElementById('modeSelect');
+    if (modeSelect && modeSelect.style.display !== 'none') {
+      if (typeof setMode === 'function') {
+        setMode('professional');
+      } else {
+        modeSelect.style.display = 'none';
+        document.body.classList.remove('no-scroll');
+      }
+    }
     setTimeout(function() {
       var inp = document.getElementById('searchInput');
       if (inp) { inp.value = sq; siteSearch(); }

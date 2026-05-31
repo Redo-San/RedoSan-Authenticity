@@ -189,7 +189,7 @@ function show404Page() {
 function doErrorSearch() {
   var q = document.getElementById('errorSearchInput');
   if (!q || !q.value.trim()) return;
-  window.location.href = '/RedoSan-Authenticity/?search=' + encodeURIComponent(q.value.trim());
+  window.location.replace('/RedoSan-Authenticity/?search=' + encodeURIComponent(q.value.trim()));
 }
 
 var requestedPath = window.location.pathname;
