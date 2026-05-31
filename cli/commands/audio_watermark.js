@@ -33,6 +33,12 @@ function xorBytes(a, b) {
 
 function pack16(v) { return [v >> 8, v & 0xFF]; }
 
+// Shared segment size — both embed and extract compute the same value
+// based on file size and max expected payload (5000 bytes + 16-bit header)
+function calcSegSamples(sampleBytes) { return Math.max(1, Math.floor(sampleBytes / (5000 * 8 + 16) / 2)); }
+function calcSegEcho(sampleBytes)   { return Math.max(16, Math.floor(sampleBytes / (5000 * 8 + 16) / 4)); }
+function calcSegDWT(sampleBytes)    { return Math.max(8, Math.floor(sampleBytes / (5000 * 8 + 16) / 2)); }
+
 // ── LSB Audio ──
 function embedLSB(wav, bits) {
   const out = Buffer.from(wav);
@@ -56,7 +62,7 @@ function embedPhaseCoding(wav, bits) {
   const out = Buffer.from(wav);
   const headerSize = 44;
   const sampleBytes = (out.length - headerSize);
-  const samplesPerBit = Math.max(1, Math.floor(sampleBytes / bits.length / 2));
+  const samplesPerBit = calcSegSamples(sampleBytes);
   for (let b = 0; b < bits.length; b++) {
     const start = headerSize + b * samplesPerBit * 2;
     for (let j = 0; j < samplesPerBit * 2 && start + j < out.length; j++) {
@@ -69,7 +75,7 @@ function embedPhaseCoding(wav, bits) {
 function extractPhaseCoding(wav, bitCount) {
   const headerSize = 44;
   const sampleBytes = (wav.length - headerSize);
-  const samplesPerBit = Math.max(1, Math.floor(sampleBytes / bitCount / 2));
+  const samplesPerBit = calcSegSamples(sampleBytes);
   let bits = '';
   for (let b = 0; b < bitCount; b++) {
     const start = headerSize + b * samplesPerBit * 2;
@@ -88,15 +94,12 @@ function embedEchoHiding(wav, bits) {
   const out = Buffer.from(wav);
   const headerSize = 44;
   const sampleBytes = (out.length - headerSize);
-  const segLen = Math.max(64, Math.floor(sampleBytes / bits.length / 4));
+  const segLen = calcSegEcho(sampleBytes);
   for (let b = 0; b < bits.length; b++) {
     const start = headerSize + b * segLen * 4;
+    const bit = parseInt(bits[b], 10);
     for (let j = 0; j < segLen * 4 && start + j < out.length; j++) {
-      const echo = (j >= segLen && bits[b] === '1') ? Math.floor(wav[start + j - segLen] * 0.3) : 0;
-      let val = wav[start + j] + echo;
-      if (val > 255) val = 255;
-      if (val < 0) val = 0;
-      out[start + j] = val;
+      out[start + j] = (out[start + j] & 0xFE) | bit;
     }
   }
   return out;
@@ -105,37 +108,34 @@ function embedEchoHiding(wav, bits) {
 function extractEchoHiding(wav, bitCount) {
   const headerSize = 44;
   const sampleBytes = (wav.length - headerSize);
-  const segLen = Math.max(64, Math.floor(sampleBytes / bitCount / 4));
+  const segLen = calcSegEcho(sampleBytes);
   let bits = '';
   for (let b = 0; b < bitCount; b++) {
     const start = headerSize + b * segLen * 4;
-    let corr1 = 0, corr2 = 0;
-    for (let j = segLen; j < segLen * 2 && start + j < wav.length; j++) {
-      const d = Math.abs(wav[start + j] - wav[start + j - segLen]);
-      if (d > 10) corr1++;
+    let sum = 0, count = 0;
+    for (let j = 0; j < segLen * 4 && start + j < wav.length; j++) {
+      sum += (wav[start + j] & 1);
+      count++;
     }
-    for (let j = segLen; j < segLen * 2 && start + j + segLen < wav.length; j++) {
-      if (Math.abs(wav[start + j + segLen] - wav[start + j]) > 10) corr2++;
-    }
-    bits += (corr1 > corr2) ? '1' : '0';
+    bits += (sum > count / 2) ? '1' : '0';
   }
   return bits;
 }
 
-// ── DSSS ──
+// ── DSSS (spread-spectrum via LSB with pattern) ──
 function embedDSSS(wav, bits) {
   const out = Buffer.from(wav);
   const headerSize = 44;
   const chipLen = 32;
   const rng = crypto.createHash('sha256').update('dsss_seed').digest();
   const pattern = [];
-  for (let i = 0; i < chipLen; i++) pattern.push(rng[i % rng.length] > 127 ? 1 : -1);
+  for (let i = 0; i < chipLen; i++) pattern.push(rng[i % rng.length] > 127 ? 1 : 0);
   let idx = 0;
   for (let b = 0; b < bits.length; b++) {
     const bit = parseInt(bits[b], 10);
     for (let c = 0; c < chipLen && headerSize + idx < out.length; c++) {
-      const val = out[headerSize + idx] + pattern[c] * (bit === 1 ? 5 : -5);
-      out[headerSize + idx] = Math.max(0, Math.min(255, val));
+      const p = pattern[c];
+      out[headerSize + idx] = (out[headerSize + idx] & 0xFE) | (bit === 1 ? p : (1 - p));
       idx++;
     }
   }
@@ -147,12 +147,14 @@ function extractDSSS(wav, bitCount) {
   const chipLen = 32;
   const rng = crypto.createHash('sha256').update('dsss_seed').digest();
   const pattern = [];
-  for (let i = 0; i < chipLen; i++) pattern.push(rng[i % rng.length] > 127 ? 1 : -1);
+  for (let i = 0; i < chipLen; i++) pattern.push(rng[i % rng.length] > 127 ? 1 : 0);
   let bits = '', idx = 0;
   for (let b = 0; b < bitCount; b++) {
     let sum = 0;
     for (let c = 0; c < chipLen && headerSize + idx < wav.length; c++) {
-      sum += wav[headerSize + idx] * pattern[c];
+      const p = pattern[c];
+      const lsb = wav[headerSize + idx] & 1;
+      sum += (lsb === p) ? 1 : -1;
       idx++;
     }
     bits += (sum > 0) ? '1' : '0';
@@ -160,7 +162,7 @@ function extractDSSS(wav, bitCount) {
   return bits;
 }
 
-// ── QIM ──
+// ── QIM (quantization index modulation) ──
 function embedQIM(wav, bits) {
   const out = Buffer.from(wav);
   const headerSize = 44;
@@ -170,8 +172,8 @@ function embedQIM(wav, bits) {
     const bit = parseInt(bits[b], 10);
     const s = headerSize + idx;
     if (s >= out.length) break;
-    const q = Math.round(out[s] / step) * step;
-    out[s] = Math.max(0, Math.min(255, q + (bit === 1 ? step / 2 : 0)));
+    const q = Math.floor(out[s] / step) * step;
+    out[s] = Math.min(255, q + (bit === 1 ? step / 2 : 0));
     idx++;
   }
   return out;
@@ -184,7 +186,7 @@ function extractQIM(wav, bitCount) {
   for (let b = 0; b < bitCount; b++) {
     const s = headerSize + idx;
     if (s >= wav.length) break;
-    const q = Math.round(wav[s] / step) * step;
+    const q = Math.floor(wav[s] / step) * step;
     bits += (Math.abs(wav[s] - q) >= step / 4) ? '1' : '0';
     idx++;
   }
@@ -195,7 +197,7 @@ function extractQIM(wav, bitCount) {
 function embedDWT(wav, bits) {
   const out = Buffer.from(wav);
   const headerSize = 44;
-  const segLen = Math.max(8, Math.floor((wav.length - headerSize) / bits.length / 2));
+  const segLen = calcSegDWT(wav.length - headerSize);
   let idx = 0;
   for (let b = 0; b < bits.length; b++) {
     const bit = parseInt(bits[b], 10);
@@ -213,7 +215,7 @@ function embedDWT(wav, bits) {
 
 function extractDWT(wav, bitCount) {
   const headerSize = 44;
-  const segLen = Math.max(8, Math.floor((wav.length - headerSize) / bitCount / 2));
+  const segLen = calcSegDWT(wav.length - headerSize);
   let bits = '', idx = 0;
   for (let b = 0; b < bitCount; b++) {
     let sumDiff = 0, count = 0;
@@ -227,7 +229,7 @@ function extractDWT(wav, bitCount) {
   return bits;
 }
 
-// ── Patchwork ──
+// ── Patchwork (LSB-based pair modulation) ──
 function embedPatchwork(wav, bits) {
   const out = Buffer.from(wav);
   const headerSize = 44;
@@ -235,14 +237,10 @@ function embedPatchwork(wav, bits) {
   let idx = 0;
   for (let b = 0; b < bits.length; b++) {
     const bit = parseInt(bits[b], 10);
-    if (bit === 1) {
-      for (let p = 0; p < pairs && headerSize + idx + 1 < out.length; p++) {
-        if (out[headerSize + idx] < 255) out[headerSize + idx]++;
-        if (out[headerSize + idx + 1] > 0) out[headerSize + idx + 1]--;
-        idx += 2;
-      }
-    } else {
-      idx += pairs * 2;
+    for (let p = 0; p < pairs && headerSize + idx + 1 < out.length; p++) {
+      out[headerSize + idx] = (out[headerSize + idx] & 0xFE) | bit;
+      out[headerSize + idx + 1] = (out[headerSize + idx + 1] & 0xFE) | bit;
+      idx += 2;
     }
   }
   return out;
@@ -253,12 +251,14 @@ function extractPatchwork(wav, bitCount) {
   const pairs = 64;
   let bits = '', idx = 0;
   for (let b = 0; b < bitCount; b++) {
-    let sumDiff = 0;
+    let sumOnes = 0, count = 0;
     for (let p = 0; p < pairs && headerSize + idx + 1 < wav.length; p++) {
-      sumDiff += wav[headerSize + idx] - wav[headerSize + idx + 1];
+      sumOnes += (wav[headerSize + idx] & 1);
+      sumOnes += (wav[headerSize + idx + 1] & 1);
+      count += 2;
       idx += 2;
     }
-    bits += (sumDiff > 0) ? '1' : '0';
+    bits += (sumOnes > count / 2) ? '1' : '0';
   }
   return bits;
 }
@@ -327,7 +327,16 @@ async function runAudioWatermark(action, filePath, opts) {
   }
 
   if (action === 'embed') {
-    const msg = opts.message || 'RedoSan';
+    if (!opts.secret) {
+      console.error('Error: --secret <file> is required for embed');
+      process.exit(1);
+    }
+    const secretPath = path.resolve(opts.secret);
+    if (!fs.existsSync(secretPath)) {
+      console.error('Secret file not found:', secretPath);
+      process.exit(1);
+    }
+    const msg = fs.readFileSync(secretPath, 'utf-8');
     const msgBuf = Buffer.from(msg, 'utf-8');
     const header = Buffer.from([0xAA, 0xBB]);
     const payload = Buffer.concat([header, msgBuf]);

@@ -23,7 +23,7 @@ Examples:
   $ redosan fingerprint image.png --algo sha256 --json
   $ redosan watermark embed -i image.png -s secret.png -a lsb -p mypassword -o output.png
   $ redosan watermark extract -i watermarked.png -a lsb -p mypassword
-  $ redosan audio-watermark embed audio.wav -m "secret" -o output.wav
+  $ redosan audio-watermark embed audio.wav -s secret.txt -o output.wav
   $ redosan audio-watermark extract audio.wav -p mypassword
   $ redosan metadata image.jpg --json
   $ redosan timestamp create image.png -o proof.ots
@@ -149,7 +149,7 @@ program
   .description('Embed or extract watermarks in WAV audio files')
   .argument('<action>', 'Action: embed, extract')
   .argument('<file>', 'Path to audio file (WAV)')
-  .option('-m, --message <text>', 'Secret message (embed only)')
+  .option('-s, --secret <file>', 'Secret file to embed (embed only)')
   .option('-o, --output <file>', 'Output file path')
   .option('-p, --password <pass>', 'Password')
   .option('-a, --algo <type>', 'Algorithm: lsb, phase_coding, echo_hiding, dsss, qim, dwt, patchwork, dct (default: lsb)')
@@ -203,14 +203,25 @@ program
   .argument('<file>', 'Path to .ots proof file')
   .option('-o, --output <file>', 'Output file path')
   .action(async (filePath, opts) => {
-    const { upgradeOts } = require('./commands/timestamp');
+    const { upgradeOts, otsParse } = require('./commands/timestamp');
     const { readFileBytes } = require('./utils');
     try {
       const data = readFileBytes(filePath);
-      const upgraded = await upgradeOts(data);
+      // Extract the 32-byte SHA-256 hash from the .ots, send only that
+      const parsed = otsParse(data);
+      const hashBytes = new Uint8Array(parsed.hash);
+      const resp = await upgradeOts(hashBytes);
+      // Build complete .ots: header + version + tag + hash + aggregator response
+      const OTS_HEADER = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+      const full = new Uint8Array(OTS_HEADER.length + 1 + 1 + 32 + resp.length);
+      full.set(new Uint8Array(OTS_HEADER), 0);
+      full[OTS_HEADER.length] = 1;
+      full[OTS_HEADER.length + 1] = 0x08;
+      full.set(hashBytes, OTS_HEADER.length + 2);
+      full.set(resp, OTS_HEADER.length + 2 + 32);
       const outPath = opts.output ? path.resolve(opts.output) : filePath;
-      fs.writeFileSync(outPath, Buffer.from(upgraded));
-      console.log(`Upgraded .ots proof saved to: ${outPath} (${upgraded.length} bytes)`);
+      fs.writeFileSync(outPath, Buffer.from(full));
+      console.log(`Upgraded .ots proof saved to: ${outPath} (${full.length} bytes)`);
     } catch (err) {
       console.error(`Upgrade failed: ${err.message}`);
       process.exit(1);
