@@ -438,11 +438,84 @@ async function menuDid() {
 async function menuCertificate() {
   console.clear();
   console.log(c('bright', '── Digital Passport ──'));
-  const file = await selectFile('Fingerprint JSON file > ');
-  const format = await ask(c('cyan', 'Format (pdf/docx/epub, Enter = pdf): '));
-  const outputRaw = await ask(c('cyan', 'Output path (Enter = passport.pdf): '));
-  const out = resolvePath(outputRaw, 'passport.pdf');
-  const args = ['certificate', file, '-o', out, '--format', format.trim() || 'pdf'];
+  console.log(c('dim', 'Professional Mode — All fields are optional except Image, Name, Email, Phone, Website\n'));
+
+  // Required: Image file
+  const imageFile = await selectFile('Image file to certify > ');
+  const args = ['certificate', imageFile];
+
+  // Required identity
+  const name = await ask(c('cyan', 'Your name (required) > '));
+  if (name.trim()) args.push('--name', name.trim());
+
+  const email = await ask(c('cyan', 'Your email (required) > '));
+  if (email.trim()) args.push('--email', email.trim());
+
+  const phoneCode = await ask(c('cyan', 'Country code (Enter = +1) > '));
+  const pcode = phoneCode.trim() || '+1';
+  args.push('--phone-code', pcode);
+
+  const phone = await ask(c('cyan', 'Phone number (required) > '));
+  if (phone.trim()) args.push('--phone', phone.replace(/\D/g, '').slice(0, 15));
+
+  const website = await ask(c('cyan', 'Website URL (required, e.g. https://example.com) > '));
+  if (website.trim()) args.push('--website', website.trim());
+
+  // Social links (optional)
+  console.log(c('dim', '\nSocial links (optional, press Enter to skip each):'));
+  const tiktok = await ask(c('cyan', '  TikTok URL > '));
+  if (tiktok.trim()) args.push('--social-tiktok', tiktok.trim());
+  const facebook = await ask(c('cyan', '  Facebook URL > '));
+  if (facebook.trim()) args.push('--social-facebook', facebook.trim());
+  const instagram = await ask(c('cyan', '  Instagram URL > '));
+  if (instagram.trim()) args.push('--social-instagram', instagram.trim());
+  const youtube = await ask(c('cyan', '  YouTube URL > '));
+  if (youtube.trim()) args.push('--social-youtube', youtube.trim());
+
+  // Music links (optional)
+  console.log(c('dim', '\nMusic platform links (optional, press Enter to skip each):'));
+  const spotify = await ask(c('cyan', '  Spotify URL > '));
+  if (spotify.trim()) args.push('--music-spotify', spotify.trim());
+  const appleMusic = await ask(c('cyan', '  Apple Music URL > '));
+  if (appleMusic.trim()) args.push('--music-applemusic', appleMusic.trim());
+  const ytmusic = await ask(c('cyan', '  YouTube Music URL > '));
+  if (ytmusic.trim()) args.push('--music-ytmusic', ytmusic.trim());
+  const soundcloud = await ask(c('cyan', '  SoundCloud URL > '));
+  if (soundcloud.trim()) args.push('--music-soundcloud', soundcloud.trim());
+
+  // Tool result files (optional)
+  console.log(c('dim', '\nTool results (optional, press Enter to skip each):'));
+
+  async function askFile(prompt) {
+    const raw = await ask(c('cyan', '  ' + prompt));
+    const cleaned = cleanPath(raw);
+    if (!cleaned) return '';
+    const resolved = path.resolve(cleaned);
+    if (fs.existsSync(resolved)) return resolved;
+    console.log(c('yellow', '  (file not found, skipping)'));
+    return '';
+  }
+
+  const wmFile = await askFile('Watermark result file (json/txt/log) > ');
+  if (wmFile) args.push('--watermark', wmFile);
+  const piFile = await askFile('Pixel Injection result file (json/txt/log) > ');
+  if (piFile) args.push('--pixel-injection', piFile);
+  const fpFile = await askFile('Fingerprint JSON file > ');
+  if (fpFile) args.push('--fingerprint', fpFile);
+  const didFile = await askFile('DID Identity JSON file > ');
+  if (didFile) args.push('--did', didFile);
+  const tsFile = await askFile('Timestamp .ots file > ');
+  if (tsFile) args.push('--timestamp', tsFile);
+
+  // Format and output
+  const format = await ask(c('cyan', '\nFormat (pdf/docx/epub, Enter = pdf): '));
+  args.push('--format', format.trim() || 'pdf');
+
+  const defaultName = 'passport.' + (format.trim() || 'pdf');
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = ' + defaultName + '): '));
+  const out = resolvePath(outputRaw, defaultName);
+  args.push('-o', out);
+
   await run(args);
   await ask('Press Enter...');
 }

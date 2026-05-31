@@ -25,7 +25,11 @@
   "dependencies": {
     "acorn": "^8.16.0",
     "canvas": "^3.2.3",
-    "commander": "^14.0.3"
+    "commander": "^14.0.3",
+    "docx": "^9.7.1",
+    "jszip": "^3.10.1",
+    "pdfkit": "^0.18.0",
+    "qrcode": "^1.5.4"
   },
   "overrides": {
     "@mapbox/node-pre-gyp": "2.0.3",
