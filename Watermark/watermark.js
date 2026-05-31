@@ -58,7 +58,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         }
         
         const result = ycbcrToImageData(ycbcr.Y, ycbcr.Cb, ycbcr.Cr, w, h);
-        const blob = await canvasToBlob(result.canvas);
+        const blob = await canvasToBlob(result.canvas, 'image/jpeg');
         const names = {2:'Frequency DCT',4:'Latent DCT',5:'Zero-bit',7:'Forensic',9:'Imatag-style'};
         const extras = {4:' (redundant x3)',5:'',7:'',9:''};
         return { ok: true, data: blob, msg: `Type ${type} (${names[type]}): ${type === 5 ? 'Presence mark embedded' : secret.length + ' bytes hidden'}${extras[type] || ''}` };
@@ -87,50 +87,6 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: 'Type 8 (Fragile): SHA-256 integrity hash embedded' };
-    }
-    
-    return { ok: false, error: `Unknown type ${type}` };
-}
-
-async function watermarkExtract(type, imageFile, password) {
-    if (type !== 5 && type !== 8 && (!password || !password.trim()))
-        return { ok: false, error: 'Password is required for this algorithm' };
-    const imgResult = await loadImage(imageFile);
-    const { imgData, w, h } = imgResult;
-    
-    var key = password ? await pw_key(password) : new Uint8Array(0);
-    
-    const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
-    
-    function extractData(bitsStr) {
-        if (bitsStr.length < 32) return { data: null, reason: 'no-data' };
-        var dlen = parseInt(bitsStr.substr(0, 32), 2);
-        if (isNaN(dlen) || dlen <= 0 || dlen > Math.min(w * h * 3 / 8, 100000)) return { data: null, reason: 'no-data' };
-        if (bitsStr.length < 32 + dlen * 8) return { data: null, reason: 'no-data' };
-        const enc = from_bits(bitsStr.substr(32, dlen * 8));
-        const dec = xor_bytes(enc, key);
-        if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB)
-            return { data: dec.slice(2), reason: 'ok' };
-        return { data: null, reason: 'bad-password' };
-    }
-    
-    if (type === 1) {
-        const b = wm1_extract(imgData);
-        const res = b.length >= 32 ? extractData(b) : { data: null, reason: 'no-data' };
-        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
-        return { ok: true, files: { 'extracted_type1.bin': res.data }, msg: `Type 1 extract: ${res.data.length} bytes` };
-    }
-    
-    else if (type === 2) {
-        const ycbcr = rgbToYcbcr(imgData);
-        let b = extractFromDCT(ycbcr.Y, w, h, 32);
-        if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
-        b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-        const res = extractData(b);
-        if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
-        return { ok: true, files: { 'extracted_type2.bin': res.data }, msg: `Type 2 extract: ${res.data.length} bytes` };
     }
     
     else if (type === 3) {
@@ -278,7 +234,8 @@ async function handleWatermarkEmbed() {
       };
       window._currentDownloadHandler = downloadWatermark;
       document.getElementById('dl-modal-title').textContent = 'Download Watermark Result';
-      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.png" class="btn">' + __('wm.download_btn') + '</a>' +
+      var ext = ([2,4,5,7,9].indexOf(type) >= 0) ? 'jpg' : 'png';
+      dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.' + ext + '" class="btn">' + __('wm.download_btn') + '</a>' +
         '<br><button onclick="showDownloadModal()" class="btn" style="margin-top:8px">' + __('fp.results_btn', 'Download Results') + '</button>';
       setText('wm-output', result.msg);
     } else {

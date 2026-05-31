@@ -1624,7 +1624,7 @@ function renderDone(body) {
   } else if (results.watermark && results.watermarkUrl) {
     sections.push('<div class="simple-done-section"><h3>' + __('simple.watermarked_label') + '</h3>' +
       '<img src="' + results.watermarkUrl + '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
-      '<a href="' + results.watermarkUrl + '" download="watermarked.png" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
+      '<a href="' + results.watermarkUrl + '" download="watermarked.jpg" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
   }
 
   if (results.audioWatermark && results.audioWatermarkUrl) {
