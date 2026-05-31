@@ -57,30 +57,27 @@ class WatermarkCore {
         const width = imageData.width;
         const height = imageData.height;
         const data = new Uint8ClampedArray(imageData.data);
-        
-        // Add error correction and redundancy
-        const messageWithCRC = this.addErrorCorrection(message);
-        const binaryMessage = this.stringToBinary(messageWithCRC);
-        
-        // Adaptive embedding based on image complexity
-        const complexityMap = this.calculateComplexityMap(data, width, height);
+        const msgBytes = new TextEncoder().encode(message);
+        // Payload: 4-byte length prefix (little-endian) + message bytes
+        const payload = new Uint8Array(4 + msgBytes.length);
+        payload[0] = msgBytes.length & 0xFF;
+        payload[1] = (msgBytes.length >> 8) & 0xFF;
+        payload[2] = (msgBytes.length >> 16) & 0xFF;
+        payload[3] = (msgBytes.length >> 24) & 0xFF;
+        payload.set(msgBytes, 4);
+        const binaryMessage = this.bytesToBinary(payload);
         let messageIndex = 0;
         
-        for (let y = 0; y < height && messageIndex < binaryMessage.length; y++) {
-            for (let x = 0; x < width && messageIndex < binaryMessage.length; x++) {
-                const pixelIndex = (y * width + x) * 4;
-                const complexity = complexityMap[y][x];
-                
-                // Adaptive embedding strength based on complexity
-                const channels = complexity > 0.7 ? 4 : 3; // More channels in complex areas
-                
-                for (let channel = 0; channel < channels && messageIndex < binaryMessage.length; channel++) {
-                    const bit = parseInt(binaryMessage[messageIndex++], 2);
-                    const strength = complexity > 0.5 ? 2 : 1; // Stronger in complex areas
-                    const mask = ~(1 << strength);
-                    data[pixelIndex + channel] = (data[pixelIndex + channel] & mask) | (bit << strength);
-                }
+        for (let i = 0; i < data.length && messageIndex < binaryMessage.length; i += 4) {
+            data[i + 3] = 255; // ensure visible alpha
+            for (let channel = 0; channel < 3 && messageIndex < binaryMessage.length; channel++) {
+                data[i + channel] = (data[i + channel] & 0xFE) | parseInt(binaryMessage[messageIndex++], 2);
             }
+        }
+        
+        // Set alpha = 255 for all pixels so canvas putImageData applies correctly
+        for (let i = 0; i < data.length; i += 4) {
+            data[i + 3] = 255;
         }
         
         return new ImageData(data, width, height);
@@ -737,6 +734,15 @@ class WatermarkCore {
         return this.addRedundancy(withCRC, 3);
     }
     
+    // Bytes to binary conversion
+    bytesToBinary(bytes) {
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+            binary += bytes[i].toString(2).padStart(8, '0');
+        }
+        return binary;
+    }
+
     // String to binary conversion
     stringToBinary(str) {
         let binary = '';
@@ -2355,46 +2361,37 @@ class WatermarkCore {
         return result.length > 0 ? result : 'No readable message found';
     }
     
-    // Enhanced LSB extraction
+    // Enhanced LSB extraction (matches enhancedLSB embed: 4-byte length prefix + message)
     extractEnhancedLSB(watermarkedImageData) {
         const data = watermarkedImageData.data;
-        const width = watermarkedImageData.width;
-        const height = watermarkedImageData.height;
-        const complexityMap = this.calculateComplexityMap(data, width, height);
-        let binaryMessage = '';
-        let extractedChars = [];
+        let bits = '';
 
-        for (let y = 0; y < height && extractedChars.length <= 1000; y++) {
-            for (let x = 0; x < width && extractedChars.length <= 1000; x++) {
-                const pixelIndex = (y * width + x) * 4;
-                const complexity = complexityMap[y][x];
-                const channels = complexity > 0.7 ? 4 : 3;
-                const strength = complexity > 0.5 ? 2 : 1;
-
-                for (let channel = 0; channel < channels; channel++) {
-                    const bit = (data[pixelIndex + channel] >> strength) & 1;
-                    binaryMessage += bit;
-                }
-
-                if (binaryMessage.length >= 8) {
-                    const byte = binaryMessage.substring(0, 8);
-                    const charCode = parseInt(byte, 2);
-                    if (charCode > 255) break;
-                    if (charCode >= 32 && charCode <= 126) {
-                        extractedChars.push(String.fromCharCode(charCode));
-                    }
-                    binaryMessage = binaryMessage.substring(8);
-                }
+        for (let i = 0; i < data.length; i += 4) {
+            for (let channel = 0; channel < 3; channel++) {
+                bits += data[i + channel] & 1;
             }
         }
 
-        const result = extractedChars.join('');
-        // Deduplicate repetition code (every other char)
-        let deduped = '';
-        for (let i = 0; i < result.length; i += 2) {
-            deduped += result[i];
+        // Read first 32 bits (4 bytes) as little-endian length
+        if (bits.length < 32) return 'No readable message found';
+        const len = parseInt(bits.substring(24, 32), 2) << 24 |
+                    parseInt(bits.substring(16, 24), 2) << 16 |
+                    parseInt(bits.substring(8, 16), 2) << 8 |
+                    parseInt(bits.substring(0, 8), 2);
+
+        if (len <= 0 || len > 100000) return 'No readable message found';
+
+        const totalBits = 32 + len * 8;
+        if (bits.length < totalBits) return 'No readable message found';
+
+        const msgBytes = [];
+        for (let i = 0; i < len; i++) {
+            const offset = 32 + i * 8;
+            const byte = parseInt(bits.substring(offset, offset + 8), 2);
+            msgBytes.push(byte);
         }
-        return deduped.length > 0 ? deduped : 'No readable message found';
+
+        return new TextDecoder('utf-8', { fatal: false }).decode(new Uint8Array(msgBytes));
     }
     
     // Multi-channel LSB extraction
