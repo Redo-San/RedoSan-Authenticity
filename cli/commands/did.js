@@ -11,18 +11,26 @@ async function runDid(action, file, opts) {
     if (algo === 'ED25519') {
       const { generateKeyPairSync } = crypto;
       keyPair = generateKeyPairSync('ed25519', {
-        privateKey: { format: 'pem' },
-        publicKey: { format: 'pem' },
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
       });
     } else if (algo === 'P-256') {
       const { generateKeyPairSync } = crypto;
       keyPair = generateKeyPairSync('ec', {
         namedCurve: 'P-256',
-        privateKey: { format: 'pem' },
-        publicKey: { format: 'pem' },
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+      });
+    } else if (algo === 'RSA-2048' || algo === 'RSA-4096') {
+      const { generateKeyPairSync } = crypto;
+      const bits = algo === 'RSA-4096' ? 4096 : 2048;
+      keyPair = generateKeyPairSync('rsa', {
+        modulusLength: bits,
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
       });
     } else {
-      console.error('Unsupported algorithm. Use Ed25519 or P-256.');
+      console.error('Unsupported algorithm. Use Ed25519, P-256, RSA-2048, or RSA-4096.');
       process.exit(1);
     }
 
@@ -67,9 +75,18 @@ async function runDid(action, file, opts) {
       process.exit(1);
     }
 
-    const sign = crypto.createSign('SHA256');
-    sign.update(hash);
-    const signature = sign.sign(didIdentity.privateKey, 'base64');
+    const algo = (didIdentity.algorithm || '').toUpperCase();
+    let signature;
+    if (algo === 'ED25519') {
+      signature = crypto.sign(null, data, didIdentity.privateKey).toString('base64');
+    } else if (algo === 'P-256' || algo.startsWith('RSA')) {
+      const sign = crypto.createSign('SHA256');
+      sign.update(hash);
+      signature = sign.sign(didIdentity.privateKey, 'base64');
+    } else {
+      console.error('Unsupported algorithm:', algo);
+      process.exit(1);
+    }
 
     const sigOutput = {
       file: path.basename(absPath),
