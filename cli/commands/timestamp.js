@@ -113,17 +113,24 @@ async function runCreate(filePath, opts) {
   const sha256Hash = crypto.createHash('sha256').update(Buffer.from(data)).digest();
   const sha256Bytes = new Uint8Array(sha256Hash);
 
-  // Build .ots proof
-  const otsBytes = otsBuildDetached(sha256Bytes);
-
-  // Try to upgrade via calendar aggregator
-  let upgraded = false;
-  let upgradedBytes = otsBytes;
   console.log('Creating OpenTimestamps proof...');
+
+  // Try to upgrade via calendar aggregator (send raw 32-byte hash only)
+  let upgraded = false;
+  let upgradedBytes;
   try {
-    upgradedBytes = await upgradeOts(otsBytes);
+    const resp = await upgradeOts(sha256Bytes);
+    // Aggregator returns timestamp operations — wrap in .ots format
+    upgradedBytes = new Uint8Array(OTS_HEADER.length + 1 + 1 + 32 + resp.length);
+    upgradedBytes.set(new Uint8Array(OTS_HEADER), 0);
+    upgradedBytes[OTS_HEADER.length] = 1;
+    upgradedBytes[OTS_HEADER.length + 1] = 0x08;
+    upgradedBytes.set(sha256Bytes, OTS_HEADER.length + 2);
+    upgradedBytes.set(resp, OTS_HEADER.length + 2 + 32);
     upgraded = true;
   } catch (e) {
+    // Aggregator unreachable — build incomplete .ots as fallback
+    upgradedBytes = otsBuildDetached(sha256Bytes);
     console.log('⚠ Calendar aggregator unreachable (will create incomplete .ots)');
     console.log('  To complete later: redosan timestamp upgrade proof.ots');
   }
@@ -194,4 +201,4 @@ async function runVerify(filePath, opts) {
   }
 }
 
-module.exports = { runTimestamp };
+module.exports = { runTimestamp, upgradeOts, otsParse };

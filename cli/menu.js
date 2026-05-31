@@ -351,12 +351,12 @@ async function runAwmEmbed() {
   console.clear();
   console.log(c('bright', '── Audio Watermark Embed ──'));
   const audio = await selectFile('Audio file path (WAV) > ');
-  const msg = await ask(c('cyan', 'Secret message > '));
+  const secretFile = await selectFile('Secret file > ');
   const pass = await ask(c('yellow', 'Password > '));
   const algo = await pickAlgorithm('Algorithm:', ['lsb', 'phase_coding', 'echo_hiding', 'dsss', 'qim', 'dwt', 'patchwork', 'dct'], 'lsb');
   const outputRaw = await ask(c('cyan', 'Output path (Enter = output.wav): '));
   const out = resolvePath(outputRaw, 'output.wav');
-  const args = ['audio-watermark', 'embed', audio, '-m', msg, '-o', out, '-a', algo];
+  const args = ['audio-watermark', 'embed', audio, '-s', secretFile, '-o', out, '-a', algo];
   if (pass.trim()) args.push('-p', pass.trim());
   await run(args);
   await ask('Press Enter...');
