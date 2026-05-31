@@ -100,6 +100,14 @@
   "pi.extract_submit": "提取消息",
   "pi.analyze_image_label": "要分析的图像",
   "pi.analyze_submit": "分析图像",
+  "pi.secret_hint": "要嵌入为秘密消息的文档文件",
+  "pi.hide_advanced": "隐藏高级选项",
+  "pi.embedding_strength": "嵌入强度",
+  "pi.error_correction": "纠错",
+  "pi.multi_channel": "多通道嵌入",
+  "pi.redundancy_factor": "冗余因子",
+  "pi.extracted_message": "提取的消息",
+  "pi.copy_message": "复制消息",
   "algo.1": "空间LSB",
   "algo.2": "频率DCT",
   "algo.3": "神经SS",
@@ -236,7 +244,7 @@
   "search.results_for": "\"{query}\" 的结果：",
   "search.hint": "尝试搜索：水印, 指纹, 元数据, 时间戳",
   "dl.title": "下载指纹",
-  "dl.inapp_alert": "请在 Safari 或 Chrome 中打开此页面以下载文件。点击浏览器菜单 (⋯) 并选择"在浏览器中打开"。",
+  "dl.inapp_alert": "请在 Safari 或 Chrome 中打开此页面以下载文件。点击浏览器菜单 (⋯) 并选择「在浏览器中打开」。",
   "dl.subtitle": "选择格式：",
   "lang.switch": "English",
   "lang.current": "当前语言",
@@ -268,9 +276,6 @@
     "secret_status_max": "最大秘密大小：~{bytes} bytes",
     "secret_status_ok": "✓ 秘密文件：{size} bytes — 容量足够",
     "secret_status_exceed": "✗ 秘密文件：{size} bytes — 超出容量 {excess} bytes"
-  },
-  "pi": {
-    "secret_hint": "要嵌入为秘密消息的文档文件"
   },
   "fp": {
     "label_file": "文件",

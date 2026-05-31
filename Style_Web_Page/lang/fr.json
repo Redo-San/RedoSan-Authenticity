@@ -99,6 +99,14 @@
   "pi.extract_submit": "Extraire le Message",
   "pi.analyze_image_label": "Image à Analyser",
   "pi.analyze_submit": "Analyser l'Image",
+  "pi.secret_hint": "Fichier de document à intégrer comme message secret",
+  "pi.hide_advanced": "Masquer les Options Avancées",
+  "pi.embedding_strength": "Force d'Intégration",
+  "pi.error_correction": "Correction d'Erreur",
+  "pi.multi_channel": "Intégration Multi-canal",
+  "pi.redundancy_factor": "Facteur de Redondance",
+  "pi.extracted_message": "Message Extrait",
+  "pi.copy_message": "Copier le Message",
   "algo.1": "LSB Spatial",
   "algo.2": "DCT Fréquentiel",
   "algo.3": "Neural SS",
@@ -278,9 +286,6 @@
     "secret_status_ok": "✓ Fichier secret : {size} octets — correspond à la capacité",
     "secret_status_exceed": "✗ Fichier secret : {size} octets — dépasse la capacité de {excess} octets",
     "detect_found": "Algorithme détecté : {algo}"
-  },
-  "pi": {
-    "secret_hint": "Fichier de document à intégrer comme message secret"
   },
   "fp": {
     "label_file": "Fichier",

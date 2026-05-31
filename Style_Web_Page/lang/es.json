@@ -99,6 +99,14 @@
   "pi.extract_submit": "Extraer Mensaje",
   "pi.analyze_image_label": "Imagen a Analizar",
   "pi.analyze_submit": "Analizar Imagen",
+  "pi.secret_hint": "Archivo de documento para incrustar como mensaje secreto",
+  "pi.hide_advanced": "Ocultar Opciones Avanzadas",
+  "pi.embedding_strength": "Fuerza de Incrustación",
+  "pi.error_correction": "Corrección de Errores",
+  "pi.multi_channel": "Incrustación Multicanal",
+  "pi.redundancy_factor": "Factor de Redundancia",
+  "pi.extracted_message": "Mensaje Extraído",
+  "pi.copy_message": "Copiar Mensaje",
   "algo.1": "LSB Espacial",
   "algo.2": "DCT de Frecuencia",
   "algo.3": "SS Neuronal",
@@ -267,9 +275,6 @@
     "secret_status_max": "Tamaño máximo de secreto: ~{bytes} bytes",
     "secret_status_ok": "✓ Archivo secreto: {size} bytes — cabe dentro de la capacidad",
     "secret_status_exceed": "✗ Archivo secreto: {size} bytes — excede la capacidad en {excess} bytes"
-  },
-  "pi": {
-    "secret_hint": "Archivo de documento para incrustar como mensaje secreto"
   },
   "fp": {
     "label_file": "Archivo",
