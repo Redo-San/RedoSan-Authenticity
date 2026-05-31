@@ -106,6 +106,14 @@
   "pi.password_label": "كلمة المرور (اختيارية)",
   "pi.advanced_options": "الخيارات المتقدمة",
   "pi.show_advanced": "عرض الخيارات المتقدمة",
+  "pi.hide_advanced": "إخفاء الخيارات المتقدمة",
+  "pi.secret_hint": "ملف الوثيقة لتضمينه كرسالة سرية",
+  "pi.embedding_strength": "قوة التضمين",
+  "pi.error_correction": "تصحيح الأخطاء",
+  "pi.multi_channel": "التضمين متعدد القنوات",
+  "pi.redundancy_factor": "عامل التكرار",
+  "pi.extracted_message": "الرسالة المستخرجة",
+  "pi.copy_message": "نسخ الرسالة",
   "pi.embed_submit": "حقن البكسل",
   "pi.watermarked_image_label": "الصورة المائية",
   "pi.auto_detect": "كشف تلقائي",
@@ -415,9 +423,6 @@
   "sidebar": {
     "usage_warning": "⚠️ الاستخدام القانوني فقط. المحتوى غير القانوني / الضار محظور. جميع المعالجات هي 100% محلية.",
     "did": "هوية DID"
-  },
-  "pi": {
-    "secret_hint": "ملف الوثيقة لتضمينه كرسالة سرية"
   },
   "simple": {
     "upload_size_note": "💡 لتركيب العلامة المائية، استخدم صورة غلاف كبيرة (على سبيل المثال 1920×1080) حتى يكون هناك ما يكفي من السعة لتضمين صورة سرية.",

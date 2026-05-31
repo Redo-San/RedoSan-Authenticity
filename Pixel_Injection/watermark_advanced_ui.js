@@ -101,10 +101,10 @@ class AdvancedWatermarkUI {
         switch (algorithm) {
             case 'enhanced_lsb':
                 options.push(
-                    { type: 'range', label: 'Embedding Strength', min: 1, max: 8, value: 4, step: 1 },
-                    { type: 'checkbox', label: 'Error Correction', checked: true },
-                    { type: 'checkbox', label: 'Multi-channel Embedding', checked: true },
-                    { type: 'range', label: 'Redundancy Factor', min: 1, max: 5, value: 3, step: 1 }
+                    { type: 'range', label: __('pi.embedding_strength', 'Embedding Strength'), min: 1, max: 8, value: 4, step: 1 },
+                    { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true },
+                    { type: 'checkbox', label: __('pi.multi_channel', 'Multi-channel Embedding'), checked: true },
+                    { type: 'range', label: __('pi.redundancy_factor', 'Redundancy Factor'), min: 1, max: 5, value: 3, step: 1 }
                 );
                 break;
                 
@@ -120,7 +120,7 @@ class AdvancedWatermarkUI {
                     { type: 'range', label: 'Strength', min: 0.01, max: 0.5, value: 0.1, step: 0.01 },
                     { type: 'select', label: 'Coefficient Selection', options: ['Mid-frequency', 'Low-frequency', 'Adaptive'], value: 'Mid-frequency' },
                     { type: 'range', label: 'Block Size', min: 4, max: 16, value: 8, step: 2 },
-                    { type: 'checkbox', label: 'Error Correction', checked: true }
+                    { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true }
                 );
                 break;
                 
@@ -160,7 +160,7 @@ class AdvancedWatermarkUI {
             case 'nullguard':
                 options.push(
                     { type: 'text', label: 'Null Space Detection', placeholder: 'Auto-detect' },
-                    { type: 'range', label: 'Embedding Strength', min: 0.01, max: 0.1, value: 0.03, step: 0.01 }
+                    { type: 'range', label: __('pi.embedding_strength', 'Embedding Strength'), min: 0.01, max: 0.1, value: 0.03, step: 0.01 }
                 );
                 break;
         }
@@ -567,7 +567,7 @@ class AdvancedWatermarkUI {
         const safeMsg = escHtml(this.extractedMessage);
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
-                <h5 style="color: var(--primary); margin-bottom: 10px;">Extracted Message</h5>
+                <h5 style="color: var(--primary); margin-bottom: 10px;">${__('pi.extracted_message', 'Extracted Message')}</h5>
                 <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); font-family: monospace; word-break: break-all;">
                     ${safeMsg}
                 </div>
@@ -576,7 +576,7 @@ class AdvancedWatermarkUI {
         
         // Add copy button
         const downloadDiv = document.getElementById('wm-download');
-        downloadDiv.innerHTML = '<button class="btn" id="wm-copy-btn" style="margin-top: 10px;">Copy Message</button>';
+        downloadDiv.innerHTML = '<button class="btn" id="wm-copy-btn" style="margin-top: 10px;">' + __('pi.copy_message', 'Copy Message') + '</button>';
         const copyBtn = document.getElementById('wm-copy-btn');
         if (copyBtn) {
             copyBtn.addEventListener('click', function() {

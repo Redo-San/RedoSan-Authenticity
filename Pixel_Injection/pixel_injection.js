@@ -227,10 +227,10 @@ class PixelInjection {
         switch (algorithm) {
             case 'enhanced_lsb':
                 options.push(
-                    { type: 'range', label: 'Embedding Strength', min: 1, max: 8, value: 4, step: 1 },
-                    { type: 'checkbox', label: 'Error Correction', checked: true },
-                    { type: 'checkbox', label: 'Multi-channel Embedding', checked: true },
-                    { type: 'range', label: 'Redundancy Factor', min: 1, max: 5, value: 3, step: 1 }
+                    { type: 'range', label: __('pi.embedding_strength', 'Embedding Strength'), min: 1, max: 8, value: 4, step: 1 },
+                    { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true },
+                    { type: 'checkbox', label: __('pi.multi_channel', 'Multi-channel Embedding'), checked: true },
+                    { type: 'range', label: __('pi.redundancy_factor', 'Redundancy Factor'), min: 1, max: 5, value: 3, step: 1 }
                 );
                 break;
                 
@@ -264,7 +264,7 @@ class PixelInjection {
                     { type: 'range', label: 'Strength', min: 0.01, max: 0.5, value: 0.1, step: 0.01 },
                     { type: 'select', label: 'Coefficient Selection', options: ['Mid-frequency', 'Low-frequency', 'Adaptive'], value: 'Mid-frequency' },
                     { type: 'range', label: 'Block Size', min: 4, max: 16, value: 8, step: 2 },
-                    { type: 'checkbox', label: 'Error Correction', checked: true }
+                    { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true }
                 );
                 break;
                 
@@ -312,7 +312,7 @@ class PixelInjection {
                 options.push(
                     { type: 'select', label: 'Decoding Algorithm', options: ['Auto', 'DCT', 'DWT', 'LSB', 'VINE'], value: 'Auto' },
                     { type: 'text', label: 'Decoding Key', placeholder: 'Optional decoding key' },
-                    { type: 'checkbox', label: 'Error Correction', checked: true }
+                    { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true }
                 );
                 break;
                 
@@ -863,7 +863,7 @@ class PixelInjection {
         const safeMsg = escHtml(messageText);
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
-                <h5 style="color: var(--primary); margin-bottom: 10px;">Extracted Message</h5>
+                <h5 style="color: var(--primary); margin-bottom: 10px;">${__('pi.extracted_message', 'Extracted Message')}</h5>
                 <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); font-family: monospace; word-break: break-all; max-height: 200px; overflow-y: auto;">
                     ${safeMsg}
                 </div>
@@ -883,7 +883,7 @@ class PixelInjection {
         
         // Add copy button + download results button
         const downloadDiv = document.getElementById('pi-download');
-        downloadDiv.innerHTML = '<button class="btn" id="pi-copy-btn" style="margin-top: 10px;">Copy Message</button>' +
+        downloadDiv.innerHTML = '<button class="btn" id="pi-copy-btn" style="margin-top: 10px;">' + __('pi.copy_message', 'Copy Message') + '</button>' +
           '<br><button class="btn" id="pi-dl-btn" style="margin-top: 8px;" onclick="showDownloadModal()">' +
           (__('fp.results_btn', 'Download Results')) + '</button>';
         const copyBtn = document.getElementById('pi-copy-btn');
@@ -1124,10 +1124,10 @@ window.showPiAdvancedOptions = function() {
     
     if (advancedOptions.style.display === 'none') {
         advancedOptions.style.display = 'block';
-        btn.textContent = 'Hide Advanced Options';
+        btn.textContent = __('pi.hide_advanced', 'Hide Advanced Options');
     } else {
         advancedOptions.style.display = 'none';
-        btn.textContent = 'Show Advanced Options';
+        btn.textContent = __('pi.show_advanced', 'Show Advanced Options');
     }
 };
 

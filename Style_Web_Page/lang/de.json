@@ -99,6 +99,14 @@
   "pi.extract_submit": "Nachricht Extrahieren",
   "pi.analyze_image_label": "Zu Analysierendes Bild",
   "pi.analyze_submit": "Bild Analysieren",
+  "pi.secret_hint": "Dokument-Datei, die als geheime Nachricht eingebettet werden soll",
+  "pi.hide_advanced": "Erweiterte Optionen Ausblenden",
+  "pi.embedding_strength": "Einbettungsstärke",
+  "pi.error_correction": "Fehlerkorrektur",
+  "pi.multi_channel": "Mehrkanal-Einbettung",
+  "pi.redundancy_factor": "Redundanzfaktor",
+  "pi.extracted_message": "Extrahierte Nachricht",
+  "pi.copy_message": "Nachricht Kopieren",
   "algo.1": "Räumliches LSB",
   "algo.2": "Frequenz-DCT",
   "algo.3": "Neuronales SS",
@@ -272,9 +280,6 @@
     "secret_status_max": "Maximale Geheimnachricht-Größe: ~{bytes} Bytes",
     "secret_status_ok": "✓ Geheimdatei: {size} Bytes — passt innerhalb der Kapazität",
     "secret_status_exceed": "✗ Geheimdatei: {size} Bytes — überschreitet die Kapazität um {excess} Bytes"
-  },
-  "pi": {
-    "secret_hint": "Dokument-Datei, die als geheime Nachricht eingebettet werden soll"
   },
   "fp": {
     "label_file": "Datei",
