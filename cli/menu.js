@@ -175,7 +175,10 @@ async function menuFingerprint() {
   if (fmt.trim() === '1' || fmt.trim() === '2') {
     const def = file + (fmt.trim() === '1' ? '.json' : '.fingerprint.txt');
     const out = await ask(c('cyan', `Output path (Enter = ${path.basename(def)}): `));
-    const outPath = out.trim() || def;
+    let outPath = out.trim() || def;
+    if (outPath && fs.existsSync(outPath) && fs.statSync(outPath).isDirectory()) {
+      outPath = path.join(outPath, path.basename(def));
+    }
     const saveArgs = ['fingerprint', file, '-o', outPath];
     if (algo.trim() && algo !== 'all') saveArgs.push('--algo', algo.trim());
     if (fmt.trim() === '1') saveArgs.push('--json');
@@ -415,9 +418,15 @@ async function menuDid() {
   console.log(c('dim', '2) Sign a file with existing DID'));
   const sub = await ask(c('cyan', '> '));
   if (sub.trim() === '1') {
-    const algo = await ask(c('cyan', 'Algorithm (Ed25519/P-256, Enter = Ed25519): '));
-    const args = ['did', 'generate', '--algo', algo.trim() || 'Ed25519'];
+    const algo = await pickAlgorithm('Algorithm:', ['Ed25519', 'P-256', 'RSA-2048', 'RSA-4096'], 'Ed25519');
+    const args = ['did', 'generate', '--algo', algo];
     await run(args);
+    const signNow = await ask(c('yellow', 'Sign a file now? (y/N): '));
+    if (signNow.trim().toLowerCase() === 'y') {
+      const file = await selectFile('Fingerprint JSON or file to sign > ');
+      const args2 = ['did', 'sign', file];
+      await run(args2);
+    }
   } else if (sub.trim() === '2') {
     const file = await selectFile('Fingerprint JSON or file to sign > ');
     const args = ['did', 'sign', file];
