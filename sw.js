@@ -47,7 +47,7 @@ var JS_WHITELIST = [
   '/RedoSan-Authenticity/Audio_Watermark/audio_watermark_core.js',
   '/RedoSan-Authenticity/Audio_Watermark/audio_watermark.js',
   '/RedoSan-Authenticity/Assistant/assistant.js',
-  '/RedoSan-Authenticity/Removal_Tools/remove_watermark.js',
+  '/RedoSan-Authenticity/Removal_Tools/removal_tools.js',
   '/RedoSan-Authenticity/vendor/jspdf.umd.min.js',
   '/RedoSan-Authenticity/vendor/qrious.min.js',
   '/RedoSan-Authenticity/vendor/jszip.min.js',
