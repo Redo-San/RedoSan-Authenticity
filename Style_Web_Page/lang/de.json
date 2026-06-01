@@ -311,8 +311,8 @@
     "chrominance_suffix": " (Chrominanzen redundant)",
     "redundant_suffix": " (redundant x3)",
     "secret_status_max": "Maximale Geheimnisgröße: ~{bytes} Bytes",
-    "secret_status_ok": "✓ Geheimdatei: {size} Bytes — passt innerhalb der Kapazität",
-    "secret_status_exceed": "✗ Geheimdatei: {size} Bytes — überschreitet die Kapazität um {excess} Bytes",
+    "secret_status_ok": "✓ Geheimnisdatei: {size} Bytes — passt in die Kapazität",
+    "secret_status_exceed": "✗ Geheimnisdatei: {size} Bytes — überschreitet die Kapazität um {excess} Bytes",
     "detect_found": "Erkanntes Algorithmus: {algo}"
   },
   "fp": {
@@ -321,7 +321,7 @@
     "label_dimensions": "Abmessungen",
     "label_format": "Format",
     "other_label": "Andere",
-    "perceptual_label": "Wahrnehmbar (Bild-Hashes)",
+    "perceptual_label": "Wahrnehmung (Bild-Hashes)",
     "results_btn": "Ergebnisse herunterladen"
   },
   "md": {
@@ -336,15 +336,15 @@
     "label_error": "Fehler"
   },
   "ts": {
-    "select_both": "Bitte wähle sowohl die Originaldatei als auch ihre .ots-Beweis aus",
-    "created_success": "✓ Vollständige .ots-Zeitstempel mit Blockchain-Beweis erstellt!\n\nSHA-256: {hash}\nGröße: {size} Bytes\n\nDiese .ots-Datei enthält einen Merkle-Beweis vom OpenTimestamps-Kalender-Aggregator. Überprüfe sie jederzeit mit dem Reiter \"Überprüfen\".",
+    "select_both": "Bitte wähle sowohl die Originaldatei als auch ihre .ots-Beweisdatei aus",
+    "created_success": "✓ Vollständige .ots-Zeitstempel mit Blockchain-Beweis erstellt!\n\nSHA-256: {hash}\nGröße: {size} Bytes\n\nDiese .ots-Datei enthält einen Merkle-Beweis vom OpenTimestamps-Kalender-Aggregator. Überprüfe ihn jederzeit mit dem Reiter \"Überprüfen\".",
     "created_warning": "SHA-256: {hash}\n\n⚠ Kalender-Aggregator nicht erreichbar. Erstelle eine unvollständige .ots-Zeitstempel ({size} Bytes, Standardformat).\n\nUm einen Blockchain-Beweis anzuhängen, führe einen der folgenden Befehle aus:\n\n{commands}",
     "verified_match": "✓ Überprüft! Hash stimmt mit dem .ots-Beweis überein.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256:  {otsHash}\n\nDie Datei wurde seit der Erstellung des Zeitstempels nicht geändert.",
     "verified_mismatch": "✗ Hash-Ungleichheit! Die Datei wurde geändert.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256:  {otsHash}\n\nDie Datei wurde seit der Erstellung des Zeitstempels geändert.",
     "option1_title": "Option 1 — OpenTimestamps-Website (einfachste Methode):",
     "option1_step1": "1. Gehe zu https://opentimestamps.org",
-    "option1_step2": "2. Ziehe und lasse die Datei \"{name}.ots\" auf die Seite fallen",
-    "option1_step3": "3. Klicke auf \"Stamp\" um eine vollständige .ots-Datei mit Blockchain-Beweis zu erhalten",
+    "option1_step2": "2. Ziehe die Datei \"{name}.ots\" auf die Seite",
+    "option1_step3": "3. Klicke auf \"Stamp\" um einen vollständigen .ots-Beweis mit Blockchain-Beweis zu erhalten",
     "option2_title": "Option 2 — Offizielle CLI:",
     "option3_title": "Option 3 — PowerShell (übermittelt rohen Hash, 32 Bytes nur):"
   },
@@ -358,7 +358,7 @@
     "no_actions": "Keine Aktionen aufgezeichnet",
     "no_assertions": "Keine zusätzlichen Behauptungen",
     "no_ingredients": "Keine Zutaten",
-    "no_signature": "Keine Signatur-Informationen",
+    "no_signature": "Keine Signaturinformationen",
     "valid": "Gültig",
     "trusted": "Vertrauenswürdig",
     "unknown": "Unbekannt",
@@ -402,7 +402,7 @@
     "reset_btn": "↻ Neu starten"
   },
   "conv": {
-    "heading": "Datei-Konverter",
+    "heading": "Dateikonverter",
     "file_label": "Datei auswählen",
     "submit": "Konvertieren",
     "converting": "Konvertiere...",
@@ -412,11 +412,11 @@
     "download": "Herunterladen",
     "detected": "Erkannt: ",
     "file": "Datei: ",
-    "format_label": "In folgendes Format konvertieren:",
-    "unknown_type": "Nicht unterstützter Dateityp. Bitte wähle ein Bild-, Audio-, Video- oder Dokument-Datei aus.",
+    "format_label": "In konvertieren:",
+    "unknown_type": "Nicht unterstützter Dateityp. Bitte wähle ein Bild, Audio, Video oder Dokument aus.",
     "unsupported": "Nicht unterstützter Dateityp",
-    "audio_limited": "Audio-Konvertierung ist im Browser eingeschränkt. Versuche es mit dem WAV-Format.",
-    "video_limited": "Video-Konvertierung ist im Browser eingeschränkt. Verwende spezielle Video-Bearbeitungs-Software."
+    "audio_limited": "Audio-Konvertierung ist im Browser eingeschränkt. Versuche es mit WAV-Format.",
+    "video_limited": "Video-Konvertierung ist im Browser eingeschränkt. Verwende spezielle Video-Bearbeitungssoftware."
   },
   "simple": {
     "upload_size_note": "💡 Für das Wasserzeichen verwenden Sie bitte ein großes Cover-Bild (z.B. 1920×1080), damit genug Kapazität vorhanden ist, um ein geheimes Bild einzubetten.",
@@ -461,7 +461,7 @@
     "info_website": "Website",
     "info_website_ph": "z.B. https://example.com",
     "info_social": "Soziale Links",
-    "info_artist": "Ich bin ein Künstler/Musiker",
+    "info_artist": "Ich bin Künstler/Musiker",
     "info_music": "Musik-Plattformen",
     "info_required": "Bitte fülle alle erforderlichen Felder aus: Name, E-Mail, Telefon, Website.",
     "cert_title": "Digitaler Reisepass",
@@ -475,7 +475,7 @@
   },
   "shared": {
     "download": "Herunterladen",
-    "drop_file": "Datei hier ablegen oder <strong>durchsuchen</strong>",
+    "drop_file": "Datei hier ablegen oder <strong> durchsuchen</strong>",
     "select_file": "Bitte wähle eine Datei aus",
     "processing": "Verarbeite...",
     "error_prefix": "Fehler: ",
@@ -486,7 +486,7 @@
     "corrupt_file": "Diese Datei scheint beschädigt oder hat ein falsches Format.",
     "dangerous_content": "Diese Datei enthält potenziell gefährlichen eingebetteten Code (Skripte, Ereignishandler) und ist nicht erlaubt.",
     "dangerous_document": "Dieses Dokument enthält potenziell gefährliche Funktionen (eingebetteter JavaScript, Auto-Ausführen von Aktionen, externe Starts, eingebettete Dateien) und ist nicht erlaubt.",
-    "bad_structure": "Diese Datei scheint verdächtige Daten nach ihrem gültigen Bildinhalt zu haben. Bitte exportiere die Datei erneut aus einem sauberen Bildbearbeitungsprogramm."
+    "bad_structure": "Diese Datei scheint verdächtige Daten nach ihrem gültigen Bildinhalt zu haben. Bitte exportiere die Datei erneut aus einem sauberen Bildeditor."
   },
   "test": {
     "translate": "Dies ist ein Test-Übersetzungs-Schlüssel"
@@ -504,7 +504,7 @@
     "context_timestamp": "Ich sehe, dass du auf der **Zeitstempel**-Seite bist. Brauchst du Hilfe damit?",
     "context_c2pa": "Ich sehe, dass du auf der **C2PA**-Seite bist. Brauchst du Hilfe damit?",
     "context_certificate": "Ich sehe, dass du auf der **Digitaler Reisepass**-Seite bist. Brauchst du Hilfe damit?",
-    "context_converter": "Ich sehe, dass du auf der **Datei-Konverter**-Seite bist. Brauchst du Hilfe damit?",
+    "context_converter": "Ich sehe, dass du auf der **Dateikonverter**-Seite bist. Brauchst du Hilfe damit?",
     "context_audio_watermark": "Ich sehe, dass du auf der **Audio-Wasserzeichen**-Seite bist. Brauchst du Hilfe damit?"
   },
   "shared.english_filename": "Der Dateiname darf nur englische Zeichen enthalten (A-Z, 0-9, Bindestriche, Unterstriche, Punkte). Bitte benennen Sie die Datei um und versuchen Sie es erneut.",
