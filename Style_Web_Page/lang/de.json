@@ -287,7 +287,7 @@
   "lang.name.ko": "한국어",
   "sidebar": {
     "certificate": "Digitaler Reisepass",
-    "usage_warning": "⚠️ Nur gesetzmäßige Nutzung. Illegale/schädliche Inhalte sind verboten. Alle Verarbeitungen erfolgen zu 100% lokal.",
+    "usage_warning": "⚠️ Nur gesetzmäßige Nutzung. Illegale/schädliche Inhalte sind verboten. Alle Verarbeitungen erfolgen 100% lokal.",
     "audio_watermark": "Audio-Wasserzeichen"
   },
   "card": {
@@ -341,8 +341,8 @@
     "verified_mismatch": "✗ Hash-Ungleichheit! Die Datei wurde geändert.\n\nDatei-SHA-256: {fileHash}\n.ots-SHA-256:  {otsHash}\n\nDie Datei wurde seit der Erstellung des Zeitstempels geändert.",
     "option1_title": "Option 1 — OpenTimestamps-Website (einfachste):",
     "option1_step1": "1. Gehe zu https://opentimestamps.org",
-    "option1_step2": "2. Ziehe und lasse die Datei \"{name}.ots\" auf die Seite fallen",
-    "option1_step3": "3. Klicke auf \"Stamp\" um eine vollständige .ots-Datei mit Blockchain-Beweis zu erhalten",
+    "option1_step2": "2. Ziehe und lasse \"{name}.ots\" auf die Seite fallen",
+    "option1_step3": "3. Klicke auf \"Stamp\" um eine vollständige .ots mit Blockchain-Beweis zu erhalten",
     "option2_title": "Option 2 — Offizielle CLI:",
     "option3_title": "Option 3 — PowerShell (roher Hash, 32 Bytes nur):"
   },
@@ -411,10 +411,10 @@
     "detected": "Erkannt: ",
     "file": "Datei: ",
     "format_label": "In folgendes Format konvertieren:",
-    "unknown_type": "Nicht unterstützter Dateityp. Bitte wähle ein Bild-, Audio-, Video- oder Dokument-Datei aus.",
+    "unknown_type": "Nicht unterstützter Dateityp. Bitte wähle ein Bild, Audio, Video oder Dokument aus.",
     "unsupported": "Nicht unterstützter Dateityp",
-    "audio_limited": "Audio-Konvertierung ist im Browser eingeschränkt. Versuche es mit dem WAV-Format.",
-    "video_limited": "Video-Konvertierung ist im Browser eingeschränkt. Verwende eine dedizierte Video-Bearbeitungs-Software."
+    "audio_limited": "Audio-Konvertierung ist im Browser eingeschränkt. Versuche es mit WAV-Format.",
+    "video_limited": "Video-Konvertierung ist im Browser eingeschränkt. Verwende spezielle Video-Bearbeitungs-Software."
   },
   "simple": {
     "upload_size_note": "💡 Für das Wasserzeichen verwenden Sie bitte ein großes Cover-Bild (z.B. 1920×1080), damit genug Kapazität vorhanden ist, um ein geheimes Bild einzubetten.",
