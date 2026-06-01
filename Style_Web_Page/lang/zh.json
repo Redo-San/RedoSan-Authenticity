@@ -49,7 +49,7 @@
   "awm.strength_label": "QIM 强度",
   "awm.dual_extract_label": "🔬 双重提取（适用于简化模式受保护的音频）",
   "awm.fp_algo_label": "指纹（左声道）算法",
-  "awm.ts_algo_label": "时间戳（右声道）算法",
+  "awm.did_algo_label": "DID身份（右声道）算法",
   "awm.dual_extract_btn": "提取两个水印",
   "awm.self_test_btn": "🔬 自测",
   "wm.heading": "数字水印",

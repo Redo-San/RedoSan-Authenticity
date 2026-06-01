@@ -49,7 +49,7 @@
   "awm.strength_label": "Force QIM",
   "awm.dual_extract_label": "🔬 Extraction Double (pour audio protégé en mode simplifié)",
   "awm.fp_algo_label": "Algorithme d'empreinte (canal gauche)",
-  "awm.ts_algo_label": "Algorithme d'horodatage (canal droit)",
+  "awm.did_algo_label": "Algorithme d'identité DID (canal droit)",
   "awm.dual_extract_btn": "Extraire les Deux Filigranes",
   "awm.self_test_btn": "🔬 Auto-test",
   "wm.heading": "Filigrane Numérique",

@@ -53,7 +53,7 @@
   "awm.strength_label": "QIM 강도",
   "awm.dual_extract_label": "🔬 이중 추출 (단순 모드 보호 오디오용)",
   "awm.fp_algo_label": "지문 (왼쪽 채널) 알고리즘",
-  "awm.ts_algo_label": "타임스탬프 (오른쪽 채널) 알고리즘",
+  "awm.did_algo_label": "DID ID (오른쪽 채널) 알고리즘",
   "awm.dual_extract_btn": "두 워터마크 모두 추출",
   "awm.self_test_btn": "🔬 자체 테스트",
   "wm.heading": "디지털 워터마크",

@@ -55,7 +55,7 @@
   "awm.strength_label": "قوة QIM",
   "awm.dual_extract_label": "🔬 استخراج مزدوج (للصوت المحمي في الوضع المبسط)",
   "awm.fp_algo_label": "خوارزمية البصمة (القناة اليسرى)",
-  "awm.ts_algo_label": "خوارزمية الطابع الزمني (القناة اليمنى)",
+  "awm.did_algo_label": "خوارزمية DID (القناة اليمنى)",
   "awm.dual_extract_btn": "استخراج كلا العلامتين المائيتين",
   "awm.self_test_btn": "🔬 اختبار ذاتي",
   "wm.heading": "العلامة المائية الرقمية",
