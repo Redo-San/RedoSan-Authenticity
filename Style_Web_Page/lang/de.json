@@ -569,7 +569,7 @@
   "did.clear_btn": "🗑️ Identität Löschen",
   "did.cleared": "DID-Identität gelöscht.",
   "did.keys_found": "🔑 Vorhandene DID-Identität gefunden",
-  "did.no_keys": "Keine DID-Identität gefunden. Erzeugen Sie oben eine.",
+  "did.no_keys": "Keine DID-Identität gefunden. Erzeugen Sie unten eine.",
   "did.no_fp": "Keine Fingerabdruckdaten gefunden. Führen Sie zuerst das Fingerabdruck-Tool aus.",
   "did.no_sig": "Keine Signatur gefunden. Signieren Sie zuerst den Fingerabdruck.",
   "did.stored": "Ihre Schlüssel werden lokal in diesem Browser gespeichert (localStorage).",

@@ -571,7 +571,7 @@
   "did.clear_btn": "🗑️ Effacer l'Identité",
   "did.cleared": "Identité DID effacée.",
   "did.keys_found": "🔑 Identité DID existante trouvée",
-  "did.no_keys": "Aucune identité DID trouvée. Générez-en une ci-dessus.",
+  "did.no_keys": "Aucune identité DID trouvée. Générez-en une ci-dessous.",
   "did.no_fp": "Aucune donnée d'empreinte trouvée. Exécutez d'abord l'outil d'empreinte.",
   "did.no_sig": "Aucune signature trouvée. Signez d'abord l'empreinte.",
   "did.stored": "Vos clés sont stockées localement dans ce navigateur (localStorage).",

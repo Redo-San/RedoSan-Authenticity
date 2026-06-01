@@ -492,7 +492,7 @@
   "did.clear_btn": "🗑️ Clear Identity",
   "did.cleared": "DID identity cleared.",
   "did.keys_found": "🔑 Existing DID identity found",
-  "did.no_keys": "No DID identity found. Generate one above.",
+  "did.no_keys": "No DID identity found. Generate one below.",
   "did.no_fp": "No fingerprint data found. Run Fingerprint tool first.",
   "did.no_sig": "No signature found. Sign the fingerprint first.",
   "did.stored": "Your keys are stored locally in this browser (localStorage).",
