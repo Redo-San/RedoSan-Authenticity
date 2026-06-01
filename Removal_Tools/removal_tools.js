@@ -93,9 +93,7 @@ async function cleanAudioFile(file, opts) {
 
   if (opts.watermark) {
     for (var i = 0; i < s16.length; i++) s16[i] &= ~1;
-    var sr = info.sr || 44100;
-    var destroyStep = Math.round(sr / 50);
-    for (var j = 0; j < s16.length; j++) s16[j] = Math.round(s16[j] / destroyStep) * destroyStep;
+    for (var j = 0; j < s16.length; j++) s16[j] = Math.round(s16[j] / 2) * 2;
     removed.push('watermark');
   }
 
