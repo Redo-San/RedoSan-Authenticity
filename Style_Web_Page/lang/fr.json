@@ -40,7 +40,7 @@
   "mode.professional_title": "⚙️ Mode Professionnel",
   "mode.professional_desc": "Accès complet à tous les outils avec options avancées",
   "mode.tagline": "Suite d'authenticité numérique gratuite et open-source — filigrane, empreinte de fichier, lecture de métadonnées, horodatage. 100% dans votre navigateur.",
-  "awm.heading": "Filigrane Audio",
+  "awm.heading": "Filigrane Audio Numérique",
   "awm.audio_label": "Fichier audio (WAV recommandé)",
   "awm.secret_label": "Message secret",
   "awm.secret_file_label": "Document secret",
@@ -174,7 +174,7 @@
   "rt.remove_pi": "Injection de Pixels",
   "rt.remove_c2pa": "Provenance C2PA",
   "rt.remove_meta": "Métadonnées",
-  "rt.remove_audio_wm": "Filigrane Audio",
+  "rt.remove_audio_wm": "Filigrane Audio Numérique",
   "rt.remove_audio_meta": "Métadonnées",
   "rt.remove_btn": "Supprimer la Sélection",
   "rt.err_no_file": "Veuillez d'abord sélectionner un fichier",
@@ -507,7 +507,7 @@
     "context_c2pa": "Je vois que vous êtes sur la page **C2PA**. Avez-vous besoin d'aide pour cela ?",
     "context_certificate": "Je vois que vous êtes sur la page **Passeport numérique**. Avez-vous besoin d'aide pour cela ?",
     "context_converter": "Je vois que vous êtes sur la page **Convertisseur de fichiers**. Avez-vous besoin d'aide pour cela ?",
-    "context_audio_watermark": "Je vois que vous êtes sur la page **Filigrane audio**. Avez-vous besoin d'aide pour cela ?"
+    "context_audio_watermark": "Je vois que vous êtes sur la page **Filigrane Audio Numérique**. Avez-vous besoin d'aide pour cela ?"
   },
   "shared.english_filename": "Le nom du fichier doit contenir uniquement des caractères anglais (A-Z, 0-9, tirets, underscores, points). Veuillez renommer le fichier et réessayer.",
   "awm": {

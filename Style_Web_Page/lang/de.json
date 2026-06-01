@@ -40,7 +40,7 @@
   "mode.professional_title": "⚙️ Professioneller Modus",
   "mode.professional_desc": "Vollzugriff auf alle Tools mit erweiterten Optionen",
   "mode.tagline": "Kostenlose Open-Source-Suite für digitale Authentizität — Wasserzeichen, Datei-Fingerabdruck, Metadatenlesen, Zeitstempel. 100% im Browser.",
-  "awm.heading": "Audio-Wasserzeichen",
+  "awm.heading": "Digitales Audio-Wasserzeichen",
   "awm.audio_label": "Audiodatei (WAV empfohlen)",
   "awm.secret_label": "Geheime Nachricht",
   "awm.secret_file_label": "Geheimes Dokument",
@@ -174,7 +174,7 @@
   "rt.remove_pi": "Pixel-Injektion",
   "rt.remove_c2pa": "C2PA-Herkunft",
   "rt.remove_meta": "Metadaten",
-  "rt.remove_audio_wm": "Audio-Wasserzeichen",
+  "rt.remove_audio_wm": "Digitales Audio-Wasserzeichen",
   "rt.remove_audio_meta": "Metadaten",
   "rt.remove_btn": "Ausgewählte Entfernen",
   "rt.err_no_file": "Bitte wählen Sie zuerst eine Datei aus",
@@ -505,7 +505,7 @@
     "context_c2pa": "Ich sehe, dass du auf der **C2PA**-Seite bist. Brauchst du Hilfe damit?",
     "context_certificate": "Ich sehe, dass du auf der **Digitaler Reisepass**-Seite bist. Brauchst du Hilfe damit?",
     "context_converter": "Ich sehe, dass du auf der **Dateikonverter**-Seite bist. Brauchst du Hilfe damit?",
-    "context_audio_watermark": "Ich sehe, dass du auf der **Audio-Wasserzeichen**-Seite bist. Brauchst du Hilfe damit?"
+    "context_audio_watermark": "Ich sehe, dass du auf der **Digitales Audio-Wasserzeichen**-Seite bist. Brauchst du Hilfe damit?"
   },
   "shared.english_filename": "Der Dateiname darf nur englische Zeichen enthalten (A-Z, 0-9, Bindestriche, Unterstriche, Punkte). Bitte benennen Sie die Datei um und versuchen Sie es erneut.",
   "awm": {

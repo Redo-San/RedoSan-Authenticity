@@ -44,7 +44,7 @@
   "mode.professional_desc": "모든 도구와 고급 옵션에 대한 전체 액세스",
   "mode.tagline": "무료 오픈 소스 디지털 진위성 제품군 — 워터마크, 파일 지문, 메타데이터 읽기, 타임스탬프. 100% 브라우저 내에서 작동.",
 
-  "awm.heading": "오디오 워터마크",
+  "awm.heading": "디지털 오디오 워터마크",
   "awm.audio_label": "오디오 파일 (WAV 권장)",
   "awm.secret_label": "비밀 메시지",
   "awm.secret_file_label": "비밀 문서",
@@ -146,7 +146,7 @@
   "rt.remove_pi": "픽셀 주입",
   "rt.remove_c2pa": "C2PA 출처",
   "rt.remove_meta": "메타데이터",
-  "rt.remove_audio_wm": "오디오 워터마크",
+  "rt.remove_audio_wm": "디지털 오디오 워터마크",
   "rt.remove_audio_meta": "메타데이터",
   "rt.remove_btn": "선택 항목 제거",
   "rt.err_no_file": "먼저 파일을 선택하세요",
