@@ -14,6 +14,7 @@
   "sidebar.timestamp": "タイムスタンプ",
   "sidebar.c2pa": "C2PA証明",
   "sidebar.converter": "ファイル変換",
+  "sidebar.remove_watermark": "透かしを削除",
   "sidebar.did": "DID ID",
 
   "home.tagline": "オンライン認証ツール — 100%ブラウザベース。サーバーにアップロードされるデータはありません。",
@@ -31,6 +32,8 @@
   "card.c2pa.desc": "コンテンツ証明メタデータの読み取りと書き込み",
   "card.converter.title": "ファイル変換",
   "card.converter.desc": "PNG、JPEG、WebPなどの画像形式を変換",
+  "card.remove_watermark.title": "透かしを削除",
+  "card.remove_watermark.desc": "画像や音声から透かし、署名、メタデータを除去",
 
   "mode.title": "エクスペリエンスを選択",
   "mode.simplified_title": "✨ 簡易モード",
@@ -132,6 +135,18 @@
   "c2pa.read_btn": "読み取り",
   "c2pa.write_btn": "署名",
   "c2pa.verify_btn": "検証",
+
+  "rw.heading": "デジタル透かしを削除",
+  "rw.file_label": "画像または音声ファイルを選択",
+  "rw.err_no_file": "最初にファイルを選択してください",
+  "rw.processing": "ファイルをクリーニング中... しばらくお待ちください。",
+  "rw.removed_info": "削除されました: 透かし、ピクセル注入、C2PA、メタデータ",
+  "rw.size_info": "元のサイズ: {orig} → クリーニング後: {new} ({reduction}% 縮小)",
+  "rw.download_btn": "クリーニングした画像をダウンロード",
+  "rw.removed_audio_info": "すべてのアルゴリズムから音声透かしを削除しました",
+  "rw.download_audio_btn": "クリーニングした音声をダウンロード",
+  "rw.success": "✅ ファイルのクリーニングが完了しました",
+  "rw.error_prefix": "エラー: {msg}",
 
   "simple.loading": "読み込み中...",
   "simple.prev_btn": "← 前へ",
