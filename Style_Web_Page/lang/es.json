@@ -40,7 +40,7 @@
   "mode.professional_title": "⚙️ Modo Profesional",
   "mode.professional_desc": "Acceso completo a todas las herramientas con opciones avanzadas",
   "mode.tagline": "Suite de autenticidad digital gratuita y de código abierto — marcas de agua, huellas de archivos, lectura de metadatos, sellos de tiempo. 100% en su navegador.",
-  "awm.heading": "Marca de Agua de Audio",
+  "awm.heading": "Marca de Agua de Audio Digital",
   "awm.audio_label": "Archivo de audio (WAV recomendado)",
   "awm.secret_label": "Mensaje secreto",
   "awm.secret_file_label": "Documento secreto",
@@ -174,7 +174,7 @@
   "rt.remove_pi": "Inyección de Píxeles",
   "rt.remove_c2pa": "Procedencia C2PA",
   "rt.remove_meta": "Metadatos",
-  "rt.remove_audio_wm": "Marca de Agua de Audio",
+  "rt.remove_audio_wm": "Marca de Agua de Audio Digital",
   "rt.remove_audio_meta": "Metadatos",
   "rt.remove_btn": "Eliminar Seleccionado",
   "rt.err_no_file": "Seleccione un archivo primero",
@@ -498,7 +498,7 @@
     "context_c2pa": "Veo que está en la página **C2PA**. ¿Necesita ayuda con eso?",
     "context_certificate": "Veo que está en la página **Pasaporte digital**. ¿Necesita ayuda con eso?",
     "context_converter": "Veo que está en la página **Convertidor de archivos**. ¿Necesita ayuda con eso?",
-    "context_audio_watermark": "Veo que está en la página **Marca de agua de audio**. ¿Necesita ayuda con eso?"
+    "context_audio_watermark": "Veo que está en la página **Marca de Agua de Audio Digital**. ¿Necesita ayuda con eso?"
   },
   "shared.english_filename": "El nombre del archivo solo debe contener caracteres en inglés (A-Z, 0-9, guiones, guiones bajos, puntos). Cambie el nombre del archivo e intente de nuevo.",
   "simple.upload_size_note": "💡 Para marcar agua, utilice una imagen de portada grande (por ejemplo, 1920×1080) para que haya suficiente capacidad para incrustar una imagen secreta.",
