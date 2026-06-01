@@ -618,13 +618,5 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   }
-  // Restore stored identity
-  var stored = didLoadKeys();
-  if (stored && document.getElementById('did-did-value')) {
-    var kp = { did: stored.did, algorithm: stored.algorithm };
-    didUpdateProfessionalUI(kp);
-    // Set selector to stored algo
-    if (algoSelect && stored.algorithm) algoSelect.value = stored.algorithm;
-  }
   didUpdateButtons();
 });
