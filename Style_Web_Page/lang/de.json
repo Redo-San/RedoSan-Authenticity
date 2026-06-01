@@ -49,7 +49,7 @@
   "awm.strength_label": "QIM-Stärke",
   "awm.dual_extract_label": "🔬 Dual-Extraktion (für geschütztes Audio im vereinfachten Modus)",
   "awm.fp_algo_label": "Fingerabdruck (linker Kanal) Algorithmus",
-  "awm.ts_algo_label": "Zeitstempel (rechter Kanal) Algorithmus",
+  "awm.did_algo_label": "DID-Identität (rechter Kanal) Algorithmus",
   "awm.dual_extract_btn": "Beide Wasserzeichen Extrahieren",
   "awm.self_test_btn": "🔬 Selbsttest",
   "wm.heading": "Digitales Wasserzeichen",

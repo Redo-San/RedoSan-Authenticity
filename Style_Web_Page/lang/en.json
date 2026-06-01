@@ -92,7 +92,7 @@
   "awm.strength_label": "QIM Strength",
   "awm.dual_extract_label": "🔬 Dual Extract (for simplified mode protected audio)",
   "awm.fp_algo_label": "Fingerprint (left ch) algorithm",
-  "awm.ts_algo_label": "Timestamp (right ch) algorithm",
+  "awm.did_algo_label": "DID Identity (right ch) algorithm",
   "awm.dual_extract_btn": "Extract Both Watermarks",
   "awm.self_test_btn": "🔬 Self-Test",
 

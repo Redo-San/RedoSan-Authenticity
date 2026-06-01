@@ -49,7 +49,7 @@
   "awm.strength_label": "Intensidad QIM",
   "awm.dual_extract_label": "🔬 Extracción Dual (para audio protegido en modo simplificado)",
   "awm.fp_algo_label": "Algoritmo de huella (canal izquierdo)",
-  "awm.ts_algo_label": "Algoritmo de sello de tiempo (canal derecho)",
+  "awm.did_algo_label": "Algoritmo de identidad DID (canal derecho)",
   "awm.dual_extract_btn": "Extraer Ambas Marcas de Agua",
   "awm.self_test_btn": "🔬 Autocomprobación",
   "wm.heading": "Marca de Agua Digital",

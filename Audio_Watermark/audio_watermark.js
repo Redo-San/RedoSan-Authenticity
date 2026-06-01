@@ -333,7 +333,7 @@ async function awmDualExtract() {
     var audioFile = document.getElementById('awm-audio-ex').files[0];
     var password = document.getElementById('awm-password-ex').value;
     var fpAlgo = parseInt(document.getElementById('awm-dual-fp-algo').value);
-    var tsAlgo = parseInt(document.getElementById('awm-dual-ts-algo').value);
+    var didAlgo = parseInt(document.getElementById('awm-dual-did-algo').value);
     if (!audioFile) return alert('Please select a watermarked audio file');
     if (!password || !password.trim()) return alert('Password is required');
     var spinner = document.getElementById('awm-spinner');
@@ -370,7 +370,7 @@ async function awmDualExtract() {
         function tryExtract(src, algo, label) {
             if (algo === 0) {
                 // Auto detect: try all algorithms that are valid for this channel
-                var candidates = label === 'Timestamp' ? [2, 6, 8] : [1, 2, 3, 5, 6, 7, 8];
+                var candidates = label === 'DID Identity' ? [2, 6, 8] : [1, 2, 3, 5, 6, 7, 8];
                 return tryExtractAuto(src, key, info.sr, candidates);
             }
             return tryExtractSingle(src, algo, key, info.sr, algoNames[algo] || ('Algo ' + algo));
@@ -384,10 +384,10 @@ async function awmDualExtract() {
         results.push({ label: 'Fingerprint (left)', result: fpResult });
 
         if (rightSrc) {
-            progText.textContent = '🔍 Scanning right channel (timestamp)...';
+            progText.textContent = '🔍 Scanning right channel (DID identity)...';
             await new Promise(function(r) { setTimeout(r, 16); });
-            var tsResult = await tryExtract(rightSrc, tsAlgo, 'Timestamp');
-            results.push({ label: 'Timestamp (right)', result: tsResult });
+            var didResult = await tryExtract(rightSrc, didAlgo, 'DID Identity');
+            results.push({ label: 'DID Identity (right)', result: didResult });
         }
 
         prog.style.display = 'none';

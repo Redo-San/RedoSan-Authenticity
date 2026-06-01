@@ -53,7 +53,7 @@
   "awm.strength_label": "QIM強度",
   "awm.dual_extract_label": "🔬 二重抽出（簡易モードの保護音声用）",
   "awm.fp_algo_label": "フィンガープリント（左チャンネル）アルゴリズム",
-  "awm.ts_algo_label": "タイムスタンプ（右チャンネル）アルゴリズム",
+  "awm.did_algo_label": "DID ID（右チャンネル）アルゴリズム",
   "awm.dual_extract_btn": "両方の透かしを抽出",
   "awm.self_test_btn": "🔬 セルフテスト",
   "wm.heading": "デジタル透かし",
