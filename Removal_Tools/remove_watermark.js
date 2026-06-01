@@ -44,10 +44,25 @@ function ycbcrToRGB(Y, Cb, Cr, w, h) {
   return d;
 }
 
+function getMimeForFile(file) {
+  var ext = file.name ? file.name.toLowerCase().split('.').pop() : '';
+  var map = {
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+    gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp'
+  };
+  return map[ext] || file.type || 'image/jpeg';
+}
+
+function extForMime(mime) {
+  var map = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/bmp': 'bmp' };
+  return map[mime] || 'jpg';
+}
+
 async function cleanImageFile(file, opts) {
   opts = opts || {};
   var img = await loadImage(file);
   var removed = [];
+  var origMime = getMimeForFile(file);
 
   if (opts.watermark) {
     cleanLSB(img.imgData, 2);
@@ -64,8 +79,10 @@ async function cleanImageFile(file, opts) {
   if (opts.c2pa) removed.push('c2pa');
   if (opts.metadata) removed.push('metadata');
 
-  var blob = await canvasToBlob(img.canvas, 'image/jpeg', 0.85);
-  return { type: 'image', blob: blob, removed: removed };
+  var mime = origMime === 'image/jpeg' ? 'image/jpeg' : origMime;
+  var quality = origMime === 'image/jpeg' ? 0.92 : undefined;
+  var blob = await canvasToBlob(img.canvas, mime, quality);
+  return { type: 'image', blob: blob, removed: removed, mime: mime };
 }
 
 async function cleanAudioFile(file, opts) {
@@ -196,7 +213,8 @@ async function handleRtRemove() {
             .replace('{orig}', fmtBytes(origSize)).replace('{new}', fmtBytes(newSize)).replace('{reduction}', reduction);
       }
       output.innerHTML += '</div>';
-      var fileName = file.name.replace(/\.[^.]+$/, '') + '_cleaned.jpg';
+      var ext = result.mime ? extForMime(result.mime) : 'jpg';
+      var fileName = file.name.replace(/\.[^.]+$/, '') + '_cleaned.' + ext;
       dl.innerHTML = '<a href="' + url + '" download="' + escHtml(fileName) + '" class="btn">' +
         __('rt.download_btn', 'Download Cleaned Image') + '</a>';
     } else {
