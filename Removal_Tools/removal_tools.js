@@ -209,7 +209,7 @@ async function handleRtRemove() {
         var reduction = origSize > 0 ? Math.round((1 - newSize / origSize) * 100) : 0;
         output.innerHTML +=
           __('rt.size_info', 'Original: {orig} → Result: {new} ({reduction}% smaller)')
-            .replace('{orig}', fmtBytes(origSize)).replace('{new}', fmtBytes(newSize)).replace('{reduction}', reduction);
+            .replace('{orig}', escHtml(fmtBytes(origSize))).replace('{new}', escHtml(fmtBytes(newSize))).replace('{reduction}', escHtml(String(reduction)));
       }
       output.innerHTML += '</div>';
       var ext = result.mime ? extForMime(result.mime) : 'jpg';
