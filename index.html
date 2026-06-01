@@ -697,6 +697,10 @@
         <div id="did-status-area">
           <p style="font-size:0.82rem;color:var(--text-muted);margin:8px 0" id="did-status-text" data-i18n="did.no_keys">No DID identity found. Generate one above.</p>
         </div>
+        <div class="form-group" id="did-fp-group">
+          <label for="did-fp-file" data-i18n="did.fp_file_label">Fingerprint JSON file (optional)</label>
+          <input type="file" id="did-fp-file" accept=".json,text/plain" onchange="didUpdateButtons()">
+        </div>
         <div style="display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap">
           <label for="did-algo-select" style="font-size:0.82rem;font-weight:600" data-i18n="did.algo_label">Algorithm:</label>
           <select id="did-algo-select">
@@ -724,10 +728,6 @@
 
       <div id="did-signature-section" style="text-align:left">
         <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 8px" data-i18n="did.verify_btn">Signature Status</p>
-        <div class="form-group" id="did-fp-group">
-          <label for="did-fp-file" data-i18n="did.fp_file_label">Fingerprint JSON file (optional)</label>
-          <input type="file" id="did-fp-file" accept=".json,text/plain" onchange="didUpdateButtons()">
-        </div>
         <div id="did-sig-display" style="display:none;margin:12px 0;padding:12px;background:rgba(40,167,69,.08);border-radius:8px">
           <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 4px" data-i18n="did.sig_label">Signature</p>
           <p id="did-sig-value" style="font-size:0.72rem;word-break:break-all;margin:0 0 8px;font-family:monospace"></p>
