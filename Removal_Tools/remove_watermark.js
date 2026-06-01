@@ -101,7 +101,8 @@ async function cleanAudioFile(file, opts) {
 
   if (opts.metadata) removed.push('metadata');
 
-  var wavBlob = awWriteWav(s16, info.sr, info.ch, info.raw, info.bps);
+  var wavBuf = awWriteWav(s16, info.sr, info.ch, info.raw, info.bps);
+  var wavBlob = new Blob([wavBuf], { type: 'audio/wav' });
   return { type: 'audio', blob: wavBlob, removed: removed };
 }
 
