@@ -557,7 +557,7 @@
   "did.clear_btn": "🗑️ Limpiar Identidad",
   "did.cleared": "Identidad DID eliminada.",
   "did.keys_found": "🔑 Identidad DID existente encontrada",
-  "did.no_keys": "No se encontró identidad DID. Genere una arriba.",
+  "did.no_keys": "No se encontró identidad DID. Genere una abajo.",
   "did.no_fp": "No se encontraron datos de huella digital. Ejecute la herramienta de huella primero.",
   "did.no_sig": "No se encontró firma. Firme la huella digital primero.",
   "did.stored": "Sus claves se almacenan localmente en este navegador (localStorage).",

@@ -310,7 +310,7 @@
   "did.clear_btn": "🗑️ IDをクリア",
   "did.cleared": "DID IDがクリアされました。",
   "did.keys_found": "🔑 既存のDID IDが見つかりました",
-  "did.no_keys": "DID IDが見つかりません。上で生成してください。",
+  "did.no_keys": "DID IDが見つかりません。下で生成してください。",
   "did.no_fp": "フィンガープリントデータが見つかりません。最初にフィンガープリントツールを実行してください。",
   "did.no_sig": "署名が見つかりません。最初にフィンガープリントに署名してください。",
   "did.stored": "キーはこのブラウザにローカル保存されます（localStorage）。",

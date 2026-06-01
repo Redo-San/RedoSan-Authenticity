@@ -534,7 +534,7 @@
   "did.clear_btn": "🗑️ 清除身份",
   "did.cleared": "DID 身份已清除。",
   "did.keys_found": "🔑 找到现有 DID 身份",
-  "did.no_keys": "未找到 DID 身份。请在上面生成一个。",
+  "did.no_keys": "未找到 DID 身份。请在下面生成一个。",
   "did.no_fp": "未找到指纹数据。请先运行指纹工具。",
   "did.no_sig": "未找到签名。请先签署指纹。",
   "did.stored": "您的密钥本地存储在此浏览器中 (localStorage)。",
