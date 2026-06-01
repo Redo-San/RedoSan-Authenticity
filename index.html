@@ -233,7 +233,7 @@
   <a href="#" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
   <a href="#" data-page="certificate" data-i18n="sidebar.certificate">Digital Passport</a>
   <a href="#" data-page="converter" data-i18n="sidebar.converter">File Converter</a>
-  <a href="#" data-page="remove-watermark" data-i18n="sidebar.remove_watermark">Remove Watermark</a>
+  <a href="#" data-page="removal-tools" data-i18n="sidebar.removal_tools">Removal Tools</a>
 </div>
 
 <main class="container" id="app">
@@ -293,10 +293,10 @@
           <h3 data-i18n="card.converter.title">File Converter</h3>
           <p data-i18n="card.converter.desc">Convert images between PNG, JPEG, WebP and more</p>
         </a>
-        <a href="#" data-page="remove-watermark" class="card">
+        <a href="#" data-page="removal-tools" class="card">
           <div class="icon">🧹</div>
-          <h3 data-i18n="card.remove_watermark.title">Remove Watermark</h3>
-          <p data-i18n="card.remove_watermark.desc">Strip watermarks, signatures & metadata from images & audio</p>
+          <h3 data-i18n="card.removal_tools.title">Removal Tools</h3>
+          <p data-i18n="card.removal_tools.desc">Strip watermarks, pixel injection, C2PA & metadata from images & audio</p>
         </a>
       </div>
     </div>
@@ -1034,23 +1034,42 @@
     </div>
   </section>
 
-  <!-- Remove Watermark -->
-  <section id="page-remove-watermark" class="page">
+  <!-- Removal Tools -->
+  <section id="page-removal-tools" class="page">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
       <a href="#" onclick="showPage('home');return false;" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
-      <h2 style="margin-bottom:0" data-i18n="rw.heading">Remove Digital Watermark</h2>
+      <h2 style="margin-bottom:0" data-i18n="rt.heading">Removal Tools</h2>
     </div>
     <div class="card-form">
       <div class="form-group">
-        <label for="rw-file" data-i18n="rw.file_label">Select image or audio file</label>
-        <input type="file" id="rw-file" accept="image/*,audio/*" onchange="handleRemoveWatermark()">
+        <label for="rt-file" data-i18n="rt.file_label">Select image or audio file</label>
+        <input type="file" id="rt-file" accept="image/*,audio/*" onchange="onRtFileChange()">
       </div>
-      <p id="rw-file-info" style="font-size:0.85rem;color:var(--text-muted);margin-top:8px"></p>
-      <span id="rw-spinner" class="spinner" style="display:none;margin-left:8px"></span>
-      <p id="rw-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:8px"></p>
+      <p id="rt-file-info" style="font-size:0.85rem;color:var(--text-muted);margin-top:8px"></p>
+
+      <div id="rt-options" style="display:none;margin-top:16px">
+        <div id="rt-image-options" style="display:none">
+          <p style="font-weight:600;margin-bottom:8px" data-i18n="rt.image_section">Image Removal Options</p>
+          <label class="rt-check"><input type="checkbox" id="rt-wm" checked> <span data-i18n="rt.remove_wm">Digital Watermark</span></label>
+          <label class="rt-check"><input type="checkbox" id="rt-pi"> <span data-i18n="rt.remove_pi">Pixel Injection</span></label>
+          <label class="rt-check"><input type="checkbox" id="rt-c2pa" checked> <span data-i18n="rt.remove_c2pa">C2PA Provenance</span></label>
+          <label class="rt-check"><input type="checkbox" id="rt-meta" checked> <span data-i18n="rt.remove_meta">Metadata</span></label>
+        </div>
+        <div id="rt-audio-options" style="display:none">
+          <p style="font-weight:600;margin-bottom:8px" data-i18n="rt.audio_section">Audio Removal Options</p>
+          <label class="rt-check"><input type="checkbox" id="rt-audio-wm" checked> <span data-i18n="rt.remove_audio_wm">Audio Watermark</span></label>
+          <label class="rt-check"><input type="checkbox" id="rt-audio-meta"> <span data-i18n="rt.remove_audio_meta">Metadata</span></label>
+        </div>
+
+        <button class="btn" id="rt-btn" onclick="handleRtRemove()" style="margin-top:16px" data-i18n="rt.remove_btn">Remove Selected</button>
+        <span id="rt-spinner" class="spinner" style="display:none;margin-left:8px"></span>
+      </div>
+
+      <p id="rt-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:8px"></p>
     </div>
-    <div id="rw-output" style="display:none;margin-top:16px">
-      <div id="rw-result" style="text-align:center"></div>
+    <div id="rt-result" style="display:none;margin-top:16px">
+      <p id="rt-output" style="display:none"></p>
+      <div id="rt-download" style="text-align:center;margin-top:12px"></div>
     </div>
   </section>
 </main>
