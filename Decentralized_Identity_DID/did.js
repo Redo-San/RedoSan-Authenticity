@@ -463,13 +463,26 @@ function didGenerateDocument(kp) {
 
 // ── Verifiable Credential ──
 
+function getCryptosuite(algorithm) {
+  if (algorithm === 'Ed25519') return 'eddsa-rdfc-2022';
+  if (algorithm === 'P-256') return 'ecdsa-rdfc-2019';
+  return 'rsa-signature-2022';
+}
+
+function getSuiteContext(algorithm) {
+  if (algorithm === 'Ed25519') return 'https://w3id.org/security/suites/ed25519-2020/v1';
+  if (algorithm === 'P-256') return 'https://w3id.org/security/suites/secp256r1-2020/v1';
+  return 'https://w3id.org/security/suites/rsa-2020/v1';
+}
+
 function didCreateVerifiableCredential(kp, subjectData, signatureB64, nonce) {
   var did = kp.did;
   var vmId = did + '#' + did.slice(8);
   var vc = {
     '@context': [
       'https://www.w3.org/ns/credentials/v2',
-      'https://www.w3.org/ns/credentials/examples/v2'
+      getSuiteContext(kp.algorithm),
+      'https://w3id.org/security/data-integrity/v2'
     ],
     type: ['VerifiableCredential', 'RedoSanIdentityCredential'],
     issuer: did,
@@ -482,7 +495,7 @@ function didCreateVerifiableCredential(kp, subjectData, signatureB64, nonce) {
       type: 'DataIntegrityProof',
       created: new Date().toISOString(),
       verificationMethod: vmId,
-      cryptosuite: 'eddsa-rdfc-2022',
+      cryptosuite: getCryptosuite(kp.algorithm),
       proofPurpose: 'assertionMethod',
       proofValue: signatureB64
     }
