@@ -289,9 +289,10 @@
   "lang.name.ko": "한국어",
   "sidebar": {
     "certificate": "Passeport numérique",
-    "usage_warning": "⚠️ Utilisation légale uniquement. Le contenu illégal ou nuisible est interdit. Tous les traitements sont effectués à 100% localement.",
+    "usage_warning": "⚠️ Utilisation légale uniquement. Contenu illégal/nuisible interdit. Tous les traitements sont effectués à 100% localement.",
     "audio_watermark": "Filigrane audio numérique",
-    "did": "Identité DID"
+    "did": "Identité DID",
+    "forensic": "Analyseur forensique"
   },
   "card": {
     "certificate": {
@@ -305,11 +306,15 @@
     "did": {
       "title": "Identité DID",
       "desc": "ID décentralisé + signature cryptographique"
+    },
+    "forensic": {
+      "title": "Analyseur forensique",
+      "desc": "Vérifications de tamper ELA, bruit, JPEG et copie-déplacement"
     }
   },
   "wm": {
     "capacity_label": "Capacité : ~{bytes} octet{s}{suffix} ({w}×{h} image)",
-    "chrominance_suffix": " (chrominance redondante)",
+    "chrominance_suffix": " (chrominance redondant)",
     "redundant_suffix": " (redondant x3)",
     "secret_status_max": "Taille maximale du secret : ~{bytes} octets",
     "secret_status_ok": "✓ Fichier secret : {size} octets — correspond à la capacité",
@@ -337,15 +342,15 @@
     "label_error": "Erreur"
   },
   "ts": {
-    "select_both": "Veuillez sélectionner à la fois le fichier d'origine et son fichier de preuve .ots",
-    "created_success": "✓ Timestamp .ots complet créé avec attestation de blockchain !\n\nSHA-256 : {hash}\nTaille : {size} octets\n\nCe fichier .ots inclut une preuve de Merkle à partir de l'agrégateur de calendrier OpenTimestamps. Vérifiez-le à tout moment en utilisant l'onglet Vérifier.",
-    "created_warning": "SHA-256 : {hash}\n\n⚠ L'agrégateur de calendrier est inaccessible. Un timestamp .ots incomplet a été créé ({size} octets, format standard).\n\nPour attacher une attestation de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
-    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier n'a pas été modifié depuis la création du timestamp.",
-    "verified_mismatch": "✗ Correspondance de hachage ! Le fichier a été modifié.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier a été modifié depuis la création du timestamp.",
+    "select_both": "Veuillez sélectionner à la fois le fichier d'origine et son preuve .ots",
+    "created_success": "✓ Preuve .ots de timestamp créée avec attestation de blockchain !\n\nSHA-256 : {hash}\nTaille : {size} octets\n\nCe fichier .ots inclut une preuve de merkle du calendrier agrégateur OpenTimestamps. Vérifiez-la à tout moment en utilisant l'onglet Vérifier.",
+    "created_warning": "SHA-256 : {hash}\n\n⚠ L'agrégateur de calendrier est inaccessible. Preuve .ots de timestamp incomplète créée ({size} octets, format standard).\n\nPour attacher une attestation de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
+    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier n'a pas changé depuis la création du timestamp.",
+    "verified_mismatch": "✗ Hachage en erreur ! Le fichier a été modifié.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier a changé depuis la création du timestamp.",
     "option1_title": "Option 1 — Site Web OpenTimestamps (le plus simple) :",
     "option1_step1": "1. Allez sur https://opentimestamps.org",
-    "option1_step2": "2. Faites glisser et déposez le fichier \"{name}.ots\" sur la page",
-    "option1_step3": "3. Cliquez sur \"Tampon\" pour obtenir un fichier .ots complet avec preuve de blockchain",
+    "option1_step2": "2. Faites glisser et déposez \"{name}.ots\" sur la page",
+    "option1_step3": "3. Cliquez sur \"Tampon\" pour obtenir une preuve .ots complète avec preuve de blockchain",
     "option2_title": "Option 2 — CLI officiel :",
     "option3_title": "Option 3 — PowerShell (soumettre le hachage brut, 32 octets uniquement) :"
   },
@@ -382,7 +387,7 @@
     "no_data_desc": "Ce fichier ne contient aucune métadonnée de provenance C2PA.",
     "no_data_desc_alt": "Ce fichier n'a pas de métadonnée de provenance C2PA.",
     "no_manifests_title": "Aucun manifeste C2PA",
-    "no_manifests_desc": "Le fichier contient des données C2PA, mais aucun manifeste lisible.",
+    "no_manifests_desc": "Le fichier contient des données C2PA mais aucun manifeste lisible.",
     "no_manifests": "Aucun manifeste trouvé",
     "verified": "Vérifié",
     "view_details": "Voir les détails complets"
@@ -449,23 +454,23 @@
     "type_other": "autre",
     "info_title": "Informations sur le propriétaire",
     "info_name": "Nom complet",
-    "info_name_ph": "par exemple, Jean Dupont",
-    "info_email": "Adresse e-mail",
-    "info_email_ph": "par exemple, jean@example.com",
+    "info_name_ph": "par exemple John Doe",
+    "info_email": "Courriel",
+    "info_email_ph": "par exemple john@example.com",
     "info_phone": "Téléphone",
-    "info_phone_ph": "par exemple, 5xx xxx xxxx",
+    "info_phone_ph": "par exemple 5xx xxx xxxx",
     "phone_digits_only": "Veuillez entrer uniquement des chiffres",
-    "clear_confirm": "Effacer toutes les données ? Votre progression actuelle sera perdue.",
-    "email_invalid": "Veuillez entrer une adresse e-mail valide",
-    "url_invalid": "Veuillez entrer une URL valide (par exemple, https://example.com)",
-    "select_country": "Sélectionner un pays",
+    "clear_confirm": "Effacer toutes les données ? Vos progrès actuels seront perdus.",
+    "email_invalid": "Veuillez entrer une adresse de courriel valide",
+    "url_invalid": "Veuillez entrer une URL valide (par exemple https://example.com)",
+    "select_country": "Sélectionner le pays",
     "digits": "chiffres",
     "info_website": "Site Web",
-    "info_website_ph": "par exemple, https://example.com",
+    "info_website_ph": "par exemple https://example.com",
     "info_social": "Liens sociaux",
     "info_artist": "Je suis un artiste / musicien",
     "info_music": "Plateformes de musique",
-    "info_required": "Veuillez remplir tous les champs obligatoires : Nom, E-mail, Téléphone, Site Web.",
+    "info_required": "Veuillez remplir tous les champs obligatoires : Nom, Courriel, Téléphone, Site Web.",
     "cert_title": "Passeport numérique",
     "cert_desc": "Télécharger un document signé avec tous les résultats, une prévisualisation d'image et un code de vérification QR.",
     "cert_desc_image": "Télécharger un document signé avec tous les résultats, une prévisualisation d'image et un code de vérification QR.",
@@ -477,7 +482,7 @@
   },
   "shared": {
     "download": "Télécharger",
-    "drop_file": "Déposer un fichier ici ou <strong>parcourir</strong>",
+    "drop_file": "Déposer le fichier ici ou <strong>parcourir</strong>",
     "select_file": "Veuillez sélectionner un fichier",
     "processing": "Traitement en cours...",
     "error_prefix": "Erreur : ",
@@ -498,7 +503,7 @@
     "placeholder": "Tapez votre question...",
     "clear": "Effacer la conversation",
     "close": "Fermer",
-    "help": "Demandez-moi des informations sur la filigrane, l'empreinte, l'horodatage, le C2PA et plus encore !",
+    "help": "Demandez-moi des informations sur la filigrane, l'empreinte, l'horodatage, C2PA, etc. !",
     "context_watermark": "Je vois que vous êtes sur la page **Filigrane**. Avez-vous besoin d'aide ?",
     "context_pixel": "Je vois que vous êtes sur la page **Injection de pixels**. Avez-vous besoin d'aide ?",
     "context_fingerprint": "Je vois que vous êtes sur la page **Empreinte**. Avez-vous besoin d'aide ?",
@@ -611,5 +616,11 @@
   "threat.btn": "Return to Safety",
   "threat.exts": "Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk and more",
   "threat.note": "If you believe this is a mistake, please report it on",
-  "threat.note_link": "GitHub Issues"
+  "threat.note_link": "GitHub Issues",
+  "forensic": {
+    "heading": "Analyseur forensique",
+    "desc": "Analyser les images pour les signaux de tamperisation à l'aide d'ELA, d'incohérence de bruit, de structure JPEG et de détection de copie-déplacement. Tout fonctionne localement dans votre navigateur.",
+    "file_label": "Fichier image",
+    "submit": "Analyser les preuves"
+  }
 }
