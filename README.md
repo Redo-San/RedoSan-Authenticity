@@ -33,15 +33,18 @@
 |---------|-------------|
 | **Dual Mode UI** | Simplified step wizard with smart AI/rephoto branching + Professional full-tool interface with sidebar navigation |
 | **Watermark** | 9 core algorithms (LSB, DCT, Neural SS, Latent DCT, Zero-bit, Multi-bit, Forensic, Fragile, Imatag) + 4 perceptual hash detection modes |
+| **Digital Audio Watermark** | 8 algorithms (LSB, GMM, QIM, Phase Coding, Echo Hiding, DSSS, DWT, Patchwork, DCT) for WAV files with dual-extract (fingerprint + DID) |
+| **Removal Tools** | Clean watermarks, fingerprints, metadata, pixels, EXIF, thumbnails, audio watermarks, and GPS from images and audio |
 | **Pixel Injection** | 23 advanced algorithms across spatial, frequency, deep learning, and professional domains |
 | **C2PA Provenance** | Sign JPEG/PNG with C2PA metadata (ECDSA P-256), read and verify manifests |
 | **Fingerprint** | 17 cryptographic hash algorithms + 4 perceptual image hashes; export as JSON, CSV, TXT, XML, PDF, DOCX |
+| **Decentralized Identity (DID)** | W3C DID Core compliant — `did:key:z…` (base58btc), DID Document, Verifiable Credentials (Ed25519 / P-256 / RSA) |
 | **Metadata** | Full EXIF reader, image dimensions, format detection, audio/video metadata |
 | **Timestamp** | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade |
 | **CLI** | Cross-platform Node.js CLI with interactive menu and direct command mode |
-| **Security Threat Blocker** | Service Worker + 404 page blocks dangerous file extensions and unknown `.js` scripts |
+| **Security Threat Blocker** | Service Worker + 404 page blocks dangerous file extensions and unknown `.js`/`.css`/`.html`/`.yml` files via 5 whitelists |
 | **File Converter** | Browser-side image (PNG/JPEG/WebP/BMP/GIF), audio (11 formats), video→audio, document, and subtitle conversion |
-| **Digital Passport** | Generate PDF, DOCX, or EPUB certificates with QR code verification |
+| **Digital Passport** | Generate PDF, DOCX, or EPUB certificates with image, identity, social links, music links, tool results, and QR code verification |
 
 ---
 
@@ -220,11 +223,12 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 │  │  │          │ │          │ │ + ffmpeg.wasm    │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
-│  │  │ Metadata │ │          │ │                  │  │    │
+│  │  │ Metadata │ │ DID (W3C)│ │ Removal Tools    │  │    │
+│  │  │          │ │did:key:z │ │ Image + Audio    │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  ├──────────────────────────────────────────────────┤    │
 │  │        Security Threat Blocker (SW + 404)        │    │
-│  │  Blocks dangerous extensions + unknown .js files │    │
+│  │  Blocks dangerous extensions + unknown scripts   │    │
 │  └──────────────────────────────────────────────────┘    │
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐    │
@@ -237,7 +241,9 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 ### Key Design Decisions
 
 - **100% client-side** — All crypto, hashing, and embedding happens in-browser or via CLI; no data ever leaves your machine
-- **Dual language UI** — Full Arabic and English interface with real-time switching via `i18n` system; `data-i18n` attributes for static text, `__(key, fallback)` for dynamic content
+- **Dual language UI** — Full Arabic and English interface with real-time switching via `i18n` system; `data-i18n` attributes for static text, `__(key, fallback)` for dynamic content. 8 language files updated with all feature-specific keys.
+- **W3C DID Core compliant** — `did:key:z…` format using base58btc multibase + unsigned varint multicodec prefixes. Generates DID Documents and Verifiable Credentials with per-algorithm cryptosuites (`eddsa-rdfc-2022`, `ecdsa-rdfc-2019`). Supports Ed25519, P-256 (secp256r1) key compression, RSA-2048, and RSA-4096.
+- **Removal Tools** — Checkbox-based UI for selective cleaning; preserves original file format (PNG lossless, JPEG quality 0.92, GIF, WebP) using `canvasToBlob`; audio cleaning uses step=2 quantization.
 - **`vm.runInThisContext`** over `require()` — Browser JS files use top-level `function`/`var` declarations; Node.js loads them via `vm.runInThisContext(src, { filename })` with polyfilled browser APIs
 - **PBKDF2 password derivation** — 100k iterations via `crypto.pbkdf2Sync` for watermark payload encryption
 - **C2PA JPEG APP11 / PNG chunk** — C2PA metadata embedded in JPEG APP11 marker or PNG `c2pa` chunk before IDAT; verified with ECDSA P-256. In Simplified Mode, C2PA signing is the final step wrapping the watermarked + pixel-injected output.
@@ -263,22 +269,25 @@ Bypass with `--allow-dangerous` for testing trusted files.
 
 The web app includes a two-layer security system:
 
-1. **Service Worker** (`sw.js`) — Intercepts all HTTP requests; blocks file downloads with dangerous extensions (`.exe`, `.bat`, `.ps1`, `.py`, `.jar`, etc.) and rejects unknown `.js` files not in the whitelist
+1. **Service Worker** (`sw.js`) — Intercepts all HTTP requests; blocks file downloads with dangerous extensions (`.exe`, `.bat`, `.ps1`, `.py`, `.jar`, etc.) and rejects unknown files via 5 whitelists:
+   - `JS_WHITELIST` — allowed `.js` scripts
+   - `CSS_WHITELIST` — allowed `.css` stylesheets
+   - `HTML_WHITELIST` — allowed `.html` pages
+   - `YML_WHITELIST` — allowed `.yml` configuration files
+   - `EXT_WHITELIST` — allowed cross-origin CDN URLs
 2. **Enhanced 404 page** (`404.html`) — Same threat detection as the Service Worker, providing fallback protection when the SW is inactive
-
-Both maintain an identical JS whitelist (20 known files) — any script not in the whitelist returns a 403 threat warning page.
 
 ---
 
 ## 🧪 Testing
 
-The CLI includes a test suite using `node:test` (zero external dependencies):
+The project includes a test suite using `node:test` (zero external dependencies):
 
 ```bash
 npm test
 ```
 
-65 tests across 6 files covering fingerprint (8), metadata (5), watermark (4), pixel-injection (5), C2PA (3), and utilities (40). Runs with `--test-concurrency=1` for resource-heavy operations. CI runs on Node.js 20 and 22 via GitHub Actions with `actions/checkout@v6` and `actions/setup-node@v6`.
+29 tests covering removal tools (watermark cleaning, audio cleaning, format preservation, file validation). Runs with `--test-concurrency=1` for resource-heavy operations. CI runs on Node.js 20 and 22 via GitHub Actions with `actions/checkout@v6` and `actions/setup-node@v6`.
 
 ---
 
@@ -299,7 +308,7 @@ npm test
 | **UI** | Vanilla HTML/CSS/JS (no frameworks) |
 | **Icons** | Font Awesome 5 |
 | **CLI** | Node.js 20+, Commander.js |
-| **Testing** | `node:test` (65 tests across 6 files, zero dependencies) |
+| **Testing** | `node:test` (29 tests, zero dependencies) |
 | **CI** | GitHub Actions (Node 20/22 matrix) |
 | **PDF Export** | jsPDF |
 | **DOCX Export** | docx |
