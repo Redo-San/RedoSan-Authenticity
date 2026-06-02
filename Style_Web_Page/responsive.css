@@ -7,6 +7,7 @@
 /* ── Safe area & iOS scroll helpers ── */
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  max-width: 100vw;
 }
 /* Prevent iOS zoom on input focus — minimum 16px on all form elements */
 input, select, textarea, button, .btn, .lang-btn, .tab-btn, .theme-btn, .simple-mode-switch {
@@ -350,11 +351,6 @@ iframe, img, video {
 /* ── Touch-friendly overscroll ── */
 .sidebar, .result, .nav-search .search-results {
   overscroll-behavior: contain;
-}
-
-/* ── Prevent horizontal overflow on very small devices ── */
-body {
-  max-width: 100vw;
 }
 
 /* ── Theme toggle & lang dropdown compact on small nav ── */

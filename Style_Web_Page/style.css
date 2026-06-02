@@ -647,10 +647,10 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   .simple-ai-options { flex-direction: column; }
   .simple-top { padding: 6px 10px; flex-wrap: wrap; gap: 6px; }
   .simple-progress { font-size: 0.65rem; padding: 4px 6px; gap: 2px; width:100%; box-sizing:border-box; }
-  .sp-step { white-space: normal; flex-shrink: 1; gap: 3px; min-width:0; }
+  .sp-step { white-space: nowrap; flex-shrink: 1; gap: 3px; min-width: 0; padding: 4px 5px; font-size: 0.6rem; }
   .sp-step-text { overflow: hidden; text-overflow: ellipsis; max-width: 60px; white-space: nowrap; }
-  .sp-dot { width: 18px; height: 18px; font-size: 0.5rem; flex-shrink: 0; }
-  .sp-line { width: 12px; margin: 0 2px; }
+  .sp-dot { width: 6px; height: 6px; font-size: 0.5rem; flex-shrink: 0; }
+  .sp-line { min-width: 14px; width: 12px; margin: 0 2px; }
   .simple-top-right .lang-btn { padding: 10px 8px; font-size: 0.8rem; min-height: 44px; }
   .simple-top-left .theme-btn { width: 44px; height: 44px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
   .simple-body { padding: 20px 12px; }
@@ -683,10 +683,6 @@ footer { text-align:center; padding:24px; border-top:1px solid var(--border); ma
   .simple-ai-card .ai-icon { font-size: 1.8rem; }
   .simple-ai-card h3 { font-size: 0.9rem; }
   .simple-ai-card p { font-size: 0.78rem; }
-  /* progress steps */
-  .sp-step { padding: 4px 5px; font-size: 0.6rem; white-space: nowrap; }
-  .sp-dot { width: 6px; height: 6px; }
-  .sp-line { min-width: 14px; }
   /* navigation */
   .simple-nav { padding: 8px 12px 12px; gap: 8px; }
   .simple-step-counter { font-size: 0.78rem; }
