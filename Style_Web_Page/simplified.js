@@ -1258,7 +1258,7 @@ function runPixelInjectStep() {
     // Populate hidden professional form fields
     var fileInput = document.getElementById('pi-image');
     if (fileInput) {
-      var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleFile.type }) : simpleFile;
+      var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleResults.watermarkBlob.type || simpleFile.type }) : simpleFile;
       if (srcFile) {
         var dt = new DataTransfer();
         dt.items.add(srcFile);
