@@ -226,6 +226,7 @@
   <a href="#" data-page="watermark" data-i18n="sidebar.watermark">Digital Watermark</a>
   <a href="#" data-page="audio-watermark" data-i18n="sidebar.audio_watermark">Audio Watermark</a>
   <a href="#" data-page="pixel-injection" data-i18n="sidebar.pixel_injection">Pixel Injection</a>
+  <a href="#" data-page="forensic" data-i18n="sidebar.forensic">Forensic Analyzer</a>
   <a href="#" data-page="fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
   <a href="#" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
   <a href="#" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
@@ -257,6 +258,11 @@
           <div class="icon">🔬</div>
           <h3 data-i18n="card.pixel_injection.title">Pixel Injection</h3>
           <p data-i18n="card.pixel_injection.desc">20+ advanced pixel injection algorithms</p>
+        </a>
+        <a href="#" data-page="forensic" class="card">
+          <div class="icon">🧪</div>
+          <h3 data-i18n="card.forensic.title">Forensic Analyzer</h3>
+          <p data-i18n="card.forensic.desc">ELA, noise, JPEG and copy-move tamper checks</p>
         </a>
         <a href="#" data-page="fingerprint" class="card">
           <div class="icon">🔍</div>
@@ -1008,6 +1014,32 @@
     </div>
   </section>
 
+  <!-- Forensic Analyzer -->
+  <section id="page-forensic" class="page">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <a href="#" onclick="showPage('home');return false;" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
+      <h2 style="margin-bottom:0" data-i18n="forensic.heading">Forensic Analyzer</h2>
+    </div>
+    <p class="lead" data-i18n="forensic.desc">Analyze images for tamper signals using ELA, noise inconsistency, JPEG structure, and copy-move detection. Everything runs locally in your browser.</p>
+    <div class="card-form">
+      <div class="form-group">
+        <label for="forensic-file" data-i18n="forensic.file_label">Image file</label>
+        <input type="file" id="forensic-file" accept="image/*">
+      </div>
+      <button class="btn" id="forensic-btn" onclick="handleForensicAnalyze()" data-i18n="forensic.submit">Analyze Forensics</button>
+      <span id="forensic-spinner" class="spinner" style="display:none;margin-left:8px"></span>
+    </div>
+    <div id="forensic-result" style="display:none;margin-top:16px">
+      <div id="forensic-output" class="mono-box"></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:16px">
+        <div id="forensic-ela-map"></div>
+        <div id="forensic-noise-map"></div>
+        <div id="forensic-copy-map"></div>
+      </div>
+      <div id="forensic-download" style="text-align:center;margin-top:16px"></div>
+    </div>
+  </section>
+
   <!-- File Converter -->
   <section id="page-converter" class="page">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
@@ -1263,6 +1295,8 @@
 <script src="Pixel_Injection/watermark_core_advanced.js" defer></script>
 <script src="Pixel_Injection/watermark_advanced_ui.js" defer></script>
 <script src="Pixel_Injection/pixel_injection.js" defer></script>
+<script src="Forensic/forensic_core.js" defer></script>
+<script src="Forensic/forensic.js" defer></script>
 <script src="Watermark/watermark.js" defer></script>
 <script src="Fingerprint/hashing.js" defer></script>
 <script src="Fingerprint/fingerprint_ui.js" defer></script>

@@ -10,6 +10,7 @@
   "sidebar.watermark": "Digital Watermark",
   "sidebar.audio_watermark": "Digital Audio Watermark",
   "sidebar.pixel_injection": "Pixel Injection",
+  "sidebar.forensic": "Forensic Analyzer",
   "sidebar.fingerprint": "Digital Fingerprint",
   "sidebar.metadata": "Metadata",
   "sidebar.timestamp": "Timestamp",
@@ -27,6 +28,8 @@
   "card.audio_watermark.desc": "Hide secrets in WAV: LSB, GMM, QIM",
   "card.pixel_injection.title": "Pixel Injection",
   "card.pixel_injection.desc": "20+ advanced pixel injection algorithms",
+  "card.forensic.title": "Forensic Analyzer",
+  "card.forensic.desc": "ELA, noise, JPEG and copy-move tamper checks",
   "card.fingerprint.title": "Digital Fingerprint",
   "card.fingerprint.desc": "SHA-256 + perceptual image hashes",
   "card.metadata.title": "Metadata",
@@ -133,6 +136,11 @@
   "pi.extract_submit": "Extract Message",
   "pi.analyze_image_label": "Image to Analyze",
   "pi.analyze_submit": "Analyze Image",
+
+  "forensic.heading": "Forensic Analyzer",
+  "forensic.desc": "Analyze images for tamper signals using ELA, noise inconsistency, JPEG structure, and copy-move detection. Everything runs locally in your browser.",
+  "forensic.file_label": "Image file",
+  "forensic.submit": "Analyze Forensics",
 
   "algo.1": "Spatial LSB",
   "algo.2": "Frequency DCT",

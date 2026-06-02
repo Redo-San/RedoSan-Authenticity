@@ -31,6 +31,7 @@ Examples:
   $ redosan c2pa sign image.png --claim "Created by Me" -o manifest.json
   $ redosan c2pa read image.jpg
   $ redosan pixel-injection embed -i image.png -s secret.txt -o output.png -a enhanced_lsb
+  $ redosan forensic image.png --json
   $ redosan did generate --algo Ed25519
   $ redosan did sign fingerprint.json
   $ redosan certificate fingerprint.json -o passport.pdf --format pdf
@@ -157,6 +158,18 @@ program
   .action(async (action, filePath, opts) => {
     const { runAudioWatermark } = require('./commands/audio_watermark');
     await runAudioWatermark(action, filePath, opts);
+  });
+
+// ── Forensic Analyzer command ──
+program
+  .command('forensic')
+  .description('Analyze image tamper signals (ELA, noise inconsistency, JPEG structure, copy-move)')
+  .argument('<file>', 'Image file to analyze')
+  .option('-j, --json', 'Output as JSON')
+  .option('-o, --output <file>', 'Save results to a file')
+  .action(async (filePath, opts) => {
+    const { runForensic } = require('./commands/forensic');
+    await runForensic(filePath, opts);
   });
 
 // ── DID Identity command ──
