@@ -8,8 +8,10 @@
   "scripts": {
     "start": "node cli/index.js",
     "link": "npm link",
-    "test": "echo No tests available",
-    "coverage": "echo No coverage available",
+    "test": "npm run test:core && npm run test:removal",
+    "test:core": "node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js",
+    "test:removal": "node cli/tests/remove_watermark_test.js",
+    "coverage": "c8 --reporter=text --reporter=lcov node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js && node cli/tests/remove_watermark_test.js",
     "coverage:report": "echo No coverage report available"
   },
   "keywords": [
@@ -21,7 +23,7 @@
     "timestamp",
     "steganography"
   ],
-  "license": "MIT",
+  "license": "GPL-2.0",
   "dependencies": {
     "acorn": "^8.16.0",
     "canvas": "^3.2.3",
