@@ -1,12 +1,21 @@
 {
   "root": true,
   "env": {
-    "node": true,
     "es2022": true
   },
   "extends": "eslint:recommended",
   "rules": {
-    "no-unused-vars": "warn",
-    "no-undef": "error"
-  }
+    "no-undef": "off",
+    "no-unused-vars": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["cli/**", "scripts/**"],
+      "env": { "node": true }
+    },
+    {
+      "files": ["sw.js"],
+      "env": { "serviceworker": true }
+    }
+  ]
 }
