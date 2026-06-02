@@ -34,6 +34,8 @@ var JS_WHITELIST = [
   '/RedoSan-Authenticity/Pixel_Injection/watermark_core_advanced.js',
   '/RedoSan-Authenticity/Pixel_Injection/watermark_advanced_ui.js',
   '/RedoSan-Authenticity/Pixel_Injection/advanced_watermarking.js',
+  '/RedoSan-Authenticity/Forensic/forensic_core.js',
+  '/RedoSan-Authenticity/Forensic/forensic.js',
   '/RedoSan-Authenticity/Timestamp/timestamp.js',
   '/RedoSan-Authenticity/Decentralized_Identity_DID/did.js',
   '/RedoSan-Authenticity/Fingerprint/hashing.js',
