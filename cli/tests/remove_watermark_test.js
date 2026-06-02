@@ -113,6 +113,8 @@ function cleanLSB(imgData, bits) {
 }
 
 // Zero out mid-frequency DCT coefficients in Y, Cb, Cr planes
+// Uses MID from watermark_core.js plus extra positions for PI DCT (u+v=7)
+const MID_EXTRA = [[0,4],[1,3],[2,2],[3,1],[4,0],[0,5],[1,4],[2,3],[3,2],[4,1],[5,0],[0,6],[1,5],[2,4],[3,3],[4,2],[5,1],[6,0],[0,7],[1,6],[2,5],[3,4],[4,3],[5,2],[6,1],[7,0]];
 function cleanDCT(imgData) {
   const { w, h } = imgData;
   const ycbcr = rgbToYcbcr(imgData);
@@ -122,7 +124,7 @@ function cleanDCT(imgData) {
     for (const [bx, by] of blocks) {
       const block = getBlock8(P, w, bx, by);
       const dct = dct8x8(block);
-      for (const [u, v] of MID) dct[u][v] = 0;
+      for (const [u, v] of MID_EXTRA) dct[u][v] = 0;
       setBlock8(P, w, bx, by, idct8x8(dct));
     }
   }
@@ -459,8 +461,13 @@ let key = null;
   if (watermarkCore) {
     console.log('\n--- Pixel Injection (Advanced Algorithms) Removal ---\n');
 
-    function piEmbed(img, algo, msg, pw) {
-      return watermarkCore.algorithms[algo](img, msg, pw || '');
+    function piEmbed(img, algo, msg, pw, opts) {
+      const result = watermarkCore.algorithms[algo](img, msg, pw || '', opts || {});
+      if (result && result.data) {
+        img.data = new Uint8ClampedArray(result.data);
+        if (result.width !== undefined) img.width = result.width;
+        if (result.height !== undefined) img.height = result.height;
+      }
     }
 
     function piExtract(img, algo, pw) {
@@ -494,17 +501,27 @@ let key = null;
 
     // DCT
     test('PI dct: embed → extract succeeds', () => {
-      const c = createTestImage(32, 32);
-      const img = imgDataForCore(c);
-      piEmbed(img, 'dct', testMsg, 'pass');
+      const w = 256, h = 256;
+      const canvas = createCanvas(w, h);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'gray';
+      ctx.fillRect(0, 0, w, h);
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const img = { data: new Uint8ClampedArray(imgData.data), width: w, height: h };
+      piEmbed(img, 'dct', testMsg, 'pass', {strength: 100});
       const result = piExtract(img, 'dct', 'pass');
       assert(result && result.length > 0 && result.indexOf(testMsg) >= 0, 'Should extract original message after DCT embed');
     });
 
     test('PI dct: cleanDCT → original message gone', () => {
-      const c = createTestImage(32, 32);
-      const img = imgDataForCore(c);
-      piEmbed(img, 'dct', testMsg, 'pass');
+      const w = 256, h = 256;
+      const canvas = createCanvas(w, h);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'gray';
+      ctx.fillRect(0, 0, w, h);
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const img = { data: new Uint8ClampedArray(imgData.data), width: w, height: h };
+      piEmbed(img, 'dct', testMsg, 'pass', {strength: 100});
       const imgObj = { data: img.data, w: img.width, h: img.height };
       cleanDCT(imgObj);
       const result = piExtract(img, 'dct', 'pass');

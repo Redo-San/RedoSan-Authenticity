@@ -620,7 +620,13 @@ class WatermarkCore {
             case 'dwt':
                 return this.extractDWT(watermarkedImageData);
             case 'lsb':
+            case 'random_lsb':
+            case 'adaptive_lsb':
                 return this.extractLSB(watermarkedImageData);
+            case 'enhanced_lsb':
+                return this.extractEnhancedLSB(watermarkedImageData);
+            case 'multi_channel_lsb':
+                return this.extractMultiChannelLSB(watermarkedImageData);
             case 'vine':
                 return this.extractVINE(watermarkedImageData);
             case 'pixel_seal':
