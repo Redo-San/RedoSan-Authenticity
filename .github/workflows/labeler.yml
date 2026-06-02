@@ -2,7 +2,7 @@ name: Labeler
 
 on:
   pull_request:
-    branches: ["beta-release"]
+    branches: ["main"]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

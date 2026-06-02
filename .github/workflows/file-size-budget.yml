@@ -24,7 +24,7 @@ jobs:
           script: |
             const fs = require('fs');
             const run = require('child_process').execSync;
-            const base = context.payload.pull_request.base.sha || 'origin/beta-release';
+            const base = context.payload.pull_request.base.sha || 'origin/main';
 
             const BUDGET = {
               '.js': 300 * 1024,
