@@ -1,0 +1,5 @@
+node_modules/
+vendor/
+**/*.min.js
+C2PA/
+Pixel_Injection/watermark_core_advanced.js
