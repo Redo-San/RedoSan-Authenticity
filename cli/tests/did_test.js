@@ -135,7 +135,7 @@ describe('DID Document', () => {
     const kp = { did: 'did:key:zDna...', algorithm: 'P-256' };
     const doc = rawFns.didGenerateDocument(kp);
     assert.equal(doc.verificationMethod[0].type, 'EcdsaSecp256r1VerificationKey2020');
-    assert.ok(doc['@context'].includes('https://w3id.org/security/suites/secp256r1-2020/v1'));
+    assert.ok(doc['@context'].some(c => c === 'https://w3id.org/security/suites/secp256r1-2020/v1'));
   });
   it('should generate RSA DID Document', () => {
     const kp = { did: 'did:key:zRsa...', algorithm: 'RSA-2048' };
@@ -149,8 +149,8 @@ describe('Verifiable Credential', () => {
     const kp = { did: 'did:key:z6Mk...', algorithm: 'Ed25519' };
     const vc = rawFns.didCreateVerifiableCredential(kp, 'hash_data', 'sig_value');
     assert.equal(vc.proof.cryptosuite, 'eddsa-rdfc-2022');
-    assert.ok(vc['@context'].includes('https://w3id.org/security/data-integrity/v2'));
-    assert.ok(vc['@context'].includes('https://w3id.org/security/suites/ed25519-2020/v1'));
+    assert.ok(vc['@context'].some(c => c === 'https://w3id.org/security/data-integrity/v2'));
+    assert.ok(vc['@context'].some(c => c === 'https://w3id.org/security/suites/ed25519-2020/v1'));
     assert.equal(vc.credentialSubject.fingerprintHash, 'hash_data');
     assert.equal(vc.proof.proofValue, 'sig_value');
   });
@@ -158,7 +158,7 @@ describe('Verifiable Credential', () => {
     const kp = { did: 'did:key:zDna...', algorithm: 'P-256' };
     const vc = rawFns.didCreateVerifiableCredential(kp, 'hash_data', 'sig_value');
     assert.equal(vc.proof.cryptosuite, 'ecdsa-rdfc-2019');
-    assert.ok(vc['@context'].includes('https://w3id.org/security/suites/secp256r1-2020/v1'));
+    assert.ok(vc['@context'].some(c => c === 'https://w3id.org/security/suites/secp256r1-2020/v1'));
   });
   it('should create RSA VC with correct cryptosuite', () => {
     const kp = { did: 'did:key:zRsa...', algorithm: 'RSA-4096' };
