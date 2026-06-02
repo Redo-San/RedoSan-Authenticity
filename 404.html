@@ -1,203 +1,456 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>404 — Page Not Found | RedoSan Authenticity</title>
-<meta name="description" content="The page you're looking for doesn't exist. Return to RedoSan Authenticity home page.">
-<meta name="robots" content="noindex, follow">
-<link rel="canonical" href="https://redo-san.github.io/RedoSan-Authenticity/404.html">
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<link rel="stylesheet" href="Style_Web_Page/style.css">
-<script src="Style_Web_Page/i18n.js" defer></script>
-<script src="Style_Web_Page/shared.js" defer></script>
-<style>
-.threat-container { max-width:600px; margin:0 auto; padding:40px 20px; text-align:center; }
-.threat-icon { font-size:72px; margin-bottom:20px; }
-.threat-title { color:#ff4757; font-size:28px; margin-bottom:16px; }
-.threat-path { background:#1a1a2e; padding:12px 16px; border-radius:8px; word-break:break-all; font-family:monospace; margin:20px 0; border:1px solid #ff475740; color:#ff6b81; font-size:14px; }
-.threat-desc { color:#a0a0b0; line-height:1.6; margin-bottom:12px; }
-.threat-btn { display:inline-block; margin-top:24px; padding:12px 32px; background:#6C5CE7; color:#fff; text-decoration:none; border-radius:8px; font-size:16px; }
-.threat-btn:hover { background:#5f4dd1; }
-.threat-exts { margin-top:20px; font-size:13px; color:#606070; }
-.threat-note { font-size:13px; color:#505060; margin-top:24px; padding:12px; background:#12121a; border-radius:6px; border:1px solid #2a2a3a; }
-</style>
-</head>
-<body>
-<div class="error-shapes">
-  <div class="error-shape"></div>
-  <div class="error-shape"></div>
-  <div class="error-shape"></div>
-</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 — Page Not Found | RedoSan Authenticity</title>
+    <meta
+      name="description"
+      content="The page you're looking for doesn't exist. Return to RedoSan Authenticity home page."
+    />
+    <meta name="robots" content="noindex, follow" />
+    <link
+      rel="canonical"
+      href="https://redo-san.github.io/RedoSan-Authenticity/404.html"
+    />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="stylesheet" href="Style_Web_Page/style.css" />
+    <script src="Style_Web_Page/i18n.js" defer></script>
+    <script src="Style_Web_Page/shared.js" defer></script>
+    <style>
+      .threat-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        text-align: center;
+      }
+      .threat-icon {
+        font-size: 72px;
+        margin-bottom: 20px;
+      }
+      .threat-title {
+        color: #ff4757;
+        font-size: 28px;
+        margin-bottom: 16px;
+      }
+      .threat-path {
+        background: #1a1a2e;
+        padding: 12px 16px;
+        border-radius: 8px;
+        word-break: break-all;
+        font-family: monospace;
+        margin: 20px 0;
+        border: 1px solid #ff475740;
+        color: #ff6b81;
+        font-size: 14px;
+      }
+      .threat-desc {
+        color: #a0a0b0;
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+      .threat-btn {
+        display: inline-block;
+        margin-top: 24px;
+        padding: 12px 32px;
+        background: #6c5ce7;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+      .threat-btn:hover {
+        background: #5f4dd1;
+      }
+      .threat-exts {
+        margin-top: 20px;
+        font-size: 13px;
+        color: #606070;
+      }
+      .threat-note {
+        font-size: 13px;
+        color: #505060;
+        margin-top: 24px;
+        padding: 12px;
+        background: #12121a;
+        border-radius: 6px;
+        border: 1px solid #2a2a3a;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="error-shapes">
+      <div class="error-shape"></div>
+      <div class="error-shape"></div>
+      <div class="error-shape"></div>
+    </div>
 
-<nav>
-  <div class="nav-left">
-    <a href="/RedoSan-Authenticity/" class="logo">
-      <div class="logo-img logo-white" role="img" aria-label="RedoSan"></div>
-      <div class="logo-img logo-black" role="img" aria-label="RedoSan"></div>
-    </a>
-    <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">🌙</button>
-  </div>
-  <div class="nav-links">
-    <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
-    <a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark">Watermark</a>
-    <a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
-    <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>
-    <a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
-    <div class="lang-dropdown">
-      <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">English</button>
-      <div class="lang-menu" id="langMenu">
-        <a href="#" onclick="switchLang('en'); return false;" class="lang-option" data-lang="en">English</a>
-        <a href="#" onclick="switchLang('ar'); return false;" class="lang-option" data-lang="ar">العربية</a>
-        <a href="#" onclick="switchLang('fr'); return false;" class="lang-option" data-lang="fr">Français</a>
-        <a href="#" onclick="switchLang('de'); return false;" class="lang-option" data-lang="de">Deutsch</a>
-        <a href="#" onclick="switchLang('es'); return false;" class="lang-option" data-lang="es">Español</a>
-        <a href="#" onclick="switchLang('zh'); return false;" class="lang-option" data-lang="zh">中文</a>
-        <a href="#" onclick="switchLang('ja'); return false;" class="lang-option" data-lang="ja">日本語</a>
-        <a href="#" onclick="switchLang('ko'); return false;" class="lang-option" data-lang="ko">한국어</a>
+    <nav>
+      <div class="nav-left">
+        <a href="/RedoSan-Authenticity/" class="logo">
+          <div
+            class="logo-img logo-white"
+            role="img"
+            aria-label="RedoSan"
+          ></div>
+          <div
+            class="logo-img logo-black"
+            role="img"
+            aria-label="RedoSan"
+          ></div>
+        </a>
+        <button
+          class="theme-btn"
+          id="themeToggle"
+          onclick="toggleTheme()"
+          title="Toggle theme"
+          aria-label="Toggle theme"
+        >
+          🌙
+        </button>
       </div>
-    </div>
-  </div>
-</nav>
+      <div class="nav-links">
+        <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
+        <a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark"
+          >Watermark</a
+        >
+        <a
+          href="/RedoSan-Authenticity/#fingerprint"
+          data-i18n="sidebar.fingerprint"
+          >Fingerprint</a
+        >
+        <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata"
+          >Metadata</a
+        >
+        <a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp"
+          >Timestamp</a
+        >
+        <div class="lang-dropdown">
+          <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
+            English
+          </button>
+          <div class="lang-menu" id="langMenu">
+            <a
+              href="#"
+              onclick="switchLang('en'); return false;"
+              class="lang-option"
+              data-lang="en"
+              >English</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('ar'); return false;"
+              class="lang-option"
+              data-lang="ar"
+              >العربية</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('fr'); return false;"
+              class="lang-option"
+              data-lang="fr"
+              >Français</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('de'); return false;"
+              class="lang-option"
+              data-lang="de"
+              >Deutsch</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('es'); return false;"
+              class="lang-option"
+              data-lang="es"
+              >Español</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('zh'); return false;"
+              class="lang-option"
+              data-lang="zh"
+              >中文</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('ja'); return false;"
+              class="lang-option"
+              data-lang="ja"
+              >日本語</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('ko'); return false;"
+              class="lang-option"
+              data-lang="ko"
+              >한국어</a
+            >
+          </div>
+        </div>
+      </div>
+    </nav>
 
-<main class="container" id="main-content">
-  <div class="error-page" id="staticFallback">
-    <div class="error-code">404</div>
-    <h1 class="error-title" data-i18n="404.title">Page Not Found</h1>
-    <p class="error-desc" data-i18n="404.desc">The page you're looking for doesn't exist or has been moved.</p>
-    <div class="error-links">
-      <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
-      <a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark">Watermark</a>
-      <a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
-      <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>
-      <a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
-    </div>
-  </div>
-</main>
+    <main class="container" id="main-content">
+      <div class="error-page" id="staticFallback">
+        <div class="error-code">404</div>
+        <h1 class="error-title" data-i18n="404.title">Page Not Found</h1>
+        <p class="error-desc" data-i18n="404.desc">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <div class="error-links">
+          <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
+          <a
+            href="/RedoSan-Authenticity/#watermark"
+            data-i18n="sidebar.watermark"
+            >Watermark</a
+          >
+          <a
+            href="/RedoSan-Authenticity/#fingerprint"
+            data-i18n="sidebar.fingerprint"
+            >Fingerprint</a
+          >
+          <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata"
+            >Metadata</a
+          >
+          <a
+            href="/RedoSan-Authenticity/#timestamp"
+            data-i18n="sidebar.timestamp"
+            >Timestamp</a
+          >
+        </div>
+      </div>
+    </main>
 
-<footer>
-  <div class="footer-links">
-    <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
-    <a href="https://github.com/Redo-San" target="_blank" rel="noopener">GitHub</a>
-    <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" data-i18n="404.report_issue">Report Issue</a>
-  </div>
-  <div class="footer-copy">RedoSan Authenticity &mdash; <span data-i18n="footer.copyright">100% browser-based &bull; Nothing leaves your device</span></div>
-</footer>
+    <footer>
+      <div class="footer-links">
+        <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
+        <a href="https://github.com/Redo-San" target="_blank" rel="noopener"
+          >GitHub</a
+        >
+        <a
+          href="https://github.com/Redo-San/RedoSan-Authenticity/issues"
+          target="_blank"
+          rel="noopener"
+          data-i18n="404.report_issue"
+          >Report Issue</a
+        >
+      </div>
+      <div class="footer-copy">
+        RedoSan Authenticity &mdash;
+        <span data-i18n="footer.copyright"
+          >100% browser-based &bull; Nothing leaves your device</span
+        >
+      </div>
+    </footer>
 
-<script>
-var DANGEROUS_EXTS = ['.exe','.msi','.bat','.cmd','.com','.scr','.pif','.ps1','.psm1','.psd1','.vbs','.vbe','.jse','.wsf','.wsh','.dll','.ocx','.sys','.drv','.jar','.sh','.pl','.py','.rb','.bash','.app','.msu','.msp','.reg','.inf','.gadget','.cpl','.mst','.hta','.ws','.vb','.vba','.swf','.action','.elf','.so','.ko','.deb','.rpm','.run','.lua','.tcl','.awk','.apk','.flatpak','.snap','.appimage','.xls','.xlsx','.ppt','.pptx','.rtf','.odt','.ods','.odp','.zip'];
+    <script>
+      var DANGEROUS_EXTS = [
+        ".exe",
+        ".msi",
+        ".bat",
+        ".cmd",
+        ".com",
+        ".scr",
+        ".pif",
+        ".ps1",
+        ".psm1",
+        ".psd1",
+        ".vbs",
+        ".vbe",
+        ".jse",
+        ".wsf",
+        ".wsh",
+        ".dll",
+        ".ocx",
+        ".sys",
+        ".drv",
+        ".jar",
+        ".sh",
+        ".pl",
+        ".py",
+        ".rb",
+        ".bash",
+        ".app",
+        ".msu",
+        ".msp",
+        ".reg",
+        ".inf",
+        ".gadget",
+        ".cpl",
+        ".mst",
+        ".hta",
+        ".ws",
+        ".vb",
+        ".vba",
+        ".swf",
+        ".action",
+        ".elf",
+        ".so",
+        ".ko",
+        ".deb",
+        ".rpm",
+        ".run",
+        ".lua",
+        ".tcl",
+        ".awk",
+        ".apk",
+        ".flatpak",
+        ".snap",
+        ".appimage",
+        ".xls",
+        ".xlsx",
+        ".ppt",
+        ".pptx",
+        ".rtf",
+        ".odt",
+        ".ods",
+        ".odp",
+        ".zip",
+      ];
 
-var JS_WHITELIST = [
-  '/RedoSan-Authenticity/sw.js',
-  '/RedoSan-Authenticity/Style_Web_Page/shared.js',
-  '/RedoSan-Authenticity/Style_Web_Page/simplified.js',
-  '/RedoSan-Authenticity/Style_Web_Page/navigation.js',
-  '/RedoSan-Authenticity/Style_Web_Page/i18n.js',
-  '/RedoSan-Authenticity/Style_Web_Page/search.js',
-  '/RedoSan-Authenticity/Certificate/certificate.js',
-  '/RedoSan-Authenticity/Watermark/watermark.js',
-  '/RedoSan-Authenticity/Watermark/watermark_core.js',
-  '/RedoSan-Authenticity/Watermark/utils.js',
-  '/RedoSan-Authenticity/Pixel_Injection/pixel_injection.js',
-  '/RedoSan-Authenticity/Pixel_Injection/watermark_core_advanced.js',
-  '/RedoSan-Authenticity/Pixel_Injection/watermark_advanced_ui.js',
-  '/RedoSan-Authenticity/Pixel_Injection/advanced_watermarking.js',
-  '/RedoSan-Authenticity/Timestamp/timestamp.js',
-  '/RedoSan-Authenticity/Fingerprint/hashing.js',
-  '/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js',
-  '/RedoSan-Authenticity/C2PA/cbor.js',
-  '/RedoSan-Authenticity/C2PA/c2pa.js',
-  '/RedoSan-Authenticity/Metadata/metadata.js',
-  '/RedoSan-Authenticity/Converter/converter.js',
-  '/RedoSan-Authenticity/Converter/ffmpeg-worker.js',
-  '/RedoSan-Authenticity/Converter/ffmpeg.min.js'
-];
+      var JS_WHITELIST = [
+        "/RedoSan-Authenticity/sw.js",
+        "/RedoSan-Authenticity/Style_Web_Page/shared.js",
+        "/RedoSan-Authenticity/Style_Web_Page/simplified.js",
+        "/RedoSan-Authenticity/Style_Web_Page/navigation.js",
+        "/RedoSan-Authenticity/Style_Web_Page/i18n.js",
+        "/RedoSan-Authenticity/Style_Web_Page/search.js",
+        "/RedoSan-Authenticity/Certificate/certificate.js",
+        "/RedoSan-Authenticity/Watermark/watermark.js",
+        "/RedoSan-Authenticity/Watermark/watermark_core.js",
+        "/RedoSan-Authenticity/Watermark/utils.js",
+        "/RedoSan-Authenticity/Pixel_Injection/pixel_injection.js",
+        "/RedoSan-Authenticity/Pixel_Injection/watermark_core_advanced.js",
+        "/RedoSan-Authenticity/Pixel_Injection/watermark_advanced_ui.js",
+        "/RedoSan-Authenticity/Pixel_Injection/advanced_watermarking.js",
+        "/RedoSan-Authenticity/Timestamp/timestamp.js",
+        "/RedoSan-Authenticity/Fingerprint/hashing.js",
+        "/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js",
+        "/RedoSan-Authenticity/C2PA/cbor.js",
+        "/RedoSan-Authenticity/C2PA/c2pa.js",
+        "/RedoSan-Authenticity/Metadata/metadata.js",
+        "/RedoSan-Authenticity/Converter/converter.js",
+        "/RedoSan-Authenticity/Converter/ffmpeg-worker.js",
+        "/RedoSan-Authenticity/Converter/ffmpeg.min.js",
+        "/RedoSan-Authenticity/Forensic/forensic_core.js",
+        "/RedoSan-Authenticity/Forensic/forensic.js",
+      ];
 
-function isThreatPath(p) {
-  var lower = p.toLowerCase();
-  // Check dangerous extensions
-  for (var i = 0; i < DANGEROUS_EXTS.length; i++) {
-    if (lower.endsWith(DANGEROUS_EXTS[i])) return true;
-  }
-  // Block unknown .js files not in whitelist
-  if (lower.endsWith('.js') && JS_WHITELIST.indexOf(p) === -1) return true;
-  // Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
-  // Catches single, double, and triple URL-encoded variants
-  var decoded = decodeURIComponent(p);
-  var decodedLower = decoded.toLowerCase();
-  // Second decode for triple-encoding (e.g., %25252F → %2F)
-  var decoded2;
-  try { decoded2 = decodeURIComponent(decodedLower); } catch(e) { decoded2 = ''; }
-  if (decodedLower.includes('://') || decoded2.includes('://')) return true;
-  if (decodedLower.includes('%3a%2f%2f') || decoded2.includes('%3a%2f%2f')) return true;
-  if (decodedLower.includes('%2f%2f') || decoded2.includes('%2f%2f')) return true;
-  if (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decodedLower) && !decodedLower.startsWith('//')) return true;
-  if (/\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decoded2) && !decoded2.startsWith('//')) return true;
-  return false;
-}
+      function isThreatPath(p) {
+        var lower = p.toLowerCase();
+        // Check dangerous extensions
+        for (var i = 0; i < DANGEROUS_EXTS.length; i++) {
+          if (lower.endsWith(DANGEROUS_EXTS[i])) return true;
+        }
+        // Block unknown .js files not in whitelist
+        if (lower.endsWith(".js") && JS_WHITELIST.indexOf(p) === -1)
+          return true;
+        // Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
+        // Catches single, double, and triple URL-encoded variants
+        var decoded = decodeURIComponent(p);
+        var decodedLower = decoded.toLowerCase();
+        // Second decode for triple-encoding (e.g., %25252F → %2F)
+        var decoded2;
+        try {
+          decoded2 = decodeURIComponent(decodedLower);
+        } catch (e) {
+          decoded2 = "";
+        }
+        if (decodedLower.includes("://") || decoded2.includes("://"))
+          return true;
+        if (
+          decodedLower.includes("%3a%2f%2f") ||
+          decoded2.includes("%3a%2f%2f")
+        )
+          return true;
+        if (decodedLower.includes("%2f%2f") || decoded2.includes("%2f%2f"))
+          return true;
+        if (
+          /\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decodedLower) &&
+          !decodedLower.startsWith("//")
+        )
+          return true;
+        if (
+          /\/\/([a-z0-9]([a-z0-9-]*\.)+[a-z]{2,})/.test(decoded2) &&
+          !decoded2.startsWith("//")
+        )
+          return true;
+        return false;
+      }
 
-function showThreatPage(path) {
-  document.title = '⚠️ Threat Blocked — RedoSan Authenticity';
-  document.getElementById('main-content').innerHTML =
-    '<div class="threat-container">' +
-    '<div class="threat-icon">&#x26A0;&#xFE0F;</div>' +
-    '<h1 class="threat-title" data-i18n="threat.title">Security Threat Blocked</h1>' +
-    '<p class="threat-desc" data-i18n="threat.desc">This URL appears to be a malicious file disguised as a legitimate resource.</p>' +
-    '<div class="threat-path">' + path.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
-    '<p class="threat-desc" data-i18n="threat.desc2">🔒 RedoSan Authenticity is a client-side digital authenticity tool and does not serve executable files or scripts. If you received this link from someone, it is likely a scam or phishing attempt.</p>' +
-    '<a href="/RedoSan-Authenticity/" class="threat-btn" data-i18n="threat.btn">Return to Safety</a>' +
-    '<div class="threat-exts" data-i18n="threat.exts">Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk and more</div>' +
-    '<div class="threat-note"><span data-i18n="threat.note">If you believe this is a mistake, please report it on</span> <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" style="color:#6C5CE7" target="_blank" rel="noopener" data-i18n="threat.note_link">GitHub Issues</a>.</div>' +
-    '</div>';
-}
+      function showThreatPage(path) {
+        document.title = "⚠️ Threat Blocked — RedoSan Authenticity";
+        document.getElementById("main-content").innerHTML =
+          '<div class="threat-container">' +
+          '<div class="threat-icon">&#x26A0;&#xFE0F;</div>' +
+          '<h1 class="threat-title" data-i18n="threat.title">Security Threat Blocked</h1>' +
+          '<p class="threat-desc" data-i18n="threat.desc">This URL appears to be a malicious file disguised as a legitimate resource.</p>' +
+          '<div class="threat-path">' +
+          path
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;") +
+          "</div>" +
+          '<p class="threat-desc" data-i18n="threat.desc2">🔒 RedoSan Authenticity is a client-side digital authenticity tool and does not serve executable files or scripts. If you received this link from someone, it is likely a scam or phishing attempt.</p>' +
+          '<a href="/RedoSan-Authenticity/" class="threat-btn" data-i18n="threat.btn">Return to Safety</a>' +
+          '<div class="threat-exts" data-i18n="threat.exts">Blocked: .exe .msi .bat .cmd .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk and more</div>' +
+          '<div class="threat-note"><span data-i18n="threat.note">If you believe this is a mistake, please report it on</span> <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" style="color:#6C5CE7" target="_blank" rel="noopener" data-i18n="threat.note_link">GitHub Issues</a>.</div>' +
+          "</div>";
+      }
 
-function show404Page() {
-  var fb = document.getElementById('staticFallback');
-  if (fb) fb.style.display = 'none';
-  document.getElementById('main-content').innerHTML =
-    '<div class="error-page">' +
-    '<div class="error-code">404</div>' +
-    '<h1 class="error-title" data-i18n="404.title">Page Not Found</h1>' +
-    '<p class="error-desc" data-i18n="404.desc_search">The page you\'re looking for doesn\'t exist or has been moved. Try searching below or use the navigation.</p>' +
-    '<div class="error-search">' +
-    '<input type="text" id="errorSearchInput" data-i18n-placeholder="404.search_placeholder" placeholder="Search the site..." aria-label="Search">' +
-    '</div>' +
-    '<div class="error-links">' +
-    '<a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>' +
-    '<a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark">Watermark</a>' +
-    '<a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>' +
-    '<a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>' +
-    '<a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>' +
-    '<a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" data-i18n="404.report_issue">Report Issue</a>' +
-    '</div>' +
-    '</div>';
+      function show404Page() {
+        var fb = document.getElementById("staticFallback");
+        if (fb) fb.style.display = "none";
+        document.getElementById("main-content").innerHTML =
+          '<div class="error-page">' +
+          '<div class="error-code">404</div>' +
+          '<h1 class="error-title" data-i18n="404.title">Page Not Found</h1>' +
+          '<p class="error-desc" data-i18n="404.desc_search">The page you\'re looking for doesn\'t exist or has been moved. Try searching below or use the navigation.</p>' +
+          '<div class="error-search">' +
+          '<input type="text" id="errorSearchInput" data-i18n-placeholder="404.search_placeholder" placeholder="Search the site..." aria-label="Search">' +
+          "</div>" +
+          '<div class="error-links">' +
+          '<a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>' +
+          '<a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark">Watermark</a>' +
+          '<a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>' +
+          '<a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>' +
+          '<a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>' +
+          '<a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" data-i18n="404.report_issue">Report Issue</a>' +
+          "</div>" +
+          "</div>";
 
-  var input = document.getElementById('errorSearchInput');
-  if (input) {
-    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') doErrorSearch(); });
-    input.addEventListener('focus', function() {
-      this.parentElement.style.boxShadow = '0 0 0 3px rgba(108,92,231,.15)';
-      this.parentElement.style.borderColor = '#6C5CE7';
-    });
-    input.addEventListener('blur', function() {
-      this.parentElement.style.boxShadow = '';
-      this.parentElement.style.borderColor = '';
-    });
-  }
-}
+        var input = document.getElementById("errorSearchInput");
+        if (input) {
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") doErrorSearch();
+          });
+          input.addEventListener("focus", function () {
+            this.parentElement.style.boxShadow =
+              "0 0 0 3px rgba(108,92,231,.15)";
+            this.parentElement.style.borderColor = "#6C5CE7";
+          });
+          input.addEventListener("blur", function () {
+            this.parentElement.style.boxShadow = "";
+            this.parentElement.style.borderColor = "";
+          });
+        }
+      }
 
-function doErrorSearch() {
-  var q = document.getElementById('errorSearchInput');
-  if (!q || !q.value.trim()) return;
-  window.location.replace('/RedoSan-Authenticity/?search=' + encodeURIComponent(q.value.trim()));
-}
+      function doErrorSearch() {
+        var q = document.getElementById("errorSearchInput");
+        if (!q || !q.value.trim()) return;
+        window.location.replace(
+          "/RedoSan-Authenticity/?search=" + encodeURIComponent(q.value.trim()),
+        );
+      }
 
-var requestedPath = window.location.pathname;
-if (isThreatPath(requestedPath)) {
-  showThreatPage(requestedPath);
-} else {
-  show404Page();
-}
-</script>
-</body>
+      var requestedPath = window.location.pathname;
+      if (isThreatPath(requestedPath)) {
+        showThreatPage(requestedPath);
+      } else {
+        show404Page();
+      }
+    </script>
+  </body>
 </html>

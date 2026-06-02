@@ -9,9 +9,9 @@
     "start": "node cli/index.js",
     "link": "npm link",
     "test": "npm run test:core && npm run test:removal",
-    "test:core": "node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js",
+    "test:core": "node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js",
     "test:removal": "node cli/tests/remove_watermark_test.js",
-    "coverage": "c8 --reporter=text --reporter=lcov node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js && node cli/tests/remove_watermark_test.js",
+    "coverage": "c8 --reporter=text --reporter=lcov node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js && node cli/tests/remove_watermark_test.js",
     "coverage:report": "echo No coverage report available"
   },
   "keywords": [
