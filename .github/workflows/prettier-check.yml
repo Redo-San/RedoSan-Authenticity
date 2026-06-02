@@ -23,7 +23,7 @@ jobs:
         with:
           script: |
             const run = require('child_process').execSync;
-            const base = context.payload.pull_request.base.sha || 'origin/beta-release';
+            const base = context.payload.pull_request.base.sha || 'origin/main';
 
             const diff = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js" "*.css" "*.html" "*.json"', { encoding: 'utf8' });
             const files = diff.trim().split('\n').filter(Boolean);
