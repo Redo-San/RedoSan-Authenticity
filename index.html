@@ -186,7 +186,13 @@
   </head>
   <body>
     <!-- Mode Selection Overlay -->
-    <div id="modeSelect" class="mode-select-overlay">
+    <div
+      id="modeSelect"
+      class="mode-select-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Mode selection"
+    >
       <div class="mode-select-bar">
         <button
           class="theme-btn"
@@ -292,7 +298,7 @@
             onclick="setMode('simplified')"
           >
             <div class="mode-card-icon">✨</div>
-            <h3 data-i18n="mode.simplified_title">Simplified Mode</h3>
+            <h2 data-i18n="mode.simplified_title">Simplified Mode</h2>
             <p data-i18n="mode.simplified_desc">
               Step-by-step wizard — upload a file and follow the guide
             </p>
@@ -302,7 +308,7 @@
             onclick="setMode('professional')"
           >
             <div class="mode-card-icon">⚙️</div>
-            <h3 data-i18n="mode.professional_title">Professional Mode</h3>
+            <h2 data-i18n="mode.professional_title">Professional Mode</h2>
             <p data-i18n="mode.professional_desc">
               Full access to all tools with advanced options
             </p>
@@ -390,7 +396,12 @@
     </div>
 
     <!-- Simplified Mode Container -->
-    <div id="simplifiedMode" style="display: none">
+    <div
+      id="simplifiedMode"
+      role="region"
+      aria-label="Simplified mode"
+      style="display: none"
+    >
       <div class="simple-top">
         <div class="simple-top-left">
           <a href="/RedoSan-Authenticity/" class="simple-logo-link">
@@ -668,7 +679,7 @@
       id="sidebarOverlay"
       onclick="toggleSidebar()"
     ></div>
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar" id="sidebar" role="region" aria-label="Sidebar menu">
       <div class="sidebar-header">
         <span class="sidebar-title" data-i18n="sidebar.title">Menu</span>
         <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
@@ -730,14 +741,14 @@
           >
             <a href="#" data-page="watermark" class="card">
               <div class="icon">💧</div>
-              <h3 data-i18n="card.watermark.title">Digital Watermark</h3>
+              <h2 data-i18n="card.watermark.title">Digital Watermark</h2>
               <p data-i18n="card.watermark.desc">
                 9 algorithms: LSB, DCT, DWT and more
               </p>
             </a>
             <a href="#" data-page="audio-watermark" class="card">
               <div class="icon">🎵</div>
-              <h3 data-i18n="card.audio_watermark.title">Audio Watermark</h3>
+              <h2 data-i18n="card.audio_watermark.title">Audio Watermark</h2>
               <p data-i18n="card.audio_watermark.desc">
                 Hide secrets in WAV: LSB, Phase Coding, Echo Hiding, DSSS, QIM,
                 DWT, Patchwork, DCT
@@ -745,77 +756,77 @@
             </a>
             <a href="#" data-page="pixel-injection" class="card">
               <div class="icon">🔬</div>
-              <h3 data-i18n="card.pixel_injection.title">Pixel Injection</h3>
+              <h2 data-i18n="card.pixel_injection.title">Pixel Injection</h2>
               <p data-i18n="card.pixel_injection.desc">
                 20+ advanced pixel injection algorithms
               </p>
             </a>
             <a href="#" data-page="forensic" class="card">
               <div class="icon">🧪</div>
-              <h3 data-i18n="card.forensic.title">Forensic Analyzer</h3>
+              <h2 data-i18n="card.forensic.title">Forensic Analyzer</h2>
               <p data-i18n="card.forensic.desc">
                 ELA, noise, JPEG and copy-move tamper checks
               </p>
             </a>
             <a href="#" data-page="id_forge" class="card">
               <div class="icon">🔑</div>
-              <h3 data-i18n="card.id_forge.title">ID Forge</h3>
+              <h2 data-i18n="card.id_forge.title">ID Forge</h2>
               <p data-i18n="card.id_forge.desc">
                 Generate UUIDs, ULIDs, Nano IDs, SWHIDs and more
               </p>
             </a>
             <a href="#" data-page="fingerprint" class="card">
               <div class="icon">🔍</div>
-              <h3 data-i18n="card.fingerprint.title">Fingerprint</h3>
+              <h2 data-i18n="card.fingerprint.title">Fingerprint</h2>
               <p data-i18n="card.fingerprint.desc">
                 SHA-256 + perceptual image hashes
               </p>
             </a>
             <a href="#" data-page="metadata" class="card">
               <div class="icon">📋</div>
-              <h3 data-i18n="card.metadata.title">Metadata</h3>
+              <h2 data-i18n="card.metadata.title">Metadata</h2>
               <p data-i18n="card.metadata.desc">
                 EXIF, dimensions, format info
               </p>
             </a>
             <a href="#" data-page="timestamp" class="card">
               <div class="icon">🕒</div>
-              <h3 data-i18n="card.timestamp.title">Timestamp</h3>
+              <h2 data-i18n="card.timestamp.title">Timestamp</h2>
               <p data-i18n="card.timestamp.desc">
                 SHA-256 hashing + OTS hash verification
               </p>
             </a>
             <a href="#" data-page="did" class="card">
               <div class="icon">🆔</div>
-              <h3 data-i18n="card.did.title">DID Identity</h3>
+              <h2 data-i18n="card.did.title">DID Identity</h2>
               <p data-i18n="card.did.desc">
                 Decentralized ID + cryptographic signing
               </p>
             </a>
             <a href="#" data-page="c2pa" class="card">
               <div class="icon">✨</div>
-              <h3 data-i18n="card.c2pa.title">C2PA Provenance</h3>
+              <h2 data-i18n="card.c2pa.title">C2PA Provenance</h2>
               <p data-i18n="card.c2pa.desc">
                 Read & write content provenance metadata
               </p>
             </a>
             <a href="#" data-page="certificate" class="card">
               <div class="icon">📜</div>
-              <h3 data-i18n="card.certificate.title">Digital Passport</h3>
+              <h2 data-i18n="card.certificate.title">Digital Passport</h2>
               <p data-i18n="card.certificate.desc">
                 Generate signed PDF/DOCX/EPUB certificate
               </p>
             </a>
             <a href="#" data-page="converter" class="card">
               <div class="icon">🔄</div>
-              <h3 data-i18n="card.converter.title">File Converter</h3>
+              <h2 data-i18n="card.converter.title">File Converter</h2>
               <p data-i18n="card.converter.desc">
                 Convert images between PNG, JPEG, WebP and more
               </p>
             </a>
             <a href="#" data-page="removal-tools" class="card">
               <div class="icon">🧹</div>
-              <h3 data-i18n="card.removal_tools.title">Removal Tools</h3>
+              <h2 data-i18n="card.removal_tools.title">Removal Tools</h2>
               <p data-i18n="card.removal_tools.desc">
                 Strip watermarks, pixel injection, C2PA & metadata from images &
                 audio
@@ -3874,7 +3885,7 @@
     >
       🎵
     </button>
-    <div id="music-credit" class="music-credit">RedoSan</div>
+    <div id="music-credit" class="music-credit" role="contentinfo" aria-label="Music credit">RedoSan</div>
 
     <script src="Style_Web_Page/lang/i18n-data.js" defer></script>
     <script src="Style_Web_Page/i18n.js" defer></script>
@@ -4045,7 +4056,7 @@
     </script>
 
     <!-- Bot / Automation block overlay -->
-    <div id="botBlockOverlay" class="bot-block-overlay">
+    <div id="botBlockOverlay" class="bot-block-overlay" role="alert" aria-live="polite">
       <div class="bot-block-content">
         <div class="bot-block-icon">🛡️</div>
         <div class="bot-block-title">Access Denied</div>
