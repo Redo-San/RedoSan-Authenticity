@@ -33,7 +33,7 @@
 |---------|-------------|
 | **Dual Mode UI** | Simplified step wizard with smart AI/rephoto branching + Professional full-tool interface with sidebar navigation |
 | **Watermark** | 9 core algorithms (LSB, DCT, Neural SS, Latent DCT, Zero-bit, Multi-bit, Forensic, Fragile, Imatag) + 4 perceptual hash detection modes |
-| **Digital Audio Watermark** | 8 algorithms (LSB, GMM, QIM, Phase Coding, Echo Hiding, DSSS, DWT, Patchwork, DCT) for WAV files with dual-extract (fingerprint + DID) |
+| **Digital Audio Watermark** | 8 algorithms (LSB, GMM, QIM, Phase Coding, Echo Hiding, DSSS, DWT, Patchwork, DCT) for WAV files with dual-extract (fingerprint + DID) and Auto Detect mode |
 | **Removal Tools** | Clean watermarks, fingerprints, metadata, pixels, EXIF, thumbnails, audio watermarks, and GPS from images and audio |
 | **Pixel Injection** | 23 advanced algorithms across spatial, frequency, deep learning, and professional domains |
 | **C2PA Provenance** | Sign JPEG/PNG with C2PA metadata (ECDSA P-256), read and verify manifests |
@@ -44,6 +44,9 @@
 | **CLI** | Cross-platform Node.js CLI with interactive menu and direct command mode |
 | **Security Threat Blocker** | Service Worker + 404 page blocks dangerous file extensions and unknown `.js`/`.css`/`.html`/`.yml` files via 5 whitelists |
 | **File Converter** | Browser-side image (PNG/JPEG/WebP/BMP/GIF), audio (11 formats), video→audio, document, and subtitle conversion |
+| **Forensic Analyzer** | Detect image tampering via Error Level Analysis (ELA), noise inconsistency detection, JPEG structure analysis, and copy-move detection |
+| **ID Forge** | Generate UUID v4/v7, ULID, NanoID, and SWHID identifiers in bulk; copy, download (JSON/CSV/TXT/XML/PDF/DOCX), or use via CLI |
+| **AI Assistant Raido** | Built-in bilingual (AR/EN) rule-based chatbot for help, tool guidance, and app information, no API needed |
 | **Digital Passport** | Generate PDF, DOCX, or EPUB certificates with image, identity, social links, music links, tool results, and QR code verification |
 
 ---
@@ -96,7 +99,9 @@ npm link    # makes 'redosan' available globally
 | `redosan metadata <file>` | Read EXIF, dimensions, format info |
 | `redosan timestamp create <file>` | Create OpenTimestamps `.ots` proof |
 | `redosan timestamp verify <file>` | Verify file against `.ots` proof |
+| `redosan forensic <file>` | Analyze image for tampering (ELA, noise, JPEG structure, copy-move) |
 | `redosan upgrade <file>` | Upgrade incomplete `.ots` proof |
+| `npm run id-forge` | Generate UUID v4/v7, ULID, NanoID, SWHID via CLI |
 
 ### Global Flags
 
@@ -127,6 +132,13 @@ redosan c2pa read image.jpg
 # Timestamp
 redosan timestamp create document.pdf -o proof.ots
 redosan timestamp verify document.pdf -o proof.ots
+
+# Forensic
+redosan forensic image.png --json
+
+# ID Forge (CLI)
+node cli/lib/id_forge.js uuidv4
+node cli/lib/id_forge.js nanoid 10 --json
 
 # Windows paths
 redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
@@ -226,6 +238,13 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 │  │  │ Metadata │ │ DID (W3C)│ │ Removal Tools    │  │    │
 │  │  │          │ │did:key:z │ │ Image + Audio    │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
+│  │  │ Forensic │ │ ID Forge │ │ AI Assistant     │  │    │
+│  │  │ Analyzer │ │(UUID/v7, │ │ Raido (rule-    │  │    │
+│  │  │(ELA,     │ │ ULID,    │ │ based, bilingual│  │    │
+│  │  │ copy-    │ │ NanoID,  │ │ AR/EN, no API)  │  │    │
+│  │  │ move)    │ │ SWHID)   │ │                 │  │    │
+│  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  ├──────────────────────────────────────────────────┤    │
 │  │        Security Threat Blocker (SW + 404)        │    │
 │  │  Blocks dangerous extensions + unknown scripts   │    │
@@ -308,7 +327,7 @@ npm test
 | **UI** | Vanilla HTML/CSS/JS (no frameworks) |
 | **Icons** | Font Awesome 5 |
 | **CLI** | Node.js 20+, Commander.js |
-| **Testing** | `node:test` (29 tests, zero dependencies) |
+| **Testing** | `node:test` (120+ tests, zero dependencies) |
 | **CI** | GitHub Actions (Node 20/22 matrix) |
 | **PDF Export** | jsPDF |
 | **DOCX Export** | docx |
