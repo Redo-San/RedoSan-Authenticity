@@ -90,6 +90,12 @@ function getLanguageDisplayName(lang) {
 
 async function loadLang(lang) {
   try {
+    if (window.__I18N_DATA && window.__I18N_DATA[lang]) {
+      i18n.data = window.__I18N_DATA[lang];
+      i18n.lang = lang;
+      applyLang();
+      return true;
+    }
     var resp = await fetch('Style_Web_Page/lang/' + lang + '.json');
     if (!resp.ok) throw new Error('Language file not found: ' + lang);
     i18n.data = await resp.json();
@@ -98,7 +104,6 @@ async function loadLang(lang) {
     return true;
   } catch(e) { 
     console.error('i18n load error:', e);
-    // Fallback to English if language fails to load
     if (lang !== 'en') {
       return loadLang('en');
     }

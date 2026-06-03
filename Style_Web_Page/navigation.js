@@ -62,6 +62,7 @@ var PAGE_TITLES = {
   c2pa: "C2PA Content Provenance — RedoSan Authenticity",
   certificate: "Digital Passport Certificate — RedoSan Authenticity",
   converter: "File Converter — RedoSan Authenticity",
+  id_forge: "ID Forge — RedoSan Authenticity",
 };
 var PAGE_DESCS = {
   home: "Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded.",
@@ -85,6 +86,8 @@ var PAGE_DESCS = {
     "Generate a signed Digital Passport PDF, DOCX, or EPUB with image, user info, and authenticity results. Free online tool.",
   converter:
     "Convert images, audio, and documents between formats. Free online file converter.",
+  id_forge:
+    "Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool.",
 };
 
 function showPage(name) {

@@ -611,7 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDropZones();
 });
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/RedoSan-Authenticity/sw.js').then(function(reg) {
       console.log('[SW] Registered scope:', reg.scope);
