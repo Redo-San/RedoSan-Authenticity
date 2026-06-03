@@ -694,6 +694,7 @@
       <a href="#" data-page="forensic" data-i18n="sidebar.forensic"
         >Forensic Analyzer</a
       >
+      <a href="#" data-page="id_forge" data-i18n="sidebar.id_forge">ID Forge</a>
       <a href="#" data-page="fingerprint" data-i18n="sidebar.fingerprint"
         >Fingerprint</a
       >
@@ -754,6 +755,13 @@
               <h3 data-i18n="card.forensic.title">Forensic Analyzer</h3>
               <p data-i18n="card.forensic.desc">
                 ELA, noise, JPEG and copy-move tamper checks
+              </p>
+            </a>
+            <a href="#" data-page="id_forge" class="card">
+              <div class="icon">🔑</div>
+              <h3 data-i18n="card.id_forge.title">ID Forge</h3>
+              <p data-i18n="card.id_forge.desc">
+                Generate UUIDs, ULIDs, Nano IDs, SWHIDs and more
               </p>
             </a>
             <a href="#" data-page="fingerprint" class="card">
@@ -3347,6 +3355,121 @@
           ></div>
         </div>
       </section>
+
+      <!-- ID Forge -->
+      <section id="page-id_forge" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="card.id_forge.title">
+            ID Forge
+          </h2>
+        </div>
+        <p class="lead" data-i18n="card.id_forge.desc">
+          Generate UUIDs, ULIDs, Nano IDs, SWHIDs and more
+        </p>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="if-type">ID Type</label>
+            <select id="if-type" onchange="idForgeShowInfo()">
+              <option value="uuidv4">UUID v4 (Random — RFC 9562)</option>
+              <option value="uuidv7">UUID v7 (Time-ordered — RFC 9562)</option>
+              <option value="ulid">ULID (Crockford Base32)</option>
+              <option value="nanoid">NanoID (URL-safe, 21 chars)</option>
+              <option value="swhid">SWHID (SHA1 — ISO/IEC 18670)</option>
+            </select>
+          </div>
+          <div
+            id="if-info"
+            class="card-info"
+            style="
+              display: none;
+              margin-bottom: 14px;
+              padding: 12px;
+              background: var(--card);
+              border: 1px solid var(--border);
+              border-radius: var(--radius);
+              font-size: 0.82rem;
+              line-height: 1.6;
+            "
+          ></div>
+          <div class="form-group">
+            <label for="if-count">Count (1–10,000)</label>
+            <input
+              type="number"
+              id="if-count"
+              value="1"
+              min="1"
+              max="10000"
+              oninput="idForgeUpdateCount()"
+            />
+          </div>
+          <button
+            class="btn"
+            onclick="handleIdForgeGenerate()"
+            id="if-gen-btn"
+            data-i18n="id_forge.generate_btn"
+          >
+            Generate
+          </button>
+        </div>
+        <div id="if-result" style="display: none; margin-top: 16px">
+          <div class="result" style="text-align: left">
+            <textarea
+              id="if-output"
+              readonly
+              rows="8"
+              style="
+                width: 100%;
+                box-sizing: border-box;
+                resize: vertical;
+                font-family: monospace;
+                font-size: 0.78rem;
+                background: var(--bg);
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 10px;
+              "
+            ></textarea>
+            <div
+              style="
+                display: flex;
+                gap: 8px;
+                margin-top: 10px;
+                justify-content: center;
+              "
+            >
+              <button
+                class="btn"
+                onclick="idForgeCopy(this)"
+                data-i18n="id_forge.copy_btn"
+              >
+                Copy
+              </button>
+              <button
+                class="btn"
+                onclick="idForgeShowDownload()"
+                data-i18n="id_forge.download_btn"
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- About -->
@@ -3753,6 +3876,7 @@
     </button>
     <div id="music-credit" class="music-credit">RedoSan</div>
 
+    <script src="Style_Web_Page/lang/i18n-data.js" defer></script>
     <script src="Style_Web_Page/i18n.js" defer></script>
     <script src="Style_Web_Page/shared.js" defer></script>
     <script src="Style_Web_Page/search.js" defer></script>
@@ -3768,6 +3892,7 @@
     <script src="Pixel_Injection/pixel_injection.js" defer></script>
     <script src="Forensic/forensic_core.js" defer></script>
     <script src="Forensic/forensic.js" defer></script>
+    <script src="ID_Forge/id_forge.js" defer></script>
     <script src="Watermark/watermark.js" defer></script>
     <script src="Fingerprint/hashing.js" defer></script>
     <script src="Fingerprint/fingerprint_ui.js" defer></script>
