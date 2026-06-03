@@ -106,6 +106,7 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/vendor/opentimestamps.min.js",
   "/RedoSan-Authenticity/Forensic/forensic.js",
   "/RedoSan-Authenticity/Forensic/forensic_core.js",
+  "/RedoSan-Authenticity/ID_Forge/id_forge.js",
 ];
 
 // Whitelist of legitimate CSS files served by the site.

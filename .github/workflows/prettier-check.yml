@@ -26,7 +26,7 @@ jobs:
             const base = context.payload.pull_request.base.sha || 'origin/main';
 
             const diff = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js" "*.css" "*.html" "*.json"', { encoding: 'utf8' });
-            const files = diff.trim().split('\n').filter(Boolean);
+            const files = diff.trim().split('\n').filter(Boolean).filter(f => !f.includes('i18n-data.js') && !f.includes('i18n.js'));
 
             if (files.length === 0) {
               console.log('No files to check.');

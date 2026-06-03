@@ -1,5 +1,5 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
-// ── Internationalization ──
+// ظ¤ظ¤ Internationalization ظ¤ظ¤
 var i18n = { lang: 'en', data: {} };
 var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
@@ -56,7 +56,7 @@ function switchLang(lang) {
 function langBtnText(lang) {
   // Return the most common alternative language for the current language
   var alternatives = {
-    'en': 'العربية',
+    'en': '╪د┘╪╣╪▒╪ذ┘è╪ر',
     'ar': 'English',
     'fr': 'English',
     'de': 'English',
@@ -77,19 +77,25 @@ function getLanguageDisplayName(lang) {
   // Fallback to default names
   var names = {
     'en': 'English',
-    'ar': 'العربية',
-    'fr': 'Français',
+    'ar': '╪د┘╪╣╪▒╪ذ┘è╪ر',
+    'fr': 'Fran├دais',
     'de': 'Deutsch',
-    'es': 'Español',
-    'zh': '中文',
-    'ja': '日本語',
-    'ko': '한국어'
+    'es': 'Espa├▒ol',
+    'zh': 'غ╕صµûç',
+    'ja': 'µùحµ£شكزئ',
+    'ko': 'وـ£م╡صهû┤'
   };
   return names[lang] || lang;
 }
 
 async function loadLang(lang) {
   try {
+    if (window.__I18N_DATA && window.__I18N_DATA[lang]) {
+      i18n.data = window.__I18N_DATA[lang];
+      i18n.lang = lang;
+      applyLang();
+      return true;
+    }
     var resp = await fetch('Style_Web_Page/lang/' + lang + '.json');
     if (!resp.ok) throw new Error('Language file not found: ' + lang);
     i18n.data = await resp.json();
@@ -98,7 +104,6 @@ async function loadLang(lang) {
     return true;
   } catch(e) { 
     console.error('i18n load error:', e);
-    // Fallback to English if language fails to load
     if (lang !== 'en') {
       return loadLang('en');
     }
