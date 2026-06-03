@@ -142,14 +142,14 @@ if (require.main === module) {
         if (arg && !arg.startsWith('--')) {
           try { ids.swhid = swhid(arg); } catch (e) { ids.swhid = 'N/A (file not found)'; }
         }
-        console.log(JSON.stringify(ids, null, 2));
+        process.stdout.write(JSON.stringify(ids, null, 2) + '\n');
         process.exit(0);
       // falls through
       default:
         console.error('Usage: node id_forge.js <uuidv4|uuidv7|ulid|swhid|nanoid|all> [count|file] [--json|--csv]');
         process.exit(1);
     }
-    console.log(formatResults(ids, format, type));
+    process.stdout.write(formatResults(ids, format, type) + '\n');
   } catch (e) {
     console.error('Error:', e.message);
     process.exit(1);
