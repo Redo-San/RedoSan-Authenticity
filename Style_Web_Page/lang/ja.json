@@ -4,7 +4,6 @@
   "nav.contact": "お問い合わせ",
   "nav.social": "ソーシャル",
   "nav.back": "戻る",
-
   "sidebar.title": "メニュー",
   "sidebar.home": "ホーム",
   "sidebar.watermark": "デジタル透かし",
@@ -17,7 +16,6 @@
   "sidebar.removal_tools": "削除ツール",
   "sidebar.id_forge": "ID Forge",
   "sidebar.did": "DID ID",
-
   "home.tagline": "オンライン認証ツール — 100%ブラウザベース。サーバーにアップロードされるデータはありません。",
   "card.watermark.title": "デジタル透かし",
   "card.watermark.desc": "9つのアルゴリズム：LSB、DCT、DWTなど",
@@ -39,24 +37,22 @@
   "card.removal_tools.desc": "画像や音声から透かし、ピクセル注入、C2PA、メタデータを除去",
   "card.id_forge.title": "ID Forge",
   "card.id_forge.desc": "UUID、ULID、Nano ID、SWHIDなどを生成",
-  "id_forge.info.uuidv4": "UUID v4 — Fully random identifier. Best for distributed systems where uniqueness matters more than order. Widest compatibility.",
-  "id_forge.info.uuidv7": "UUID v7 — Time-ordered identifier (timestamp + random bits). Ideal for database indexing (B-trees). Faster inserts than v4.",
-  "id_forge.info.ulid": "ULID — 26-char Crockford Base32 identifier. Time-sortable, URL-safe, human-readable. Compact and easy to copy.",
-  "id_forge.info.nanoid": "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
-  "id_forge.info.swhid": "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
-  "id_forge.generate_btn": "Generate",
-  "id_forge.generating_btn": "Generating...",
-  "id_forge.copy_btn": "Copy",
-  "id_forge.copied_btn": "✓ Copied!",
-  "id_forge.download_btn": "Download",
-
+  "id_forge.info.uuidv4": "UUID v4 — 完全ランダム識別子。順序よりも一意性が重要な分散システムに最適。最も広い互換性。",
+  "id_forge.info.uuidv7": "UUID v7 — 時間順序識別子（タイムスタンプ＋ランダムビット）。データベースインデックス（B-tree）に最適。v4より高速な挿入。",
+  "id_forge.info.ulid": "ULID — 26文字のCrockford Base32識別子。時間順にソート可能、URLセーフ、人間が読める。コンパクトでコピーも簡単。",
+  "id_forge.info.nanoid": "NanoID — 短くURLセーフな21文字のID。64記号のアルファベット。セッション、短いリンク、ファイル名に最適。",
+  "id_forge.info.swhid": "SWHID — ISO/IEC 18670コンテンツ識別子。SHA1ハッシュから計算され完全性を保証。Software Heritageがコードアーカイブに使用。",
+  "id_forge.generate_btn": "生成",
+  "id_forge.generating_btn": "生成中...",
+  "id_forge.copy_btn": "コピー",
+  "id_forge.copied_btn": "✓ コピー完了!",
+  "id_forge.download_btn": "ダウンロード",
   "mode.title": "エクスペリエンスを選択",
   "mode.simplified_title": "✨ 簡易モード",
   "mode.simplified_desc": "ステップバイステップのウィザード — ファイルをアップロードしてガイドに従う",
   "mode.professional_title": "⚙️ プロフェッショナルモード",
   "mode.professional_desc": "すべてのツールと高度なオプションにフルアクセス",
   "mode.tagline": "無料のオープンソースデジタル真正性スイート — 透かし、ファイルフィンガープリント、メタデータ読み取り、タイムスタンプ。100％ブラウザ内で動作。",
-
   "awm.heading": "デジタル音声透かし",
   "awm.audio_label": "音声ファイル（WAV推奨）",
   "awm.secret_label": "秘密メッセージ",
@@ -99,7 +95,6 @@
   "wm.detect_tip": "ヒント：上記のアルゴリズムに切り替えて、「透かしを抽出」をクリックしてデータをダウンロードしてください。",
   "wm.detect_error": "検出エラー：{msg}",
   "wm.type_label": "タイプ{type}",
-
   "pi.heading": "高度なピクセル注入",
   "pi.embed_btn": "埋め込み",
   "pi.extract_btn": "抽出",
@@ -112,7 +107,6 @@
   "pi.redundancy_factor": "冗長性係数",
   "pi.extracted_message": "抽出されたメッセージ",
   "pi.copy_message": "メッセージをコピー",
-
   "algo.1": "空間LSB",
   "algo.2": "周波数DCT",
   "algo.3": "ニューラルSS",
@@ -122,18 +116,15 @@
   "algo.7": "フォレンジック",
   "algo.8": "フラジール",
   "algo.9": "Imatagスタイル",
-
   "fp.heading": "ファイルフィンガープリント",
   "fp.file_label": "ファイル",
   "fp.submit": "フィンガープリントを生成",
   "fp.download_title": "フィンガープリントをダウンロード",
   "fp.choose_format": "フォーマットを選択：",
-
   "md.heading": "メタデータリーダー",
   "md.file_label": "画像ファイル",
   "md.desc": "EXIF、サイズ、フォーマット、カラーモードを読み取ります。すべての処理は純粋なJavaScriptで行われます。",
   "md.submit": "メタデータを読み取る",
-
   "ts.heading": "OpenTimestamps (.ots)",
   "ts.ots_create_btn": ".otsを作成",
   "ts.ots_verify_btn": ".otsを検証",
@@ -145,12 +136,10 @@
   "ts.verify_file_label": "元のファイル",
   "ts.ots_proof_label": ".ots証明ファイル",
   "ts.verify_ots": ".otsを検証",
-
   "c2pa.heading": "C2PAコンテンツ証明",
   "c2pa.read_btn": "読み取り",
   "c2pa.write_btn": "署名",
   "c2pa.verify_btn": "検証",
-
   "rt.heading": "削除ツール",
   "rt.file_label": "画像または音声ファイルを選択",
   "rt.image_section": "画像削除オプション",
@@ -175,7 +164,6 @@
   "rt.download_audio_btn": "クリーニングした音声をダウンロード",
   "rt.success": "✅ ファイルの処理が完了しました",
   "rt.error_prefix": "エラー: {msg}",
-
   "simple.loading": "読み込み中...",
   "simple.prev_btn": "← 前へ",
   "simple.next_btn": "次へ →",
@@ -239,17 +227,14 @@
   "simple.fp_failed": "フィンガープリント失敗：{msg}",
   "simple.fp_done": "デジタルフィンガープリントが正常に生成されました。すべてのハッシュは証明書で利用可能です。",
   "simple.pi_done": "秘密メッセージが正常に注入されました。最終ページでダウンロード可能です。",
-
   "search.placeholder": "検索...",
   "search.heading": "検索結果",
   "search.no_results": "「{query}」の結果は見つかりませんでした。",
   "search.results_for": "「{query}」の検索結果：",
   "search.hint": "例：透かし、フィンガープリント、メタデータ、タイムスタンプ",
-
   "dl.title": "フィンガープリントをダウンロード",
   "dl.inapp_alert": "ファイルをダウンロードするには、SafariまたはChromeでこのページを開いてください。ブラウザメニュー(⋯)をタップし、「ブラウザで開く」を選択してください。",
   "dl.subtitle": "フォーマットを選択：",
-
   "lang.switch": "English",
   "lang.current": "現在の言語",
   "lang.select": "言語を選択",
@@ -263,7 +248,6 @@
   "lang.name.zh": "中文",
   "lang.name.ja": "日本語",
   "lang.name.ko": "한국어",
-
   "footer.copyright": "100%ブラウザベース • デバイスからデータは送信されません",
   "shared.english_filename": "ファイル名は英字のみ使用可能です (A-Z, 0-9, ハイフン, アンダースコア, ドット)。ファイル名を変更してもう一度お試しください。",
   "simple.upload_size_note": "💡 透かし処理には、大きなカバー画像（例：1920×1080）を使用して、秘密の画像を埋め込むのに十分な容量を確保してください。",
@@ -302,7 +286,6 @@
   "simple.cert_desc_audio": "すべての結果、オーディオプレーヤープレビュー、QR検証コードを含む署名済み文書をダウンロードします。",
   "simple.cert_desc_video": "すべての結果、ビデオプレビュー、QR検証コードを含む署名済み文書をダウンロードします。",
   "simple.cert_desc_other": "すべての結果とQR検証コードを含む署名済み文書をダウンロードします。",
-
   "did.heading": "分散型アイデンティティ（DID）",
   "did.desc": "分散型識別子（DID）キーペアを生成し、ファイルフィンガープリントに暗号署名して、あなたがこのコンテンツを作成したことを証明します。",
   "did.gen_btn": "🔑 DID IDを生成",
@@ -333,7 +316,6 @@
   "did.fp_file_label": "フィンガープリントJSONファイル（オプション）",
   "did.dl_btn": "📥 ダウンロード",
   "did.prompt_sign": "👉 今すぐ ✍️ フィンガープリントに署名 をクリックしてファイルに署名してください。",
-
   "c2pa.social_label": "ソーシャルリンク（オプション）",
   "c2pa.music_label": "音楽ストリーミング（オプション）",
   "c2pa.read_file_label": "C2PAデータを含む画像",
@@ -348,7 +330,6 @@
   "c2pa.type_dnt": "AIを学習させない",
   "c2pa.image_label": "署名する画像",
   "c2pa.download_btn": "結果をダウンロード",
-
   "cert.heading": "デジタルパスポート",
   "cert.desc": "画像、ユーザー情報、その他のツールの結果を含む署名済みデジタルパスポート（PDF、DOCX、EPUB）を生成します。以下に結果を貼り付けて、[生成]をクリックします。",
   "cert.image_label": "画像",

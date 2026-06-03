@@ -4,7 +4,6 @@
   "nav.contact": "문의",
   "nav.social": "소셜",
   "nav.back": "뒤로",
-
   "sidebar.title": "메뉴",
   "sidebar.home": "홈",
   "sidebar.watermark": "디지털 워터마크",
@@ -17,7 +16,6 @@
   "sidebar.removal_tools": "제거 도구",
   "sidebar.id_forge": "ID Forge",
   "sidebar.did": "DID 신원",
-
   "home.tagline": "온라인 디지털 인증 도구 — 100% 브라우저 기반. 서버에 업로드되는 데이터가 없습니다.",
   "card.watermark.title": "디지털 워터마크",
   "card.watermark.desc": "9가지 알고리즘: LSB, DCT, DWT 등",
@@ -39,24 +37,22 @@
   "card.removal_tools.desc": "이미지 및 오디오에서 워터마크, 픽셀 주입, C2PA 및 메타데이터 제거",
   "card.id_forge.title": "ID Forge",
   "card.id_forge.desc": "UUID, ULID, Nano ID, SWHID 등 생성",
-  "id_forge.info.uuidv4": "UUID v4 — Fully random identifier. Best for distributed systems where uniqueness matters more than order. Widest compatibility.",
-  "id_forge.info.uuidv7": "UUID v7 — Time-ordered identifier (timestamp + random bits). Ideal for database indexing (B-trees). Faster inserts than v4.",
-  "id_forge.info.ulid": "ULID — 26-char Crockford Base32 identifier. Time-sortable, URL-safe, human-readable. Compact and easy to copy.",
-  "id_forge.info.nanoid": "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
-  "id_forge.info.swhid": "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
-  "id_forge.generate_btn": "Generate",
-  "id_forge.generating_btn": "Generating...",
-  "id_forge.copy_btn": "Copy",
-  "id_forge.copied_btn": "✓ Copied!",
-  "id_forge.download_btn": "Download",
-
+  "id_forge.info.uuidv4": "UUID v4 — 완전 무작위 식별자. 순서보다 고유성이 중요한 분산 시스템에 최적. 가장 넓은 호환성.",
+  "id_forge.info.uuidv7": "UUID v7 — 시간 순서 식별자(타임스탬프 + 무작위 비트). 데이터베이스 인덱싱(B-트리)에 이상적. v4보다 빠른 삽입.",
+  "id_forge.info.ulid": "ULID — 26자 Crockford Base32 식별자. 시간 정렬 가능, URL 안전, 사람이 읽을 수 있음. 컴팩트하고 복사하기 쉬움.",
+  "id_forge.info.nanoid": "NanoID — 짧고 URL 안전한 21자 ID. 64개 심볼 알파벳. 세션, 짧은 링크, 파일명에 적합.",
+  "id_forge.info.swhid": "SWHID — ISO/IEC 18670 콘텐츠 식별자. 무결성을 위해 SHA1 해시에서 계산. Software Heritage에서 코드 아카이빙에 사용.",
+  "id_forge.generate_btn": "생성",
+  "id_forge.generating_btn": "생성 중...",
+  "id_forge.copy_btn": "복사",
+  "id_forge.copied_btn": "✓ 복사됨!",
+  "id_forge.download_btn": "다운로드",
   "mode.title": "경험 선택",
   "mode.simplified_title": "✨ 간편 모드",
   "mode.simplified_desc": "단계별 마법사 — 파일을 업로드하고 가이드를 따르세요",
   "mode.professional_title": "⚙️ 전문가 모드",
   "mode.professional_desc": "모든 도구와 고급 옵션에 대한 전체 액세스",
   "mode.tagline": "무료 오픈 소스 디지털 진위성 제품군 — 워터마크, 파일 지문, 메타데이터 읽기, 타임스탬프. 100% 브라우저 내에서 작동.",
-
   "awm.heading": "디지털 오디오 워터마크",
   "awm.audio_label": "오디오 파일 (WAV 권장)",
   "awm.secret_label": "비밀 메시지",
@@ -99,7 +95,6 @@
   "wm.detect_tip": "힌트: 위의 알고리즘으로 전환하고 '워터마크 추출'을 클릭하여 데이터를 다운로드하세요.",
   "wm.detect_error": "감지 오류: {msg}",
   "wm.type_label": "유형 {type}",
-
   "pi.heading": "고급 픽셀 삽입",
   "pi.embed_btn": "삽입",
   "pi.extract_btn": "추출",
@@ -112,7 +107,6 @@
   "pi.redundancy_factor": "중복 계수",
   "pi.extracted_message": "추출된 메시지",
   "pi.copy_message": "메시지 복사",
-
   "algo.1": "공간 LSB",
   "algo.2": "주파수 DCT",
   "algo.3": "신경 SS",
@@ -122,18 +116,15 @@
   "algo.7": "포렌식",
   "algo.8": "프래자일",
   "algo.9": "Imatag 스타일",
-
   "fp.heading": "파일 지문",
   "fp.file_label": "파일",
   "fp.submit": "지문 생성",
   "fp.download_title": "지문 다운로드",
   "fp.choose_format": "포맷 선택:",
-
   "md.heading": "메타데이터 리더",
   "md.file_label": "이미지 파일",
   "md.desc": "EXIF, 크기, 포맷 및 색상 모드를 읽습니다. 모든 처리는 순수 JavaScript로 수행됩니다.",
   "md.submit": "메타데이터 읽기",
-
   "ts.heading": "OpenTimestamps (.ots)",
   "ts.ots_create_btn": ".ots 생성",
   "ts.ots_verify_btn": ".ts 확인",
@@ -145,12 +136,10 @@
   "ts.verify_file_label": "원본 파일",
   "ts.ots_proof_label": ".ots 증명 파일",
   "ts.verify_ots": ".ots 확인",
-
   "c2pa.heading": "C2PA 콘텐츠 출처",
   "c2pa.read_btn": "읽기",
   "c2pa.write_btn": "서명",
   "c2pa.verify_btn": "확인",
-
   "rt.heading": "제거 도구",
   "rt.file_label": "이미지 또는 오디오 파일 선택",
   "rt.image_section": "이미지 제거 옵션",
@@ -175,7 +164,6 @@
   "rt.download_audio_btn": "정리된 오디오 다운로드",
   "rt.success": "✅ 파일 처리 완료",
   "rt.error_prefix": "오류: {msg}",
-
   "simple.loading": "로딩 중...",
   "simple.prev_btn": "← 이전",
   "simple.next_btn": "다음 →",
@@ -239,17 +227,14 @@
   "simple.fp_failed": "지문 실패: {msg}",
   "simple.fp_done": "디지털 지문이 성공적으로 생성되었습니다. 모든 해시는 인증서에서 확인할 수 있습니다.",
   "simple.pi_done": "비밀 메시지가 성공적으로 주입되었습니다. 마지막 페이지에서 다운로드 가능합니다.",
-
   "search.placeholder": "검색...",
   "search.heading": "검색 결과",
   "search.no_results": "\"{query}\"에 대한 결과가 없습니다.",
   "search.results_for": "\"{query}\" 검색 결과:",
   "search.hint": "예: 워터마크, 지문, 메타데이터, 타임스탬프",
-
   "dl.title": "지문 다운로드",
   "dl.inapp_alert": "파일을 다운로드하려면 Safari 또는 Chrome에서 이 페이지를 여세요. 브라우저 메뉴(⋯)를 누르고 \"브라우저에서 열기\"를 선택하세요.",
   "dl.subtitle": "포맷 선택:",
-
   "lang.switch": "English",
   "lang.current": "현재 언어",
   "lang.select": "언어 선택",
@@ -263,7 +248,6 @@
   "lang.name.zh": "中文",
   "lang.name.ja": "日本語",
   "lang.name.ko": "한국어",
-
   "footer.copyright": "100% 브라우저 기반 • 장치에서 데이터가 전송되지 않습니다",
   "shared.english_filename": "파일 이름은 영문자만 사용할 수 있습니다 (A-Z, 0-9, 하이픈, 밑줄, 점). 파일 이름을 바꾸고 다시 시도해주세요.",
   "simple.upload_size_note": "💡 워터마킹을 위해 큰 커버 이미지(예: 1920×1080)를 사용하여 비밀 이미지를 삽입할 충분한 용량을 확보하세요.",
@@ -302,7 +286,6 @@
   "simple.cert_desc_audio": "모든 결과, 오디오 플레이어 미리보기 및 QR 확인 코드가 포함된 서명된 문서를 다운로드합니다.",
   "simple.cert_desc_video": "모든 결과, 비디오 미리보기 및 QR 확인 코드가 포함된 서명된 문서를 다운로드합니다.",
   "simple.cert_desc_other": "모든 결과 및 QR 확인 코드가 포함된 서명된 문서를 다운로드합니다.",
-
   "did.heading": "분산 ID (DID)",
   "did.desc": "분산 식별자(DID) 키페어를 생성하고 파일 지문에 암호학적으로 서명하여 귀하가 이 콘텐츠를 만들었음을 증명하세요.",
   "did.gen_btn": "🔑 DID ID 생성",
@@ -333,7 +316,6 @@
   "did.fp_file_label": "지문 JSON 파일 (선택 사항)",
   "did.dl_btn": "📥 다운로드",
   "did.prompt_sign": "👉 지금 ✍️ 지문 서명을 클릭하여 파일에 서명하세요.",
-
   "c2pa.social_label": "소셜 링크 (선택 사항)",
   "c2pa.music_label": "음악 스트리밍 (선택 사항)",
   "c2pa.read_file_label": "C2PA 데이터가 있는 이미지",
@@ -348,7 +330,6 @@
   "c2pa.type_dnt": "AI 학습 금지",
   "c2pa.image_label": "서명할 이미지",
   "c2pa.download_btn": "결과 다운로드",
-
   "cert.heading": "디지털 여권",
   "cert.desc": "이미지, 사용자 정보 및 기타 도구의 결과와 함께 서명된 디지털 여권(PDF, DOCX, EPUB)을 생성합니다. 아래에 결과를 붙여넣은 다음 생성을 클릭하세요.",
   "cert.image_label": "이미지",
