@@ -4,7 +4,7 @@
 // Supports Ed25519, ECDSA P-256, RSA-2048, RSA-4096
 
 var DID_STORAGE_KEY = 'redoSan_did_keys';
-
+ 
 // ── Base58btc ──
 var BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
