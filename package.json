@@ -12,7 +12,8 @@
     "test:core": "node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js",
     "test:removal": "node cli/tests/remove_watermark_test.js",
     "coverage": "c8 --reporter=text --reporter=lcov node --test cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js && node cli/tests/remove_watermark_test.js",
-    "coverage:report": "echo No coverage report available"
+    "coverage:report": "echo No coverage report available",
+    "dom-review": "node cli/tests/dom_check.js"
   },
   "keywords": [
     "watermark",
@@ -39,6 +40,8 @@
   },
   "devDependencies": {
     "c8": "^11.0.0",
-    "eslint": "^8.0.0"
+    "eslint": "^8.0.0",
+    "playwright": "^1.52.0",
+    "@axe-core/playwright": "^4.10.1"
   }
 }
