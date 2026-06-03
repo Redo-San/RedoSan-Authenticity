@@ -126,7 +126,17 @@ async function translateViaAI(texts, targetLang) {
 
   var resp = await fetch(endpoint, { method: 'POST', headers: headers, body: body });
   responseText = await resp.text();
-  if (!resp.ok) throw new Error('API error ' + resp.status + ': ' + responseText);
+  if (!resp.ok) {
+    if (resp.status === 429) {
+      var waitMs = 30000;
+      var match = responseText.match(/(\d+(?:\.\d+)?)\s*s/);
+      if (match) waitMs = Math.ceil(parseFloat(match[1]) * 1000) + 1000;
+      console.warn('  Rate limited, waiting ' + (waitMs / 1000).toFixed(0) + 's...');
+      await new Promise(function(r) { setTimeout(r, waitMs); });
+      return translateViaAI(texts, targetLang);
+    }
+    throw new Error('API error ' + resp.status + ': ' + responseText);
+  }
 
   var data = JSON.parse(responseText);
   var content;
