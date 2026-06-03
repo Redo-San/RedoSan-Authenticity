@@ -298,7 +298,7 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
 @media (max-width: 767px) {
   .card { padding: 18px; }
   .card .icon { font-size: 1.5rem; }
-  .card h3 { font-size: 0.9rem; }
+  .card h2 { font-size: 0.9rem; }
   .card p { font-size: 0.75rem; }
   .badge { font-size: 0.72rem; padding: 4px 12px; min-height: 28px; display: inline-flex; align-items: center; }
   /* Ensure minimum readable sizes */
@@ -318,7 +318,7 @@ input, select, textarea, label, .file-drop-zone, .contact-card {
   .mode-cards { flex-direction: column; gap: 12px; }
   .mode-card { padding: 16px; }
   .mode-card-icon { font-size: 1.8rem; margin-bottom: 8px; }
-  .mode-card h3 { font-size: 0.9rem; }
+  .mode-card h2 { font-size: 0.9rem; }
   .mode-card p { font-size: 0.76rem; }
   .mode-links { gap: 12px; }
   .mode-links a { font-size: 0.76rem; padding: 8px 0; display: inline-block; }
