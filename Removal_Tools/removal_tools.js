@@ -239,7 +239,6 @@ async function cleanDocumentFile(file, opts) {
     removed.push('doc_metadata');
   }
 
-  // Rebuild document in original format
   var rebuilt = await _rtRebuildDoc(file, buf, text, opts);
   return { type: 'document', blob: rebuilt.blob, ext: rebuilt.ext, removed: removed };
 }

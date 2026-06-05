@@ -302,26 +302,31 @@
   "lang.name.ko": "한국어",
   "sidebar": {
     "certificate": "数字护照",
-    "usage_warning": "⚠️ 仅限合法使用。禁止上传违法或有害内容。所有处理均在本地进行。",
-    "audio_watermark": "音频水印"
+    "usage_warning": "⚠️ 仅限合法使用。禁止非法/有害内容。所有处理均在本地进行 100%。",
+    "audio_watermark": "数字音频水印",
+    "forensic": "法医分析器"
   },
   "card": {
     "certificate": {
       "title": "数字护照",
-      "desc": "生成带签名的PDF/DOCX/EPUB证书"
+      "desc": "生成签名的 PDF/DOCX/EPUB 证书"
     },
     "audio_watermark": {
-      "title": "音频水印",
-      "desc": "在WAV中隐藏秘密：LSB、GMM、QIM"
+      "title": "数字音频水印",
+      "desc": "在 WAV 中隐藏秘密：LSB、GMM、QIM"
+    },
+    "forensic": {
+      "title": "法医分析器",
+      "desc": "ELA、噪声、JPEG 和复制移动篡改检查"
     }
   },
   "wm": {
-    "capacity_label": "容量：~{bytes}字节{s}{suffix}（{w}×{h}图像）",
-    "chrominance_suffix": "（色度冗余）",
-    "redundant_suffix": "（冗余x3）",
-    "secret_status_max": "最大秘密大小：~{bytes}字节",
-    "secret_status_ok": "✓ 秘密文件：{size}字节 —— 容量足够",
-    "secret_status_exceed": "✗ 秘密文件：{size}字节 —— 超出容量{excess}字节",
+    "capacity_label": "容量：~{bytes} 字节{s}{suffix} ({w}×{h} 图像)",
+    "chrominance_suffix": " (色度冗余)",
+    "redundant_suffix": " (冗余 x3)",
+    "secret_status_max": "最大秘密大小：~{bytes} 字节",
+    "secret_status_ok": "✓ 秘密文件：{size} 字节 —— 容纳在容量内",
+    "secret_status_exceed": "✗ 秘密文件：{size} 字节 —— 超出容量 {excess} 字节",
     "detect_found": "检测到的算法：{algo}"
   },
   "fp": {
@@ -335,7 +340,7 @@
   },
   "md": {
     "select_image": "请选择图像",
-    "download_json": "下载JSON",
+    "download_json": "下载 JSON",
     "label_file": "文件",
     "label_size": "大小",
     "label_dimensions": "尺寸",
@@ -345,17 +350,17 @@
     "label_error": "错误"
   },
   "ts": {
-    "select_both": "请选择原始文件及其.ots证明",
-    "created_success": "✓ 完成.ots时间戳创建，附带区块链证明！\n\nSHA-256：{hash}\n大小：{size}字节\n\n此.ots文件包含来自OpenTimestamps日历聚合器的默克尔证明。可以随时使用“验证”选项卡进行验证。",
-    "created_warning": "SHA-256：{hash}\n\n⚠ 日历聚合器无法访问。创建了不完整的.ots时间戳（{size}字节，标准格式）。\n\n要附加区块链证明，请运行以下命令之一：\n\n{commands}",
-    "verified_match": "✓ 已验证！哈希与.ots证明匹配。\n\n文件SHA-256：{fileHash}\n.ots SHA-256：{otsHash}\n\n文件自时间戳创建以来未被修改。",
-    "verified_mismatch": "✗ 哈希不匹配！文件已被修改。\n\n文件SHA-256：{fileHash}\n.ots SHA-256：{otsHash}\n\n文件自时间戳创建以来已被修改。",
-    "option1_title": "选项1 —— OpenTimestamps网站（最简单）:",
-    "option1_step1": "1. 访问https://opentimestamps.org",
-    "option1_step2": "2. 将“{name}.ots”文件拖放到页面上",
-    "option1_step3": "3. 点击“时间戳”以获取带有区块链证明的完整.ots文件",
-    "option2_title": "选项2 —— 官方CLI:",
-    "option3_title": "选项3 —— PowerShell（提交原始哈希，32字节）:"
+    "select_both": "请选择原始文件和其 .ots 证明",
+    "created_success": "✓ 完成 .ots 时间戳创建，附带区块链证明！\n\nSHA-256：{hash}\n大小：{size} 字节\n\n此 .ots 文件包括来自 OpenTimestamps 日历聚合器的默克尔证明。可以随时使用“验证”选项卡进行验证。",
+    "created_warning": "SHA-256：{hash}\n\n⚠ 日历聚合器无法访问。创建了一个不完整的 .ots 时间戳 ({size} 字节，标准格式)。\n\n要附加区块链证明，请运行以下命令之一：\n\n{commands}",
+    "verified_match": "✓ 已验证！哈希与 .ots 证明匹配。\n\n文件 SHA-256：{fileHash}\n.ots SHA-256：{otsHash}\n\n文件自时间戳创建以来未被修改。",
+    "verified_mismatch": "✗ 哈希不匹配！文件已被修改。\n\n文件 SHA-256：{fileHash}\n.ots SHA-256：{otsHash}\n\n文件自时间戳创建以来已被修改。",
+    "option1_title": "选项 1 — OpenTimestamps 网站（最简单）",
+    "option1_step1": "1. 访问 https://opentimestamps.org",
+    "option1_step2": "2. 将 \"{name}.ots\" 拖放到页面上",
+    "option1_step3": "3. 点击“时间戳”以获取带有区块链证明的完整 .ots",
+    "option2_title": "选项 2 — 官方 CLI",
+    "option3_title": "选项 3 — PowerShell（提交原始哈希，32 字节）"
   },
   "c2pa": {
     "action_created": "📄 创建",
@@ -364,10 +369,10 @@
     "action_opened": "📂 打开",
     "action_converted": "🔄 转换",
     "action_opt_out": "🚫 不参与训练",
-    "no_actions": "无记录的操作",
-    "no_assertions": "无额外的断言",
-    "no_ingredients": "无成分",
-    "no_signature": "无签名信息",
+    "no_actions": "没有记录的操作",
+    "no_assertions": "没有额外的断言",
+    "no_ingredients": "没有成分",
+    "no_signature": "没有签名信息",
     "valid": "有效",
     "trusted": "可信",
     "unknown": "未知",
@@ -375,25 +380,25 @@
     "select_content_type": "请选择至少一个内容类型",
     "format_label": "格式",
     "claim_generator": "声明生成器",
-    "instance_id": "实例ID",
+    "instance_id": "实例 ID",
     "claim_version": "声明版本",
     "untitled": "无标题",
     "unnamed": "无名",
     "unknown_gen": "未知",
     "error_label": "错误：",
-    "check_console": "查看控制台以获取详细信息。",
+    "check_console": "检查控制台以获取详细信息。",
     "success_title": "成功！",
-    "success_message": "图像已使用C2PA来源元数据进行签名。",
+    "success_message": "图像已使用 C2PA 溯源元数据签名。",
     "download_signed": "下载已签名的图像",
-    "download_report": "下载C2PA报告",
-    "no_data_found": "未找到C2PA数据",
-    "no_data_desc": "此文件不包含任何C2PA来源元数据。",
-    "no_data_desc_alt": "此文件没有C2PA来源元数据。",
-    "no_manifests_title": "无C2PA清单",
-    "no_manifests_desc": "文件具有C2PA数据，但没有可读的清单。",
-    "no_manifests": "未找到清单",
+    "download_report": "下载 C2PA 报告",
+    "no_data_found": "没有找到 C2PA 数据",
+    "no_data_desc": "此文件不包含任何 C2PA 溯源元数据。",
+    "no_data_desc_alt": "此文件没有 C2PA 溯源元数据。",
+    "no_manifests_title": "没有 C2PA 清单",
+    "no_manifests_desc": "文件具有 C2PA 数据，但没有可读的清单。",
+    "no_manifests": "没有找到清单",
     "verified": "已验证",
-    "view_details": "查看全部详细信息"
+    "view_details": "查看详细信息"
   },
   "cert": {
     "heading": "数字护照",
@@ -408,7 +413,8 @@
     "fp_label": "指纹文件（.json、.txt）",
     "ts_label": "时间戳文件（.ots）",
     "download_label": "证书准备就绪！选择格式：",
-    "reset_btn": "↻ 重新开始"
+    "reset_btn": "↻ 重新开始",
+    "docw_label": "文档水印结果 (.txt)"
   },
   "conv": {
     "heading": "文件转换器",
@@ -424,7 +430,7 @@
     "format_label": "转换为：",
     "unknown_type": "不支持的文件类型。请选择图像、音频、视频或文档文件。",
     "unsupported": "不支持的文件类型",
-    "audio_limited": "音频转换在浏览器中有限。尝试使用WAV格式。",
+    "audio_limited": "音频转换在浏览器中有限。尝试使用 WAV 格式。",
     "video_limited": "视频转换在浏览器中有限。使用专用的视频编辑软件。"
   },
   "simple": {
@@ -434,13 +440,13 @@
     "c2pa_tiktok": "TikTok URL",
     "c2pa_youtube": "YouTube URL",
     "c2pa_music_label": "音乐流媒体（可选）",
-    "c2pa_failed": "C2PA签名失败。查看控制台以获取详细信息。",
-    "c2pa_no_module": "C2PA模块未加载。检查互联网连接并刷新。",
+    "c2pa_failed": "C2PA 签名失败。检查控制台以获取详细信息。",
+    "c2pa_no_module": "C2PA 模块未加载。检查互联网连接并刷新。",
     "pi_msg_ph": "输入您的秘密消息（必填）",
     "final_image_title": "✅ 最终图像",
     "final_image_desc": "带有水印和秘密消息的单个下载。",
     "final_dl_btn": "📥 下载最终图像",
-    "pi_dl_btn": "📥 下载注入图像",
+    "pi_dl_btn": "📥 下载注入的图像",
     "step_upload": "上传",
     "step_type": "类型",
     "step_c2pa": "C2PA",
@@ -456,27 +462,27 @@
     "type_other": "其他",
     "info_title": "所有者信息",
     "info_name": "全名",
-    "info_name_ph": "例如John Doe",
+    "info_name_ph": "例如 John Doe",
     "info_email": "电子邮件",
-    "info_email_ph": "例如john@example.com",
+    "info_email_ph": "例如 john@example.com",
     "info_phone": "电话",
-    "info_phone_ph": "例如5xx xxx xxxx",
+    "info_phone_ph": "例如 5xx xxx xxxx",
     "phone_digits_only": "请输入数字",
     "clear_confirm": "清除所有数据？您的当前进度将丢失。",
     "email_invalid": "请输入有效的电子邮件地址",
-    "url_invalid": "请输入有效的URL（例如https://example.com）",
+    "url_invalid": "请输入有效的 URL（例如 https://example.com）",
     "select_country": "选择国家",
     "digits": "数字",
     "info_website": "网站",
-    "info_website_ph": "例如https://example.com",
+    "info_website_ph": "例如 https://example.com",
     "info_social": "社交链接",
     "info_artist": "我是艺术家/音乐家",
     "info_music": "音乐平台",
     "info_required": "请填写所有必填字段：名称、电子邮件、电话、网站。",
     "cert_title": "数字护照",
     "cert_desc": "下载带有所有结果、图像预览和 QR 验证码的签名文档。",
-    "step_did": "DID签名",
-    "pi_done_did": "✅ DID签名已成功注入为秘密消息。"
+    "step_did": "DID 签名",
+    "pi_done_did": "✅ DID 签名已成功注入为秘密消息。"
   },
   "shared": {
     "download": "下载",
@@ -486,13 +492,13 @@
     "error_prefix": "错误：",
     "lang_title": "当前：{lang}\n点击更改语言",
     "failed_load_image": "加载图像失败",
-    "dangerous_file": "此文件类型出于安全原因不被允许。",
+    "dangerous_file": "此文件类型出于安全原因不允许。",
     "wrong_type": "请选择此工具的有效文件类型。",
     "corrupt_file": "此文件似乎已损坏或格式不正确。",
-    "dangerous_content": "此文件包含潜在的危险嵌入代码（脚本、事件处理程序）且不被允许。",
-    "dangerous_document": "此文档包含潜在的危险功能（嵌入JavaScript、自动执行操作、外部启动、嵌入文件）且不被允许。",
-    "bad_structure": "此文件似乎在其有效图像内容之后附加了可疑数据。请从干净的图像编辑器重新导出文件。",
-    "english_filename": "文件名必须仅使用英文字符（A-Z、0-9、连字符、下划线、点）。请重命名文件并重试。"
+    "dangerous_content": "此文件包含潜在的危险嵌入代码（脚本、事件处理程序）且不允许。",
+    "dangerous_document": "此文档包含潜在的危险功能（嵌入式 JavaScript、自动执行操作、外部启动）且不允许。",
+    "bad_structure": "此文件似乎在其有效图像内容之后附加了可疑的数据。请从干净的图像编辑器重新导出文件。",
+    "english_filename": "文件名必须使用英文字符（A-Z、0-9、连字符、下划线、点）。请重命名文件并重试。"
   },
   "test": {
     "translate": "这是一个测试翻译键"
@@ -595,11 +601,11 @@
   "threat.note": "If you believe this is a mistake, please report it on",
   "threat.note_link": "GitHub Issues",
   "ast": {
-    "title": "🤖 RedoSan助手",
+    "title": "🤖 RedoSan 助手",
     "placeholder": "输入您的问题...",
     "clear": "清除聊天",
     "close": "关闭",
-    "help": "问我关于水印、指纹、时间戳、C2PA等的问题！",
+    "help": "问我关于水印、指纹、时间戳、C2PA 等问题！",
     "context_watermark": "我看到您在 **水印** 页面。需要帮助吗？",
     "context_audio_watermark": "我看到您在 **数字音频水印** 页面。需要帮助吗？",
     "context_pixel": "我看到您在 **像素注入** 页面。需要帮助吗？",
@@ -653,5 +659,17 @@
   "docw.warning_forensic_desc": "取证分析工具",
   "docw.warning_tip": "如果这是文本文档，请尝试上传.txt或.docx版本。",
   "docw.warning_low_cap": "⚠ 容量不足",
-  "docw.warning_low_desc": "提取的文本（{chars}个字符，约{cap}容量）对于大多数消息来说太短。考虑对基于图像的文档使用<b>像素注入</b>或<b>水印</b>工具。"
+  "docw.warning_low_desc": "提取的文本（{chars}个字符，约{cap}容量）对于大多数消息来说太短。考虑对基于图像的文档使用<b>像素注入</b>或<b>水印</b>工具。",
+  "forensic": {
+    "heading": "法医分析器",
+    "desc": "使用 ELA、噪声不一致、JPEG 结构和复制移动检测来分析图像中的篡改信号。所有内容都在浏览器中本地运行。",
+    "file_label": "图像文件",
+    "submit": "分析法医"
+  },
+  "rt": {
+    "document_section": "文档清理选项",
+    "remove_doc_wm": "文档水印",
+    "remove_doc_meta": "元数据",
+    "download_doc_btn": "下载清理后的文档"
+  }
 }
