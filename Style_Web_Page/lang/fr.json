@@ -302,7 +302,7 @@
   "lang.name.ko": "한국어",
   "sidebar": {
     "certificate": "Passeport numérique",
-    "usage_warning": "⚠️ Utilisation légale uniquement. Contenu illégal/nuisible interdit. Tous les traitements sont effectués à 100% localement.",
+    "usage_warning": "⚠️ Utilisation légale uniquement. Le contenu illégal ou nuisible est interdit. Tous les traitements sont effectués à 100% localement.",
     "audio_watermark": "Filigrane audio numérique",
     "did": "Identité DID",
     "forensic": "Analyseur forensique"
@@ -322,12 +322,12 @@
     },
     "forensic": {
       "title": "Analyseur forensique",
-      "desc": "Vérifications de tamper ELA, bruit, JPEG et copie-déplacement"
+      "desc": "Vérifications de tamper ELA, de bruit, de structure JPEG et de copie"
     }
   },
   "wm": {
     "capacity_label": "Capacité : ~{bytes} octet{s}{suffix} ({w}×{h} image)",
-    "chrominance_suffix": " (chrominance redondant)",
+    "chrominance_suffix": " (chrominance redondante)",
     "redundant_suffix": " (redondant x3)",
     "secret_status_max": "Taille maximale du secret : ~{bytes} octets",
     "secret_status_ok": "✓ Fichier secret : {size} octets — correspond à la capacité",
@@ -355,15 +355,15 @@
     "label_error": "Erreur"
   },
   "ts": {
-    "select_both": "Veuillez sélectionner à la fois le fichier d'origine et son preuve .ots",
-    "created_success": "✓ Preuve .ots de timestamp créée avec attestation de blockchain !\n\nSHA-256 : {hash}\nTaille : {size} octets\n\nCe fichier .ots inclut une preuve de merkle du calendrier agrégateur OpenTimestamps. Vérifiez-la à tout moment en utilisant l'onglet Vérifier.",
-    "created_warning": "SHA-256 : {hash}\n\n⚠ L'agrégateur de calendrier est inaccessible. Preuve .ots de timestamp incomplète créée ({size} octets, format standard).\n\nPour attacher une attestation de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
-    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier n'a pas changé depuis la création du timestamp.",
-    "verified_mismatch": "✗ Hachage en erreur ! Le fichier a été modifié.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier a changé depuis la création du timestamp.",
+    "select_both": "Veuillez sélectionner à la fois le fichier d'origine et sa preuve .ots",
+    "created_success": "✓ Horodatage .ots complet créé avec attestation de blockchain !\n\nSHA-256 : {hash}\nTaille : {size} octets\n\nCe fichier .ots inclut une preuve Merkle de l'agrégateur de calendrier OpenTimestamps. Vérifiez-le à tout moment en utilisant l'onglet Vérifier.",
+    "created_warning": "SHA-256 : {hash}\n\n⚠ L'agrégateur de calendrier est inaccessible. Horodatage .ots incomplet créé ({size} octets, format standard).\n\nPour attacher une attestation de blockchain, exécutez l'une des commandes suivantes :\n\n{commands}",
+    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier n'a pas été modifié depuis la création de l'horodatage.",
+    "verified_mismatch": "✗ Hachage en contradiction ! Le fichier a été modifié.\n\nHachage SHA-256 du fichier : {fileHash}\nHachage SHA-256 .ots : {otsHash}\n\nLe fichier a changé depuis la création de l'horodatage.",
     "option1_title": "Option 1 — Site Web OpenTimestamps (le plus simple) :",
     "option1_step1": "1. Allez sur https://opentimestamps.org",
-    "option1_step2": "2. Faites glisser et déposez \"{name}.ots\" sur la page",
-    "option1_step3": "3. Cliquez sur \"Tampon\" pour obtenir une preuve .ots complète avec preuve de blockchain",
+    "option1_step2": "2. Déposez \"{name}.ots\" sur la page",
+    "option1_step3": "3. Cliquez sur \"Tampon\" pour obtenir un .ots complet avec preuve de blockchain",
     "option2_title": "Option 2 — CLI officiel :",
     "option3_title": "Option 3 — PowerShell (soumettre le hachage brut, 32 octets uniquement) :"
   },
@@ -419,7 +419,8 @@
     "ts_label": "Fichier d'horodatage (ots)",
     "download_label": "Certificat prêt ! Choisissez un format :",
     "reset_btn": "↻ Réinitialiser",
-    "did_label": "Résultat d'identité DID (json, txt)"
+    "did_label": "Résultat d'identité DID (json, txt)",
+    "docw_label": "Résultat de filigrane de document (.txt)"
   },
   "conv": {
     "heading": "Convertisseur de fichiers",
@@ -445,7 +446,7 @@
     "c2pa_tiktok": "URL TikTok",
     "c2pa_youtube": "URL YouTube",
     "c2pa_music_label": "Diffusion de musique (facultatif)",
-    "c2pa_failed": "Échec de la signature C2PA. Vérifiez la console pour plus de détails.",
+    "c2pa_failed": "La signature C2PA a échoué. Vérifiez la console pour plus de détails.",
     "c2pa_no_module": "Module C2PA non chargé. Vérifiez votre connexion Internet et actualisez.",
     "pi_msg_ph": "Entrez votre message secret (obligatoire)",
     "final_image_title": "✅ Image finale",
@@ -468,13 +469,13 @@
     "info_title": "Informations sur le propriétaire",
     "info_name": "Nom complet",
     "info_name_ph": "par exemple John Doe",
-    "info_email": "Courriel",
+    "info_email": "Adresse e-mail",
     "info_email_ph": "par exemple john@example.com",
     "info_phone": "Téléphone",
     "info_phone_ph": "par exemple 5xx xxx xxxx",
     "phone_digits_only": "Veuillez entrer uniquement des chiffres",
-    "clear_confirm": "Effacer toutes les données ? Vos progrès actuels seront perdus.",
-    "email_invalid": "Veuillez entrer une adresse de courriel valide",
+    "clear_confirm": "Effacer toutes les données ? Votre progression actuelle sera perdue.",
+    "email_invalid": "Veuillez entrer une adresse e-mail valide",
     "url_invalid": "Veuillez entrer une URL valide (par exemple https://example.com)",
     "select_country": "Sélectionner le pays",
     "digits": "chiffres",
@@ -483,7 +484,7 @@
     "info_social": "Liens sociaux",
     "info_artist": "Je suis un artiste / musicien",
     "info_music": "Plateformes de musique",
-    "info_required": "Veuillez remplir tous les champs obligatoires : Nom, Courriel, Téléphone, Site Web.",
+    "info_required": "Veuillez remplir tous les champs obligatoires : Nom, Adresse e-mail, Téléphone, Site Web.",
     "cert_title": "Passeport numérique",
     "cert_desc": "Télécharger un document signé avec tous les résultats, une prévisualisation d'image et un code de vérification QR.",
     "cert_desc_image": "Télécharger un document signé avec tous les résultats, une prévisualisation d'image et un code de vérification QR.",
@@ -491,7 +492,7 @@
     "cert_desc_video": "Télécharger un document signé avec tous les résultats, une prévisualisation de vidéo et un code de vérification QR.",
     "cert_desc_other": "Télécharger un document signé avec tous les résultats et un code de vérification QR.",
     "step_did": "DID Sign",
-    "pi_done_did": "✅ Signature DID injectée avec succès en tant que message secret."
+    "pi_done_did": "✅ La signature DID a été injectée avec succès en tant que message secret."
   },
   "shared": {
     "download": "Télécharger",
@@ -505,7 +506,7 @@
     "wrong_type": "Veuillez sélectionner un type de fichier valide pour cet outil.",
     "corrupt_file": "Ce fichier semble être corrompu ou avoir un format incorrect.",
     "dangerous_content": "Ce fichier contient du code intégré potentiellement dangereux (scripts, gestionnaires d'événements) et n'est pas autorisé.",
-    "dangerous_document": "Ce document contient des fonctionnalités potentiellement dangereuses (JavaScript intégré, actions d'exécution automatique, lancement de fichiers externes, fichiers intégrés) et n'est pas autorisé.",
+    "dangerous_document": "Ce document contient des fonctionnalités potentiellement dangereuses (JavaScript intégré, actions d'exécution automatique, lancements externes) et n'est pas autorisé.",
     "bad_structure": "Ce fichier semble avoir des données suspectes ajoutées après son contenu d'image valide. Veuillez réexporter le fichier à partir d'un éditeur d'images propre."
   },
   "test": {
@@ -516,7 +517,7 @@
     "placeholder": "Tapez votre question...",
     "clear": "Effacer la conversation",
     "close": "Fermer",
-    "help": "Demandez-moi des informations sur la filigrane, l'empreinte, l'horodatage, C2PA, etc. !",
+    "help": "Demandez-moi des informations sur la filigrane, l'empreinte, l'horodatage, le C2PA, etc.",
     "context_watermark": "Je vois que vous êtes sur la page **Filigrane**. Avez-vous besoin d'aide ?",
     "context_pixel": "Je vois que vous êtes sur la page **Injection de pixels**. Avez-vous besoin d'aide ?",
     "context_fingerprint": "Je vois que vous êtes sur la page **Empreinte**. Avez-vous besoin d'aide ?",
@@ -632,7 +633,7 @@
   "threat.note_link": "GitHub Issues",
   "forensic": {
     "heading": "Analyseur forensique",
-    "desc": "Analyser les images pour les signaux de tamperisation à l'aide d'ELA, d'incohérence de bruit, de structure JPEG et de détection de copie-déplacement. Tout fonctionne localement dans votre navigateur.",
+    "desc": "Analyser les images pour les signaux de tamperisation à l'aide d'ELA, d'incohérences de bruit, de structure JPEG et de détection de copie. Tout fonctionne localement dans votre navigateur.",
     "file_label": "Fichier image",
     "submit": "Analyser les preuves"
   },
@@ -679,5 +680,11 @@
   "docw.warning_forensic_desc": "outils d'analyse médico-légale",
   "docw.warning_tip": "S'il s'agit d'un document texte, essayez de télécharger une version .txt ou .docx à la place.",
   "docw.warning_low_cap": "⚠ Faible capacité",
-  "docw.warning_low_desc": "Le texte extrait ({chars} car., ~{cap} capacité) est trop court pour la plupart des messages. Envisagez d'utiliser les outils <b>Injection de pixels</b> ou <b>Filigrane</b> pour les documents basés sur l'image."
+  "docw.warning_low_desc": "Le texte extrait ({chars} car., ~{cap} capacité) est trop court pour la plupart des messages. Envisagez d'utiliser les outils <b>Injection de pixels</b> ou <b>Filigrane</b> pour les documents basés sur l'image.",
+  "rt": {
+    "document_section": "Options de nettoyage de document",
+    "remove_doc_wm": "Filigrane de document",
+    "remove_doc_meta": "Métadonnées",
+    "download_doc_btn": "Télécharger le document nettoyé"
+  }
 }
