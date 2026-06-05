@@ -123,7 +123,9 @@ async function mainMenu() {
     console.log('  ' + c('green', '12') + ' Pixel Injection (extract)');
     console.log('  ' + c('green', '13') + ' DID Identity');
     console.log('  ' + c('green', '14') + ' Digital Passport');
-    console.log('  ' + c('green', '15') + ' File Converter');
+    console.log('  ' + c('green', '15') + '  File Converter');
+    console.log('  ' + c('green', '16') + '  Document Watermark (embed)');
+    console.log('  ' + c('green', '17') + '  Document Watermark (extract)');
     console.log('  ' + c('green', '0') + '  Exit');
     console.log();
 
@@ -146,6 +148,8 @@ async function mainMenu() {
         case '13': await menuDid(); break;
         case '14': await menuCertificate(); break;
         case '15': await menuConverter(); break;
+        case '16': await menuDocwEmbed(); break;
+        case '17': await menuDocwExtract(); break;
         case '0': console.log(c('green', 'Goodbye!')); rl.close(); return;
         default: console.log(c('red', 'Invalid choice')); await ask('Press Enter...');
       }
@@ -516,6 +520,45 @@ async function menuCertificate() {
   const out = resolvePath(outputRaw, defaultName);
   args.push('-o', out);
 
+  await run(args);
+  await ask('Press Enter...');
+}
+
+async function menuDocwEmbed() {
+  console.clear();
+  console.log(c('bright', '── Document Watermark Embed ──'));
+  const input = await selectFile('Cover text file > ');
+  const useFile = await ask(c('cyan', 'Use secret file? (y/N): '));
+  var args = ['document-watermark', 'embed', '-i', input, '-a', '1'];
+  if (useFile.trim().toLowerCase() === 'y') {
+    const secret = await selectFile('Secret message file > ');
+    args.push('-s', secret);
+  } else {
+    const msg = await ask(c('cyan', 'Secret message > '));
+    if (msg.trim()) args.push('-m', msg.trim());
+  }
+  const algo = await pickAlgorithm('Algorithm:', ['ZWC (Zero-Width)', 'Homoglyph', 'Whitespace'], 'ZWC (Zero-Width)');
+  var algoMap = { 1: '1', 2: '2', 3: '3' };
+  args.push('-a', algoMap[algo] || '1');
+  const pass = await ask(c('yellow', 'Password (optional) > '));
+  if (pass.trim()) args.push('-p', pass.trim());
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = input.watermarked.txt): '));
+  if (outputRaw.trim()) args.push('-o', outputRaw.trim());
+  await run(args);
+  await ask('Press Enter...');
+}
+
+async function menuDocwExtract() {
+  console.clear();
+  console.log(c('bright', '── Document Watermark Extract ──'));
+  const input = await selectFile('Watermarked text file > ');
+  var args = ['document-watermark', 'extract', '-i', input, '-a', '0'];
+  const useAlgo = await ask(c('cyan', 'Specify algorithm? (1=ZWC, 2=Homoglyph, 3=Whitespace, Enter=Auto): '));
+  if (useAlgo.trim()) args[args.length - 1] = useAlgo.trim();
+  const pass = await ask(c('yellow', 'Password (optional) > '));
+  if (pass.trim()) args.push('-p', pass.trim());
+  const outputRaw = await ask(c('cyan', 'Output path (Enter = print to screen): '));
+  if (outputRaw.trim()) args.push('-o', outputRaw.trim());
   await run(args);
   await ask('Press Enter...');
 }

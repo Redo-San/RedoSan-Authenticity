@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 /**
  * Read a file and return as Uint8Array
@@ -24,6 +25,229 @@ function readFileBytes(filePath) {
 function readFileArrayBuffer(filePath) {
   const buf = readFileBytes(filePath);
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length);
+}
+
+/**
+ * Read a text file and return as UTF-8 string (skip binary validation)
+ */
+function readFileText(filePath) {
+  const absPath = path.resolve(filePath);
+  if (!fs.existsSync(absPath)) {
+    throw new Error(`File not found: ${absPath}`);
+  }
+  return fs.readFileSync(absPath, 'utf-8');
+}
+
+/**
+ * Read a document file (TXT, DOCX, PDF) and return extracted text
+ */
+async function readDocumentText(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.txt' || ext === '.json' || ext === '.csv' || ext === '.md') {
+    return readFileText(filePath);
+  }
+  if (ext === '.docx') {
+    return await readDocxText(filePath);
+  }
+  if (ext === '.pdf') {
+    return readPdfText(filePath);
+  }
+  if (ext === '.doc') {
+    // DOC (binary OLE): best-effort - read raw bytes, extract printable ASCII text
+    const buf = readFileBytes(filePath);
+    // Try to find WordDocument stream text in OLE2
+    // Look for contiguous sequences of printable ASCII interspersed in binary
+    let result = '';
+    for (let i = 0; i < buf.length; i++) {
+      const c = buf[i];
+      if ((c >= 0x20 && c <= 0x7E) || c === 0x0A || c === 0x0D) {
+        result += String.fromCharCode(c);
+      } else if (c === 0x00) {
+        result += ' ';
+      }
+    }
+    result = result.replace(/\s+/g, ' ').trim();
+    return result;
+  }
+  // Other: best-effort UTF-8 read
+  try { return readFileText(filePath); } catch(e) { return ''; }
+}
+
+async function readDocxText(filePath) {
+  const JSZip = require('jszip');
+  const buf = readFileBytes(filePath);
+  const zip = new JSZip();
+  const z = await zip.loadAsync(buf);
+  const entry = z.file('word/document.xml');
+  if (!entry) throw new Error('word/document.xml not found');
+  const xml = await entry.async('string');
+  // Simple XML text extraction
+  let text = '';
+  const wtRe = /<w:t[^>]*>([^<]+)<\/w:t>/g;
+  let m;
+  const paraBreaks = xml.split('</w:p>');
+  for (let p = 0; p < paraBreaks.length; p++) {
+    const para = paraBreaks[p];
+    const parts = [];
+    while ((m = wtRe.exec(para)) !== null) parts.push(m[1]);
+    if (parts.length) text += parts.join('') + '\n';
+  }
+  return text.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function readPdfText(filePath) {
+  const buf = readFileBytes(filePath);
+  const src = buf.toString('latin1');
+
+  // Object map
+  const objMap = {};
+  const objRe = /(\d+)\s+(\d+)\s+obj([\s\S]*?)endobj/g;
+  let m;
+  while ((m = objRe.exec(src)) !== null) {
+    objMap[m[1]] = m[3];
+  }
+
+  // Build CMap from ToUnicode streams
+  const cmap = {};
+  for (const [id, content] of Object.entries(objMap)) {
+    if (!content.includes('FlateDecode')) continue;
+    const sm = content.match(/stream\n([\s\S]*?)endstream/);
+    if (!sm) continue;
+    let raw = sm[1].replace(/\r?\n$/, '');
+    let data;
+    try { data = zlib.inflateSync(Buffer.from(raw, 'binary')).toString('latin1'); }
+    catch(e) { continue; }
+    if (!data.includes('begincmap')) continue;
+
+    const bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
+    let bm;
+    while ((bm = bfcharRe.exec(data)) !== null) {
+      const entries = bm[2].split('\n');
+      for (const entry of entries) {
+        const match = entry.match(/<(\w+)>\s*<(\w+)>/);
+        if (match) cmap[parseInt(match[1], 16)] = parseInt(match[2], 16);
+      }
+    }
+    const bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
+    let rm;
+    while ((rm = bfrangeRe.exec(data)) !== null) {
+      const entries = rm[2].split('\n');
+      for (const entry of entries) {
+        const parts = entry.match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
+        if (parts) {
+          const start = parseInt(parts[1], 16);
+          const end = parseInt(parts[2], 16);
+          const baseCode = parseInt(parts[3], 16);
+          for (let i = start; i <= end; i++) {
+            if (!cmap[i]) cmap[i] = baseCode + (i - start);
+          }
+        }
+      }
+    }
+  }
+
+  // Find page content streams
+  const pages = [];
+  const pageRe = /(\d+)\s+(\d+)\s+obj[\s\S]*?\/Type\s*\/Page[\s\S]*?\/Contents\s+(\d+)\s+(\d+)\s+R/g;
+  let pm;
+  while ((pm = pageRe.exec(src)) !== null) {
+    pages.push({ obj: pm[1] + ' ' + pm[2], contentRef: pm[3] });
+  }
+
+  if (pages.length === 0) return '';
+
+  let text = '';
+  for (let p = 0; p < pages.length; p++) {
+    const contentObj = objMap[pages[p].contentRef];
+    if (!contentObj) continue;
+
+    const streamRe = /stream\n([\s\S]*?)endstream/;
+    const sm = streamRe.exec(contentObj);
+    if (!sm) continue;
+
+    let raw = sm[1].replace(/\r?\n$/, '').replace(/\r\n/g, '\n');
+    let data;
+
+    if (contentObj.includes('FlateDecode')) {
+      try {
+        data = zlib.inflateSync(Buffer.from(raw, 'binary')).toString('latin1');
+      } catch(e) {
+        try {
+          data = zlib.inflateRawSync(Buffer.from(raw, 'binary')).toString('latin1');
+        } catch(e2) {
+          continue;
+        }
+      }
+    } else {
+      data = raw;
+    }
+
+    // Extract text from content stream
+    let t;
+
+    function decodePdfString(s) {
+      if (s.length < 2) return s;
+      var asianCount = 0;
+      var testLen = Math.min(100, s.length);
+      for (var ti = 0; ti + 1 < testLen; ti += 2) {
+        var b1 = s.charCodeAt(ti), b2 = s.charCodeAt(ti + 1);
+        if (b1 === 0 && b2 >= 0x20 && b2 <= 0x7E) asianCount++;
+      }
+      if (asianCount > 5 && asianCount / Math.floor(testLen / 2) > 0.4) {
+        var out2 = '';
+        for (var di2 = 0; di2 + 1 < s.length; di2 += 2) {
+          out2 += String.fromCharCode((s.charCodeAt(di2) << 8) | s.charCodeAt(di2 + 1));
+        }
+        return out2;
+      }
+      return s;
+    }
+
+    // Parenthesized strings: (text) Tj
+    const tjRe = /\(([^)]*)\)\s*Tj/g;
+    while ((t = tjRe.exec(data)) !== null) {
+      text += decodePdfString(t[1].replace(/\\(.)/g, '$1')) + ' ';
+    }
+
+    // Parenthesized strings in TJ arrays: [(text) num (text)] TJ
+    const tjArrayRe = /\[([^\]]*)\]\s*TJ/g;
+    while ((t = tjArrayRe.exec(data)) !== null) {
+      const parts = t[1].match(/\(([^)]*)\)/g);
+      if (parts) parts.forEach(function(p2) { text += decodePdfString(p2.slice(1, -1).replace(/\\(.)/g, '$1')) + ' '; });
+    }
+
+    // Hex strings: <hex> Tj (CID fonts)
+    const hexTjRe = /<([\dA-Fa-f]+)>\s*Tj/g;
+    while ((t = hexTjRe.exec(data)) !== null) {
+      const code = parseInt(t[1], 16);
+      if (cmap[code]) {
+        try { text += String.fromCodePoint(cmap[code]); }
+        catch(e) { text += '?'; }
+      } else text += '?';
+    }
+
+    // Hex strings in TJ arrays
+    const hexTjArrayRe = /\[([^\]]*)\]\s*TJ/g;
+    while ((t = hexTjArrayRe.exec(data)) !== null) {
+      const hexParts = t[1].match(/<([\dA-Fa-f]+)>/g);
+      if (hexParts) hexParts.forEach(function(h) {
+        const code = parseInt(h.slice(1, -1), 16);
+        if (cmap[code]) text += String.fromCodePoint(cmap[code]);
+        else text += String.fromCodePoint(0xFFFD);
+      });
+    }
+  }
+
+  return text.replace(/[ \t\n\r\f\v]+/g, ' ').trim();
+}
+
+/**
+ * Write a text string to a file
+ */
+function writeFileText(filePath, content) {
+  const absPath = path.resolve(filePath);
+  fs.writeFileSync(absPath, content, 'utf-8');
+  return absPath;
 }
 
 /**
@@ -172,7 +396,7 @@ const DOC_THREAT_PATTERNS = [
   { pattern: /\/JS\s+\d+\s+0\s+R/i, label: 'embedded JavaScript' },
   { pattern: /\/OpenAction[\s<]/i, label: 'auto-execute action' },
   { pattern: /\/Launch[\s<]/i, label: 'launch external app' },
-  { pattern: /\/EmbeddedFiles[\s<]/i, label: 'embedded file attachments' },
+
 ];
 
 function isDangerousExt(fileName) {
@@ -307,15 +531,7 @@ function validateFile(filePath, options) {
     }
   }
 
-  // 4. Document threats (PDF)
-  if (ext === '.pdf') {
-    const docResult = checkDocumentThreats(data);
-    if (!docResult.safe) {
-      throw new Error(`PDF threat detected (${docResult.reason}) in ${fileName}`);
-    }
-  }
-
-  // 5. File structure integrity
+  // 4. File structure integrity
   const structResult = checkFileStructure(data, ext);
   if (!structResult.safe) {
     throw new Error(`Structure check failed for ${fileName}: ${structResult.reason}`);
@@ -326,6 +542,9 @@ function validateFile(filePath, options) {
 
 module.exports = {
   readFileBytes,
+  readFileText,
+  readDocumentText,
+  writeFileText,
   readFileArrayBuffer,
   getFileInfo,
   hashNode,

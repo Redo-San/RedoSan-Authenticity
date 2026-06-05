@@ -385,6 +385,24 @@ async function downloadCertPDF(data) {
     y += 2;
   }
 
+  // ── 3b. Document Watermark ──
+  if (data.documentWatermark) {
+    checkPage(12);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('Document Watermark', margin, y); y += 5;
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(9);
+    doc.text('File: ' + (data.documentWatermarkFileName || 'Completed'), margin, y); y += 4;
+    if (data.documentWatermarkResult) {
+      doc.setFontSize(7);
+      var docwLines = doc.splitTextToSize(data.documentWatermarkResult, pageW);
+      doc.text(docwLines, margin, y);
+      y += docwLines.length * 3.5;
+    }
+    y += 2;
+  }
+
   // ── 4. Pixel Injection ──
   if (data.pixelInjection) {
     checkPage(12);
@@ -676,6 +694,16 @@ async function downloadCertDOCX(data) {
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
 
+  // 5b. Document Watermark
+  if (data.documentWatermark) {
+    addHeading('Document Watermark', 2);
+    addLabelValue('File', data.documentWatermarkFileName || 'Completed');
+    if (data.documentWatermarkResult) {
+      addBody(data.documentWatermarkResult);
+    }
+    children.push(new docx.Paragraph({ spacing: { after: 200 } }));
+  }
+
   // 6. Timestamp
   if (data.timestamp) {
     addHeading('Timestamp', 2);
@@ -861,6 +889,7 @@ async function downloadCertEPUB(data) {
     (imgBase64 ? '<div class="img-wrapper"><img src="images/photo.' + (data.file.type === 'image/png' ? 'png' : 'jpg') + '" alt="Original Image"/></div>' : '') +
 
     (data.watermark ? '<h2>Watermark</h2><p><strong>Result:</strong> ' + escHtml(data.watermarkAlgo || 'Completed') + '</p><pre>' + escHtml(data.watermarkResult || '') + '</pre>' : '') +
+    (data.documentWatermark ? '<h2>Document Watermark</h2><p><strong>File:</strong> ' + escHtml(data.documentWatermarkFileName || 'Completed') + '</p><pre>' + escHtml(data.documentWatermarkResult || '') + '</pre>' : '') +
     (data.pixelInjection ? '<h2>Pixel Injection</h2><p><strong>Result:</strong> Completed</p><pre>' + escHtml(data.piResultHtml || '') + '</pre>' : '') +
     (data.timestamp ? '<h2>Timestamp</h2><pre>' + escHtml(data.tsResult || 'Timestamp created successfully.') + '</pre>' : '') +
 
@@ -1209,6 +1238,11 @@ async function generateProfessionalCert() {
       try { didUploadData = JSON.parse(didText); } catch(e) { didUploadData = { raw: didText }; }
     }
 
+    // Document Watermark: uploaded file only
+    var docwFile = getFileFrom('cert-result-docw');
+    var docwText = docwFile ? await readFileAsText(docwFile) : '';
+    var docwFileName = docwFile ? docwFile.name : '';
+
     // Timestamp: uploaded file only
     var tsFile = getFileFrom('cert-result-ts');
     var tsName = tsFile ? tsFile.name : '';
@@ -1282,6 +1316,9 @@ async function generateProfessionalCert() {
       fingerprint: !!(fpFile || fpGlobal),
       fpResult: fpResultData,
       fpFileName: fpFile ? fpFile.name : (fpGlobal ? (fpGlobal.file_info ? fpGlobal.file_info.file_name : '') : ''),
+      documentWatermark: !!docwFile,
+      documentWatermarkFileName: docwFileName,
+      documentWatermarkResult: stripHtml(docwText),
       didSig: window._didSig || (didUploadData && didUploadData.signature ? didUploadData.signature : null),
       didIdentity: (window._didKeypair ? window._didKeypair.did : '') || (didUploadData ? didUploadData.did : ''),
       ct: { submitted: false }
@@ -1373,7 +1410,7 @@ function resetProfessionalCert() {
   var ids = ['cert-file', 'cert-name', 'cert-email', 'cert-phone', 'cert-website',
     'cert-social-tiktok', 'cert-social-facebook', 'cert-social-instagram', 'cert-social-youtube',
     'cert-music-spotify', 'cert-music-applemusic', 'cert-music-ytmusic', 'cert-music-soundcloud',
-    'cert-result-wm', 'cert-result-pi', 'cert-result-fp', 'cert-result-ts', 'cert-result-did'];
+    'cert-result-wm', 'cert-result-pi', 'cert-result-fp', 'cert-result-ts', 'cert-result-did', 'cert-result-docw'];
   ids.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) { el.value = ''; }
