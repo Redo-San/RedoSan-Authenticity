@@ -108,7 +108,10 @@ function rtDetectType(file) {
   var isAudio = file.type && file.type.startsWith('audio/');
   var ext = file.name ? file.name.toLowerCase().split('.').pop() : '';
   var audioExts = ['wav', 'mp3', 'flac', 'ogg', 'aac', 'wma', 'm4a'];
-  return isAudio || audioExts.indexOf(ext) >= 0 ? 'audio' : 'image';
+  var docExts = ['txt', 'pdf', 'docx', 'doc', 'csv', 'json'];
+  if (isAudio || audioExts.indexOf(ext) >= 0) return 'audio';
+  if (docExts.indexOf(ext) >= 0) return 'document';
+  return 'image';
 }
 
 function onRtFileChange() {
@@ -118,6 +121,7 @@ function onRtFileChange() {
   var options = document.getElementById('rt-options');
   var imgOpts = document.getElementById('rt-image-options');
   var audioOpts = document.getElementById('rt-audio-options');
+  var docOpts = document.getElementById('rt-document-options');
   var resultDiv = document.getElementById('rt-result');
   var output = document.getElementById('rt-output');
   var status = document.getElementById('rt-status');
@@ -127,19 +131,212 @@ function onRtFileChange() {
   options.style.display = 'none';
   imgOpts.style.display = 'none';
   audioOpts.style.display = 'none';
+  docOpts.style.display = 'none';
 
   if (!file) { info.textContent = ''; status.textContent = ''; return; }
 
   info.textContent = file.name + ' (' + fmtBytes(file.size) + ')';
   options.style.display = 'block';
 
-  if (rtDetectType(file) === 'audio') {
-    imgOpts.style.display = 'none';
+  var type = rtDetectType(file);
+  if (type === 'audio') {
     audioOpts.style.display = 'block';
+  } else if (type === 'document') {
+    docOpts.style.display = 'block';
   } else {
     imgOpts.style.display = 'block';
-    audioOpts.style.display = 'none';
   }
+}
+
+// ── Document watermark removal helpers ──
+
+function _rtStripDocwChars(text) {
+  var zwc = [
+    '\u200B','\u200C','\u200D','\uFEFF','\u2060','\u2061','\u2062','\u2063',
+    '\u2064','\u2066','\u2067','\u2068','\u2069','\u180E','\u034F','\u061C'
+  ];
+  for (var i = 0; i < zwc.length; i++) {
+    text = text.split(zwc[i]).join('');
+  }
+  return text;
+}
+
+function _rtStripDocwSpaces(text) {
+  var special = [
+    '\u2000','\u2001','\u2002','\u2003','\u2004','\u2005','\u2006',
+    '\u2007','\u2008','\u2009','\u200A','\u202F','\u205F','\u3000','\u00A0'
+  ];
+  for (var i = 0; i < special.length; i++) {
+    text = text.split(special[i]).join(' ');
+  }
+  return text;
+}
+
+function _rtNormalizeHomoglyphs(text) {
+  var map = {
+    '\u0410':'A','\u0412':'B','\u0421':'C','\u13A0':'D','\u0415':'E',
+    '\uFF26':'F','\u050C':'G','\u041D':'H','\u0406':'I','\u0408':'J',
+    '\u041A':'K','\u13DE':'L','\u041C':'M','\uFF2E':'N','\u041E':'O',
+    '\u0420':'P','\u051A':'Q','\u042F':'R','\u0405':'S','\u0422':'T',
+    '\u0478':'U','\u0474':'V','\u051C':'W','\u0425':'X','\u04AE':'Y',
+    '\u0396':'Z','\u0430':'a','\u0180':'b','\u0441':'c','\u0501':'d',
+    '\u0435':'e','\u0192':'f','\u0261':'g','\u04BB':'h','\u0456':'i',
+    '\u0458':'j','\u0138':'k','\u026C':'l','\u043C':'m','\u03B7':'n',
+    '\u043E':'o','\u0440':'p','\u051B':'q','\u0433':'r','\u0455':'s',
+    '\u0442':'t','\u03BD':'u','\u0475':'v','\u051D':'w','\u0445':'x',
+    '\u0443':'y','\u03B6':'z','\uFF10':'0','\uFF11':'1','\uFF12':'2',
+    '\uFF13':'3','\uFF14':'4','\uFF15':'5','\uFF16':'6','\uFF17':'7',
+    '\uFF18':'8','\uFF19':'9','\u2024':'.','\u104A':',','\u2236':':',
+    '\u037E':';','\u2010':'-','\u0391':'A','\u0395':'E','\u0397':'H',
+    '\u039A':'K','\u039C':'M','\u039F':'O','\u03A1':'P','\u03A4':'T',
+    '\u03A7':'X','\u03B1':'a','\u03B5':'e','\u03B9':'i','\u03BA':'k',
+    '\u03BC':'m','\u03BF':'o','\u03C1':'p','\u03C2':'s','\u03C4':'t',
+    '\u03C7':'x','\u03B3':'y','\u03F2':'c','\u03F9':'C'
+  };
+  var out = '';
+  for (var i = 0; i < text.length; i++) {
+    out += map[text[i]] || text[i];
+  }
+  return out;
+}
+
+function _rtCleanDocText(text) {
+  text = _rtStripDocwChars(text);
+  text = _rtStripDocwSpaces(text);
+  text = _rtNormalizeHomoglyphs(text);
+  return text;
+}
+
+function _rtDocxStripMeta(xml) {
+  // Remove custom XML props, comments, revision marks
+  var removeTags = [
+    'w:comments', 'w:comment', 'w:revisionView', 'w:trackRevisions',
+    'w:rsids', 'cp:', 'dc:', 'dcterms:', 'w:docPr', 'w:proofState',
+    'w:customXml', 'w:customXmlPr', 'w:customXmlElement'
+  ];
+  for (var i = 0; i < removeTags.length; i++) {
+    var re = new RegExp('<' + removeTags[i] + '[^>]*>[\\s\\S]*?<\\/' + removeTags[i] + '>', 'gi');
+    xml = xml.replace(re, '');
+    var reSelf = new RegExp('<' + removeTags[i] + '[^>]*\\/>', 'gi');
+    xml = xml.replace(reSelf, '');
+  }
+  return xml;
+}
+
+async function cleanDocumentFile(file, opts) {
+  var removed = [];
+  var buf = await _rtReadFile(file);
+
+  // Extract text from document
+  var text = await _rtExtractDocText(file, buf);
+
+  if (opts.watermark) {
+    text = _rtCleanDocText(text);
+    removed.push('doc_watermark');
+  }
+
+  if (opts.metadata) {
+    removed.push('doc_metadata');
+  }
+
+  // Rebuild document in original format
+  var blob = await _rtRebuildDoc(file, buf, text, opts);
+  return { type: 'document', blob: blob, removed: removed };
+}
+
+function _rtReadFile(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function (e) { resolve(e.target.result); };
+    reader.onerror = function () { reject(new Error('Failed to read file')); };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function _rtExtractDocText(file, buf) {
+  return new Promise(function (resolve, reject) {
+    var ext = file.name.toLowerCase().split('.').pop();
+    if (ext === 'docx' && typeof DOCX_EXTRACTOR !== 'undefined' && DOCX_EXTRACTOR.readDocx) {
+      DOCX_EXTRACTOR.readDocx(buf).then(resolve).catch(function (err) {
+        reject(new Error('DOCX extraction failed: ' + err.message));
+      });
+    } else if (ext === 'pdf' && typeof DOCX_EXTRACTOR !== 'undefined' && DOCX_EXTRACTOR.readPdf) {
+      DOCX_EXTRACTOR.readPdf(new Uint8Array(buf)).then(function (txt) {
+        resolve(txt || '');
+      }).catch(function (err) {
+        reject(new Error('PDF extraction failed: ' + err.message));
+      });
+    } else if (ext === 'doc') {
+      var arr = new Uint8Array(buf);
+      var result = '';
+      for (var i = 0; i < arr.length; i++) {
+        var c = arr[i];
+        if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+          result += String.fromCharCode(c);
+        }
+      }
+      resolve(result.replace(/\s+/g, ' ').trim() || 'No readable text');
+    } else {
+      resolve(new TextDecoder('UTF-8').decode(new Uint8Array(buf)));
+    }
+  });
+}
+
+async function _rtRebuildDoc(file, buf, text, opts) {
+  var ext = file.name.toLowerCase().split('.').pop();
+
+  if (ext === 'txt' || ext === 'csv' || ext === 'json') {
+    return new Blob([text], { type: 'text/plain;charset=utf-8' });
+  }
+
+  if (ext === 'docx' && typeof JSZip !== 'undefined') {
+    try {
+      var zip = await JSZip.loadAsync(buf);
+      if (opts.watermark) {
+        // Replace text in word/document.xml
+        var docXml = await zip.file('word/document.xml').async('string');
+        // Replace all w:t content with cleaned text (flatten)
+        var runCount = 0;
+        docXml = docXml.replace(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g, function (match, content) {
+          runCount++;
+          if (runCount === 1) {
+            return match.replace(content, _rtCleanDocText(content));
+          }
+          return match.replace(content, '');
+        });
+        zip.file('word/document.xml', docXml);
+      }
+      if (opts.metadata) {
+        // Strip metadata from docProps
+        var docPropsFiles = ['docProps/core.xml', 'docProps/app.xml', 'docProps/custom.xml'];
+        for (var pi = 0; pi < docPropsFiles.length; pi++) {
+          if (zip.file(docPropsFiles[pi])) {
+            zip.remove(docPropsFiles[pi]);
+          }
+        }
+        // Strip comments
+        if (zip.file('word/comments.xml')) zip.remove('word/comments.xml');
+        if (zip.file('word/commentsExtended.xml')) zip.remove('word/commentsExtended.xml');
+        if (zip.file('word/people.xml')) zip.remove('word/people.xml');
+      }
+
+      // Update [Content_Types].xml to remove references to removed files
+      var contentTypes = await zip.file('[Content_Types].xml').async('string');
+      contentTypes = contentTypes.replace(/<Override PartName="\/docProps\/[^"]+"[^/]*\/>/g, '');
+      contentTypes = contentTypes.replace(/<Override PartName="\/word\/comments[^"]+"[^/]*\/>/g, '');
+      contentTypes = contentTypes.replace(/<Override PartName="\/word\/people\.xml"[^/]*\/>/g, '');
+      zip.file('[Content_Types].xml', contentTypes);
+
+      var newZip = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      return newZip;
+    } catch (e) {
+      // Fallback: return as TXT
+      return new Blob([text], { type: 'text/plain;charset=utf-8' });
+    }
+  }
+
+  // Fallback for PDF, DOC, or unsupported formats: return cleaned text as TXT
+  return new Blob([text], { type: 'text/plain;charset=utf-8' });
 }
 
 async function handleRtRemove() {
@@ -172,6 +369,10 @@ async function handleRtRemove() {
       opts.watermark = document.getElementById('rt-audio-wm').checked;
       opts.metadata = document.getElementById('rt-audio-meta').checked;
       result = await cleanAudioFile(file, opts);
+    } else if (type === 'document') {
+      opts.watermark = document.getElementById('rt-doc-wm').checked;
+      opts.metadata = document.getElementById('rt-doc-meta').checked;
+      result = await cleanDocumentFile(file, opts);
     } else {
       opts.watermark = document.getElementById('rt-wm').checked;
       opts.pixelInjection = document.getElementById('rt-pi').checked;
@@ -189,7 +390,9 @@ async function handleRtRemove() {
       watermark: __('rt.watermark_label', 'Digital Watermark'),
       pixel_injection: __('rt.pixel_injection_label', 'Pixel Injection'),
       c2pa: __('rt.c2pa_label', 'C2PA Provenance'),
-      metadata: __('rt.metadata_label', 'Metadata')
+      metadata: __('rt.metadata_label', 'Metadata'),
+      doc_watermark: __('rt.remove_doc_wm', 'Document Watermark'),
+      doc_metadata: __('rt.remove_doc_meta', 'Metadata')
     };
     for (var k = 0; k < result.removed.length; k++) {
       if (labelMap[result.removed[k]]) removedLabels.push(labelMap[result.removed[k]]);
@@ -216,6 +419,16 @@ async function handleRtRemove() {
       var fileName = file.name.replace(/\.[^.]+$/, '') + '_cleaned.' + ext;
       dl.innerHTML = '<a href="' + url + '" download="' + escHtml(fileName) + '" class="btn">' +
         __('rt.download_btn', 'Download Cleaned Image') + '</a>';
+    } else if (type === 'document') {
+      var docExt = file.name.split('.').pop();
+      // If original was DOCX and we could rebuild, keep extension; otherwise fallback to .txt
+      var isDocx = docExt.toLowerCase() === 'docx' && result.blob.type.indexOf('openxml') >= 0;
+      var cleanedName = file.name.replace(/\.[^.]+$/, '') + '_cleaned.' + (isDocx ? 'docx' : 'txt');
+      output.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:10px">' +
+        __('rt.removed_label', 'Removed: {items}').replace('{items}', escHtml(removedSummary)) + '</div>';
+      dl.innerHTML = '<a href="' + url + '" download="' + escHtml(cleanedName) + '" class="btn">' +
+        __('rt.download_doc_btn', 'Download Cleaned Document') + '</a>';
     } else {
       output.innerHTML =
         '<div style="text-align:center;margin-bottom:15px">' +

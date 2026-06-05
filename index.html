@@ -3309,7 +3309,7 @@
             <input
               type="file"
               id="rt-file"
-              accept="image/*,audio/*"
+              accept="image/*,audio/*,.txt,.pdf,.docx,.doc,.csv,.json"
               onchange="onRtFileChange()"
             />
           </div>
@@ -3363,6 +3363,24 @@
               <label class="rt-check"
                 ><input type="checkbox" id="rt-audio-meta" />
                 <span data-i18n="rt.remove_audio_meta">Metadata</span></label
+              >
+            </div>
+            <div id="rt-document-options" style="display: none">
+              <p
+                style="font-weight: 600; margin-bottom: 8px"
+                data-i18n="rt.document_section"
+              >
+                Document Cleaning Options
+              </p>
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-doc-wm" />
+                <span data-i18n="rt.remove_doc_wm"
+                  >Document Watermark</span
+                ></label
+              >
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-doc-meta" />
+                <span data-i18n="rt.remove_doc_meta">Metadata</span></label
               >
             </div>
 
@@ -4320,7 +4338,7 @@
     <script src="Audio_Watermark/audio_watermark_core.js?v=7" defer></script>
     <script src="Audio_Watermark/audio_watermark.js?v=3" defer></script>
     <script src="Watermark/watermark_core.js" defer></script>
-    <script src="Removal_Tools/removal_tools.js?v=1" defer></script>
+    <script src="Removal_Tools/removal_tools.js?v=2" defer></script>
     <script src="Pixel_Injection/watermark_core_advanced.js" defer></script>
     <script src="Pixel_Injection/watermark_advanced_ui.js" defer></script>
     <script src="Pixel_Injection/pixel_injection.js" defer></script>
