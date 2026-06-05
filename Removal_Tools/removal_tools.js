@@ -240,8 +240,8 @@ async function cleanDocumentFile(file, opts) {
   }
 
   // Rebuild document in original format
-  var blob = await _rtRebuildDoc(file, buf, text, opts);
-  return { type: 'document', blob: blob, removed: removed };
+  var rebuilt = await _rtRebuildDoc(file, buf, text, opts);
+  return { type: 'document', blob: rebuilt.blob, ext: rebuilt.ext, removed: removed };
 }
 
 function _rtReadFile(file) {
@@ -285,17 +285,21 @@ function _rtExtractDocText(file, buf) {
 async function _rtRebuildDoc(file, buf, text, opts) {
   var ext = file.name.toLowerCase().split('.').pop();
 
-  if (ext === 'txt' || ext === 'csv' || ext === 'json') {
-    return new Blob([text], { type: 'text/plain;charset=utf-8' });
+  if (ext === 'txt') {
+    return { blob: new Blob([text], { type: 'text/plain;charset=utf-8' }), ext: 'txt' };
+  }
+  if (ext === 'csv') {
+    return { blob: new Blob([text], { type: 'text/csv;charset=utf-8' }), ext: 'csv' };
+  }
+  if (ext === 'json') {
+    return { blob: new Blob([text], { type: 'application/json;charset=utf-8' }), ext: 'json' };
   }
 
   if (ext === 'docx' && typeof JSZip !== 'undefined') {
     try {
       var zip = await JSZip.loadAsync(buf);
       if (opts.watermark) {
-        // Replace text in word/document.xml
         var docXml = await zip.file('word/document.xml').async('string');
-        // Replace all w:t content with cleaned text (flatten)
         var runCount = 0;
         docXml = docXml.replace(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g, function (match, content) {
           runCount++;
@@ -307,36 +311,26 @@ async function _rtRebuildDoc(file, buf, text, opts) {
         zip.file('word/document.xml', docXml);
       }
       if (opts.metadata) {
-        // Strip metadata from docProps
         var docPropsFiles = ['docProps/core.xml', 'docProps/app.xml', 'docProps/custom.xml'];
         for (var pi = 0; pi < docPropsFiles.length; pi++) {
-          if (zip.file(docPropsFiles[pi])) {
-            zip.remove(docPropsFiles[pi]);
-          }
+          if (zip.file(docPropsFiles[pi])) zip.remove(docPropsFiles[pi]);
         }
-        // Strip comments
         if (zip.file('word/comments.xml')) zip.remove('word/comments.xml');
         if (zip.file('word/commentsExtended.xml')) zip.remove('word/commentsExtended.xml');
         if (zip.file('word/people.xml')) zip.remove('word/people.xml');
       }
-
-      // Update [Content_Types].xml to remove references to removed files
       var contentTypes = await zip.file('[Content_Types].xml').async('string');
       contentTypes = contentTypes.replace(/<Override PartName="\/docProps\/[^"]+"[^/]*\/>/g, '');
       contentTypes = contentTypes.replace(/<Override PartName="\/word\/comments[^"]+"[^/]*\/>/g, '');
       contentTypes = contentTypes.replace(/<Override PartName="\/word\/people\.xml"[^/]*\/>/g, '');
       zip.file('[Content_Types].xml', contentTypes);
-
       var newZip = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      return newZip;
-    } catch (e) {
-      // Fallback: return as TXT
-      return new Blob([text], { type: 'text/plain;charset=utf-8' });
-    }
+      return { blob: newZip, ext: 'docx' };
+    } catch (e) {}
   }
 
-  // Fallback for PDF, DOC, or unsupported formats: return cleaned text as TXT
-  return new Blob([text], { type: 'text/plain;charset=utf-8' });
+  // PDF, DOC, or unsupported: return cleaned text as TXT
+  return { blob: new Blob([text], { type: 'text/plain;charset=utf-8' }), ext: 'txt' };
 }
 
 async function handleRtRemove() {
@@ -420,10 +414,8 @@ async function handleRtRemove() {
       dl.innerHTML = '<a href="' + url + '" download="' + escHtml(fileName) + '" class="btn">' +
         __('rt.download_btn', 'Download Cleaned Image') + '</a>';
     } else if (type === 'document') {
-      var docExt = file.name.split('.').pop();
-      // If original was DOCX and we could rebuild, keep extension; otherwise fallback to .txt
-      var isDocx = docExt.toLowerCase() === 'docx' && result.blob.type.indexOf('openxml') >= 0;
-      var cleanedName = file.name.replace(/\.[^.]+$/, '') + '_cleaned.' + (isDocx ? 'docx' : 'txt');
+      var cleanedDocExt = result.ext || 'txt';
+      var cleanedName = file.name.replace(/\.[^.]+$/, '') + '_cleaned.' + cleanedDocExt;
       output.innerHTML =
         '<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:10px">' +
         __('rt.removed_label', 'Removed: {items}').replace('{items}', escHtml(removedSummary)) + '</div>';
