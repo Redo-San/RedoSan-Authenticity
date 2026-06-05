@@ -229,6 +229,7 @@ async function cleanDocumentFile(file, opts) {
 
   // Extract text from document
   var text = await _rtExtractDocText(file, buf);
+  var originalText = text;
 
   if (opts.watermark) {
     text = _rtCleanDocText(text);
@@ -239,7 +240,7 @@ async function cleanDocumentFile(file, opts) {
     removed.push('doc_metadata');
   }
 
-  var rebuilt = await _rtRebuildDoc(file, buf, text, opts);
+  var rebuilt = await _rtRebuildDoc(file, buf, text, opts, originalText);
   return { type: 'document', blob: rebuilt.blob, ext: rebuilt.ext, removed: removed };
 }
 
@@ -281,7 +282,132 @@ function _rtExtractDocText(file, buf) {
   });
 }
 
-async function _rtRebuildDoc(file, buf, text, opts) {
+async function _rtDeflate(bytes) {
+  if (typeof CompressionStream === 'undefined') throw new Error('CompressionStream not available');
+  var cs = new CompressionStream('deflate-raw');
+  var writer = cs.writable.getWriter();
+  var reader = cs.readable.getReader();
+  var chunks = [];
+  var readPromise = (async function () {
+    while (true) { var v = await reader.read(); if (v.done) break; chunks.push(v.value); }
+  })();
+  await writer.write(bytes);
+  await writer.close();
+  await readPromise;
+  var total = 0;
+  for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
+  var result = new Uint8Array(total);
+  var offset = 0;
+  for (var i2 = 0; i2 < chunks.length; i2++) { result.set(chunks[i2], offset); offset += chunks[i2].length; }
+  return result;
+}
+
+async function _rtRebuildPdf(buf, originalText, cleanedText) {
+  var src = '';
+  var arr = new Uint8Array(buf);
+  for (var i = 0; i < arr.length; i++) src += String.fromCharCode(arr[i]);
+  var result = '', lastIdx = 0;
+  var re = /stream([\r\n]+)([\s\S]*?)endstream/g;
+  var m;
+  while ((m = re.exec(src)) !== null) {
+    result += src.substring(lastIdx, m.index);
+    result += 'stream' + m[1];
+    var rawData = m[2];
+    var cleanData = rawData.replace(/[\r\n]+$/, '');
+    var rawBytes = new Uint8Array(cleanData.length);
+    for (var di = 0; di < cleanData.length; di++) rawBytes[di] = cleanData.charCodeAt(di) & 0xff;
+    var modified = cleanData;
+    var dec = null;
+    for (var fmtIdx = 0; fmtIdx < 2 && dec === null; fmtIdx++) {
+      var fmt = fmtIdx === 0 ? 'deflate' : 'deflate-raw';
+      try {
+        var st = new DecompressionStream(fmt);
+        var sw = st.writable.getWriter();
+        var sr = st.readable.getReader();
+        var sch = [];
+        var srp = (async function () {
+          while (true) { var v = await sr.read(); if (v.done) break; sch.push(v.value); }
+        })();
+        await sw.write(rawBytes);
+        await sw.close();
+        await srp;
+        var sttl = 0;
+        for (var si = 0; si < sch.length; si++) sttl += sch[si].length;
+        dec = new Uint8Array(sttl);
+        var soff = 0;
+        for (var sj = 0; sj < sch.length; sj++) { dec.set(sch[sj], soff); soff += sch[sj].length; }
+      } catch (e) { dec = null; }
+    }
+    if (dec) {
+      var decStr = '';
+      for (var d2 = 0; d2 < dec.length; d2++) decStr += String.fromCharCode(dec[d2]);
+      if (/\(.*\)\s*Tj|\[.*\]\s*TJ/.test(decStr) && typeof _pdfReplaceInStream === 'function' && originalText !== cleanedText) {
+        var newStr = _pdfReplaceInStream(decStr, originalText, cleanedText);
+        if (newStr !== decStr) {
+          var nBytes = new Uint8Array(newStr.length);
+          for (var nb = 0; nb < newStr.length; nb++) nBytes[nb] = newStr.charCodeAt(nb) & 0xff;
+          var comp = await _rtDeflate(nBytes);
+          modified = '';
+          for (var ciX = 0; ciX < comp.length; ciX++) modified += String.fromCharCode(comp[ciX]);
+        }
+      }
+    }
+    var trail = rawData.substring(cleanData.length);
+    result += modified + trail + 'endstream';
+    lastIdx = m.index + m[0].length;
+  }
+  result += src.substring(lastIdx);
+  var out = new Uint8Array(result.length);
+  for (var i2 = 0; i2 < result.length; i2++) out[i2] = result.charCodeAt(i2) & 0xff;
+  return out;
+}
+
+function _rtDocToDocx(text) {
+  if (typeof JSZip === 'undefined') throw new Error('JSZip not available');
+  var zip = new JSZip();
+  var esc = function (s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  };
+  zip.file('[Content_Types].xml',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+    '</Types>');
+  zip.file('_rels/.rels',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '</Relationships>');
+  zip.file('word/_rels/document.xml.rels',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+    '</Relationships>');
+  var paragraphs = text.split(/\n+/);
+  var bodyXml = '';
+  for (var pi = 0; pi < paragraphs.length; pi++) {
+    var para = paragraphs[pi].trim();
+    if (para) {
+      bodyXml += '<w:p><w:r><w:rPr><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>' + esc(para) + '</w:t></w:r></w:p>';
+    }
+  }
+  if (!bodyXml) bodyXml = '<w:p><w:r><w:t> </w:t></w:r></w:p>';
+  zip.file('word/document.xml',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:body>' + bodyXml + '</w:body></w:document>');
+  zip.file('word/styles.xml',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:style w:type="paragraph" w:styleId="Normal" w:default="1"><w:name w:val="Normal"/><w:pPr><w:spacing w:after="200" w:line="276"/></w:pPr></w:style>' +
+    '</w:styles>');
+  return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+
+async function _rtRebuildDoc(file, buf, text, opts, originalText) {
   var ext = file.name.toLowerCase().split('.').pop();
 
   if (ext === 'txt') {
@@ -328,7 +454,23 @@ async function _rtRebuildDoc(file, buf, text, opts) {
     } catch (e) {}
   }
 
-  // PDF, DOC, or unsupported: return cleaned text as TXT
+  // PDF — rebuild with cleaned text in content streams
+  if (ext === 'pdf' && opts.watermark && originalText && originalText !== text) {
+    try {
+      var pdfBytes = await _rtRebuildPdf(buf, originalText, text);
+      return { blob: new Blob([pdfBytes], { type: 'application/pdf' }), ext: 'pdf' };
+    } catch (e) {}
+  }
+
+  // DOC — rebuild as minimal DOCX (can't modify binary .doc in browser)
+  if (ext === 'doc' && typeof JSZip !== 'undefined') {
+    try {
+      var docxBlob = await _rtDocToDocx(text);
+      return { blob: docxBlob, ext: 'docx' };
+    } catch (e) {}
+  }
+
+  // Unsupported format: fall back to TXT
   return { blob: new Blob([text], { type: 'text/plain;charset=utf-8' }), ext: 'txt' };
 }
 
