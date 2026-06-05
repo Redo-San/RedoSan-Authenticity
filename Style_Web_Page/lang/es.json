@@ -302,7 +302,7 @@
   "lang.name.ko": "한국어",
   "sidebar": {
     "certificate": "Pasaporte digital",
-    "usage_warning": "⚠️ Solo uso lícito. Contenido ilegal o perjudicial está prohibido. Todo el procesamiento es 100% local.",
+    "usage_warning": "⚠️ Uso legítimo solo. Contenido ilegal/dañino está prohibido. Todo el procesamiento es 100% local.",
     "audio_watermark": "Marca de agua de audio digital",
     "forensic": "Analizador forense"
   },
@@ -355,16 +355,16 @@
   },
   "ts": {
     "select_both": "Por favor, seleccione ambos el archivo original y su prueba .ots",
-    "created_success": "✓ .ots de marca de tiempo creado con atestación de blockchain!\n\nSHA-256: {hash}\nTamaño: {size} bytes\n\nEste archivo .ots incluye una prueba de merkle del calendario agregador de OpenTimestamps. Verifíquelo en cualquier momento utilizando la pestaña Verificar.",
-    "created_warning": "SHA-256: {hash}\n\n⚠ El agregador de calendario no es accesible. Se creó una marca de tiempo .ots incompleta ({size} bytes, formato estándar).\n\nPara adjuntar una atestación de blockchain, ejecute uno de los siguientes comandos:\n\n{commands}",
+    "created_success": "✓ .ots de marca de tiempo completo creado con atestación de blockchain!\n\nSHA-256: {hash}\nTamaño: {size} bytes\n\nEste archivo .ots incluye una prueba de merkle del agregador de calendario OpenTimestamps. Verifíquelo en cualquier momento utilizando la pestaña Verificar.",
+    "created_warning": "SHA-256: {hash}\n\n⚠ El agregador de calendario no es accesible. Se creó un .ots de marca de tiempo incompleto ({size} bytes, formato estándar).\n\nPara adjuntar una atestación de blockchain, ejecute uno de los siguientes comandos:\n\n{commands}",
     "verified_match": "✓ Verificado! El hash coincide con la prueba .ots.\n\nSHA-256 del archivo: {fileHash}\nSHA-256 de .ots: {otsHash}\n\nEl archivo no ha cambiado desde que se creó la marca de tiempo.",
     "verified_mismatch": "✗ Hash NO coincide! El archivo ha sido modificado.\n\nSHA-256 del archivo: {fileHash}\nSHA-256 de .ots: {otsHash}\n\nEl archivo ha cambiado desde que se creó la marca de tiempo.",
     "option1_title": "Opción 1 — Sitio web de OpenTimestamps (más fácil):",
     "option1_step1": "1. Vaya a https://opentimestamps.org",
     "option1_step2": "2. Arrastre y suelte \"{name}.ots\" en la página",
-    "option1_step3": "3. Haga clic en \"Stamp\" para obtener .ots completo con prueba de blockchain",
+    "option1_step3": "3. Haga clic en \"Stamp\" para obtener un .ots completo con prueba de blockchain",
     "option2_title": "Opción 2 — CLI oficial:",
-    "option3_title": "Opción 3 — PowerShell (enviar hash sin procesar, 32 bytes solo):"
+    "option3_title": "Opción 3 — PowerShell (enviar hash raw, 32 bytes solo):"
   },
   "c2pa": {
     "action_created": "📄 Creado",
@@ -373,7 +373,7 @@
     "action_opened": "📂 Abierto",
     "action_converted": "🔄 Convertido",
     "action_opt_out": "🚫 No entrenar",
-    "no_actions": "No se han registrado acciones",
+    "no_actions": "No se registran acciones",
     "no_assertions": "No hay afirmaciones adicionales",
     "no_ingredients": "No hay ingredientes",
     "no_signature": "No hay información de firma",
@@ -392,14 +392,14 @@
     "error_label": "Error:",
     "check_console": "Verifique la consola para obtener más detalles.",
     "success_title": "¡Éxito!",
-    "success_message": "La imagen se ha firmado con metadatos de procedencia C2PA.",
+    "success_message": "La imagen se firmó con metadatos de procedencia C2PA.",
     "download_signed": "Descargar imagen firmada",
     "download_report": "Descargar informe C2PA",
     "no_data_found": "No se encontraron datos C2PA",
     "no_data_desc": "Este archivo no contiene metadatos de procedencia C2PA.",
     "no_data_desc_alt": "Este archivo no tiene metadatos de procedencia C2PA.",
     "no_manifests_title": "No hay manifiestos C2PA",
-    "no_manifests_desc": "El archivo tiene datos C2PA, pero no hay manifiestos legibles.",
+    "no_manifests_desc": "El archivo tiene datos C2PA pero no hay manifiestos legibles.",
     "no_manifests": "No se encontraron manifiestos",
     "verified": "Verificado",
     "view_details": "Ver detalles completos"
@@ -417,7 +417,8 @@
     "fp_label": "Archivo de huella dactilar (.json, .txt)",
     "ts_label": "Archivo de marcador de tiempo (.ots)",
     "download_label": "Certificado listo. Elija un formato:",
-    "reset_btn": "↻ Volver a empezar"
+    "reset_btn": "↻ Volver a empezar",
+    "docw_label": "Resultado de marca de agua de documento (.txt)"
   },
   "conv": {
     "heading": "Convertidor de archivos",
@@ -494,12 +495,12 @@
     "processing": "Procesando...",
     "error_prefix": "Error: ",
     "lang_title": "Actual: {lang}\nHaga clic para cambiar el idioma",
-    "failed_load_image": "No se pudo cargar la imagen",
+    "failed_load_image": "Falló la carga de la imagen",
     "dangerous_file": "Este tipo de archivo no está permitido por razones de seguridad.",
     "wrong_type": "Por favor, seleccione un tipo de archivo válido para esta herramienta.",
     "corrupt_file": "Este archivo parece estar dañado o tiene un formato incorrecto.",
     "dangerous_content": "Este archivo contiene código incrustado potencialmente peligroso (scripts, controladores de eventos) y no está permitido.",
-    "dangerous_document": "Este documento contiene características potencialmente peligrosas (JavaScript incrustado, acciones de autoejecución, lanzamientos externos, archivos incrustados) y no está permitido.",
+    "dangerous_document": "Este documento contiene características potencialmente peligrosas (JavaScript incrustado, acciones de auto-ejecución, lanzamientos externos) y no está permitido.",
     "bad_structure": "Este archivo parece tener datos sospechosos agregados después de su contenido de imagen válido. Por favor, vuelva a exportar el archivo desde un editor de imágenes limpio."
   },
   "ast": {
@@ -665,5 +666,11 @@
   "docw.warning_forensic_desc": "herramientas de análisis forense",
   "docw.warning_tip": "Si este es un documento de texto, intente cargar una versión .txt o .docx.",
   "docw.warning_low_cap": "⚠ Capacidad baja",
-  "docw.warning_low_desc": "El texto extraído ({chars} caracteres, ~{cap} capacidad) es demasiado corto para la mayoría de los mensajes. Considere usar <b>Inyección de píxeles</b> o <b>Marca de agua</b> para documentos basados en imagen."
+  "docw.warning_low_desc": "El texto extraído ({chars} caracteres, ~{cap} capacidad) es demasiado corto para la mayoría de los mensajes. Considere usar <b>Inyección de píxeles</b> o <b>Marca de agua</b> para documentos basados en imagen.",
+  "rt": {
+    "document_section": "Opciones de limpieza de documentos",
+    "remove_doc_wm": "Marca de agua de documento",
+    "remove_doc_meta": "Metadatos",
+    "download_doc_btn": "Descargar documento limpio"
+  }
 }
