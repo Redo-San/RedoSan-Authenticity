@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name("redosan")
   .description(
-    "Digital authenticity tools — fingerprint, watermark, audio-watermark, metadata, timestamp, did, certificate, converter",
+    "Digital authenticity tools — fingerprint, watermark, audio-watermark, metadata, timestamp, did, certificate, converter, document-watermark",
   )
   .version("1.0.0")
   .option(
@@ -42,8 +42,10 @@ Examples:
   $ redosan did generate --algo Ed25519
   $ redosan did sign fingerprint.json
   $ redosan certificate fingerprint.json -o passport.pdf --format pdf
-  $ redosan converter image.png -f webp
-  $ redosan upgrade proof.ots -o upgraded.ots
+   $ redosan converter image.png -f webp
+   $ redosan document-watermark embed -i document.txt -m "secret" -o output.txt
+   $ redosan document-watermark extract -i watermarked.txt
+   $ redosan upgrade proof.ots -o upgraded.ots
 
 All processing is 100% local — nothing is uploaded to any server.
 `,
@@ -257,6 +259,25 @@ program
   .action(async (filePath, opts) => {
     const { runCertificate } = require("./commands/certificate");
     await runCertificate(filePath, opts);
+  });
+
+// ── Document Watermark command ──
+program
+  .command("document-watermark")
+  .description("Embed or extract invisible watermarks in text documents")
+  .argument("<action>", "Action: embed, extract")
+  .requiredOption("-i, --input <file>", "Input text file")
+  .option("-s, --secret <file>", "Secret message file (embed mode)")
+  .option("-m, --message <text>", "Secret message text (embed mode)")
+  .option("-o, --output <file>", "Output file path")
+  .option("-p, --password <pass>", "Password")
+  .option(
+    "-a, --algo <type>",
+    "Algorithm: 1=ZWC, 2=Homoglyph, 3=Whitespace, 0=Auto (default: 1)",
+  )
+  .action(async (action, opts) => {
+    const { runDocumentWatermark } = require("./commands/document_watermark");
+    await runDocumentWatermark(action, opts);
   });
 
 // ── Converter command ──
