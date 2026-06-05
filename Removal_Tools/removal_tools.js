@@ -289,6 +289,8 @@ async function _rtExtractPdfText(buf) {
     si++;
     if (si % 5 === 0) await _rtYield();
     var rawStream = sm[1].replace(/[\r\n]+$/, '');
+    // Skip large streams (image data, not text)
+    if (rawStream.length > 500000) continue;
     var rawBytes = new Uint8Array(rawStream.length);
     for (var di = 0; di < rawStream.length; di++) rawBytes[di] = rawStream.charCodeAt(di) & 0xff;
     var dec = null;
@@ -399,6 +401,12 @@ async function _rtRebuildPdf(buf, originalText, cleanedText) {
     result += 'stream' + m[1];
     var rawData = m[2];
     var cleanData = rawData.replace(/[\r\n]+$/, '');
+    // Skip very large streams (image data) — preserves them unchanged
+    if (cleanData.length > 500000) {
+      result += rawData + 'endstream';
+      lastIdx = m.index + m[0].length;
+      continue;
+    }
     var rawBytes = new Uint8Array(cleanData.length);
     for (var di = 0; di < cleanData.length; di++) rawBytes[di] = cleanData.charCodeAt(di) & 0xff;
     var modified = cleanData;
@@ -559,6 +567,18 @@ async function _rtRebuildDoc(file, buf, text, opts, originalText) {
   return { blob: new Blob([text], { type: 'text/plain;charset=utf-8' }), ext: 'txt' };
 }
 
+function showRtLoading(msg) {
+  var ov = document.getElementById('rt-loading-overlay');
+  if (!ov) return;
+  ov.style.display = 'flex';
+  var lt = document.getElementById('rt-loading-text');
+  if (lt) lt.textContent = msg || 'Processing...';
+}
+function hideRtLoading() {
+  var ov = document.getElementById('rt-loading-overlay');
+  if (ov) ov.style.display = 'none';
+}
+
 async function handleRtRemove() {
   var btn = document.getElementById('rt-btn');
   var input = document.getElementById('rt-file');
@@ -580,10 +600,16 @@ async function handleRtRemove() {
   dl.innerHTML = '';
   setText('rt-status', __('rt.processing', 'Processing...'));
 
+  var type = rtDetectType(file);
+  var isHeavy = type === 'document' || type === 'audio';
+  if (isHeavy) showRtLoading(__('rt.processing', 'Processing...'));
+
+  // Allow browser to paint the overlay before blocking
+  await new Promise(function (r) { setTimeout(r, 30); });
+
   try {
     var opts = {};
     var result;
-    var type = rtDetectType(file);
 
     if (type === 'audio') {
       opts.watermark = document.getElementById('rt-audio-wm').checked;
@@ -600,6 +626,8 @@ async function handleRtRemove() {
       opts.metadata = document.getElementById('rt-meta').checked;
       result = await cleanImageFile(file, opts);
     }
+
+    if (isHeavy) hideRtLoading();
 
     var url = URL.createObjectURL(result.blob);
     if (window._rtLastUrl) URL.revokeObjectURL(window._rtLastUrl);
@@ -663,6 +691,7 @@ async function handleRtRemove() {
     resultDiv.style.display = 'block';
     output.style.display = 'block';
   } catch (e) {
+    if (isHeavy) hideRtLoading();
     setText('rt-status', __('rt.error_prefix', 'Error: {msg}').replace('{msg}', e.message));
     resultDiv.style.display = 'block';
   }
