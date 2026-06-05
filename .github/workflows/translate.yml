@@ -34,9 +34,26 @@ jobs:
           OPENAI_API_BASE: https://api.groq.com/openai
           MODEL: llama-3.3-70b-versatile
       - name: Commit translations
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add Style_Web_Page/lang/
-          if git diff --cached --quiet; then echo "No changes"; else git commit -m "auto: translate new i18n keys" && git push; fi
+          if git diff --cached --quiet; then echo "No changes" >> $GITHUB_OUTPUT; exit 0; fi
+          git commit -m "auto: translate new i18n keys"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+      - name: Create PR
+        if: steps.commit.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="auto/translate-i18n-$(date +%s)"
+          git checkout -b "$BRANCH"
+          git push origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "auto: translate new i18n keys" \
+            --body "AI-generated translation of new i18n keys detected in \`en.json\`." \
+            --label "automated"
