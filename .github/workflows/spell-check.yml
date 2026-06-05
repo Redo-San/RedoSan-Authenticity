@@ -22,4 +22,4 @@ jobs:
         with:
           check_filenames: true
           skip: .git,*.json,node_modules,vendor,./Style_Web_Page/lang/*.json,./Style_Web_Page/lang/i18n-data.js
-          ignore_words_list: ro,aks,te,reod,ist,ser,ba,noe,fpr,gud,cunt,fils,whats,nome
+          ignore_words_list: ro,aks,te,reod,ist,ser,ba,noe,fpr,gud,cunt,fils,whats,nome,FO
