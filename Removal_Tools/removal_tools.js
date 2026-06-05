@@ -253,87 +253,179 @@ function _rtReadFile(file) {
   });
 }
 
+function stringToBytes(str) {
+  var buf = new Uint8Array(str.length);
+  for (var i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xff;
+  return buf;
+}
+
+async function _rtDecompressBytes(data) {
+  if (typeof DecompressionStream === 'undefined') return null;
+  for (var fmtIdx = 0; fmtIdx < 2; fmtIdx++) {
+    var fmt = fmtIdx === 0 ? 'deflate' : 'deflate-raw';
+    try {
+      var st = new DecompressionStream(fmt);
+      var sw = st.writable.getWriter();
+      var sr = st.readable.getReader();
+      var sch = [];
+      var srp = (async function () {
+        while (true) { var v = await sr.read(); if (v.done) break; sch.push(v.value); }
+      })().catch(function () {});
+      await sw.write(data);
+      await sw.close();
+      await srp;
+      var sttl = 0;
+      for (var sci = 0; sci < sch.length; sci++) sttl += sch[sci].length;
+      var dec = new Uint8Array(sttl);
+      var soff = 0;
+      for (var scj = 0; scj < sch.length; scj++) { dec.set(sch[scj], soff); soff += sch[scj].length; }
+      return dec;
+    } catch (e) {}
+  }
+  return null;
+}
+
 async function _rtExtractPdfText(buf) {
   var arr = new Uint8Array(buf);
   var src = '';
   for (var i = 0; i < arr.length; i++) src += String.fromCharCode(arr[i]);
-  // Determine if we can delegate to DOCX_EXTRACTOR safely (fast path)
-  var hasStreams = /stream\s*[\r\n]/.test(src);
-  if (!hasStreams) {
-    // Plain text disguised as PDF — extract raw text
+
+  // Quick check: no streams → plain text
+  if (!/stream\s*[\r\n]/.test(src)) {
     var raw = '';
     var ptRe = /\(([^)]*)\)\s*Tj/g;
     var pm;
     while ((pm = ptRe.exec(src)) !== null) raw += pm[1];
-    return raw || 'No readable text';
+    return raw || '';
   }
-  // Check for known-safe simple PDFs: small, few compressed streams
+
+  // Fast path: delegate to DOCX_EXTRACTOR for simple PDFs
   var streamCount = (src.match(/endstream/g) || []).length;
-  var safe =
+  if (
     typeof DOCX_EXTRACTOR !== 'undefined' &&
     typeof DOCX_EXTRACTOR.readPdf === 'function' &&
     streamCount <= 100 &&
-    src.length < 5000000;
-  if (safe) {
+    src.length < 5000000
+  ) {
     try {
       var txt = await DOCX_EXTRACTOR.readPdf(new Uint8Array(buf));
       if (txt && txt.length > 0) return txt;
     } catch (e) {}
   }
-  // Fallback: extract text from compressed streams with safe decompression
-  var textPieces = [];
-  var streamRe = /stream\s*\n([\s\S]*?)endstream/g;
-  var sm;
-  var si = 0;
-  while ((sm = streamRe.exec(src)) !== null) {
-    si++;
-    if (si % 5 === 0) await _rtYield();
-    var rawStream = sm[1].replace(/[\r\n]+$/, '');
-    // Skip large streams (image data, not text)
-    if (rawStream.length > 500000) continue;
-    var rawBytes = new Uint8Array(rawStream.length);
-    for (var di = 0; di < rawStream.length; di++) rawBytes[di] = rawStream.charCodeAt(di) & 0xff;
-    var dec = null;
-    for (var fmtIdx = 0; fmtIdx < 2 && dec === null; fmtIdx++) {
-      var fmt = fmtIdx === 0 ? 'deflate' : 'deflate-raw';
-      try {
-        var st = new DecompressionStream(fmt);
-        var sw = st.writable.getWriter();
-        var sr = st.readable.getReader();
-        var sch = [];
-        var srp = (async function () {
-          while (true) { var v = await sr.read(); if (v.done) break; sch.push(v.value); }
-        })().catch(function () {});
-        await sw.write(rawBytes);
-        await sw.close();
-        await srp;
-        var sttl = 0;
-        for (var sci = 0; sci < sch.length; sci++) sttl += sch[sci].length;
-        dec = new Uint8Array(sttl);
-        var soff = 0;
-        for (var scj = 0; scj < sch.length; scj++) { dec.set(sch[scj], soff); soff += sch[scj].length; }
-      } catch (e) { dec = null; }
+
+  // ── Standalone PDF text extraction with CMap support ──
+
+  // Build object map
+  var objMap = {};
+  var objRe = /(\d+)\s+(\d+)\s+obj([\s\S]*?)endobj/g;
+  var m;
+  while ((m = objRe.exec(src)) !== null) objMap[m[1] + ' ' + m[2]] = m[3];
+  await _rtYield();
+
+  // Build CMap from ToUnicode streams
+  var cmap = {};
+  for (var objId in objMap) {
+    var objContent = objMap[objId];
+    if (objContent.indexOf('FlateDecode') === -1) continue;
+    var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
+    if (!sm2) continue;
+    var raw2 = sm2[1].replace(/[\r\n]+$/, '');
+    if (raw2.length > 100000) continue;
+    var dec2 = await _rtDecompressBytes(stringToBytes(raw2));
+    if (!dec2) continue;
+    var data = '';
+    for (var di = 0; di < dec2.length; di++) data += String.fromCharCode(dec2[di]);
+    if (data.indexOf('begincmap') === -1) continue;
+
+    var bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
+    var bm;
+    while ((bm = bfcharRe.exec(data)) !== null) {
+      var entries = bm[2].split('\n');
+      for (var ei = 0; ei < entries.length; ei++) {
+        var match = entries[ei].match(/<(\w+)>\s*<(\w+)>/);
+        if (match) cmap[parseInt(match[1], 16)] = parseInt(match[2], 16);
+      }
     }
-    if (dec) {
-      var decStr = '';
-      for (var d2 = 0; d2 < dec.length; d2++) decStr += String.fromCharCode(dec[d2]);
-      // Only extract if it looks like PDF content stream (has BT/ET markers)
-      if (/BT/.test(decStr) && /ET/.test(decStr)) {
-        var tjRe = /\(([^)]*)\)\s*Tj/g;
-        var tm;
-        while ((tm = tjRe.exec(decStr)) !== null) textPieces.push(tm[1]);
-        var tjArrRe = /\[([^\]]*)\]\s*TJ/g;
-        while ((tm = tjArrRe.exec(decStr)) !== null) {
-          var segRe = /\(([^)]*)\)/g;
-          var sm2;
-          while ((sm2 = segRe.exec(tm[1])) !== null) textPieces.push(sm2[1]);
+    var bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
+    var rm;
+    while ((rm = bfrangeRe.exec(data)) !== null) {
+      var rentries = rm[2].split('\n');
+      for (var ri = 0; ri < rentries.length; ri++) {
+        var parts = rentries[ri].match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
+        if (parts) {
+          var start = parseInt(parts[1], 16);
+          var end = parseInt(parts[2], 16);
+          var baseCode = parseInt(parts[3], 16);
+          for (var ci = start; ci <= end; ci++) {
+            if (!cmap[ci]) cmap[ci] = baseCode + (ci - start);
+          }
         }
       }
-      // If too many pieces (>100k), yield
-      if (textPieces.length > 100000) await _rtYield();
     }
   }
-  return textPieces.join('') || 'No readable text';
+  await _rtYield();
+
+  function cmapChar(code) {
+    if (cmap[code]) {
+      try { return String.fromCodePoint(cmap[code]); } catch (e) { return '?'; }
+    }
+    if (code >= 0x20 && code <= 0x7e) return String.fromCharCode(code);
+    return '?';
+  }
+  function unescapePdfStr(s) {
+    return s.replace(/\\([nrt])/g, ' ').replace(/\\(.)/g, '$1');
+  }
+
+  // Find page content references
+  var pages = [];
+  var pageRe = /\/Contents\s+(\d+)\s+(\d+)\s+R/g;
+  var pm2;
+  while ((pm2 = pageRe.exec(src)) !== null) {
+    pages.push(pm2[1] + ' ' + pm2[2]);
+  }
+  if (pages.length === 0) return '';
+
+  var textPieces = [];
+  var streamRe = /stream\s*\n([\s\S]*?)endstream/g;
+  var si = 0;
+  while ((sm2 = streamRe.exec(src)) !== null) {
+    si++;
+    if (si % 5 === 0) await _rtYield();
+    var rawStream = sm2[1].replace(/[\r\n]+$/, '');
+    if (rawStream.length > 500000) continue;
+
+    var decBytes = await _rtDecompressBytes(stringToBytes(rawStream));
+    if (!decBytes || decBytes.length === 0) continue;
+
+    var content = '';
+    for (var d2 = 0; d2 < decBytes.length; d2++) content += String.fromCharCode(decBytes[d2]);
+    if (content.indexOf('BT') === -1 || content.indexOf('ET') === -1) continue;
+
+    // Parenthesized strings with Tj
+    var psRe = /\(((?:[^()\\]|\\.)*)\)\s*Tj/g;
+    var tm;
+    while ((tm = psRe.exec(content)) !== null) textPieces.push(unescapePdfStr(tm[1]));
+
+    // Hex strings with Tj (decode via CMap)
+    var hsRe = /<([0-9A-Fa-f]+)>\s*Tj/g;
+    while ((tm = hsRe.exec(content)) !== null) {
+      textPieces.push(cmapChar(parseInt(tm[1], 16)));
+    }
+
+    // TJ arrays
+    var tjRe = /\[([^\]]*)\]\s*TJ/g;
+    while ((tm = tjRe.exec(content)) !== null) {
+      var parRe = /\(((?:[^()\\]|\\.)*)\)/g;
+      var pm3;
+      while ((pm3 = parRe.exec(tm[1])) !== null) textPieces.push(unescapePdfStr(pm3[1]));
+      var hxRe = /<([0-9A-Fa-f]+)>/g;
+      while ((pm3 = hxRe.exec(tm[1])) !== null) textPieces.push(cmapChar(parseInt(pm3[1], 16)));
+    }
+
+    if (textPieces.length > 100000) await _rtYield();
+  }
+
+  return textPieces.join(' ').replace(/[ \t\n\r\f\v]+/g, ' ').trim();
 }
 
 function _rtExtractDocText(file, buf) {
