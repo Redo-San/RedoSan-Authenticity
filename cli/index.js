@@ -271,7 +271,10 @@ program
   .option("-m, --message <text>", "Secret message text (embed mode)")
   .option("-o, --output <file>", "Output file path")
   .option("-p, --password <pass>", "Password")
-  .option("-a, --algo <type>", "Algorithm: 1=ZWC, 2=Homoglyph, 3=Whitespace, 0=Auto (default: 1)")
+  .option(
+    "-a, --algo <type>",
+    "Algorithm: 1=ZWC, 2=Homoglyph, 3=Whitespace, 0=Auto (default: 1)",
+  )
   .action(async (action, opts) => {
     const { runDocumentWatermark } = require("./commands/document_watermark");
     await runDocumentWatermark(action, opts);

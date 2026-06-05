@@ -1,4 +1,16 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function () {
+  if (
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
+    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
+      window.location.href,
+    )
+  )
+    throw new Error(
+      "RedoSan Authenticity: This script is protected by GPL license.",
+    );
+})();
 // ── Simplified mode: step-by-step wizard ──
 
 var simpleFile = null;
@@ -11,14 +23,24 @@ var simpleSteps = [];
 var simpleResults = {};
 var simpleStepDone = false;
 var simpleUserInfo = {
-  name: '', email: '', phone: '', phoneCode: '', website: '',
-  social: { tiktok: '', facebook: '', instagram: '', youtube: '' },
+  name: "",
+  email: "",
+  phone: "",
+  phoneCode: "",
+  website: "",
+  social: { tiktok: "", facebook: "", instagram: "", youtube: "" },
   isArtist: false,
-  music: { spotify: '', appleMusic: '', youtubeMusic: '', soundcloud: '', bandcamp: '' }
+  music: {
+    spotify: "",
+    appleMusic: "",
+    youtubeMusic: "",
+    soundcloud: "",
+    bandcamp: "",
+  },
 };
 
 function setBodyOverflow(disable) {
-  document.documentElement.style.overflow = disable ? 'hidden' : '';
+  document.documentElement.style.overflow = disable ? "hidden" : "";
 }
 
 function initMode() {
@@ -26,212 +48,341 @@ function initMode() {
 }
 
 function setMode(mode) {
-  document.getElementById('modeSelect').style.display = 'none';
+  document.getElementById("modeSelect").style.display = "none";
   setBodyOverflow(false);
-  try { history.pushState({ modeSet: mode }, '', window.location.pathname.replace(/\/+$/, '') + '/'); } catch(e) {}
-  if (mode === 'simplified') {
-    document.getElementById('mainNav').style.display = 'none';
-    document.getElementById('sidebar').style.display = 'none';
-    document.getElementById('sidebarOverlay').style.display = 'none';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('mainFooter').style.display = 'none';
-    document.getElementById('simplifiedMode').style.display = '';
+  try {
+    history.pushState(
+      { modeSet: mode },
+      "",
+      window.location.pathname.replace(/\/+$/, "") + "/",
+    );
+  } catch (e) {}
+  if (mode === "simplified") {
+    document.getElementById("mainNav").style.display = "none";
+    document.getElementById("sidebar").style.display = "none";
+    document.getElementById("sidebarOverlay").style.display = "none";
+    document.getElementById("app").style.display = "none";
+    document.getElementById("mainFooter").style.display = "none";
+    document.getElementById("simplifiedMode").style.display = "";
     initSimplified();
   } else {
-    document.getElementById('simplifiedMode').style.display = 'none';
-    document.getElementById('mainNav').style.display = '';
-    document.getElementById('sidebar').style.display = '';
-    document.getElementById('app').style.display = '';
-    document.getElementById('mainFooter').style.display = '';
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.sidebar a[data-page]').forEach(a => a.classList.remove('active'));
-    var home = document.getElementById('page-home');
-    if (home) home.classList.add('active');
+    document.getElementById("simplifiedMode").style.display = "none";
+    document.getElementById("mainNav").style.display = "";
+    document.getElementById("sidebar").style.display = "";
+    document.getElementById("app").style.display = "";
+    document.getElementById("mainFooter").style.display = "";
+    document
+      .querySelectorAll(".page")
+      .forEach((p) => p.classList.remove("active"));
+    document
+      .querySelectorAll(".sidebar a[data-page]")
+      .forEach((a) => a.classList.remove("active"));
+    var home = document.getElementById("page-home");
+    if (home) home.classList.add("active");
   }
 }
 
 function resetProfessionalForms() {
   // Clear all file inputs in professional mode
-  document.querySelectorAll('#app input[type="file"]').forEach(function(el) {
+  document.querySelectorAll('#app input[type="file"]').forEach(function (el) {
     var dt = new DataTransfer();
     el.files = dt.files;
   });
   // Clear all text/password inputs and textareas
-  document.querySelectorAll('#app input[type="text"], #app input[type="password"], #app input[type="search"], #app textarea').forEach(function(el) {
-    el.value = '';
-  });
+  document
+    .querySelectorAll(
+      '#app input[type="text"], #app input[type="password"], #app input[type="search"], #app textarea',
+    )
+    .forEach(function (el) {
+      el.value = "";
+    });
   // Hide all result/output sections
-  ['wm-result', 'pi-result', 'fp-result', 'md-result', 'ts-result', 'c2pa-read-result', 'c2pa-write-result', 'c2pa-verify-result'].forEach(function(id) {
+  [
+    "wm-result",
+    "pi-result",
+    "fp-result",
+    "md-result",
+    "ts-result",
+    "c2pa-read-result",
+    "c2pa-write-result",
+    "c2pa-verify-result",
+  ].forEach(function (id) {
     var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    if (el) el.style.display = "none";
   });
 }
 
 function switchMode() {
   resetProfessionalForms();
   // Show mode overlay without page reload (keeps music playing)
-  document.getElementById('modeSelect').style.display = '';
+  document.getElementById("modeSelect").style.display = "";
   setBodyOverflow(true);
-  document.getElementById('simplifiedMode').style.display = 'none';
-  document.getElementById('mainNav').style.display = '';
-  document.getElementById('sidebar').style.display = '';
-  document.getElementById('sidebarOverlay').style.display = '';
-  document.getElementById('app').style.display = '';
-  document.getElementById('mainFooter').style.display = '';
+  document.getElementById("simplifiedMode").style.display = "none";
+  document.getElementById("mainNav").style.display = "";
+  document.getElementById("sidebar").style.display = "";
+  document.getElementById("sidebarOverlay").style.display = "";
+  document.getElementById("app").style.display = "";
+  document.getElementById("mainFooter").style.display = "";
   // Reset to home page
-  showPage('home');
+  showPage("home");
 }
 
 function showModeSelect() {
   resetProfessionalForms();
   // Show mode overlay without page reload (keeps music playing)
-  document.getElementById('modeSelect').style.display = '';
+  document.getElementById("modeSelect").style.display = "";
   setBodyOverflow(true);
-  document.getElementById('simplifiedMode').style.display = 'none';
-  document.getElementById('mainNav').style.display = 'none';
-  document.getElementById('sidebar').style.display = 'none';
-  document.getElementById('sidebarOverlay').style.display = 'none';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('mainFooter').style.display = 'none';
+  document.getElementById("simplifiedMode").style.display = "none";
+  document.getElementById("mainNav").style.display = "none";
+  document.getElementById("sidebar").style.display = "none";
+  document.getElementById("sidebarOverlay").style.display = "none";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("mainFooter").style.display = "none";
 }
 
 // ── File type detection ──
 
 function detectFileType(file) {
   var name = file.name.toLowerCase();
-  if (/\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|avif|tiff?)$/.test(name)) return 'image';
-  if (/\.(mp3|wav|ogg|flac|aac|wma|m4a|opus)$/.test(name)) return 'audio';
-  if (/\.(mp4|avi|mkv|mov|wmv|flv|webm|m4v|3gp)$/.test(name)) return 'video';
-  if (/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|html?|xml|json|md|epub)$/.test(name)) return 'document';
-  return 'other';
+  if (/\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|avif|tiff?)$/.test(name))
+    return "image";
+  if (/\.(mp3|wav|ogg|flac|aac|wma|m4a|opus)$/.test(name)) return "audio";
+  if (/\.(mp4|avi|mkv|mov|wmv|flv|webm|m4v|3gp)$/.test(name)) return "video";
+  if (
+    /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|html?|xml|json|md|epub)$/.test(
+      name,
+    )
+  )
+    return "document";
+  return "other";
 }
 
 function buildSteps(type, isAI) {
-  var s = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
-  if (type === 'image') {
-    s.push({ id: 'ai-question', label: __('simple.step_type', 'Type') });
-    s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
-    s.push({ id: 'watermark', label: __('simple.step_watermark', 'Watermark') });
-    s.push({ id: 'pixel-injection', label: __('simple.step_inject', 'Inject') });
-    if (isAI) s.push({ id: 'c2pa', label: __('simple.step_c2pa', 'C2PA') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
-  } else if (type === 'audio') {
-    s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
-    s.push({ id: 'audio-watermark', label: 'Audio Watermark' });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
+  var s = [{ id: "upload", label: __("simple.step_upload", "Upload") }];
+  if (type === "image") {
+    s.push({ id: "ai-question", label: __("simple.step_type", "Type") });
+    s.push({
+      id: "fingerprint",
+      label: __("simple.step_fingerprint", "Fingerprint"),
+    });
+    s.push({ id: "did-sign", label: __("simple.step_did", "DID Sign") });
+    s.push({
+      id: "watermark",
+      label: __("simple.step_watermark", "Watermark"),
+    });
+    s.push({
+      id: "pixel-injection",
+      label: __("simple.step_inject", "Inject"),
+    });
+    if (isAI) s.push({ id: "c2pa", label: __("simple.step_c2pa", "C2PA") });
+    s.push({
+      id: "timestamp",
+      label: __("simple.step_timestamp", "Timestamp"),
+    });
+  } else if (type === "audio") {
+    s.push({
+      id: "fingerprint",
+      label: __("simple.step_fingerprint", "Fingerprint"),
+    });
+    s.push({ id: "did-sign", label: __("simple.step_did", "DID Sign") });
+    s.push({ id: "audio-watermark", label: "Audio Watermark" });
+    s.push({
+      id: "timestamp",
+      label: __("simple.step_timestamp", "Timestamp"),
+    });
   } else {
-    s.push({ id: 'fingerprint', label: __('simple.step_fingerprint', 'Fingerprint') });
-    s.push({ id: 'timestamp', label: __('simple.step_timestamp', 'Timestamp') });
-    s.push({ id: 'did-sign', label: __('simple.step_did', 'DID Sign') });
+    s.push({
+      id: "fingerprint",
+      label: __("simple.step_fingerprint", "Fingerprint"),
+    });
+    s.push({
+      id: "timestamp",
+      label: __("simple.step_timestamp", "Timestamp"),
+    });
+    s.push({ id: "did-sign", label: __("simple.step_did", "DID Sign") });
   }
-  s.push({ id: 'done', label: __('simple.step_done', 'Done') });
+  s.push({ id: "done", label: __("simple.step_done", "Done") });
   return s;
 }
 
 // ── Init & render ──
 
 function initSimplified() {
-  simpleFile = null; simpleBuf = null; simpleType = null;
-  simpleIsAI = false; simpleStep = 0; simpleSteps = [];
+  simpleFile = null;
+  simpleBuf = null;
+  simpleType = null;
+  simpleIsAI = false;
+  simpleStep = 0;
+  simpleSteps = [];
   simpleResults = {};
   simpleUserInfo = {
-    name: '', email: '', phone: '', phoneCode: '', website: '',
-    social: { tiktok: '', facebook: '', instagram: '', youtube: '' },
+    name: "",
+    email: "",
+    phone: "",
+    phoneCode: "",
+    website: "",
+    social: { tiktok: "", facebook: "", instagram: "", youtube: "" },
     isArtist: false,
-    music: { spotify: '', appleMusic: '', youtubeMusic: '', soundcloud: '', bandcamp: '' }
+    music: {
+      spotify: "",
+      appleMusic: "",
+      youtubeMusic: "",
+      soundcloud: "",
+      bandcamp: "",
+    },
   };
-  var steps = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }];
+  var steps = [{ id: "upload", label: __("simple.step_upload", "Upload") }];
   simpleSteps = steps;
-  document.getElementById('simpleNav').style.display = '';
+  document.getElementById("simpleNav").style.display = "";
   renderStep();
 }
 
 function renderStep() {
   var step = simpleSteps[simpleStep];
   renderProgress();
-  var body = document.getElementById('simpleBody');
-  var nextBtn = document.getElementById('simpleNextBtn');
-  var prevBtn = document.getElementById('simplePrevBtn');
-  prevBtn.style.display = simpleStep === 0 ? 'none' : '';
+  var body = document.getElementById("simpleBody");
+  var nextBtn = document.getElementById("simpleNextBtn");
+  var prevBtn = document.getElementById("simplePrevBtn");
+  prevBtn.style.display = simpleStep === 0 ? "none" : "";
   var isLast = simpleStep === simpleSteps.length - 1;
-  nextBtn.textContent = isLast ? __('simple.start_over') : __('simple.next_btn');
+  nextBtn.textContent = isLast
+    ? __("simple.start_over")
+    : __("simple.next_btn");
   // Manage Next button: hidden for action-required steps, disabled until done for others
   simpleStepDone = false;
-  if (['ai-question', 'c2pa', 'watermark', 'pixel-injection', 'audio-watermark'].indexOf(step.id) >= 0) {
-    nextBtn.style.display = 'none';
+  if (
+    [
+      "ai-question",
+      "c2pa",
+      "watermark",
+      "pixel-injection",
+      "audio-watermark",
+    ].indexOf(step.id) >= 0
+  ) {
+    nextBtn.style.display = "none";
   } else {
-    nextBtn.style.display = '';
-    nextBtn.disabled = step.id === 'upload' ? !simpleFile : step.id === 'done' ? false : true;
+    nextBtn.style.display = "";
+    nextBtn.disabled =
+      step.id === "upload" ? !simpleFile : step.id === "done" ? false : true;
   }
-  if (step.id === 'upload') renderUpload(body);
-  else if (step.id === 'ai-question') renderAiQuestion(body);
-  else if (step.id === 'c2pa') renderC2paStep(body);
-  else if (step.id === 'watermark') renderWatermarkStep(body);
-  else if (step.id === 'pixel-injection') renderPixelInjectStep(body);
-  else if (step.id === 'timestamp') renderTimestampStep(body);
-  else if (step.id === 'audio-watermark') renderAudioWatermarkStep(body);
-  else if (step.id === 'fingerprint') renderFingerprintStep(body);
-  else if (step.id === 'did-sign') renderDIDStep(body);
-  else if (step.id === 'done') renderDone(body);
-  document.getElementById('simpleStepCounter').textContent =
-    __('simple.step_of', 'Step {current} of {total}').replace('{current}', simpleStep + 1).replace('{total}', simpleSteps.length);
+  if (step.id === "upload") renderUpload(body);
+  else if (step.id === "ai-question") renderAiQuestion(body);
+  else if (step.id === "c2pa") renderC2paStep(body);
+  else if (step.id === "watermark") renderWatermarkStep(body);
+  else if (step.id === "pixel-injection") renderPixelInjectStep(body);
+  else if (step.id === "timestamp") renderTimestampStep(body);
+  else if (step.id === "audio-watermark") renderAudioWatermarkStep(body);
+  else if (step.id === "fingerprint") renderFingerprintStep(body);
+  else if (step.id === "did-sign") renderDIDStep(body);
+  else if (step.id === "done") renderDone(body);
+  document.getElementById("simpleStepCounter").textContent = __(
+    "simple.step_of",
+    "Step {current} of {total}",
+  )
+    .replace("{current}", simpleStep + 1)
+    .replace("{total}", simpleSteps.length);
 }
 
 function renderProgress() {
-  var el = document.getElementById('simpleProgress');
-  el.innerHTML = simpleSteps.map(function(s, i) {
-    var cls = i === simpleStep ? 'sp-active' : i < simpleStep ? 'sp-done' : '';
-    return '<div class="sp-step ' + cls + '"><div class="sp-dot"></div><span class="sp-step-text">' + s.label + '</span></div>';
-  }).join('<div class="sp-line"></div>');
+  var el = document.getElementById("simpleProgress");
+  el.innerHTML = simpleSteps
+    .map(function (s, i) {
+      var cls =
+        i === simpleStep ? "sp-active" : i < simpleStep ? "sp-done" : "";
+      return (
+        '<div class="sp-step ' +
+        cls +
+        '"><div class="sp-dot"></div><span class="sp-step-text">' +
+        s.label +
+        "</span></div>"
+      );
+    })
+    .join('<div class="sp-line"></div>');
 }
 
 // ── Navigation ──
 
 function simpleNext() {
   var step = simpleSteps[simpleStep];
-  if (step.id === 'upload' && !simpleFile) return;
-  if (step.id === 'upload') {
+  if (step.id === "upload" && !simpleFile) return;
+  if (step.id === "upload") {
     saveSimpleUserInfo();
-    if (!simpleUserInfo.name || !simpleUserInfo.email || !simpleUserInfo.phone || !simpleUserInfo.website) {
-      var infoSection = document.querySelector('.simple-info-section');
+    if (
+      !simpleUserInfo.name ||
+      !simpleUserInfo.email ||
+      !simpleUserInfo.phone ||
+      !simpleUserInfo.website
+    ) {
+      var infoSection = document.querySelector(".simple-info-section");
       if (infoSection) {
-        var existingErr = infoSection.querySelector('.simple-info-error');
+        var existingErr = infoSection.querySelector(".simple-info-error");
         if (existingErr) existingErr.remove();
-        var err = document.createElement('p');
-        err.className = 'simple-info-error';
-        err.style.cssText = 'font-size:0.8rem;color:var(--danger);margin:8px 0 0;text-align:left';
-        err.textContent = __('simple.info_required', 'Please fill in all required fields: Name, Email, Phone, Website.');
+        var err = document.createElement("p");
+        err.className = "simple-info-error";
+        err.style.cssText =
+          "font-size:0.8rem;color:var(--danger);margin:8px 0 0;text-align:left";
+        err.textContent = __(
+          "simple.info_required",
+          "Please fill in all required fields: Name, Email, Phone, Website.",
+        );
         infoSection.appendChild(err);
       }
       return;
     }
     // Deeper field validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(simpleUserInfo.email)) {
-      var warn = document.getElementById('sinfo-email-warn');
-      if (warn) warn.style.display = 'block';
+      var warn = document.getElementById("sinfo-email-warn");
+      if (warn) warn.style.display = "block";
       return;
     }
-    if (simpleUserInfo.website === 'https://' || !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(simpleUserInfo.website)) {
-      var warn = document.getElementById('sinfo-website-warn');
-      if (warn) warn.style.display = 'block';
+    if (
+      simpleUserInfo.website === "https://" ||
+      !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(simpleUserInfo.website)
+    ) {
+      var warn = document.getElementById("sinfo-website-warn");
+      if (warn) warn.style.display = "block";
       return;
     }
     // Validate social/music URLs at submission time
-    var socialFields = ['sinfo-tiktok','sinfo-facebook','sinfo-instagram','sinfo-youtube','sinfo-spotify','sinfo-applemusic','sinfo-ytmusic','sinfo-soundcloud','sinfo-bandcamp'];
+    var socialFields = [
+      "sinfo-tiktok",
+      "sinfo-facebook",
+      "sinfo-instagram",
+      "sinfo-youtube",
+      "sinfo-spotify",
+      "sinfo-applemusic",
+      "sinfo-ytmusic",
+      "sinfo-soundcloud",
+      "sinfo-bandcamp",
+    ];
     for (var si = 0; si < socialFields.length; si++) {
       var fld = document.getElementById(socialFields[si]);
-      if (fld && fld.value && !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(fld.value)) {
-        var w = document.getElementById(socialFields[si] + '-warn');
-        if (w) w.style.display = 'block';
+      if (
+        fld &&
+        fld.value &&
+        !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(fld.value)
+      ) {
+        var w = document.getElementById(socialFields[si] + "-warn");
+        if (w) w.style.display = "block";
         return;
       }
     }
   }
   // Auto-run steps must complete before advancing
-  if ((step.id === 'timestamp' || step.id === 'fingerprint' || step.id === 'watermark' || step.id === 'pixel-injection' || step.id === 'c2pa' || step.id === 'did-sign') && !simpleStepDone) return;
-  if (step.id === 'done') { restartSimple(); return; }
+  if (
+    (step.id === "timestamp" ||
+      step.id === "fingerprint" ||
+      step.id === "watermark" ||
+      step.id === "pixel-injection" ||
+      step.id === "c2pa" ||
+      step.id === "did-sign") &&
+    !simpleStepDone
+  )
+    return;
+  if (step.id === "done") {
+    restartSimple();
+    return;
+  }
   simpleStep++;
   if (simpleStep >= simpleSteps.length) simpleStep = simpleSteps.length - 1;
   renderStep();
@@ -251,64 +402,70 @@ function restartSimple() {
 // ── Country code data ──
 
 var COUNTRY_CODES = [
-  { code: 'SA', dial: '+966', name: 'السعودية', len: 9 },
-  { code: 'AE', dial: '+971', name: 'الإمارات', len: 9 },
-  { code: 'EG', dial: '+20', name: 'مصر', len: 10 },
-  { code: 'KW', dial: '+965', name: 'الكويت', len: 8 },
-  { code: 'QA', dial: '+974', name: 'قطر', len: 8 },
-  { code: 'BH', dial: '+973', name: 'البحرين', len: 8 },
-  { code: 'OM', dial: '+968', name: 'عمان', len: 8 },
-  { code: 'IQ', dial: '+964', name: 'العراق', len: 10 },
-  { code: 'JO', dial: '+962', name: 'الأردن', len: 9 },
-  { code: 'LB', dial: '+961', name: 'لبنان', len: 8 },
-  { code: 'PS', dial: '+970', name: 'فلسطين', len: 9 },
-  { code: 'SY', dial: '+963', name: 'سوريا', len: 9 },
-  { code: 'YE', dial: '+967', name: 'اليمن', len: 9 },
-  { code: 'SD', dial: '+249', name: 'السودان', len: 9 },
-  { code: 'LY', dial: '+218', name: 'ليبيا', len: 9 },
-  { code: 'TN', dial: '+216', name: 'تونس', len: 8 },
-  { code: 'DZ', dial: '+213', name: 'الجزائر', len: 9 },
-  { code: 'MA', dial: '+212', name: 'المغرب', len: 9 },
-  { code: 'TR', dial: '+90', name: 'تركيا', len: 10 },
-  { code: 'US', dial: '+1', name: 'USA', len: 10 },
-  { code: 'GB', dial: '+44', name: 'UK', len: 10 },
-  { code: 'CA', dial: '+1', name: 'Canada', len: 10 },
-  { code: 'AU', dial: '+61', name: 'Australia', len: 9 },
-  { code: 'IN', dial: '+91', name: 'India', len: 10 },
-  { code: 'CN', dial: '+86', name: 'China', len: 11 },
-  { code: 'JP', dial: '+81', name: 'Japan', len: 10 },
-  { code: 'KR', dial: '+82', name: 'South Korea', len: 10 },
-  { code: 'FR', dial: '+33', name: 'France', len: 9 },
-  { code: 'DE', dial: '+49', name: 'Germany', len: 10 },
-  { code: 'IT', dial: '+39', name: 'Italy', len: 10 },
-  { code: 'ES', dial: '+34', name: 'Spain', len: 9 },
-  { code: 'NL', dial: '+31', name: 'Netherlands', len: 9 },
-  { code: 'RU', dial: '+7', name: 'Russia', len: 10 },
-  { code: 'BR', dial: '+55', name: 'Brazil', len: 10 },
-  { code: 'PK', dial: '+92', name: 'Pakistan', len: 10 },
-  { code: 'BD', dial: '+880', name: 'Bangladesh', len: 10 },
-  { code: 'ID', dial: '+62', name: 'Indonesia', len: 10 },
-  { code: 'MY', dial: '+60', name: 'Malaysia', len: 9 },
-  { code: 'SG', dial: '+65', name: 'Singapore', len: 8 },
-  { code: 'TH', dial: '+66', name: 'Thailand', len: 9 },
-  { code: 'PH', dial: '+63', name: 'Philippines', len: 10 },
-  { code: 'NG', dial: '+234', name: 'Nigeria', len: 10 },
-  { code: 'ZA', dial: '+27', name: 'South Africa', len: 9 },
-  { code: 'KE', dial: '+254', name: 'Kenya', len: 9 },
-  { code: 'IR', dial: '+98', name: 'Iran', len: 10 },
-  { code: 'AF', dial: '+93', name: 'Afghanistan', len: 9 }
+  { code: "SA", dial: "+966", name: "السعودية", len: 9 },
+  { code: "AE", dial: "+971", name: "الإمارات", len: 9 },
+  { code: "EG", dial: "+20", name: "مصر", len: 10 },
+  { code: "KW", dial: "+965", name: "الكويت", len: 8 },
+  { code: "QA", dial: "+974", name: "قطر", len: 8 },
+  { code: "BH", dial: "+973", name: "البحرين", len: 8 },
+  { code: "OM", dial: "+968", name: "عمان", len: 8 },
+  { code: "IQ", dial: "+964", name: "العراق", len: 10 },
+  { code: "JO", dial: "+962", name: "الأردن", len: 9 },
+  { code: "LB", dial: "+961", name: "لبنان", len: 8 },
+  { code: "PS", dial: "+970", name: "فلسطين", len: 9 },
+  { code: "SY", dial: "+963", name: "سوريا", len: 9 },
+  { code: "YE", dial: "+967", name: "اليمن", len: 9 },
+  { code: "SD", dial: "+249", name: "السودان", len: 9 },
+  { code: "LY", dial: "+218", name: "ليبيا", len: 9 },
+  { code: "TN", dial: "+216", name: "تونس", len: 8 },
+  { code: "DZ", dial: "+213", name: "الجزائر", len: 9 },
+  { code: "MA", dial: "+212", name: "المغرب", len: 9 },
+  { code: "TR", dial: "+90", name: "تركيا", len: 10 },
+  { code: "US", dial: "+1", name: "USA", len: 10 },
+  { code: "GB", dial: "+44", name: "UK", len: 10 },
+  { code: "CA", dial: "+1", name: "Canada", len: 10 },
+  { code: "AU", dial: "+61", name: "Australia", len: 9 },
+  { code: "IN", dial: "+91", name: "India", len: 10 },
+  { code: "CN", dial: "+86", name: "China", len: 11 },
+  { code: "JP", dial: "+81", name: "Japan", len: 10 },
+  { code: "KR", dial: "+82", name: "South Korea", len: 10 },
+  { code: "FR", dial: "+33", name: "France", len: 9 },
+  { code: "DE", dial: "+49", name: "Germany", len: 10 },
+  { code: "IT", dial: "+39", name: "Italy", len: 10 },
+  { code: "ES", dial: "+34", name: "Spain", len: 9 },
+  { code: "NL", dial: "+31", name: "Netherlands", len: 9 },
+  { code: "RU", dial: "+7", name: "Russia", len: 10 },
+  { code: "BR", dial: "+55", name: "Brazil", len: 10 },
+  { code: "PK", dial: "+92", name: "Pakistan", len: 10 },
+  { code: "BD", dial: "+880", name: "Bangladesh", len: 10 },
+  { code: "ID", dial: "+62", name: "Indonesia", len: 10 },
+  { code: "MY", dial: "+60", name: "Malaysia", len: 9 },
+  { code: "SG", dial: "+65", name: "Singapore", len: 8 },
+  { code: "TH", dial: "+66", name: "Thailand", len: 9 },
+  { code: "PH", dial: "+63", name: "Philippines", len: 10 },
+  { code: "NG", dial: "+234", name: "Nigeria", len: 10 },
+  { code: "ZA", dial: "+27", name: "South Africa", len: 9 },
+  { code: "KE", dial: "+254", name: "Kenya", len: 9 },
+  { code: "IR", dial: "+98", name: "Iran", len: 10 },
+  { code: "AF", dial: "+93", name: "Afghanistan", len: 9 },
 ];
 
 function getCountryFromLocale() {
   // Try all Intl APIs for region code detection
   // Intl.NumberFormat usually returns the most accurate locale (OS-level)
   var locales = [];
-  try { locales.push(Intl.NumberFormat().resolvedOptions().locale); } catch(e) {}
-  try { locales.push(Intl.DateTimeFormat().resolvedOptions().locale); } catch(e) {}
-  try { locales.push(Intl.Collator().resolvedOptions().locale); } catch(e) {}
+  try {
+    locales.push(Intl.NumberFormat().resolvedOptions().locale);
+  } catch (e) {}
+  try {
+    locales.push(Intl.DateTimeFormat().resolvedOptions().locale);
+  } catch (e) {}
+  try {
+    locales.push(Intl.Collator().resolvedOptions().locale);
+  } catch (e) {}
   for (var li = 0; li < locales.length; li++) {
     if (!locales[li]) continue;
-    var parts = locales[li].split('-');
+    var parts = locales[li].split("-");
     for (var k = parts.length - 1; k >= 0; k--) {
       if (parts[k].length === 2 && /^[A-Za-z]{2}$/.test(parts[k])) {
         var code = parts[k].toUpperCase();
@@ -326,82 +483,312 @@ function getCountryFromTimezone() {
     var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (!tz) return null;
     // Extract city name from timezone (last component)
-    var parts = tz.split('/');
+    var parts = tz.split("/");
     var city = parts[parts.length - 1];
     // Comprehensive IANA city → country code mapping
     // Generated from zone1970.tab — covers 300+ canonical timezones
     var tzCity = {
-      'Adak':'US','Adelaide':'AU','Algiers':'DZ','Almaty':'KZ','Amman':'JO',
-      'Anadyr':'RU','Anchorage':'US','Andorra':'AD','Apia':'WS','Aqtau':'KZ',
-      'Aqtobe':'KZ','Araguaina':'BR','Ashgabat':'TM','Astrakhan':'RU',
-      'Asuncion':'PY','Athens':'GR','Atyrau':'KZ','Auckland':'NZ','Azores':'PT',
-      'Baghdad':'IQ','Bahia':'BR','Bahia_Banderas':'MX','Baku':'AZ','Bangkok':'TH',
-      'Barbados':'BB','Barnaul':'RU','Beirut':'LB','Belem':'BR','Belgrade':'RS',
-      'Belize':'BZ','Berlin':'DE','Bermuda':'BM','Beulah':'US','Bishkek':'KG',
-      'Bissau':'GW','Boa_Vista':'BR','Bogota':'CO','Boise':'US','Bougainville':'PG',
-      'Brisbane':'AU','Broken_Hill':'AU','Brussels':'BE','Bucharest':'RO',
-      'Budapest':'HU','Buenos_Aires':'AR','Cairo':'EG','Cambridge_Bay':'CA',
-      'Campo_Grande':'BR','Canary':'ES','Cancun':'MX','Cape_Verde':'CV',
-      'Caracas':'VE','Casablanca':'MA','Catamarca':'AR','Cayenne':'GF',
-      'Center':'US','Ceuta':'ES','Chagos':'IO','Chatham':'NZ','Chicago':'US',
-      'Chihuahua':'MX','Chisinau':'MD','Chita':'RU','Ciudad_Juarez':'MX',
-      'Colombo':'LK','Cordoba':'AR','Costa_Rica':'CR','Coyhaique':'CL',
-      'Cuiaba':'BR','Damascus':'SY','Danmarkshavn':'GL','Darwin':'AU',
-      'Dawson':'CA','Dawson_Creek':'CA','Denver':'US','Detroit':'US','Dhaka':'BD',
-      'Dili':'TL','Dubai':'AE','Dublin':'IE','Dushanbe':'TJ','Easter':'CL',
-      'Edmonton':'CA','Efate':'VU','Eirunepe':'BR','El_Aaiun':'EH',
-      'El_Salvador':'SV','Eucla':'AU','Fakaofo':'TK','Famagusta':'CY',
-      'Faroe':'FO','Fiji':'FJ','Fort_Nelson':'CA','Fortaleza':'BR',
-      'Galapagos':'EC','Gambier':'PF','Gaza':'PS','Gibraltar':'GI',
-      'Glace_Bay':'CA','Goose_Bay':'CA','Grand_Turk':'TC','Guadalcanal':'SB',
-      'Guam':'GU','Guatemala':'GT','Guayaquil':'EC','Guyana':'GY','Halifax':'CA',
-      'Havana':'CU','Hebron':'PS','Helsinki':'FI','Hermosillo':'MX',
-      'Ho_Chi_Minh':'VN','Hobart':'AU','Hong_Kong':'HK','Honolulu':'US',
-      'Hovd':'MN','Indianapolis':'US','Inuvik':'CA','Iqaluit':'CA',
-      'Irkutsk':'RU','Istanbul':'TR','Jakarta':'ID','Jamaica':'JM',
-      'Jayapura':'ID','Jerusalem':'IL','Johannesburg':'ZA','Juba':'SS',
-      'Jujuy':'AR','Juneau':'US','Kabul':'AF','Kaliningrad':'RU',
-      'Kamchatka':'RU','Kanton':'KI','Karachi':'PK','Kathmandu':'NP',
-      'Khandyga':'RU','Khartoum':'SD','Kiritimati':'KI','Kirov':'RU',
-      'Knox':'US','Kolkata':'IN','Krasnoyarsk':'RU','Kuching':'MY',
-      'Kwajalein':'MH','Kyiv':'UA','La_Paz':'BO','La_Rioja':'AR','Lagos':'NG',
-      'Lima':'PE','Lindeman':'AU','Lisbon':'PT','London':'GB','Lord_Howe':'AU',
-      'Los_Angeles':'US','Louisville':'US','Macau':'MO','Maceio':'BR',
-      'Macquarie':'AU','Madeira':'PT','Madrid':'ES','Magadan':'RU',
-      'Makassar':'ID','Maldives':'MV','Malta':'MT','Managua':'NI','Manaus':'BR',
-      'Manila':'PH','Maputo':'MZ','Marengo':'US','Marquesas':'PF',
-      'Martinique':'MQ','Matamoros':'MX','Mauritius':'MU','Mazatlan':'MX',
-      'Melbourne':'AU','Mendoza':'AR','Menominee':'US','Merida':'MX',
-      'Metlakatla':'US','Mexico_City':'MX','Minsk':'BY','Miquelon':'PM',
-      'Moncton':'CA','Monrovia':'LR','Monterrey':'MX','Montevideo':'UY',
-      'Monticello':'US','Moscow':'RU','Nairobi':'KE','Nauru':'NR',
-      'Ndjamena':'TD','New_Salem':'US','New_York':'US','Nicosia':'CY',
-      'Niue':'NU','Nome':'US','Norfolk':'NF','Noronha':'BR','Noumea':'NC',
-      'Novokuznetsk':'RU','Novosibirsk':'RU','Nuuk':'GL','Ojinaga':'MX',
-      'Omsk':'RU','Oral':'KZ','Palau':'PW','Panama':'PA','Paramaribo':'SR',
-      'Paris':'FR','Perth':'AU','Petersburg':'US','Phoenix':'US','Pitcairn':'PN',
-      'Pontianak':'ID','Port_Moresby':'PG','Port-au-Prince':'HT',
-      'Porto_Velho':'BR','Prague':'CZ','Puerto_Rico':'PR','Punta_Arenas':'CL',
-      'Pyongyang':'KP','Qatar':'QA','Qostanay':'KZ','Qyzylorda':'KZ',
-      'Rankin_Inlet':'CA','Rarotonga':'CK','Recife':'BR','Regina':'CA',
-      'Resolute':'CA','Riga':'LV','Rio_Branco':'BR','Rio_Gallegos':'AR',
-      'Riyadh':'SA','Rome':'IT','Sakhalin':'RU','Salta':'AR','Samara':'RU',
-      'Samarkand':'UZ','San_Juan':'AR','San_Luis':'AR','Santarem':'BR',
-      'Santiago':'CL','Santo_Domingo':'DO','Sao_Paulo':'BR','Sao_Tome':'ST',
-      'Saratov':'RU','Scoresbysund':'GL','Seoul':'KR','Shanghai':'CN',
-      'Simferopol':'RU','Singapore':'SG','Sitka':'US','Sofia':'BG',
-      'Srednekolymsk':'RU','St_Johns':'CA','Stanley':'FK',
-      'Swift_Current':'CA','Sydney':'AU','Tahiti':'PF','Taipei':'TW',
-      'Tallinn':'EE','Tarawa':'KI','Tashkent':'UZ','Tbilisi':'GE',
-      'Tegucigalpa':'HN','Tehran':'IR','Tell_City':'US','Thimphu':'BT',
-      'Thule':'GL','Tijuana':'MX','Tirane':'AL','Tokyo':'JP','Tomsk':'RU',
-      'Tongatapu':'TO','Toronto':'CA','Tripoli':'LY','Tucuman':'AR',
-      'Tunis':'TN','Ulaanbaatar':'MN','Ulyanovsk':'RU','Urumqi':'CN',
-      'Ushuaia':'AR','Ust-Nera':'RU','Vancouver':'CA','Vevay':'US',
-      'Vienna':'AT','Vilnius':'LT','Vincennes':'US','Vladivostok':'RU',
-      'Volgograd':'RU','Warsaw':'PL','Whitehorse':'CA','Winamac':'US',
-      'Windhoek':'NA','Winnipeg':'CA','Yakutat':'US','Yakutsk':'RU',
-      'Yangon':'MM','Yekaterinburg':'RU','Yerevan':'AM','Zurich':'CH'
+      Adak: "US",
+      Adelaide: "AU",
+      Algiers: "DZ",
+      Almaty: "KZ",
+      Amman: "JO",
+      Anadyr: "RU",
+      Anchorage: "US",
+      Andorra: "AD",
+      Apia: "WS",
+      Aqtau: "KZ",
+      Aqtobe: "KZ",
+      Araguaina: "BR",
+      Ashgabat: "TM",
+      Astrakhan: "RU",
+      Asuncion: "PY",
+      Athens: "GR",
+      Atyrau: "KZ",
+      Auckland: "NZ",
+      Azores: "PT",
+      Baghdad: "IQ",
+      Bahia: "BR",
+      Bahia_Banderas: "MX",
+      Baku: "AZ",
+      Bangkok: "TH",
+      Barbados: "BB",
+      Barnaul: "RU",
+      Beirut: "LB",
+      Belem: "BR",
+      Belgrade: "RS",
+      Belize: "BZ",
+      Berlin: "DE",
+      Bermuda: "BM",
+      Beulah: "US",
+      Bishkek: "KG",
+      Bissau: "GW",
+      Boa_Vista: "BR",
+      Bogota: "CO",
+      Boise: "US",
+      Bougainville: "PG",
+      Brisbane: "AU",
+      Broken_Hill: "AU",
+      Brussels: "BE",
+      Bucharest: "RO",
+      Budapest: "HU",
+      Buenos_Aires: "AR",
+      Cairo: "EG",
+      Cambridge_Bay: "CA",
+      Campo_Grande: "BR",
+      Canary: "ES",
+      Cancun: "MX",
+      Cape_Verde: "CV",
+      Caracas: "VE",
+      Casablanca: "MA",
+      Catamarca: "AR",
+      Cayenne: "GF",
+      Center: "US",
+      Ceuta: "ES",
+      Chagos: "IO",
+      Chatham: "NZ",
+      Chicago: "US",
+      Chihuahua: "MX",
+      Chisinau: "MD",
+      Chita: "RU",
+      Ciudad_Juarez: "MX",
+      Colombo: "LK",
+      Cordoba: "AR",
+      Costa_Rica: "CR",
+      Coyhaique: "CL",
+      Cuiaba: "BR",
+      Damascus: "SY",
+      Danmarkshavn: "GL",
+      Darwin: "AU",
+      Dawson: "CA",
+      Dawson_Creek: "CA",
+      Denver: "US",
+      Detroit: "US",
+      Dhaka: "BD",
+      Dili: "TL",
+      Dubai: "AE",
+      Dublin: "IE",
+      Dushanbe: "TJ",
+      Easter: "CL",
+      Edmonton: "CA",
+      Efate: "VU",
+      Eirunepe: "BR",
+      El_Aaiun: "EH",
+      El_Salvador: "SV",
+      Eucla: "AU",
+      Fakaofo: "TK",
+      Famagusta: "CY",
+      Faroe: "FO",
+      Fiji: "FJ",
+      Fort_Nelson: "CA",
+      Fortaleza: "BR",
+      Galapagos: "EC",
+      Gambier: "PF",
+      Gaza: "PS",
+      Gibraltar: "GI",
+      Glace_Bay: "CA",
+      Goose_Bay: "CA",
+      Grand_Turk: "TC",
+      Guadalcanal: "SB",
+      Guam: "GU",
+      Guatemala: "GT",
+      Guayaquil: "EC",
+      Guyana: "GY",
+      Halifax: "CA",
+      Havana: "CU",
+      Hebron: "PS",
+      Helsinki: "FI",
+      Hermosillo: "MX",
+      Ho_Chi_Minh: "VN",
+      Hobart: "AU",
+      Hong_Kong: "HK",
+      Honolulu: "US",
+      Hovd: "MN",
+      Indianapolis: "US",
+      Inuvik: "CA",
+      Iqaluit: "CA",
+      Irkutsk: "RU",
+      Istanbul: "TR",
+      Jakarta: "ID",
+      Jamaica: "JM",
+      Jayapura: "ID",
+      Jerusalem: "IL",
+      Johannesburg: "ZA",
+      Juba: "SS",
+      Jujuy: "AR",
+      Juneau: "US",
+      Kabul: "AF",
+      Kaliningrad: "RU",
+      Kamchatka: "RU",
+      Kanton: "KI",
+      Karachi: "PK",
+      Kathmandu: "NP",
+      Khandyga: "RU",
+      Khartoum: "SD",
+      Kiritimati: "KI",
+      Kirov: "RU",
+      Knox: "US",
+      Kolkata: "IN",
+      Krasnoyarsk: "RU",
+      Kuching: "MY",
+      Kwajalein: "MH",
+      Kyiv: "UA",
+      La_Paz: "BO",
+      La_Rioja: "AR",
+      Lagos: "NG",
+      Lima: "PE",
+      Lindeman: "AU",
+      Lisbon: "PT",
+      London: "GB",
+      Lord_Howe: "AU",
+      Los_Angeles: "US",
+      Louisville: "US",
+      Macau: "MO",
+      Maceio: "BR",
+      Macquarie: "AU",
+      Madeira: "PT",
+      Madrid: "ES",
+      Magadan: "RU",
+      Makassar: "ID",
+      Maldives: "MV",
+      Malta: "MT",
+      Managua: "NI",
+      Manaus: "BR",
+      Manila: "PH",
+      Maputo: "MZ",
+      Marengo: "US",
+      Marquesas: "PF",
+      Martinique: "MQ",
+      Matamoros: "MX",
+      Mauritius: "MU",
+      Mazatlan: "MX",
+      Melbourne: "AU",
+      Mendoza: "AR",
+      Menominee: "US",
+      Merida: "MX",
+      Metlakatla: "US",
+      Mexico_City: "MX",
+      Minsk: "BY",
+      Miquelon: "PM",
+      Moncton: "CA",
+      Monrovia: "LR",
+      Monterrey: "MX",
+      Montevideo: "UY",
+      Monticello: "US",
+      Moscow: "RU",
+      Nairobi: "KE",
+      Nauru: "NR",
+      Ndjamena: "TD",
+      New_Salem: "US",
+      New_York: "US",
+      Nicosia: "CY",
+      Niue: "NU",
+      Nome: "US",
+      Norfolk: "NF",
+      Noronha: "BR",
+      Noumea: "NC",
+      Novokuznetsk: "RU",
+      Novosibirsk: "RU",
+      Nuuk: "GL",
+      Ojinaga: "MX",
+      Omsk: "RU",
+      Oral: "KZ",
+      Palau: "PW",
+      Panama: "PA",
+      Paramaribo: "SR",
+      Paris: "FR",
+      Perth: "AU",
+      Petersburg: "US",
+      Phoenix: "US",
+      Pitcairn: "PN",
+      Pontianak: "ID",
+      Port_Moresby: "PG",
+      "Port-au-Prince": "HT",
+      Porto_Velho: "BR",
+      Prague: "CZ",
+      Puerto_Rico: "PR",
+      Punta_Arenas: "CL",
+      Pyongyang: "KP",
+      Qatar: "QA",
+      Qostanay: "KZ",
+      Qyzylorda: "KZ",
+      Rankin_Inlet: "CA",
+      Rarotonga: "CK",
+      Recife: "BR",
+      Regina: "CA",
+      Resolute: "CA",
+      Riga: "LV",
+      Rio_Branco: "BR",
+      Rio_Gallegos: "AR",
+      Riyadh: "SA",
+      Rome: "IT",
+      Sakhalin: "RU",
+      Salta: "AR",
+      Samara: "RU",
+      Samarkand: "UZ",
+      San_Juan: "AR",
+      San_Luis: "AR",
+      Santarem: "BR",
+      Santiago: "CL",
+      Santo_Domingo: "DO",
+      Sao_Paulo: "BR",
+      Sao_Tome: "ST",
+      Saratov: "RU",
+      Scoresbysund: "GL",
+      Seoul: "KR",
+      Shanghai: "CN",
+      Simferopol: "RU",
+      Singapore: "SG",
+      Sitka: "US",
+      Sofia: "BG",
+      Srednekolymsk: "RU",
+      St_Johns: "CA",
+      Stanley: "FK",
+      Swift_Current: "CA",
+      Sydney: "AU",
+      Tahiti: "PF",
+      Taipei: "TW",
+      Tallinn: "EE",
+      Tarawa: "KI",
+      Tashkent: "UZ",
+      Tbilisi: "GE",
+      Tegucigalpa: "HN",
+      Tehran: "IR",
+      Tell_City: "US",
+      Thimphu: "BT",
+      Thule: "GL",
+      Tijuana: "MX",
+      Tirane: "AL",
+      Tokyo: "JP",
+      Tomsk: "RU",
+      Tongatapu: "TO",
+      Toronto: "CA",
+      Tripoli: "LY",
+      Tucuman: "AR",
+      Tunis: "TN",
+      Ulaanbaatar: "MN",
+      Ulyanovsk: "RU",
+      Urumqi: "CN",
+      Ushuaia: "AR",
+      "Ust-Nera": "RU",
+      Vancouver: "CA",
+      Vevay: "US",
+      Vienna: "AT",
+      Vilnius: "LT",
+      Vincennes: "US",
+      Vladivostok: "RU",
+      Volgograd: "RU",
+      Warsaw: "PL",
+      Whitehorse: "CA",
+      Winamac: "US",
+      Windhoek: "NA",
+      Winnipeg: "CA",
+      Yakutat: "US",
+      Yakutsk: "RU",
+      Yangon: "MM",
+      Yekaterinburg: "RU",
+      Yerevan: "AM",
+      Zurich: "CH",
     };
     var code = tzCity[city];
     if (code) {
@@ -409,7 +796,7 @@ function getCountryFromTimezone() {
         if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
       }
     }
-  } catch(e) {}
+  } catch (e) {}
   return null;
 }
 
@@ -420,9 +807,11 @@ function getDefaultPhoneCode() {
   if (c) return c;
   // 2. Try navigator.languages (user's ordered preference list)
   try {
-    var langs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+    var langs = navigator.languages || [
+      navigator.language || navigator.userLanguage || "",
+    ];
     for (var l = 0; l < langs.length; l++) {
-      var parts = langs[l].split('-');
+      var parts = langs[l].split("-");
       for (var p = 0; p < parts.length; p++) {
         if (parts[p].length === 2 && /^[A-Za-z]{2}$/.test(parts[p])) {
           var code = parts[p].toUpperCase();
@@ -432,7 +821,7 @@ function getDefaultPhoneCode() {
         }
       }
     }
-  } catch(e) {}
+  } catch (e) {}
   // 3. Try from timezone (300+ IANA zones mapped to country codes)
   c = getCountryFromTimezone();
   if (c) return c;
@@ -442,48 +831,74 @@ function getDefaultPhoneCode() {
 
 function updatePhoneMaxLength() {
   // Try cert fields first, fall back to simplified fields
-  var el = document.getElementById('cert-phone') || document.getElementById('sinfo-phone');
-  var code = document.getElementById('cert-phonecode') || document.getElementById('sinfo-phonecode');
+  var el =
+    document.getElementById("cert-phone") ||
+    document.getElementById("sinfo-phone");
+  var code =
+    document.getElementById("cert-phonecode") ||
+    document.getElementById("sinfo-phonecode");
   if (!el || !code) return;
   var dial = code.value;
   var maxLen = 15; // ITU max
   for (var i = 0; i < COUNTRY_CODES.length; i++) {
-    if (COUNTRY_CODES[i].dial === dial) { maxLen = COUNTRY_CODES[i].len; break; }
+    if (COUNTRY_CODES[i].dial === dial) {
+      maxLen = COUNTRY_CODES[i].len;
+      break;
+    }
   }
   el.maxLength = maxLen;
   if (el.value.length > maxLen) el.value = el.value.slice(0, maxLen);
 }
 
 function validateSocialInput(el) {
-  var warn = document.getElementById(el.id + '-warn');
-  if (!el.value) { if (warn) warn.style.display = 'none'; return; }
+  var warn = document.getElementById(el.id + "-warn");
+  if (!el.value) {
+    if (warn) warn.style.display = "none";
+    return;
+  }
   var ok = /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(el.value);
-  if (warn) warn.style.display = ok ? 'none' : 'block';
+  if (warn) warn.style.display = ok ? "none" : "block";
 }
 
 function prefixHttps(el) {
-  if (!el.value || !/^https?:\/\//i.test(el.value)) { el.value = 'https://'; }
+  if (!el.value || !/^https?:\/\//i.test(el.value)) {
+    el.value = "https://";
+  }
   el.setSelectionRange(el.value.length, el.value.length);
 }
 
 // ── Progress bar ──
 function showProgress() {
-  var el = document.getElementById('simpleProgressBar');
-  if (el) el.style.display = '';
+  var el = document.getElementById("simpleProgressBar");
+  if (el) el.style.display = "";
 }
 function hideProgress() {
-  var el = document.getElementById('simpleProgressBar');
-  if (el) { el.style.display = 'none'; }
+  var el = document.getElementById("simpleProgressBar");
+  if (el) {
+    el.style.display = "none";
+  }
 }
 
 // ── Clear data ──
 function clearSimpleData() {
-  if (!confirm(__('simple.clear_confirm', 'Clear all data? Your current progress will be lost.'))) return;
-  localStorage.removeItem('simpleUserInfo');
-  localStorage.removeItem('simpleFileData');
+  if (
+    !confirm(
+      __(
+        "simple.clear_confirm",
+        "Clear all data? Your current progress will be lost.",
+      ),
+    )
+  )
+    return;
+  localStorage.removeItem("simpleUserInfo");
+  localStorage.removeItem("simpleFileData");
   if (simpleResults) {
-    Object.keys(simpleResults).forEach(function(k) {
-      if (k.indexOf('Url') > 0) { try { URL.revokeObjectURL(simpleResults[k]); } catch(e) {} }
+    Object.keys(simpleResults).forEach(function (k) {
+      if (k.indexOf("Url") > 0) {
+        try {
+          URL.revokeObjectURL(simpleResults[k]);
+        } catch (e) {}
+      }
     });
   }
   initSimplified();
@@ -491,44 +906,56 @@ function clearSimpleData() {
 
 // ── Lightbox ──
 function openLightbox(src) {
-  var img = document.getElementById('lightboxImg');
-  var box = document.getElementById('lightbox');
-  if (img && box) { img.src = src; box.style.display = ''; }
+  var img = document.getElementById("lightboxImg");
+  var box = document.getElementById("lightbox");
+  if (img && box) {
+    img.src = src;
+    box.style.display = "";
+  }
 }
 function closeLightbox() {
-  var box = document.getElementById('lightbox');
-  if (box) box.style.display = 'none';
+  var box = document.getElementById("lightbox");
+  if (box) box.style.display = "none";
 }
 
 // ── C2PA link validation ──
 function validateC2paLink(el) {
-  var warn = document.getElementById(el.id + '-warn');
-  if (!el.value) { if (warn) warn.style.display = 'none'; return; }
+  var warn = document.getElementById(el.id + "-warn");
+  if (!el.value) {
+    if (warn) warn.style.display = "none";
+    return;
+  }
   var ok = /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(el.value);
-  if (warn) warn.style.display = ok ? 'none' : 'block';
+  if (warn) warn.style.display = ok ? "none" : "block";
 }
 
 function validateUrlInput(el) {
-  var warn = document.getElementById(el.id + '-warn');
-  if (!el.value) { if (warn) warn.style.display = 'none'; return; }
+  var warn = document.getElementById(el.id + "-warn");
+  if (!el.value) {
+    if (warn) warn.style.display = "none";
+    return;
+  }
   var ok = /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(el.value);
-  if (warn) warn.style.display = ok ? 'none' : 'block';
+  if (warn) warn.style.display = ok ? "none" : "block";
 }
 
 function validateEmailInput(el) {
-  var warn = document.getElementById(el.id + '-warn');
-  if (!el.value) { if (warn) warn.style.display = 'none'; return; }
+  var warn = document.getElementById(el.id + "-warn");
+  if (!el.value) {
+    if (warn) warn.style.display = "none";
+    return;
+  }
   var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value);
-  if (warn) warn.style.display = ok ? 'none' : 'block';
+  if (warn) warn.style.display = ok ? "none" : "block";
 }
 
 function validatePhoneInput(el) {
-  var warn = document.getElementById(el.id + '-warn');
+  var warn = document.getElementById(el.id + "-warn");
   if (/[^\d]/.test(el.value)) {
-    el.value = el.value.replace(/\D/g, '');
-    if (warn) warn.style.display = 'block';
+    el.value = el.value.replace(/\D/g, "");
+    if (warn) warn.style.display = "block";
   } else {
-    if (warn) warn.style.display = 'none';
+    if (warn) warn.style.display = "none";
   }
   if (el.maxLength && el.value.length > el.maxLength) {
     el.value = el.value.slice(0, el.maxLength);
@@ -536,14 +963,26 @@ function validatePhoneInput(el) {
 }
 
 function phoneCodeOptionsHtml(selected) {
-  var html = '';
+  var html = "";
   // Placeholder when no country auto-detected
   if (!selected) {
-    html += '<option value="" disabled selected style="color:var(--text-muted)">—— ' + __('simple.select_country', 'Select country') + ' ——</option>';
+    html +=
+      '<option value="" disabled selected style="color:var(--text-muted)">—— ' +
+      __("simple.select_country", "Select country") +
+      " ——</option>";
   }
   for (var i = 0; i < COUNTRY_CODES.length; i++) {
     var c = COUNTRY_CODES[i];
-    html += '<option value="' + c.dial + '"' + (c.dial === selected ? ' selected' : '') + '>' + c.code + ' ' + c.dial + '</option>';
+    html +=
+      '<option value="' +
+      c.dial +
+      '"' +
+      (c.dial === selected ? " selected" : "") +
+      ">" +
+      c.code +
+      " " +
+      c.dial +
+      "</option>";
   }
   return html;
 }
@@ -559,173 +998,378 @@ function renderUpload(body) {
     if (detected) simpleUserInfo.phoneCode = detected.dial;
   }
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.upload_title') + '</h2><p>' + __('simple.upload_desc') + '</p>' +
+    '<div class="simple-card"><h2>' +
+    __("simple.upload_title") +
+    "</h2><p>" +
+    __("simple.upload_desc") +
+    "</p>" +
     '<div class="simple-upload-zone" id="simpleDropZone" onclick="document.getElementById(\'simpleFileInput\').click()">' +
     '<div class="dz-icon">📂</div>' +
-    '<div class="dz-text">' + __('simple.drop_text') + '</div></div>' +
+    '<div class="dz-text">' +
+    __("simple.drop_text") +
+    "</div></div>" +
     '<input type="file" id="simpleFileInput" style="display:none" accept="image/*,video/*,.pdf,.mp3,.wav,.ogg,.aac,.wma,.flac,.m4a,.opus,.webm,.aiff,.au,.amr,.mid,.midi" onchange="simpleFileSelected(this)">' +
     '<div id="simpleFileInfo"></div>' +
     '<p style="font-size:0.72rem;color:var(--text-muted);margin:8px 0 0;padding:6px 8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.upload_size_note', '💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.') + '</p>' +
+    __(
+      "simple.upload_size_note",
+      "💡 For watermarking, use a large cover image (e.g. 1920×1080) so there is enough capacity to embed a secret image.",
+    ) +
+    "</p>" +
     '<p style="font-size:0.7rem;color:var(--danger);margin:6px 0 0;padding:4px 8px;background:rgba(220,53,69,.08);border-radius:6px">' +
-    __('simple.usage_warning', '⚠️ This tool is for lawful use only. Uploading illegal or harmful content is strictly prohibited. All processing is local — nothing is stored or sent to any server.') + '</p>' +
+    __(
+      "simple.usage_warning",
+      "⚠️ This tool is for lawful use only. Uploading illegal or harmful content is strictly prohibited. All processing is local — nothing is stored or sent to any server.",
+    ) +
+    "</p>" +
     '<div class="simple-info-section" style="margin-top:20px;text-align:left">' +
-    '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' + __('simple.info_title', 'Owner Information') + '</h3>' +
-    '<div class="form-group"><label>' + __('simple.info_name', 'Full Name') + ' <span style="color:var(--danger)">*</span></label>' +
-    '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' + __('simple.info_name_ph', 'e.g. John Doe') + '" value="' + escHtml(simpleUserInfo.name) + '" required maxlength="25"></div>' +
-    '<div class="form-group"><label>' + __('simple.info_email', 'Email') + ' <span style="color:var(--danger)">*</span></label>' +
-    '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' + __('simple.info_email_ph', 'e.g. john@example.com') + '" value="' + escHtml(simpleUserInfo.email) + '" required maxlength="20" oninput="validateEmailInput(this)">' +
-    '<span id="sinfo-email-warn" class="simple-field-warn" style="display:none">' + __('simple.email_invalid', 'Please enter a valid email address') + '</span></div>' +
-    '<div class="form-group"><label>' + __('simple.info_phone', 'Phone') + ' <span style="color:var(--danger)">*</span></label>' +
+    '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' +
+    __("simple.info_title", "Owner Information") +
+    "</h3>" +
+    '<div class="form-group"><label>' +
+    __("simple.info_name", "Full Name") +
+    ' <span style="color:var(--danger)">*</span></label>' +
+    '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' +
+    __("simple.info_name_ph", "e.g. John Doe") +
+    '" value="' +
+    escHtml(simpleUserInfo.name) +
+    '" required maxlength="25"></div>' +
+    '<div class="form-group"><label>' +
+    __("simple.info_email", "Email") +
+    ' <span style="color:var(--danger)">*</span></label>' +
+    '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' +
+    __("simple.info_email_ph", "e.g. john@example.com") +
+    '" value="' +
+    escHtml(simpleUserInfo.email) +
+    '" required maxlength="20" oninput="validateEmailInput(this)">' +
+    '<span id="sinfo-email-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.email_invalid", "Please enter a valid email address") +
+    "</span></div>" +
+    '<div class="form-group"><label>' +
+    __("simple.info_phone", "Phone") +
+    ' <span style="color:var(--danger)">*</span></label>' +
     '<div class="simple-phone-group">' +
-    '<select id="sinfo-phonecode" onchange="updatePhoneMaxLength()">' + phoneCodeOptionsHtml(simpleUserInfo.phoneCode) + '</select>' +
-    '<input type="tel" id="sinfo-phone" class="simple-info-field" maxlength="15" placeholder="' + __('simple.info_phone_ph', 'e.g. 5xx xxx xxxx') + '" value="' + escHtml(simpleUserInfo.phone) + '" required oninput="validatePhoneInput(this)">' +
-    '</div>' +
-    '<span id="sinfo-phone-warn" class="simple-field-warn" style="display:none">' + __('simple.phone_digits_only', 'Please enter numbers only') + '</span></div>' +
-    '<div class="form-group"><label>' + __('simple.info_website', 'Website') + ' <span style="color:var(--danger)">*</span></label>' +
-    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' + __('simple.info_website_ph', 'e.g. https://example.com') + '" value="' + escHtml(simpleUserInfo.website || 'https://') + '" required maxlength="30" oninput="validateUrlInput(this)" onfocus="prefixHttps(this)">' +
-    '<span id="sinfo-website-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL (e.g. https://example.com)') + '</span></div>' +
-    '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' + __('simple.info_social', 'Social Links') + '</h4>' +
+    '<select id="sinfo-phonecode" onchange="updatePhoneMaxLength()">' +
+    phoneCodeOptionsHtml(simpleUserInfo.phoneCode) +
+    "</select>" +
+    '<input type="tel" id="sinfo-phone" class="simple-info-field" maxlength="15" placeholder="' +
+    __("simple.info_phone_ph", "e.g. 5xx xxx xxxx") +
+    '" value="' +
+    escHtml(simpleUserInfo.phone) +
+    '" required oninput="validatePhoneInput(this)">' +
+    "</div>" +
+    '<span id="sinfo-phone-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.phone_digits_only", "Please enter numbers only") +
+    "</span></div>" +
+    '<div class="form-group"><label>' +
+    __("simple.info_website", "Website") +
+    ' <span style="color:var(--danger)">*</span></label>' +
+    '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' +
+    __("simple.info_website_ph", "e.g. https://example.com") +
+    '" value="' +
+    escHtml(simpleUserInfo.website || "https://") +
+    '" required maxlength="30" oninput="validateUrlInput(this)" onfocus="prefixHttps(this)">' +
+    '<span id="sinfo-website-warn" class="simple-field-warn" style="display:none">' +
+    __(
+      "simple.url_invalid",
+      "Please enter a valid URL (e.g. https://example.com)",
+    ) +
+    "</span></div>" +
+    '<h4 style="font-size:0.9rem;margin:14px 0 8px;color:var(--text-muted)">' +
+    __("simple.info_social", "Social Links") +
+    "</h4>" +
     '<div class="simple-social-grid">' +
-    '<div><input type="url" id="sinfo-tiktok" placeholder="' + __('simple.ph_tiktok', 'TikTok URL') + '" value="' + escHtml(socialVal.tiktok || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-tiktok-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '<div><input type="url" id="sinfo-facebook" placeholder="' + __('simple.ph_facebook', 'Facebook URL') + '" value="' + escHtml(socialVal.facebook || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-facebook-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '<div><input type="url" id="sinfo-instagram" placeholder="' + __('simple.ph_instagram', 'Instagram URL') + '" value="' + escHtml(socialVal.instagram || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-instagram-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '<div><input type="url" id="sinfo-youtube" placeholder="' + __('simple.ph_youtube', 'YouTube URL') + '" value="' + escHtml(socialVal.youtube || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-youtube-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '</div>' +
+    '<div><input type="url" id="sinfo-tiktok" placeholder="' +
+    __("simple.ph_tiktok", "TikTok URL") +
+    '" value="' +
+    escHtml(socialVal.tiktok || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-tiktok-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" id="sinfo-facebook" placeholder="' +
+    __("simple.ph_facebook", "Facebook URL") +
+    '" value="' +
+    escHtml(socialVal.facebook || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-facebook-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" id="sinfo-instagram" placeholder="' +
+    __("simple.ph_instagram", "Instagram URL") +
+    '" value="' +
+    escHtml(socialVal.instagram || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-instagram-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" id="sinfo-youtube" placeholder="' +
+    __("simple.ph_youtube", "YouTube URL") +
+    '" value="' +
+    escHtml(socialVal.youtube || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-youtube-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    "</div>" +
     '<label class="simple-artist-check" style="display:flex;align-items:center;gap:8px;margin:14px 0 8px;cursor:pointer;font-size:0.9rem">' +
-    '<input type="checkbox" id="sinfo-isArtist"' + (simpleUserInfo.isArtist ? ' checked' : '') + ' onchange="toggleArtistFields()"> ' +
-    __('simple.info_artist', 'I am an artist / musician') +
-    '</label>' +
-    '<div id="sinfo-artist-fields" style="display:' + (simpleUserInfo.isArtist ? '' : 'none') + '">' +
-    '<h4 style="font-size:0.9rem;margin:0 0 8px;color:var(--text-muted)">' + __('simple.info_music', 'Music Platforms') + '</h4>' +
+    '<input type="checkbox" id="sinfo-isArtist"' +
+    (simpleUserInfo.isArtist ? " checked" : "") +
+    ' onchange="toggleArtistFields()"> ' +
+    __("simple.info_artist", "I am an artist / musician") +
+    "</label>" +
+    '<div id="sinfo-artist-fields" style="display:' +
+    (simpleUserInfo.isArtist ? "" : "none") +
+    '">' +
+    '<h4 style="font-size:0.9rem;margin:0 0 8px;color:var(--text-muted)">' +
+    __("simple.info_music", "Music Platforms") +
+    "</h4>" +
     '<div class="simple-social-grid">' +
-    '<div><input type="url" id="sinfo-spotify" placeholder="' + __('simple.ph_spotify', 'Spotify URL') + '" value="' + escHtml(musicVal.spotify || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-spotify-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '<div><input type="url" id="sinfo-applemusic" placeholder="' + __('simple.ph_applemusic', 'Apple Music URL') + '" value="' + escHtml(musicVal.appleMusic || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-applemusic-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '<div><input type="url" id="sinfo-ytmusic" placeholder="' + __('simple.ph_ytmusic', 'YouTube Music URL') + '" value="' + escHtml(musicVal.youtubeMusic || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-ytmusic-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '<div><input type="url" id="sinfo-soundcloud" placeholder="' + __('simple.ph_soundcloud', 'SoundCloud URL') + '" value="' + escHtml(musicVal.soundcloud || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-soundcloud-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '<div><input type="url" id="sinfo-bandcamp" placeholder="' + __('simple.ph_bandcamp', 'Bandcamp URL') + '" value="' + escHtml(musicVal.bandcamp || '') + '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-bandcamp-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '</div></div></div></div>';
+    '<div><input type="url" id="sinfo-spotify" placeholder="' +
+    __("simple.ph_spotify", "Spotify URL") +
+    '" value="' +
+    escHtml(musicVal.spotify || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-spotify-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" id="sinfo-applemusic" placeholder="' +
+    __("simple.ph_applemusic", "Apple Music URL") +
+    '" value="' +
+    escHtml(musicVal.appleMusic || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-applemusic-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" id="sinfo-ytmusic" placeholder="' +
+    __("simple.ph_ytmusic", "YouTube Music URL") +
+    '" value="' +
+    escHtml(musicVal.youtubeMusic || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-ytmusic-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" id="sinfo-soundcloud" placeholder="' +
+    __("simple.ph_soundcloud", "SoundCloud URL") +
+    '" value="' +
+    escHtml(musicVal.soundcloud || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-soundcloud-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" id="sinfo-bandcamp" placeholder="' +
+    __("simple.ph_bandcamp", "Bandcamp URL") +
+    '" value="' +
+    escHtml(musicVal.bandcamp || "") +
+    '" maxlength="80" oninput="validateSocialInput(this)"><span id="sinfo-bandcamp-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    "</div></div></div></div>";
   setupSimpleDropZone();
   if (simpleFile) restoreUploadFileInfo();
 }
 
 function toggleArtistFields() {
-  var cb = document.getElementById('sinfo-isArtist');
-  var fields = document.getElementById('sinfo-artist-fields');
-  if (fields) fields.style.display = cb && cb.checked ? '' : 'none';
+  var cb = document.getElementById("sinfo-isArtist");
+  var fields = document.getElementById("sinfo-artist-fields");
+  if (fields) fields.style.display = cb && cb.checked ? "" : "none";
 }
 
 function saveSimpleUserInfo() {
-  simpleUserInfo.name = (document.getElementById('sinfo-name') || {}).value || '';
-  simpleUserInfo.email = (document.getElementById('sinfo-email') || {}).value || '';
-  simpleUserInfo.phoneCode = (document.getElementById('sinfo-phonecode') || {}).value || '';
-  var phone = (document.getElementById('sinfo-phone') || {}).value || '';
-  simpleUserInfo.phone = phone.replace(/\D/g, '').slice(0, 15);
-  simpleUserInfo.website = (document.getElementById('sinfo-website') || {}).value || '';
+  simpleUserInfo.name =
+    (document.getElementById("sinfo-name") || {}).value || "";
+  simpleUserInfo.email =
+    (document.getElementById("sinfo-email") || {}).value || "";
+  simpleUserInfo.phoneCode =
+    (document.getElementById("sinfo-phonecode") || {}).value || "";
+  var phone = (document.getElementById("sinfo-phone") || {}).value || "";
+  simpleUserInfo.phone = phone.replace(/\D/g, "").slice(0, 15);
+  simpleUserInfo.website =
+    (document.getElementById("sinfo-website") || {}).value || "";
   simpleUserInfo.social = {
-    tiktok: (document.getElementById('sinfo-tiktok') || {}).value || '',
-    facebook: (document.getElementById('sinfo-facebook') || {}).value || '',
-    instagram: (document.getElementById('sinfo-instagram') || {}).value || '',
-    youtube: (document.getElementById('sinfo-youtube') || {}).value || ''
+    tiktok: (document.getElementById("sinfo-tiktok") || {}).value || "",
+    facebook: (document.getElementById("sinfo-facebook") || {}).value || "",
+    instagram: (document.getElementById("sinfo-instagram") || {}).value || "",
+    youtube: (document.getElementById("sinfo-youtube") || {}).value || "",
   };
-  var cb = document.getElementById('sinfo-isArtist');
+  var cb = document.getElementById("sinfo-isArtist");
   simpleUserInfo.isArtist = cb ? cb.checked : false;
   simpleUserInfo.music = {
-    spotify: (document.getElementById('sinfo-spotify') || {}).value || '',
-    appleMusic: (document.getElementById('sinfo-applemusic') || {}).value || '',
-    youtubeMusic: (document.getElementById('sinfo-ytmusic') || {}).value || '',
-    soundcloud: (document.getElementById('sinfo-soundcloud') || {}).value || '',
-    bandcamp: (document.getElementById('sinfo-bandcamp') || {}).value || ''
+    spotify: (document.getElementById("sinfo-spotify") || {}).value || "",
+    appleMusic: (document.getElementById("sinfo-applemusic") || {}).value || "",
+    youtubeMusic: (document.getElementById("sinfo-ytmusic") || {}).value || "",
+    soundcloud: (document.getElementById("sinfo-soundcloud") || {}).value || "",
+    bandcamp: (document.getElementById("sinfo-bandcamp") || {}).value || "",
   };
 }
 
 function setupSimpleDropZone() {
-  var dz = document.getElementById('simpleDropZone');
+  var dz = document.getElementById("simpleDropZone");
   if (!dz) return;
-  dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', function() { dz.classList.remove('drag-over'); });
-  dz.addEventListener('drop', function(e) {
-    e.preventDefault(); dz.classList.remove('drag-over');
-    if (e.dataTransfer.files.length) simpleFileSelected({ files: e.dataTransfer.files });
+  dz.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    dz.classList.add("drag-over");
+  });
+  dz.addEventListener("dragleave", function () {
+    dz.classList.remove("drag-over");
+  });
+  dz.addEventListener("drop", function (e) {
+    e.preventDefault();
+    dz.classList.remove("drag-over");
+    if (e.dataTransfer.files.length)
+      simpleFileSelected({ files: e.dataTransfer.files });
   });
 }
 
 function getSimpleTypeLabel(type) {
   var labels = {
-    image: __('simple.type_image', 'image'),
-    audio: __('simple.type_audio', 'audio'),
-    video: __('simple.type_video', 'video'),
-    document: __('simple.type_document', 'document'),
-    other: __('simple.type_other', 'other')
+    image: __("simple.type_image", "image"),
+    audio: __("simple.type_audio", "audio"),
+    video: __("simple.type_video", "video"),
+    document: __("simple.type_document", "document"),
+    other: __("simple.type_other", "other"),
   };
   return labels[type] || type;
 }
 
 function restoreUploadFileInfo() {
-  var dz = document.getElementById('simpleDropZone');
-  var info = document.getElementById('simpleFileInfo');
+  var dz = document.getElementById("simpleDropZone");
+  var info = document.getElementById("simpleFileInfo");
   if (!dz || !info || !simpleFile) return;
-  dz.classList.add('has-file');
-  var icon = { image: '🖼️', audio: '🎵', video: '🎬', document: '📄', other: '📁' }[simpleType] || '📁';
-  info.innerHTML = '<div class="simple-file-info"><span class="simple-file-icon">' + icon + '</span>' +
-    '<div><strong>' + escapeHtml(simpleFile.name) + '</strong><br>' + formatSize(simpleFile.size) +
-    ' <span class="badge badge-muted">' + getSimpleTypeLabel(simpleType) + '</span></div></div>';
+  dz.classList.add("has-file");
+  var icon =
+    { image: "🖼️", audio: "🎵", video: "🎬", document: "📄", other: "📁" }[
+      simpleType
+    ] || "📁";
+  info.innerHTML =
+    '<div class="simple-file-info"><span class="simple-file-icon">' +
+    icon +
+    "</span>" +
+    "<div><strong>" +
+    escapeHtml(simpleFile.name) +
+    "</strong><br>" +
+    formatSize(simpleFile.size) +
+    ' <span class="badge badge-muted">' +
+    getSimpleTypeLabel(simpleType) +
+    "</span></div></div>";
 }
 
 async function simpleFileSelected(input) {
   var file = input.files ? input.files[0] : input;
   if (!file) return;
   if (isDangerousFile(file)) {
-    alert(__('shared.dangerous_file', 'This file type is not allowed for security reasons.'));
-    if (input && input.tagName === 'INPUT') { input.value = ''; }
+    alert(
+      __(
+        "shared.dangerous_file",
+        "This file type is not allowed for security reasons.",
+      ),
+    );
+    if (input && input.tagName === "INPUT") {
+      input.value = "";
+    }
     return;
   }
   if (!isEnglishFilename(file.name)) {
-    alert(__('shared.english_filename', 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.') || 'File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.');
-    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    alert(
+      __(
+        "shared.english_filename",
+        "File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.",
+      ) ||
+        "File name must use English characters only (A-Z, 0-9, hyphens, underscores, dots). Please rename the file and try again.",
+    );
+    if (input && input.tagName === "INPUT") {
+      try {
+        input.value = "";
+      } catch (e) {}
+    }
     return;
   }
-  var acceptEl = document.getElementById('simpleFileInput');
-  if (acceptEl && acceptEl.getAttribute('accept') && !matchesAccept(file, acceptEl.getAttribute('accept'))) {
-    alert(__('shared.wrong_type', 'Please select a valid file type for this tool.'));
-    if (input && input.tagName === 'INPUT') { input.value = ''; }
+  var acceptEl = document.getElementById("simpleFileInput");
+  if (
+    acceptEl &&
+    acceptEl.getAttribute("accept") &&
+    !matchesAccept(file, acceptEl.getAttribute("accept"))
+  ) {
+    alert(
+      __("shared.wrong_type", "Please select a valid file type for this tool."),
+    );
+    if (input && input.tagName === "INPUT") {
+      input.value = "";
+    }
     return;
   }
   var magicOk = await matchesMagicBytes(file);
   if (!magicOk) {
-    alert(__('shared.corrupt_file', 'This file appears to be corrupted or has an incorrect format.') || 'This file appears to be corrupted or has an incorrect format.');
-    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    alert(
+      __(
+        "shared.corrupt_file",
+        "This file appears to be corrupted or has an incorrect format.",
+      ) || "This file appears to be corrupted or has an incorrect format.",
+    );
+    if (input && input.tagName === "INPUT") {
+      try {
+        input.value = "";
+      } catch (e) {}
+    }
     return;
   }
   var dangerous = await checkDangerousContent(file);
   if (dangerous) {
-    alert(__('shared.dangerous_content', 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.') || 'This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.');
-    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    alert(
+      __(
+        "shared.dangerous_content",
+        "This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.",
+      ) ||
+        "This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.",
+    );
+    if (input && input.tagName === "INPUT") {
+      try {
+        input.value = "";
+      } catch (e) {}
+    }
     return;
   }
   var structOk = await checkFileStructure(file);
   if (!structOk) {
-    alert(__('shared.bad_structure', 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.') || 'This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.');
-    if (input && input.tagName === 'INPUT') { try { input.value = ''; } catch(e) {} }
+    alert(
+      __(
+        "shared.bad_structure",
+        "This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.",
+      ) ||
+        "This file appears to have suspicious data appended after its valid image content. Please re-export the file from a clean image editor.",
+    );
+    if (input && input.tagName === "INPUT") {
+      try {
+        input.value = "";
+      } catch (e) {}
+    }
     return;
   }
   simpleFile = file;
   var type = detectFileType(file);
-  var dz = document.getElementById('simpleDropZone');
-  var info = document.getElementById('simpleFileInfo');
-  dz.classList.add('has-file');
-  var icon = { image: '🖼️', audio: '🎵', video: '🎬', document: '📄', other: '📁' }[type] || '📁';
-  info.innerHTML = '<div class="simple-file-info"><span class="simple-file-icon">' + icon + '</span>' +
-    '<div><strong>' + escapeHtml(file.name) + '</strong><br>' + formatSize(file.size) +
-    ' <span class="badge badge-muted">' + getSimpleTypeLabel(type) + '</span></div></div>';
+  var dz = document.getElementById("simpleDropZone");
+  var info = document.getElementById("simpleFileInfo");
+  dz.classList.add("has-file");
+  var icon =
+    { image: "🖼️", audio: "🎵", video: "🎬", document: "📄", other: "📁" }[
+      type
+    ] || "📁";
+  info.innerHTML =
+    '<div class="simple-file-info"><span class="simple-file-icon">' +
+    icon +
+    "</span>" +
+    "<div><strong>" +
+    escapeHtml(file.name) +
+    "</strong><br>" +
+    formatSize(file.size) +
+    ' <span class="badge badge-muted">' +
+    getSimpleTypeLabel(type) +
+    "</span></div></div>";
   simpleType = type;
   // Read file buffer
   var reader = new FileReader();
-  reader.onload = function(e) { simpleBuf = e.target.result; };
+  reader.onload = function (e) {
+    simpleBuf = e.target.result;
+  };
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
-  if (type === 'image') {
-    simpleSteps = [{ id: 'upload', label: __('simple.step_upload', 'Upload') }, { id: 'ai-question', label: __('simple.step_type', 'Type') }];
+  if (type === "image") {
+    simpleSteps = [
+      { id: "upload", label: __("simple.step_upload", "Upload") },
+      { id: "ai-question", label: __("simple.step_type", "Type") },
+    ];
   } else {
     simpleSteps = buildSteps(type, false);
   }
@@ -736,222 +1380,349 @@ async function simpleFileSelected(input) {
 
 function renderAiQuestion(body) {
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.ai_title') + '</h2><p>' + __('simple.ai_desc') + '</p>' +
+    '<div class="simple-card"><h2>' +
+    __("simple.ai_title") +
+    "</h2><p>" +
+    __("simple.ai_desc") +
+    "</p>" +
     '<div class="simple-ai-options">' +
-    '<div class="simple-ai-card" onclick="chooseAi(false)"><span class="ai-icon">📸</span><h3>' + __('simple.ai_regular') + '</h3><p>' + __('simple.ai_regular_desc') + '</p></div>' +
-    '<div class="simple-ai-card" onclick="chooseAi(true)"><span class="ai-icon">🤖</span><h3>' + __('simple.ai_generated') + '</h3><p>' + __('simple.ai_generated_desc') + '</p></div>' +
-    '</div></div>';
+    '<div class="simple-ai-card" onclick="chooseAi(false)"><span class="ai-icon">📸</span><h3>' +
+    __("simple.ai_regular") +
+    "</h3><p>" +
+    __("simple.ai_regular_desc") +
+    "</p></div>" +
+    '<div class="simple-ai-card" onclick="chooseAi(true)"><span class="ai-icon">🤖</span><h3>' +
+    __("simple.ai_generated") +
+    "</h3><p>" +
+    __("simple.ai_generated_desc") +
+    "</p></div>" +
+    "</div></div>";
 }
 
 function chooseAi(isAI) {
   simpleIsAI = isAI;
-  simpleSteps = buildSteps('image', isAI);
-  simpleStep = simpleSteps.findIndex(function(s) { return s.id === 'fingerprint'; });
+  simpleSteps = buildSteps("image", isAI);
+  simpleStep = simpleSteps.findIndex(function (s) {
+    return s.id === "fingerprint";
+  });
   renderStep();
 }
 
 function renderC2paStep(body) {
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.c2pa_title') + '</h2><p>' + __('simple.c2pa_desc') + '</p>' +
+    '<div class="simple-card"><h2>' +
+    __("simple.c2pa_title") +
+    "</h2><p>" +
+    __("simple.c2pa_desc") +
+    "</p>" +
     '<div id="sc2pa-content" style="text-align:left">' +
     // Content type cards
-    '<div class="form-group"><span>' + __('c2pa.content_type_label') + '</span>' +
+    '<div class="form-group"><span>' +
+    __("c2pa.content_type_label") +
+    "</span>" +
     '<div id="sc2pa-write-types">' +
     '<div class="c2pa-type-card" data-form-type="create">' +
-      '<label class="c2pa-type-header" for="sc2pa-create">' +
-        '<input type="checkbox" id="sc2pa-create" value="create">' +
-        '<span class="c2pa-type-name">' + __('c2pa.type_digital') + '</span></label>' +
-      '<div class="c2pa-type-fields">' +
-        '<input type="text" class="sc2pa-field" data-field="title" data-type="create" placeholder="' + __('c2pa.title_label') + '">' +
-        '<input type="text" class="sc2pa-field" data-field="author" data-type="create" placeholder="' + __('c2pa.author_label') + '">' +
-      '</div></div>' +
+    '<label class="c2pa-type-header" for="sc2pa-create">' +
+    '<input type="checkbox" id="sc2pa-create" value="create">' +
+    '<span class="c2pa-type-name">' +
+    __("c2pa.type_digital") +
+    "</span></label>" +
+    '<div class="c2pa-type-fields">' +
+    '<input type="text" class="sc2pa-field" data-field="title" data-type="create" placeholder="' +
+    __("c2pa.title_label") +
+    '">' +
+    '<input type="text" class="sc2pa-field" data-field="author" data-type="create" placeholder="' +
+    __("c2pa.author_label") +
+    '">' +
+    "</div></div>" +
     '<div class="c2pa-type-card" data-form-type="edit">' +
-      '<label class="c2pa-type-header" for="sc2pa-edit">' +
-        '<input type="checkbox" id="sc2pa-edit" value="edit">' +
-        '<span class="c2pa-type-name">' + __('c2pa.type_edited') + '</span></label>' +
-      '<div class="c2pa-type-fields">' +
-        '<input type="text" class="sc2pa-field" data-field="title" data-type="edit" placeholder="' + __('c2pa.title_label') + '">' +
-        '<input type="text" class="sc2pa-field" data-field="author" data-type="edit" placeholder="' + __('c2pa.author_label') + '">' +
-      '</div></div>' +
+    '<label class="c2pa-type-header" for="sc2pa-edit">' +
+    '<input type="checkbox" id="sc2pa-edit" value="edit">' +
+    '<span class="c2pa-type-name">' +
+    __("c2pa.type_edited") +
+    "</span></label>" +
+    '<div class="c2pa-type-fields">' +
+    '<input type="text" class="sc2pa-field" data-field="title" data-type="edit" placeholder="' +
+    __("c2pa.title_label") +
+    '">' +
+    '<input type="text" class="sc2pa-field" data-field="author" data-type="edit" placeholder="' +
+    __("c2pa.author_label") +
+    '">' +
+    "</div></div>" +
     '<div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">' +
-      '<label class="c2pa-type-header" for="sc2pa-ai">' +
-        '<input type="checkbox" id="sc2pa-ai" value="ai" checked>' +
-        '<span class="c2pa-type-name">' + __('c2pa.type_ai') + '</span></label>' +
-      '<div class="c2pa-type-fields">' +
-        '<input type="text" class="sc2pa-field" data-field="title" data-type="ai" placeholder="' + __('c2pa.title_label') + '">' +
-        '<input type="text" class="sc2pa-field" data-field="author" data-type="ai" placeholder="' + __('c2pa.author_label') + '">' +
-      '</div></div>' +
+    '<label class="c2pa-type-header" for="sc2pa-ai">' +
+    '<input type="checkbox" id="sc2pa-ai" value="ai" checked>' +
+    '<span class="c2pa-type-name">' +
+    __("c2pa.type_ai") +
+    "</span></label>" +
+    '<div class="c2pa-type-fields">' +
+    '<input type="text" class="sc2pa-field" data-field="title" data-type="ai" placeholder="' +
+    __("c2pa.title_label") +
+    '">' +
+    '<input type="text" class="sc2pa-field" data-field="author" data-type="ai" placeholder="' +
+    __("c2pa.author_label") +
+    '">' +
+    "</div></div>" +
     '<div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">' +
-      '<label class="c2pa-type-header" for="sc2pa-capture">' +
-        '<input type="checkbox" id="sc2pa-capture" value="capture">' +
-        '<span class="c2pa-type-name">' + __('c2pa.type_capture') + '</span></label>' +
-      '<div class="c2pa-type-fields">' +
-        '<input type="text" class="sc2pa-field" data-field="title" data-type="capture" placeholder="' + __('c2pa.title_label') + '">' +
-        '<input type="text" class="sc2pa-field" data-field="author" data-type="capture" placeholder="' + __('c2pa.author_label') + '">' +
-      '</div></div>' +
+    '<label class="c2pa-type-header" for="sc2pa-capture">' +
+    '<input type="checkbox" id="sc2pa-capture" value="capture">' +
+    '<span class="c2pa-type-name">' +
+    __("c2pa.type_capture") +
+    "</span></label>" +
+    '<div class="c2pa-type-fields">' +
+    '<input type="text" class="sc2pa-field" data-field="title" data-type="capture" placeholder="' +
+    __("c2pa.title_label") +
+    '">' +
+    '<input type="text" class="sc2pa-field" data-field="author" data-type="capture" placeholder="' +
+    __("c2pa.author_label") +
+    '">' +
+    "</div></div>" +
     '<div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">' +
-      '<label class="c2pa-type-header" for="sc2pa-composite">' +
-        '<input type="checkbox" id="sc2pa-composite" value="composite">' +
-        '<span class="c2pa-type-name">' + __('c2pa.type_composite') + '</span></label>' +
-      '<div class="c2pa-type-fields">' +
-        '<input type="text" class="sc2pa-field" data-field="title" data-type="composite" placeholder="' + __('c2pa.title_label') + '">' +
-        '<input type="text" class="sc2pa-field" data-field="author" data-type="composite" placeholder="' + __('c2pa.author_label') + '">' +
-      '</div></div>' +
+    '<label class="c2pa-type-header" for="sc2pa-composite">' +
+    '<input type="checkbox" id="sc2pa-composite" value="composite">' +
+    '<span class="c2pa-type-name">' +
+    __("c2pa.type_composite") +
+    "</span></label>" +
+    '<div class="c2pa-type-fields">' +
+    '<input type="text" class="sc2pa-field" data-field="title" data-type="composite" placeholder="' +
+    __("c2pa.title_label") +
+    '">' +
+    '<input type="text" class="sc2pa-field" data-field="author" data-type="composite" placeholder="' +
+    __("c2pa.author_label") +
+    '">' +
+    "</div></div>" +
     '<div class="c2pa-type-card dnt-card">' +
-      '<label class="c2pa-type-header" for="sc2pa-dnt">' +
-        '<input type="checkbox" id="sc2pa-dnt">' +
-        '<span class="c2pa-type-name">' + __('c2pa.type_dnt') + '</span></label></div>' +
-    '</div></div>' +
+    '<label class="c2pa-type-header" for="sc2pa-dnt">' +
+    '<input type="checkbox" id="sc2pa-dnt">' +
+    '<span class="c2pa-type-name">' +
+    __("c2pa.type_dnt") +
+    "</span></label></div>" +
+    "</div></div>" +
     // Social links
-    '<div class="form-group"><span>' + __('simple.c2pa_social_label') + '</span>' +
+    '<div class="form-group"><span>' +
+    __("simple.c2pa_social_label") +
+    "</span>" +
     '<div class="c2pa-links-grid">' +
-      '<div><input type="url" class="sc2pa-link" data-platform="instagram" placeholder="' + __('simple.c2pa_instagram', 'Instagram URL') + '" id="sc2pa-link-instagram" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-instagram-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="twitter" placeholder="' + __('simple.c2pa_twitter', 'Twitter / X URL') + '" id="sc2pa-link-twitter" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-twitter-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="facebook" placeholder="' + __('simple.c2pa_facebook', 'Facebook URL') + '" id="sc2pa-link-facebook" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-facebook-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="tiktok" placeholder="' + __('simple.c2pa_tiktok', 'TikTok URL') + '" id="sc2pa-link-tiktok" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-tiktok-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="youtube" placeholder="' + __('simple.c2pa_youtube', 'YouTube URL') + '" id="sc2pa-link-youtube" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-youtube-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="website" placeholder="' + __('simple.c2pa_website', 'Website URL') + '" id="sc2pa-link-website" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-website-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '</div></div>' +
+    '<div><input type="url" class="sc2pa-link" data-platform="instagram" placeholder="' +
+    __("simple.c2pa_instagram", "Instagram URL") +
+    '" id="sc2pa-link-instagram" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-instagram-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="twitter" placeholder="' +
+    __("simple.c2pa_twitter", "Twitter / X URL") +
+    '" id="sc2pa-link-twitter" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-twitter-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="facebook" placeholder="' +
+    __("simple.c2pa_facebook", "Facebook URL") +
+    '" id="sc2pa-link-facebook" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-facebook-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="tiktok" placeholder="' +
+    __("simple.c2pa_tiktok", "TikTok URL") +
+    '" id="sc2pa-link-tiktok" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-tiktok-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="youtube" placeholder="' +
+    __("simple.c2pa_youtube", "YouTube URL") +
+    '" id="sc2pa-link-youtube" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-youtube-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="website" placeholder="' +
+    __("simple.c2pa_website", "Website URL") +
+    '" id="sc2pa-link-website" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-website-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    "</div></div>" +
     // Music links
-    '<div class="form-group"><span>' + __('simple.c2pa_music_label', 'Music Streaming (optional)') + '</span>' +
+    '<div class="form-group"><span>' +
+    __("simple.c2pa_music_label", "Music Streaming (optional)") +
+    "</span>" +
     '<div class="c2pa-links-grid">' +
-      '<div><input type="url" class="sc2pa-link" data-platform="spotify" placeholder="' + __('simple.c2pa_spotify', 'Spotify URL') + '" id="sc2pa-link-spotify" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-spotify-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="applemusic" placeholder="' + __('simple.c2pa_applemusic', 'Apple Music URL') + '" id="sc2pa-link-applemusic" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-applemusic-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="soundcloud" placeholder="' + __('simple.c2pa_soundcloud', 'SoundCloud URL') + '" id="sc2pa-link-soundcloud" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-soundcloud-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-      '<div><input type="url" class="sc2pa-link" data-platform="bandcamp" placeholder="' + __('simple.c2pa_bandcamp', 'Bandcamp URL') + '" id="sc2pa-link-bandcamp" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-bandcamp-warn" class="simple-field-warn" style="display:none">' + __('simple.url_invalid', 'Please enter a valid URL') + '</span></div>' +
-    '</div></div>' +
-    '<button class="btn" onclick="runC2paStep()" id="sc2pa-btn">' + __('simple.c2pa_btn') + '</button>' +
+    '<div><input type="url" class="sc2pa-link" data-platform="spotify" placeholder="' +
+    __("simple.c2pa_spotify", "Spotify URL") +
+    '" id="sc2pa-link-spotify" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-spotify-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="applemusic" placeholder="' +
+    __("simple.c2pa_applemusic", "Apple Music URL") +
+    '" id="sc2pa-link-applemusic" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-applemusic-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="soundcloud" placeholder="' +
+    __("simple.c2pa_soundcloud", "SoundCloud URL") +
+    '" id="sc2pa-link-soundcloud" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-soundcloud-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    '<div><input type="url" class="sc2pa-link" data-platform="bandcamp" placeholder="' +
+    __("simple.c2pa_bandcamp", "Bandcamp URL") +
+    '" id="sc2pa-link-bandcamp" maxlength="80" oninput="validateC2paLink(this)"><span id="sc2pa-link-bandcamp-warn" class="simple-field-warn" style="display:none">' +
+    __("simple.url_invalid", "Please enter a valid URL") +
+    "</span></div>" +
+    "</div></div>" +
+    '<button class="btn" onclick="runC2paStep()" id="sc2pa-btn">' +
+    __("simple.c2pa_btn") +
+    "</button>" +
     '<div id="sc2pa-result"></div></div>';
 }
 
 async function runC2paStep() {
   showProgress();
-  var btn = document.getElementById('sc2pa-btn');
-  var statusEl = document.getElementById('sc2pa-result');
+  var btn = document.getElementById("sc2pa-btn");
+  var statusEl = document.getElementById("sc2pa-result");
   if (!window.handleC2paWrite) {
     if (statusEl) {
-      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
-        __('simple.c2pa_no_module', 'C2PA module not loaded. Check internet connection and refresh.') + '</div>';
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
+        __(
+          "simple.c2pa_no_module",
+          "C2PA module not loaded. Check internet connection and refresh.",
+        ) +
+        "</div>";
     }
     return;
   }
   // Validate C2PA social/music links before signing
-  var c2paLinks = document.querySelectorAll('.sc2pa-link');
+  var c2paLinks = document.querySelectorAll(".sc2pa-link");
   var urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
   for (var ci = 0; ci < c2paLinks.length; ci++) {
     if (c2paLinks[ci].value && !urlRegex.test(c2paLinks[ci].value)) {
-      var warnId = c2paLinks[ci].id + '-warn';
+      var warnId = c2paLinks[ci].id + "-warn";
       var warn = document.getElementById(warnId);
-      if (warn) warn.style.display = 'block';
+      if (warn) warn.style.display = "block";
       hideProgress();
       return;
     }
   }
   // 1. Sync content type checkboxes
-  var typeCards = document.querySelectorAll('#sc2pa-write-types .c2pa-type-card[data-form-type]');
-  typeCards.forEach(function(card) {
+  var typeCards = document.querySelectorAll(
+    "#sc2pa-write-types .c2pa-type-card[data-form-type]",
+  );
+  typeCards.forEach(function (card) {
     var ft = card.dataset.formType;
     var simpleCb = card.querySelector('input[type="checkbox"]');
-    var profCb = document.getElementById('c2pa-write-' + ft);
+    var profCb = document.getElementById("c2pa-write-" + ft);
     if (profCb && simpleCb) profCb.checked = simpleCb.checked;
   });
   // DNT checkbox (no data-form-type)
-  var simpleDnt = document.getElementById('sc2pa-dnt');
-  var profDnt = document.getElementById('c2pa-write-dnt');
+  var simpleDnt = document.getElementById("sc2pa-dnt");
+  var profDnt = document.getElementById("c2pa-write-dnt");
   if (profDnt && simpleDnt) profDnt.checked = simpleDnt.checked;
   // 2. Sync content type fields (title/author)
-  var simpleFields = document.querySelectorAll('.sc2pa-field');
-  simpleFields.forEach(function(f) {
+  var simpleFields = document.querySelectorAll(".sc2pa-field");
+  simpleFields.forEach(function (f) {
     var type = f.dataset.type;
     var fname = f.dataset.field;
-    var profF = document.getElementById('c2pa-field-' + type + '-' + fname);
+    var profF = document.getElementById("c2pa-field-" + type + "-" + fname);
     if (profF) profF.value = f.value;
   });
   // 3. Sync social & music links
-  var simpleLinks = document.querySelectorAll('.sc2pa-link');
-  simpleLinks.forEach(function(link) {
+  var simpleLinks = document.querySelectorAll(".sc2pa-link");
+  simpleLinks.forEach(function (link) {
     var platform = link.dataset.platform;
-    var profLink = document.getElementById('c2pa-link-' + platform);
+    var profLink = document.getElementById("c2pa-link-" + platform);
     if (profLink) profLink.value = link.value;
   });
   // 4. Use the PI output as the image to sign (or watermark if PI not done)
   if (simpleResults.piFinalUrl && !simpleResults.piFinalBlob) {
-    if (simpleResults.piFinalUrl.indexOf('blob:') === 0) {
+    if (simpleResults.piFinalUrl.indexOf("blob:") === 0) {
       try {
         var resp = await fetch(simpleResults.piFinalUrl);
         simpleResults.piFinalBlob = await resp.blob();
-      } catch(e) {}
+      } catch (e) {}
     } else {
       simpleResults.piFinalBlob = dataUrlToBlob(simpleResults.piFinalUrl);
     }
   }
   var srcBlob = simpleResults.piFinalBlob || simpleResults.watermarkBlob;
-  var fname = simpleFile ? simpleFile.name : 'image.png';
-  var srcFile = srcBlob ? new File([srcBlob], fname, { type: 'image/png' }) : simpleFile;
-  var fileInput = document.getElementById('c2pa-write-file');
+  var fname = simpleFile ? simpleFile.name : "image.png";
+  var srcFile = srcBlob
+    ? new File([srcBlob], fname, { type: "image/png" })
+    : simpleFile;
+  var fileInput = document.getElementById("c2pa-write-file");
   if (fileInput && srcFile) {
     var dt = new DataTransfer();
     dt.items.add(srcFile);
     fileInput.files = dt.files;
   }
-  var btn = document.getElementById('sc2pa-btn');
-  btn.disabled = true; btn.textContent = __('simple.signing');
-  var statusEl = document.getElementById('sc2pa-result');
-  handleC2paWrite().then(function(result) {
+  var btn = document.getElementById("sc2pa-btn");
+  btn.disabled = true;
+  btn.textContent = __("simple.signing");
+  var statusEl = document.getElementById("sc2pa-result");
+  handleC2paWrite().then(function (result) {
     if (result && result.ok) {
-      btn.textContent = __('simple.signed');
+      btn.textContent = __("simple.signed");
       simpleResults.c2pa = true;
-      simpleResults.c2paUrl = window._c2paSignedUrl || '';
+      simpleResults.c2paUrl = window._c2paSignedUrl || "";
       simpleStepDone = true;
-      var nextBtn = document.getElementById('simpleNextBtn');
+      var nextBtn = document.getElementById("simpleNextBtn");
       nextBtn.disabled = false;
-      nextBtn.style.display = '';
-      if (statusEl) statusEl.innerHTML = '';
+      nextBtn.style.display = "";
+      if (statusEl) statusEl.innerHTML = "";
     } else {
-      var errMsg = (result && result.error) || __('simple.c2pa_failed', 'C2PA signing failed');
-      btn.textContent = __('simple.failed_retry');
+      var errMsg =
+        (result && result.error) ||
+        __("simple.c2pa_failed", "C2PA signing failed");
+      btn.textContent = __("simple.failed_retry");
       btn.disabled = false;
       if (statusEl) {
-        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
-          escapeHtml(errMsg) + '</div>';
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
+          escapeHtml(errMsg) +
+          "</div>";
       }
     }
   });
 }
 
 function renderWatermarkStep(body) {
-  var usingName = simpleFile ? simpleFile.name : '';
+  var usingName = simpleFile ? simpleFile.name : "";
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.watermark_title') + '</h2><p>' + __('simple.watermark_desc') + '</p>' +
+    '<div class="simple-card"><h2>' +
+    __("simple.watermark_title") +
+    "</h2><p>" +
+    __("simple.watermark_desc") +
+    "</p>" +
     '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">' +
-    __('simple.using_file').replace('{name}', escapeHtml(usingName)) + '</p>' +
+    __("simple.using_file").replace("{name}", escapeHtml(usingName)) +
+    "</p>" +
     '<div class="card-form" style="text-align:left">' +
-    '<div class="form-group"><label>' + __('simple.wm_algo_label', 'Algorithm') + '</label>' +
+    '<div class="form-group"><label>' +
+    __("simple.wm_algo_label", "Algorithm") +
+    "</label>" +
     '<select id="swm-type">' +
     '  <option value="2">2. Frequency DCT</option>' +
     '  <option value="4">4. Latent DCT</option>' +
     '  <option value="7">7. Forensic</option>' +
     '  <option value="9">9. Imatag-style</option>' +
-    '</select></div>' +
-    '<div class="form-group"><label>' + __('simple.wm_pass_label', 'Password') + '</label>' +
+    "</select></div>" +
+    '<div class="form-group"><label>' +
+    __("simple.wm_pass_label", "Password") +
+    "</label>" +
     '<input type="password" id="swm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.wm_fp_payload', '🔐 The fingerprint hash will be embedded as the secret message.') + '</p>' +
-    '</div>' +
-    '<button class="btn" onclick="runWatermarkStep()" id="swm-btn">' + __('simple.watermark_btn', 'Embed Watermark') + '</button>' +
+    __(
+      "simple.wm_fp_payload",
+      "🔐 The fingerprint hash will be embedded as the secret message.",
+    ) +
+    "</p>" +
+    "</div>" +
+    '<button class="btn" onclick="runWatermarkStep()" id="swm-btn">' +
+    __("simple.watermark_btn", "Embed Watermark") +
+    "</button>" +
     '<div id="swm-status"></div></div>';
 }
 
 // Build combined fingerprint + DID payload, trimmed to fit maxBytes
 function buildCombinedPayload(fpResult, didSig, maxBytes) {
-  var didStr = '';
+  var didStr = "";
   if (didSig) {
-    didStr = '\n---DIDSIG---\n' + JSON.stringify(didSig);
+    didStr = "\n---DIDSIG---\n" + JSON.stringify(didSig);
   }
   var didBytes = new TextEncoder().encode(didStr).length;
   var fpMaxBytes = maxBytes - didBytes;
   if (fpMaxBytes < 100) fpMaxBytes = 100;
-  if (fpResult && typeof trimFingerprintPayload === 'function') {
+  if (fpResult && typeof trimFingerprintPayload === "function") {
     var trimmed = trimFingerprintPayload(fpResult, fpMaxBytes);
     var combined = JSON.stringify(trimmed) + didStr;
     // If combined exceeds maxBytes even after trimming, drop DID
@@ -960,9 +1731,12 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
     }
     return combined;
   }
-  var fpText = '';
+  var fpText = "";
   if (fpResult) {
-    fpText = typeof fpResult === 'string' ? fpResult : JSON.stringify(fpResult, null, 2);
+    fpText =
+      typeof fpResult === "string"
+        ? fpResult
+        : JSON.stringify(fpResult, null, 2);
   }
   var available = maxBytes - didBytes;
   if (available < 50) available = 50;
@@ -976,66 +1750,95 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
 
 function runWatermarkStep() {
   showProgress();
-  var algo = parseInt(document.getElementById('swm-type').value, 10);
-  var pass = document.getElementById('swm-password').value || '';
-  var statusEl = document.getElementById('swm-status');
-  var btn = document.getElementById('swm-btn');
-  if (btn) { btn.disabled = true; btn.textContent = __('simple.embedding', 'Embedding...'); }
+  var algo = parseInt(document.getElementById("swm-type").value, 10);
+  var pass = document.getElementById("swm-password").value || "";
+  var statusEl = document.getElementById("swm-status");
+  var btn = document.getElementById("swm-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = __("simple.embedding", "Embedding...");
+  }
 
   // Embed fingerprint only
   var payloadStr = JSON.stringify(simpleResults.fpResult || {});
-  var secretFile = new File([payloadStr], 'fingerprint.txt', { type: 'text/plain' });
+  var secretFile = new File([payloadStr], "fingerprint.txt", {
+    type: "text/plain",
+  });
 
-  watermarkEmbed(algo, simpleFile, secretFile, pass).then(function(result) {
+  watermarkEmbed(algo, simpleFile, secretFile, pass).then(function (result) {
     if (result.ok) {
-      var wmNames = {2:'Frequency DCT',4:'Latent DCT',7:'Forensic',9:'Imatag-style'};
+      var wmNames = {
+        2: "Frequency DCT",
+        4: "Latent DCT",
+        7: "Forensic",
+        9: "Imatag-style",
+      };
       simpleResults.watermark = true;
       simpleResults.watermarkAlgo = algo;
-      simpleResults.watermarkAlgoName = wmNames[algo] || 'Type ' + algo;
+      simpleResults.watermarkAlgoName = wmNames[algo] || "Type " + algo;
       simpleResults.watermarkBlob = result.data;
       simpleResults.watermarkUrl = URL.createObjectURL(result.data);
-      simpleResults.watermarkResult = result.msg ? result.msg.replace(/^Type\s+\d+\s+\([^)]+\):\s*/, '') : '';
+      simpleResults.watermarkResult = result.msg
+        ? result.msg.replace(/^Type\s+\d+\s+\([^)]+\):\s*/, "")
+        : "";
       simpleStepDone = true;
-      var nextBtn = document.getElementById('simpleNextBtn');
+      var nextBtn = document.getElementById("simpleNextBtn");
       nextBtn.disabled = false;
-      nextBtn.style.display = '';
-      if (btn) { btn.textContent = '✅ ' + __('simple.watermarked_short', 'Watermarked'); }
+      nextBtn.style.display = "";
+      if (btn) {
+        btn.textContent = "✅ " + __("simple.watermarked_short", "Watermarked");
+      }
       if (statusEl) {
-        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-          __('simple.wm_done', '✅ Watermark embedded successfully using fingerprint hash.') + '</div>';
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+          __(
+            "simple.wm_done",
+            "✅ Watermark embedded successfully using fingerprint hash.",
+          ) +
+          "</div>";
       }
       hideProgress();
     } else {
       hideProgress();
-      if (btn) { btn.disabled = false; btn.textContent = __('simple.watermark_btn', 'Embed Watermark'); }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = __("simple.watermark_btn", "Embed Watermark");
+      }
       if (statusEl) {
-        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-          escapeHtml(result.error || __('simple.embed_failed')) + '</div>';
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          escapeHtml(result.error || __("simple.embed_failed")) +
+          "</div>";
       }
     }
   });
 }
 
 function renderAudioWatermarkStep(body) {
-  var usingName = simpleFile ? simpleFile.name : '';
-  var fpSummary = '';
+  var usingName = simpleFile ? simpleFile.name : "";
+  var fpSummary = "";
   if (simpleResults.fpResult && simpleResults.fpResult.hashes) {
     var h = simpleResults.fpResult.hashes;
     var hashKeys = Object.keys(h);
     var hashCount = hashKeys.length;
-    fpSummary = hashCount + ' hashes (';
-    var shortList = ['SHA-256','SHA-512','BLAKE3','SHA-1'];
+    fpSummary = hashCount + " hashes (";
+    var shortList = ["SHA-256", "SHA-512", "BLAKE3", "SHA-1"];
     for (var si = 0; si < shortList.length; si++) {
       if (h[shortList[si]]) {
-        fpSummary += shortList[si] + ': ' + h[shortList[si]].substring(0, 8) + '… ';
+        fpSummary +=
+          shortList[si] + ": " + h[shortList[si]].substring(0, 8) + "… ";
       }
     }
-    fpSummary = fpSummary.trim() + ')';
+    fpSummary = fpSummary.trim() + ")";
   }
-  var tsSummary = simpleResults.tsResult ? simpleResults.tsResult.substring(0, 100).replace(/\n/g, ' ') : '';
+  var tsSummary = simpleResults.tsResult
+    ? simpleResults.tsResult.substring(0, 100).replace(/\n/g, " ")
+    : "";
   body.innerHTML =
     '<div class="simple-card"><h2>Audio Watermarking</h2><p>Embed both the fingerprint and DID signature as hidden watermarks in your audio. Choose one algorithm for each.</p>' +
-    '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">Using: ' + escapeHtml(usingName) + '</p>' +
+    '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">Using: ' +
+    escapeHtml(usingName) +
+    "</p>" +
     '<div class="card-form" style="text-align:left">' +
     '<div class="form-group"><label>Algorithm for Fingerprint <span style="font-size:0.72rem;color:var(--text-muted)">(high capacity)</span></label>' +
     '<select id="sawm-fp-type">' +
@@ -1044,23 +1847,27 @@ function renderAudioWatermarkStep(body) {
     '  <option value="5">3. QIM</option>' +
     '  <option value="6">4. DWT (Haar Wavelet)</option>' +
     '  <option value="8" selected>5. DCT-based (Recommended)</option>' +
-    '</select></div>' +
+    "</select></div>" +
     '<div class="form-group"><label>Algorithm for DID Signature (right channel)</label>' +
     '<select id="sawm-ts-type">' +
     '  <option value="2">1. FFT-QIM</option>' +
     '  <option value="6">2. DWT (Haar Wavelet)</option>' +
     '  <option value="8" selected>3. DCT-based (Recommended)</option>' +
-    '</select></div>' +
+    "</select></div>" +
     '<div class="form-group"><label>Password</label>' +
     '<input type="password" id="sawm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
     '<div class="form-group" id="sawm-strength-group">' +
     '<label>Strength <span id="sawm-strength-val">400</span></label>' +
     '<input type="range" id="sawm-strength" min="100" max="3000" value="400" step="100" oninput="document.getElementById(\'sawm-strength-val\').textContent=this.value"></div>' +
     '<div style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px;text-align:left">' +
-    '<p><strong>🔐 Fingerprint payload:</strong><br><span style="word-break:break-all">' + escapeHtml(fpSummary) + '</span></p>' +
-    '<p style="margin-top:6px"><strong>🕒 Timestamp payload:</strong><br><span style="word-break:break-all">' + escapeHtml(tsSummary) + '</span></p>' +
+    '<p><strong>🔐 Fingerprint payload:</strong><br><span style="word-break:break-all">' +
+    escapeHtml(fpSummary) +
+    "</span></p>" +
+    '<p style="margin-top:6px"><strong>🕒 Timestamp payload:</strong><br><span style="word-break:break-all">' +
+    escapeHtml(tsSummary) +
+    "</span></p>" +
     '<p style="margin-top:6px">Your audio will be watermarked with both layers simultaneously.</p></div>' +
-    '</div>' +
+    "</div>" +
     '<button class="btn" onclick="runAudioWatermarkStep()" id="sawm-btn">Embed Both Watermarks</button>' +
     '<div id="sawm-status"></div>' +
     '<div id="sawm-progress" style="display:none;margin-top:12px">' +
@@ -1071,18 +1878,25 @@ function renderAudioWatermarkStep(body) {
 }
 
 async function runAudioWatermarkStep() {
-  var fpAlgo = parseInt(document.getElementById('sawm-fp-type').value);
-  var tsAlgo = parseInt(document.getElementById('sawm-ts-type').value);
-  var pass = document.getElementById('sawm-password').value || '';
-  var strength = parseInt(document.getElementById('sawm-strength').value) || 400;
-  if (!pass) { alert('Password is required'); return; }
+  var fpAlgo = parseInt(document.getElementById("sawm-fp-type").value);
+  var tsAlgo = parseInt(document.getElementById("sawm-ts-type").value);
+  var pass = document.getElementById("sawm-password").value || "";
+  var strength =
+    parseInt(document.getElementById("sawm-strength").value) || 400;
+  if (!pass) {
+    alert("Password is required");
+    return;
+  }
   showProgress();
-  var statusEl = document.getElementById('sawm-status');
-  var btn = document.getElementById('sawm-btn');
-  var progContainer = document.getElementById('sawm-progress');
-  var progFill = document.getElementById('sawm-progress-fill');
-  var progText = document.getElementById('sawm-progress-text');
-  if (btn) { btn.disabled = true; btn.textContent = 'Embedding...'; }
+  var statusEl = document.getElementById("sawm-status");
+  var btn = document.getElementById("sawm-btn");
+  var progContainer = document.getElementById("sawm-progress");
+  var progFill = document.getElementById("sawm-progress-fill");
+  var progText = document.getElementById("sawm-progress-text");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Embedding...";
+  }
   try {
     var info = await awLoadAudio(simpleFile);
     var key = await pw_key(pass);
@@ -1092,82 +1906,155 @@ async function runAudioWatermarkStep() {
     var didMsg = JSON.stringify(simpleResults.didSig || {});
     var tsBytes = new TextEncoder().encode(didMsg);
     var tsBits = awFormatPayload(tsBytes, key);
-    if (tsBits.length > tsMax) throw new Error('DID message too long for algorithm ' + tsAlgo);
+    if (tsBits.length > tsMax)
+      throw new Error("DID message too long for algorithm " + tsAlgo);
     // Left channel: embed fingerprint only
     var fpPayload = JSON.stringify(simpleResults.fpResult || {});
     var fpBytes = new TextEncoder().encode(fpPayload);
     var fpBits = awFormatPayload(fpBytes, key);
-    if (fpBits.length > fpMax) throw new Error('Fingerprint message too long for algorithm ' + fpAlgo + '. Need ' + fpBits.length + ' bits, max ' + fpMax);
-    var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
-    progContainer.style.display = '';
-    progFill.style.width = '0%';
+    if (fpBits.length > fpMax)
+      throw new Error(
+        "Fingerprint message too long for algorithm " +
+          fpAlgo +
+          ". Need " +
+          fpBits.length +
+          " bits, max " +
+          fpMax,
+      );
+    var algoNames = {
+      1: "LSB Audio",
+      2: "FFT-QIM",
+      3: "Echo Hiding",
+      4: "DSSS",
+      5: "QIM",
+      6: "DWT",
+      7: "Patchwork",
+      8: "DCT-based",
+    };
+    progContainer.style.display = "";
+    progFill.style.width = "0%";
 
     // ── Zero-interference dual embed ──
     // Stereo: fingerprint in left channel, DID signature in right channel
     // Mono:   duplicate to both virtual channels → stereo
-    var isStereo = info.ch >= 2 && info.raw && info.raw.length >= info.samples.length * 2;
+    var isStereo =
+      info.ch >= 2 && info.raw && info.raw.length >= info.samples.length * 2;
     var leftSamples = new Int16Array(info.samples);
     var rightSamples;
     if (isStereo) {
       rightSamples = new Int16Array(info.samples.length);
-      for (var ri = 0; ri < info.samples.length; ri++) rightSamples[ri] = info.raw[ri * info.ch + 1];
+      for (var ri = 0; ri < info.samples.length; ri++)
+        rightSamples[ri] = info.raw[ri * info.ch + 1];
     } else {
       rightSamples = new Int16Array(info.samples);
     }
 
-    progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (left channel, 0%)';
-    var fpModified = await embedAlgo(fpAlgo, new Int16Array(leftSamples), fpBits, info.sr, strength, function(pct) {
-      progFill.style.width = (pct * 50) + '%';
-      progText.textContent = 'Embedding fingerprint with ' + algoNames[fpAlgo] + ' (' + Math.round(pct * 100) + '%)';
+    progText.textContent =
+      "Embedding fingerprint with " + algoNames[fpAlgo] + " (left channel, 0%)";
+    var fpModified = await embedAlgo(
+      fpAlgo,
+      new Int16Array(leftSamples),
+      fpBits,
+      info.sr,
+      strength,
+      function (pct) {
+        progFill.style.width = pct * 50 + "%";
+        progText.textContent =
+          "Embedding fingerprint with " +
+          algoNames[fpAlgo] +
+          " (" +
+          Math.round(pct * 100) +
+          "%)";
+      },
+    );
+    progFill.style.width = "50%";
+    await new Promise(function (r) {
+      setTimeout(r, 50);
     });
-    progFill.style.width = '50%';
-    await new Promise(function(r) { setTimeout(r, 50); });
-    progText.textContent = 'Embedding timestamp with ' + algoNames[tsAlgo] + ' (right channel, 0%)';
-    var tsModified = await embedAlgo(tsAlgo, new Int16Array(rightSamples), tsBits, info.sr, strength, function(pct) {
-      progFill.style.width = (50 + pct * 50) + '%';
-      progText.textContent = 'Embedding DID signature with ' + algoNames[tsAlgo] + ' (' + Math.round(pct * 100) + '%)';
-    });
-    progFill.style.width = '100%';
-    progText.textContent = 'Finalizing...';
+    progText.textContent =
+      "Embedding timestamp with " + algoNames[tsAlgo] + " (right channel, 0%)";
+    var tsModified = await embedAlgo(
+      tsAlgo,
+      new Int16Array(rightSamples),
+      tsBits,
+      info.sr,
+      strength,
+      function (pct) {
+        progFill.style.width = 50 + pct * 50 + "%";
+        progText.textContent =
+          "Embedding DID signature with " +
+          algoNames[tsAlgo] +
+          " (" +
+          Math.round(pct * 100) +
+          "%)";
+      },
+    );
+    progFill.style.width = "100%";
+    progText.textContent = "Finalizing...";
 
     var wavBuf = awWriteWav([fpModified, tsModified], info.sr, 2);
-    var blob = new Blob([wavBuf], { type: 'audio/wav' });
+    var blob = new Blob([wavBuf], { type: "audio/wav" });
     simpleResults.audioWatermark = true;
     simpleResults.audioWatermarkBlob = blob;
     simpleResults.audioWatermarkUrl = URL.createObjectURL(blob);
     simpleResults.audioWatermarkFpAlgo = fpAlgo;
     simpleResults.audioWatermarkTsAlgo = tsAlgo;
-    var origName = simpleFile.name.replace(/\.[^.]+$/, '');
-    simpleResults.audioWatermarkFilename = origName + '_protected.wav';
-    progContainer.style.display = 'none';
+    var origName = simpleFile.name.replace(/\.[^.]+$/, "");
+    simpleResults.audioWatermarkFilename = origName + "_protected.wav";
+    progContainer.style.display = "none";
     hideProgress();
     simpleStepDone = true;
-    if (btn) { btn.textContent = '✅ Watermarked'; }
-    if (statusEl) {
-      var chMode = isStereo ? 'separate channels' : 'split halves';
-      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-        '✅ Audio watermarked with two non-interfering layers!<br>' +
-        'Fingerprint: ' + algoNames[fpAlgo] + ' (' + (isStereo ? 'left channel' : 'first half') + ')<br>' +
-        'DID Signature: ' + algoNames[tsAlgo] + ' (' + (isStereo ? 'right channel' : 'second half') + ')<br>' +
-        'Mode: ' + chMode + ' — zero interference.</div>';
+    if (btn) {
+      btn.textContent = "✅ Watermarked";
     }
-    var nextBtn = document.getElementById('simpleNextBtn');
+    if (statusEl) {
+      var chMode = isStereo ? "separate channels" : "split halves";
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+        "✅ Audio watermarked with two non-interfering layers!<br>" +
+        "Fingerprint: " +
+        algoNames[fpAlgo] +
+        " (" +
+        (isStereo ? "left channel" : "first half") +
+        ")<br>" +
+        "DID Signature: " +
+        algoNames[tsAlgo] +
+        " (" +
+        (isStereo ? "right channel" : "second half") +
+        ")<br>" +
+        "Mode: " +
+        chMode +
+        " — zero interference.</div>";
+    }
+    var nextBtn = document.getElementById("simpleNextBtn");
     nextBtn.disabled = false;
-    nextBtn.style.display = '';
+    nextBtn.style.display = "";
   } catch (e) {
     hideProgress();
-    if (progContainer) progContainer.style.display = 'none';
-    if (btn) { btn.disabled = false; btn.textContent = 'Embed Both Watermarks'; }
+    if (progContainer) progContainer.style.display = "none";
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Embed Both Watermarks";
+    }
     if (statusEl) {
-      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-        escapeHtml(e.message) + '</div>';
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        escapeHtml(e.message) +
+        "</div>";
     }
   }
 }
 
 function algoMaxBits(algo, audioLen, sr) {
   if (algo === 1 || algo === 5) return audioLen;
-  var fns = {2:aw2_maxBits,3:aw3_maxBits,4:aw4_maxBits,6:aw6_maxBits,7:aw7_maxBits,8:aw8_maxBits};
+  var fns = {
+    2: aw2_maxBits,
+    3: aw3_maxBits,
+    4: aw4_maxBits,
+    6: aw6_maxBits,
+    7: aw7_maxBits,
+    8: aw8_maxBits,
+  };
   return fns[algo] ? fns[algo](audioLen, sr) : 0;
 }
 
@@ -1179,56 +2066,84 @@ async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
   else if (algo === 5) return aw5_embed(s16, bitsStr, sr);
   else if (algo === 6) return aw6_embed(s16, bitsStr, sr);
   else if (algo === 7) return aw7_embed(s16, bitsStr, sr);
-  else if (algo === 8) return await aw8_embed_async(s16, bitsStr, sr, onProgress);
-  throw new Error('Unknown algorithm: ' + algo);
+  else if (algo === 8)
+    return await aw8_embed_async(s16, bitsStr, sr, onProgress);
+  throw new Error("Unknown algorithm: " + algo);
 }
 
 function renderPixelInjectStep(body) {
-  var usingName = simpleFile ? simpleFile.name : '';
-  var catOpts = '';
-  var cats = window.pixelInjection && window.pixelInjection.algorithms
-    ? window.pixelInjection.algorithms : { spatial: { enhanced_lsb: { name: 'Enhanced LSB' } } };
+  var usingName = simpleFile ? simpleFile.name : "";
+  var catOpts = "";
+  var cats =
+    window.pixelInjection && window.pixelInjection.algorithms
+      ? window.pixelInjection.algorithms
+      : { spatial: { enhanced_lsb: { name: "Enhanced LSB" } } };
   var catKeys = Object.keys(cats);
   for (var ci = 0; ci < catKeys.length; ci++) {
-    if (catKeys[ci] === 'detection') continue;
-    var label = catKeys[ci].charAt(0).toUpperCase() + catKeys[ci].slice(1).replace(/_/g, ' ');
-    catOpts += '<option value="' + catKeys[ci] + '">' + label + '</option>';
+    if (catKeys[ci] === "detection") continue;
+    var label =
+      catKeys[ci].charAt(0).toUpperCase() +
+      catKeys[ci].slice(1).replace(/_/g, " ");
+    catOpts += '<option value="' + catKeys[ci] + '">' + label + "</option>";
   }
-  var defaultCat = catKeys[0] === 'detection' ? (catKeys[1] || catKeys[0]) : catKeys[0];
+  var defaultCat =
+    catKeys[0] === "detection" ? catKeys[1] || catKeys[0] : catKeys[0];
   var algoOpts = getPiAlgoOptions(cats, defaultCat);
 
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.pi_title') + '</h2><p>' + __('simple.pi_desc') + '</p>' +
+    '<div class="simple-card"><h2>' +
+    __("simple.pi_title") +
+    "</h2><p>" +
+    __("simple.pi_desc") +
+    "</p>" +
     '<p style="font-size:0.82rem;color:var(--success);margin:0 0 16px;text-align:left">' +
-    __('simple.using_file').replace('{name}', escapeHtml(usingName)) + '</p>' +
+    __("simple.using_file").replace("{name}", escapeHtml(usingName)) +
+    "</p>" +
     '<div class="card-form" style="text-align:left">' +
-    '<div class="form-group"><label>' + __('simple.pi_category_label', 'Category') + '</label>' +
-    '<select id="spi-category" onchange="updateSpiAlgorithms()">' + catOpts + '</select></div>' +
-    '<div class="form-group"><label>' + __('simple.pi_algo_label', 'Algorithm') + '</label>' +
-    '<select id="spi-algorithm">' + algoOpts + '</select></div>' +
-    '<div class="form-group"><label>' + __('simple.wm_pass_label', 'Password') + '</label>' +
+    '<div class="form-group"><label>' +
+    __("simple.pi_category_label", "Category") +
+    "</label>" +
+    '<select id="spi-category" onchange="updateSpiAlgorithms()">' +
+    catOpts +
+    "</select></div>" +
+    '<div class="form-group"><label>' +
+    __("simple.pi_algo_label", "Algorithm") +
+    "</label>" +
+    '<select id="spi-algorithm">' +
+    algoOpts +
+    "</select></div>" +
+    '<div class="form-group"><label>' +
+    __("simple.wm_pass_label", "Password") +
+    "</label>" +
     '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.pi_did_info', '🆔 The DID signature will be injected as the secret message.') + '</p>' +
-    '</div>' +
-    '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' + __('simple.pi_btn', 'Inject Message') + '</button>' +
+    __(
+      "simple.pi_did_info",
+      "🆔 The DID signature will be injected as the secret message.",
+    ) +
+    "</p>" +
+    "</div>" +
+    '<button class="btn" onclick="runPixelInjectStep()" id="spi-btn">' +
+    __("simple.pi_btn", "Inject Message") +
+    "</button>" +
     '<div id="spi-status"></div></div>';
 }
 
 function getPiAlgoOptions(cats, cat) {
   var algos = cats[cat] || {};
   var keys = Object.keys(algos);
-  var opts = '';
+  var opts = "";
   for (var i = 0; i < keys.length; i++) {
     var algo = algos[keys[i]];
-    opts += '<option value="' + keys[i] + '">' + (algo.name || keys[i]) + '</option>';
+    opts +=
+      '<option value="' + keys[i] + '">' + (algo.name || keys[i]) + "</option>";
   }
   return opts;
 }
 
 function updateSpiAlgorithms() {
-  var sel = document.getElementById('spi-category');
-  var algoSel = document.getElementById('spi-algorithm');
+  var sel = document.getElementById("spi-category");
+  var algoSel = document.getElementById("spi-algorithm");
   if (!sel || !algoSel) return;
   var cats = window.pixelInjection && window.pixelInjection.algorithms;
   if (!cats) return;
@@ -1237,119 +2152,164 @@ function updateSpiAlgorithms() {
 
 function runPixelInjectStep() {
   showProgress();
-  var cat = document.getElementById('spi-category').value;
-  var pass = document.getElementById('spi-password').value;
-  var statusEl = document.getElementById('spi-status');
-  var btn = document.getElementById('spi-btn');
-  if (btn) { btn.disabled = true; btn.textContent = __('simple.injecting', 'Injecting...'); }
+  var cat = document.getElementById("spi-category").value;
+  var pass = document.getElementById("spi-password").value;
+  var statusEl = document.getElementById("spi-status");
+  var btn = document.getElementById("spi-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = __("simple.injecting", "Injecting...");
+  }
 
   // Use DID signature as the message
-  var didMessage = simpleResults.didSig ? 'DID Signature:\n' + JSON.stringify(simpleResults.didSig, null, 2) : '';
+  var didMessage = simpleResults.didSig
+    ? "DID Signature:\n" + JSON.stringify(simpleResults.didSig, null, 2)
+    : "";
 
-  if (window.switchPiTab) window.switchPiTab('embed');
+  if (window.switchPiTab) window.switchPiTab("embed");
 
-  setTimeout(function() {
+  setTimeout(function () {
     // Populate hidden professional form fields
-    var fileInput = document.getElementById('pi-image');
+    var fileInput = document.getElementById("pi-image");
     if (fileInput) {
-      var srcFile = simpleResults.watermarkBlob ? new File([simpleResults.watermarkBlob], simpleFile.name, { type: simpleResults.watermarkBlob.type || simpleFile.type }) : simpleFile;
+      var srcFile = simpleResults.watermarkBlob
+        ? new File([simpleResults.watermarkBlob], simpleFile.name, {
+            type: simpleResults.watermarkBlob.type || simpleFile.type,
+          })
+        : simpleFile;
       if (srcFile) {
         var dt = new DataTransfer();
         dt.items.add(srcFile);
         fileInput.files = dt.files;
-        fileInput.dispatchEvent(new Event('change'));
+        fileInput.dispatchEvent(new Event("change"));
       }
     }
-    var catSelect = document.getElementById('pi-category');
-    if (catSelect) { catSelect.value = cat; catSelect.dispatchEvent(new Event('change')); }
-    var algoSelect = document.getElementById('pi-algorithm');
-    var srcAlgo = document.getElementById('spi-algorithm');
+    var catSelect = document.getElementById("pi-category");
+    if (catSelect) {
+      catSelect.value = cat;
+      catSelect.dispatchEvent(new Event("change"));
+    }
+    var algoSelect = document.getElementById("pi-algorithm");
+    var srcAlgo = document.getElementById("spi-algorithm");
     if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
-    var msgInput = document.getElementById('pi-message');
+    var msgInput = document.getElementById("pi-message");
     if (msgInput) msgInput.value = didMessage;
-    var passInput = document.getElementById('pi-password');
+    var passInput = document.getElementById("pi-password");
     if (passInput) passInput.value = pass;
 
     function cleanupPiFields() {
-      if (msgInput) msgInput.value = '';
-      if (passInput) passInput.value = '';
-      if (fileInput) { var dt2 = new DataTransfer(); fileInput.files = dt2.files; }
+      if (msgInput) msgInput.value = "";
+      if (passInput) passInput.value = "";
+      if (fileInput) {
+        var dt2 = new DataTransfer();
+        fileInput.files = dt2.files;
+      }
     }
 
     var promise = window.handlePixelInjection();
     if (promise && promise.then) {
-      promise.then(function() {
-        simpleResults['pixel-injection'] = true;
-        var piOutput = document.getElementById('pi-output');
-        var piDownload = document.getElementById('pi-download');
-        if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
-        if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
-        if (piDownload) {
-          var piLink = piDownload.querySelector('a');
-          if (piLink) simpleResults.piFinalUrl = piLink.href;
-        }
-        simpleStepDone = true;
-        var nextBtn = document.getElementById('simpleNextBtn');
-        nextBtn.disabled = false;
-        nextBtn.style.display = '';
+      promise
+        .then(function () {
+          simpleResults["pixel-injection"] = true;
+          var piOutput = document.getElementById("pi-output");
+          var piDownload = document.getElementById("pi-download");
+          if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
+          if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
+          if (piDownload) {
+            var piLink = piDownload.querySelector("a");
+            if (piLink) simpleResults.piFinalUrl = piLink.href;
+          }
+          simpleStepDone = true;
+          var nextBtn = document.getElementById("simpleNextBtn");
+          nextBtn.disabled = false;
+          nextBtn.style.display = "";
 
-        if (btn) { btn.textContent = '✅ ' + __('simple.injected', 'Injected'); }
-        if (statusEl) {
-          statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-            __('simple.pi_done_did', '✅ DID signature injected successfully as secret message.') + '</div>';
-        }
-        hideProgress();
-      }).catch(function(e) {
-        hideProgress();
-        if (btn) { btn.disabled = false; btn.textContent = __('simple.pi_btn', 'Inject Message'); }
-        if (statusEl) {
-          statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-            escapeHtml(e && e.message ? e.message : __('simple.pi_failed', 'Injection failed')) + '</div>';
-        }
-      }).then(function() {
-        cleanupPiFields();
-      });
+          if (btn) {
+            btn.textContent = "✅ " + __("simple.injected", "Injected");
+          }
+          if (statusEl) {
+            statusEl.innerHTML =
+              '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+              __(
+                "simple.pi_done_did",
+                "✅ DID signature injected successfully as secret message.",
+              ) +
+              "</div>";
+          }
+          hideProgress();
+        })
+        .catch(function (e) {
+          hideProgress();
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = __("simple.pi_btn", "Inject Message");
+          }
+          if (statusEl) {
+            statusEl.innerHTML =
+              '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+              escapeHtml(
+                e && e.message
+                  ? e.message
+                  : __("simple.pi_failed", "Injection failed"),
+              ) +
+              "</div>";
+          }
+        })
+        .then(function () {
+          cleanupPiFields();
+        });
     }
   }, 50);
 }
 
 function renderTimestampStep(body) {
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.ts_title') + '</h2><p>' + __('simple.ts_desc') + '</p>' +
-    '<div id="sts-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p>' + __('simple.processing') + '</p></div></div>';
+    '<div class="simple-card"><h2>' +
+    __("simple.ts_title") +
+    "</h2><p>" +
+    __("simple.ts_desc") +
+    "</p>" +
+    '<div id="sts-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p>' +
+    __("simple.processing") +
+    "</p></div></div>";
   runTimestampStep();
 }
 
 function dataUrlToBlob(dataUrl) {
   try {
-    var parts = dataUrl.split(',');
+    var parts = dataUrl.split(",");
     var mime = parts[0].match(/:(.*?);/)[1];
     var raw = atob(parts[1]);
     var arr = new Uint8Array(raw.length);
     for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
     return new Blob([arr], { type: mime });
-  } catch(e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
 async function runTimestampStep() {
   if (!window.handleOtsCreate) return;
-  var fileInput = document.getElementById('ts-create-file');
+  var fileInput = document.getElementById("ts-create-file");
   if (fileInput) {
     // Use final output (C2PA/audio > injected > original) depending on available steps
     try {
       var srcUrl = null;
-      if (simpleType === 'image') srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl;
-      else if (simpleType === 'audio') srcUrl = simpleResults.audioWatermarkUrl;
+      if (simpleType === "image")
+        srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl;
+      else if (simpleType === "audio") srcUrl = simpleResults.audioWatermarkUrl;
       if (srcUrl) {
         var blob;
-        if (srcUrl.indexOf('blob:') === 0) {
+        if (srcUrl.indexOf("blob:") === 0) {
           var resp = await fetch(srcUrl);
           blob = await resp.blob();
         } else {
           blob = dataUrlToBlob(srcUrl);
         }
         if (blob) {
-          var finalFile = new File([blob], simpleFile.name, { type: simpleFile.type });
+          var finalFile = new File([blob], simpleFile.name, {
+            type: simpleFile.type,
+          });
           var dt = new DataTransfer();
           dt.items.add(finalFile);
           fileInput.files = dt.files;
@@ -1359,124 +2319,186 @@ async function runTimestampStep() {
         dt.items.add(simpleFile);
         fileInput.files = dt.files;
       }
-      var evt = new Event('change');
+      var evt = new Event("change");
       fileInput.dispatchEvent(evt);
-    } catch(e) {
+    } catch (e) {
       if (simpleFile) {
         var dt = new DataTransfer();
         dt.items.add(simpleFile);
         fileInput.files = dt.files;
-        var evt = new Event('change');
+        var evt = new Event("change");
         fileInput.dispatchEvent(evt);
       }
     }
   }
   var promise = window.handleOtsCreate();
   if (promise && promise.then) {
-    promise.then(function() {
-      var resultDiv = document.getElementById('sts-result');
-      if (resultDiv) {
-        var text = escapeHtml((document.getElementById('ts-output') || {}).textContent || '');
-        resultDiv.innerHTML = '<div class="simple-success">' + text.replace(/\n/g, '<br>') + '</div>';
-      }
-      simpleResults.timestamp = true;
-      var tsOut = document.getElementById('ts-output');
-      if (tsOut) {
-        var rawText = tsOut.textContent || '';
-        var hashMatch = rawText.match(/[a-f0-9]{64}/i);
-        var hash = hashMatch ? hashMatch[0] : '';
-        var hasAttestation = rawText.indexOf('blockchain') >= 0 || rawText.indexOf('attestation') >= 0;
-        var dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
-        if (hash) {
-          simpleResults.tsResult = 'Certificate Transparency\n' +
-            'SHA-256: ' + hash + '\n' +
-            (hasAttestation ? 'Logged: ' + dateStr + '\nTransparency log: a.pool.opentimestamps.org\n' : 'Created: ' + dateStr + '\nStatus: Pending — awaiting blockchain attestation\n') +
-            'Verifiable at: https://opentimestamps.org';
-        } else {
-          simpleResults.tsResult = rawText;
+    promise
+      .then(function () {
+        var resultDiv = document.getElementById("sts-result");
+        if (resultDiv) {
+          var text = escapeHtml(
+            (document.getElementById("ts-output") || {}).textContent || "",
+          );
+          resultDiv.innerHTML =
+            '<div class="simple-success">' +
+            text.replace(/\n/g, "<br>") +
+            "</div>";
         }
-      }
-      var tsDl = document.getElementById('ts-download');
-      if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
-      simpleStepDone = true;
-      document.getElementById('simpleNextBtn').disabled = false;
-    }).catch(function(e) {
-      var resultDiv = document.getElementById('sts-result');
-      if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.ts_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
-    });
+        simpleResults.timestamp = true;
+        var tsOut = document.getElementById("ts-output");
+        if (tsOut) {
+          var rawText = tsOut.textContent || "";
+          var hashMatch = rawText.match(/[a-f0-9]{64}/i);
+          var hash = hashMatch ? hashMatch[0] : "";
+          var hasAttestation =
+            rawText.indexOf("blockchain") >= 0 ||
+            rawText.indexOf("attestation") >= 0;
+          var dateStr = new Date()
+            .toISOString()
+            .replace("T", " ")
+            .substring(0, 19);
+          if (hash) {
+            simpleResults.tsResult =
+              "Certificate Transparency\n" +
+              "SHA-256: " +
+              hash +
+              "\n" +
+              (hasAttestation
+                ? "Logged: " +
+                  dateStr +
+                  "\nTransparency log: a.pool.opentimestamps.org\n"
+                : "Created: " +
+                  dateStr +
+                  "\nStatus: Pending — awaiting blockchain attestation\n") +
+              "Verifiable at: https://opentimestamps.org";
+          } else {
+            simpleResults.tsResult = rawText;
+          }
+        }
+        var tsDl = document.getElementById("ts-download");
+        if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
+        simpleStepDone = true;
+        document.getElementById("simpleNextBtn").disabled = false;
+      })
+      .catch(function (e) {
+        var resultDiv = document.getElementById("sts-result");
+        if (resultDiv)
+          resultDiv.innerHTML =
+            '<div class="simple-error">' +
+            __("simple.ts_failed").replace("{msg}", escapeHtml(e.message)) +
+            "</div>";
+      });
   }
 }
 
 function renderFingerprintStep(body) {
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.fp_title') + '</h2><p>' + __('simple.fp_desc') + '</p>' +
+    '<div class="simple-card"><h2>' +
+    __("simple.fp_title") +
+    "</h2><p>" +
+    __("simple.fp_desc") +
+    "</p>" +
     '<p style="font-size:0.78rem;color:var(--text-muted);margin:0 0 12px;padding:8px;background:rgba(108,92,231,.1);border-radius:6px">' +
-    __('simple.fp_processing_note', '⏳ Computing multiple hash algorithms. This may take a moment for large files.') + '</p>' +
-    '<div id="sfp-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p id="sfp-status">' + __('simple.processing') + '</p></div></div>';
+    __(
+      "simple.fp_processing_note",
+      "⏳ Computing multiple hash algorithms. This may take a moment for large files.",
+    ) +
+    "</p>" +
+    '<div id="sfp-result"><div class="spinner" style="display:inline-block;margin:16px auto"></div><p id="sfp-status">' +
+    __("simple.processing") +
+    "</p></div></div>";
   runFingerprintStep();
 }
 
 function runFingerprintStep() {
   if (!window.handleFingerprint) return;
-  var fileInput = document.getElementById('fp-file');
+  var fileInput = document.getElementById("fp-file");
   if (fileInput && simpleFile) {
     var dt = new DataTransfer();
     dt.items.add(simpleFile);
     fileInput.files = dt.files;
-    var evt = new Event('change');
+    var evt = new Event("change");
     fileInput.dispatchEvent(evt);
   }
   // Defer to next tick so the browser renders the spinner first
-  setTimeout(function() {
+  setTimeout(function () {
     if (window.fastFingerprint) {
-      var statusEl = document.getElementById('sfp-status');
+      var statusEl = document.getElementById("sfp-status");
       var _fpResultRef = null;
       var _fpPendingHashes = {};
-      window.fastFingerprint(simpleFile, function(msg) {
-        if (statusEl) statusEl.textContent = msg || '';
-      }, function(extraHashes) {
-        if (_fpResultRef) {
-          Object.assign(_fpResultRef.hashes, extraHashes);
-        }
-        Object.assign(_fpPendingHashes, extraHashes);
-      }).then(function(result) {
-        _fpResultRef = result;
-        Object.assign(result.hashes, _fpPendingHashes);
-        var resultDiv = document.getElementById('sfp-result');
-        if (resultDiv) {
-          resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-            __('simple.fp_done', 'Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.') + '</div>';
-        }
-        simpleResults.fingerprint = true;
-        simpleResults.fpResult = result;
-        window._fpResult = result;
-        simpleStepDone = true;
-        document.getElementById('simpleNextBtn').disabled = false;
-      }).catch(function(e) {
-        var resultDiv = document.getElementById('sfp-result');
-        if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.fp_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
-      });
+      window
+        .fastFingerprint(
+          simpleFile,
+          function (msg) {
+            if (statusEl) statusEl.textContent = msg || "";
+          },
+          function (extraHashes) {
+            if (_fpResultRef) {
+              Object.assign(_fpResultRef.hashes, extraHashes);
+            }
+            Object.assign(_fpPendingHashes, extraHashes);
+          },
+        )
+        .then(function (result) {
+          _fpResultRef = result;
+          Object.assign(result.hashes, _fpPendingHashes);
+          var resultDiv = document.getElementById("sfp-result");
+          if (resultDiv) {
+            resultDiv.innerHTML =
+              '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+              __(
+                "simple.fp_done",
+                "Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.",
+              ) +
+              "</div>";
+          }
+          simpleResults.fingerprint = true;
+          simpleResults.fpResult = result;
+          window._fpResult = result;
+          simpleStepDone = true;
+          document.getElementById("simpleNextBtn").disabled = false;
+        })
+        .catch(function (e) {
+          var resultDiv = document.getElementById("sfp-result");
+          if (resultDiv)
+            resultDiv.innerHTML =
+              '<div class="simple-error">' +
+              __("simple.fp_failed").replace("{msg}", escapeHtml(e.message)) +
+              "</div>";
+        });
     } else {
       var promise = window.handleFingerprint();
       if (promise && promise.then) {
-        promise.then(function() {
-          var resultDiv = document.getElementById('sfp-result');
-          var fpOutput = document.getElementById('fp-output');
-          if (resultDiv) {
-            resultDiv.innerHTML = '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-              __('simple.fp_done', 'Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.') + '</div>';
-          }
-          simpleResults.fingerprint = true;
-          if (fpOutput) {
-            simpleResults.fpHtml = fpOutput.innerHTML;
-            simpleResults.fpResult = window._fpResult || null;
-          }
-          simpleStepDone = true;
-          document.getElementById('simpleNextBtn').disabled = false;
-        }).catch(function(e) {
-          var resultDiv = document.getElementById('sfp-result');
-          if (resultDiv) resultDiv.innerHTML = '<div class="simple-error">' + __('simple.fp_failed').replace('{msg}', escapeHtml(e.message)) + '</div>';
-        });
+        promise
+          .then(function () {
+            var resultDiv = document.getElementById("sfp-result");
+            var fpOutput = document.getElementById("fp-output");
+            if (resultDiv) {
+              resultDiv.innerHTML =
+                '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+                __(
+                  "simple.fp_done",
+                  "Digital fingerprint generated successfully. All hash algorithms and perceptual hashes are complete.",
+                ) +
+                "</div>";
+            }
+            simpleResults.fingerprint = true;
+            if (fpOutput) {
+              simpleResults.fpHtml = fpOutput.innerHTML;
+              simpleResults.fpResult = window._fpResult || null;
+            }
+            simpleStepDone = true;
+            document.getElementById("simpleNextBtn").disabled = false;
+          })
+          .catch(function (e) {
+            var resultDiv = document.getElementById("sfp-result");
+            if (resultDiv)
+              resultDiv.innerHTML =
+                '<div class="simple-error">' +
+                __("simple.fp_failed").replace("{msg}", escapeHtml(e.message)) +
+                "</div>";
+          });
       }
     }
   }, 50);
@@ -1485,61 +2507,101 @@ function runFingerprintStep() {
 function renderDIDStep(body) {
   var hasKeys = didLoadKeys() !== null;
   var algos = didGetAlgorithmList();
-  var algoOpts = '';
+  var algoOpts = "";
   for (var ai = 0; ai < algos.length; ai++) {
     var label = algos[ai];
-    if (algos[ai] === 'Ed25519') label += ' (fast, 64-byte sig)';
-    else if (algos[ai] === 'P-256') label += ' (widely compatible)';
-    else if (algos[ai] === 'RSA-2048') label += ' (256-byte sig)';
-    else if (algos[ai] === 'RSA-4096') label += ' (512-byte sig)';
-    algoOpts += '<option value="' + algos[ai] + '">' + label + '</option>';
+    if (algos[ai] === "Ed25519") label += " (fast, 64-byte sig)";
+    else if (algos[ai] === "P-256") label += " (widely compatible)";
+    else if (algos[ai] === "RSA-2048") label += " (256-byte sig)";
+    else if (algos[ai] === "RSA-4096") label += " (512-byte sig)";
+    algoOpts += '<option value="' + algos[ai] + '">' + label + "</option>";
   }
   body.innerHTML =
-    '<div class="simple-card"><h2>' + __('simple.did_title', 'Decentralized Identity') + '</h2><p>' + __('simple.did_desc', 'Sign your file fingerprint with a Decentralized Identifier (DID). This cryptographically proves you created this content.') + '</p>' +
+    '<div class="simple-card"><h2>' +
+    __("simple.did_title", "Decentralized Identity") +
+    "</h2><p>" +
+    __(
+      "simple.did_desc",
+      "Sign your file fingerprint with a Decentralized Identifier (DID). This cryptographically proves you created this content.",
+    ) +
+    "</p>" +
     '<div style="text-align:left">' +
     '<div id="sdid-status-area">' +
-    (hasKeys ? '<p style="font-size:0.82rem;color:var(--text-muted);margin:8px 0">' + __('simple.did_keys_exist', 'Existing DID identity found. You can Sign or Generate a new one.') + '</p>' :
-     '<p style="font-size:0.82rem;color:var(--text-muted);margin:8px 0">' + __('simple.did_no_keys', 'No DID identity found. Generate a new one below.') + '</p>') +
-    '</div>' +
+    (hasKeys
+      ? '<p style="font-size:0.82rem;color:var(--text-muted);margin:8px 0">' +
+        __(
+          "simple.did_keys_exist",
+          "Existing DID identity found. You can Sign or Generate a new one.",
+        ) +
+        "</p>"
+      : '<p style="font-size:0.82rem;color:var(--text-muted);margin:8px 0">' +
+        __(
+          "simple.did_no_keys",
+          "No DID identity found. Generate a new one below.",
+        ) +
+        "</p>") +
+    "</div>" +
     '<div style="display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap">' +
-    '<label for="sdid-algo-select" style="font-size:0.82rem;font-weight:600">' + __('did.algo_label', 'Algorithm:') + '</label>' +
-    '<select id="sdid-algo-select">' + algoOpts + '</select></div>' +
+    '<label for="sdid-algo-select" style="font-size:0.82rem;font-weight:600">' +
+    __("did.algo_label", "Algorithm:") +
+    "</label>" +
+    '<select id="sdid-algo-select">' +
+    algoOpts +
+    "</select></div>" +
     '<button class="btn" onclick="runDIDStepGenerate()" id="sdid-gen-btn" style="margin-right:8px">' +
-    __('simple.did_gen_btn', '🔑 Generate DID Identity') + '</button>' +
-    '<button class="btn" onclick="runDIDStepSign()" id="sdid-sign-btn"' + (hasKeys ? '' : ' disabled') + '>' +
-    __('simple.did_sign_btn', '✍️ Sign &amp; Verify') + '</button>' +
+    __("simple.did_gen_btn", "🔑 Generate DID Identity") +
+    "</button>" +
+    '<button class="btn" onclick="runDIDStepSign()" id="sdid-sign-btn"' +
+    (hasKeys ? "" : " disabled") +
+    ">" +
+    __("simple.did_sign_btn", "✍️ Sign &amp; Verify") +
+    "</button>" +
     '<div id="sdid-result" style="margin-top:12px"></div>' +
     '<div id="sdid-status" style="margin-top:8px;font-size:0.82rem;color:var(--text-muted)"></div>' +
-    '</div></div>';
+    "</div></div>";
 }
 
 async function runDIDStepGenerate() {
-  var statusEl = document.getElementById('sdid-result');
-  var genBtn = document.getElementById('sdid-gen-btn');
-  var signBtn = document.getElementById('sdid-sign-btn');
-  var algoSelect = document.getElementById('sdid-algo-select');
-  var algo = algoSelect ? algoSelect.value : 'Ed25519';
-  if (statusEl) statusEl.innerHTML = '<div class="spinner" style="display:inline-block;margin:8px auto"></div><p style="font-size:0.82rem;color:var(--text-muted)">' + __('simple.did_generating', 'Generating DID keypair...') + '</p>';
+  var statusEl = document.getElementById("sdid-result");
+  var genBtn = document.getElementById("sdid-gen-btn");
+  var signBtn = document.getElementById("sdid-sign-btn");
+  var algoSelect = document.getElementById("sdid-algo-select");
+  var algo = algoSelect ? algoSelect.value : "Ed25519";
+  if (statusEl)
+    statusEl.innerHTML =
+      '<div class="spinner" style="display:inline-block;margin:8px auto"></div><p style="font-size:0.82rem;color:var(--text-muted)">' +
+      __("simple.did_generating", "Generating DID keypair...") +
+      "</p>";
   try {
     var kp = await didGenerateKeypair(algo);
     didStoreKeys(kp.did, kp.privJwk, kp.algorithm);
     window._didKeypair = kp;
     if (statusEl) {
-      statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
-        __('simple.did_generated', '✅ DID identity generated successfully!') + '<br><span style="font-size:0.75rem;word-break:break-all">' + kp.did + '</span></div>';
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
+        __("simple.did_generated", "✅ DID identity generated successfully!") +
+        '<br><span style="font-size:0.75rem;word-break:break-all">' +
+        kp.did +
+        "</span></div>";
     }
     if (signBtn) signBtn.disabled = false;
     simpleResults.didIdentity = kp.did;
   } catch (e) {
-    if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-      __('simple.did_failed', '❌ DID generation failed: {msg}').replace('{msg}', escapeHtml(e.message)) + '</div>';
+    if (statusEl)
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        __("simple.did_failed", "❌ DID generation failed: {msg}").replace(
+          "{msg}",
+          escapeHtml(e.message),
+        ) +
+        "</div>";
   }
 }
 
 async function runDIDStepSign() {
-  var statusEl = document.getElementById('sdid-result');
-  var signBtn = document.getElementById('sdid-sign-btn');
-  var genBtn = document.getElementById('sdid-gen-btn');
+  var statusEl = document.getElementById("sdid-result");
+  var signBtn = document.getElementById("sdid-sign-btn");
+  var genBtn = document.getElementById("sdid-gen-btn");
   if (!window._didKeypair) {
     var stored = didLoadKeys();
     if (stored) {
@@ -1547,24 +2609,46 @@ async function runDIDStepSign() {
         window._didKeypair = await didImportSignKey(stored);
       } catch (e) {
         didClearKeys();
-        if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-          __('simple.did_stored_keys_invalid', 'Stored DID keys are invalid. Please generate a new identity.') + '</div>';
-        var signBtn = document.getElementById('sdid-sign-btn');
+        if (statusEl)
+          statusEl.innerHTML =
+            '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+            __(
+              "simple.did_stored_keys_invalid",
+              "Stored DID keys are invalid. Please generate a new identity.",
+            ) +
+            "</div>";
+        var signBtn = document.getElementById("sdid-sign-btn");
         if (signBtn) signBtn.disabled = true;
         return;
       }
     } else {
-      if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-        __('simple.did_no_keys_err', 'Please generate a DID identity first.') + '</div>';
+      if (statusEl)
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          __(
+            "simple.did_no_keys_err",
+            "Please generate a DID identity first.",
+          ) +
+          "</div>";
       return;
     }
   }
   if (!simpleResults.fpResult) {
-    if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-      __('simple.did_no_fp', 'No fingerprint found. Please complete the Fingerprint step first.') + '</div>';
+    if (statusEl)
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        __(
+          "simple.did_no_fp",
+          "No fingerprint found. Please complete the Fingerprint step first.",
+        ) +
+        "</div>";
     return;
   }
-  if (statusEl) statusEl.innerHTML = '<div class="spinner" style="display:inline-block;margin:8px auto"></div><p style="font-size:0.82rem;color:var(--text-muted)">' + __('simple.did_signing', 'Signing fingerprint...') + '</p>';
+  if (statusEl)
+    statusEl.innerHTML =
+      '<div class="spinner" style="display:inline-block;margin:8px auto"></div><p style="font-size:0.82rem;color:var(--text-muted)">' +
+      __("simple.did_signing", "Signing fingerprint...") +
+      "</p>";
   try {
     var fpJson = JSON.stringify(simpleResults.fpResult.hashes || {});
     var sigBytes = await didSign(window._didKeypair, fpJson);
@@ -1573,27 +2657,55 @@ async function runDIDStepSign() {
       did: window._didKeypair.did,
       algorithm: window._didKeypair.algorithm,
       signature: sigBase64,
-      signedData: 'fingerprint_hashes',
-      timestamp: new Date().toISOString()
+      signedData: "fingerprint_hashes",
+      timestamp: new Date().toISOString(),
     };
-    var verifyOk = await didVerify(window._didKeypair.publicKey, sigBytes, fpJson, window._didKeypair.algorithm);
+    var verifyOk = await didVerify(
+      window._didKeypair.publicKey,
+      sigBytes,
+      fpJson,
+      window._didKeypair.algorithm,
+    );
     if (statusEl) {
       if (verifyOk) {
-        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
-          __('simple.did_signed_success', '✅ Fingerprint signed and verified successfully!') + '<br>' +
-          '<span style="font-size:0.75rem;word-break:break-all">DID: ' + window._didKeypair.did + '</span><br>' +
-          '<span style="font-size:0.72rem;color:var(--text-muted)">' + __('simple.did_sig_algorithm', 'Algorithm: {algo}').replace('{algo}', window._didKeypair.algorithm) + '</span></div>';
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
+          __(
+            "simple.did_signed_success",
+            "✅ Fingerprint signed and verified successfully!",
+          ) +
+          "<br>" +
+          '<span style="font-size:0.75rem;word-break:break-all">DID: ' +
+          window._didKeypair.did +
+          "</span><br>" +
+          '<span style="font-size:0.72rem;color:var(--text-muted)">' +
+          __("simple.did_sig_algorithm", "Algorithm: {algo}").replace(
+            "{algo}",
+            window._didKeypair.algorithm,
+          ) +
+          "</span></div>";
       } else {
-        statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-          __('simple.did_verify_failed', '❌ Signature verification failed. Please regenerate your identity.') + '</div>';
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          __(
+            "simple.did_verify_failed",
+            "❌ Signature verification failed. Please regenerate your identity.",
+          ) +
+          "</div>";
       }
     }
     simpleStepDone = true;
-    var nextBtn = document.getElementById('simpleNextBtn');
+    var nextBtn = document.getElementById("simpleNextBtn");
     if (nextBtn) nextBtn.disabled = false;
   } catch (e) {
-    if (statusEl) statusEl.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-      __('simple.did_failed', '❌ DID signing failed: {msg}').replace('{msg}', escapeHtml(e.message)) + '</div>';
+    if (statusEl)
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        __("simple.did_failed", "❌ DID signing failed: {msg}").replace(
+          "{msg}",
+          escapeHtml(e.message),
+        ) +
+        "</div>";
   }
 }
 
@@ -1602,155 +2714,285 @@ function renderDone(body) {
   var sections = [];
 
   if (results.c2pa && results.c2paUrl) {
-    sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
-      '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
-      __('simple.c2pa_final_desc', 'C2PA-signed — watermark + timestamp injected + AI provenance.') + '</p>' +
-      '<img src="' + results.c2paUrl + '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
-      '<a href="' + results.c2paUrl + '" download="signed.png" class="btn" style="background:var(--primary);color:#fff">' +
-      __('simple.final_dl_btn', '📥 Download Final Image') + '</a></div>');
-  } else if (results['pixel-injection'] && results.piFinalUrl) {
-    sections.push('<div class="simple-done-section"><h3>' + __('simple.final_image_title', 'Final Image') + '</h3>' +
-      '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
-      __('simple.final_image_desc', 'Watermark + secret message — one image. Use Professional mode to extract both.') + '</p>' +
-      '<img src="' + results.piFinalUrl + '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
-      '<a href="' + results.piFinalUrl + '" download="protected.png" class="btn" style="background:var(--primary);color:#fff">' +
-      __('simple.final_dl_btn', '📥 Download Final Image') + '</a></div>');
+    sections.push(
+      '<div class="simple-done-section"><h3>' +
+        __("simple.final_image_title", "Final Image") +
+        "</h3>" +
+        '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
+        __(
+          "simple.c2pa_final_desc",
+          "C2PA-signed — watermark + timestamp injected + AI provenance.",
+        ) +
+        "</p>" +
+        '<img src="' +
+        results.c2paUrl +
+        '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
+        '<a href="' +
+        results.c2paUrl +
+        '" download="signed.png" class="btn" style="background:var(--primary);color:#fff">' +
+        __("simple.final_dl_btn", "📥 Download Final Image") +
+        "</a></div>",
+    );
+  } else if (results["pixel-injection"] && results.piFinalUrl) {
+    sections.push(
+      '<div class="simple-done-section"><h3>' +
+        __("simple.final_image_title", "Final Image") +
+        "</h3>" +
+        '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
+        __(
+          "simple.final_image_desc",
+          "Watermark + secret message — one image. Use Professional mode to extract both.",
+        ) +
+        "</p>" +
+        '<img src="' +
+        results.piFinalUrl +
+        '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
+        '<a href="' +
+        results.piFinalUrl +
+        '" download="protected.png" class="btn" style="background:var(--primary);color:#fff">' +
+        __("simple.final_dl_btn", "📥 Download Final Image") +
+        "</a></div>",
+    );
   } else if (results.watermark && results.watermarkUrl) {
-    sections.push('<div class="simple-done-section"><h3>' + __('simple.watermarked_label') + '</h3>' +
-      '<img src="' + results.watermarkUrl + '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
-      '<a href="' + results.watermarkUrl + '" download="watermarked.jpg" class="btn">' + __('simple.watermark_dl_btn') + '</a></div>');
+    sections.push(
+      '<div class="simple-done-section"><h3>' +
+        __("simple.watermarked_label") +
+        "</h3>" +
+        '<img src="' +
+        results.watermarkUrl +
+        '" onclick="openLightbox(this.src)" style="max-width:100%;max-height:240px;border-radius:6px;cursor:zoom-in;margin-bottom:10px;display:block">' +
+        '<a href="' +
+        results.watermarkUrl +
+        '" download="watermarked.jpg" class="btn">' +
+        __("simple.watermark_dl_btn") +
+        "</a></div>",
+    );
   }
 
   if (results.audioWatermark && results.audioWatermarkUrl) {
-    var algoNames = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'DSSS',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
-    var fpName = algoNames[results.audioWatermarkFpAlgo] || 'Algo ' + results.audioWatermarkFpAlgo;
-    var tsName = algoNames[results.audioWatermarkTsAlgo] || 'Algo ' + results.audioWatermarkTsAlgo;
-    sections.push('<div class="simple-done-section"><h3>Protected Audio</h3>' +
-      '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
-      'Fingerprint: <strong>' + fpName + '</strong> &nbsp;|&nbsp; Timestamp: <strong>' + tsName + '</strong></p>' +
-      '<audio controls style="width:100%;max-width:400px;display:block;margin-bottom:10px">' +
-      '<source src="' + results.audioWatermarkUrl + '" type="audio/wav"></audio>' +
-      '<a href="' + results.audioWatermarkUrl + '" download="' + escapeHtml(results.audioWatermarkFilename || 'protected_audio.wav') + '" class="btn" style="background:var(--primary);color:#fff">📥 Download Protected Audio</a></div>');
+    var algoNames = {
+      1: "LSB Audio",
+      2: "FFT-QIM",
+      3: "Echo Hiding",
+      4: "DSSS",
+      5: "QIM",
+      6: "DWT",
+      7: "Patchwork",
+      8: "DCT-based",
+    };
+    var fpName =
+      algoNames[results.audioWatermarkFpAlgo] ||
+      "Algo " + results.audioWatermarkFpAlgo;
+    var tsName =
+      algoNames[results.audioWatermarkTsAlgo] ||
+      "Algo " + results.audioWatermarkTsAlgo;
+    sections.push(
+      '<div class="simple-done-section"><h3>Protected Audio</h3>' +
+        '<p style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 10px">' +
+        "Fingerprint: <strong>" +
+        fpName +
+        "</strong> &nbsp;|&nbsp; Timestamp: <strong>" +
+        tsName +
+        "</strong></p>" +
+        '<audio controls style="width:100%;max-width:400px;display:block;margin-bottom:10px">' +
+        '<source src="' +
+        results.audioWatermarkUrl +
+        '" type="audio/wav"></audio>' +
+        '<a href="' +
+        results.audioWatermarkUrl +
+        '" download="' +
+        escapeHtml(results.audioWatermarkFilename || "protected_audio.wav") +
+        '" class="btn" style="background:var(--primary);color:#fff">📥 Download Protected Audio</a></div>',
+    );
   }
 
   if (results.timestamp) {
-    var tsHtml = '<div class="simple-done-section"><h3>' + __('simple.ts_label') + '</h3>';
-    if (results.tsResult) tsHtml += '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.78rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' + escapeHtml(results.tsResult) + '</pre>';
-    if (results.tsHtml) tsHtml += '<div style="margin-top:8px">' + results.tsHtml + '</div>';
-    tsHtml += '</div>';
+    var tsHtml =
+      '<div class="simple-done-section"><h3>' + __("simple.ts_label") + "</h3>";
+    if (results.tsResult)
+      tsHtml +=
+        '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.78rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' +
+        escapeHtml(results.tsResult) +
+        "</pre>";
+    if (results.tsHtml)
+      tsHtml += '<div style="margin-top:8px">' + results.tsHtml + "</div>";
+    tsHtml += "</div>";
     sections.push(tsHtml);
   }
 
   if (results.fingerprint) {
-    var fpHtml = '<div class="simple-done-section"><h3>' + __('simple.fp_label') + '</h3>';
+    var fpHtml =
+      '<div class="simple-done-section"><h3>' + __("simple.fp_label") + "</h3>";
     fpHtml += '<div style="margin-top:12px">';
-    fpHtml += '<button class="btn" onclick="setupFpDownload();showDownloadModal()">' + __('simple.fp_dl_btn') + '</button>';
-    fpHtml += '</div></div>';
+    fpHtml +=
+      '<button class="btn" onclick="setupFpDownload();showDownloadModal()">' +
+      __("simple.fp_dl_btn") +
+      "</button>";
+    fpHtml += "</div></div>";
     sections.push(fpHtml);
   }
 
   if (results.c2pa && !results.c2paUrl) {
-    sections.push('<div class="simple-done-section"><h3>' + __('simple.c2pa_label') + '</h3><p>' + __('simple.c2pa_done_desc') + '</p></div>');
+    sections.push(
+      '<div class="simple-done-section"><h3>' +
+        __("simple.c2pa_label") +
+        "</h3><p>" +
+        __("simple.c2pa_done_desc") +
+        "</p></div>",
+    );
   }
 
   if (results.didSig || results.didIdentity) {
-    var didHtml = '<div class="simple-done-section"><h3>' + __('simple.did_title', 'Decentralized Identity') + '</h3>';
+    var didHtml =
+      '<div class="simple-done-section"><h3>' +
+      __("simple.did_title", "Decentralized Identity") +
+      "</h3>";
     if (results.didSig) {
-      didHtml += '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.75rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' +
-        'DID: ' + escapeHtml(results.didSig.did) + '\n' +
-        'Algorithm: ' + escapeHtml(results.didSig.algorithm || 'Ed25519') + '\n' +
-        'Signed: ' + escapeHtml((results.didSig.timestamp || '').replace('T', ' ').substring(0, 19)) + '</pre>';
+      didHtml +=
+        '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.75rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' +
+        "DID: " +
+        escapeHtml(results.didSig.did) +
+        "\n" +
+        "Algorithm: " +
+        escapeHtml(results.didSig.algorithm || "Ed25519") +
+        "\n" +
+        "Signed: " +
+        escapeHtml(
+          (results.didSig.timestamp || "").replace("T", " ").substring(0, 19),
+        ) +
+        "</pre>";
     } else if (results.didIdentity) {
-      didHtml += '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.75rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' +
-        'DID: ' + escapeHtml(results.didIdentity) + '</pre>';
+      didHtml +=
+        '<pre style="white-space:pre-wrap;word-break:break-all;font-size:0.75rem;background:var(--bg);padding:8px;border-radius:6px;margin:8px 0">' +
+        "DID: " +
+        escapeHtml(results.didIdentity) +
+        "</pre>";
     }
     didHtml += '<div style="margin-top:12px">';
-    didHtml += '<button class="btn" onclick="setupDidDownload();showDownloadModal()">' + __('simple.did_dl_btn', '📥 Download DID') + '</button>';
-    didHtml += '</div></div>';
+    didHtml +=
+      '<button class="btn" onclick="setupDidDownload();showDownloadModal()">' +
+      __("simple.did_dl_btn", "📥 Download DID") +
+      "</button>";
+    didHtml += "</div></div>";
     sections.push(didHtml);
   }
 
   // Certificate download section
-  var hasAnyResult = results.watermark || results['pixel-injection'] || results.audioWatermark || results.timestamp || results.fingerprint || results.c2pa || results.didSig;
+  var hasAnyResult =
+    results.watermark ||
+    results["pixel-injection"] ||
+    results.audioWatermark ||
+    results.timestamp ||
+    results.fingerprint ||
+    results.c2pa ||
+    results.didSig;
   if (hasAnyResult) {
-    var certType = simpleType || 'other';
-    var certDescKey = 'simple.cert_desc_' + certType;
+    var certType = simpleType || "other";
+    var certDescKey = "simple.cert_desc_" + certType;
     var certDescFallback = {
-      image: 'Download a signed document with all results, image preview, and QR verification code.',
-      audio: 'Download a signed document with all results, audio player preview, and QR verification code.',
-      video: 'Download a signed document with all results, video preview, and QR verification code.',
-      other: 'Download a signed document with all results and QR verification code.'
+      image:
+        "Download a signed document with all results, image preview, and QR verification code.",
+      audio:
+        "Download a signed document with all results, audio player preview, and QR verification code.",
+      video:
+        "Download a signed document with all results, video preview, and QR verification code.",
+      other:
+        "Download a signed document with all results and QR verification code.",
     }[certType];
-    sections.push('<div class="simple-done-section simple-cert-section">' +
-      '<h3>' + __('simple.cert_title', 'Digital Passport') + '</h3>' +
-      '<p style="font-size:0.82rem;color:var(--text-muted);margin:4px 0 12px">' +
-      __(certDescKey, certDescFallback) + '</p>' +
-      '<div class="simple-cert-btns">' +
-      '<button class="btn cert-btn" onclick="downloadCert(\'pdf\', this)" style="background:#d32f2f;color:#fff">📄 PDF</button>' +
-      '<button class="btn cert-btn" onclick="downloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
-      '<button class="btn cert-btn" onclick="downloadCert(\'epub\', this)" style="background:#7ab55c;color:#fff">📖 EPUB</button>' +
-      '<button class="btn cert-btn" id="cert-ots-dl-btn" onclick="downloadCertOtsProof()" style="background:#666;color:#fff;display:none;margin-top:8px">🛡️ Certificate .OTS Proof</button>' +
-      '</div></div>');
+    sections.push(
+      '<div class="simple-done-section simple-cert-section">' +
+        "<h3>" +
+        __("simple.cert_title", "Digital Passport") +
+        "</h3>" +
+        '<p style="font-size:0.82rem;color:var(--text-muted);margin:4px 0 12px">' +
+        __(certDescKey, certDescFallback) +
+        "</p>" +
+        '<div class="simple-cert-btns">' +
+        '<button class="btn cert-btn" onclick="downloadCert(\'pdf\', this)" style="background:#d32f2f;color:#fff">📄 PDF</button>' +
+        '<button class="btn cert-btn" onclick="downloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
+        '<button class="btn cert-btn" onclick="downloadCert(\'epub\', this)" style="background:#7ab55c;color:#fff">📖 EPUB</button>' +
+        '<button class="btn cert-btn" id="cert-ots-dl-btn" onclick="downloadCertOtsProof()" style="background:#666;color:#fff;display:none;margin-top:8px">🛡️ Certificate .OTS Proof</button>' +
+        "</div></div>",
+    );
   }
 
-  var mainHtml = '<div class="simple-card simple-done"><h2>' + __('simple.done_title') + '</h2>' +
-    '<p>' + __('simple.done_desc') + '</p>' +
-    '<div class="simple-results-list">' + sections.join('') + '</div>' +
+  var mainHtml =
+    '<div class="simple-card simple-done"><h2>' +
+    __("simple.done_title") +
+    "</h2>" +
+    "<p>" +
+    __("simple.done_desc") +
+    "</p>" +
+    '<div class="simple-results-list">' +
+    sections.join("") +
+    "</div>" +
     '<div class="simple-done-actions">' +
-    '<button class="btn" onclick="restartSimple()">' + __('simple.done_restart') + '</button>' +
-    '<button class="btn" onclick="switchMode()">' + __('simple.done_switch') + '</button>' +
-    '</div></div>';
+    '<button class="btn" onclick="restartSimple()">' +
+    __("simple.done_restart") +
+    "</button>" +
+    '<button class="btn" onclick="switchMode()">' +
+    __("simple.done_switch") +
+    "</button>" +
+    "</div></div>";
 
   body.innerHTML = mainHtml;
-  document.getElementById('simplePrevBtn').style.display = 'none';
-  document.getElementById('simpleNextBtn').textContent = __('simple.start_over');
+  document.getElementById("simplePrevBtn").style.display = "none";
+  document.getElementById("simpleNextBtn").textContent =
+    __("simple.start_over");
 }
 
 function setupFpDownload() {
   window._currentDownloadHandler = downloadFingerprint;
-  document.getElementById('dl-modal-title').textContent = __('dl.title');
-  if (!window._fpResult && simpleResults.fpResult) window._fpResult = simpleResults.fpResult;
+  document.getElementById("dl-modal-title").textContent = __("dl.title");
+  if (!window._fpResult && simpleResults.fpResult)
+    window._fpResult = simpleResults.fpResult;
 }
 
 function setupDidDownload() {
   window._currentDownloadHandler = downloadDID;
-  document.getElementById('dl-modal-title').textContent = __('dl.title', 'Download') + ' — DID';
+  document.getElementById("dl-modal-title").textContent =
+    __("dl.title", "Download") + " — DID";
   // Ensure window._didKeypair is available for download converters
-  if (!window._didKeypair && simpleResults.didIdentity && typeof didLoadKeys === 'function') {
+  if (
+    !window._didKeypair &&
+    simpleResults.didIdentity &&
+    typeof didLoadKeys === "function"
+  ) {
     var stored = didLoadKeys();
-    if (stored && typeof didImportSignKey === 'function') {
-      didImportSignKey(stored).then(function(kp) {
+    if (stored && typeof didImportSignKey === "function") {
+      didImportSignKey(stored).then(function (kp) {
         window._didKeypair = kp;
         window._didSig = simpleResults.didSig || window._didSig || null;
       });
     }
   }
-  if (simpleResults.didSig && !window._didSig) window._didSig = simpleResults.didSig;
+  if (simpleResults.didSig && !window._didSig)
+    window._didSig = simpleResults.didSig;
 }
 
 function toggleSimpleLangDropdown() {
-  var menu = document.getElementById('simpleLangMenu');
-  if (menu) menu.classList.toggle('show');
+  var menu = document.getElementById("simpleLangMenu");
+  if (menu) menu.classList.toggle("show");
 }
 
 function toggleModeLangDropdown() {
-  var menu = document.getElementById('modeLangMenu');
-  if (menu) menu.classList.toggle('show');
+  var menu = document.getElementById("modeLangMenu");
+  if (menu) menu.classList.toggle("show");
 }
 
 // ── Helpers ──
 
 function escapeHtml(s) {
-  var div = document.createElement('div');
+  var div = document.createElement("div");
   div.textContent = s;
   return div.innerHTML;
 }
 
 function formatSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1048576).toFixed(1) + ' MB';
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1048576).toFixed(1) + " MB";
 }
 
 // Init on DOM ready
-document.addEventListener('DOMContentLoaded', initMode);
+document.addEventListener("DOMContentLoaded", initMode);
