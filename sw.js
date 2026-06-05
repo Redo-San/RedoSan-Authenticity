@@ -107,6 +107,11 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Forensic/forensic.js",
   "/RedoSan-Authenticity/Forensic/forensic_core.js",
   "/RedoSan-Authenticity/ID_Forge/id_forge.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data.js",
+  "/RedoSan-Authenticity/Document_Watermark/document_watermark_core.js",
+  "/RedoSan-Authenticity/Document_Watermark/text_extractor.js",
+  "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
+  "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
 ];
 
 // Whitelist of legitimate CSS files served by the site.
