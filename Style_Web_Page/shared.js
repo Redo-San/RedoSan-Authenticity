@@ -221,7 +221,6 @@ var DOC_THREAT_PATTERNS = [
   { pattern: /\/JS\s+\d+\s+0\s+R/i, label: "embedded JavaScript" },
   { pattern: /\/OpenAction[\s<]/i, label: "auto-execute action" },
   { pattern: /\/Launch[\s<]/i, label: "launch external app" },
-  { pattern: /\/EmbeddedFiles[\s<]/i, label: "embedded file attachments" },
 ];
 
 function hasDangerousContent(arr) {
@@ -498,18 +497,6 @@ async function validateFileInput(input) {
     clearInputFiles(input);
     return false;
   }
-  var docOk = await checkDocumentThreats(file);
-  if (!docOk) {
-    alert(
-      __(
-        "shared.dangerous_document",
-        "This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.",
-      ) ||
-        "This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.",
-    );
-    clearInputFiles(input);
-    return false;
-  }
   var structOk = await checkFileStructure(file);
   if (!structOk) {
     alert(
@@ -598,18 +585,6 @@ async function getFile(id) {
           "This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.",
         ) ||
           "This file contains potentially dangerous embedded code (scripts, event handlers) and is not allowed.",
-      );
-      input.value = "";
-      return null;
-    }
-    var docOk = await checkDocumentThreats(file);
-    if (!docOk) {
-      alert(
-        __(
-          "shared.dangerous_document",
-          "This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.",
-        ) ||
-          "This document contains potentially dangerous features (scripts, auto-execute actions, embedded files) and is not allowed.",
       );
       input.value = "";
       return null;

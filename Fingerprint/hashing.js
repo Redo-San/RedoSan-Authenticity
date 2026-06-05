@@ -761,7 +761,7 @@ async function fingerprintFile(file) {
             if (window._fpResult) Object.assign(window._fpResult.hashes, extraHashes);
         });
     }
-    computeRemainingHashes(result.hashes, buf).catch(function(e) {
+    await computeRemainingHashes(result.hashes, buf).catch(function(e) {
         console.warn('Main-thread hash compute error:', e);
     });
 
@@ -910,8 +910,8 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
     if (typeof Worker !== 'undefined' && typeof window !== 'undefined') {
         window._fpWorkerPromise = startBackgroundWorker(result.hashes, buf, onProgress, onRemainingHashes);
     }
-    // Main thread fallback runs concurrently — whichever finishes first populates result
-    computeRemainingHashes(result.hashes, buf, onProgress, onRemainingHashes)
+    // Main thread fallback — ensures all hashes are present when returning
+    await computeRemainingHashes(result.hashes, buf, onProgress, onRemainingHashes)
         .catch(function(e) { console.warn('Main-thread hash compute error:', e); });
 
     return result;
