@@ -253,6 +253,87 @@ function _rtReadFile(file) {
   });
 }
 
+async function _rtExtractPdfText(buf) {
+  var arr = new Uint8Array(buf);
+  var src = '';
+  for (var i = 0; i < arr.length; i++) src += String.fromCharCode(arr[i]);
+  // Determine if we can delegate to DOCX_EXTRACTOR safely (fast path)
+  var hasStreams = /stream\s*[\r\n]/.test(src);
+  if (!hasStreams) {
+    // Plain text disguised as PDF — extract raw text
+    var raw = '';
+    var ptRe = /\(([^)]*)\)\s*Tj/g;
+    var pm;
+    while ((pm = ptRe.exec(src)) !== null) raw += pm[1];
+    return raw || 'No readable text';
+  }
+  // Check for known-safe simple PDFs: small, few compressed streams
+  var streamCount = (src.match(/endstream/g) || []).length;
+  var safe =
+    typeof DOCX_EXTRACTOR !== 'undefined' &&
+    typeof DOCX_EXTRACTOR.readPdf === 'function' &&
+    streamCount <= 100 &&
+    src.length < 5000000;
+  if (safe) {
+    try {
+      var txt = await DOCX_EXTRACTOR.readPdf(new Uint8Array(buf));
+      if (txt && txt.length > 0) return txt;
+    } catch (e) {}
+  }
+  // Fallback: extract text from compressed streams with safe decompression
+  var textPieces = [];
+  var streamRe = /stream\s*\n([\s\S]*?)endstream/g;
+  var sm;
+  var si = 0;
+  while ((sm = streamRe.exec(src)) !== null) {
+    si++;
+    if (si % 5 === 0) await _rtYield();
+    var rawStream = sm[1].replace(/[\r\n]+$/, '');
+    var rawBytes = new Uint8Array(rawStream.length);
+    for (var di = 0; di < rawStream.length; di++) rawBytes[di] = rawStream.charCodeAt(di) & 0xff;
+    var dec = null;
+    for (var fmtIdx = 0; fmtIdx < 2 && dec === null; fmtIdx++) {
+      var fmt = fmtIdx === 0 ? 'deflate' : 'deflate-raw';
+      try {
+        var st = new DecompressionStream(fmt);
+        var sw = st.writable.getWriter();
+        var sr = st.readable.getReader();
+        var sch = [];
+        var srp = (async function () {
+          while (true) { var v = await sr.read(); if (v.done) break; sch.push(v.value); }
+        })().catch(function () {});
+        await sw.write(rawBytes);
+        await sw.close();
+        await srp;
+        var sttl = 0;
+        for (var sci = 0; sci < sch.length; sci++) sttl += sch[sci].length;
+        dec = new Uint8Array(sttl);
+        var soff = 0;
+        for (var scj = 0; scj < sch.length; scj++) { dec.set(sch[scj], soff); soff += sch[scj].length; }
+      } catch (e) { dec = null; }
+    }
+    if (dec) {
+      var decStr = '';
+      for (var d2 = 0; d2 < dec.length; d2++) decStr += String.fromCharCode(dec[d2]);
+      // Only extract if it looks like PDF content stream (has BT/ET markers)
+      if (/BT/.test(decStr) && /ET/.test(decStr)) {
+        var tjRe = /\(([^)]*)\)\s*Tj/g;
+        var tm;
+        while ((tm = tjRe.exec(decStr)) !== null) textPieces.push(tm[1]);
+        var tjArrRe = /\[([^\]]*)\]\s*TJ/g;
+        while ((tm = tjArrRe.exec(decStr)) !== null) {
+          var segRe = /\(([^)]*)\)/g;
+          var sm2;
+          while ((sm2 = segRe.exec(tm[1])) !== null) textPieces.push(sm2[1]);
+        }
+      }
+      // If too many pieces (>100k), yield
+      if (textPieces.length > 100000) await _rtYield();
+    }
+  }
+  return textPieces.join('') || 'No readable text';
+}
+
 function _rtExtractDocText(file, buf) {
   return new Promise(function (resolve, reject) {
     var ext = file.name.toLowerCase().split('.').pop();
@@ -260,12 +341,8 @@ function _rtExtractDocText(file, buf) {
       DOCX_EXTRACTOR.readDocx(buf).then(resolve).catch(function (err) {
         reject(new Error('DOCX extraction failed: ' + err.message));
       });
-    } else if (ext === 'pdf' && typeof DOCX_EXTRACTOR !== 'undefined' && DOCX_EXTRACTOR.readPdf) {
-      DOCX_EXTRACTOR.readPdf(new Uint8Array(buf)).then(function (txt) {
-        resolve(txt || '');
-      }).catch(function (err) {
-        reject(new Error('PDF extraction failed: ' + err.message));
-      });
+    } else if (ext === 'pdf') {
+      _rtExtractPdfText(buf).then(resolve).catch(function () { resolve(''); });
     } else if (ext === 'doc') {
       var arr = new Uint8Array(buf);
       var result = '';
@@ -290,7 +367,7 @@ async function _rtDeflate(bytes) {
   var chunks = [];
   var readPromise = (async function () {
     while (true) { var v = await reader.read(); if (v.done) break; chunks.push(v.value); }
-  })();
+  })().catch(function () {});
   await writer.write(bytes);
   await writer.close();
   await readPromise;
@@ -302,14 +379,22 @@ async function _rtDeflate(bytes) {
   return result;
 }
 
+function _rtYield() { return new Promise(function (r) { setTimeout(r, 0); }); }
+
 async function _rtRebuildPdf(buf, originalText, cleanedText) {
   var src = '';
   var arr = new Uint8Array(buf);
-  for (var i = 0; i < arr.length; i++) src += String.fromCharCode(arr[i]);
+  for (var i = 0; i < arr.length; i++) {
+    src += String.fromCharCode(arr[i]);
+    if (i > 0 && i % 500000 === 0) await _rtYield();
+  }
   var result = '', lastIdx = 0;
   var re = /stream([\r\n]+)([\s\S]*?)endstream/g;
   var m;
+  var streamCount = 0;
   while ((m = re.exec(src)) !== null) {
+    streamCount++;
+    if (streamCount % 3 === 0) await _rtYield();
     result += src.substring(lastIdx, m.index);
     result += 'stream' + m[1];
     var rawData = m[2];
@@ -327,7 +412,7 @@ async function _rtRebuildPdf(buf, originalText, cleanedText) {
         var sch = [];
         var srp = (async function () {
           while (true) { var v = await sr.read(); if (v.done) break; sch.push(v.value); }
-        })();
+        })().catch(function () {});
         await sw.write(rawBytes);
         await sw.close();
         await srp;
