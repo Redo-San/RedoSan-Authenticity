@@ -240,10 +240,10 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
 │  │  │ Forensic │ │ ID Forge │ │ AI Assistant     │  │    │
-│  │  │ Analyzer │ │(UUID/v7, │ │ Raido (rule-    │  │    │
-│  │  │(ELA,     │ │ ULID,    │ │ based, bilingual│  │    │
-│  │  │ copy-    │ │ NanoID,  │ │ AR/EN, no API)  │  │    │
-│  │  │ move)    │ │ SWHID)   │ │                 │  │    │
+│  │  │ Analyzer │ │(UUID/v7, │ │ Raido (rule-     │  │    │
+│  │  │(ELA,     │ │ ULID,    │ │ based, bilingual │  │    │
+│  │  │ copy-    │ │ NanoID,  │ │ AR/EN, no API)   │  │    │
+│  │  │ move)    │ │ SWHID)   │ │                  │  │    │
 │  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
 │  ├──────────────────────────────────────────────────┤    │
 │  │        Security Threat Blocker (SW + 404)        │    │
