@@ -84,10 +84,14 @@ var DOCX_EXTRACTOR = (function () {
     }).pipeThrough(new DecompressionStream(format));
     var reader = stream.getReader();
     var chunks = [];
-    while (true) {
-      var v = await reader.read();
-      if (v.done) break;
-      chunks.push(v.value);
+    try {
+      while (true) {
+        var v = await reader.read();
+        if (v.done) break;
+        chunks.push(v.value);
+      }
+    } catch (e) {
+      throw e;
     }
     var total = 0;
     for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -102,7 +106,7 @@ var DOCX_EXTRACTOR = (function () {
 
   async function inflateRaw(data) {
     // PDF FlateDecode uses zlib wrapper (RFC 1950), but some PDFs use raw deflate.
-    // Try both, plus try without any compression as fallback.
+    // Try both formats
     if (typeof DecompressionStream === "undefined") {
       throw new Error(
         "PDF compression not supported in this browser. Try a plain text file instead.",
@@ -120,9 +124,9 @@ var DOCX_EXTRACTOR = (function () {
     } catch (e2) {
       console.warn("docw: deflate-raw failed", e2);
     }
-    // If data is short, it might be uncompressed text
-    console.warn("docw: both decompression formats failed, returning raw data");
-    return data;
+    // Both failed — return empty instead of raw compressed data
+    // (raw binary will cause regex processing to freeze the page)
+    return new Uint8Array(0);
   }
 
   function _yield() {
@@ -153,6 +157,8 @@ var DOCX_EXTRACTOR = (function () {
       var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
       if (!sm2) continue;
       var raw2 = sm2[1].replace(/[\r\n]+$/, "");
+      // Skip large streams (likely image data, not CMap)
+      if (raw2.length > 100000) continue;
       var dec2;
       try {
         dec2 = await inflateRaw(stringToBytes(raw2));
@@ -260,6 +266,9 @@ var DOCX_EXTRACTOR = (function () {
       if (!sm) continue;
 
       var rawStream = sm[1].replace(/[\r\n]+$/, "");
+      // Skip very large streams (likely image data, not text)
+      if (rawStream.length > 500000) continue;
+
       var decompressed;
 
       if (contentObj.indexOf("FlateDecode") >= 0) {
@@ -267,6 +276,9 @@ var DOCX_EXTRACTOR = (function () {
       } else {
         decompressed = stringToBytes(rawStream);
       }
+
+      // Skip if decompression produced nothing
+      if (!decompressed || decompressed.length === 0) continue;
 
       var content = latin1Decode(decompressed);
 
