@@ -63,6 +63,7 @@ var PAGE_TITLES = {
   certificate: "Digital Passport Certificate — RedoSan Authenticity",
   converter: "File Converter — RedoSan Authenticity",
   id_forge: "ID Forge — RedoSan Authenticity",
+  "document-watermark": "Document Watermark — RedoSan Authenticity",
 };
 var PAGE_DESCS = {
   home: "Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded.",
@@ -88,6 +89,8 @@ var PAGE_DESCS = {
     "Convert images, audio, and documents between formats. Free online file converter.",
   id_forge:
     "Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool.",
+  "document-watermark":
+    "Embed and extract invisible watermarks in text documents using Zero-Width Characters, Unicode Homoglyphs, and Whitespace Replacement. Free online tool.",
 };
 
 function showPage(name) {
