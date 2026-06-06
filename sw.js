@@ -162,6 +162,7 @@ var YML_WHITELIST = [
   "/RedoSan-Authenticity/.github/workflows/eslint-review.yml",
   "/RedoSan-Authenticity/.github/workflows/stale.yml",
   "/RedoSan-Authenticity/.github/workflows/dom-review.yml",
+  "/RedoSan-Authenticity/.github/workflows/copilot-setup-steps.yml",
   "/RedoSan-Authenticity/.github/dependabot.yml",
   "/RedoSan-Authenticity/.github/labeler.yml",
   "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/bug_report.yml",
