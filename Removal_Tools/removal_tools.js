@@ -174,24 +174,33 @@ function _rtStripDocwSpaces(text) {
 
 function _rtNormalizeHomoglyphs(text) {
   var map = {
-    '\u0410':'A','\u0412':'B','\u0421':'C','\u13A0':'D','\u0415':'E',
-    '\uFF26':'F','\u050C':'G','\u041D':'H','\u0406':'I','\u0408':'J',
-    '\u041A':'K','\u13DE':'L','\u041C':'M','\uFF2E':'N','\u041E':'O',
-    '\u0420':'P','\u051A':'Q','\u042F':'R','\u0405':'S','\u0422':'T',
-    '\u0478':'U','\u0474':'V','\u051C':'W','\u0425':'X','\u04AE':'Y',
-    '\u0396':'Z','\u0430':'a','\u0180':'b','\u0441':'c','\u0501':'d',
-    '\u0435':'e','\u0192':'f','\u0261':'g','\u04BB':'h','\u0456':'i',
-    '\u0458':'j','\u0138':'k','\u026C':'l','\u043C':'m','\u03B7':'n',
-    '\u043E':'o','\u0440':'p','\u051B':'q','\u0433':'r','\u0455':'s',
-    '\u0442':'t','\u03BD':'u','\u0475':'v','\u051D':'w','\u0445':'x',
-    '\u0443':'y','\u03B6':'z','\uFF10':'0','\uFF11':'1','\uFF12':'2',
+    '\u0410':'A','\u0412':'B','\u0421':'C','\u0415':'E','\u0406':'I',
+    '\u0408':'J','\u041A':'K','\u041C':'M','\u041D':'H','\u041E':'O',
+    '\u0420':'P','\u0422':'T','\u0425':'X','\u042F':'R','\u0405':'S',
+    '\u0478':'U','\u0474':'V','\u04AE':'Y','\u050C':'G','\u051A':'Q',
+    '\u051C':'W','\u04BA':'E','\u04A2':'H','\u047A':'O','\u13A0':'D',
+    '\u13DE':'L','\u13AA':'A','\u13DF':'C','\u13C6':'K','\u13F4':'M',
+    '\u13E2':'P','\u13BE':'T','\u13B0':'X','\u13A1':'R','\u01A6':'R',
+    '\u135A':'S','\u10BD':'S',
+    '\u0430':'a','\u0441':'c','\u0435':'e','\u043C':'m','\u043E':'o',
+    '\u0440':'p','\u0442':'t','\u0445':'x','\u0443':'y','\u0433':'r',
+    '\u0455':'s','\u0456':'i','\u0458':'j','\u0475':'v','\u04BB':'h',
+    '\u0501':'d','\u051B':'q','\u051D':'w','\u04D1':'a','\u04AB':'c',
+    '\u04D9':'e','\u04D7':'i','\u049F':'k','\u04CE':'m','\u04A8':'o',
+    '\u04E7':'p','\u04B1':'s','\u04AD':'t','\u04B3':'x','\u04AF':'y',
+    '\u0503':'d','\u04C9':'n','\u0257':'d','\u0266':'h','\u0127':'h',
+    '\u0280':'r','\u027F':'r','\u057D':'u','\u222A':'u',
+    '\u0180':'b','\u0192':'f','\u0261':'g','\u0138':'k','\u026C':'l',
+    '\u0391':'A','\u0395':'E','\u0397':'H','\u039A':'K','\u039C':'M',
+    '\u039F':'O','\u03A1':'P','\u03A4':'T','\u03A7':'X','\u0396':'Z',
+    '\u03F9':'C','\u03AE':'n',
+    '\u03B1':'a','\u03B5':'e','\u03B9':'i','\u03BA':'k','\u03BC':'m',
+    '\u03BF':'o','\u03C1':'p','\u03C2':'s','\u03C4':'t','\u03C7':'x',
+    '\u03B3':'y','\u03B7':'n','\u03BD':'u','\u03F2':'c',
+    '\uFF26':'F','\uFF2E':'N','\uFF10':'0','\uFF11':'1','\uFF12':'2',
     '\uFF13':'3','\uFF14':'4','\uFF15':'5','\uFF16':'6','\uFF17':'7',
-    '\uFF18':'8','\uFF19':'9','\u2024':'.','\u104A':',','\u2236':':',
-    '\u037E':';','\u2010':'-','\u0391':'A','\u0395':'E','\u0397':'H',
-    '\u039A':'K','\u039C':'M','\u039F':'O','\u03A1':'P','\u03A4':'T',
-    '\u03A7':'X','\u03B1':'a','\u03B5':'e','\u03B9':'i','\u03BA':'k',
-    '\u03BC':'m','\u03BF':'o','\u03C1':'p','\u03C2':'s','\u03C4':'t',
-    '\u03C7':'x','\u03B3':'y','\u03F2':'c','\u03F9':'C'
+    '\uFF18':'8','\uFF19':'9',
+    '\u2024':'.','\u104A':',','\u2236':':','\u037E':';','\u2010':'-',
   };
   var out = '';
   for (var i = 0; i < text.length; i++) {
@@ -475,6 +484,179 @@ async function _rtDeflate(bytes) {
 
 function _rtYield() { return new Promise(function (r) { setTimeout(r, 0); }); }
 
+function _rtTryUtf16BeDecode(text) {
+  if (text.length < 4 || text.length % 2 !== 0) return null;
+  var result = "";
+  for (var i = 0; i < text.length; i += 2) {
+    var code = (text.charCodeAt(i) << 8) | text.charCodeAt(i + 1);
+    if (code === 0) return null;
+    result += String.fromCharCode(code);
+  }
+  return result;
+}
+function _rtUtf16BeEncode(text) {
+  var result = "";
+  for (var i = 0; i < text.length; i++) {
+    var code = text.charCodeAt(i);
+    result += String.fromCharCode((code >> 8) & 0xff);
+    result += String.fromCharCode(code & 0xff);
+  }
+  return result;
+}
+
+function _rtCleanPdfStream(content, cmap) {
+  // Clean text in Tj operators: (text) Tj
+  content = content.replace(/\(((?:[^()\\]|\\.)*)\)\s*Tj/g, function (match, text) {
+    var raw = text.replace(/\\(.)/g, "$1");
+    // Try UTF-16 BE decode (for appended watermark text blocks)
+    var utf16 = _rtTryUtf16BeDecode(raw);
+    if (utf16 !== null) {
+      var cleanedUtf16 = _rtCleanDocText(utf16);
+      if (cleanedUtf16 !== utf16) {
+        var reEncoded = _rtUtf16BeEncode(cleanedUtf16);
+        return "(" + reEncoded.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)") + ") Tj";
+      }
+    }
+    // Fall back to literal text cleaning
+    var cleaned = _rtCleanDocText(raw);
+    return "(" + cleaned.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)") + ") Tj";
+  });
+  // Clean text in TJ arrays: [(text) num (text) ...] TJ
+  content = content.replace(/\[([^\]]*)\]\s*TJ/g, function (match, arr) {
+    return "[" + arr.replace(/\(((?:[^()\\]|\\.)*)\)/g, function (inner, text) {
+      var raw = text.replace(/\\(.)/g, "$1");
+      var utf16 = _rtTryUtf16BeDecode(raw);
+      if (utf16 !== null) {
+        var cleanedUtf16 = _rtCleanDocText(utf16);
+        if (cleanedUtf16 !== utf16) {
+          return "(" + _rtUtf16BeEncode(cleanedUtf16).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)") + ")";
+        }
+      }
+      var cleaned = _rtCleanDocText(raw);
+      return "(" + cleaned.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)") + ")";
+    }) + "] TJ";
+  });
+  // Clean hex-encoded Tj operators
+  // If CMap is available, decode multi-byte hex via CMap, clean, re-encode
+  if (cmap) {
+    var hexRe = /<([0-9A-Fa-f]+)>\s*Tj/g;
+    var hm;
+    while ((hm = hexRe.exec(content)) !== null) {
+      var hexStr = hm[1];
+      var cid = parseInt(hexStr, 16);
+      if (cmap.forward[cid] !== undefined) {
+        var uni = cmap.forward[cid];
+        var ch;
+        try { ch = String.fromCodePoint(uni); } catch (e) { continue; }
+        var cleaned = _rtCleanDocText(ch);
+        if (cleaned !== ch) {
+          if (cleaned.length === 0) {
+            content = content.substring(0, hm.index) + content.substring(hm.index + hm[0].length);
+            hexRe.lastIndex = hm.index;
+          } else {
+            var newCid = cmap.reverse[cleaned.charCodeAt(0)];
+            if (newCid !== undefined) {
+              var newHex = newCid.toString(16).toUpperCase().padStart(hexStr.length, '0');
+              var repl = "<" + newHex + "> Tj";
+              content = content.substring(0, hm.index) + repl + content.substring(hm.index + hm[0].length);
+              hexRe.lastIndex = hm.index + repl.length;
+            } else {
+              var esc = cleaned.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+              var repl2 = "(" + esc + ") Tj";
+              content = content.substring(0, hm.index) + repl2 + content.substring(hm.index + hm[0].length);
+              hexRe.lastIndex = hm.index + repl2.length;
+            }
+          }
+        }
+      } else if (hexStr.length === 2) {
+        // Identity CMap fallback: single-byte hex
+        var cp = parseInt(hexStr, 16);
+        if (cp >= 0x20 && cp <= 0x7e) {
+          var cleaned = _rtCleanDocText(String.fromCharCode(cp));
+          if (cleaned !== String.fromCharCode(cp)) {
+            var esc2 = cleaned.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+            var repl3 = "(" + esc2 + ") Tj";
+            content = content.substring(0, hm.index) + repl3 + content.substring(hm.index + hm[0].length);
+            hexRe.lastIndex = hm.index + repl3.length;
+          }
+        }
+      }
+    }
+  } else {
+    // No CMap: identity CMap fallback (single byte printable ASCII)
+    var hexRe2 = /<([0-9A-Fa-f]+)>\s*Tj/g;
+    var hm2;
+    while ((hm2 = hexRe2.exec(content)) !== null) {
+      var cp2 = parseInt(hm2[1], 16);
+      if (cp2 >= 0x20 && cp2 <= 0x7e) {
+        var cleaned2 = _rtCleanDocText(String.fromCharCode(cp2));
+        if (cleaned2 !== String.fromCharCode(cp2)) {
+          var esc3 = cleaned2.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+          var repl4 = "(" + esc3 + ") Tj";
+          content = content.substring(0, hm2.index) + repl4 + content.substring(hm2.index + hm2[0].length);
+          hexRe2.lastIndex = hm2.index + repl4.length;
+        }
+      }
+    }
+  }
+  return content;
+}
+
+async function _rtBuildCMap(src) {
+  var cmap = { forward: {}, reverse: {} };
+  var objRe = /(\d+)\s+\d+\s+obj([\s\S]*?)endobj/g;
+  var m;
+  while ((m = objRe.exec(src)) !== null) {
+    var objContent = m[2];
+    if (objContent.indexOf("FlateDecode") === -1) continue;
+    var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
+    if (!sm2) continue;
+    var raw2 = sm2[1].replace(/[\r\n]+$/, "");
+    if (raw2.length > 100000) continue;
+    var dec2;
+    try { dec2 = await _rtDecompressBytes(stringToBytes(raw2)); } catch (e) { continue; }
+    if (!dec2 || dec2.length === 0) continue;
+    var data = "";
+    for (var di = 0; di < dec2.length; di++) data += String.fromCharCode(dec2[di]);
+    if (data.indexOf("begincmap") === -1) continue;
+    var bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
+    var bm;
+    while ((bm = bfcharRe.exec(data)) !== null) {
+      var entries = bm[2].split("\n");
+      for (var ei = 0; ei < entries.length; ei++) {
+        var match = entries[ei].match(/<(\w+)>\s*<(\w+)>/);
+        if (match) {
+          var cid = parseInt(match[1], 16);
+          var uni = parseInt(match[2], 16);
+          if (!cmap.forward[cid]) cmap.forward[cid] = uni;
+          if (cmap.reverse[uni] === undefined) cmap.reverse[uni] = cid;
+        }
+      }
+    }
+    var bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
+    var rm;
+    while ((rm = bfrangeRe.exec(data)) !== null) {
+      var rentries = rm[2].split("\n");
+      for (var ri = 0; ri < rentries.length; ri++) {
+        var parts = rentries[ri].match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
+        if (parts) {
+          var start = parseInt(parts[1], 16);
+          var end = parseInt(parts[2], 16);
+          var baseCode = parseInt(parts[3], 16);
+          for (var ci = start; ci <= end; ci++) {
+            var uni2 = baseCode + (ci - start);
+            if (!cmap.forward[ci]) {
+              cmap.forward[ci] = uni2;
+              if (cmap.reverse[uni2] === undefined) cmap.reverse[uni2] = ci;
+            }
+          }
+        }
+      }
+    }
+  }
+  return cmap;
+}
+
 async function _rtRebuildPdf(buf, originalText, cleanedText) {
   var src = '';
   var arr = new Uint8Array(buf);
@@ -482,6 +664,8 @@ async function _rtRebuildPdf(buf, originalText, cleanedText) {
     src += String.fromCharCode(arr[i]);
     if (i > 0 && i % 500000 === 0) await _rtYield();
   }
+  var cmap = null;
+  try { cmap = await _rtBuildCMap(src); } catch (e) { cmap = null; }
   var result = '', lastIdx = 0;
   var re = /stream([\r\n]+)([\s\S]*?)endstream/g;
   var m;
@@ -526,8 +710,8 @@ async function _rtRebuildPdf(buf, originalText, cleanedText) {
     if (dec) {
       var decStr = '';
       for (var d2 = 0; d2 < dec.length; d2++) decStr += String.fromCharCode(dec[d2]);
-      if (/\(.*\)\s*Tj|\[.*\]\s*TJ/.test(decStr) && typeof _pdfReplaceInStream === 'function' && originalText !== cleanedText) {
-        var newStr = _pdfReplaceInStream(decStr, originalText, cleanedText);
+      if (/\(.*\)\s*Tj|\[.*\]\s*TJ|<[0-9A-Fa-f]+>\s*Tj/.test(decStr) && originalText !== cleanedText) {
+        var newStr = _rtCleanPdfStream(decStr, cmap);
         if (newStr !== decStr) {
           var nBytes = new Uint8Array(newStr.length);
           for (var nb = 0; nb < newStr.length; nb++) nBytes[nb] = newStr.charCodeAt(nb) & 0xff;
