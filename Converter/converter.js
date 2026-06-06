@@ -103,7 +103,7 @@ function handleConvFile() {
     document.getElementById('conv-btn').style.display = 'none';
     return;
   }
-  var html = '<label style="margin-bottom:8px;display:block;font-size:0.8rem;color:var(--text-muted)">' + __('conv.format_label', 'Convert to:') + '</label>';
+  var html = '<span style="margin-bottom:8px;display:block;font-size:0.8rem;color:var(--text-muted)">' + __('conv.format_label', 'Convert to:') + '</span>';
   html += '<div id="conv-format-grid" style="display:flex;flex-wrap:wrap;gap:8px">';
   for (var i = 0; i < _convFormats.length; i++) {
     var active = i === 0 ? ' active' : '';
