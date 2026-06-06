@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("pointerdown", deferredReplace);
   document.addEventListener("keydown", deferredReplace);
 });
-} else {
+if (document.readyState !== "loading") {
   initNav();
 }
 
