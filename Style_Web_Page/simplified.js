@@ -1026,7 +1026,7 @@ function renderUpload(body) {
     '<h3 style="font-size:1rem;margin:0 0 12px;color:var(--text-muted)">' +
     __("simple.info_title", "Owner Information") +
     "</h3>" +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="sinfo-name">' +
     __("simple.info_name", "Full Name") +
     ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="text" id="sinfo-name" class="simple-info-field" placeholder="' +
@@ -1034,7 +1034,7 @@ function renderUpload(body) {
     '" value="' +
     escHtml(simpleUserInfo.name) +
     '" required maxlength="25"></div>' +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="sinfo-email">' +
     __("simple.info_email", "Email") +
     ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="email" id="sinfo-email" class="simple-info-field" placeholder="' +
@@ -1045,7 +1045,7 @@ function renderUpload(body) {
     '<span id="sinfo-email-warn" class="simple-field-warn" style="display:none">' +
     __("simple.email_invalid", "Please enter a valid email address") +
     "</span></div>" +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="sinfo-phone">' +
     __("simple.info_phone", "Phone") +
     ' <span style="color:var(--danger)">*</span></label>' +
     '<div class="simple-phone-group">' +
@@ -1061,7 +1061,7 @@ function renderUpload(body) {
     '<span id="sinfo-phone-warn" class="simple-field-warn" style="display:none">' +
     __("simple.phone_digits_only", "Please enter numbers only") +
     "</span></div>" +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="sinfo-website">' +
     __("simple.info_website", "Website") +
     ' <span style="color:var(--danger)">*</span></label>' +
     '<input type="url" id="sinfo-website" class="simple-info-field" placeholder="' +
@@ -1687,7 +1687,7 @@ function renderWatermarkStep(body) {
     __("simple.using_file").replace("{name}", escapeHtml(usingName)) +
     "</p>" +
     '<div class="card-form" style="text-align:left">' +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="swm-type">' +
     __("simple.wm_algo_label", "Algorithm") +
     "</label>" +
     '<select id="swm-type">' +
@@ -1696,7 +1696,7 @@ function renderWatermarkStep(body) {
     '  <option value="7">7. Forensic</option>' +
     '  <option value="9">9. Imatag-style</option>' +
     "</select></div>" +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="swm-password">' +
     __("simple.wm_pass_label", "Password") +
     "</label>" +
     '<input type="password" id="swm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
@@ -1840,7 +1840,7 @@ function renderAudioWatermarkStep(body) {
     escapeHtml(usingName) +
     "</p>" +
     '<div class="card-form" style="text-align:left">' +
-    '<div class="form-group"><label>Algorithm for Fingerprint <span style="font-size:0.72rem;color:var(--text-muted)">(high capacity)</span></label>' +
+    '<div class="form-group"><label for="sawm-fp-type">Algorithm for Fingerprint <span style="font-size:0.72rem;color:var(--text-muted)">(high capacity)</span></label>' +
     '<select id="sawm-fp-type">' +
     '  <option value="1">1. LSB Audio</option>' +
     '  <option value="2">2. FFT-QIM</option>' +
@@ -1848,16 +1848,16 @@ function renderAudioWatermarkStep(body) {
     '  <option value="6">4. DWT (Haar Wavelet)</option>' +
     '  <option value="8" selected>5. DCT-based (Recommended)</option>' +
     "</select></div>" +
-    '<div class="form-group"><label>Algorithm for DID Signature (right channel)</label>' +
+    '<div class="form-group"><label for="sawm-ts-type">Algorithm for DID Signature (right channel)</label>' +
     '<select id="sawm-ts-type">' +
     '  <option value="2">1. FFT-QIM</option>' +
     '  <option value="6">2. DWT (Haar Wavelet)</option>' +
     '  <option value="8" selected>3. DCT-based (Recommended)</option>' +
     "</select></div>" +
-    '<div class="form-group"><label>Password</label>' +
+    '<div class="form-group"><label for="sawm-password">Password</label>' +
     '<input type="password" id="sawm-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
     '<div class="form-group" id="sawm-strength-group">' +
-    '<label>Strength <span id="sawm-strength-val">400</span></label>' +
+    '<label for="sawm-strength">Strength <span id="sawm-strength-val">400</span></label>' +
     '<input type="range" id="sawm-strength" min="100" max="3000" value="400" step="100" oninput="document.getElementById(\'sawm-strength-val\').textContent=this.value"></div>' +
     '<div style="font-size:0.78rem;color:var(--text-muted);margin:8px 0;padding:8px;background:rgba(108,92,231,.1);border-radius:6px;text-align:left">' +
     '<p><strong>🔐 Fingerprint payload:</strong><br><span style="word-break:break-all">' +
@@ -2100,19 +2100,19 @@ function renderPixelInjectStep(body) {
     __("simple.using_file").replace("{name}", escapeHtml(usingName)) +
     "</p>" +
     '<div class="card-form" style="text-align:left">' +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="spi-category">' +
     __("simple.pi_category_label", "Category") +
     "</label>" +
     '<select id="spi-category" onchange="updateSpiAlgorithms()">' +
     catOpts +
     "</select></div>" +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="spi-algorithm">' +
     __("simple.pi_algo_label", "Algorithm") +
     "</label>" +
     '<select id="spi-algorithm">' +
     algoOpts +
     "</select></div>" +
-    '<div class="form-group"><label>' +
+    '<div class="form-group"><label for="spi-password">' +
     __("simple.wm_pass_label", "Password") +
     "</label>" +
     '<input type="password" id="spi-password" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>' +
