@@ -1,7 +1,6 @@
 name: AI i18n Translation
 
 on: 
-  workflow_dispatch:
   push:
     branches: ["main"]
     paths: 
@@ -16,6 +15,8 @@ jobs:
   translate:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
@@ -23,7 +24,6 @@ jobs:
           allowed-endpoints: >
             api.groq.com:443
             github.com:443
-            api.github.com:443
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           persist-credentials: false
@@ -38,7 +38,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.TRANSLATE_PAT }}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add Style_Web_Page/lang/
           if git diff --cached --quiet; then echo "No changes" >> $GITHUB_OUTPUT; exit 0; fi
           git commit -m "auto: translate new i18n keys"
@@ -46,7 +46,7 @@ jobs:
       - name: Create PR
         if: steps.commit.outputs.has_changes == 'true'
         env:
-          GH_TOKEN: ${{ secrets.TRANSLATE_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="auto/translate-i18n-$(date +%s)"
           git checkout -b "$BRANCH"
