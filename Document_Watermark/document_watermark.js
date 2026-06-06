@@ -16,6 +16,7 @@ var _docwSecretMessage = "";
 var _docwCoverText = "";
 var _docwCoverFileName = "";
 var _docwCoverBytes = null;
+var _docwSecretData = null;
 var _docwExtractText = "";
 var _docwExtractResult = null;
 
@@ -61,7 +62,7 @@ function hideDocwLoading() {
 
 function _docwShowNoTextWarning(cap) {
   var w = document.getElementById("docw-cover-warning");
-  if (_docwCoverText != null && _docwCoverText.length <= 100) {
+  if (_docwCoverText && _docwCoverText.length <= 100) {
     w.style.display = "";
     w.innerHTML =
       "<strong>⚠ Very little text detected</strong><br>This document has only <b>" +
@@ -69,7 +70,7 @@ function _docwShowNoTextWarning(cap) {
       " characters</b> (~" +
       cap +
       ' capacity) — likely a scanned/image-based document with only form labels.<br><br>Document Watermarking works by modifying visible text. For image-based documents, use one of these instead:<br>• <b>Pixel Injection</b> — embed data in image pixels<br>• <b>Watermark</b> — image watermarking algorithms<br>• <b>Forensic</b> — forensic analysis tools<br><br><span style="font-size:0.72rem;color:var(--text-muted)">If this is a text document, try uploading a .txt or .docx version instead.</span>';
-  } else if (_docwCoverText != null && cap <= 100) {
+  } else if (_docwCoverText && cap <= 100) {
     w.style.display = "";
     w.innerHTML =
       "<strong>⚠ Low capacity</strong><br>The extracted text (" +
@@ -83,7 +84,7 @@ function _docwShowNoTextWarning(cap) {
 }
 
 function docwAlgoChanged() {
-  if (_docwCoverText != null) {
+  if (_docwCoverText) {
     var cap = docwEstimateCapacity(
       _docwCoverText,
       parseInt(document.getElementById("docw-algo").value),
@@ -125,33 +126,75 @@ function docwExAlgoChanged() {
   }
 }
 
+function _formatFingerprint(parsed) {
+  var lines = [];
+  if (parsed.file_info) {
+    var fi = parsed.file_info;
+    var dims = fi.width && fi.height ? " " + fi.width + "x" + fi.height : "";
+    lines.push("File: " + (fi.file_name || "unknown") + dims + " (" + (fi.file_size_bytes || "?") + " bytes)");
+  }
+  if (parsed.hashes) {
+    var hashKeys = Object.keys(parsed.hashes).sort();
+    for (var i = 0; i < hashKeys.length; i++) {
+      lines.push(hashKeys[i] + ": " + parsed.hashes[hashKeys[i]]);
+    }
+  }
+  if (parsed.perceptual_hashes) {
+    var phKeys = Object.keys(parsed.perceptual_hashes).sort();
+    for (var j = 0; j < phKeys.length; j++) {
+      lines.push(phKeys[j] + ": " + parsed.perceptual_hashes[phKeys[j]]);
+    }
+  }
+  return lines.join("\n");
+}
+
+function _formatFingerprintShort(parsed) {
+  var count = 0;
+  if (parsed.hashes) count += Object.keys(parsed.hashes).length;
+  if (parsed.perceptual_hashes) count += Object.keys(parsed.perceptual_hashes).length;
+  return count + " hashes";
+}
+
 function loadDocwSecretFile(event) {
   var file = event.target.files[0];
   if (!file) return;
   var ext = file.name.split(".").pop().toLowerCase();
   if (ext === "json") {
-    // Parse JSON and extract SHA-256 hash automatically for fingerprint files
     var reader = new FileReader();
     reader.onload = function (e) {
       try {
         var parsed = JSON.parse(e.target.result);
-        var msg = null;
-        if (parsed.hashes && parsed.hashes["SHA-256"]) {
-          msg = parsed.hashes["SHA-256"];
-        } else if (parsed.sha256) {
-          msg = parsed.sha256;
+        _docwSecretData = parsed;
+        if (typeof parsed === "object" && parsed !== null && (parsed.hashes || parsed.perceptual_hashes || parsed.file_info)) {
+          // Fingerprint JSON — store full formatted content
+          _docwSecretMessage = _formatFingerprint(parsed);
+          var shortDesc = _formatFingerprintShort(parsed);
+          document.getElementById("docw-secret-name").textContent = __(
+            "docw.loaded_fingerprint",
+            "Loaded: {name} ({desc}, {len} chars)",
+          )
+            .replace("{name}", file.name)
+            .replace("{desc}", shortDesc)
+            .replace("{len}", _docwSecretMessage.length);
         } else if (typeof parsed === "string") {
-          msg = parsed;
+          _docwSecretMessage = parsed;
+          _docwSecretData = null;
+          document.getElementById("docw-secret-name").textContent = __(
+            "docw.loaded",
+            "Loaded: {name} ({len} chars)",
+          )
+            .replace("{name}", file.name)
+            .replace("{len}", parsed.length);
         } else {
-          msg = JSON.stringify(parsed, null, 2);
+          _docwSecretMessage = JSON.stringify(parsed, null, 2);
+          _docwSecretData = null;
+          document.getElementById("docw-secret-name").textContent = __(
+            "docw.loaded",
+            "Loaded: {name} ({len} chars)",
+          )
+            .replace("{name}", file.name)
+            .replace("{len}", _docwSecretMessage.length);
         }
-        _docwSecretMessage = msg;
-        document.getElementById("docw-secret-name").textContent = __(
-          "docw.loaded_hash",
-          "Loaded: {name} (SHA-256 hash, {len} chars)",
-        )
-          .replace("{name}", file.name)
-          .replace("{len}", msg.length);
         document.getElementById("docw-secret-name").style.color = "#2ecc71";
       } catch (e) {
         alert("Invalid JSON file: " + e.message);
@@ -165,6 +208,7 @@ function loadDocwSecretFile(event) {
         return;
       }
       _docwSecretMessage = text;
+      _docwSecretData = null;
       document.getElementById("docw-secret-name").textContent = __(
         "docw.loaded",
         "Loaded: {name} ({len} chars)",
@@ -379,6 +423,84 @@ function docwExtractTextFromBuf(file, buf, callback) {
   }
 }
 
+async function _buildPayloadForHomoglyph(data, password, coverText) {
+  // Build ordered list of entries from fingerprint data
+  var entries = [];
+  if (data.file_info) {
+    var fi = data.file_info;
+    var dims = fi.width && fi.height ? " " + fi.width + "x" + fi.height : "";
+    entries.push("File: " + (fi.file_name || "unknown") + dims + " (" + (fi.file_size_bytes || "?") + " bytes)");
+  }
+  if (data.hashes) {
+    var priority = ["SHA-256", "SHA-384", "SHA-512", "SHA-3_512", "SHA-3_384", "SHA-3_256", "SHA-3_224", "SHA-1", "SHA-224", "BLAKE3", "BLAKE2b", "BLAKE2s", "MD5", "RIPEMD-160", "Whirlpool", "MD2", "MD4"];
+    var added = {};
+    for (var p = 0; p < priority.length; p++) {
+      var name = priority[p];
+      if (data.hashes[name]) {
+        entries.push(name + ": " + data.hashes[name]);
+        added[name] = true;
+      }
+    }
+    // Add any remaining hashes not in priority list
+    var remaining = Object.keys(data.hashes).sort();
+    for (var r = 0; r < remaining.length; r++) {
+      if (!added[remaining[r]]) {
+        entries.push(remaining[r] + ": " + data.hashes[remaining[r]]);
+      }
+    }
+  }
+  if (data.perceptual_hashes) {
+    var phKeys = Object.keys(data.perceptual_hashes).sort();
+    for (var q = 0; q < phKeys.length; q++) {
+      entries.push(phKeys[q] + ": " + data.perceptual_hashes[phKeys[q]]);
+    }
+  }
+
+  // Calculate max bits available
+  DOCW_HOMOGLYPH._initReverse();
+  var maxBits = 0;
+  for (var i = 0; i < coverText.length; i++) {
+    var ch = coverText[i];
+    if (DOCW_HOMOGLYPH.MULTI_MAP[ch] !== undefined) maxBits += 2;
+    else if (DOCW_HOMOGLYPH.MAP[ch] !== undefined) maxBits += 1;
+  }
+  if (maxBits <= 0) {
+    throw new Error("Cover text has no eligible characters for Unicode Homoglyphs");
+  }
+
+  // Build payload incrementally — add complete entries while bits fit
+  var payload = "";
+  for (var e = 0; e < entries.length; e++) {
+    var candidate = payload ? payload + "\n" + entries[e] : entries[e];
+    var bits = await _msgToBits(candidate, password || "");
+    if (bits && bits.length <= maxBits) {
+      payload = candidate;
+    } else {
+      break;
+    }
+  }
+
+  if (!payload) {
+    // Even the first entry doesn't fit — try with just SHA-256 value (compact form)
+    if (data.hashes && data.hashes["SHA-256"]) {
+      var shaBits = await _msgToBits(data.hashes["SHA-256"], password || "");
+      if (shaBits && shaBits.length <= maxBits) {
+        return data.hashes["SHA-256"];
+      }
+    }
+    var firstEntryBits = await _msgToBits(entries[0], password || "");
+    throw new Error(
+      "Text too short. Need ~" +
+        Math.ceil(firstEntryBits.length / 8) +
+        " bytes, eligible chars provide " +
+        Math.floor(maxBits / 8) +
+        " bytes",
+    );
+  }
+
+  return payload;
+}
+
 async function handleDocwEmbed() {
   var algo = parseInt(document.getElementById("docw-algo").value);
   var password = document.getElementById("docw-password").value;
@@ -396,22 +518,6 @@ async function handleDocwEmbed() {
     return;
   }
 
-  var cap = docwEstimateCapacity(_docwCoverText, algo);
-  if (cap < _docwSecretMessage.length) {
-    if (cap <= 100) {
-      alert(
-        "This document has very little extractable text (" +
-          _docwCoverText.length +
-          " chars, ~" +
-          cap +
-          " capacity). It is likely a scanned/image-based document.\n\nDocument Watermarking requires visible text. Try these instead:\n• Pixel Injection — for images\n• Watermark — image watermarking\n• Forensic — forensic analysis",
-      );
-    } else {
-      alert("Message too long for this text. Max ~" + cap + " characters.");
-    }
-    return;
-  }
-
   var btn = document.getElementById("docw-embed-btn");
   btn.textContent = "Processing...";
   btn.disabled = true;
@@ -422,26 +528,52 @@ async function handleDocwEmbed() {
   });
 
   try {
+    // Build payload based on algorithm
+    var message;
+    if (algo === 2 && _docwSecretData && _docwSecretData.hashes) {
+      message = await _buildPayloadForHomoglyph(
+        _docwSecretData,
+        password,
+        _docwCoverText,
+      );
+    } else {
+      message = _docwSecretMessage;
+    }
     var result = await docwEmbed(
       _docwCoverText,
-      _docwSecretMessage,
+      message,
       algo,
       password,
     );
     showDocwLoading("Building download\u2026");
-    document.getElementById("docw-embed-output").value = result;
-    document.getElementById("docw-embed-result").style.display = "";
-    document.getElementById("docw-embed-buttons").style.display = "";
-    document.getElementById("docw-embed-algo-name").textContent =
-      DOCW_ALGOS[String(algo)].name;
+    // Compute SHA-256 of the original cover text for the certificate
+    var hash = "";
+    try {
+      if (typeof crypto !== "undefined" && crypto.subtle) {
+        var enc = new TextEncoder().encode(_docwCoverText);
+        var hb = await crypto.subtle.digest("SHA-256", enc);
+        var harr = new Uint8Array(hb);
+        for (var hi = 0; hi < harr.length; hi++)
+          hash += ("0" + harr[hi].toString(16)).slice(-2);
+        hash = "SHA-256:" + hash;
+      }
+    } catch (_e) { /* fallback: hash stays empty */ }
+    var algoName = DOCW_ALGOS[String(algo)].name;
     _docwResult = {
-      algo: DOCW_ALGOS[String(algo)].name,
+      algo: algoName,
       algoId: algo,
+      message: message,
+      hash: hash,
       timestamp: new Date().toISOString(),
       textLength: _docwCoverText.length,
       resultLength: result.length,
       watermarkedText: result,
     };
+    document.getElementById("docw-embed-output").value =
+      _docwBuildCertificateText(_docwResult);
+    document.getElementById("docw-embed-result").style.display = "";
+    document.getElementById("docw-embed-buttons").style.display = "";
+    document.getElementById("docw-embed-algo-name").textContent = algoName;
     window._currentDownloadHandler = downloadDocw;
 
     // Direct download: actual watermarked document (rebuilt in original format)
@@ -563,6 +695,19 @@ async function handleDocwExtract() {
     } else {
       result = await docwExtract(_docwExtractText, algo, password);
       algoName = DOCW_ALGOS[String(algo)].name;
+      // Fallback for PDFs with duplicate text (original + appended watermark)
+      if (!result && _docwExtractText.length > 200) {
+        var halfLen = Math.ceil(_docwExtractText.length / 2);
+        var portions = [
+          _docwExtractText.substring(0, halfLen),
+          _docwExtractText.substring(_docwExtractText.length - halfLen),
+        ];
+        for (var pi = 0; pi < portions.length && !result; pi++) {
+          try {
+            result = await docwExtract(portions[pi], algo, password);
+          } catch (e2) { /* ignore */ }
+        }
+      }
     }
 
     document.getElementById("docw-extract-result").style.display = "";
@@ -653,15 +798,14 @@ function _docwQrDataURL(text) {
 
 async function _docwBuildReportPdf(r, mode) {
   var isExtract = mode === "extract";
-  var title = isExtract
-    ? "Extracted Watermark — Authenticity Report"
-    : "Document Watermark — Authenticity Report";
-  var content = isExtract ? r.message || "" : r.watermarkedText || "";
   var algo = isExtract ? r.algo || "" : r.algo || "";
-  var ts = isExtract
-    ? r.timestamp || new Date().toISOString()
-    : r.timestamp || new Date().toISOString();
-  var hash = await _docwHash(content);
+  var ts = isExtract ? r.timestamp || "" : r.timestamp || "";
+  var content = isExtract
+    ? r.message || ""
+    : _docwBuildCertificateText(r);
+  var hash = isExtract
+    ? await _docwHash(r.message || "")
+    : (r.hash || "").replace("SHA-256:", "") || await _docwHash(r.watermarkedText || "");
   var qrContent = JSON.stringify({
     hash: hash,
     algo: algo,
@@ -677,98 +821,66 @@ async function _docwBuildReportPdf(r, mode) {
   });
   var pw = doc.internal.pageSize.getWidth();
   var ph = doc.internal.pageSize.getHeight();
-  var lm = 20,
-    rm = 20,
-    y = 20;
-
-  // ── Header bar ──
-  doc.setFillColor(108, 92, 231);
-  doc.rect(0, 0, pw, 12, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.text("RedoSan Authenticity — Digital Document Provenance", pw / 2, 8, {
-    align: "center",
-  });
+  var lm = 20, rm = 20, y = 20;
+  var maxW = pw - lm - rm;
 
   // ── Title ──
-  y = 24;
+  doc.setFontSize(16);
   doc.setTextColor(30, 30, 50);
-  doc.setFontSize(18);
-  doc.text(title, pw / 2, y, { align: "center" });
-  y += 8;
-  doc.setFontSize(9);
-  doc.setTextColor(120, 120, 140);
   doc.text(
-    "Certificate of Document Authenticity — 100% Client-Side Generated",
-    pw / 2,
-    y,
-    { align: "center" },
+    isExtract ? "Extracted Watermark Report" : "Document Watermark Certificate",
+    pw / 2, y, { align: "center" }
   );
+  y += 8;
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 140);
+  doc.text("Digital Authenticity Certificate — Generated by RedoSan Authenticity", pw / 2, y, { align: "center" });
   y += 12;
 
-  // ── Metadata table ──
-  var meta = [
-    ["Algorithm", algo],
-    ["Timestamp", new Date(ts).toLocaleString()],
-    ["Content Length", content.length + " characters"],
-    ["SHA-256 Fingerprint", hash],
-  ];
-  doc.setFontSize(8);
-  doc.setTextColor(60, 60, 80);
-  doc.setFillColor(245, 245, 250);
-  for (var mi = 0; mi < meta.length; mi++) {
-    if (mi % 2 === 0) doc.rect(lm, y - 3, pw - lm - rm, 7, "F");
-    doc.text(meta[mi][0], lm + 3, y);
-    doc.text(meta[mi][1], lm + 55, y);
-    y += 7;
-  }
+  // ── Separator ──
+  doc.setDrawColor(180, 180, 195);
+  doc.line(lm, y, pw - rm, y);
   y += 6;
 
-  // ── Content section ──
-  doc.setFillColor(108, 92, 231);
-  doc.rect(lm, y, pw - lm - rm, 0.5, "F");
+  // ── Metadata ──
+  var metaPairs = [
+    ["Algorithm", algo],
+    ["Timestamp", ts ? new Date(ts).toLocaleString() : ""],
+    ["Content Length", content.length + " characters"],
+    ["SHA-256", hash],
+  ];
+  doc.setFontSize(9);
+  doc.setTextColor(60, 60, 80);
+  for (var mi = 0; mi < metaPairs.length; mi++) {
+    doc.text(metaPairs[mi][0] + ":  " + metaPairs[mi][1], lm, y);
+    y += 5;
+  }
   y += 4;
+
+  // ── Separator ──
+  doc.setDrawColor(180, 180, 195);
+  doc.line(lm, y, pw - rm, y);
+  y += 6;
+
+  // ── Section title ──
   doc.setFontSize(11);
   doc.setTextColor(30, 30, 50);
-  doc.text(isExtract ? "Extracted Message" : "Watermarked Content", lm, y);
-  y += 6;
-  doc.setFontSize(7);
-  var boxX = lm,
-    boxW = pw - lm - rm;
-  doc.setDrawColor(200, 200, 215);
-  doc.setFillColor(250, 250, 252);
-  var contentLines = doc.splitTextToSize(content, boxW - 8);
-  var maxLines = Math.min(contentLines.length, 80);
-  var lineH = 3.5;
-  var boxH = Math.max(20, Math.min(maxLines * lineH + 6, 280));
-  doc.roundedRect(boxX, y - 3, boxW, boxH, 2, 2, "FD");
+  doc.text(isExtract ? "Extracted Message" : "Watermark Certificate", lm, y);
+  y += 7;
+
+  // ── Content (plain text, auto-wrapped, page breaks) ──
+  doc.setFontSize(8);
   doc.setTextColor(60, 60, 80);
-  for (var cli = 0; cli < maxLines; cli++) {
-    var line = contentLines[cli];
-    if (
-      (doc.getStringUnitWidth(line) * doc.internal.getFontSize()) /
-        doc.internal.scaleFactor >
-      boxW - 8
-    ) {
-      line = line.substring(0, Math.floor((boxW - 8) * 0.7)) + "…";
+  var textLines = doc.splitTextToSize(content, maxW);
+  for (var li = 0; li < textLines.length; li++) {
+    if (y + 4 > ph - 15) {
+      doc.addPage();
+      y = 15;
     }
-    doc.text(line, boxX + 4, y + 2);
-    y += lineH;
+    doc.text(textLines[li], lm, y);
+    y += 4;
   }
-  if (contentLines.length > maxLines) {
-    doc.text(
-      "... (" +
-        (contentLines.length - maxLines) +
-        " " +
-        __("docw.more_lines", "more lines") +
-        ")",
-      boxX + 4,
-      y + 2,
-    );
-    y += lineH + 2;
-  } else {
-    y += 14;
-  }
+  y += 6;
 
   // ── QR Code ──
   if (qrData) {
@@ -782,12 +894,7 @@ async function _docwBuildReportPdf(r, mode) {
     y += 4;
     doc.setFontSize(7);
     doc.setTextColor(120, 120, 140);
-    doc.text(
-      "Scan to verify document integrity — QR encodes hash, algorithm, and timestamp",
-      pw / 2,
-      y,
-      { align: "center" },
-    );
+    doc.text("Scan to verify document integrity", pw / 2, y, { align: "center" });
     y += 3;
     try {
       doc.addImage(qrData, "PNG", pw / 2 - 30, y, 60, 60);
@@ -799,23 +906,25 @@ async function _docwBuildReportPdf(r, mode) {
   doc.setFontSize(6);
   doc.setTextColor(160, 160, 175);
   doc.text(
-    "Generated by RedoSan Authenticity (redo-san.github.io) — " +
-      new Date().toISOString().split("T")[0],
-    pw / 2,
-    ph - 8,
-    { align: "center" },
+    "Generated by RedoSan Authenticity (redo-san.github.io) — " + new Date().toISOString().split("T")[0],
+    pw / 2, ph - 8, { align: "center" }
   );
-  doc.text("SHA-256: " + hash, pw / 2, ph - 4, { align: "center" });
+  if (hash)
+    doc.text("SHA-256: " + hash, pw / 2, ph - 4, { align: "center" });
 
   return doc.output("blob");
 }
 
 async function _docwBuildReportDocx(r, mode) {
   var isExtract = mode === "extract";
-  var content = isExtract ? r.message || "" : r.watermarkedText || "";
   var algo = isExtract ? r.algo || "" : r.algo || "";
   var ts = isExtract ? r.timestamp || "" : r.timestamp || "";
-  var hash = await _docwHash(content);
+  var content = isExtract
+    ? r.message || ""
+    : _docwBuildCertificateText(r);
+  var hash = isExtract
+    ? await _docwHash(r.message || "")
+    : (r.hash || "").replace("SHA-256:", "") || await _docwHash(r.watermarkedText || "");
   var dateStr = ts
     ? new Date(ts).toLocaleString()
     : new Date().toLocaleString();
@@ -889,9 +998,10 @@ async function _docwBuildReportDocx(r, mode) {
 
 function _docwBuildReportHtml(r, mode) {
   var isExtract = mode === "extract";
-  var content = isExtract ? r.message || "" : r.watermarkedText || "";
   var algo = isExtract ? r.algo || "" : r.algo || "";
   var ts = isExtract ? r.timestamp || "" : r.timestamp || "";
+  var content = isExtract ? r.message || "" : _docwBuildCertificateText(r);
+  var hashVal = isExtract ? "" : (r.hash || "").replace("SHA-256:", "");
   var dateStr = ts
     ? new Date(ts).toLocaleString()
     : new Date().toLocaleString();
@@ -933,7 +1043,7 @@ function _docwBuildReportHtml(r, mode) {
     '<tr><td>SHA-256</td><td class="fingerprint" id="docw-hash"></td></tr>' +
     "</table></div>" +
     '<div class="section"><h2>' +
-    (isExtract ? "Extracted Message" : "Watermarked Content") +
+    (isExtract ? "Extracted Message" : "Watermark Certificate") +
     "</h2>" +
     '<div class="content-box">' +
     _docwEscXml(content) +
@@ -943,20 +1053,31 @@ function _docwBuildReportHtml(r, mode) {
     new Date().toISOString().split("T")[0] +
     "</div>" +
     "<script>" +
-    'crypto.subtle.digest("SHA-256",new TextEncoder().encode(' +
-    JSON.stringify(content) +
-    ")).then(function(b){" +
-    'var h="";new Uint8Array(b).forEach(function(v){h+=("0"+v.toString(16)).slice(-2)});' +
-    'document.getElementById("docw-hash").textContent=h;' +
+    (isExtract
+      ? 'crypto.subtle.digest("SHA-256",new TextEncoder().encode(' +
+        JSON.stringify(content) +
+        ')).then(function(b){var h="";new Uint8Array(b).forEach(function(v){h+=("0"+v.toString(16)).slice(-2)});document.getElementById("docw-hash").textContent=h;' +
+        'new QRious({element:document.createElement("canvas"),value:JSON.stringify({hash:h,algo:' +
+        JSON.stringify(algo) +
+        ",timestamp:" +
+        JSON.stringify(ts) +
+        '}),size:140,level:"H",padding:4});'
+      : 'document.getElementById("docw-hash").textContent=' +
+        JSON.stringify(hashVal) +
+        ";"
+    ) +
     'var qr=document.createElement("canvas");' +
-    "new QRious({element:qr,value:JSON.stringify({hash:h,algo:" +
+    "new QRious({element:qr,value:JSON.stringify({hash:" +
+    (isExtract ? "h" : JSON.stringify(hashVal)) +
+    ",algo:" +
     JSON.stringify(algo) +
     ",timestamp:" +
     JSON.stringify(ts) +
     '}),size:140,level:"H",padding:4});' +
     'var img=document.createElement("img");img.src=qr.toDataURL();img.alt="Verification QR Code";' +
     'document.getElementById("docw-qr-section").appendChild(img)' +
-    "})</script>" +
+    (isExtract ? "})" : "") +
+    "</script>" +
     "</body></html>"
   );
 }
@@ -990,7 +1111,105 @@ function _getWmAtPos(origFull, wmFull, segText, startPos) {
   return wmFull.substring(wmStart, wmIdx);
 }
 
-function _pdfReplaceInStream(content, origFull, wmFull) {
+async function _decompressRaw(bytes) {
+  if (typeof DecompressionStream === "undefined") {
+    throw new Error("DecompressionStream not available");
+  }
+  var ds = new DecompressionStream("deflate-raw");
+  var writer = ds.writable.getWriter();
+  var reader = ds.readable.getReader();
+  var chunks = [];
+  var readPromise = (async function () {
+    while (true) {
+      try {
+        var v = await reader.read();
+        if (v.done) break;
+        chunks.push(v.value);
+      } catch (e) { break; }
+    }
+  })();
+  readPromise.catch(function () {});
+  try {
+    await writer.write(bytes);
+    await writer.close();
+  } catch (e) { /* suppress */ }
+  await readPromise;
+  var total = 0;
+  for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
+  var result = new Uint8Array(total);
+  var offset = 0;
+  for (var i2 = 0; i2 < chunks.length; i2++) {
+    result.set(chunks[i2], offset);
+    offset += chunks[i2].length;
+  }
+  return result;
+}
+
+function _stringToBytes(str) {
+  var buf = new Uint8Array(str.length);
+  for (var i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xff;
+  return buf;
+}
+
+async function _pdfBuildCMap(src) {
+  var cmap = { forward: {}, reverse: {} };
+  var objRe = /(\d+)\s+\d+\s+obj([\s\S]*?)endobj/g;
+  var m;
+  while ((m = objRe.exec(src)) !== null) {
+    var objContent = m[2];
+    if (objContent.indexOf("FlateDecode") === -1) continue;
+    var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
+    if (!sm2) continue;
+    var raw2 = sm2[1].replace(/[\r\n]+$/, "");
+    if (raw2.length > 100000) continue;
+    var dec2;
+    try {
+      dec2 = await _decompressRaw(_stringToBytes(raw2));
+    } catch (e) { continue; }
+    if (!dec2 || dec2.length === 0) continue;
+    var data = "";
+    for (var di = 0; di < dec2.length; di++) data += String.fromCharCode(dec2[di]);
+    if (data.indexOf("begincmap") === -1) continue;
+
+    var bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
+    var bm;
+    while ((bm = bfcharRe.exec(data)) !== null) {
+      var entries = bm[2].split("\n");
+      for (var ei = 0; ei < entries.length; ei++) {
+        var match = entries[ei].match(/<(\w+)>\s*<(\w+)>/);
+        if (match) {
+          var cid = parseInt(match[1], 16);
+          var uni = parseInt(match[2], 16);
+          cmap.forward[cid] = uni;
+          if (!cmap.reverse[uni]) cmap.reverse[uni] = cid;
+        }
+      }
+    }
+    var bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
+    var rm;
+    while ((rm = bfrangeRe.exec(data)) !== null) {
+      var rentries = rm[2].split("\n");
+      for (var ri = 0; ri < rentries.length; ri++) {
+        var parts = rentries[ri].match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
+        if (parts) {
+          var start = parseInt(parts[1], 16);
+          var end = parseInt(parts[2], 16);
+          var baseCode = parseInt(parts[3], 16);
+          for (var ci = start; ci <= end; ci++) {
+            var uni2 = baseCode + (ci - start);
+            if (!cmap.forward[ci]) {
+              cmap.forward[ci] = uni2;
+              if (!cmap.reverse[uni2]) cmap.reverse[uni2] = ci;
+            }
+          }
+        }
+      }
+    }
+  }
+  return cmap;
+}
+
+function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
   // ── 1. Locate all text segments (TJ arrays + Tj operators) ──
   var segs = [];
   var reTJ = /\[([\s\S]*?)\]\s*TJ/g;
@@ -1035,6 +1254,50 @@ function _pdfReplaceInStream(content, origFull, wmFull) {
     });
   }
   if (segs.length === 0) {
+    // Try hex Tj strings (CMap-encoded)
+    var hexTjRe = /<([0-9A-Fa-f]+)>\s*Tj/g;
+    var hexSegs = [];
+    var htm;
+    var hexCombined = "";
+    while ((htm = hexTjRe.exec(content)) !== null) {
+      var hex = htm[1];
+      var cid = parseInt(hex, 16);
+      var ch;
+      if (cmap && cmap.forward[cid] !== undefined) {
+        try { ch = String.fromCodePoint(cmap.forward[cid]); }
+        catch (e) { ch = "?"; }
+      } else {
+        ch = String.fromCharCode(cid);
+      }
+      hexSegs.push({ start: htm.index, end: htm.index + htm[0].length, hex: hex, cid: cid, ch: ch });
+      hexCombined += ch;
+    }
+    if (hexSegs.length > 0 && hexCombined) {
+      var hexStreamPos = origFull.indexOf(hexCombined);
+      if (hexStreamPos >= 0) {
+        var hexRemaining = hexCombined.length;
+        for (var hi = hexSegs.length - 1; hi >= 0; hi--) {
+          var segEndInStream = hexRemaining;
+          var segStartInStream = segEndInStream - 1;
+          hexRemaining = segStartInStream;
+          var wmChar = wmFull[hexStreamPos + segStartInStream];
+          if (wmChar) {
+            var wmCode = wmChar.charCodeAt(0);
+            var newCid;
+            if (cmap && cmap.reverse[wmCode] !== undefined) {
+              newCid = cmap.reverse[wmCode];
+            } else {
+              newCid = hexSegs[hi].cid;
+            }
+            var newHex = newCid.toString(16).toUpperCase();
+            while (newHex.length < 4) newHex = "0" + newHex;
+            content = content.substring(0, hexSegs[hi].start) + "<" + newHex + "> Tj" + content.substring(hexSegs[hi].end);
+          }
+        }
+        return content;
+      }
+    }
+    // Fallback: hex-encode Unicode and replace (works for identity CMaps)
     var origHex = "",
       replHex = "";
     for (var j = 0; j < origFull.length; j++)
@@ -1094,6 +1357,9 @@ async function buildWatermarkedPdfDoc(
   var result = "",
     lastIdx = 0;
 
+  // Parse CMap from the PDF for hex Tj replacement
+  var cmap = await _pdfBuildCMap(src);
+
   // Encode watermarked text as UTF-16 BE for PDF parenthesized string
   var wmUtf16Be = "";
   for (var ci = 0; ci < watermarkedText.length; ci++) {
@@ -1106,6 +1372,7 @@ async function buildWatermarkedPdfDoc(
   }
   var wmStreamSnippet =
     "\nBT\n/F0 12 Tf\n0 0 Td\n(" + escPdfStr(wmUtf16Be) + ") Tj\nET\n";
+  var wmAppended = false;
 
   // Process each stream
   var re = /stream([\r\n]+)([\s\S]*?)endstream/g;
@@ -1140,8 +1407,11 @@ async function buildWatermarkedPdfDoc(
             /* reader error — suppress */
           }
         })();
-        await sw.write(rawBytes);
-        await sw.close();
+        srp.catch(function () {});
+        try {
+          await sw.write(rawBytes);
+          await sw.close();
+        } catch (e) { /* suppress */ }
         await srp;
         var sttl = 0;
         for (var si = 0; si < sch.length; si++) sttl += sch[si].length;
@@ -1160,23 +1430,26 @@ async function buildWatermarkedPdfDoc(
       var decStr = "";
       for (var d2 = 0; d2 < dec.length; d2++)
         decStr += String.fromCharCode(dec[d2]);
-      // Append watermarked text to the first page content stream (has BT/ET)
+      // Try text replacement with CMap support
+      var newStr = _pdfReplaceInStream(decStr, originalText, watermarkedText, cmap);
+      var didReplace = newStr !== decStr;
+      // Only append if the CMap replacement didn't already modify the content
       var pageStream =
-        wmUtf16Be && decStr.indexOf("BT") >= 0 && decStr.indexOf("ET") >= 0;
+        !didReplace && wmUtf16Be && decStr.indexOf("BT") >= 0 && decStr.indexOf("ET") >= 0;
       if (pageStream) {
         var lastEt = decStr.lastIndexOf("ET");
         decStr =
           decStr.substring(0, lastEt + 2) +
           wmStreamSnippet +
           decStr.substring(lastEt + 2);
-        wmUtf16Be = ""; // only append once
+        wmUtf16Be = "";
+        wmAppended = true;
       }
-      // Try text replacement (best-effort, likely won't match CMap-encoded text)
-      var newStr = _pdfReplaceInStream(decStr, originalText, watermarkedText);
-      if (newStr !== decStr || pageStream) {
-        var nBytes = new Uint8Array(newStr.length);
-        for (var nb = 0; nb < newStr.length; nb++)
-          nBytes[nb] = newStr.charCodeAt(nb) & 0xff;
+      if (didReplace || pageStream) {
+        var finalStr = didReplace ? newStr : decStr;
+        var nBytes = new Uint8Array(finalStr.length);
+        for (var nb = 0; nb < finalStr.length; nb++)
+          nBytes[nb] = finalStr.charCodeAt(nb) & 0xff;
         var comp = await _deflate(nBytes);
         modified = "";
         for (var ciX = 0; ciX < comp.length; ciX++)
@@ -1196,15 +1469,58 @@ async function buildWatermarkedPdfDoc(
   return out;
 }
 
+function _docwBuildCertificateText(r) {
+  var DASHES = "------------------------------------------------------------";
+  var s = "";
+  s += "============================================================\n";
+  s += "         WATERMARK CERTIFICATE\n";
+  s += "     RedoSan Authenticity -- Document Watermark\n";
+  s += "============================================================\n\n";
+  s += "This document has been digitally watermarked. The embedded\n";
+  s += "watermark serves as proof of authenticity and can be\n";
+  s += "extracted and verified at any time.\n";
+  s += DASHES + "\n";
+  s += "             WATERMARK DETAILS\n";
+  s += DASHES + "\n";
+  s += "  Algorithm:   " + (r.algo || "--") + "\n";
+  s += "  Message:     " + (r.message || "--") + "\n";
+  s += "  Timestamp:   " + (r.timestamp ? new Date(r.timestamp).toLocaleString() : "--") + "\n";
+  s += "  Doc. Length: " + (r.textLength ? r.textLength + " characters" : "--") + "\n";
+  s += "  Document ID: " + (r.hash || "--") + "\n";
+  s += DASHES + "\n";
+  s += "             VERIFICATION\n";
+  s += DASHES + "\n";
+  s += "  To verify this watermark:\n";
+  s += "  1. Open the Extract tab\n";
+  s += '  2. Select "' + (r.algo || "same") + '" algorithm\n';
+  s += "  3. Enter the password used during embedding\n";
+  s += "  4. Load the watermarked document\n";
+  s += "  5. The embedded message will appear\n";
+  s += DASHES + "\n";
+  s += "             INTEGRITY\n";
+  s += DASHES + "\n";
+  s += "  The watermark is embedded directly into the document\n";
+  s += "  text using steganography. Any modification to the\n";
+  s += "  watermarked content will invalidate the embedded\n";
+  s += "  message, providing tamper-evident protection.\n";
+  s += DASHES + "\n";
+  s += "  Generated by RedoSan Authenticity\n";
+  s += "  100% Client-Side | No Data Upload\n";
+  s += "  https://redo-san.github.io/RedoSan-Authenticity/\n";
+  s += "============================================================\n";
+  return s;
+}
+
 function docwToTXT(r) {
-  return r.watermarkedText || "";
+  return _docwBuildCertificateText(r);
 }
 
 function docwToCSV(r) {
   var rows = [["Key", "Value"]];
-  for (var k in r) {
-    if (k === "watermarkedText") continue;
-    rows.push([k, String(r[k])]);
+  var keys = ["algo", "message", "timestamp", "textLength", "hash", "resultLength"];
+  for (var ki = 0; ki < keys.length; ki++) {
+    var k = keys[ki];
+    rows.push([k, r[k] !== undefined ? String(r[k]) : ""]);
   }
   return (
     rows
@@ -1221,9 +1537,11 @@ function docwToCSV(r) {
 
 function docwToXML(r) {
   var xml = '<?xml version="1.0"?>\n<document_watermark>\n';
-  for (var k in r) {
-    if (k === "watermarkedText") continue;
-    xml += "  <" + k + ">" + _docwEscXml(String(r[k])) + "</" + k + ">\n";
+  var keys = ["algo", "message", "timestamp", "textLength", "hash", "resultLength"];
+  for (var ki = 0; ki < keys.length; ki++) {
+    var k = keys[ki];
+    if (r[k] !== undefined)
+      xml += "  <" + k + ">" + _docwEscXml(String(r[k])) + "</" + k + ">\n";
   }
   xml += "</document_watermark>";
   return xml;
@@ -1257,8 +1575,10 @@ async function downloadDocw(format) {
         {
           watermarkedText: r.watermarkedText,
           algo: r.algo,
+          message: r.message || "",
           timestamp: r.timestamp,
           textLength: r.textLength,
+          hash: r.hash || "",
         },
         null,
         2,

@@ -79,13 +79,18 @@ async function _deflate(bytes) {
   var chunks = [];
   var readPromise = (async function () {
     while (true) {
-      var v = await reader.read();
-      if (v.done) break;
-      chunks.push(v.value);
+      try {
+        var v = await reader.read();
+        if (v.done) break;
+        chunks.push(v.value);
+      } catch (e) { break; }
     }
   })();
-  await writer.write(bytes);
-  await writer.close();
+  readPromise.catch(function () {});
+  try {
+    await writer.write(bytes);
+    await writer.close();
+  } catch (e) { /* suppress */ }
   await readPromise;
   var total = 0;
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -107,13 +112,22 @@ async function _inflate(bytes) {
   var chunks = [];
   var readPromise = (async function () {
     while (true) {
-      var v = await reader.read();
-      if (v.done) break;
-      chunks.push(v.value);
+      try {
+        var v = await reader.read();
+        if (v.done) break;
+        chunks.push(v.value);
+      } catch (e) {
+        break;
+      }
     }
   })();
-  await writer.write(bytes);
-  await writer.close();
+  readPromise.catch(function () {});
+  try {
+    await writer.write(bytes);
+    await writer.close();
+  } catch (e) {
+    /* write/close errors — suppress */
+  }
   await readPromise;
   var total = 0;
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -573,16 +587,34 @@ async function docwExtract(text, algoId, password) {
   return await algo.impl.extract(text, password || "");
 }
 
+function _isGarbageResult(msg) {
+  if (!msg || msg.length < 2) return true;
+  if (msg.length < 4) return false;
+  var unique = 0, seen = {};
+  for (var i = 0; i < msg.length && i < 50; i++) {
+    if (!seen[msg[i]]) { seen[msg[i]] = true; unique++; }
+  }
+  return unique < 2;
+}
+
 async function docwAutoDetect(text, password) {
   var pwError = false;
+  var candidates = [];
   for (var id in DOCW_ALGOS) {
     try {
       var result = await DOCW_ALGOS[id].impl.extract(text, password || "");
-      if (result)
-        return { algo: id, name: DOCW_ALGOS[id].name, message: result };
+      if (result) {
+        if (!_isGarbageResult(result))
+          return { algo: id, name: DOCW_ALGOS[id].name, message: result };
+        candidates.push({ algo: id, name: DOCW_ALGOS[id].name, message: result });
+      }
     } catch (e) {
       if (e.message === "WRONG_PASSWORD") pwError = true;
     }
+  }
+  if (candidates.length > 0) {
+    candidates.sort(function (a, b) { return b.message.length - a.message.length; });
+    return candidates[0];
   }
   if (pwError) throw new Error("WRONG_PASSWORD");
   return null;
