@@ -58,13 +58,15 @@ function extForMime(mime) {
   return map[mime] || 'jpg';
 }
 
-async function cleanImageFile(file, opts) {
+async function cleanImageFile(file, opts, password) {
   opts = opts || {};
   var img = await loadImage(file);
   var removed = [];
   var origMime = getMimeForFile(file);
 
   if (opts.watermark) {
+    if (!password) throw new Error(__('rt.err_pw_required', 'Password is required to remove watermarks'));
+    await _rtVerifyImagePassword(file, password);
     cleanLSB(img.imgData, 2);
     cleanDCT(img.imgData);
     removed.push('watermark');
@@ -85,13 +87,15 @@ async function cleanImageFile(file, opts) {
   return { type: 'image', blob: blob, removed: removed, mime: mime };
 }
 
-async function cleanAudioFile(file, opts) {
+async function cleanAudioFile(file, opts, password) {
   opts = opts || {};
   var info = await awLoadAudio(file);
   var s16 = new Int16Array(info.samples);
   var removed = [];
 
   if (opts.watermark) {
+    if (!password) throw new Error(__('rt.err_pw_required', 'Password is required to remove watermarks'));
+    await _rtVerifyAudioPassword(file, password);
     for (var i = 0; i < s16.length; i++) s16[i] &= ~1;
     for (var j = 0; j < s16.length; j++) s16[j] = Math.round(s16[j] / 2) * 2;
     removed.push('watermark');
@@ -232,7 +236,7 @@ function _rtDocxStripMeta(xml) {
   return xml;
 }
 
-async function cleanDocumentFile(file, opts) {
+async function cleanDocumentFile(file, opts, password) {
   var removed = [];
   var buf = await _rtReadFile(file);
 
@@ -241,6 +245,8 @@ async function cleanDocumentFile(file, opts) {
   var originalText = text;
 
   if (opts.watermark) {
+    if (!password) throw new Error(__('rt.err_pw_required', 'Password is required to remove watermarks'));
+    await _rtVerifyDocumentPassword(file, buf, password);
     text = _rtCleanDocText(text);
     removed.push('doc_watermark');
   }
@@ -886,21 +892,22 @@ async function handleRtRemove() {
   try {
     var opts = {};
     var result;
+    var password = document.getElementById('rt-password') ? document.getElementById('rt-password').value : '';
 
     if (type === 'audio') {
       opts.watermark = document.getElementById('rt-audio-wm').checked;
       opts.metadata = document.getElementById('rt-audio-meta').checked;
-      result = await cleanAudioFile(file, opts);
+      result = await cleanAudioFile(file, opts, password);
     } else if (type === 'document') {
       opts.watermark = document.getElementById('rt-doc-wm').checked;
       opts.metadata = document.getElementById('rt-doc-meta').checked;
-      result = await cleanDocumentFile(file, opts);
+      result = await cleanDocumentFile(file, opts, password);
     } else {
       opts.watermark = document.getElementById('rt-wm').checked;
       opts.pixelInjection = document.getElementById('rt-pi').checked;
       opts.c2pa = document.getElementById('rt-c2pa').checked;
       opts.metadata = document.getElementById('rt-meta').checked;
-      result = await cleanImageFile(file, opts);
+      result = await cleanImageFile(file, opts, password);
     }
 
     if (isHeavy) hideRtLoading();
@@ -968,7 +975,8 @@ async function handleRtRemove() {
     output.style.display = 'block';
   } catch (e) {
     if (isHeavy) hideRtLoading();
-    setText('rt-status', __('rt.error_prefix', 'Error: {msg}').replace('{msg}', e.message));
+    var errMsg = e.message === 'WRONG_PASSWORD' ? __('rt.err_wrong_password', 'Wrong password. Please enter the correct watermark password used during embedding.') : e.message;
+    setText('rt-status', __('rt.error_prefix', 'Error: {msg}').replace('{msg}', errMsg));
     resultDiv.style.display = 'block';
   }
 
@@ -980,4 +988,73 @@ function fmtBytes(bytes) {
   if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
   if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return bytes + ' B';
+}
+
+// ── Password verification helpers ──
+
+function _rtCheckPayload(bitsStr, key) {
+  if (!bitsStr || bitsStr.length < 32) return false;
+  var dlen = parseInt(bitsStr.substring(0, 32), 2);
+  if (!dlen || dlen < 2 || dlen > 100000 || bitsStr.length < 32 + dlen * 8) return false;
+  var data = from_bits(bitsStr.substring(0, 32 + dlen * 8));
+  var enc = data.slice(4);
+  var dec = xor_bytes(enc, key);
+  return dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB;
+}
+
+async function _rtVerifyImagePassword(file, password) {
+  var img = await loadImage(file);
+  var key = await pw_key(password);
+  var bits;
+
+  if (typeof wm1_extract === 'function') {
+    bits = wm1_extract(img.imgData);
+    if (_rtCheckPayload(bits, key)) return true;
+  }
+
+  if (typeof extractFromDCT === 'function' && typeof rgbToYcbcr === 'function') {
+    var w = img.imgData.w || img.imgData.width;
+    var h = img.imgData.h || img.imgData.height;
+    if (w >= 8 && h >= 8) {
+      try {
+        var ycbcr = rgbToYcbcr(img.imgData);
+        bits = extractFromDCT(ycbcr.Y, w, h, 32);
+        if (bits.length >= 32) {
+          var dlen = parseInt(bits.substring(0, 32), 2);
+          if (dlen > 0 && dlen < 100000) {
+            bits = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
+            if (_rtCheckPayload(bits, key)) return true;
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
+  throw new Error('WRONG_PASSWORD');
+}
+
+async function _rtVerifyAudioPassword(file, password) {
+  var info = await awLoadAudio(file);
+  var key = await pw_key(password);
+  var limit = Math.min(info.samples.length, 400032);
+  var bits = '';
+  for (var i = 0; i < limit; i++) {
+    bits += info.samples[i] & 1;
+    if (bits.length >= 32) {
+      var dlen = parseInt(bits.substring(0, 32), 2);
+      if (dlen > 0 && dlen < 100000 && bits.length >= 32 + dlen * 8) break;
+    }
+  }
+  if (_rtCheckPayload(bits, key)) return true;
+  throw new Error('WRONG_PASSWORD');
+}
+
+async function _rtVerifyDocumentPassword(file, buf, password) {
+  var text = await _rtExtractDocText(file, buf);
+  if (typeof docwAutoDetect !== 'function') return;
+  try {
+    await docwAutoDetect(text, password);
+  } catch (e) {
+    if (e.message === 'WRONG_PASSWORD') throw new Error('WRONG_PASSWORD');
+  }
 }
