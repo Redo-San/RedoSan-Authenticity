@@ -28,3 +28,6 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Removal Tools (local-only)
+Removal_Tools/
