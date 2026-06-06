@@ -295,7 +295,7 @@
         <div class="mode-cards">
           <div
             class="mode-card mode-card-simple"
-            onclick="setMode('simplified')"
+            onclick="if(typeof setMode==='function')setMode('simplified')"
           >
             <div class="mode-card-icon">✨</div>
             <h2 data-i18n="mode.simplified_title">Simplified Mode</h2>
@@ -305,7 +305,7 @@
           </div>
           <div
             class="mode-card mode-card-pro"
-            onclick="setMode('professional')"
+            onclick="if(typeof setMode==='function')setMode('professional')"
           >
             <div class="mode-card-icon">⚙️</div>
             <h2 data-i18n="mode.professional_title">Professional Mode</h2>
@@ -418,7 +418,7 @@
           </a>
           <button
             class="simple-mode-switch"
-            onclick="switchMode()"
+            onclick="if(typeof switchMode==='function')switchMode()"
             data-i18n="simple.pro_mode_btn"
           >
             ⚙️
