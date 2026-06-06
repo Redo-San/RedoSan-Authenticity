@@ -1006,10 +1006,12 @@ async function _rtVerifyImagePassword(file, password) {
   var img = await loadImage(file);
   var key = await pw_key(password);
   var bits;
+  var lsbOk = false, dctOk = false;
 
   if (typeof wm1_extract === 'function') {
     bits = wm1_extract(img.imgData);
-    if (_rtCheckPayload(bits, key)) return true;
+    lsbOk = _rtCheckPayload(bits, key);
+    if (lsbOk) return true;
   }
 
   if (typeof extractFromDCT === 'function' && typeof rgbToYcbcr === 'function') {
@@ -1023,13 +1025,17 @@ async function _rtVerifyImagePassword(file, password) {
           var dlen = parseInt(bits.substring(0, 32), 2);
           if (dlen > 0 && dlen < 100000) {
             bits = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-            if (_rtCheckPayload(bits, key)) return true;
+            dctOk = _rtCheckPayload(bits, key);
+            if (dctOk) return true;
           }
         }
-      } catch (e) {}
+      } catch (e) { console.warn('_rtVerifyImagePassword DCT error:', e); }
     }
   }
 
+  if (!lsbOk && !dctOk) {
+    console.warn('_rtVerifyImagePassword: password verification failed (LSB=' + lsbOk + ' DCT=' + dctOk + ')');
+  }
   throw new Error('WRONG_PASSWORD');
 }
 
@@ -1045,13 +1051,20 @@ async function _rtVerifyAudioPassword(file, password) {
       if (dlen > 0 && dlen < 100000 && bits.length >= 32 + dlen * 8) break;
     }
   }
-  if (_rtCheckPayload(bits, key)) return true;
+  if (_rtCheckPayload(bits, key)) {
+    console.log('_rtVerifyAudioPassword: password OK');
+    return true;
+  }
+  console.warn('_rtVerifyAudioPassword: wrong password');
   throw new Error('WRONG_PASSWORD');
 }
 
 async function _rtVerifyDocumentPassword(file, buf, password) {
   var text = await _rtExtractDocText(file, buf);
-  if (typeof docwAutoDetect !== 'function') return;
+  if (typeof docwAutoDetect !== 'function') {
+    console.warn('_rtVerifyDocumentPassword: docwAutoDetect not available — rejecting');
+    throw new Error('WRONG_PASSWORD');
+  }
   try {
     await docwAutoDetect(text, password);
   } catch (e) {
