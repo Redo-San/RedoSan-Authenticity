@@ -1305,6 +1305,7 @@
               <div style="margin-top: 8px; text-align: left">
                 <div class="form-group">
                   <label
+                    for="awm-dual-fp-algo"
                     style="font-size: 0.75rem"
                     data-i18n="awm.fp_algo_label"
                     >Fingerprint (left ch) algorithm</label
@@ -1332,6 +1333,7 @@
                 </div>
                 <div class="form-group">
                   <label
+                    for="awm-dual-did-algo"
                     style="font-size: 0.75rem"
                     data-i18n="awm.did_algo_label"
                     >DID Identity (right ch) algorithm</label
@@ -2673,9 +2675,9 @@
 
           <!-- User info (required) -->
           <div class="form-group">
-            <label data-i18n="cert.user_info_label"
+            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.user_info_label"
               >Your Information
-              <span style="color: var(--danger)">*</span></label
+              <span style="color: var(--danger)">*</span></p
             >
             <div
               style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
@@ -2753,7 +2755,7 @@
 
           <!-- Social links -->
           <div class="form-group">
-            <label data-i18n="cert.social_label">Social Links (optional)</label>
+            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.social_label">Social Links (optional)</p>
             <div
               style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
             >
@@ -2826,7 +2828,7 @@
 
           <!-- Music links -->
           <div class="form-group" id="cert-music-group">
-            <label data-i18n="cert.music_label">Music Links (optional)</label>
+            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.music_label">Music Links (optional)</p>
             <div style="margin: 8px 0">
               <label class="cert-music-toggle">
                 <input
@@ -2913,8 +2915,8 @@
 
           <!-- Result files (upload from other sections) -->
           <div class="form-group">
-            <label data-i18n="cert.results_label"
-              >Tool Results (upload from other sections)</label
+            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.results_label"
+              >Tool Results (upload from other sections)</p
             >
             <div
               style="
