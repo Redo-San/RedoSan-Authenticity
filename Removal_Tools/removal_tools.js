@@ -464,7 +464,7 @@ function _rtExtractDocText(file, buf) {
 
 async function _rtDeflate(bytes) {
   if (typeof CompressionStream === 'undefined') throw new Error('CompressionStream not available');
-  var cs = new CompressionStream('deflate-raw');
+  var cs = new CompressionStream('deflate');
   var writer = cs.writable.getWriter();
   var reader = cs.readable.getReader();
   var chunks = [];
