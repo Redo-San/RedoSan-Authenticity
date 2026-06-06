@@ -276,22 +276,29 @@ function handleHashNav() {
     }, 500);
   }
 }
-// Initialize first history state — runs exactly once
+// Initialize first history state — deferred to first user gesture
 function initNav() {
   handleHashNav();
-  if (!history.state || !history.state.modeOverlay) {
-    try {
-      history.replaceState(
-        { modeOverlay: true },
-        "",
-        window.location.pathname.replace(/\/+$/, "") + "/",
-      );
-    } catch (e) {}
-  }
 }
-// Run only via DOMContentLoaded to avoid double execution with defer scripts
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initNav);
+// Defer replaceState to first user interaction to avoid Chrome marking it skippable
+document.addEventListener("DOMContentLoaded", function () {
+  var p = new Promise(function (r) { initNav(); r(); });
+  var deferredReplace = function () {
+    if (!history.state || !history.state.modeOverlay) {
+      try {
+        history.replaceState(
+          { modeOverlay: true },
+          "",
+          window.location.pathname.replace(/\/+$/, "") + "/",
+        );
+      } catch (e) {}
+    }
+    document.removeEventListener("pointerdown", deferredReplace);
+    document.removeEventListener("keydown", deferredReplace);
+  };
+  document.addEventListener("pointerdown", deferredReplace);
+  document.addEventListener("keydown", deferredReplace);
+});
 } else {
   initNav();
 }

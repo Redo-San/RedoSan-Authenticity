@@ -362,7 +362,7 @@ class AdvancedWatermarkUI {
                         </label>
                     </div>
                     <div class="form-group">
-                        <label>Extraction Strength:</label>
+                        <label for="extraction-strength">Extraction Strength:</label>
                         <input type="range" id="extraction-strength" min="0.1" max="1.0" value="1.0" step="0.1" style="width: 100%;">
                     </div>
                 </div>
