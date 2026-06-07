@@ -161,6 +161,19 @@ function sanitizeText(str) {
   });
 }
 
+function validateSwhidText(el) {
+  var warn = document.getElementById("if-swhid-text-warning");
+  if (!warn) return;
+  var val = el.value;
+  var nonEnglish = /[^\x00-\x7F]/.test(val);
+  warn.style.display = nonEnglish ? "block" : "none";
+  if (nonEnglish) {
+    el.style.borderColor = "#e74c3c";
+  } else {
+    el.style.borderColor = "";
+  }
+}
+
 async function computeSwhidFromFile(file) {
   var ext = file.name.split(".").pop().toLowerCase();
   var buf = await file.arrayBuffer();
