@@ -353,6 +353,21 @@ body.no-scroll {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.btn-sm {
+  display: inline-block;
+  padding: 5px 14px;
+  background: var(--card, #f0f0f0);
+  color: var(--text, #333);
+  border: 1px solid var(--border, #ddd);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: 0.2s;
+  touch-action: manipulation;
+}
+.btn-sm:hover {
+  opacity: 0.85;
+}
 .tab-btn {
   flex: 1;
   background: var(--card-hover);
