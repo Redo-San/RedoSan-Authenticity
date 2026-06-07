@@ -137,6 +137,15 @@ function nanoidBulk(n, len) {
 }
 
 async function swhid() {
+  var fileInput = document.getElementById("if-swhid-file");
+  var textInput = document.getElementById("if-swhid-text");
+
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    return await computeSwhidFromFile(fileInput.files[0]);
+  }
+  if (textInput && textInput.value.trim()) {
+    return await computeSwhidFromText(sanitizeText(textInput.value.trim()));
+  }
   var bytes = new Uint8Array(64);
   crypto.getRandomValues(bytes);
   var hash = await crypto.subtle.digest("SHA-1", bytes);
@@ -144,6 +153,64 @@ async function swhid() {
   var v = new Uint8Array(hash);
   for (var i = 0; i < v.length; i++) h += hex(v[i], 2);
   return "swh:1:cnt:" + h;
+}
+
+function sanitizeText(str) {
+  return str.replace(/[<>&"'`]/g, function (c) {
+    return "&#" + c.charCodeAt(0) + ";";
+  });
+}
+
+async function computeSwhidFromFile(file) {
+  var ext = file.name.split(".").pop().toLowerCase();
+  var buf = await file.arrayBuffer();
+
+  if (ext === "ots") {
+    var hex = await extractHashFromOts(buf);
+    return "swh:1:cnt:" + hex;
+  }
+  if (ext === "json") {
+    var dec = new TextDecoder("utf-8");
+    var text = dec.decode(buf);
+    var obj;
+    try { obj = JSON.parse(text); } catch (e) { throw new Error("Invalid fingerprint JSON: " + e.message); }
+    var sha1 = obj && obj.hashes && obj.hashes["SHA-1"];
+    if (sha1) return "swh:1:cnt:" + sha1.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+    var sha256 = obj && obj.hashes && obj.hashes["SHA-256"];
+    if (sha256) return "swh:1:cnt:" + sha256.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+    throw new Error("No SHA-1 or SHA-256 hash found in fingerprint JSON");
+  }
+  var hash = await crypto.subtle.digest("SHA-1", buf);
+  return "swh:1:cnt:" + hexFromDigest(hash);
+}
+
+function extractHashFromOts(buf) {
+  var data = new Uint8Array(buf);
+  var OTS_HEADER = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+  for (var i = 0; i < OTS_HEADER.length; i++) {
+    if (data[i] !== OTS_HEADER[i]) throw new Error("Invalid OTS file: bad magic bytes");
+  }
+  if (data[OTS_HEADER.length] !== 1) throw new Error("Unsupported OTS version");
+  if (data[OTS_HEADER.length + 1] !== 0x08) throw new Error("Unsupported OTS hash: only SHA-256");
+  var off = OTS_HEADER.length + 2;
+  if (off + 32 > data.length) throw new Error("OTS file too short");
+  var h = "";
+  for (var j = 0; j < 32; j++) h += hex(data[off + j], 2);
+  return h;
+}
+
+async function computeSwhidFromText(text) {
+  var enc = new TextEncoder();
+  var buf = enc.encode(text);
+  var hash = await crypto.subtle.digest("SHA-1", buf);
+  return "swh:1:cnt:" + hexFromDigest(hash);
+}
+
+function hexFromDigest(buf) {
+  var v = new Uint8Array(buf);
+  var h = "";
+  for (var i = 0; i < v.length; i++) h += hex(v[i], 2);
+  return h;
 }
 
 function handleIdForgeGenerate() {
@@ -171,11 +238,13 @@ function handleIdForgeGenerate() {
           ids = count === 1 ? [ulid()] : ulidBulk(count);
           break;
         case "nanoid":
-          ids = count === 1 ? [nanoid()] : nanoidBulk(count);
+          var nlen = parseInt(document.getElementById("if-nanoid-len").value, 10) || 21;
+          ids = count === 1 ? [nanoid(nlen)] : nanoidBulk(count, nlen);
           break;
         case "swhid":
-          ids = [];
-          for (var k = 0; k < count; k++) ids.push(await swhid());
+          var first = await swhid();
+          ids = [first];
+          for (var k = 1; k < count; k++) ids.push(first);
           break;
         default:
           ids = [uuidv4()];
@@ -344,6 +413,32 @@ function idForgeShowInfo() {
     (icon[type] || "") +
     "</span> " +
     text;
+
+  var nanoWrap = document.getElementById("if-nanoid-wrapper");
+  var swhidWrap = document.getElementById("if-swhid-source-wrapper");
+  if (nanoWrap) nanoWrap.style.display = type === "nanoid" ? "block" : "none";
+  if (swhidWrap) swhidWrap.style.display = type === "swhid" ? "block" : "none";
+
+  if (type === "swhid") switchSwhidTab("file");
+}
+
+function switchSwhidTab(tab) {
+  var btns = document.querySelectorAll("[data-swhid-tab]");
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].style.background =
+      btns[i].getAttribute("data-swhid-tab") === tab
+        ? "var(--accent, #6c5ce7)"
+        : "var(--card, #f0f0f0)";
+    btns[i].style.color =
+      btns[i].getAttribute("data-swhid-tab") === tab
+        ? "#fff"
+        : "var(--text, #333)";
+  }
+  var wrappers = ["if-swhid-file-wrapper", "if-swhid-text-wrapper"];
+  for (var j = 0; j < wrappers.length; j++) {
+    document.getElementById(wrappers[j]).style.display = "none";
+  }
+  document.getElementById("if-swhid-" + tab + "-wrapper").style.display = "block";
 }
 
 function idForgeShowDownload() {
@@ -358,4 +453,4 @@ function idForgeUpdateCount() {
   if (isNaN(val) || val < 1) document.getElementById("if-count").value = 1;
   if (val > 10000) document.getElementById("if-count").value = 10000;
 }
-/* exported handleIdForgeGenerate, idForgeCopy, idForgeShowDownload, idForgeUpdateCount, idForgeShowInfo */
+/* exported handleIdForgeGenerate, idForgeCopy, idForgeShowDownload, idForgeUpdateCount, idForgeShowInfo, switchSwhidTab */
