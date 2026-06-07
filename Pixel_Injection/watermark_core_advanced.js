@@ -203,18 +203,15 @@ class WatermarkCore {
                 // Read bit: 0 → c[5,2] > c[4,3], 1 → c[4,3] > c[5,2]
                 const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
                 const bit = parseInt(encoded[bitIdx++], 2);
-                const diff = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
-                
+                const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
+                const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
+                const needed = Math.max(gap, 5) + K;
                 if (bit === 0) {
-                    if (dctBlock[idxB] >= dctBlock[idxA]) {
-                        dctBlock[idxA] += diff + K;
-                        dctBlock[idxB] -= diff + K;
-                    }
+                    dctBlock[idxA] = avg + needed / 2;
+                    dctBlock[idxB] = avg - needed / 2;
                 } else {
-                    if (dctBlock[idxA] >= dctBlock[idxB]) {
-                        dctBlock[idxB] += diff + K;
-                        dctBlock[idxA] -= diff + K;
-                    }
+                    dctBlock[idxA] = avg - needed / 2;
+                    dctBlock[idxB] = avg + needed / 2;
                 }
                 
                 const watermarkedBlock = this.applyInverseDCT(dctBlock);
@@ -241,11 +238,11 @@ class WatermarkCore {
         const distribution = this.optimizeMessageDistribution(encodedMessage, waveletDecomposition);
         
         let messageIndex = 0;
-        for (const [band, coeffs] of Object.entries(distribution)) {
-            if (messageIndex >= encodedMessage.length) break;
-            
+        for (const band of ['LH', 'HL', 'HH']) {
+            const coeffs = distribution[band];
+            if (!coeffs) continue;
             for (let i = 0; i < coeffs.length && messageIndex < encodedMessage.length; i++) {
-                coeffs[i] = this.embedInCoefficient(coeffs[i], 
+                coeffs[i] = this.embedInCoefficient(Math.round(coeffs[i]), 
                     parseInt(encodedMessage[messageIndex++], 2));
             }
         }
@@ -274,19 +271,22 @@ class WatermarkCore {
                 
                 const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
                 const bit = parseInt(encoded[bitIdx++], 2);
-                const diff = Math.abs(dftBlock[idxA].real - dftBlock[idxB].real);
-                
+                const gap = Math.abs(dftBlock[idxA].real - dftBlock[idxB].real);
+                const avg = (dftBlock[idxA].real + dftBlock[idxB].real) / 2;
+                const needed = Math.max(gap, 5) + K;
                 if (bit === 0) {
-                    if (dftBlock[idxB].real >= dftBlock[idxA].real) {
-                        dftBlock[idxA].real += diff + K;
-                        dftBlock[idxB].real -= diff + K;
-                    }
+                    dftBlock[idxA].real = avg + needed / 2;
+                    dftBlock[idxB].real = avg - needed / 2;
                 } else {
-                    if (dftBlock[idxA].real >= dftBlock[idxB].real) {
-                        dftBlock[idxB].real += diff + K;
-                        dftBlock[idxA].real -= diff + K;
-                    }
+                    dftBlock[idxA].real = avg - needed / 2;
+                    dftBlock[idxB].real = avg + needed / 2;
                 }
+                
+                const conjA = 3 * 8 + 6, conjB = 4 * 8 + 5;
+                dftBlock[conjA].real = dftBlock[idxA].real;
+                dftBlock[conjA].imag = -dftBlock[idxA].imag;
+                dftBlock[conjB].real = dftBlock[idxB].real;
+                dftBlock[conjB].imag = -dftBlock[idxB].imag;
                 
                 const watermarkedBlock = this.applyInverseDFT(dftBlock);
                 this.putBlock(data, watermarkedBlock, x, y, width);
@@ -299,42 +299,37 @@ class WatermarkCore {
     // 6. Hybrid DCT-DWT for maximum robustness
     hybridDCTDWT(imageData, message, options = {}) {
         const {
-            dctStrength = 0.1,
-            dwtLevels = 2,
-            ratio = 0.6 // 60% DCT, 40% DWT
+            dctStrength = 15
         } = options;
         
         const width = imageData.width;
         const height = imageData.height;
         const data = new Uint8ClampedArray(imageData.data);
+        const blockSize = 8;
         
         const encodedMessage = this.encodeMessage(message);
         const messageLength = encodedMessage.length;
         
-        // Split message between DCT and DWT
-        const dctLength = Math.floor(messageLength * ratio);
-        const dwtLength = messageLength - dctLength;
-        
+        // DCT portion: one bit per 8x8 block via coefficient pair comparison
+        const K = dctStrength;
+        const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
         let messageIndex = 0;
         
-        // Apply DCT watermarking to first portion
-        for (let y = 0; y < height - 8 + 1 && messageIndex < dctLength; y += 8) {
-            for (let x = 0; x < width - 8 + 1 && messageIndex < dctLength; x += 8) {
-                const block = this.extractBlock(data, x, y, width, 8);
+        for (let y = 0; y < height - blockSize + 1 && messageIndex < messageLength; y += blockSize) {
+            for (let x = 0; x < width - blockSize + 1 && messageIndex < messageLength; x += blockSize) {
+                const block = this.extractBlock(data, x, y, width, blockSize);
                 const dctBlock = this.applyDCT(block);
                 
-                // Embed in robust mid-frequency coefficients
-                for (let i = 1; i < 7 && messageIndex < dctLength; i++) {
-                    for (let j = 1; j < 7 && messageIndex < dctLength; j++) {
-                        const bit = parseInt(encodedMessage[messageIndex++], 2);
-                        // Convert 2D access to 1D for dctBlock array
-                        const index = i * 8 + j;
-                        if (index < dctBlock.length) {
-                            const coefficient = dctBlock[index];
-                            const modified = this.modifyCoefficient(coefficient, bit, dctStrength);
-                            dctBlock[index] = modified;
-                        }
-                    }
+                const bit = parseInt(encodedMessage[messageIndex++], 2);
+                const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
+                const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
+                const needed = Math.max(gap, 5) + K;
+                if (bit === 0) {
+                    dctBlock[idxA] = avg + needed / 2;
+                    dctBlock[idxB] = avg - needed / 2;
+                } else {
+                    dctBlock[idxA] = avg - needed / 2;
+                    dctBlock[idxB] = avg + needed / 2;
                 }
                 
                 const watermarkedBlock = this.applyInverseDCT(dctBlock);
@@ -342,25 +337,26 @@ class WatermarkCore {
             }
         }
         
-        // Apply DWT watermarking to remaining portion
+        // DWT portion: step-2 LSB embedding for remaining bits (if any)
         if (messageIndex < messageLength) {
-            const waveletDecomposition = this.applyDWT(data, width, height, dwtLevels);
-            const remainingMessage = encodedMessage.substring(messageIndex);
+            const decomp = this.applyDWT(data, width, height, 1, 'haar');
             
-            // Distribute remaining message in DWT sub-bands
-            const dwtDistribution = this.distributeMessageInSubBands(remainingMessage, waveletDecomposition);
-            
-            for (const [band, coeffs] of Object.entries(dwtDistribution)) {
-                for (let i = 0; i < coeffs.length; i++) {
-                    coeffs[i] = this.embedInCoefficient(coeffs[i], parseInt(remainingMessage[i % remainingMessage.length], 2));
+            // Count available DWT coefficients
+            const dwtCapacity = decomp._bandLen * 3; // LH + HL + HH
+            const dwtBits = messageLength - messageIndex;
+            if (dwtBits <= dwtCapacity) {
+                for (const band of ['LH', 'HL', 'HH']) {
+                    const coeffs = decomp[band];
+                    const bandLen = decomp._bandLen;
+                    for (let i = 0; i < bandLen && messageIndex < messageLength; i++) {
+                        coeffs[i] = this.embedInCoefficient(coeffs[i], parseInt(encodedMessage[messageIndex++], 2));
+                    }
                 }
-            }
-            
-            const dwtReconstructed = this.applyInverseDWT(waveletDecomposition, width, height, dwtLevels);
-            
-            // Combine DCT and DWT results
-            for (let i = 0; i < data.length; i++) {
-                data[i] = Math.round(0.7 * data[i] + 0.3 * dwtReconstructed[i]);
+                
+                const reconstructed = this.applyInverseDWT(decomp, width, height, 1, 'haar');
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = reconstructed[i];
+                }
             }
         }
         
@@ -1699,35 +1695,70 @@ class WatermarkCore {
         return data;
     }
     
-    // Apply multi-level DWT
+    // Apply 1-level 2D Haar DWT
     applyDWT(data, width, height, levels, wavelet = 'haar') {
-        const decomposition = {};
+        const halfW = Math.floor(width / 2);
+        const halfH = Math.floor(height / 2);
+        const total = width * height * 4;
+        const bandLen = halfW * halfH * 4;
         
-        // Simplified DWT implementation
-        for (let level = 0; level < levels; level++) {
-            const currentWidth = width >> level;
-            const currentHeight = height >> level;
-            
-            decomposition[`level_${level}`] = {
-                LL: this.extractSubBand(data, width, height, level, 'LL'),
-                LH: this.extractSubBand(data, width, height, level, 'LH'),
-                HL: this.extractSubBand(data, width, height, level, 'HL'),
-                HH: this.extractSubBand(data, width, height, level, 'HH')
-            };
+        const LL = new Float64Array(total);
+        const LH = new Float64Array(total);
+        const HL = new Float64Array(total);
+        const HH = new Float64Array(total);
+        
+        for (let y = 0; y < halfH * 2; y += 2) {
+            for (let x = 0; x < halfW * 2; x += 2) {
+                const idx00 = (y * width + x) * 4;
+                const idx01 = (y * width + x + 1) * 4;
+                const idx10 = ((y + 1) * width + x) * 4;
+                const idx11 = ((y + 1) * width + x + 1) * 4;
+                const outIdx = ((y / 2) * halfW + (x / 2)) * 4;
+                
+                for (let c = 0; c < 4; c++) {
+                    const a = data[idx00 + c];
+                    const b = data[idx01 + c];
+                    const C = data[idx10 + c];
+                    const d = data[idx11 + c];
+                    
+                    LL[outIdx + c] = (a + b + C + d) / 2;
+                    LH[outIdx + c] = (a + b - C - d) / 2;
+                    HL[outIdx + c] = (a - b + C - d) / 2;
+                    HH[outIdx + c] = (a - b - C + d) / 2;
+                }
+            }
         }
         
-        return decomposition;
+        return { LL, LH, HL, HH, _bandLen: bandLen };
     }
     
-    // Apply inverse multi-level DWT
+    // Apply inverse 1-level 2D Haar DWT
     applyInverseDWT(decomposition, width, height, levels, wavelet = 'haar') {
-        // Simplified inverse DWT
-        let data = new Uint8ClampedArray(width * height * 4);
+        const { LL, LH, HL, HH } = decomposition;
+        const halfW = Math.floor(width / 2);
+        const halfH = Math.floor(height / 2);
+        const data = new Uint8ClampedArray(width * height * 4);
         
-        // Start from the highest level
-        for (let level = levels - 1; level >= 0; level--) {
-            const levelData = decomposition[`level_${level}`];
-            data = this.reconstructFromSubBands(data, width, height, level, levelData, wavelet);
+        for (let y = 0; y < halfH * 2; y += 2) {
+            for (let x = 0; x < halfW * 2; x += 2) {
+                const outIdx00 = (y * width + x) * 4;
+                const outIdx01 = (y * width + x + 1) * 4;
+                const outIdx10 = ((y + 1) * width + x) * 4;
+                const outIdx11 = ((y + 1) * width + x + 1) * 4;
+                const inIdx = ((y / 2) * halfW + (x / 2)) * 4;
+                
+                for (let c = 0; c < 4; c++) {
+                    const ll = LL[inIdx + c];
+                    const lh = LH[inIdx + c];
+                    const hl = HL[inIdx + c];
+                    const hh = HH[inIdx + c];
+                    
+                    data[outIdx00 + c] = Math.max(0, Math.min(255, Math.round((ll + lh + hl + hh) / 2)));
+                    data[outIdx01 + c] = Math.max(0, Math.min(255, Math.round((ll + lh - hl - hh) / 2)));
+                    data[outIdx10 + c] = Math.max(0, Math.min(255, Math.round((ll - lh + hl - hh) / 2)));
+                    data[outIdx11 + c] = Math.max(0, Math.min(255, Math.round((ll - lh - hl + hh) / 2)));
+                }
+            }
         }
         
         return data;
@@ -1917,9 +1948,11 @@ class WatermarkCore {
         return modified * weight;
     }
     
-    // Embed in wavelet coefficient
+    // Embed in wavelet coefficient (step=2 to survive inverse/forward DWT rounding)
     embedInCoefficient(coefficient, bit) {
-        return (coefficient & ~1) | bit;
+        const rounded = Math.round(coefficient);
+        const quantized = Math.floor(rounded / 2);
+        return (quantized & ~1 | bit) * 2;
     }
     
     // Calculate mean
@@ -2301,16 +2334,6 @@ class WatermarkCore {
         return imageData;
     }
     
-    extractSubBand(data, width, height, level, band) {
-        // Extract specific sub-band from DWT
-        return [];
-    }
-    
-    reconstructFromSubBands(data, width, height, level, subBands, wavelet) {
-        // Reconstruct image from sub-bands
-        return data;
-    }
-    
     distributeMessageInSubBands(message, decomposition) {
         // Optimize message distribution in sub-bands
         const distribution = {};
@@ -2397,10 +2420,78 @@ class WatermarkCore {
         const pipeIdx = str.indexOf('|');
         return pipeIdx >= 0 ? str.substring(0, pipeIdx) : str;
     }
-
+    
+    extractHybridDCTDWT(watermarkedImageData) {
+        const width = watermarkedImageData.width;
+        const height = watermarkedImageData.height;
+        const data = watermarkedImageData.data;
+        const blockSize = 8;
+        const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+        
+        // Extract DCT bits from pair comparison
+        let dctBits = '';
+        for (let y = 0; y < height - blockSize + 1; y += blockSize) {
+            for (let x = 0; x < width - blockSize + 1; x += blockSize) {
+                const block = this.extractBlock(data, x, y, width, blockSize);
+                const dctBlock = this.applyDCT(block);
+                dctBits += dctBlock[idxA] > dctBlock[idxB] ? 0 : 1;
+            }
+        }
+        
+        // Extract DWT bits from step-2 LSB (LH, HL, HH like embed)
+        const decomp = this.applyDWT(data, width, height, 1, 'haar');
+        const bandLen = decomp._bandLen;
+        let dwtBits = '';
+        for (const band of [decomp.LH, decomp.HL, decomp.HH]) {
+            for (let i = 0; i < bandLen && dwtBits.length < 100000; i++) {
+                dwtBits += Math.floor(Math.round(band[i]) / 2) & 1;
+            }
+        }
+        
+        // Try decoding DCT + DWT concatenated
+        const allBits = dctBits + dwtBits;
+        const trimLen = allBits.length - (allBits.length % 3);
+        if (trimLen >= 3) {
+            const decoded = this.decodeRedundancy(allBits.substring(0, trimLen), 3);
+            const str = this.binaryToString(decoded);
+            const pipeIdx = str.indexOf('|');
+            if (pipeIdx >= 0) {
+                return str.substring(0, pipeIdx);
+            }
+        }
+        
+        // Fallback: try DCT-only
+        const dctTrim = dctBits.length - (dctBits.length % 3);
+        if (dctTrim >= 3) {
+            const decoded = this.decodeRedundancy(dctBits.substring(0, dctTrim), 3);
+            const str = this.binaryToString(decoded);
+            const pipeIdx = str.indexOf('|');
+            if (pipeIdx >= 0) {
+                return str.substring(0, pipeIdx);
+            }
+        }
+        
+        return null;
+    }
+    
     extractDWT(watermarkedImageData) {
-        // Extract message from DWT watermarked image
-        return 'extracted_message';
+        const { data, width, height } = watermarkedImageData;
+        const decomp = this.applyDWT(data, width, height, 1, 'haar');
+        const { LH, HL, HH } = decomp;
+        const bandLen = decomp._bandLen || (Math.floor(width / 2) * Math.floor(height / 2) * 4);
+        let bits = '';
+        
+        for (const band of [LH, HL, HH]) {
+            for (let i = 0; i < bandLen && bits.length < 100000; i++) {
+                bits += Math.floor(Math.round(band[i]) / 2) & 1;
+            }
+        }
+        
+        const decoded = this.decodeRedundancy(bits, 3);
+        const str = this.binaryToString(decoded);
+        const nullIdx = str.indexOf('\0');
+        const pipeIdx = str.indexOf('|');
+        return pipeIdx >= 0 ? str.substring(0, pipeIdx) : nullIdx >= 0 ? str.substring(0, nullIdx) : str;
     }
     
     extractLSB(watermarkedImageData) {
