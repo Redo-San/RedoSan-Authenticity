@@ -662,15 +662,18 @@ class PixelInjection {
             const imageData = await this.loadImage(file);
             
             if (algorithm === 'auto_detect') {
-                // Auto Detect: try all analysis methods
                 this.analysisResults = {
                     statistical: this.core.detection.statistical_detection(imageData),
                     ml: this.core.detection.ml_detection(imageData),
+                    blind_decoding: this.core.detection.blind_decoding(imageData, 'dct', {}),
+                    robustness: this.core.detection.robustness_testing(imageData, imageData),
+                    quality: this.core.detection.quality_metrics(imageData, imageData),
                     characteristics: this.analyzeImageCharacteristics(imageData),
-                    recommendations: this.generateRecommendations(imageData)
+                    recommendations: this.generateRecommendations(imageData),
+                    timestamp: new Date().toISOString()
                 };
-                this.showAnalysisResults();
-                this.showMessage('Auto analysis completed — all methods applied', 'success');
+                this.showAutoAnalysisResults();
+                this.showMessage('Auto analysis completed — all 5 methods applied', 'success');
             } else if (algorithm === 'robustness_testing' || algorithm === 'quality_metrics') {
                 // Need original for comparison
                 const compareInput = document.getElementById('pi-analyze-compare');
@@ -945,62 +948,126 @@ class PixelInjection {
         outputDiv.innerHTML += metricsHtml;
     }
     
-    showAnalysisResults() {
+    showAutoAnalysisResults() {
         if (!this.analysisResults) return;
+        const r = this.analysisResults;
         
         const resultDiv = document.getElementById('pi-result');
         if (!resultDiv) return;
-        
         resultDiv.style.display = 'block';
+        
+        const fmtPct = v => (v * 100).toFixed(1) + '%';
+        const fmtScore = v => v !== null && v !== undefined && v !== Infinity ? v.toFixed(2) : 'N/A';
+        const badge = (cond, t, f) =>
+          `<span style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:0.75rem;font-weight:700;${cond ? 'background:var(--success);color:#fff' : 'background:var(--danger);color:#fff'}">${cond ? t : f}</span>`;
+        const valueBox = (label, val, color) =>
+          `<div style="margin:4px 0;font-size:0.85rem;color:var(--text-muted)">${label}: <strong style="color:${color || 'var(--text)'}">${val}</strong></div>`;
+        
+        const stat = r.statistical;
+        const ml = r.ml;
+        const blind = r.blind_decoding;
+        const robust = r.robustness;
+        const qual = r.quality;
+        const chars = r.characteristics;
         
         const outputDiv = document.getElementById('pi-output');
         outputDiv.innerHTML = `
-            <div style="text-align: center; margin-bottom: 15px;">
-                <h5 style="color: var(--primary); margin-bottom: 10px;">Image Analysis Results</h5>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                    <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
-                        <h6 style="margin: 0 0 10px 0; color: var(--text);">Statistical Detection</h6>
-                        <div style="font-size: 0.9rem;">
-                            <div>Watermark Detected: <strong>${this.analysisResults.statistical.hasWatermark ? 'Yes' : 'No'}</strong></div>
-                            <div>Confidence: <strong>${(this.analysisResults.statistical.watermarkProbability * 100).toFixed(1)}%</strong></div>
-                            <div>Algorithm: <strong>${this.analysisResults.statistical.likelyAlgorithm || 'Unknown'}</strong></div>
-                        </div>
-                    </div>
-                    <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
-                        <h6 style="margin: 0 0 10px 0; color: var(--text);">ML Detection</h6>
-                        <div style="font-size: 0.9rem;">
-                            <div>Detected: <strong>${this.analysisResults.ml.detected ? 'Yes' : 'No'}</strong></div>
-                            <div>Confidence: <strong>${(this.analysisResults.ml.confidence * 100).toFixed(1)}%</strong></div>
-                            <div>Algorithm: <strong>${this.analysisResults.ml.algorithm || 'Unknown'}</strong></div>
-                            <div>Additional Info: <strong>${this.analysisResults.ml.additionalInfo || 'None'}</strong></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px;">
-                    <h6 style="margin: 0 0 10px 0; color: var(--text);">Image Characteristics</h6>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 0.9rem;">
-                        <div>Complexity: <strong>${(this.analysisResults.characteristics.complexity * 100).toFixed(1)}%</strong></div>
-                        <div>Noise Level: <strong>${(this.analysisResults.characteristics.noise * 100).toFixed(1)}%</strong></div>
-                        <div>Brightness: <strong>${this.analysisResults.characteristics.brightness.toFixed(1)}</strong></div>
-                        <div>Contrast: <strong>${this.analysisResults.characteristics.contrast.toFixed(2)}</strong></div>
-                        <div>Texture: <strong>${this.analysisResults.characteristics.texture.toFixed(2)}</strong></div>
-                        <div>Edges: <strong>${this.analysisResults.characteristics.edges}</strong></div>
-                    </div>
-                </div>
-                
-                <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
-                    <h6 style="margin: 0 0 10px 0; color: var(--text);">Recommendations</h6>
-                    <div style="font-size: 0.9rem;">
-                        ${this.analysisResults.recommendations.map(rec => `<div>• ${rec}</div>`).join('')}
-                    </div>
-                </div>
+          <div style="max-width:1000px;margin:0 auto">
+            <h5 style="color:var(--primary);text-align:center;margin:0 0 20px 0">Comprehensive Analysis Report</h5>
+            
+            <!-- Row 1: Statistical + ML -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+                <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">🔍 Statistical Detection</h6>
+                <div style="margin-bottom:8px">${badge(stat.hasWatermark, 'Watermark Detected', 'No Watermark')}</div>
+                ${valueBox('Confidence', fmtPct(stat.watermarkProbability))}
+                ${valueBox('Likely Algorithm', stat.likelyAlgorithm || 'N/A', 'var(--primary)')}
+                ${valueBox('Estimated Strength', stat.strength !== null && stat.strength !== undefined ? fmtPct(stat.strength) : 'N/A')}
+              </div>
+              <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+                <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">🧠 ML Detection</h6>
+                <div style="margin-bottom:8px">${badge(ml.detected, 'Detected', 'Not Detected')}</div>
+                ${valueBox('Confidence', fmtPct(ml.confidence))}
+                ${valueBox('Algorithm', ml.algorithm || 'N/A', 'var(--primary)')}
+                ${valueBox('Robustness', ml.robustness !== undefined ? fmtPct(ml.robustness) : 'N/A')}
+              </div>
             </div>
+            
+            <!-- Row 2: Blind Decoding + Robustness -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+                <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">🎯 Blind Decoding (DCT)</h6>
+                <div style="margin-bottom:8px">${badge(blind && blind.length > 0, 'Data Found', 'No Hidden Data')}</div>
+                ${valueBox('Result Length', blind ? blind.length + ' chars' : '0')}
+                ${valueBox('Preview', blind ? escHtml(blind.substring(0, 60)) + (blind.length > 60 ? '...' : '') : '—', 'var(--primary)')}
+              </div>
+              <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+                <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">🛡 Robustness Testing</h6>
+                ${valueBox('Overall Score', robust.overall_score !== undefined ? (robust.overall_score * 100).toFixed(1) + '%' : 'N/A', robust.overall_score > 0.5 ? 'var(--success)' : 'var(--danger)')}
+                ${robust.individual_tests ? robust.individual_tests.map(t =>
+                  `<div style="margin:3px 0;font-size:0.8rem;color:var(--text-muted)">${badge(t.score > 0.5, '✓', '✗')} ${t.test}: ${(t.score * 100).toFixed(0)}%</div>`
+                ).join('') : ''}
+              </div>
+            </div>
+            
+            <!-- Row 3: Quality Metrics (full width) -->
+            <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px">
+              <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">📊 Quality Metrics</h6>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:0.85rem">
+                <div>PSNR: <strong style="color:${qual.psnr === Infinity ? 'var(--success)' : 'var(--text)'}">${qual.psnr === Infinity ? '∞ dB (identical)' : fmtScore(qual.psnr) + ' dB'}</strong></div>
+                <div>SSIM: <strong>${fmtScore(qual.ssim)}</strong></div>
+                <div>LPIPS: <strong>${fmtScore(qual.lpips)}</strong></div>
+                <div>BER: <strong>${qual.ber !== null ? qual.ber.toFixed(2) + '%' : 'N/A'}</strong></div>
+                <div>MSE: <strong>${fmtScore(qual.mse)}</strong></div>
+                <div>MAD: <strong>${fmtScore(qual.mad)}</strong></div>
+              </div>
+            </div>
+            
+            <!-- Row 4: Image Characteristics (full width) -->
+            <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px">
+              <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">📐 Image Characteristics</h6>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:0.85rem">
+                <div>Complexity: <strong>${fmtPct(chars.complexity)}</strong></div>
+                <div>Noise Level: <strong>${fmtPct(chars.noise)}</strong></div>
+                <div>Brightness: <strong>${chars.brightness !== undefined ? (chars.brightness * 100).toFixed(1) + '%' : 'N/A'}</strong></div>
+                <div>Contrast: <strong>${chars.contrast !== undefined ? chars.contrast.toFixed(2) : 'N/A'}</strong></div>
+                <div>Texture: <strong>${chars.texture !== undefined ? chars.texture.toFixed(2) : 'N/A'}</strong></div>
+                <div>Edges: <strong>${chars.edges !== undefined ? chars.edges : 'N/A'}</strong></div>
+              </div>
+            </div>
+            
+            <!-- Row 5: Recommendations -->
+            <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px">
+              <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">💡 Recommendations</h6>
+              <div style="font-size:0.85rem">
+                ${r.recommendations.map(rec => `<div style="margin:4px 0;color:var(--text-muted)">• ${rec}</div>`).join('')}
+              </div>
+            </div>
+          </div>
         `;
         
+        // Set up download
+        window._piResult = {
+          type: 'analysis_auto',
+          algorithm: 'Auto Detect',
+          statistical: JSON.stringify(stat, null, 2),
+          ml: JSON.stringify(ml, null, 2),
+          blind_decoding: blind || '(empty)',
+          robustness: JSON.stringify(robust, null, 2),
+          quality_metrics: JSON.stringify(qual, null, 2),
+          image_characteristics: JSON.stringify(chars, null, 2),
+          recommendations: r.recommendations.join('\n'),
+          timestamp: r.timestamp || new Date().toISOString()
+        };
+        window._currentDownloadHandler = downloadPixelInjection;
+        document.getElementById('dl-modal-title').textContent = 'Download Analysis Report';
+        
         const downloadDiv = document.getElementById('pi-download');
-        downloadDiv.innerHTML = '';
+        downloadDiv.innerHTML = `
+          <div style="text-align:center;margin-top:16px">
+            <button class="btn" onclick="showDownloadModal()">${__('fp.results_btn', 'Download Results')}</button>
+          </div>
+        `;
     }
     
     showSingleAnalysisResult(algorithm, result) {
@@ -1014,16 +1081,13 @@ class PixelInjection {
         
         const outputDiv = document.getElementById('pi-output');
         outputDiv.innerHTML = `
-            <div style="text-align: center; margin-bottom: 15px;">
-                <h5 style="color: var(--primary); margin-bottom: 10px;">${escHtml(algoName)} Results</h5>
-                <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
-                    <pre style="text-align: left; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem;">${safeResult}</pre>
-                </div>
+          <div style="max-width:800px;margin:0 auto;text-align:center">
+            <h5 style="color:var(--primary);margin:0 0 16px 0">${escHtml(algoName)}</h5>
+            <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:left">
+              <pre style="white-space:pre-wrap;word-wrap:break-word;font-size:0.85rem;margin:0;color:var(--text)">${safeResult}</pre>
             </div>
+          </div>
         `;
-        
-        const downloadDiv = document.getElementById('pi-download');
-        downloadDiv.innerHTML = '';
         
         window._piResult = {
           type: 'analysis', algorithm: algoName,
@@ -1032,6 +1096,13 @@ class PixelInjection {
         };
         window._currentDownloadHandler = downloadPixelInjection;
         document.getElementById('dl-modal-title').textContent = 'Download Analysis Result';
+        
+        const downloadDiv = document.getElementById('pi-download');
+        downloadDiv.innerHTML = `
+          <div style="text-align:center;margin-top:16px">
+            <button class="btn" onclick="showDownloadModal()">${__('fp.results_btn', 'Download Results')}</button>
+          </div>
+        `;
     }
     
     analyzeImageCharacteristics(imageData) {
