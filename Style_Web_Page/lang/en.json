@@ -51,7 +51,7 @@
   "id_forge.info.uuidv7": "UUID v7 — Time-ordered identifier (timestamp + random bits). Ideal for database indexing (B-trees). Faster inserts than v4.",
   "id_forge.info.ulid": "ULID — 26-char Crockford Base32 identifier. Time-sortable, URL-safe, human-readable. Compact and easy to copy.",
   "id_forge.info.nanoid": "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
-  "id_forge.info.swhid": "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+  "id_forge.info.swhid": "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 & SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
   "id_forge.generate_btn": "Generate",
   "id_forge.generating_btn": "Generating...",
   "id_forge.copy_btn": "Copy",
@@ -620,5 +620,14 @@
   "docw.warning_forensic_desc": "forensic analysis tools",
   "docw.warning_tip": "If this is a text document, try uploading a .txt or .docx version instead.",
   "docw.warning_low_cap": "⚠ Low capacity",
-  "docw.warning_low_desc": "The extracted text ({chars} chars, ~{cap} capacity) is too short for most messages. Consider using <b>Pixel Injection</b> or <b>Watermark</b> tools for image-based documents."
+  "docw.warning_low_desc": "The extracted text ({chars} chars, ~{cap} capacity) is too short for most messages. Consider using <b>Pixel Injection</b> or <b>Watermark</b> tools for image-based documents.",
+  "id_forge.nanoid_len": "NanoID Length",
+  "id_forge.swhid_file": "Upload File",
+  "id_forge.swhid_text": "Insert Text",
+  "id_forge.swhid_url": "From URL",
+  "id_forge.swhid_file_label": "Upload file for SHA-1 & SHA-256 hash",
+  "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
+  "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
+  "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
+  "id_forge.swhid_text_warning": "English characters only. Non-English text will produce incorrect SWHID."
 }
