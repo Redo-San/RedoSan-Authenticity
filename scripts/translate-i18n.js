@@ -93,19 +93,30 @@ async function translateViaXnx3(texts, targetLang) {
   var keys = Object.keys(texts);
   var langId = XNX3_LANG_MAP[targetLang];
   if (!langId) throw new Error('Unsupported language: ' + targetLang);
-  var encodedText = encodeURIComponent(JSON.stringify(keys.map(function(k) { return texts[k]; })));
-  var resp = await fetch(XNX3_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'text=' + encodedText + '&to=' + encodeURIComponent(langId)
-  });
-  var data = await resp.json();
-  if (data.result !== 1) throw new Error('xnx3 translate error: ' + (data.info || 'unknown'));
-  var translated = {};
-  for (var i = 0; i < keys.length; i++) {
-    translated[keys[i]] = data.text[i] || texts[keys[i]];
+
+  // Batch all keys in one request; retry up to 3 times on failure
+  var lastError;
+  for (var attempt = 0; attempt < 3; attempt++) {
+    try {
+      var encodedText = encodeURIComponent(JSON.stringify(keys.map(function(k) { return texts[k]; })));
+      var resp = await fetch(XNX3_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'text=' + encodedText + '&to=' + encodeURIComponent(langId)
+      });
+      var data = await resp.json();
+      if (data.result !== 1) throw new Error('xnx3 translate error: ' + (data.info || 'unknown'));
+      var translated = {};
+      for (var i = 0; i < keys.length; i++) {
+        translated[keys[i]] = data.text[i] || texts[keys[i]];
+      }
+      return translated;
+    } catch(e) {
+      lastError = e;
+      if (attempt < 2) await new Promise(function(r) { setTimeout(r, 2000 * (attempt + 1)); });
+    }
   }
-  return translated;
+  throw lastError;
 }
 
 async function translateViaAI(texts, targetLang) {
