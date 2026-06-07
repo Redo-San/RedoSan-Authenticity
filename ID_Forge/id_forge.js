@@ -255,9 +255,7 @@ function handleIdForgeGenerate() {
           ids = count === 1 ? [nanoid(nlen)] : nanoidBulk(count, nlen);
           break;
         case "swhid":
-          var first = await swhid();
-          ids = [first];
-          for (var k = 1; k < count; k++) ids.push(first);
+          ids = [await swhid()];
           break;
         default:
           ids = [uuidv4()];
@@ -429,8 +427,10 @@ function idForgeShowInfo() {
 
   var nanoWrap = document.getElementById("if-nanoid-wrapper");
   var swhidWrap = document.getElementById("if-swhid-source-wrapper");
+  var countWrap = document.getElementById("if-count-wrapper");
   if (nanoWrap) nanoWrap.style.display = type === "nanoid" ? "block" : "none";
   if (swhidWrap) swhidWrap.style.display = type === "swhid" ? "block" : "none";
+  if (countWrap) countWrap.style.display = type === "swhid" ? "none" : "block";
 
   if (type === "swhid") switchSwhidTab("file");
 }
