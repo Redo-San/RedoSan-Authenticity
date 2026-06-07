@@ -31,3 +31,6 @@ Thumbs.db
 
 # Removal Tools (local-only)
 Removal_Tools/
+
+# Local agent memory (not committed)
+AGENTS.md

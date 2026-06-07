@@ -3502,11 +3502,11 @@
           <div class="form-group">
             <label for="if-type">ID Type</label>
             <select id="if-type" onchange="idForgeShowInfo()">
+              <option value="swhid">SWHID (SHA1 — ISO/IEC 18670)</option>
               <option value="uuidv4">UUID v4 (Random — RFC 9562)</option>
               <option value="uuidv7">UUID v7 (Time-ordered — RFC 9562)</option>
               <option value="ulid">ULID (Crockford Base32)</option>
-              <option value="nanoid">NanoID (URL-safe, 21 chars)</option>
-              <option value="swhid">SWHID (SHA1 — ISO/IEC 18670)</option>
+              <option value="nanoid">NanoID (URL-safe)</option>
             </select>
           </div>
           <div
@@ -3533,6 +3533,25 @@
               max="10000"
               oninput="idForgeUpdateCount()"
             />
+          </div>
+          <div id="if-nanoid-wrapper" class="form-group" style="display:none">
+            <label for="if-nanoid-len" data-i18n="id_forge.nanoid_len">NanoID Length</label>
+            <input type="number" id="if-nanoid-len" value="21" min="4" max="256" />
+          </div>
+          <div id="if-swhid-source-wrapper" style="display:none">
+            <div id="if-swhid-tabs" style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+              <button type="button" class="btn-sm" data-swhid-tab="file" onclick="switchSwhidTab('file')" data-i18n="id_forge.swhid_file">Upload File</button>
+              <button type="button" class="btn-sm" data-swhid-tab="text" onclick="switchSwhidTab('text')" data-i18n="id_forge.swhid_text">Insert Text</button>
+            </div>
+            <div id="if-swhid-file-wrapper" class="form-group">
+              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label">Upload .ots / fingerprint.json / .txt for SHA-1 hash</label>
+              <input type="file" id="if-swhid-file" accept=".ots,.json,.txt" />
+              <small style="display:block;margin-top:4px;opacity:0.7;font-size:0.75rem" data-i18n="id_forge.swhid_file_hint">Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)</small>
+            </div>
+            <div id="if-swhid-text-wrapper" class="form-group" style="display:none">
+              <label for="if-swhid-text" data-i18n="id_forge.swhid_text_label">Enter or paste the text to compute SWHID</label>
+              <textarea id="if-swhid-text" rows="3" placeholder="Type or paste the text content here..." style="width:100%;box-sizing:border-box;font-family:monospace;font-size:0.82rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;resize:vertical"></textarea>
+            </div>
           </div>
           <button
             class="btn"

@@ -146,6 +146,7 @@ async function mainMenu() {
     console.log("  " + c("green", "15") + " File Converter");
     console.log("  " + c("green", "16") + " Document Watermark (embed)");
     console.log("  " + c("green", "17") + " Document Watermark (extract)");
+    console.log("  " + c("green", "18") + " Check external tools");
     console.log("  " + c("green", "0") + "  Exit");
     console.log();
 
@@ -203,6 +204,11 @@ async function mainMenu() {
           break;
         case "17":
           await menuDocwExtract();
+          break;
+        case "18":
+          const tools = require("./tools");
+          console.log(tools.printToolSummary());
+          await ask("Press Enter...");
           break;
         case "0":
           console.log(c("green", "Goodbye!"));

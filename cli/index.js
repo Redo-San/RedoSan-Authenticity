@@ -332,4 +332,13 @@ program
     }
   });
 
+// ── Tools command (check external dependencies) ──
+program
+  .command("tools")
+  .description("Check availability of external tools (exiftool, sox, ImageMagick, etc.)")
+  .action(() => {
+    const tools = require("./tools");
+    console.log(tools.printToolSummary());
+  });
+
 program.parse(process.argv);

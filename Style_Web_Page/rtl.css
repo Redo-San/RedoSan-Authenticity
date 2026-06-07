@@ -92,6 +92,10 @@ input[type="file"] {
   margin-left: 2px; 
   margin-right: 0; 
 }
+.btn-sm { 
+  margin-left: 4px; 
+  margin-right: 0; 
+}
 
 /* Footer */
 .footer-links { 
