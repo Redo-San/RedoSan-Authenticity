@@ -82,13 +82,31 @@ function deepMerge(base, overlay) {
   return result;
 }
 
+async function translateViaLibreTranslate(texts, targetLang) {
+  var keys = Object.keys(texts);
+  var translated = {};
+  var baseUrl = process.env.LIBRETRANSLATE_URL || 'https://libretranslate.com';
+  for (var i = 0; i < keys.length; i++) {
+    var resp = await fetch(baseUrl + '/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: texts[keys[i]], source: 'en', target: targetLang })
+    });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error('LibreTranslate error: ' + (data.error || resp.status));
+    translated[keys[i]] = data.translatedText;
+    if (i < keys.length - 1) await new Promise(function(r) { setTimeout(r, 300); });
+  }
+  return translated;
+}
+
 async function translateViaAI(texts, targetLang) {
   var apiKey = process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY ||
                process.env.GROQ_API_KEY || process.env.GOOGLE_API_KEY;
   var model = process.env.MODEL || 'llama-3.3-70b-versatile';
   var apiBase = process.env.OPENAI_API_BASE || 'https://api.groq.com/openai';
 
-  if (!apiKey) throw new Error('No API key found. Set OPENAI_API_KEY.');
+  if (!apiKey) return translateViaLibreTranslate(texts, targetLang);
 
   var provider, endpoint, headers;
   if (process.env.ANTHROPIC_API_KEY) {
