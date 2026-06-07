@@ -18,8 +18,18 @@
 <p align="center">
   <a href="https://redo-san.github.io/RedoSan-Authenticity/"><strong>🌐 Try Online</strong></a> ·
   <a href="#-installation"><strong>💻 CLI</strong></a> ·
-  <a href="#-usage"><strong>📖 Docs</strong></a>
+  <a href="#-usage"><strong>📖 Docs</strong></a> ·
+  <a href="https://github.com/Redo-San/RedoSan-Authenticity/releases"><strong>📦 Releases</strong></a>
 </p>
+
+---
+
+## 📢 What's New in v1.5
+
+- **DCT/DFT/DWT/Hybrid round-trip fixes** — All 4 frequency-domain algorithms now correctly extract embedded messages. DCT/DFT use guaranteed coefficient pair gaps, DWT uses step-2 embedding to survive Haar rounding, and Hybrid has a dedicated `extractHybridDCTDWT` function.
+- **Analyze tab** — Detection & Analysis algorithms moved from Embed to a dedicated tab with Auto Detect mode, professional card-based grid display, multi-format download (JSON/CSV/TXT/XML/PDF/DOCX).
+- **A11y fixes** — Automated orphan-label fixer workflow with PR creation (Scorecard score 9), all `<label>` elements properly associated with form controls.
+- **Translate workflow re-enabled** — LibreTranslate fallback, creates PRs on new i18n keys.
 
 ---
 
@@ -191,10 +201,10 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 | `adaptive_lsb` | Spatial | Region-adaptive strategy (complexity/edge/texture) |
 | `multi_channel_lsb` | Spatial | Channel-alternating LSB with configurable bit depth |
 | `random_lsb` | Spatial | Seeded PRNG positioning (uses password for seed) |
-| `dct` | Frequency | DCT 8×8 coefficient pair embedding |
-| `dwt` | Frequency | Multi-level wavelet decomposition |
-| `dft` | Frequency | Phase modulation in frequency domain |
-| `hybrid_dct_dwt` | Hybrid | Combined DCT + DWT embedding |
+| `dct` | Frequency | DCT 8×8 coefficient pair comparison (guaranteed gap ≥20 survives IDCT rounding) |
+| `dwt` | Frequency | 1-level Haar DWT, step-2 embedding (survives /2 rounding in inverse transform) |
+| `dft` | Frequency | DFT 8×8 coefficient pair comparison (conjugate-symmetry preserved) |
+| `hybrid_dct_dwt` | Hybrid | DCT pair comparison + DWT step-2 sequential embedding (no pixel blending) |
 | `vine` | Deep Learning | Adversarial simulation for AI-editing resistance |
 | `pixel_seal` | Deep Learning | JND-based perceptual masking |
 | `nullguard` | Deep Learning | Null-space region detection |
@@ -267,7 +277,9 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 - **PBKDF2 password derivation** — 100k iterations via `crypto.pbkdf2Sync` for watermark payload encryption
 - **C2PA JPEG APP11 / PNG chunk** — C2PA metadata embedded in JPEG APP11 marker or PNG `c2pa` chunk before IDAT; verified with ECDSA P-256. In Simplified Mode, C2PA signing is the final step wrapping the watermarked + pixel-injected output.
 - **OpenTimestamps** — Merkle tree proof creation and verification via Bitcoin blockchain calendar aggregation
-- **Coefficient pair comparison for DCT** — `c[5,2]` vs `c[4,3]` comparison (K=15) replaces LSB-in-DCT for PNG-safe robust watermarking
+- **Coefficient pair comparison for DCT/DFT** — `c[5,2]` vs `c[4,3]` comparison with guaranteed minimum gap `max(|diff|, 5) + K` (K=15) survives IDCT rounding and pixel clamping
+- **Step-2 DWT embedding** — `floor(coeff/2)×2 + bit` instead of LSB; survives the 2×2 Haar DWT's `/2` rounding loss (~39% LSB flips → 0% step-2 flips)
+- **Hybrid DCT-DWT** — Sequential embedding: DCT pair comparison on 8×8 blocks, then DWT step-2 on LH/HL/HH sub-bands; no pixel blending (was 70/30 blend that corrupted both watermarks)
 - **×3 redundancy with majority voting** — Each message bit repeated 3×; decoder corrects 1 bit error per triplet (98.6% accuracy)
 
 ### File Validation (6 Layers)
