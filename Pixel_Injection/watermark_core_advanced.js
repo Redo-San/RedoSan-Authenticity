@@ -257,33 +257,43 @@ class WatermarkCore {
     }
     
     // 5. DFT Watermarking for rotation invariance
-    dft(imageData, message, strength = 0.05) {
+    dft(imageData, message, password = null, options = {}) {
+        const blockSize = 8;
+        const K = (options && options.strength) || 15;
         const width = imageData.width;
         const height = imageData.height;
         const data = new Uint8ClampedArray(imageData.data);
         
-        // Apply 2D DFT to entire image
-        const spectrum = this.apply2DDFT(data, width, height);
+        const encoded = this.encodeMessage(message);
+        let bitIdx = 0;
         
-        // Embed in frequency domain with phase modulation
-        const encodedMessage = this.encodeMessage(message);
-        const phaseModulation = this.generatePhaseModulation(encodedMessage);
-        
-        let messageIndex = 0;
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const freqIndex = y * width + x;
-                if (messageIndex < encodedMessage.length) {
-                    const bit = parseInt(encodedMessage[messageIndex++], 2);
-                    spectrum[freqIndex] = this.modulatePhase(spectrum[freqIndex], bit, phaseModulation[freqIndex]);
+        for (let y = 0; y < height - blockSize + 1 && bitIdx < encoded.length; y += blockSize) {
+            for (let x = 0; x < width - blockSize + 1 && bitIdx < encoded.length; x += blockSize) {
+                const block = this.extractBlock(data, x, y, width, blockSize);
+                const dftBlock = this.applyDFT(block);
+                
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                const bit = parseInt(encoded[bitIdx++], 2);
+                const diff = Math.abs(dftBlock[idxA].real - dftBlock[idxB].real);
+                
+                if (bit === 0) {
+                    if (dftBlock[idxB].real >= dftBlock[idxA].real) {
+                        dftBlock[idxA].real += diff + K;
+                        dftBlock[idxB].real -= diff + K;
+                    }
+                } else {
+                    if (dftBlock[idxA].real >= dftBlock[idxB].real) {
+                        dftBlock[idxB].real += diff + K;
+                        dftBlock[idxA].real -= diff + K;
+                    }
                 }
+                
+                const watermarkedBlock = this.applyInverseDFT(dftBlock);
+                this.putBlock(data, watermarkedBlock, x, y, width);
             }
         }
         
-        // Apply inverse 2D DFT
-        const watermarkedData = this.applyInverse2DDFT(spectrum, width, height);
-        
-        return new ImageData(watermarkedData, width, height);
+        return new ImageData(data, width, height);
     }
     
     // 6. Hybrid DCT-DWT for maximum robustness
@@ -866,6 +876,45 @@ class WatermarkCore {
         return transformed;
     }
     
+    applyDFT(block) {
+        const N = 8;
+        const transformed = [];
+        for (let u = 0; u < N; u++) {
+            for (let v = 0; v < N; v++) {
+                let real = 0, imag = 0;
+                for (let x = 0; x < N; x++) {
+                    for (let y = 0; y < N; y++) {
+                        const val = block[y * N + x];
+                        const angle = -2 * Math.PI * (u * x / N + v * y / N);
+                        real += val * Math.cos(angle);
+                        imag += val * Math.sin(angle);
+                    }
+                }
+                transformed[u * N + v] = { real, imag };
+            }
+        }
+        return transformed;
+    }
+
+    applyInverseDFT(spectrum) {
+        const N = 8;
+        const block = new Array(N * N);
+        for (let x = 0; x < N; x++) {
+            for (let y = 0; y < N; y++) {
+                let sum = 0;
+                for (let u = 0; u < N; u++) {
+                    for (let v = 0; v < N; v++) {
+                        const idx = u * N + v;
+                        const angle = 2 * Math.PI * (u * x / N + v * y / N);
+                        sum += spectrum[idx].real * Math.cos(angle) - spectrum[idx].imag * Math.sin(angle);
+                    }
+                }
+                block[y * N + x] = sum / (N * N);
+            }
+        }
+        return block;
+    }
+
     applyInverseDCT(dctBlock) {
         const N = 8;
         const block = new Array(N * N);
@@ -2325,6 +2374,29 @@ class WatermarkCore {
         return pipeIdx >= 0 ? str.substring(0, pipeIdx) : str;
     }
     
+    extractDFT(watermarkedImageData, password = null, options = {}) {
+        const blockSize = 8;
+        const width = watermarkedImageData.width;
+        const height = watermarkedImageData.height;
+        const data = watermarkedImageData.data;
+        let bits = '';
+
+        for (let y = 0; y < height - blockSize + 1; y += blockSize) {
+            for (let x = 0; x < width - blockSize + 1; x += blockSize) {
+                const block = this.extractBlock(data, x, y, width, blockSize);
+                const dftBlock = this.applyDFT(block);
+
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                bits += dftBlock[idxA].real > dftBlock[idxB].real ? 0 : 1;
+            }
+        }
+
+        const decoded = this.decodeRedundancy(bits, 3);
+        const str = this.binaryToString(decoded);
+        const pipeIdx = str.indexOf('|');
+        return pipeIdx >= 0 ? str.substring(0, pipeIdx) : str;
+    }
+
     extractDWT(watermarkedImageData) {
         // Extract message from DWT watermarked image
         return 'extracted_message';
