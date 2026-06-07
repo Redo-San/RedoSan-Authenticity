@@ -53,7 +53,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — معرّف قصير وآمن (21 حرفاً)، يستخدم 64 رمزاً (A-Za-z0-9_-). مثالي لمعرّفات الجلسات، الروابط المختصرة، وأسماء الملفات.",
     "id_forge.info.swhid":
-      "SWHID — معرّف المحتوى الرقمي وفق ISO/IEC 18670. يُحسب من تجزئة SHA1 للملف لضمان integrity. يستخدم في Software Heritage لأرشفة الكود.",
+      "SWHID — معرّف المحتوى الرقمي وفق ISO/IEC 18670. يُحسب من تجزئة SHA1 أو SHA-256 للملف لضمان integrity. يستخدم في Software Heritage لأرشفة الكود.",
     "id_forge.generate_btn": "توليد",
     "id_forge.generating_btn": "جارٍ التوليد...",
     "id_forge.copy_btn": "نسخ",
@@ -63,7 +63,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "رفع ملف",
     "id_forge.swhid_text": "إدراج نص",
     "id_forge.swhid_url": "من رابط",
-    "id_forge.swhid_file_label": "ارفع .ots / fingerprint.json / .txt لحساب الهاش",
+    "id_forge.swhid_file_label": "ارفع .ots / fingerprint.json / .txt لحساب SHA-1 أو SHA-256",
     "id_forge.swhid_text_label": "أدخل أو الصق النص لحساب SWHID",
     "id_forge.swhid_url_label": "أدخل رابط المورد لجلب وحساب SHA-1",
     "id_forge.swhid_file_hint": "يقبل: .ots (يستخرج SHA-256)، .json (بصمة — يستخدم SHA-1)، .txt (هاش المحتوى)",
@@ -836,7 +836,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
     "id_forge.info.swhid":
-      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 &amp; SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
     "id_forge.generate_btn": "Generate",
     "id_forge.generating_btn": "Generating...",
     "id_forge.copy_btn": "Copy",
@@ -846,7 +846,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "Upload File",
     "id_forge.swhid_text": "Insert Text",
     "id_forge.swhid_url": "From URL",
-    "id_forge.swhid_file_label": "Upload file for SHA-1 hash",
+    "id_forge.swhid_file_label": "Upload file for SHA-1 &amp; SHA-256 hash",
     "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
     "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
     "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
@@ -1635,7 +1635,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
     "id_forge.info.swhid":
-      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 &amp; SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
     "id_forge.generate_btn": "Generate",
     "id_forge.generating_btn": "Generating...",
     "id_forge.copy_btn": "Copy",
@@ -1645,7 +1645,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "Upload File",
     "id_forge.swhid_text": "Insert Text",
     "id_forge.swhid_url": "From URL",
-    "id_forge.swhid_file_label": "Upload file for SHA-1 hash",
+    "id_forge.swhid_file_label": "Upload file for SHA-1 &amp; SHA-256 hash",
     "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
     "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
     "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
@@ -2365,7 +2365,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
     "id_forge.info.swhid":
-      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 &amp; SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
     "id_forge.generate_btn": "Generate",
     "id_forge.generating_btn": "Generating...",
     "id_forge.copy_btn": "Copy",
@@ -2375,7 +2375,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "Upload File",
     "id_forge.swhid_text": "Insert Text",
     "id_forge.swhid_url": "From URL",
-    "id_forge.swhid_file_label": "Upload file for SHA-1 hash",
+    "id_forge.swhid_file_label": "Upload file for SHA-1 &amp; SHA-256 hash",
     "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
     "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
     "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
@@ -3136,7 +3136,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
     "id_forge.info.swhid":
-      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 &amp; SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
     "id_forge.generate_btn": "Generate",
     "id_forge.generating_btn": "Generating...",
     "id_forge.copy_btn": "Copy",
@@ -3146,7 +3146,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "Upload File",
     "id_forge.swhid_text": "Insert Text",
     "id_forge.swhid_url": "From URL",
-    "id_forge.swhid_file_label": "Upload file for SHA-1 hash",
+    "id_forge.swhid_file_label": "Upload file for SHA-1 &amp; SHA-256 hash",
     "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
     "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
     "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
@@ -3928,7 +3928,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
     "id_forge.info.swhid":
-      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 &amp; SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
     "id_forge.generate_btn": "Generate",
     "id_forge.generating_btn": "Generating...",
     "id_forge.copy_btn": "Copy",
@@ -3938,7 +3938,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "Upload File",
     "id_forge.swhid_text": "Insert Text",
     "id_forge.swhid_url": "From URL",
-    "id_forge.swhid_file_label": "Upload file for SHA-1 hash",
+    "id_forge.swhid_file_label": "Upload file for SHA-1 &amp; SHA-256 hash",
     "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
     "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
     "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
@@ -4397,7 +4397,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
     "id_forge.info.swhid":
-      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 &amp; SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
     "id_forge.generate_btn": "Generate",
     "id_forge.generating_btn": "Generating...",
     "id_forge.copy_btn": "Copy",
@@ -4407,7 +4407,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "Upload File",
     "id_forge.swhid_text": "Insert Text",
     "id_forge.swhid_url": "From URL",
-    "id_forge.swhid_file_label": "Upload file for SHA-1 hash",
+    "id_forge.swhid_file_label": "Upload file for SHA-1 &amp; SHA-256 hash",
     "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
     "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
     "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
@@ -4853,7 +4853,7 @@ window.__I18N_DATA = {
     "id_forge.info.nanoid":
       "NanoID — Short, URL-safe 21-character ID. 64-symbol alphabet. Great for sessions, short links, filenames.",
     "id_forge.info.swhid":
-      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 hash for integrity. Used by Software Heritage for code archiving.",
+      "SWHID — ISO/IEC 18670 content identifier. Computed from SHA1 &amp; SHA-256 hash for integrity. Used by Software Heritage for code archiving.",
     "id_forge.generate_btn": "Generate",
     "id_forge.generating_btn": "Generating...",
     "id_forge.copy_btn": "Copy",
@@ -4863,7 +4863,7 @@ window.__I18N_DATA = {
     "id_forge.swhid_file": "Upload File",
     "id_forge.swhid_text": "Insert Text",
     "id_forge.swhid_url": "From URL",
-    "id_forge.swhid_file_label": "Upload file for SHA-1 hash",
+    "id_forge.swhid_file_label": "Upload file for SHA-1 &amp; SHA-256 hash",
     "id_forge.swhid_text_label": "Enter or paste the text to compute SWHID",
     "id_forge.swhid_url_label": "Fetch URL and compute SHA-1",
     "id_forge.swhid_file_hint": "Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)",
