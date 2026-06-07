@@ -121,9 +121,9 @@ async function translateViaXnx3(texts, targetLang) {
 
 async function translateViaAI(texts, targetLang) {
   var apiKey = process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY ||
-               process.env.GROQ_API_KEY || process.env.GOOGLE_API_KEY;
-  var model = process.env.MODEL || 'llama-3.3-70b-versatile';
-  var apiBase = process.env.OPENAI_API_BASE || 'https://api.groq.com/openai';
+               process.env.GROQ_API_KEY || process.env.GOOGLE_API_KEY || process.env.GITHUB_TOKEN;
+  var model = process.env.MODEL || 'gpt-4o-mini';
+  var apiBase = process.env.OPENAI_API_BASE || 'https://models.inference.ai.azure.com';
 
   if (!apiKey) return translateViaXnx3(texts, targetLang);
 
@@ -227,7 +227,20 @@ async function main() {
       fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + '\n');
       console.log('  ✓ ' + lang + ' updated (' + Object.keys(translated).length + ' keys)');
     } catch(e) {
-      console.error('  ✗ ' + lang + ' failed: ' + e.message);
+      if (process.env.GITHUB_TOKEN && !process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY &&
+          !process.env.GROQ_API_KEY && !process.env.GOOGLE_API_KEY) {
+        console.warn('  GitHub Models failed, falling back to xnx3...');
+        try {
+          var translated = await translateViaXnx3(info.flat, lang);
+          var merged = deepMerge(info.target, unflatten(translated));
+          fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + '\n');
+          console.log('  ✓ ' + lang + ' updated via xnx3 fallback (' + Object.keys(translated).length + ' keys)');
+        } catch(e2) {
+          console.error('  ✗ ' + lang + ' failed (both GitHub Models and xnx3): ' + e2.message);
+        }
+      } else {
+        console.error('  ✗ ' + lang + ' failed: ' + e.message);
+      }
     }
   }
 }
