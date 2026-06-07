@@ -82,20 +82,28 @@ function deepMerge(base, overlay) {
   return result;
 }
 
-async function translateViaLibreTranslate(texts, targetLang) {
+var XNX3_LANG_MAP = {
+  ar: 'arabic', fr: 'french', de: 'deutsch', es: 'spanish',
+  zh: 'chinese_simplified', ja: 'japanese', ko: 'korean'
+};
+
+var XNX3_API = 'https://api.translate.zvo.cn/translate.json';
+
+async function translateViaXnx3(texts, targetLang) {
   var keys = Object.keys(texts);
+  var langId = XNX3_LANG_MAP[targetLang];
+  if (!langId) throw new Error('Unsupported language: ' + targetLang);
+  var encodedText = encodeURIComponent(JSON.stringify(keys.map(function(k) { return texts[k]; })));
+  var resp = await fetch(XNX3_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'text=' + encodedText + '&to=' + encodeURIComponent(langId)
+  });
+  var data = await resp.json();
+  if (data.result !== 1) throw new Error('xnx3 translate error: ' + (data.info || 'unknown'));
   var translated = {};
-  var baseUrl = process.env.LIBRETRANSLATE_URL || 'https://libretranslate.com';
   for (var i = 0; i < keys.length; i++) {
-    var resp = await fetch(baseUrl + '/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: texts[keys[i]], source: 'en', target: targetLang })
-    });
-    var data = await resp.json();
-    if (!resp.ok) throw new Error('LibreTranslate error: ' + (data.error || resp.status));
-    translated[keys[i]] = data.translatedText;
-    if (i < keys.length - 1) await new Promise(function(r) { setTimeout(r, 300); });
+    translated[keys[i]] = data.text[i] || texts[keys[i]];
   }
   return translated;
 }
@@ -106,7 +114,7 @@ async function translateViaAI(texts, targetLang) {
   var model = process.env.MODEL || 'llama-3.3-70b-versatile';
   var apiBase = process.env.OPENAI_API_BASE || 'https://api.groq.com/openai';
 
-  if (!apiKey) return translateViaLibreTranslate(texts, targetLang);
+  if (!apiKey) return translateViaXnx3(texts, targetLang);
 
   var provider, endpoint, headers;
   if (process.env.ANTHROPIC_API_KEY) {
