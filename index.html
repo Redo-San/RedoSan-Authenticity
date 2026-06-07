@@ -3502,7 +3502,7 @@
           <div class="form-group">
             <label for="if-type">ID Type</label>
             <select id="if-type" onchange="idForgeShowInfo()">
-              <option value="swhid">SWHID (SHA1 — ISO/IEC 18670)</option>
+              <option value="swhid">SWHID (SHA1 &amp; SHA-256 — ISO/IEC 18670)</option>
               <option value="uuidv4">UUID v4 (Random — RFC 9562)</option>
               <option value="uuidv7">UUID v7 (Time-ordered — RFC 9562)</option>
               <option value="ulid">ULID (Crockford Base32)</option>
@@ -3550,7 +3550,8 @@
             </div>
             <div id="if-swhid-text-wrapper" class="form-group" style="display:none">
               <label for="if-swhid-text" data-i18n="id_forge.swhid_text_label">Enter or paste the text to compute SWHID</label>
-              <textarea id="if-swhid-text" rows="3" placeholder="Type or paste the text content here..." style="width:100%;box-sizing:border-box;font-family:monospace;font-size:0.82rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;resize:vertical"></textarea>
+              <textarea id="if-swhid-text" rows="3" placeholder="Type or paste the text content here..." oninput="validateSwhidText(this)" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:0.82rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;resize:vertical"></textarea>
+              <small id="if-swhid-text-warning" style="display:none;color:#e74c3c;margin-top:4px;font-size:0.75rem" data-i18n="id_forge.swhid_text_warning">English characters only. Non-English text will produce incorrect SWHID.</small>
             </div>
           </div>
           <button
