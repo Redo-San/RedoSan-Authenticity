@@ -39,13 +39,15 @@ class PixelInjection {
                 'elevenlikes': { name: 'ElevenLikes', description: 'Industrial-grade solution' },
                 'diffusion_based': { name: 'Diffusion-based', description: 'During generation watermarking' }
             },
-            detection: {
-                'statistical_detection': { name: 'Statistical Detection', description: 'Statistical analysis' },
-                'ml_detection': { name: 'ML Detection', description: 'Machine learning detection' },
-                'blind_decoding': { name: 'Blind Decoding', description: 'Without original image' },
-                'robustness_testing': { name: 'Robustness Testing', description: 'Attack resistance testing' },
-                'quality_metrics': { name: 'Quality Metrics', description: 'PSNR, SSIM, LPIPS' }
-            }
+        };
+        
+        this.analysisAlgorithms = {
+            'auto_detect': { name: 'Auto Detect', description: 'Try all analysis methods automatically' },
+            'statistical_detection': { name: 'Statistical Detection', description: 'Statistical analysis' },
+            'ml_detection': { name: 'ML Detection', description: 'Machine learning detection' },
+            'blind_decoding': { name: 'Blind Decoding', description: 'Without original image' },
+            'robustness_testing': { name: 'Robustness Testing', description: 'Attack resistance testing' },
+            'quality_metrics': { name: 'Quality Metrics', description: 'PSNR, SSIM, LPIPS' }
         };
         
         this.extractMap = {
@@ -102,6 +104,21 @@ class PixelInjection {
                 this.toggleExtractPiPassword();
             });
         }
+        
+        const analyzeAlgorithmSelect = document.getElementById('pi-analyze-algorithm');
+        if (analyzeAlgorithmSelect) {
+            analyzeAlgorithmSelect.addEventListener('change', () => {
+                this.toggleAnalyzeCompareInput();
+            });
+        }
+    }
+    
+    toggleAnalyzeCompareInput() {
+        const algoSelect = document.getElementById('pi-analyze-algorithm');
+        const compareGroup = document.getElementById('pi-analyze-compare-group');
+        if (!algoSelect || !compareGroup) return;
+        const val = algoSelect.value;
+        compareGroup.style.display = (val === 'robustness_testing' || val === 'quality_metrics') ? 'block' : 'none';
     }
     
     updatePiAlgorithms() {
@@ -168,10 +185,14 @@ class PixelInjection {
             extractAlgorithmSelect.appendChild(autoOption);
         }
         
+        // Analysis-only algorithms excluded from extract
+        const analysisKeys = ['statistical_detection', 'ml_detection', 'blind_decoding', 'robustness_testing', 'quality_metrics'];
+        
         const allAlgorithms = {};
         
         Object.entries(this.algorithms).forEach(([category, algorithms]) => {
             Object.entries(algorithms).forEach(([key, algorithm]) => {
+                if (analysisKeys.indexOf(key) !== -1) return;
                 allAlgorithms[key] = {
                     ...algorithm,
                     category: category
@@ -453,28 +474,6 @@ class PixelInjection {
             // Get advanced options
             const options = this.getAdvancedOptions();
             
-            // Apply pixel injection
-            if (this.currentCategory === 'detection') {
-                // Detection algorithms don't embed watermarks, they analyze images
-                // Instead, run the detection algorithm on the image
-                this.showLoading(false);
-                
-                try {
-                    // Run detection algorithm
-                    const detectionResult = await this.runDetectionAlgorithm(this.currentAlgorithm, imageData, message, password, options);
-                    
-                    // Show detection results
-                    this.showDetectionResults(detectionResult);
-                    this.showMessage(`Detection completed using ${this.algorithms[this.currentCategory][this.currentAlgorithm].name}`, 'success');
-                    
-                } catch (error) {
-                    console.error('Detection error:', error);
-                    this.showMessage(`Detection error: ${error.message}`, 'error');
-                }
-                
-                return;
-            }
-            
             // Check if algorithm exists in core or algorithms object
             if (!this.core[this.currentAlgorithm] || typeof this.core[this.currentAlgorithm] !== 'function') {
                 if (!this.core.algorithms[this.currentAlgorithm]) {
@@ -506,7 +505,6 @@ class PixelInjection {
     }
     
     async runDetectionAlgorithm(algorithm, imageData, message, password, options) {
-        // Run detection algorithm based on the selected algorithm
         switch (algorithm) {
             case 'statistical_detection':
                 return this.core.detection.statistical_detection(imageData);
@@ -514,10 +512,14 @@ class PixelInjection {
                 return this.core.detection.ml_detection(imageData);
             case 'blind_decoding':
                 return this.core.detection.blind_decoding(imageData, message, options);
-            case 'robustness_testing':
-                return this.core.detection.robustness_testing(imageData, options);
-            case 'quality_metrics':
-                return this.core.detection.quality_metrics(imageData);
+            case 'robustness_testing': {
+                const compareImage = options && options.compareImage ? options.compareImage : imageData;
+                return this.core.detection.robustness_testing(compareImage, imageData);
+            }
+            case 'quality_metrics': {
+                const compareImage = options && options.compareImage ? options.compareImage : imageData;
+                return this.core.detection.quality_metrics(compareImage, imageData);
+            }
             default:
                 throw new Error(`Unknown detection algorithm: ${algorithm}`);
         }
@@ -638,6 +640,7 @@ class PixelInjection {
     
     async handlePixelAnalysis() {
         const imageInput = document.getElementById('pi-analyze-image');
+        const algoSelect = document.getElementById('pi-analyze-algorithm');
         
         if (!imageInput.files.length) {
             this.showMessage('Please select an image file to analyze', 'error');
@@ -651,27 +654,44 @@ class PixelInjection {
         }
         
         const file = imageInput.files[0];
+        const algorithm = algoSelect ? algoSelect.value : 'auto_detect';
         
         try {
-            // Show loading state
             this.showLoading(true);
             
-            // Read and process image
             const imageData = await this.loadImage(file);
             
-            // Perform comprehensive analysis
-            this.analysisResults = {
-                statistical: this.core.detection.statistical_detection(imageData),
-                ml: this.core.detection.ml_detection(imageData),
-                characteristics: this.analyzeImageCharacteristics(imageData),
-                recommendations: this.generateRecommendations(imageData)
-            };
+            if (algorithm === 'auto_detect') {
+                // Auto Detect: try all analysis methods
+                this.analysisResults = {
+                    statistical: this.core.detection.statistical_detection(imageData),
+                    ml: this.core.detection.ml_detection(imageData),
+                    characteristics: this.analyzeImageCharacteristics(imageData),
+                    recommendations: this.generateRecommendations(imageData)
+                };
+                this.showAnalysisResults();
+                this.showMessage('Auto analysis completed — all methods applied', 'success');
+            } else if (algorithm === 'robustness_testing' || algorithm === 'quality_metrics') {
+                // Need original for comparison
+                const compareInput = document.getElementById('pi-analyze-compare');
+                let result;
+                if (compareInput && compareInput.files && compareInput.files.length) {
+                    const compareFile = compareInput.files[0];
+                    const compareData = await this.loadImage(compareFile);
+                    result = await this.runDetectionAlgorithm(algorithm, imageData, null, null, { compareImage: compareData });
+                } else {
+                    result = await this.runDetectionAlgorithm(algorithm, imageData, null, null, { compareImage: imageData });
+                }
+                this.showSingleAnalysisResult(algorithm, result);
+                this.showMessage(`${this.analysisAlgorithms[algorithm].name} completed`, 'success');
+            } else {
+                // Single analysis algorithm
+                const result = await this.runDetectionAlgorithm(algorithm, imageData);
+                this.showSingleAnalysisResult(algorithm, result);
+                this.showMessage(`${this.analysisAlgorithms[algorithm].name} completed`, 'success');
+            }
             
-            // Show analysis results
-            this.showAnalysisResults();
             this.showLoading(false);
-            
-            this.showMessage('Image analysis completed', 'success');
             
         } catch (error) {
             this.showLoading(false);
@@ -981,6 +1001,37 @@ class PixelInjection {
         
         const downloadDiv = document.getElementById('pi-download');
         downloadDiv.innerHTML = '';
+    }
+    
+    showSingleAnalysisResult(algorithm, result) {
+        const resultDiv = document.getElementById('pi-result');
+        if (!resultDiv) return;
+        
+        resultDiv.style.display = 'block';
+        
+        const algoName = this.analysisAlgorithms[algorithm] ? this.analysisAlgorithms[algorithm].name : algorithm;
+        const safeResult = escHtml(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
+        
+        const outputDiv = document.getElementById('pi-output');
+        outputDiv.innerHTML = `
+            <div style="text-align: center; margin-bottom: 15px;">
+                <h5 style="color: var(--primary); margin-bottom: 10px;">${escHtml(algoName)} Results</h5>
+                <div style="background: var(--bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
+                    <pre style="text-align: left; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem;">${safeResult}</pre>
+                </div>
+            </div>
+        `;
+        
+        const downloadDiv = document.getElementById('pi-download');
+        downloadDiv.innerHTML = '';
+        
+        window._piResult = {
+          type: 'analysis', algorithm: algoName,
+          result: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+          timestamp: new Date().toISOString()
+        };
+        window._currentDownloadHandler = downloadPixelInjection;
+        document.getElementById('dl-modal-title').textContent = 'Download Analysis Result';
     }
     
     analyzeImageCharacteristics(imageData) {

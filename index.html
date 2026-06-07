@@ -1515,7 +1515,6 @@
                 <option value="frequency">Frequency Domain</option>
                 <option value="deep_learning">Deep Learning</option>
                 <option value="professional">Professional Tools</option>
-                <option value="detection">Detection & Analysis</option>
               </select>
             </div>
             <div class="form-group">
@@ -1653,6 +1652,39 @@
           </div>
           <div id="pi-analyze" style="display: none">
             <div class="form-group">
+              <label
+                for="pi-analyze-algorithm"
+                data-i18n="pi.analyze_algorithm_label"
+                >Analysis Algorithm</label
+              >
+              <select id="pi-analyze-algorithm" name="pi-analyze-algorithm">
+                <option value="auto_detect" data-i18n="pi.auto_detect">
+                  Auto Detect
+                </option>
+                <option
+                  value="statistical_detection"
+                  data-i18n="pi.statistical_detection"
+                >
+                  Statistical Detection
+                </option>
+                <option value="ml_detection" data-i18n="pi.ml_detection">
+                  ML Detection
+                </option>
+                <option value="blind_decoding" data-i18n="pi.blind_decoding">
+                  Blind Decoding
+                </option>
+                <option
+                  value="robustness_testing"
+                  data-i18n="pi.robustness_testing"
+                >
+                  Robustness Testing
+                </option>
+                <option value="quality_metrics" data-i18n="pi.quality_metrics">
+                  Quality Metrics
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
               <label for="pi-analyze-image" data-i18n="pi.analyze_image_label"
                 >Image to Analyze</label
               >
@@ -1660,6 +1692,23 @@
                 type="file"
                 id="pi-analyze-image"
                 name="pi-analyze-image"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff"
+              />
+            </div>
+            <div
+              class="form-group"
+              id="pi-analyze-compare-group"
+              style="display: none"
+            >
+              <label
+                for="pi-analyze-compare"
+                data-i18n="pi.analyze_compare_label"
+                >Original Image (for comparison)</label
+              >
+              <input
+                type="file"
+                id="pi-analyze-compare"
+                name="pi-analyze-compare"
                 accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff"
               />
             </div>
