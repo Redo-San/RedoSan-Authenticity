@@ -28,7 +28,7 @@ jobs:
       - name: Run Semgrep
         run: |
           pip install semgrep
-          semgrep --config auto --sarif-file=semgrep.sarif .
+          semgrep --config auto --sarif --output=semgrep.sarif .
         env:
           SEMGREP_APP_TOKEN: ""
       - name: Upload SARIF to GitHub
