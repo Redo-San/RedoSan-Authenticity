@@ -3523,7 +3523,7 @@
               line-height: 1.6;
             "
           ></div>
-          <div class="form-group">
+          <div id="if-count-wrapper" class="form-group">
             <label for="if-count">Count (1–10,000)</label>
             <input
               type="number"
@@ -3544,7 +3544,7 @@
               <button type="button" class="btn-sm" data-swhid-tab="text" onclick="switchSwhidTab('text')" data-i18n="id_forge.swhid_text">Insert Text</button>
             </div>
             <div id="if-swhid-file-wrapper" class="form-group">
-              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label">Upload .ots / fingerprint.json / .txt for SHA-1 hash</label>
+              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label">Upload .ots / fingerprint.json / .txt for SHA-1 &amp; SHA-256 hash</label>
               <input type="file" id="if-swhid-file" accept=".ots,.json,.txt" />
               <small style="display:block;margin-top:4px;opacity:0.7;font-size:0.75rem" data-i18n="id_forge.swhid_file_hint">Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)</small>
             </div>
