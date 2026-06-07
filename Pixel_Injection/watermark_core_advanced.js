@@ -1786,6 +1786,7 @@ class WatermarkCore {
     
     // Binary to string conversion
     binaryToString(binary) {
+        if (!binary || typeof binary !== 'string' || binary.length < 8) return '';
         return binary.match(/.{1,8}/g).map(byte => 
             String.fromCharCode(parseInt(byte, 2))).join('');
     }
