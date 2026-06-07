@@ -111,6 +111,7 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Document_Watermark/text_extractor.js",
   "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
   "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
+  "/RedoSan-Authenticity/scripts/fix-orphan-labels.js",
 ];
 
 // Whitelist of legitimate CSS files served by the site.
@@ -163,6 +164,7 @@ var YML_WHITELIST = [
   "/RedoSan-Authenticity/.github/workflows/stale.yml",
   "/RedoSan-Authenticity/.github/workflows/dom-review.yml",
   "/RedoSan-Authenticity/.github/workflows/copilot-setup-steps.yml",
+  "/RedoSan-Authenticity/.github/workflows/a11y-fix.yml",
   "/RedoSan-Authenticity/.github/dependabot.yml",
   "/RedoSan-Authenticity/.github/labeler.yml",
   "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/bug_report.yml",
