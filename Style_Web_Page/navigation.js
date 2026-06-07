@@ -117,6 +117,9 @@ function showPage(name) {
   if (name === "certificate") {
     if (typeof initCertPhoneCode === "function") initCertPhoneCode();
   }
+  if (name === "id_forge") {
+    if (typeof idForgeShowInfo === "function") idForgeShowInfo();
+  }
   var isProfessional =
     document.getElementById("mainNav") &&
     document.getElementById("mainNav").style.display !== "none";
