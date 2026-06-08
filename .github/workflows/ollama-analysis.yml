@@ -28,7 +28,8 @@ jobs:
       - name: Install and Start Ollama
         run: |
           for attempt in 1 2 3; do
-            curl -fsSL https://ollama.com/install.sh | bash && break
+            curl -fsSL https://ollama.com/install.sh -o /tmp/ollama-install.sh
+            bash /tmp/ollama-install.sh && break
             echo "Install attempt $attempt failed, retrying..." && sleep 5
           done
           ollama serve > /dev/null 2>&1 &
