@@ -40,7 +40,7 @@ jobs:
             echo "Waiting for Ollama... ${i}s"
             sleep 2
           done
-          ollama pull qwen2.5-coder:1.5b
+          ollama pull qwen2.5-coder:7b
       - name: Run Ollama Code Review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,7 +74,7 @@ jobs:
 
           set +e
           REVIEW=$(curl -s http://localhost:11434/api/generate \
-            -d "{\"model\": \"qwen2.5-coder:1.5b\", \"prompt\": $ESCAPED_PROMPT, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            -d "{\"model\": \"qwen2.5-coder:7b\", \"prompt\": $ESCAPED_PROMPT, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
             | jq -r '.response // "Ollama returned empty response"')
           RC=$?
           set -e
