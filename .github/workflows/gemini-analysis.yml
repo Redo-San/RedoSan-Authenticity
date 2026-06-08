@@ -40,7 +40,7 @@ jobs:
           BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
 
           set +e
-          gemini -p "You are an expert code reviewer. Review this GitHub pull request.
+          gemini --skip-trust -p "You are an expert code reviewer. Review this GitHub pull request.
 
           Title: $TITLE
           Description: $BODY
