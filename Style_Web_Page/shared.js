@@ -66,6 +66,7 @@ var BLOCKED_EXTS = [
   ".ods",
   ".odp",
   ".zip",
+  ".lnk",
 ];
 
 function isDangerousFile(file) {
