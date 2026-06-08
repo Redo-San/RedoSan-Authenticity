@@ -31,6 +31,7 @@ jobs:
             curl -fsSL https://ollama.com/install.sh | bash && break
             echo "Install attempt $attempt failed, retrying..." && sleep 5
           done
+          ollama serve > /dev/null 2>&1 &
           for i in $(seq 1 30); do
             if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
               echo "Ollama server ready after ${i}s"
