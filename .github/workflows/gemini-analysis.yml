@@ -39,7 +39,8 @@ jobs:
           TITLE=$(echo "$PR_DATA" | jq -r '.title')
           BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
 
-          gemini --headless -p "You are an expert code reviewer. Review this GitHub pull request.
+          set +e
+          gemini --skip-trust -p "You are an expert code reviewer. Review this GitHub pull request.
 
           Title: $TITLE
           Description: $BODY
@@ -56,7 +57,14 @@ jobs:
           4. Missing edge cases
           5. Performance problems
 
-          Format as concise bullet points with file:line references. Respond in Arabic and English." > review.txt 2>&1 || echo "Gemini review failed" > review.txt
+          Format as concise bullet points with file:line references. Respond in Arabic and English." > review.txt 2>&1
+          RC=$?
+          set -e
+          if [ $RC -ne 0 ]; then
+            echo "Gemini CLI exit code: $RC"
+            cat review.txt
+            echo "Gemini review failed. Exit code $RC." > review.txt
+          fi
 
           REVIEW=$(cat review.txt)
           echo "REVIEW<<EOF" >> $GITHUB_ENV
