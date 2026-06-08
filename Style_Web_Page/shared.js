@@ -733,7 +733,7 @@ function unpack32(b) {
   return ((b[0] << 24) >>> 0) | (b[1] << 16) | (b[2] << 8) | b[3];
 }
 
-// ── Theme Toggle ──
+// ── Theme Toggle (light/dark) ──
 function setTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   const btn = document.getElementById("themeToggle");
