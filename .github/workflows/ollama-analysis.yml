@@ -27,7 +27,18 @@ jobs:
           persist-credentials: false
       - name: Install and Start Ollama
         run: |
-          curl -fsSL https://ollama.com/install.sh | bash
+          curl -fsSL https://ollama.com/download/ollama-linux-amd64.tgz -o /tmp/ollama.tgz
+          tar -C /usr/local/bin --strip-components=1 -xzf /tmp/ollama.tgz 2>/dev/null || tar -C /usr/local/bin -xzf /tmp/ollama.tgz
+          ollama serve &
+          sleep 2
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+              echo "Ollama server ready after ${i}s"
+              break
+            fi
+            echo "Waiting for Ollama... ${i}s"
+            sleep 2
+          done
           ollama pull qwen2.5-coder:1.5b
       - name: Run Ollama Code Review
         env:
