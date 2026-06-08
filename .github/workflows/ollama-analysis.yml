@@ -1,0 +1,83 @@
+name: Ollama AI Code Review
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install and Start Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | bash
+          ollama pull qwen2.5-coder:1.5b
+      - name: Run Ollama Code Review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }} 2>/dev/null | head -5000)
+          PR_DATA=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title,body 2>/dev/null)
+          TITLE=$(echo "$PR_DATA" | jq -r '.title')
+          BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
+
+          PROMPT="You are an expert code reviewer for a watermarking/authenticity web tool. Review this GitHub pull request.
+
+Title: $TITLE
+Description: $BODY
+
+Diff:
+\`\`\`diff
+$DIFF
+\`\`\`
+
+Focus on:
+1. Security vulnerabilities
+2. Logic bugs in algorithms (watermark, fingerprint, C2PA, hashing, etc.)
+3. Code quality issues
+4. Missing edge cases
+5. Performance problems
+
+Format as concise bullet points with file:line references. Respond in Arabic and English."
+
+          ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs '.')
+
+          set +e
+          REVIEW=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"qwen2.5-coder:1.5b\", \"prompt\": $ESCAPED_PROMPT, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty response"')
+          RC=$?
+          set -e
+
+          if [ $RC -ne 0 ] || [ -z "$REVIEW" ]; then
+            REVIEW="Ollama review failed. Exit code $RC."
+          fi
+
+          echo "$REVIEW" > review.txt
+          echo "REVIEW<<EOF" >> $GITHUB_ENV
+          echo "$REVIEW" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Post Review Comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "## Ollama AI Review
+
+          $REVIEW" 2>/dev/null || echo "Posted review comment"
