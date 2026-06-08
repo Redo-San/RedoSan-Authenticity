@@ -2,7 +2,7 @@ name: Full Codebase AI Audit
 
 on:
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 6 1 * *'
   workflow_dispatch:
 
 env:
@@ -254,8 +254,12 @@ jobs:
 
           ISSUE_TITLE="AI Code Audit Report - $(date -u +%Y-%m-%d)"
           ISSUE_BODY=$(cat /tmp/final.md | head -30000)
-          gh issue create \
-            --title "$ISSUE_TITLE" \
-            --label "audit,ai" \
-            --body "$ISSUE_BODY" \
-            --repo ${{ github.repository }} 2>/dev/null || echo "Issue exists or creation failed"
+          if ! gh issue list --label "automated" --state all --json title --jq '.[].title' --repo ${{ github.repository }} 2>/dev/null | grep -q "AI Code Audit Report - $(date -u +%Y-%m)"; then
+            gh issue create \
+              --title "$ISSUE_TITLE" \
+              --label "automated,ci" \
+              --body "$ISSUE_BODY" \
+              --repo ${{ github.repository }} || echo "Issue creation failed"
+          else
+            echo "Audit issue for this month already exists"
+          fi
