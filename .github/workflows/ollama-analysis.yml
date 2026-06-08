@@ -40,7 +40,7 @@ jobs:
             echo "Waiting for Ollama... ${i}s"
             sleep 2
           done
-          ollama pull qwen2.5-coder:1.5b
+          ollama pull qwen2.5-coder:7b
       - name: Run Ollama Code Review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,13 +68,13 @@ jobs:
             "4. Missing edge cases" \
             "5. Performance problems" \
             "" \
-            "Format as concise bullet points with file:line references. Respond in Arabic and English.")
+            "Format as concise bullet points with file:line references. Respond in English only.")
 
           ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs '.')
 
           set +e
           REVIEW=$(curl -s http://localhost:11434/api/generate \
-            -d "{\"model\": \"qwen2.5-coder:1.5b\", \"prompt\": $ESCAPED_PROMPT, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            -d "{\"model\": \"qwen2.5-coder:7b\", \"prompt\": $ESCAPED_PROMPT, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
             | jq -r '.response // "Ollama returned empty response"')
           RC=$?
           set -e
