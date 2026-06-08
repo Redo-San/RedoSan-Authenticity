@@ -68,7 +68,7 @@ jobs:
             "4. Missing edge cases" \
             "5. Performance problems" \
             "" \
-            "Format as concise bullet points with file:line references. Respond in Arabic and English.")
+            "Format as concise bullet points with file:line references. Respond in English only.")
 
           ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs '.')
 
