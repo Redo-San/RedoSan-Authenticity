@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "c8": "^11.0.0",
-    "eslint": "^8.0.0",
+    "eslint": "^10.3.0",
     "playwright": "^1.52.0",
     "@axe-core/playwright": "^4.10.1"
   }
