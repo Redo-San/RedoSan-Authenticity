@@ -1,0 +1,260 @@
+name: Full Codebase AI Audit
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install & Start Ollama
+        run: |
+          for attempt in 1 2 3; do
+            curl -fsSL https://ollama.com/install.sh | bash && break
+            echo "Install attempt $attempt failed, retrying..." && sleep 5
+          done
+          ollama serve > /dev/null 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+              echo "Ollama server ready after ${i}s"
+              break
+            fi
+            echo "Waiting for Ollama... ${i}s"
+            sleep 2
+          done
+          ollama pull deepseek-coder:6.7b
+
+      - name: Review - Watermark Embed/Extract
+        run: |
+          FILES="Watermark/watermark_core.js Watermark/utils.js"
+          PROMPT=$(printf '%s\n' \
+            "Review these watermark core algorithm files for algorithmic correctness and security." \
+            "Focus on:" \
+            "- DCT 8x8 embed/extract logic: are coefficients selected correctly?" \
+            "- LSB embedding: any off-by-one errors or buffer overflows?" \
+            "- Patchwork algorithm: is the statistical approach correct?" \
+            "- Edge cases: empty image, non-RGB, boundary conditions" \
+            "" \
+            "--- Files ---" \
+            "$(cat $FILES)" \
+            "" \
+            "Output concise bullet points in English. For each issue, include file:line." \
+            "If no issues found, say \"No issues found.\"")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## Watermark Core Algorithms" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Review - Audio Watermark
+        run: |
+          PROMPT=$(printf '%s\n' \
+            "Review these audio watermark algorithm files for correctness and security." \
+            "Focus on:" \
+            "- FFT radix-2 implementation: correctness of butterfly operations" \
+            "- Phase Coding: does phase modification preserve hearability?" \
+            "- Echo Hiding: are echo parameters within safe ranges?" \
+            "- DSSS/QIM/DWT/DCT algorithms: any implementation flaws?" \
+            "- WAV read/write: buffer handling, endianness, edge cases" \
+            "" \
+            "--- Files ---" \
+            "$(cat Audio_Watermark/audio_watermark_core.js)" \
+            "" \
+            "Output concise bullet points in English with file:line. Say \"No issues found.\" if clean.")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## Audio Watermark Algorithms" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Review - Document Watermark
+        run: |
+          PROMPT=$(printf '%s\n' \
+            "Review these document watermark algorithm files for correctness." \
+            "Focus on:" \
+            "- Whitespace watermark: does it survive re-rendering?" \
+            "- Zero-width character embedding: encoding/decoding logic" \
+            "- Synonym replacement: dictionary correctness, context sensitivity" \
+            "- Line-shift and word-shift: precision of shift values" \
+            "- Any data loss or corruption in extract vs embed" \
+            "" \
+            "--- Files ---" \
+            "$(cat Document_Watermark/document_watermark_core.js)" \
+            "" \
+            "Output concise bullet points in English with file:line.")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## Document Watermark Algorithms" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Review - Pixel Injection (Advanced)
+        run: |
+          PROMPT=$(printf '%s\n' \
+            "Review these pixel injection algorithm files for algorithmic correctness." \
+            "Focus on:" \
+            "- Enhanced/Adaptive/Random LSB: spatial domain embedding logic" \
+            "- DCT pair comparison: coefficient selection, gap enforcement (>=20)" \
+            "- DWT step-2 embedding: sub-band selection, scaling factors" \
+            "- DFT conjugate-symmetry: frequency domain constraints" \
+            "- Any security vulnerabilities or logic errors" \
+            "" \
+            "--- Files ---" \
+            "$(head -1200 Pixel_Injection/watermark_core_advanced.js)" \
+            "" \
+            "Output concise bullet points in English with file:line.")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## Pixel Injection (Spatial & Frequency)" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Review - Fingerprint / Hashing
+        run: |
+          PROMPT=$(printf '%s\n' \
+            "Review these hashing algorithm files for correctness and security." \
+            "Focus on:" \
+            "- SHA-1/224/256/384/512: block processing, padding, initial hash values" \
+            "- SHA-3 (all 4 variants): sponge construction correctness" \
+            "- MD2/4/5: any known weakness exposure in implementation" \
+            "- BLAKE2b/2s/3: domain separation, parameter encoding" \
+            "- Perceptual hashing (ahash/dhash/phash/whash): image processing logic" \
+            "- RIPEMD-160, Whirlpool: implementation correctness" \
+            "" \
+            "--- Files ---" \
+            "$(head -800 Fingerprint/hashing.js)" \
+            "" \
+            "Output concise bullet points in English with file:line.")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## Fingerprint / Hashing" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Review - C2PA & DID (Provenance)
+        run: |
+          PROMPT=$(printf '%s\n' \
+            "Review these C2PA and DID files for security and correctness." \
+            "Focus on:" \
+            "- C2PA: COSE Sign1 structure, ECDSA signing/verification, claim encoding" \
+            "- CBOR encoder/decoder: correctness, buffer safety" \
+            "- DID: Ed25519/ECDSA P-256/RSA key generation, base58 encoding" \
+            "- DID document structure: correctness per W3C spec" \
+            "- Verification logic: signature validation, key integrity" \
+            "" \
+            "--- C2PA ---" \
+            "$(head -600 C2PA/c2pa.js)" \
+            "--- CBOR ---" \
+            "$(cat C2PA/cbor.js)" \
+            "--- DID ---" \
+            "$(head -600 Decentralized_Identity_DID/did.js)" \
+            "" \
+            "Output concise bullet points in English with file:line.")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## C2PA & DID (Provenance)" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Review - Infrastructure (sw.js, Workflows)
+        run: |
+          PROMPT=$(printf '%s\n' \
+            "Review these infrastructure files for security and correctness." \
+            "Focus on:" \
+            "- sw.js: cache logic, security headers, request interception safety" \
+            "- GitHub workflows: any security issues (injection, permissions)" \
+            "- Are there any exposed secrets or dangerous patterns?" \
+            "" \
+            "--- sw.js ---" \
+            "$(head -200 sw.js)" \
+            "--- Key workflows ---" \
+            "$(head -100 .github/workflows/ollama-analysis.yml)" \
+            "$(head -100 .github/workflows/deploy-pages.yml)" \
+            "$(head -100 .github/workflows/ci.yml)" \
+            "" \
+            "Output concise bullet points in English with file:line.")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## Infrastructure (sw.js + Workflows)" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Review - HTML & CSS
+        run: |
+          PROMPT=$(printf '%s\n' \
+            "Review the HTML and CSS structure for quality and issues." \
+            "Focus on:" \
+            "- HTML: semantic structure, accessibility gaps, script loading order" \
+            "- CSS: specificity issues, redundant rules, browser compatibility" \
+            "- Responsive design: mobile breakpoints, overflow risks" \
+            "- Any injected scripts or unsafe patterns" \
+            "" \
+            "--- HTML (home, watermark, fingerprint sections) ---" \
+            "$(grep -n '<section\|<div class=\"container\|<script\|<link\|id=\"page-' index.html | head -100)" \
+            "--- style.css (key parts) ---" \
+            "$(head -400 style.css)" \
+            "--- responsive.css ---" \
+            "$(head -200 Style_Web_Page/responsive.css)" \
+            "" \
+            "Output concise bullet points in English with file:line.")
+          ESCAPED=$(echo "$PROMPT" | jq -Rs '.')
+          RESULT=$(curl -s http://localhost:11434/api/generate \
+            -d "{\"model\": \"deepseek-coder:6.7b\", \"prompt\": $ESCAPED, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+            | jq -r '.response // "Ollama returned empty"')
+          echo "## HTML & CSS" >> /tmp/report.md
+          echo "$RESULT" >> /tmp/report.md
+          echo "" >> /tmp/report.md
+
+      - name: Publish Audit Report
+        run: |
+          if [ ! -f /tmp/report.md ] || [ ! -s /tmp/report.md ]; then
+            echo "No report generated." >> /tmp/report.md
+          fi
+          {
+            echo "---"
+            echo "**Repository:** ${{ github.repository }}"
+            echo "**Commit:** ${{ github.sha }}"
+            echo "**Date:** $(date -u)"
+            echo ""
+            cat /tmp/report.md
+          } >> /tmp/final.md
+          cat /tmp/final.md >> $GITHUB_STEP_SUMMARY
+
+          ISSUE_TITLE="AI Code Audit Report - $(date -u +%Y-%m-%d)"
+          ISSUE_BODY=$(cat /tmp/final.md | head -30000)
+          gh issue create \
+            --title "$ISSUE_TITLE" \
+            --label "audit,ai" \
+            --body "$ISSUE_BODY" \
+            --repo ${{ github.repository }} 2>/dev/null || echo "Issue exists or creation failed"
