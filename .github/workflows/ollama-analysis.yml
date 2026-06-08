@@ -27,7 +27,19 @@ jobs:
           persist-credentials: false
       - name: Install and Start Ollama
         run: |
-          curl -fsSL https://ollama.com/install.sh | bash
+          for attempt in 1 2 3; do
+            curl -fsSL https://ollama.com/install.sh | bash && break
+            echo "Install attempt $attempt failed, retrying..." && sleep 5
+          done
+          ollama serve > /dev/null 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+              echo "Ollama server ready after ${i}s"
+              break
+            fi
+            echo "Waiting for Ollama... ${i}s"
+            sleep 2
+          done
           ollama pull qwen2.5-coder:1.5b
       - name: Run Ollama Code Review
         env:
