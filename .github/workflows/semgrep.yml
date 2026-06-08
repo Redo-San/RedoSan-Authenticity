@@ -27,7 +27,7 @@ jobs:
           python-version: "3.12"
       - name: Run Semgrep
         run: |
-          pip install semgrep
+          pip install semgrep==1.72.0
           semgrep --config auto --sarif --output=semgrep.sarif .
         env:
           SEMGREP_APP_TOKEN: ""
