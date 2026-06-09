@@ -126,8 +126,10 @@ var CSS_WHITELIST = [
 // Any .yml/.yaml request not in this list is treated as a threat.
 var YML_WHITELIST = [
   "/RedoSan-Authenticity/.github/workflows/deploy-pages.yml",
+  "/RedoSan-Authenticity/.github/workflows/a11y-fix.yml",
   "/RedoSan-Authenticity/.github/workflows/ci.yml",
   "/RedoSan-Authenticity/.github/workflows/codeql.yml",
+  "/RedoSan-Authenticity/.github/workflows/codebase-audit.yml",
   "/RedoSan-Authenticity/.github/workflows/scorecards.yml",
   "/RedoSan-Authenticity/.github/workflows/review.yml",
   "/RedoSan-Authenticity/.github/workflows/malware-scan.yml",
@@ -168,6 +170,7 @@ var YML_WHITELIST = [
   "/RedoSan-Authenticity/.github/workflows/gemini-analysis.yml",
   "/RedoSan-Authenticity/.github/workflows/semgrep.yml",
   "/RedoSan-Authenticity/.github/workflows/ollama-analysis.yml",
+  "/RedoSan-Authenticity/.github/workflows/scorecards.yml",
   "/RedoSan-Authenticity/.github/dependabot.yml",
   "/RedoSan-Authenticity/.github/labeler.yml",
   "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/bug_report.yml",
