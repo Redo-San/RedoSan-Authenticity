@@ -77,9 +77,11 @@ function updateAwmCapacity() {
 // ── Embed ──
 async function handleAwmEmbed() {
     var type = parseInt(document.getElementById('awm-type').value);
-    var audioFile = document.getElementById('awm-audio').files[0];
+    var input = document.getElementById('awm-audio');
+    if (!input || !input.files || !input.files[0]) return alert('Please select an audio file');
+    if (typeof validateFileInput === 'function' && !validateFileInput(input)) return;
+    var audioFile = input.files[0];
     var password = document.getElementById('awm-password').value;
-    if (!audioFile) return alert('Please select an audio file');
     var isLowCapacity = (type === 3 || type === 4 || type === 7);
     if (!isLowCapacity) {
         if (!_awmSecretBytes) return alert('Please upload a secret document');
@@ -135,7 +137,7 @@ async function handleAwmEmbed() {
         var blob = new Blob([wavBuf], { type: 'audio/wav' });
         output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark embedded successfully!</strong><br>Algorithm: ' + names[type] + '<br>File: ' + escapeHtml(audioFile.name) + '<br>Sample Rate: ' + info.sr + ' Hz<br>Channels: ' + info.ch + '<br>Hidden: ' + secretBytes.length + ' bytes</div>';
         downloadDiv.innerHTML = '<a href="' + URL.createObjectURL(blob) + '" download="watermarked_' + escapeHtml(audioFile.name).replace(/\.[^.]+$/, '.wav') + '" class="btn">⬇ Download Watermarked WAV</a>';
-        window._awmResult = { blob: blob, originalName: audioFile.name, type: type, algorithm: names[type] };
+        setResult('awmResult', { blob: blob, originalName: audioFile.name, type: type, algorithm: names[type] });
         resultDiv.style.display = '';
     } catch (e) {
         prog.style.display = 'none';
@@ -150,9 +152,11 @@ async function handleAwmEmbed() {
 // ── Extract ──
 async function handleAwmExtract() {
     var type = parseInt(document.getElementById('awm-type-ex').value);
-    var audioFile = document.getElementById('awm-audio-ex').files[0];
+    var input = document.getElementById('awm-audio-ex');
+    if (!input || !input.files || !input.files[0]) return alert('Please select a watermarked audio file');
+    if (typeof validateFileInput === 'function' && !validateFileInput(input)) return;
+    var audioFile = input.files[0];
     var password = document.getElementById('awm-password-ex').value;
-    if (!audioFile) return alert('Please select a watermarked audio file');
     if (!password || !password.trim()) return alert('Password is required');
     var spinner = document.getElementById('awm-spinner');
     var prog = document.getElementById('awm-progress');

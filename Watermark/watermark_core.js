@@ -61,7 +61,7 @@ function idct8x8(dct) {
 }
 
 // ── Block helpers ──
-const MID = [[0,4],[1,3],[2,2],[3,1],[4,0],[0,5],[1,4],[2,3],[3,2],[4,1],[5,0]];
+var MID = [[0,4],[1,3],[2,2],[3,1],[4,0],[0,5],[1,4],[2,3],[3,2],[4,1],[5,0]];
 function blockIter(w, h, bsize) {
     const blocks = [];
     for (let y = 0; y < h - h % bsize; y += bsize)
@@ -121,7 +121,7 @@ function maxDCTBits(w, h, bpb) {
     return cols * rows * (bpb || 11);
 }
 
-const LSB_MAX_BITS = 100000;
+var LSB_MAX_BITS = 100000;
 
 // ── Algorithm 1: Spatial LSB ──
 function wm1_embed(imgData, payloadBits) {

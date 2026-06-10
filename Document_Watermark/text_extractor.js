@@ -52,13 +52,13 @@ var DOCX_EXTRACTOR = (function () {
     var inPara = false;
     var i = 0;
     while (i < xml.length) {
-      if (xml.substr(i, 10) === "<w:p ") inPara = true;
-      if (xml.substr(i, 10) === "<w:p>") inPara = true;
-      if (xml.substr(i, 11) === "</w:p>" && inPara) {
+      if (xml.substr(i, 6) === "<w:p ") inPara = true;
+      if (xml.substr(i, 5) === "<w:p>") inPara = true;
+      if (xml.substr(i, 6) === "</w:p>" && inPara) {
         text += "\n";
         inPara = false;
       }
-      if (xml.substr(i, 7) === "<w:t ") {
+      if (xml.substr(i, 5) === "<w:t " || xml.substr(i, 4) === "<w:t>") {
         var start = xml.indexOf(">", i) + 1;
         var end = xml.indexOf("</w:t>", start);
         if (start > 0 && end > start) {

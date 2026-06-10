@@ -5,13 +5,20 @@ var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
 function sanitizeHtml(html) {
   var allowed = /^(h[23]|p|ul|li|a|br|strong|em|b|i|code|pre|blockquote|ol|span|div)$/i;
-  // codeql[js/incomplete-multi-character-sanitization]
   return html.replace(/<[^>]*>/g, function(m) {
     var name = m.replace(/<\/?([^\s>/]+).*/, '$1');
     if (!allowed.test(name)) return '';
-    // codeql[js/incomplete-multi-character-sanitization]
-    return m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-            .replace(/href\s*=\s*"javascript:/gi, 'href="#"');
+    // Strip all event handlers (onclick, onerror, etc.) — single, double, and unquoted
+    var clean = m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    // Block javascript: in href — all quote styles, formaction
+    clean = clean.replace(/\s+(href|formaction)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, function(attr) {
+      var val = attr.replace(/^[^=]+=\s*/, '');
+      var quote = val.charAt(0);
+      if (quote === '"' || quote === "'") val = val.slice(1, -1);
+      if (val.toLowerCase().indexOf('javascript:') === 0) return '';
+      return attr;
+    });
+    return clean;
   });
 }
 

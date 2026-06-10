@@ -11,6 +11,9 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+// ── Standalone page detection ──
+var isStandalone = document.documentElement && document.documentElement.dataset.standalone;
+
 // ── Sidebar toggle ──
 function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("open");
@@ -31,6 +34,8 @@ document
   )
   .forEach((a) => {
     a.addEventListener("click", (e) => {
+      // In standalone mode, let the browser follow the href link
+      if (document.documentElement.dataset.standalone) return;
       e.preventDefault();
       showPage(a.dataset.page);
       if (a.closest(".sidebar")) closeSidebar();
@@ -44,6 +49,7 @@ document.querySelectorAll(".simple-nav-links a[data-page]").forEach((a) => {
 });
 document.querySelectorAll(".card[data-page]").forEach((c) => {
   c.addEventListener("click", (e) => {
+    if (document.documentElement.dataset.standalone) return;
     e.preventDefault();
     showPage(c.dataset.page);
   });
@@ -93,7 +99,11 @@ var PAGE_DESCS = {
     "Embed and extract invisible watermarks in text documents using Zero-Width Characters, Unicode Homoglyphs, and Whitespace Replacement. Free online tool.",
 };
 
+var PAGE_NAMES = Object.keys(PAGE_TITLES);
+
 function showPage(name) {
+  // Validate name against whitelist to prevent CSS selector / path injection
+  if (name && PAGE_NAMES.indexOf(name) === -1) return;
   document
     .querySelectorAll(".page")
     .forEach((p) => p.classList.remove("active"));
@@ -101,9 +111,18 @@ function showPage(name) {
     .querySelectorAll(".sidebar a[data-page]")
     .forEach((a) => a.classList.remove("active"));
   const page = document.getElementById("page-" + name);
+  
+  // Standalone: if target page doesn't exist here, navigate to its standalone URL
+  if (!page && document.documentElement.dataset.standalone && name) {
+    window.location.href = '../' + name + '/index.html';
+    return;
+  }
+  
   if (page) page.classList.add("active");
-  const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
-  if (nav) nav.classList.add("active");
+  if (name) {
+    const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
+    if (nav) nav.classList.add("active");
+  }
   if (name && PAGE_TITLES[name]) {
     document.title = PAGE_TITLES[name];
   }
@@ -342,7 +361,7 @@ function closeDownloadModal() {
 }
 
 function downloadResult(format) {
-  var handler = window._currentDownloadHandler;
+  var handler = getDownloadHandler();
   if (handler) {
     handler(format);
     return;
@@ -375,3 +394,8 @@ function switchC2paTab(mode) {
     updateC2paWriteForm();
   }
 }
+
+// Re-evaluate standalone status after DOMContentLoaded (data-standalone is set by MPA inline script)
+document.addEventListener("DOMContentLoaded", function () {
+  isStandalone = document.documentElement && document.documentElement.dataset.standalone;
+});

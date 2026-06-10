@@ -421,6 +421,8 @@ const BLOCKED_EXTS = [
   ".ods",
   ".odp",
   ".zip",
+  ".svg",
+  ".svgz",
 ];
 
 const MAGIC_BYTES = {

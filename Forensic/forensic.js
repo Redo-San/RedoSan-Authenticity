@@ -301,8 +301,8 @@ function renderForensicResult(result) {
     type: "application/json",
   });
   var url = URL.createObjectURL(blob);
-  if (window._forensicLastUrl) URL.revokeObjectURL(window._forensicLastUrl);
-  window._forensicLastUrl = url;
+  if (getResult('forensicLastUrl')) URL.revokeObjectURL(getResult('forensicLastUrl'));
+  setResult('forensicLastUrl', url);
   dl.innerHTML =
     '<a href="' +
     url +

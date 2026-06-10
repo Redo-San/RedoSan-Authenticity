@@ -287,7 +287,7 @@ function idForgeCopy(el) {
     (i18n.data && i18n.data["id_forge.copied_btn"]) || "✓ Copied!";
   el.style.background = "var(--success, #00e676)";
   el.style.color = "#000";
-  navigator.clipboard.writeText(output.value).catch(function () {
+  navigator.clipboard.writeText(escHtml(output.value)).catch(function () {
     output.select();
     document.execCommand("copy");
   });
@@ -456,7 +456,7 @@ function switchSwhidTab(tab) {
 
 function idForgeShowDownload() {
   if (!window._ifResult) return;
-  window._currentDownloadHandler = idForgeDownload;
+  setDownloadHandler(idForgeDownload);
   document.getElementById("dl-modal-title").textContent = "Download — ID Forge";
   showDownloadModal();
 }

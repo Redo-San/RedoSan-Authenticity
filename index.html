@@ -49,7 +49,7 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; object-src 'none'; frame-ancestors 'none'"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
     />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -57,6 +57,28 @@
       if (top !== self) {
         top.location = self.location;
       }
+      // Default to MPA (new system) on web servers only.
+      // Append ?spa or ?classic for SPA (classic). No redirect on file:// or localhost.
+      (function () {
+        if (
+          window.location.protocol === "file:" ||
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1" ||
+          window.location.search.indexOf("spa") !== -1 ||
+          window.location.search.indexOf("classic") !== -1
+        )
+          return;
+        var base = "Style_Web_Page/pages/";
+        var hash = window.location.hash;
+        if (hash && hash.indexOf("#/") === 0) {
+          var page = hash.substring(2).split("?")[0].split("#")[0];
+          if (page) {
+            window.location.replace(base + page + "/index.html");
+            return;
+          }
+        }
+        window.location.replace(base + "home/index.html");
+      })();
     </script>
     <link
       rel="canonical"
@@ -4479,10 +4501,20 @@
       RedoSan
     </div>
 
+    <script src="Style_Web_Page/lang/i18n-data-ar.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-de.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-en.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-es.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-fr.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-ja.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-ko.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-zh.js" defer></script>
     <script src="Style_Web_Page/lang/i18n-data.js" defer></script>
     <script src="Style_Web_Page/i18n.js" defer></script>
+    <script src="Style_Web_Page/shared_validation.js" defer></script>
     <script src="Style_Web_Page/shared.js" defer></script>
     <script src="Style_Web_Page/search.js" defer></script>
+    <script src="Assistant/assistant_data.js" defer></script>
     <script src="Assistant/assistant.js" defer></script>
     <script src="Style_Web_Page/navigation.js" defer></script>
     <script src="Watermark/utils.js?v=2" defer></script>
@@ -4491,6 +4523,8 @@
     <script src="Watermark/watermark_core.js" defer></script>
     <script>!function(){var e=location.href;if(/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(e)){var t=function(n){var a=document.querySelector(n);a&&a.remove()};t('.sidebar a[data-page="removal-tools"]'),t('.card[data-page="removal-tools"]'),t("#page-removal-tools")}else{var s=document.createElement("script");s.src="Removal_Tools/removal_tools.js?v=4",s.defer=!0,document.body.appendChild(s)}}();</script>
     <script src="Pixel_Injection/watermark_core_advanced.js" defer></script>
+    <script src="Pixel_Injection/watermark_core_transforms.js" defer></script>
+    <script src="Pixel_Injection/watermark_core_algorithms.js" defer></script>
     <script src="Pixel_Injection/watermark_advanced_ui.js" defer></script>
     <script src="Pixel_Injection/pixel_injection.js" defer></script>
     <script src="Forensic/forensic_core.js" defer></script>
@@ -4500,20 +4534,31 @@
       src="Document_Watermark/document_watermark_core.js?v=3"
       defer
     ></script>
+    <script src="Document_Watermark/document_watermark_report.js?v=1" defer></script>
+    <script src="Document_Watermark/document_watermark_pdf.js?v=1" defer></script>
     <script src="Document_Watermark/text_extractor.js?v=5" defer></script>
     <script src="Document_Watermark/document_watermark.js?v=3" defer></script>
     <script src="Watermark/watermark.js" defer></script>
+    <script src="Fingerprint/hashing_perceptual.js" defer></script>
     <script src="Fingerprint/hashing.js" defer></script>
     <script src="Fingerprint/fingerprint_ui.js" defer></script>
     <script src="Metadata/metadata.js" defer></script>
     <script src="Timestamp/timestamp.js" defer></script>
     <script src="Decentralized_Identity_DID/did.js" defer></script>
+    <script src="Style_Web_Page/simplified_countries.js" defer></script>
+    <script src="Style_Web_Page/simplified_helpers.js" defer></script>
+    <script src="Style_Web_Page/simplified_renderers.js" defer></script>
     <script src="Style_Web_Page/simplified.js" defer></script>
     <script src="vendor/jspdf.umd.min.js" defer></script>
     <script src="vendor/qrious.min.js" defer></script>
     <script src="vendor/jszip.min.js" defer></script>
     <script src="vendor/opentimestamps.min.js" defer></script>
     <script src="vendor/pdf-lib.min.js" defer></script>
+    <script src="Certificate/certificate_ots.js" defer></script>
+    <script src="Certificate/certificate_utils.js" defer></script>
+    <script src="Certificate/certificate_pdf.js" defer></script>
+    <script src="Certificate/certificate_docx.js" defer></script>
+    <script src="Certificate/certificate_epub.js" defer></script>
     <script src="Certificate/certificate.js" defer></script>
     <script
       src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js"

@@ -56,10 +56,10 @@ class PixelInjection {
             dct: 'extractDCT', dwt: 'extractDWT', dft: 'extractDFT',
             hybrid_dct_dwt: 'extractDCT',
             vine: 'extractVINE', pixel_seal: 'extractPixelSeal',
-            nullguard: 'extractNullGuard', shallow_diffuse: 'extractShallowDiffuse',
-            diffusion_based: 'extractLSB',
-            imagewmark: 'extractImageWMark', meta_seal: 'extractMetaSeal',
-            stardustmark: 'extractLSB', invisimark: 'extractLSB', elevenlikes: 'extractLSB',
+            nullguard: 'extractDCT', shallow_diffuse: 'extractShallowDiffuse',
+            diffusion_based: 'extractDCT',
+            imagewmark: 'extractDCT', meta_seal: 'extractMetaSeal',
+            stardustmark: 'extractDCT', invisimark: 'extractDCT', elevenlikes: 'extractDCT',
         };
         this.initializeEventListeners();
         this.updatePiAlgorithms();
@@ -782,14 +782,14 @@ class PixelInjection {
         var algoName = this.algorithms && this.algorithms[this.currentCategory] && this.algorithms[this.currentCategory][this.currentAlgorithm]
           ? this.algorithms[this.currentCategory][this.currentAlgorithm].name : this.currentAlgorithm;
         var secretFileName = this._secretFileName || '';
-        window._piResult = {
+        setResult('piResult', {
           type: 'embed', category: this.currentCategory, algorithm: algoName,
           secretFile: secretFileName,
           password: (document.getElementById('pi-password') || {}).value ? '****' : '',
           dimensions: this.watermarkedImage.width + 'x' + this.watermarkedImage.height,
           timestamp: new Date().toISOString()
-        };
-        window._currentDownloadHandler = downloadPixelInjection;
+        });
+        setDownloadHandler(downloadPixelInjection);
         document.getElementById('dl-modal-title').textContent = 'Download Pixel Injection Result';
         
         const downloadDiv = document.getElementById('pi-download');
@@ -896,12 +896,12 @@ class PixelInjection {
         // Store result for multi-format download
         var algoName = this.algorithms && this.algorithms[this.currentCategory] && this.algorithms[this.currentCategory][this.currentAlgorithm]
           ? this.algorithms[this.currentCategory][this.currentAlgorithm].name : this.currentAlgorithm;
-        window._piResult = {
+        setResult('piResult', {
           type: 'extract', category: this.currentCategory, algorithm: algoName,
           extractedMessage: messageText,
           timestamp: new Date().toISOString()
-        };
-        window._currentDownloadHandler = downloadPixelInjection;
+        });
+        setDownloadHandler(downloadPixelInjection);
         document.getElementById('dl-modal-title').textContent = 'Download Pixel Injection Result';
         
         // Add copy button + download results button
@@ -912,7 +912,7 @@ class PixelInjection {
         const copyBtn = document.getElementById('pi-copy-btn');
         if (copyBtn) {
             copyBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(messageText);
+                navigator.clipboard.writeText(escHtml(messageText));
             });
         }
     }
@@ -1047,7 +1047,7 @@ class PixelInjection {
         `;
         
         // Set up download
-        window._piResult = {
+        setResult('piResult', {
           type: 'analysis_auto',
           algorithm: 'Auto Detect',
           statistical: JSON.stringify(stat, null, 2),
@@ -1058,8 +1058,8 @@ class PixelInjection {
           image_characteristics: JSON.stringify(chars, null, 2),
           recommendations: r.recommendations.join('\n'),
           timestamp: r.timestamp || new Date().toISOString()
-        };
-        window._currentDownloadHandler = downloadPixelInjection;
+        });
+        setDownloadHandler(downloadPixelInjection);
         document.getElementById('dl-modal-title').textContent = 'Download Analysis Report';
         
         const downloadDiv = document.getElementById('pi-download');
@@ -1089,12 +1089,12 @@ class PixelInjection {
           </div>
         `;
         
-        window._piResult = {
+        setResult('piResult', {
           type: 'analysis', algorithm: algoName,
           result: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
           timestamp: new Date().toISOString()
-        };
-        window._currentDownloadHandler = downloadPixelInjection;
+        });
+        setDownloadHandler(downloadPixelInjection);
         document.getElementById('dl-modal-title').textContent = 'Download Analysis Result';
         
         const downloadDiv = document.getElementById('pi-download');
@@ -1328,7 +1328,7 @@ function piToHTML(r) {
 
 async function downloadPixelInjection(format) {
   closeDownloadModal();
-  var r = window._piResult;
+  var r = getResult('piResult');
   if (!r) return;
   var name = 'pixel_injection_' + r.type;
 
