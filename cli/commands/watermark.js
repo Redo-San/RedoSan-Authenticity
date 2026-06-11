@@ -82,6 +82,10 @@ vm.runInThisContext(wmSrc, { filename: 'watermark.js' });
 // Load WatermarkCore from advanced watermark module for all advanced algorithms
 const advancedSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Pixel_Injection', 'watermark_core_advanced.js'), 'utf8');
 vm.runInThisContext(advancedSrc, { filename: 'watermark_core_advanced.js' });
+const transformsSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Pixel_Injection', 'watermark_core_transforms.js'), 'utf8');
+vm.runInThisContext(transformsSrc, { filename: 'watermark_core_transforms.js' });
+const algorithmsSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'Pixel_Injection', 'watermark_core_algorithms.js'), 'utf8');
+vm.runInThisContext(algorithmsSrc, { filename: 'watermark_core_algorithms.js' });
 
 // Create instance of WatermarkCore for advanced algorithms
 let watermarkCore = null;

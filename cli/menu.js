@@ -205,9 +205,10 @@ async function mainMenu() {
         case "17":
           await menuDocwExtract();
           break;
-        case "18":
+        case "18": {
           const tools = require("./tools");
           console.log(tools.printToolSummary());
+        }
           await ask("Press Enter...");
           break;
         case "0":

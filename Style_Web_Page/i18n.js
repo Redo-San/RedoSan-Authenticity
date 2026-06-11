@@ -5,13 +5,23 @@ var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
 function sanitizeHtml(html) {
   var allowed = /^(h[23]|p|ul|li|a|br|strong|em|b|i|code|pre|blockquote|ol|span|div)$/i;
-  // codeql[js/incomplete-multi-character-sanitization]
   return html.replace(/<[^>]*>/g, function(m) {
     var name = m.replace(/<\/?([^\s>/]+).*/, '$1');
     if (!allowed.test(name)) return '';
-    // codeql[js/incomplete-multi-character-sanitization]
-    return m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-            .replace(/href\s*=\s*"javascript:/gi, 'href="#"');
+    // Strip all event handlers (onclick, onerror, etc.) — single, double, and unquoted
+    // Matches any attribute starting with "on" to catch event handlers (codeql: safe as intent is broad)
+    var clean = m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    // Block javascript: in href — all quote styles, formaction
+    clean = clean.replace(/\s+(href|formaction)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, function(attr) {
+      var val = attr.replace(/^[^=]+=\s*/, '');
+      var quote = val.charAt(0);
+      if (quote === '"' || quote === "'") val = val.slice(1, -1);
+      if (val.toLowerCase().indexOf('javascript:') === 0) return '';
+      if (val.toLowerCase().indexOf('data:') === 0) return '';
+      if (val.toLowerCase().indexOf('vbscript:') === 0) return '';
+      return attr;
+    });
+    return clean;
   });
 }
 
@@ -21,7 +31,7 @@ function sanitizeHtml(html) {
 var BROWSER_LANGUAGE_MAP = {
   'en': 'en', 'ar': 'ar', 'fr': 'fr', 'de': 'de', 'es': 'es', 'zh': 'zh',
   'ja': 'ja', 'ko': 'ko',
-  'pt': 'pt', 'it': 'it', 'ja': 'ja', 'ko': 'ko', 'ru': 'ru', 'hi': 'hi',
+  'pt': 'pt', 'it': 'it', 'ru': 'ru', 'hi': 'hi',
   'ur': 'ur', 'bn': 'bn', 'id': 'id', 'ms': 'ms', 'th': 'th', 'vi': 'vi',
   'tl': 'tl', 'tr': 'tr', 'fa': 'fa', 'he': 'he', 'nl': 'nl', 'sv': 'sv',
   'no': 'no', 'da': 'da', 'fi': 'fi', 'pl': 'pl', 'cs': 'cs', 'hu': 'hu',
@@ -123,13 +133,13 @@ function applyLang() {
   }
   var sBtn = document.getElementById('simpleLangBtn');
   if (sBtn) {
-    var displayName = getLanguageDisplayName(i18n.lang);
+    displayName = getLanguageDisplayName(i18n.lang);
     sBtn.textContent = displayName;
     sBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
   var mBtn = document.getElementById('modeLangBtn');
   if (mBtn) {
-    var displayName = getLanguageDisplayName(i18n.lang);
+    displayName = getLanguageDisplayName(i18n.lang);
     mBtn.textContent = displayName;
     mBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
@@ -175,7 +185,7 @@ function applyLang() {
   }
 
   // Update language button titles
-  var displayName = getLanguageDisplayName(i18n.lang);
+  displayName = getLanguageDisplayName(i18n.lang);
   ['langBtn', 'simpleLangBtn', 'modeLangBtn'].forEach(function(id) {
     var btn = document.getElementById(id);
     if (btn) btn.title = __('shared.lang_title', 'Current: ' + displayName + '\nClick to change language').replace('{lang}', displayName);

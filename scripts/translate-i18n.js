@@ -213,7 +213,7 @@ async function main() {
 
   if (!apply || total === 0) return;
 
-  for (var lang in allMissing) {
+  for (lang in allMissing) {
     var info = allMissing[lang];
     if (info.count === 0) continue;
     console.log('\nTranslating ' + lang + ' (' + info.count + ' keys)...');
@@ -231,8 +231,8 @@ async function main() {
           !process.env.GROQ_API_KEY && !process.env.GOOGLE_API_KEY) {
         console.warn('  GitHub Models failed, falling back to xnx3...');
         try {
-          var translated = await translateViaXnx3(info.flat, lang);
-          var merged = deepMerge(info.target, unflatten(translated));
+          translated = await translateViaXnx3(info.flat, lang);
+          merged = deepMerge(info.target, unflatten(translated));
           fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + '\n');
           console.log('  ✓ ' + lang + ' updated via xnx3 fallback (' + Object.keys(translated).length + ' keys)');
         } catch(e2) {

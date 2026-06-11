@@ -610,7 +610,7 @@ window.handleC2paWrite = async function() {
 // ── C2PA Download functions ──
 
 window.showC2paDownloadModal = function() {
-  window._currentDownloadHandler = window.downloadC2pa;
+  setDownloadHandler(window.downloadC2pa);
   document.getElementById('dl-modal-title').textContent = __('c2pa.download_report', 'Download C2PA Report');
   showDownloadModal();
 };

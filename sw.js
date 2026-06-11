@@ -71,23 +71,35 @@ var DANGEROUS_EXTS = [
 // Any .js request not in this list is treated as a threat.
 var JS_WHITELIST = [
   "/RedoSan-Authenticity/sw.js",
+  "/RedoSan-Authenticity/Style_Web_Page/shared_validation.js",
   "/RedoSan-Authenticity/Style_Web_Page/shared.js",
+  "/RedoSan-Authenticity/Style_Web_Page/simplified_countries.js",
+  "/RedoSan-Authenticity/Style_Web_Page/simplified_helpers.js",
+  "/RedoSan-Authenticity/Style_Web_Page/simplified_renderers.js",
   "/RedoSan-Authenticity/Style_Web_Page/simplified.js",
   "/RedoSan-Authenticity/Style_Web_Page/navigation.js",
   "/RedoSan-Authenticity/Style_Web_Page/i18n.js",
   "/RedoSan-Authenticity/Style_Web_Page/search.js",
   "/RedoSan-Authenticity/Certificate/certificate.js",
+  "/RedoSan-Authenticity/Certificate/certificate_docx.js",
+  "/RedoSan-Authenticity/Certificate/certificate_epub.js",
+  "/RedoSan-Authenticity/Certificate/certificate_ots.js",
+  "/RedoSan-Authenticity/Certificate/certificate_pdf.js",
+  "/RedoSan-Authenticity/Certificate/certificate_utils.js",
   "/RedoSan-Authenticity/Watermark/watermark.js",
   "/RedoSan-Authenticity/Watermark/watermark_core.js",
   "/RedoSan-Authenticity/Watermark/utils.js",
   "/RedoSan-Authenticity/Pixel_Injection/pixel_injection.js",
   "/RedoSan-Authenticity/Pixel_Injection/watermark_core_advanced.js",
+  "/RedoSan-Authenticity/Pixel_Injection/watermark_core_transforms.js",
+  "/RedoSan-Authenticity/Pixel_Injection/watermark_core_algorithms.js",
   "/RedoSan-Authenticity/Pixel_Injection/watermark_advanced_ui.js",
   "/RedoSan-Authenticity/Pixel_Injection/advanced_watermarking.js",
   "/RedoSan-Authenticity/Forensic/forensic_core.js",
   "/RedoSan-Authenticity/Forensic/forensic.js",
   "/RedoSan-Authenticity/Timestamp/timestamp.js",
   "/RedoSan-Authenticity/Decentralized_Identity_DID/did.js",
+  "/RedoSan-Authenticity/Fingerprint/hashing_perceptual.js",
   "/RedoSan-Authenticity/Fingerprint/hashing.js",
   "/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js",
   "/RedoSan-Authenticity/C2PA/cbor.js",
@@ -98,6 +110,7 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Converter/ffmpeg.min.js",
   "/RedoSan-Authenticity/Audio_Watermark/audio_watermark_core.js",
   "/RedoSan-Authenticity/Audio_Watermark/audio_watermark.js",
+  "/RedoSan-Authenticity/Assistant/assistant_data.js",
   "/RedoSan-Authenticity/Assistant/assistant.js",
   "/RedoSan-Authenticity/vendor/jspdf.umd.min.js",
   "/RedoSan-Authenticity/vendor/qrious.min.js",
@@ -106,8 +119,18 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Forensic/forensic.js",
   "/RedoSan-Authenticity/Forensic/forensic_core.js",
   "/RedoSan-Authenticity/ID_Forge/id_forge.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ar.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-de.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-en.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-es.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-fr.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ja.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ko.js",
+  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-zh.js",
   "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data.js",
   "/RedoSan-Authenticity/Document_Watermark/document_watermark_core.js",
+  "/RedoSan-Authenticity/Document_Watermark/document_watermark_report.js",
+  "/RedoSan-Authenticity/Document_Watermark/document_watermark_pdf.js",
   "/RedoSan-Authenticity/Document_Watermark/text_extractor.js",
   "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
   "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
@@ -182,6 +205,27 @@ var YML_WHITELIST = [
 var HTML_WHITELIST = [
   "/RedoSan-Authenticity/index.html",
   "/RedoSan-Authenticity/404.html",
+  // Standalone MPA pages
+  "/RedoSan-Authenticity/Style_Web_Page/pages/home/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/watermark/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/audio-watermark/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/fingerprint/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/search/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/pixel-injection/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/metadata/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/timestamp/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/did/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/c2pa/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/certificate/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/forensic/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/converter/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/removal-tools/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/id_forge/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/document-watermark/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/about/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/privacy/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/contact/index.html",
+  "/RedoSan-Authenticity/Style_Web_Page/pages/social/index.html",
 ];
 
 // Whitelist of known external libraries loaded from CDNs.
@@ -277,7 +321,9 @@ self.addEventListener("fetch", function (event) {
       lower.endsWith(".yaml") ||
       lower.endsWith(".wasm")
     ) {
-      isBlocked = isBlocked || EXT_WHITELIST.indexOf(event.request.url) === -1;
+      isBlocked = isBlocked || !EXT_WHITELIST.some(function(allowed) {
+        return event.request.url.indexOf(allowed) === 0;
+      });
     }
   }
 

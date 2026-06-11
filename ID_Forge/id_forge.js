@@ -165,7 +165,7 @@ function validateSwhidText(el) {
   var warn = document.getElementById("if-swhid-text-warning");
   if (!warn) return;
   var val = el.value;
-  var nonEnglish = /[^\x00-\x7F]/.test(val);
+  var nonEnglish = /[\u0100-\uFFFF]/.test(val);
   warn.style.display = nonEnglish ? "block" : "none";
   if (nonEnglish) {
     el.style.borderColor = "#e74c3c";
@@ -287,7 +287,7 @@ function idForgeCopy(el) {
     (i18n.data && i18n.data["id_forge.copied_btn"]) || "✓ Copied!";
   el.style.background = "var(--success, #00e676)";
   el.style.color = "#000";
-  navigator.clipboard.writeText(output.value).catch(function () {
+  navigator.clipboard.writeText(escHtml(output.value)).catch(function () {
     output.select();
     document.execCommand("copy");
   });
@@ -456,7 +456,7 @@ function switchSwhidTab(tab) {
 
 function idForgeShowDownload() {
   if (!window._ifResult) return;
-  window._currentDownloadHandler = idForgeDownload;
+  setDownloadHandler(idForgeDownload);
   document.getElementById("dl-modal-title").textContent = "Download — ID Forge";
   showDownloadModal();
 }

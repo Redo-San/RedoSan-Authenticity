@@ -599,7 +599,7 @@ async function handleDidSign() {
   }
 
   // Get fingerprint data
-  var fpResult = window._fpResult || null;
+  var fpResult = getResult('fpResult') || null;
   if (!fpResult) {
     // Try loading from professional mode file uploads
     var fpFileInput = document.getElementById('did-fp-file') || document.getElementById('cert-result-fp');
@@ -669,7 +669,7 @@ async function handleDidSign() {
 function showDidDownloadModal() {
   var stored = didLoadKeys();
   if (!stored) return;
-  window._currentDownloadHandler = downloadDID;
+  setDownloadHandler(downloadDID);
   document.getElementById('dl-modal-title').textContent = __('dl.title', 'Download') + ' — DID';
   showDownloadModal();
 }
