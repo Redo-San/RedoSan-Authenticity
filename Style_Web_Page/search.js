@@ -102,7 +102,9 @@ document.addEventListener('click', function(e) {
   var item = e.target.closest('.search-result-item');
   if (item) {
     var pageName = item.getAttribute('data-page');
-    if (pageName) navigateToSearchResult(pageName);
+    if (pageName && Array.isArray(PAGE_NAMES) && PAGE_NAMES.indexOf(pageName) !== -1) {
+      navigateToSearchResult(pageName);
+    }
     e.preventDefault();
   }
   var search = document.getElementById('navSearch');
