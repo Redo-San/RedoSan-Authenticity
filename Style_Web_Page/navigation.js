@@ -124,6 +124,7 @@ function showPage(name) {
   
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
   if (!page && document.documentElement.dataset.standalone && name) {
+    var safeName = encodeURIComponent(name);
     var parts = window.location.pathname.split('/');
     var pagesIdx = -1;
     for (var i = 0; i < parts.length; i++) {
@@ -131,10 +132,10 @@ function showPage(name) {
     }
     if (pagesIdx !== -1) {
       parts = parts.slice(0, pagesIdx + 1);
-      parts.push(name, 'index.html');
+      parts.push(safeName, 'index.html');
       window.location.href = parts.join('/');
     } else {
-      window.location.href = './' + name + '/index.html';
+      window.location.href = './' + safeName + '/index.html';
     }
     return;
   }
