@@ -179,8 +179,6 @@ describe('E2E — C2PA Provenance', () => {
     const signedUrl = await page.evaluate(() => window._c2paSignedUrl || '');
     if (!signedUrl) {
       // If signing failed (e.g. CDN unavailable), log the error and skip
-      console.log('C2PA write output:', writeOutput.substring(0, 200));
-      console.log('C2PA errors:', errors.join('; '));
     }
     assert.ok(signedUrl.length > 0,
       'Signed image URL should be available. Output: ' + writeOutput.substring(0, 200));

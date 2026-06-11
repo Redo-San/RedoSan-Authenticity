@@ -150,8 +150,6 @@ describe('E2E — Certificate / Digital Passport', () => {
       const el = document.getElementById('cert-status');
       return el ? el.textContent : '';
     });
-    console.log('Cert status:', statusText);
-
     const downloadVisible = await page.evaluate(() => {
       const el = document.getElementById('cert-download-section');
       return el ? el.style.display !== 'none' && el.style.display !== '' : false;
