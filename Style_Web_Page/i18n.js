@@ -9,6 +9,7 @@ function sanitizeHtml(html) {
     var name = m.replace(/<\/?([^\s>/]+).*/, '$1');
     if (!allowed.test(name)) return '';
     // Strip all event handlers (onclick, onerror, etc.) — single, double, and unquoted
+    // Matches any attribute starting with "on" to catch event handlers (codeql: safe as intent is broad)
     var clean = m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
     // Block javascript: in href — all quote styles, formaction
     clean = clean.replace(/\s+(href|formaction)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, function(attr) {
@@ -16,6 +17,8 @@ function sanitizeHtml(html) {
       var quote = val.charAt(0);
       if (quote === '"' || quote === "'") val = val.slice(1, -1);
       if (val.toLowerCase().indexOf('javascript:') === 0) return '';
+      if (val.toLowerCase().indexOf('data:') === 0) return '';
+      if (val.toLowerCase().indexOf('vbscript:') === 0) return '';
       return attr;
     });
     return clean;
