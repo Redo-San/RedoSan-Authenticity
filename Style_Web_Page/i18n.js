@@ -106,7 +106,8 @@ async function loadLang(lang) {
       applyLang();
       return true;
     }
-    var resp = await fetch('Style_Web_Page/lang/' + lang + '.json');
+    var base = document.documentElement.dataset.standalone ? '../../' : '';
+    var resp = await fetch(base + 'Style_Web_Page/lang/' + lang + '.json');
     if (!resp.ok) throw new Error('Language file not found: ' + lang);
     i18n.data = await resp.json();
     i18n.lang = lang;
@@ -169,7 +170,8 @@ function applyLang() {
       link = document.createElement('link');
       link.id = 'rtl-css';
       link.rel = 'stylesheet';
-      link.href = 'Style_Web_Page/rtl.css';
+      var rtlBase = document.documentElement.dataset.standalone ? '../../' : '';
+      link.href = rtlBase + 'Style_Web_Page/rtl.css';
       document.head.appendChild(link);
     }
   } else {
