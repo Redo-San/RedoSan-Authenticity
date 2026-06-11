@@ -39,8 +39,6 @@ jobs:
         run: npx playwright install chromium 2>&1 || echo "Playwright install skipped (may already be cached)"
       - name: Run tests
         run: npm test
-        env:
-          NODE_OPTIONS: "--test-timeout=120000"
       - name: Run coverage
         run: npm run coverage
       - name: Upload coverage to Codecov
