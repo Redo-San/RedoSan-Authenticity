@@ -36,3 +36,15 @@ function seededShuffle(arr, seed) {
     for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
     return arr;
 }
+function extractData(bitsStr, key) {
+    if (bitsStr.length < 32) return { data: null, reason: 'no-data' };
+    const dlen = parseInt(bitsStr.substr(0, 32), 2);
+    if (dlen <= 0 || dlen > 100000) return { data: null, reason: 'invalid-length' };
+    const neededBits = 32 + dlen * 8;
+    if (bitsStr.length < neededBits) return { data: null, reason: 'no-data' };
+    let data = from_bits(bitsStr.substr(32, dlen * 8));
+    if (key && key.length) data = xor_bytes(data, key);
+    if (data.length >= 2 && data[0] === 0xAA && data[1] === 0xBB)
+        return { data: data.slice(2), reason: 'ok' };
+    return { data: null, reason: 'bad-password' };
+}

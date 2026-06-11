@@ -38,6 +38,8 @@ const MODULES = [
   ['../../Watermark/utils.js', 'utils.js'],
   ['../../Watermark/watermark_core.js', 'watermark_core.js'],
   ['../../Pixel_Injection/watermark_core_advanced.js', 'watermark_core_advanced.js'],
+  ['../../Pixel_Injection/watermark_core_transforms.js', 'watermark_core_transforms.js'],
+  ['../../Pixel_Injection/watermark_core_algorithms.js', 'watermark_core_algorithms.js'],
 ];
 for (const [rel, name] of MODULES) {
   const src = fs.readFileSync(path.join(__dirname, rel), 'utf8');

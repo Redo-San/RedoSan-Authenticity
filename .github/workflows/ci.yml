@@ -35,6 +35,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
       - name: Install npm deps
         run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install chromium 2>&1 || echo "Playwright install skipped (may already be cached)"
       - name: Run tests
         run: npm test
       - name: Run coverage

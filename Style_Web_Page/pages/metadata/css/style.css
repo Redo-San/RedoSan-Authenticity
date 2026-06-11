@@ -1,0 +1,23 @@
+#md-output {
+  font-family: inherit;
+  white-space: normal;
+}
+.meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.meta-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.meta-table td:first-child {
+  color: var(--text-muted);
+  white-space: nowrap;
+  width: 120px;
+}
+.meta-table code {
+  font-size: 0.7rem;
+  word-break: break-all;
+}

@@ -15,8 +15,17 @@
     />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="stylesheet" href="Style_Web_Page/style.css" />
+    <script src="Style_Web_Page/lang/i18n-data-ar.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-de.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-en.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-es.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-fr.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-ja.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-ko.js" defer></script>
+    <script src="Style_Web_Page/lang/i18n-data-zh.js" defer></script>
     <script src="Style_Web_Page/lang/i18n-data.js" defer></script>
     <script src="Style_Web_Page/i18n.js" defer></script>
+    <script src="Style_Web_Page/shared_validation.js" defer></script>
     <script src="Style_Web_Page/shared.js" defer></script>
     <style>
       .threat-container {
@@ -312,20 +321,32 @@
 
       var JS_WHITELIST = [
         "/RedoSan-Authenticity/sw.js",
+        "/RedoSan-Authenticity/Style_Web_Page/shared_validation.js",
         "/RedoSan-Authenticity/Style_Web_Page/shared.js",
+        "/RedoSan-Authenticity/Style_Web_Page/simplified_countries.js",
+        "/RedoSan-Authenticity/Style_Web_Page/simplified_helpers.js",
+        "/RedoSan-Authenticity/Style_Web_Page/simplified_renderers.js",
         "/RedoSan-Authenticity/Style_Web_Page/simplified.js",
         "/RedoSan-Authenticity/Style_Web_Page/navigation.js",
         "/RedoSan-Authenticity/Style_Web_Page/i18n.js",
         "/RedoSan-Authenticity/Style_Web_Page/search.js",
         "/RedoSan-Authenticity/Certificate/certificate.js",
+        "/RedoSan-Authenticity/Certificate/certificate_docx.js",
+        "/RedoSan-Authenticity/Certificate/certificate_epub.js",
+        "/RedoSan-Authenticity/Certificate/certificate_ots.js",
+        "/RedoSan-Authenticity/Certificate/certificate_pdf.js",
+        "/RedoSan-Authenticity/Certificate/certificate_utils.js",
         "/RedoSan-Authenticity/Watermark/watermark.js",
         "/RedoSan-Authenticity/Watermark/watermark_core.js",
         "/RedoSan-Authenticity/Watermark/utils.js",
         "/RedoSan-Authenticity/Pixel_Injection/pixel_injection.js",
         "/RedoSan-Authenticity/Pixel_Injection/watermark_core_advanced.js",
+        "/RedoSan-Authenticity/Pixel_Injection/watermark_core_transforms.js",
+        "/RedoSan-Authenticity/Pixel_Injection/watermark_core_algorithms.js",
         "/RedoSan-Authenticity/Pixel_Injection/watermark_advanced_ui.js",
         "/RedoSan-Authenticity/Pixel_Injection/advanced_watermarking.js",
         "/RedoSan-Authenticity/Timestamp/timestamp.js",
+        "/RedoSan-Authenticity/Fingerprint/hashing_perceptual.js",
         "/RedoSan-Authenticity/Fingerprint/hashing.js",
         "/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js",
         "/RedoSan-Authenticity/C2PA/cbor.js",
@@ -338,6 +359,7 @@
         "/RedoSan-Authenticity/Forensic/forensic.js",
         "/RedoSan-Authenticity/Audio_Watermark/audio_watermark_core.js",
         "/RedoSan-Authenticity/Audio_Watermark/audio_watermark.js",
+        "/RedoSan-Authenticity/Assistant/assistant_data.js",
         "/RedoSan-Authenticity/Assistant/assistant.js",
         "/RedoSan-Authenticity/ID_Forge/id_forge.js",
         "/RedoSan-Authenticity/Decentralized_Identity_DID/did.js",
@@ -346,8 +368,18 @@
         "/RedoSan-Authenticity/vendor/jszip.min.js",
         "/RedoSan-Authenticity/vendor/opentimestamps.min.js",
         "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ar.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-de.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-en.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-es.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-fr.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ja.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ko.js",
+        "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-zh.js",
         "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data.js",
         "/RedoSan-Authenticity/Document_Watermark/document_watermark_core.js",
+        "/RedoSan-Authenticity/Document_Watermark/document_watermark_report.js",
+        "/RedoSan-Authenticity/Document_Watermark/document_watermark_pdf.js",
         "/RedoSan-Authenticity/Document_Watermark/text_extractor.js",
         "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
       ];

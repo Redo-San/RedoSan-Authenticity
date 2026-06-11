@@ -3,7 +3,7 @@
 
 async function downloadFingerprint(format) {
   closeDownloadModal();
-  var r = window._fpResult;
+  var r = getResult('fpResult');
   if (!r) return;
 
   var name = r.file_info.file_name;
@@ -310,7 +310,7 @@ async function handleFingerprint() {
 
   try {
     const result = await fingerprintFile(file);
-    window._fpResult = result;
+    setResult('fpResult', result);
 
     let html = '<table class="meta-table">';
     html += '<tr><td>' + __('fp.label_file', 'File') + '</td><td>' + escHtml(result.file_info.file_name) + '</td></tr>';
@@ -352,7 +352,7 @@ async function handleFingerprint() {
 
     output.innerHTML = html;
 
-    window._currentDownloadHandler = downloadFingerprint;
+    setDownloadHandler(downloadFingerprint);
     document.getElementById('dl-modal-title').textContent = __('dl.title') || 'Download Fingerprint';
     dl.innerHTML = '<button onclick="showDownloadModal()" class="btn">' + __('fp.results_btn', 'Download Results') + '</button>';
   } catch (e) { setText('fp-output', __('shared.error_prefix', 'Error: ') + e.message); }

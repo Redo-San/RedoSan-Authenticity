@@ -51,9 +51,7 @@ function convGetFormatLabel(fmt) {
 
 function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function convStripHtml(s) {
-  var d = document.createElement('div');
-  d.innerHTML = String(s);
-  return (d.textContent || d.innerText || '').trim();
+  return new DOMParser().parseFromString(String(s), 'text/html').body.textContent.trim();
 }
 function convYield() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
@@ -87,6 +85,7 @@ function handleConvFile() {
   outDiv.style.display = 'none';
   dl.innerHTML = '';
   if (!input || !input.files || !input.files[0]) return;
+  if (typeof validateFileInput === 'function' && !validateFileInput(input)) return;
   _convFile = input.files[0];
   _convType = convDetectType(_convFile);
   _convFormats = convGetFormats(_convType);

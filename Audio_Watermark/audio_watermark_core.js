@@ -188,8 +188,8 @@ function aw1_extract(s16, maxBits) {
 
 // ── Algorithm 2: FFT-QIM (Frequency-domain magnitude QIM, replaces broken Phase Coding) ──
 // QIM on FFT magnitude coefficients in mid-frequency band, non-overlapping frames
-const AWM2_FRAME = 2048;
-const AWM2_REPS = 5;
+var AWM2_FRAME = 2048;
+var AWM2_REPS = 5;
 function aw2_embed(s16, bitsStr, sr) {
     const F = AWM2_FRAME, REPS = AWM2_REPS;
     const totalFrames = Math.floor(s16.length / F);
@@ -257,8 +257,8 @@ function aw2_maxBits(audioLen, sr) {
 
 // ── Algorithm 3: Echo Hiding ──
 // Based on tam17aki implementation: echo at d0/d1, control_strength=0.2, overlap-add
-const AWM3_FRAME = 4096;
-const AWM3_CHIPS = 32;
+var AWM3_FRAME = 4096;
+var AWM3_CHIPS = 32;
 function aw3_embed(s16, bitsStr, sr) {
     const F = AWM3_FRAME, CHIPS = AWM3_CHIPS;
     const S = Math.round((sr || 44100) / 100);
@@ -320,8 +320,8 @@ function aw3_maxBits(audioLen, sr) {
 
 // ── Algorithm 4: Spread Spectrum (DSSS) ──
 // Fixed PN sequence and chips per bit for consistent embed/extract
-const AWM4_FRAME = 2048;
-const AWM4_CHIPS = 256;
+var AWM4_FRAME = 2048;
+var AWM4_CHIPS = 256;
 function aw4_pn(seed, len) {
     const pn = new Float64Array(len);
     let s = seed >>> 0;
@@ -557,7 +557,7 @@ function aw6_maxBits(audioLen, sr) {
 }
 
 // ── DCT helpers (Type-II/III, orthogonal, precomputed matrix) ──
-let _awDctCos = null;
+var _awDctCos = null;
 function awDctInit(N) {
     if (_awDctCos && _awDctCos.N === N) return;
     const T = new Float64Array(N * N);
@@ -598,8 +598,8 @@ function awIdct(X) {
 
 // ── Algorithm 7: DCT-domain QIM ──
 // Similar to aw8 but with different frame size and chip count.
-const AWM7_FRAME = 512;
-const AWM7_CHIPS = 5;
+var AWM7_FRAME = 512;
+var AWM7_CHIPS = 5;
 function aw7_embed(s16, bitsStr, sr) {
     const S = Math.round((sr || 44100) / 80);
     const F = AWM7_FRAME, CHIPS = AWM7_CHIPS;
@@ -662,8 +662,8 @@ function aw7_maxBits(audioLen, sr) {
 }
 
 // ── Algorithm 8: DCT-based (DCT domain, QIM on mid-frequency coefficients, non-overlapping) ──
-const AWM8_FRAME = 1024;
-const AWM8_CHIPS = 5;
+var AWM8_FRAME = 1024;
+var AWM8_CHIPS = 5;
 function aw8_embed(s16, bitsStr, sr) {
     const S = Math.round((sr || 44100) / 60);
     const F = AWM8_FRAME, CHIPS = AWM8_CHIPS;

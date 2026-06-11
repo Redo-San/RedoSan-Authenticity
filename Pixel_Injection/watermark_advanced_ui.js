@@ -580,7 +580,7 @@ class AdvancedWatermarkUI {
         const copyBtn = document.getElementById('wm-copy-btn');
         if (copyBtn) {
             copyBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(this.extractedMessage);
+                navigator.clipboard.writeText(escHtml(this.extractedMessage));
             }.bind(this));
         }
     }

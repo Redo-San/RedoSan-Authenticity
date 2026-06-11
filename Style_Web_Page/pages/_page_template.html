@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en" data-standalone="{PAGE_ID}">
+  <head>
+    <meta
+      name="google-site-verification"
+      content="vBNEdYqB2JK2r1n-dq8e0lJHPtiyT3CKNVZjjgXhkr4"
+    />
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>{PAGE_TITLE}</title>
+    <meta name="description" content="{PAGE_DESC}" />
+    <meta
+      name="keywords"
+      content="digital watermark, image fingerprint, steganography, LSB, DCT, DWT, SHA-256, BLAKE3, EXIF reader, photo metadata, OpenTimestamps, image hashing, perceptual hash, digital authenticity"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Redo_San" />
+    <meta
+      property="og:title"
+      content="{PAGE_TITLE}"
+    />
+    <meta
+      property="og:description"
+      content="{PAGE_DESC}"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://redo-san.github.io/RedoSan-Authenticity/"
+    />
+    <meta
+      property="og:image"
+      content="https://redo-san.github.io/RedoSan-Authenticity/Style_Web_Page/logo.png"
+    />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{PAGE_TITLE}" />
+    <meta
+      name="twitter:description"
+      content="{PAGE_DESC}"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+    />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <script>
+      if (top !== self) {
+        top.location = self.location;
+      }
+    </script>
+    <link
+      rel="canonical"
+      href="https://redo-san.github.io/RedoSan-Authenticity/"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://redo-san.github.io/RedoSan-Authenticity/"
+    />
+    <link
+      rel="alternate"
+      hreflang="ar"
+      href="https://redo-san.github.io/RedoSan-Authenticity/?lang=ar"
+    />
+    <link
+      rel="alternate"
+      hreflang="fr"
+      href="https://redo-san.github.io/RedoSan-Authenticity/?lang=fr"
+    />
+    <link
+      rel="alternate"
+      hreflang="de"
+      href="https://redo-san.github.io/RedoSan-Authenticity/?lang=de"
+    />
+    <link
+      rel="alternate"
+      hreflang="es"
+      href="https://redo-san.github.io/RedoSan-Authenticity/?lang=es"
+    />
+    <link
+      rel="alternate"
+      hreflang="zh"
+      href="https://redo-san.github.io/RedoSan-Authenticity/?lang=zh"
+    />
+    <link
+      rel="alternate"
+      hreflang="ja"
+      href="https://redo-san.github.io/RedoSan-Authenticity/?lang=ja"
+    />
+    <link
+      rel="alternate"
+      hreflang="ko"
+      href="https://redo-san.github.io/RedoSan-Authenticity/?lang=ko"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://redo-san.github.io/RedoSan-Authenticity/"
+    />
+    <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="../../responsive.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      rel="stylesheet"
+      href="css/responsive.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../../responsive.css"
+    /></noscript>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "RedoSan Authenticity",
+        "description": "Free, open-source digital authenticity suite for watermarking images, verifying file fingerprints (SHA-256, BLAKE3), reading metadata/EXIF, and creating OpenTimestamps proofs. 100% client-side, no uploads.",
+        "url": "https://redo-san.github.io/RedoSan-Authenticity/",
+        "applicationCategory": "Multimedia",
+        "applicationSubCategory": "DigitalAuthenticity",
+        "operatingSystem": "Web Browser",
+        "browserRequirements": "Requires JavaScript",
+        "author": {
+          "@type": "Person",
+          "name": "Redo_San",
+          "url": "https://github.com/Redo-San",
+          "sameAs": [
+            "https://github.com/Redo-San",
+            "https://www.youtube.com/@Redo_San",
+            "https://www.instagram.com/redo_san1",
+            "https://www.tiktok.com/@redo_san",
+            "https://linktr.ee/RedoSan"
+          ]
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "featureList": [
+          "Digital watermarking (LSB, DCT, DWT)",
+          "Pixel injection steganography",
+          "File fingerprinting (SHA-256, SHA-512, BLAKE3, perceptual hash)",
+          "Metadata / EXIF reader",
+          "OpenTimestamps proof generation and verification",
+          "C2PA content provenance",
+          "File format converter",
+          "Digital passport certificate generation"
+        ],
+        "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style_Web_Page/logo.png",
+        "license": "https://www.gnu.org/licenses/gpl-3.0.html"
+      }
+    </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+      integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/docx@8.5.0"
+      integrity="sha384-TcLTgu6flPhnZ5dfHnHimsxNFjYWN0povfGgnOvgPJKbZe6IbuoC2ociiatSHl9E"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"
+      integrity="sha512-pUhApVQtLbnpLtJn6DuzDD5o2xtmLJnJ7oBoMsBnzOkVkpqofGLGPaBJ6ayD2zQe3lCgCibhJBi4cj5wAxwVKA=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+      integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Navigation bar -->
+    <nav id="mainNav" class="nav-header">
+      <div class="nav-left">
+        <button
+          class="hamburger"
+          id="menuBtn"
+          onclick="toggleSidebar()"
+          aria-label="Menu"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <a href="../home/index.html" class="logo">
+          <div
+            class="logo-img logo-white"
+            role="img"
+            aria-label="RedoSan"
+          ></div>
+          <div
+            class="logo-img logo-black"
+            role="img"
+            aria-label="RedoSan"
+          ></div>
+        </a>
+        <div class="nav-search" id="navSearch">
+          <input
+            type="text"
+            id="searchInput"
+            name="searchInput"
+            data-i18n-placeholder="search.placeholder"
+            placeholder="Search..."
+            aria-label="Search"
+            onkeydown="if(event.key==='Enter')siteSearch()"
+            onfocus="this.parentElement.classList.add('focused')"
+            onblur="this.parentElement.classList.remove('focused')"
+          />
+          <button
+            class="search-btn"
+            onclick="siteSearch()"
+            aria-label="Search"
+          ></button>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+        <button
+          class="theme-btn mode-switch-btn"
+          onclick="window.location.href='../home/'"
+          title="Back to Home"
+          aria-label="Back to Home"
+        >
+          🏠
+        </button>
+      </div>
+      <div class="nav-links">
+        <a href="../about/index.html" data-i18n="nav.about">About</a>
+        <a href="../privacy/index.html" data-i18n="nav.privacy">Privacy</a>
+        <a href="../contact/index.html" data-i18n="nav.contact">Contact</a>
+        <a href="../social/index.html" data-i18n="nav.social">Social</a>
+        <div class="lang-dropdown">
+          <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
+            English
+          </button>
+          <div class="lang-menu" id="langMenu">
+            <a
+              href="#"
+              onclick="switchLang('en'); return false;"
+              class="lang-option"
+              data-lang="en"
+              >English</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('ar'); return false;"
+              class="lang-option"
+              data-lang="ar"
+              >العربية</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('fr'); return false;"
+              class="lang-option"
+              data-lang="fr"
+              >Français</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('de'); return false;"
+              class="lang-option"
+              data-lang="de"
+              >Deutsch</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('es'); return false;"
+              class="lang-option"
+              data-lang="es"
+              >Español</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('zh'); return false;"
+              class="lang-option"
+              data-lang="zh"
+              >中文</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('ja'); return false;"
+              class="lang-option"
+              data-lang="ja"
+              >日本語</a
+            >
+            <a
+              href="#"
+              onclick="switchLang('ko'); return false;"
+              class="lang-option"
+              data-lang="ko"
+              >한국어</a
+            >
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <button
+      class="theme-btn"
+      id="themeToggle"
+      onclick="toggleTheme()"
+      title="Toggle theme"
+      aria-label="Toggle theme"
+    >
+      🌙
+    </button>
+
+    <div
+      class="sidebar-overlay"
+      id="sidebarOverlay"
+      onclick="toggleSidebar()"
+    ></div>
+    <div class="sidebar" id="sidebar" role="region" aria-label="Sidebar menu">
+      <div class="sidebar-header">
+        <span class="sidebar-title" data-i18n="sidebar.title">Menu</span>
+        <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
+      </div>
+      <a href="../home/index.html" data-page="home" data-i18n="sidebar.home"
+        >Home</a
+      >
+      <a href="../watermark/index.html" data-page="watermark" data-i18n="sidebar.watermark"
+        >Digital Watermark</a
+      >
+      <a
+        href="../audio-watermark/index.html"
+        data-page="audio-watermark"
+        data-i18n="sidebar.audio_watermark"
+        >Audio Watermark</a
+      >
+      <a
+        href="../pixel-injection/index.html"
+        data-page="pixel-injection"
+        data-i18n="sidebar.pixel_injection"
+        >Pixel Injection</a
+      >
+      <a href="../forensic/index.html" data-page="forensic" data-i18n="sidebar.forensic"
+        >Forensic Analyzer</a
+      >
+      <a href="../id_forge/index.html" data-page="id_forge" data-i18n="sidebar.id_forge">ID Forge</a>
+      <a href="../fingerprint/index.html" data-page="fingerprint" data-i18n="sidebar.fingerprint"
+        >Fingerprint</a
+      >
+      <a href="../metadata/index.html" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
+      <a href="../timestamp/index.html" data-page="timestamp" data-i18n="sidebar.timestamp"
+        >Timestamp</a
+      >
+      <a href="../did/index.html" data-page="did" data-i18n="sidebar.did">DID Identity</a>
+      <a href="../c2pa/index.html" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
+      <a href="../certificate/index.html" data-page="certificate" data-i18n="sidebar.certificate"
+        >Digital Passport</a
+      >
+      <a href="../converter/index.html" data-page="converter" data-i18n="sidebar.converter"
+        >File Converter</a
+      >
+      <a href="../removal-tools/index.html" data-page="removal-tools" data-i18n="sidebar.removal_tools"
+        >Removal Tools</a
+      >
+      <a
+        href="../document-watermark/index.html"
+        data-page="document-watermark"
+        data-i18n="sidebar.document_watermark"
+        >Document Watermark</a
+      >
+    </div>
+
+    <!-- App container: page-specific content -->
+    <main class="container" id="app">
+{PAGE_CONTENT}
+    </main>
+
+    <!-- Download Format Modal (outside #app so it works when #app is hidden in simplified mode) -->
+    <div
+      class="modal-overlay"
+      id="dl-modal"
+      onclick="if(event.target===this)closeDownloadModal()"
+    >
+      <div class="modal-box">
+        <div class="modal-close" onclick="closeDownloadModal()">&times;</div>
+        <h3 id="dl-modal-title">Download Report</h3>
+        <p
+          style="
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+          "
+          id="dl-modal-subtitle"
+        >
+          Choose a format:
+        </p>
+        <div class="dl-grid">
+          <button class="dl-option" onclick="downloadResult('json')">
+            <span class="dl-icon">{ }</span> JSON
+          </button>
+          <button class="dl-option" onclick="downloadResult('csv')">
+            <span class="dl-icon">#</span> CSV
+          </button>
+          <button class="dl-option" onclick="downloadResult('txt')">
+            <span class="dl-icon">©</span> TXT
+          </button>
+          <button class="dl-option" onclick="downloadResult('xml')">
+            <span class="dl-icon">&lt;/&gt;</span> XML
+          </button>
+          <button class="dl-option" onclick="downloadResult('pdf')">
+            <span class="dl-icon">📄</span> PDF
+          </button>
+          <button class="dl-option" onclick="downloadResult('doc')">
+            <span class="dl-icon">📑</span> DOCX
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer id="mainFooter">
+      <div class="footer-links">
+        <a href="../about/index.html" data-page="about" data-i18n="nav.about">About</a>
+        <a href="../privacy/index.html" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
+        <a href="../contact/index.html" data-page="contact" data-i18n="nav.contact">Contact</a>
+        <a href="../social/index.html" data-page="social" data-i18n="nav.social">Social</a>
+      </div>
+      <div class="footer-social">
+        <span class="footer-social-label">🌐</span>
+        <a
+          href="https://github.com/Redo-San"
+          target="_blank"
+          rel="noopener"
+          aria-label="GitHub"
+          >GitHub</a
+        >
+        <a
+          href="https://www.youtube.com/@Redo_San"
+          target="_blank"
+          rel="noopener"
+          aria-label="YouTube"
+          >YouTube</a
+        >
+        <a
+          href="https://www.instagram.com/redo_san1"
+          target="_blank"
+          rel="noopener"
+          aria-label="Instagram"
+          >Instagram</a
+        >
+        <a
+          href="https://www.tiktok.com/@redo_san"
+          target="_blank"
+          rel="noopener"
+          aria-label="TikTok"
+          >TikTok</a
+        >
+        <a
+          href="https://linktr.ee/RedoSan"
+          target="_blank"
+          rel="noopener"
+          aria-label="Linktree"
+          >Linktree</a
+        >
+      </div>
+      <div class="footer-social">
+        <span class="footer-social-label">🎵</span>
+        <a
+          href="https://open.spotify.com/artist/2N0Eck89FwMklsACBIqj8P"
+          target="_blank"
+          rel="noopener"
+          aria-label="Spotify"
+          >Spotify</a
+        >
+        <a
+          href="https://music.apple.com/gb/artist/redosan/1804262206"
+          target="_blank"
+          rel="noopener"
+          aria-label="Apple Music"
+          >Apple Music</a
+        >
+        <a
+          href="https://music.youtube.com/channel/UC92UgsGpq8JgrbE31sZkwCA"
+          target="_blank"
+          rel="noopener"
+          aria-label="YouTube Music"
+          >YouTube Music</a
+        >
+      </div>
+      <div class="footer-copy" data-i18n="footer.copyright">
+        RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves
+        your device
+      </div>
+      <div style="margin-top: 12px; font-size: 0.75rem">
+        <a
+          href="../../../index.html?spa"
+          style="color: var(--text-muted); text-decoration: none"
+          data-i18n="footer.classic_mode"
+          >Classic Version</a
+        >
+      </div>
+    </footer>
+
+    <!-- Music Player -->
+    <audio id="bg-music" src="../../RedoSan_Music.mp3" loop></audio>
+    <button
+      id="music-btn"
+      class="music-btn"
+      onclick="toggleMusic()"
+      title="Play Music"
+      aria-label="Toggle Music"
+    >
+      🎵
+    </button>
+    <div
+      id="music-credit"
+      class="music-credit"
+      role="contentinfo"
+      aria-label="Music credit"
+    >
+      RedoSan
+    </div>
+
+    <script src="../../lang/i18n-data-ar.js" defer></script>
+    <script src="../../lang/i18n-data-de.js" defer></script>
+    <script src="../../lang/i18n-data-en.js" defer></script>
+    <script src="../../lang/i18n-data-es.js" defer></script>
+    <script src="../../lang/i18n-data-fr.js" defer></script>
+    <script src="../../lang/i18n-data-ja.js" defer></script>
+    <script src="../../lang/i18n-data-ko.js" defer></script>
+    <script src="../../lang/i18n-data-zh.js" defer></script>
+    <script src="../../i18n.js" defer></script>
+    <script src="../../shared_validation.js" defer></script>
+    <script src="../../shared.js" defer></script>
+    <script src="../../search.js" defer></script>
+    <script src="../../../Assistant/assistant_data.js" defer></script>
+    <script src="../../../Assistant/assistant.js" defer></script>
+    <script src="../../navigation.js" defer></script>
+    <script src="../../../Watermark/utils.js?v=2" defer></script>
+    <script src="../../../Audio_Watermark/audio_watermark_core.js?v=7" defer></script>
+    <script src="../../../Audio_Watermark/audio_watermark.js?v=3" defer></script>
+    <script src="../../../Watermark/watermark_core.js" defer></script>
+    <script>!function(){var e=location.href;if(/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(e)){var t=function(n){var a=document.querySelector(n);a&&a.remove()};t('.sidebar a[data-page="removal-tools"]'),t('.card[data-page="removal-tools"]'),t("#page-removal-tools")}else{var s=document.createElement("script");s.src="../../../Removal_Tools/removal_tools.js?v=4",s.defer=!0,document.body.appendChild(s)}}();</script>
+    <script src="../../../Pixel_Injection/watermark_core_advanced.js" defer></script>
+    <script src="../../../Pixel_Injection/watermark_core_transforms.js" defer></script>
+    <script src="../../../Pixel_Injection/watermark_core_algorithms.js" defer></script>
+    <script src="../../../Pixel_Injection/watermark_advanced_ui.js" defer></script>
+    <script src="../../../Pixel_Injection/pixel_injection.js" defer></script>
+    <script src="../../../Forensic/forensic_core.js" defer></script>
+    <script src="../../../Forensic/forensic.js" defer></script>
+    <script src="../../../ID_Forge/id_forge.js" defer></script>
+    <script
+      src="../../../Document_Watermark/document_watermark_core.js?v=3"
+      defer
+    ></script>
+    <script src="../../../Document_Watermark/document_watermark_report.js?v=1" defer></script>
+    <script src="../../../Document_Watermark/document_watermark_pdf.js?v=1" defer></script>
+    <script src="../../../Document_Watermark/text_extractor.js?v=5" defer></script>
+    <script src="../../../Document_Watermark/document_watermark.js?v=3" defer></script>
+    <script src="../../../Watermark/watermark.js" defer></script>
+    <script src="../../../Fingerprint/hashing_perceptual.js" defer></script>
+    <script src="../../../Fingerprint/hashing.js" defer></script>
+    <script src="../../../Fingerprint/fingerprint_ui.js" defer></script>
+    <script src="../../../Metadata/metadata.js" defer></script>
+    <script src="../../../Timestamp/timestamp.js" defer></script>
+    <script src="../../../Decentralized_Identity_DID/did.js" defer></script>
+    <script src="../../simplified_countries.js" defer></script>
+    <script src="../../simplified_helpers.js" defer></script>
+    <script src="../../simplified_renderers.js" defer></script>
+    <script src="../../simplified.js" defer></script>
+    <script src="../../../vendor/jspdf.umd.min.js" defer></script>
+    <script src="../../../vendor/qrious.min.js" defer></script>
+    <script src="../../../vendor/jszip.min.js" defer></script>
+    <script src="../../../vendor/opentimestamps.min.js" defer></script>
+    <script src="../../../vendor/pdf-lib.min.js" defer></script>
+    <script src="../../../Certificate/certificate_ots.js" defer></script>
+    <script src="../../../Certificate/certificate_utils.js" defer></script>
+    <script src="../../../Certificate/certificate_pdf.js" defer></script>
+    <script src="../../../Certificate/certificate_docx.js" defer></script>
+    <script src="../../../Certificate/certificate_epub.js" defer></script>
+    <script src="../../../Certificate/certificate.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js"
+      defer
+    ></script>
+    <script src="../../../Converter/ffmpeg.min.js" defer></script>
+    <script src="../../../Converter/converter.js" defer></script>
+    <script>
+      (function () {
+        var TAP_BTN_IDS = {
+          handleC2paRead: "c2pa-read-btn",
+          handleC2paWrite: "c2pa-write-btn",
+          handleC2paVerify: "c2pa-verify-btn",
+        };
+        document.addEventListener("DOMContentLoaded", function () {
+          for (var k in TAP_BTN_IDS) {
+            var b = document.getElementById(TAP_BTN_IDS[k]);
+            if (b) b.dataset.origLabel = b.textContent;
+          }
+        });
+
+        var pending = {};
+
+        function showC2paSpinner(fnName) {
+          var placeholder = function () {
+            var btn = document.getElementById(TAP_BTN_IDS[fnName]);
+            var spinner =
+              btn &&
+              btn.closest(".card-form") &&
+              btn.closest(".card-form").querySelector(".spinner");
+            if (spinner) spinner.style.display = "block";
+
+            if (window[fnName] !== placeholder) return window[fnName]();
+
+            if (!pending[fnName]) {
+              pending[fnName] = setInterval(function () {
+                if (window[fnName] !== placeholder) {
+                  clearInterval(pending[fnName]);
+                  delete pending[fnName];
+                  window[fnName]();
+                }
+              }, 400);
+            }
+          };
+          placeholder._c2paPlaceholder = true;
+          return placeholder;
+        }
+
+        for (var fn in TAP_BTN_IDS) {
+          if (!window[fn]) window[fn] = showC2paSpinner(fn);
+        }
+
+        setTimeout(function () {
+          for (var fn in TAP_BTN_IDS) {
+            var placeholder = window[fn];
+            if (placeholder && placeholder._c2paPlaceholder) {
+              if (pending[fn]) clearInterval(pending[fn]);
+              delete pending[fn];
+              var out = document.getElementById(
+                fn.replace("handleC2pa", "") === "Read"
+                  ? "c2pa-read-output"
+                  : fn.replace("handleC2pa", "") === "Write"
+                  ? "c2pa-write-output"
+                  : "c2pa-verify-output",
+              );
+              if (out) {
+                out.innerHTML =
+                  '<div class="c2pa-error"><strong>Loading failed</strong><p>The C2PA module could not be loaded. Check your internet connection and try refreshing the page.</p></div>';
+                out.parentElement.style.display = "block";
+              }
+              var btn = document.getElementById(TAP_BTN_IDS[fn]);
+              if (btn) btn.textContent = "Retry";
+              window[fn] = function () {
+                location.reload();
+              };
+              break;
+            }
+          }
+        }, 30000);
+      })();
+    </script>
+    <script type="module" src="../../../C2PA/c2pa.js"></script>
+    <script>
+      function toggleMusic() {
+        var audio = document.getElementById("bg-music");
+        var btn = document.getElementById("music-btn");
+        var credit = document.getElementById("music-credit");
+        if (audio.paused) {
+          audio
+            .play()
+            .then(function () {
+              btn.textContent = "🔊";
+              btn.classList.add("playing");
+              credit.classList.add("show");
+            })
+            .catch(function () {});
+        } else {
+          audio.pause();
+          btn.textContent = "🎵";
+          btn.classList.remove("playing");
+          credit.classList.remove("show");
+        }
+      }
+      document.addEventListener("DOMContentLoaded", function () {
+        var credit = document.getElementById("music-credit");
+        if (credit) credit.classList.remove("show");
+      });
+      var musicStarted = false;
+      document.addEventListener("click", function startMusic() {
+        if (musicStarted) return;
+        musicStarted = true;
+        var audio = document.getElementById("bg-music");
+        var btn = document.getElementById("music-btn");
+        var credit = document.getElementById("music-credit");
+        if (audio && audio.paused) {
+          audio
+            .play()
+            .then(function () {
+              if (btn) {
+                btn.textContent = "🔊";
+                btn.classList.add("playing");
+              }
+              if (credit) credit.classList.add("show");
+            })
+            .catch(function () {});
+        }
+        document.removeEventListener("click", startMusic);
+      });
+    </script>
+
+    <!-- Bot / Automation block overlay -->
+    <div
+      id="botBlockOverlay"
+      class="bot-block-overlay"
+      role="alert"
+      aria-live="polite"
+    >
+      <div class="bot-block-content">
+        <div class="bot-block-icon">🛡️</div>
+        <div class="bot-block-title">Access Denied</div>
+        <div class="bot-block-text">Automated / headless browser detected.</div>
+        <a
+          class="bot-block-link"
+          href="https://github.com/Redo-San/RedoSan-Authenticity/issues"
+          target="_blank"
+          >Report an issue</a
+        >
+      </div>
+    </div>
+
+    <!-- Lightbox overlay -->
+    <div
+      id="lightbox"
+      class="lightbox"
+      style="display: none"
+      onclick="closeLightbox()"
+    >
+      <span class="lightbox-close">&times;</span>
+      <img class="lightbox-img" id="lightboxImg" alt="" />
+    </div>
+
+    <!-- Floating AI Assistant -->
+    <div
+      id="assistantBubble"
+      class="ast-bubble"
+      role="button"
+      aria-label="Open assistant"
+      tabindex="0"
+      onclick="toggleAssistant()"
+    >
+      <span>💬</span>
+    </div>
+    <div id="assistantPanel" class="ast-panel">
+      <div class="ast-header">
+        <span class="ast-title">🤖 RedoSan Assistant</span>
+        <div class="ast-header-actions">
+          <button class="ast-clear-btn" title="Clear chat">🗑️</button>
+          <button class="ast-close-btn" title="Close">&times;</button>
+        </div>
+      </div>
+      <div id="assistantMessages" class="ast-messages"></div>
+      <div id="assistantSuggestions" class="ast-suggestions"></div>
+      <div class="ast-input-area">
+        <textarea
+          id="assistantInput"
+          class="ast-input"
+          placeholder="Type your question..."
+          rows="1"
+        ></textarea>
+        <button class="ast-send-btn">➤</button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          document.documentElement.style.overflow = '';
+        }, 0);
+        document.documentElement.dataset.standalone = '{PAGE_ID}';
+        var modeSelect = document.getElementById('modeSelect');
+        if (modeSelect) modeSelect.style.display = 'none';
+        var simplified = document.getElementById('simplifiedMode');
+        if (simplified) simplified.style.display = 'none';
+        if (typeof showPage === 'function') {
+          showPage('{PAGE_ID}');
+        }
+      });
+    </script>
+  </body>
+</html>

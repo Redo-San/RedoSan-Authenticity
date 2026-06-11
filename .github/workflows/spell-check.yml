@@ -21,5 +21,5 @@ jobs:
       - uses: codespell-project/actions-codespell@406322ec52dd7b488e48c1c4b82e2a8b3a1bf630 # v2
         with:
           check_filenames: true
-          skip: .git,*.json,node_modules,vendor,./Style_Web_Page/lang/*.json,./Style_Web_Page/lang/i18n-data.js
+          skip: .git,*.json,node_modules,vendor,./Style_Web_Page/lang/*.json,./Style_Web_Page/lang/i18n-data*.js
           ignore_words_list: ro,aks,te,reod,ist,ser,ba,noe,fpr,gud,cunt,fils,whats,nome,FO
