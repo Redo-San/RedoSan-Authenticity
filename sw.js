@@ -287,8 +287,22 @@ self.addEventListener("fetch", function (event) {
     if (lower.endsWith(".yml") || lower.endsWith(".yaml"))
       isBlocked = isBlocked || YML_WHITELIST.indexOf(path) === -1;
     // Unknown .html files not in HTML_WHITELIST
-    if (lower.endsWith(".html"))
-      isBlocked = isBlocked || HTML_WHITELIST.indexOf(path) === -1;
+    if (lower.endsWith(".html")) {
+      // Normalize: if path has /pages/<extra>/<service>/index.html where extra isn't a page dir,
+      // rewrite to /pages/<service>/index.html before checking whitelist
+      var normalizedPath = path;
+      var pageMatch = lower.match(/\/pages\/[^/]+\/([a-z][a-z0-9_-]*)\/index\.html$/);
+      if (pageMatch && HTML_WHITELIST.indexOf(path) === -1) {
+        var altPath = "/RedoSan-Authenticity/Style_Web_Page/pages/" + pageMatch[1] + "/index.html";
+        if (HTML_WHITELIST.indexOf(altPath) !== -1) {
+          normalizedPath = altPath;
+          // Also update path for future matching
+          path = altPath;
+          lower = altPath.toLowerCase();
+        }
+      }
+      isBlocked = isBlocked || HTML_WHITELIST.indexOf(normalizedPath) === -1;
+    }
 
     // Block embedded URLs in path (same-origin only)
     var decoded = decodeURIComponent(path);
