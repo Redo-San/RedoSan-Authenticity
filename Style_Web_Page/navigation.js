@@ -124,7 +124,20 @@ function showPage(name) {
   
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
   if (!page && document.documentElement.dataset.standalone && name) {
-    window.location.href = '../' + name + '/index.html';
+    // Build path relative to the current page's directory
+    var parts = window.location.pathname.split('/');
+    // Find the 'pages' directory in the path and use it as base
+    var pagesIdx = -1;
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] === 'pages') { pagesIdx = i; break; }
+    }
+    if (pagesIdx !== -1) {
+      parts = parts.slice(0, pagesIdx + 1);
+      parts.push(name, 'index.html');
+      window.location.href = parts.join('/');
+    } else {
+      window.location.href = './' + name + '/index.html';
+    }
     return;
   }
   
