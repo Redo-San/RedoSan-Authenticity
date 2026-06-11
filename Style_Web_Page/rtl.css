@@ -105,9 +105,12 @@ input[type="file"] {
   text-align: center; 
 }
 
-/* Fix width issues */
+/* Fix width issues — prevent horizontal overflow in RTL */
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 body { 
-  width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
 }
