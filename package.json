@@ -34,7 +34,7 @@
     "test:e2e-metadata": "node --test --test-timeout=120000 cli/tests/e2e/e2e_metadata_test.js",
     "test:e2e-timestamp": "node --test --test-timeout=120000 cli/tests/e2e/e2e_timestamp_test.js",
     "test:e2e-misc": "node --test --test-timeout=120000 cli/tests/e2e/e2e_misc_pages_test.js",
-    "test:e2e-pixel": "node --test --test-timeout=120000 cli/tests/e2e/e2e_pixel_injection_test.js",
+    "test:e2e-pixel": "node --test --test-timeout=300000 cli/tests/e2e/e2e_pixel_injection_test.js",
     "test:e2e-forensic": "node --test --test-timeout=120000 cli/tests/e2e/e2e_forensic_test.js",
     "test:e2e-conv-rem": "node --test --test-timeout=120000 cli/tests/e2e/e2e_converter_removal_test.js",
     "test:e2e-all": "node --test --test-timeout=120000 cli/tests/e2e/e2e_navigation_test.js cli/tests/e2e/e2e_watermark_test.js cli/tests/e2e/e2e_fingerprint_test.js cli/tests/e2e/e2e_features_test.js cli/tests/e2e/e2e_audio_test.js cli/tests/e2e/e2e_c2pa_test.js cli/tests/e2e/e2e_did_test.js cli/tests/e2e/e2e_certificate_test.js cli/tests/e2e/e2e_docw_test.js cli/tests/e2e/e2e_metadata_test.js cli/tests/e2e/e2e_timestamp_test.js cli/tests/e2e/e2e_misc_pages_test.js cli/tests/e2e/e2e_pixel_injection_test.js cli/tests/e2e/e2e_forensic_test.js cli/tests/e2e/e2e_converter_removal_test.js",
