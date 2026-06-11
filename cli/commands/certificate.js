@@ -46,7 +46,6 @@ async function buildCertData(filePath, opts) {
     user: {
       name: opts.name || '',
       email: opts.email || '',
-      phone: (opts.phoneCode || '') + (opts.phone || ''),
       phoneCode: opts.phoneCode || '',
       phone: opts.phone || '',
       website: opts.website || '',

@@ -7,7 +7,6 @@ const vm = require('vm');
 
 globalThis.window = globalThis;
 globalThis.location = { protocol: 'file:', href: 'file:///test/', hostname: 'localhost', origin: 'null' };
-globalThis.DecompressionStream = globalThis.DecompressionStream;
 globalThis.ReadableStream = require('stream/web').ReadableStream;
 
 const realJSZip = require('jszip');

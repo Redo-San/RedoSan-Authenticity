@@ -28,7 +28,7 @@ function sanitizeHtml(html) {
 var BROWSER_LANGUAGE_MAP = {
   'en': 'en', 'ar': 'ar', 'fr': 'fr', 'de': 'de', 'es': 'es', 'zh': 'zh',
   'ja': 'ja', 'ko': 'ko',
-  'pt': 'pt', 'it': 'it', 'ja': 'ja', 'ko': 'ko', 'ru': 'ru', 'hi': 'hi',
+  'pt': 'pt', 'it': 'it', 'ru': 'ru', 'hi': 'hi',
   'ur': 'ur', 'bn': 'bn', 'id': 'id', 'ms': 'ms', 'th': 'th', 'vi': 'vi',
   'tl': 'tl', 'tr': 'tr', 'fa': 'fa', 'he': 'he', 'nl': 'nl', 'sv': 'sv',
   'no': 'no', 'da': 'da', 'fi': 'fi', 'pl': 'pl', 'cs': 'cs', 'hu': 'hu',
@@ -130,13 +130,13 @@ function applyLang() {
   }
   var sBtn = document.getElementById('simpleLangBtn');
   if (sBtn) {
-    var displayName = getLanguageDisplayName(i18n.lang);
+    displayName = getLanguageDisplayName(i18n.lang);
     sBtn.textContent = displayName;
     sBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
   var mBtn = document.getElementById('modeLangBtn');
   if (mBtn) {
-    var displayName = getLanguageDisplayName(i18n.lang);
+    displayName = getLanguageDisplayName(i18n.lang);
     mBtn.textContent = displayName;
     mBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
@@ -182,7 +182,7 @@ function applyLang() {
   }
 
   // Update language button titles
-  var displayName = getLanguageDisplayName(i18n.lang);
+  displayName = getLanguageDisplayName(i18n.lang);
   ['langBtn', 'simpleLangBtn', 'modeLangBtn'].forEach(function(id) {
     var btn = document.getElementById(id);
     if (btn) btn.title = __('shared.lang_title', 'Current: ' + displayName + '\nClick to change language').replace('{lang}', displayName);

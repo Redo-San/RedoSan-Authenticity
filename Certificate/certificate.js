@@ -454,7 +454,6 @@ async function generateProfessionalCert() {
       user: {
         name: cname,
         email: cemail,
-        phone: cphoneCode + cphone,
         phoneCode: cphoneCode,
         phone: cphone,
         website: cwebsite,
