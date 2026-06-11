@@ -173,7 +173,8 @@ describe('E2E — Image Watermark', () => {
 
     // Fetch the watermarked image blob for extraction
     const wmInfo = await page.evaluate(async () => {
-      const url = window._wmLastBlobUrl;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const url = getFn ? getFn('wmLastBlobUrl') : null;
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
@@ -187,11 +188,9 @@ describe('E2E — Image Watermark', () => {
     const wmType = wmInfo.type;
     const wmExt = wmType === 'image/jpeg' ? 'jpg' : 'png';
 
-    // Switch to extract tab
     await page.evaluate(() => switchWmTab('extract'));
     await page.waitForTimeout(300);
 
-    // Select Zero-bit algorithm (type 5)
     await page.evaluate(() => {
       const sel = document.getElementById('wm-type-ex');
       if (sel) sel.value = '5';
@@ -199,13 +198,11 @@ describe('E2E — Image Watermark', () => {
     });
     await page.waitForTimeout(300);
 
-    // Upload watermarked image (use correct mime type from blob)
     await page.setInputFiles('#wm-image-ex', [
       { name: 'watermarked.' + wmExt, mimeType: wmType, buffer: wmBuf }
     ]);
     await page.waitForTimeout(500);
 
-    // Click extract
     await page.evaluate(() => document.getElementById('wm-btn-ex').click());
     await page.waitForSelector('#wm-result', { state: 'visible', timeout: 30000 });
     await page.waitForTimeout(1000);
@@ -228,7 +225,6 @@ describe('E2E — Image Watermark', () => {
     await navTo(page, 'watermark');
     await page.waitForTimeout(1000);
 
-    // Select LSB algorithm (type 1, default, but set explicitly)
     await page.evaluate(() => {
       const sel = document.getElementById('wm-type');
       if (sel) sel.value = '1';
@@ -236,32 +232,27 @@ describe('E2E — Image Watermark', () => {
     });
     await page.waitForTimeout(300);
 
-    // Password group should be visible for type 1
     const pwVisible = await page.evaluate(() => {
       const g = document.getElementById('wm-password-group');
       return g ? g.style.display !== 'none' : false;
     });
     assert.ok(pwVisible, 'Password group should be visible for type 1');
 
-    // Set password
     await page.evaluate(() => {
       const pw = document.getElementById('wm-password');
       if (pw) pw.value = 'test-password-123';
     });
 
-    // Upload cover image (64x64 for enough LSB capacity)
     await page.setInputFiles('#wm-image', [
       { name: 'cover.png', mimeType: 'image/png', buffer: PNG_64_BUF }
     ]);
     await page.waitForTimeout(500);
 
-    // Upload secret file
     await page.setInputFiles('#wm-secret', [
       { name: 'secret.txt', mimeType: 'text/plain', buffer: SECRET_BUF }
     ]);
     await page.waitForTimeout(500);
 
-    // Click embed
     await page.evaluate(() => document.getElementById('wm-btn').click());
     await page.waitForSelector('#wm-result', { state: 'visible', timeout: 30000 });
     await page.waitForTimeout(1000);
@@ -273,9 +264,9 @@ describe('E2E — Image Watermark', () => {
     assert.ok(embedHtml.includes('hidden') || embedHtml.includes('bytes'),
       'Embed should report bytes hidden. Got: ' + embedHtml.substring(0, 100));
 
-    // Fetch watermarked image blob (LSB produces PNG)
     const wmInfo = await page.evaluate(async () => {
-      const url = window._wmLastBlobUrl;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const url = getFn ? getFn('wmLastBlobUrl') : null;
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
@@ -289,11 +280,9 @@ describe('E2E — Image Watermark', () => {
     const wmType = wmInfo.type;
     const wmExt = wmType === 'image/jpeg' ? 'jpg' : 'png';
 
-    // Switch to extract tab
     await page.evaluate(() => switchWmTab('extract'));
     await page.waitForTimeout(300);
 
-    // Select LSB algorithm (type 1)
     await page.evaluate(() => {
       const sel = document.getElementById('wm-type-ex');
       if (sel) sel.value = '1';
@@ -301,19 +290,16 @@ describe('E2E — Image Watermark', () => {
     });
     await page.waitForTimeout(300);
 
-    // Set password
     await page.evaluate(() => {
       const pw = document.getElementById('wm-password-ex');
       if (pw) pw.value = 'test-password-123';
     });
 
-    // Upload watermarked image (use correct mime type)
     await page.setInputFiles('#wm-image-ex', [
       { name: 'watermarked.' + wmExt, mimeType: wmType, buffer: wmBuf }
     ]);
     await page.waitForTimeout(500);
 
-    // Click extract
     await page.evaluate(() => document.getElementById('wm-btn-ex').click());
     await page.waitForSelector('#wm-result', { state: 'visible', timeout: 30000 });
     await page.waitForTimeout(1000);
@@ -371,7 +357,8 @@ describe('E2E — Image Watermark', () => {
       'Type 4 embed should succeed. Got: ' + embedHtml.substring(0, 100));
 
     const wmInfo = await page.evaluate(async () => {
-      const url = window._wmLastBlobUrl;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const url = getFn ? getFn('wmLastBlobUrl') : null;
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
@@ -454,7 +441,8 @@ describe('E2E — Image Watermark', () => {
       'Type 6 embed should succeed. Got: ' + embedHtml.substring(0, 100));
 
     const wmInfo = await page.evaluate(async () => {
-      const url = window._wmLastBlobUrl;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const url = getFn ? getFn('wmLastBlobUrl') : null;
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
@@ -537,7 +525,8 @@ describe('E2E — Image Watermark', () => {
       'Type 7 embed should succeed. Got: ' + embedHtml.substring(0, 100));
 
     const wmInfo = await page.evaluate(async () => {
-      const url = window._wmLastBlobUrl;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const url = getFn ? getFn('wmLastBlobUrl') : null;
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
@@ -587,7 +576,6 @@ describe('E2E — Image Watermark', () => {
     await navTo(page, 'watermark');
     await page.waitForTimeout(1000);
 
-    // Type 8 does NOT require a password
     await page.evaluate(() => {
       const sel = document.getElementById('wm-type');
       if (sel) sel.value = '8';
@@ -616,7 +604,8 @@ describe('E2E — Image Watermark', () => {
       'Type 8 embed should succeed. Got: ' + embedHtml.substring(0, 100));
 
     const wmInfo = await page.evaluate(async () => {
-      const url = window._wmLastBlobUrl;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const url = getFn ? getFn('wmLastBlobUrl') : null;
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
@@ -628,7 +617,6 @@ describe('E2E — Image Watermark', () => {
     await page.evaluate(() => switchWmTab('extract'));
     await page.waitForTimeout(300);
 
-    // Type 8 also does NOT require password for extract
     await page.evaluate(() => {
       const sel = document.getElementById('wm-type-ex');
       if (sel) sel.value = '8';
@@ -695,7 +683,8 @@ describe('E2E — Image Watermark', () => {
       'Type 9 embed should succeed. Got: ' + embedHtml.substring(0, 100));
 
     const wmInfo = await page.evaluate(async () => {
-      const url = window._wmLastBlobUrl;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const url = getFn ? getFn('wmLastBlobUrl') : null;
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
