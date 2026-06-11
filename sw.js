@@ -205,6 +205,7 @@ var YML_WHITELIST = [
 var HTML_WHITELIST = [
   "/RedoSan-Authenticity/index.html",
   "/RedoSan-Authenticity/404.html",
+  "/RedoSan-Authenticity/Style_Web_Page/index.html",
   // Standalone MPA pages
   "/RedoSan-Authenticity/Style_Web_Page/pages/home/index.html",
   "/RedoSan-Authenticity/Style_Web_Page/pages/watermark/index.html",
