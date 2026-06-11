@@ -100,9 +100,12 @@ describe('E2E — Fingerprint Page', () => {
     assert.ok(outputHtml.includes('SHA-256'), 'Should contain SHA-256 hash');
     assert.ok(outputHtml.includes('testimg.png'), 'Should show file name');
 
-    // Verify result is stored globally
-    const hasResult = await page.evaluate(() => !!window._fpResult);
-    assert.ok(hasResult, 'window._fpResult should be set');
+    // Verify result is stored
+    const hasResult = await page.evaluate(() => {
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      return getFn ? !!getFn('fpResult') : false;
+    });
+    assert.ok(hasResult, 'fpResult should be set in result store');
 
     await ctx.close();
   });

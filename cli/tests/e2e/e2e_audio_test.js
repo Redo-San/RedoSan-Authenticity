@@ -170,7 +170,8 @@ describe('E2E — Audio Watermark', () => {
       'LSB embed should succeed. Got: ' + embedHtml.substring(0, 100));
 
     const wmInfo = await page.evaluate(async () => {
-      const r = window._awmResult;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const r = getFn ? getFn('awmResult') : null;
       if (!r || !r.blob) return null;
       const resp = await fetch(URL.createObjectURL(r.blob));
       const blob = await resp.blob();
@@ -243,7 +244,8 @@ describe('E2E — Audio Watermark', () => {
     await page.waitForTimeout(1000);
 
     const wmInfo = await page.evaluate(async () => {
-      const r = window._awmResult;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const r = getFn ? getFn('awmResult') : null;
       if (!r || !r.blob) return null;
       const resp = await fetch(URL.createObjectURL(r.blob));
       const blob = await resp.blob();
@@ -330,7 +332,8 @@ describe('E2E — Audio Watermark', () => {
 
     // Fetch watermarked audio blob
     const wmInfo = await page.evaluate(async () => {
-      const r = window._awmResult;
+      const getFn = typeof getResult === 'function' ? getResult : window.getResult;
+      const r = getFn ? getFn('awmResult') : null;
       if (!r || !r.blob) return null;
       const resp = await fetch(URL.createObjectURL(r.blob));
       const blob = await resp.blob();
