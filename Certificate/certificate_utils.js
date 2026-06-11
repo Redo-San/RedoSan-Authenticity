@@ -36,7 +36,7 @@ function bufToDataURL(buf, mime) {
 }
 
 function hasNonLatinChars(str) {
-  return /[\u0080-\uFFFF]/.test(str);
+  return /[\u0100-\uFFFF]/.test(str);
 }
 
 // Render text with non-Latin chars (Arabic, etc.) as a canvas image for PDF
