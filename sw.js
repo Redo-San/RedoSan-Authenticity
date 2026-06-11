@@ -261,12 +261,18 @@ self.addEventListener("install", function () {
 });
 
 self.addEventListener("activate", function (event) {
-  event.waitUntil(Promise.all([
-    clients.claim(),
-    caches.keys().then(function (keys) {
-      return Promise.all(keys.map(function (k) { return caches.delete(k); }));
-    })
-  ]));
+  event.waitUntil(
+    Promise.all([
+      clients.claim(),
+      caches.keys().then(function (keys) {
+        return Promise.all(
+          keys.map(function (k) {
+            return caches.delete(k);
+          }),
+        );
+      }),
+    ]),
+  );
 });
 
 self.addEventListener("fetch", function (event) {
@@ -297,9 +303,14 @@ self.addEventListener("fetch", function (event) {
       // Normalize: if path has /pages/<extra>/<service>/index.html where extra isn't a page dir,
       // rewrite to /pages/<service>/index.html before checking whitelist
       var normalizedPath = path;
-      var pageMatch = lower.match(/\/pages\/[^/]+\/([a-z][a-z0-9_-]*)\/index\.html$/);
+      var pageMatch = lower.match(
+        /\/pages\/[^/]+\/([a-z][a-z0-9_-]*)\/index\.html$/,
+      );
       if (pageMatch && HTML_WHITELIST.indexOf(path) === -1) {
-        var altPath = "/RedoSan-Authenticity/Style_Web_Page/pages/" + pageMatch[1] + "/index.html";
+        var altPath =
+          "/RedoSan-Authenticity/Style_Web_Page/pages/" +
+          pageMatch[1] +
+          "/index.html";
         if (HTML_WHITELIST.indexOf(altPath) !== -1) {
           normalizedPath = altPath;
           // Also update path for future matching
@@ -341,9 +352,11 @@ self.addEventListener("fetch", function (event) {
       lower.endsWith(".yaml") ||
       lower.endsWith(".wasm")
     ) {
-      isBlocked = isBlocked || !EXT_WHITELIST.some(function(allowed) {
-        return event.request.url.indexOf(allowed) === 0;
-      });
+      isBlocked =
+        isBlocked ||
+        !EXT_WHITELIST.some(function (allowed) {
+          return event.request.url.indexOf(allowed) === 0;
+        });
     }
   }
 

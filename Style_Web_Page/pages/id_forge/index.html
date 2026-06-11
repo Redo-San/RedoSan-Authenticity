@@ -11,17 +11,17 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>ID Forge — RedoSan Authenticity</title>
-    <meta name="description" content="Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool." />
+    <meta
+      name="description"
+      content="Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool."
+    />
     <meta
       name="keywords"
       content="digital watermark, image fingerprint, steganography, LSB, DCT, DWT, SHA-256, BLAKE3, EXIF reader, photo metadata, OpenTimestamps, image hashing, perceptual hash, digital authenticity"
     />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="Redo_San" />
-    <meta
-      property="og:title"
-      content="ID Forge — RedoSan Authenticity"
-    />
+    <meta property="og:title" content="ID Forge — RedoSan Authenticity" />
     <meta
       property="og:description"
       content="Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool."
@@ -105,22 +105,15 @@
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../../style.css" />
+
     <link
       rel="stylesheet"
       href="../../responsive.css"
       media="print"
       onload="this.media='all'"
     />
-    <link
-      rel="stylesheet"
-      href="css/responsive.css"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript
-      ><link rel="stylesheet" href="../../responsive.css"
-    /></noscript>
+    <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -331,7 +324,10 @@
       <a href="../home/index.html" data-page="home" data-i18n="sidebar.home"
         >Home</a
       >
-      <a href="../watermark/index.html" data-page="watermark" data-i18n="sidebar.watermark"
+      <a
+        href="../watermark/index.html"
+        data-page="watermark"
+        data-i18n="sidebar.watermark"
         >Digital Watermark</a
       >
       <a
@@ -346,26 +342,58 @@
         data-i18n="sidebar.pixel_injection"
         >Pixel Injection</a
       >
-      <a href="../forensic/index.html" data-page="forensic" data-i18n="sidebar.forensic"
+      <a
+        href="../forensic/index.html"
+        data-page="forensic"
+        data-i18n="sidebar.forensic"
         >Forensic Analyzer</a
       >
-      <a href="../id_forge/index.html" data-page="id_forge" data-i18n="sidebar.id_forge">ID Forge</a>
-      <a href="../fingerprint/index.html" data-page="fingerprint" data-i18n="sidebar.fingerprint"
+      <a
+        href="../id_forge/index.html"
+        data-page="id_forge"
+        data-i18n="sidebar.id_forge"
+        >ID Forge</a
+      >
+      <a
+        href="../fingerprint/index.html"
+        data-page="fingerprint"
+        data-i18n="sidebar.fingerprint"
         >Fingerprint</a
       >
-      <a href="../metadata/index.html" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
-      <a href="../timestamp/index.html" data-page="timestamp" data-i18n="sidebar.timestamp"
+      <a
+        href="../metadata/index.html"
+        data-page="metadata"
+        data-i18n="sidebar.metadata"
+        >Metadata</a
+      >
+      <a
+        href="../timestamp/index.html"
+        data-page="timestamp"
+        data-i18n="sidebar.timestamp"
         >Timestamp</a
       >
-      <a href="../did/index.html" data-page="did" data-i18n="sidebar.did">DID Identity</a>
-      <a href="../c2pa/index.html" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
-      <a href="../certificate/index.html" data-page="certificate" data-i18n="sidebar.certificate"
+      <a href="../did/index.html" data-page="did" data-i18n="sidebar.did"
+        >DID Identity</a
+      >
+      <a href="../c2pa/index.html" data-page="c2pa" data-i18n="sidebar.c2pa"
+        >C2PA Provenance</a
+      >
+      <a
+        href="../certificate/index.html"
+        data-page="certificate"
+        data-i18n="sidebar.certificate"
         >Digital Passport</a
       >
-      <a href="../converter/index.html" data-page="converter" data-i18n="sidebar.converter"
+      <a
+        href="../converter/index.html"
+        data-page="converter"
+        data-i18n="sidebar.converter"
         >File Converter</a
       >
-      <a href="../removal-tools/index.html" data-page="removal-tools" data-i18n="sidebar.removal_tools"
+      <a
+        href="../removal-tools/index.html"
+        data-page="removal-tools"
+        data-i18n="sidebar.removal_tools"
         >Removal Tools</a
       >
       <a
@@ -405,7 +433,9 @@
           <div class="form-group">
             <label for="if-type">ID Type</label>
             <select id="if-type" onchange="idForgeShowInfo()">
-              <option value="swhid">SWHID (SHA1 &amp; SHA-256 — ISO/IEC 18670)</option>
+              <option value="swhid">
+                SWHID (SHA1 &amp; SHA-256 — ISO/IEC 18670)
+              </option>
               <option value="uuidv4">UUID v4 (Random — RFC 9562)</option>
               <option value="uuidv7">UUID v7 (Time-ordered — RFC 9562)</option>
               <option value="ulid">ULID (Crockford Base32)</option>
@@ -437,24 +467,103 @@
               oninput="idForgeUpdateCount()"
             />
           </div>
-          <div id="if-nanoid-wrapper" class="form-group" style="display:none">
-            <label for="if-nanoid-len" data-i18n="id_forge.nanoid_len">NanoID Length</label>
-            <input type="number" id="if-nanoid-len" value="21" min="4" max="256" />
+          <div id="if-nanoid-wrapper" class="form-group" style="display: none">
+            <label for="if-nanoid-len" data-i18n="id_forge.nanoid_len"
+              >NanoID Length</label
+            >
+            <input
+              type="number"
+              id="if-nanoid-len"
+              value="21"
+              min="4"
+              max="256"
+            />
           </div>
-          <div id="if-swhid-source-wrapper" style="display:none">
-            <div id="if-swhid-tabs" style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
-              <button type="button" class="btn-sm" data-swhid-tab="file" onclick="switchSwhidTab('file')" data-i18n="id_forge.swhid_file">Upload File</button>
-              <button type="button" class="btn-sm" data-swhid-tab="text" onclick="switchSwhidTab('text')" data-i18n="id_forge.swhid_text">Insert Text</button>
+          <div id="if-swhid-source-wrapper" style="display: none">
+            <div
+              id="if-swhid-tabs"
+              style="
+                display: flex;
+                gap: 4px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                type="button"
+                class="btn-sm"
+                data-swhid-tab="file"
+                onclick="switchSwhidTab('file')"
+                data-i18n="id_forge.swhid_file"
+              >
+                Upload File
+              </button>
+              <button
+                type="button"
+                class="btn-sm"
+                data-swhid-tab="text"
+                onclick="switchSwhidTab('text')"
+                data-i18n="id_forge.swhid_text"
+              >
+                Insert Text
+              </button>
             </div>
             <div id="if-swhid-file-wrapper" class="form-group">
-              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label">Upload .ots / fingerprint.json / .txt for SHA-1 &amp; SHA-256 hash</label>
+              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label"
+                >Upload .ots / fingerprint.json / .txt for SHA-1 &amp; SHA-256
+                hash</label
+              >
               <input type="file" id="if-swhid-file" accept=".ots,.json,.txt" />
-              <small style="display:block;margin-top:4px;opacity:0.7;font-size:0.75rem" data-i18n="id_forge.swhid_file_hint">Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)</small>
+              <small
+                style="
+                  display: block;
+                  margin-top: 4px;
+                  opacity: 0.7;
+                  font-size: 0.75rem;
+                "
+                data-i18n="id_forge.swhid_file_hint"
+                >Accepts: .ots (extracts SHA-256), .json (fingerprint — uses
+                SHA-1), .txt (hashes content)</small
+              >
             </div>
-            <div id="if-swhid-text-wrapper" class="form-group" style="display:none">
-              <label for="if-swhid-text" data-i18n="id_forge.swhid_text_label">Enter or paste the text to compute SWHID</label>
-              <textarea id="if-swhid-text" rows="3" placeholder="Type or paste the text content here..." oninput="validateSwhidText(this)" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:0.82rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;resize:vertical"></textarea>
-              <small id="if-swhid-text-warning" style="display:none;color:#e74c3c;margin-top:4px;font-size:0.75rem" data-i18n="id_forge.swhid_text_warning">English characters only. Non-English text will produce incorrect SWHID.</small>
+            <div
+              id="if-swhid-text-wrapper"
+              class="form-group"
+              style="display: none"
+            >
+              <label for="if-swhid-text" data-i18n="id_forge.swhid_text_label"
+                >Enter or paste the text to compute SWHID</label
+              >
+              <textarea
+                id="if-swhid-text"
+                rows="3"
+                placeholder="Type or paste the text content here..."
+                oninput="validateSwhidText(this)"
+                style="
+                  width: 100%;
+                  box-sizing: border-box;
+                  font-family: monospace;
+                  font-size: 0.82rem;
+                  background: var(--bg);
+                  color: var(--text);
+                  border: 1px solid var(--border);
+                  border-radius: var(--radius);
+                  padding: 8px;
+                  resize: vertical;
+                "
+              ></textarea>
+              <small
+                id="if-swhid-text-warning"
+                style="
+                  display: none;
+                  color: #e74c3c;
+                  margin-top: 4px;
+                  font-size: 0.75rem;
+                "
+                data-i18n="id_forge.swhid_text_warning"
+                >English characters only. Non-English text will produce
+                incorrect SWHID.</small
+              >
             </div>
           </div>
           <button
@@ -557,10 +666,24 @@
 
     <footer id="mainFooter">
       <div class="footer-links">
-        <a href="../about/index.html" data-page="about" data-i18n="nav.about">About</a>
-        <a href="../privacy/index.html" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
-        <a href="../contact/index.html" data-page="contact" data-i18n="nav.contact">Contact</a>
-        <a href="../social/index.html" data-page="social" data-i18n="nav.social">Social</a>
+        <a href="../about/index.html" data-page="about" data-i18n="nav.about"
+          >About</a
+        >
+        <a
+          href="../privacy/index.html"
+          data-page="privacy"
+          data-i18n="nav.privacy"
+          >Privacy</a
+        >
+        <a
+          href="../contact/index.html"
+          data-page="contact"
+          data-i18n="nav.contact"
+          >Contact</a
+        >
+        <a href="../social/index.html" data-page="social" data-i18n="nav.social"
+          >Social</a
+        >
       </div>
       <div class="footer-social">
         <span class="footer-social-label">🌐</span>
@@ -674,14 +797,50 @@
     <script src="../../../Assistant/assistant.js" defer></script>
     <script src="../../navigation.js" defer></script>
     <script src="../../../Watermark/utils.js?v=2" defer></script>
-    <script src="../../../Audio_Watermark/audio_watermark_core.js?v=7" defer></script>
-    <script src="../../../Audio_Watermark/audio_watermark.js?v=3" defer></script>
+    <script
+      src="../../../Audio_Watermark/audio_watermark_core.js?v=7"
+      defer
+    ></script>
+    <script
+      src="../../../Audio_Watermark/audio_watermark.js?v=3"
+      defer
+    ></script>
     <script src="../../../Watermark/watermark_core.js" defer></script>
-    <script>!function(){var e=location.href;if(/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(e)){var t=function(n){var a=document.querySelector(n);a&&a.remove()};t('.sidebar a[data-page="removal-tools"]'),t('.card[data-page="removal-tools"]'),t("#page-removal-tools")}else{var s=document.createElement("script");s.src="../../../Removal_Tools/removal_tools.js?v=4",s.defer=!0,document.body.appendChild(s)}}();</script>
-    <script src="../../../Pixel_Injection/watermark_core_advanced.js" defer></script>
-    <script src="../../../Pixel_Injection/watermark_core_transforms.js" defer></script>
-    <script src="../../../Pixel_Injection/watermark_core_algorithms.js" defer></script>
-    <script src="../../../Pixel_Injection/watermark_advanced_ui.js" defer></script>
+    <script>
+      !(function () {
+        var e = location.href;
+        if (/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(e)) {
+          var t = function (n) {
+            var a = document.querySelector(n);
+            a && a.remove();
+          };
+          t('.sidebar a[data-page="removal-tools"]'),
+            t('.card[data-page="removal-tools"]'),
+            t("#page-removal-tools");
+        } else {
+          var s = document.createElement("script");
+          (s.src = "../../../Removal_Tools/removal_tools.js?v=4"),
+            (s.defer = !0),
+            document.body.appendChild(s);
+        }
+      })();
+    </script>
+    <script
+      src="../../../Pixel_Injection/watermark_core_advanced.js"
+      defer
+    ></script>
+    <script
+      src="../../../Pixel_Injection/watermark_core_transforms.js"
+      defer
+    ></script>
+    <script
+      src="../../../Pixel_Injection/watermark_core_algorithms.js"
+      defer
+    ></script>
+    <script
+      src="../../../Pixel_Injection/watermark_advanced_ui.js"
+      defer
+    ></script>
     <script src="../../../Pixel_Injection/pixel_injection.js" defer></script>
     <script src="../../../Forensic/forensic_core.js" defer></script>
     <script src="../../../Forensic/forensic.js" defer></script>
@@ -690,10 +849,22 @@
       src="../../../Document_Watermark/document_watermark_core.js?v=3"
       defer
     ></script>
-    <script src="../../../Document_Watermark/document_watermark_report.js?v=1" defer></script>
-    <script src="../../../Document_Watermark/document_watermark_pdf.js?v=1" defer></script>
-    <script src="../../../Document_Watermark/text_extractor.js?v=5" defer></script>
-    <script src="../../../Document_Watermark/document_watermark.js?v=3" defer></script>
+    <script
+      src="../../../Document_Watermark/document_watermark_report.js?v=1"
+      defer
+    ></script>
+    <script
+      src="../../../Document_Watermark/document_watermark_pdf.js?v=1"
+      defer
+    ></script>
+    <script
+      src="../../../Document_Watermark/text_extractor.js?v=5"
+      defer
+    ></script>
+    <script
+      src="../../../Document_Watermark/document_watermark.js?v=3"
+      defer
+    ></script>
     <script src="../../../Watermark/watermark.js" defer></script>
     <script src="../../../Fingerprint/hashing_perceptual.js" defer></script>
     <script src="../../../Fingerprint/hashing.js" defer></script>
@@ -717,7 +888,9 @@
     <script src="../../../Certificate/certificate_epub.js" defer></script>
     <script src="../../../Certificate/certificate.js" defer></script>
     <script
-      src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js"`n      defer
+      src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js"
+      `n
+      defer
     ></script>
     <script src="../../../Converter/ffmpeg.min.js" defer></script>
     <script src="../../../Converter/converter.js" defer></script>
@@ -908,17 +1081,17 @@
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
+      document.addEventListener("DOMContentLoaded", function () {
         setTimeout(function () {
-          document.documentElement.style.overflow = '';
+          document.documentElement.style.overflow = "";
         }, 0);
-        document.documentElement.dataset.standalone = 'id_forge';
-        var modeSelect = document.getElementById('modeSelect');
-        if (modeSelect) modeSelect.style.display = 'none';
-        var simplified = document.getElementById('simplifiedMode');
-        if (simplified) simplified.style.display = 'none';
-        if (typeof showPage === 'function') {
-          showPage('id_forge');
+        document.documentElement.dataset.standalone = "id_forge";
+        var modeSelect = document.getElementById("modeSelect");
+        if (modeSelect) modeSelect.style.display = "none";
+        var simplified = document.getElementById("simplifiedMode");
+        if (simplified) simplified.style.display = "none";
+        if (typeof showPage === "function") {
+          showPage("id_forge");
         }
       });
     </script>
