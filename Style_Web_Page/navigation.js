@@ -124,7 +124,19 @@ function showPage(name) {
   
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
   if (!page && document.documentElement.dataset.standalone && name) {
-    window.location.href = '../' + name + '/index.html';
+    var safeName = encodeURIComponent(name);
+    var parts = window.location.pathname.split('/');
+    var pagesIdx = -1;
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] === 'pages') { pagesIdx = i; break; }
+    }
+    if (pagesIdx !== -1) {
+      parts = parts.slice(0, pagesIdx + 1);
+      parts.push(safeName, 'index.html');
+      window.location.href = parts.join('/');
+    } else {
+      window.location.href = './' + safeName + '/index.html';
+    }
     return;
   }
   
