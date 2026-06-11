@@ -70,6 +70,11 @@ var PAGE_TITLES = {
   converter: "File Converter — RedoSan Authenticity",
   id_forge: "ID Forge — RedoSan Authenticity",
   "document-watermark": "Document Watermark — RedoSan Authenticity",
+  search: "Search — RedoSan Authenticity",
+  about: "About — RedoSan Authenticity",
+  privacy: "Privacy Policy — RedoSan Authenticity",
+  contact: "Contact — RedoSan Authenticity",
+  social: "Social Links — RedoSan Authenticity",
 };
 var PAGE_DESCS = {
   home: "Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded.",
@@ -97,6 +102,11 @@ var PAGE_DESCS = {
     "Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool.",
   "document-watermark":
     "Embed and extract invisible watermarks in text documents using Zero-Width Characters, Unicode Homoglyphs, and Whitespace Replacement. Free online tool.",
+  search: "Search across all tools and pages. Free online tool.",
+  about: "Learn about RedoSan Authenticity — a free, open-source digital authenticity tool.",
+  privacy: "Privacy policy for RedoSan Authenticity — all processing is 100% client-side.",
+  contact: "Contact information for RedoSan Authenticity support.",
+  social: "Social links and community resources for RedoSan Authenticity.",
 };
 
 var PAGE_NAMES = Object.keys(PAGE_TITLES);
