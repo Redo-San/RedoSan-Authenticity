@@ -124,9 +124,7 @@ function showPage(name) {
   
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
   if (!page && document.documentElement.dataset.standalone && name) {
-    // Build path relative to the current page's directory
     var parts = window.location.pathname.split('/');
-    // Find the 'pages' directory in the path and use it as base
     var pagesIdx = -1;
     for (var i = 0; i < parts.length; i++) {
       if (parts[i] === 'pages') { pagesIdx = i; break; }
