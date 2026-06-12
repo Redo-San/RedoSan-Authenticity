@@ -24,6 +24,8 @@ function startServer(port) {
       }
       const requestPath = urlNoQ === '/' ? '/index.html' : urlNoQ;
       let filePath = path.resolve(ROOT, `.${requestPath}`);
+      const normalizedRoot = ROOT.endsWith(path.sep) ? ROOT : ROOT + path.sep;
+      if (!(filePath === ROOT || filePath.startsWith(normalizedRoot))) { res.writeHead(403); res.end(); return; }
       try {
         const stat = fs.statSync(filePath);
         if (stat.isDirectory()) filePath = path.join(filePath, 'index.html');
