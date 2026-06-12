@@ -1588,6 +1588,7 @@ footer {
   padding: 24px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .mode-select-bar {
   display: flex;

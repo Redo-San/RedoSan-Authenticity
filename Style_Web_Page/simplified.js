@@ -47,7 +47,8 @@ function setBodyOverflow(disable) {
 }
 
 function initMode() {
-  setBodyOverflow(true);
+  // Don't lock body scroll here — the mode overlay CSS has overflow-y: auto
+  // and setting overflow:hidden on <html> can prevent fixed children from scrolling on mobile.
 }
 
 function setMode(mode) {
@@ -123,7 +124,7 @@ function showModeSelect() {
   resetProfessionalForms();
   // Show mode overlay without page reload (keeps music playing)
   document.getElementById("modeSelect").style.display = "";
-  setBodyOverflow(true);
+  document.documentElement.style.overflow = "hidden";
   document.getElementById("simplifiedMode").style.display = "none";
   document.getElementById("mainNav").style.display = "none";
   document.getElementById("sidebar").style.display = "none";

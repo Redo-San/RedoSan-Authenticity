@@ -273,7 +273,16 @@ window.addEventListener("popstate", function (e) {
   document.getElementById("simplifiedMode").style.display = "none";
   var targetPage = (state && state.page) || "home";
   var el = document.getElementById("page-" + targetPage);
-  if (el) el.classList.add("active");
+  if (el) {
+    el.classList.add("active");
+  } else {
+    // Fallback: if target page element doesn't exist, show mode overlay
+    document.documentElement.style.overflow = "hidden";
+    hideAllExcept("modeSelect");
+    var modeSelect = document.getElementById("modeSelect");
+    if (modeSelect) modeSelect.style.display = "";
+    return;
+  }
   var navItem = document.querySelector(
     '.sidebar a[data-page="' + targetPage + '"]',
   );
