@@ -577,6 +577,7 @@ label,
     justify-content: flex-start;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .mode-select-box {
     padding: 0 16px 32px;

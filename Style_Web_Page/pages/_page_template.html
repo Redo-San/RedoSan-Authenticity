@@ -857,9 +857,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(function () {
-          document.documentElement.style.overflow = "";
-        }, 0);
+        document.documentElement.style.overflow = "";
         document.documentElement.dataset.standalone = "{PAGE_ID}";
         var modeSelect = document.getElementById("modeSelect");
         if (modeSelect) modeSelect.style.display = "none";
