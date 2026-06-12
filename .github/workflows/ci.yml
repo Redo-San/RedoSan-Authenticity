@@ -71,7 +71,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium 2>&1 || echo "Playwright install skipped (may already be cached)"
       - name: Run E2E tests
-        run: npm run test:e2e-nav && npm run test:e2e-watermark && npm run test:e2e-fingerprint && npm run test:e2e-features && npm run test:e2e-docw && npm run test:e2e-metadata && npm run test:e2e-timestamp && npm run test:e2e-misc && npm run test:e2e-pixel && npm run test:e2e-forensic && npm run test:e2e-conv-rem && npm run test:e2e-c2pa && npm run test:e2e-did && npm run test:e2e-cert && npm run test:e2e-audio
+        run: npm run test:e2e-all
       - name: npm audit
         run: npm audit
         continue-on-error: true
