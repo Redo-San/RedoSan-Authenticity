@@ -196,7 +196,7 @@
         >
           <span></span><span></span><span></span>
         </button>
-        <a href="../home/index.html" class="logo">
+        <a href="../home/index.html" data-page="home" class="logo">
           <div
             class="logo-img logo-white"
             role="img"
@@ -229,7 +229,7 @@
         </div>
         <button
           class="theme-btn mode-switch-btn"
-          onclick="window.location.href='../../../index.html'"
+          onclick="window.location.href='../../../../index.html'"
           title="Back to Home"
           aria-label="Back to Home"
         >
@@ -237,10 +237,10 @@
         </button>
       </div>
       <div class="nav-links">
-        <a href="../about/index.html" data-i18n="nav.about">About</a>
-        <a href="../privacy/index.html" data-i18n="nav.privacy">Privacy</a>
-        <a href="../contact/index.html" data-i18n="nav.contact">Contact</a>
-        <a href="../social/index.html" data-i18n="nav.social">Social</a>
+        <a href="../about/index.html" data-page="about" data-i18n="nav.about">About</a>
+        <a href="../privacy/index.html" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
+        <a href="../contact/index.html" data-page="contact" data-i18n="nav.contact">Contact</a>
+        <a href="../social/index.html" data-page="social" data-i18n="nav.social">Social</a>
         <div class="lang-dropdown">
           <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
             English
@@ -747,7 +747,7 @@
       </div>
       <div style="margin-top: 12px; font-size: 0.75rem">
         <a
-          href="../../../index.html?spa"
+          href="../../../../index.html?spa"
           style="color: var(--text-muted); text-decoration: none"
           data-i18n="footer.classic_mode"
           >Classic Version</a

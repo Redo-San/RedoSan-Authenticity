@@ -30,7 +30,7 @@ function closeSidebar() {
 // ── Page navigation ──
 document
   .querySelectorAll(
-    ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page]",
+    ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .logo[data-page]",
   )
   .forEach((a) => {
     a.addEventListener("click", (e) => {
@@ -220,6 +220,8 @@ function hideAllExcept(keep) {
 }
 
 window.addEventListener("popstate", function (e) {
+  // Standalone pages handle their own navigation — skip popstate
+  if (document.documentElement.dataset.standalone) return;
   var state = e.state;
   document
     .querySelectorAll(".page")
