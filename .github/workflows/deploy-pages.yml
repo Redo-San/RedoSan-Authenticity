@@ -36,35 +36,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
 
-      - name: Show repository root (debug)
-        run: |
-          echo "--- repo root listing ---"
-          ls -la
-          echo "--- du on repo root ---"
-          du -sh . || true
-
-      - name: Show Style_Web_Page contents (debug)
-        run: |
-          echo "--- Style_Web_Page listing ---"
-          ls -la Style_Web_Page || true
-          echo "--- du on Style_Web_Page ---"
-          du -sh Style_Web_Page || true
-
-      - name: Prepare Pages artifact
-        run: |
-          echo "Preparing site-artifact from Style_Web_Page"
-          rm -rf site-artifact || true
-          mkdir site-artifact
-          cp -r Style_Web_Page/* site-artifact/ || true
-          echo "--- site-artifact listing ---"
-          ls -la site-artifact || true
-          echo "--- du on site-artifact ---"
-          du -sh site-artifact || true
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
-          path: site-artifact
+          path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
