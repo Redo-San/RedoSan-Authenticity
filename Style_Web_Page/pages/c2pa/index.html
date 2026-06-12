@@ -1360,10 +1360,8 @@
           document.documentElement.style.overflow = "";
         }, 0);
         document.documentElement.dataset.standalone = "c2pa";
-        var modeSelect = document.getElementById("modeSelect");
-        if (modeSelect) modeSelect.style.display = "none";
-        var simplified = document.getElementById("simplifiedMode");
-        if (simplified) simplified.style.display = "none";
+        var app = document.getElementById("app");
+        if (app) app.style.display = "";
         if (typeof showPage === "function") {
           showPage("c2pa");
         }

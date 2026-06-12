@@ -33,6 +33,13 @@ Thumbs.db
 Removal_Tools/
 Style_Web_Page/pages/removal-tools/
 
+# Debug Playwright screenshots
+debug_rtl_*.png
+cli/tests/debug_*.js
+
+# One-time migration scripts
+scripts/fix_standalone_pages.js
+
 # Local agent memory (not committed)
 AGENTS.md
 STATUS.md
