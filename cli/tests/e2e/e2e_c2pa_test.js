@@ -6,7 +6,7 @@ const { startServer, stopServer } = require('./e2e_helpers');
 const path = require('path');
 const fs = require('fs');
 
-const PORT = 9895;
+const PORT = 9900;
 const BASE = `http://localhost:${PORT}`;
 const PNG_BUF = fs.readFileSync(path.resolve(__dirname, '..', 'fixtures', 'testimg.png'));
 
