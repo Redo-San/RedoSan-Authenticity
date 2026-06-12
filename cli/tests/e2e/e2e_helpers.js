@@ -23,6 +23,13 @@ function startServer(port) {
         res.writeHead(400); res.end(); return;
       }
       const requestPath = urlNoQ === '/' ? '/index.html' : urlNoQ;
+      const isSafePath =
+        requestPath.startsWith('/') &&
+        requestPath.indexOf('\0') === -1 &&
+        requestPath.indexOf('\\') === -1 &&
+        /^\/[A-Za-z0-9._\-\/]*$/.test(requestPath) &&
+        requestPath.split('/').every((seg) => seg !== '.' && seg !== '..');
+      if (!isSafePath) { res.writeHead(403); res.end(); return; }
       let filePath = path.resolve(ROOT, `.${requestPath}`);
       const normalizedRoot = ROOT.endsWith(path.sep) ? ROOT : ROOT + path.sep;
       if (!(filePath === ROOT || filePath.startsWith(normalizedRoot))) { res.writeHead(403); res.end(); return; }
