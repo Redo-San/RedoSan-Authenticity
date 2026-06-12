@@ -22,7 +22,8 @@ function startServer(port) {
         // doesn't throw from decodeURIComponent directly on req.url.
         const parsed = new URL(req.url, 'http://localhost');
         pathname = parsed.pathname || '/';
-      } catch (e) {
+      } catch (err) {
+        void err;
         res.writeHead(400); res.end(); return;
       }
 
@@ -44,7 +45,9 @@ function startServer(port) {
       try {
         const stat = fs.statSync(filePath);
         if (stat.isDirectory()) filePath = path.join(filePath, 'index.html');
-      } catch (e) {}
+      } catch (err) {
+        void err;
+      }
 
       // Resolve real paths to handle symlinks and final containment check.
       let realRoot;
@@ -52,14 +55,15 @@ function startServer(port) {
       try {
         realRoot = fs.realpathSync(ROOT);
         realFilePath = fs.realpathSync(filePath);
-      } catch (e) {
+      } catch (err) {
+        void err;
         res.writeHead(404); res.end(); return;
       }
       if (!(realFilePath === realRoot || realFilePath.startsWith(realRoot + path.sep))) { res.writeHead(403); res.end(); return; }
 
       const contentType = MIME[path.extname(realFilePath)] || 'application/octet-stream';
       fs.readFile(realFilePath, (err, data) => {
-        if (err) { res.writeHead(404); res.end(); return; }
+        if (err) { void err; res.writeHead(404); res.end(); return; }
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(data);
       });
