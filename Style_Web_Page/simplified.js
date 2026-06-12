@@ -116,18 +116,8 @@ function resetProfessionalForms() {
 }
 
 function switchMode() {
-  resetProfessionalForms();
-  // Show mode overlay without page reload (keeps music playing)
-  document.getElementById("modeSelect").style.display = "";
-  setBodyOverflow(true);
-  document.getElementById("simplifiedMode").style.display = "none";
-  document.getElementById("mainNav").style.display = "";
-  document.getElementById("sidebar").style.display = "";
-  document.getElementById("sidebarOverlay").style.display = "";
-  document.getElementById("app").style.display = "";
-  document.getElementById("mainFooter").style.display = "";
-  // Reset to home page
-  showPage("home");
+  // Redirect to MPA standalone home page
+  window.location.href = 'Style_Web_Page/pages/home/index.html';
 }
 
 function showModeSelect() {

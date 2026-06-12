@@ -57,17 +57,20 @@
       if (top !== self) {
         top.location = self.location;
       }
-      // Default to SPA (classic). Direct URL access to standalone pages still works.
-      // Append ?mpa to force MPA (new system). No redirect on file:// or localhost.
+      // Root URL = mode selection overlay (SPA only).
+      // Professional Mode → redirects to MPA standalone pages.
+      // Simplified Mode → uses SPA hash routing.
+      // Direct URLs to standalone pages work directly (no redirect).
+      // Append ?mpa to force MPA redirect. Append ?spa or ?classic to force SPA.
+      // No redirect on file:// or localhost.
       (function () {
         if (
           window.location.protocol === "file:" ||
           window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1" ||
-          window.location.search.indexOf("spa") !== -1 ||
-          window.location.search.indexOf("classic") !== -1
+          window.location.hostname === "127.0.0.1"
         )
           return;
+        // MPA redirect: ?mpa or when page has hash route
         if (window.location.search.indexOf("mpa") !== -1) {
           var base = "Style_Web_Page/pages/";
           var hash = window.location.hash;
@@ -329,7 +332,7 @@
           </div>
           <div
             class="mode-card mode-card-pro"
-            onclick="if(typeof setMode==='function')setMode('professional')"
+            onclick="window.location.href='Style_Web_Page/pages/home/index.html'"
           >
             <div class="mode-card-icon">⚙️</div>
             <h2 data-i18n="mode.professional_title">Professional Mode</h2>
