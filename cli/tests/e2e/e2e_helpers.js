@@ -24,11 +24,21 @@ function startServer(port) {
       }
       const requestPath = urlNoQ === '/' ? '/index.html' : urlNoQ;
       let filePath = path.resolve(ROOT, `.${requestPath}`);
-      const rel = path.relative(ROOT, filePath);
-      if (rel.startsWith('..') || path.isAbsolute(rel)) { res.writeHead(403); res.end(); return; }
-      try { const stat = fs.statSync(filePath); if (stat.isDirectory()) filePath = path.join(filePath, 'index.html'); } catch (e) {}
-      const contentType = MIME[path.extname(filePath)] || 'application/octet-stream';
-      fs.readFile(filePath, (err, data) => {
+      try {
+        const stat = fs.statSync(filePath);
+        if (stat.isDirectory()) filePath = path.join(filePath, 'index.html');
+      } catch (e) {}
+      let realRoot;
+      let realFilePath;
+      try {
+        realRoot = fs.realpathSync(ROOT);
+        realFilePath = fs.realpathSync(filePath);
+      } catch (e) {
+        res.writeHead(404); res.end(); return;
+      }
+      if (!(realFilePath === realRoot || realFilePath.startsWith(realRoot + path.sep))) { res.writeHead(403); res.end(); return; }
+      const contentType = MIME[path.extname(realFilePath)] || 'application/octet-stream';
+      fs.readFile(realFilePath, (err, data) => {
         if (err) { res.writeHead(404); res.end(); return; }
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(data);
