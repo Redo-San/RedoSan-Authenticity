@@ -116,8 +116,7 @@ function resetProfessionalForms() {
 }
 
 function switchMode() {
-  // Redirect to MPA standalone home page
-  window.location.href = 'Style_Web_Page/pages/home/index.html';
+  showModeSelect();
 }
 
 function showModeSelect() {
