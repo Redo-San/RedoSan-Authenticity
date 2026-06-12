@@ -34,8 +34,6 @@ document
   )
   .forEach((a) => {
     a.addEventListener("click", (e) => {
-      // In standalone mode, let the browser follow the href link
-      if (document.documentElement.dataset.standalone) return;
       e.preventDefault();
       showPage(a.dataset.page);
       if (a.closest(".sidebar")) closeSidebar();
@@ -49,7 +47,6 @@ document.querySelectorAll(".simple-nav-links a[data-page]").forEach((a) => {
 });
 document.querySelectorAll(".card[data-page]").forEach((c) => {
   c.addEventListener("click", (e) => {
-    if (document.documentElement.dataset.standalone) return;
     e.preventDefault();
     showPage(c.dataset.page);
   });
