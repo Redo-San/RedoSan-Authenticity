@@ -1137,9 +1137,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(function () {
-          document.documentElement.style.overflow = "";
-        }, 0);
+        document.documentElement.style.overflow = "";
         document.documentElement.dataset.standalone = "did";
         var app = document.getElementById("app");
         if (app) app.style.display = "";
