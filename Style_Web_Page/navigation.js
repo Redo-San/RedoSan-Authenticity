@@ -164,7 +164,7 @@ function showPage(name) {
   var isProfessional =
     document.getElementById("mainNav") &&
     document.getElementById("mainNav").style.display !== "none";
-  if (isProfessional) {
+  if (isProfessional && !document.documentElement.dataset.standalone) {
     try {
       if (name && name !== "home") {
         history.pushState({ page: name }, "", "#/" + name);
