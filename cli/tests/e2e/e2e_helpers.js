@@ -16,27 +16,37 @@ const MIME = {
 function startServer(port) {
   return new Promise((resolve) => {
     server = http.createServer((req, res) => {
-      let urlNoQ;
+      let pathname;
       try {
-        urlNoQ = decodeURIComponent(req.url).split('?')[0];
+        // Use the WHATWG URL parser with a base so malformed percent-encoding
+        // doesn't throw from decodeURIComponent directly on req.url.
+        const parsed = new URL(req.url, 'http://localhost');
+        pathname = parsed.pathname || '/';
       } catch (e) {
         res.writeHead(400); res.end(); return;
       }
-      const requestPath = urlNoQ === '/' ? '/index.html' : urlNoQ;
-      const isSafePath =
-        requestPath.startsWith('/') &&
-        requestPath.indexOf('\0') === -1 &&
-        requestPath.indexOf('\\') === -1 &&
-        /^\/[A-Za-z0-9._\-\/]*$/.test(requestPath) &&
-        requestPath.split('/').every((seg) => seg !== '.' && seg !== '..');
-      if (!isSafePath) { res.writeHead(403); res.end(); return; }
+
+      const requestPath = pathname === '/' ? '/index.html' : pathname;
+
+      // Basic sanity checks: reject null bytes and ensure leading slash. Backslashes are normalized by path.resolve on POSIX,
+      // but we explicitly reject backslashes to avoid confusion on Windows vs POSIX inputs.
+      if (requestPath.indexOf('\0') !== -1 || requestPath.indexOf('\\') !== -1 || !requestPath.startsWith('/')) {
+        res.writeHead(403); res.end(); return;
+      }
+
+      // Resolve candidate path anchored at ROOT. Prefix with '.' so leading '/' doesn't make it absolute.
       let filePath = path.resolve(ROOT, `.${requestPath}`);
+
+      // Fast containment check: ensure the resolved path is within ROOT (platform-aware).
       const normalizedRoot = ROOT.endsWith(path.sep) ? ROOT : ROOT + path.sep;
       if (!(filePath === ROOT || filePath.startsWith(normalizedRoot))) { res.writeHead(403); res.end(); return; }
+
       try {
         const stat = fs.statSync(filePath);
         if (stat.isDirectory()) filePath = path.join(filePath, 'index.html');
       } catch (e) {}
+
+      // Resolve real paths to handle symlinks and final containment check.
       let realRoot;
       let realFilePath;
       try {
@@ -46,6 +56,7 @@ function startServer(port) {
         res.writeHead(404); res.end(); return;
       }
       if (!(realFilePath === realRoot || realFilePath.startsWith(realRoot + path.sep))) { res.writeHead(403); res.end(); return; }
+
       const contentType = MIME[path.extname(realFilePath)] || 'application/octet-stream';
       fs.readFile(realFilePath, (err, data) => {
         if (err) { res.writeHead(404); res.end(); return; }
