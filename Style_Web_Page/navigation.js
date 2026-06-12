@@ -329,11 +329,8 @@ document.addEventListener("DOMContentLoaded", function () {
   var deferredReplace = function () {
     if (!history.state || !history.state.modeOverlay) {
       try {
-        history.replaceState(
-          { modeOverlay: true },
-          "",
-          window.location.pathname.replace(/\/+$/, "") + "/",
-        );
+        var p = window.location.pathname.replace(/\/+$/, "").replace(/\/index\.html$/i, "");
+        history.replaceState({ modeOverlay: true }, "", p + "/");
       } catch (e) {}
     }
     document.removeEventListener("pointerdown", deferredReplace);
