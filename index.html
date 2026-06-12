@@ -57,8 +57,8 @@
       if (top !== self) {
         top.location = self.location;
       }
-      // Default to MPA (new system) on web servers only.
-      // Append ?spa or ?classic for SPA (classic). No redirect on file:// or localhost.
+      // Default to SPA (classic). Direct URL access to standalone pages still works.
+      // Append ?mpa to force MPA (new system). No redirect on file:// or localhost.
       (function () {
         if (
           window.location.protocol === "file:" ||
@@ -68,16 +68,18 @@
           window.location.search.indexOf("classic") !== -1
         )
           return;
-        var base = "Style_Web_Page/pages/";
-        var hash = window.location.hash;
-        if (hash && hash.indexOf("#/") === 0) {
-          var page = hash.substring(2).split("?")[0].split("#")[0];
-          if (page) {
-            window.location.replace(base + page + "/index.html");
-            return;
+        if (window.location.search.indexOf("mpa") !== -1) {
+          var base = "Style_Web_Page/pages/";
+          var hash = window.location.hash;
+          if (hash && hash.indexOf("#/") === 0) {
+            var page = hash.substring(2).split("?")[0].split("#")[0];
+            if (page) {
+              window.location.replace(base + page + "/index.html");
+              return;
+            }
           }
+          window.location.replace(base + "home/index.html");
         }
-        window.location.replace(base + "home/index.html");
       })();
     </script>
     <link
