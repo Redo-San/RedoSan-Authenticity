@@ -16,10 +16,16 @@ const MIME = {
 function startServer(port) {
   return new Promise((resolve) => {
     server = http.createServer((req, res) => {
-      const urlNoQ = decodeURIComponent(req.url).split('?')[0];
-      let filePath = path.join(ROOT, urlNoQ === '/' ? '/index.html' : urlNoQ);
-      filePath = path.normalize(filePath);
-      if (!filePath.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
+      let urlNoQ;
+      try {
+        urlNoQ = decodeURIComponent(req.url).split('?')[0];
+      } catch (e) {
+        res.writeHead(400); res.end(); return;
+      }
+      const requestPath = urlNoQ === '/' ? '/index.html' : urlNoQ;
+      let filePath = path.resolve(ROOT, `.${requestPath}`);
+      const rel = path.relative(ROOT, filePath);
+      if (rel.startsWith('..') || path.isAbsolute(rel)) { res.writeHead(403); res.end(); return; }
       try { const stat = fs.statSync(filePath); if (stat.isDirectory()) filePath = path.join(filePath, 'index.html'); } catch (e) {}
       const contentType = MIME[path.extname(filePath)] || 'application/octet-stream';
       fs.readFile(filePath, (err, data) => {
