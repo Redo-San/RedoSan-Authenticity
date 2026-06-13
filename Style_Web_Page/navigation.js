@@ -484,14 +484,14 @@ window.addEventListener("pageshow", function (ev) {
     var st = history.state;
     if (st && st.page) {
       document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
-      var pg = document.getElementById("page-" + st.page);
-      if (pg) pg.classList.add("active");
+      var pg2 = document.getElementById("page-" + st.page);
+      if (pg2) pg2.classList.add("active");
       var nav = document.querySelector('.sidebar a[data-page="' + st.page + '"]');
       if (nav) nav.classList.add("active");
     } else if (st && st.staticPage) {
       document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
-      var pg = document.getElementById("page-" + st.staticPage);
-      if (pg) pg.classList.add("active");
+      var pg3 = document.getElementById("page-" + st.staticPage);
+      if (pg3) pg3.classList.add("active");
     } else if (!st || st.modeOverlay) {
       // Mode overlay — show it
       var modeEl = document.getElementById("modeSelect");
