@@ -308,9 +308,7 @@ self.addEventListener("fetch", function (event) {
       );
       if (pageMatch && HTML_WHITELIST.indexOf(path) === -1) {
         var altPath =
-          "/RedoSan-Authenticity/Style/pages/" +
-          pageMatch[1] +
-          "/index.html";
+          "/RedoSan-Authenticity/Style/pages/" + pageMatch[1] + "/index.html";
         if (HTML_WHITELIST.indexOf(altPath) !== -1) {
           normalizedPath = altPath;
           // Also update path for future matching

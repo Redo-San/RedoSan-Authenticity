@@ -144,9 +144,7 @@
       media="print"
       onload="this.media='all'"
     />
-    <noscript
-      ><link rel="stylesheet" href="Style/responsive.css"
-    /></noscript>
+    <noscript><link rel="stylesheet" href="Style/responsive.css" /></noscript>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -2751,10 +2749,12 @@
 
           <!-- User info (required) -->
           <div class="form-group">
-            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.user_info_label"
-              >Your Information
-              <span style="color: var(--danger)">*</span></p
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.user_info_label"
             >
+              Your Information <span style="color: var(--danger)">*</span>
+            </p>
             <div
               style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
             >
@@ -2831,7 +2831,12 @@
 
           <!-- Social links -->
           <div class="form-group">
-            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.social_label">Social Links (optional)</p>
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.social_label"
+            >
+              Social Links (optional)
+            </p>
             <div
               style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
             >
@@ -2904,7 +2909,12 @@
 
           <!-- Music links -->
           <div class="form-group" id="cert-music-group">
-            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.music_label">Music Links (optional)</p>
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.music_label"
+            >
+              Music Links (optional)
+            </p>
             <div style="margin: 8px 0">
               <label class="cert-music-toggle">
                 <input
@@ -2991,9 +3001,12 @@
 
           <!-- Result files (upload from other sections) -->
           <div class="form-group">
-            <p style="margin:0 0 8px 0;font-weight:600" data-i18n="cert.results_label"
-              >Tool Results (upload from other sections)</p
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.results_label"
             >
+              Tool Results (upload from other sections)
+            </p>
             <div
               style="
                 display: grid;
@@ -3462,9 +3475,15 @@
               >
             </div>
 
-            <div class="form-group" style="margin-top:12px">
-              <label for="rt-password" data-i18n="rt.password_label">Watermark Password</label>
-              <input type="password" id="rt-password" placeholder="Enter password used during embedding" />
+            <div class="form-group" style="margin-top: 12px">
+              <label for="rt-password" data-i18n="rt.password_label"
+                >Watermark Password</label
+              >
+              <input
+                type="password"
+                id="rt-password"
+                placeholder="Enter password used during embedding"
+              />
             </div>
 
             <button
@@ -3529,7 +3548,9 @@
           <div class="form-group">
             <label for="if-type">ID Type</label>
             <select id="if-type" onchange="idForgeShowInfo()">
-              <option value="swhid">SWHID (SHA1 &amp; SHA-256 — ISO/IEC 18670)</option>
+              <option value="swhid">
+                SWHID (SHA1 &amp; SHA-256 — ISO/IEC 18670)
+              </option>
               <option value="uuidv4">UUID v4 (Random — RFC 9562)</option>
               <option value="uuidv7">UUID v7 (Time-ordered — RFC 9562)</option>
               <option value="ulid">ULID (Crockford Base32)</option>
@@ -3561,24 +3582,103 @@
               oninput="idForgeUpdateCount()"
             />
           </div>
-          <div id="if-nanoid-wrapper" class="form-group" style="display:none">
-            <label for="if-nanoid-len" data-i18n="id_forge.nanoid_len">NanoID Length</label>
-            <input type="number" id="if-nanoid-len" value="21" min="4" max="256" />
+          <div id="if-nanoid-wrapper" class="form-group" style="display: none">
+            <label for="if-nanoid-len" data-i18n="id_forge.nanoid_len"
+              >NanoID Length</label
+            >
+            <input
+              type="number"
+              id="if-nanoid-len"
+              value="21"
+              min="4"
+              max="256"
+            />
           </div>
-          <div id="if-swhid-source-wrapper" style="display:none">
-            <div id="if-swhid-tabs" style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
-              <button type="button" class="btn-sm" data-swhid-tab="file" onclick="switchSwhidTab('file')" data-i18n="id_forge.swhid_file">Upload File</button>
-              <button type="button" class="btn-sm" data-swhid-tab="text" onclick="switchSwhidTab('text')" data-i18n="id_forge.swhid_text">Insert Text</button>
+          <div id="if-swhid-source-wrapper" style="display: none">
+            <div
+              id="if-swhid-tabs"
+              style="
+                display: flex;
+                gap: 4px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                type="button"
+                class="btn-sm"
+                data-swhid-tab="file"
+                onclick="switchSwhidTab('file')"
+                data-i18n="id_forge.swhid_file"
+              >
+                Upload File
+              </button>
+              <button
+                type="button"
+                class="btn-sm"
+                data-swhid-tab="text"
+                onclick="switchSwhidTab('text')"
+                data-i18n="id_forge.swhid_text"
+              >
+                Insert Text
+              </button>
             </div>
             <div id="if-swhid-file-wrapper" class="form-group">
-              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label">Upload .ots / fingerprint.json / .txt for SHA-1 &amp; SHA-256 hash</label>
+              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label"
+                >Upload .ots / fingerprint.json / .txt for SHA-1 &amp; SHA-256
+                hash</label
+              >
               <input type="file" id="if-swhid-file" accept=".ots,.json,.txt" />
-              <small style="display:block;margin-top:4px;opacity:0.7;font-size:0.75rem" data-i18n="id_forge.swhid_file_hint">Accepts: .ots (extracts SHA-256), .json (fingerprint — uses SHA-1), .txt (hashes content)</small>
+              <small
+                style="
+                  display: block;
+                  margin-top: 4px;
+                  opacity: 0.7;
+                  font-size: 0.75rem;
+                "
+                data-i18n="id_forge.swhid_file_hint"
+                >Accepts: .ots (extracts SHA-256), .json (fingerprint — uses
+                SHA-1), .txt (hashes content)</small
+              >
             </div>
-            <div id="if-swhid-text-wrapper" class="form-group" style="display:none">
-              <label for="if-swhid-text" data-i18n="id_forge.swhid_text_label">Enter or paste the text to compute SWHID</label>
-              <textarea id="if-swhid-text" rows="3" placeholder="Type or paste the text content here..." oninput="validateSwhidText(this)" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:0.82rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px;resize:vertical"></textarea>
-              <small id="if-swhid-text-warning" style="display:none;color:#e74c3c;margin-top:4px;font-size:0.75rem" data-i18n="id_forge.swhid_text_warning">English characters only. Non-English text will produce incorrect SWHID.</small>
+            <div
+              id="if-swhid-text-wrapper"
+              class="form-group"
+              style="display: none"
+            >
+              <label for="if-swhid-text" data-i18n="id_forge.swhid_text_label"
+                >Enter or paste the text to compute SWHID</label
+              >
+              <textarea
+                id="if-swhid-text"
+                rows="3"
+                placeholder="Type or paste the text content here..."
+                oninput="validateSwhidText(this)"
+                style="
+                  width: 100%;
+                  box-sizing: border-box;
+                  font-family: monospace;
+                  font-size: 0.82rem;
+                  background: var(--bg);
+                  color: var(--text);
+                  border: 1px solid var(--border);
+                  border-radius: var(--radius);
+                  padding: 8px;
+                  resize: vertical;
+                "
+              ></textarea>
+              <small
+                id="if-swhid-text-warning"
+                style="
+                  display: none;
+                  color: #e74c3c;
+                  margin-top: 4px;
+                  font-size: 0.75rem;
+                "
+                data-i18n="id_forge.swhid_text_warning"
+                >English characters only. Non-English text will produce
+                incorrect SWHID.</small
+              >
             </div>
           </div>
           <button
@@ -4526,7 +4626,25 @@
     <script src="Audio_Watermark/audio_watermark_core.js?v=7" defer></script>
     <script src="Audio_Watermark/audio_watermark.js?v=3" defer></script>
     <script src="Watermark/watermark_core.js" defer></script>
-    <script>!function(){var e=location.href;if(/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(e)){var t=function(n){var a=document.querySelector(n);a&&a.remove()};t('.sidebar a[data-page="removal-tools"]'),t('.card[data-page="removal-tools"]'),t("#page-removal-tools")}else{var s=document.createElement("script");s.src="Removal_Tools/removal_tools.js?v=4",s.defer=!0,document.body.appendChild(s)}}();</script>
+    <script>
+      !(function () {
+        var e = location.href;
+        if (/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(e)) {
+          var t = function (n) {
+            var a = document.querySelector(n);
+            a && a.remove();
+          };
+          t('.sidebar a[data-page="removal-tools"]'),
+            t('.card[data-page="removal-tools"]'),
+            t("#page-removal-tools");
+        } else {
+          var s = document.createElement("script");
+          (s.src = "Removal_Tools/removal_tools.js?v=4"),
+            (s.defer = !0),
+            document.body.appendChild(s);
+        }
+      })();
+    </script>
     <script src="Pixel_Injection/watermark_core_advanced.js" defer></script>
     <script src="Pixel_Injection/watermark_core_transforms.js" defer></script>
     <script src="Pixel_Injection/watermark_core_algorithms.js" defer></script>
@@ -4539,8 +4657,14 @@
       src="Document_Watermark/document_watermark_core.js?v=3"
       defer
     ></script>
-    <script src="Document_Watermark/document_watermark_report.js?v=1" defer></script>
-    <script src="Document_Watermark/document_watermark_pdf.js?v=1" defer></script>
+    <script
+      src="Document_Watermark/document_watermark_report.js?v=1"
+      defer
+    ></script>
+    <script
+      src="Document_Watermark/document_watermark_pdf.js?v=1"
+      defer
+    ></script>
     <script src="Document_Watermark/text_extractor.js?v=5" defer></script>
     <script src="Document_Watermark/document_watermark.js?v=3" defer></script>
     <script src="Watermark/watermark.js" defer></script>
