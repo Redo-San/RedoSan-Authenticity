@@ -226,7 +226,7 @@ jobs:
             "--- style.css (key parts) ---" \
             "$(head -400 style.css)" \
             "--- responsive.css ---" \
-            "$(head -200 Style_Web_Page/responsive.css)" \
+            "$(head -200 Style/responsive.css)" \
             "" \
             "Output concise bullet points in English with file:line.")
           ESCAPED=$(echo "$PROMPT" | jq -Rs '.')

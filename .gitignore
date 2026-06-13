@@ -31,7 +31,7 @@ Thumbs.db
 
 # Removal Tools (local-only)
 Removal_Tools/
-Style_Web_Page/pages/removal-tools/
+Style/pages/removal-tools/
 
 # Debug Playwright screenshots
 debug_*.png
