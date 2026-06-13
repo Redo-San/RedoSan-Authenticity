@@ -15,8 +15,8 @@ watermark:
 cli:
   - any: ['cli/**/*']
 i18n:
-  - any: ['Style_Web_Page/lang/**/*']
+  - any: ['Style/lang/**/*']
 css:
-  - any: ['Style_Web_Page/*.css']
+  - any: ['Style/*.css']
 ci:
   - any: ['.github/workflows/**/*']
