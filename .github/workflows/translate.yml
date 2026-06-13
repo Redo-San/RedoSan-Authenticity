@@ -17,7 +17,7 @@ jobs:
     if: github.actor != 'github-actions[bot]'
 
     runs-on: ubuntu-latest
-    # All write operations use GH_PAT, so GITHUB_TOKEN needs no extra permissions
+    permissions: {}
     steps:
       - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:

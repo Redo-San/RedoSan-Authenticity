@@ -18,7 +18,6 @@ var fs = require("fs");
 var path = require("path");
 
 var LANG_DIR = path.join(__dirname, "..", "Style", "lang");
-var SOURCE_LANG = "en";
 var LANGS = ["ar", "fr", "de", "es", "zh", "ja", "ko"];
 
 var LANG_NAMES = {
@@ -280,6 +279,7 @@ async function main() {
     try {
       target = readJson(filePath);
     } catch (e) {
+      void e;
       target = {};
     }
     var missing = findMissing(en, target);
