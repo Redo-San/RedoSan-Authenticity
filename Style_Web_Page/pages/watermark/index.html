@@ -1105,7 +1105,8 @@
         if (!document.querySelector) return;
         document.addEventListener("mouseenter", function(e){
           var t = e.target;
-          var a = t.tagName === "A" ? t : t.closest("a");
+            if (t.nodeType !== 1) return;
+            var a = t.tagName === "A" ? t : t.closest("a");
           if (!a || !a.href || !a.href.startsWith(location.origin)) return;
           if (a.href.indexOf("/pages/") === -1) return;
           var l = document.createElement("link");
