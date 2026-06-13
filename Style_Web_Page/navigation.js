@@ -111,6 +111,8 @@ var PAGE_DESCS = {
 var PAGE_NAMES = Object.keys(PAGE_TITLES);
 
 function showPage(name) {
+  // Clear any residual no-scroll from mode overlay transitions
+  document.body.classList.remove("no-scroll");
   // Validate name against whitelist to prevent CSS selector / path injection
   if (name && PAGE_NAMES.indexOf(name) === -1) return;
   const page = document.getElementById("page-" + name);
@@ -142,7 +144,12 @@ function showPage(name) {
     .querySelectorAll(".sidebar a[data-page]")
     .forEach((a) => a.classList.remove("active"));
   
-  if (page) page.classList.add("active");
+  if (page) {
+    page.classList.add("active");
+    // Ensure app container is visible (page section is inside #app)
+    var app = document.getElementById("app");
+    if (app && app.style.display === "none") app.style.display = "";
+  }
   if (name) {
     const nav = document.querySelector('.sidebar a[data-page="' + name + '"]');
     if (nav) nav.classList.add("active");
@@ -193,7 +200,7 @@ function showStaticPage(name) {
   var mainNav = document.getElementById("mainNav");
   if (mainNav) mainNav.style.display = "none";
   var app = document.getElementById("app");
-  if (app) app.style.display = "none";
+  if (app) app.style.display = "";
   var sidebar = document.getElementById("sidebar");
   if (sidebar) sidebar.style.display = "none";
   var sidebarOverlay = document.getElementById("sidebarOverlay");
@@ -253,11 +260,19 @@ window.addEventListener("popstate", function (e) {
     .querySelectorAll(".sidebar a[data-page]")
     .forEach((a) => a.classList.remove("active"));
 
-  // Static page from overlay/simplified → restore the mode overlay
+  // Static page from overlay/simplified → show the static page (don't go back to overlay)
   if (state && state.staticPage) {
-    hideAllExcept(null);
-    document.getElementById("modeSelect").style.display = "";
-    document.documentElement.style.overflow = "hidden";
+    document.body.classList.remove("no-scroll");
+    document.documentElement.style.overflow = "";
+    var targetPage = state.staticPage;
+    var el = document.getElementById("page-" + targetPage);
+    if (el) {
+      el.classList.add("active");
+    } else {
+      hideAllExcept(null);
+      document.getElementById("modeSelect").style.display = "";
+      document.documentElement.style.overflow = "hidden";
+    }
     return;
   }
 
@@ -452,15 +467,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // bfcache restore: re-activate page section (back/forward navigation)
 window.addEventListener("pageshow", function (ev) {
-  if (ev.persisted && document.documentElement.dataset.standalone) {
-    document.documentElement.style.overflow = "";
-    var loader = document.getElementById("page-loader");
-    if (loader) loader.classList.add("page-loader--hidden");
-    // Re-activate the page section if it lost .active during freeze
+  if (!ev.persisted) return;
+  document.documentElement.style.overflow = "";
+  document.body.classList.remove("no-scroll");
+  var loader = document.getElementById("page-loader");
+  if (loader) loader.classList.add("page-loader--hidden");
+  if (document.documentElement.dataset.standalone) {
+    // MPA standalone: re-activate the page section if it lost .active during freeze
     var id = document.documentElement.dataset.standalone;
     var pg = document.getElementById("page-" + id);
     if (pg && !pg.classList.contains("active")) {
       pg.classList.add("active");
+    }
+  } else {
+    // SPA: restore page section from history state
+    var st = history.state;
+    if (st && st.page) {
+      document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
+      var pg = document.getElementById("page-" + st.page);
+      if (pg) pg.classList.add("active");
+      var nav = document.querySelector('.sidebar a[data-page="' + st.page + '"]');
+      if (nav) nav.classList.add("active");
+    } else if (st && st.staticPage) {
+      document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
+      var pg = document.getElementById("page-" + st.staticPage);
+      if (pg) pg.classList.add("active");
+    } else if (!st || st.modeOverlay) {
+      // Mode overlay — show it
+      var modeEl = document.getElementById("modeSelect");
+      if (modeEl) modeEl.style.display = "";
     }
   }
 });

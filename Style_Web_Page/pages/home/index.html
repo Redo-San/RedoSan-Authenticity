@@ -203,7 +203,7 @@
         <a
           href="../home/index.html"
           class="logo"
-          onclick="var m=document.getElementById('modeSelect');var a=document.getElementById('app');if(m)m.style.display='';if(a)a.style.display='none';event.preventDefault()"
+          onclick="if(!document.documentElement.dataset.standalone){var m=document.getElementById('modeSelect');var a=document.getElementById('app');if(m)m.style.display='';if(a)a.style.display='none';event.preventDefault()}"
         >
           <div
             class="logo-img logo-white"
