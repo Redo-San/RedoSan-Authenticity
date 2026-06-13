@@ -5,24 +5,24 @@ var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
 function sanitizeHtml(html) {
   var allowed = /^(h[23]|p|ul|li|a|br|strong|em|b|i|code|pre|blockquote|ol|span|div)$/i;
-  return html.replace(/<[^>]*>/g, function(m) {
-    var name = m.replace(/<\/?([^\s>/]+).*/, '$1');
-    if (!allowed.test(name)) return '';
-    // Strip all event handlers (onclick, onerror, etc.) — single, double, and unquoted
-    // Matches any attribute starting with "on" to catch event handlers (codeql: safe as intent is broad)
-    var clean = m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
-    // Block javascript: in href — all quote styles, formaction
-    clean = clean.replace(/\s+(href|formaction)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, function(attr) {
-      var val = attr.replace(/^[^=]+=\s*/, '');
-      var quote = val.charAt(0);
-      if (quote === '"' || quote === "'") val = val.slice(1, -1);
-      if (val.toLowerCase().indexOf('javascript:') === 0) return '';
-      if (val.toLowerCase().indexOf('data:') === 0) return '';
-      if (val.toLowerCase().indexOf('vbscript:') === 0) return '';
-      return attr;
+  // Use repeated replace until no more tags found (handles nested/encoded attempts)
+  var prev;
+  do {
+    prev = html;
+    html = html.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, function(m, name) {
+      if (!allowed.test(name)) return '';
+      var clean = m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+      clean = clean.replace(/\s+(href|formaction)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, function(attr) {
+        var val = attr.replace(/^[^=]+=\s*/, '');
+        var quote = val.charAt(0);
+        if (quote === '"' || quote === "'") val = val.slice(1, -1);
+        if (/^(javascript|data|vbscript|blob):/i.test(val)) return '';
+        return attr;
+      });
+      return clean;
     });
-    return clean;
-  });
+  } while (html !== prev);
+  return html;
 }
 
 // Browser language fallback mapping
