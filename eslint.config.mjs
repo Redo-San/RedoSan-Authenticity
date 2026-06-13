@@ -7,29 +7,29 @@ export default [
     languageOptions: {
       ecmaVersion: 2022,
       globals: {
-        ...globals.es2022
-      }
+        ...globals.es2022,
+      },
     },
     rules: {
       "no-undef": "off",
-      "no-unused-vars": "warn"
-    }
+      "no-unused-vars": "warn",
+    },
   },
   {
     files: ["cli/**", "scripts/**"],
     languageOptions: {
       globals: {
-        ...globals.node
-      }
-    }
+        ...globals.node,
+      },
+    },
   },
   {
     files: ["sw.js"],
     languageOptions: {
       globals: {
-        ...globals.serviceworker
-      }
-    }
+        ...globals.serviceworker,
+      },
+    },
   },
   {
     ignores: [
@@ -38,7 +38,7 @@ export default [
       "**/*.min.js",
       "C2PA/",
       "Pixel_Injection/watermark_core_advanced.js",
-      "Style/lang/i18n-data.js"
-    ]
-  }
+      "Style/lang/i18n-data.js",
+    ],
+  },
 ];
