@@ -38,7 +38,7 @@ export default [
       "**/*.min.js",
       "C2PA/",
       "Pixel_Injection/watermark_core_advanced.js",
-      "Style_Web_Page/lang/i18n-data.js"
+      "Style/lang/i18n-data.js"
     ]
   }
 ];

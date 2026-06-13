@@ -71,15 +71,15 @@ var DANGEROUS_EXTS = [
 // Any .js request not in this list is treated as a threat.
 var JS_WHITELIST = [
   "/RedoSan-Authenticity/sw.js",
-  "/RedoSan-Authenticity/Style_Web_Page/shared_validation.js",
-  "/RedoSan-Authenticity/Style_Web_Page/shared.js",
-  "/RedoSan-Authenticity/Style_Web_Page/simplified_countries.js",
-  "/RedoSan-Authenticity/Style_Web_Page/simplified_helpers.js",
-  "/RedoSan-Authenticity/Style_Web_Page/simplified_renderers.js",
-  "/RedoSan-Authenticity/Style_Web_Page/simplified.js",
-  "/RedoSan-Authenticity/Style_Web_Page/navigation.js",
-  "/RedoSan-Authenticity/Style_Web_Page/i18n.js",
-  "/RedoSan-Authenticity/Style_Web_Page/search.js",
+  "/RedoSan-Authenticity/Style/shared_validation.js",
+  "/RedoSan-Authenticity/Style/shared.js",
+  "/RedoSan-Authenticity/Style/simplified_countries.js",
+  "/RedoSan-Authenticity/Style/simplified_helpers.js",
+  "/RedoSan-Authenticity/Style/simplified_renderers.js",
+  "/RedoSan-Authenticity/Style/simplified.js",
+  "/RedoSan-Authenticity/Style/navigation.js",
+  "/RedoSan-Authenticity/Style/i18n.js",
+  "/RedoSan-Authenticity/Style/search.js",
   "/RedoSan-Authenticity/Certificate/certificate.js",
   "/RedoSan-Authenticity/Certificate/certificate_docx.js",
   "/RedoSan-Authenticity/Certificate/certificate_epub.js",
@@ -119,15 +119,15 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Forensic/forensic.js",
   "/RedoSan-Authenticity/Forensic/forensic_core.js",
   "/RedoSan-Authenticity/ID_Forge/id_forge.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ar.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-de.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-en.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-es.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-fr.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ja.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-ko.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data-zh.js",
-  "/RedoSan-Authenticity/Style_Web_Page/lang/i18n-data.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-ar.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-de.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-en.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-es.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-fr.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-ja.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-ko.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data-zh.js",
+  "/RedoSan-Authenticity/Style/lang/i18n-data.js",
   "/RedoSan-Authenticity/Document_Watermark/document_watermark_core.js",
   "/RedoSan-Authenticity/Document_Watermark/document_watermark_report.js",
   "/RedoSan-Authenticity/Document_Watermark/document_watermark_pdf.js",
@@ -140,9 +140,9 @@ var JS_WHITELIST = [
 // Whitelist of legitimate CSS files served by the site.
 // Any .css request not in this list is treated as a threat.
 var CSS_WHITELIST = [
-  "/RedoSan-Authenticity/Style_Web_Page/style.css",
-  "/RedoSan-Authenticity/Style_Web_Page/rtl.css",
-  "/RedoSan-Authenticity/Style_Web_Page/responsive.css",
+  "/RedoSan-Authenticity/Style/style.css",
+  "/RedoSan-Authenticity/Style/rtl.css",
+  "/RedoSan-Authenticity/Style/responsive.css",
 ];
 
 // Whitelist of legitimate YML/YAML files (GitHub workflows, configs).
@@ -205,28 +205,28 @@ var YML_WHITELIST = [
 var HTML_WHITELIST = [
   "/RedoSan-Authenticity/index.html",
   "/RedoSan-Authenticity/404.html",
-  "/RedoSan-Authenticity/Style_Web_Page/index.html",
+  "/RedoSan-Authenticity/Style/index.html",
   // Standalone MPA pages
-  "/RedoSan-Authenticity/Style_Web_Page/pages/home/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/watermark/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/audio-watermark/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/fingerprint/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/search/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/pixel-injection/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/metadata/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/timestamp/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/did/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/c2pa/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/certificate/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/forensic/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/converter/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/removal-tools/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/id_forge/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/document-watermark/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/about/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/privacy/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/contact/index.html",
-  "/RedoSan-Authenticity/Style_Web_Page/pages/social/index.html",
+  "/RedoSan-Authenticity/Style/pages/home/index.html",
+  "/RedoSan-Authenticity/Style/pages/watermark/index.html",
+  "/RedoSan-Authenticity/Style/pages/audio-watermark/index.html",
+  "/RedoSan-Authenticity/Style/pages/fingerprint/index.html",
+  "/RedoSan-Authenticity/Style/pages/search/index.html",
+  "/RedoSan-Authenticity/Style/pages/pixel-injection/index.html",
+  "/RedoSan-Authenticity/Style/pages/metadata/index.html",
+  "/RedoSan-Authenticity/Style/pages/timestamp/index.html",
+  "/RedoSan-Authenticity/Style/pages/did/index.html",
+  "/RedoSan-Authenticity/Style/pages/c2pa/index.html",
+  "/RedoSan-Authenticity/Style/pages/certificate/index.html",
+  "/RedoSan-Authenticity/Style/pages/forensic/index.html",
+  "/RedoSan-Authenticity/Style/pages/converter/index.html",
+  "/RedoSan-Authenticity/Style/pages/removal-tools/index.html",
+  "/RedoSan-Authenticity/Style/pages/id_forge/index.html",
+  "/RedoSan-Authenticity/Style/pages/document-watermark/index.html",
+  "/RedoSan-Authenticity/Style/pages/about/index.html",
+  "/RedoSan-Authenticity/Style/pages/privacy/index.html",
+  "/RedoSan-Authenticity/Style/pages/contact/index.html",
+  "/RedoSan-Authenticity/Style/pages/social/index.html",
 ];
 
 // Whitelist of known external libraries loaded from CDNs.
@@ -308,7 +308,7 @@ self.addEventListener("fetch", function (event) {
       );
       if (pageMatch && HTML_WHITELIST.indexOf(path) === -1) {
         var altPath =
-          "/RedoSan-Authenticity/Style_Web_Page/pages/" +
+          "/RedoSan-Authenticity/Style/pages/" +
           pageMatch[1] +
           "/index.html";
         if (HTML_WHITELIST.indexOf(altPath) !== -1) {
