@@ -1249,7 +1249,7 @@ function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
         hashingUrl =
           location.href
             .substring(0, location.href.lastIndexOf("/"))
-            .replace("/Style_Web_Page", "") + "/Fingerprint/hashing.js";
+            .replace("/Style", "") + "/Fingerprint/hashing.js";
       }
       fetch(hashingUrl)
         .then(function (resp) {

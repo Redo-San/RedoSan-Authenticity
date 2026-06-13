@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const PAGES_DIR = path.resolve(__dirname, '../Style_Web_Page/pages');
+const PAGES_DIR = path.resolve(__dirname, '../Style/pages');
 // All 20 page directories
 const PAGES = [
   'home', 'watermark', 'audio-watermark', 'fingerprint', 'search',
