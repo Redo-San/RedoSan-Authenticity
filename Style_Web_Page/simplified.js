@@ -43,7 +43,8 @@ var simpleUserInfo = {
 };
 
 function setBodyOverflow(disable) {
-  document.documentElement.style.overflow = disable ? "hidden" : "";
+  if (disable) document.body.classList.add("no-scroll");
+  else document.body.classList.remove("no-scroll");
 }
 
 function initMode() {

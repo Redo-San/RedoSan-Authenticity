@@ -28,29 +28,31 @@ function closeSidebar() {
 }
 
 // ── Page navigation ──
-document
-  .querySelectorAll(
-    ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .logo[data-page]",
-  )
-  .forEach((a) => {
+if (!isStandalone) {
+  document
+    .querySelectorAll(
+      ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .logo[data-page]",
+    )
+    .forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        showPage(a.dataset.page);
+        if (a.closest(".sidebar")) closeSidebar();
+      });
+    });
+  document.querySelectorAll(".simple-nav-links a[data-page]").forEach((a) => {
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      showPage(a.dataset.page);
-      if (a.closest(".sidebar")) closeSidebar();
+      showStaticPage(a.dataset.page);
     });
   });
-document.querySelectorAll(".simple-nav-links a[data-page]").forEach((a) => {
-  a.addEventListener("click", (e) => {
-    e.preventDefault();
-    showStaticPage(a.dataset.page);
+  document.querySelectorAll(".card[data-page]").forEach((c) => {
+    c.addEventListener("click", (e) => {
+      e.preventDefault();
+      showPage(c.dataset.page);
+    });
   });
-});
-document.querySelectorAll(".card[data-page]").forEach((c) => {
-  c.addEventListener("click", (e) => {
-    e.preventDefault();
-    showPage(c.dataset.page);
-  });
-});
+}
 
 var PAGE_TITLES = {
   home: "RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool",
@@ -111,15 +113,11 @@ var PAGE_NAMES = Object.keys(PAGE_TITLES);
 function showPage(name) {
   // Validate name against whitelist to prevent CSS selector / path injection
   if (name && PAGE_NAMES.indexOf(name) === -1) return;
-  document
-    .querySelectorAll(".page")
-    .forEach((p) => p.classList.remove("active"));
-  document
-    .querySelectorAll(".sidebar a[data-page]")
-    .forEach((a) => a.classList.remove("active"));
   const page = document.getElementById("page-" + name);
   
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
+  // NOTE: we check this BEFORE removing .active from current page, so bfcache
+  // preserves the visible state (fixes back-button blank page)
   if (!page && document.documentElement.dataset.standalone && name) {
     var safeName = encodeURIComponent(name);
     var parts = window.location.pathname.split('/');
@@ -136,6 +134,13 @@ function showPage(name) {
     }
     return;
   }
+  
+  document
+    .querySelectorAll(".page")
+    .forEach((p) => p.classList.remove("active"));
+  document
+    .querySelectorAll(".sidebar a[data-page]")
+    .forEach((a) => a.classList.remove("active"));
   
   if (page) page.classList.add("active");
   if (name) {
@@ -196,7 +201,7 @@ function showStaticPage(name) {
   var footer = document.getElementById("mainFooter");
   if (footer) footer.style.display = "none";
 
-  document.documentElement.style.overflow = "";
+  document.body.classList.remove("no-scroll");
   showPage(name);
   try {
     history.pushState({ staticPage: name, fromOverlay: true }, "", "#/" + name);
@@ -220,8 +225,26 @@ function hideAllExcept(keep) {
 }
 
 window.addEventListener("popstate", function (e) {
-  // Standalone pages handle their own navigation — skip popstate
-  if (document.documentElement.dataset.standalone) return;
+  // Standalone pages handle their own navigation — handle by redirecting to the standalone URL
+  if (document.documentElement.dataset.standalone) {
+    var st = e.state || {};
+    var target = st.page || "home";
+    // Build base path up to /pages/
+    var parts = window.location.pathname.split("/");
+    var pagesIdx = -1;
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] === 'pages') { pagesIdx = i; break; }
+    }
+    var base;
+    if (pagesIdx !== -1) {
+      base = parts.slice(0, pagesIdx + 1).join('/');
+    } else {
+      base = window.location.pathname.replace(/\/[^\/]*$/, "");
+    }
+    var safeName = encodeURIComponent(target);
+    window.location.href = base + '/' + safeName + '/index.html';
+    return;
+  }
   var state = e.state;
   document
     .querySelectorAll(".page")
@@ -241,7 +264,7 @@ window.addEventListener("popstate", function (e) {
   // Mode overlay → re-show the selection screen
   if (!state || state.modeOverlay) {
     if (typeof resetProfessionalForms === "function") resetProfessionalForms();
-    document.documentElement.style.overflow = "hidden";
+    document.body.classList.add("no-scroll");
     hideAllExcept("modeSelect");
     document.getElementById("sidebarOverlay").style.display = "none";
     return;
@@ -249,7 +272,7 @@ window.addEventListener("popstate", function (e) {
 
   // Within-a-mode → restore the correct mode
   if (state.modeSet) {
-    document.documentElement.style.overflow = "";
+    document.body.classList.remove("no-scroll");
     document.getElementById("modeSelect").style.display = "none";
     document.getElementById("sidebarOverlay").style.display = "none";
     if (state.modeSet === "simplified") {
@@ -268,7 +291,7 @@ window.addEventListener("popstate", function (e) {
   }
 
   // Page state (professional mode navigation)
-  document.documentElement.style.overflow = "";
+  document.body.classList.remove("no-scroll");
   document.getElementById("modeSelect").style.display = "none";
   document.getElementById("simplifiedMode").style.display = "none";
   var targetPage = (state && state.page) || "home";
@@ -425,4 +448,19 @@ function switchC2paTab(mode) {
 // Re-evaluate standalone status after DOMContentLoaded (data-standalone is set by MPA inline script)
 document.addEventListener("DOMContentLoaded", function () {
   isStandalone = document.documentElement && document.documentElement.dataset.standalone;
+});
+
+// bfcache restore: re-activate page section (back/forward navigation)
+window.addEventListener("pageshow", function (ev) {
+  if (ev.persisted && document.documentElement.dataset.standalone) {
+    document.documentElement.style.overflow = "";
+    var loader = document.getElementById("page-loader");
+    if (loader) loader.classList.add("page-loader--hidden");
+    // Re-activate the page section if it lost .active during freeze
+    var id = document.documentElement.dataset.standalone;
+    var pg = document.getElementById("page-" + id);
+    if (pg && !pg.classList.contains("active")) {
+      pg.classList.add("active");
+    }
+  }
 });
