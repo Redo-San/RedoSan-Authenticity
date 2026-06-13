@@ -300,7 +300,7 @@ window.addEventListener("popstate", function (e) {
     el.classList.add("active");
   } else {
     // Fallback: if target page element doesn't exist, show mode overlay
-    document.body.classList.add("no-scroll");
+    document.documentElement.style.overflow = "hidden";
     hideAllExcept("modeSelect");
     var modeSelect = document.getElementById("modeSelect");
     if (modeSelect) modeSelect.style.display = "";
