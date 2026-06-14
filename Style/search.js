@@ -72,6 +72,9 @@ function siteSearch() {
 
   // Standalone page without #search-output → redirect
   if (!document.getElementById("search-output")) {
+    try {
+      sessionStorage.setItem("searchReferrer", window.location.href);
+    } catch (e) {}
     var parts = window.location.pathname.split("/");
     var pagesIdx = -1;
     for (var i = 0; i < parts.length; i++) {

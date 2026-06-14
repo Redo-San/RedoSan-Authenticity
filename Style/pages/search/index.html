@@ -426,9 +426,25 @@
     <main class="container" id="app">
       <!-- Search Results -->
       <section id="page-search" class="page">
-        <h2 style="margin-bottom: 20px" data-i18n="search.heading">
-          Search Results
-        </h2>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="searchGoBack();return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="search.heading">
+            Search Results
+          </h2>
+        </div>
         <div id="search-output"></div>
       </section>
     </main>
@@ -914,8 +930,40 @@
           }
         }
       });
+      function searchGoBack() {
+        try {
+          var url = sessionStorage.getItem("searchReferrer");
+          if (url) {
+            sessionStorage.removeItem("searchReferrer");
+            window.location.href = url;
+            return;
+          }
+        } catch (e) {}
+        if (
+          document.referrer &&
+          document.referrer.indexOf(window.location.origin) === 0
+        ) {
+          window.location.href = document.referrer;
+          return;
+        }
+        // Fallback: go to home
+        var parts = window.location.pathname.split("/");
+        var pagesIdx = -1;
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i] === "pages") {
+            pagesIdx = i;
+            break;
+          }
+        }
+        if (pagesIdx !== -1) {
+          parts = parts.slice(0, pagesIdx + 1);
+          parts.push("home", "index.html");
+          window.location.href = parts.join("/");
+        } else {
+          window.location.href = "../home/index.html";
+        }
+      }
     </script>
-    <!-- Early page activation (runs before deferred scripts load) -->
     <script>
       (function () {
         var _id = document.documentElement.dataset.standalone;
