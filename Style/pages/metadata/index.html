@@ -186,7 +186,9 @@
   </head>
   <body>
     <!-- Page loading spinner -->
-    <div id="page-loader" aria-hidden="true"><div class="loader-spinner"></div></div>
+    <div id="page-loader" aria-hidden="true">
+      <div class="loader-spinner"></div>
+    </div>
     <!-- Navigation bar -->
     <nav id="mainNav" class="nav-header">
       <div class="nav-left">
@@ -239,10 +241,24 @@
         </button>
       </div>
       <div class="nav-links">
-        <a href="../about/index.html" data-page="about" data-i18n="nav.about">About</a>
-        <a href="../privacy/index.html" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
-        <a href="../contact/index.html" data-page="contact" data-i18n="nav.contact">Contact</a>
-        <a href="../social/index.html" data-page="social" data-i18n="nav.social">Social</a>
+        <a href="../about/index.html" data-page="about" data-i18n="nav.about"
+          >About</a
+        >
+        <a
+          href="../privacy/index.html"
+          data-page="privacy"
+          data-i18n="nav.privacy"
+          >Privacy</a
+        >
+        <a
+          href="../contact/index.html"
+          data-page="contact"
+          data-i18n="nav.contact"
+          >Contact</a
+        >
+        <a href="../social/index.html" data-page="social" data-i18n="nav.social"
+          >Social</a
+        >
         <div class="lang-dropdown">
           <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
             English
@@ -612,15 +628,15 @@
           >Classic Version</a
         >
       </div>
-    
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </footer>
 
     <!-- Music Player -->
@@ -634,7 +650,6 @@
     >
       🎵
     </button>
-
 
     <script src="../../lang/i18n-data-ar.js" defer></script>
     <script src="../../lang/i18n-data-de.js" defer></script>
@@ -946,9 +961,9 @@
         }
       });
     </script>
-      <!-- Early page activation (runs before deferred scripts load) -->
+    <!-- Early page activation (runs before deferred scripts load) -->
     <script>
-      (function(){
+      (function () {
         var _id = document.documentElement.dataset.standalone;
         if (_id) {
           var _pg = document.getElementById("page-" + _id);
@@ -960,22 +975,25 @@
     </script>
     <!-- Inline prefetch: preload pages on hover for instant navigation -->
     <script>
-      (function(){
+      (function () {
         if (!document.querySelector) return;
-        document.addEventListener("mouseenter", function(e){
-          var t = e.target;
+        document.addEventListener(
+          "mouseenter",
+          function (e) {
+            var t = e.target;
             if (t.nodeType !== 1) return;
             var a = t.tagName === "A" ? t : t.closest("a");
-          if (!a || !a.href || !a.href.startsWith(location.origin)) return;
-          if (a.href.indexOf("/pages/") === -1) return;
-          var l = document.createElement("link");
-          l.rel = "prefetch";
-          l.href = a.href;
-          l.as = "document";
-          document.head.appendChild(l);
-        }, {passive:true});
+            if (!a || !a.href || !a.href.startsWith(location.origin)) return;
+            if (a.href.indexOf("/pages/") === -1) return;
+            var l = document.createElement("link");
+            l.rel = "prefetch";
+            l.href = a.href;
+            l.as = "document";
+            document.head.appendChild(l);
+          },
+          { passive: true },
+        );
       })();
     </script>
-
-</body>
+  </body>
 </html>

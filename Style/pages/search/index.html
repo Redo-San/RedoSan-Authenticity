@@ -936,10 +936,12 @@
           origin = window.location.protocol + "//" + window.location.host;
         }
         var ref = document.referrer;
-        var isSameOrigin = ref && (
-          ref === origin ||
-          ref.indexOf(origin + "/") === 0
-        );
+        var isSameOrigin = false;
+        if (ref) {
+          try {
+            isSameOrigin = new URL(ref).origin === origin;
+          } catch (_) {}
+        }
         if (isSameOrigin) {
           if (window.history.length > 1) {
             history.back();
