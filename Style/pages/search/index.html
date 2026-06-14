@@ -931,21 +931,25 @@
         }
       });
       function searchGoBack() {
-        // Use history.back() — the cursor moves to the previous entry
-        // (the service page the user searched from). Then that page's own
-        // back button naturally goes to the page before it (typically home).
-        if (
-          document.referrer &&
-          document.referrer.indexOf(window.location.origin) === 0
-        ) {
-          history.back();
+        var ref = document.referrer;
+        var isSameOrigin = ref && (
+          ref === window.location.origin ||
+          ref.indexOf(window.location.origin + "/") === 0
+        );
+        if (isSameOrigin) {
+          if (window.history.length > 1) {
+            // Normal flow: came from another page on the site
+            history.back();
+            return;
+          }
+          // New tab / middle-click: referrer exists but no history to go back to
+          window.location.href = ref;
           return;
         }
-        if (window.history.length > 1) {
-          history.back();
-          return;
-        }
-        // Fallback: go to home
+        // No same-origin referrer (direct access or external): go to home
+        _goHome();
+      }
+      function _goHome() {
         var parts = window.location.pathname.split("/");
         var pagesIdx = -1;
         for (var i = 0; i < parts.length; i++) {
