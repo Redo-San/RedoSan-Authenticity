@@ -26,7 +26,15 @@ var PAGES = [
 ];
 
 function stripTags(s) {
-  return s.replace(/<[^>]*>/g, "").replace(/</g, "");
+  var out = "";
+  var inTag = false;
+  for (var i = 0; i < s.length; i++) {
+    var ch = s.charAt(i);
+    if (ch === "<") { inTag = true; continue; }
+    if (ch === ">") { inTag = false; continue; }
+    if (!inTag) out += ch;
+  }
+  return out;
 }
 
 function extractTitle(content) {
