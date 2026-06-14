@@ -108,7 +108,12 @@ var PAGE_DESCS = {
   social: "Social links and community resources for RedoSan Authenticity.",
 };
 
-var PAGE_NAMES = Object.keys(PAGE_TITLES);
+var PAGE_NAMES = [
+  "about", "audio-watermark", "c2pa", "certificate", "contact",
+  "converter", "did", "document-watermark", "fingerprint", "forensic",
+  "home", "id_forge", "metadata", "pixel-injection", "privacy",
+  "removal-tools", "search", "social", "timestamp", "watermark",
+];
 
 function showPage(name) {
   // Clear any residual no-scroll from mode overlay transitions

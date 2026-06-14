@@ -87,7 +87,7 @@ function siteSearch() {
         parts.join("/") + "?q=" + encodeURIComponent(query);
     } else {
       window.location.href =
-        "./search/index.html?q=" + encodeURIComponent(query);
+        "../search/index.html?q=" + encodeURIComponent(query);
     }
     return;
   }
@@ -146,26 +146,6 @@ function _executeSearch(query, idx, isMpa) {
 
 function showSearchResults(query, results, isMpa) {
   var output = document.getElementById("search-output");
-  if (!output) {
-    var parts = window.location.pathname.split("/");
-    var pagesIdx = -1;
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i] === "pages") {
-        pagesIdx = i;
-        break;
-      }
-    }
-    if (pagesIdx !== -1) {
-      parts = parts.slice(0, pagesIdx + 1);
-      parts.push("search", "index.html");
-      window.location.href =
-        parts.join("/") + "?q=" + encodeURIComponent(query);
-    } else {
-      window.location.href =
-        "./search/index.html?q=" + encodeURIComponent(query);
-    }
-    return;
-  }
   var lang = i18n && i18n.data ? i18n.data : {};
 
   var html = "";
@@ -194,7 +174,7 @@ function showSearchResults(query, results, isMpa) {
       results.length +
       "</strong></p>";
     results.forEach(function (r) {
-      var pageName = r.page.id.replace("page-", "");
+      var pageName = r.page.id;
       var safeName = escHtml(pageName);
       if (isMpa) {
         var url = r.page.url || "../" + safeName + "/";
