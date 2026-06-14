@@ -14,15 +14,22 @@
 // ── Site Search ──
 var SEARCH_INDEX = null;
 
+// Detect whether we are in the SPA (index.html) or MPA (standalone page)
+function _isMpaSearch() {
+  return (
+    document.documentElement.dataset.standalone === "search" ||
+    !document.getElementById("page-home")
+  );
+}
+
+// SPA index builder — scans all .page sections in index.html
 function buildSearchIndex() {
   if (SEARCH_INDEX) return SEARCH_INDEX;
   SEARCH_INDEX = [];
   document.querySelectorAll(".page").forEach(function (page) {
-    var id = page.id;
+    var id = page.id.replace("page-", "");
     var heading = page.querySelector("h2");
-    var title = heading
-      ? heading.textContent || heading.innerText
-      : id.replace("page-", "");
+    var title = heading ? heading.textContent || heading.innerText : id;
     var text = page.textContent || page.innerText || "";
     var keywords = [];
     var cards = page.querySelectorAll(".card h3");
@@ -34,12 +41,36 @@ function buildSearchIndex() {
   return SEARCH_INDEX;
 }
 
+// MPA index loader — fetches the pre-built search-index.json
+var _mpaIndexPromise = null;
+
+function _loadMpaIndex() {
+  if (_mpaIndexPromise) return _mpaIndexPromise;
+  // On the MPA search page, the JSON is in the same directory
+  _mpaIndexPromise = fetch("search-index.json")
+    .then(function (r) {
+      if (!r.ok) throw new Error("Failed to load search index");
+      return r.json();
+    })
+    .then(function (data) {
+      SEARCH_INDEX = data;
+      return data;
+    })
+    .catch(function () {
+      SEARCH_INDEX = [];
+      return [];
+    });
+  return _mpaIndexPromise;
+}
+
 function siteSearch() {
   var input = document.getElementById("searchInput");
   var query = input.value.trim().toLowerCase();
   if (!query) return;
 
-  // Standalone page without #search-output → redirect to search page with query
+  var isMpa = _isMpaSearch();
+
+  // Standalone page without #search-output → redirect
   if (!document.getElementById("search-output")) {
     var parts = window.location.pathname.split("/");
     var pagesIdx = -1;
@@ -61,7 +92,19 @@ function siteSearch() {
     return;
   }
 
-  var idx = buildSearchIndex();
+  if (isMpa) {
+    // MPA mode: load index from JSON, then search
+    _loadMpaIndex().then(function (idx) {
+      _executeSearch(query, idx, true);
+    });
+  } else {
+    // SPA mode: use DOM-based index
+    var idx = buildSearchIndex();
+    _executeSearch(query, idx, false);
+  }
+}
+
+function _executeSearch(query, idx, isMpa) {
   var results = [];
 
   idx.forEach(function (page) {
@@ -73,9 +116,11 @@ function siteSearch() {
     if (lowerTitle === query) score += 100;
     else if (lowerTitle.indexOf(query) !== -1) score += 50;
 
-    page.keywords.forEach(function (k) {
-      if (k.toLowerCase().indexOf(query) !== -1) score += 30;
-    });
+    if (page.keywords) {
+      page.keywords.forEach(function (k) {
+        if (k.toLowerCase().indexOf(query) !== -1) score += 30;
+      });
+    }
 
     var pos = lowerText.indexOf(query);
     if (pos !== -1) {
@@ -96,10 +141,10 @@ function siteSearch() {
     return b.score - a.score;
   });
 
-  showSearchResults(query, results);
+  showSearchResults(query, results, isMpa);
 }
 
-function showSearchResults(query, results) {
+function showSearchResults(query, results, isMpa) {
   var output = document.getElementById("search-output");
   if (!output) {
     var parts = window.location.pathname.split("/");
@@ -151,8 +196,15 @@ function showSearchResults(query, results) {
     results.forEach(function (r) {
       var pageName = r.page.id.replace("page-", "");
       var safeName = escHtml(pageName);
-      html +=
-        '<a href="#" data-page="' + safeName + '" class="search-result-item">';
+      if (isMpa) {
+        var url = r.page.url || "../" + safeName + "/";
+        html += '<a href="' + escHtml(url) + '" class="search-result-item">';
+      } else {
+        html +=
+          '<a href="#" data-page="' +
+          safeName +
+          '" class="search-result-item">';
+      }
       html +=
         '<div class="search-result-title">' + escHtml(r.page.title) + "</div>";
       if (r.snippet) {
@@ -169,6 +221,8 @@ function showSearchResults(query, results) {
 }
 
 function navigateToSearchResult(pageName) {
+  // In MPA mode, navigation is handled by direct <a href> — this is only for SPA
+  if (_isMpaSearch()) return;
   showPage(pageName);
   document.getElementById("searchInput").value = "";
 }
@@ -181,6 +235,11 @@ function closeSearchResults() {
 document.addEventListener("click", function (e) {
   var item = e.target.closest(".search-result-item");
   if (item) {
+    // MPA links have direct href — let browser navigate naturally
+    if (item.getAttribute("href") && item.getAttribute("href") !== "#") {
+      return;
+    }
+    // SPA links use data-page
     var pageName = item.getAttribute("data-page");
     if (
       pageName &&

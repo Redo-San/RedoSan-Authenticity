@@ -906,7 +906,10 @@
           var inp = document.getElementById("searchInput");
           if (inp) {
             inp.value = q;
-            if (typeof siteSearch === "function") siteSearch();
+            // Wait briefly for search index to load before executing
+            setTimeout(function () {
+              if (typeof siteSearch === "function") siteSearch();
+            }, 50);
           }
         }
       });
