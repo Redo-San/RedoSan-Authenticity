@@ -144,7 +144,7 @@ async function swhid() {
     return await computeSwhidFromFile(fileInput.files[0]);
   }
   if (textInput && textInput.value.trim()) {
-    return await computeSwhidFromText(sanitizeText(textInput.value.trim()));
+    return await computeSwhidFromText(textInput.value.trim());
   }
   var bytes = new Uint8Array(64);
   crypto.getRandomValues(bytes);
