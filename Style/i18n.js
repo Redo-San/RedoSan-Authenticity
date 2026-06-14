@@ -5,21 +5,25 @@ var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
 function sanitizeHtml(html) {
   var allowed = /^(h[23]|p|ul|li|a|br|strong|em|b|i|code|pre|blockquote|ol|span|div)$/i;
-  // Use repeated replace until no more tags found (handles nested/encoded attempts)
   var prev;
   do {
     prev = html;
     html = html.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, function(m, name) {
       if (!allowed.test(name)) return '';
-      var clean = m.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
-      clean = clean.replace(/\s+(href|formaction)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, function(attr) {
-        var val = attr.replace(/^[^=]+=\s*/, '');
+      var result = '<' + name;
+      var attrs = m.match(/\s+[a-zA-Z][a-zA-Z0-9-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/g) || [];
+      for (var i = 0; i < attrs.length; i++) {
+        var a = attrs[i];
+        var aname = a.match(/\s+([a-zA-Z][a-zA-Z0-9-]*)/)[1];
+        if (/^on/i.test(aname)) continue;
+        var val = a.replace(/^[^=]+=\s*/, '');
         var quote = val.charAt(0);
         if (quote === '"' || quote === "'") val = val.slice(1, -1);
-        if (/^(javascript|data|vbscript|blob):/i.test(val)) return '';
-        return attr;
-      });
-      return clean;
+        if (/^(javascript|data|vbscript|blob):/i.test(val)) continue;
+        result += a;
+      }
+      result += '>';
+      return result;
     });
   } while (html !== prev);
   return html;
