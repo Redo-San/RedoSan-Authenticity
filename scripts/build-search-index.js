@@ -26,7 +26,7 @@ var PAGES = [
 ];
 
 function stripTags(s) {
-  return s.replace(/<[^>]*>/g, "");
+  return s.replace(/<[^>]*>/g, "").replace(/</g, "");
 }
 
 function extractTitle(content) {
