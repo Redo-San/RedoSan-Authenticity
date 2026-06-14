@@ -931,40 +931,26 @@
         }
       });
       function searchGoBack() {
+        var origin = window.location.origin;
+        if (!origin || origin === "null") {
+          origin = window.location.protocol + "//" + window.location.host;
+        }
         var ref = document.referrer;
-        var isSameOrigin = ref && (
-          ref === window.location.origin ||
-          ref.indexOf(window.location.origin + "/") === 0
-        );
+        var isSameOrigin = false;
+        if (ref) {
+          try {
+            isSameOrigin = new URL(ref).origin === origin;
+          } catch (_) {}
+        }
         if (isSameOrigin) {
           if (window.history.length > 1) {
-            // Normal flow: came from another page on the site
             history.back();
             return;
           }
-          // New tab / middle-click: referrer exists but no history to go back to
           window.location.href = ref;
           return;
         }
-        // No same-origin referrer (direct access or external): go to home
-        _goHome();
-      }
-      function _goHome() {
-        var parts = window.location.pathname.split("/");
-        var pagesIdx = -1;
-        for (var i = 0; i < parts.length; i++) {
-          if (parts[i] === "pages") {
-            pagesIdx = i;
-            break;
-          }
-        }
-        if (pagesIdx !== -1) {
-          parts = parts.slice(0, pagesIdx + 1);
-          parts.push("home", "index.html");
-          window.location.href = parts.join("/");
-        } else {
-          window.location.href = "../home/index.html";
-        }
+        goHome();
       }
     </script>
     <script>
