@@ -1,22 +1,22 @@
 converter:
-  - any: ['Converter/**/*']
+  - any: ["Converter/**/*"]
 c2pa:
-  - any: ['C2PA/**/*']
+  - any: ["C2PA/**/*"]
 certificate:
-  - any: ['Certificate/**/*']
+  - any: ["Certificate/**/*"]
 fingerprint:
-  - any: ['Fingerprint/**/*']
+  - any: ["Fingerprint/**/*"]
 metadata:
-  - any: ['Metadata/**/*']
+  - any: ["Metadata/**/*"]
 timestamp:
-  - any: ['Timestamp/**/*']
+  - any: ["Timestamp/**/*"]
 watermark:
-  - any: ['Watermark/**/*']
+  - any: ["Watermark/**/*"]
 cli:
-  - any: ['cli/**/*']
+  - any: ["cli/**/*"]
 i18n:
-  - any: ['Style/lang/**/*']
+  - any: ["Style/lang/**/*"]
 css:
-  - any: ['Style/*.css']
+  - any: ["Style/*.css"]
 ci:
-  - any: ['.github/workflows/**/*']
+  - any: [".github/workflows/**/*"]

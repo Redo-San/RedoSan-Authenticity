@@ -1228,7 +1228,8 @@ async function fingerprintFile(file) {
   // Step 3: Background worker + main thread fallback for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
   if (typeof Worker !== "undefined" && typeof window !== "undefined") {
     startBackgroundWorker(result.hashes, buf, null, function (extraHashes) {
-      var fp = getResult('fpResult'); if (fp) Object.assign(fp.hashes, extraHashes);
+      var fp = getResult("fpResult");
+      if (fp) Object.assign(fp.hashes, extraHashes);
     });
   }
   await computeRemainingHashes(result.hashes, buf).catch(function (e) {
@@ -1241,7 +1242,10 @@ async function fingerprintFile(file) {
 // ── Background worker: fetch hashing.js and create self-contained worker ──
 function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
   return new Promise(function (resolve) {
-    if (location.protocol === 'file:') { resolve(); return; }
+    if (location.protocol === "file:") {
+      resolve();
+      return;
+    }
     try {
       var scriptTag = document.querySelector('script[src*="hashing.js"]');
       var hashingUrl = scriptTag ? scriptTag.src : "";
