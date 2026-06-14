@@ -186,11 +186,17 @@ async function computeSwhidFromFile(file) {
     var dec = new TextDecoder("utf-8");
     var text = dec.decode(buf);
     var obj;
-    try { obj = JSON.parse(text); } catch (e) { throw new Error("Invalid fingerprint JSON: " + e.message); }
+    try {
+      obj = JSON.parse(text);
+    } catch (e) {
+      throw new Error("Invalid fingerprint JSON: " + e.message);
+    }
     var sha1 = obj && obj.hashes && obj.hashes["SHA-1"];
-    if (sha1) return "swh:1:cnt:" + sha1.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+    if (sha1)
+      return "swh:1:cnt:" + sha1.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
     var sha256 = obj && obj.hashes && obj.hashes["SHA-256"];
-    if (sha256) return "swh:1:cnt:" + sha256.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+    if (sha256)
+      return "swh:1:cnt:" + sha256.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
     throw new Error("No SHA-1 or SHA-256 hash found in fingerprint JSON");
   }
   var hash = await crypto.subtle.digest("SHA-1", buf);
@@ -199,12 +205,18 @@ async function computeSwhidFromFile(file) {
 
 function extractHashFromOts(buf) {
   var data = new Uint8Array(buf);
-  var OTS_HEADER = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+  var OTS_HEADER = [
+    0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+    0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf,
+    0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
+  ];
   for (var i = 0; i < OTS_HEADER.length; i++) {
-    if (data[i] !== OTS_HEADER[i]) throw new Error("Invalid OTS file: bad magic bytes");
+    if (data[i] !== OTS_HEADER[i])
+      throw new Error("Invalid OTS file: bad magic bytes");
   }
   if (data[OTS_HEADER.length] !== 1) throw new Error("Unsupported OTS version");
-  if (data[OTS_HEADER.length + 1] !== 0x08) throw new Error("Unsupported OTS hash: only SHA-256");
+  if (data[OTS_HEADER.length + 1] !== 0x08)
+    throw new Error("Unsupported OTS hash: only SHA-256");
   var off = OTS_HEADER.length + 2;
   if (off + 32 > data.length) throw new Error("OTS file too short");
   var h = "";
@@ -251,7 +263,8 @@ function handleIdForgeGenerate() {
           ids = count === 1 ? [ulid()] : ulidBulk(count);
           break;
         case "nanoid":
-          var nlen = parseInt(document.getElementById("if-nanoid-len").value, 10) || 21;
+          var nlen =
+            parseInt(document.getElementById("if-nanoid-len").value, 10) || 21;
           ids = count === 1 ? [nanoid(nlen)] : nanoidBulk(count, nlen);
           break;
         case "swhid":
@@ -451,7 +464,8 @@ function switchSwhidTab(tab) {
   for (var j = 0; j < wrappers.length; j++) {
     document.getElementById(wrappers[j]).style.display = "none";
   }
-  document.getElementById("if-swhid-" + tab + "-wrapper").style.display = "block";
+  document.getElementById("if-swhid-" + tab + "-wrapper").style.display =
+    "block";
 }
 
 function idForgeShowDownload() {
