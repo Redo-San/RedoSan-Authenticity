@@ -554,3 +554,24 @@ function setDownloadHandler(fn) {
 function getDownloadHandler() {
   return _dlHandler;
 }
+
+// ── Navigate to home page from any standalone page ──
+function goHome() {
+  var parts = window.location.pathname.split("/");
+  var pagesIdx = -1;
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i] === "pages") {
+      pagesIdx = i;
+      break;
+    }
+  }
+  if (pagesIdx !== -1) {
+    parts = parts.slice(0, pagesIdx + 1);
+    parts.push("home", "index.html");
+  } else {
+    parts = ["..", "home", "index.html"];
+  }
+  var target = parts.join("/");
+  if (target.indexOf("/") !== 0) target = "/" + target;
+  window.location.href = target;
+}
