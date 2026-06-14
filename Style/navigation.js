@@ -109,10 +109,10 @@ var PAGE_DESCS = {
 };
 
 var PAGE_NAMES = [
-  "about", "audio-watermark", "c2pa", "certificate", "contact",
-  "converter", "did", "document-watermark", "fingerprint", "forensic",
-  "home", "id_forge", "metadata", "pixel-injection", "privacy",
-  "removal-tools", "search", "social", "timestamp", "watermark",
+  'about', 'audio-watermark', 'c2pa', 'certificate', 'contact',
+  'converter', 'did', 'document-watermark', 'fingerprint', 'forensic',
+  'home', 'id_forge', 'metadata', 'pixel-injection', 'privacy',
+  'removal-tools', 'search', 'social', 'timestamp', 'watermark',
 ];
 
 function showPage(name) {
