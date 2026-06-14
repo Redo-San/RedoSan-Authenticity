@@ -935,7 +935,7 @@
           var url = sessionStorage.getItem("searchReferrer");
           if (url) {
             sessionStorage.removeItem("searchReferrer");
-            window.location.href = url;
+            window.location.replace(url);
             return;
           }
         } catch (_) {}
@@ -943,7 +943,7 @@
           document.referrer &&
           document.referrer.indexOf(window.location.origin) === 0
         ) {
-          window.location.href = document.referrer;
+          window.location.replace(document.referrer);
           return;
         }
         // Fallback: go to home
