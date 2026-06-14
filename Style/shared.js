@@ -13,7 +13,6 @@
 })();
 // ── Shared utilities used by all features ──
 
-
 function escHtml(s) {
   if (s == null) return "";
   return String(s)
@@ -145,7 +144,7 @@ function downloadBlobSimple(blob, fileName) {
   }
   var a = document.createElement("a");
   a.href = url;
-  a.download = fileName.replace(/[/\\]/g, '_');
+  a.download = fileName.replace(/[/\\]/g, "_");
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -165,12 +164,12 @@ function downloadBlob(blob, name, containerId) {
   const url = URL.createObjectURL(blob);
   var container = document.getElementById(containerId);
   if (!container) return;
-  var link = document.createElement('a');
+  var link = document.createElement("a");
   link.href = url;
-  link.download = name.replace(/[/\\]/g, '_');
-  link.className = 'btn';
-  link.style.cssText = 'margin:4px';
-  link.textContent = __("shared.download") + ' ' + name;
+  link.download = name.replace(/[/\\]/g, "_");
+  link.className = "btn";
+  link.style.cssText = "margin:4px";
+  link.textContent = __("shared.download") + " " + name;
   container.appendChild(link);
 }
 
@@ -523,14 +522,16 @@ document.addEventListener("DOMContentLoaded", () => {
 var SW_VERSION = 2;
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/RedoSan-Authenticity/sw.js?v=" + SW_VERSION).then(
-      function (reg) {
-        console.log("[SW] Registered scope:", reg.scope);
-      },
-      function (err) {
-        console.warn("[SW] Registration failed:", err);
-      },
-    );
+    navigator.serviceWorker
+      .register("/RedoSan-Authenticity/sw.js?v=" + SW_VERSION)
+      .then(
+        function (reg) {
+          console.log("[SW] Registered scope:", reg.scope);
+        },
+        function (err) {
+          console.warn("[SW] Registration failed:", err);
+        },
+      );
   });
 }
 
@@ -553,4 +554,29 @@ function setDownloadHandler(fn) {
 }
 function getDownloadHandler() {
   return _dlHandler;
+}
+
+// ── Navigate to home page from any standalone page ──
+var _homePath = "";
+function goHome() {
+  if (!_homePath) {
+    var parts = window.location.pathname.split("/");
+    var pagesIdx = -1;
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] === "pages") {
+        pagesIdx = i;
+        break;
+      }
+    }
+    if (pagesIdx !== -1) {
+      parts = parts.slice(0, pagesIdx + 1);
+      parts.push("home", "index.html");
+    } else {
+      parts = ["..", "home", "index.html"];
+    }
+    var target = parts.join("/");
+    if (target.indexOf("/") !== 0) target = "/" + target;
+    _homePath = target;
+  }
+  window.location.href = _homePath;
 }
