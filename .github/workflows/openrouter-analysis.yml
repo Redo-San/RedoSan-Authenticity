@@ -42,8 +42,7 @@ jobs:
             prod.app-api.stepsecurity.io:443
       - name: Install jq
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
+          sudo apt-get update && sudo apt-get install -y jq
       - name: Run OpenRouter Code Review and Post Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
