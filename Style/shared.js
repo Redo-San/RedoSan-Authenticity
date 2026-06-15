@@ -580,3 +580,98 @@ function goHome() {
   }
   window.location.href = _homePath;
 }
+
+// ── Floating Music Player (MPA/SPA compatible) ──
+var _musicStarted = false;
+
+function toggleMusic() {
+  var audio = document.getElementById("bg-music");
+  var btn = document.getElementById("music-btn");
+  var credit = document.getElementById("music-credit");
+  if (audio.paused) {
+    audio
+      .play()
+      .then(function () {
+        if (btn) {
+          btn.textContent = "🔊";
+          btn.classList.add("playing");
+        }
+        if (credit) credit.classList.add("show");
+      })
+      .catch(function () {});
+  } else {
+    audio.pause();
+    if (btn) {
+      btn.textContent = "🎵";
+      btn.classList.remove("playing");
+    }
+    if (credit) credit.classList.remove("show");
+  }
+}
+
+function _saveMusicState() {
+  var audio = document.getElementById("bg-music");
+  if (!audio) return;
+  try {
+    sessionStorage.setItem(
+      "musicState",
+      JSON.stringify({
+        isPlaying: !audio.paused,
+        currentTime: audio.currentTime,
+      }),
+    );
+  } catch (e) {}
+}
+
+function _restoreMusicState() {
+  var credit = document.getElementById("music-credit");
+  if (credit) credit.classList.remove("show");
+  var audio = document.getElementById("bg-music");
+  if (!audio) return;
+  try {
+    var saved = sessionStorage.getItem("musicState");
+    if (!saved) return;
+    var state = JSON.parse(saved);
+    if (state.currentTime) audio.currentTime = state.currentTime;
+    if (state.isPlaying) {
+      audio
+        .play()
+        .then(function () {
+          _musicStarted = true;
+          var btn = document.getElementById("music-btn");
+          var credit = document.getElementById("music-credit");
+          if (btn) {
+            btn.textContent = "🔊";
+            btn.classList.add("playing");
+          }
+          if (credit) credit.classList.add("show");
+        })
+        .catch(function () {});
+    }
+  } catch (e) {}
+}
+
+function _initMusicFirstClick() {
+  if (_musicStarted) return;
+  _musicStarted = true;
+  var audio = document.getElementById("bg-music");
+  var btn = document.getElementById("music-btn");
+  var credit = document.getElementById("music-credit");
+  if (audio && audio.paused) {
+    audio
+      .play()
+      .then(function () {
+        if (btn) {
+          btn.textContent = "🔊";
+          btn.classList.add("playing");
+        }
+        if (credit) credit.classList.add("show");
+      })
+      .catch(function () {});
+  }
+  document.removeEventListener("click", _initMusicFirstClick);
+}
+
+document.addEventListener("click", _initMusicFirstClick);
+window.addEventListener("beforeunload", _saveMusicState);
+document.addEventListener("DOMContentLoaded", _restoreMusicState);
