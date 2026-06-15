@@ -43,3 +43,4 @@ scripts/fix_standalone_pages.js
 # Local agent memory (not committed)
 AGENTS.md
 STATUS.md
+.aider.*
