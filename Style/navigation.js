@@ -123,8 +123,8 @@ function showPage(name) {
   const page = document.getElementById("page-" + name);
   
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
-  // NOTE: we check this BEFORE removing .active from current page, so bfcache
-  // preserves the visible state (fixes back-button blank page)
+  // This check runs before removing .active from the current page so that bfcache
+  // captures the visible state, preventing a blank page on back-button navigation
   if (!page && document.documentElement.dataset.standalone && name) {
     var safeName = encodeURIComponent(name);
     var parts = window.location.pathname.split('/');
