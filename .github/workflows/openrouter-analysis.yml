@@ -1,0 +1,86 @@
+name: OpenRouter AI Code Review
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review (for manual testing)"
+        required: false
+        type: number
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run OpenRouter Code Review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.pull_request.number }}
+        run: |
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo ${{ github.repository }} 2>/dev/null | head -5000)
+          PR_DATA=$(gh pr view "$PR_NUMBER" --repo ${{ github.repository }} --json title,body 2>/dev/null)
+          TITLE=$(echo "$PR_DATA" | jq -r '.title')
+          BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
+
+          jq -n --arg diff "$DIFF" --arg title "$TITLE" --arg body "$BODY" '{
+            "model": "nex-agi/nex-n2-pro:free",
+            "messages": [
+              {
+                "role": "system",
+                "content": "You are an expert code reviewer for a watermarking/authenticity web tool. Review GitHub pull requests for security vulnerabilities, logic bugs, code quality issues, missing edge cases, and performance problems. Format as concise bullet points with file:line references. Respond in English only."
+              },
+              {
+                "role": "user",
+                "content": "PR Title: \($title)\n\nDescription: \($body)\n\n```diff\n\($diff)\n```"
+              }
+            ],
+            "temperature": 0.1,
+            "max_tokens": 4096
+          }' > request.json
+
+          set +e
+          RESPONSE=$(curl -s -w "\n%{http_code}" https://openrouter.ai/api/v1/chat/completions \
+            -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @request.json)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          set -e
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            REVIEW="OpenRouter review failed (HTTP $HTTP_CODE).\n\nResponse:\n$BODY"
+          else
+            REVIEW=$(echo "$BODY" | jq -r '.choices[0].message.content // "Empty response"')
+          fi
+
+          echo "$REVIEW" > review.txt
+          echo "REVIEW<<EOF" >> $GITHUB_ENV
+          echo "$REVIEW" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Post Review Comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo ${{ github.repository }} --body "## OpenRouter AI Review
+
+          $REVIEW" 2>/dev/null || echo "Posted review comment"
