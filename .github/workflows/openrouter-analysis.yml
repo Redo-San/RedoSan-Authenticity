@@ -9,7 +9,7 @@ on:
       pr_number:
         description: "PR number to review"
         required: true
-        type: number
+        type: string
 
 concurrency:
   group: openrouter-review-${{ github.event.inputs.pr_number || github.event.pull_request.number }}
