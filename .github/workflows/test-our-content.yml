@@ -1,0 +1,13 @@
+name: Code Review (OpenRouter) - Test 3
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: string
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Test: ${{ github.event.inputs.pr_number }}"
