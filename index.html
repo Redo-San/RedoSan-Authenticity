@@ -4584,15 +4584,15 @@
         RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves
         your device
       </div>
-    
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </footer>
 
     <!-- Music Player -->
@@ -4606,7 +4606,6 @@
     >
       🎵
     </button>
-
 
     <script src="Style/lang/i18n-data-ar.js" defer></script>
     <script src="Style/lang/i18n-data-de.js" defer></script>
@@ -4780,54 +4779,7 @@
     </script>
     <script type="module" src="C2PA/c2pa.js"></script>
     <script>
-      // ── Floating Music Player ──
-      function toggleMusic() {
-        var audio = document.getElementById("bg-music");
-        var btn = document.getElementById("music-btn");
-        var credit = document.getElementById("music-credit");
-        if (audio.paused) {
-          audio
-            .play()
-            .then(function () {
-              btn.textContent = "🔊";
-              btn.classList.add("playing");
-              credit.classList.add("show");
-            })
-            .catch(function () {});
-        } else {
-          audio.pause();
-          btn.textContent = "🎵";
-          btn.classList.remove("playing");
-          credit.classList.remove("show");
-        }
-      }
-      // Auto-hide credit after page load — only show when playing
-      document.addEventListener("DOMContentLoaded", function () {
-        var credit = document.getElementById("music-credit");
-        if (credit) credit.classList.remove("show");
-      });
-      // Start music on first user interaction (any click on the page)
-      var musicStarted = false;
-      document.addEventListener("click", function startMusic() {
-        if (musicStarted) return;
-        musicStarted = true;
-        var audio = document.getElementById("bg-music");
-        var btn = document.getElementById("music-btn");
-        var credit = document.getElementById("music-credit");
-        if (audio && audio.paused) {
-          audio
-            .play()
-            .then(function () {
-              if (btn) {
-                btn.textContent = "🔊";
-                btn.classList.add("playing");
-              }
-              if (credit) credit.classList.add("show");
-            })
-            .catch(function () {});
-        }
-        document.removeEventListener("click", startMusic);
-      });
+      //
     </script>
 
     <!-- Bot / Automation block overlay -->
