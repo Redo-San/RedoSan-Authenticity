@@ -1,9 +1,12 @@
 name: Ollama AI Code Review
 
 on:
-  pull_request:
-    branches: ["main"]
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: number
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -11,24 +14,27 @@ env:
 permissions:
   contents: read
   pull-requests: write
-  issues: write
 
 jobs:
   review:
-    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event.inputs.pr_number != ''
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
         with:
-          egress-policy: audit
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+          egress-policy: block
+          allowed-endpoints: >
+            ollama.com:443
+            api.github.com:443
+            github.com:443
+            results-receiver.actions.githubusercontent.com:443
+            agent.api.stepsecurity.io:443
+            prod.app-api.stepsecurity.io:443
       - name: Install and Start Ollama
         run: |
           for attempt in 1 2 3; do
-            curl -fsSL https://ollama.com/install.sh -o /tmp/ollama-install.sh
+            curl -fsSL --max-time 60 https://ollama.com/install.sh -o /tmp/ollama-install.sh
             bash /tmp/ollama-install.sh && break
             echo "Install attempt $attempt failed, retrying..." && sleep 5
           done
@@ -45,11 +51,17 @@ jobs:
       - name: Run Ollama Code Review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
         run: |
-          DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }} 2>/dev/null | head -5000)
-          PR_DATA=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title,body 2>/dev/null)
-          TITLE=$(echo "$PR_DATA" | jq -r '.title')
-          BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo ${{ github.repository }} 2>/dev/null | head -c 200000 || true)
+          PR_DATA=$(gh pr view "$PR_NUMBER" --repo ${{ github.repository }} --json title,body 2>/dev/null || echo '{}')
+          TITLE=$(echo "$PR_DATA" | jq -r '.title // "N/A"')
+          BODY=$(echo "$PR_DATA" | jq -r '.body // ""' | head -c 20000)
+
+          if [ -z "$DIFF" ]; then
+            printf '%s' "_No code changes to review._" > /tmp/review.md
+            exit 0
+          fi
 
           PROMPT=$(printf '%s\n' \
             "You are an expert code reviewer for a watermarking/authenticity web tool. Review this GitHub pull request." \
@@ -73,25 +85,26 @@ jobs:
 
           ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs '.')
 
-          set +e
-          REVIEW=$(curl -s http://localhost:11434/api/generate \
-            -d "{\"model\": \"qwen2.5-coder:7b\", \"prompt\": $ESCAPED_PROMPT, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
-            | jq -r '.response // "Ollama returned empty response"')
-          RC=$?
-          set -e
+          for attempt in 1 2 3; do
+            set +e
+            REVIEW=$(curl -s --max-time 300 http://localhost:11434/api/generate \
+              -d "{\"model\": \"qwen2.5-coder:7b\", \"prompt\": $ESCAPED_PROMPT, \"stream\": false, \"options\": {\"temperature\": 0.1}}" \
+              | jq -r '.response // ""')
+            RC=$?
+            set -e
+            if [ $RC -eq 0 ] && [ -n "$REVIEW" ]; then break; fi
+            echo "Ollama attempt $attempt failed, retrying..."
+            sleep 10
+          done
 
           if [ $RC -ne 0 ] || [ -z "$REVIEW" ]; then
-            REVIEW="Ollama review failed. Exit code $RC."
+            echo "Ollama review failed"; exit 1
           fi
 
-          echo "$REVIEW" > review.txt
-          echo "REVIEW<<EOF" >> $GITHUB_ENV
-          echo "$REVIEW" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          printf '%s' "$REVIEW" > /tmp/review.md
       - name: Post Review Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "## Ollama AI Review
-
-          $REVIEW" 2>/dev/null || echo "Posted review comment"
+          gh pr comment "$PR_NUMBER" --repo ${{ github.repository }} --body-file /tmp/review.md
