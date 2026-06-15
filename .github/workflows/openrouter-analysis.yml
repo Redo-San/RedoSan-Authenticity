@@ -54,7 +54,7 @@ jobs:
               }
             ],
             "temperature": 0.1,
-            "max_tokens": 8192
+            "max_tokens": 32000
           }' > request.json
 
           set +e
@@ -68,14 +68,9 @@ jobs:
           BODY=$(echo "$RESPONSE" | sed '$d')
           set -e
 
-          echo "DEBUG: HTTP_CODE=$HTTP_CODE"
-          echo "DEBUG: BODY_LEN=$(echo "$BODY" | wc -c)"
-          echo "DEBUG: BODY_PREVIEW=$(echo "$BODY" | head -c 500)"
-
           if [ "$HTTP_CODE" != "200" ]; then
-            REVIEW="OpenRouter review failed (HTTP $HTTP_CODE).\n\nResponse:\n$(echo "$BODY" | head -c 2000)"
+            REVIEW="OpenRouter review failed (HTTP $HTTP_CODE)."
           else
-            FINISH_REASON=$(echo "$BODY" | jq -r '.choices[0].finish_reason // "unknown"')
             CONTENT=$(echo "$BODY" | jq -r '.choices[0].message.content // ""')
             REASONING=$(echo "$BODY" | jq -r '.choices[0].message.reasoning // ""')
             if [ -n "$CONTENT" ]; then
@@ -83,11 +78,11 @@ jobs:
             elif [ -n "$REASONING" ]; then
               REVIEW="$REASONING"
             else
-              REVIEW="OpenRouter returned empty response (finish_reason: $FINISH_REASON).\n\nRaw response:\n$(echo "$BODY" | head -c 1000)"
+              FINISH_REASON=$(echo "$BODY" | jq -r '.choices[0].finish_reason // "unknown"')
+              REVIEW="_OpenRouter returned empty (finish_reason: $FINISH_REASON)._"
             fi
           fi
 
-          echo "$REVIEW" > review.txt
           echo "REVIEW<<EOF" >> $GITHUB_ENV
           echo "$REVIEW" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -98,4 +93,4 @@ jobs:
         run: |
           gh pr comment "$PR_NUMBER" --repo ${{ github.repository }} --body "## OpenRouter AI Review
 
-          $REVIEW" 2>/dev/null || echo "Posted review comment"
+          $REVIEW"
