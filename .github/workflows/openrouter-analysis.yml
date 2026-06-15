@@ -74,7 +74,8 @@ jobs:
               }
             ],
             "temperature": 0.1,
-            "max_tokens": 32000
+            "max_tokens": 32000,
+            "stream": false
           }' > request.json
 
           for attempt in 1 2 3; do
@@ -96,18 +97,20 @@ jobs:
           if [ "$HTTP_CODE" != "200" ]; then
             REVIEW="_OpenRouter review failed (HTTP $HTTP_CODE after 3 attempts)._"
           else
-            # Debug: print first 2KB of response body
-            echo "API response (first 2048 bytes):"
-            echo "$BODY" | head -c 2048 || true
+            # Debug: save raw response and inspect
+            printf '%s' "$BODY" > raw_response.json
+            echo "Raw response size: $(wc -c < raw_response.json) bytes"
+            echo "First 500 bytes of response:"
+            head -c 500 raw_response.json || true
             echo ""
             # Check for OpenRouter error response
-            API_ERROR=$(echo "$BODY" | jq -r 'try .error.message // ""' || true)
+            API_ERROR=$(jq -r 'try .error.message // ""' < raw_response.json || true)
             if [ -n "$API_ERROR" ]; then
               echo "DEBUG: OpenRouter returned an error: $API_ERROR"
             fi
             # Defensive jq: add || true to prevent set -e on unexpected response shape
-            CONTENT=$(echo "$BODY" | jq -r 'try .choices[0].message.content // ""' || true)
-            FINISH_REASON=$(echo "$BODY" | jq -r 'try .choices[0].finish_reason // "unknown"' || true)
+            CONTENT=$(jq -r 'try .choices[0].message.content // ""' < raw_response.json || true)
+            FINISH_REASON=$(jq -r 'try .choices[0].finish_reason // "unknown"' < raw_response.json || true)
             echo "DEBUG: content_len=${#CONTENT} finish_reason=$FINISH_REASON"
             if [ -n "$CONTENT" ]; then
               REVIEW="$CONTENT"
@@ -115,12 +118,19 @@ jobs:
               if [ "$FINISH_REASON" = "length" ]; then
                 REVIEW="_Model ran out of tokens (finish_reason: length). Try reducing diff size._"
               else
-                REASONING=$(echo "$BODY" | jq -r 'try .choices[0].message.reasoning // ""' || true)
+                REASONING=$(jq -r 'try .choices[0].message.reasoning // ""' < raw_response.json || true)
                 echo "DEBUG: reasoning_len=${#REASONING}"
                 if [ -n "$REASONING" ]; then
                   REVIEW="$REASONING"
                 else
-                  REVIEW="_Empty response (finish_reason: ${FINISH_REASON})._"
+                  # Last resort: if jq fails, try parsing as SSE
+                  if grep -q "^data: " raw_response.json 2>/dev/null; then
+                    REVIEW=$(grep "^data: " raw_response.json | grep -v "\[DONE\]" | sed 's/^data: //' | jq -r 'try .choices[0].delta.content // ""' | tr -d '\n' || true)
+                    echo "DEBUG: parsed SSE content_len=${#REVIEW}"
+                  fi
+                  if [ -z "$REVIEW" ]; then
+                    REVIEW="_Empty response (finish_reason: ${FINISH_REASON})._"
+                  fi
                 fi
               fi
             fi
