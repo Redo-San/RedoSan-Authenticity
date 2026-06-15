@@ -1,4 +1,4 @@
-name: OpenRouter AI Code Review
+name: Code Review (OpenRouter)
 
 on:
   pull_request:
