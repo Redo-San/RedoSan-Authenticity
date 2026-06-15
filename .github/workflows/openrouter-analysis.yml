@@ -100,42 +100,65 @@ jobs:
             # Debug: save raw response and inspect
             printf '%s' "$BODY" > raw_response.json
             echo "Raw response size: $(wc -c < raw_response.json) bytes"
-            echo "First 500 bytes of response:"
-            head -c 500 raw_response.json || true
-            echo ""
-            # Check for OpenRouter error response
-            API_ERROR=$(jq -r 'try .error.message // ""' < raw_response.json || true)
-            if [ -n "$API_ERROR" ]; then
-              echo "DEBUG: OpenRouter returned an error: $API_ERROR"
-            fi
-            # Defensive jq: add || true to prevent set -e on unexpected response shape
-            CONTENT=$(jq -r 'try .choices[0].message.content // ""' < raw_response.json || true)
-            FINISH_REASON=$(jq -r 'try .choices[0].finish_reason // "unknown"' < raw_response.json || true)
-            echo "DEBUG: content_len=${#CONTENT} finish_reason=$FINISH_REASON"
-            if [ -n "$CONTENT" ]; then
-              REVIEW="$CONTENT"
-            else
-              if [ "$FINISH_REASON" = "length" ]; then
-                REVIEW="_Model ran out of tokens (finish_reason: length). Try reducing diff size._"
+            echo "Raw response hexdump (first 200 bytes):"
+            head -c 200 raw_response.json | xxd | head -10 || true
+            # Check if JSON is valid
+            if jq -e . < raw_response.json >/dev/null 2>&1; then
+              echo "Response is valid JSON"
+              # Check for OpenRouter error
+              API_ERROR=$(jq -r 'try .error.message // ""' < raw_response.json || true)
+              if [ -n "$API_ERROR" ]; then
+                echo "DEBUG: OpenRouter error: $API_ERROR"
+              fi
+              # Check top-level keys
+              echo "Top-level keys: $(jq -r 'keys | join(", ")' < raw_response.json || true)"
+              # Extract fields
+              CONTENT=$(jq -r 'try .choices[0].message.content // ""' < raw_response.json || true)
+              FINISH_REASON=$(jq -r 'try .choices[0].finish_reason // "unknown"' < raw_response.json || true)
+              echo "DEBUG: content_len=${#CONTENT} finish_reason=$FINISH_REASON"
+              if [ -n "$CONTENT" ]; then
+                REVIEW="$CONTENT"
               else
-                REASONING=$(jq -r 'try .choices[0].message.reasoning // ""' < raw_response.json || true)
-                echo "DEBUG: reasoning_len=${#REASONING}"
-                if [ -n "$REASONING" ]; then
-                  REVIEW="$REASONING"
+                if [ "$FINISH_REASON" = "length" ]; then
+                  REVIEW="_Model ran out of tokens._"
                 else
-                  # Last resort: if jq fails, try parsing as SSE
-                  if grep -q "^data: " raw_response.json 2>/dev/null; then
-                    REVIEW=$(grep "^data: " raw_response.json | grep -v "\[DONE\]" | sed 's/^data: //' | jq -r 'try .choices[0].delta.content // ""' | tr -d '\n' || true)
-                    echo "DEBUG: parsed SSE content_len=${#REVIEW}"
-                  fi
-                  if [ -z "$REVIEW" ]; then
+                  REASONING=$(jq -r 'try .choices[0].message.reasoning // ""' < raw_response.json || true)
+                  echo "DEBUG: reasoning_len=${#REASONING}"
+                  if [ -n "$REASONING" ]; then
+                    REVIEW="$REASONING"
+                  else
                     REVIEW="_Empty response (finish_reason: ${FINISH_REASON})._"
                   fi
                 fi
+              fi
+            else
+              echo "Response is NOT valid JSON"
+              # Maybe it's SSE
+              if head -c 200 raw_response.json | grep -q "^data: "; then
+                echo "Detected SSE format"
+                REVIEW=$(grep "^data: " raw_response.json | grep -v "\[DONE\]" | sed 's/^data: //' | jq -r 'try .choices[0].delta.content // ""' | tr -d '\n' || true)
+                if [ -z "$REVIEW" ]; then
+                  # SSE but with full message at end
+                  REVIEW=$(grep "^data: " raw_response.json | grep -v "\[DONE\]" | tail -1 | sed 's/^data: //' | jq -r 'try .choices[0].message.content // ""' || true)
+                fi
+              fi
+              if [ -z "$REVIEW" ]; then
+                REVIEW="_Response was not valid JSON or SSE._"
+                # Upload as artifact for debugging
+                echo "Saving raw_response.json for artifact upload"
               fi
             fi
           fi
 
           printf '%s' "$REVIEW" > /tmp/review.md
           echo "Posting review comment..."
+          echo "Review body (first 200 chars):"
+          head -c 200 /tmp/review.md
+          echo ""
           gh pr comment "$PR_NUMBER" --repo ${{ github.repository }} --body-file /tmp/review.md
+      - name: Upload Debug Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openrouter-response
+          path: raw_response.json
