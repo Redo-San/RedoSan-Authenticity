@@ -96,15 +96,21 @@ jobs:
           if [ "$HTTP_CODE" != "200" ]; then
             REVIEW="_OpenRouter review failed (HTTP $HTTP_CODE after 3 attempts)._"
           else
-            CONTENT=$(echo "$BODY" | jq -r '.choices[0].message.content // ""')
+            # Defensive jq: add || true to prevent set -e on unexpected response shape
+            CONTENT=$(echo "$BODY" | jq -r 'try .choices[0].message.content // ""' || true)
+            FINISH_REASON=$(echo "$BODY" | jq -r 'try .choices[0].finish_reason // "unknown"' || true)
             if [ -n "$CONTENT" ]; then
               REVIEW="$CONTENT"
             else
-              FINISH_REASON=$(echo "$BODY" | jq -r '.choices[0].finish_reason // "unknown"')
               if [ "$FINISH_REASON" = "length" ]; then
                 REVIEW="_Model ran out of tokens (finish_reason: length). Try reducing diff size._"
               else
-                REVIEW=$(echo "$BODY" | jq -r '.choices[0].message.reasoning // "_Empty response (finish_reason: '"$FINISH_REASON"')._"')
+                REASONING=$(echo "$BODY" | jq -r 'try .choices[0].message.reasoning // ""' || true)
+                if [ -n "$REASONING" ]; then
+                  REVIEW="$REASONING"
+                else
+                  REVIEW="_Empty response (finish_reason: ${FINISH_REASON})._"
+                fi
               fi
             fi
           fi
