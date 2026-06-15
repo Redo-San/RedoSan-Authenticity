@@ -40,6 +40,7 @@ jobs:
             results-receiver.actions.githubusercontent.com:443
             agent.api.stepsecurity.io:443
             prod.app-api.stepsecurity.io:443
+            files.openssf.org:443
       - name: Install jq
         run: |
           sudo apt-get update && sudo apt-get install -y jq
