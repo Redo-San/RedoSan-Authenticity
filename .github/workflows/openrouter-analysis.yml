@@ -80,24 +80,23 @@ jobs:
 
           for attempt in 1 2 3; do
             set +e
-            # Save raw response for debugging
-            CURL_RESPONSE=$(curl -s --max-time 120 -w "\n%{http_code}" https://openrouter.ai/api/v1/chat/completions \
+            RESPONSE=$(curl -s --max-time 120 -w "\n%{http_code}" https://openrouter.ai/api/v1/chat/completions \
               -H "Authorization: Bearer $OPENROUTER_API_KEY" \
               -H "Content-Type: application/json" \
               -H "HTTP-Referer: https://redo-san.github.io/RedoSan-Authenticity/" \
               -H "X-Title: RedoSan Authenticity" \
               -d @request.json)
-            echo "Attempt $attempt: curl exit code $?"
-            HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -1)
-            BODY=$(echo "$CURL_RESPONSE" | sed '$d')
+            HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+            BODY=$(echo "$RESPONSE" | sed '$d')
             set -e
             if [ "$HTTP_CODE" = "200" ]; then
               echo "API returned HTTP 200"
               RESPONSE_SIZE=$(echo "$BODY" | wc -c)
               echo "Response body size: $RESPONSE_SIZE bytes"
-              echo "Body first 200 chars:"
-              echo "$BODY" | head -c 200
-              echo ""
+              if [ $RESPONSE_SIZE -gt 0 ]; then
+                echo "Response first 500 chars:"
+                echo "$BODY" | head -c 500
+              fi
               break
             fi
             echo "Attempt $attempt failed (HTTP $HTTP_CODE), retrying..."
@@ -107,21 +106,12 @@ jobs:
           if [ "$HTTP_CODE" != "200" ]; then
             REVIEW="_OpenRouter review failed (HTTP $HTTP_CODE after 3 attempts)._"
           else
-            # Debug: save raw response and inspect
-            printf '%s' "$BODY" > raw_response.json
+            # Save raw response for debugging
+            echo "$BODY" > raw_response.json
             echo "Raw response size: $(wc -c < raw_response.json) bytes"
-            echo "Raw response hexdump (first 200 bytes):"
-            head -c 200 raw_response.json | xxd | head -10 || true
             # Check if JSON is valid
             if jq -e . < raw_response.json >/dev/null 2>&1; then
               echo "Response is valid JSON"
-              # Check for OpenRouter error
-              API_ERROR=$(jq -r 'try .error.message // ""' < raw_response.json || true)
-              if [ -n "$API_ERROR" ]; then
-                echo "DEBUG: OpenRouter error: $API_ERROR"
-              fi
-              # Check top-level keys
-              echo "Top-level keys: $(jq -r 'keys | join(", ")' < raw_response.json || true)"
               # Extract fields
               CONTENT=$(jq -r 'try .choices[0].message.content // ""' < raw_response.json || true)
               FINISH_REASON=$(jq -r 'try .choices[0].finish_reason // "unknown"' < raw_response.json || true)
@@ -132,43 +122,17 @@ jobs:
                 if [ "$FINISH_REASON" = "length" ]; then
                   REVIEW="_Model ran out of tokens._"
                 else
-                  REASONING=$(jq -r 'try .choices[0].message.reasoning // ""' < raw_response.json || true)
-                  echo "DEBUG: reasoning_len=${#REASONING}"
-                  if [ -n "$REASONING" ]; then
-                    REVIEW="$REASONING"
-                  else
-                    REVIEW="_Empty response (finish_reason: ${FINISH_REASON})._"
-                  fi
+                  REVIEW="_Empty response._"
                 fi
               fi
             else
-              echo "Response is NOT valid JSON"
-              # Maybe it's SSE
-              if head -c 200 raw_response.json | grep -q "^data: "; then
-                echo "Detected SSE format"
-                REVIEW=$(grep "^data: " raw_response.json | grep -v "\[DONE\]" | sed 's/^data: //' | jq -r 'try .choices[0].delta.content // ""' | tr -d '\n' || true)
-                if [ -z "$REVIEW" ]; then
-                  # SSE but with full message at end
-                  REVIEW=$(grep "^data: " raw_response.json | grep -v "\[DONE\]" | tail -1 | sed 's/^data: //' | jq -r 'try .choices[0].message.content // ""' || true)
-                fi
-              fi
-              if [ -z "$REVIEW" ]; then
-                REVIEW="_Response was not valid JSON or SSE._"
-                # Upload as artifact for debugging
-                echo "Saving raw_response.json for artifact upload"
-              fi
+              echo "Response is NOT valid JSON - saving for artifact upload"
+              REVIEW="_Response was not valid JSON._"
             fi
           fi
 
           printf '%s' "$REVIEW" > /tmp/review.md
-          echo "Posting review comment..."
           echo "Review body (first 200 chars):"
           head -c 200 /tmp/review.md
           echo ""
           gh pr comment "$PR_NUMBER" --repo ${{ github.repository }} --body-file /tmp/review.md
-      - name: Upload Debug Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: openrouter-response
-          path: raw_response.json
