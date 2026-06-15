@@ -196,6 +196,7 @@ var YML_WHITELIST = [
   "/RedoSan-Authenticity/.github/workflows/scorecards.yml",
   "/RedoSan-Authenticity/.github/workflows/code-review-openrouter.yml",
   "/RedoSan-Authenticity/.github/workflows/minimal-dispatch.yml",
+  "/RedoSan-Authenticity/.github/workflows/test-pr-dispatch.yml",
   "/RedoSan-Authenticity/.github/dependabot.yml",
   "/RedoSan-Authenticity/.github/labeler.yml",
   "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/bug_report.yml",
