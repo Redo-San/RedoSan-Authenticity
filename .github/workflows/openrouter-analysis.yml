@@ -80,16 +80,26 @@ jobs:
 
           for attempt in 1 2 3; do
             set +e
-            RESPONSE=$(curl -s --max-time 120 -w "\n%{http_code}" https://openrouter.ai/api/v1/chat/completions \
+            # Save raw response for debugging
+            CURL_RESPONSE=$(curl -s --max-time 120 -w "\n%{http_code}" https://openrouter.ai/api/v1/chat/completions \
               -H "Authorization: Bearer $OPENROUTER_API_KEY" \
               -H "Content-Type: application/json" \
               -H "HTTP-Referer: https://redo-san.github.io/RedoSan-Authenticity/" \
               -H "X-Title: RedoSan Authenticity" \
               -d @request.json)
-            HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
+            echo "Attempt $attempt: curl exit code $?"
+            HTTP_CODE=$(echo "$CURL_RESPONSE" | tail -1)
+            BODY=$(echo "$CURL_RESPONSE" | sed '$d')
             set -e
-            if [ "$HTTP_CODE" = "200" ]; then break; fi
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "API returned HTTP 200"
+              RESPONSE_SIZE=$(echo "$BODY" | wc -c)
+              echo "Response body size: $RESPONSE_SIZE bytes"
+              echo "Body first 200 chars:"
+              echo "$BODY" | head -c 200
+              echo ""
+              break
+            fi
             echo "Attempt $attempt failed (HTTP $HTTP_CODE), retrying..."
             sleep 5
           done
