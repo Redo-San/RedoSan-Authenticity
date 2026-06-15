@@ -1,6 +1,7 @@
 name: Minimal Dispatch Test
 on:
   workflow_dispatch:
+permissions: {}
 jobs:
   test:
     runs-on: ubuntu-latest
