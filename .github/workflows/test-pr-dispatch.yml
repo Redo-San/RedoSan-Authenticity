@@ -1,0 +1,10 @@
+name: Test PR + Dispatch
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello"
