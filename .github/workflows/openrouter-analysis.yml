@@ -96,9 +96,19 @@ jobs:
           if [ "$HTTP_CODE" != "200" ]; then
             REVIEW="_OpenRouter review failed (HTTP $HTTP_CODE after 3 attempts)._"
           else
+            # Debug: print first 2KB of response body
+            echo "API response (first 2048 bytes):"
+            echo "$BODY" | head -c 2048 || true
+            echo ""
+            # Check for OpenRouter error response
+            API_ERROR=$(echo "$BODY" | jq -r 'try .error.message // ""' || true)
+            if [ -n "$API_ERROR" ]; then
+              echo "DEBUG: OpenRouter returned an error: $API_ERROR"
+            fi
             # Defensive jq: add || true to prevent set -e on unexpected response shape
             CONTENT=$(echo "$BODY" | jq -r 'try .choices[0].message.content // ""' || true)
             FINISH_REASON=$(echo "$BODY" | jq -r 'try .choices[0].finish_reason // "unknown"' || true)
+            echo "DEBUG: content_len=${#CONTENT} finish_reason=$FINISH_REASON"
             if [ -n "$CONTENT" ]; then
               REVIEW="$CONTENT"
             else
@@ -106,6 +116,7 @@ jobs:
                 REVIEW="_Model ran out of tokens (finish_reason: length). Try reducing diff size._"
               else
                 REASONING=$(echo "$BODY" | jq -r 'try .choices[0].message.reasoning // ""' || true)
+                echo "DEBUG: reasoning_len=${#REASONING}"
                 if [ -n "$REASONING" ]; then
                   REVIEW="$REASONING"
                 else
