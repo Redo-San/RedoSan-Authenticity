@@ -38,8 +38,8 @@ jobs:
         run: |
           DIFF=$(gh pr diff "$PR_NUMBER" --repo ${{ github.repository }} 2>/dev/null | head -5000)
           PR_DATA=$(gh pr view "$PR_NUMBER" --repo ${{ github.repository }} --json title,body 2>/dev/null)
-          TITLE=$(echo "$PR_DATA" | jq -r '.title')
-          BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
+          TITLE=$(echo "$PR_DATA" | jq -r '.title // "N/A"')
+          BODY=$(echo "$PR_DATA" | jq -r '.body // ""' | head -500)
 
           jq -n --arg diff "$DIFF" --arg title "$TITLE" --arg body "$BODY" '{
             "model": "nex-agi/nex-n2-pro:free",
@@ -61,15 +61,27 @@ jobs:
           RESPONSE=$(curl -s -w "\n%{http_code}" https://openrouter.ai/api/v1/chat/completions \
             -H "Authorization: Bearer $OPENROUTER_API_KEY" \
             -H "Content-Type: application/json" \
+            -H "HTTP-Referer: https://redo-san.github.io/RedoSan-Authenticity/" \
+            -H "X-Title: RedoSan Authenticity" \
             -d @request.json)
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | sed '$d')
           set -e
 
+          echo "DEBUG: HTTP_CODE=$HTTP_CODE"
+          echo "DEBUG: BODY_LEN=$(echo "$BODY" | wc -c)"
+          echo "DEBUG: BODY_PREVIEW=$(echo "$BODY" | head -c 500)"
+
           if [ "$HTTP_CODE" != "200" ]; then
             REVIEW="OpenRouter review failed (HTTP $HTTP_CODE).\n\nResponse:\n$BODY"
           else
-            REVIEW=$(echo "$BODY" | jq -r '.choices[0].message.content // "Empty response"')
+            FINISH_REASON=$(echo "$BODY" | jq -r '.choices[0].finish_reason // "unknown"')
+            CONTENT=$(echo "$BODY" | jq -r '.choices[0].message.content // ""')
+            if [ -z "$CONTENT" ]; then
+              REVIEW="OpenRouter returned HTTP 200 but empty content (finish_reason: $FINISH_REASON).\n\nFull response:\n$(echo "$BODY" | head -c 2000)"
+            else
+              REVIEW="$CONTENT"
+            fi
           fi
 
           echo "$REVIEW" > review.txt
