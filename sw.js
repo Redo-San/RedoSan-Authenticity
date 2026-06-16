@@ -80,6 +80,7 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Style/navigation.js",
   "/RedoSan-Authenticity/Style/i18n.js",
   "/RedoSan-Authenticity/Style/search.js",
+  "/RedoSan-Authenticity/Style/mpa-router.js",
   "/RedoSan-Authenticity/Certificate/certificate.js",
   "/RedoSan-Authenticity/Certificate/certificate_docx.js",
   "/RedoSan-Authenticity/Certificate/certificate_epub.js",

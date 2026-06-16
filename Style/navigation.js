@@ -11,6 +11,12 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+// ── Sanitize removal-tools on production (ReDoS domain check) ──
+function sanitizeRemovalTools() {
+  if (!/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(window.location.href)) return;
+  var sel = '.sidebar a[data-page="removal-tools"], .card[data-page="removal-tools"], #page-removal-tools';
+  document.querySelectorAll(sel).forEach(function (el) { el.remove(); });
+}
 // ── Standalone page detection ──
 var isStandalone = document.documentElement && document.documentElement.dataset.standalone;
 
@@ -237,26 +243,8 @@ function hideAllExcept(keep) {
 }
 
 window.addEventListener("popstate", function (e) {
-  // Standalone pages handle their own navigation — handle by redirecting to the standalone URL
-  if (document.documentElement.dataset.standalone) {
-    var st = e.state || {};
-    var target = st.page || "home";
-    // Build base path up to /pages/
-    var parts = window.location.pathname.split("/");
-    var pagesIdx = -1;
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i] === 'pages') { pagesIdx = i; break; }
-    }
-    var base;
-    if (pagesIdx !== -1) {
-      base = parts.slice(0, pagesIdx + 1).join('/');
-    } else {
-      base = window.location.pathname.replace(/\/[^\/]*$/, "");
-    }
-    var safeName = encodeURIComponent(target);
-    window.location.href = base + '/' + safeName + '/index.html';
-    return;
-  }
+  // Standalone MPA pages: handled by mpa-router.js (AJAX navigation)
+  if (document.documentElement.dataset.standalone) return;
   var state = e.state;
   document
     .querySelectorAll(".page")
@@ -377,6 +365,7 @@ function initNav() {
 }
 // Defer replaceState to first user interaction to avoid Chrome marking it skippable
 document.addEventListener("DOMContentLoaded", function () {
+  sanitizeRemovalTools();
   var p = new Promise(function (r) { initNav(); r(); });
   var deferredReplace = function () {
     if (!history.state || !history.state.modeOverlay) {
