@@ -79,18 +79,14 @@
     if (!link) return;
     var href = link.getAttribute("href");
     if (!href) return;
-    if (link.getAttribute("target") === "_blank") return;
-    if (link.hasAttribute("download")) return;
-    if (href.indexOf("http") === 0 || href.indexOf("//") === 0) return;
-    if (href.indexOf("#") === 0) return;
-    if (href.indexOf("?") === 0) return;
-    if (href.indexOf("javascript:") === 0 || href.indexOf("data:") === 0)
-      return;
+    // Whitelist: only intercept relative `../page/index.html` links
     var match = href.match(/^(?:\.\.\/)+([^/]+)\/index\.html$/);
     if (!match) return;
     var pageName = match[1];
     if (pageName === _currentPage) return;
     if (pageName === "removal-tools") return;
+    if (link.getAttribute("target") === "_blank") return;
+    if (link.hasAttribute("download")) return;
     e.preventDefault();
     navigateTo(href, pageName);
   });
