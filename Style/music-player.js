@@ -1,19 +1,17 @@
 (function () {
   // ── Compute audio path relative to current page ──
   function audioSrc() {
-    var depth = 0;
     var p = window.location.pathname;
     var parts = p.replace(/\/+$/, "").split("/");
     for (var i = 0; i < parts.length; i++) {
       if (parts[i] === "pages") {
-        depth = parts.length - i - 1;
-        break;
+        var depth = parts.length - i - 1;
+        var prefix = "";
+        for (var j = 0; j < depth; j++) prefix += "../";
+        return prefix + "RedoSan_Music.mp3";
       }
     }
-    if (depth === 0) depth = 1;
-    var prefix = "";
-    for (var j = 0; j < depth; j++) prefix += "../";
-    return prefix + "RedoSan_Music.mp3";
+    return "Style/RedoSan_Music.mp3";
   }
 
   // ── Inject HTML once ──
@@ -42,7 +40,9 @@
     if (audio.paused) {
       try {
         sessionStorage.setItem("musicInteracted", "true");
-      } catch (e) {}
+      } catch (e) {
+        /* noop */
+      }
       _musicStarted = true;
       audio
         .play()
@@ -51,7 +51,9 @@
           btn.classList.add("playing");
           if (credit) credit.classList.add("show");
         })
-        .catch(function () {});
+        .catch(function () {
+          /* noop */
+        });
     } else {
       audio.pause();
       btn.textContent = "\uD83C\uDFB5";
@@ -71,7 +73,9 @@
           currentTime: audio.currentTime,
         }),
       );
-    } catch (e) {}
+    } catch (e) {
+      /* noop */
+    }
   }
 
   function restoreState() {
@@ -101,9 +105,13 @@
             }
             if (c) c.classList.add("show");
           })
-          .catch(function () {});
+          .catch(function () {
+            /* noop */
+          });
       }
-    } catch (e) {}
+    } catch (e) {
+      /* noop */
+    }
   }
 
   function firstClick() {
@@ -118,14 +126,18 @@
         .then(function () {
           try {
             sessionStorage.setItem("musicInteracted", "true");
-          } catch (e) {}
+          } catch (e) {
+            /* noop */
+          }
           if (btn) {
             btn.textContent = "\uD83D\uDD0A";
             btn.classList.add("playing");
           }
           if (credit) credit.classList.add("show");
         })
-        .catch(function () {});
+        .catch(function () {
+          /* noop */
+        });
     }
     document.removeEventListener("click", firstClick);
   }

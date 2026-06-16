@@ -138,6 +138,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="Style/style.css" />
+    <link rel="stylesheet" href="Style/music-player.css" />
     <link
       rel="stylesheet"
       href="Style/responsive.css"
@@ -4584,29 +4585,9 @@
         RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves
         your device
       </div>
-
-      <div
-        id="music-credit"
-        class="music-credit"
-        role="note"
-        aria-label="Music credit"
-      >
-        RedoSan
-      </div>
     </footer>
 
-    <!-- Music Player -->
-    <audio id="bg-music" src="Style/RedoSan_Music.mp3" loop></audio>
-    <button
-      id="music-btn"
-      class="music-btn"
-      onclick="toggleMusic()"
-      title="Play Music"
-      aria-label="Toggle Music"
-    >
-      🎵
-    </button>
-
+    <script src="Style/music-player.js" defer></script>
     <script src="Style/lang/i18n-data-ar.js" defer></script>
     <script src="Style/lang/i18n-data-de.js" defer></script>
     <script src="Style/lang/i18n-data-en.js" defer></script>
