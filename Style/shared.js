@@ -575,7 +575,9 @@ function goHome() {
       parts = ["..", "home", "index.html"];
     }
     var target = parts.join("/");
-    if (target.indexOf("/") !== 0) target = "/" + target;
+    // Only add a leading slash for absolute-style paths that are not relative ("..")
+    if (target.indexOf("/") !== 0 && parts[0] !== "..")
+      target = "/" + target;
     _homePath = target;
   }
   window.location.href = _homePath;
@@ -589,6 +591,12 @@ function toggleMusic() {
   var btn = document.getElementById("music-btn");
   var credit = document.getElementById("music-credit");
   if (audio.paused) {
+    // mark that the user explicitly interacted with music in this tab
+    try {
+      sessionStorage.setItem("musicInteracted", "true");
+    } catch (e) {}
+    // mark started to avoid races with the first-click handler
+    _musicStarted = true;
     audio
       .play()
       .then(function () {
@@ -633,11 +641,23 @@ function _restoreMusicState() {
     if (!saved) return;
     var state = JSON.parse(saved);
     if (state.currentTime) audio.currentTime = state.currentTime;
+
+    // If the user has previously interacted with the music in this tab,
+    // we should disable the first-click activation so a random page click
+    // doesn't trigger playback unexpectedly.
+    try {
+      if (sessionStorage.getItem("musicInteracted") === "true") {
+        _musicStarted = true;
+        document.removeEventListener("click", _initMusicFirstClick);
+      }
+    } catch (e) {}
+
     if (state.isPlaying) {
+      // mark started before calling play to avoid race with click handler
+      _musicStarted = true;
       audio
         .play()
         .then(function () {
-          _musicStarted = true;
           var btn = document.getElementById("music-btn");
           var credit = document.getElementById("music-credit");
           if (btn) {
@@ -661,6 +681,9 @@ function _initMusicFirstClick() {
     audio
       .play()
       .then(function () {
+        try {
+          sessionStorage.setItem("musicInteracted", "true");
+        } catch (e) {}
         if (btn) {
           btn.textContent = "🔊";
           btn.classList.add("playing");
