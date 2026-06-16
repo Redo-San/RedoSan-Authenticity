@@ -114,6 +114,10 @@
   function firstClick() {
     var audio = document.getElementById("bg-music");
     if (!audio) return;
+    if (sessionStorage.getItem("musicInteracted") === "true") {
+      document.removeEventListener("click", firstClick);
+      return;
+    }
     sessionStorage.setItem("musicInteracted", "true");
     document.removeEventListener("click", firstClick);
     if (_playing) return;
