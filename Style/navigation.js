@@ -11,14 +11,19 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
-// ── Sanitize removal-tools on production (ReDoS domain check) ──
+// ── Sanitize removal-tools on production ──
 function sanitizeRemovalTools() {
-  if (!/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(window.location.href)) return;
-  var sel = '.sidebar a[data-page="removal-tools"], .card[data-page="removal-tools"], #page-removal-tools';
-  document.querySelectorAll(sel).forEach(function (el) { el.remove(); });
+  if (window.location.hostname !== "redo-san.github.io") return;
+  var sel =
+    '.sidebar a[data-page="removal-tools"], .card[data-page="removal-tools"], .footer-links a[data-page="removal-tools"]';
+  document.querySelectorAll(sel).forEach(function (el) {
+    el.remove();
+  });
 }
+sanitizeRemovalTools();
 // ── Standalone page detection ──
-var isStandalone = document.documentElement && document.documentElement.dataset.standalone;
+var isStandalone =
+  document.documentElement && document.documentElement.dataset.standalone;
 
 // ── Sidebar toggle ──
 function toggleSidebar() {
@@ -108,17 +113,35 @@ var PAGE_DESCS = {
   "document-watermark":
     "Embed and extract invisible watermarks in text documents using Zero-Width Characters, Unicode Homoglyphs, and Whitespace Replacement. Free online tool.",
   search: "Search across all tools and pages. Free online tool.",
-  about: "Learn about RedoSan Authenticity — a free, open-source digital authenticity tool.",
-  privacy: "Privacy policy for RedoSan Authenticity — all processing is 100% client-side.",
+  about:
+    "Learn about RedoSan Authenticity — a free, open-source digital authenticity tool.",
+  privacy:
+    "Privacy policy for RedoSan Authenticity — all processing is 100% client-side.",
   contact: "Contact information for RedoSan Authenticity support.",
   social: "Social links and community resources for RedoSan Authenticity.",
 };
 
 var PAGE_NAMES = [
-  'about', 'audio-watermark', 'c2pa', 'certificate', 'contact',
-  'converter', 'did', 'document-watermark', 'fingerprint', 'forensic',
-  'home', 'id_forge', 'metadata', 'pixel-injection', 'privacy',
-  'removal-tools', 'search', 'social', 'timestamp', 'watermark',
+  "about",
+  "audio-watermark",
+  "c2pa",
+  "certificate",
+  "contact",
+  "converter",
+  "did",
+  "document-watermark",
+  "fingerprint",
+  "forensic",
+  "home",
+  "id_forge",
+  "metadata",
+  "pixel-injection",
+  "privacy",
+  "removal-tools",
+  "search",
+  "social",
+  "timestamp",
+  "watermark",
 ];
 
 function showPage(name) {
@@ -127,34 +150,37 @@ function showPage(name) {
   // Validate name against whitelist to prevent CSS selector / path injection
   if (name && PAGE_NAMES.indexOf(name) === -1) return;
   const page = document.getElementById("page-" + name);
-  
+
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
   // This check runs before removing .active from the current page so that bfcache
   // captures the visible state, preventing a blank page on back-button navigation
   if (!page && document.documentElement.dataset.standalone && name) {
     var safeName = encodeURIComponent(name);
-    var parts = window.location.pathname.split('/');
+    var parts = window.location.pathname.split("/");
     var pagesIdx = -1;
     for (var i = 0; i < parts.length; i++) {
-      if (parts[i] === 'pages') { pagesIdx = i; break; }
+      if (parts[i] === "pages") {
+        pagesIdx = i;
+        break;
+      }
     }
     if (pagesIdx !== -1) {
       parts = parts.slice(0, pagesIdx + 1);
-      parts.push(safeName, 'index.html');
-      window.location.href = parts.join('/');
+      parts.push(safeName, "index.html");
+      window.location.href = parts.join("/");
     } else {
-      window.location.href = './' + safeName + '/index.html';
+      window.location.href = "./" + safeName + "/index.html";
     }
     return;
   }
-  
+
   document
     .querySelectorAll(".page")
     .forEach((p) => p.classList.remove("active"));
   document
     .querySelectorAll(".sidebar a[data-page]")
     .forEach((a) => a.classList.remove("active"));
-  
+
   if (page) {
     page.classList.add("active");
     // Ensure app container is visible (page section is inside #app)
@@ -366,11 +392,16 @@ function initNav() {
 // Defer replaceState to first user interaction to avoid Chrome marking it skippable
 document.addEventListener("DOMContentLoaded", function () {
   sanitizeRemovalTools();
-  var p = new Promise(function (r) { initNav(); r(); });
+  var p = new Promise(function (r) {
+    initNav();
+    r();
+  });
   var deferredReplace = function () {
     if (!history.state || !history.state.modeOverlay) {
       try {
-        var p = window.location.pathname.replace(/\/+$/, "").replace(/\/index\.html$/i, "");
+        var p = window.location.pathname
+          .replace(/\/+$/, "")
+          .replace(/\/index\.html$/i, "");
         history.replaceState({ modeOverlay: true }, "", p + "/");
       } catch (e) {}
     }
@@ -456,7 +487,8 @@ function switchC2paTab(mode) {
 
 // Re-evaluate standalone status after DOMContentLoaded (data-standalone is set by MPA inline script)
 document.addEventListener("DOMContentLoaded", function () {
-  isStandalone = document.documentElement && document.documentElement.dataset.standalone;
+  isStandalone =
+    document.documentElement && document.documentElement.dataset.standalone;
 });
 
 // bfcache restore: re-activate page section (back/forward navigation)
@@ -477,13 +509,19 @@ window.addEventListener("pageshow", function (ev) {
     // SPA: restore page section from history state
     var st = history.state;
     if (st && st.page) {
-      document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
+      document.querySelectorAll(".page").forEach(function (p) {
+        p.classList.remove("active");
+      });
       var pg2 = document.getElementById("page-" + st.page);
       if (pg2) pg2.classList.add("active");
-      var nav = document.querySelector('.sidebar a[data-page="' + st.page + '"]');
+      var nav = document.querySelector(
+        '.sidebar a[data-page="' + st.page + '"]',
+      );
       if (nav) nav.classList.add("active");
     } else if (st && st.staticPage) {
-      document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("active"); });
+      document.querySelectorAll(".page").forEach(function (p) {
+        p.classList.remove("active");
+      });
       var pg3 = document.getElementById("page-" + st.staticPage);
       if (pg3) pg3.classList.add("active");
     } else if (!st || st.modeOverlay) {
