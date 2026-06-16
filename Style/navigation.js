@@ -392,10 +392,7 @@ function initNav() {
 // Defer replaceState to first user interaction to avoid Chrome marking it skippable
 document.addEventListener("DOMContentLoaded", function () {
   sanitizeRemovalTools();
-  var p = new Promise(function (r) {
-    initNav();
-    r();
-  });
+  initNav();
   var deferredReplace = function () {
     if (!history.state || !history.state.modeOverlay) {
       try {
@@ -411,9 +408,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("pointerdown", deferredReplace);
   document.addEventListener("keydown", deferredReplace);
 });
-if (document.readyState !== "loading") {
-  initNav();
-}
 
 // ── Tab switching ──
 function switchWmTab(mode) {
