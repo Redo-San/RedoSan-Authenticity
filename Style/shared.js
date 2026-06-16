@@ -576,7 +576,8 @@ function goHome() {
     }
     var target = parts.join("/");
     // Only add a leading slash for absolute-style paths that are not relative ("..")
-    if (target.indexOf("/") !== 0 && target.indexOf("..") !== 0) target = "/" + target;
+    if (target.indexOf("/") !== 0 && parts[0] !== "..")
+      target = "/" + target;
     _homePath = target;
   }
   window.location.href = _homePath;
