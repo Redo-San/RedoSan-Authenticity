@@ -81,6 +81,7 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Style/i18n.js",
   "/RedoSan-Authenticity/Style/search.js",
   "/RedoSan-Authenticity/Style/mpa-router.js",
+  "/RedoSan-Authenticity/Style/music-player.js",
   "/RedoSan-Authenticity/Certificate/certificate.js",
   "/RedoSan-Authenticity/Certificate/certificate_docx.js",
   "/RedoSan-Authenticity/Certificate/certificate_epub.js",
@@ -144,6 +145,7 @@ var CSS_WHITELIST = [
   "/RedoSan-Authenticity/Style/style.css",
   "/RedoSan-Authenticity/Style/rtl.css",
   "/RedoSan-Authenticity/Style/responsive.css",
+  "/RedoSan-Authenticity/Style/music-player.css",
 ];
 
 // Whitelist of legitimate YML/YAML files (GitHub workflows, configs).

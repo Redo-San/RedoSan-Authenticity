@@ -120,6 +120,7 @@
       onload="this.media='all'"
     />
     <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
+    <link rel="stylesheet" href="../../music-player.css" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -1036,18 +1037,6 @@
       </div>
     </footer>
 
-    <!-- Music Player -->
-    <audio id="bg-music" src="../../RedoSan_Music.mp3" loop></audio>
-    <button
-      id="music-btn"
-      class="music-btn"
-      onclick="toggleMusic()"
-      title="Play Music"
-      aria-label="Toggle Music"
-    >
-      🎵
-    </button>
-
     <script src="../../lang/i18n-data-ar.js" defer></script>
     <script src="../../lang/i18n-data-de.js" defer></script>
     <script src="../../lang/i18n-data-en.js" defer></script>
@@ -1270,6 +1259,7 @@
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->
     <script src="../../mpa-router.js" defer></script>
+    <script src="../../music-player.js" defer></script>
 
         <!-- Floating AI Assistant -->
     <div
