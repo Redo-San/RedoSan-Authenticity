@@ -1,5 +1,4 @@
 (function () {
-  // ── Compute audio path relative to current page ──
   function audioSrc() {
     var p = window.location.pathname;
     var parts = p.replace(/\/+$/, "").split("/");
@@ -14,10 +13,52 @@
     return "Style/RedoSan_Music.mp3";
   }
 
-  // ── Inject HTML once ──
   var _injected = false;
+  var _playing = false;
+  var _playPromise = null;
+
+  function setUI(playing) {
+    var btn = document.getElementById("music-btn");
+    var credit = document.getElementById("music-credit");
+    if (!btn) return;
+    if (playing) {
+      btn.textContent = "\uD83D\uDD0A";
+      btn.classList.add("playing");
+      if (credit) credit.classList.add("show");
+    } else {
+      btn.textContent = "\uD83C\uDFB5";
+      btn.classList.remove("playing");
+      if (credit) credit.classList.remove("show");
+    }
+  }
+
+  function doPlay() {
+    var audio = document.getElementById("bg-music");
+    if (!audio) return;
+    if (!audio.paused) return;
+    _playPromise = audio.play();
+    _playPromise
+      .then(function () {
+        if (_playing === false) {
+          audio.pause();
+          return;
+        }
+        setUI(true);
+      })
+      .catch(function () {});
+  }
+
+  function doPause() {
+    var audio = document.getElementById("bg-music");
+    if (!audio) return;
+    _playing = false;
+    audio.pause();
+    setUI(false);
+  }
+
   function inject() {
     if (_injected) return;
+    if (document.getElementById("bg-music")) return;
     _injected = true;
     var div = document.createElement("div");
     div.innerHTML =
@@ -29,123 +70,58 @@
     while (div.firstChild) document.body.appendChild(div.firstChild);
   }
 
-  // ── Music state ──
-  var _musicStarted = false;
-
-  window.toggleMusic = function () {
+  function toggle() {
     var audio = document.getElementById("bg-music");
-    var btn = document.getElementById("music-btn");
-    var credit = document.getElementById("music-credit");
-    if (!audio || !btn) return;
+    if (!audio) return;
     if (audio.paused) {
-      try {
-        sessionStorage.setItem("musicInteracted", "true");
-      } catch (e) {
-        /* noop */
-      }
-      _musicStarted = true;
-      audio
-        .play()
-        .then(function () {
-          btn.textContent = "\uD83D\uDD0A";
-          btn.classList.add("playing");
-          if (credit) credit.classList.add("show");
-        })
-        .catch(function () {
-          /* noop */
-        });
+      sessionStorage.setItem("musicInteracted", "true");
+      _playing = true;
+      doPlay();
     } else {
-      audio.pause();
-      btn.textContent = "\uD83C\uDFB5";
-      btn.classList.remove("playing");
-      if (credit) credit.classList.remove("show");
+      doPause();
     }
-  };
+  }
 
   function saveState() {
     var audio = document.getElementById("bg-music");
     if (!audio) return;
-    try {
-      sessionStorage.setItem(
-        "musicState",
-        JSON.stringify({
-          isPlaying: !audio.paused,
-          currentTime: audio.currentTime,
-        }),
-      );
-    } catch (e) {
-      /* noop */
-    }
+    sessionStorage.setItem(
+      "musicState",
+      JSON.stringify({
+        isPlaying: _playing,
+        currentTime: audio.currentTime,
+      }),
+    );
   }
 
   function restoreState() {
     var audio = document.getElementById("bg-music");
-    var credit = document.getElementById("music-credit");
     if (!audio) return;
-    if (credit) credit.classList.remove("show");
-    try {
-      var saved = sessionStorage.getItem("musicState");
-      if (!saved) return;
-      var state = JSON.parse(saved);
-      if (state.currentTime) audio.currentTime = state.currentTime;
-      if (sessionStorage.getItem("musicInteracted") === "true") {
-        _musicStarted = true;
-        document.removeEventListener("click", firstClick);
-      }
-      if (state.isPlaying) {
-        _musicStarted = true;
-        audio
-          .play()
-          .then(function () {
-            var btn = document.getElementById("music-btn");
-            var c = document.getElementById("music-credit");
-            if (btn) {
-              btn.textContent = "\uD83D\uDD0A";
-              btn.classList.add("playing");
-            }
-            if (c) c.classList.add("show");
-          })
-          .catch(function () {
-            /* noop */
-          });
-      }
-    } catch (e) {
-      /* noop */
-    }
+    setUI(false);
+    var saved = sessionStorage.getItem("musicState");
+    if (!saved) return;
+    var state = JSON.parse(saved);
+    if (state.currentTime) audio.currentTime = state.currentTime;
+    if (sessionStorage.getItem("musicInteracted") !== "true") return;
+    document.removeEventListener("click", firstClick);
+    if (!state.isPlaying) return;
+    _playing = true;
+    doPlay();
   }
 
   function firstClick() {
-    if (_musicStarted) return;
-    _musicStarted = true;
     var audio = document.getElementById("bg-music");
-    var btn = document.getElementById("music-btn");
-    var credit = document.getElementById("music-credit");
-    if (audio && audio.paused) {
-      audio
-        .play()
-        .then(function () {
-          try {
-            sessionStorage.setItem("musicInteracted", "true");
-          } catch (e) {
-            /* noop */
-          }
-          if (btn) {
-            btn.textContent = "\uD83D\uDD0A";
-            btn.classList.add("playing");
-          }
-          if (credit) credit.classList.add("show");
-        })
-        .catch(function () {
-          /* noop */
-        });
-    }
+    if (!audio) return;
+    sessionStorage.setItem("musicInteracted", "true");
     document.removeEventListener("click", firstClick);
+    if (_playing) return;
+    _playing = true;
+    doPlay();
   }
 
-  // ── Init: inject, attach events, restore state ──
   function init() {
     inject();
-    document.getElementById("music-btn").onclick = window.toggleMusic;
+    document.getElementById("music-btn").addEventListener("click", toggle);
     document.addEventListener("click", firstClick);
     window.addEventListener("beforeunload", saveState);
     restoreState();
