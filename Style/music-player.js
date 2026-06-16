@@ -97,16 +97,18 @@
   function restoreState() {
     var audio = document.getElementById("bg-music");
     if (!audio) return;
-    setUI(false);
     var saved = sessionStorage.getItem("musicState");
-    if (!saved) return;
-    var state = JSON.parse(saved);
-    if (state.currentTime) audio.currentTime = state.currentTime;
-    if (sessionStorage.getItem("musicInteracted") !== "true") return;
-    document.removeEventListener("click", firstClick);
-    if (!state.isPlaying) return;
-    _playing = true;
-    doPlay();
+    var state = saved ? JSON.parse(saved) : null;
+    if (state && state.currentTime) audio.currentTime = state.currentTime;
+    if (sessionStorage.getItem("musicInteracted") === "true") {
+      document.removeEventListener("click", firstClick);
+      if (state && state.isPlaying) {
+        _playing = true;
+        doPlay();
+        return;
+      }
+    }
+    setUI(false);
   }
 
   function firstClick() {
