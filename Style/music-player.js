@@ -44,7 +44,12 @@
         }
         setUI(true);
       })
-      .catch(function () {});
+      .catch(function () {
+        if (_playing) {
+          _playing = false;
+          setUI(false);
+        }
+      });
   }
 
   function doPause() {
@@ -103,16 +108,38 @@
   function restoreState() {
     var audio = document.getElementById("bg-music");
     if (!audio) return;
-    var saved = sessionStorage.getItem("musicState");
-    var state = saved ? JSON.parse(saved) : null;
-    if (state && state.currentTime) audio.currentTime = state.currentTime;
-    if (sessionStorage.getItem("musicInteracted") === "true") {
-      document.removeEventListener("click", firstClick);
-      if (state && state.isPlaying) {
+    var state = null;
+    var interacted = false;
+    try {
+      var saved = sessionStorage.getItem("musicState");
+      if (saved) state = JSON.parse(saved);
+      interacted = sessionStorage.getItem("musicInteracted") === "true";
+    } catch (_) {
+      void _;
+    }
+    if (
+      state &&
+      typeof state.currentTime === "number" &&
+      isFinite(state.currentTime) &&
+      state.currentTime >= 0
+    ) {
+      try {
+        audio.currentTime = state.currentTime;
+      } catch (_) {
+        void _;
+      }
+    }
+    if (interacted) {
+      if (state && state.isPlaying === true) {
         _playing = true;
-        doPlay();
+        setUI(true);
         return;
       }
+      if (!state) {
+        setUI(true);
+        return;
+      }
+      document.removeEventListener("click", firstClick);
     }
     setUI(false);
   }
@@ -122,6 +149,7 @@
     if (!audio) return;
     if (sessionStorage.getItem("musicInteracted") === "true") {
       document.removeEventListener("click", firstClick);
+      if (_playing) doPlay();
       return;
     }
     sessionStorage.setItem("musicInteracted", "true");
