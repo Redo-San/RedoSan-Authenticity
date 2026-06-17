@@ -58,8 +58,8 @@
         top.location = self.location;
       }
       // Root URL = mode selection overlay (SPA only).
-      // Professional Mode → redirects to MPA standalone pages.
       // Simplified Mode → uses SPA hash routing.
+      // Professional Mode → switches to SPA professional mode (no page reload).
       // Direct URLs to standalone pages work directly (no redirect).
       // Append ?mpa to force MPA redirect. Append ?spa or ?classic to force SPA.
       // No redirect on file:// or localhost.
@@ -322,7 +322,10 @@
         <div class="mode-cards">
           <div
             class="mode-card mode-card-simple"
+            role="button"
+            tabindex="0"
             onclick="if(typeof setMode==='function')setMode('simplified')"
+            onkeydown="if(!event.repeat&&(event.key==='Enter'||event.key===' '||event.code==='Space')){event.preventDefault();if(typeof setMode==='function')setMode('simplified')}"
           >
             <div class="mode-card-icon">✨</div>
             <h2 data-i18n="mode.simplified_title">Simplified Mode</h2>
@@ -332,7 +335,10 @@
           </div>
           <div
             class="mode-card mode-card-pro"
-            onclick="window.location.href='/RedoSan-Authenticity/Style/pages/home/index.html'"
+            role="button"
+            tabindex="0"
+            onclick="if(typeof setMode==='function')setMode('professional')"
+            onkeydown="if(!event.repeat&&(event.key==='Enter'||event.key===' '||event.code==='Space')){event.preventDefault();if(typeof setMode==='function')setMode('professional')}"
           >
             <div class="mode-card-icon">⚙️</div>
             <h2 data-i18n="mode.professional_title">Professional Mode</h2>

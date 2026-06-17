@@ -1697,6 +1697,10 @@ footer {
   transform: translateY(-3px);
   border-color: var(--primary);
 }
+.mode-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
 .mode-card-icon {
   font-size: 2.4rem;
   margin-bottom: 12px;
