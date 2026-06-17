@@ -10,7 +10,7 @@
   color: #fff;
   font-size: 1.4rem;
   cursor: pointer;
-  z-index: 9999;
+  z-index: 9999999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,7 +46,7 @@
   color: var(--text-muted);
   opacity: 0;
   transition: opacity 0.3s ease;
-  z-index: 9998;
+  z-index: 9999998;
   pointer-events: none;
   text-align: right;
   direction: ltr;
