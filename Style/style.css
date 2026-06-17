@@ -1692,6 +1692,9 @@ footer {
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 .mode-card:hover {
   transform: translateY(-3px);
