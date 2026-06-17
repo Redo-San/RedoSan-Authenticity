@@ -56,6 +56,7 @@
           : document.title;
         if (newStandalone)
           document.documentElement.dataset.standalone = newStandalone;
+        ensurePreserved();
         var st = history.state || {};
         st.page = pageName;
         history.pushState(st, "", url);
@@ -115,6 +116,17 @@
         links[i].classList.add("active");
       } else {
         links[i].classList.remove("active");
+      }
+    }
+  }
+
+  var _preserveIds = ["bg-music", "music-btn", "music-credit"];
+
+  function ensurePreserved() {
+    for (var i = 0; i < _preserveIds.length; i++) {
+      var el = document.getElementById(_preserveIds[i]);
+      if (el && !document.body.contains(el)) {
+        document.body.appendChild(el);
       }
     }
   }

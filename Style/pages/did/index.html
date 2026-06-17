@@ -121,6 +121,7 @@
     />
     <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
     <link rel="stylesheet" href="../../music-player.css" />
+    <link rel="preload" as="audio" href="../../RedoSan_Music.mp3" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -1055,11 +1056,30 @@
       <img class="lightbox-img" id="lightboxImg" alt="" />
     </div>
 
+    <!-- Music player -->
+    <audio
+      id="bg-music"
+      src="../../RedoSan_Music.mp3"
+      loop
+      preload="auto"
+    ></audio>
+    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+      &#x1F3B5;
+    </button>
+    <div
+      id="music-credit"
+      class="music-credit"
+      role="contentinfo"
+      aria-label="Music credit"
+    >
+      RedoSan
+    </div>
+
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->
     <script src="../../mpa-router.js" defer></script>
     <script src="../../music-player.js" defer></script>
 
-        <!-- Floating AI Assistant -->
+    <!-- Floating AI Assistant -->
     <div
       id="assistantBubble"
       class="ast-bubble"

@@ -139,6 +139,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="Style/style.css" />
     <link rel="stylesheet" href="Style/music-player.css" />
+    <link rel="preload" as="audio" href="Style/RedoSan_Music.mp3" />
     <link
       rel="stylesheet"
       href="Style/responsive.css"
@@ -4586,6 +4587,25 @@
         your device
       </div>
     </footer>
+
+    <!-- Music player -->
+    <audio
+      id="bg-music"
+      src="Style/RedoSan_Music.mp3"
+      loop
+      preload="auto"
+    ></audio>
+    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+      &#x1F3B5;
+    </button>
+    <div
+      id="music-credit"
+      class="music-credit"
+      role="contentinfo"
+      aria-label="Music credit"
+    >
+      RedoSan
+    </div>
 
     <script src="Style/music-player.js" defer></script>
     <script src="Style/lang/i18n-data-ar.js" defer></script>
