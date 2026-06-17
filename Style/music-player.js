@@ -13,7 +13,6 @@
     return "Style/RedoSan_Music.mp3";
   }
 
-  var _injected = false;
   var _playing = false;
   var _playPromise = null;
 
@@ -56,15 +55,22 @@
     setUI(false);
   }
 
+  function preloadAudio() {
+    if (document.querySelector('link[rel="preload"][as="audio"]')) return;
+    var link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "audio";
+    link.href = audioSrc();
+    document.head.appendChild(link);
+  }
+
   function inject() {
-    if (_injected) return;
     if (document.getElementById("bg-music")) return;
-    _injected = true;
     var div = document.createElement("div");
     div.innerHTML =
       '<audio id="bg-music" src="' +
       audioSrc() +
-      '" loop></audio>' +
+      '" loop preload="auto"></audio>' +
       '<button id="music-btn" class="music-btn" aria-label="Toggle Music">&#x1F3B5;</button>' +
       '<div id="music-credit" class="music-credit" role="contentinfo" aria-label="Music credit">RedoSan</div>';
     while (div.firstChild) document.body.appendChild(div.firstChild);
@@ -126,8 +132,10 @@
   }
 
   function init() {
+    preloadAudio();
     inject();
-    document.getElementById("music-btn").addEventListener("click", toggle);
+    var btn = document.getElementById("music-btn");
+    if (btn) btn.addEventListener("click", toggle);
     document.addEventListener("click", firstClick);
     window.addEventListener("beforeunload", saveState);
     restoreState();
