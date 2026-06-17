@@ -58,7 +58,7 @@
         top.location = self.location;
       }
       // Root URL = mode selection overlay (SPA only).
-      // Professional Mode → redirects to MPA standalone pages.
+      // Professional Mode → navigates to MPA standalone pages.
       // Simplified Mode → uses SPA hash routing.
       // Direct URLs to standalone pages work directly (no redirect).
       // Append ?mpa to force MPA redirect. Append ?spa or ?classic to force SPA.
@@ -333,19 +333,16 @@
               Step-by-step wizard — upload a file and follow the guide
             </p>
           </div>
-          <div
+          <a
             class="mode-card mode-card-pro"
-            role="button"
-            tabindex="0"
-            onclick="window.location.href='/RedoSan-Authenticity/Style/pages/home/index.html'"
-            onkeydown="if(!event.repeat&&(event.key==='Enter'||event.key===' '||event.code==='Space')){event.preventDefault();window.location.href='/RedoSan-Authenticity/Style/pages/home/index.html'}"
+            href="./Style/pages/home/index.html"
           >
             <div class="mode-card-icon">⚙️</div>
             <h2 data-i18n="mode.professional_title">Professional Mode</h2>
             <p data-i18n="mode.professional_desc">
               Full access to all tools with advanced options
             </p>
-          </div>
+          </a>
         </div>
         <div class="mode-links">
           <a
