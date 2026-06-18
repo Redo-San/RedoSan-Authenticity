@@ -319,7 +319,7 @@ async function downloadCertEPUB(data) {
   zip.folder("OEBPS").file("style.css", css);
   zip.folder("OEBPS").file("toc.ncx", ncx);
   if (data.file.dataUrl) {
-    var imgExt = data.file.type === "image/png" ? "png" : "jpg";
+    let imgExt = data.file.type === "image/png" ? "png" : "jpg";
     zip
       .folder("OEBPS")
       .folder("images")

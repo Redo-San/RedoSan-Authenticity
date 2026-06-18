@@ -235,7 +235,7 @@ async function _bitsToMsg(bits, password) {
       return "";
     }
   }
-  var result = "";
+  result = "";
   for (const byte of bytes) {
     if (byte === 0) break;
     result += String.fromCharCode(byte);

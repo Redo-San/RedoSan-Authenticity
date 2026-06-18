@@ -13,10 +13,10 @@ var CONV_SUB_EXTS = ['.srt', '.vtt', '.ass', '.ssa', '.sub', '.sbv', '.smi', '.l
 function convDetectType(file) {
   var name = file.name.toLowerCase();
   for (var i = 0; i < CONV_IMG_EXTS.length; i++) { if (name.endsWith(CONV_IMG_EXTS[i])) return 'image'; }
-  for (var i = 0; i < CONV_AUDIO_EXTS.length; i++) { if (name.endsWith(CONV_AUDIO_EXTS[i])) return 'audio'; }
-  for (var i = 0; i < CONV_VIDEO_EXTS.length; i++) { if (name.endsWith(CONV_VIDEO_EXTS[i])) return 'video'; }
-  for (var i = 0; i < CONV_DOC_EXTS.length; i++) { if (name.endsWith(CONV_DOC_EXTS[i])) return 'document'; }
-  for (var i = 0; i < CONV_SUB_EXTS.length; i++) { if (name.endsWith(CONV_SUB_EXTS[i])) return 'subtitle'; }
+  for (let i = 0; i < CONV_AUDIO_EXTS.length; i++) { if (name.endsWith(CONV_AUDIO_EXTS[i])) return 'audio'; }
+  for (let i = 0; i < CONV_VIDEO_EXTS.length; i++) { if (name.endsWith(CONV_VIDEO_EXTS[i])) return 'video'; }
+  for (let i = 0; i < CONV_DOC_EXTS.length; i++) { if (name.endsWith(CONV_DOC_EXTS[i])) return 'document'; }
+  for (let i = 0; i < CONV_SUB_EXTS.length; i++) { if (name.endsWith(CONV_SUB_EXTS[i])) return 'subtitle'; }
   return 'unknown';
 }
 
@@ -69,7 +69,7 @@ function convSubFormats() {
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
     wav: 'WAV', aiff: 'AIFF', au: 'AU', raw: 'RAW', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
-    mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV', gif: 'GIF',
+    mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
     json: 'JSON', xml: 'XML', csv: 'CSV',
     srt: 'SRT', vtt: 'VTT', ass: 'ASS', sub: 'SUB', sbv: 'SBV', lrc: 'LRC', ttml: 'TTML' };
@@ -301,7 +301,7 @@ async function convAudio(file, format) {
   if (format === 'wav' || format === 'aiff' || format === 'au' || format === 'raw') {
     var numChannels = audioBuf.numberOfChannels;
     var sampleRate = audioBuf.sampleRate;
-    var buf, mime, ext;
+    let buf, mime, ext;
     switch (format) {
       case 'wav': {
         buf = convEncodeWav(audioBuf, numChannels, sampleRate);
@@ -411,15 +411,15 @@ function convAudioToMp3(audioCtx, audioBuf) {
       } else {
         var left = audioBuf.getChannelData(0);
         var right = numChannels > 1 ? audioBuf.getChannelData(1) : left;
-        for (var i = 0; i < length; i += blockSize) {
-          var end = Math.min(i + blockSize, length);
+        for (let i = 0; i < length; i += blockSize) {
+          let end = Math.min(i + blockSize, length);
           var lChunk = new Int16Array(end - i);
           var rChunk = new Int16Array(end - i);
-          for (var j = i; j < end; j++) {
+          for (let j = i; j < end; j++) {
             lChunk[j - i] = floatToInt16(left[j]);
             rChunk[j - i] = floatToInt16(right[j]);
           }
-          var buf = mp3enc.encodeBuffer(lChunk, rChunk);
+          let buf = mp3enc.encodeBuffer(lChunk, rChunk);
           if (buf.length > 0) mp3Data.push(buf);
         }
       }
@@ -1024,7 +1024,7 @@ function convGifEncode(frames, delayCs, w, h) {
   var palIndex = {};
   for (var i = 0; i < maxColors; i++) {
     var parts = sorted[i].split(',');
-    var ri = +parts[0], gi = +parts[1], bi = +parts[2];
+    let ri = +parts[0], gi = +parts[1], bi = +parts[2];
     palette.push([(ri << 3) | (ri >> 2), (gi << 3) | (gi >> 2), (bi << 3) | (bi >> 2)]);
     palIndex[sorted[i]] = i;
   }
@@ -1049,13 +1049,13 @@ function convGifEncode(frames, delayCs, w, h) {
 
   // Re-map pixels to palette indices using nearest color
   var indices = [];
-  for (var fi = 0; fi < frames.length; fi++) {
-    var rgba = frames[fi];
+  for (let fi = 0; fi < frames.length; fi++) {
+    let rgba = frames[fi];
     var frameIndices = new Uint8Array(w * h);
-    for (var j = 0; j < w * h; j++) {
+    for (let j = 0; j < w * h; j++) {
       var r = rgba[j * 4], g = rgba[j * 4 + 1], b = rgba[j * 4 + 2];
-      var ri = r >> 3, gi = g >> 3, bi = b >> 3;
-      var key = ri + ',' + gi + ',' + bi;
+      let ri = r >> 3, gi = g >> 3, bi = b >> 3;
+      let key = ri + ',' + gi + ',' + bi;
       var idx = palIndex[key];
       if (idx !== undefined && idx < maxColors) {
         frameIndices[j] = idx;
@@ -1073,7 +1073,7 @@ function convGifEncode(frames, delayCs, w, h) {
     indices.push(frameIndices);
   }
 
-  for (var fi = 0; fi < frames.length; fi++) {
+  for (let fi = 0; fi < frames.length; fi++) {
     put(0x21); put(0xF9); put(4); put(0x00); putS(delayCs); put(0); put(0x00);
     put(0x2C); putS(0); putS(0); putS(w); putS(h); put(0x00);
     put(minCodeSize);
@@ -1224,12 +1224,12 @@ function convSubParse(text, ext) {
     case 'vtt': {
       var parts = text.split(/\n\s*\n/);
       for (var i = 0; i < parts.length; i++) {
-        var lines = parts[i].trim().split('\n');
+        let lines = parts[i].trim().split('\n');
         if (lines.length < 2 || lines[0] === 'WEBVTT' || lines[0].startsWith('NOTE')) continue;
-        var timeMatch = lines[0].match(/(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})\.(\d{3})/) ||
+        let timeMatch = lines[0].match(/(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})\.(\d{3})/) ||
           lines[0].match(/(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})/);
         if (!timeMatch) continue;
-        var start, end;
+        let start, end;
         if (timeMatch.length === 9) {
           start = (+timeMatch[1])*3_600_000 + (+timeMatch[2])*60_000 + (+timeMatch[3])*1000 + (+timeMatch[4]);
           end = (+timeMatch[5])*3_600_000 + (+timeMatch[6])*60_000 + (+timeMatch[7])*1000 + (+timeMatch[8]);
@@ -1244,14 +1244,14 @@ function convSubParse(text, ext) {
     case 'ass': case 'ssa': {
       var inEvents = false;
       var fmtLine = null;
-      var lines = text.split('\n');
-      for (var i = 0; i < lines.length; i++) {
+      let lines = text.split('\n');
+      for (let i = 0; i < lines.length; i++) {
         var l = lines[i].trim();
         if (l === '[Events]') { inEvents = true; continue; }
         if (l.startsWith('[')) { inEvents = false; continue; }
         if (inEvents && l.startsWith('Format:')) { fmtLine = l.substring(7).split(',').map(function(s) { return s.trim(); }); }
         if (inEvents && l.startsWith('Dialogue:')) {
-          var parts = l.substring(9).split(',');
+          let parts = l.substring(9).split(',');
           if (!fmtLine) continue;
           var idx = {};
           for (var f = 0; f < fmtLine.length; f++) idx[fmtLine[f].toLowerCase()] = f;
@@ -1265,15 +1265,15 @@ function convSubParse(text, ext) {
             if (!m) return 0;
             return (+m[1])*3_600_000 + (+m[2])*60_000 + (+m[3])*1000 + (+m[4])*10;
           }
-          var txt = parts.slice(idx.text).join(',').replaceAll(String.raw`\N`, '\n').replaceAll(/{[^}]*}/g, '');
+          let txt = parts.slice(idx.text).join(',').replaceAll(String.raw`\N`, '\n').replaceAll(/{[^}]*}/g, '');
           cues.push(convSubCue(toMs(parts[idx.start]), toMs(parts[idx.end]), txt));
         }
       }
       break;
     }
     case 'sub': {
-      var lines = text.split('\n');
-      for (var i = 0; i < lines.length; i++) {
+      let lines = text.split('\n');
+      for (let i = 0; i < lines.length; i++) {
         var m = lines[i].match(/\{(\d+)\}\{(\d+)\}(.*)/);
         if (m) {
           var fps = 23.976;
@@ -1283,9 +1283,9 @@ function convSubParse(text, ext) {
       break;
     }
     case 'sbv': {
-      var blocks = text.split(/\n\s*\n/);
-      for (var i = 0; i < blocks.length; i++) {
-        var lines = blocks[i].trim().split('\n');
+      let blocks = text.split(/\n\s*\n/);
+      for (let i = 0; i < blocks.length; i++) {
+        let lines = blocks[i].trim().split('\n');
         if (lines.length < 2) continue;
         var tm = lines[0].match(/(\d+):(\d+):(\d+)\.(\d+),(\d+):(\d+):(\d+)\.(\d+)/);
         if (!tm) continue;
@@ -1294,18 +1294,18 @@ function convSubParse(text, ext) {
       break;
     }
     case 'lrc': {
-      var lines = text.split('\n');
-      for (var i = 0; i < lines.length; i++) {
-        var m = lines[i].match(/\[(\d+):(\d+)\.(\d+)\](.*)/);
+      let lines = text.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        let m = lines[i].match(/\[(\d+):(\d+)\.(\d+)\](.*)/);
         if (m) {
-          var start = (+m[1])*60_000 + (+m[2])*1000 + (+m[3])*10;
+          let start = (+m[1])*60_000 + (+m[2])*1000 + (+m[3])*10;
           cues.push(convSubCue(start, start + 5000, m[3].trim()));
         }
       }
       break;
     }
     case 'ttml': case 'dfxp': {
-      var m;
+      let m;
       var re = /<p[^>]*begin=["']([^"']+)["'][^>]*end=["']([^"']+)["'][^>]*>(.*?)<\/p>/g;
       while ((m = re.exec(text)) !== null) {
         /**
@@ -1320,14 +1320,14 @@ function convSubParse(text, ext) {
           }
           return Number.parseFloat(t.replace('s',''))*1000;
         }
-        var txt = convStripHtml(m[3]);
+        let txt = convStripHtml(m[3]);
         cues.push(convSubCue(ttmlToMs(m[1]), ttmlToMs(m[2]), txt));
       }
       break;
     }
     default: {
-      var lines = text.split('\n');
-      for (var i = 0; i < lines.length; i++) {
+      let lines = text.split('\n');
+      for (let i = 0; i < lines.length; i++) {
         if (lines[i].trim()) cues.push(convSubCue(i*1000, (i+1)*1000, lines[i].trim()));
       }
     }

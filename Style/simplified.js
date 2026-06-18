@@ -415,7 +415,7 @@ function simpleNext() {
       simpleUserInfo.website === "https://" ||
       !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(simpleUserInfo.website)
     ) {
-      var warn = document.querySelector("#sinfo-website-warn");
+      let warn = document.querySelector("#sinfo-website-warn");
       if (warn) warn.style.display = "block";
       return;
     }
@@ -563,10 +563,10 @@ async function runC2paStep() {
     dt.items.add(srcFile);
     fileInput.files = dt.files;
   }
-  var btn = document.querySelector("#sc2pa-btn");
+  btn = document.querySelector("#sc2pa-btn");
   btn.disabled = true;
   btn.textContent = __("simple.signing");
-  var statusEl = document.querySelector("#sc2pa-result");
+  statusEl = document.querySelector("#sc2pa-result");
   handleC2paWrite().then(function (result) {
     if (result && result.ok) {
       btn.textContent = __("simple.signed");
@@ -1034,7 +1034,7 @@ async function runTimestampStep() {
           fileInput.files = dt.files;
         }
       } else if (simpleFile) {
-        var dt = new DataTransfer();
+        let dt = new DataTransfer();
         dt.items.add(simpleFile);
         fileInput.files = dt.files;
       }
@@ -1042,10 +1042,10 @@ async function runTimestampStep() {
       fileInput.dispatchEvent(evt);
     } catch {
       if (simpleFile) {
-        var dt = new DataTransfer();
+        let dt = new DataTransfer();
         dt.items.add(simpleFile);
         fileInput.files = dt.files;
-        var evt = new Event("change");
+        let evt = new Event("change");
         fileInput.dispatchEvent(evt);
       }
     }
@@ -1264,7 +1264,7 @@ async function runDIDStepSign() {
               "Stored DID keys are invalid. Please generate a new identity.",
             ) +
             "</div>";
-        var signBtn = document.querySelector("#sdid-sign-btn");
+        let signBtn = document.querySelector("#sdid-sign-btn");
         if (signBtn) signBtn.disabled = true;
         return;
       }

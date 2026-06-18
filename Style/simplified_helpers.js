@@ -12,6 +12,8 @@
     );
 })();
 
+/* global simpleFile: writable, simpleType: writable, simpleBuf: writable, simpleSteps: writable, simpleStep: writable, simpleIsAI: writable, simpleUserInfo: writable */
+
 /**
  *
  */
@@ -292,7 +294,7 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
   var available = maxBytes - didBytes;
   if (available < 50) available = 50;
   fpText = fpText.substring(0, available);
-  var combined = fpText + didStr;
+  combined = fpText + didStr;
   if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
     combined = fpText;
   }

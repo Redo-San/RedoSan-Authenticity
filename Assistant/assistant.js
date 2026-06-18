@@ -60,8 +60,8 @@ function levenshtein(a, b) {
   var m = [];
   for (var i = 0; i <= b.length; i++) m[i] = [i];
   for (var j = 0; j <= a.length; j++) m[0][j] = j;
-  for (var i = 1; i <= b.length; i++) {
-    for (var j = 1; j <= a.length; j++) {
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
       var cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
       m[i][j] = Math.min(
         m[i - 1][j] + 1,
@@ -117,11 +117,11 @@ function matchAssistantIntent(input) {
       var inTokens = {};
 
       for (var k = 0; k < tokens.length; k++) union[tokens[k]] = true;
-      for (var k = 0; k < patternTokens.length; k++)
+      for (let k = 0; k < patternTokens.length; k++)
         union[patternTokens[k]] = true;
-      for (var k = 0; k < tokens.length; k++) inTokens[tokens[k]] = true;
+      for (let k = 0; k < tokens.length; k++) inTokens[tokens[k]] = true;
 
-      for (var k = 0; k < patternTokens.length; k++) {
+      for (let k = 0; k < patternTokens.length; k++) {
         if (inTokens[patternTokens[k]]) {
           exactMatches++;
         } else {

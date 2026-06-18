@@ -25,12 +25,12 @@ async function downloadFingerprint(format) {
   var name = r.file_info.file_name;
 
   if (format === "pdf") {
-    var blob = await fpToPDF(r);
+    let blob = await fpToPDF(r);
     downloadBlobSimple(blob, name + ".fingerprint.pdf");
     return;
   }
   if (format === "doc") {
-    var blob = await fpToDOCX(r);
+    let blob = await fpToDOCX(r);
     downloadBlobSimple(blob, name + ".fingerprint.docx");
     return;
   }
@@ -69,7 +69,7 @@ async function downloadFingerprint(format) {
     }
   }
   if (content == null) return;
-  var blob = new Blob([content], { type: mime });
+  let blob = new Blob([content], { type: mime });
   downloadBlobSimple(blob, name + ".fingerprint." + ext);
 }
 
@@ -316,7 +316,7 @@ function fpToCSV(r) {
     if (r.hashes[k]) rows.push([k, r.hashes[k]]);
   }
   if (r.perceptual_hashes) {
-    for (var k in r.perceptual_hashes) {
+    for (let k in r.perceptual_hashes) {
       if (r.perceptual_hashes[k])
         rows.push(["Perceptual_" + k, r.perceptual_hashes[k]]);
     }
@@ -348,7 +348,7 @@ function fpToTXT(r) {
   }
   if (r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0) {
     lines.push("", "--- Perceptual Hashes ---");
-    for (var k in r.perceptual_hashes) {
+    for (let k in r.perceptual_hashes) {
       if (r.perceptual_hashes[k]) lines.push(k + ": " + r.perceptual_hashes[k]);
     }
   }
@@ -382,7 +382,7 @@ function fpToXML(r) {
   xml += "  </hashes>\n";
   if (r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0) {
     xml += "  <perceptual_hashes>\n";
-    for (var k in r.perceptual_hashes) {
+    for (let k in r.perceptual_hashes) {
       if (r.perceptual_hashes[k])
         xml += "    <" + k + ">" + r.perceptual_hashes[k] + "</" + k + ">\n";
     }

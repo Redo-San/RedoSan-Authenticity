@@ -327,8 +327,8 @@ globalThis.addEventListener("popstate", function (e) {
   if (state && state.staticPage) {
     document.body.classList.remove("no-scroll");
     document.documentElement.style.overflow = "";
-    var targetPage = state.staticPage;
-    var el = document.getElementById("page-" + targetPage);
+    let targetPage = state.staticPage;
+    let el = document.getElementById("page-" + targetPage);
     if (el) {
       el.classList.add("active");
     } else {
@@ -372,8 +372,8 @@ globalThis.addEventListener("popstate", function (e) {
   document.body.classList.remove("no-scroll");
   document.querySelector("#modeSelect").style.display = "none";
   document.querySelector("#simplifiedMode").style.display = "none";
-  var targetPage = (state && state.page) || "home";
-  var el = document.getElementById("page-" + targetPage);
+  let targetPage = (state && state.page) || "home";
+  let el = document.getElementById("page-" + targetPage);
   if (el) {
     el.classList.add("active");
   } else {

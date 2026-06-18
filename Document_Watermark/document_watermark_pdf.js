@@ -272,8 +272,8 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
   // ── 3. Walk segments backward, replace each with per-position watermarked text ──
   var remainingText = streamText.length;
   for (var si2 = segs.length - 1; si2 >= 0; si2--) {
-    var segEndInStream = remainingText;
-    var segStartInStream = segEndInStream - segs[si2].text.length;
+    let segEndInStream = remainingText;
+    let segStartInStream = segEndInStream - segs[si2].text.length;
     remainingText = segStartInStream;
     var wmSeg = _getWmAtPos(
       origFull,
@@ -540,13 +540,13 @@ async function downloadDocw(format) {
   if (!r) return;
 
   if (format === "pdf") {
-    var blob = await _docwBuildReportPdf(r, "embed");
+    let blob = await _docwBuildReportPdf(r, "embed");
     downloadBlobSimple(blob, "document_watermark_report.pdf");
     return;
   }
 
   if (format === "doc") {
-    var blob = await _docwBuildReportDocx(r, "embed");
+    let blob = await _docwBuildReportDocx(r, "embed");
     downloadBlobSimple(blob, "document_watermark_report.docx");
     return;
   }
@@ -596,6 +596,6 @@ async function downloadDocw(format) {
     }
   }
   if (content == null) return;
-  var blob = new Blob([content], { type: mime });
+  let blob = new Blob([content], { type: mime });
   downloadBlobSimple(blob, "document_watermark." + ext);
 }

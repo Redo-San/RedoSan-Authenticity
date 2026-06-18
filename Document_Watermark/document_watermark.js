@@ -19,6 +19,7 @@ var _docwCoverBytes = null;
 var _docwSecretData = null;
 var _docwExtractText = "";
 var _docwExtractResult = null;
+var _docwResult = null;
 
 /**
  *
@@ -668,7 +669,7 @@ async function handleDocwEmbed() {
           " (DOCX)</a>";
       } catch {
         var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-        var outUrl = URL.createObjectURL(txtBlob);
+        let outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
           '<a href="' +
           outUrl +
@@ -697,8 +698,8 @@ async function handleDocwEmbed() {
           __("docw.direct_download", "Download Watermarked Document") +
           " (PDF)</a>";
       } catch {
-        var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-        var outUrl = URL.createObjectURL(txtBlob);
+        let txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
+        let outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
           '<a href="' +
           outUrl +
@@ -711,8 +712,8 @@ async function handleDocwEmbed() {
           ")</a>";
       }
     } else {
-      var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-      var outUrl = URL.createObjectURL(txtBlob);
+      let txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
+      let outUrl = URL.createObjectURL(txtBlob);
       dlContainer.innerHTML =
         '<a href="' +
         outUrl +
@@ -884,13 +885,13 @@ async function downloadDocwExtract(format) {
   if (!r) return;
 
   if (format === "pdf") {
-    var blob = await _docwBuildReportPdf(r, "extract");
+    let blob = await _docwBuildReportPdf(r, "extract");
     downloadBlobSimple(blob, "extracted_message_report.pdf");
     return;
   }
 
   if (format === "doc") {
-    var blob = await _docwBuildReportDocx(r, "extract");
+    let blob = await _docwBuildReportDocx(r, "extract");
     downloadBlobSimple(blob, "extracted_message_report.docx");
     return;
   }
@@ -944,6 +945,6 @@ async function downloadDocwExtract(format) {
     }
   }
   if (content == null) return;
-  var blob = new Blob([content], { type: mime });
+  let blob = new Blob([content], { type: mime });
   downloadBlobSimple(blob, "extracted_message." + ext);
 }
