@@ -1,12 +1,10 @@
 // ── CLI Utilities ──
 // Shared helpers for CLI commands — does NOT interfere with web code
 
-"use strict";
-
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
-const zlib = require("zlib");
+const fs = require("node:fs");
+const path = require("node:path");
+const crypto = require("node:crypto");
+const zlib = require("node:zlib");
 
 /**
  * Read a file and return as Uint8Array
@@ -72,7 +70,7 @@ async function readDocumentText(filePath) {
   // Other: best-effort UTF-8 read
   try {
     return readFileText(filePath);
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 }
@@ -88,13 +86,16 @@ async function readDocxText(filePath) {
   // Simple XML text extraction
   let text = "";
   const wtRe = /<w:t[^>]*>([^<]+)<\/w:t>/g;
-  let m;
   const paraBreaks = xml.split("</w:p>");
   for (let p = 0; p < paraBreaks.length; p++) {
     const para = paraBreaks[p];
     const parts = [];
-    while ((m = wtRe.exec(para)) !== null) parts.push(m[1]);
-    if (parts.length) text += parts.join("") + "\n";
+    let m = wtRe.exec(para);
+    while (m !== null) {
+      parts.push(m[1]);
+      m = wtRe.exec(para);
+    }
+    if (parts.length) text += `${parts.join("")}\n`;
   }
   return text.replace(/\n{3,}/g, "\n\n").trim();
 }
@@ -106,9 +107,10 @@ function readPdfText(filePath) {
   // Object map
   const objMap = {};
   const objRe = /(\d+)\s+(\d+)\s+obj([\s\S]*?)endobj/g;
-  let m;
-  while ((m = objRe.exec(src)) !== null) {
+  let m = objRe.exec(src);
+  while (m !== null) {
     objMap[m[1]] = m[3];
+    m = objRe.exec(src);
   }
 
   // Build CMap from ToUnicode streams
@@ -117,27 +119,28 @@ function readPdfText(filePath) {
     if (!content.includes("FlateDecode")) continue;
     const sm = content.match(/stream\n([\s\S]*?)endstream/);
     if (!sm) continue;
-    let raw = sm[1].replace(/\r?\n$/, "");
+    const raw = sm[1].replace(/\r?\n$/, "");
     let data;
     try {
       data = zlib.inflateSync(Buffer.from(raw, "binary")).toString("latin1");
-    } catch (e) {
+    } catch (_e) {
       continue;
     }
     if (!data.includes("begincmap")) continue;
 
     const bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
-    let bm;
-    while ((bm = bfcharRe.exec(data)) !== null) {
+    let bm = bfcharRe.exec(data);
+    while (bm !== null) {
       const entries = bm[2].split("\n");
       for (const entry of entries) {
         const match = entry.match(/<(\w+)>\s*<(\w+)>/);
         if (match) cmap[parseInt(match[1], 16)] = parseInt(match[2], 16);
       }
+      bm = bfcharRe.exec(data);
     }
     const bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
-    let rm;
-    while ((rm = bfrangeRe.exec(data)) !== null) {
+    let rm = bfrangeRe.exec(data);
+    while (rm !== null) {
       const entries = rm[2].split("\n");
       for (const entry of entries) {
         const parts = entry.match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
@@ -150,16 +153,17 @@ function readPdfText(filePath) {
           }
         }
       }
+      rm = bfrangeRe.exec(data);
     }
   }
 
   // Find page content streams
   const pages = [];
-  const pageRe =
-    /(\d+)\s+(\d+)\s+obj[\s\S]*?\/Type\s*\/Page[\s\S]*?\/Contents\s+(\d+)\s+(\d+)\s+R/g;
-  let pm;
-  while ((pm = pageRe.exec(src)) !== null) {
-    pages.push({ obj: pm[1] + " " + pm[2], contentRef: pm[3] });
+  const pageRe = /(\d+)\s+(\d+)\s+obj[\s\S]*?\/Type\s*\/Page[\s\S]*?\/Contents\s+(\d+)\s+(\d+)\s+R/g;
+  let pm = pageRe.exec(src);
+  while (pm !== null) {
+    pages.push({ obj: `${pm[1]} ${pm[2]}`, contentRef: pm[3] });
+    pm = pageRe.exec(src);
   }
 
   if (pages.length === 0) return "";
@@ -168,17 +172,15 @@ function readPdfText(filePath) {
     if (s.length < 2) return s;
     var asianCount = 0;
     var testLen = Math.min(100, s.length);
-    for (var ti = 0; ti + 1 < testLen; ti += 2) {
-      var b1 = s.charCodeAt(ti),
+    for (let ti = 0; ti + 1 < testLen; ti += 2) {
+      let b1 = s.charCodeAt(ti),
         b2 = s.charCodeAt(ti + 1);
       if (b1 === 0 && b2 >= 0x20 && b2 <= 0x7e) asianCount++;
     }
     if (asianCount > 5 && asianCount / Math.floor(testLen / 2) > 0.4) {
-      var out2 = "";
-      for (var di2 = 0; di2 + 1 < s.length; di2 += 2) {
-        out2 += String.fromCharCode(
-          (s.charCodeAt(di2) << 8) | s.charCodeAt(di2 + 1),
-        );
+      let out2 = "";
+      for (let di2 = 0; di2 + 1 < s.length; di2 += 2) {
+        out2 += String.fromCharCode((s.charCodeAt(di2) << 8) | s.charCodeAt(di2 + 1));
       }
       return out2;
     }
@@ -194,18 +196,16 @@ function readPdfText(filePath) {
     const sm = streamRe.exec(contentObj);
     if (!sm) continue;
 
-    let raw = sm[1].replace(/\r?\n$/, "").replace(/\r\n/g, "\n");
+    const raw = sm[1].replace(/\r?\n$/, "").replace(/\r\n/g, "\n");
     let data;
 
     if (contentObj.includes("FlateDecode")) {
       try {
         data = zlib.inflateSync(Buffer.from(raw, "binary")).toString("latin1");
-      } catch (e) {
+      } catch (_e) {
         try {
-          data = zlib
-            .inflateRawSync(Buffer.from(raw, "binary"))
-            .toString("latin1");
-        } catch (e2) {
+          data = zlib.inflateRawSync(Buffer.from(raw, "binary")).toString("latin1");
+        } catch (_e2) {
           continue;
         }
       }
@@ -215,45 +215,51 @@ function readPdfText(filePath) {
 
     // Parenthesized strings: (text) Tj
     const tjRe = /\(([^)]*)\)\s*Tj/g;
-    let t;
-    while ((t = tjRe.exec(data)) !== null) {
-      text += decodePdfString(t[1].replace(/\\(.)/g, "$1")) + " ";
+    let t = tjRe.exec(data);
+    while (t !== null) {
+      text += `${decodePdfString(t[1].replace(/\\(.)/g, "$1"))} `;
+      t = tjRe.exec(data);
     }
 
     // Parenthesized strings in TJ arrays: [(text) num (text)] TJ
     const tjArrayRe = /\[([^\]]*)\]\s*TJ/g;
-    while ((t = tjArrayRe.exec(data)) !== null) {
+    t = tjArrayRe.exec(data);
+    while (t !== null) {
       const parts = t[1].match(/\(([^)]*)\)/g);
       if (parts)
-        parts.forEach(function (p2) {
-          text +=
-            decodePdfString(p2.slice(1, -1).replace(/\\(.)/g, "$1")) + " ";
+        parts.forEach((p2) => {
+          text += `${decodePdfString(p2.slice(1, -1).replace(/\\(.)/g, "$1"))} `;
         });
+      t = tjArrayRe.exec(data);
     }
 
     // Hex strings: <hex> Tj (CID fonts)
     const hexTjRe = /<([\dA-Fa-f]+)>\s*Tj/g;
-    while ((t = hexTjRe.exec(data)) !== null) {
+    t = hexTjRe.exec(data);
+    while (t !== null) {
       const code = parseInt(t[1], 16);
       if (cmap[code]) {
         try {
           text += String.fromCodePoint(cmap[code]);
-        } catch (e) {
+        } catch (_e) {
           text += "?";
         }
       } else text += "?";
+      t = hexTjRe.exec(data);
     }
 
     // Hex strings in TJ arrays
     const hexTjArrayRe = /\[([^\]]*)\]\s*TJ/g;
-    while ((t = hexTjArrayRe.exec(data)) !== null) {
+    t = hexTjArrayRe.exec(data);
+    while (t !== null) {
       const hexParts = t[1].match(/<([\dA-Fa-f]+)>/g);
       if (hexParts)
-        hexParts.forEach(function (h) {
+        hexParts.forEach((h) => {
           const code = parseInt(h.slice(1, -1), 16);
           if (cmap[code]) text += String.fromCodePoint(cmap[code]);
           else text += String.fromCodePoint(0xfffd);
         });
+      t = hexTjArrayRe.exec(data);
     }
   }
 
@@ -343,9 +349,9 @@ function saveImageData(imageData, outputPath) {
  * Format bytes to human-readable
  */
 function fmtSize(bytes) {
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / 1048576).toFixed(1) + " MB";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
 /**
@@ -358,10 +364,7 @@ function outputResult(text, opts) {
     console.log(text);
   }
   if (opts.output) {
-    fs.writeFileSync(
-      path.resolve(opts.output),
-      typeof text === "string" ? text : JSON.stringify(text, null, 2),
-    );
+    fs.writeFileSync(path.resolve(opts.output), typeof text === "string" ? text : JSON.stringify(text, null, 2));
     console.log(`\nResults saved to: ${opts.output}`);
   }
 }
@@ -432,21 +435,9 @@ const MAGIC_BYTES = {
     [0x47, 0x49, 0x46, 0x38, 0x39, 0x61],
     [0x47, 0x49, 0x46, 0x38, 0x37, 0x61],
   ],
-  "image/webp": function (buf) {
-    if (
-      buf[0] !== 0x52 ||
-      buf[1] !== 0x49 ||
-      buf[2] !== 0x46 ||
-      buf[3] !== 0x46
-    )
-      return false;
-    if (
-      buf[8] !== 0x57 ||
-      buf[9] !== 0x45 ||
-      buf[10] !== 0x42 ||
-      buf[11] !== 0x50
-    )
-      return false;
+  "image/webp": (buf) => {
+    if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
+    if (buf[8] !== 0x57 || buf[9] !== 0x45 || buf[10] !== 0x42 || buf[11] !== 0x50) return false;
     return true;
   },
   "image/bmp": [[0x42, 0x4d]],
@@ -454,10 +445,9 @@ const MAGIC_BYTES = {
     [0x49, 0x49, 0x2a, 0x00],
     [0x4d, 0x4d, 0x00, 0x2a],
   ],
-  "image/svg+xml": function (buf) {
+  "image/svg+xml": (buf) => {
     var s = "";
-    for (let i = 0; i < Math.min(50, buf.length); i++)
-      s += String.fromCharCode(buf[i]);
+    for (let i = 0; i < Math.min(50, buf.length); i++) s += String.fromCharCode(buf[i]);
     s = s.toLowerCase();
     return s.indexOf("<svg") !== -1 || s.indexOf("<?xml") !== -1;
   },
@@ -468,51 +458,21 @@ const MAGIC_BYTES = {
     [0xff, 0xf3],
     [0xff, 0xf2],
   ],
-  "audio/wav": function (buf) {
-    if (
-      buf[0] !== 0x52 ||
-      buf[1] !== 0x49 ||
-      buf[2] !== 0x46 ||
-      buf[3] !== 0x46
-    )
-      return false;
-    if (
-      buf[8] !== 0x57 ||
-      buf[9] !== 0x41 ||
-      buf[10] !== 0x56 ||
-      buf[11] !== 0x45
-    )
-      return false;
+  "audio/wav": (buf) => {
+    if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
+    if (buf[8] !== 0x57 || buf[9] !== 0x41 || buf[10] !== 0x56 || buf[11] !== 0x45) return false;
     return true;
   },
   "audio/flac": [[0x66, 0x4c, 0x61, 0x43]],
   "audio/ogg": [[0x4f, 0x67, 0x67, 0x53]],
-  "video/mp4": function (buf) {
-    if (
-      buf[4] !== 0x66 ||
-      buf[5] !== 0x74 ||
-      buf[6] !== 0x79 ||
-      buf[7] !== 0x70
-    )
-      return false;
+  "video/mp4": (buf) => {
+    if (buf[4] !== 0x66 || buf[5] !== 0x74 || buf[6] !== 0x79 || buf[7] !== 0x70) return false;
     return true;
   },
   "video/webm": [[0x1a, 0x45, 0xdf, 0xa3]],
-  "video/avi": function (buf) {
-    if (
-      buf[0] !== 0x52 ||
-      buf[1] !== 0x49 ||
-      buf[2] !== 0x46 ||
-      buf[3] !== 0x46
-    )
-      return false;
-    if (
-      buf[8] !== 0x41 ||
-      buf[9] !== 0x56 ||
-      buf[10] !== 0x49 ||
-      buf[11] !== 0x20
-    )
-      return false;
+  "video/avi": (buf) => {
+    if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
+    if (buf[8] !== 0x41 || buf[9] !== 0x56 || buf[10] !== 0x49 || buf[11] !== 0x20) return false;
     return true;
   },
 };
@@ -538,8 +498,8 @@ const DOC_THREAT_PATTERNS = [
 ];
 
 function isDangerousExt(fileName) {
-  var name = path.basename(fileName).toLowerCase();
-  for (var i = 0; i < BLOCKED_EXTS.length; i++) {
+  let name = path.basename(fileName).toLowerCase();
+  for (let i = 0; i < BLOCKED_EXTS.length; i++) {
     if (name.endsWith(BLOCKED_EXTS[i])) return true;
   }
   return false;
@@ -568,7 +528,7 @@ function hasDangerousContent(data) {
   const arr = data instanceof Uint8Array ? data : new Uint8Array(data);
   const dec = new TextDecoder("utf-8", { fatal: false });
   const s = dec.decode(arr.slice(0, 4096));
-  for (var i = 0; i < DANGEROUS_PATTERNS.length; i++) {
+  for (let i = 0; i < DANGEROUS_PATTERNS.length; i++) {
     if (DANGEROUS_PATTERNS[i].test(s)) return true;
   }
   return false;
@@ -582,9 +542,7 @@ function checkDocumentThreats(data) {
   if (s.length > maxSize)
     return {
       safe: false,
-      reason: `PDF exceeds 10MB limit (${(s.length / 1024 / 1024).toFixed(
-        1,
-      )}MB)`,
+      reason: `PDF exceeds 10MB limit (${(s.length / 1024 / 1024).toFixed(1)}MB)`,
     };
   for (let i = 0; i < DOC_THREAT_PATTERNS.length; i++) {
     if (DOC_THREAT_PATTERNS[i].pattern.test(s)) {
@@ -597,15 +555,9 @@ function checkDocumentThreats(data) {
 function checkFileStructure(data, ext) {
   const arr = data instanceof Uint8Array ? data : new Uint8Array(data);
   if (ext === ".png") {
-    if (arr.length < 12)
-      return { safe: false, reason: "File too small to be valid PNG" };
+    if (arr.length < 12) return { safe: false, reason: "File too small to be valid PNG" };
     const iend = arr.slice(arr.length - 12);
-    if (
-      iend[4] !== 0x49 ||
-      iend[5] !== 0x45 ||
-      iend[6] !== 0x4e ||
-      iend[7] !== 0x44
-    )
+    if (iend[4] !== 0x49 || iend[5] !== 0x45 || iend[6] !== 0x4e || iend[7] !== 0x44)
       return {
         safe: false,
         reason: "Invalid PNG: missing IEND chunk (possible appended data)",
@@ -619,8 +571,7 @@ function checkFileStructure(data, ext) {
       };
   } else if (ext === ".gif") {
     if (arr.length < 1) return { safe: false, reason: "File too small" };
-    if (arr[arr.length - 1] !== 0x3b)
-      return { safe: false, reason: "Invalid GIF: missing trailer (0x3B)" };
+    if (arr[arr.length - 1] !== 0x3b) return { safe: false, reason: "Invalid GIF: missing trailer (0x3B)" };
   }
   return { safe: true };
 }
@@ -636,10 +587,10 @@ const DANGEROUS_MAGIC = [
 ];
 
 function hasDangerousMagic(buf) {
-  for (var i = 0; i < DANGEROUS_MAGIC.length; i++) {
-    var sig = DANGEROUS_MAGIC[i].sig;
-    var match = true;
-    for (var j = 0; j < sig.length; j++) {
+  for (let i = 0; i < DANGEROUS_MAGIC.length; i++) {
+    let sig = DANGEROUS_MAGIC[i].sig;
+    let match = true;
+    for (let j = 0; j < sig.length; j++) {
       if (buf[j] !== sig[j]) {
         match = false;
         break;
@@ -666,15 +617,13 @@ function validateFile(filePath, options) {
 
   // 1. Extension blocklist
   if (!opts.allowDangerous && isDangerousExt(fileName)) {
-    throw new Error(
-      `Blocked dangerous file type: ${ext} (${fileName}). Use --allow-dangerous to override.`,
-    );
+    throw new Error(`Blocked dangerous file type: ${ext} (${fileName}). Use --allow-dangerous to override.`);
   }
 
   // 1b. Check files without extension by magic bytes
   if (!opts.allowDangerous && !fileHasExt(fileName)) {
-    var raw = fs.readFileSync(absPath).slice(0, 64);
-    var magic = hasDangerousMagic(raw);
+    let raw = fs.readFileSync(absPath).slice(0, 64);
+    let magic = hasDangerousMagic(raw);
     if (magic) {
       throw new Error(
         `Blocked dangerous file type detected by magic bytes: ${magic} (${fileName}). Use --allow-dangerous to override.`,
@@ -686,42 +635,23 @@ function validateFile(filePath, options) {
   const info = getFileInfo(filePath);
 
   // 2. Magic bytes check
-  if (
-    info.type !== "application/octet-stream" &&
-    !checkMagicBytes(data, info.type)
-  ) {
+  if (info.type !== "application/octet-stream" && !checkMagicBytes(data, info.type)) {
     throw new Error(
       `Magic bytes mismatch for ${fileName}: declared type ${info.type} doesn't match actual file content`,
     );
   }
 
   // 3. Dangerous content scan (images, audio, video)
-  if (
-    [
-      ".png",
-      ".jpg",
-      ".jpeg",
-      ".gif",
-      ".webp",
-      ".bmp",
-      ".tiff",
-      ".tif",
-      ".svg",
-    ].includes(ext)
-  ) {
+  if ([".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".svg"].includes(ext)) {
     if (hasDangerousContent(data)) {
-      throw new Error(
-        `Dangerous content detected in ${fileName}: embedded scripts or code patterns found`,
-      );
+      throw new Error(`Dangerous content detected in ${fileName}: embedded scripts or code patterns found`);
     }
   }
 
   // 4. File structure integrity
   const structResult = checkFileStructure(data, ext);
   if (!structResult.safe) {
-    throw new Error(
-      `Structure check failed for ${fileName}: ${structResult.reason}`,
-    );
+    throw new Error(`Structure check failed for ${fileName}: ${structResult.reason}`);
   }
 
   return data;

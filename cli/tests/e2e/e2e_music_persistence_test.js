@@ -1,4 +1,3 @@
-"use strict";
 const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
@@ -9,10 +8,10 @@ const BASE = `http://localhost:${PORT}`;
 const NAV_WAIT = { waitUntil: "domcontentloaded" };
 
 let browser;
-let server;
+let _server;
 
 before(async () => {
-  server = await startServer(PORT);
+  _server = await startServer(PORT);
   browser = await chromium.launch({ headless: true });
 });
 
@@ -68,9 +67,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
 
     // Enter Professional Mode first
     await page.evaluate(() => {
-      const card = document.querySelector(
-        '.card[data-page="home"], a.mode-card',
-      );
+      const card = document.querySelector('.card[data-page="home"], a.mode-card');
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -116,9 +113,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.waitForTimeout(2000);
 
     await page.evaluate(() => {
-      const card = document.querySelector(
-        '.card[data-page="home"], a.mode-card',
-      );
+      const card = document.querySelector('.card[data-page="home"], a.mode-card');
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -135,7 +130,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
       audio: !!document.getElementById("bg-music"),
       credit: !!document.getElementById("music-credit"),
       count: document.querySelectorAll("#bg-music").length,
-      audioInApp: (function () {
+      audioInApp: (() => {
         var app = document.getElementById("app");
         return app ? app.contains(document.getElementById("bg-music")) : false;
       })(),
@@ -155,20 +150,12 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.waitForTimeout(2000);
 
     await page.evaluate(() => {
-      const card = document.querySelector(
-        '.card[data-page="home"], a.mode-card',
-      );
+      const card = document.querySelector('.card[data-page="home"], a.mode-card');
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
 
-    const pages = [
-      "watermark",
-      "fingerprint",
-      "c2pa",
-      "certificate",
-      "timestamp",
-    ];
+    const pages = ["watermark", "fingerprint", "c2pa", "certificate", "timestamp"];
     for (const p of pages) {
       await page.evaluate((name) => {
         const link = document.querySelector(`#sidebar a[data-page="${name}"]`);
@@ -190,10 +177,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
           count: cnt,
         };
       });
-      assert.ok(
-        ok.ok,
-        `Music elements valid after navigating to ${p} (count=${ok.count})`,
-      );
+      assert.ok(ok.ok, `Music elements valid after navigating to ${p} (count=${ok.count})`);
     }
 
     // Final check: audio src is still set
@@ -201,10 +185,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
       var a = document.getElementById("bg-music");
       return a ? a.src : null;
     });
-    assert.ok(
-      src && src.length > 0,
-      "Audio src is still set after 5 navigations",
-    );
+    assert.ok(src && src.length > 0, "Audio src is still set after 5 navigations");
     await ctx.close();
   });
 
@@ -215,9 +196,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.waitForTimeout(2000);
 
     await page.evaluate(() => {
-      const card = document.querySelector(
-        '.card[data-page="home"], a.mode-card',
-      );
+      const card = document.querySelector('.card[data-page="home"], a.mode-card');
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -229,9 +208,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
     });
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const link = document.querySelector(
-        '#sidebar a[data-page="fingerprint"]',
-      );
+      const link = document.querySelector('#sidebar a[data-page="fingerprint"]');
       if (link) link.click();
     });
     await page.waitForTimeout(1500);
@@ -270,9 +247,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.waitForTimeout(2000);
 
     await page.evaluate(() => {
-      const card = document.querySelector(
-        '.card[data-page="home"], a.mode-card',
-      );
+      const card = document.querySelector('.card[data-page="home"], a.mode-card');
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -285,15 +260,11 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.waitForTimeout(2000);
 
     // Should have exactly one music button
-    const btnCount = await page.evaluate(
-      () => document.querySelectorAll("#music-btn").length,
-    );
+    const btnCount = await page.evaluate(() => document.querySelectorAll("#music-btn").length);
     assert.equal(btnCount, 1, "Exactly one music-btn element");
 
     // Should have exactly one audio
-    const audioCount = await page.evaluate(
-      () => document.querySelectorAll("#bg-music").length,
-    );
+    const audioCount = await page.evaluate(() => document.querySelectorAll("#bg-music").length);
     assert.equal(audioCount, 1, "Exactly one bg-music element");
 
     await ctx.close();
@@ -306,22 +277,13 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.waitForTimeout(2000);
 
     await page.evaluate(() => {
-      const card = document.querySelector(
-        '.card[data-page="home"], a.mode-card',
-      );
+      const card = document.querySelector('.card[data-page="home"], a.mode-card');
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
 
     // Repeated rapid navigations
-    const navs = [
-      "watermark",
-      "fingerprint",
-      "watermark",
-      "c2pa",
-      "fingerprint",
-      "certificate",
-    ];
+    const navs = ["watermark", "fingerprint", "watermark", "c2pa", "fingerprint", "certificate"];
     for (const p of navs) {
       await page.evaluate((name) => {
         const link = document.querySelector(`#sidebar a[data-page="${name}"]`);
@@ -340,10 +302,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
         count: cnt,
       };
     });
-    assert.ok(
-      final.ok,
-      "Music elements survive rapid navigation (count=" + final.count + ")",
-    );
+    assert.ok(final.ok, `Music elements survive rapid navigation (count=${final.count})`);
     await ctx.close();
   });
 
@@ -353,12 +312,10 @@ describe("Music Persistence — Hybrid Navigation", () => {
     const page = await ctx.newPage();
 
     // Go to standalone watermark page first
-    await page.goto(BASE + "/Style/pages/watermark/index.html", NAV_WAIT);
+    await page.goto(`${BASE}/Style/pages/watermark/index.html`, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    const beforeCount = await page.evaluate(
-      () => document.querySelectorAll("#bg-music").length,
-    );
+    const beforeCount = await page.evaluate(() => document.querySelectorAll("#bg-music").length);
     assert.equal(beforeCount, 1, "One bg-music on standalone page");
 
     // Now navigate via a simulated hybrid link (back to index + nav)
@@ -366,9 +323,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    const afterCount = await page.evaluate(
-      () => document.querySelectorAll("#bg-music").length,
-    );
+    const afterCount = await page.evaluate(() => document.querySelectorAll("#bg-music").length);
     assert.equal(afterCount, 1, "One bg-music after returning to index.html");
 
     await ctx.close();

@@ -40,6 +40,7 @@ export default [
       "unicorn/no-useless-undefined": "off",
       "unicorn/consistent-function-scoping": "off",
       "unicorn/no-static-only-class": "off",
+      "unicorn/prefer-string-slice": "off",
       "import-x/no-unresolved": "warn",
       "import-x/no-named-as-default": "off",
       "import-x/no-named-as-default-member": "off",

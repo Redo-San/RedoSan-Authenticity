@@ -2,13 +2,11 @@
 // Each tool is wrapped with a JS fallback so nothing breaks when tools are missing.
 // Load via: const tools = require('./tools');
 
-"use strict";
-
-const { execFileSync, execSync } = require("child_process");
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
-const os = require("os");
+const { execFileSync, execSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const _crypto = require("node:crypto");
+const _os = require("node:os");
 
 // ── Helpers ──
 
@@ -38,7 +36,7 @@ function _runTool(cmd, args, opts) {
   }
 }
 
-let _cache = {};
+const _cache = {};
 
 /**
  * Check if a tool is available. Cached after first check.
@@ -53,10 +51,10 @@ function checkTool(name) {
  * Check all tools at once. Returns { name: path|null }
  */
 function checkAllTools() {
-  return ["exiftool", "sox", "soxi", "pngcheck", "jpeginfo", "magick", "convert", "cbor-diag"].reduce(
-    (acc, t) => { acc[t] = checkTool(t); return acc; },
-    {}
-  );
+  return ["exiftool", "sox", "soxi", "pngcheck", "jpeginfo", "magick", "convert", "cbor-diag"].reduce((acc, t) => {
+    acc[t] = checkTool(t);
+    return acc;
+  }, {});
 }
 
 // ── exiftool ──
@@ -71,7 +69,7 @@ function exifRead(filePath) {
   if (out.error) return { from: "js", warning: out.error };
   try {
     const arr = JSON.parse(out);
-    return { from: "exiftool", data: (arr && arr[0]) || {} };
+    return { from: "exiftool", data: arr?.[0] || {} };
   } catch {
     return { from: "js", warning: "exiftool JSON parse failed" };
   }
@@ -84,13 +82,19 @@ function exifReadGps(filePath) {
   const tool = checkTool("exiftool");
   if (!tool) return null;
   const out = _runTool(tool, [
-    "-GPSLatitude", "-GPSLongitude", "-GPSAltitude",
-    "-GPSLatitudeRef", "-GPSLongitudeRef", "-n", "-json", filePath,
+    "-GPSLatitude",
+    "-GPSLongitude",
+    "-GPSAltitude",
+    "-GPSLatitudeRef",
+    "-GPSLongitudeRef",
+    "-n",
+    "-json",
+    filePath,
   ]);
   if (out.error) return null;
   try {
     const arr = JSON.parse(out);
-    return (arr && arr[0]) || null;
+    return arr?.[0] || null;
   } catch {
     return null;
   }
@@ -131,7 +135,9 @@ function audioConvert(input, output) {
   const tool = _soxTool();
   if (!tool) {
     // No conversion possible — just copy
-    try { fs.copyFileSync(input, output); } catch {}
+    try {
+      fs.copyFileSync(input, output);
+    } catch {}
     return { ok: false, warning: "sox not installed — file copied without conversion" };
   }
   const out = _runTool(tool, [input, output]);
@@ -207,7 +213,9 @@ function imageIdentify(filePath) {
 function imageConvert(input, output) {
   const tool = _magickTool();
   if (!tool) {
-    try { fs.copyFileSync(input, output); } catch {}
+    try {
+      fs.copyFileSync(input, output);
+    } catch {}
     return { ok: false, warning: "ImageMagick not installed — file copied without conversion" };
   }
   const out = _runTool(tool, [input, output]);
@@ -224,7 +232,7 @@ function imageResize(input, output, scale) {
   const pct = Math.round(scale * 100);
   const out = _runTool(tool, [input, "-resize", `${pct}%`, output]);
   if (out.error) return { ok: false, error: out.error };
-  return { ok: true, from: "imagemagick", scale: pct + "%" };
+  return { ok: true, from: "imagemagick", scale: `${pct}%` };
 }
 
 /**

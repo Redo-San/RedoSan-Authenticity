@@ -1,4 +1,3 @@
-"use strict";
 const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
@@ -9,10 +8,10 @@ const BASE = `http://localhost:${PORT}`;
 const NAV_WAIT = { waitUntil: "domcontentloaded" };
 
 let browser;
-let server;
+let _server;
 
 before(async () => {
-  server = await startServer(PORT);
+  _server = await startServer(PORT);
   browser = await chromium.launch({ headless: true });
 });
 
@@ -32,9 +31,7 @@ describe("E2E — Home Page", () => {
     });
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
-    const fatal = errors.filter(
-      (e) => !e.includes("frame-ancestors") && !e.includes("404"),
-    );
+    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404"));
     assert.equal(fatal.length, 0, `Errors: ${fatal.join(", ")}`);
     await ctx.close();
   });
@@ -52,9 +49,7 @@ describe("E2E — Home Page", () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     await page.goto(BASE, NAV_WAIT);
-    const count = await page.evaluate(
-      () => document.querySelectorAll("#sidebar a[data-page]").length,
-    );
+    const count = await page.evaluate(() => document.querySelectorAll("#sidebar a[data-page]").length);
     assert.ok(count >= 10, `Expected >=10 sidebar links, got ${count}`);
     await ctx.close();
   });
@@ -117,10 +112,7 @@ describe("E2E — Hash Routing & Page Navigation", () => {
     });
     await page.waitForTimeout(2000);
     const hash = await page.evaluate(() => window.location.hash);
-    assert.ok(
-      hash.includes("page-id_forge"),
-      `Hash should include 'page-id_forge', got: ${hash}`,
-    );
+    assert.ok(hash.includes("page-id_forge"), `Hash should include 'page-id_forge', got: ${hash}`);
     await ctx.close();
   });
 });
@@ -136,15 +128,9 @@ describe("E2E — ID Forge Functionality", () => {
       if (a) a.click();
     });
     await page.waitForTimeout(1000);
-    const hasSelect = await page.evaluate(
-      () => !!document.getElementById("if-type"),
-    );
-    const hasBtn = await page.evaluate(
-      () => !!document.getElementById("if-gen-btn"),
-    );
-    const hasOutput = await page.evaluate(
-      () => !!document.getElementById("if-output"),
-    );
+    const hasSelect = await page.evaluate(() => !!document.getElementById("if-type"));
+    const hasBtn = await page.evaluate(() => !!document.getElementById("if-gen-btn"));
+    const hasOutput = await page.evaluate(() => !!document.getElementById("if-output"));
     assert.ok(hasSelect, "ID Forge type selector should exist");
     assert.ok(hasBtn, "ID Forge generate button (#if-gen-btn) should exist");
     assert.ok(hasOutput, "ID Forge output textarea should exist");
