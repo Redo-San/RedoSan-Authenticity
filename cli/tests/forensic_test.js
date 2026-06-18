@@ -1,10 +1,10 @@
-const { describe, it, before } = require("node:test");
+const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-let loadImage, createCanvas;
+let _loadImage, createCanvas;
 try {
-  ({ loadImage, createCanvas } = require("canvas"));
+  ({ loadImage: _loadImage, createCanvas } = require("canvas"));
 } catch {
   // canvas native module not available — tests will skip
 }

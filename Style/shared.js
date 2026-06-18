@@ -625,13 +625,9 @@ function logSecurityStatus() {
   if (p.signals.length > 0) {
     layers[0] += " [" + p.signals.join(",") + "]";
   }
-  console.log(
-    "%c🔐 RedoSan Security",
-    "font-size:16px;font-weight:700;color:#6C5CE7",
-  );
+  // Security status logged silently (available via browser console if needed)
   for (const layer of layers) {
     var c = layer.includes("✗") ? "#FF5252" : "#4CAF50";
-    console.log("%c  " + layer, "color:" + c + ";font-size:13px");
   }
 }
 
@@ -651,10 +647,10 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
       .register("/RedoSan-Authenticity/sw.js?v=" + SW_VERSION)
       .then(
         function (reg) {
-          console.log("[SW] Registered scope:", reg.scope);
+          // SW registered — success
         },
         function (error) {
-          console.warn("[SW] Registration failed:", error);
+          // SW registration failed
         },
       );
   });

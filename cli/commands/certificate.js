@@ -14,8 +14,7 @@ async function runCertificate(filePath, opts) {
   const data = await buildCertData(filePath, opts);
 
   const format = (opts.format || "pdf").toLowerCase();
-  let outPath;
-  outPath = opts.output ? path.resolve(opts.output) : path.resolve(`passport.${format}`);
+  const outPath = opts.output ? path.resolve(opts.output) : path.resolve(`passport.${format}`);
 
   const qrVerData = buildQRVerificationJSON(data);
   const docHash = crypto.createHash("sha256").update(qrVerData).digest("hex");

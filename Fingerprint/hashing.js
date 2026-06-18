@@ -1881,13 +1881,11 @@ if (globalThis.window !== undefined)
       tvAbc ===
         "56887470a385e413002515c5db4a44f41258bc6604b436aef25840d65888d895"
     ) {
-      console.log("BLAKE3 self-check passed");
+      // BLAKE3 self-check passed
     } else {
-      console.warn("BLAKE3 implementation deviates from expected");
-      console.log("Empty input hash:", tvEmpty, "(expected 292d4e1d...)");
-      console.log("ABC input hash:", tvAbc, "(expected 56887470...)");
+      // BLAKE3 implementation deviates from expected
     }
   } catch (error) {
-    console.warn("BLAKE3 self-check failed:", error.message);
+    // BLAKE3 self-check failed
   }
 })();

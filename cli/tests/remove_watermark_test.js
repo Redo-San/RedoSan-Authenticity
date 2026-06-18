@@ -5,7 +5,7 @@
 const path = require("node:path");
 const fs = require("node:fs");
 const crypto = require("node:crypto");
-const { createCanvas, loadImage, ImageData } = require("canvas");
+const { createCanvas, loadImage: _loadImage, ImageData } = require("canvas");
 
 // ── Polyfills (matches cli/commands/watermark.js) ──
 const mockDocument = {

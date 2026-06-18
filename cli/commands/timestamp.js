@@ -168,8 +168,7 @@ async function runCreate(filePath, opts) {
   }
 
   // Determine output path
-  let outputPath;
-  outputPath = opts.output ? path.resolve(opts.output) : `${absPath}.ots`;
+  const outputPath = opts.output ? path.resolve(opts.output) : `${absPath}.ots`;
 
   fs.writeFileSync(outputPath, Buffer.from(upgradedBytes));
 
