@@ -179,20 +179,21 @@ function audioEffect(input, output, effect) {
   if (!tool) return { ok: false, warning: "sox not installed" };
   const args = [input, output];
   switch (effect) {
-  case "noise": {
-  args.push("noise", "0.01");
-  break;
-  }
-  case "reverb": {
-  args.push("reverb");
-  break;
-  }
-  case "speed": {
-  args.push("speed", "0.95");
-  break;
-  }
-  default: { if (typeof effect === "string") args.push(...effect.split(" "));
-  }
+    case "noise": {
+      args.push("noise", "0.01");
+      break;
+    }
+    case "reverb": {
+      args.push("reverb");
+      break;
+    }
+    case "speed": {
+      args.push("speed", "0.95");
+      break;
+    }
+    default: {
+      if (typeof effect === "string") args.push(...effect.split(" "));
+    }
   }
   const out = _runTool(tool, args);
   if (out.error) return { ok: false, error: out.error };

@@ -24,25 +24,25 @@ async function runCertificate(filePath, opts) {
 
   let output;
   switch (format) {
-  case "pdf": {
-    output = await generatePDF(data, qrPngBuf, qrContent);
-  
-  break;
-  }
-  case "docx": {
-    output = await generateDOCX(data, qrPngBuf, qrContent);
-  
-  break;
-  }
-  case "epub": {
-    output = await generateEPUB(data, qrPngBuf, qrContent);
-  
-  break;
-  }
-  default: {
-    console.error("Unsupported format. Use pdf, docx, or epub.");
-    process.exit(1);
-  }
+    case "pdf": {
+      output = await generatePDF(data, qrPngBuf, qrContent);
+
+      break;
+    }
+    case "docx": {
+      output = await generateDOCX(data, qrPngBuf, qrContent);
+
+      break;
+    }
+    case "epub": {
+      output = await generateEPUB(data, qrPngBuf, qrContent);
+
+      break;
+    }
+    default: {
+      console.error("Unsupported format. Use pdf, docx, or epub.");
+      process.exit(1);
+    }
   }
 
   fs.writeFileSync(outPath, output);
@@ -774,11 +774,11 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
 function escHtml(s) {
   if (s == null) return "";
   return String(s)
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll('\'', "&#39;");
+    .replaceAll("'", "&#39;");
 }
 
 /**
@@ -883,9 +883,9 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
         '<tr><td><strong>Signature</strong></td><td style="font-size:0.6em;word-break:break-all">' +
         escHtml(`${(data.didSig.signature || "").substring(0, 64)}...`) +
         "</td></tr></table>"
-      : (data.didIdentity
+      : data.didIdentity
         ? `<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">${escHtml(data.didIdentity)}</td></tr></table>`
-        : "")) +
+        : "") +
     (data.ct?.submitted && data.ct.hash
       ? "<h2>Certificate Transparency</h2><table>" +
         '<tr><td><strong>SHA-256</strong></td><td style="font-size:0.6em;word-break:break-all">' +
@@ -900,9 +900,9 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
             escHtml((data.ct.aggregator || "OTS").replace("https://", "").split("/")[0] || "OTS calendar") +
             "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'
-      : (data.ct
+      : data.ct
         ? `<h2>Certificate Transparency</h2><p>Status: ${escHtml(data.ct.submitted ? "Submitted" : `Unavailable — ${data.ct.error || "offline"}`)}</p>`
-        : "")) +
+        : "") +
     "<h2>Verification QR Code</h2>" +
     "<p>Scan this QR code to verify the document contents.</p>" +
     '<div class="qr-wrapper"><img src="images/qr.png" alt="QR Code"/></div>' +

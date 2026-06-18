@@ -13,41 +13,41 @@ async function runDid(action, file, opts) {
     const algo = (opts.algo || "Ed25519").toUpperCase();
     let keyPair;
     switch (algo) {
-    case "ED25519": {
-      const { generateKeyPairSync } = crypto;
-      keyPair = generateKeyPairSync("ed25519", {
-        publicKeyEncoding: { type: "spki", format: "pem" },
-        privateKeyEncoding: { type: "pkcs8", format: "pem" },
-      });
-    
-    break;
-    }
-    case "P-256": {
-      const { generateKeyPairSync } = crypto;
-      keyPair = generateKeyPairSync("ec", {
-        namedCurve: "P-256",
-        publicKeyEncoding: { type: "spki", format: "pem" },
-        privateKeyEncoding: { type: "pkcs8", format: "pem" },
-      });
-    
-    break;
-    }
-    case "RSA-2048": 
-    case "RSA-4096": {
-      const { generateKeyPairSync } = crypto;
-      const bits = algo === "RSA-4096" ? 4096 : 2048;
-      keyPair = generateKeyPairSync("rsa", {
-        modulusLength: bits,
-        publicKeyEncoding: { type: "spki", format: "pem" },
-        privateKeyEncoding: { type: "pkcs8", format: "pem" },
-      });
-    
-    break;
-    }
-    default: {
-      console.error("Unsupported algorithm. Use Ed25519, P-256, RSA-2048, or RSA-4096.");
-      process.exit(1);
-    }
+      case "ED25519": {
+        const { generateKeyPairSync } = crypto;
+        keyPair = generateKeyPairSync("ed25519", {
+          publicKeyEncoding: { type: "spki", format: "pem" },
+          privateKeyEncoding: { type: "pkcs8", format: "pem" },
+        });
+
+        break;
+      }
+      case "P-256": {
+        const { generateKeyPairSync } = crypto;
+        keyPair = generateKeyPairSync("ec", {
+          namedCurve: "P-256",
+          publicKeyEncoding: { type: "spki", format: "pem" },
+          privateKeyEncoding: { type: "pkcs8", format: "pem" },
+        });
+
+        break;
+      }
+      case "RSA-2048":
+      case "RSA-4096": {
+        const { generateKeyPairSync } = crypto;
+        const bits = algo === "RSA-4096" ? 4096 : 2048;
+        keyPair = generateKeyPairSync("rsa", {
+          modulusLength: bits,
+          publicKeyEncoding: { type: "spki", format: "pem" },
+          privateKeyEncoding: { type: "pkcs8", format: "pem" },
+        });
+
+        break;
+      }
+      default: {
+        console.error("Unsupported algorithm. Use Ed25519, P-256, RSA-2048, or RSA-4096.");
+        process.exit(1);
+      }
     }
 
     const did = `did:key:${algo === "ED25519" ? "z" : "z"}${Buffer.from(keyPair.publicKey).toString("base64url").substring(0, 32)}`;

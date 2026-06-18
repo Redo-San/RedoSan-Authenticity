@@ -71,6 +71,8 @@ export default [
       "unicorn/prefer-dom-node-text-content": "off",
       "unicorn/explicit-length-check": "off",
       "unicorn/no-useless-spread": "off",
+      "unicorn/number-literal-case": "off",
+      "unicorn/consistent-existence-index-check": "off",
       // ── SonarJS style / redundancy (safe to suppress) ──
       "sonarjs/no-unused-vars": "off",
       "sonarjs/no-dead-store": "off",

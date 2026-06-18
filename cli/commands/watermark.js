@@ -58,9 +58,7 @@ if (globalThis.window === undefined) {
 if (globalThis.sha256Hex === undefined) {
   globalThis.sha256Hex = async (data) => {
     const hash = crypto.createHash("sha256").update(Buffer.from(data)).digest();
-    return [...hash]
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    return [...hash].map((b) => b.toString(16).padStart(2, "0")).join("");
   };
 }
 
@@ -204,7 +202,7 @@ async function deriveKey(password) {
  * @param key
  */
 function makePayload(secretData, key) {
-  const magic = new Uint8Array([0xAA, 0xBB]);
+  const magic = new Uint8Array([0xaa, 0xbb]);
   const rawData = new Uint8Array(2 + secretData.length);
   rawData.set(magic);
   rawData.set(secretData, 2);
@@ -228,7 +226,7 @@ function extractPayload(bitsStr, key) {
   if (bitsStr.length < 32 + dlen * 8) return null;
   const enc = bitsFromStr(bitsStr.substr(32, dlen * 8));
   const dec = xorBytes(enc, key);
-  if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB) return dec.slice(2);
+  if (dec.length >= 2 && dec[0] === 0xaa && dec[1] === 0xbb) return dec.slice(2);
   return null;
 }
 
@@ -344,122 +342,124 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
     fs.writeFileSync(path.resolve(outputFile), outBuf);
     console.log(`Advanced watermark embedded (${algoName})`);
     console.log(`Output: ${path.resolve(outputFile)}`);
-  } else switch (algoNum) {
- case 1: {
-    // LSB
-    const payload = makePayload(secretData || new Uint8Array(0), key);
-    if (payload.bits.length > maxPixels) {
-      console.error("Image too small");
-      process.exit(1);
-    }
-    globalThis.wm1_embed(imgData, payload.bits.split("").map(Number));
-    ctx.putImageData(imgData, 0, 0);
-    saveEmbed(path.resolve(outputFile), payload.bits.length);
-  
- break;
- }
- case 3: {
-    // Random LSB (seeded shuffle)
-    const payload = makePayload(secretData || new Uint8Array(0), key);
-    if (payload.bits.length > maxPixels) {
-      console.error("Image too small");
-      process.exit(1);
-    }
-    globalThis.wm3_embed(imgData, payload.bits.split("").map(Number), keyVal);
-    ctx.putImageData(imgData, 0, 0);
-    saveEmbed(path.resolve(outputFile), payload.bits.length);
-  
- break;
- }
- case 6: {
-    // Multi-bit (2-bit LSB)
-    const payload = makePayload(secretData || new Uint8Array(0), key);
-    if (payload.bits.length > (maxPixels * 2) / 3) {
-      console.error("Image too small");
-      process.exit(1);
-    }
-    globalThis.wm6_embed(imgData, payload.bits.split("").map(Number));
-    ctx.putImageData(imgData, 0, 0);
-    saveEmbed(path.resolve(outputFile), payload.bits.length);
-  
- break;
- }
- case 8: {
-    // Fragile (SHA-256 hash)
-    if (!secretData) {
-      console.error("Secret required for fragile algorithm");
-      process.exit(1);
-    }
-    if (512 > maxPixels) {
-      console.error("Image too small (need >= 171 pixels)");
-      process.exit(1);
-    }
-    await globalThis.wm8_embed(imgData, secretData, key);
-    ctx.putImageData(imgData, 0, 0);
-    saveEmbed(path.resolve(outputFile), 512);
-  
- break;
- }
- default: { if ([2, 4, 5, 7, 9].includes(algoNum)) {
-    // DCT-based algorithms
-    const ycbcr = globalThis.rgbToYcbcr(imgData);
-    const cap = globalThis.maxDCTBits(w, h, 11);
+  } else
+    switch (algoNum) {
+      case 1: {
+        // LSB
+        const payload = makePayload(secretData || new Uint8Array(0), key);
+        if (payload.bits.length > maxPixels) {
+          console.error("Image too small");
+          process.exit(1);
+        }
+        globalThis.wm1_embed(imgData, payload.bits.split("").map(Number));
+        ctx.putImageData(imgData, 0, 0);
+        saveEmbed(path.resolve(outputFile), payload.bits.length);
 
-    if (algoNum === 5) {
-      const sig = new TextEncoder().encode("RedoSanZeroBit");
-      const sigBits = bytesToBits(sig);
-      globalThis.embedInDCT(ycbcr.Y, w, h, sigBits, 25);
-      console.log("Zero-bit: embedding presence signature");
-    } else {
-      const payload = makePayload(secretData || new Uint8Array(0), key);
-      switch (algoNum) {
-      case 4: {
-        if (payload.bits.length * 3 > cap) {
-          console.error("Secret too large for redundant embedding");
-          process.exit(1);
-        }
-        globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits + payload.bits + payload.bits, 30);
-      
-      break;
+        break;
       }
-      case 7: {
-        if (payload.bits.length > cap) {
-          console.error("Secret too large");
+      case 3: {
+        // Random LSB (seeded shuffle)
+        const payload = makePayload(secretData || new Uint8Array(0), key);
+        if (payload.bits.length > maxPixels) {
+          console.error("Image too small");
           process.exit(1);
         }
-        globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 20);
-      
-      break;
+        globalThis.wm3_embed(imgData, payload.bits.split("").map(Number), keyVal);
+        ctx.putImageData(imgData, 0, 0);
+        saveEmbed(path.resolve(outputFile), payload.bits.length);
+
+        break;
       }
-      case 9: {
-        if (payload.bits.length > cap) {
-          console.error("Secret too large");
+      case 6: {
+        // Multi-bit (2-bit LSB)
+        const payload = makePayload(secretData || new Uint8Array(0), key);
+        if (payload.bits.length > (maxPixels * 2) / 3) {
+          console.error("Image too small");
           process.exit(1);
         }
-        globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 15);
-        globalThis.embedInDCT(ycbcr.Cb, w, h, payload.bits, 10);
-      
-      break;
+        globalThis.wm6_embed(imgData, payload.bits.split("").map(Number));
+        ctx.putImageData(imgData, 0, 0);
+        saveEmbed(path.resolve(outputFile), payload.bits.length);
+
+        break;
+      }
+      case 8: {
+        // Fragile (SHA-256 hash)
+        if (!secretData) {
+          console.error("Secret required for fragile algorithm");
+          process.exit(1);
+        }
+        if (512 > maxPixels) {
+          console.error("Image too small (need >= 171 pixels)");
+          process.exit(1);
+        }
+        await globalThis.wm8_embed(imgData, secretData, key);
+        ctx.putImageData(imgData, 0, 0);
+        saveEmbed(path.resolve(outputFile), 512);
+
+        break;
       }
       default: {
-        if (payload.bits.length > cap) {
-          console.error("Secret too large");
-          process.exit(1);
+        if ([2, 4, 5, 7, 9].includes(algoNum)) {
+          // DCT-based algorithms
+          const ycbcr = globalThis.rgbToYcbcr(imgData);
+          const cap = globalThis.maxDCTBits(w, h, 11);
+
+          if (algoNum === 5) {
+            const sig = new TextEncoder().encode("RedoSanZeroBit");
+            const sigBits = bytesToBits(sig);
+            globalThis.embedInDCT(ycbcr.Y, w, h, sigBits, 25);
+            console.log("Zero-bit: embedding presence signature");
+          } else {
+            const payload = makePayload(secretData || new Uint8Array(0), key);
+            switch (algoNum) {
+              case 4: {
+                if (payload.bits.length * 3 > cap) {
+                  console.error("Secret too large for redundant embedding");
+                  process.exit(1);
+                }
+                globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits + payload.bits + payload.bits, 30);
+
+                break;
+              }
+              case 7: {
+                if (payload.bits.length > cap) {
+                  console.error("Secret too large");
+                  process.exit(1);
+                }
+                globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 20);
+
+                break;
+              }
+              case 9: {
+                if (payload.bits.length > cap) {
+                  console.error("Secret too large");
+                  process.exit(1);
+                }
+                globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 15);
+                globalThis.embedInDCT(ycbcr.Cb, w, h, payload.bits, 10);
+
+                break;
+              }
+              default: {
+                if (payload.bits.length > cap) {
+                  console.error("Secret too large");
+                  process.exit(1);
+                }
+                globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 25);
+              }
+            }
+          }
+
+          const result = globalThis.ycbcrToImageData(ycbcr.Y, ycbcr.Cb, ycbcr.Cr, w, h);
+          ctx.putImageData(result.imgData, 0, 0);
+          const outBuf = canvas.toBuffer("image/png");
+          fs.writeFileSync(path.resolve(outputFile), outBuf);
+          console.log(`Watermark embedded (${algoName})`);
+          console.log(`Output: ${path.resolve(outputFile)}`);
         }
-        globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 25);
-      }
       }
     }
-
-    const result = globalThis.ycbcrToImageData(ycbcr.Y, ycbcr.Cb, ycbcr.Cr, w, h);
-    ctx.putImageData(result.imgData, 0, 0);
-    const outBuf = canvas.toBuffer("image/png");
-    fs.writeFileSync(path.resolve(outputFile), outBuf);
-    console.log(`Watermark embedded (${algoName})`);
-    console.log(`Output: ${path.resolve(outputFile)}`);
-  }
- }
- }
 
   /**
    *
@@ -536,7 +536,10 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
       };
       const methodName = extractMethods[algoName];
       let result;
-      result = methodName && typeof watermarkCore[methodName] === "function" ? watermarkCore[methodName](imgData, password) : watermarkCore.blind_decoding(imgData, algoName, password);
+      result =
+        methodName && typeof watermarkCore[methodName] === "function"
+          ? watermarkCore[methodName](imgData, password)
+          : watermarkCore.blind_decoding(imgData, algoName, password);
       if (result && result !== "No readable message found") {
         const buf = Buffer.from(result, "utf-8");
         writeExtracted(buf, outputFile, algoName);
@@ -548,103 +551,102 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
   }
 
   switch (algoNum) {
-  case 1: 
-  case 3: 
-  case 6: {
-    const fn = algoNum === 1 ? "wm1_extract" : (algoNum === 3 ? "wm3_extract" : "wm6_extract");
-    const args = algoNum === 3 ? [imgData, keyVal] : [imgData];
-    const bits = globalThis[fn](...args);
-    if (typeof bits === "string") {
-      /* already string */
-    }
-    const data = extractPayload(bits, key);
-    if (data) {
-      writeExtracted(data, outputFile, algoName);
-    } else {
-      console.log("No watermark found. Try a different algorithm or password.");
-    }
-  
-  break;
-  }
-  case 5: {
-    const sig = new TextEncoder().encode("RedoSanZeroBit");
-    const ycbcr = globalThis.rgbToYcbcr(imgData);
-    const b = globalThis.extractFromDCT(ycbcr.Y, w, h, sig.length * 8);
-    if (b.length < sig.length * 8) {
-      console.log("No watermark detected");
-      return;
-    }
-    const data = bitsFromStr(b.substr(0, sig.length * 8));
-    let matches = 0;
-    for (let i = 0; i < data.length; i++) if (data[i] === sig[i]) matches++;
-    const ratio = matches / sig.length;
-    if (ratio > 0.85) {
-      console.log(`Presence confirmed (${Math.round(ratio * 100)}% match)`);
-    } else {
-      console.log(`No watermark (${Math.round(ratio * 100)}% match)`);
-    }
-  
-  break;
-  }
-  case 8: {
-    const hash = globalThis.wm8_extract(imgData, key);
-    if (hash) {
-      const hex = [...hash]
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-      console.log(`SHA-256 hash extracted: ${hex}`);
-    } else {
-      console.log("No fragile watermark found.");
-    }
-  
-  break;
-  }
-  default: { if ([2, 4, 7, 9].includes(algoNum)) {
-    const ycbcr = globalThis.rgbToYcbcr(imgData);
-    let b = globalThis.extractFromDCT(ycbcr.Y, w, h, 32);
-    if (b.length < 32) {
-      console.log("No watermark found");
-      return;
-    }
-    const dlen = Number.parseInt(b.substr(0, 32), 2);
-    if (dlen <= 0 || dlen > 100_000) {
-      console.log("No watermark found");
-      return;
-    }
+    case 1:
+    case 3:
+    case 6: {
+      const fn = algoNum === 1 ? "wm1_extract" : algoNum === 3 ? "wm3_extract" : "wm6_extract";
+      const args = algoNum === 3 ? [imgData, keyVal] : [imgData];
+      const bits = globalThis[fn](...args);
+      if (typeof bits === "string") {
+        /* already string */
+      }
+      const data = extractPayload(bits, key);
+      if (data) {
+        writeExtracted(data, outputFile, algoName);
+      } else {
+        console.log("No watermark found. Try a different algorithm or password.");
+      }
 
-    if (algoNum === 4) {
-      const totalBits = 32 + dlen * 8 * 3;
-      b = globalThis.extractFromDCT(ycbcr.Y, w, h, totalBits);
-      if (b.length < totalBits) {
-        console.log("No watermark found");
+      break;
+    }
+    case 5: {
+      const sig = new TextEncoder().encode("RedoSanZeroBit");
+      const ycbcr = globalThis.rgbToYcbcr(imgData);
+      const b = globalThis.extractFromDCT(ycbcr.Y, w, h, sig.length * 8);
+      if (b.length < sig.length * 8) {
+        console.log("No watermark detected");
         return;
       }
-    } else if ([2, 7].includes(algoNum)) {
-      b = globalThis.extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-      if (b.length < 32 + dlen * 8) {
-        console.log("No watermark found");
-        return;
+      const data = bitsFromStr(b.substr(0, sig.length * 8));
+      let matches = 0;
+      for (let i = 0; i < data.length; i++) if (data[i] === sig[i]) matches++;
+      const ratio = matches / sig.length;
+      if (ratio > 0.85) {
+        console.log(`Presence confirmed (${Math.round(ratio * 100)}% match)`);
+      } else {
+        console.log(`No watermark (${Math.round(ratio * 100)}% match)`);
       }
-    } else if (algoNum === 9) {
-      // Imatag: extract from Cb (more robust), fallback to Y
-      b = globalThis.extractFromDCT(ycbcr.Cb, w, h, 32 + dlen * 8);
-      if (b.length < 32 + dlen * 8) {
-        b = globalThis.extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-        if (b.length < 32 + dlen * 8) {
+
+      break;
+    }
+    case 8: {
+      const hash = globalThis.wm8_extract(imgData, key);
+      if (hash) {
+        const hex = [...hash].map((b) => b.toString(16).padStart(2, "0")).join("");
+        console.log(`SHA-256 hash extracted: ${hex}`);
+      } else {
+        console.log("No fragile watermark found.");
+      }
+
+      break;
+    }
+    default: {
+      if ([2, 4, 7, 9].includes(algoNum)) {
+        const ycbcr = globalThis.rgbToYcbcr(imgData);
+        let b = globalThis.extractFromDCT(ycbcr.Y, w, h, 32);
+        if (b.length < 32) {
           console.log("No watermark found");
           return;
         }
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) {
+          console.log("No watermark found");
+          return;
+        }
+
+        if (algoNum === 4) {
+          const totalBits = 32 + dlen * 8 * 3;
+          b = globalThis.extractFromDCT(ycbcr.Y, w, h, totalBits);
+          if (b.length < totalBits) {
+            console.log("No watermark found");
+            return;
+          }
+        } else if ([2, 7].includes(algoNum)) {
+          b = globalThis.extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
+          if (b.length < 32 + dlen * 8) {
+            console.log("No watermark found");
+            return;
+          }
+        } else if (algoNum === 9) {
+          // Imatag: extract from Cb (more robust), fallback to Y
+          b = globalThis.extractFromDCT(ycbcr.Cb, w, h, 32 + dlen * 8);
+          if (b.length < 32 + dlen * 8) {
+            b = globalThis.extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
+            if (b.length < 32 + dlen * 8) {
+              console.log("No watermark found");
+              return;
+            }
+          }
+        }
+
+        const data = extractPayload(b, key);
+        if (data) {
+          writeExtracted(data, outputFile, algoName);
+        } else {
+          console.log("Wrong password or no watermark.");
+        }
       }
     }
-
-    const data = extractPayload(b, key);
-    if (data) {
-      writeExtracted(data, outputFile, algoName);
-    } else {
-      console.log("Wrong password or no watermark.");
-    }
-  }
-  }
   }
 }
 

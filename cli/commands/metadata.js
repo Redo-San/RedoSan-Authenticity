@@ -78,10 +78,13 @@ async function runMetadata(filePath, opts) {
 
     // Parse EXIF (JPEG only)
     let exif = {};
-    if (data[0] === 0xFF && data[1] === 0xD8 && // Call the parseJPEGExif function from metadata.js
-      typeof globalThis.parseJPEGExif === "function") {
-        exif = globalThis.parseJPEGExif(data) || {};
-      }
+    if (
+      data[0] === 0xff &&
+      data[1] === 0xd8 && // Call the parseJPEGExif function from metadata.js
+      typeof globalThis.parseJPEGExif === "function"
+    ) {
+      exif = globalThis.parseJPEGExif(data) || {};
+    }
 
     const result = {
       file: {

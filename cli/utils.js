@@ -61,7 +61,7 @@ async function readDocumentText(filePath) {
     // Look for contiguous sequences of printable ASCII interspersed in binary
     let result = "";
     for (const c of buf) {
-      if ((c >= 0x20 && c <= 0x7E) || c === 0x0A || c === 0x0D) {
+      if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
         result += String.fromCharCode(c);
       } else if (c === 0x00) {
         result += " ";
@@ -187,9 +187,9 @@ function readPdfText(filePath) {
     var asianCount = 0;
     var testLen = Math.min(100, s.length);
     for (let ti = 0; ti + 1 < testLen; ti += 2) {
-      let b1 = s.charCodeAt(ti),
+      const b1 = s.charCodeAt(ti),
         b2 = s.charCodeAt(ti + 1);
-      if (b1 === 0 && b2 >= 0x20 && b2 <= 0x7E) asianCount++;
+      if (b1 === 0 && b2 >= 0x20 && b2 <= 0x7e) asianCount++;
     }
     if (asianCount > 5 && asianCount / Math.floor(testLen / 2) > 0.4) {
       let out2 = "";
@@ -210,7 +210,7 @@ function readPdfText(filePath) {
     const sm = streamRe.exec(contentObj);
     if (!sm) continue;
 
-    const raw = sm[1].replace(/\r?\n$/, "").replaceAll('\r\n', "\n");
+    const raw = sm[1].replace(/\r?\n$/, "").replaceAll("\r\n", "\n");
     let data;
 
     if (contentObj.includes("FlateDecode")) {
@@ -270,7 +270,7 @@ function readPdfText(filePath) {
       if (hexParts)
         hexParts.forEach((h) => {
           const code = Number.parseInt(h.slice(1, -1), 16);
-          text += cmap[code] ? String.fromCodePoint(cmap[code]) : String.fromCodePoint(0xFF_FD);
+          text += cmap[code] ? String.fromCodePoint(cmap[code]) : String.fromCodePoint(0xff_fd);
         });
       t = hexTjArrayRe.exec(data);
     }
@@ -332,9 +332,7 @@ function getFileInfo(filePath) {
  */
 async function hashNode(algo, data) {
   const hash = crypto.createHash(algo).update(data).digest();
-  return [...hash]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return [...hash].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**
@@ -453,8 +451,8 @@ const BLOCKED_EXTS = [
 ];
 
 const MAGIC_BYTES = {
-  "image/png": [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],
-  "image/jpeg": [[0xFF, 0xD8, 0xFF]],
+  "image/png": [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
+  "image/jpeg": [[0xff, 0xd8, 0xff]],
   "image/gif": [
     [0x47, 0x49, 0x46, 0x38, 0x39, 0x61],
     [0x47, 0x49, 0x46, 0x38, 0x37, 0x61],
@@ -464,10 +462,10 @@ const MAGIC_BYTES = {
     if (buf[8] !== 0x57 || buf[9] !== 0x45 || buf[10] !== 0x42 || buf[11] !== 0x50) return false;
     return true;
   },
-  "image/bmp": [[0x42, 0x4D]],
+  "image/bmp": [[0x42, 0x4d]],
   "image/tiff": [
-    [0x49, 0x49, 0x2A, 0x00],
-    [0x4D, 0x4D, 0x00, 0x2A],
+    [0x49, 0x49, 0x2a, 0x00],
+    [0x4d, 0x4d, 0x00, 0x2a],
   ],
   "image/svg+xml": (buf) => {
     var s = "";
@@ -478,22 +476,22 @@ const MAGIC_BYTES = {
   "application/pdf": [[0x25, 0x50, 0x44, 0x46]],
   "audio/mpeg": [
     [0x49, 0x44, 0x33],
-    [0xFF, 0xFB],
-    [0xFF, 0xF3],
-    [0xFF, 0xF2],
+    [0xff, 0xfb],
+    [0xff, 0xf3],
+    [0xff, 0xf2],
   ],
   "audio/wav": (buf) => {
     if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
     if (buf[8] !== 0x57 || buf[9] !== 0x41 || buf[10] !== 0x56 || buf[11] !== 0x45) return false;
     return true;
   },
-  "audio/flac": [[0x66, 0x4C, 0x61, 0x43]],
-  "audio/ogg": [[0x4F, 0x67, 0x67, 0x53]],
+  "audio/flac": [[0x66, 0x4c, 0x61, 0x43]],
+  "audio/ogg": [[0x4f, 0x67, 0x67, 0x53]],
   "video/mp4": (buf) => {
     if (buf[4] !== 0x66 || buf[5] !== 0x74 || buf[6] !== 0x79 || buf[7] !== 0x70) return false;
     return true;
   },
-  "video/webm": [[0x1A, 0x45, 0xDF, 0xA3]],
+  "video/webm": [[0x1a, 0x45, 0xdf, 0xa3]],
   "video/avi": (buf) => {
     if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
     if (buf[8] !== 0x41 || buf[9] !== 0x56 || buf[10] !== 0x49 || buf[11] !== 0x20) return false;
@@ -526,7 +524,7 @@ const DOC_THREAT_PATTERNS = [
  * @param fileName
  */
 function isDangerousExt(fileName) {
-  let name = path.basename(fileName).toLowerCase();
+  const name = path.basename(fileName).toLowerCase();
   for (const BLOCKED_EXT of BLOCKED_EXTS) {
     if (name.endsWith(BLOCKED_EXT)) return true;
   }
@@ -600,47 +598,47 @@ function checkDocumentThreats(data) {
 function checkFileStructure(data, ext) {
   const arr = data instanceof Uint8Array ? data : new Uint8Array(data);
   switch (ext) {
-  case ".png": {
-    if (arr.length < 12) return { safe: false, reason: "File too small to be valid PNG" };
-    const iend = arr.slice(- 12);
-    if (iend[4] !== 0x49 || iend[5] !== 0x45 || iend[6] !== 0x4E || iend[7] !== 0x44)
-      return {
-        safe: false,
-        reason: "Invalid PNG: missing IEND chunk (possible appended data)",
-      };
-  
-  break;
-  }
-  case ".jpg": 
-  case ".jpeg": {
-    if (arr.length < 2) return { safe: false, reason: "File too small" };
-    if (arr.at(-2) !== 0xFF || arr.at(-1) !== 0xD9)
-      return {
-        safe: false,
-        reason: "Invalid JPEG: missing EOI marker (FF D9)",
-      };
-  
-  break;
-  }
-  case ".gif": {
-    if (arr.length === 0) return { safe: false, reason: "File too small" };
-    if (arr.at(-1) !== 0x3B) return { safe: false, reason: "Invalid GIF: missing trailer (0x3B)" };
-  
-  break;
-  }
-  // No default
+    case ".png": {
+      if (arr.length < 12) return { safe: false, reason: "File too small to be valid PNG" };
+      const iend = arr.slice(-12);
+      if (iend[4] !== 0x49 || iend[5] !== 0x45 || iend[6] !== 0x4e || iend[7] !== 0x44)
+        return {
+          safe: false,
+          reason: "Invalid PNG: missing IEND chunk (possible appended data)",
+        };
+
+      break;
+    }
+    case ".jpg":
+    case ".jpeg": {
+      if (arr.length < 2) return { safe: false, reason: "File too small" };
+      if (arr.at(-2) !== 0xff || arr.at(-1) !== 0xd9)
+        return {
+          safe: false,
+          reason: "Invalid JPEG: missing EOI marker (FF D9)",
+        };
+
+      break;
+    }
+    case ".gif": {
+      if (arr.length === 0) return { safe: false, reason: "File too small" };
+      if (arr.at(-1) !== 0x3b) return { safe: false, reason: "Invalid GIF: missing trailer (0x3B)" };
+
+      break;
+    }
+    // No default
   }
   return { safe: true };
 }
 
 const DANGEROUS_MAGIC = [
-  { sig: [0x4D, 0x5A], name: "PE executable (exe/dll/sys)" },
-  { sig: [0x7F, 0x45, 0x4C, 0x46], name: "ELF executable" },
-  { sig: [0xCA, 0xFE, 0xBA, 0xBE], name: "Mach-O executable" },
-  { sig: [0xFE, 0xED, 0xFA, 0xCE], name: "Mach-O executable" },
-  { sig: [0xCE, 0xFA, 0xED, 0xFE], name: "Mach-O executable" },
-  { sig: [0xCF, 0xFA, 0xED, 0xFE], name: "Mach-O x86_64" },
-  { sig: [0x4D, 0x53, 0x43, 0x46], name: "CAB archive" },
+  { sig: [0x4d, 0x5a], name: "PE executable (exe/dll/sys)" },
+  { sig: [0x7f, 0x45, 0x4c, 0x46], name: "ELF executable" },
+  { sig: [0xca, 0xfe, 0xba, 0xbe], name: "Mach-O executable" },
+  { sig: [0xfe, 0xed, 0xfa, 0xce], name: "Mach-O executable" },
+  { sig: [0xce, 0xfa, 0xed, 0xfe], name: "Mach-O executable" },
+  { sig: [0xcf, 0xfa, 0xed, 0xfe], name: "Mach-O x86_64" },
+  { sig: [0x4d, 0x53, 0x43, 0x46], name: "CAB archive" },
 ];
 
 /**
@@ -649,7 +647,7 @@ const DANGEROUS_MAGIC = [
  */
 function hasDangerousMagic(buf) {
   for (const element of DANGEROUS_MAGIC) {
-    let sig = element.sig;
+    const sig = element.sig;
     let match = true;
     for (const [j, element_] of sig.entries()) {
       if (buf[j] !== element_) {
@@ -692,8 +690,8 @@ function validateFile(filePath, options) {
 
   // 1b. Check files without extension by magic bytes
   if (!opts.allowDangerous && !fileHasExt(fileName)) {
-    let raw = fs.readFileSync(absPath).slice(0, 64);
-    let magic = hasDangerousMagic(raw);
+    const raw = fs.readFileSync(absPath).slice(0, 64);
+    const magic = hasDangerousMagic(raw);
     if (magic) {
       throw new Error(
         `Blocked dangerous file type detected by magic bytes: ${magic} (${fileName}). Use --allow-dangerous to override.`,
@@ -712,9 +710,12 @@ function validateFile(filePath, options) {
   }
 
   // 3. Dangerous content scan (images, audio, video)
-  if ([".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".svg"].includes(ext) && hasDangerousContent(data)) {
-      throw new Error(`Dangerous content detected in ${fileName}: embedded scripts or code patterns found`);
-    }
+  if (
+    [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".svg"].includes(ext) &&
+    hasDangerousContent(data)
+  ) {
+    throw new Error(`Dangerous content detected in ${fileName}: embedded scripts or code patterns found`);
+  }
 
   // 4. File structure integrity
   const structResult = checkFileStructure(data, ext);
@@ -751,7 +752,7 @@ module.exports = {
  * @param buf
  */
 function stripC2PA(buf) {
-  if (buf[1] !== 0x50 || buf[2] !== 0x4E || buf[3] !== 0x47) return buf;
+  if (buf[1] !== 0x50 || buf[2] !== 0x4e || buf[3] !== 0x47) return buf;
   const parts = [buf.slice(0, 8)];
   let i = 8;
   while (i <= buf.length - 12) {

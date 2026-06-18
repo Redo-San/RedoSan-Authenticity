@@ -103,7 +103,7 @@ function findC2PAInFile(filePath) {
   if (ext === ".jpg" || ext === ".jpeg") {
     // JPEG: look for C2PA marker (APP11 - 0xFFEB)
     for (let i = 0; i < data.length - 16; i++) {
-      if (data[i] === 0xFF && data[i + 1] === 0xEB) {
+      if (data[i] === 0xff && data[i + 1] === 0xeb) {
         const segLen = (data[i + 2] << 8) | data[i + 3];
         const c2paMarker = "c2pa\u0000";
         let found = true;
@@ -184,22 +184,22 @@ async function runC2pa(action, filePath, opts) {
     }
 
     switch (action) {
-    case "sign": {
-    await doSign(absPath, opts);
-    break;
-    }
-    case "read": {
-    await doRead(absPath, opts);
-    break;
-    }
-    case "verify": {
-    await doVerify(absPath, opts);
-    break;
-    }
-    default: {
-      console.error("Unknown action. Use: sign, read, verify");
-      process.exit(1);
-    }
+      case "sign": {
+        await doSign(absPath, opts);
+        break;
+      }
+      case "read": {
+        await doRead(absPath, opts);
+        break;
+      }
+      case "verify": {
+        await doVerify(absPath, opts);
+        break;
+      }
+      default: {
+        console.error("Unknown action. Use: sign, read, verify");
+        process.exit(1);
+      }
     }
   } catch (error) {
     console.error(`Error: ${error.message}`);
@@ -273,7 +273,7 @@ async function doSign(absPath, opts) {
  */
 function embedC2PAJPEG(jpegBuf, manifestBuf) {
   // Find SOS marker (0xFFDA) — insert APP11 before it
-  const sosIdx = findJPEGMarker(jpegBuf, 0xDA);
+  const sosIdx = findJPEGMarker(jpegBuf, 0xda);
   if (sosIdx < 0) throw new Error("JPEG SOS marker not found");
 
   // Build C2PA payload: 'c2pa\x00' + 4-byte big-endian length + manifest
@@ -283,8 +283,8 @@ function embedC2PAJPEG(jpegBuf, manifestBuf) {
   // Build APP11 segment: FF EB + 2-byte big-endian segment length (including length field) + payload
   const segLen = c2paHeader.length + 2; // +2 for the length field itself
   const app11 = Buffer.alloc(2 + segLen);
-  app11[0] = 0xFF;
-  app11[1] = 0xEB;
+  app11[0] = 0xff;
+  app11[1] = 0xeb;
   app11.writeUInt16BE(segLen, 2);
   c2paHeader.copy(app11, 4);
 
@@ -299,7 +299,7 @@ function embedC2PAJPEG(jpegBuf, manifestBuf) {
  */
 function findJPEGMarker(buf, marker) {
   for (let i = 0; i < buf.length - 1; i++) {
-    if (buf[i] === 0xFF && buf[i + 1] === marker) return i;
+    if (buf[i] === 0xff && buf[i + 1] === marker) return i;
   }
   return -1;
 }
@@ -358,14 +358,14 @@ function findPNGChunk(buf, name) {
  * @param buf
  */
 function crc32(buf) {
-  let crc = 0xFF_FF_FF_FF;
+  let crc = 0xff_ff_ff_ff;
   for (const element of buf) {
     crc ^= element;
     for (let j = 0; j < 8; j++) {
-      crc = (crc >>> 1) ^ (crc & 1 ? 0xED_B8_83_20 : 0);
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xed_b8_83_20 : 0);
     }
   }
-  return (crc ^ 0xFF_FF_FF_FF) >>> 0;
+  return (crc ^ 0xff_ff_ff_ff) >>> 0;
 }
 
 /**

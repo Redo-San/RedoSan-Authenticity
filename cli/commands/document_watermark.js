@@ -12,7 +12,7 @@ function compressData(data) {
   var encoded = Buffer.from(data, "utf8");
   var compressed = zlib.deflateSync(encoded);
   if (compressed.length < encoded.length) {
-    let payload = Buffer.alloc(1 + compressed.length);
+    const payload = Buffer.alloc(1 + compressed.length);
     payload[0] = 0x02;
     compressed.copy(payload, 1);
     return payload;
@@ -28,7 +28,7 @@ function decompressData(buf) {
   if (buf.length === 0) return "";
   if (buf[0] === 0x02) {
     try {
-      let decompressed = zlib.inflateSync(buf.slice(1));
+      const decompressed = zlib.inflateSync(buf.slice(1));
       let end = decompressed.length;
       for (let ti = decompressed.length - 1; ti >= 0; ti--) {
         if (decompressed[ti] !== 0) {
@@ -39,7 +39,7 @@ function decompressData(buf) {
       return decompressed.slice(0, end).toString("utf8");
     } catch (error) {
       try {
-        let decompressed2 = zlib.inflateRawSync(buf.slice(1));
+        const decompressed2 = zlib.inflateRawSync(buf.slice(1));
         let end2 = decompressed2.length;
         for (let ti2 = decompressed2.length - 1; ti2 >= 0; ti2--) {
           if (decompressed2[ti2] !== 0) {
@@ -132,7 +132,7 @@ function autoDetect(text, password) {
   let pwError = false;
   for (let a = 1; a <= 3; a++) {
     try {
-      let result = extract(text, String(a), password);
+      const result = extract(text, String(a), password);
       if (result) return result;
     } catch (error) {
       if (error.message === "WRONG_PASSWORD") pwError = true;
@@ -299,10 +299,10 @@ var HOMO_MULTI = {
   x: ["\u0445", "\u03C7", "\u04B3"],
   y: ["\u0443", "\u03B3", "\u04AF"],
 };
-let HOMO_MULTI_REV = {};
-for (let mk in HOMO_MULTI) {
+const HOMO_MULTI_REV = {};
+for (const mk in HOMO_MULTI) {
   HOMO_MULTI_REV[mk] = { key: mk, idx: 0 };
-  let arr = HOMO_MULTI[mk];
+  const arr = HOMO_MULTI[mk];
   for (const [vi, element] of arr.entries()) {
     HOMO_MULTI_REV[element] = { key: mk, idx: vi + 1 };
   }
@@ -322,7 +322,7 @@ function isEligible(ch) {
  * @param bits
  */
 function embedHomoglyph(text, bits) {
-  let eligible = [];
+  const eligible = [];
   for (const [i, element] of text.entries()) {
     if (isEligible(element)) eligible.push(i);
   }
@@ -333,15 +333,15 @@ function embedHomoglyph(text, bits) {
   if (bits.length > maxBits) {
     throw new Error(`Text too short. Need ~${bits.length} bits, eligible chars provide ${maxBits} bits`);
   }
-  let result = text.split("");
+  const result = text.split("");
   let bitIdx = 0;
-  for (let idx of eligible) {
-    let ch = text[idx];
-    let multi = HOMO_MULTI[ch];
+  for (const idx of eligible) {
+    const ch = text[idx];
+    const multi = HOMO_MULTI[ch];
     if (multi) {
       let pair = bitIdx < bits.length ? bits.substr(bitIdx, 2) : "00";
       while (pair.length < 2) pair += "0";
-      let val = Number.parseInt(pair, 2);
+      const val = Number.parseInt(pair, 2);
       if (val > 0) result[idx] = multi[val - 1];
       bitIdx += 2;
     } else {
@@ -358,9 +358,9 @@ function embedHomoglyph(text, bits) {
  */
 function extractHomoglyph(text) {
   let bits = "";
-  for (let ch of text) {
+  for (const ch of text) {
     if (HOMO_MULTI_REV[ch] !== undefined) {
-      let info = HOMO_MULTI_REV[ch];
+      const info = HOMO_MULTI_REV[ch];
       let pair = info.idx.toString(2);
       while (pair.length < 2) pair = `0${pair}`;
       bits += pair;
@@ -410,13 +410,13 @@ function embedWhitespace(text, bits) {
     throw new Error(`Not enough spaces. Need ~${encodedCount}, found ${spaceCount}`);
   }
 
-  let encoded = [];
+  const encoded = [];
   for (let i = 0; i + (WS_BITS_PER_SPACE - 1) < bits.length; i += WS_BITS_PER_SPACE) {
     let quad = bits.substr(i, WS_BITS_PER_SPACE);
     while (quad.length < WS_BITS_PER_SPACE) quad += "0";
     encoded.push(WS_SPACES[Number.parseInt(quad, 2)]);
   }
-  let rem = bits.length % WS_BITS_PER_SPACE;
+  const rem = bits.length % WS_BITS_PER_SPACE;
   if (rem > 0) {
     let last = bits.substr(bits.length - rem, rem);
     while (last.length < WS_BITS_PER_SPACE) last += "0";
@@ -445,10 +445,10 @@ function embedWhitespace(text, bits) {
  * @param text
  */
 function extractWhitespace(text) {
-  let found = [];
+  const found = [];
   for (const element of text) {
-    let idx = WS_SPACES.indexOf(element);
-    if (idx >= 0) found.push(idx);
+    const idx = WS_SPACES.indexOf(element);
+    if (idx !== -1) found.push(idx);
   }
   if (found.length === 0) return "";
   let bits = "";
@@ -468,7 +468,7 @@ function extractWhitespace(text) {
 function msgToBitsRaw(buf) {
   if (!buf || buf.length === 0) return null;
   var bits = "";
-  for (let b of buf) {
+  for (const b of buf) {
     for (let j = 7; j >= 0; j--) bits += (b >> j) & 1 ? "1" : "0";
   }
   return bits;
@@ -514,7 +514,7 @@ function bitsToMsg(bits, password) {
   var buf = bitsToBytes(bits);
   if (buf.length > 0 && buf[0] === 0x02) {
     try {
-      let decompressed = decompressData(buf);
+      const decompressed = decompressData(buf);
       return checkPassword(decompressed, password);
     } catch (error) {
       if (error.message === "WRONG_PASSWORD") throw error;
@@ -542,7 +542,7 @@ async function runDocumentWatermark(action, opts) {
 
   if (action === "embed") {
     if (opts.secret) {
-      let secretPath = path.resolve(opts.secret);
+      const secretPath = path.resolve(opts.secret);
       message = await readDocumentText(secretPath);
     } else if (opts.message) {
       message = opts.message;
@@ -551,12 +551,12 @@ async function runDocumentWatermark(action, opts) {
       process.exit(1);
     }
 
-    let watermarked = embed(text, message, opts.algo || "1", opts.password || "");
-    let outPath = opts.output ? path.resolve(opts.output) : `${inputPath}.watermarked.txt`;
+    const watermarked = embed(text, message, opts.algo || "1", opts.password || "");
+    const outPath = opts.output ? path.resolve(opts.output) : `${inputPath}.watermarked.txt`;
     writeFileText(outPath, watermarked);
     console.log(`Watermarked text saved to: ${outPath}`);
   } else {
-    let msg =
+    const msg =
       opts.algo === "0"
         ? extract(text, "0", opts.password || "")
         : extract(text, opts.algo || "1", opts.password || "");

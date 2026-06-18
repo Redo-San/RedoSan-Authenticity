@@ -48,7 +48,7 @@ function xorBytes(a, b) {
  * @param v
  */
 function pack16(v) {
-  return [v >> 8, v & 0xFF];
+  return [v >> 8, v & 0xff];
 }
 
 // Shared segment size — both embed and extract compute the same value
@@ -85,7 +85,7 @@ function embedLSB(wav, bits) {
   const out = Buffer.from(wav);
   let idx = 0;
   for (let i = 44; i < out.length && idx < bits.length; i++) {
-    out[i] = (out[i] & 0xFE) | Number.parseInt(bits[idx++], 10);
+    out[i] = (out[i] & 0xfe) | Number.parseInt(bits[idx++], 10);
   }
   return out;
 }
@@ -116,7 +116,7 @@ function embedPhaseCoding(wav, bits) {
   for (const [b, bit] of bits.entries()) {
     const start = headerSize + b * samplesPerBit * 2;
     for (let j = 0; j < samplesPerBit * 2 && start + j < out.length; j++) {
-      out[start + j] = (out[start + j] & 0xFE) | Number.parseInt(bit, 10);
+      out[start + j] = (out[start + j] & 0xfe) | Number.parseInt(bit, 10);
     }
   }
   return out;
@@ -160,7 +160,7 @@ function embedEchoHiding(wav, bits) {
     const start = headerSize + b * segLen * 4;
     const bit = Number.parseInt(bit_, 10);
     for (let j = 0; j < segLen * 4 && start + j < out.length; j++) {
-      out[start + j] = (out[start + j] & 0xFE) | bit;
+      out[start + j] = (out[start + j] & 0xfe) | bit;
     }
   }
   return out;
@@ -207,7 +207,7 @@ function embedDSSS(wav, bits) {
     const bit = Number.parseInt(bit_, 10);
     for (let c = 0; c < chipLen && headerSize + idx < out.length; c++) {
       const p = pattern[c];
-      out[headerSize + idx] = (out[headerSize + idx] & 0xFE) | (bit === 1 ? p : 1 - p);
+      out[headerSize + idx] = (out[headerSize + idx] & 0xfe) | (bit === 1 ? p : 1 - p);
       idx++;
     }
   }
@@ -344,8 +344,8 @@ function embedPatchwork(wav, bits) {
   for (const bit_ of bits) {
     const bit = Number.parseInt(bit_, 10);
     for (let p = 0; p < pairs && headerSize + idx + 1 < out.length; p++) {
-      out[headerSize + idx] = (out[headerSize + idx] & 0xFE) | bit;
-      out[headerSize + idx + 1] = (out[headerSize + idx + 1] & 0xFE) | bit;
+      out[headerSize + idx] = (out[headerSize + idx] & 0xfe) | bit;
+      out[headerSize + idx + 1] = (out[headerSize + idx + 1] & 0xfe) | bit;
       idx += 2;
     }
   }
@@ -469,7 +469,7 @@ async function runAudioWatermark(action, filePath, opts) {
     }
     const msg = fs.readFileSync(secretPath, "utf8");
     const msgBuf = Buffer.from(msg, "utf-8");
-    const header = Buffer.from([0xAA, 0xBB]);
+    const header = Buffer.from([0xaa, 0xbb]);
     const payload = Buffer.concat([header, msgBuf]);
     const enc = xorBytes(payload, key);
     const lenBuf = Buffer.from(pack16(2 + msgBuf.length));
@@ -493,7 +493,7 @@ async function runAudioWatermark(action, filePath, opts) {
       if (bits.length < offset + 16 + dlen * 8) continue;
       const enc = bitsToBytes(bits.substring(offset + 16, offset + 16 + dlen * 8));
       const dec = xorBytes(enc, key);
-      if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB) {
+      if (dec.length >= 2 && dec[0] === 0xaa && dec[1] === 0xbb) {
         const msg = dec.slice(2).toString("utf-8").replace(/\0+$/, "");
         if (opts.json) {
           const json = JSON.stringify({ algorithm: algo, message: msg, length: msg.length, status: "ok" }, null, 2);
