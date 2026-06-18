@@ -450,8 +450,9 @@ var DOCW_HOMOGLYPH = {
     var bits = await _msgToBits(message, password);
     if (!bits) throw new Error("Empty message");
     var eligible = [];
-    for (const [i, element] of text.entries()) {
-      if (this._isEligible(element)) eligible.push(i);
+    var chars = [...text];
+    for (var i = 0; i < chars.length; i++) {
+      if (this._isEligible(chars[i])) eligible.push(i);
     }
     var maxBits = 0;
     for (const element of eligible) {

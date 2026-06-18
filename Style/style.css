@@ -3405,7 +3405,7 @@ html[dir="rtl"] .ast-msg-user {
 .bot-block-text {
   font-size: 16px;
   line-height: 1.7;
-  color: var(--text);
+  color: #e0e0e8;
   margin-bottom: 24px;
 }
 

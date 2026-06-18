@@ -137,7 +137,7 @@
       audioSrc() +
       '" loop preload="auto"></audio>' +
       '<button id="music-btn" class="music-btn" aria-label="Toggle Music">&#x1F3B5;</button>' +
-      '<div id="music-credit" class="music-credit" role="contentinfo" aria-label="Music credit">RedoSan</div>';
+      '<div id="music-credit" class="music-credit" aria-label="Music credit">RedoSan</div>';
     while (div.firstChild) document.body.append(div.firstChild);
   }
 
