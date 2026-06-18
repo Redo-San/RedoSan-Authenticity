@@ -4,10 +4,10 @@
 
 Only the latest release receives security updates.
 
-| Version | Supported |
-|---------|-----------|
-| v1.0-beta.x | :white_check_mark: |
-| Older releases | :x: |
+| Version        | Supported          |
+| -------------- | ------------------ |
+| v1.0-beta.x    | :white_check_mark: |
+| Older releases | :x:                |
 
 ## Reporting a Vulnerability
 

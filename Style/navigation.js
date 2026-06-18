@@ -86,7 +86,7 @@ var PAGE_TITLES = {
   did: "Decentralized Identity (DID) — RedoSan Authenticity",
   c2pa: "C2PA Content Provenance — RedoSan Authenticity",
   certificate: "Digital Passport Certificate — RedoSan Authenticity",
-  converter: "File Converter — RedoSan Authenticity",
+  converter: "Converter — RedoSan Authenticity",
   id_forge: "ID Forge — RedoSan Authenticity",
   "document-watermark": "Document Watermark — RedoSan Authenticity",
   search: "Search — RedoSan Authenticity",
@@ -116,7 +116,7 @@ var PAGE_DESCS = {
   certificate:
     "Generate a signed Digital Passport PDF, DOCX, or EPUB with image, user info, and authenticity results. Free online tool.",
   converter:
-    "Convert images, audio, and documents between formats. Free online file converter.",
+    "File format converter — convert between image, audio, video, document, and subtitle formats.",
   id_forge:
     "Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool.",
   "document-watermark":

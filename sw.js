@@ -104,6 +104,7 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Fingerprint/hashing_perceptual.js",
   "/RedoSan-Authenticity/Fingerprint/hashing.js",
   "/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js",
+  "/RedoSan-Authenticity/Fingerprint/hash_worker.js",
   "/RedoSan-Authenticity/C2PA/cbor.js",
   "/RedoSan-Authenticity/C2PA/c2pa.js",
   "/RedoSan-Authenticity/Metadata/metadata.js",
@@ -324,8 +325,7 @@ self.addEventListener("fetch", function (event) {
   // 2. For same-origin requests: check local whitelists (JS/CSS/HTML/YML)
   if (url.origin === self.location.origin) {
     // Unknown .js files not in JS_WHITELIST
-    if (lower.endsWith(".js"))
-      isBlocked = isBlocked || !JS_WHITELIST.has(path);
+    if (lower.endsWith(".js")) isBlocked = isBlocked || !JS_WHITELIST.has(path);
     // Unknown .css files not in CSS_WHITELIST
     if (lower.endsWith(".css"))
       isBlocked = isBlocked || !CSS_WHITELIST.has(path);
@@ -353,8 +353,7 @@ self.addEventListener("fetch", function (event) {
       isBlocked = isBlocked || !HTML_WHITELIST.has(normalizedPath);
     }
     // Unknown .md files not in MD_WHITELIST
-    if (lower.endsWith(".md"))
-      isBlocked = isBlocked || !MD_WHITELIST.has(path);
+    if (lower.endsWith(".md")) isBlocked = isBlocked || !MD_WHITELIST.has(path);
     // Unknown .json files not in JSON_WHITELIST
     if (lower.endsWith(".json"))
       isBlocked = isBlocked || !JSON_WHITELIST.has(path);
@@ -450,9 +449,9 @@ function logoBlockPage() {
  */
 function escapeHtml(str) {
   return str
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll('\'', "&#39;");
+    .replaceAll("'", "&#39;");
 }

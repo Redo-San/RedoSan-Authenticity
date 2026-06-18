@@ -2,10 +2,15 @@ const { describe, it, before } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-void require("node:vm");
+const vm = require("node:vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.ImageData = class ImageData {
   constructor(data, width, height) {
     this.data = data;
@@ -14,18 +19,25 @@ globalThis.ImageData = class ImageData {
   }
 };
 
-const src = fs.readFileSync(path.join(__dirname, "../../Pixel_Injection/watermark_core_advanced.js"), "utf8");
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Pixel_Injection/watermark_core_advanced.js"),
+  "utf8",
+);
 vm.runInThisContext(src, { filename: "watermark_core_advanced.js" });
 const transformsSrc = fs.readFileSync(
   path.join(__dirname, "../../Pixel_Injection/watermark_core_transforms.js"),
   "utf8",
 );
-vm.runInThisContext(transformsSrc, { filename: "watermark_core_transforms.js" });
+vm.runInThisContext(transformsSrc, {
+  filename: "watermark_core_transforms.js",
+});
 const algorithmsSrc = fs.readFileSync(
   path.join(__dirname, "../../Pixel_Injection/watermark_core_algorithms.js"),
   "utf8",
 );
-vm.runInThisContext(algorithmsSrc, { filename: "watermark_core_algorithms.js" });
+vm.runInThisContext(algorithmsSrc, {
+  filename: "watermark_core_algorithms.js",
+});
 
 function makeImage(w, h) {
   const data = new Uint8ClampedArray(w * h * 4);
@@ -60,7 +72,10 @@ describe("Pixel Injection — Helpers", () => {
     assert.equal(core.bytesToBinary(new Uint8Array([0x00])), "00000000");
     assert.equal(core.bytesToBinary(new Uint8Array([0xff])), "11111111");
     assert.equal(core.bytesToBinary(new Uint8Array([0x61])), "01100001");
-    assert.equal(core.bytesToBinary(new Uint8Array([0x00, 0xff])), "0000000011111111");
+    assert.equal(
+      core.bytesToBinary(new Uint8Array([0x00, 0xff])),
+      "0000000011111111",
+    );
   });
 
   it("stringToBinary should convert string to bit string", () => {
@@ -252,13 +267,19 @@ describe("Pixel Injection — All algorithm embeds (VINE, PixelSeal, etc.)", () 
   it("VINE extract delegates to extractLSB", () => {
     const core = new WatermarkCore();
     const result = core.extractVINE({ data: [], width: 1, height: 1 });
-    assert.ok(typeof result === "string", "VINE extract should return a string");
+    assert.ok(
+      typeof result === "string",
+      "VINE extract should return a string",
+    );
   });
 
   it("PixelSeal extract delegates to extractDCT", () => {
     const core = new WatermarkCore();
     const result = core.extractPixelSeal({ data: [], width: 1, height: 1 });
-    assert.ok(typeof result === "string", "PixelSeal extract should return a string");
+    assert.ok(
+      typeof result === "string",
+      "PixelSeal extract should return a string",
+    );
   });
 });
 
