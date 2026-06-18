@@ -1,6 +1,9 @@
 (function () {
-  var _fromRoot = !document.documentElement || !document.documentElement.dataset.standalone;
-  var _currentPage = document.documentElement ? document.documentElement.dataset.standalone || "" : "";
+  var _fromRoot =
+    !document.documentElement || !document.documentElement.dataset.standalone;
+  var _currentPage = document.documentElement
+    ? document.documentElement.dataset.standalone || ""
+    : "";
   var _inFlight = false;
   var _lastUrl = null;
   var _savedSection = null;
@@ -25,7 +28,9 @@
 
   function cachePut(pageName, html) {
     _pageCache[pageName] = html;
-    try { sessionStorage.setItem("mpa_" + pageName, html); } catch (e) {}
+    try {
+      sessionStorage.setItem("mpa_" + pageName, html);
+    } catch (e) {}
   }
 
   function cacheGet(pageName) {
@@ -34,12 +39,16 @@
       var v = sessionStorage.getItem("mpa_" + pageName);
       if (v) _pageCache[pageName] = v;
       return v || null;
-    } catch (e) { return null; }
+    } catch (e) {
+      return null;
+    }
   }
 
   function cacheDel(pageName) {
     delete _pageCache[pageName];
-    try { sessionStorage.removeItem("mpa_" + pageName); } catch (e) {}
+    try {
+      sessionStorage.removeItem("mpa_" + pageName);
+    } catch (e) {}
   }
 
   // ── UI helpers ──
@@ -112,31 +121,46 @@
   // ── Page-specific re-init after content swap ──
   function reInitPage(pageName) {
     // Tab-based pages: reset to default tab
-    if (pageName === "timestamp" && typeof switchOtsTab === "function") switchOtsTab("create");
+    if (pageName === "timestamp" && typeof switchOtsTab === "function")
+      switchOtsTab("create");
     if (pageName === "watermark" && typeof switchWmTab === "function") {
       switchWmTab("embed");
       if (typeof toggleWmPassword === "function") toggleWmPassword();
-      if (typeof toggleWmExtractPassword === "function") toggleWmExtractPassword();
-      var et = document.getElementById('wm-type');
-      if (et && typeof toggleWmPassword === "function") et.addEventListener('change', toggleWmPassword);
-      var ext = document.getElementById('wm-type-ex');
-      if (ext && typeof toggleWmExtractPassword === "function") ext.addEventListener('change', toggleWmExtractPassword);
+      if (typeof toggleWmExtractPassword === "function")
+        toggleWmExtractPassword();
+      var et = document.getElementById("wm-type");
+      if (et && typeof toggleWmPassword === "function")
+        et.addEventListener("change", toggleWmPassword);
+      var ext = document.getElementById("wm-type-ex");
+      if (ext && typeof toggleWmExtractPassword === "function")
+        ext.addEventListener("change", toggleWmExtractPassword);
     }
-    if (pageName === "c2pa" && typeof switchC2paTab === "function") switchC2paTab("read");
-    if (pageName === "document-watermark" && typeof switchDocwTab === "function") switchDocwTab("embed");
-    if (pageName === "audio-watermark" && typeof switchAwTab === "function") switchAwTab("embed");
+    if (pageName === "c2pa" && typeof switchC2paTab === "function")
+      switchC2paTab("read");
+    if (
+      pageName === "document-watermark" &&
+      typeof switchDocwTab === "function"
+    )
+      switchDocwTab("embed");
+    if (pageName === "audio-watermark" && typeof switchAwTab === "function")
+      switchAwTab("embed");
 
     // ID Forge: update info display
-    if (pageName === "id_forge" && typeof idForgeShowInfo === "function") idForgeShowInfo();
+    if (pageName === "id_forge" && typeof idForgeShowInfo === "function")
+      idForgeShowInfo();
 
     // Certificate: init phone code input
-    if (pageName === "certificate" && typeof initCertPhoneCode === "function") initCertPhoneCode();
+    if (pageName === "certificate" && typeof initCertPhoneCode === "function")
+      initCertPhoneCode();
 
     // Re-translate page content
-    if (typeof __ === "function" && typeof translatePage === "function") translatePage();
+    if (typeof __ === "function" && typeof translatePage === "function")
+      translatePage();
 
     // Reset result sections and file inputs
-    var results = document.querySelectorAll(".result, .result-box, .output-area, .fingerprint-result, .c2pa-result");
+    var results = document.querySelectorAll(
+      ".result, .result-box, .output-area, .fingerprint-result, .c2pa-result",
+    );
     for (var ri = 0; ri < results.length; ri++) {
       var r = results[ri];
       if (r && r.style) r.style.display = "none";
@@ -151,7 +175,7 @@
   function loadContent(html, url, pageName, skipPush) {
     // Save audio state before DOM manipulation
     if (typeof window.__musicSaveTime === "function") window.__musicSaveTime();
-    var _audioSave = (function() {
+    var _audioSave = (function () {
       var a = document.getElementById("bg-music");
       // Use the _playing flag first; fall back to audio.paused
       var wasPlaying = false;
@@ -160,13 +184,20 @@
         wasPlaying = st && st.playing === true;
       }
       if (!wasPlaying && a) wasPlaying = !a.paused;
-      console.warn("[mpa] audioSave: wasPlaying=" + wasPlaying + " paused=" + (a ? a.paused : "no-el"));
+      console.warn(
+        "[mpa] audioSave: wasPlaying=" +
+          wasPlaying +
+          " paused=" +
+          (a ? a.paused : "no-el"),
+      );
       return { el: a, wasPlaying: wasPlaying };
     })();
 
     var parser = new DOMParser();
     var doc = parser.parseFromString(html, "text/html");
-    var newPage = doc.querySelector("#app > section.page.active") || doc.querySelector("#app > section.page");
+    var newPage =
+      doc.querySelector("#app > section.page.active") ||
+      doc.querySelector("#app > section.page");
     if (!newPage) {
       // Fallback: full navigation
       _inFlight = false;
@@ -181,7 +212,12 @@
     var app = document.getElementById("app");
     var oldPage = app ? app.querySelector("section.page") : null;
     // Save original section before first navigation away from initial page
-    if (!_savedSection && oldPage && _currentPage && _currentPage !== pageName) {
+    if (
+      !_savedSection &&
+      oldPage &&
+      _currentPage &&
+      _currentPage !== pageName
+    ) {
       _savedSection = oldPage.cloneNode(true);
       _savedPageName = _currentPage;
     }
@@ -191,12 +227,11 @@
     } else if (app) {
       app.appendChild(newPage);
     }
-    document.title = newTitle
-      ? newTitle.textContent.trim()
-      : document.title;
+    document.title = newTitle ? newTitle.textContent.trim() : document.title;
     if (newDesc) {
       var curDesc = document.querySelector('meta[name="description"]');
-      if (curDesc) curDesc.setAttribute("content", newDesc.getAttribute("content"));
+      if (curDesc)
+        curDesc.setAttribute("content", newDesc.getAttribute("content"));
     }
     ensurePreserved();
     if (!skipPush) {
@@ -218,17 +253,23 @@
       (function resumeAudio(el, tries) {
         if (el.paused) {
           if (el.readyState < 2) {
-            el.addEventListener("canplay", function onCanPlay() {
-              var p = el.play();
-              if (p && typeof p.catch === "function") p.catch(function(){});
-            }, { once: true });
+            el.addEventListener(
+              "canplay",
+              function onCanPlay() {
+                var p = el.play();
+                if (p && typeof p.catch === "function") p.catch(function () {});
+              },
+              { once: true },
+            );
           } else {
             var p = el.play();
-            if (p && typeof p.catch === "function") p.catch(function(){});
+            if (p && typeof p.catch === "function") p.catch(function () {});
           }
         }
         if (el.paused && tries > 0) {
-          setTimeout(function() { resumeAudio(el, tries - 1); }, 100);
+          setTimeout(function () {
+            resumeAudio(el, tries - 1);
+          }, 100);
         }
       })(_audioSave.el, 5);
     }
@@ -250,11 +291,14 @@
       // Use session cache — don't show loader
       loadContent(cached, url, pageName, skipPush);
       // Re-fetch in background to update cache
-      fetch(url).then(function (r) {
-        if (r.ok) return r.text();
-      }).then(function (html) {
-        if (html) cachePut(pageName, html);
-      }).catch(function () {});
+      fetch(url)
+        .then(function (r) {
+          if (r.ok) return r.text();
+        })
+        .then(function (html) {
+          if (html) cachePut(pageName, html);
+        })
+        .catch(function () {});
       return;
     }
 
@@ -319,10 +363,15 @@
           oldPage.parentNode.replaceChild(_savedSection, oldPage);
           _savedSection = null;
         }
-        _currentPage = _savedPageName || document.documentElement.dataset.standalone || "";
+        _currentPage =
+          _savedPageName || document.documentElement.dataset.standalone || "";
         _lastUrl = null;
         document.title = _initialTitle;
-        if (_initialDesc) _initialDesc.setAttribute("content", _initialDesc.getAttribute("content"));
+        if (_initialDesc)
+          _initialDesc.setAttribute(
+            "content",
+            _initialDesc.getAttribute("content"),
+          );
         updateActiveSidebar(_currentPage);
         ensurePreserved();
         reInitPage(_currentPage);
@@ -358,7 +407,8 @@
       return;
     }
     enterProfessionalMode();
-    var url = getPagesBase() + "/" + encodeURIComponent(pageName) + "/index.html";
+    var url =
+      getPagesBase() + "/" + encodeURIComponent(pageName) + "/index.html";
     navigateTo(url, pageName);
   };
 
@@ -378,6 +428,9 @@
     var pageName = m[1];
     if (pageName === _currentPage) return;
     enterProfessionalMode();
-    navigateTo(getPagesBase() + "/" + encodeURIComponent(pageName) + "/index.html", pageName);
+    navigateTo(
+      getPagesBase() + "/" + encodeURIComponent(pageName) + "/index.html",
+      pageName,
+    );
   })();
 })();

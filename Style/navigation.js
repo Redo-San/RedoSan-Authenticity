@@ -281,7 +281,10 @@ window.addEventListener("popstate", function (e) {
   var state = e.state;
   // Hybrid mode: mpa-router handles professional mode page navigation
   // Only handle mode overlay, static page, and mode modeSet transitions here
-  if (typeof window.__mpaNavigate === "function" && !document.getElementById("page-home")) {
+  if (
+    typeof window.__mpaNavigate === "function" &&
+    !document.getElementById("page-home")
+  ) {
     if (state && (state.staticPage || state.modeSet)) {
       // Handled below
     } else if (!state || state.modeOverlay) {

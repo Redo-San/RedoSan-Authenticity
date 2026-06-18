@@ -11,8 +11,5 @@
     "alpha-value-notation": null,
     "import-notation": null
   },
-  "ignoreFiles": [
-    "vendor/**/*.css",
-    "node_modules/**/*.css"
-  ]
+  "ignoreFiles": ["vendor/**/*.css", "node_modules/**/*.css"]
 }

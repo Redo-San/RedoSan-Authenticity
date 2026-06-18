@@ -40,11 +40,17 @@
       _playPromise = audio.play();
       _playPromise
         .then(function () {
-          if (!_playing) { audio.pause(); return; }
+          if (!_playing) {
+            audio.pause();
+            return;
+          }
           setUI(true);
         })
         .catch(function () {
-          if (_playing) { _playing = false; setUI(false); }
+          if (_playing) {
+            _playing = false;
+            setUI(false);
+          }
         });
     };
     if (audio.readyState >= 3) {
@@ -135,7 +141,13 @@
       void _;
     }
     _audioBaseSrc = (audio.src || audioSrc()).split("#")[0];
-    if (state && state.isPlaying === true && typeof state.currentTime === "number" && isFinite(state.currentTime) && state.currentTime > 0) {
+    if (
+      state &&
+      state.isPlaying === true &&
+      typeof state.currentTime === "number" &&
+      isFinite(state.currentTime) &&
+      state.currentTime > 0
+    ) {
       _seekTarget = state.currentTime;
       _lastSafeTime = state.currentTime;
     }
@@ -159,7 +171,10 @@
     if (!audio) return;
     if (sessionStorage.getItem("musicInteracted") === "true") {
       document.removeEventListener("click", firstClick);
-      if (_playing) { _userPaused = false; doPlay(); }
+      if (_playing) {
+        _userPaused = false;
+        doPlay();
+      }
       return;
     }
     sessionStorage.setItem("musicInteracted", "true");
@@ -232,12 +247,15 @@
           a.load();
           var onReady = function () {
             a.removeEventListener("canplay", onReady);
-            a.play().catch(function(){});
+            a.play().catch(function () {});
           };
-          if (a.readyState >= 3) { onReady(); }
-          else { a.addEventListener("canplay", onReady, { once: true }); }
+          if (a.readyState >= 3) {
+            onReady();
+          } else {
+            a.addEventListener("canplay", onReady, { once: true });
+          }
         } else {
-          a.play().catch(function(){});
+          a.play().catch(function () {});
         }
       }
     }, 1000);
@@ -258,7 +276,10 @@
     }, 5000);
   }
   function stopSaveTimer() {
-    if (_saveTimer) { clearInterval(_saveTimer); _saveTimer = null; }
+    if (_saveTimer) {
+      clearInterval(_saveTimer);
+      _saveTimer = null;
+    }
   }
 
   function init() {
@@ -275,7 +296,9 @@
     restoreState();
   }
 
-  window.__musicPlayerState = function () { return { playing: _playing }; };
+  window.__musicPlayerState = function () {
+    return { playing: _playing };
+  };
   window.__musicSaveTime = function () {
     var a = document.getElementById("bg-music");
     if (a && !a.paused) {

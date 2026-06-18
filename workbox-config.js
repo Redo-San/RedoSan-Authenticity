@@ -7,10 +7,7 @@ module.exports = {
     "404.html",
     "sw.js",
   ],
-  globIgnores: [
-    "Style/lang/i18n-data.js",
-    "Style/pages/",
-  ],
+  globIgnores: ["Style/lang/i18n-data.js", "Style/pages/"],
   swDest: "sw-precache.js",
   inlineWorkboxRuntime: true,
   sourceMap: false,

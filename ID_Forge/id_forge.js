@@ -366,10 +366,15 @@ function idForgeDownload(format) {
       content = "Type,Count,Timestamp,ID\n";
       for (var s = 0; s < r.ids.length; s++)
         content +=
-          '"' + String(r.type).replace(/"/g, '""') + '","' +
-          r.count + '","' +
-          String(r.timestamp).replace(/"/g, '""') + '","' +
-          String(r.ids[s]).replace(/"/g, '""') + '"\n';
+          '"' +
+          String(r.type).replace(/"/g, '""') +
+          '","' +
+          r.count +
+          '","' +
+          String(r.timestamp).replace(/"/g, '""') +
+          '","' +
+          String(r.ids[s]).replace(/"/g, '""') +
+          '"\n';
       ext = "csv";
       mime = "text/csv";
       break;

@@ -77,7 +77,10 @@ function setMode(mode) {
     document.getElementById("app").style.display = "";
     document.getElementById("mainFooter").style.display = "";
     // Hybrid: use mpa-router to load home page content from standalone page
-    if (typeof window.__mpaGoHome === "function" && !document.getElementById("page-home")) {
+    if (
+      typeof window.__mpaGoHome === "function" &&
+      !document.getElementById("page-home")
+    ) {
       window.__mpaGoHome();
     } else {
       document
@@ -507,7 +510,6 @@ async function runC2paStep() {
   });
 }
 
-
 // Build combined fingerprint + DID payload, trimmed to fit maxBytes
 
 function runWatermarkStep() {
@@ -575,7 +577,6 @@ function runWatermarkStep() {
     }
   });
 }
-
 
 async function runAudioWatermarkStep() {
   var fpAlgo = parseInt(document.getElementById("sawm-fp-type").value);
@@ -771,9 +772,6 @@ async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
   throw new Error("Unknown algorithm: " + algo);
 }
 
-
-
-
 function runPixelInjectStep() {
   showProgress();
   var cat = document.getElementById("spi-category").value;
@@ -886,8 +884,6 @@ function runPixelInjectStep() {
   }, 50);
 }
 
-
-
 async function runTimestampStep() {
   if (!window.handleOtsCreate) return;
   var fileInput = document.getElementById("ts-create-file");
@@ -992,7 +988,6 @@ async function runTimestampStep() {
   }
 }
 
-
 function runFingerprintStep() {
   if (!window.handleFingerprint) return;
   var fileInput = document.getElementById("fp-file");
@@ -1037,7 +1032,7 @@ function runFingerprintStep() {
           }
           simpleResults.fingerprint = true;
           simpleResults.fpResult = result;
-          setResult('fpResult', result);
+          setResult("fpResult", result);
           simpleStepDone = true;
           document.getElementById("simpleNextBtn").disabled = false;
         })
@@ -1068,7 +1063,7 @@ function runFingerprintStep() {
             simpleResults.fingerprint = true;
             if (fpOutput) {
               simpleResults.fpHtml = fpOutput.innerHTML;
-              simpleResults.fpResult = getResult('fpResult') || null;
+              simpleResults.fpResult = getResult("fpResult") || null;
             }
             simpleStepDone = true;
             document.getElementById("simpleNextBtn").disabled = false;
@@ -1085,7 +1080,6 @@ function runFingerprintStep() {
     }
   }, 50);
 }
-
 
 async function runDIDStepGenerate() {
   var statusEl = document.getElementById("sdid-result");
@@ -1238,14 +1232,7 @@ async function runDIDStepSign() {
   _didSig = null;
 }
 
-
-
-
-
-
 // ── Helpers ──
-
-
 
 // Init on DOM ready
 document.addEventListener("DOMContentLoaded", initMode);
