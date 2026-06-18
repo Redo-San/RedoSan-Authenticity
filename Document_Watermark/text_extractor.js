@@ -1,10 +1,10 @@
 (function () {
   if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
+      globalThis.location.href,
     )
   )
     throw new Error(
@@ -16,6 +16,10 @@
 // Supports: TXT, DOCX, PDF (browser + Node.js)
 
 var DOCX_EXTRACTOR = (function () {
+  /**
+   *
+   * @param raw
+   */
   function readDocx(raw) {
     return new Promise(function (resolve, reject) {
       if (typeof JSZip === "undefined") {
@@ -41,12 +45,16 @@ var DOCX_EXTRACTOR = (function () {
           var text = extractDocxText(xml);
           resolve(text);
         })
-        .catch(function (err) {
-          reject(new Error("Failed to read DOCX: " + err.message));
+        .catch(function (error) {
+          reject(new Error("Failed to read DOCX: " + error.message));
         });
     });
   }
 
+  /**
+   *
+   * @param xml
+   */
   function extractDocxText(xml) {
     var text = "";
     var inPara = false;
@@ -69,12 +77,17 @@ var DOCX_EXTRACTOR = (function () {
       }
       i++;
     }
-    return text.replace(/\n{3,}/g, "\n\n").trim();
+    return text.replaceAll(/\n{3,}/g, "\n\n").trim();
   }
 
   // ── Simple PDF Text Extraction (browser) ──
   // Handles uncompressed and FlateDecode PDFs
 
+  /**
+   *
+   * @param data
+   * @param format
+   */
   async function inflateStream(data, format) {
     var stream = new ReadableStream({
       start: function (controller) {
@@ -90,51 +103,62 @@ var DOCX_EXTRACTOR = (function () {
         if (v.done) break;
         chunks.push(v.value);
       }
-    } catch (e) {
-      throw e;
+    } catch (error) {
+      throw error;
     }
     var total = 0;
     for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
     var result = new Uint8Array(total);
     var offset = 0;
-    for (var i2 = 0; i2 < chunks.length; i2++) {
-      result.set(chunks[i2], offset);
-      offset += chunks[i2].length;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
     }
     return result;
   }
 
+  /**
+   *
+   * @param data
+   */
   async function inflateRaw(data) {
     // PDF FlateDecode uses zlib wrapper (RFC 1950), but some PDFs use raw deflate.
     // Try both formats
     if (typeof DecompressionStream === "undefined") {
-      throw new Error(
+      throw new TypeError(
         "PDF compression not supported in this browser. Try a plain text file instead.",
       );
     }
     // Try zlib format first (per PDF spec)
     try {
       return await inflateStream(data, "deflate");
-    } catch (e1) {
-      console.warn("docw: deflate failed", e1);
+    } catch (error) {
+      console.warn("docw: deflate failed", error);
     }
     // Try raw deflate (some non-compliant PDF generators)
     try {
       return await inflateStream(data, "deflate-raw");
-    } catch (e2) {
-      console.warn("docw: deflate-raw failed", e2);
+    } catch (error) {
+      console.warn("docw: deflate-raw failed", error);
     }
     // Both failed — return empty instead of raw compressed data
     // (raw binary will cause regex processing to freeze the page)
     return new Uint8Array(0);
   }
 
+  /**
+   *
+   */
   function _yield() {
     return new Promise(function (r) {
       setTimeout(r, 0);
     });
   }
 
+  /**
+   *
+   * @param raw
+   */
   async function readPdf(raw) {
     var arr = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
     var src = latin1Decode(arr);
@@ -153,40 +177,40 @@ var DOCX_EXTRACTOR = (function () {
     var cmap = {};
     for (var objId in objMap) {
       var objContent = objMap[objId];
-      if (objContent.indexOf("FlateDecode") === -1) continue;
+      if (!objContent.includes("FlateDecode")) continue;
       var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
       if (!sm2) continue;
       var raw2 = sm2[1].replace(/[\r\n]+$/, "");
       // Skip large streams (likely image data, not CMap)
-      if (raw2.length > 100000) continue;
+      if (raw2.length > 100_000) continue;
       var dec2;
       try {
         dec2 = await inflateRaw(stringToBytes(raw2));
-      } catch (e) {
+      } catch {
         continue;
       }
       var data = latin1Decode(dec2);
-      if (data.indexOf("begincmap") === -1) continue;
+      if (!data.includes("begincmap")) continue;
 
       var bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
       var bm;
       while ((bm = bfcharRe.exec(data)) !== null) {
         var entries = bm[2].split("\n");
-        for (var ei = 0; ei < entries.length; ei++) {
-          var match = entries[ei].match(/<(\w+)>\s*<(\w+)>/);
-          if (match) cmap[parseInt(match[1], 16)] = parseInt(match[2], 16);
+        for (const entry of entries) {
+          var match = entry.match(/<(\w+)>\s*<(\w+)>/);
+          if (match) cmap[Number.parseInt(match[1], 16)] = Number.parseInt(match[2], 16);
         }
       }
       var bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
       var rm;
       while ((rm = bfrangeRe.exec(data)) !== null) {
         var rentries = rm[2].split("\n");
-        for (var ri = 0; ri < rentries.length; ri++) {
-          var parts = rentries[ri].match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
+        for (const rentry of rentries) {
+          var parts = rentry.match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
           if (parts) {
-            var start = parseInt(parts[1], 16);
-            var end = parseInt(parts[2], 16);
-            var baseCode = parseInt(parts[3], 16);
+            var start = Number.parseInt(parts[1], 16);
+            var end = Number.parseInt(parts[2], 16);
+            var baseCode = Number.parseInt(parts[3], 16);
             for (var ci = start; ci <= end; ci++) {
               if (!cmap[ci]) cmap[ci] = baseCode + (ci - start);
             }
@@ -214,21 +238,33 @@ var DOCX_EXTRACTOR = (function () {
     if (pages.length === 0) return "";
     await _yield();
 
+    /**
+     *
+     * @param code
+     */
     function cmapChar(code) {
       if (cmap[code]) {
         try {
           return String.fromCodePoint(cmap[code]);
-        } catch (e) {
+        } catch {
           return "?";
         }
       }
       return "?";
     }
+    /**
+     *
+     * @param hex
+     */
     function cmapStr(hex) {
-      var code = parseInt(hex, 16);
+      var code = Number.parseInt(hex, 16);
       return cmapChar(code);
     }
 
+    /**
+     *
+     * @param s
+     */
     function decodePdfString(s) {
       if (s.length < 2) return s;
       var asianCount = 0;
@@ -236,7 +272,7 @@ var DOCX_EXTRACTOR = (function () {
       for (var ti = 0; ti + 1 < testLen; ti += 2) {
         var b1 = s.charCodeAt(ti),
           b2 = s.charCodeAt(ti + 1);
-        if (b1 === 0 && b2 >= 0x20 && b2 <= 0x7e) asianCount++;
+        if (b1 === 0 && b2 >= 0x20 && b2 <= 0x7E) asianCount++;
       }
       if (asianCount > 5 && asianCount / Math.floor(testLen / 2) > 0.4) {
         var out2 = "";
@@ -250,15 +286,19 @@ var DOCX_EXTRACTOR = (function () {
       return s;
     }
 
+    /**
+     *
+     * @param s
+     */
     function unescapePdfStr(s) {
-      return s.replace(/\\([nrt])/g, " ").replace(/\\(.)/g, "$1");
+      return s.replaceAll(/\\([nrt])/g, " ").replaceAll(/\\(.)/g, "$1");
     }
 
     var textPieces = [];
-    for (var p = 0; p < pages.length; p++) {
+    for (const [p, page] of pages.entries()) {
       if (p > 0 && p % 5 === 0) await _yield();
 
-      var contentObj = objMap[pages[p].contentRef];
+      var contentObj = objMap[page.contentRef];
       if (!contentObj) continue;
 
       var streamRe = /stream\s*\n([\s\S]*?)endstream/;
@@ -267,15 +307,11 @@ var DOCX_EXTRACTOR = (function () {
 
       var rawStream = sm[1].replace(/[\r\n]+$/, "");
       // Skip very large streams (likely image data, not text)
-      if (rawStream.length > 500000) continue;
+      if (rawStream.length > 500_000) continue;
 
       var decompressed;
 
-      if (contentObj.indexOf("FlateDecode") >= 0) {
-        decompressed = await inflateRaw(stringToBytes(rawStream));
-      } else {
-        decompressed = stringToBytes(rawStream);
-      }
+      decompressed = contentObj.includes("FlateDecode") ? (await inflateRaw(stringToBytes(rawStream))) : stringToBytes(rawStream);
 
       // Skip if decompression produced nothing
       if (!decompressed || decompressed.length === 0) continue;
@@ -311,13 +347,17 @@ var DOCX_EXTRACTOR = (function () {
 
     return textPieces
       .join(" ")
-      .replace(/[ \t\n\r\f\v]+/g, " ")
+      .replaceAll(/[ \t\n\r\f\v]+/g, " ")
       .trim();
   }
 
+  /**
+   *
+   * @param str
+   */
   function stringToBytes(str) {
     var buf = new Uint8Array(str.length);
-    for (var i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xff;
+    for (var i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xFF;
     return buf;
   }
 
@@ -325,6 +365,10 @@ var DOCX_EXTRACTOR = (function () {
   // Using TextDecoder('latin1') is unreliable because browsers may implement it as
   // Windows-1252, which maps bytes 0x80-0x9F to different code points (>255), causing
   // data corruption when round-tripping through stringToBytes.
+  /**
+   *
+   * @param arr
+   */
   function latin1Decode(arr) {
     var s = "";
     for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
@@ -339,6 +383,11 @@ var DOCX_EXTRACTOR = (function () {
 
 // ── Main extraction dispatcher ──
 
+/**
+ *
+ * @param file
+ * @param callback
+ */
 async function docwExtractText(file, callback) {
   var ext = file.name.split(".").pop().toLowerCase();
   var reader = new FileReader();
@@ -347,19 +396,23 @@ async function docwExtractText(file, callback) {
     callback("Error reading file: " + file.name);
   };
 
-  if (ext === "docx") {
-    reader.onload = function (e) {
+  switch (ext) {
+  case "docx": {
+    reader.addEventListener('load', function (e) {
       DOCX_EXTRACTOR.readDocx(e.target.result)
         .then(function (text) {
           callback(null, text, "docx");
         })
-        .catch(function (err) {
-          callback(err.message);
+        .catch(function (error) {
+          callback(error.message);
         });
-    };
+    });
     reader.readAsArrayBuffer(file);
-  } else if (ext === "pdf") {
-    reader.onload = function (e) {
+  
+  break;
+  }
+  case "pdf": {
+    reader.addEventListener('load', function (e) {
       DOCX_EXTRACTOR.readPdf(new Uint8Array(e.target.result))
         .then(function (text) {
           if (text) {
@@ -370,31 +423,37 @@ async function docwExtractText(file, callback) {
             );
           }
         })
-        .catch(function (err) {
-          callback("PDF extraction failed: " + err.message);
+        .catch(function (error) {
+          callback("PDF extraction failed: " + error.message);
         });
-    };
+    });
     reader.readAsArrayBuffer(file);
-  } else if (ext === "doc") {
+  
+  break;
+  }
+  case "doc": {
     // DOC (binary OLE) - best-effort: read as binary, extract printable ASCII
-    reader.onload = function (e) {
+    reader.addEventListener('load', function (e) {
       var arr = new Uint8Array(e.target.result);
       var result = "";
-      for (var i = 0; i < arr.length; i++) {
-        var c = arr[i];
-        if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+      for (var c of arr) {
+        if ((c >= 0x20 && c <= 0x7E) || c === 0x0A || c === 0x0D) {
           result += String.fromCharCode(c);
         }
       }
-      result = result.replace(/\s+/g, " ").trim();
+      result = result.replaceAll(/\s+/g, " ").trim();
       callback(null, result || "No readable text found in DOC file.", "doc");
-    };
+    });
     reader.readAsArrayBuffer(file);
-  } else {
+  
+  break;
+  }
+  default: {
     // TXT, JSON, CSV and others - read as text
-    reader.onload = function (e) {
+    reader.addEventListener('load', function (e) {
       callback(null, e.target.result, ext);
-    };
+    });
     reader.readAsText(file, "UTF-8");
+  }
   }
 }

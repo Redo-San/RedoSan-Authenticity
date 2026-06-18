@@ -5,16 +5,17 @@ const PDFDocument = require("pdfkit");
 const QRCode = require("qrcode");
 const JSZip = require("jszip");
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function runCertificate(filePath, opts) {
   const data = await buildCertData(filePath, opts);
 
   const format = (opts.format || "pdf").toLowerCase();
   let outPath;
-  if (opts.output) {
-    outPath = path.resolve(opts.output);
-  } else {
-    outPath = path.resolve(`passport.${format}`);
-  }
+  outPath = opts.output ? path.resolve(opts.output) : path.resolve(`passport.${format}`);
 
   const qrVerData = buildQRVerificationJSON(data);
   const docHash = crypto.createHash("sha256").update(qrVerData).digest("hex");
@@ -22,21 +23,37 @@ async function runCertificate(filePath, opts) {
   const qrPngBuf = await QRCode.toBuffer(qrContent, { type: "png", width: 400, margin: 2, errorCorrectionLevel: "H" });
 
   let output;
-  if (format === "pdf") {
+  switch (format) {
+  case "pdf": {
     output = await generatePDF(data, qrPngBuf, qrContent);
-  } else if (format === "docx") {
+  
+  break;
+  }
+  case "docx": {
     output = await generateDOCX(data, qrPngBuf, qrContent);
-  } else if (format === "epub") {
+  
+  break;
+  }
+  case "epub": {
     output = await generateEPUB(data, qrPngBuf, qrContent);
-  } else {
+  
+  break;
+  }
+  default: {
     console.error("Unsupported format. Use pdf, docx, or epub.");
     process.exit(1);
+  }
   }
 
   fs.writeFileSync(outPath, output);
   console.log(`Digital Passport generated: ${outPath}`);
 }
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function buildCertData(filePath, opts) {
   const data = {
     generatedAt: new Date().toISOString(),
@@ -95,13 +112,13 @@ async function buildCertData(filePath, opts) {
     data.file.buf = fbuf;
     data.file.hash = crypto.createHash("sha256").update(fbuf).digest("hex");
 
-    if (ext.match(/\.(png|jpg|jpeg|bmp|tiff?|webp)$/i)) {
+    if (/\.(png|jpg|jpeg|bmp|tiff?|webp)$/i.test(ext)) {
       try {
         const { loadImage } = require("canvas");
         const img = await loadImage(fbuf);
         data.file.width = img.width;
         data.file.height = img.height;
-      } catch (_e) {
+      } catch {
         // canvas not available for image loading
       }
     }
@@ -111,22 +128,22 @@ async function buildCertData(filePath, opts) {
   if (opts.watermark && fs.existsSync(opts.watermark)) {
     data.watermark = true;
     data.watermarkAlgo = path.basename(opts.watermark);
-    data.watermarkResult = fs.readFileSync(opts.watermark, "utf-8");
+    data.watermarkResult = fs.readFileSync(opts.watermark, "utf8");
   }
 
   // Pixel injection result file
   if (opts.pixelInjection && fs.existsSync(opts.pixelInjection)) {
     data.pixelInjection = true;
-    data.piResultHtml = fs.readFileSync(opts.pixelInjection, "utf-8");
+    data.piResultHtml = fs.readFileSync(opts.pixelInjection, "utf8");
   }
 
   // Fingerprint JSON file (the original <file> argument, but separate option too)
   if (opts.fingerprint && fs.existsSync(opts.fingerprint)) {
     try {
-      const fpText = fs.readFileSync(opts.fingerprint, "utf-8");
+      const fpText = fs.readFileSync(opts.fingerprint, "utf8");
       data.fpResult = JSON.parse(fpText);
       data.fingerprint = true;
-    } catch (_e) {
+    } catch {
       console.error("Invalid fingerprint JSON:", opts.fingerprint);
     }
   }
@@ -134,11 +151,11 @@ async function buildCertData(filePath, opts) {
   // DID identity file
   if (opts.did && fs.existsSync(opts.did)) {
     try {
-      const didText = fs.readFileSync(opts.did, "utf-8");
+      const didText = fs.readFileSync(opts.did, "utf8");
       const didData = JSON.parse(didText);
       if (didData.signature) data.didSig = didData.signature;
       if (didData.did) data.didIdentity = didData.did;
-    } catch (_e) {
+    } catch {
       // ignore parse errors
     }
   }
@@ -153,14 +170,14 @@ async function buildCertData(filePath, opts) {
   // Also read the <filePath> argument — if it's a fingerprint JSON, use it
   if (!data.fpResult && filePath && fs.existsSync(filePath)) {
     try {
-      const fpText = fs.readFileSync(filePath, "utf-8");
+      const fpText = fs.readFileSync(filePath, "utf8");
       const parsed = JSON.parse(fpText);
       // Only treat as fingerprint if it has hashes
       if (parsed.hashes || parsed.perceptual_hashes || parsed.fileHash) {
         data.fpResult = parsed;
         data.fingerprint = true;
       }
-    } catch (_e) {
+    } catch {
       // not a fingerprint JSON, that's OK
     }
   }
@@ -168,6 +185,10 @@ async function buildCertData(filePath, opts) {
   return data;
 }
 
+/**
+ *
+ * @param data
+ */
 function buildQRVerificationJSON(data) {
   const qr = {
     v: 1,
@@ -180,8 +201,8 @@ function buildQRVerificationJSON(data) {
   if (data.fpResult?.hashes) {
     qr.fp = {};
     const keys = ["SHA-256", "SHA-384", "SHA-512", "BLAKE3", "MD5"];
-    for (let i = 0; i < keys.length; i++) {
-      if (data.fpResult.hashes[keys[i]]) qr.fp[keys[i]] = data.fpResult.hashes[keys[i]];
+    for (const key of keys) {
+      if (data.fpResult.hashes[key]) qr.fp[key] = data.fpResult.hashes[key];
     }
     if (data.fpResult.perceptual_hashes) {
       for (const key in data.fpResult.perceptual_hashes) {
@@ -202,30 +223,44 @@ function buildQRVerificationJSON(data) {
   return JSON.stringify(qr);
 }
 
+/**
+ *
+ * @param bytes
+ */
 function fmtSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1048576).toFixed(1)} MB`;
+  if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1_048_576).toFixed(1)} MB`;
 }
 
+/**
+ *
+ * @param s
+ */
 function stripHtml(s) {
   if (!s) return "";
   let p;
   do {
     p = s;
-    s = s.replace(/<[^>]*>/g, "");
+    s = s.replaceAll(/<[^>]*>/g, "");
   } while (s !== p);
   return s
-    .replace(/&[^;]+;/g, (m) => {
+    .replaceAll(/&[^;]+;/g, (m) => {
       const e = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" };
       return e[m] || " ";
     })
-    .replace(/\s+/g, " ")
+    .replaceAll(/\s+/g, " ")
     .trim();
 }
 
 // ── PDF generation (pdfkit) ──
 
+/**
+ *
+ * @param data
+ * @param qrPngBuf
+ * @param qrContent
+ */
 function generatePDF(data, qrPngBuf, qrContent) {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 50, size: "A4" });
@@ -240,6 +275,10 @@ function generatePDF(data, qrPngBuf, qrContent) {
       pageW = pw - 2 * margin;
     let y = margin;
 
+    /**
+     *
+     * @param need
+     */
     function checkPage(need) {
       if (y + need > ph - margin) {
         doc.addPage();
@@ -308,7 +347,7 @@ function generatePDF(data, qrPngBuf, qrContent) {
       doc.font("Helvetica").text(data.file.name);
       y += 5;
     }
-    if (data.file.size) {
+    if (data.file.size > 0) {
       doc.font("Helvetica-Bold").text("Size: ", margin, y, { continued: true });
       doc.font("Helvetica").text(fmtSize(data.file.size));
       y += 5;
@@ -343,7 +382,7 @@ function generatePDF(data, qrPngBuf, qrContent) {
       try {
         doc.image(data.file.buf, (pw - imgW) / 2, y, { width: imgW, height: imgH });
         y += imgH + 6;
-      } catch (_e) {
+      } catch {
         y += 2;
       }
     }
@@ -521,27 +560,48 @@ function generatePDF(data, qrPngBuf, qrContent) {
 
 // ── DOCX generation ──
 
+/**
+ *
+ * @param data
+ * @param qrPngBuf
+ * @param _qrContent
+ */
 async function generateDOCX(data, qrPngBuf, _qrContent) {
   let docx;
   try {
     docx = require("docx");
-  } catch (_e) {
+  } catch {
     console.error("docx library not available. Install with: npm install docx");
     process.exit(1);
   }
 
   const children = [];
 
+  /**
+   *
+   * @param content
+   */
   function addParagraph(content) {
     children.push(new docx.Paragraph({ children: content, spacing: { after: 200 } }));
   }
 
+  /**
+   *
+   * @param pngBuf
+   * @param width
+   * @param height
+   */
   function addImage(pngBuf, width, height) {
     addParagraph([
       new docx.ImageRun({ data: pngBuf, type: "png", transformation: { width: width || 400, height: height || 300 } }),
     ]);
   }
 
+  /**
+   *
+   * @param text
+   * @param level
+   */
   function addHeading(text, level) {
     children.push(
       new docx.Paragraph({
@@ -551,6 +611,10 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
     );
   }
 
+  /**
+   *
+   * @param text
+   */
   function addBody(text) {
     children.push(
       new docx.Paragraph({
@@ -560,6 +624,11 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
     );
   }
 
+  /**
+   *
+   * @param label
+   * @param value
+   */
   function addLabelValue(label, value) {
     if (!value) return;
     children.push(
@@ -698,16 +767,26 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
 
 // ── EPUB generation (JSZip) ──
 
+/**
+ *
+ * @param s
+ */
 function escHtml(s) {
   if (s == null) return "";
   return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replaceAll('&', "&amp;")
+    .replaceAll('<', "&lt;")
+    .replaceAll('>', "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll('\'', "&#39;");
 }
 
+/**
+ *
+ * @param data
+ * @param qrPngBuf
+ * @param qrContent
+ */
 async function generateEPUB(data, qrPngBuf, qrContent) {
   let userSection = "";
   if (data.user.name) {
@@ -804,26 +883,26 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
         '<tr><td><strong>Signature</strong></td><td style="font-size:0.6em;word-break:break-all">' +
         escHtml(`${(data.didSig.signature || "").substring(0, 64)}...`) +
         "</td></tr></table>"
-      : data.didIdentity
+      : (data.didIdentity
         ? `<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">${escHtml(data.didIdentity)}</td></tr></table>`
-        : "") +
+        : "")) +
     (data.ct?.submitted && data.ct.hash
       ? "<h2>Certificate Transparency</h2><table>" +
         '<tr><td><strong>SHA-256</strong></td><td style="font-size:0.6em;word-break:break-all">' +
         escHtml(data.ct.hash) +
         "</td></tr>" +
-        (!data.ct.pending
-          ? "<tr><td><strong>Logged</strong></td><td>" +
+        (data.ct.pending
+          ? ""
+          : "<tr><td><strong>Logged</strong></td><td>" +
             escHtml((data.ct.timestamp || "").replace("T", " ").substring(0, 19)) +
             "</td></tr>" +
             "<tr><td><strong>Log</strong></td><td>" +
             escHtml((data.ct.aggregator || "OTS").replace("https://", "").split("/")[0] || "OTS calendar") +
-            "</td></tr>"
-          : "") +
+            "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'
-      : data.ct
+      : (data.ct
         ? `<h2>Certificate Transparency</h2><p>Status: ${escHtml(data.ct.submitted ? "Submitted" : `Unavailable — ${data.ct.error || "offline"}`)}</p>`
-        : "") +
+        : "")) +
     "<h2>Verification QR Code</h2>" +
     "<p>Scan this QR code to verify the document contents.</p>" +
     '<div class="qr-wrapper"><img src="images/qr.png" alt="QR Code"/></div>' +
@@ -845,8 +924,11 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
     ".qr-wrapper img{width:200px;height:200px}" +
     ".qr-data{font-size:0.6em;background:#f5f5f5;padding:8px;border:1px solid #ddd;white-space:pre-wrap;word-break:break-all}";
 
+  /**
+   *
+   */
   function makeUUID() {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replaceAll(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
       return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
     });

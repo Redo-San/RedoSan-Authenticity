@@ -1,6 +1,13 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 // ── Watermark embed/extract orchestrators + UI handlers ──
 
+/**
+ *
+ * @param type
+ * @param imageFile
+ * @param secretFile
+ * @param password
+ */
 async function watermarkEmbed(type, imageFile, secretFile, password) {
     if (type !== 5 && type !== 8 && (!password || !password.trim()))
         return { ok: false, error: 'Password is required for this algorithm' };
@@ -23,38 +30,57 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
     
     const maxPixels = w * h * 3;
     
-    if (type === 1) {
+    switch (type) {
+    case 1: {
         if (payloadBits.length > maxPixels) return { ok: false, error: `Image too small: need ${payloadBits.length} bits, have ${maxPixels}` };
         wm1_embed(imgData, payloadBits);
         imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: `Type 1 (Spatial LSB): ${secret.length} bytes hidden` };
     }
-    
-    else if (type === 2 || type === 4 || type === 5 || type === 7 || type === 9) {
+    case 2: 
+    case 4: 
+    case 5: 
+    case 7: 
+    case 9: {
         const cap = maxDCTBits(w, h, 11);
         if (type === 4) {
             if (payloadBits.length * 3 > cap) return { ok: false, error: 'Secret too large for redundant embedding' };
-        } else if (type !== 5) {
-            if (payloadBits.length > cap) return { ok: false, error: `Secret too large: image supports ~${Math.floor(cap/8)} bytes` };
-        }
+        } else if (type !== 5 && payloadBits.length > cap) return { ok: false, error: `Secret too large: image supports ~${Math.floor(cap/8)} bytes` };
         
         const ycbcr = rgbToYcbcr(imgData);
         
-        if (type === 2) {
+        switch (type) {
+        case 2: {
             embedInDCT(ycbcr.Y, w, h, payloadBits, 25);
-        } else if (type === 4) {
+        
+        break;
+        }
+        case 4: {
             const triple = payloadBits.repeat(3);
             embedInDCT(ycbcr.Y, w, h, triple, 30);
-        } else if (type === 5) {
+        
+        break;
+        }
+        case 5: {
             const sig = new TextEncoder().encode('RedoSanZeroBit');
             const sigBits = bits(sig);
             embedInDCT(ycbcr.Y, w, h, sigBits, 25);
-        } else if (type === 7) {
+        
+        break;
+        }
+        case 7: {
             embedInDCT(ycbcr.Y, w, h, payloadBits, 20);
-        } else if (type === 9) {
+        
+        break;
+        }
+        case 9: {
             embedInDCT(ycbcr.Y, w, h, payloadBits, 15);
             embedInDCT(ycbcr.Cb, w, h, payloadBits, 10);
+        
+        break;
+        }
+        // No default
         }
         
         const result = ycbcrToImageData(ycbcr.Y, ycbcr.Cb, ycbcr.Cr, w, h);
@@ -63,45 +89,40 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         const extras = {4:' (redundant x3)',5:'',7:'',9:''};
         return { ok: true, data: blob, msg: `Type ${type} (${names[type]}): ${type === 5 ? 'Presence mark embedded' : secret.length + ' bytes hidden'}${extras[type] || ''}` };
     }
-    
-    else if (type === 3) {
+    case 3: {
         if (payloadBits.length > maxPixels) return { ok: false, error: `Image too small` };
-        const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
+        const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12_345;
         wm3_embed(imgData, payloadBits, keyVal);
         imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: `Type 3 (Neural SS): ${secret.length} bytes hidden` };
     }
-    
-    else if (type === 6) {
+    case 6: {
         if (payloadBits.length > maxPixels * 2 / 3) return { ok: false, error: `Image too small` };
         wm6_embed(imgData, payloadBits);
         imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: `Type 6 (Multi-bit): ${secret.length} bytes hidden (2-bit LSB)` };
     }
-    
-    else if (type === 8) {
+    case 8: {
         if (512 > maxPixels) return { ok: false, error: 'Image too small (need at least 171 pixels for 512-bit hash)' };
         await wm8_embed(imgData, secret, key);
         imgResult.ctx.putImageData(imgData, 0, 0);
         const blob = await canvasToBlob(canvas);
         return { ok: true, data: blob, msg: 'Type 8 (Fragile): SHA-256 integrity hash embedded' };
     }
-    
-    else if (type === 3) {
+    case 3: {
         const b = wm3_extract(imgData, keyVal);
         const res = b.length >= 32 ? extractData(b) : { data: null, reason: 'no-data' };
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
         return { ok: true, files: { 'extracted_type3.bin': res.data }, msg: `Type 3 extract: ${res.data.length} bytes` };
     }
-    
-    else if (type === 4) {
+    case 4: {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) return { ok: false, error: 'No watermark found with this algorithm' };
         // Type 4 embeds payload 3x redundantly — read all 3 copies
         const totalBits = 32 + dlen * 8 * 3;
         b = extractFromDCT(ycbcr.Y, w, h, totalBits);
@@ -123,8 +144,7 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
         return { ok: true, files: { 'extracted_type4.bin': res.data }, msg: `Type 4 extract: ${res.data.length} bytes` };
     }
-    
-    else if (type === 5) {
+    case 5: {
         const ycbcr = rgbToYcbcr(imgData);
         const sig = new TextEncoder().encode('RedoSanZeroBit');
         const b = extractFromDCT(ycbcr.Y, w, h, sig.length * 8);
@@ -136,38 +156,34 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         if (ratio > 0.85) return { ok: true, msg: ratio === 1 ? 'Type 5: PRESENCE CONFIRMED - Zero-bit watermark detected' : `Type 5: Presence likely (${Math.round(ratio*100)}% match)` };
         return { ok: false, error: `Type 5: No watermark (only ${Math.round(ratio*100)}% match)` };
     }
-    
-    else if (type === 6) {
+    case 6: {
         const b = wm6_extract(imgData);
         const res = b.length >= 32 ? extractData(b) : { data: null, reason: 'no-data' };
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
         return { ok: true, files: { 'extracted_type6.bin': res.data }, msg: `Type 6 extract: ${res.data.length} bytes` };
     }
-    
-    else if (type === 7) {
+    case 7: {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) return { ok: false, error: 'No watermark found with this algorithm' };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const res = extractData(b);
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
         return { ok: true, files: { 'extracted_type7.bin': res.data }, msg: `Type 7 extract: ${res.data.length} bytes` };
     }
-    
-    else if (type === 8) {
+    case 8: {
         const hash = wm8_extract(imgData, key);
-        if (!hash) return { ok: false, error: key && key.length ? 'Wrong password' : 'No hash found' };
+        if (!hash) return { ok: false, error: key && key.length > 0 ? 'Wrong password' : 'No hash found' };
         return { ok: true, files: { 'extracted_hash_type8.txt': new TextEncoder().encode(hash) }, msg: `Type 8: Embedded hash: ${hash}` };
     }
-    
-    else if (type === 9) {
+    case 9: {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) return { ok: false, error: 'No watermark found with this algorithm' };
         // Type 9 embeds in both Y and Cb — verify Cb matches Y
         const bY = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const bCb = extractFromDCT(ycbcr.Cb, w, h, 32 + dlen * 8);
@@ -183,18 +199,26 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
         return { ok: true, files: { 'extracted_type9.bin': res.data }, msg: `Type 9 extract: ${res.data.length} bytes` };
     }
+    // No default
+    }
     
     return { ok: false, error: `Unknown type ${type}` };
 }
 
 // ── Watermark extract dispatcher (supported: types 3-9) ──
+/**
+ *
+ * @param type
+ * @param imageFile
+ * @param password
+ */
 async function watermarkExtract(type, imageFile, password) {
     const imgResult = await loadImage(imageFile);
     const { imgData, w, h } = imgResult;
     var key = password ? await pw_key(password) : new Uint8Array(0);
 
     if (type === 1) {
-        const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
+        const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12_345;
         const b = wm1_extract(imgData);
         const res = b.length >= 32 ? extractData(b, key) : { data: null, reason: 'no-data' };
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
@@ -205,8 +229,8 @@ async function watermarkExtract(type, imageFile, password) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) return { ok: false, error: 'No watermark found with this algorithm' };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const res = extractData(b, key);
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
@@ -214,7 +238,7 @@ async function watermarkExtract(type, imageFile, password) {
     }
 
     if (type === 3) {
-        const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
+        const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12_345;
         const b = wm3_extract(imgData, keyVal);
         const res = b.length >= 32 ? extractData(b, key) : { data: null, reason: 'no-data' };
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
@@ -225,8 +249,8 @@ async function watermarkExtract(type, imageFile, password) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) return { ok: false, error: 'No watermark found with this algorithm' };
         const copyLen = 32 + dlen * 8;
         const totalBits = 3 * copyLen;
         b = extractFromDCT(ycbcr.Y, w, h, totalBits);
@@ -271,8 +295,8 @@ async function watermarkExtract(type, imageFile, password) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) return { ok: false, error: 'No watermark found with this algorithm' };
         b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         const res = extractData(b, key);
         if (!res.data) return { ok: false, error: res.reason === 'bad-password' ? 'Wrong password' : 'No watermark found with this algorithm' };
@@ -281,7 +305,7 @@ async function watermarkExtract(type, imageFile, password) {
 
     if (type === 8) {
         const hash = wm8_extract(imgData, key);
-        if (!hash) return { ok: false, error: key && key.length ? 'Wrong password' : 'No hash found' };
+        if (!hash) return { ok: false, error: key && key.length > 0 ? 'Wrong password' : 'No hash found' };
         return { ok: true, files: { 'extracted_hash_type8.txt': new TextEncoder().encode(hash) }, msg: `Type 8: Embedded hash: ${hash}` };
     }
 
@@ -289,8 +313,8 @@ async function watermarkExtract(type, imageFile, password) {
         const ycbcr = rgbToYcbcr(imgData);
         let b = extractFromDCT(ycbcr.Y, w, h, 32);
         if (b.length < 32) return { ok: false, error: 'No watermark found with this algorithm' };
-        const dlen = parseInt(b.substr(0, 32), 2);
-        if (dlen <= 0 || dlen > 100000) return { ok: false, error: 'No watermark found with this algorithm' };
+        const dlen = Number.parseInt(b.substr(0, 32), 2);
+        if (dlen <= 0 || dlen > 100_000) return { ok: false, error: 'No watermark found with this algorithm' };
         const bY = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
         if (bY.length < 32 + dlen * 8)
             return { ok: false, error: 'No watermark found with this algorithm' };
@@ -304,17 +328,20 @@ async function watermarkExtract(type, imageFile, password) {
 
 // ── UI Handlers ──
 
+/**
+ *
+ */
 async function handleWatermarkEmbed() {
-  const btn = document.getElementById('wm-btn');
-  const resultDiv = document.getElementById('wm-result');
-  const output = document.getElementById('wm-output');
-  const dl = document.getElementById('wm-download');
+  const btn = document.querySelector('#wm-btn');
+  const resultDiv = document.querySelector('#wm-result');
+  const output = document.querySelector('#wm-output');
+  const dl = document.querySelector('#wm-download');
 
-  const type = parseInt(getVal('wm-type'));
+  const type = Number.parseInt(getVal('wm-type'));
   const pw = getVal('wm-password');
   const imgFile = await getFile('wm-image');
   if (!imgFile) { setText('wm-output', __('wm.err_select_image')); resultDiv.style.display = 'block'; return; }
-  if (!(await validateFileInput(document.getElementById('wm-image')))) { return; }
+  if (!(await validateFileInput(document.querySelector('#wm-image')))) { return; }
 
   if (type !== 5 && type !== 8 && (!pw || !pw.trim())) {
     setText('wm-output', __('wm.err_pw_required'));
@@ -327,7 +354,7 @@ async function handleWatermarkEmbed() {
     resultDiv.style.display = 'block'; return;
   }
   if (secretFile) {
-    var secretInput = document.getElementById('wm-secret');
+    var secretInput = document.querySelector('#wm-secret');
     if (secretInput && !(await validateFileInput(secretInput))) { return; }
   }
   if (!secretFile) secretFile = imgFile;
@@ -348,42 +375,64 @@ async function handleWatermarkEmbed() {
         password: pw ? '****' : '', timestamp: new Date().toISOString()
       });
       setDownloadHandler(downloadWatermark);
-      document.getElementById('dl-modal-title').textContent = 'Download Watermark Result';
-      var ext = ([2,4,5,7,9].indexOf(type) >= 0) ? 'jpg' : 'png';
+      document.querySelector('#dl-modal-title').textContent = 'Download Watermark Result';
+      var ext = ([2,4,5,7,9].includes(type)) ? 'jpg' : 'png';
       dl.innerHTML = '<a href="' + imgUrl + '" download="watermarked.' + ext + '" class="btn">' + __('wm.download_btn') + '</a>' +
         '<br><button onclick="showDownloadModal()" class="btn" style="margin-top:8px">' + __('fp.results_btn', 'Download Results') + '</button>';
       setText('wm-output', result.msg);
     } else {
       setText('wm-output', __('wm.error_prefix').replace('{msg}', result.error));
     }
-  } catch (e) { setText('wm-output', __('wm.error_prefix').replace('{msg}', e.message)); }
+  } catch (error) { setText('wm-output', __('wm.error_prefix').replace('{msg}', error.message)); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('wm-spinner', false);
 }
 
+/**
+ *
+ */
 async function updateCapacity() {
-  const capEl = document.getElementById('wm-capacity');
-  const secretStatusEl = document.getElementById('wm-secret-status');
+  const capEl = document.querySelector('#wm-capacity');
+  const secretStatusEl = document.querySelector('#wm-secret-status');
   const imgFile = await getFile('wm-image');
   if (!imgFile) { capEl.textContent = ''; secretStatusEl.textContent = ''; return; }
-  const type = parseInt(getVal('wm-type') || '1', 10);
+  const type = Number.parseInt(getVal('wm-type') || '1', 10);
   try {
     const loaded = await loadImage(imgFile);
     const { w, h } = loaded;
     let bits = 0;
-    if (type === 1 || type === 3) {
+    switch (type) {
+    case 1: 
+    case 3: {
       bits = w * h * 3;
-    } else if (type === 6) {
+    
+    break;
+    }
+    case 6: {
       bits = Math.floor(w * h * 3 * 2 / 3);
-    } else if (type === 2 || type === 4 || type === 5 || type === 7 || type === 9) {
+    
+    break;
+    }
+    case 2: 
+    case 4: 
+    case 5: 
+    case 7: 
+    case 9: {
       bits = maxDCTBits(w, h, 11);
       if (type === 4) bits = Math.floor(bits / 3);
-    } else if (type === 8) {
+    
+    break;
+    }
+    case 8: {
       bits = 512;
+    
+    break;
+    }
+    // No default
     }
     const capacityBytes = Math.floor(bits/8);
-    const suffix = type === 9 ? __('wm.chrominance_suffix', ' (chrominance redundant)') : type === 4 ? __('wm.redundant_suffix', ' (redundant x3)') : '';
-    const capText = __('wm.capacity_label', 'Capacity: ~{bytes} byte{s}{suffix} ({w}×{h} image)').replace('{bytes}', capacityBytes.toLocaleString()).replace('{s}', capacityBytes !== 1 ? 's' : '').replace('{suffix}', suffix).replace('{w}', w).replace('{h}', h);
+    const suffix = type === 9 ? __('wm.chrominance_suffix', ' (chrominance redundant)') : (type === 4 ? __('wm.redundant_suffix', ' (redundant x3)') : '');
+    const capText = __('wm.capacity_label', 'Capacity: ~{bytes} byte{s}{suffix} ({w}×{h} image)').replace('{bytes}', capacityBytes.toLocaleString()).replace('{s}', capacityBytes === 1 ? '' : 's').replace('{suffix}', suffix).replace('{w}', w).replace('{h}', h);
     capEl.textContent = capText;
 
     const secretFile = await getFile('wm-secret');
@@ -391,10 +440,7 @@ async function updateCapacity() {
       secretStatusEl.textContent = '';
     } else if (type === 8) {
       secretStatusEl.textContent = '';
-    } else if (!secretFile) {
-      const maxSecretBytes = capacityBytes;
-      secretStatusEl.innerHTML = `<span style="color:var(--text-muted)">${__('wm.secret_status_max', 'Max secret size: ~{bytes} bytes').replace('{bytes}', maxSecretBytes.toLocaleString())}</span>`;
-    } else {
+    } else if (secretFile) {
       const secretSize = secretFile.size;
       const effectiveCapacity = capacityBytes;
       if (secretSize <= effectiveCapacity) {
@@ -403,10 +449,18 @@ async function updateCapacity() {
         const excess = secretSize - effectiveCapacity;
         secretStatusEl.innerHTML = `<span style="color:#f44336">${__('wm.secret_status_exceed', '✗ Secret file: {size} bytes — exceeds capacity by {excess} bytes').replace('{size}', secretSize.toLocaleString()).replace('{excess}', excess.toLocaleString())}</span>`;
       }
+    } else {
+      const maxSecretBytes = capacityBytes;
+      secretStatusEl.innerHTML = `<span style="color:var(--text-muted)">${__('wm.secret_status_max', 'Max secret size: ~{bytes} bytes').replace('{bytes}', maxSecretBytes.toLocaleString())}</span>`;
     }
-  } catch(e) { capEl.textContent = ''; secretStatusEl.textContent = ''; }
+  } catch{ capEl.textContent = ''; secretStatusEl.textContent = ''; }
 }
 
+/**
+ *
+ * @param imgFile
+ * @param password
+ */
 async function detectWatermarkAlgorithm(imgFile, password) {
   const all = [];
   const pw = password || '';
@@ -415,13 +469,17 @@ async function detectWatermarkAlgorithm(imgFile, password) {
     try {
       const r = await watermarkExtract(t, imgFile, pw);
       if (r.ok) all.push({ type: t, msg: r.msg, files: r.files });
-    } catch(e) { /* skip */ }
+    } catch{ /* skip */ }
   }
   try {
     const r5 = await watermarkExtract(5, imgFile, '');
     if (r5.ok) all.push({ type: 5, msg: r5.msg });
-  } catch(e) { /* skip */ }
+  } catch{ /* skip */ }
   // Deduplicate: group by payload content, keep most specific type per group
+  /**
+   *
+   * @param r
+   */
   function payloadKey(r) {
     if (!r.files) return 'nofiles';
     const data = Object.values(r.files)[0];
@@ -445,17 +503,20 @@ async function detectWatermarkAlgorithm(imgFile, password) {
   return results;
 }
 
+/**
+ *
+ */
 async function handleWatermarkExtract() {
-  const btn = document.getElementById('wm-btn-ex');
-  const resultDiv = document.getElementById('wm-result');
-  const output = document.getElementById('wm-output');
-  const dl = document.getElementById('wm-download');
+  const btn = document.querySelector('#wm-btn-ex');
+  const resultDiv = document.querySelector('#wm-result');
+  const output = document.querySelector('#wm-output');
+  const dl = document.querySelector('#wm-download');
 
-  let type = parseInt(getVal('wm-type-ex'));
+  let type = Number.parseInt(getVal('wm-type-ex'));
   const pw = getVal('wm-password-ex');
   const imgFile = await getFile('wm-image-ex');
   if (!imgFile) { setText('wm-output', __('wm.err_select_stego')); resultDiv.style.display = 'block'; return; }
-  if (!(await validateFileInput(document.getElementById('wm-image-ex')))) { return; }
+  if (!(await validateFileInput(document.querySelector('#wm-image-ex')))) { return; }
 
   if (type !== 0 && type !== 5 && type !== 8 && (!pw || !pw.trim())) {
     setText('wm-output', __('wm.err_pw_required'));
@@ -466,6 +527,10 @@ async function handleWatermarkExtract() {
   resultDiv.style.display = 'none'; dl.innerHTML = '';
   setText('wm-output', __('wm.processing'));
 
+  /**
+   *
+   * @param err
+   */
   function wmErr(err) {
     const m = {
       'Wrong password': __('wm.err_wrong_password'),
@@ -506,7 +571,7 @@ async function handleWatermarkExtract() {
               textParts.push('<pre style="font-size:0.75rem;background:var(--bg);color:var(--text);padding:10px;border-radius:6px;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:6px 0">' +
                 escHtml(contentStr) + '</pre>');
             }
-          } catch(e) {}
+          } catch{}
         }
       }
       setResult('wmResult', {
@@ -515,7 +580,7 @@ async function handleWatermarkExtract() {
         password: pw ? '****' : '', imageName: imgFile.name, timestamp: new Date().toISOString()
       });
       setDownloadHandler(downloadWatermark);
-      document.getElementById('dl-modal-title').textContent = 'Download Watermark Result';
+      document.querySelector('#dl-modal-title').textContent = 'Download Watermark Result';
       dl.innerHTML += '<br><button onclick="showDownloadModal()" class="btn" style="margin-top:8px">' + __('fp.results_btn', 'Download Results') + '</button>';
       output.innerHTML = textParts.join('\n');
     } else {
@@ -525,30 +590,40 @@ async function handleWatermarkExtract() {
       }
       setText('wm-output', errMsg);
     }
-  } catch (e) { setText('wm-output', __('wm.error_prefix').replace('{msg}', e.message)); }
+  } catch (error) { setText('wm-output', __('wm.error_prefix').replace('{msg}', error.message)); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('wm-spinner', false);
 }
 
 // ── Password visibility toggles ──
+/**
+ *
+ */
 function toggleWmPassword() {
-  var pwGroup = document.getElementById('wm-password-group');
+  var pwGroup = document.querySelector('#wm-password-group');
   if (!pwGroup) return;
-  var typeSelect = document.getElementById('wm-type');
-  var type = typeSelect ? parseInt(typeSelect.value, 10) : 1;
+  var typeSelect = document.querySelector('#wm-type');
+  var type = typeSelect ? Number.parseInt(typeSelect.value, 10) : 1;
   pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
 }
 
+/**
+ *
+ */
 function toggleWmExtractPassword() {
-  var pwGroup = document.getElementById('wm-password-ex-group');
+  var pwGroup = document.querySelector('#wm-password-ex-group');
   if (!pwGroup) return;
-  var typeSelect = document.getElementById('wm-type-ex');
-  var type = typeSelect ? parseInt(typeSelect.value, 10) : 0;
+  var typeSelect = document.querySelector('#wm-type-ex');
+  var type = typeSelect ? Number.parseInt(typeSelect.value, 10) : 0;
   pwGroup.style.display = (type !== 5 && type !== 8) ? 'block' : 'none';
 }
 
 // ── Multi-format watermark download ──
 
+/**
+ *
+ * @param r
+ */
 function wmToTXT(r) {
   var lines = ['=== RedoSan Authenticity - Watermark Result ===', ''];
   for (var k in r) lines.push(k + ': ' + String(r[k]));
@@ -556,12 +631,20 @@ function wmToTXT(r) {
   return lines.join('\n');
 }
 
+/**
+ *
+ * @param r
+ */
 function wmToCSV(r) {
   var rows = [['Key', 'Value']];
   for (var k in r) rows.push([k, String(r[k])]);
-  return rows.map(function(row) { return row.map(function(c) { return '"' + String(c).replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
+  return rows.map(function(row) { return row.map(function(c) { return '"' + String(c).replaceAll('"','""') + '"'; }).join(','); }).join('\n');
 }
 
+/**
+ *
+ * @param r
+ */
 function wmToXML(r) {
   var xml = '<?xml version="1.0"?>\n<watermark>\n';
   for (var k in r) xml += '  <' + k + '>' + escXml(String(r[k])) + '</' + k + '>\n';
@@ -569,6 +652,10 @@ function wmToXML(r) {
   return xml;
 }
 
+/**
+ *
+ * @param r
+ */
 function wmToHTML(r) {
   var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Watermark Result</title>';
   h += '<style>body{font-family:-apple-system,sans-serif;max-width:600px;margin:40px auto;padding:0 20px}';
@@ -580,6 +667,10 @@ function wmToHTML(r) {
   return h;
 }
 
+/**
+ *
+ * @param format
+ */
 async function downloadWatermark(format) {
   closeDownloadModal();
   var r = getResult('wmResult');
@@ -599,7 +690,7 @@ async function downloadWatermark(format) {
     return;
   }
   if (format === 'doc') {
-    var docx = window.docx;
+    var docx = globalThis.docx;
     var children = [];
     children.push(new docx.Paragraph({ children: [new docx.TextRun({ text: 'Watermark Result', bold: true, size: 28 })], spacing: { after: 200 } }));
     var rows = [];
@@ -613,11 +704,16 @@ async function downloadWatermark(format) {
 
   var content, ext, mime;
   switch (format) {
-    case 'json': content = JSON.stringify(r, null, 2); ext = 'json'; mime = 'application/json'; break;
-    case 'csv':  content = wmToCSV(r);  ext = 'csv';  mime = 'text/csv'; break;
-    case 'txt':  content = wmToTXT(r);  ext = 'txt';  mime = 'text/plain'; break;
-    case 'xml':  content = wmToXML(r);  ext = 'xml';  mime = 'application/xml'; break;
-    case 'html': content = wmToHTML(r); ext = 'html'; mime = 'text/html'; break;
+    case 'json': { content = JSON.stringify(r, null, 2); ext = 'json'; mime = 'application/json'; break;
+    }
+    case 'csv': {  content = wmToCSV(r);  ext = 'csv';  mime = 'text/csv'; break;
+    }
+    case 'txt': {  content = wmToTXT(r);  ext = 'txt';  mime = 'text/plain'; break;
+    }
+    case 'xml': {  content = wmToXML(r);  ext = 'xml';  mime = 'application/xml'; break;
+    }
+    case 'html': { content = wmToHTML(r); ext = 'html'; mime = 'text/html'; break;
+    }
   }
   if (content == null) return;
   downloadBlobSimple(new Blob([content], { type: mime }), name + '.' + ext);
@@ -625,9 +721,9 @@ async function downloadWatermark(format) {
 
 // ── Live capacity updates ──
 document.addEventListener('DOMContentLoaded', function() {
-  var imgInput = document.getElementById('wm-image');
-  var secretInput = document.getElementById('wm-secret');
-  var typeSelect = document.getElementById('wm-type');
+  var imgInput = document.querySelector('#wm-image');
+  var secretInput = document.querySelector('#wm-secret');
+  var typeSelect = document.querySelector('#wm-type');
   if (imgInput) imgInput.addEventListener('change', updateCapacity);
   if (secretInput) secretInput.addEventListener('change', updateCapacity);
   if (typeSelect) typeSelect.addEventListener('change', updateCapacity);
@@ -635,9 +731,9 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleWmPassword();
   toggleWmExtractPassword();
   
-  var embedType = document.getElementById('wm-type');
+  var embedType = document.querySelector('#wm-type');
   if (embedType) embedType.addEventListener('change', toggleWmPassword);
   
-  var extractType = document.getElementById('wm-type-ex');
+  var extractType = document.querySelector('#wm-type-ex');
   if (extractType) extractType.addEventListener('change', toggleWmExtractPassword);
 });

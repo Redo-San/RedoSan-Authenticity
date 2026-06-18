@@ -1,10 +1,10 @@
 (function () {
   if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
+      globalThis.location.href,
     )
   )
     throw new Error(
@@ -16,14 +16,17 @@
 
 
 
+/**
+ *
+ */
 async function collectCertData() {
   await new Promise(function (r) {
     setTimeout(r, 30);
   });
-  var info = window.simpleUserInfo || {};
-  var file = window.simpleFile;
-  var buf = window.simpleBuf;
-  var results = window.simpleResults || {};
+  var info = globalThis.simpleUserInfo || {};
+  var file = globalThis.simpleFile;
+  var buf = globalThis.simpleBuf;
+  var results = globalThis.simpleResults || {};
   var data = {
     generatedAt: new Date().toISOString(),
     generator: "RedoSan Authenticity",
@@ -51,9 +54,9 @@ async function collectCertData() {
     tsResult: results.tsResult || "",
     fingerprint: !!results.fingerprint,
     fpResult: results.fpResult || null,
-    didSig: results.didSig || window._didSig || null,
+    didSig: results.didSig || globalThis._didSig || null,
     didIdentity:
-      results.didIdentity || (window._didKeypair ? window._didKeypair.did : ""),
+      results.didIdentity || (globalThis._didKeypair ? globalThis._didKeypair.did : ""),
     ct: { submitted: false },
   };
   if (buf && file) {
@@ -71,15 +74,15 @@ async function collectCertData() {
     var timeoutPromise = new Promise(function (_, rej) {
       setTimeout(function () {
         rej(new Error("CT submission timed out"));
-      }, 10000);
+      }, 10_000);
     });
     var ctResult = await Promise.race([ctPromise, timeoutPromise]);
     ctResult.originalFileHash = data.file.hash || "";
     data.ct = ctResult;
-  } catch (e) {
+  } catch (error) {
     data.ct = {
       submitted: false,
-      error: e.message,
+      error: error.message,
       timestamp: new Date().toISOString(),
     };
   }
@@ -88,12 +91,17 @@ async function collectCertData() {
 
 
 
+/**
+ *
+ * @param blob
+ * @param format
+ */
 async function stampCertFile(blob, format) {
   try {
     var buf = await blob.arrayBuffer();
     var hashBuf = await crypto.subtle.digest("SHA-256", buf);
     var hashBytes = new Uint8Array(hashBuf);
-    var hashHex = Array.from(hashBytes)
+    var hashHex = [...hashBytes]
       .map(function (b) {
         return b.toString(16).padStart(2, "0");
       })
@@ -108,16 +116,20 @@ async function stampCertFile(blob, format) {
         format: format,
         timestamp: new Date().toISOString(),
       });
-      var certOtsBtn = document.getElementById("cert-ots-dl-btn");
+      var certOtsBtn = document.querySelector("#cert-ots-dl-btn");
       if (certOtsBtn) certOtsBtn.style.display = "inline-block";
     }
-  } catch (e) {
-    console.error("Failed to stamp certificate file:", e);
+  } catch (error) {
+    console.error("Failed to stamp certificate file:", error);
   }
 }
 
 // ── Main download dispatcher ──
 
+/**
+ *
+ * @param name
+ */
 function ensureLib(name) {
   return new Promise(function (resolve, reject) {
     if (name === "jspdf" && typeof jspdf !== "undefined") return resolve();
@@ -144,6 +156,9 @@ function ensureLib(name) {
         "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
       ];
     var idx = 0;
+    /**
+     *
+     */
     function tryNext() {
       if (idx >= urls.length)
         return reject(
@@ -157,13 +172,13 @@ function ensureLib(name) {
         );
       var s = document.createElement("script");
       s.src = urls[idx++];
-      s.onload = function () {
+      s.addEventListener('load', function () {
         resolve();
-      };
+      });
       s.onerror = function () {
         setTimeout(tryNext, 1000);
       };
-      document.head.appendChild(s);
+      document.head.append(s);
     }
     tryNext();
   });
@@ -171,6 +186,9 @@ function ensureLib(name) {
 
 // ── Loading overlay (CSS spinner survives sync freeze) ──
 var _certOverlay = null;
+/**
+ *
+ */
 function showCertOverlay() {
   if (_certOverlay) return;
   var o = document.createElement("div");
@@ -180,15 +198,18 @@ function showCertOverlay() {
     '<div class="cert-spinner" style="border:5px solid rgba(255,255,255,0.2);border-top:5px solid #d32f2f;border-radius:50%;width:50px;height:50px;animation:certSpin 0.9s linear infinite"></div>' +
     '<div style="color:#fff;font:18px/1.4 sans-serif;margin-top:16px">Generating certificate…</div>' +
     '<div style="color:rgba(255,255,255,0.65);font:13px/1.4 sans-serif;margin-top:6px">Please wait, this may take up to 30 seconds</div>';
-  document.body.appendChild(o);
+  document.body.append(o);
   _certOverlay = o;
-  if (!document.getElementById("cert-spin-style")) {
+  if (!document.querySelector("#cert-spin-style")) {
     var s = document.createElement("style");
     s.id = "cert-spin-style";
     s.textContent = "@keyframes certSpin{to{transform:rotate(360deg)}}";
-    document.head.appendChild(s);
+    document.head.append(s);
   }
 }
+/**
+ *
+ */
 function hideCertOverlay() {
   if (_certOverlay) {
     _certOverlay.remove();
@@ -196,6 +217,9 @@ function hideCertOverlay() {
   }
 }
 
+/**
+ *
+ */
 function downloadCertOtsProof() {
   var ct = getResult('certCtResult');
   if (!ct || !ct.otsProof) return;
@@ -208,17 +232,20 @@ function downloadCertOtsProof() {
     var a = document.createElement("a");
     a.href = url;
     a.download = "RedoSan_Digital_Passport." + (ct.format || "pdf") + ".ots";
-    document.body.appendChild(a);
+    document.body.append(a);
     a.click();
     setTimeout(function () {
-      document.body.removeChild(a);
+      a.remove();
       URL.revokeObjectURL(url);
     }, 100);
-  } catch (e) {
-    console.error("Failed to download cert .ots proof:", e);
+  } catch (error) {
+    console.error("Failed to download cert .ots proof:", error);
   }
 }
 
+/**
+ *
+ */
 function downloadOtsProof() {
   var ct = getResult('lastCtResult');
   if (!ct || !ct.otsProof) return;
@@ -231,17 +258,22 @@ function downloadOtsProof() {
     var a = document.createElement("a");
     a.href = url;
     a.download = "RedoSan_Digital_Passport.ots";
-    document.body.appendChild(a);
+    document.body.append(a);
     a.click();
     setTimeout(function () {
-      document.body.removeChild(a);
+      a.remove();
       URL.revokeObjectURL(url);
     }, 100);
-  } catch (e) {
-    console.error("Failed to download .ots proof:", e);
+  } catch (error) {
+    console.error("Failed to download .ots proof:", error);
   }
 }
 
+/**
+ *
+ * @param format
+ * @param btn
+ */
 async function downloadCert(format, btn) {
   if (btn) {
     btn.disabled = true;
@@ -271,12 +303,12 @@ async function downloadCert(format, btn) {
     }
     setResult('lastCtResult', (data && data.ct) ? data.ct : null);
     if (data.ct && data.ct.otsProof) {
-      var otsBtn = document.getElementById("ots-dl-btn");
+      var otsBtn = document.querySelector("#ots-dl-btn");
       if (otsBtn) otsBtn.style.display = "inline-block";
     }
-  } catch (e) {
-    console.error("Certificate generation failed:", e);
-    alert("Failed to generate certificate: " + e.message);
+  } catch (error) {
+    console.error("Certificate generation failed:", error);
+    alert("Failed to generate certificate: " + error.message);
   }
   hideCertOverlay();
   if (btn) {
@@ -289,27 +321,38 @@ async function downloadCert(format, btn) {
 
 var _certData = null;
 
+/**
+ *
+ * @param id
+ */
 function getValOrEmpty(id) {
   var el = document.getElementById(id);
   return el ? el.value.trim() : "";
 }
 
+/**
+ *
+ * @param id
+ */
 function getUrlOrEmpty(id) {
   var val = getValOrEmpty(id);
   return val || "";
 }
 
+/**
+ *
+ */
 async function generateProfessionalCert() {
-  var btn = document.getElementById("cert-gen-btn");
-  var spinner = document.getElementById("cert-spinner");
-  var status = document.getElementById("cert-status");
-  var dlSection = document.getElementById("cert-download-section");
+  var btn = document.querySelector("#cert-gen-btn");
+  var spinner = document.querySelector("#cert-spinner");
+  var status = document.querySelector("#cert-status");
+  var dlSection = document.querySelector("#cert-download-section");
   if (spinner) spinner.style.display = "block";
   if (status) status.textContent = "Generating certificate...";
   if (btn) btn.disabled = true;
 
   try {
-    var fileInput = document.getElementById("cert-file");
+    var fileInput = document.querySelector("#cert-file");
     var file =
       fileInput && fileInput.files && fileInput.files[0]
         ? fileInput.files[0]
@@ -319,18 +362,26 @@ async function generateProfessionalCert() {
       buf = await file.arrayBuffer();
     }
 
+    /**
+     *
+     * @param id
+     */
     function getFileFrom(id) {
       var el = document.getElementById(id);
       return el && el.files && el.files[0] ? el.files[0] : null;
     }
 
+    /**
+     *
+     * @param f
+     */
     async function readFileAsText(f) {
       if (!f) return "";
       return new Promise(function (resolve) {
         var r = new FileReader();
-        r.onload = function (e) {
+        r.addEventListener('load', function (e) {
           resolve(e.target.result);
-        };
+        });
         r.onerror = function () {
           resolve("");
         };
@@ -355,17 +406,17 @@ async function generateProfessionalCert() {
     if (fpText) {
       try {
         fpResultData = JSON.parse(fpText);
-      } catch (e) {
+      } catch {
         fpResultData = { hashes: {}, perceptual_hashes: {}, raw: fpText };
         var fpLines = fpText.split("\n");
         var curSection = "";
-        for (var fli = 0; fli < fpLines.length; fli++) {
-          var line = fpLines[fli].trim();
-          if (line.indexOf("--- Hashes ---") >= 0) {
+        for (const fpLine of fpLines) {
+          var line = fpLine.trim();
+          if (line.includes("--- Hashes ---")) {
             curSection = "hashes";
             continue;
           }
-          if (line.indexOf("--- Perceptual Hashes ---") >= 0) {
+          if (line.includes("--- Perceptual Hashes ---")) {
             curSection = "phash";
             continue;
           }
@@ -396,7 +447,7 @@ async function generateProfessionalCert() {
     if (didText) {
       try {
         didUploadData = JSON.parse(didText);
-      } catch (e) {
+      } catch {
         didUploadData = { raw: didText };
       }
     }
@@ -415,9 +466,9 @@ async function generateProfessionalCert() {
     var cname = getValOrEmpty("cert-name");
     var cemail = getValOrEmpty("cert-email");
     var cphoneCode =
-      (document.getElementById("cert-phonecode") || {}).value || "";
+      (document.querySelector("#cert-phonecode") || {}).value || "";
     var cphoneRaw = getValOrEmpty("cert-phone");
-    var cphone = cphoneRaw.replace(/\D/g, "").slice(0, 15);
+    var cphone = cphoneRaw.replaceAll(/\D/g, "").slice(0, 15);
     var cwebsite = getValOrEmpty("cert-website");
 
     if (!cname || !cemail || !cphone || !cwebsite) {
@@ -429,7 +480,7 @@ async function generateProfessionalCert() {
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cemail)) {
-      var ew = document.getElementById("cert-email-warn");
+      var ew = document.querySelector("#cert-email-warn");
       if (ew) ew.style.display = "block";
       if (status) status.textContent = "";
       if (spinner) spinner.style.display = "none";
@@ -440,7 +491,7 @@ async function generateProfessionalCert() {
       cwebsite === "https://" ||
       !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(cwebsite)
     ) {
-      var ww = document.getElementById("cert-website-warn");
+      var ww = document.querySelector("#cert-website-warn");
       if (ww) ww.style.display = "block";
       if (status) status.textContent = "";
       if (spinner) spinner.style.display = "none";
@@ -504,12 +555,12 @@ async function generateProfessionalCert() {
       documentWatermarkFileName: docwFileName,
       documentWatermarkResult: stripHtml(docwText),
       didSig:
-        window._didSig ||
+        globalThis._didSig ||
         (didUploadData && didUploadData.signature
           ? didUploadData.signature
           : null),
       didIdentity:
-        (window._didKeypair ? window._didKeypair.did : "") ||
+        (globalThis._didKeypair ? globalThis._didKeypair.did : "") ||
         (didUploadData ? didUploadData.did : ""),
       ct: { submitted: false },
     };
@@ -520,15 +571,15 @@ async function generateProfessionalCert() {
       var ctTimeout = new Promise(function (_, rej) {
         setTimeout(function () {
           rej(new Error("CT submission timed out"));
-        }, 10000);
+        }, 10_000);
       });
       var ctResult = await Promise.race([ctPromise, ctTimeout]);
       ctResult.originalFileHash = _certData.file.hash || "";
       _certData.ct = ctResult;
-    } catch (e) {
+    } catch (error) {
       _certData.ct = {
         submitted: false,
-        error: e.message,
+        error: error.message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -545,58 +596,77 @@ async function generateProfessionalCert() {
 
     if (status) status.textContent = "Certificate generated successfully!";
     if (dlSection) dlSection.style.display = "block";
-  } catch (e) {
-    console.error("Certificate generation failed:", e);
-    if (status) status.textContent = "Error: " + e.message;
-    alert("Failed to generate certificate: " + e.message);
+  } catch (error) {
+    console.error("Certificate generation failed:", error);
+    if (status) status.textContent = "Error: " + error.message;
+    alert("Failed to generate certificate: " + error.message);
   }
 
   if (spinner) spinner.style.display = "none";
   if (btn) btn.disabled = false;
 }
 
+/**
+ *
+ * @param format
+ */
 async function downloadProfessionalCert(format) {
   if (!_certData) {
     alert("Please generate the certificate first.");
     return;
   }
-  var status = document.getElementById("cert-status");
+  var status = document.querySelector("#cert-status");
   if (status) status.textContent = "Generating " + format.toUpperCase() + "...";
   var certBlob;
   try {
-    if (format === "pdf") {
+    switch (format) {
+    case "pdf": {
       if (typeof jspdf === "undefined")
         throw new Error(
           "PDF library (jspdf) did not load. Try disabling ad blockers or check your internet connection.",
         );
       certBlob = await downloadCertPDF(_certData);
-    } else if (format === "docx") {
+    
+    break;
+    }
+    case "docx": {
       if (typeof QRious === "undefined")
         throw new Error(
           "QR library (QRious) did not load. Try disabling ad blockers or check your internet connection.",
         );
       certBlob = await downloadCertDOCX(_certData);
-    } else if (format === "epub") certBlob = await downloadCertEPUB(_certData);
+    
+    break;
+    }
+    case "epub": { {
+    certBlob = await downloadCertEPUB(_certData);
+    // No default
+    }
+    break;
+    }
+    }
     if (certBlob) stampCertFile(certBlob, format);
     if (status)
       status.textContent = format.toUpperCase() + " downloaded successfully.";
-  } catch (e) {
-    console.error("Download failed:", e);
-    if (status) status.textContent = "Error: " + e.message;
-    alert("Failed to download: " + e.message);
+  } catch (error) {
+    console.error("Download failed:", error);
+    if (status) status.textContent = "Error: " + error.message;
+    alert("Failed to download: " + error.message);
   }
 }
 
+/**
+ *
+ */
 function initCertPhoneCode() {
-  var sel = document.getElementById("cert-phonecode");
+  var sel = document.querySelector("#cert-phonecode");
   if (!sel) return;
   // Build options — same format as simplified mode (country code + dial)
   var html =
     '<option value="">—— ' +
     __("simple.select_country", "Select country") +
     " ——</option>";
-  for (var i = 0; i < COUNTRY_CODES.length; i++) {
-    var c = COUNTRY_CODES[i];
+  for (var c of COUNTRY_CODES) {
     html +=
       '<option value="' + c.dial + '">' + c.code + " " + c.dial + "</option>";
   }
@@ -611,12 +681,18 @@ function initCertPhoneCode() {
   if (typeof updatePhoneMaxLength === "function") updatePhoneMaxLength();
 }
 
+/**
+ *
+ */
 function toggleCertMusicFields() {
-  var cb = document.getElementById("cert-show-music");
-  var fields = document.getElementById("cert-music-fields");
+  var cb = document.querySelector("#cert-show-music");
+  var fields = document.querySelector("#cert-music-fields");
   if (fields) fields.style.display = cb && cb.checked ? "" : "none";
 }
 
+/**
+ *
+ */
 function resetProfessionalCert() {
   _certData = null;
   var ids = [
@@ -646,19 +722,19 @@ function resetProfessionalCert() {
       el.value = "";
     }
   });
-  var phonecode = document.getElementById("cert-phonecode");
+  var phonecode = document.querySelector("#cert-phonecode");
   if (phonecode) {
     phonecode.value = "";
   }
-  var showMusic = document.getElementById("cert-show-music");
+  var showMusic = document.querySelector("#cert-show-music");
   if (showMusic) {
     showMusic.checked = false;
   }
-  var musicFields = document.getElementById("cert-music-fields");
+  var musicFields = document.querySelector("#cert-music-fields");
   if (musicFields) musicFields.style.display = "none";
-  var dlSection = document.getElementById("cert-download-section");
+  var dlSection = document.querySelector("#cert-download-section");
   if (dlSection) dlSection.style.display = "none";
-  var status = document.getElementById("cert-status");
+  var status = document.querySelector("#cert-status");
   if (status) status.textContent = "";
   // Re-init phone code detection
   initCertPhoneCode();

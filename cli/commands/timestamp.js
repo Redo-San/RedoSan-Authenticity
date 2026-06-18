@@ -9,27 +9,34 @@ const { readFileBytes, getFileInfo, fmtSize } = require("../utils");
 
 // ── OTS constants (copied from timestamp.js) ──
 var OTS_HEADER = [
-  0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72,
-  0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
+  0x00, 0x4F, 0x70, 0x65, 0x6E, 0x54, 0x69, 0x6D, 0x65, 0x73, 0x74, 0x61, 0x6D, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72,
+  0x6F, 0x6F, 0x66, 0x00, 0xBF, 0x89, 0xE2, 0xE8, 0x84, 0xE8, 0x92, 0x94,
 ];
 var OTS_MAJOR_VERSION = 1;
 var OTS_SHA256_TAG = 0x08;
 
+/**
+ *
+ * @param sha256Bytes
+ */
 function otsBuildDetached(sha256Bytes) {
-  var out = OTS_HEADER.slice();
-  out.push(OTS_MAJOR_VERSION);
-  out.push(OTS_SHA256_TAG);
+  var out = [...OTS_HEADER];
+  out.push(OTS_MAJOR_VERSION, OTS_SHA256_TAG);
   for (let i = 0; i < 32; i++) out.push(sha256Bytes[i]);
   return new Uint8Array(out);
 }
 
+/**
+ *
+ * @param bytes
+ */
 function otsParse(bytes) {
   var data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   var off = 0;
   var magic = data.slice(off, off + OTS_HEADER.length);
   off += OTS_HEADER.length;
-  for (let i = 0; i < OTS_HEADER.length; i++) {
-    if (magic[i] !== OTS_HEADER[i]) throw new Error("Invalid OTS file: bad magic bytes");
+  for (const [i, element] of OTS_HEADER.entries()) {
+    if (magic[i] !== element) throw new Error("Invalid OTS file: bad magic bytes");
   }
   var ver = data[off++];
   if (ver !== OTS_MAJOR_VERSION) throw new Error(`Unsupported OTS version: ${ver}`);
@@ -42,6 +49,11 @@ function otsParse(bytes) {
 var OTS_AGGREGATORS = ["https://a.pool.opentimestamps.org/digest", "https://b.pool.opentimestamps.org/digest"];
 
 // Node.js HTTPS POST (replaces fetch)
+/**
+ *
+ * @param url
+ * @param bodyBytes
+ */
 function httpsPost(url, bodyBytes) {
   return new Promise((resolve, reject) => {
     var urlObj = new URL(url);
@@ -54,7 +66,7 @@ function httpsPost(url, bodyBytes) {
         "Content-Type": "application/x-www-form-urlencoded",
         "Content-Length": bodyBytes.length,
       },
-      timeout: 15000,
+      timeout: 15_000,
     };
     var req = https.request(options, (res) => {
       var chunks = [];
@@ -80,18 +92,28 @@ function httpsPost(url, bodyBytes) {
   });
 }
 
+/**
+ *
+ * @param bytes
+ */
 async function upgradeOts(bytes) {
   var lastErr;
   for (var url of OTS_AGGREGATORS) {
     try {
       return await httpsPost(url, bytes);
-    } catch (e) {
-      lastErr = e;
+    } catch (error) {
+      lastErr = error;
     }
   }
   throw lastErr;
 }
 
+/**
+ *
+ * @param action
+ * @param filePath
+ * @param opts
+ */
 async function runTimestamp(action, filePath, opts) {
   try {
     if (action === "create") {
@@ -103,12 +125,17 @@ async function runTimestamp(action, filePath, opts) {
       console.error("Available: create, verify");
       process.exit(1);
     }
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function runCreate(filePath, opts) {
   const absPath = path.resolve(filePath);
   const data = readFileBytes(absPath);
@@ -133,7 +160,7 @@ async function runCreate(filePath, opts) {
     upgradedBytes.set(sha256Bytes, OTS_HEADER.length + 2);
     upgradedBytes.set(resp, OTS_HEADER.length + 2 + 32);
     upgraded = true;
-  } catch (_e) {
+  } catch {
     // Aggregator unreachable — build incomplete .ots as fallback
     upgradedBytes = otsBuildDetached(sha256Bytes);
     console.log("⚠ Calendar aggregator unreachable (will create incomplete .ots)");
@@ -142,11 +169,7 @@ async function runCreate(filePath, opts) {
 
   // Determine output path
   let outputPath;
-  if (opts.output) {
-    outputPath = path.resolve(opts.output);
-  } else {
-    outputPath = `${absPath}.ots`;
-  }
+  outputPath = opts.output ? path.resolve(opts.output) : `${absPath}.ots`;
 
   fs.writeFileSync(outputPath, Buffer.from(upgradedBytes));
 
@@ -157,6 +180,11 @@ async function runCreate(filePath, opts) {
   console.log(`Proof: ${outputPath} (${upgradedBytes.length} bytes)`);
 }
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function runVerify(filePath, opts) {
   const absPath = path.resolve(filePath);
   const data = readFileBytes(absPath);
@@ -164,11 +192,7 @@ async function runVerify(filePath, opts) {
 
   // Determine .ots proof path
   let otsPath;
-  if (opts.output) {
-    otsPath = path.resolve(opts.output);
-  } else {
-    otsPath = `${absPath}.ots`;
-  }
+  otsPath = opts.output ? path.resolve(opts.output) : `${absPath}.ots`;
 
   if (!fs.existsSync(otsPath)) {
     console.error(`Proof file not found: ${otsPath}`);

@@ -10,7 +10,7 @@ const { getFileInfo, fmtSize, outputResult, hashNode, validateFile } = require("
 const crypto = require("node:crypto");
 
 // Patch global crypto object so hashing.js works unchanged
-if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
+if (globalThis.crypto === undefined || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
       digest: async (algo, data) => {
@@ -30,13 +30,13 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
 }
 
 // Polyfill window for hashing.js (uses window.fastFingerprint = ...)
-if (typeof globalThis.window === "undefined") {
+if (globalThis.window === undefined) {
   globalThis.window = globalThis;
 }
 
 // Polyfill document.createElement('canvas') for perceptual hash resize
 const { createCanvas, loadImage: nodeLoadImage } = require("canvas");
-if (typeof globalThis.document === "undefined") {
+if (globalThis.document === undefined) {
   globalThis.document = {
     createElement: (tag) => {
       if (tag === "canvas") return createCanvas(1, 1);
@@ -47,7 +47,7 @@ if (typeof globalThis.document === "undefined") {
 
 // Polyfill loadImage for hashing.js (used by perceptual hashes)
 // shared.js defines loadImage(file) -> { imgData, w, h }
-if (typeof globalThis.loadImage === "undefined") {
+if (globalThis.loadImage === undefined) {
   globalThis.loadImage = async (blobOrBuffer) => {
     let buf;
     if (blobOrBuffer instanceof Blob) {
@@ -83,6 +83,11 @@ try {
 // After loading, all functions are available on global scope or window-like object
 // hashing.js attaches: sha3_224, sha3_256, sha3_384, sha3_512, blake2b, blake2s, sha224, md2, md4, md5, ripemd160, blake3, whirlpool, fingerprintFile, fastFingerprint, loadImage, resizeImageData, ahash, dhash, phash, whash
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function runFingerprint(filePath, opts) {
   const absPath = path.resolve(filePath);
 
@@ -92,9 +97,9 @@ async function runFingerprint(filePath, opts) {
       data = validateFile(absPath, {
         allowDangerous: opts.allowDangerous || process.argv.includes("--allow-dangerous"),
       });
-    } catch (e) {
-      console.error(`Validation failed: ${e.message}`);
-      if (e.message.includes("Blocked dangerous file type")) {
+    } catch (error) {
+      console.error(`Validation failed: ${error.message}`);
+      if (error.message.includes("Blocked dangerous file type")) {
         console.error("Use --allow-dangerous to bypass file validation");
       }
       process.exit(1);
@@ -122,6 +127,9 @@ async function runFingerprint(filePath, opts) {
     const hashes = {};
 
     // Yield between algorithms to keep process responsive
+    /**
+     *
+     */
     async function yieldLoop() {
       await new Promise((r) => setTimeout(r, 0));
     }
@@ -141,55 +149,55 @@ async function runFingerprint(filePath, opts) {
       await yieldLoop();
       try {
         hashes["SHA-224"] = await globalThis.sha224(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["SHA-3_224"] = await globalThis.sha3_224(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["SHA-3_256"] = await globalThis.sha3_256(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["SHA-3_384"] = await globalThis.sha3_384(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["SHA-3_512"] = await globalThis.sha3_512(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["BLAKE2b"] = await globalThis.blake2b(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["BLAKE2s"] = await globalThis.blake2s(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["BLAKE3"] = await globalThis.blake3(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["MD2"] = globalThis.md2(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["MD4"] = globalThis.md4(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["MD5"] = await globalThis.md5(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["RIPEMD-160"] = await globalThis.ripemd160(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
       try {
         hashes["Whirlpool"] = await globalThis.whirlpool(data);
-      } catch (_e) {}
+      } catch {}
       await yieldLoop();
     } else {
       const target = algoMap[opts.algo.toLowerCase()];
@@ -234,9 +242,9 @@ async function runFingerprint(filePath, opts) {
         perceptual.phash = globalThis.phash(imgDataForHash);
         try {
           perceptual.whash = globalThis.whash(imgDataForHash);
-        } catch (_e) {}
-      } catch (e) {
-        console.error(`Perceptual hash error: ${e.message}`);
+        } catch {}
+      } catch (error) {
+        console.error(`Perceptual hash error: ${error.message}`);
       }
     }
 
@@ -290,8 +298,8 @@ async function runFingerprint(filePath, opts) {
 
       outputResult(text, opts);
     }
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }

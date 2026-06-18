@@ -2,6 +2,11 @@ const path = require("node:path");
 const fs = require("node:fs");
 const { execSync } = require("node:child_process");
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function runConverter(filePath, opts) {
   const absPath = path.resolve(filePath);
   if (!fs.existsSync(absPath)) {
@@ -19,10 +24,10 @@ async function runConverter(filePath, opts) {
   const base = path.basename(absPath, ext);
   const outPath = opts.output ? path.resolve(opts.output) : path.resolve(path.dirname(absPath), `${base}.${format}`);
 
-  const imageFormats = ["png", "jpg", "jpeg", "webp", "gif", "bmp", "tiff", "avif"];
+  const imageFormats = new Set(["png", "jpg", "jpeg", "webp", "gif", "bmp", "tiff", "avif"]);
 
   try {
-    if (imageFormats.includes(ext.replace(".", "")) || imageFormats.includes(format)) {
+    if (imageFormats.has(ext.replace(".", "")) || imageFormats.has(format)) {
       const sharpPath = path.join(__dirname, "..", "..", "node_modules", ".bin", "sharp");
       let cmd;
       if (fs.existsSync(sharpPath)) {
@@ -33,10 +38,10 @@ async function runConverter(filePath, opts) {
           await sharp(absPath).toFile(outPath);
           console.log(`Converted: ${outPath}`);
           return;
-        } catch (_e) {
+        } catch {
           try {
             execSync(`magick "${absPath}" "${outPath}"`, { stdio: "ignore" });
-          } catch (_e2) {
+          } catch {
             fs.copyFileSync(absPath, outPath);
             console.log(`Copied (no conversion library available): ${outPath}`);
             return;
@@ -57,14 +62,14 @@ async function runConverter(filePath, opts) {
         try {
           const _result = execSync(`ffmpeg -i "${absPath}" "${outPath}" 2>&1`, { stdio: "pipe" });
           console.log(`Converted via ffmpeg: ${outPath}`);
-        } catch (_e) {
+        } catch {
           fs.copyFileSync(absPath, outPath);
           console.log(`Copied (ffmpeg not available): ${outPath}`);
         }
       }
     }
-  } catch (err) {
-    console.error(`Conversion failed: ${err.message}`);
+  } catch (error) {
+    console.error(`Conversion failed: ${error.message}`);
     process.exit(1);
   }
 }

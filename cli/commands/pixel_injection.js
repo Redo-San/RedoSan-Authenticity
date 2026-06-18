@@ -18,8 +18,8 @@ const mockDocument = {
   getElementById: () => null,
 };
 globalThis.document = mockDocument;
-if (typeof globalThis.ImageData === "undefined") globalThis.ImageData = ImageData;
-if (typeof globalThis.window === "undefined") globalThis.window = globalThis;
+if (globalThis.ImageData === undefined) globalThis.ImageData = ImageData;
+if (globalThis.window === undefined) globalThis.window = globalThis;
 
 const vm = require("node:vm");
 const advancedSrc = fs.readFileSync(
@@ -41,14 +41,19 @@ vm.runInThisContext(algorithmsSrc, { filename: "watermark_core_algorithms.js" })
 let core = null;
 try {
   core = new globalThis.WatermarkCore();
-} catch (_e) {}
+} catch {}
 
+/**
+ *
+ * @param mode
+ * @param opts
+ */
 async function runPixelInjection(mode, opts) {
   if (!core) {
     console.error("WatermarkCore not available");
     process.exit(1);
   }
-  if (typeof globalThis.document === "undefined") globalThis.document = mockDocument;
+  if (globalThis.document === undefined) globalThis.document = mockDocument;
 
   const imageFile = opts.image;
   if (!imageFile) {
@@ -59,16 +64,16 @@ async function runPixelInjection(mode, opts) {
   const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
   try {
     validateFile(absPath, { allowDangerous });
-  } catch (e) {
-    console.error(`Validation failed: ${e.message}`);
-    if (e.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+  } catch (error) {
+    console.error(`Validation failed: ${error.message}`);
+    if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
     process.exit(1);
   }
   if (opts.secret) {
     try {
       validateFile(path.resolve(opts.secret), { allowDangerous });
-    } catch (e) {
-      console.error(`Validation failed for secret: ${e.message}`);
+    } catch (error) {
+      console.error(`Validation failed for secret: ${error.message}`);
       process.exit(1);
     }
   }

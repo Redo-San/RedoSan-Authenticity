@@ -6,7 +6,7 @@ const crypto = require("node:crypto");
 const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, validateFile } = require("../utils");
 
 // Patch crypto.subtle for Node.js
-if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
+if (globalThis.crypto === undefined || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
       digest: async (_algo, data) => {
@@ -18,7 +18,7 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
 }
 
 // Polyfill window for browser JS files
-if (typeof globalThis.window === "undefined") {
+if (globalThis.window === undefined) {
   globalThis.window = globalThis;
 }
 
@@ -39,6 +39,11 @@ try {
   console.warn = _origWarn;
 }
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function runMetadata(filePath, opts) {
   const absPath = path.resolve(filePath);
   const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
@@ -46,9 +51,9 @@ async function runMetadata(filePath, opts) {
   try {
     try {
       validateFile(absPath, { allowDangerous });
-    } catch (e) {
-      console.error(`Validation failed: ${e.message}`);
-      if (e.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+    } catch (error) {
+      console.error(`Validation failed: ${error.message}`);
+      if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
       process.exit(1);
     }
     const data = readFileBytes(absPath);
@@ -67,18 +72,16 @@ async function runMetadata(filePath, opts) {
         mode: "RGBA",
         format: info.ext.replace(".", "").toUpperCase(),
       };
-    } catch (e) {
-      imageInfo = { error: e.message };
+    } catch (error) {
+      imageInfo = { error: error.message };
     }
 
     // Parse EXIF (JPEG only)
     let exif = {};
-    if (data[0] === 0xff && data[1] === 0xd8) {
-      // Call the parseJPEGExif function from metadata.js
-      if (typeof globalThis.parseJPEGExif === "function") {
+    if (data[0] === 0xFF && data[1] === 0xD8 && // Call the parseJPEGExif function from metadata.js
+      typeof globalThis.parseJPEGExif === "function") {
         exif = globalThis.parseJPEGExif(data) || {};
       }
-    }
 
     const result = {
       file: {
@@ -118,8 +121,8 @@ async function runMetadata(filePath, opts) {
 
       outputResult(text, opts);
     }
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }

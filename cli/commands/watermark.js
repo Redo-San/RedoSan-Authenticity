@@ -21,12 +21,12 @@ const mockDocument = {
 globalThis.document = mockDocument;
 
 // Polyfill ImageData for Node.js (canvas package expects width/height)
-if (typeof globalThis.ImageData === "undefined") {
+if (globalThis.ImageData === undefined) {
   globalThis.ImageData = ImageData;
 }
 
 // Polyfill crypto.subtle with PBKDF2 support (for pw_key)
-if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
+if (globalThis.crypto === undefined || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
       digest: async (algo, data) => {
@@ -40,7 +40,7 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
       deriveBits: async (algorithm, baseKey, length) => {
         const pw = Buffer.from(baseKey.keyData);
         const salt = algorithm.salt || pw;
-        const iterations = algorithm.iterations || 100000;
+        const iterations = algorithm.iterations || 100_000;
         const hash = algorithm.hash || "SHA-256";
         const hashName = typeof hash === "string" ? hash.replace("-", "").toLowerCase() : "sha256";
         const derived = crypto.pbkdf2Sync(pw, salt, iterations, length / 8, hashName);
@@ -50,15 +50,15 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
   };
 }
 
-if (typeof globalThis.window === "undefined") {
+if (globalThis.window === undefined) {
   globalThis.window = globalThis;
 }
 
 // Polyfill missing browser functions
-if (typeof globalThis.sha256Hex === "undefined") {
+if (globalThis.sha256Hex === undefined) {
   globalThis.sha256Hex = async (data) => {
     const hash = crypto.createHash("sha256").update(Buffer.from(data)).digest();
-    return Array.from(hash)
+    return [...hash]
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
   };
@@ -66,7 +66,7 @@ if (typeof globalThis.sha256Hex === "undefined") {
 
 // Load watermark modules via vm.runInThisContext
 const vm = require("node:vm");
-globalThis.LSB_MAX_BITS = 100000;
+globalThis.LSB_MAX_BITS = 100_000;
 
 const coreSrc = fs.readFileSync(path.join(__dirname, "..", "..", "Watermark", "watermark_core.js"), "utf8");
 vm.runInThisContext(coreSrc, { filename: "watermark_core.js" });
@@ -100,7 +100,7 @@ vm.runInThisContext(algorithmsSrc, { filename: "watermark_core_algorithms.js" })
 let watermarkCore = null;
 try {
   watermarkCore = new globalThis.WatermarkCore();
-} catch (_e) {
+} catch {
   // Will be checked at runtime
 }
 
@@ -140,23 +140,40 @@ const ALL_ALGOS = { ...CORE_ALGOS };
 for (const a of ADVANCED_ALGOS) ALL_ALGOS[a] = a;
 
 // ── Embed payload helpers (matches watermark.js format) ──
+/**
+ *
+ * @param data
+ */
 function bytesToBits(data) {
   let s = "";
   for (let i = 0; i < data.length; i++) s += data[i].toString(2).padStart(8, "0");
   return s;
 }
 
+/**
+ *
+ * @param s
+ */
 function bitsFromStr(s) {
   const len = Math.floor(s.length / 8),
     b = new Uint8Array(len);
-  for (let i = 0; i < len; i++) b[i] = parseInt(s.substr(i * 8, 8), 2);
+  for (let i = 0; i < len; i++) b[i] = Number.parseInt(s.substr(i * 8, 8), 2);
   return b;
 }
 
+/**
+ *
+ * @param v
+ */
 function pack32(v) {
   return new Uint8Array([(v >> 24) & 255, (v >> 16) & 255, (v >> 8) & 255, v & 255]);
 }
 
+/**
+ *
+ * @param data
+ * @param key
+ */
 function xorBytes(data, key) {
   if (!key?.length) return data;
   const r = new Uint8Array(data.length);
@@ -164,21 +181,30 @@ function xorBytes(data, key) {
   return r;
 }
 
+/**
+ *
+ * @param password
+ */
 async function deriveKey(password) {
   if (!password) return new Uint8Array(0);
   const enc = new TextEncoder();
   const km = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
   return new Uint8Array(
     await crypto.subtle.deriveBits(
-      { name: "PBKDF2", salt: enc.encode(password), iterations: 100000, hash: "SHA-256" },
+      { name: "PBKDF2", salt: enc.encode(password), iterations: 100_000, hash: "SHA-256" },
       km,
       256,
     ),
   );
 }
 
+/**
+ *
+ * @param secretData
+ * @param key
+ */
 function makePayload(secretData, key) {
-  const magic = new Uint8Array([0xaa, 0xbb]);
+  const magic = new Uint8Array([0xAA, 0xBB]);
   const rawData = new Uint8Array(2 + secretData.length);
   rawData.set(magic);
   rawData.set(secretData, 2);
@@ -190,18 +216,28 @@ function makePayload(secretData, key) {
   return { payload, bits: bytesToBits(payload) };
 }
 
+/**
+ *
+ * @param bitsStr
+ * @param key
+ */
 function extractPayload(bitsStr, key) {
   if (bitsStr.length < 32) return null;
-  const dlen = parseInt(bitsStr.substr(0, 32), 2);
-  if (isNaN(dlen) || dlen <= 0 || dlen > 100000) return null;
+  const dlen = Number.parseInt(bitsStr.substr(0, 32), 2);
+  if (isNaN(dlen) || dlen <= 0 || dlen > 100_000) return null;
   if (bitsStr.length < 32 + dlen * 8) return null;
   const enc = bitsFromStr(bitsStr.substr(32, dlen * 8));
   const dec = xorBytes(enc, key);
-  if (dec.length >= 2 && dec[0] === 0xaa && dec[1] === 0xbb) return dec.slice(2);
+  if (dec.length >= 2 && dec[0] === 0xAA && dec[1] === 0xBB) return dec.slice(2);
   return null;
 }
 
 // ── Main Command ──
+/**
+ *
+ * @param mode
+ * @param opts
+ */
 async function runWatermark(mode, opts) {
   try {
     const imageFile = opts.image;
@@ -214,9 +250,9 @@ async function runWatermark(mode, opts) {
     const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
     try {
       validateFile(absPath, { allowDangerous });
-    } catch (e) {
-      console.error(`Validation failed for image: ${e.message}`);
-      if (e.message.includes("Blocked dangerous file type")) {
+    } catch (error) {
+      console.error(`Validation failed for image: ${error.message}`);
+      if (error.message.includes("Blocked dangerous file type")) {
         console.error("Use --allow-dangerous to bypass file validation");
       }
       process.exit(1);
@@ -224,8 +260,8 @@ async function runWatermark(mode, opts) {
     if (opts.secret) {
       try {
         validateFile(path.resolve(opts.secret), { allowDangerous });
-      } catch (e) {
-        console.error(`Validation failed for secret: ${e.message}`);
+      } catch (error) {
+        console.error(`Validation failed for secret: ${error.message}`);
         process.exit(1);
       }
     }
@@ -258,12 +294,23 @@ async function runWatermark(mode, opts) {
     } else if (mode === "extract") {
       await doExtract(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced, password);
     }
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }
 
+/**
+ *
+ * @param canvas
+ * @param ctx
+ * @param imgData
+ * @param opts
+ * @param algoName
+ * @param algoNum
+ * @param isAdvanced
+ * @param password
+ */
 async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced, password) {
   const secretFile = opts.secret;
   const outputFile = opts.output;
@@ -276,7 +323,7 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
   const maxPixels = w * h * 3;
   const secretData = secretFile ? readFileBytes(secretFile) : null;
   const key = await deriveKey(password);
-  const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
+  const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12_345;
 
   if (isAdvanced) {
     // ── Advanced algorithms via WatermarkCore ──
@@ -297,7 +344,8 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
     fs.writeFileSync(path.resolve(outputFile), outBuf);
     console.log(`Advanced watermark embedded (${algoName})`);
     console.log(`Output: ${path.resolve(outputFile)}`);
-  } else if (algoNum === 1) {
+  } else switch (algoNum) {
+ case 1: {
     // LSB
     const payload = makePayload(secretData || new Uint8Array(0), key);
     if (payload.bits.length > maxPixels) {
@@ -307,7 +355,10 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
     globalThis.wm1_embed(imgData, payload.bits.split("").map(Number));
     ctx.putImageData(imgData, 0, 0);
     saveEmbed(path.resolve(outputFile), payload.bits.length);
-  } else if (algoNum === 3) {
+  
+ break;
+ }
+ case 3: {
     // Random LSB (seeded shuffle)
     const payload = makePayload(secretData || new Uint8Array(0), key);
     if (payload.bits.length > maxPixels) {
@@ -317,7 +368,10 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
     globalThis.wm3_embed(imgData, payload.bits.split("").map(Number), keyVal);
     ctx.putImageData(imgData, 0, 0);
     saveEmbed(path.resolve(outputFile), payload.bits.length);
-  } else if (algoNum === 6) {
+  
+ break;
+ }
+ case 6: {
     // Multi-bit (2-bit LSB)
     const payload = makePayload(secretData || new Uint8Array(0), key);
     if (payload.bits.length > (maxPixels * 2) / 3) {
@@ -327,7 +381,10 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
     globalThis.wm6_embed(imgData, payload.bits.split("").map(Number));
     ctx.putImageData(imgData, 0, 0);
     saveEmbed(path.resolve(outputFile), payload.bits.length);
-  } else if (algoNum === 8) {
+  
+ break;
+ }
+ case 8: {
     // Fragile (SHA-256 hash)
     if (!secretData) {
       console.error("Secret required for fragile algorithm");
@@ -340,7 +397,10 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
     await globalThis.wm8_embed(imgData, secretData, key);
     ctx.putImageData(imgData, 0, 0);
     saveEmbed(path.resolve(outputFile), 512);
-  } else if ([2, 4, 5, 7, 9].includes(algoNum)) {
+  
+ break;
+ }
+ default: { if ([2, 4, 5, 7, 9].includes(algoNum)) {
     // DCT-based algorithms
     const ycbcr = globalThis.rgbToYcbcr(imgData);
     const cap = globalThis.maxDCTBits(w, h, 11);
@@ -352,31 +412,42 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
       console.log("Zero-bit: embedding presence signature");
     } else {
       const payload = makePayload(secretData || new Uint8Array(0), key);
-      if (algoNum === 4) {
+      switch (algoNum) {
+      case 4: {
         if (payload.bits.length * 3 > cap) {
           console.error("Secret too large for redundant embedding");
           process.exit(1);
         }
         globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits + payload.bits + payload.bits, 30);
-      } else if (algoNum === 7) {
+      
+      break;
+      }
+      case 7: {
         if (payload.bits.length > cap) {
           console.error("Secret too large");
           process.exit(1);
         }
         globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 20);
-      } else if (algoNum === 9) {
+      
+      break;
+      }
+      case 9: {
         if (payload.bits.length > cap) {
           console.error("Secret too large");
           process.exit(1);
         }
         globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 15);
         globalThis.embedInDCT(ycbcr.Cb, w, h, payload.bits, 10);
-      } else {
+      
+      break;
+      }
+      default: {
         if (payload.bits.length > cap) {
           console.error("Secret too large");
           process.exit(1);
         }
         globalThis.embedInDCT(ycbcr.Y, w, h, payload.bits, 25);
+      }
       }
     }
 
@@ -387,7 +458,14 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
     console.log(`Watermark embedded (${algoName})`);
     console.log(`Output: ${path.resolve(outputFile)}`);
   }
+ }
+ }
 
+  /**
+   *
+   * @param outPath
+   * @param bitsCount
+   */
   function saveEmbed(outPath, bitsCount) {
     const outBuf = canvas.toBuffer("image/png");
     fs.writeFileSync(outPath, outBuf);
@@ -397,11 +475,22 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
   }
 }
 
+/**
+ *
+ * @param _canvas
+ * @param _ctx
+ * @param imgData
+ * @param opts
+ * @param algoName
+ * @param algoNum
+ * @param isAdvanced
+ * @param password
+ */
 async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdvanced, password) {
   const outputFile = opts.output;
   const { w, h } = imgData;
   const key = await deriveKey(password);
-  const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12345;
+  const keyVal = key.length >= 4 ? ((key[0] << 24) | (key[1] << 16) | (key[2] << 8) | key[3]) >>> 0 : 12_345;
 
   if (isAdvanced) {
     if (!watermarkCore) {
@@ -424,7 +513,7 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
       }
     } else if (freqAdvanced.includes(algoName)) {
       const ycbcr = globalThis.rgbToYcbcr(imgData);
-      const bits = globalThis.extractFromDCT(ycbcr.Y, w, h, 100000);
+      const bits = globalThis.extractFromDCT(ycbcr.Y, w, h, 100_000);
       const data = extractPayload(bits, key);
       if (data) {
         writeExtracted(data, outputFile, algoName);
@@ -447,11 +536,7 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
       };
       const methodName = extractMethods[algoName];
       let result;
-      if (methodName && typeof watermarkCore[methodName] === "function") {
-        result = watermarkCore[methodName](imgData, password);
-      } else {
-        result = watermarkCore.blind_decoding(imgData, algoName, password);
-      }
+      result = methodName && typeof watermarkCore[methodName] === "function" ? watermarkCore[methodName](imgData, password) : watermarkCore.blind_decoding(imgData, algoName, password);
       if (result && result !== "No readable message found") {
         const buf = Buffer.from(result, "utf-8");
         writeExtracted(buf, outputFile, algoName);
@@ -462,8 +547,11 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
     return;
   }
 
-  if (algoNum === 1 || algoNum === 3 || algoNum === 6) {
-    const fn = algoNum === 1 ? "wm1_extract" : algoNum === 3 ? "wm3_extract" : "wm6_extract";
+  switch (algoNum) {
+  case 1: 
+  case 3: 
+  case 6: {
+    const fn = algoNum === 1 ? "wm1_extract" : (algoNum === 3 ? "wm3_extract" : "wm6_extract");
     const args = algoNum === 3 ? [imgData, keyVal] : [imgData];
     const bits = globalThis[fn](...args);
     if (typeof bits === "string") {
@@ -475,7 +563,10 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
     } else {
       console.log("No watermark found. Try a different algorithm or password.");
     }
-  } else if (algoNum === 5) {
+  
+  break;
+  }
+  case 5: {
     const sig = new TextEncoder().encode("RedoSanZeroBit");
     const ycbcr = globalThis.rgbToYcbcr(imgData);
     const b = globalThis.extractFromDCT(ycbcr.Y, w, h, sig.length * 8);
@@ -492,25 +583,31 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
     } else {
       console.log(`No watermark (${Math.round(ratio * 100)}% match)`);
     }
-  } else if (algoNum === 8) {
+  
+  break;
+  }
+  case 8: {
     const hash = globalThis.wm8_extract(imgData, key);
     if (hash) {
-      const hex = Array.from(hash)
+      const hex = [...hash]
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
       console.log(`SHA-256 hash extracted: ${hex}`);
     } else {
       console.log("No fragile watermark found.");
     }
-  } else if ([2, 4, 7, 9].includes(algoNum)) {
+  
+  break;
+  }
+  default: { if ([2, 4, 7, 9].includes(algoNum)) {
     const ycbcr = globalThis.rgbToYcbcr(imgData);
     let b = globalThis.extractFromDCT(ycbcr.Y, w, h, 32);
     if (b.length < 32) {
       console.log("No watermark found");
       return;
     }
-    const dlen = parseInt(b.substr(0, 32), 2);
-    if (dlen <= 0 || dlen > 100000) {
+    const dlen = Number.parseInt(b.substr(0, 32), 2);
+    if (dlen <= 0 || dlen > 100_000) {
       console.log("No watermark found");
       return;
     }
@@ -547,8 +644,16 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
       console.log("Wrong password or no watermark.");
     }
   }
+  }
+  }
 }
 
+/**
+ *
+ * @param data
+ * @param outputFile
+ * @param _algoName
+ */
 function writeExtracted(data, outputFile, _algoName) {
   if (outputFile) {
     fs.writeFileSync(path.resolve(outputFile), data);
@@ -557,7 +662,7 @@ function writeExtracted(data, outputFile, _algoName) {
     try {
       const text = new TextDecoder().decode(data);
       console.log(`Extracted text: ${text}`);
-    } catch (_e) {
+    } catch {
       console.log(`Extracted ${data.length} bytes (binary). Use --output to save.`);
     }
   }

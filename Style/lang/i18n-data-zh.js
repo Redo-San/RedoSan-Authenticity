@@ -1,18 +1,18 @@
 (function () {
   if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
+      globalThis.location.href,
     )
   )
     throw new Error(
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
-window.__I18N_DATA = window.__I18N_DATA || {};
-window.__I18N_DATA.zh = {
+globalThis.__I18N_DATA = globalThis.__I18N_DATA || {};
+globalThis.__I18N_DATA.zh = {
   "nav.about": "关于",
   "nav.privacy": "隐私",
   "nav.contact": "联系",

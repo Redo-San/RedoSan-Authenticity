@@ -5,6 +5,10 @@ const { createCanvas, loadImage } = require("canvas");
 const { readFileBytes, getFileInfo, fmtSize, outputResult, validateFile } = require("../utils");
 const core = require("../../Forensic/forensic_core");
 
+/**
+ *
+ * @param filePath
+ */
 async function loadCanvasImage(filePath) {
   const img = await loadImage(filePath);
   const canvas = createCanvas(img.width, img.height);
@@ -17,6 +21,11 @@ async function loadCanvasImage(filePath) {
   };
 }
 
+/**
+ *
+ * @param original
+ * @param recompressed
+ */
 function elaDiff(original, recompressed) {
   const scores = [];
   let max = 1;
@@ -43,6 +52,10 @@ function elaDiff(original, recompressed) {
 
 const FORENSIC_MAX_DIMENSION = 4000;
 
+/**
+ *
+ * @param absPath
+ */
 async function analyzeForensicFile(absPath) {
   const info = getFileInfo(absPath);
   const bytes = readFileBytes(absPath);
@@ -105,15 +118,20 @@ async function analyzeForensicFile(absPath) {
   };
 }
 
+/**
+ *
+ * @param filePath
+ * @param opts
+ */
 async function runForensic(filePath, opts) {
   const absPath = path.resolve(filePath);
   const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
   try {
     try {
       validateFile(absPath, { allowDangerous });
-    } catch (e) {
-      console.error(`Validation failed: ${e.message}`);
-      if (e.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+    } catch (error) {
+      console.error(`Validation failed: ${error.message}`);
+      if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
       process.exit(1);
     }
     const result = await analyzeForensicFile(absPath);
@@ -130,8 +148,8 @@ async function runForensic(filePath, opts) {
     text += "Signals:\n";
     for (const s of result.signals) text += `  - ${s}\n`;
     outputResult(text, opts);
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }

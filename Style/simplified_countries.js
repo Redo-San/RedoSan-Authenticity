@@ -1,4 +1,4 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 // ── Country code data ──
 
 var COUNTRY_CODES = [
@@ -50,27 +50,30 @@ var COUNTRY_CODES = [
   { code: "AF", dial: "+93", name: "Afghanistan", len: 9 },
 ];
 
+/**
+ *
+ */
 function getCountryFromLocale() {
   // Try all Intl APIs for region code detection
   // Intl.NumberFormat usually returns the most accurate locale (OS-level)
   var locales = [];
   try {
     locales.push(Intl.NumberFormat().resolvedOptions().locale);
-  } catch (e) {}
+  } catch {}
   try {
     locales.push(Intl.DateTimeFormat().resolvedOptions().locale);
-  } catch (e) {}
+  } catch {}
   try {
     locales.push(Intl.Collator().resolvedOptions().locale);
-  } catch (e) {}
-  for (var li = 0; li < locales.length; li++) {
-    if (!locales[li]) continue;
-    var parts = locales[li].split("-");
+  } catch {}
+  for (const locale of locales) {
+    if (!locale) continue;
+    var parts = locale.split("-");
     for (var k = parts.length - 1; k >= 0; k--) {
       if (parts[k].length === 2 && /^[A-Za-z]{2}$/.test(parts[k])) {
         var code = parts[k].toUpperCase();
-        for (var i = 0; i < COUNTRY_CODES.length; i++) {
-          if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+        for (const COUNTRY_CODE of COUNTRY_CODES) {
+          if (COUNTRY_CODE.code === code) return COUNTRY_CODE;
         }
       }
     }
@@ -78,13 +81,16 @@ function getCountryFromLocale() {
   return null;
 }
 
+/**
+ *
+ */
 function getCountryFromTimezone() {
   try {
     var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (!tz) return null;
     // Extract city name from timezone (last component)
     var parts = tz.split("/");
-    var city = parts[parts.length - 1];
+    var city = parts.at(-1);
     // Comprehensive IANA city → country code mapping
     // Generated from zone1970.tab — covers 300+ canonical timezones
     var tzCity = {
@@ -392,14 +398,17 @@ function getCountryFromTimezone() {
     };
     var code = tzCity[city];
     if (code) {
-      for (var i = 0; i < COUNTRY_CODES.length; i++) {
-        if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+      for (const COUNTRY_CODE of COUNTRY_CODES) {
+        if (COUNTRY_CODE.code === code) return COUNTRY_CODE;
       }
     }
-  } catch (e) {}
+  } catch {}
   return null;
 }
 
+/**
+ *
+ */
 function getDefaultPhoneCode() {
   var c;
   // 1. Try Intl APIs (NumberFormat, DateTimeFormat, Collator)
@@ -410,18 +419,18 @@ function getDefaultPhoneCode() {
     var langs = navigator.languages || [
       navigator.language || navigator.userLanguage || "",
     ];
-    for (var l = 0; l < langs.length; l++) {
-      var parts = langs[l].split("-");
-      for (var p = 0; p < parts.length; p++) {
-        if (parts[p].length === 2 && /^[A-Za-z]{2}$/.test(parts[p])) {
-          var code = parts[p].toUpperCase();
-          for (var i = 0; i < COUNTRY_CODES.length; i++) {
-            if (COUNTRY_CODES[i].code === code) return COUNTRY_CODES[i];
+    for (const lang of langs) {
+      var parts = lang.split("-");
+      for (const part of parts) {
+        if (part.length === 2 && /^[A-Za-z]{2}$/.test(part)) {
+          var code = part.toUpperCase();
+          for (const COUNTRY_CODE of COUNTRY_CODES) {
+            if (COUNTRY_CODE.code === code) return COUNTRY_CODE;
           }
         }
       }
     }
-  } catch (e) {}
+  } catch {}
   // 3. Try from timezone (300+ IANA zones mapped to country codes)
   c = getCountryFromTimezone();
   if (c) return c;
@@ -429,20 +438,23 @@ function getDefaultPhoneCode() {
   return null;
 }
 
+/**
+ *
+ */
 function updatePhoneMaxLength() {
   // Try cert fields first, fall back to simplified fields
   var el =
-    document.getElementById("cert-phone") ||
-    document.getElementById("sinfo-phone");
+    document.querySelector("#cert-phone") ||
+    document.querySelector("#sinfo-phone");
   var code =
-    document.getElementById("cert-phonecode") ||
-    document.getElementById("sinfo-phonecode");
+    document.querySelector("#cert-phonecode") ||
+    document.querySelector("#sinfo-phonecode");
   if (!el || !code) return;
   var dial = code.value;
   var maxLen = 15; // ITU max
-  for (var i = 0; i < COUNTRY_CODES.length; i++) {
-    if (COUNTRY_CODES[i].dial === dial) {
-      maxLen = COUNTRY_CODES[i].len;
+  for (const COUNTRY_CODE of COUNTRY_CODES) {
+    if (COUNTRY_CODE.dial === dial) {
+      maxLen = COUNTRY_CODE.len;
       break;
     }
   }
@@ -450,6 +462,10 @@ function updatePhoneMaxLength() {
   if (el.value.length > maxLen) el.value = el.value.slice(0, maxLen);
 }
 
+/**
+ *
+ * @param el
+ */
 function validateSocialInput(el) {
   var warn = document.getElementById(el.id + "-warn");
   if (!el.value) {
@@ -460,6 +476,10 @@ function validateSocialInput(el) {
   if (warn) warn.style.display = ok ? "none" : "block";
 }
 
+/**
+ *
+ * @param el
+ */
 function prefixHttps(el) {
   if (!el.value || !/^https?:\/\//i.test(el.value)) {
     el.value = "https://";
@@ -468,18 +488,27 @@ function prefixHttps(el) {
 }
 
 // ── Progress bar ──
+/**
+ *
+ */
 function showProgress() {
-  var el = document.getElementById("simpleProgressBar");
+  var el = document.querySelector("#simpleProgressBar");
   if (el) el.style.display = "";
 }
+/**
+ *
+ */
 function hideProgress() {
-  var el = document.getElementById("simpleProgressBar");
+  var el = document.querySelector("#simpleProgressBar");
   if (el) {
     el.style.display = "none";
   }
 }
 
 // ── Clear data ──
+/**
+ *
+ */
 function clearSimpleData() {
   if (
     !confirm(
@@ -497,7 +526,7 @@ function clearSimpleData() {
       if (k.indexOf("Url") > 0) {
         try {
           URL.revokeObjectURL(simpleResults[k]);
-        } catch (e) {}
+        } catch {}
       }
     });
   }
@@ -505,20 +534,31 @@ function clearSimpleData() {
 }
 
 // ── Lightbox ──
+/**
+ *
+ * @param src
+ */
 function openLightbox(src) {
-  var img = document.getElementById("lightboxImg");
-  var box = document.getElementById("lightbox");
+  var img = document.querySelector("#lightboxImg");
+  var box = document.querySelector("#lightbox");
   if (img && box) {
     img.src = src;
     box.style.display = "";
   }
 }
+/**
+ *
+ */
 function closeLightbox() {
-  var box = document.getElementById("lightbox");
+  var box = document.querySelector("#lightbox");
   if (box) box.style.display = "none";
 }
 
 // ── C2PA link validation ──
+/**
+ *
+ * @param el
+ */
 function validateC2paLink(el) {
   var warn = document.getElementById(el.id + "-warn");
   if (!el.value) {
@@ -529,6 +569,10 @@ function validateC2paLink(el) {
   if (warn) warn.style.display = ok ? "none" : "block";
 }
 
+/**
+ *
+ * @param el
+ */
 function validateUrlInput(el) {
   var warn = document.getElementById(el.id + "-warn");
   if (!el.value) {
@@ -539,6 +583,10 @@ function validateUrlInput(el) {
   if (warn) warn.style.display = ok ? "none" : "block";
 }
 
+/**
+ *
+ * @param el
+ */
 function validateEmailInput(el) {
   var warn = document.getElementById(el.id + "-warn");
   if (!el.value) {
@@ -549,10 +597,14 @@ function validateEmailInput(el) {
   if (warn) warn.style.display = ok ? "none" : "block";
 }
 
+/**
+ *
+ * @param el
+ */
 function validatePhoneInput(el) {
   var warn = document.getElementById(el.id + "-warn");
   if (/[^\d]/.test(el.value)) {
-    el.value = el.value.replace(/\D/g, "");
+    el.value = el.value.replaceAll(/\D/g, "");
     if (warn) warn.style.display = "block";
   } else {
     if (warn) warn.style.display = "none";
@@ -562,6 +614,10 @@ function validatePhoneInput(el) {
   }
 }
 
+/**
+ *
+ * @param selected
+ */
 function phoneCodeOptionsHtml(selected) {
   var html = "";
   // Placeholder when no country auto-detected
@@ -571,8 +627,7 @@ function phoneCodeOptionsHtml(selected) {
       __("simple.select_country", "Select country") +
       " ——</option>";
   }
-  for (var i = 0; i < COUNTRY_CODES.length; i++) {
-    var c = COUNTRY_CODES[i];
+  for (var c of COUNTRY_CODES) {
     html +=
       '<option value="' +
       c.dial +

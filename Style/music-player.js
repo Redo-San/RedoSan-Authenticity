@@ -1,6 +1,9 @@
 (function () {
+  /**
+   *
+   */
   function audioSrc() {
-    var p = window.location.pathname;
+    var p = globalThis.location.pathname;
     var parts = p.replace(/\/+$/, "").split("/");
     for (var i = 0; i < parts.length; i++) {
       if (parts[i] === "pages") {
@@ -17,9 +20,13 @@
   var _playPromise = null;
   var _audioBaseSrc = "";
 
+  /**
+   *
+   * @param playing
+   */
   function setUI(playing) {
-    var btn = document.getElementById("music-btn");
-    var credit = document.getElementById("music-credit");
+    var btn = document.querySelector("#music-btn");
+    var credit = document.querySelector("#music-credit");
     if (!btn) return;
     if (playing) {
       btn.textContent = "\uD83D\uDD0A";
@@ -33,6 +40,10 @@
   }
 
   var _seekTarget = -1;
+  /**
+   *
+   * @param audio
+   */
   function playSeeked(audio) {
     var onReady = function () {
       audio.removeEventListener("canplay", onReady);
@@ -59,8 +70,11 @@
       audio.addEventListener("canplay", onReady, { once: true });
     }
   }
+  /**
+   *
+   */
   function doPlay() {
-    var audio = document.getElementById("bg-music");
+    var audio = document.querySelector("#bg-music");
     if (!audio) return;
     if (!audio.paused) return;
     if (_seekTarget > 0) {
@@ -89,25 +103,34 @@
       });
   }
 
+  /**
+   *
+   */
   function doPause() {
-    var audio = document.getElementById("bg-music");
+    var audio = document.querySelector("#bg-music");
     if (!audio) return;
     _playing = false;
     audio.pause();
     setUI(false);
   }
 
+  /**
+   *
+   */
   function preloadAudio() {
     if (document.querySelector('link[rel="preload"][as="audio"]')) return;
     var link = document.createElement("link");
     link.rel = "preload";
     link.as = "audio";
     link.href = audioSrc();
-    document.head.appendChild(link);
+    document.head.append(link);
   }
 
+  /**
+   *
+   */
   function inject() {
-    if (document.getElementById("bg-music")) return;
+    if (document.querySelector("#bg-music")) return;
     var div = document.createElement("div");
     div.innerHTML =
       '<audio id="bg-music" src="' +
@@ -115,11 +138,14 @@
       '" loop preload="auto"></audio>' +
       '<button id="music-btn" class="music-btn" aria-label="Toggle Music">&#x1F3B5;</button>' +
       '<div id="music-credit" class="music-credit" role="contentinfo" aria-label="Music credit">RedoSan</div>';
-    while (div.firstChild) document.body.appendChild(div.firstChild);
+    while (div.firstChild) document.body.append(div.firstChild);
   }
 
+  /**
+   *
+   */
   function saveState() {
-    var audio = document.getElementById("bg-music");
+    var audio = document.querySelector("#bg-music");
     if (!audio) return;
     var st = JSON.stringify({
       isPlaying: _playing,
@@ -128,8 +154,11 @@
     sessionStorage.setItem("musicState", st);
   }
 
+  /**
+   *
+   */
   function restoreState() {
-    var audio = document.getElementById("bg-music");
+    var audio = document.querySelector("#bg-music");
     if (!audio) return;
     var state = null;
     var interacted = false;
@@ -137,8 +166,8 @@
       var saved = sessionStorage.getItem("musicState");
       if (saved) state = JSON.parse(saved);
       interacted = sessionStorage.getItem("musicInteracted") === "true";
-    } catch (_) {
-      void _;
+    } catch (error) {
+      void error;
     }
     _audioBaseSrc = (audio.src || audioSrc()).split("#")[0];
     if (
@@ -166,8 +195,11 @@
     setUI(false);
   }
 
+  /**
+   *
+   */
   function firstClick() {
-    var audio = document.getElementById("bg-music");
+    var audio = document.querySelector("#bg-music");
     if (!audio) return;
     if (sessionStorage.getItem("musicInteracted") === "true") {
       document.removeEventListener("click", firstClick);
@@ -187,8 +219,11 @@
 
   var _userPaused = false;
 
+  /**
+   *
+   */
   function toggle() {
-    var audio = document.getElementById("bg-music");
+    var audio = document.querySelector("#bg-music");
     if (!audio) return;
     if (audio.paused) {
       _userPaused = false;
@@ -201,13 +236,16 @@
     }
   }
 
+  /**
+   *
+   */
   function initAudioProtection() {
-    var audio = document.getElementById("bg-music");
+    var audio = document.querySelector("#bg-music");
     if (!audio) return;
     audio.addEventListener("pause", function onPause() {
       if (!_userPaused && _playing) {
         setTimeout(function () {
-          var a = document.getElementById("bg-music");
+          var a = document.querySelector("#bg-music");
           if (a && a.paused && _playing && !_userPaused) {
             a.play().catch(function () {});
           }
@@ -216,12 +254,15 @@
     });
   }
 
+  /**
+   *
+   */
   function watchAudioElement() {
     var target = document.body || document.documentElement;
     var obs = new MutationObserver(function (mutations) {
-      for (var m = 0; m < mutations.length; m++) {
-        for (var r = 0; r < mutations[m].removedNodes.length; r++) {
-          if (mutations[m].removedNodes[r].id === "bg-music") {
+      for (const mutation of mutations) {
+        for (var r = 0; r < mutation.removedNodes.length; r++) {
+          if (mutation.removedNodes[r].id === "bg-music") {
             console.error("[music] bg-music REMOVED from DOM!");
           }
         }
@@ -233,10 +274,13 @@
 
   var _guardianTimer = null;
   var _lastSafeTime = 0;
+  /**
+   *
+   */
   function startGuardian() {
     stopGuardian();
     _guardianTimer = setInterval(function () {
-      var a = document.getElementById("bg-music");
+      var a = document.querySelector("#bg-music");
       if (a && !a.paused && a.currentTime > 0) _lastSafeTime = a.currentTime;
       if (!_playing || _userPaused) return;
       if (a && a.paused && a.src) {
@@ -260,6 +304,9 @@
       }
     }, 1000);
   }
+  /**
+   *
+   */
   function stopGuardian() {
     if (_guardianTimer) {
       clearInterval(_guardianTimer);
@@ -268,13 +315,19 @@
   }
 
   var _saveTimer = null;
+  /**
+   *
+   */
   function startSaveTimer() {
     stopSaveTimer();
     _saveTimer = setInterval(function () {
-      var a = document.getElementById("bg-music");
+      var a = document.querySelector("#bg-music");
       if (a && _playing && !a.paused) saveState();
     }, 5000);
   }
+  /**
+   *
+   */
   function stopSaveTimer() {
     if (_saveTimer) {
       clearInterval(_saveTimer);
@@ -282,6 +335,9 @@
     }
   }
 
+  /**
+   *
+   */
   function init() {
     preloadAudio();
     inject();
@@ -289,18 +345,18 @@
     watchAudioElement();
     startGuardian();
     startSaveTimer();
-    var btn = document.getElementById("music-btn");
+    var btn = document.querySelector("#music-btn");
     if (btn) btn.addEventListener("click", toggle);
     document.addEventListener("click", firstClick);
     window.addEventListener("beforeunload", saveState);
     restoreState();
   }
 
-  window.__musicPlayerState = function () {
+  globalThis.__musicPlayerState = function () {
     return { playing: _playing };
   };
-  window.__musicSaveTime = function () {
-    var a = document.getElementById("bg-music");
+  globalThis.__musicSaveTime = function () {
+    var a = document.querySelector("#bg-music");
     if (a && !a.paused) {
       _lastSafeTime = a.currentTime;
       saveState();

@@ -1,10 +1,10 @@
 (function () {
   if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
+      globalThis.location.href,
     )
   )
     throw new Error(
@@ -21,6 +21,10 @@ var DID_STORAGE_KEY = "redoSan_did_keys";
 var BASE58_ALPHABET =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
+/**
+ *
+ * @param buf
+ */
 function base58Encode(buf) {
   var bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
   if (bytes.length === 0) return "";
@@ -34,8 +38,8 @@ function base58Encode(buf) {
   while (num.length > 0) {
     var remainder = 0;
     var newNum = [];
-    for (var j = 0; j < num.length; j++) {
-      remainder = remainder * 256 + num[j];
+    for (const element of num) {
+      remainder = remainder * 256 + element;
       var digit = Math.floor(remainder / 58);
       remainder = remainder % 58;
       if (newNum.length > 0 || digit > 0) newNum.push(digit);
@@ -48,6 +52,10 @@ function base58Encode(buf) {
   return b58;
 }
 
+/**
+ *
+ * @param str
+ */
 function base58Decode(str) {
   if (typeof str !== "string" || str.length === 0) return new Uint8Array(0);
   // Count leading '1's
@@ -61,11 +69,11 @@ function base58Decode(str) {
     var carry = idx;
     for (var j = 0; j < num.length; j++) {
       carry += num[j] * 58;
-      num[j] = carry & 0xff;
+      num[j] = carry & 0xFF;
       carry = carry >> 8;
     }
     while (carry > 0) {
-      num.push(carry & 0xff);
+      num.push(carry & 0xFF);
       carry = carry >> 8;
     }
   }
@@ -77,16 +85,25 @@ function base58Decode(str) {
 }
 
 // ── Unsigned Varint ──
+/**
+ *
+ * @param value
+ */
 function varintEncode(value) {
   var bytes = [];
   while (value >= 0x80) {
-    bytes.push((value & 0x7f) | 0x80);
+    bytes.push((value & 0x7F) | 0x80);
     value >>>= 7;
   }
-  bytes.push(value & 0x7f);
+  bytes.push(value & 0x7F);
   return new Uint8Array(bytes);
 }
 
+/**
+ *
+ * @param bytes
+ * @param offset
+ */
 function varintDecode(bytes, offset) {
   offset = offset || 0;
   var value = 0;
@@ -95,7 +112,7 @@ function varintDecode(bytes, offset) {
   while (true) {
     if (i >= bytes.length) throw new Error("Incomplete varint");
     var b = bytes[i];
-    value |= (b & 0x7f) << shift;
+    value |= (b & 0x7F) << shift;
     if (!(b & 0x80)) break;
     shift += 7;
     i++;
@@ -111,6 +128,10 @@ var P256_B = BigInt(
   "0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b",
 );
 
+/**
+ *
+ * @param rawBytes
+ */
 function compressP256Key(rawBytes) {
   if (rawBytes.length === 33) return rawBytes;
   if (rawBytes.length !== 65 || rawBytes[0] !== 0x04)
@@ -123,6 +144,10 @@ function compressP256Key(rawBytes) {
   return compressed;
 }
 
+/**
+ *
+ * @param compressed
+ */
 function decompressP256Key(compressed) {
   if (compressed.length === 65 && compressed[0] === 0x04) return compressed;
   if (compressed.length !== 33)
@@ -143,6 +168,10 @@ function decompressP256Key(compressed) {
   return raw;
 }
 
+/**
+ *
+ * @param bytes
+ */
 function bytesToBigInt(bytes) {
   var hex = "";
   for (var i = 0; i < bytes.length; i++)
@@ -150,15 +179,25 @@ function bytesToBigInt(bytes) {
   return BigInt("0x" + hex);
 }
 
+/**
+ *
+ * @param bn
+ * @param len
+ */
 function bigIntToBytes(bn, len) {
   var hex = bn.toString(16);
   while (hex.length < len * 2) hex = "0" + hex;
   var bytes = new Uint8Array(len);
   for (var i = 0; i < len; i++)
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+    bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
   return bytes;
 }
 
+/**
+ *
+ * @param a
+ * @param p
+ */
 function modSqrt(a, p) {
   // Tonelli-Shanks for p ≡ 3 (mod 4): a^((p+1)/4) mod p
   if (p % 4n === 3n) return powMod(a, (p + 1n) / 4n, p);
@@ -192,6 +231,12 @@ function modSqrt(a, p) {
   return r;
 }
 
+/**
+ *
+ * @param a
+ * @param e
+ * @param m
+ */
 function powMod(a, e, m) {
   if (m === 1n) return 0n;
   var r = 1n;
@@ -206,8 +251,8 @@ function powMod(a, e, m) {
 
 // ── Multicodec Prefixes ──
 var MULTICODEC_MAP = {
-  ed25519: { code: 0xed, keyLength: 32 },
-  p256: { code: 0x1200, keyLength: 33 },
+  ed25519: { code: 0xED, keyLength: 32 },
+  p256: { code: 0x12_00, keyLength: 33 },
   rsa: { code: 0x81, keyLength: null },
 };
 var MULTICODEC_REVERSE = {};
@@ -216,31 +261,40 @@ for (var _algo in MULTICODEC_MAP) {
   MULTICODEC_REVERSE[_code] = _algo;
 }
 
+/**
+ *
+ */
 function didGetAlgorithmList() {
   var algos = ["Ed25519", "P-256"];
   if (crypto.subtle && crypto.subtle.generateKey) {
-    algos.push("RSA-2048");
-    algos.push("RSA-4096");
+    algos.push("RSA-2048", "RSA-4096");
   }
   return algos;
 }
 
+/**
+ *
+ * @param algo
+ */
 async function didIsAlgoSupported(algo) {
   try {
-    if (algo === "Ed25519") {
+    switch (algo) {
+    case "Ed25519": {
       var k = await crypto.subtle.generateKey({ name: "Ed25519" }, false, [
         "sign",
         "verify",
       ]);
       return !!k;
-    } else if (algo === "P-256") {
+    }
+    case "P-256": {
       var k = await crypto.subtle.generateKey(
         { name: "ECDSA", namedCurve: "P-256" },
         false,
         ["sign", "verify"],
       );
       return !!k;
-    } else if (algo === "RSA-2048") {
+    }
+    case "RSA-2048": {
       var k = await crypto.subtle.generateKey(
         {
           name: "RSASSA-PKCS1-v1_5",
@@ -251,7 +305,8 @@ async function didIsAlgoSupported(algo) {
         ["sign", "verify"],
       );
       return !!k;
-    } else if (algo === "RSA-4096") {
+    }
+    case "RSA-4096": {
       var k = await crypto.subtle.generateKey(
         {
           name: "RSASSA-PKCS1-v1_5",
@@ -263,12 +318,18 @@ async function didIsAlgoSupported(algo) {
       );
       return !!k;
     }
-  } catch (e) {
+    // No default
+    }
+  } catch {
     return false;
   }
   return false;
 }
 
+/**
+ *
+ * @param algo
+ */
 async function didGenerateKeypair(algo) {
   algo = algo || "Ed25519";
   if (algo === "Ed25519") return didGenerateEd25519Keypair();
@@ -279,6 +340,9 @@ async function didGenerateKeypair(algo) {
   return didGenerateEd25519Keypair();
 }
 
+/**
+ *
+ */
 async function didGenerateEd25519Keypair() {
   try {
     var keypair = await crypto.subtle.generateKey({ name: "Ed25519" }, true, [
@@ -298,11 +362,14 @@ async function didGenerateEd25519Keypair() {
       pubRaw: pubRaw,
       algorithm: "Ed25519",
     };
-  } catch (e) {
+  } catch {
     return didGenerateP256Keypair();
   }
 }
 
+/**
+ *
+ */
 async function didGenerateP256Keypair() {
   var keypair = await crypto.subtle.generateKey(
     { name: "ECDSA", namedCurve: "P-256" },
@@ -325,6 +392,10 @@ async function didGenerateP256Keypair() {
   };
 }
 
+/**
+ *
+ * @param bits
+ */
 async function didGenerateRSAKeypair(bits) {
   bits = bits || 2048;
   var keypair = await crypto.subtle.generateKey(
@@ -353,6 +424,11 @@ async function didGenerateRSAKeypair(bits) {
   };
 }
 
+/**
+ *
+ * @param pubKeyBytes
+ * @param algoType
+ */
 function didKeyEncode(pubKeyBytes, algoType) {
   var info = MULTICODEC_MAP[algoType];
   if (!info) throw new Error("Unknown algorithm type: " + algoType);
@@ -364,12 +440,16 @@ function didKeyEncode(pubKeyBytes, algoType) {
   return "did:key:z" + b58;
 }
 
+/**
+ *
+ * @param did
+ */
 function didKeyDecode(did) {
   if (!did || typeof did !== "string") throw new Error("Invalid DID");
   // Backward compat: old format did:key:u... (base64url)
   if (did.indexOf("did:key:u") === 0) {
     var b64 = did.slice(9);
-    b64 = b64.replace(/-/g, "+").replace(/_/g, "/");
+    b64 = b64.replaceAll('-', "+").replaceAll('_', "/");
     while (b64.length % 4) b64 += "=";
     var bytes = new Uint8Array(
       atob(b64)
@@ -381,13 +461,24 @@ function didKeyDecode(did) {
     var prefix = bytes[0];
     var pubKeyBytes = bytes.slice(1);
     var algo;
-    if (prefix === 0xed) algo = "ed25519";
-    else if (prefix === 0x80) algo = "p256";
-    else if (prefix === 0x81) algo = "rsa";
-    else
-      throw new Error(
+    switch (prefix) {
+    case 0xED: {
+    algo = "ed25519";
+    break;
+    }
+    case 0x80: {
+    algo = "p256";
+    break;
+    }
+    case 0x81: {
+    algo = "rsa";
+    break;
+    }
+    default: { throw new Error(
         "Unknown old-format multicodec prefix: 0x" + prefix.toString(16),
       );
+    }
+    }
     return { pubKeyBytes: pubKeyBytes, algorithm: algo, legacy: true };
   }
   // New format: did:key:z... (base58btc)
@@ -406,6 +497,10 @@ function didKeyDecode(did) {
   return { pubKeyBytes: pubKeyBytes, algorithm: algoName };
 }
 
+/**
+ *
+ * @param did
+ */
 async function didImportVerifyKey(did) {
   var decoded = didKeyDecode(did);
   if (decoded.algorithm === "ed25519") {
@@ -436,13 +531,18 @@ async function didImportVerifyKey(did) {
   }
 }
 
+/**
+ *
+ * @param keypair
+ * @param data
+ */
 async function didSign(keypair, data) {
   var enc =
     typeof data === "string"
       ? new TextEncoder().encode(data)
-      : data instanceof Uint8Array
+      : (data instanceof Uint8Array
       ? data
-      : new Uint8Array(data);
+      : new Uint8Array(data));
   var algo;
   if (keypair.algorithm === "Ed25519") algo = { name: "Ed25519" };
   else if (keypair.algorithm === "P-256")
@@ -452,13 +552,20 @@ async function didSign(keypair, data) {
   return new Uint8Array(sig);
 }
 
+/**
+ *
+ * @param publicKey
+ * @param signature
+ * @param data
+ * @param algorithm
+ */
 async function didVerify(publicKey, signature, data, algorithm) {
   var enc =
     typeof data === "string"
       ? new TextEncoder().encode(data)
-      : data instanceof Uint8Array
+      : (data instanceof Uint8Array
       ? data
-      : new Uint8Array(data);
+      : new Uint8Array(data));
   var sig =
     signature instanceof Uint8Array ? signature : new Uint8Array(signature);
   var algo;
@@ -468,6 +575,12 @@ async function didVerify(publicKey, signature, data, algorithm) {
   return await crypto.subtle.verify(algo, publicKey, sig, enc);
 }
 
+/**
+ *
+ * @param did
+ * @param privJwk
+ * @param algorithm
+ */
 function didStoreKeys(did, privJwk, algorithm) {
   try {
     var data = JSON.stringify({
@@ -478,11 +591,14 @@ function didStoreKeys(did, privJwk, algorithm) {
     });
     localStorage.setItem(DID_STORAGE_KEY, data);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
 
+/**
+ *
+ */
 function didLoadKeys() {
   try {
     var raw = localStorage.getItem(DID_STORAGE_KEY);
@@ -495,20 +611,27 @@ function didLoadKeys() {
       algorithm: data.algorithm,
       createdAt: data.createdAt || 0,
     };
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
+/**
+ *
+ */
 function didClearKeys() {
   try {
     localStorage.removeItem(DID_STORAGE_KEY);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
 
+/**
+ *
+ * @param stored
+ */
 async function didImportSignKey(stored) {
   if (stored.algorithm === "Ed25519") {
     var privateKey = await crypto.subtle.importKey(
@@ -590,15 +713,23 @@ async function didImportSignKey(stored) {
   }
 }
 
+/**
+ *
+ * @param sigBytes
+ */
 function didSigToBase64(sigBytes) {
   return btoa(String.fromCharCode.apply(null, sigBytes))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
+    .replaceAll('+', "-")
+    .replaceAll('/', "_")
     .replace(/=+$/, "");
 }
 
+/**
+ *
+ * @param b64
+ */
 function didBase64ToBytes(b64) {
-  b64 = b64.replace(/-/g, "+").replace(/_/g, "/");
+  b64 = b64.replaceAll('-', "+").replaceAll('_', "/");
   while (b64.length % 4) b64 += "=";
   return new Uint8Array(
     atob(b64)
@@ -611,6 +742,10 @@ function didBase64ToBytes(b64) {
 
 // ── W3C DID Document ──
 
+/**
+ *
+ * @param kp
+ */
 function didGenerateDocument(kp) {
   var did = kp.did;
   var vmId = did + "#" + did.slice(8); // fragment = multibase value
@@ -649,12 +784,20 @@ function didGenerateDocument(kp) {
 
 // ── Verifiable Credential ──
 
+/**
+ *
+ * @param algorithm
+ */
 function getCryptosuite(algorithm) {
   if (algorithm === "Ed25519") return "eddsa-rdfc-2022";
   if (algorithm === "P-256") return "ecdsa-rdfc-2019";
   return "rsa-signature-2022";
 }
 
+/**
+ *
+ * @param algorithm
+ */
 function getSuiteContext(algorithm) {
   if (algorithm === "Ed25519")
     return "https://w3id.org/security/suites/ed25519-2020/v1";
@@ -663,6 +806,13 @@ function getSuiteContext(algorithm) {
   return "https://w3id.org/security/suites/rsa-2020/v1";
 }
 
+/**
+ *
+ * @param kp
+ * @param subjectData
+ * @param signatureB64
+ * @param nonce
+ */
 function didCreateVerifiableCredential(kp, subjectData, signatureB64, nonce) {
   var did = kp.did;
   var vmId = did + "#" + did.slice(8);
@@ -694,12 +844,15 @@ function didCreateVerifiableCredential(kp, subjectData, signatureB64, nonce) {
 
 // ── Professional Mode Handlers ──
 
+/**
+ *
+ */
 function didUpdateButtons() {
-  var genBtn = document.getElementById("did-gen-btn");
-  var signBtn = document.getElementById("did-sign-btn");
-  var clearBtn = document.getElementById("did-clear-btn");
-  var fpInput = document.getElementById("did-fp-file");
-  var hasDid = !!window._didKeypair;
+  var genBtn = document.querySelector("#did-gen-btn");
+  var signBtn = document.querySelector("#did-sign-btn");
+  var clearBtn = document.querySelector("#did-clear-btn");
+  var fpInput = document.querySelector("#did-fp-file");
+  var hasDid = !!globalThis._didKeypair;
   var hasFp = !!(fpInput && fpInput.files && fpInput.files[0]);
   if (genBtn) {
     genBtn.disabled = !hasFp;
@@ -712,11 +865,15 @@ function didUpdateButtons() {
   }
 }
 
+/**
+ *
+ * @param kp
+ */
 function didUpdateProfessionalUI(kp) {
-  var didVal = document.getElementById("did-did-value");
-  var algoVal = document.getElementById("did-algo-value");
-  var keyDisplay = document.getElementById("did-key-display");
-  var statusText = document.getElementById("did-status-text");
+  var didVal = document.querySelector("#did-did-value");
+  var algoVal = document.querySelector("#did-algo-value");
+  var keyDisplay = document.querySelector("#did-key-display");
+  var statusText = document.querySelector("#did-status-text");
   if (didVal) didVal.textContent = kp.did;
   if (algoVal) algoVal.textContent = kp.algorithm;
   if (keyDisplay) keyDisplay.style.display = "block";
@@ -728,13 +885,16 @@ function didUpdateProfessionalUI(kp) {
   didUpdateButtons();
 }
 
+/**
+ *
+ */
 async function handleDidGenerate() {
-  var btn = document.getElementById("did-gen-btn");
-  var signBtn = document.getElementById("did-sign-btn");
-  var spinner = document.getElementById("did-spinner");
-  var result = document.getElementById("did-result");
-  var statusText = document.getElementById("did-status-text");
-  var algoSelect = document.getElementById("did-algo-select");
+  var btn = document.querySelector("#did-gen-btn");
+  var signBtn = document.querySelector("#did-sign-btn");
+  var spinner = document.querySelector("#did-spinner");
+  var result = document.querySelector("#did-result");
+  var statusText = document.querySelector("#did-status-text");
+  var algoSelect = document.querySelector("#did-algo-select");
   var algo = algoSelect ? algoSelect.value : "Ed25519";
   if (spinner) spinner.style.display = "block";
   if (btn) btn.disabled = true;
@@ -746,8 +906,8 @@ async function handleDidGenerate() {
   try {
     var kp = await didGenerateKeypair(algo);
     didStoreKeys(kp.did, kp.privJwk, kp.algorithm);
-    window._didKeypair = kp;
-    window._didStored = didLoadKeys();
+    globalThis._didKeypair = kp;
+    globalThis._didStored = didLoadKeys();
     didUpdateProfessionalUI(kp);
     if (result)
       result.innerHTML =
@@ -764,15 +924,15 @@ async function handleDidGenerate() {
           "⚠ Keys stored in browser (localStorage) — not encrypted. Avoid using on shared computers.",
         ) +
         "</span></div>";
-  } catch (e) {
+  } catch (error) {
     if (result)
       result.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
         __("did.failed", "Error: {msg}").replace(
           "{msg}",
           typeof escapeHtml === "function"
-            ? escapeHtml(e.message)
-            : escHtml(e.message),
+            ? escapeHtml(error.message)
+            : escHtml(error.message),
         ) +
         "</div>";
     if (btn) btn.disabled = false;
@@ -781,34 +941,37 @@ async function handleDidGenerate() {
   if (btn) btn.disabled = false;
 }
 
+/**
+ *
+ */
 async function handleDidSign() {
-  var signBtn = document.getElementById("did-sign-btn");
-  var spinner = document.getElementById("did-spinner");
-  var result = document.getElementById("did-result");
-  var sigDisplay = document.getElementById("did-sig-display");
-  var sigValue = document.getElementById("did-sig-value");
-  var sigDid = document.getElementById("did-sig-did");
-  var statusText = document.getElementById("did-status-text");
+  var signBtn = document.querySelector("#did-sign-btn");
+  var spinner = document.querySelector("#did-spinner");
+  var result = document.querySelector("#did-result");
+  var sigDisplay = document.querySelector("#did-sig-display");
+  var sigValue = document.querySelector("#did-sig-value");
+  var sigDid = document.querySelector("#did-sig-did");
+  var statusText = document.querySelector("#did-status-text");
   if (spinner) spinner.style.display = "block";
   if (signBtn) signBtn.disabled = true;
   if (statusText)
     statusText.textContent = __("did.status_signing", "Signing fingerprint...");
 
   // Load keypair if not in memory
-  if (!window._didKeypair) {
+  if (!globalThis._didKeypair) {
     var stored = didLoadKeys();
     if (stored) {
       try {
-        window._didKeypair = await didImportSignKey(stored);
-      } catch (e) {
+        globalThis._didKeypair = await didImportSignKey(stored);
+      } catch (error) {
         if (result)
           result.innerHTML =
             '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
             __("did.failed", "Error: {msg}").replace(
               "{msg}",
               typeof escapeHtml === "function"
-                ? escapeHtml("Failed to load keys: " + e.message)
-                : escHtml("Failed to load keys: " + e.message),
+                ? escapeHtml("Failed to load keys: " + error.message)
+                : escHtml("Failed to load keys: " + error.message),
             ) +
             "</div>";
         if (signBtn) signBtn.disabled = false;
@@ -832,15 +995,15 @@ async function handleDidSign() {
   if (!fpResult) {
     // Try loading from professional mode file uploads
     var fpFileInput =
-      document.getElementById("did-fp-file") ||
-      document.getElementById("cert-result-fp");
+      document.querySelector("#did-fp-file") ||
+      document.querySelector("#cert-result-fp");
     var fpText = "";
     if (fpFileInput && fpFileInput.files && fpFileInput.files[0]) {
       fpText = await new Promise(function (resolve) {
         var r = new FileReader();
-        r.onload = function (e) {
+        r.addEventListener('load', function (e) {
           resolve(e.target.result);
-        };
+        });
         r.onerror = function () {
           resolve("");
         };
@@ -850,7 +1013,7 @@ async function handleDidSign() {
     if (fpText) {
       try {
         fpResult = JSON.parse(fpText);
-      } catch (e) {
+      } catch {
         fpResult = null;
       }
     }
@@ -872,11 +1035,11 @@ async function handleDidSign() {
 
   try {
     var fpJson = JSON.stringify(fpResult.hashes || {});
-    var sigBytes = await didSign(window._didKeypair, fpJson);
+    var sigBytes = await didSign(globalThis._didKeypair, fpJson);
     var sigBase64 = didSigToBase64(sigBytes);
-    window._didSig = {
-      did: window._didKeypair.did,
-      algorithm: window._didKeypair.algorithm,
+    globalThis._didSig = {
+      did: globalThis._didKeypair.did,
+      algorithm: globalThis._didKeypair.algorithm,
       signature: sigBase64,
       signedData: fpJson,
       timestamp: new Date().toISOString(),
@@ -884,17 +1047,17 @@ async function handleDidSign() {
 
     // Verify
     var verifyOk = await didVerify(
-      window._didKeypair.publicKey,
+      globalThis._didKeypair.publicKey,
       sigBytes,
       fpJson,
-      window._didKeypair.algorithm,
+      globalThis._didKeypair.algorithm,
     );
 
     if (sigValue) sigValue.textContent = sigBase64.substring(0, 64) + "...";
-    if (sigDid) sigDid.textContent = window._didKeypair.did;
+    if (sigDid) sigDid.textContent = globalThis._didKeypair.did;
     if (sigDisplay) sigDisplay.style.display = "block";
 
-    var dlContainer = document.getElementById("did-dl-container");
+    var dlContainer = document.querySelector("#did-dl-container");
     if (verifyOk) {
       if (result)
         result.innerHTML =
@@ -913,18 +1076,18 @@ async function handleDidSign() {
           "</div>";
       if (dlContainer) dlContainer.style.display = "none";
     }
-  } catch (e) {
+  } catch (error) {
     if (result)
       result.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
         __("did.failed", "Error: {msg}").replace(
           "{msg}",
           typeof escapeHtml === "function"
-            ? escapeHtml(e.message)
-            : escHtml(e.message),
+            ? escapeHtml(error.message)
+            : escHtml(error.message),
         ) +
         "</div>";
-    var dlContainer = document.getElementById("did-dl-container");
+    var dlContainer = document.querySelector("#did-dl-container");
     if (dlContainer) dlContainer.style.display = "none";
   }
   if (spinner) spinner.style.display = "none";
@@ -933,31 +1096,38 @@ async function handleDidSign() {
 
 // ── DID Download ──
 
+/**
+ *
+ */
 function showDidDownloadModal() {
   var stored = didLoadKeys();
   if (!stored) return;
   setDownloadHandler(downloadDID);
-  document.getElementById("dl-modal-title").textContent =
+  document.querySelector("#dl-modal-title").textContent =
     __("dl.title", "Download") + " — DID";
   showDownloadModal();
 }
 
+/**
+ *
+ * @param format
+ */
 async function downloadDID(format) {
   closeDownloadModal();
   var stored = didLoadKeys();
   if (!stored) return;
   // Reconstruct keypair
   var kp;
-  if (window._didKeypair && window._didKeypair.did === stored.did) {
-    kp = window._didKeypair;
+  if (globalThis._didKeypair && globalThis._didKeypair.did === stored.did) {
+    kp = globalThis._didKeypair;
   } else {
     try {
       kp = await didImportSignKey(stored);
-    } catch (e) {
+    } catch {
       return;
     }
   }
-  var didSig = window._didSig || null;
+  var didSig = globalThis._didSig || null;
   var createdAt = stored.createdAt
     ? new Date(stored.createdAt).toISOString()
     : "";
@@ -977,26 +1147,30 @@ async function downloadDID(format) {
 
   var content, ext, mime;
   switch (format) {
-    case "json":
+    case "json": {
       content = didToJSON(kp, didSig, createdAt);
       ext = "json";
       mime = "application/json";
       break;
-    case "csv":
+    }
+    case "csv": {
       content = didToCSV(kp, didSig, createdAt);
       ext = "csv";
       mime = "text/csv";
       break;
-    case "txt":
+    }
+    case "txt": {
       content = didToTXT(kp, didSig, createdAt);
       ext = "txt";
       mime = "text/plain";
       break;
-    case "xml":
+    }
+    case "xml": {
       content = didToXML(kp, didSig, createdAt);
       ext = "xml";
       mime = "application/xml";
       break;
+    }
   }
   if (content == null) return;
   var blob = new Blob([content], { type: mime });
@@ -1005,6 +1179,12 @@ async function downloadDID(format) {
 
 // ── DID format converters ──
 
+/**
+ *
+ * @param kp
+ * @param didSig
+ * @param createdAt
+ */
 function didToJSON(kp, didSig, createdAt) {
   var doc = didGenerateDocument(kp);
   var data = {
@@ -1033,6 +1213,12 @@ function didToJSON(kp, didSig, createdAt) {
   return JSON.stringify(data, null, 2);
 }
 
+/**
+ *
+ * @param kp
+ * @param didSig
+ * @param createdAt
+ */
 function didToCSV(kp, didSig, createdAt) {
   var lines = [];
   lines.push("did,algorithm,created_at,public_key");
@@ -1045,18 +1231,14 @@ function didToCSV(kp, didSig, createdAt) {
       createdAt +
       '","' +
       (kp.pubRaw ? btoa(String.fromCharCode.apply(null, kp.pubRaw)) : "") +
-      '"',
+      '"', ""
   );
-  lines.push("");
   var docStr = JSON.stringify(didGenerateDocument(kp));
   lines.push("did_document");
-  lines.push('"' + docStr.replace(/"/g, '""') + '"');
+  lines.push('"' + docStr.replaceAll('"', '""') + '"');
   if (didSig) {
-    lines.push("");
-    lines.push(
-      "signature_did,signature_algorithm,signature_value,signed_data,timestamp",
-    );
-    lines.push(
+    lines.push("", 
+      "signature_did,signature_algorithm,signature_value,signed_data,timestamp", 
       '"' +
         didSig.did +
         '","' +
@@ -1068,42 +1250,35 @@ function didToCSV(kp, didSig, createdAt) {
         '","' +
         didSig.timestamp +
         '"',
+    
     );
     var vcStr = JSON.stringify(
       didCreateVerifiableCredential(kp, didSig.signedData, didSig.signature),
     );
-    lines.push("");
-    lines.push("verifiable_credential");
-    lines.push('"' + vcStr.replace(/"/g, '""') + '"');
+    lines.push("", "verifiable_credential");
+    lines.push('"' + vcStr.replaceAll('"', '""') + '"');
   }
   return lines.join("\n");
 }
 
+/**
+ *
+ * @param kp
+ * @param didSig
+ * @param createdAt
+ */
 function didToTXT(kp, didSig, createdAt) {
   var lines = [];
-  lines.push("RedoSan Authenticity — Decentralized Identity (DID)");
-  lines.push("===================================================");
-  lines.push("");
-  lines.push("DID:            " + kp.did);
-  lines.push("Algorithm:      " + kp.algorithm);
+  lines.push("RedoSan Authenticity — Decentralized Identity (DID)", "===================================================", "", "DID:            " + kp.did, "Algorithm:      " + kp.algorithm);
   if (createdAt) lines.push("Created:        " + createdAt);
   if (kp.pubRaw)
     lines.push(
       "Public Key:     " + btoa(String.fromCharCode.apply(null, kp.pubRaw)),
     );
-  lines.push("");
-  lines.push("--- W3C DID Document ---");
+  lines.push("", "--- W3C DID Document ---");
   lines.push(JSON.stringify(didGenerateDocument(kp), null, 2));
   if (didSig) {
-    lines.push("");
-    lines.push("--- Signature ---");
-    lines.push("Signed By:      " + didSig.did);
-    lines.push("Algorithm:      " + didSig.algorithm);
-    lines.push("Timestamp:      " + didSig.timestamp);
-    lines.push("Signed Data:    " + didSig.signedData);
-    lines.push("Signature:      " + didSig.signature);
-    lines.push("");
-    lines.push("--- Verifiable Credential ---");
+    lines.push("", "--- Signature ---", "Signed By:      " + didSig.did, "Algorithm:      " + didSig.algorithm, "Timestamp:      " + didSig.timestamp, "Signed Data:    " + didSig.signedData, "Signature:      " + didSig.signature, "", "--- Verifiable Credential ---");
     lines.push(
       JSON.stringify(
         didCreateVerifiableCredential(kp, didSig.signedData, didSig.signature),
@@ -1112,11 +1287,16 @@ function didToTXT(kp, didSig, createdAt) {
       ),
     );
   }
-  lines.push("");
-  lines.push("Generated by RedoSan Authenticity");
+  lines.push("", "Generated by RedoSan Authenticity");
   return lines.join("\n");
 }
 
+/**
+ *
+ * @param kp
+ * @param didSig
+ * @param createdAt
+ */
 function didToXML(kp, didSig, createdAt) {
   var x = '<?xml version="1.0" encoding="UTF-8"?>\n<did>\n';
   x += "  <did_value>" + escXml(kp.did) + "</did_value>\n";
@@ -1153,15 +1333,25 @@ function didToXML(kp, didSig, createdAt) {
   return x;
 }
 
+/**
+ *
+ * @param s
+ */
 function escXml(s) {
   return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replaceAll('&', "&amp;")
+    .replaceAll('<', "&lt;")
+    .replaceAll('>', "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll('\'', "&apos;");
 }
 
+/**
+ *
+ * @param kp
+ * @param didSig
+ * @param createdAt
+ */
 async function didToPDF(kp, didSig, createdAt) {
   if (typeof jspdf === "undefined") await ensureLib("jspdf");
   var doc = new jspdf.jsPDF();
@@ -1197,12 +1387,12 @@ async function didToPDF(kp, didSig, createdAt) {
   doc.setTextColor(50, 50, 50);
   var docStr = JSON.stringify(didGenerateDocument(kp), null, 2);
   var docLines = doc.splitTextToSize(docStr, 180);
-  for (var di = 0; di < docLines.length; di++) {
+  for (const docLine of docLines) {
     if (y > 275) {
       doc.addPage();
       y = 20;
     }
-    doc.text(docLines[di], 14, y);
+    doc.text(docLine, 14, y);
     y += 3.5;
   }
   if (didSig) {
@@ -1242,18 +1432,24 @@ async function didToPDF(kp, didSig, createdAt) {
       2,
     );
     var vcLines = doc.splitTextToSize(vcStr, 180);
-    for (var vi = 0; vi < vcLines.length; vi++) {
+    for (const vcLine of vcLines) {
       if (y > 275) {
         doc.addPage();
         y = 20;
       }
-      doc.text(vcLines[vi], 14, y);
+      doc.text(vcLine, 14, y);
       y += 3.5;
     }
   }
   return doc.output("blob");
 }
 
+/**
+ *
+ * @param kp
+ * @param didSig
+ * @param createdAt
+ */
 async function didToDOCX(kp, didSig, createdAt) {
   if (typeof docx === "undefined") await ensureLib("docx");
   var children = [];
@@ -1442,19 +1638,22 @@ async function didToDOCX(kp, didSig, createdAt) {
   return docx.Packer.toBlob(doc2);
 }
 
+/**
+ *
+ */
 function handleDidClear() {
   didClearKeys();
-  window._didKeypair = null;
-  window._didSig = null;
-  var keyDisplay = document.getElementById("did-key-display");
-  var sigDisplay = document.getElementById("did-sig-display");
-  var signBtn = document.getElementById("did-sign-btn");
-  var result = document.getElementById("did-result");
-  var statusText = document.getElementById("did-status-text");
+  globalThis._didKeypair = null;
+  globalThis._didSig = null;
+  var keyDisplay = document.querySelector("#did-key-display");
+  var sigDisplay = document.querySelector("#did-sig-display");
+  var signBtn = document.querySelector("#did-sign-btn");
+  var result = document.querySelector("#did-result");
+  var statusText = document.querySelector("#did-status-text");
   if (keyDisplay) keyDisplay.style.display = "none";
   if (sigDisplay) sigDisplay.style.display = "none";
   if (signBtn) signBtn.style.display = "none";
-  var dlContainer = document.getElementById("did-dl-container");
+  var dlContainer = document.querySelector("#did-dl-container");
   if (dlContainer) dlContainer.style.display = "none";
   if (statusText)
     statusText.textContent = __(
@@ -1471,17 +1670,17 @@ function handleDidClear() {
 // ── Auto-restore DID identity + populate algorithm selector on page load ──
 document.addEventListener("DOMContentLoaded", function () {
   // Populate algorithm selector (preserve static HTML option labels)
-  var algoSelect = document.getElementById("did-algo-select");
+  var algoSelect = document.querySelector("#did-algo-select");
   if (algoSelect) {
     var algos = didGetAlgorithmList();
     var hasOptions = algoSelect.options.length > 0;
     if (!hasOptions) {
       algoSelect.innerHTML = "";
-      for (var ai = 0; ai < algos.length; ai++) {
+      for (const algo of algos) {
         var opt = document.createElement("option");
-        opt.value = algos[ai];
-        opt.textContent = algos[ai];
-        algoSelect.appendChild(opt);
+        opt.value = algo;
+        opt.textContent = algo;
+        algoSelect.append(opt);
       }
     }
   }

@@ -46,6 +46,10 @@ gEdZPT2qO+/2xxICIQD/nFV4pGEf7n7LC3lh7BC8P/WPFd2S6FMq9Lg7WqVAmg==
 -----END CERTIFICATE-----`;
 
 // ── Signing ──
+/**
+ *
+ * @param data
+ */
 function signWithECKey(data) {
   const sign = crypto.createSign("SHA256");
   sign.update(data);
@@ -53,6 +57,13 @@ function signWithECKey(data) {
   return sign.sign(C2PA_PRIVATE_KEY);
 }
 
+/**
+ *
+ * @param fileHash
+ * @param fileName
+ * @param mimeType
+ * @param assertions
+ */
 function genC2PAManifest(fileHash, fileName, mimeType, assertions) {
   const now = new Date().toISOString();
   return {
@@ -81,6 +92,10 @@ function genC2PAManifest(fileHash, fileName, mimeType, assertions) {
 }
 
 // ── C2PA Read (search file for C2PA markers) ──
+/**
+ *
+ * @param filePath
+ */
 function findC2PAInFile(filePath) {
   const data = readFileBytes(filePath);
   const ext = path.extname(filePath).toLowerCase();
@@ -88,9 +103,9 @@ function findC2PAInFile(filePath) {
   if (ext === ".jpg" || ext === ".jpeg") {
     // JPEG: look for C2PA marker (APP11 - 0xFFEB)
     for (let i = 0; i < data.length - 16; i++) {
-      if (data[i] === 0xff && data[i + 1] === 0xeb) {
+      if (data[i] === 0xFF && data[i + 1] === 0xEB) {
         const segLen = (data[i + 2] << 8) | data[i + 3];
-        const c2paMarker = "c2pa\x00";
+        const c2paMarker = "c2pa\u0000";
         let found = true;
         for (let j = 0; j < 5; j++) {
           if (data[i + 4 + j] !== c2paMarker.charCodeAt(j)) {
@@ -126,22 +141,32 @@ function findC2PAInFile(filePath) {
   return null;
 }
 
+/**
+ *
+ * @param buf
+ */
 function parseC2PAFromBuffer(buf) {
   try {
     const dec = new TextDecoder("utf-8", { fatal: false });
     const text = dec.decode(buf);
     const jsonStart = text.indexOf("{");
     const jsonEnd = text.lastIndexOf("}");
-    if (jsonStart >= 0 && jsonEnd > jsonStart) {
+    if (jsonStart !== -1 && jsonEnd > jsonStart) {
       return JSON.parse(text.substring(jsonStart, jsonEnd + 1));
     }
     return { raw: buf, note: "C2PA binary data (not JSON-parseable)" };
-  } catch (_e) {
+  } catch {
     return { raw: buf, note: "C2PA binary data" };
   }
 }
 
 // ── Commands ──
+/**
+ *
+ * @param action
+ * @param filePath
+ * @param opts
+ */
 async function runC2pa(action, filePath, opts) {
   try {
     const absPath = path.resolve(filePath);
@@ -152,25 +177,41 @@ async function runC2pa(action, filePath, opts) {
     const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
     try {
       validateFile(absPath, { allowDangerous });
-    } catch (e) {
-      console.error(`Validation failed: ${e.message}`);
-      if (e.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+    } catch (error) {
+      console.error(`Validation failed: ${error.message}`);
+      if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
       process.exit(1);
     }
 
-    if (action === "sign") await doSign(absPath, opts);
-    else if (action === "read") await doRead(absPath, opts);
-    else if (action === "verify") await doVerify(absPath, opts);
-    else {
+    switch (action) {
+    case "sign": {
+    await doSign(absPath, opts);
+    break;
+    }
+    case "read": {
+    await doRead(absPath, opts);
+    break;
+    }
+    case "verify": {
+    await doVerify(absPath, opts);
+    break;
+    }
+    default: {
       console.error("Unknown action. Use: sign, read, verify");
       process.exit(1);
     }
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
+    }
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }
 
+/**
+ *
+ * @param absPath
+ * @param opts
+ */
 async function doSign(absPath, opts) {
   const data = readFileBytes(absPath);
   const info = getFileInfo(absPath);
@@ -225,20 +266,25 @@ async function doSign(absPath, opts) {
 }
 
 // ── JPEG: embed C2PA as APP11 (0xFFEB) segment before SOS ──
+/**
+ *
+ * @param jpegBuf
+ * @param manifestBuf
+ */
 function embedC2PAJPEG(jpegBuf, manifestBuf) {
   // Find SOS marker (0xFFDA) — insert APP11 before it
-  const sosIdx = findJPEGMarker(jpegBuf, 0xda);
+  const sosIdx = findJPEGMarker(jpegBuf, 0xDA);
   if (sosIdx < 0) throw new Error("JPEG SOS marker not found");
 
   // Build C2PA payload: 'c2pa\x00' + 4-byte big-endian length + manifest
-  const c2paHeader = Buffer.concat([Buffer.from("c2pa\x00", "utf-8"), Buffer.alloc(4), manifestBuf]);
+  const c2paHeader = Buffer.concat([Buffer.from("c2pa\u0000", "utf-8"), Buffer.alloc(4), manifestBuf]);
   c2paHeader.writeUInt32BE(manifestBuf.length, 5); // 4-byte length after 'c2pa\0'
 
   // Build APP11 segment: FF EB + 2-byte big-endian segment length (including length field) + payload
   const segLen = c2paHeader.length + 2; // +2 for the length field itself
   const app11 = Buffer.alloc(2 + segLen);
-  app11[0] = 0xff;
-  app11[1] = 0xeb;
+  app11[0] = 0xFF;
+  app11[1] = 0xEB;
   app11.writeUInt16BE(segLen, 2);
   c2paHeader.copy(app11, 4);
 
@@ -246,14 +292,24 @@ function embedC2PAJPEG(jpegBuf, manifestBuf) {
   return Buffer.concat([jpegBuf.slice(0, sosIdx), app11, jpegBuf.slice(sosIdx)]);
 }
 
+/**
+ *
+ * @param buf
+ * @param marker
+ */
 function findJPEGMarker(buf, marker) {
   for (let i = 0; i < buf.length - 1; i++) {
-    if (buf[i] === 0xff && buf[i + 1] === marker) return i;
+    if (buf[i] === 0xFF && buf[i + 1] === marker) return i;
   }
   return -1;
 }
 
 // ── PNG: embed C2PA as custom 'c2pa' chunk before IEND ──
+/**
+ *
+ * @param pngBuf
+ * @param manifestBuf
+ */
 function embedC2PAPNG(pngBuf, manifestBuf) {
   const idatIdx = findPNGChunk(pngBuf, "IDAT");
   if (idatIdx < 0) throw new Error("PNG IDAT chunk not found");
@@ -273,6 +329,11 @@ function embedC2PAPNG(pngBuf, manifestBuf) {
   return Buffer.concat([pngBuf.slice(0, idatIdx), chunk, pngBuf.slice(idatIdx)]);
 }
 
+/**
+ *
+ * @param buf
+ * @param name
+ */
 function findPNGChunk(buf, name) {
   const nameBytes = Buffer.from(name, "ascii");
   let i = 8;
@@ -292,17 +353,26 @@ function findPNGChunk(buf, name) {
 }
 
 // Simple CRC32 for PNG chunk
+/**
+ *
+ * @param buf
+ */
 function crc32(buf) {
-  let crc = 0xffffffff;
-  for (let i = 0; i < buf.length; i++) {
-    crc ^= buf[i];
+  let crc = 0xFF_FF_FF_FF;
+  for (const element of buf) {
+    crc ^= element;
     for (let j = 0; j < 8; j++) {
-      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xED_B8_83_20 : 0);
     }
   }
-  return (crc ^ 0xffffffff) >>> 0;
+  return (crc ^ 0xFF_FF_FF_FF) >>> 0;
 }
 
+/**
+ *
+ * @param absPath
+ * @param opts
+ */
 async function doRead(absPath, opts) {
   const info = getFileInfo(absPath);
   const data = readFileBytes(absPath);
@@ -340,6 +410,11 @@ async function doRead(absPath, opts) {
   }
 }
 
+/**
+ *
+ * @param absPath
+ * @param _opts
+ */
 async function doVerify(absPath, _opts) {
   const data = readFileBytes(absPath);
   const info = getFileInfo(absPath);
@@ -368,8 +443,8 @@ async function doVerify(absPath, _opts) {
       const certPem = C2PA_CERTS;
       const valid = verify.verify(certPem, sigBuf);
       console.log(`\nSignature: ${valid ? "✓ VALID" : "✗ INVALID"}`);
-    } catch (e) {
-      console.log(`\nSignature verification unavailable: ${e.message}`);
+    } catch (error) {
+      console.log(`\nSignature verification unavailable: ${error.message}`);
     }
   } else {
     console.log("\nNo signature found in C2PA data.");

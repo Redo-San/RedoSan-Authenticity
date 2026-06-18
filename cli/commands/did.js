@@ -2,24 +2,38 @@ const path = require("node:path");
 const fs = require("node:fs");
 const crypto = require("node:crypto");
 
+/**
+ *
+ * @param action
+ * @param file
+ * @param opts
+ */
 async function runDid(action, file, opts) {
   if (action === "generate") {
     const algo = (opts.algo || "Ed25519").toUpperCase();
     let keyPair;
-    if (algo === "ED25519") {
+    switch (algo) {
+    case "ED25519": {
       const { generateKeyPairSync } = crypto;
       keyPair = generateKeyPairSync("ed25519", {
         publicKeyEncoding: { type: "spki", format: "pem" },
         privateKeyEncoding: { type: "pkcs8", format: "pem" },
       });
-    } else if (algo === "P-256") {
+    
+    break;
+    }
+    case "P-256": {
       const { generateKeyPairSync } = crypto;
       keyPair = generateKeyPairSync("ec", {
         namedCurve: "P-256",
         publicKeyEncoding: { type: "spki", format: "pem" },
         privateKeyEncoding: { type: "pkcs8", format: "pem" },
       });
-    } else if (algo === "RSA-2048" || algo === "RSA-4096") {
+    
+    break;
+    }
+    case "RSA-2048": 
+    case "RSA-4096": {
       const { generateKeyPairSync } = crypto;
       const bits = algo === "RSA-4096" ? 4096 : 2048;
       keyPair = generateKeyPairSync("rsa", {
@@ -27,9 +41,13 @@ async function runDid(action, file, opts) {
         publicKeyEncoding: { type: "spki", format: "pem" },
         privateKeyEncoding: { type: "pkcs8", format: "pem" },
       });
-    } else {
+    
+    break;
+    }
+    default: {
       console.error("Unsupported algorithm. Use Ed25519, P-256, RSA-2048, or RSA-4096.");
       process.exit(1);
+    }
     }
 
     const did = `did:key:${algo === "ED25519" ? "z" : "z"}${Buffer.from(keyPair.publicKey).toString("base64url").substring(0, 32)}`;
@@ -66,9 +84,9 @@ async function runDid(action, file, opts) {
     ];
     for (const p of didPaths) {
       try {
-        didIdentity = JSON.parse(fs.readFileSync(path.resolve(p), "utf-8"));
+        didIdentity = JSON.parse(fs.readFileSync(path.resolve(p), "utf8"));
         break;
-      } catch (_e) {}
+      } catch {}
     }
     if (!didIdentity) {
       console.error('No DID identity found. Generate one first with "redosan did generate".');
