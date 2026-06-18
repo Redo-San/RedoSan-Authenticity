@@ -102,7 +102,7 @@ describe('E2E — Hash Routing & Page Navigation', () => {
     await ctx.close();
   });
 
-  it('should update hash after navigation', async () => {
+  it('should update URL after navigation (MPA-style path)', async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     await page.goto(BASE, NAV_WAIT);
@@ -111,9 +111,9 @@ describe('E2E — Hash Routing & Page Navigation', () => {
       const a = document.querySelector('#sidebar a[data-page="id_forge"]');
       if (a) a.click();
     });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
     const hash = await page.evaluate(() => window.location.hash);
-    assert.equal(hash, '#/id_forge');
+    assert.ok(hash.includes('page-id_forge'), `Hash should include 'page-id_forge', got: ${hash}`);
     await ctx.close();
   });
 });

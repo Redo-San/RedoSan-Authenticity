@@ -86,8 +86,10 @@ function siteSearch() {
       window.location.href =
         parts.join("/") + "?q=" + encodeURIComponent(query);
     } else {
+      // Hybrid mode (index.html without pre-loaded sections) or MPA root:
+      // redirect to the standalone search page under Style/pages/search/
       window.location.href =
-        "../search/index.html?q=" + encodeURIComponent(query);
+        "Style/pages/search/index.html?q=" + encodeURIComponent(query);
     }
     return;
   }

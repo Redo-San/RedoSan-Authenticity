@@ -164,6 +164,7 @@ window.__I18N_DATA.ko = {
     "fp.submit": "지문 생성",
     "fp.download_title": "지문 다운로드",
     "fp.choose_format": "포맷 선택:",
+    "fp.broken": "레거시 — SHA-2 및 SHA-3로 대체됨",
 
     "md.heading": "메타데이터 리더",
     "md.file_label": "이미지 파일",

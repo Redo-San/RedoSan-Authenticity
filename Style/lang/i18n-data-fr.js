@@ -181,6 +181,7 @@ window.__I18N_DATA.fr = {
     "fp.submit": "Générer l'Empreinte",
     "fp.download_title": "Télécharger l'Empreinte",
     "fp.choose_format": "Choisissez un format :",
+    "fp.broken": "ancien — remplacé par SHA-2 et SHA-3",
     "md.heading": "Lecteur de Métadonnées",
     "md.file_label": "Fichier image",
     "md.desc":

@@ -167,6 +167,7 @@ window.__I18N_DATA.ja = {
     "fp.submit": "フィンガープリントを生成",
     "fp.download_title": "フィンガープリントをダウンロード",
     "fp.choose_format": "フォーマットを選択：",
+    "fp.broken": "レガシー — SHA-2 および SHA-3 に置き換えられました",
 
     "md.heading": "メタデータリーダー",
     "md.file_label": "画像ファイル",

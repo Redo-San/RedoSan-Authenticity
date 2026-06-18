@@ -182,6 +182,7 @@ window.__I18N_DATA.es = {
     "fp.submit": "Generar Huella Digital",
     "fp.download_title": "Descargar Huella Digital",
     "fp.choose_format": "Elija un formato:",
+    "fp.broken": "heredado — reemplazado por SHA-2 y SHA-3",
     "md.heading": "Lector de Metadatos",
     "md.file_label": "Archivo de imagen",
     "md.desc":

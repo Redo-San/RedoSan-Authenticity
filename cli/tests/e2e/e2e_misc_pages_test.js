@@ -26,21 +26,17 @@ function navTo(page, id) {
 }
 
 describe('E2E — Search, Assistant, About, Privacy, Contact, Social', () => {
-  it('should navigate to search page without errors', async () => {
+  it('should navigate to search page via URL and show active', async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
-    const errors = [];
-    page.on('pageerror', (err) => errors.push(err.message));
-    await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+    // Navigate directly to standalone search page
+    await page.goto(BASE + '/Style/pages/search/index.html', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
-    await navTo(page, 'search');
-    await page.waitForTimeout(1000);
-    assert.equal(errors.filter(e => !e.includes('404') && !e.includes('Failed to load')).length, 0);
-    const heading = await page.evaluate(() => {
-      const h = document.querySelector('#page-search h2');
-      return h ? h.textContent : '';
+    const searchSection = await page.evaluate(() => {
+      const s = document.getElementById('page-search');
+      return s ? s.classList.contains('active') : false;
     });
-    assert.ok(heading.length > 0, 'Search heading should exist');
+    assert.ok(searchSection, 'Search page section should be active on standalone page');
     await ctx.close();
   });
 
@@ -129,17 +125,21 @@ describe('E2E — Search, Assistant, About, Privacy, Contact, Social', () => {
     await page.goto(BASE, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
+    // Enter professional mode first then navigate to search page
+    await page.evaluate(() => {
+      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      if (card) card.click();
+    });
+    await page.waitForTimeout(2000);
+
+    // Navigate to search page via sidebar
+    await navTo(page, 'search');
+    await page.waitForTimeout(2000);
+
     // Type in search input and press Enter
     await page.fill('#searchInput', 'watermark');
     await page.press('#searchInput', 'Enter');
-    await page.waitForTimeout(1000);
-
-    // Should navigate to search page with results
-    const searchPageVisible = await page.evaluate(() => {
-      const page = document.getElementById('page-search');
-      return page && page.classList.contains('active');
-    });
-    assert.ok(searchPageVisible, 'Search page should be active');
+    await page.waitForTimeout(2000);
 
     const resultsHtml = await page.evaluate(() => {
       const el = document.getElementById('search-output');

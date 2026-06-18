@@ -139,6 +139,7 @@
   "fp.submit": "生成指纹",
   "fp.download_title": "下载指纹",
   "fp.choose_format": "选择格式：",
+  "fp.broken": "遗留算法 — 已被 SHA-2 和 SHA-3 取代",
   "md.heading": "元数据读取器",
   "md.file_label": "图像文件",
   "md.desc": "读取EXIF、尺寸、格式和颜色模式。所有处理均使用纯JavaScript。",

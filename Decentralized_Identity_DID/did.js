@@ -554,10 +554,10 @@ async function handleDidGenerate() {
     window._didStored = didLoadKeys();
     didUpdateProfessionalUI(kp);
     if (result) result.innerHTML = '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
-      __('did.generated', '✅ DID identity generated successfully!') + '<br><span style="font-size:0.8rem;margin-top:6px;display:block">' + __('did.prompt_sign', '👉 Now click ✍️ Sign Fingerprint to sign your file.') + '</span></div>';
+      __('did.generated', '✅ DID identity generated successfully!') + '<br><span style="font-size:0.8rem;margin-top:6px;display:block">' + __('did.prompt_sign', '👉 Now click ✍️ Sign Fingerprint to sign your file.') + '</span><br><span style="font-size:0.7rem;margin-top:4px;display:block;color:var(--warning)">' + __('did.storage_warning', '⚠ Keys stored in browser (localStorage) — not encrypted. Avoid using on shared computers.') + '</span></div>';
   } catch (e) {
     if (result) result.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-      __('did.failed', 'Error: {msg}').replace('{msg}', escapeHtml(e.message)) + '</div>';
+      __('did.failed', 'Error: {msg}').replace('{msg}', (typeof escapeHtml === 'function' ? escapeHtml(e.message) : escHtml(e.message))) + '</div>';
     if (btn) btn.disabled = false;
   }
   if (spinner) spinner.style.display = 'none';
@@ -584,7 +584,7 @@ async function handleDidSign() {
         window._didKeypair = await didImportSignKey(stored);
       } catch (e) {
         if (result) result.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-          __('did.failed', 'Error: {msg}').replace('{msg}', escapeHtml('Failed to load keys: ' + e.message)) + '</div>';
+          __('did.failed', 'Error: {msg}').replace('{msg}', (typeof escapeHtml === 'function' ? escapeHtml('Failed to load keys: ' + e.message) : escHtml('Failed to load keys: ' + e.message))) + '</div>';
         if (signBtn) signBtn.disabled = false;
         if (spinner) spinner.style.display = 'none';
         return;
@@ -656,7 +656,7 @@ async function handleDidSign() {
     }
   } catch (e) {
     if (result) result.innerHTML = '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
-      __('did.failed', 'Error: {msg}').replace('{msg}', escapeHtml(e.message)) + '</div>';
+      __('did.failed', 'Error: {msg}').replace('{msg}', (typeof escapeHtml === 'function' ? escapeHtml(e.message) : escHtml(e.message))) + '</div>';
     var dlContainer = document.getElementById('did-dl-container');
     if (dlContainer) dlContainer.style.display = 'none';
   }

@@ -174,6 +174,19 @@ function showPage(name) {
     return;
   }
 
+  // Hybrid: on root page (no dataset.standalone), if page section doesn't exist,
+  // delegate to mpa-router for AJAX content loading
+  if (!page && !document.documentElement.dataset.standalone && name) {
+    if (typeof window.__mpaNavigate === "function") {
+      window.__mpaNavigate(name);
+    } else {
+      // Fallback: just show mode overlay
+      var modeSelect = document.getElementById("modeSelect");
+      if (modeSelect) modeSelect.style.display = "";
+    }
+    return;
+  }
+
   document
     .querySelectorAll(".page")
     .forEach((p) => p.classList.remove("active"));
@@ -198,30 +211,24 @@ function showPage(name) {
     var m = document.querySelector('meta[name="description"]');
     if (m) m.setAttribute("content", PAGE_DESCS[name]);
   }
-  if (name === "timestamp") {
-    if (typeof switchOtsTab === "function") switchOtsTab("create");
-  }
-  if (name === "certificate") {
-    if (typeof initCertPhoneCode === "function") initCertPhoneCode();
-  }
-  if (name === "id_forge") {
-    if (typeof idForgeShowInfo === "function") idForgeShowInfo();
-  }
-  var isProfessional =
-    document.getElementById("mainNav") &&
-    document.getElementById("mainNav").style.display !== "none";
-  if (isProfessional && !document.documentElement.dataset.standalone) {
-    try {
-      if (name && name !== "home") {
-        history.pushState({ page: name }, "", "#/" + name);
-      } else {
-        history.pushState(
-          { page: "home" },
-          "",
-          window.location.pathname.replace(/\/+$/, "") + "/",
-        );
-      }
-    } catch (e) {}
+  if (name && typeof window.__mpaNavigate !== "function") {
+    // Only push hash state when mpa-router is NOT available
+    var isProfessional =
+      document.getElementById("mainNav") &&
+      document.getElementById("mainNav").style.display !== "none";
+    if (isProfessional && !document.documentElement.dataset.standalone) {
+      try {
+        if (name && name !== "home") {
+          history.pushState({ page: name }, "", "#/" + name);
+        } else {
+          history.pushState(
+            { page: "home" },
+            "",
+            window.location.pathname.replace(/\/+$/, "") + "/",
+          );
+        }
+      } catch (e) {}
+    }
   }
 }
 
@@ -272,6 +279,19 @@ window.addEventListener("popstate", function (e) {
   // Standalone MPA pages: handled by mpa-router.js (AJAX navigation)
   if (document.documentElement.dataset.standalone) return;
   var state = e.state;
+  // Hybrid mode: mpa-router handles professional mode page navigation
+  // Only handle mode overlay, static page, and mode modeSet transitions here
+  if (typeof window.__mpaNavigate === "function" && !document.getElementById("page-home")) {
+    if (state && (state.staticPage || state.modeSet)) {
+      // Handled below
+    } else if (!state || state.modeOverlay) {
+      // Fall through to mode overlay handler below
+    } else if (state.routerPage) {
+      return; // mpa-router handles this
+    } else {
+      return; // Unknown state — let mpa-router handle it
+    }
+  }
   document
     .querySelectorAll(".page")
     .forEach((p) => p.classList.remove("active"));

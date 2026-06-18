@@ -76,14 +76,19 @@ function setMode(mode) {
     document.getElementById("sidebar").style.display = "";
     document.getElementById("app").style.display = "";
     document.getElementById("mainFooter").style.display = "";
-    document
-      .querySelectorAll(".page")
-      .forEach((p) => p.classList.remove("active"));
-    document
-      .querySelectorAll(".sidebar a[data-page]")
-      .forEach((a) => a.classList.remove("active"));
-    var home = document.getElementById("page-home");
-    if (home) home.classList.add("active");
+    // Hybrid: use mpa-router to load home page content from standalone page
+    if (typeof window.__mpaGoHome === "function" && !document.getElementById("page-home")) {
+      window.__mpaGoHome();
+    } else {
+      document
+        .querySelectorAll(".page")
+        .forEach((p) => p.classList.remove("active"));
+      document
+        .querySelectorAll(".sidebar a[data-page]")
+        .forEach((a) => a.classList.remove("active"));
+      var home = document.getElementById("page-home");
+      if (home) home.classList.add("active");
+    }
   }
 }
 

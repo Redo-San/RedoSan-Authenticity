@@ -220,6 +220,7 @@ window.__I18N_DATA.en = {
     "fp.other_label": "Other",
     "fp.perceptual_label": "Perceptual (image hashes)",
     "fp.results_btn": "Download Results",
+    "fp.broken": "legacy — superseded by SHA-2 and SHA-3",
 
     "md.heading": "Metadata Reader",
     "md.file_label": "Image file",

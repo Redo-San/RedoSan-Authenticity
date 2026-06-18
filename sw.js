@@ -207,6 +207,35 @@ var YML_WHITELIST = [
 
 // Whitelist of legitimate HTML pages served by the site.
 // Any .html request not in this list is treated as a threat.
+// Whitelist of legitimate .md files served by the site.
+var MD_WHITELIST = [
+  "/RedoSan-Authenticity/AGENTS.md",
+  "/RedoSan-Authenticity/README.md",
+  "/RedoSan-Authenticity/STATUS.md",
+  "/RedoSan-Authenticity/CONTRIBUTING.md",
+];
+
+// Whitelist of legitimate .json files served by the site.
+var JSON_WHITELIST = [
+  "/RedoSan-Authenticity/package.json",
+  "/RedoSan-Authenticity/package-lock.json",
+  "/RedoSan-Authenticity/biome.json",
+  "/RedoSan-Authenticity/backstop.json",
+  "/RedoSan-Authenticity/cspell.json",
+  "/RedoSan-Authenticity/typedoc.json",
+  "/RedoSan-Authenticity/.markdownlint.json",
+  "/RedoSan-Authenticity/.stylelintrc.json",
+  "/RedoSan-Authenticity/Style/lang/en.json",
+  "/RedoSan-Authenticity/Style/lang/ar.json",
+  "/RedoSan-Authenticity/Style/lang/de.json",
+  "/RedoSan-Authenticity/Style/lang/es.json",
+  "/RedoSan-Authenticity/Style/lang/fr.json",
+  "/RedoSan-Authenticity/Style/lang/ja.json",
+  "/RedoSan-Authenticity/Style/lang/ko.json",
+  "/RedoSan-Authenticity/Style/lang/zh.json",
+  "/RedoSan-Authenticity/Style/pages/search/search-index.json",
+];
+
 var HTML_WHITELIST = [
   "/RedoSan-Authenticity/index.html",
   "/RedoSan-Authenticity/404.html",
@@ -323,6 +352,12 @@ self.addEventListener("fetch", function (event) {
       }
       isBlocked = isBlocked || HTML_WHITELIST.indexOf(normalizedPath) === -1;
     }
+    // Unknown .md files not in MD_WHITELIST
+    if (lower.endsWith(".md"))
+      isBlocked = isBlocked || MD_WHITELIST.indexOf(path) === -1;
+    // Unknown .json files not in JSON_WHITELIST
+    if (lower.endsWith(".json"))
+      isBlocked = isBlocked || JSON_WHITELIST.indexOf(path) === -1;
 
     // Block embedded URLs in path (same-origin only)
     var decoded = decodeURIComponent(path);
@@ -394,7 +429,7 @@ function threatPage(filePath) {
   return (
     '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>⚠️ Threat Blocked — RedoSan Authenticity</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center}.container{max-width:600px;padding:40px 20px;text-align:center}.icon{font-size:72px;margin-bottom:20px}h1{color:#ff4757;font-size:28px;margin-bottom:16px}.file-path{background:#1a1a2e;padding:12px 16px;border-radius:8px;word-break:break-all;font-family:monospace;margin:20px 0;border:1px solid #ff475740;color:#ff6b81;font-size:14px}p{color:#a0a0b0;line-height:1.6;margin-bottom:12px}.btn{display:inline-block;margin-top:24px;padding:12px 32px;background:#6C5CE7;color:#fff;text-decoration:none;border-radius:8px;font-size:16px;border:none;cursor:pointer}.btn:hover{background:#5f4dd1}.ext-list{margin-top:20px;font-size:13px;color:#606070}.note{font-size:13px;color:#505060;margin-top:24px;padding:12px;background:#12121a;border-radius:6px;border:1px solid #2a2a3a}</style></head><body><div class="container"><div class="icon">&#x26A0;&#xFE0F;</div><h1>Security Threat Blocked</h1><p>This URL appears to be a malicious file disguised as a legitimate resource.</p><div class="file-path">' +
     escapeHtml(filePath) +
-    '</div><p>&#x1F512; RedoSan Authenticity is a client-side digital authenticity tool. It does <strong>not</strong> serve executable files, scripts, or unknown JavaScript files. If you received this link from someone, it is likely a scam or phishing attempt.</p><a href="/RedoSan-Authenticity/" class="btn">Return to Safety</a><div class="ext-list">Blocked: .exe .msi .bat .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk + all unknown .js / .css / .html / .yml files</div><div class="note">If you believe this is a mistake, please report it on <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" style="color:#6C5CE7" target="_blank" rel="noopener">GitHub Issues</a>.</div></div></body></html>'
+    '</div><p>&#x1F512; RedoSan Authenticity is a client-side digital authenticity tool. It does <strong>not</strong> serve executable files, scripts, or unknown JavaScript files. If you received this link from someone, it is likely a scam or phishing attempt.</p><a href="/RedoSan-Authenticity/" class="btn">Return to Safety</a><div class="ext-list">Blocked: .exe .msi .bat .ps1 .vbs .dll .jar .sh .py .elf .so .deb .rpm .lua .apk + all unknown .js / .css / .html / .yml / .md / .json files</div><div class="note">If you believe this is a mistake, please report it on <a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" style="color:#6C5CE7" target="_blank" rel="noopener">GitHub Issues</a>.</div></div></body></html>'
   );
 }
 

@@ -321,11 +321,12 @@ async function handleFingerprint() {
     }
     html += '</table>';
 
+    var brokenWarning = ' <span style="font-weight:400;font-size:0.7rem;opacity:0.65">(' + (__( 'fp.broken', 'legacy — superseded by SHA-2 and SHA-3' ) || 'legacy') + ')</span>';
     const familyOrder = [
-      { label: 'SHA-1', keys: ['SHA-1'] },
+      { label: 'SHA-1' + brokenWarning, keys: ['SHA-1'] },
       { label: 'SHA-2', keys: ['SHA-224','SHA-256','SHA-384','SHA-512'] },
       { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
-      { label: 'MD', keys: ['MD2','MD4','MD5'] },
+      { label: 'MD' + brokenWarning, keys: ['MD2','MD4','MD5'] },
       { label: 'BLAKE', keys: ['BLAKE2b','BLAKE2s','BLAKE3'] },
       { label: __('fp.other_label', 'Other'), keys: ['RIPEMD-160','Whirlpool'] },
     ];

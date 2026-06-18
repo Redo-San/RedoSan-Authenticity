@@ -1,0 +1,18 @@
+{
+  "defaults": {
+    "standard": "WCAG2AA",
+    "timeout": 30000,
+    "hideElements": "#music-player, .sidebar, footer",
+    "includeWarnings": true,
+    "ignore": [
+      "notice"
+    ],
+    "level": "error"
+  },
+  "urls": [
+    "https://redo-san.github.io/RedoSan-Authenticity/",
+    "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/watermark/",
+    "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/fingerprint/",
+    "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/pixel-injection/"
+  ]
+}

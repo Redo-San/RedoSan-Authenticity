@@ -205,6 +205,7 @@ window.__I18N_DATA.ar = {
     "fp.other_label": "أخرى",
     "fp.perceptual_label": "الإدراكية (بصمات الصور)",
     "fp.results_btn": "تحميل النتائج",
+    "fp.broken": "نسخة قديمة — تم استبدالها بـ SHA-2 و SHA-3",
     "md.heading": "قارئ البيانات الوصفية",
     "md.file_label": "ملف الصورة",
     "md.desc":

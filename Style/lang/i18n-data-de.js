@@ -182,6 +182,7 @@ window.__I18N_DATA.de = {
     "fp.submit": "Fingerabdruck Erstellen",
     "fp.download_title": "Fingerabdruck Herunterladen",
     "fp.choose_format": "Wählen Sie ein Format:",
+    "fp.broken": "veraltet — durch SHA-2 und SHA-3 ersetzt",
     "md.heading": "Metadaten-Leser",
     "md.file_label": "Bilddatei",
     "md.desc":

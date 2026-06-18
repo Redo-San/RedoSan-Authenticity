@@ -26,10 +26,12 @@ async function pw_key(password) {
         { name: 'PBKDF2', salt: enc.encode(password), iterations: 100000, hash: 'SHA-256' }, km, 256));
 }
 function mulberry32(seed) {
-    return function() { seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-        return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    var s = seed | 0;
+    return function() { s = (s + 0x9E3779B9) | 0; var z = s;
+        z = Math.imul(z ^ (z >>> 16), 0x85EBCA6B);
+        z = Math.imul(z ^ (z >>> 13), 0xC2B2AE35);
+        z = z ^ (z >>> 16);
+        return (z >>> 0) / 4294967296; };
 }
 function seededShuffle(arr, seed) {
     const rng = mulberry32(seed);

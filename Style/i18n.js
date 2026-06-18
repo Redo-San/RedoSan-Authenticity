@@ -19,7 +19,7 @@ function sanitizeHtml(html) {
         var val = a.replace(/^[^=]+=\s*/, '');
         var quote = val.charAt(0);
         if (quote === '"' || quote === "'") val = val.slice(1, -1);
-        if (/^(javascript|data|vbscript|blob):/i.test(val)) continue;
+        if (!/^(https?|mailto):/i.test(val)) continue;
         result += a;
       }
       result += '>';

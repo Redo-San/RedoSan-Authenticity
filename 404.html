@@ -117,6 +117,14 @@
         border-radius: 6px;
         border: 1px solid #2a2a3a;
       }
+      @media (max-width: 640px) {
+        .error-page .nav-links,
+        nav .nav-links { flex-wrap: wrap; gap: 2px; }
+        nav .nav-links a { font-size: 0.75rem; padding: 4px 6px; }
+      }
+      @media (max-width: 430px) {
+        nav .nav-links a:nth-child(n+4) { display: none; }
+      }
     </style>
   </head>
   <body>
@@ -417,6 +425,33 @@
         "/RedoSan-Authenticity/Style/music-player.js",
       ];
 
+      var MD_WHITELIST = [
+        "/RedoSan-Authenticity/AGENTS.md",
+        "/RedoSan-Authenticity/README.md",
+        "/RedoSan-Authenticity/STATUS.md",
+        "/RedoSan-Authenticity/CONTRIBUTING.md",
+      ];
+
+      var JSON_WHITELIST = [
+        "/RedoSan-Authenticity/package.json",
+        "/RedoSan-Authenticity/package-lock.json",
+        "/RedoSan-Authenticity/biome.json",
+        "/RedoSan-Authenticity/backstop.json",
+        "/RedoSan-Authenticity/cspell.json",
+        "/RedoSan-Authenticity/typedoc.json",
+        "/RedoSan-Authenticity/.markdownlint.json",
+        "/RedoSan-Authenticity/.stylelintrc.json",
+        "/RedoSan-Authenticity/Style/lang/en.json",
+        "/RedoSan-Authenticity/Style/lang/ar.json",
+        "/RedoSan-Authenticity/Style/lang/de.json",
+        "/RedoSan-Authenticity/Style/lang/es.json",
+        "/RedoSan-Authenticity/Style/lang/fr.json",
+        "/RedoSan-Authenticity/Style/lang/ja.json",
+        "/RedoSan-Authenticity/Style/lang/ko.json",
+        "/RedoSan-Authenticity/Style/lang/zh.json",
+        "/RedoSan-Authenticity/Style/pages/search/search-index.json",
+      ];
+
       function isThreatPath(p) {
         var lower = p.toLowerCase();
         // Check dangerous extensions
@@ -425,6 +460,12 @@
         }
         // Block unknown .js files not in whitelist
         if (lower.endsWith(".js") && JS_WHITELIST.indexOf(p) === -1)
+          return true;
+        // Block unknown .md files not in whitelist
+        if (lower.endsWith(".md") && MD_WHITELIST.indexOf(p) === -1)
+          return true;
+        // Block unknown .json files not in whitelist
+        if (lower.endsWith(".json") && JSON_WHITELIST.indexOf(p) === -1)
           return true;
         // Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
         // Catches single, double, and triple URL-encoded variants

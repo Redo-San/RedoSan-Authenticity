@@ -441,6 +441,16 @@ async function validateFileInput(input) {
     clearInputFiles(input);
     return false;
   }
+  if (file.size > 200 * 1024 * 1024) {
+    alert(
+      __(
+        "shared.file_too_large",
+        "File is too large. Maximum size is 200 MB.",
+      ) || "File is too large. Maximum size is 200 MB.",
+    );
+    clearInputFiles(input);
+    return false;
+  }
   if (!isEnglishFilename(file.name)) {
     alert(
       __(
