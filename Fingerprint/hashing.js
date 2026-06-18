@@ -1885,7 +1885,7 @@ if (globalThis.window !== undefined)
     } else {
       // BLAKE3 implementation deviates from expected
     }
-  } catch (error) {
-    // BLAKE3 self-check failed
+  } catch {
+    // BLAKE3 self-check silently skipped on error
   }
 })();

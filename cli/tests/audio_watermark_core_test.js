@@ -2,7 +2,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-void require("node:vm");
+const vm = require("node:vm");
 
 globalThis.window = globalThis;
 globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
