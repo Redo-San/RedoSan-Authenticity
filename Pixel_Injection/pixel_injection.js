@@ -1,4 +1,4 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 // ── Pixel Injection Advanced System ──
 // Specialized interface for advanced pixel injection algorithms
 
@@ -82,14 +82,14 @@ class PixelInjection {
         this.updateExtractAlgorithms();
         this.toggleExtractPiPassword();
         
-        const categorySelect = document.getElementById('pi-category');
+        const categorySelect = document.querySelector('#pi-category');
         if (categorySelect) {
             categorySelect.addEventListener('change', () => {
                 this.updatePiAlgorithms();
             });
         }
         
-        const algorithmSelect = document.getElementById('pi-algorithm');
+        const algorithmSelect = document.querySelector('#pi-algorithm');
         if (algorithmSelect) {
             algorithmSelect.addEventListener('change', () => {
                 this.currentAlgorithm = algorithmSelect.value;
@@ -98,14 +98,14 @@ class PixelInjection {
             });
         }
         
-        const extractAlgorithmSelect = document.getElementById('pi-extract-algorithm');
+        const extractAlgorithmSelect = document.querySelector('#pi-extract-algorithm');
         if (extractAlgorithmSelect) {
             extractAlgorithmSelect.addEventListener('change', () => {
                 this.toggleExtractPiPassword();
             });
         }
         
-        const analyzeAlgorithmSelect = document.getElementById('pi-analyze-algorithm');
+        const analyzeAlgorithmSelect = document.querySelector('#pi-analyze-algorithm');
         if (analyzeAlgorithmSelect) {
             analyzeAlgorithmSelect.addEventListener('change', () => {
                 this.toggleAnalyzeCompareInput();
@@ -114,16 +114,16 @@ class PixelInjection {
     }
     
     toggleAnalyzeCompareInput() {
-        const algoSelect = document.getElementById('pi-analyze-algorithm');
-        const compareGroup = document.getElementById('pi-analyze-compare-group');
+        const algoSelect = document.querySelector('#pi-analyze-algorithm');
+        const compareGroup = document.querySelector('#pi-analyze-compare-group');
         if (!algoSelect || !compareGroup) return;
         const val = algoSelect.value;
         compareGroup.style.display = (val === 'robustness_testing' || val === 'quality_metrics') ? 'block' : 'none';
     }
     
     updatePiAlgorithms() {
-        const categorySelect = document.getElementById('pi-category');
-        const algorithmSelect = document.getElementById('pi-algorithm');
+        const categorySelect = document.querySelector('#pi-category');
+        const algorithmSelect = document.querySelector('#pi-algorithm');
         
         if (!categorySelect || !algorithmSelect) return;
         
@@ -137,7 +137,7 @@ class PixelInjection {
             option.value = key;
             option.textContent = algorithm.name;
             option.title = algorithm.description;
-            algorithmSelect.appendChild(option);
+            algorithmSelect.append(option);
         });
         
         this.currentCategory = category;
@@ -151,7 +151,7 @@ class PixelInjection {
     }
     
     togglePiPassword() {
-        const group = document.getElementById('pi-password-group');
+        const group = document.querySelector('#pi-password-group');
         if (!group) return;
         if (this.currentAlgorithm === 'random_lsb') {
             group.style.display = 'block';
@@ -162,9 +162,9 @@ class PixelInjection {
     }
     
     toggleExtractPiPassword() {
-        const group = document.getElementById('pi-extract-password-group');
+        const group = document.querySelector('#pi-extract-password-group');
         if (!group) return;
-        const extractSelect = document.getElementById('pi-extract-algorithm');
+        const extractSelect = document.querySelector('#pi-extract-algorithm');
         const algo = extractSelect ? extractSelect.value : '';
         if (algo === 'random_lsb') {
             group.style.display = 'block';
@@ -175,24 +175,24 @@ class PixelInjection {
     }
     
     updateExtractAlgorithms() {
-        const extractAlgorithmSelect = document.getElementById('pi-extract-algorithm');
+        const extractAlgorithmSelect = document.querySelector('#pi-extract-algorithm');
         
         if (!extractAlgorithmSelect) return;
         
         const autoOption = extractAlgorithmSelect.querySelector('option[value="auto"]');
         extractAlgorithmSelect.innerHTML = '';
         if (autoOption) {
-            extractAlgorithmSelect.appendChild(autoOption);
+            extractAlgorithmSelect.append(autoOption);
         }
         
         // Analysis-only algorithms excluded from extract
-        const analysisKeys = ['statistical_detection', 'ml_detection', 'blind_decoding', 'robustness_testing', 'quality_metrics'];
+        const analysisKeys = new Set(['statistical_detection', 'ml_detection', 'blind_decoding', 'robustness_testing', 'quality_metrics']);
         
         const allAlgorithms = {};
         
         Object.entries(this.algorithms).forEach(([category, algorithms]) => {
             Object.entries(algorithms).forEach(([key, algorithm]) => {
-                if (analysisKeys.indexOf(key) !== -1) return;
+                if (analysisKeys.has(key)) return;
                 allAlgorithms[key] = {
                     ...algorithm,
                     category: category
@@ -205,13 +205,13 @@ class PixelInjection {
             option.value = key;
             option.textContent = `${algorithm.name} (${algorithm.category})`;
             option.title = algorithm.description;
-            extractAlgorithmSelect.appendChild(option);
+            extractAlgorithmSelect.append(option);
         });
     }
     
     updatePiOptions() {
-        const algorithmSelect = document.getElementById('pi-algorithm');
-        const optionsContainer = document.getElementById('pi-options-container');
+        const algorithmSelect = document.querySelector('#pi-algorithm');
+        const optionsContainer = document.querySelector('#pi-options-container');
         
         if (!algorithmSelect || !optionsContainer) return;
         
@@ -235,9 +235,9 @@ class PixelInjection {
                 
                 const input = this.createOptionInput(option);
                 
-                optionDiv.appendChild(label);
-                optionDiv.appendChild(input);
-                optionsContainer.appendChild(optionDiv);
+                optionDiv.append(label);
+                optionDiv.append(input);
+                optionsContainer.append(optionDiv);
             });
         }
     }
@@ -246,7 +246,7 @@ class PixelInjection {
         const options = [];
         
         switch (algorithm) {
-            case 'enhanced_lsb':
+            case 'enhanced_lsb': {
                 options.push(
                     { type: 'range', label: __('pi.embedding_strength', 'Embedding Strength'), min: 1, max: 8, value: 4, step: 1 },
                     { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true },
@@ -254,15 +254,17 @@ class PixelInjection {
                     { type: 'range', label: __('pi.redundancy_factor', 'Redundancy Factor'), min: 1, max: 5, value: 3, step: 1 }
                 );
                 break;
+            }
                 
-            case 'adaptive_lsb':
+            case 'adaptive_lsb': {
                 options.push(
                     { type: 'select', label: 'Adaptation Mode', options: ['Complexity', 'Edge Detection', 'Texture Analysis'], value: 'Complexity' },
-                    { type: 'range', label: 'Sensitivity', min: 0.1, max: 1.0, value: 0.7, step: 0.1 }
+                    { type: 'range', label: 'Sensitivity', min: 0.1, max: 1, value: 0.7, step: 0.1 }
                 );
                 break;
+            }
                 
-            case 'multi_channel_lsb':
+            case 'multi_channel_lsb': {
                 options.push(
                     { type: 'range', label: 'Channel Count', min: 1, max: 4, value: 3, step: 1 },
                     { type: 'select', label: 'Channel Strategy', options: ['RGB', 'CMYK', 'YCbCr'], value: 'RGB' },
@@ -270,17 +272,19 @@ class PixelInjection {
                     { type: 'checkbox', label: 'Channel Separation', checked: true }
                 );
                 break;
+            }
                 
-            case 'random_lsb':
+            case 'random_lsb': {
                 options.push(
-                    { type: 'range', label: 'Randomization Level', min: 0.1, max: 1.0, value: 0.5, step: 0.1 },
+                    { type: 'range', label: 'Randomization Level', min: 0.1, max: 1, value: 0.5, step: 0.1 },
                     { type: 'text', label: 'Seed Key', placeholder: 'Enter random seed' },
                     { type: 'select', label: 'Distribution', options: ['Uniform', 'Gaussian', 'Exponential'], value: 'Uniform' },
                     { type: 'checkbox', label: 'Anti-detection', checked: true }
                 );
                 break;
+            }
                 
-            case 'dct':
+            case 'dct': {
                 options.push(
                     { type: 'range', label: 'Strength', min: 0.01, max: 0.5, value: 0.1, step: 0.01 },
                     { type: 'select', label: 'Coefficient Selection', options: ['Mid-frequency', 'Low-frequency', 'Adaptive'], value: 'Mid-frequency' },
@@ -288,64 +292,72 @@ class PixelInjection {
                     { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true }
                 );
                 break;
+            }
                 
-            case 'dwt':
+            case 'dwt': {
                 options.push(
                     { type: 'select', label: 'Wavelet Type', options: ['Haar', 'Daubechies', 'Biorthogonal'], value: 'Haar' },
                     { type: 'range', label: 'Decomposition Levels', min: 1, max: 5, value: 3, step: 1 },
                     { type: 'select', label: 'Embedding Bands', options: ['HH, HL, LH', 'All Bands'], value: 'HH, HL, LH' }
                 );
                 break;
+            }
                 
-            case 'vine':
+            case 'vine': {
                 options.push(
                     { type: 'text', label: 'Model Path', placeholder: 'Path to pre-trained model' },
                     { type: 'range', label: 'Adversarial Strength', min: 0.01, max: 0.2, value: 0.05, step: 0.01 },
                     { type: 'checkbox', label: 'Perceptual Masking', checked: true }
                 );
                 break;
+            }
                 
-            case 'pixel_seal':
+            case 'pixel_seal': {
                 options.push(
                     { type: 'range', label: 'JND Strength', min: 0.01, max: 0.1, value: 0.05, step: 0.01 },
                     { type: 'checkbox', label: 'Adversarial Training', checked: true },
                     { type: 'checkbox', label: 'High-resolution Adaptation', checked: true }
                 );
                 break;
+            }
                 
-            case 'statistical_detection':
+            case 'statistical_detection': {
                 options.push(
-                    { type: 'range', label: 'Detection Threshold', min: 0.1, max: 1.0, value: 0.7, step: 0.1 },
+                    { type: 'range', label: 'Detection Threshold', min: 0.1, max: 1, value: 0.7, step: 0.1 },
                     { type: 'select', label: 'Analysis Method', options: ['Histogram', 'Frequency', 'Statistical'], value: 'Histogram' },
                     { type: 'checkbox', label: 'Advanced Features', checked: true }
                 );
                 break;
+            }
                 
-            case 'ml_detection':
+            case 'ml_detection': {
                 options.push(
                     { type: 'select', label: 'ML Model', options: ['Neural Network', 'SVM', 'Random Forest'], value: 'Neural Network' },
-                    { type: 'range', label: 'Confidence Threshold', min: 0.5, max: 1.0, value: 0.8, step: 0.1 },
+                    { type: 'range', label: 'Confidence Threshold', min: 0.5, max: 1, value: 0.8, step: 0.1 },
                     { type: 'checkbox', label: 'Feature Engineering', checked: true }
                 );
                 break;
+            }
                 
-            case 'blind_decoding':
+            case 'blind_decoding': {
                 options.push(
                     { type: 'select', label: 'Decoding Algorithm', options: ['Auto', 'DCT', 'DWT', 'LSB', 'VINE'], value: 'Auto' },
                     { type: 'text', label: 'Decoding Key', placeholder: 'Optional decoding key' },
                     { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true }
                 );
                 break;
+            }
                 
-            case 'robustness_testing':
+            case 'robustness_testing': {
                 options.push(
                     { type: 'select', label: 'Test Suite', options: ['Basic', 'Comprehensive', 'Advanced'], value: 'Comprehensive' },
-                    { type: 'range', label: 'Attack Intensity', min: 0.1, max: 1.0, value: 0.5, step: 0.1 },
+                    { type: 'range', label: 'Attack Intensity', min: 0.1, max: 1, value: 0.5, step: 0.1 },
                     { type: 'checkbox', label: 'Generate Report', checked: true }
                 );
                 break;
+            }
                 
-            case 'quality_metrics':
+            case 'quality_metrics': {
                 options.push(
                     { type: 'checkbox', label: 'PSNR', checked: true },
                     { type: 'checkbox', label: 'SSIM', checked: true },
@@ -355,8 +367,9 @@ class PixelInjection {
                     { type: 'checkbox', label: 'MAD', checked: true }
                 );
                 break;
+            }
                 
-            case 'hybrid_dct_dwt':
+            case 'hybrid_dct_dwt': {
                 options.push(
                     { type: 'range', label: 'DCT Strength', min: 0.05, max: 0.2, value: 0.1, step: 0.01 },
                     { type: 'range', label: 'DWT Strength', min: 0.05, max: 0.2, value: 0.1, step: 0.01 },
@@ -364,6 +377,7 @@ class PixelInjection {
                     { type: 'checkbox', label: 'Adaptive Ratio', checked: true }
                 );
                 break;
+            }
         }
         
         return options;
@@ -373,7 +387,7 @@ class PixelInjection {
         let input;
         
         switch (option.type) {
-            case 'range':
+            case 'range': {
                 input = document.createElement('input');
                 input.type = 'range';
                 input.min = option.min;
@@ -382,52 +396,56 @@ class PixelInjection {
                 input.step = option.step;
                 input.style.cssText = 'width: 100%; margin: 5px 0;';
                 break;
+            }
                 
-            case 'checkbox':
+            case 'checkbox': {
                 input = document.createElement('input');
                 input.type = 'checkbox';
                 input.checked = option.checked;
                 input.style.cssText = 'margin-right: 10px;';
                 break;
+            }
                 
-            case 'select':
+            case 'select': {
                 input = document.createElement('select');
                 option.options.forEach(opt => {
                     const optionElement = document.createElement('option');
                     optionElement.value = opt;
                     optionElement.textContent = opt;
-                    input.appendChild(optionElement);
+                    input.append(optionElement);
                 });
                 input.value = option.value;
                 input.style.cssText = 'width: 100%; margin: 5px 0;';
                 break;
+            }
                 
-            case 'text':
+            case 'text': {
                 input = document.createElement('input');
                 input.type = 'text';
                 input.placeholder = option.placeholder;
                 input.value = option.value || '';
                 input.style.cssText = 'width: 100%; margin: 5px 0; padding: 8px;';
                 break;
+            }
         }
         
         return input;
     }
     
     async handlePixelInjection() {
-        const imageInput = document.getElementById('pi-image');
-        const messageFileInput = document.getElementById('pi-secret-file');
-        const messageTextInput = document.getElementById('pi-message');
-        const passwordInput = document.getElementById('pi-password');
+        const imageInput = document.querySelector('#pi-image');
+        const messageFileInput = document.querySelector('#pi-secret-file');
+        const messageTextInput = document.querySelector('#pi-message');
+        const passwordInput = document.querySelector('#pi-password');
         
-        if (!imageInput.files.length) {
+        if (imageInput.files.length === 0) {
             this.showMessage('Please select an image file', 'error');
             return;
         }
         
         // Determine message source: secret file or textarea
         var message, secretFileName = '';
-        if (messageFileInput && messageFileInput.files && messageFileInput.files.length) {
+        if (messageFileInput && messageFileInput.files && messageFileInput.files.length > 0) {
             // Validate secret document file
             if (typeof validateFileInput === 'function' && !(await validateFileInput(messageFileInput))) {
                 this.showMessage('Invalid or dangerous secret file', 'error');
@@ -437,7 +455,7 @@ class PixelInjection {
             secretFileName = secretFile.name;
             var secretText = await new Promise(function(resolve) {
                 var r = new FileReader();
-                r.onload = function(e) { resolve(e.target.result); };
+                r.addEventListener('load', function(e) { resolve(e.target.result); });
                 r.onerror = function() { resolve(''); };
                 r.readAsText(secretFile);
             });
@@ -482,7 +500,7 @@ class PixelInjection {
                 // Use algorithms object as fallback
                 const coreAlgorithm = this.core.algorithms[this.currentAlgorithm];
                 if (typeof coreAlgorithm !== 'function') {
-                    throw new Error(`Algorithm ${this.currentAlgorithm} is not a function`);
+                    throw new TypeError(`Algorithm ${this.currentAlgorithm} is not a function`);
                 }
                 this.watermarkedImage = await coreAlgorithm(imageData, message, password, options);
             } else {
@@ -506,12 +524,15 @@ class PixelInjection {
     
     async runDetectionAlgorithm(algorithm, imageData, message, password, options) {
         switch (algorithm) {
-            case 'statistical_detection':
+            case 'statistical_detection': {
                 return this.core.detection.statistical_detection(imageData);
-            case 'ml_detection':
+            }
+            case 'ml_detection': {
                 return this.core.detection.ml_detection(imageData);
-            case 'blind_decoding':
+            }
+            case 'blind_decoding': {
                 return this.core.detection.blind_decoding(imageData, message, options);
+            }
             case 'robustness_testing': {
                 const compareImage = options && options.compareImage ? options.compareImage : imageData;
                 return this.core.detection.robustness_testing(compareImage, imageData);
@@ -520,18 +541,19 @@ class PixelInjection {
                 const compareImage = options && options.compareImage ? options.compareImage : imageData;
                 return this.core.detection.quality_metrics(compareImage, imageData);
             }
-            default:
+            default: {
                 throw new Error(`Unknown detection algorithm: ${algorithm}`);
+            }
         }
     }
     
     showDetectionResults(result) {
-        const resultDiv = document.getElementById('pi-result');
+        const resultDiv = document.querySelector('#pi-result');
         if (!resultDiv) return;
         
         resultDiv.style.display = 'block';
         
-        const outputDiv = document.getElementById('pi-output');
+        const outputDiv = document.querySelector('#pi-output');
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
                 <h5 style="color: var(--primary); margin-bottom: 10px;">Detection Results</h5>
@@ -541,14 +563,14 @@ class PixelInjection {
             </div>
         `;
         
-        const downloadDiv = document.getElementById('pi-download');
+        const downloadDiv = document.querySelector('#pi-download');
         downloadDiv.innerHTML = '';
     }
     
     async handlePixelExtraction() {
-        const imageInput = document.getElementById('pi-watermarked-image');
-        const algorithmSelect = document.getElementById('pi-extract-algorithm');
-        const passwordInput = document.getElementById('pi-extract-password');
+        const imageInput = document.querySelector('#pi-watermarked-image');
+        const algorithmSelect = document.querySelector('#pi-extract-algorithm');
+        const passwordInput = document.querySelector('#pi-extract-password');
         
         // Check if elements exist
         if (!imageInput || !algorithmSelect || !passwordInput) {
@@ -556,7 +578,7 @@ class PixelInjection {
             return;
         }
         
-        if (!imageInput.files || !imageInput.files.length) {
+        if (!imageInput.files || imageInput.files.length === 0) {
             this.showMessage('Please select a watermarked image file', 'error');
             return;
         }
@@ -582,7 +604,7 @@ class PixelInjection {
             const options = {
                 useOriginal: false,
                 errorCorrection: true,
-                strength: 1.0,
+                strength: 1,
                 password: password
             };
             
@@ -592,17 +614,13 @@ class PixelInjection {
             // Try extract map first, then detection/convention, finally blind decoding
             const extractMethodName = this.extractMap[algorithm];
             if (extractMethodName && typeof this.core[extractMethodName] === 'function') {
-                if (algorithm === 'random_lsb') {
-                    extractedMessage = await this.core[extractMethodName](imageData, password);
-                } else {
-                    extractedMessage = await this.core[extractMethodName](imageData);
-                }
+                extractedMessage = await (algorithm === 'random_lsb' ? this.core[extractMethodName](imageData, password) : this.core[extractMethodName](imageData));
             } else if (this.core.detection && this.core.detection[algorithm]) {
                 extractedMessage = await this.core.detection[algorithm](imageData);
             } else if (this.core[algorithm] && typeof this.core[algorithm] === 'function') {
                 extractedMessage = await this.core[algorithm](imageData, '', password, options);
             } else {
-                const extractionMethod = `extract${algorithm.charAt(0).toUpperCase() + algorithm.slice(1).replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())}`;
+                const extractionMethod = `extract${algorithm.charAt(0).toUpperCase() + algorithm.slice(1).replaceAll(/_([a-z])/g, (match, letter) => letter.toUpperCase())}`;
                 if (this.core[extractionMethod] && typeof this.core[extractionMethod] === 'function') {
                     extractedMessage = await this.core[extractionMethod](imageData);
                 } else if (this.core.detection && this.core.detection.blind_decoding) {
@@ -639,10 +657,10 @@ class PixelInjection {
     }
     
     async handlePixelAnalysis() {
-        const imageInput = document.getElementById('pi-analyze-image');
-        const algoSelect = document.getElementById('pi-analyze-algorithm');
+        const imageInput = document.querySelector('#pi-analyze-image');
+        const algoSelect = document.querySelector('#pi-analyze-algorithm');
         
-        if (!imageInput.files.length) {
+        if (imageInput.files.length === 0) {
             this.showMessage('Please select an image file to analyze', 'error');
             return;
         }
@@ -676,9 +694,9 @@ class PixelInjection {
                 this.showMessage('Auto analysis completed — all 5 methods applied', 'success');
             } else if (algorithm === 'robustness_testing' || algorithm === 'quality_metrics') {
                 // Need original for comparison
-                const compareInput = document.getElementById('pi-analyze-compare');
+                const compareInput = document.querySelector('#pi-analyze-compare');
                 let result;
-                if (compareInput && compareInput.files && compareInput.files.length) {
+                if (compareInput && compareInput.files && compareInput.files.length > 0) {
                     const compareFile = compareInput.files[0];
                     const compareData = await this.loadImage(compareFile);
                     result = await this.runDetectionAlgorithm(algorithm, imageData, null, null, { compareImage: compareData });
@@ -704,7 +722,7 @@ class PixelInjection {
     
     getAdvancedOptions() {
         const options = {};
-        const optionsContainer = document.getElementById('pi-options-container');
+        const optionsContainer = document.querySelector('#pi-options-container');
         
         if (optionsContainer) {
             const inputs = optionsContainer.querySelectorAll('input, select');
@@ -715,7 +733,7 @@ class PixelInjection {
                 if (input.type === 'checkbox') {
                     options[key] = input.checked;
                 } else if (input.type === 'number' || input.type === 'range') {
-                    var val = parseFloat(input.value);
+                    var val = Number.parseFloat(input.value);
                     if (!isNaN(val)) options[key] = val;
                 } else {
                     options[key] = input.value;
@@ -729,9 +747,9 @@ class PixelInjection {
     async loadImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.addEventListener('load', (e) => {
                 const img = new Image();
-                img.onload = () => {
+                img.addEventListener('load', () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
                     canvas.height = img.height;
@@ -746,10 +764,10 @@ class PixelInjection {
                         img.height
                     );
                     resolve(newImageData);
-                };
+                });
                 img.onerror = reject;
                 img.src = e.target.result;
-            };
+            });
             reader.onerror = reject;
             reader.readAsDataURL(file);
         });
@@ -758,7 +776,7 @@ class PixelInjection {
     showWatermarkedImage() {
         if (!this.watermarkedImage) return;
         
-        const resultDiv = document.getElementById('pi-result');
+        const resultDiv = document.querySelector('#pi-result');
         if (!resultDiv) return;
         
         resultDiv.style.display = 'block';
@@ -785,25 +803,25 @@ class PixelInjection {
         setResult('piResult', {
           type: 'embed', category: this.currentCategory, algorithm: algoName,
           secretFile: secretFileName,
-          password: (document.getElementById('pi-password') || {}).value ? '****' : '',
+          password: (document.querySelector('#pi-password') || {}).value ? '****' : '',
           dimensions: this.watermarkedImage.width + 'x' + this.watermarkedImage.height,
           timestamp: new Date().toISOString()
         });
         setDownloadHandler(downloadPixelInjection);
-        document.getElementById('dl-modal-title').textContent = 'Download Pixel Injection Result';
+        document.querySelector('#dl-modal-title').textContent = 'Download Pixel Injection Result';
         
-        const downloadDiv = document.getElementById('pi-download');
+        const downloadDiv = document.querySelector('#pi-download');
         downloadDiv.innerHTML = '';
-        downloadDiv.appendChild(downloadLink);
+        downloadDiv.append(downloadLink);
         var dlBtn = document.createElement('button');
         dlBtn.textContent = __('fp.results_btn', 'Download Results');
         dlBtn.className = 'btn';
         dlBtn.style.cssText = 'margin-top: 8px; display: block;';
-        dlBtn.onclick = showDownloadModal;
-        downloadDiv.appendChild(dlBtn);
+        dlBtn.addEventListener('click', showDownloadModal);
+        downloadDiv.append(dlBtn);
         
         // Show image preview
-        const outputDiv = document.getElementById('pi-output');
+        const outputDiv = document.querySelector('#pi-output');
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
                 <h5 style="color: var(--primary); margin-bottom: 10px;">Pixel Injected Image</h5>
@@ -847,7 +865,7 @@ class PixelInjection {
             // Check if we have enough bits for a complete character (8 bits)
             if (binaryMessage.length >= 8) {
                 const byte = binaryMessage.substring(0, 8);
-                const charCode = parseInt(byte, 2);
+                const charCode = Number.parseInt(byte, 2);
                 
                 // Stop if we encounter null terminator
                 
@@ -868,12 +886,12 @@ class PixelInjection {
     }
     
     showExtractedMessage() {
-        const resultDiv = document.getElementById('pi-result');
+        const resultDiv = document.querySelector('#pi-result');
         if (!resultDiv) return;
         
         resultDiv.style.display = 'block';
         
-        const outputDiv = document.getElementById('pi-output');
+        const outputDiv = document.querySelector('#pi-output');
         let messageText = this.extractedMessage;
         
         // Handle different message types
@@ -902,14 +920,14 @@ class PixelInjection {
           timestamp: new Date().toISOString()
         });
         setDownloadHandler(downloadPixelInjection);
-        document.getElementById('dl-modal-title').textContent = 'Download Pixel Injection Result';
+        document.querySelector('#dl-modal-title').textContent = 'Download Pixel Injection Result';
         
         // Add copy button + download results button
-        const downloadDiv = document.getElementById('pi-download');
+        const downloadDiv = document.querySelector('#pi-download');
         downloadDiv.innerHTML = '<button class="btn" id="pi-copy-btn" style="margin-top: 10px;">' + __('pi.copy_message', 'Copy Message') + '</button>' +
           '<br><button class="btn" id="pi-dl-btn" style="margin-top: 8px;" onclick="showDownloadModal()">' +
           (__('fp.results_btn', 'Download Results')) + '</button>';
-        const copyBtn = document.getElementById('pi-copy-btn');
+        const copyBtn = document.querySelector('#pi-copy-btn');
         if (copyBtn) {
             copyBtn.addEventListener('click', function() {
                 navigator.clipboard.writeText(escHtml(messageText));
@@ -920,7 +938,7 @@ class PixelInjection {
     showQualityMetrics() {
         if (!this.qualityMetrics) return;
         
-        const outputDiv = document.getElementById('pi-output');
+        const outputDiv = document.querySelector('#pi-output');
         const metricsHtml = `
             <div style="margin-top: 20px; padding: 15px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border);">
                 <h5 style="color: var(--primary); margin-bottom: 15px;">Quality Metrics</h5>
@@ -952,7 +970,7 @@ class PixelInjection {
         if (!this.analysisResults) return;
         const r = this.analysisResults;
         
-        const resultDiv = document.getElementById('pi-result');
+        const resultDiv = document.querySelector('#pi-result');
         if (!resultDiv) return;
         resultDiv.style.display = 'block';
         
@@ -970,7 +988,7 @@ class PixelInjection {
         const qual = r.quality;
         const chars = r.characteristics;
         
-        const outputDiv = document.getElementById('pi-output');
+        const outputDiv = document.querySelector('#pi-output');
         outputDiv.innerHTML = `
           <div style="max-width:1000px;margin:0 auto">
             <h5 style="color:var(--primary);text-align:center;margin:0 0 20px 0">Comprehensive Analysis Report</h5>
@@ -989,7 +1007,7 @@ class PixelInjection {
                 <div style="margin-bottom:8px">${badge(ml.detected, 'Detected', 'Not Detected')}</div>
                 ${valueBox('Confidence', fmtPct(ml.confidence))}
                 ${valueBox('Algorithm', ml.algorithm || 'N/A', 'var(--primary)')}
-                ${valueBox('Robustness', ml.robustness !== undefined ? fmtPct(ml.robustness) : 'N/A')}
+                ${valueBox('Robustness', ml.robustness === undefined ? 'N/A' : fmtPct(ml.robustness))}
               </div>
             </div>
             
@@ -1003,7 +1021,7 @@ class PixelInjection {
               </div>
               <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
                 <h6 style="margin:0 0 10px 0;color:var(--text);font-size:0.9rem">🛡 Robustness Testing</h6>
-                ${valueBox('Overall Score', robust.overall_score !== undefined ? (robust.overall_score * 100).toFixed(1) + '%' : 'N/A', robust.overall_score > 0.5 ? 'var(--success)' : 'var(--danger)')}
+                ${valueBox('Overall Score', robust.overall_score === undefined ? 'N/A' : (robust.overall_score * 100).toFixed(1) + '%', robust.overall_score > 0.5 ? 'var(--success)' : 'var(--danger)')}
                 ${robust.individual_tests ? robust.individual_tests.map(t =>
                   `<div style="margin:3px 0;font-size:0.8rem;color:var(--text-muted)">${badge(t.score > 0.5, '✓', '✗')} ${t.test}: ${(t.score * 100).toFixed(0)}%</div>`
                 ).join('') : ''}
@@ -1017,7 +1035,7 @@ class PixelInjection {
                 <div>PSNR: <strong style="color:${qual.psnr === Infinity ? 'var(--success)' : 'var(--text)'}">${qual.psnr === Infinity ? '∞ dB (identical)' : fmtScore(qual.psnr) + ' dB'}</strong></div>
                 <div>SSIM: <strong>${fmtScore(qual.ssim)}</strong></div>
                 <div>LPIPS: <strong>${fmtScore(qual.lpips)}</strong></div>
-                <div>BER: <strong>${qual.ber !== null ? qual.ber.toFixed(2) + '%' : 'N/A'}</strong></div>
+                <div>BER: <strong>${qual.ber === null ? 'N/A' : qual.ber.toFixed(2) + '%'}</strong></div>
                 <div>MSE: <strong>${fmtScore(qual.mse)}</strong></div>
                 <div>MAD: <strong>${fmtScore(qual.mad)}</strong></div>
               </div>
@@ -1029,10 +1047,10 @@ class PixelInjection {
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:0.85rem">
                 <div>Complexity: <strong>${fmtPct(chars.complexity)}</strong></div>
                 <div>Noise Level: <strong>${fmtPct(chars.noise)}</strong></div>
-                <div>Brightness: <strong>${chars.brightness !== undefined ? (chars.brightness * 100).toFixed(1) + '%' : 'N/A'}</strong></div>
-                <div>Contrast: <strong>${chars.contrast !== undefined ? chars.contrast.toFixed(2) : 'N/A'}</strong></div>
-                <div>Texture: <strong>${chars.texture !== undefined ? chars.texture.toFixed(2) : 'N/A'}</strong></div>
-                <div>Edges: <strong>${chars.edges !== undefined ? chars.edges : 'N/A'}</strong></div>
+                <div>Brightness: <strong>${chars.brightness === undefined ? 'N/A' : (chars.brightness * 100).toFixed(1) + '%'}</strong></div>
+                <div>Contrast: <strong>${chars.contrast === undefined ? 'N/A' : chars.contrast.toFixed(2)}</strong></div>
+                <div>Texture: <strong>${chars.texture === undefined ? 'N/A' : chars.texture.toFixed(2)}</strong></div>
+                <div>Edges: <strong>${chars.edges === undefined ? 'N/A' : chars.edges}</strong></div>
               </div>
             </div>
             
@@ -1060,9 +1078,9 @@ class PixelInjection {
           timestamp: r.timestamp || new Date().toISOString()
         });
         setDownloadHandler(downloadPixelInjection);
-        document.getElementById('dl-modal-title').textContent = 'Download Analysis Report';
+        document.querySelector('#dl-modal-title').textContent = 'Download Analysis Report';
         
-        const downloadDiv = document.getElementById('pi-download');
+        const downloadDiv = document.querySelector('#pi-download');
         downloadDiv.innerHTML = `
           <div style="text-align:center;margin-top:16px">
             <button class="btn" onclick="showDownloadModal()">${__('fp.results_btn', 'Download Results')}</button>
@@ -1071,7 +1089,7 @@ class PixelInjection {
     }
     
     showSingleAnalysisResult(algorithm, result) {
-        const resultDiv = document.getElementById('pi-result');
+        const resultDiv = document.querySelector('#pi-result');
         if (!resultDiv) return;
         
         resultDiv.style.display = 'block';
@@ -1079,7 +1097,7 @@ class PixelInjection {
         const algoName = this.analysisAlgorithms[algorithm] ? this.analysisAlgorithms[algorithm].name : algorithm;
         const safeResult = escHtml(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
         
-        const outputDiv = document.getElementById('pi-output');
+        const outputDiv = document.querySelector('#pi-output');
         outputDiv.innerHTML = `
           <div style="max-width:800px;margin:0 auto;text-align:center">
             <h5 style="color:var(--primary);margin:0 0 16px 0">${escHtml(algoName)}</h5>
@@ -1095,9 +1113,9 @@ class PixelInjection {
           timestamp: new Date().toISOString()
         });
         setDownloadHandler(downloadPixelInjection);
-        document.getElementById('dl-modal-title').textContent = 'Download Analysis Result';
+        document.querySelector('#dl-modal-title').textContent = 'Download Analysis Result';
         
-        const downloadDiv = document.getElementById('pi-download');
+        const downloadDiv = document.querySelector('#pi-download');
         downloadDiv.innerHTML = `
           <div style="text-align:center;margin-top:16px">
             <button class="btn" onclick="showDownloadModal()">${__('fp.results_btn', 'Download Results')}</button>
@@ -1124,7 +1142,7 @@ class PixelInjection {
         
         // Calculate complexity (simplified)
         const variance = this.calculateVariance(data);
-        const complexity = Math.min(1, variance / 10000);
+        const complexity = Math.min(1, variance / 10_000);
         
         return {
             complexity: complexity,
@@ -1173,14 +1191,13 @@ class PixelInjection {
             recommendations.push('Adjust embedding strength for extreme brightness');
         }
         
-        recommendations.push('Test robustness with compression attacks');
-        recommendations.push('Consider multi-layered protection for sensitive content');
+        recommendations.push('Test robustness with compression attacks', 'Consider multi-layered protection for sensitive content');
         
         return recommendations;
     }
     
     showLoading(show) {
-        const spinner = document.getElementById('pi-spinner');
+        const spinner = document.querySelector('#pi-spinner');
         if (spinner) {
             spinner.style.display = show ? 'block' : 'none';
         }
@@ -1194,7 +1211,7 @@ class PixelInjection {
             top: 20px;
             right: 20px;
             padding: 15px 20px;
-            background: ${type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--primary)'};
+            background: ${type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--primary)')};
             color: white;
             border-radius: var(--radius);
             z-index: 10000;
@@ -1206,7 +1223,7 @@ class PixelInjection {
         `;
         
         toast.textContent = message;
-        document.body.appendChild(toast);
+        document.body.append(toast);
         
         // Animate in
         setTimeout(() => {
@@ -1220,7 +1237,7 @@ class PixelInjection {
             toast.style.transform = 'translateX(100%)';
             setTimeout(() => {
                 if (document.body.contains(toast)) {
-                    document.body.removeChild(toast);
+                    toast.remove();
                 }
             }, 300);
         }, 3000);
@@ -1228,21 +1245,21 @@ class PixelInjection {
 }
 
 // Global functions for HTML onclick handlers
-window.updatePiAlgorithms = function() {
-    if (window.pixelInjection) {
-        window.pixelInjection.updatePiAlgorithms();
+globalThis.updatePiAlgorithms = function() {
+    if (globalThis.pixelInjection) {
+        globalThis.pixelInjection.updatePiAlgorithms();
     }
 };
 
-window.updatePiOptions = function() {
-    if (window.pixelInjection) {
-        window.pixelInjection.updatePiOptions();
+globalThis.updatePiOptions = function() {
+    if (globalThis.pixelInjection) {
+        globalThis.pixelInjection.updatePiOptions();
     }
 };
 
-window.showPiAdvancedOptions = function() {
-    const advancedOptions = document.getElementById('pi-advanced-options');
-    const btn = document.getElementById('pi-advanced-btn');
+globalThis.showPiAdvancedOptions = function() {
+    const advancedOptions = document.querySelector('#pi-advanced-options');
+    const btn = document.querySelector('#pi-advanced-btn');
     
     if (advancedOptions.style.display === 'none') {
         advancedOptions.style.display = 'block';
@@ -1253,11 +1270,11 @@ window.showPiAdvancedOptions = function() {
     }
 };
 
-window.switchPiTab = function(tab) {
+globalThis.switchPiTab = function(tab) {
     // Hide all tabs
-    document.getElementById('pi-embed').style.display = 'none';
-    document.getElementById('pi-extract').style.display = 'none';
-    document.getElementById('pi-analyze').style.display = 'none';
+    document.querySelector('#pi-embed').style.display = 'none';
+    document.querySelector('#pi-extract').style.display = 'none';
+    document.querySelector('#pi-analyze').style.display = 'none';
     
     // Show selected tab
     document.getElementById('pi-' + tab).style.display = 'block';
@@ -1269,32 +1286,36 @@ window.switchPiTab = function(tab) {
     document.querySelector(`[data-pi-tab="${tab}"]`).classList.add('active');
 
     // Hide previous results when switching away from embed
-    var resultDiv = document.getElementById('pi-result');
+    var resultDiv = document.querySelector('#pi-result');
     if (resultDiv && tab !== 'embed') {
         resultDiv.style.display = 'none';
     }
 };
 
-window.handlePixelInjection = function() {
-    if (window.pixelInjection) {
-        return window.pixelInjection.handlePixelInjection();
+globalThis.handlePixelInjection = function() {
+    if (globalThis.pixelInjection) {
+        return globalThis.pixelInjection.handlePixelInjection();
     }
 };
 
-window.handlePixelExtraction = function() {
-    if (window.pixelInjection) {
-        return window.pixelInjection.handlePixelExtraction();
+globalThis.handlePixelExtraction = function() {
+    if (globalThis.pixelInjection) {
+        return globalThis.pixelInjection.handlePixelExtraction();
     }
 };
 
-window.handlePixelAnalysis = function() {
-    if (window.pixelInjection) {
-        return window.pixelInjection.handlePixelAnalysis();
+globalThis.handlePixelAnalysis = function() {
+    if (globalThis.pixelInjection) {
+        return globalThis.pixelInjection.handlePixelAnalysis();
     }
 };
 
 // ── Multi-format pixel injection download ──
 
+/**
+ *
+ * @param r
+ */
 function piToTXT(r) {
   var lines = ['=== RedoSan Authenticity - Pixel Injection Result ===', ''];
   for (var k in r) lines.push(k + ': ' + String(r[k]));
@@ -1302,12 +1323,20 @@ function piToTXT(r) {
   return lines.join('\n');
 }
 
+/**
+ *
+ * @param r
+ */
 function piToCSV(r) {
   var rows = [['Key', 'Value']];
   for (var k in r) rows.push([k, String(r[k])]);
-  return rows.map(function(row) { return row.map(function(c) { return '"' + String(c).replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
+  return rows.map(function(row) { return row.map(function(c) { return '"' + String(c).replaceAll('"','""') + '"'; }).join(','); }).join('\n');
 }
 
+/**
+ *
+ * @param r
+ */
 function piToXML(r) {
   var xml = '<?xml version="1.0"?>\n<pixel_injection>\n';
   for (var k in r) xml += '  <' + k + '>' + escXml(String(r[k])) + '</' + k + '>\n';
@@ -1315,6 +1344,10 @@ function piToXML(r) {
   return xml;
 }
 
+/**
+ *
+ * @param r
+ */
 function piToHTML(r) {
   var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pixel Injection Result</title>';
   h += '<style>body{font-family:-apple-system,sans-serif;max-width:600px;margin:40px auto;padding:0 20px}';
@@ -1326,6 +1359,10 @@ function piToHTML(r) {
   return h;
 }
 
+/**
+ *
+ * @param format
+ */
 async function downloadPixelInjection(format) {
   closeDownloadModal();
   var r = getResult('piResult');
@@ -1345,7 +1382,7 @@ async function downloadPixelInjection(format) {
     return;
   }
   if (format === 'doc') {
-    var docx = window.docx;
+    var docx = globalThis.docx;
     var children = [];
     children.push(new docx.Paragraph({ children: [new docx.TextRun({ text: 'Pixel Injection Result', bold: true, size: 28 })], spacing: { after: 200 } }));
     var rows = [];
@@ -1359,11 +1396,16 @@ async function downloadPixelInjection(format) {
 
   var content, ext, mime;
   switch (format) {
-    case 'json': content = JSON.stringify(r, null, 2); ext = 'json'; mime = 'application/json'; break;
-    case 'csv':  content = piToCSV(r);  ext = 'csv';  mime = 'text/csv'; break;
-    case 'txt':  content = piToTXT(r);  ext = 'txt';  mime = 'text/plain'; break;
-    case 'xml':  content = piToXML(r);  ext = 'xml';  mime = 'application/xml'; break;
-    case 'html': content = piToHTML(r); ext = 'html'; mime = 'text/html'; break;
+    case 'json': { content = JSON.stringify(r, null, 2); ext = 'json'; mime = 'application/json'; break;
+    }
+    case 'csv': {  content = piToCSV(r);  ext = 'csv';  mime = 'text/csv'; break;
+    }
+    case 'txt': {  content = piToTXT(r);  ext = 'txt';  mime = 'text/plain'; break;
+    }
+    case 'xml': {  content = piToXML(r);  ext = 'xml';  mime = 'application/xml'; break;
+    }
+    case 'html': { content = piToHTML(r); ext = 'html'; mime = 'text/html'; break;
+    }
   }
   if (content == null) return;
   downloadBlobSimple(new Blob([content], { type: mime }), name + '.' + ext);
@@ -1371,12 +1413,12 @@ async function downloadPixelInjection(format) {
 
 // Initialize pixel injection system
 document.addEventListener('DOMContentLoaded', () => {
-    window.pixelInjection = new PixelInjection();
+    globalThis.pixelInjection = new PixelInjection();
     
     // Force initial update
     setTimeout(() => {
-        if (window.pixelInjection) {
-            window.pixelInjection.updatePiAlgorithms();
+        if (globalThis.pixelInjection) {
+            globalThis.pixelInjection.updatePiAlgorithms();
         }
     }, 100);
 });

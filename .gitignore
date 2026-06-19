@@ -48,4 +48,27 @@ STATUS.md
 opencode.json
 .opencode/
 
+# Agent skills (AI-specific configs, not project code)
+agent-skills/
+skills
+
+# Generated: BackstopJS visual regression screenshots/reports
+backstop_data/
+
+# Generated: TypeDoc API documentation
+docs/api/
+
+# Generated: Workbox service worker (use sw.js instead)
+sw-precache.js
+
+# Generated: Madge dependency graph
+deps.svg
+
+# Temporary test artifacts
+tmp_test*.txt
+test-results/
+
+# Local-only dev server
+dev-server.js
+
 

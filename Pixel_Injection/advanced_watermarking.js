@@ -1,4 +1,4 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 class AdvancedWatermarking {
     constructor() {
         this._core = new WatermarkCore();
@@ -13,7 +13,7 @@ class AdvancedWatermarking {
 
     binaryToString(binary) {
         return binary.match(/.{1,8}/g).map(byte =>
-            String.fromCharCode(parseInt(byte, 2))).join('');
+            String.fromCharCode(Number.parseInt(byte, 2))).join('');
     }
 
     addErrorCorrection(message) {
@@ -28,8 +28,8 @@ class AdvancedWatermarking {
 
     generateAdversarialPattern(message) {
         const pattern = [];
-        for (let i = 0; i < message.length; i++) {
-            pattern.push(message[i] === '1' ? 1 : -1);
+        for (const element of message) {
+            pattern.push(element === '1' ? 1 : -1);
         }
         return this.applySpreadSpectrum(pattern);
     }
@@ -42,7 +42,7 @@ class AdvancedWatermarking {
 
     applyDCT(block) {
         const N = block.length;
-        const dctBlock = Array(N).fill().map(() => Array(N).fill(0));
+        const dctBlock = new Array(N).fill().map(() => new Array(N).fill(0));
         for (let u = 0; u < N; u++) {
             for (let v = 0; v < N; v++) {
                 let sum = 0;
@@ -63,7 +63,7 @@ class AdvancedWatermarking {
 
     applyInverseDCT(dctBlock) {
         const N = dctBlock.length;
-        const block = Array(N).fill().map(() => Array(N).fill(0));
+        const block = new Array(N).fill().map(() => new Array(N).fill(0));
         for (let x = 0; x < N; x++) {
             for (let y = 0; y < N; y++) {
                 let sum = 0;
@@ -139,7 +139,7 @@ class AdvancedWatermarking {
     }
 
     extractBlock(data, x, y, width, blockSize) {
-        const block = Array(blockSize).fill().map(() => Array(blockSize).fill(0));
+        const block = new Array(blockSize).fill().map(() => new Array(blockSize).fill(0));
         for (let i = 0; i < blockSize; i++) {
             for (let j = 0; j < blockSize; j++) {
                 const pixelIndex = ((y + i) * width + (x + j)) * 4;
@@ -170,22 +170,22 @@ class AdvancedWatermarking {
     }
 
     calculateCRC32(str) {
-        let crc = 0xFFFFFFFF;
+        let crc = 0xFF_FF_FF_FF;
         for (let i = 0; i < str.length; i++) {
             crc ^= str.charCodeAt(i);
             for (let j = 0; j < 8; j++) {
-                crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+                crc = (crc >>> 1) ^ (crc & 1 ? 0xED_B8_83_20 : 0);
             }
         }
-        return (crc ^ 0xFFFFFFFF).toString(16).toUpperCase();
+        return (crc ^ 0xFF_FF_FF_FF).toString(16).toUpperCase();
     }
 
     calculateJNDMask(data, pixelIndex, x, y) {
         const brightness = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3;
         return [
-            brightness < 64 ? 2 : brightness < 128 ? 4 : 8,
-            brightness < 64 ? 2 : brightness < 128 ? 4 : 8,
-            brightness < 64 ? 2 : brightness < 128 ? 4 : 8
+            brightness < 64 ? 2 : (brightness < 128 ? 4 : 8),
+            brightness < 64 ? 2 : (brightness < 128 ? 4 : 8),
+            brightness < 64 ? 2 : (brightness < 128 ? 4 : 8)
         ];
     }
 
@@ -204,21 +204,21 @@ class AdvancedWatermarking {
     applySpreadSpectrum(pattern) {
         const spread = [];
         const pnSequence = this.generatePNSequence(pattern.length);
-        for (let i = 0; i < pattern.length; i++) {
-            spread.push(pattern[i] * pnSequence[i]);
+        for (const [i, element] of pattern.entries()) {
+            spread.push(element * pnSequence[i]);
         }
         return spread;
     }
 
     generatePNSequence(length) {
         const sequence = [];
-        let seed = 12345;
+        let seed = 12_345;
         for (let i = 0; i < length; i++) {
-            seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+            seed = (seed * 1_103_515_245 + 12_345) & 0x7F_FF_FF_FF;
             sequence.push(seed % 2 === 0 ? 1 : -1);
         }
         return sequence;
     }
 }
 
-window.AdvancedWatermarking = AdvancedWatermarking;
+globalThis.AdvancedWatermarking = AdvancedWatermarking;

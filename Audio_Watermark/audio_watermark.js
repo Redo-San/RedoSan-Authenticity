@@ -1,25 +1,35 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 
 var _awmSecretBytes = null;
 
 // ── Tab switching ──
+/**
+ *
+ * @param mode
+ */
 function switchAwmTab(mode) {
     document.querySelectorAll('.tab-btn[data-awm-tab]').forEach(b => b.classList.remove('active'));
-    document.getElementById('awm-embed').style.display = mode === 'embed' ? '' : 'none';
-    document.getElementById('awm-extract').style.display = mode === 'extract' ? '' : 'none';
+    document.querySelector('#awm-embed').style.display = mode === 'embed' ? '' : 'none';
+    document.querySelector('#awm-extract').style.display = mode === 'extract' ? '' : 'none';
     document.querySelector('.tab-btn[data-awm-tab="' + mode + '"]').classList.add('active');
 }
 
 // ── Password toggle ──
+/**
+ *
+ */
 function toggleAwmPassword() {
-    var t = parseInt(document.getElementById('awm-type').value);
-    document.getElementById('awm-password-group').style.display = '';
-    document.getElementById('awm-strength-group').style.display = (t === 5 || t === 6 || t === 8) ? '' : 'none';
+    var t = Number.parseInt(document.querySelector('#awm-type').value);
+    document.querySelector('#awm-password-group').style.display = '';
+    document.querySelector('#awm-strength-group').style.display = (t === 5 || t === 6 || t === 8) ? '' : 'none';
 }
+/**
+ *
+ */
 function toggleAwmInput() {
-    var t = parseInt(document.getElementById('awm-type').value);
-    var fileGroup = document.getElementById('awm-file-group');
-    var textGroup = document.getElementById('awm-text-group');
+    var t = Number.parseInt(document.querySelector('#awm-type').value);
+    var fileGroup = document.querySelector('#awm-file-group');
+    var textGroup = document.querySelector('#awm-text-group');
     var isLowCapacity = (t === 3 || t === 4 || t === 7);
     fileGroup.style.display = isLowCapacity ? 'none' : '';
     textGroup.style.display = isLowCapacity ? '' : 'none';
@@ -27,42 +37,52 @@ function toggleAwmInput() {
         _awmSecretBytes = null;
         updateAwmCapacity();
     } else {
-        var fi = document.getElementById('awm-file');
+        var fi = document.querySelector('#awm-file');
         if (fi.files && fi.files[0]) loadAwmFile({target:fi});
     }
 }
+/**
+ *
+ */
 function toggleAwmPasswordEx() {
-    var t = parseInt(document.getElementById('awm-type-ex').value);
-    document.getElementById('awm-password-ex-group').style.display = '';
-    document.getElementById('awm-strength-ex-group').style.display = (t === 0 || t === 5 || t === 6 || t === 8) ? '' : 'none';
+    var t = Number.parseInt(document.querySelector('#awm-type-ex').value);
+    document.querySelector('#awm-password-ex-group').style.display = '';
+    document.querySelector('#awm-strength-ex-group').style.display = (t === 0 || t === 5 || t === 6 || t === 8) ? '' : 'none';
 }
 
 // ── File upload for secret message ──
+/**
+ *
+ * @param event
+ */
 function loadAwmFile(event) {
     var file = event.target.files[0];
     if (!file) { _awmSecretBytes = null; return; }
     var reader = new FileReader();
-    reader.onload = function(e) {
+    reader.addEventListener('load', function(e) {
         _awmSecretBytes = new TextEncoder().encode(e.target.result);
-        document.getElementById('awm-file-name').textContent = file.name + ' (' + _awmSecretBytes.length + ' bytes)';
+        document.querySelector('#awm-file-name').textContent = file.name + ' (' + _awmSecretBytes.length + ' bytes)';
         updateAwmCapacity();
-    };
+    });
     reader.readAsText(file);
 }
 
 // ── Capacity update ──
+/**
+ *
+ */
 function updateAwmCapacity() {
-    var f = document.getElementById('awm-audio');
-    var capEl = document.getElementById('awm-capacity');
+    var f = document.querySelector('#awm-audio');
+    var capEl = document.querySelector('#awm-capacity');
     if (!f || !f.files || !f.files[0]) { capEl.textContent = ''; return; }
-    var t = parseInt(document.getElementById('awm-type').value);
+    var t = Number.parseInt(document.querySelector('#awm-type').value);
     var isLowCapacity = (t === 3 || t === 4 || t === 7);
     var msgBytes;
     if (isLowCapacity) {
-        var txt = document.getElementById('awm-text').value;
+        var txt = document.querySelector('#awm-text').value;
         msgBytes = txt ? new TextEncoder().encode(txt.substring(0, 1000)) : new Uint8Array(0);
         _awmSecretBytes = msgBytes;
-        document.getElementById('awm-text-info').textContent = msgBytes.length + ' bytes / ~' + (msgBytes.length*8) + ' bits';
+        document.querySelector('#awm-text-info').textContent = msgBytes.length + ' bytes / ~' + (msgBytes.length*8) + ' bits';
     } else {
         msgBytes = _awmSecretBytes || new Uint8Array(0);
     }
@@ -70,35 +90,38 @@ function updateAwmCapacity() {
     var descs = {1:'LSB: ~1 bit/sample',2:'Phase Coding: ~1 bit/sample',3:'Echo Hiding: ~1 bit/'+AWM3_FRAME+' samples x3 reps',4:'DSSS: ~1 bit/'+(AWM4_FRAME>>1)+' frames',5:'QIM: ~1 bit/sample',6:'DWT Haar: ~1 bit/1024 coefs',7:'Patchwork: ~1 bit/'+(AWM7_FRAME>>1)+' frames x5 reps',8:'DCT: ~1 bit/'+(AWM8_FRAME>>1)+' frames'};
     var mult = {1:1, 2:1, 3:AWM3_FRAME*3, 4:AWM4_FRAME>>1, 5:1, 6:1024, 7:AWM7_FRAME*5>>1, 8:AWM8_FRAME>>1};
     var m = mult[t] || 1;
-    var estSeconds = Math.ceil(byteLen * 8 * m / 44100);
+    var estSeconds = Math.ceil(byteLen * 8 * m / 44_100);
     capEl.textContent = (descs[t]||'') + ' | Message: ' + (byteLen*8) + ' bits | Need ~' + estSeconds + 's audio at 44.1kHz';
 }
 
 // ── Embed ──
+/**
+ *
+ */
 async function handleAwmEmbed() {
-    var type = parseInt(document.getElementById('awm-type').value);
-    var input = document.getElementById('awm-audio');
+    var type = Number.parseInt(document.querySelector('#awm-type').value);
+    var input = document.querySelector('#awm-audio');
     if (!input || !input.files || !input.files[0]) return alert('Please select an audio file');
     if (typeof validateFileInput === 'function' && !validateFileInput(input)) return;
     var audioFile = input.files[0];
-    var password = document.getElementById('awm-password').value;
+    var password = document.querySelector('#awm-password').value;
     var isLowCapacity = (type === 3 || type === 4 || type === 7);
-    if (!isLowCapacity) {
-        if (!_awmSecretBytes) return alert('Please upload a secret document');
-    } else {
-        var txtVal = document.getElementById('awm-text').value;
+    if (isLowCapacity) {
+        var txtVal = document.querySelector('#awm-text').value;
         if (!txtVal || !txtVal.trim()) return alert('Please enter a secret message');
         _awmSecretBytes = new TextEncoder().encode(txtVal.trim());
+    } else {
+        if (!_awmSecretBytes) return alert('Please upload a secret document');
     }
     if (!password || !password.trim()) return alert('Password is required');
     var secretBytes = _awmSecretBytes;
-    var spinner = document.getElementById('awm-spinner');
-    var prog = document.getElementById('awm-progress');
-    var progFill = document.getElementById('awm-progress-fill');
-    var progText = document.getElementById('awm-progress-text');
-    var resultDiv = document.getElementById('awm-result');
-    var output = document.getElementById('awm-output');
-    var downloadDiv = document.getElementById('awm-download');
+    var spinner = document.querySelector('#awm-spinner');
+    var prog = document.querySelector('#awm-progress');
+    var progFill = document.querySelector('#awm-progress-fill');
+    var progText = document.querySelector('#awm-progress-text');
+    var resultDiv = document.querySelector('#awm-result');
+    var output = document.querySelector('#awm-output');
+    var downloadDiv = document.querySelector('#awm-download');
     resultDiv.style.display = 'none';
     spinner.style.display = 'block';
     prog.style.display = 'none';
@@ -123,13 +146,38 @@ async function handleAwmEmbed() {
                 progText.textContent = Math.round(pct * 100) + '%';
             });
         } else {
-            if (type === 1) modified = aw1_embed(s16, payloadBits);
-            else if (type === 2) modified = aw2_embed(s16, payloadBits, info.sr);
-            else if (type === 3) modified = aw3_embed(s16, payloadBits, info.sr);
-            else if (type === 4) modified = aw4_embed(s16, payloadBits, info.sr);
-            else if (type === 5) modified = aw5_embed(s16, payloadBits, info.sr);
-            else if (type === 6) modified = aw6_embed(s16, payloadBits, info.sr);
-            else if (type === 7) modified = aw7_embed(s16, payloadBits, info.sr);
+            switch (type) {
+            case 1: {
+            modified = aw1_embed(s16, payloadBits);
+            break;
+            }
+            case 2: {
+            modified = aw2_embed(s16, payloadBits, info.sr);
+            break;
+            }
+            case 3: {
+            modified = aw3_embed(s16, payloadBits, info.sr);
+            break;
+            }
+            case 4: {
+            modified = aw4_embed(s16, payloadBits, info.sr);
+            break;
+            }
+            case 5: {
+            modified = aw5_embed(s16, payloadBits, info.sr);
+            break;
+            }
+            case 6: {
+            modified = aw6_embed(s16, payloadBits, info.sr);
+            break;
+            }
+            case 7: { {
+            modified = aw7_embed(s16, payloadBits, info.sr);
+            // No default
+            }
+            break;
+            }
+            }
         }
         prog.style.display = 'none';
         spinner.style.display = 'none';
@@ -139,9 +187,9 @@ async function handleAwmEmbed() {
         downloadDiv.innerHTML = '<a href="' + URL.createObjectURL(blob) + '" download="watermarked_' + escapeHtml(audioFile.name).replace(/\.[^.]+$/, '.wav') + '" class="btn">⬇ Download Watermarked WAV</a>';
         setResult('awmResult', { blob: blob, originalName: audioFile.name, type: type, algorithm: names[type] });
         resultDiv.style.display = '';
-    } catch (e) {
+    } catch (error) {
         prog.style.display = 'none';
-        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(error.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }
@@ -150,21 +198,24 @@ async function handleAwmEmbed() {
 }
 
 // ── Extract ──
+/**
+ *
+ */
 async function handleAwmExtract() {
-    var type = parseInt(document.getElementById('awm-type-ex').value);
-    var input = document.getElementById('awm-audio-ex');
+    var type = Number.parseInt(document.querySelector('#awm-type-ex').value);
+    var input = document.querySelector('#awm-audio-ex');
     if (!input || !input.files || !input.files[0]) return alert('Please select a watermarked audio file');
     if (typeof validateFileInput === 'function' && !validateFileInput(input)) return;
     var audioFile = input.files[0];
-    var password = document.getElementById('awm-password-ex').value;
+    var password = document.querySelector('#awm-password-ex').value;
     if (!password || !password.trim()) return alert('Password is required');
-    var spinner = document.getElementById('awm-spinner');
-    var prog = document.getElementById('awm-progress');
-    var progFill = document.getElementById('awm-progress-fill');
-    var progText = document.getElementById('awm-progress-text');
-    var resultDiv = document.getElementById('awm-result');
-    var output = document.getElementById('awm-output');
-    var downloadDiv = document.getElementById('awm-download');
+    var spinner = document.querySelector('#awm-spinner');
+    var prog = document.querySelector('#awm-progress');
+    var progFill = document.querySelector('#awm-progress-fill');
+    var progText = document.querySelector('#awm-progress-text');
+    var resultDiv = document.querySelector('#awm-result');
+    var output = document.querySelector('#awm-output');
+    var downloadDiv = document.querySelector('#awm-download');
     resultDiv.style.display = 'none';
     spinner.style.display = 'block';
     prog.style.display = 'none';
@@ -186,16 +237,39 @@ async function handleAwmExtract() {
                 progText.textContent = Math.round(pct * 100) + '%';
             });
         } else {
-            if (type === 1) bitsStr = aw1_extract(info.samples, info.samples.length);
-            else if (type === 2) bitsStr = aw2_extract(info.samples, info.sr);
-            else if (type === 3) bitsStr = await aw3_extract(info.samples, info.sr);
-            else if (type === 4) bitsStr = aw4_extract(info.samples, info.sr);
-            else if (type === 5) {
+            switch (type) {
+            case 1: {
+            bitsStr = aw1_extract(info.samples, info.samples.length);
+            break;
+            }
+            case 2: {
+            bitsStr = aw2_extract(info.samples, info.sr);
+            break;
+            }
+            case 3: {
+            bitsStr = await aw3_extract(info.samples, info.sr);
+            break;
+            }
+            case 4: {
+            bitsStr = aw4_extract(info.samples, info.sr);
+            break;
+            }
+            case 5: {
                 bitsStr = aw5_extract(info.samples, info.sr, info.samples.length);
-            } else if (type === 6) {
+            
+            break;
+            }
+            case 6: {
                 bitsStr = aw6_extract(info.samples, info.sr, info.samples.length);
-            } else if (type === 7) {
+            
+            break;
+            }
+            case 7: {
                 bitsStr = aw7_extract(info.samples, info.sr);
+            
+            break;
+            }
+            // No default
             }
         }
         prog.style.display = 'none';
@@ -204,19 +278,19 @@ async function handleAwmExtract() {
             var result = awExtractPayload(bitsStr, key);
             if (result === 'bad-password') {
                 output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>Wrong password or no watermark found</div>';
-            } else if (!result) {
-                output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>No watermark data found. Try a different algorithm.</div>';
-            } else {
+            } else if (result) {
                 var decoded = new TextDecoder().decode(result);
                 var algoName = detectedAlgo || ({1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',4:'Spread Spectrum (DSSS)',5:'QIM',6:'DWT (Haar Wavelet)',7:'Patchwork',8:'DCT-based'})[type] || 'Unknown';
                 output.innerHTML = '<div class="result-success"><span class="result-icon">✅</span><strong>Watermark extracted!</strong><br>Algorithm: ' + algoName + '<br><br><strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(decoded) + '</pre></div>';
+            } else {
+                output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>No watermark data found. Try a different algorithm.</div>';
             }
         }
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
-    } catch (e) {
+    } catch (error) {
         prog.style.display = 'none';
-        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(error.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }
@@ -224,10 +298,19 @@ async function handleAwmExtract() {
     prog.style.display = 'none';
 }
 
+/**
+ *
+ * @param info
+ * @param key
+ * @param spinner
+ * @param prog
+ * @param progFill
+ * @param progText
+ */
 async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
-    var output = document.getElementById('awm-output');
-    var downloadDiv = document.getElementById('awm-download');
-    var resultDiv = document.getElementById('awm-result');
+    var output = document.querySelector('#awm-output');
+    var downloadDiv = document.querySelector('#awm-download');
+    var resultDiv = document.querySelector('#awm-result');
     spinner.style.display = 'none';
     prog.style.display = 'flex';
 
@@ -238,6 +321,10 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
         for (var ri = 0; ri < info.samples.length; ri++) rightSamples[ri] = info.raw[ri * info.ch + 1];
     }
 
+    /**
+     *
+     * @param src
+     */
     function makeAlgos(src) { return [
         { id: 8, name: 'DCT-based', fn: function() {
             return aw8_extract_async(src, info.sr, src.length, function(pct) {
@@ -271,11 +358,9 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
 
     var found = [];
     var seen = {};
-    for (var ci = 0; ci < channels.length; ci++) {
-        var ch = channels[ci];
+    for (var ch of channels) {
         var algos = makeAlgos(ch.src);
-        for (var i = 0; i < algos.length; i++) {
-            var a = algos[i];
+        for (var a of algos) {
             progFill.style.width = '0%';
             progFill.style.background = '';
             progText.textContent = '🔍 ' + a.name + ' (' + ch.label + ', scanning...)';
@@ -283,7 +368,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
             var bitsStr;
             try {
                 bitsStr = await a.fn();
-            } catch (e) { continue; }
+            } catch { continue; }
             await new Promise(function(r) { setTimeout(r, 0); });
             if (typeof bitsStr !== 'string' || bitsStr.length < 32) {
                 continue;
@@ -312,8 +397,7 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
         return false;
     }
     var html = '';
-    for (var j = 0; j < found.length; j++) {
-        var f = found[j];
+    for (var [j, f] of found.entries()) {
         var icon = j === 0 ? '✅' : '🔷';
         html += '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">' + icon + '</span>' +
             '<strong>Watermark #' + (j + 1) + '</strong><br>Algorithm: ' + f.name + ' (auto-detected, ' + f.channel + ')<br><br>' +
@@ -322,31 +406,38 @@ async function awmMultiDetect(info, key, spinner, prog, progFill, progText) {
     output.innerHTML = html;
     downloadDiv.innerHTML = '';
     resultDiv.style.display = '';
-    document.getElementById('awm-type-ex').value = found[0].algo;
+    document.querySelector('#awm-type-ex').value = found[0].algo;
     return true;
 }
 
+/**
+ *
+ * @param s
+ */
 function escapeHtml(s) {
     var d = document.createElement('div');
-    d.appendChild(document.createTextNode(s));
+    d.append(document.createTextNode(s));
     return d.innerHTML;
 }
 
 // ── Dual extract (for simplified-mode protected audio) ──
+/**
+ *
+ */
 async function awmDualExtract() {
-    var audioFile = document.getElementById('awm-audio-ex').files[0];
-    var password = document.getElementById('awm-password-ex').value;
-    var fpAlgo = parseInt(document.getElementById('awm-dual-fp-algo').value);
-    var didAlgo = parseInt(document.getElementById('awm-dual-did-algo').value);
+    var audioFile = document.querySelector('#awm-audio-ex').files[0];
+    var password = document.querySelector('#awm-password-ex').value;
+    var fpAlgo = Number.parseInt(document.querySelector('#awm-dual-fp-algo').value);
+    var didAlgo = Number.parseInt(document.querySelector('#awm-dual-did-algo').value);
     if (!audioFile) return alert('Please select a watermarked audio file');
     if (!password || !password.trim()) return alert('Password is required');
-    var spinner = document.getElementById('awm-spinner');
-    var prog = document.getElementById('awm-progress');
-    var progFill = document.getElementById('awm-progress-fill');
-    var progText = document.getElementById('awm-progress-text');
-    var resultDiv = document.getElementById('awm-result');
-    var output = document.getElementById('awm-output');
-    var downloadDiv = document.getElementById('awm-download');
+    var spinner = document.querySelector('#awm-spinner');
+    var prog = document.querySelector('#awm-progress');
+    var progFill = document.querySelector('#awm-progress-fill');
+    var progText = document.querySelector('#awm-progress-text');
+    var resultDiv = document.querySelector('#awm-result');
+    var output = document.querySelector('#awm-output');
+    var downloadDiv = document.querySelector('#awm-download');
     resultDiv.style.display = 'none';
     spinner.style.display = 'block';
     prog.style.display = 'none';
@@ -371,6 +462,12 @@ async function awmDualExtract() {
         spinner.style.display = 'none';
         prog.style.display = 'flex';
 
+        /**
+         *
+         * @param src
+         * @param algo
+         * @param label
+         */
         function tryExtract(src, algo, label) {
             if (algo === 0) {
                 // Auto detect: try all algorithms that are valid for this channel
@@ -396,24 +493,20 @@ async function awmDualExtract() {
 
         prog.style.display = 'none';
         var html = '';
-        for (var rj = 0; rj < results.length; rj++) {
-            var res2 = results[rj].result;
-            if (res2 && res2.decoded) {
-                html += '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">✅</span>' +
-                    '<strong>' + results[rj].label + '</strong><br>Algorithm: ' + res2.algorithm + '<br>' +
-                    '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(res2.decoded) + '</pre></div>';
-            } else {
-                html += '<div class="result-error" style="margin-bottom:12px"><span class="result-icon">❌</span>' +
-                    '<strong>' + results[rj].label + '</strong><br>' +
+        for (const result of results) {
+            var res2 = result.result;
+            html += res2 && res2.decoded ? '<div class="result-success" style="margin-bottom:12px"><span class="result-icon">✅</span>' +
+                    '<strong>' + result.label + '</strong><br>Algorithm: ' + res2.algorithm + '<br>' +
+                    '<strong>Hidden Message:</strong><br><pre class="awm-pre">' + escapeHtml(res2.decoded) + '</pre></div>' : '<div class="result-error" style="margin-bottom:12px"><span class="result-icon">❌</span>' +
+                    '<strong>' + result.label + '</strong><br>' +
                     (res2 ? res2.error : 'not found') + '</div>';
-            }
         }
         output.innerHTML = html || '<div class="result-error">❌ No watermarks found.</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
-    } catch (e) {
+    } catch (error) {
         prog.style.display = 'none';
-        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(e.message) + '</div>';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>' + escapeHtml(error.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }
@@ -421,25 +514,67 @@ async function awmDualExtract() {
     prog.style.display = 'none';
 }
 
+/**
+ *
+ * @param src
+ * @param algo
+ * @param key
+ * @param sr
+ * @param algoName
+ */
 async function tryExtractSingle(src, algo, key, sr, algoName) {
     var bitsStr;
-    if (algo === 1) bitsStr = await aw1_extract(src, src.length);
-    else if (algo === 2) bitsStr = await aw2_extract(src, sr);
-    else if (algo === 3) bitsStr = await aw3_extract(src, sr);
-    else if (algo === 4) bitsStr = await aw4_extract(src, sr);
-    else if (algo === 5) bitsStr = await aw5_extract(src, sr, src.length);
-    else if (algo === 6) bitsStr = await aw6_extract(src, sr, src.length);
-    else if (algo === 7) bitsStr = await aw7_extract(src, sr);
-    else if (algo === 8) bitsStr = await aw8_extract_async(src, sr, src.length);
+    switch (algo) {
+    case 1: {
+    bitsStr = await aw1_extract(src, src.length);
+    break;
+    }
+    case 2: {
+    bitsStr = await aw2_extract(src, sr);
+    break;
+    }
+    case 3: {
+    bitsStr = await aw3_extract(src, sr);
+    break;
+    }
+    case 4: {
+    bitsStr = await aw4_extract(src, sr);
+    break;
+    }
+    case 5: {
+    bitsStr = await aw5_extract(src, sr, src.length);
+    break;
+    }
+    case 6: {
+    bitsStr = await aw6_extract(src, sr, src.length);
+    break;
+    }
+    case 7: {
+    bitsStr = await aw7_extract(src, sr);
+    break;
+    }
+    case 8: { {
+    bitsStr = await aw8_extract_async(src, sr, src.length);
+    // No default
+    }
+    break;
+    }
+    }
     if (typeof bitsStr !== 'string' || bitsStr.length < 32) return null;
     var r = awExtractPayload(bitsStr, key);
     if (!r || r === 'bad-password') return null;
     return { decoded: new TextDecoder().decode(r), algorithm: algoName };
 }
 
+/**
+ *
+ * @param src
+ * @param key
+ * @param sr
+ * @param candidates
+ */
 async function tryExtractAuto(src, key, sr, candidates) {
-    for (var ci = 0; ci < candidates.length; ci++) {
-        var a = candidates[ci];
+    for (var a of candidates) {
         var names = {1:'LSB Audio',2:'FFT-QIM',3:'Echo Hiding',5:'QIM',6:'DWT',7:'Patchwork',8:'DCT-based'};
         var r = await tryExtractSingle(src, a, key, sr, names[a] || ('Algo ' + a));
         if (r && r.decoded) return r;
@@ -448,12 +583,15 @@ async function tryExtractAuto(src, key, sr, candidates) {
 }
 
 // ── Self-test diagnostic ──
+/**
+ *
+ */
 async function awmSelfTest() {
-    var output = document.getElementById('awm-output');
-    var downloadDiv = document.getElementById('awm-download');
-    var resultDiv = document.getElementById('awm-result');
-    var spinner = document.getElementById('awm-spinner');
-    var prog = document.getElementById('awm-progress');
+    var output = document.querySelector('#awm-output');
+    var downloadDiv = document.querySelector('#awm-download');
+    var resultDiv = document.querySelector('#awm-result');
+    var spinner = document.querySelector('#awm-spinner');
+    var prog = document.querySelector('#awm-progress');
     resultDiv.style.display = 'none';
     spinner.style.display = 'block';
     prog.style.display = 'none';
@@ -461,7 +599,7 @@ async function awmSelfTest() {
 
     try {
         // Create synthetic 5-second audio
-        var sr = 44100;
+        var sr = 44_100;
         var len = sr * 5;
         var buf = new ArrayBuffer(44 + len * 2);
         var v = new DataView(buf);
@@ -498,10 +636,9 @@ async function awmSelfTest() {
             { id: 8, name: 'DCT', embed: async function() { return await aw8_embed_async(new Int16Array(s16), payload, sr); },
               extract: async function(m) { return await aw8_extract_async(m, sr, m.length); } }
         ];
-        for (var a = 0; a < algos.length; a++) {
-            var algo = algos[a];
+        for (var algo of algos) {
             try {
-                var maxB = algo.id === 1 || algo.id === 5 ? s16.length : Math.floor(s16.length / (algo.id === 8 ? 1024 : algo.id === 6 ? 1024 : 2048));
+                var maxB = algo.id === 1 || algo.id === 5 ? s16.length : Math.floor(s16.length / (algo.id === 8 ? 1024 : (algo.id === 6 ? 1024 : 2048)));
                 if (payload.length > maxB) { results.push(algo.name + ': SKIP'); continue; }
                 var modified = await algo.embed();
                 var bits = await algo.extract(modified);
@@ -509,11 +646,11 @@ async function awmSelfTest() {
                 if (r && r !== 'bad-password') {
                     results.push(algo.name + ': ✅');
                 } else {
-                    var d = bits ? parseInt(bits.substring(0, 32), 2) : -1;
+                    var d = bits ? Number.parseInt(bits.substring(0, 32), 2) : -1;
                     results.push(algo.name + ': ❌ (dlen=' + d + ')');
                 }
-            } catch (e) {
-                results.push(algo.name + ': 💥 ' + e.message.substring(0, 30));
+            } catch (error) {
+                results.push(algo.name + ': 💥 ' + error.message.substring(0, 30));
             }
         }
 
@@ -548,8 +685,8 @@ async function awmSelfTest() {
                 results.push('Dual (DCT left + DWT right): ' + (fpOk && tsOk ? '✅' : '❌'));
                 if (!fpOk) results.push('  FP: ' + (fpR ? new TextDecoder().decode(fpR).substring(0, 20) : 'null'));
                 if (!tsOk) results.push('  TS: ' + (tsR ? new TextDecoder().decode(tsR).substring(0, 20) : 'null'));
-            } catch (e) {
-                results.push('Dual: 💥 ' + e.message.substring(0, 40));
+            } catch (error) {
+                results.push('Dual: 💥 ' + error.message.substring(0, 40));
             }
         } else {
             results.push('Dual: SKIP (payload too large for 5s)');
@@ -561,9 +698,9 @@ async function awmSelfTest() {
         output.innerHTML = html;
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
-    } catch (e) {
+    } catch (error) {
         spinner.style.display = 'none';
-        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>Self-test error: ' + escapeHtml(e.message) + '</div>';
+        output.innerHTML = '<div class="result-error"><span class="result-icon">❌</span>Self-test error: ' + escapeHtml(error.message) + '</div>';
         downloadDiv.innerHTML = '';
         resultDiv.style.display = '';
     }

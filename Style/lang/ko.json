@@ -121,6 +121,7 @@
   "fp.submit": "지문 생성",
   "fp.download_title": "지문 다운로드",
   "fp.choose_format": "포맷 선택:",
+  "fp.broken": "레거시 — SHA-2 및 SHA-3로 대체됨",
   "md.heading": "메타데이터 리더",
   "md.file_label": "이미지 파일",
   "md.desc": "EXIF, 크기, 포맷 및 색상 모드를 읽습니다. 모든 처리는 순수 JavaScript로 수행됩니다.",

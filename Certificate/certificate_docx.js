@@ -1,10 +1,10 @@
 (function () {
   if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
+      globalThis.location.href,
     )
   )
     throw new Error(
@@ -13,10 +13,18 @@
 })();
 // ── DOCX Certificate Generator ──
 
+/**
+ *
+ * @param data
+ */
 async function downloadCertDOCX(data) {
   var children = [];
 
   // Helper: convert data URL to Uint8Array
+  /**
+   *
+   * @param dataUrl
+   */
   function dataURLToUint8Array(dataUrl) {
     var base64 = dataUrl.split(",")[1];
     var binary = atob(base64);
@@ -26,6 +34,10 @@ async function downloadCertDOCX(data) {
   }
 
   // Helper: detect image type from MIME
+  /**
+   *
+   * @param mime
+   */
   function imageTypeFromMime(mime) {
     if (mime === "image/png") return "png";
     if (mime === "image/jpeg" || mime === "image/jpg") return "jpeg";
@@ -34,12 +46,22 @@ async function downloadCertDOCX(data) {
     return "png";
   }
 
+  /**
+   *
+   * @param content
+   */
   function addParagraph(content) {
     children.push(
       new docx.Paragraph({ children: content, spacing: { after: 200 } }),
     );
   }
 
+  /**
+   *
+   * @param dataUrl
+   * @param width
+   * @param height
+   */
   function addImage(dataUrl, width, height) {
     var mime = (dataUrl.split(",")[0].split(":")[1] || "").split(";")[0];
     var type = imageTypeFromMime(mime);
@@ -53,6 +75,11 @@ async function downloadCertDOCX(data) {
     ]);
   }
 
+  /**
+   *
+   * @param text
+   * @param level
+   */
   function addHeading(text, level) {
     children.push(
       new docx.Paragraph({
@@ -69,6 +96,10 @@ async function downloadCertDOCX(data) {
     );
   }
 
+  /**
+   *
+   * @param text
+   */
   function addBody(text) {
     children.push(
       new docx.Paragraph({
@@ -78,6 +109,11 @@ async function downloadCertDOCX(data) {
     );
   }
 
+  /**
+   *
+   * @param label
+   * @param value
+   */
   function addLabelValue(label, value) {
     if (!value) return;
     children.push(
@@ -193,8 +229,7 @@ async function downloadCertDOCX(data) {
       { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
       { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
     ];
-    for (var fi = 0; fi < families.length; fi++) {
-      var fam = families[fi];
+    for (var fam of families) {
       var has = false;
       for (var ki = 0; ki < fam.keys.length; ki++) {
         if (data.fpResult.hashes[fam.keys[ki]]) {
@@ -296,9 +331,9 @@ async function downloadCertDOCX(data) {
   var a = document.createElement("a");
   a.href = url;
   a.download = "RedoSan_Digital_Passport.docx";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   setTimeout(function () {
     URL.revokeObjectURL(url);
   }, 1000);

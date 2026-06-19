@@ -1,0 +1,55 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "complexity": {
+        "noForEach": "off",
+        "noBannedTypes": "off",
+        "useLiteralKeys": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
+        "useTemplate": "warn",
+        "noParameterAssign": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noShadowRestrictedNames": "off",
+        "noGlobalIsNan": "off"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always"
+    }
+  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "files": {
+    "includes": [
+      "**/cli/**/*.js",
+      "!**/node_modules/",
+      "!**/vendor/",
+      "!**/*.min.js",
+      "!**/C2PA/",
+      "!**/Pixel_Injection/watermark_core_advanced.js",
+      "!**/Style/lang/i18n-data.js",
+      "!**/cli/tests/",
+      "!**/cli/lib/"
+    ]
+  }
+}

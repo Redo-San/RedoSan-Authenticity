@@ -1,10 +1,10 @@
 (function () {
   if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
+      globalThis.location.href,
     )
   )
     throw new Error(
@@ -19,49 +19,66 @@ var _docwCoverBytes = null;
 var _docwSecretData = null;
 var _docwExtractText = "";
 var _docwExtractResult = null;
+var _docwResult = null;
 
+/**
+ *
+ * @param mode
+ */
 function switchDocwTab(mode) {
   document.querySelectorAll(".tab-btn[data-docw-tab]").forEach(function (b) {
     b.classList.remove("active");
   });
-  document.getElementById("docw-embed").style.display =
+  document.querySelector("#docw-embed").style.display =
     mode === "embed" ? "" : "none";
-  document.getElementById("docw-extract").style.display =
+  document.querySelector("#docw-extract").style.display =
     mode === "extract" ? "" : "none";
-  document.getElementById("docw-embed-result").style.display = "none";
-  document.getElementById("docw-extract-result").style.display = "none";
-  document.getElementById("docw-embed-buttons").style.display = "none";
-  document.getElementById("docw-extract-buttons").style.display = "none";
-  document.getElementById("docw-embed-download").innerHTML = "";
+  document.querySelector("#docw-embed-result").style.display = "none";
+  document.querySelector("#docw-extract-result").style.display = "none";
+  document.querySelector("#docw-embed-buttons").style.display = "none";
+  document.querySelector("#docw-extract-buttons").style.display = "none";
+  document.querySelector("#docw-embed-download").innerHTML = "";
   document
     .querySelector('.tab-btn[data-docw-tab="' + mode + '"]')
     .classList.add("active");
 }
 
+/**
+ *
+ * @param msg
+ * @param pct
+ */
 function showDocwLoading(msg, pct) {
-  var ov = document.getElementById("docw-loading-overlay");
+  var ov = document.querySelector("#docw-loading-overlay");
   if (!ov) return;
   ov.style.display = "flex";
-  document.getElementById("docw-loading-text").textContent =
+  document.querySelector("#docw-loading-text").textContent =
     msg || "Processing...";
-  var bw = document.getElementById("docw-loading-bar-wrap");
-  var bp = document.getElementById("docw-loading-pct");
+  var bw = document.querySelector("#docw-loading-bar-wrap");
+  var bp = document.querySelector("#docw-loading-pct");
   if (pct != null && pct >= 0) {
     bw.style.display = "";
-    document.getElementById("docw-loading-bar").style.width = pct + "%";
+    document.querySelector("#docw-loading-bar").style.width = pct + "%";
     bp.textContent = pct + "%";
   } else {
     bw.style.display = "none";
     bp.textContent = "";
   }
 }
+/**
+ *
+ */
 function hideDocwLoading() {
-  var ov = document.getElementById("docw-loading-overlay");
+  var ov = document.querySelector("#docw-loading-overlay");
   if (ov) ov.style.display = "none";
 }
 
+/**
+ *
+ * @param cap
+ */
 function _docwShowNoTextWarning(cap) {
-  var w = document.getElementById("docw-cover-warning");
+  var w = document.querySelector("#docw-cover-warning");
   if (_docwCoverText && _docwCoverText.length <= 100) {
     w.style.display = "";
     w.innerHTML =
@@ -83,13 +100,16 @@ function _docwShowNoTextWarning(cap) {
   }
 }
 
+/**
+ *
+ */
 function docwAlgoChanged() {
   if (_docwCoverText) {
     var cap = docwEstimateCapacity(
       _docwCoverText,
-      parseInt(document.getElementById("docw-algo").value),
+      Number.parseInt(document.querySelector("#docw-algo").value),
     );
-    var el = document.getElementById("docw-capacity");
+    var el = document.querySelector("#docw-capacity");
     if (cap > 0) {
       el.textContent = __(
         "docw.capacity_estimate",
@@ -107,13 +127,16 @@ function docwAlgoChanged() {
   }
 }
 
+/**
+ *
+ */
 function docwExAlgoChanged() {
   if (_docwExtractText) {
     var cap = docwEstimateCapacity(
       _docwExtractText,
-      parseInt(document.getElementById("docw-algo-ex").value),
+      Number.parseInt(document.querySelector("#docw-algo-ex").value),
     );
-    var el = document.getElementById("docw-ex-capacity");
+    var el = document.querySelector("#docw-ex-capacity");
     if (cap > 0) {
       el.textContent = __(
         "docw.capacity_estimate",
@@ -126,6 +149,10 @@ function docwExAlgoChanged() {
   }
 }
 
+/**
+ *
+ * @param parsed
+ */
 function _formatFingerprint(parsed) {
   var lines = [];
   if (parsed.file_info) {
@@ -135,19 +162,23 @@ function _formatFingerprint(parsed) {
   }
   if (parsed.hashes) {
     var hashKeys = Object.keys(parsed.hashes).sort();
-    for (var i = 0; i < hashKeys.length; i++) {
-      lines.push(hashKeys[i] + ": " + parsed.hashes[hashKeys[i]]);
+    for (const hashKey of hashKeys) {
+      lines.push(hashKey + ": " + parsed.hashes[hashKey]);
     }
   }
   if (parsed.perceptual_hashes) {
     var phKeys = Object.keys(parsed.perceptual_hashes).sort();
-    for (var j = 0; j < phKeys.length; j++) {
-      lines.push(phKeys[j] + ": " + parsed.perceptual_hashes[phKeys[j]]);
+    for (const phKey of phKeys) {
+      lines.push(phKey + ": " + parsed.perceptual_hashes[phKey]);
     }
   }
   return lines.join("\n");
 }
 
+/**
+ *
+ * @param parsed
+ */
 function _formatFingerprintShort(parsed) {
   var count = 0;
   if (parsed.hashes) count += Object.keys(parsed.hashes).length;
@@ -155,6 +186,10 @@ function _formatFingerprintShort(parsed) {
   return count + " hashes";
 }
 
+/**
+ *
+ * @param event
+ */
 function loadDocwSecretFile(event) {
   var file = event.target.files[0];
   if (!file) return;
@@ -162,7 +197,7 @@ function loadDocwSecretFile(event) {
   var ext = file.name.split(".").pop().toLowerCase();
   if (ext === "json") {
     var reader = new FileReader();
-    reader.onload = function (e) {
+    reader.addEventListener('load', function (e) {
       try {
         var parsed = JSON.parse(e.target.result);
         _docwSecretData = parsed;
@@ -170,7 +205,7 @@ function loadDocwSecretFile(event) {
           // Fingerprint JSON — store full formatted content
           _docwSecretMessage = _formatFingerprint(parsed);
           var shortDesc = _formatFingerprintShort(parsed);
-          document.getElementById("docw-secret-name").textContent = __(
+          document.querySelector("#docw-secret-name").textContent = __(
             "docw.loaded_fingerprint",
             "Loaded: {name} ({desc}, {len} chars)",
           )
@@ -180,7 +215,7 @@ function loadDocwSecretFile(event) {
         } else if (typeof parsed === "string") {
           _docwSecretMessage = parsed;
           _docwSecretData = null;
-          document.getElementById("docw-secret-name").textContent = __(
+          document.querySelector("#docw-secret-name").textContent = __(
             "docw.loaded",
             "Loaded: {name} ({len} chars)",
           )
@@ -189,18 +224,18 @@ function loadDocwSecretFile(event) {
         } else {
           _docwSecretMessage = JSON.stringify(parsed, null, 2);
           _docwSecretData = null;
-          document.getElementById("docw-secret-name").textContent = __(
+          document.querySelector("#docw-secret-name").textContent = __(
             "docw.loaded",
             "Loaded: {name} ({len} chars)",
           )
             .replace("{name}", file.name)
             .replace("{len}", _docwSecretMessage.length);
         }
-        document.getElementById("docw-secret-name").style.color = "#2ecc71";
-      } catch (e) {
-        alert("Invalid JSON file: " + e.message);
+        document.querySelector("#docw-secret-name").style.color = "#2ecc71";
+      } catch (error) {
+        alert("Invalid JSON file: " + error.message);
       }
-    };
+    });
     reader.readAsText(file);
   } else {
     docwExtractText(file, function (err, text) {
@@ -210,25 +245,29 @@ function loadDocwSecretFile(event) {
       }
       _docwSecretMessage = text;
       _docwSecretData = null;
-      document.getElementById("docw-secret-name").textContent = __(
+      document.querySelector("#docw-secret-name").textContent = __(
         "docw.loaded",
         "Loaded: {name} ({len} chars)",
       )
         .replace("{name}", file.name)
         .replace("{len}", text.length);
-      document.getElementById("docw-secret-name").style.color = "#2ecc71";
+      document.querySelector("#docw-secret-name").style.color = "#2ecc71";
     });
   }
 }
 
+/**
+ *
+ * @param event
+ */
 function loadDocwCoverFile(event) {
   var file = event.target.files[0];
   if (!file) return;
   if (typeof validateFileInput === 'function' && !validateFileInput(event.target)) return;
   _docwCoverFileName = file.name;
-  var nameEl = document.getElementById("docw-cover-name");
-  var capEl = document.getElementById("docw-capacity");
-  document.getElementById("docw-cover-warning").style.display = "none";
+  var nameEl = document.querySelector("#docw-cover-name");
+  var capEl = document.querySelector("#docw-capacity");
+  document.querySelector("#docw-cover-warning").style.display = "none";
   nameEl.textContent =
     file.name + " (" + __("docw.extracting", "extracting text\u2026") + ")";
   nameEl.style.color = "var(--text-muted)";
@@ -238,15 +277,15 @@ function loadDocwCoverFile(event) {
     0,
   );
   var reader = new FileReader();
-  reader.onprogress = function (e) {
+  reader.addEventListener('progress', function (e) {
     if (e.lengthComputable) {
       showDocwLoading(
         __("docw.reading", "Reading {name}...").replace("{name}", file.name),
         Math.round((e.loaded / e.total) * 100),
       );
     }
-  };
-  reader.onload = function (e) {
+  });
+  reader.addEventListener('load', function (e) {
     var buf = e.target.result;
     _docwCoverBytes = new Uint8Array(buf);
     showDocwLoading(
@@ -258,31 +297,41 @@ function loadDocwCoverFile(event) {
     setTimeout(function () {
       var ext = file.name.split(".").pop().toLowerCase();
       var textPromise;
-      if (ext === "docx") {
+      switch (ext) {
+      case "docx": {
         textPromise = DOCX_EXTRACTOR.readDocx(buf);
-      } else if (ext === "pdf") {
+      
+      break;
+      }
+      case "pdf": {
         textPromise = DOCX_EXTRACTOR.readPdf(new Uint8Array(buf)).then(
           function (text) {
             return text || "";
           },
         );
-      } else if (ext === "doc") {
+      
+      break;
+      }
+      case "doc": {
         var arr = new Uint8Array(buf);
         var result = "";
-        for (var i = 0; i < arr.length; i++) {
-          var c = arr[i];
-          if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+        for (var c of arr) {
+          if ((c >= 0x20 && c <= 0x7E) || c === 0x0A || c === 0x0D) {
             result += String.fromCharCode(c);
           }
         }
-        result = result.replace(/\s+/g, " ").trim();
+        result = result.replaceAll(/\s+/g, " ").trim();
         textPromise = Promise.resolve(
           result || "No readable text found in DOC file.",
         );
-      } else {
+      
+      break;
+      }
+      default: {
         textPromise = Promise.resolve(
           new TextDecoder("UTF-8").decode(new Uint8Array(buf)),
         );
+      }
       }
       textPromise
         .then(function (text) {
@@ -297,7 +346,7 @@ function loadDocwCoverFile(event) {
           nameEl.style.color = "#2ecc71";
           var cap = docwEstimateCapacity(
             text,
-            parseInt(document.getElementById("docw-algo").value),
+            Number.parseInt(document.querySelector("#docw-algo").value),
           );
           if (cap > 0) {
             capEl.textContent = __(
@@ -315,22 +364,26 @@ function loadDocwCoverFile(event) {
           _docwShowNoTextWarning(cap);
           hideDocwLoading();
         })
-        .catch(function (err) {
+        .catch(function (error) {
           hideDocwLoading();
-          alert(err.message || err);
+          alert(error.message || error);
           nameEl.textContent = "";
           capEl.textContent = "";
         });
     }, 50);
-  };
+  });
   reader.readAsArrayBuffer(file);
 }
 
+/**
+ *
+ * @param event
+ */
 function loadDocwExtractFile(event) {
   var file = event.target.files[0];
   if (!file) return;
-  var nameEl = document.getElementById("docw-extract-name");
-  var capEl = document.getElementById("docw-ex-capacity");
+  var nameEl = document.querySelector("#docw-extract-name");
+  var capEl = document.querySelector("#docw-ex-capacity");
   nameEl.textContent =
     file.name + " (" + __("docw.extracting", "extracting text\u2026") + ")";
   nameEl.style.color = "var(--text-muted)";
@@ -340,15 +393,15 @@ function loadDocwExtractFile(event) {
     0,
   );
   var reader = new FileReader();
-  reader.onprogress = function (e) {
+  reader.addEventListener('progress', function (e) {
     if (e.lengthComputable) {
       showDocwLoading(
         __("docw.reading", "Reading {name}...").replace("{name}", file.name),
         Math.round((e.loaded / e.total) * 100),
       );
     }
-  };
-  reader.onload = function (e) {
+  });
+  reader.addEventListener('load', function (e) {
     var buf = e.target.result;
     showDocwLoading(
       __("docw.extracting_from", "Extracting text from {name}...").replace(
@@ -374,7 +427,7 @@ function loadDocwExtractFile(event) {
         nameEl.style.color = "#2ecc71";
         var cap = docwEstimateCapacity(
           text,
-          parseInt(document.getElementById("docw-algo-ex").value),
+          Number.parseInt(document.querySelector("#docw-algo-ex").value),
         );
         if (cap > 0) {
           capEl.textContent = __(
@@ -387,44 +440,66 @@ function loadDocwExtractFile(event) {
         }
       });
     }, 50);
-  };
+  });
   reader.readAsArrayBuffer(file);
 }
 
+/**
+ *
+ * @param file
+ * @param buf
+ * @param callback
+ */
 function docwExtractTextFromBuf(file, buf, callback) {
   var ext = file.name.split(".").pop().toLowerCase();
-  if (ext === "docx") {
+  switch (ext) {
+  case "docx": {
     DOCX_EXTRACTOR.readDocx(buf)
       .then(function (text) {
         callback(null, text, "docx");
       })
-      .catch(function (err) {
-        callback(err.message);
+      .catch(function (error) {
+        callback(error.message);
       });
-  } else if (ext === "pdf") {
+  
+  break;
+  }
+  case "pdf": {
     DOCX_EXTRACTOR.readPdf(new Uint8Array(buf))
       .then(function (text) {
         callback(null, text || "", "pdf");
       })
-      .catch(function (err) {
-        callback("PDF extraction failed: " + err.message);
+      .catch(function (error) {
+        callback("PDF extraction failed: " + error.message);
       });
-  } else if (ext === "doc") {
+  
+  break;
+  }
+  case "doc": {
     var arr = new Uint8Array(buf);
     var result = "";
-    for (var i = 0; i < arr.length; i++) {
-      var c = arr[i];
-      if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+    for (var c of arr) {
+      if ((c >= 0x20 && c <= 0x7E) || c === 0x0A || c === 0x0D) {
         result += String.fromCharCode(c);
       }
     }
-    result = result.replace(/\s+/g, " ").trim();
+    result = result.replaceAll(/\s+/g, " ").trim();
     callback(null, result || "No readable text found in DOC file.", "doc");
-  } else {
+  
+  break;
+  }
+  default: {
     callback(null, new TextDecoder("UTF-8").decode(new Uint8Array(buf)), ext);
+  }
   }
 }
 
+/**
+ *
+ * @param data
+ * @param password
+ * @param coverText
+ */
 async function _buildPayloadForHomoglyph(data, password, coverText) {
   // Build ordered list of entries from fingerprint data
   var entries = [];
@@ -436,8 +511,7 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
   if (data.hashes) {
     var priority = ["SHA-256", "SHA-384", "SHA-512", "SHA-3_512", "SHA-3_384", "SHA-3_256", "SHA-3_224", "SHA-1", "SHA-224", "BLAKE3", "BLAKE2b", "BLAKE2s", "MD5", "RIPEMD-160", "Whirlpool", "MD2", "MD4"];
     var added = {};
-    for (var p = 0; p < priority.length; p++) {
-      var name = priority[p];
+    for (var name of priority) {
       if (data.hashes[name]) {
         entries.push(name + ": " + data.hashes[name]);
         added[name] = true;
@@ -445,24 +519,23 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
     }
     // Add any remaining hashes not in priority list
     var remaining = Object.keys(data.hashes).sort();
-    for (var r = 0; r < remaining.length; r++) {
-      if (!added[remaining[r]]) {
-        entries.push(remaining[r] + ": " + data.hashes[remaining[r]]);
+    for (const element of remaining) {
+      if (!added[element]) {
+        entries.push(element + ": " + data.hashes[element]);
       }
     }
   }
   if (data.perceptual_hashes) {
     var phKeys = Object.keys(data.perceptual_hashes).sort();
-    for (var q = 0; q < phKeys.length; q++) {
-      entries.push(phKeys[q] + ": " + data.perceptual_hashes[phKeys[q]]);
+    for (const phKey of phKeys) {
+      entries.push(phKey + ": " + data.perceptual_hashes[phKey]);
     }
   }
 
   // Calculate max bits available
   DOCW_HOMOGLYPH._initReverse();
   var maxBits = 0;
-  for (var i = 0; i < coverText.length; i++) {
-    var ch = coverText[i];
+  for (var ch of coverText) {
     if (DOCW_HOMOGLYPH.MULTI_MAP[ch] !== undefined) maxBits += 2;
     else if (DOCW_HOMOGLYPH.MAP[ch] !== undefined) maxBits += 1;
   }
@@ -472,8 +545,8 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
 
   // Build payload incrementally — add complete entries while bits fit
   var payload = "";
-  for (var e = 0; e < entries.length; e++) {
-    var candidate = payload ? payload + "\n" + entries[e] : entries[e];
+  for (const entry of entries) {
+    var candidate = payload ? payload + "\n" + entry : entry;
     var bits = await _msgToBits(candidate, password || "");
     if (bits && bits.length <= maxBits) {
       payload = candidate;
@@ -503,9 +576,12 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
   return payload;
 }
 
+/**
+ *
+ */
 async function handleDocwEmbed() {
-  var algo = parseInt(document.getElementById("docw-algo").value);
-  var password = document.getElementById("docw-password").value;
+  var algo = Number.parseInt(document.querySelector("#docw-algo").value);
+  var password = document.querySelector("#docw-password").value;
 
   if (!_docwSecretMessage) {
     alert("Please upload a secret message file.");
@@ -520,7 +596,7 @@ async function handleDocwEmbed() {
     return;
   }
 
-  var btn = document.getElementById("docw-embed-btn");
+  var btn = document.querySelector("#docw-embed-btn");
   btn.textContent = "Processing...";
   btn.disabled = true;
   showDocwLoading("Embedding watermark\u2026");
@@ -532,15 +608,11 @@ async function handleDocwEmbed() {
   try {
     // Build payload based on algorithm
     var message;
-    if (algo === 2 && _docwSecretData && _docwSecretData.hashes) {
-      message = await _buildPayloadForHomoglyph(
+    message = algo === 2 && _docwSecretData && _docwSecretData.hashes ? (await _buildPayloadForHomoglyph(
         _docwSecretData,
         password,
         _docwCoverText,
-      );
-    } else {
-      message = _docwSecretMessage;
-    }
+      )) : _docwSecretMessage;
     var result = await docwEmbed(
       _docwCoverText,
       message,
@@ -559,7 +631,7 @@ async function handleDocwEmbed() {
           hash += ("0" + harr[hi].toString(16)).slice(-2);
         hash = "SHA-256:" + hash;
       }
-    } catch (_e) { /* fallback: hash stays empty */ }
+    } catch { /* fallback: hash stays empty */ }
     var algoName = DOCW_ALGOS[String(algo)].name;
     _docwResult = {
       algo: algoName,
@@ -571,15 +643,15 @@ async function handleDocwEmbed() {
       resultLength: result.length,
       watermarkedText: result,
     };
-    document.getElementById("docw-embed-output").value =
+    document.querySelector("#docw-embed-output").value =
       _docwBuildCertificateText(_docwResult);
-    document.getElementById("docw-embed-result").style.display = "";
-    document.getElementById("docw-embed-buttons").style.display = "";
-    document.getElementById("docw-embed-algo-name").textContent = algoName;
+    document.querySelector("#docw-embed-result").style.display = "";
+    document.querySelector("#docw-embed-buttons").style.display = "";
+    document.querySelector("#docw-embed-algo-name").textContent = algoName;
     setDownloadHandler(downloadDocw);
 
     // Direct download: actual watermarked document (rebuilt in original format)
-    var dlContainer = document.getElementById("docw-embed-download");
+    var dlContainer = document.querySelector("#docw-embed-download");
     var ext = _docwCoverFileName.split(".").pop().toLowerCase();
     var safeDocwFileName = escHtml(_docwCoverFileName);
     var safeDocwFileNameTxt = escHtml(_docwCoverFileName.replace(/\.[^.]+$/, ".txt"));
@@ -595,9 +667,9 @@ async function handleDocwEmbed() {
           '" class="btn">' +
           __("docw.direct_download", "Download Watermarked Document") +
           " (DOCX)</a>";
-      } catch (e) {
+      } catch {
         var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-        var outUrl = URL.createObjectURL(txtBlob);
+        let outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
           '<a href="' +
           outUrl +
@@ -625,9 +697,9 @@ async function handleDocwEmbed() {
           '" class="btn">' +
           __("docw.direct_download", "Download Watermarked Document") +
           " (PDF)</a>";
-      } catch (e) {
-        var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-        var outUrl = URL.createObjectURL(txtBlob);
+      } catch {
+        let txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
+        let outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
           '<a href="' +
           outUrl +
@@ -640,8 +712,8 @@ async function handleDocwEmbed() {
           ")</a>";
       }
     } else {
-      var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-      var outUrl = URL.createObjectURL(txtBlob);
+      let txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
+      let outUrl = URL.createObjectURL(txtBlob);
       dlContainer.innerHTML =
         '<a href="' +
         outUrl +
@@ -651,9 +723,9 @@ async function handleDocwEmbed() {
         __("docw.direct_download", "Download Watermarked Document") +
         " (TXT)</a>";
     }
-  } catch (e) {
+  } catch (error) {
     hideDocwLoading();
-    alert("Error: " + e.message);
+    alert("Error: " + error.message);
   }
 
   hideDocwLoading();
@@ -661,9 +733,12 @@ async function handleDocwEmbed() {
   btn.disabled = false;
 }
 
+/**
+ *
+ */
 async function handleDocwExtract() {
-  var algo = parseInt(document.getElementById("docw-algo-ex").value);
-  var password = document.getElementById("docw-password-ex").value;
+  var algo = Number.parseInt(document.querySelector("#docw-algo-ex").value);
+  var password = document.querySelector("#docw-password-ex").value;
 
   if (!_docwExtractText) {
     alert("Please upload a watermarked document.");
@@ -674,7 +749,7 @@ async function handleDocwExtract() {
     return;
   }
 
-  var btn = document.getElementById("docw-extract-btn");
+  var btn = document.querySelector("#docw-extract-btn");
   btn.textContent = "Extracting...";
   btn.disabled = true;
 
@@ -687,10 +762,10 @@ async function handleDocwExtract() {
         result = detected.message;
         algoName = detected.name + " (auto-detected)";
       } else {
-        document.getElementById("docw-extract-result").style.display = "";
-        document.getElementById("docw-extract-buttons").style.display = "none";
-        document.getElementById("docw-extracted-msg").value = "";
-        document.getElementById("docw-extract-algo-name").textContent =
+        document.querySelector("#docw-extract-result").style.display = "";
+        document.querySelector("#docw-extract-buttons").style.display = "none";
+        document.querySelector("#docw-extracted-msg").value = "";
+        document.querySelector("#docw-extract-algo-name").textContent =
           "No watermark found";
         btn.textContent = "Extract Watermark";
         btn.disabled = false;
@@ -709,16 +784,16 @@ async function handleDocwExtract() {
         for (var pi = 0; pi < portions.length && !result; pi++) {
           try {
             result = await docwExtract(portions[pi], algo, password);
-          } catch (e2) { /* ignore */ }
+          } catch { /* ignore */ }
         }
       }
     }
 
-    document.getElementById("docw-extract-result").style.display = "";
-    document.getElementById("docw-extract-buttons").style.display = "";
-    document.getElementById("docw-extracted-msg").value =
+    document.querySelector("#docw-extract-result").style.display = "";
+    document.querySelector("#docw-extract-buttons").style.display = "";
+    document.querySelector("#docw-extracted-msg").value =
       result || __("docw.no_watermark", "No watermark found");
-    document.getElementById("docw-extract-algo-name").textContent = algoName;
+    document.querySelector("#docw-extract-algo-name").textContent = algoName;
     _docwExtractResult = {
       message: result,
       algo: algoName,
@@ -726,17 +801,17 @@ async function handleDocwExtract() {
       timestamp: new Date().toISOString(),
     };
     setDownloadHandler(downloadDocwExtract);
-  } catch (e) {
-    if (e.message === "WRONG_PASSWORD") {
-      document.getElementById("docw-extract-result").style.display = "";
-      document.getElementById("docw-extract-buttons").style.display = "none";
-      document.getElementById("docw-extracted-msg").value = "";
-      document.getElementById("docw-extract-algo-name").textContent = __(
+  } catch (error) {
+    if (error.message === "WRONG_PASSWORD") {
+      document.querySelector("#docw-extract-result").style.display = "";
+      document.querySelector("#docw-extract-buttons").style.display = "none";
+      document.querySelector("#docw-extracted-msg").value = "";
+      document.querySelector("#docw-extract-algo-name").textContent = __(
         "docw.wrong_password",
         "Password may be incorrect",
       );
     } else {
-      alert("Error: " + e.message);
+      alert("Error: " + error.message);
     }
   }
 
@@ -744,6 +819,10 @@ async function handleDocwExtract() {
   btn.disabled = false;
 }
 
+/**
+ *
+ * @param id
+ */
 function docwCopyResult(id) {
   var el = document.getElementById(id);
   if (!el) return;
@@ -751,6 +830,11 @@ function docwCopyResult(id) {
   document.execCommand("copy");
 }
 
+/**
+ *
+ * @param id
+ * @param filename
+ */
 function docwDownloadResult(id, filename) {
   var el = document.getElementById(id);
   if (!el) return;
@@ -759,9 +843,9 @@ function docwDownloadResult(id, filename) {
   var a = document.createElement("a");
   a.href = url;
   a.download = filename || "document_watermarked.txt";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   URL.revokeObjectURL(url);
 }
 
@@ -769,11 +853,16 @@ function docwDownloadResult(id, filename) {
 
 // ── Rebuild original document with watermarked text (preserves ZWC) ──
 
+/**
+ *
+ * @param originalBytes
+ * @param watermarkedText
+ */
 async function buildWatermarkedDocx(originalBytes, watermarkedText) {
   var zip = await JSZip.loadAsync(originalBytes);
   var xml = await zip.file("word/document.xml").async("string");
   var runCount = 0;
-  xml = xml.replace(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g, function (match, content) {
+  xml = xml.replaceAll(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g, function (match, content) {
     runCount++;
     if (runCount === 1) {
       return match.replace(content, _docwEscXml(watermarkedText));
@@ -786,49 +875,56 @@ async function buildWatermarkedDocx(originalBytes, watermarkedText) {
 
 // ── Multi-format download for extraction result ──
 
+/**
+ *
+ * @param format
+ */
 async function downloadDocwExtract(format) {
   closeDownloadModal();
   var r = _docwExtractResult;
   if (!r) return;
 
   if (format === "pdf") {
-    var blob = await _docwBuildReportPdf(r, "extract");
+    let blob = await _docwBuildReportPdf(r, "extract");
     downloadBlobSimple(blob, "extracted_message_report.pdf");
     return;
   }
 
   if (format === "doc") {
-    var blob = await _docwBuildReportDocx(r, "extract");
+    let blob = await _docwBuildReportDocx(r, "extract");
     downloadBlobSimple(blob, "extracted_message_report.docx");
     return;
   }
 
   var content, ext, mime;
   switch (format) {
-    case "json":
+    case "json": {
       content = JSON.stringify(r, null, 2);
       ext = "json";
       mime = "application/json";
       break;
-    case "csv":
+    }
+    case "csv": {
       content =
         '"Key","Value"\n' +
         '"message","' +
-        (r.message || "").replace(/"/g, '""') +
+        (r.message || "").replaceAll('"', '""') +
         '"\n"algo","' +
-        (r.algo || "").replace(/"/g, '""') +
+        (r.algo || "").replaceAll('"', '""') +
         '"\n"timestamp","' +
-        (r.timestamp || "").replace(/"/g, '""') +
+        (r.timestamp || "").replaceAll('"', '""') +
         '"';
       ext = "csv";
       mime = "text/csv";
       break;
-    case "txt":
+    }
+    case "txt": {
       content = r.message || "";
       ext = "txt";
       mime = "text/plain";
       break;
-    case "xml":
+    }
+    case "xml": {
       content =
         '<?xml version="1.0"?>\n<extracted>\n  <message>' +
         _docwEscXml(r.message || "") +
@@ -840,13 +936,15 @@ async function downloadDocwExtract(format) {
       ext = "xml";
       mime = "application/xml";
       break;
-    case "html":
+    }
+    case "html": {
       content = _docwBuildReportHtml(r, "extract");
       ext = "html";
       mime = "text/html";
       break;
+    }
   }
   if (content == null) return;
-  var blob = new Blob([content], { type: mime });
+  let blob = new Blob([content], { type: mime });
   downloadBlobSimple(blob, "extracted_message." + ext);
 }

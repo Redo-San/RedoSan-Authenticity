@@ -1,10 +1,10 @@
 (function () {
   if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
+      globalThis.location.href,
     )
   )
     throw new Error(
@@ -13,6 +13,10 @@
 })();
 // ── EPUB Certificate Generator ──
 
+/**
+ *
+ * @param data
+ */
 async function downloadCertEPUB(data) {
   var qrText = buildQRVerificationJSON(data);
   var docHash = await getDocHash(qrText);
@@ -67,8 +71,7 @@ async function downloadCertEPUB(data) {
       { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
       { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
     ];
-    for (var fi = 0; fi < families.length; fi++) {
-      var fam = families[fi];
+    for (var fam of families) {
       var has = false;
       for (var ki = 0; ki < fam.keys.length; ki++) {
         if (data.fpResult.hashes[fam.keys[ki]]) {
@@ -184,11 +187,11 @@ async function downloadCertEPUB(data) {
         '<tr><td><strong>Signature</strong></td><td style="font-size:0.6em;word-break:break-all">' +
         escHtml((data.didSig.signature || "").substring(0, 64) + "...") +
         "</td></tr></table>"
-      : data.didIdentity
+      : (data.didIdentity
       ? '<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">' +
         escHtml(data.didIdentity) +
         "</td></tr></table>"
-      : "") +
+      : "")) +
     (data.ct && data.ct.submitted && data.ct.hash
       ? "<h2>Certificate Transparency</h2><table>" +
         '<tr><td><strong>SHA-256</strong></td><td style="font-size:0.6em;word-break:break-all">' +
@@ -209,7 +212,7 @@ async function downloadCertEPUB(data) {
             ) +
             "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'
-      : data.ct
+      : (data.ct
       ? "<h2>Certificate Transparency</h2><p>Status: " +
         escHtml(
           data.ct.submitted
@@ -217,7 +220,7 @@ async function downloadCertEPUB(data) {
             : "Unavailable — " + (data.ct.error || "offline"),
         ) +
         "</p>"
-      : "") +
+      : "")) +
     "<h2>Verification QR Code</h2>" +
     "<p>Scan this QR code to verify the document contents.</p>" +
     '<div class="qr-wrapper"><img src="images/qr.png" alt="QR Code"/></div>' +
@@ -295,19 +298,19 @@ async function downloadCertEPUB(data) {
     '<dc:language xmlns:dc="http://purl.org/dc/elements/1.1/">en</dc:language>' +
     '<dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">RedoSan Authenticity</dc:creator>' +
     "</metadata><manifest>";
-  for (var mi = 0; mi < manifestItems.length; mi++) {
+  for (const manifestItem of manifestItems) {
     opf +=
       '<item id="' +
-      manifestItems[mi].id +
+      manifestItem.id +
       '" href="' +
-      manifestItems[mi].href +
+      manifestItem.href +
       '" media-type="' +
-      manifestItems[mi].mt +
+      manifestItem.mt +
       '"/>';
   }
   opf += '</manifest><spine toc="ncx">';
-  for (var si = 0; si < spineItems.length; si++) {
-    opf += '<itemref idref="' + spineItems[si].id + '"/>';
+  for (const spineItem of spineItems) {
+    opf += '<itemref idref="' + spineItem.id + '"/>';
   }
   opf += "</spine></package>";
 
@@ -316,7 +319,7 @@ async function downloadCertEPUB(data) {
   zip.folder("OEBPS").file("style.css", css);
   zip.folder("OEBPS").file("toc.ncx", ncx);
   if (data.file.dataUrl) {
-    var imgExt = data.file.type === "image/png" ? "png" : "jpg";
+    let imgExt = data.file.type === "image/png" ? "png" : "jpg";
     zip
       .folder("OEBPS")
       .folder("images")
@@ -335,9 +338,9 @@ async function downloadCertEPUB(data) {
   var a = document.createElement("a");
   a.href = url;
   a.download = "RedoSan_Digital_Passport.epub";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   setTimeout(function () {
     URL.revokeObjectURL(url);
   }, 1000);
