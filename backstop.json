@@ -1,0 +1,78 @@
+{
+  "id": "redosan",
+  "viewports": [
+    {
+      "label": "desktop",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "label": "tablet",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "label": "mobile",
+      "width": 375,
+      "height": 812
+    }
+  ],
+  "scenarios": [
+    {
+      "label": "Home",
+      "url": "https://redo-san.github.io/RedoSan-Authenticity/",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#app"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Watermark",
+      "url": "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/watermark/",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-watermark"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Fingerprint",
+      "url": "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/fingerprint/",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-fingerprint"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "C2PA",
+      "url": "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/c2pa/",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-c2pa"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Certificate",
+      "url": "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/certificate/",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-certificate"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    }
+  ],
+  "paths": {
+    "bitmaps_reference": "backstop_data/bitmaps_reference",
+    "bitmaps_test": "backstop_data/bitmaps_test",
+    "engine_scripts": "backstop_data/engine_scripts",
+    "html_report": "backstop_data/html_report",
+    "ci_report": "backstop_data/ci_report"
+  },
+  "report": ["browser", "CI"],
+  "engine": "puppeteer",
+  "engineOptions": {
+    "args": ["--no-sandbox"]
+  },
+  "asyncCaptureLimit": 3,
+  "asyncCompareLimit": 3,
+  "debug": false,
+  "debugWindow": false
+}
