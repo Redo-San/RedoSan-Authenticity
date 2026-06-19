@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -14,10 +14,6 @@
 
 // ── Perceptual hashing (pure JS using Canvas) ──
 
-/**
- *
- * @param imgData
- */
 function ahash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -39,10 +35,6 @@ function ahash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
-/**
- *
- * @param imgData
- */
 function dhash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -66,10 +58,6 @@ function dhash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
-/**
- *
- * @param imgData
- */
 function phash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -105,10 +93,6 @@ function phash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
-/**
- *
- * @param imgData
- */
 function whash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -141,7 +125,7 @@ function whash(imgData) {
   var vals = [];
   for (var y = 0; y < 8; y++)
     for (var x = 0; x < 8; x++) vals.push(out2[y * size + x]);
-  var sorted = [...vals].sort(function (a, b) {
+  var sorted = vals.slice().sort(function (a, b) {
     return a - b;
   });
   var median = sorted[32];
@@ -155,11 +139,6 @@ function whash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
-/**
- *
- * @param imgData
- * @param targetSize
- */
 function resizeImageData(imgData, targetSize) {
   var c = document.createElement("canvas");
   c.width = imgData.w;
