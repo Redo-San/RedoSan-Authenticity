@@ -446,17 +446,26 @@ function addMessage(text, role) {
   }
   var content = document.createElement("div");
   content.className = "ast-content";
-  content.textContent = "";
   var formatted = text
     .replaceAll('&', "&amp;")
     .replaceAll('<', "&lt;")
     .replaceAll('>', "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll('\'', "&#039;");
-  formatted = formatted
-    .replaceAll(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replaceAll('\n', "<br>");
-  content.innerHTML = formatted;
+  var segments = formatted.split(/\*\*(.*?)\*\*/g);
+  for (var s = 0; s < segments.length; s++) {
+    if (s % 2 === 1) {
+      var strong = document.createElement("strong");
+      strong.textContent = segments[s];
+      content.append(strong);
+    } else {
+      var lines = segments[s].split("\n");
+      for (var t = 0; t < lines.length; t++) {
+        if (t > 0) content.append(document.createElement("br"));
+        content.append(document.createTextNode(lines[t]));
+      }
+    }
+  }
   div.append(content);
   msgArea.append(div);
   msgArea.scrollTop = msgArea.scrollHeight;
