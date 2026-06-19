@@ -127,7 +127,7 @@
     "backstopjs": "^6.3.25",
     "c8": "^11.0.0",
     "caniuse-lite": "^1.0.30001799",
-    "cspell": "^8.19.4",
+    "cspell": "^10.0.1",
     "depcheck": "^1.4.7",
     "eslint": "^10.3.0",
     "eslint-plugin-compat": "^6.2.1",
