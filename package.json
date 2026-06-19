@@ -148,7 +148,7 @@
     "playwright": "^1.52.0",
     "size-limit": "^11.2.0",
     "stylelint": "^16.26.1",
-    "stylelint-config-standard": "^36.0.1",
+    "stylelint-config-standard": "^40.0.0",
     "typedoc": "^0.28.19",
     "workbox-cli": "^7.4.1"
   }
