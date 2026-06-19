@@ -29,7 +29,6 @@ jobs:
         continue-on-error: true
 
   axe:
-    if: github.event_name == 'push'
     name: axe-core (Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 10
