@@ -1,18 +1,15 @@
 // ── Document Watermark CLI ──
+"use strict";
 
-const path = require("node:path");
-const zlib = require("node:zlib");
+const path = require("path");
+const zlib = require("zlib");
 const { readDocumentText, writeFileText } = require("../utils");
 
-/**
- *
- * @param data
- */
 function compressData(data) {
   var encoded = Buffer.from(data, "utf8");
   var compressed = zlib.deflateSync(encoded);
   if (compressed.length < encoded.length) {
-    const payload = Buffer.alloc(1 + compressed.length);
+    var payload = Buffer.alloc(1 + compressed.length);
     payload[0] = 0x02;
     compressed.copy(payload, 1);
     return payload;
@@ -20,42 +17,38 @@ function compressData(data) {
   return encoded;
 }
 
-/**
- *
- * @param buf
- */
 function decompressData(buf) {
-  if (buf.length === 0) return "";
+  if (buf.length < 1) return "";
   if (buf[0] === 0x02) {
     try {
-      const decompressed = zlib.inflateSync(buf.slice(1));
-      let end = decompressed.length;
-      for (let ti = decompressed.length - 1; ti >= 0; ti--) {
+      var decompressed = zlib.inflateSync(buf.slice(1));
+      var end = decompressed.length;
+      for (var ti = decompressed.length - 1; ti >= 0; ti--) {
         if (decompressed[ti] !== 0) {
           end = ti + 1;
           break;
         }
       }
       return decompressed.slice(0, end).toString("utf8");
-    } catch (error) {
+    } catch (e) {
       try {
-        const decompressed2 = zlib.inflateRawSync(buf.slice(1));
-        let end2 = decompressed2.length;
-        for (let ti2 = decompressed2.length - 1; ti2 >= 0; ti2--) {
+        var decompressed2 = zlib.inflateRawSync(buf.slice(1));
+        var end2 = decompressed2.length;
+        for (var ti2 = decompressed2.length - 1; ti2 >= 0; ti2--) {
           if (decompressed2[ti2] !== 0) {
             end2 = ti2 + 1;
             break;
           }
         }
         return decompressed2.slice(0, end2).toString("utf8");
-      } catch {
-        throw error;
+      } catch (e2) {
+        throw e;
       }
     }
   }
-  let endPos = buf.length;
-  for (const [scanIdx, element] of buf.entries()) {
-    if (element === 0) {
+  var endPos = buf.length;
+  for (var scanIdx = 0; scanIdx < buf.length; scanIdx++) {
+    if (buf[scanIdx] === 0) {
       endPos = scanIdx;
       break;
     }
@@ -63,79 +56,52 @@ function decompressData(buf) {
   return buf.slice(0, endPos).toString("utf8");
 }
 
-/**
- *
- * @param text
- * @param message
- * @param algo
- * @param password
- */
 function embed(text, message, algo, password) {
-  var data = password ? `${password}:${message}` : message;
+  var data = password ? password + ":" + message : message;
   var compressed = compressData(data);
   var bits = msgToBitsRaw(compressed);
   if (!bits) throw new Error("Empty message");
 
   switch (String(algo)) {
-    case "1": {
+    case "1":
       return embedZwc(text, bits);
-    }
-    case "2": {
+    case "2":
       return embedHomoglyph(text, bits);
-    }
-    case "3": {
+    case "3":
       return embedWhitespace(text, bits);
-    }
-    default: {
-      throw new Error(`Unknown algorithm: ${algo}`);
-    }
+    default:
+      throw new Error("Unknown algorithm: " + algo);
   }
 }
 
-/**
- *
- * @param text
- * @param algo
- * @param password
- */
 function extract(text, algo, password) {
   var bits;
   switch (String(algo)) {
-    case "0": {
+    case "0":
       return autoDetect(text, password);
-    }
-    case "1": {
+    case "1":
       bits = extractZwc(text);
       break;
-    }
-    case "2": {
+    case "2":
       bits = extractHomoglyph(text);
       break;
-    }
-    case "3": {
+    case "3":
       bits = extractWhitespace(text);
       break;
-    }
-    default: {
-      throw new Error(`Unknown algorithm: ${algo}`);
-    }
+    default:
+      throw new Error("Unknown algorithm: " + algo);
   }
   return bitsToMsg(bits, password);
 }
 
-/**
- *
- * @param text
- * @param password
- */
 function autoDetect(text, password) {
-  let pwError = false;
-  for (let a = 1; a <= 3; a++) {
+  var pwError = false;
+  for (var a = 1; a <= 3; a++) {
     try {
-      const result = extract(text, String(a), password);
+      var result = extract(text, String(a), password);
       if (result) return result;
-    } catch (error) {
-      if (error.message === "WRONG_PASSWORD") pwError = true;
+    } catch (e) {
+      if (e.message === "WRONG_PASSWORD") pwError = true;
     }
   }
   if (pwError) throw new Error("WRONG_PASSWORD");
@@ -166,28 +132,26 @@ var ZWC_CHARS = [
 var ZWC_BITS_PER_ZWC = 4;
 var ZWC_MAX_ZWCS_PER_CHAR = 16;
 
-/**
- *
- * @param text
- * @param bits
- */
 function embedZwc(text, bits) {
   var needed = Math.ceil(bits.length / ZWC_BITS_PER_ZWC);
   var perChar = Math.ceil(needed / text.length);
   if (perChar > ZWC_MAX_ZWCS_PER_CHAR) {
     throw new Error(
-      `Cover text too short. Need ~${Math.ceil(needed / ZWC_MAX_ZWCS_PER_CHAR)} chars, have ${text.length}`,
+      "Cover text too short. Need ~" +
+        Math.ceil(needed / ZWC_MAX_ZWCS_PER_CHAR) +
+        " chars, have " +
+        text.length,
     );
   }
-  let result = "";
-  let bitIdx = 0;
-  for (const element of text) {
-    result += element;
+  var result = "";
+  var bitIdx = 0;
+  for (var i = 0; i < text.length; i++) {
+    result += text[i];
     if (bitIdx < bits.length) {
-      for (let z = 0; z < perChar && bitIdx < bits.length; z++) {
-        let chunk = bits.substr(bitIdx, ZWC_BITS_PER_ZWC);
+      for (var z = 0; z < perChar && bitIdx < bits.length; z++) {
+        var chunk = bits.substr(bitIdx, ZWC_BITS_PER_ZWC);
         while (chunk.length < ZWC_BITS_PER_ZWC) chunk += "0";
-        result += ZWC_CHARS[Number.parseInt(chunk, 2)];
+        result += ZWC_CHARS[parseInt(chunk, 2)];
         bitIdx += ZWC_BITS_PER_ZWC;
       }
     }
@@ -195,17 +159,13 @@ function embedZwc(text, bits) {
   return result;
 }
 
-/**
- *
- * @param text
- */
 function extractZwc(text) {
-  let bits = "";
-  for (const element of text) {
-    for (const [j, ZWC_CHAR] of ZWC_CHARS.entries()) {
-      if (element === ZWC_CHAR) {
-        let b = j.toString(2);
-        while (b.length < ZWC_BITS_PER_ZWC) b = `0${b}`;
+  var bits = "";
+  for (var i = 0; i < text.length; i++) {
+    for (var j = 0; j < ZWC_CHARS.length; j++) {
+      if (text[i] === ZWC_CHARS[j]) {
+        var b = j.toString(2);
+        while (b.length < ZWC_BITS_PER_ZWC) b = "0" + b;
         bits += b;
         break;
       }
@@ -299,70 +259,66 @@ var HOMO_MULTI = {
   x: ["\u0445", "\u03C7", "\u04B3"],
   y: ["\u0443", "\u03B3", "\u04AF"],
 };
-const HOMO_MULTI_REV = {};
-for (const mk in HOMO_MULTI) {
+var HOMO_MULTI_REV = {};
+for (var mk in HOMO_MULTI) {
   HOMO_MULTI_REV[mk] = { key: mk, idx: 0 };
-  const arr = HOMO_MULTI[mk];
-  for (const [vi, element] of arr.entries()) {
-    HOMO_MULTI_REV[element] = { key: mk, idx: vi + 1 };
+  var arr = HOMO_MULTI[mk];
+  for (var vi = 0; vi < arr.length; vi++) {
+    HOMO_MULTI_REV[arr[vi]] = { key: mk, idx: vi + 1 };
   }
 }
 
-/**
- *
- * @param ch
- */
 function isEligible(ch) {
   return HOMO_MAP[ch] !== undefined || HOMO_MULTI[ch] !== undefined;
 }
 
-/**
- *
- * @param text
- * @param bits
- */
 function embedHomoglyph(text, bits) {
-  const eligible = [];
-  for (const [i, element] of text.entries()) {
-    if (isEligible(element)) eligible.push(i);
+  var eligible = [];
+  for (var i = 0; i < text.length; i++) {
+    if (isEligible(text[i])) eligible.push(i);
   }
-  let maxBits = 0;
-  for (const element of eligible) {
-    maxBits += HOMO_MULTI[text[element]] ? 2 : 1;
+  var maxBits = 0;
+  for (var e = 0; e < eligible.length; e++) {
+    maxBits += HOMO_MULTI[text[eligible[e]]] ? 2 : 1;
   }
   if (bits.length > maxBits) {
-    throw new Error(`Text too short. Need ~${bits.length} bits, eligible chars provide ${maxBits} bits`);
+    throw new Error(
+      "Text too short. Need ~" +
+        bits.length +
+        " bits, eligible chars provide " +
+        maxBits +
+        " bits",
+    );
   }
-  const result = text.split("");
-  let bitIdx = 0;
-  for (const idx of eligible) {
-    const ch = text[idx];
-    const multi = HOMO_MULTI[ch];
+  var result = text.split("");
+  var bitIdx = 0;
+  for (var e2 = 0; e2 < eligible.length; e2++) {
+    var idx = eligible[e2];
+    var ch = text[idx];
+    var multi = HOMO_MULTI[ch];
     if (multi) {
-      let pair = bitIdx < bits.length ? bits.substr(bitIdx, 2) : "00";
+      var pair = bitIdx < bits.length ? bits.substr(bitIdx, 2) : "00";
       while (pair.length < 2) pair += "0";
-      const val = Number.parseInt(pair, 2);
+      var val = parseInt(pair, 2);
       if (val > 0) result[idx] = multi[val - 1];
       bitIdx += 2;
     } else {
-      if (bitIdx < bits.length && bits[bitIdx] === "1") result[idx] = HOMO_MAP[ch];
+      if (bitIdx < bits.length && bits[bitIdx] === "1")
+        result[idx] = HOMO_MAP[ch];
       bitIdx += 1;
     }
   }
   return result.join("");
 }
 
-/**
- *
- * @param text
- */
 function extractHomoglyph(text) {
-  let bits = "";
-  for (const ch of text) {
+  var bits = "";
+  for (var i = 0; i < text.length; i++) {
+    var ch = text[i];
     if (HOMO_MULTI_REV[ch] !== undefined) {
-      const info = HOMO_MULTI_REV[ch];
-      let pair = info.idx.toString(2);
-      while (pair.length < 2) pair = `0${pair}`;
+      var info = HOMO_MULTI_REV[ch];
+      var pair = info.idx.toString(2);
+      while (pair.length < 2) pair = "0" + pair;
       bits += pair;
     } else if (HOMO_MAP[ch] !== undefined) {
       bits += "0";
@@ -395,38 +351,39 @@ var WS_SPACES = [
 ];
 var WS_BITS_PER_SPACE = 4;
 
-/**
- *
- * @param text
- * @param bits
- */
 function embedWhitespace(text, bits) {
-  let spaceCount = 0;
-  for (const element of text) {
-    if (element === " ") spaceCount++;
+  var spaceCount = 0;
+  for (var j = 0; j < text.length; j++) {
+    if (text[j] === " ") spaceCount++;
   }
   var encodedCount = Math.ceil(bits.length / WS_BITS_PER_SPACE);
   if (spaceCount < encodedCount) {
-    throw new Error(`Not enough spaces. Need ~${encodedCount}, found ${spaceCount}`);
+    throw new Error(
+      "Not enough spaces. Need ~" + encodedCount + ", found " + spaceCount,
+    );
   }
 
-  const encoded = [];
-  for (let i = 0; i + (WS_BITS_PER_SPACE - 1) < bits.length; i += WS_BITS_PER_SPACE) {
-    let quad = bits.substr(i, WS_BITS_PER_SPACE);
+  var encoded = [];
+  for (
+    var i = 0;
+    i + (WS_BITS_PER_SPACE - 1) < bits.length;
+    i += WS_BITS_PER_SPACE
+  ) {
+    var quad = bits.substr(i, WS_BITS_PER_SPACE);
     while (quad.length < WS_BITS_PER_SPACE) quad += "0";
-    encoded.push(WS_SPACES[Number.parseInt(quad, 2)]);
+    encoded.push(WS_SPACES[parseInt(quad, 2)]);
   }
-  const rem = bits.length % WS_BITS_PER_SPACE;
+  var rem = bits.length % WS_BITS_PER_SPACE;
   if (rem > 0) {
-    let last = bits.substr(bits.length - rem, rem);
+    var last = bits.substr(bits.length - rem, rem);
     while (last.length < WS_BITS_PER_SPACE) last += "0";
-    encoded.push(WS_SPACES[Number.parseInt(last, 2)]);
+    encoded.push(WS_SPACES[parseInt(last, 2)]);
   }
 
-  let result = "";
-  let encIdx = 0;
-  for (const element of text) {
-    if (element === " ") {
+  var result = "";
+  var encIdx = 0;
+  for (var k = 0; k < text.length; k++) {
+    if (text[k] === " ") {
       if (encIdx < encoded.length) {
         result += encoded[encIdx];
         encIdx++;
@@ -434,107 +391,83 @@ function embedWhitespace(text, bits) {
         result += " ";
       }
     } else {
-      result += element;
+      result += text[k];
     }
   }
   return result;
 }
 
-/**
- *
- * @param text
- */
 function extractWhitespace(text) {
-  const found = [];
-  for (const element of text) {
-    const idx = WS_SPACES.indexOf(element);
-    if (idx !== -1) found.push(idx);
+  var found = [];
+  for (var i = 0; i < text.length; i++) {
+    var idx = WS_SPACES.indexOf(text[i]);
+    if (idx >= 0) found.push(idx);
   }
   if (found.length === 0) return "";
-  let bits = "";
-  for (const element of found) {
-    let b = element.toString(2);
-    while (b.length < WS_BITS_PER_SPACE) b = `0${b}`;
+  var bits = "";
+  for (var j = 0; j < found.length; j++) {
+    var b = found[j].toString(2);
+    while (b.length < WS_BITS_PER_SPACE) b = "0" + b;
     bits += b;
   }
   return bits;
 }
 
 // ── Bit/Message helpers ──
-/**
- *
- * @param buf
- */
 function msgToBitsRaw(buf) {
   if (!buf || buf.length === 0) return null;
   var bits = "";
-  for (const b of buf) {
-    for (let j = 7; j >= 0; j--) bits += (b >> j) & 1 ? "1" : "0";
+  for (var i = 0; i < buf.length; i++) {
+    var b = buf[i];
+    for (var j = 7; j >= 0; j--) bits += (b >> j) & 1 ? "1" : "0";
   }
   return bits;
 }
 
-/**
- *
- * @param bits
- */
 function bitsToBytes(bits) {
   if (bits.length < 8) return Buffer.alloc(0);
   var bytes = [];
-  for (let i = 0; i + 7 < bits.length; i += 8) {
-    let byteVal = 0;
-    for (let j = 0; j < 8; j++) byteVal = (byteVal << 1) | (bits[i + j] === "1" ? 1 : 0);
+  for (var i = 0; i + 7 < bits.length; i += 8) {
+    var byteVal = 0;
+    for (var j = 0; j < 8; j++)
+      byteVal = (byteVal << 1) | (bits[i + j] === "1" ? 1 : 0);
     bytes.push(byteVal);
   }
   return Buffer.from(bytes);
 }
 
-/**
- *
- * @param result
- * @param password
- */
 function checkPassword(result, password) {
   if (!password) return result;
   var colonIdx = result.indexOf(":");
   if (colonIdx > 0 && colonIdx <= 50) {
-    if (result.indexOf(`${password}:`) === 0) return result.substr(password.length + 1);
+    if (result.indexOf(password + ":") === 0)
+      return result.substr(password.length + 1);
     throw new Error("WRONG_PASSWORD");
   }
   return result;
 }
 
-/**
- *
- * @param bits
- * @param password
- */
 function bitsToMsg(bits, password) {
   if (bits.length < 8) return "";
   var buf = bitsToBytes(bits);
   if (buf.length > 0 && buf[0] === 0x02) {
     try {
-      const decompressed = decompressData(buf);
+      var decompressed = decompressData(buf);
       return checkPassword(decompressed, password);
-    } catch (error) {
-      if (error.message === "WRONG_PASSWORD") throw error;
+    } catch (e) {
+      if (e.message === "WRONG_PASSWORD") throw e;
       return "";
     }
   }
-  let result = "";
-  for (const element of buf) {
-    if (element === 0) break;
-    result += String.fromCharCode(element);
+  var result = "";
+  for (var k = 0; k < buf.length; k++) {
+    if (buf[k] === 0) break;
+    result += String.fromCharCode(buf[k]);
   }
   return checkPassword(result, password);
 }
 
 // ── CLI entry ──
-/**
- *
- * @param action
- * @param opts
- */
 async function runDocumentWatermark(action, opts) {
   var inputPath = path.resolve(opts.input);
   var text = await readDocumentText(inputPath);
@@ -542,7 +475,7 @@ async function runDocumentWatermark(action, opts) {
 
   if (action === "embed") {
     if (opts.secret) {
-      const secretPath = path.resolve(opts.secret);
+      var secretPath = path.resolve(opts.secret);
       message = await readDocumentText(secretPath);
     } else if (opts.message) {
       message = opts.message;
@@ -551,21 +484,28 @@ async function runDocumentWatermark(action, opts) {
       process.exit(1);
     }
 
-    const watermarked = embed(text, message, opts.algo || "1", opts.password || "");
-    const outPath = opts.output ? path.resolve(opts.output) : `${inputPath}.watermarked.txt`;
+    var watermarked = embed(
+      text,
+      message,
+      opts.algo || "1",
+      opts.password || "",
+    );
+    var outPath = opts.output
+      ? path.resolve(opts.output)
+      : inputPath + ".watermarked.txt";
     writeFileText(outPath, watermarked);
-    console.log(`Watermarked text saved to: ${outPath}`);
+    console.log("Watermarked text saved to: " + outPath);
   } else {
-    const msg =
+    var msg =
       opts.algo === "0"
         ? extract(text, "0", opts.password || "")
         : extract(text, opts.algo || "1", opts.password || "");
     if (msg) {
       if (opts.output) {
         writeFileText(path.resolve(opts.output), msg);
-        console.log(`Extracted message saved to: ${path.resolve(opts.output)}`);
+        console.log("Extracted message saved to: " + path.resolve(opts.output));
       } else {
-        console.log(`\nExtracted message:\n${msg}`);
+        console.log("\nExtracted message:\n" + msg);
       }
     } else {
       console.log("No watermark found.");

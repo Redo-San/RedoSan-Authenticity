@@ -763,7 +763,3291 @@
     </div>
 
     <main class="container" id="app">
-      <!-- Content loaded dynamically via mpa-router.js -->
+      <!-- Home -->
+      <section id="page-home" class="page active">
+        <div class="hero">
+          <h1><span>RedoSan</span> Authenticity</h1>
+          <p data-i18n="home.tagline">
+            Online digital authenticity tool — 100% browser-based. Nothing is
+            uploaded to any server.
+          </p>
+          <div
+            class="grid"
+            style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))"
+          >
+            <a href="#" data-page="watermark" class="card">
+              <div class="icon">💧</div>
+              <h2 data-i18n="card.watermark.title">Digital Watermark</h2>
+              <p data-i18n="card.watermark.desc">
+                9 algorithms: LSB, DCT, DWT and more
+              </p>
+            </a>
+            <a href="#" data-page="audio-watermark" class="card">
+              <div class="icon">🎵</div>
+              <h2 data-i18n="card.audio_watermark.title">Audio Watermark</h2>
+              <p data-i18n="card.audio_watermark.desc">
+                Hide secrets in WAV: LSB, Phase Coding, Echo Hiding, DSSS, QIM,
+                DWT, Patchwork, DCT
+              </p>
+            </a>
+            <a href="#" data-page="pixel-injection" class="card">
+              <div class="icon">🔬</div>
+              <h2 data-i18n="card.pixel_injection.title">Pixel Injection</h2>
+              <p data-i18n="card.pixel_injection.desc">
+                20+ advanced pixel injection algorithms
+              </p>
+            </a>
+            <a href="#" data-page="forensic" class="card">
+              <div class="icon">🧪</div>
+              <h2 data-i18n="card.forensic.title">Forensic Analyzer</h2>
+              <p data-i18n="card.forensic.desc">
+                ELA, noise, JPEG and copy-move tamper checks
+              </p>
+            </a>
+            <a href="#" data-page="id_forge" class="card">
+              <div class="icon">🔑</div>
+              <h2 data-i18n="card.id_forge.title">ID Forge</h2>
+              <p data-i18n="card.id_forge.desc">
+                Generate UUIDs, ULIDs, Nano IDs, SWHIDs and more
+              </p>
+            </a>
+            <a href="#" data-page="fingerprint" class="card">
+              <div class="icon">🔍</div>
+              <h2 data-i18n="card.fingerprint.title">Fingerprint</h2>
+              <p data-i18n="card.fingerprint.desc">
+                SHA-256 + perceptual image hashes
+              </p>
+            </a>
+            <a href="#" data-page="metadata" class="card">
+              <div class="icon">📋</div>
+              <h2 data-i18n="card.metadata.title">Metadata</h2>
+              <p data-i18n="card.metadata.desc">
+                EXIF, dimensions, format info
+              </p>
+            </a>
+            <a href="#" data-page="timestamp" class="card">
+              <div class="icon">🕒</div>
+              <h2 data-i18n="card.timestamp.title">Timestamp</h2>
+              <p data-i18n="card.timestamp.desc">
+                SHA-256 hashing + OTS hash verification
+              </p>
+            </a>
+            <a href="#" data-page="did" class="card">
+              <div class="icon">🆔</div>
+              <h2 data-i18n="card.did.title">DID Identity</h2>
+              <p data-i18n="card.did.desc">
+                Decentralized ID + cryptographic signing
+              </p>
+            </a>
+            <a href="#" data-page="c2pa" class="card">
+              <div class="icon">✨</div>
+              <h2 data-i18n="card.c2pa.title">C2PA Provenance</h2>
+              <p data-i18n="card.c2pa.desc">
+                Read & write content provenance metadata
+              </p>
+            </a>
+            <a href="#" data-page="certificate" class="card">
+              <div class="icon">📜</div>
+              <h2 data-i18n="card.certificate.title">Digital Passport</h2>
+              <p data-i18n="card.certificate.desc">
+                Generate signed PDF/DOCX/EPUB certificate
+              </p>
+            </a>
+            <a href="#" data-page="converter" class="card">
+              <div class="icon">🔄</div>
+              <h2 data-i18n="card.converter.title">File Converter</h2>
+              <p data-i18n="card.converter.desc">
+                Convert images between PNG, JPEG, WebP and more
+              </p>
+            </a>
+            <a href="#" data-page="removal-tools" class="card">
+              <div class="icon">🗑️</div>
+              <h2 data-i18n="card.removal_tools.title">Removal Tools</h2>
+              <p data-i18n="card.removal_tools.desc">
+                Strip watermarks, pixel injection, C2PA & metadata from images &
+                audio
+              </p>
+            </a>
+            <a href="#" data-page="document-watermark" class="card">
+              <div class="icon">📝</div>
+              <h2 data-i18n="card.document_watermark.title">
+                Document Watermark
+              </h2>
+              <p data-i18n="card.document_watermark.desc">
+                Hide messages in text: ZWC, Homoglyphs, Whitespace
+              </p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Watermark -->
+      <section id="page-watermark" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="wm.heading">
+            Digital Watermarking
+          </h2>
+        </div>
+        <div class="card-form">
+          <div style="display: flex; gap: 8px; margin-bottom: 20px">
+            <button
+              class="btn tab-btn active"
+              data-wm-tab="embed"
+              onclick="switchWmTab('embed')"
+              data-i18n="wm.embed_btn"
+            >
+              Embed
+            </button>
+            <button
+              class="btn tab-btn"
+              data-wm-tab="extract"
+              onclick="switchWmTab('extract')"
+              data-i18n="wm.extract_btn"
+            >
+              Extract
+            </button>
+          </div>
+          <div id="wm-embed">
+            <div class="form-group">
+              <label for="wm-type" data-i18n="wm.algo_label">Algorithm</label>
+              <select id="wm-type" name="wm-type">
+                <option value="1">1. Spatial LSB</option>
+                <option value="2">2. Frequency DCT</option>
+                <option value="3">3. Neural SS</option>
+                <option value="4">4. Latent DCT</option>
+                <option value="5">5. Zero-bit</option>
+                <option value="6">6. Multi-bit</option>
+                <option value="7">7. Forensic</option>
+                <option value="8">8. Fragile</option>
+                <option value="9">9. Imatag-style</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="wm-image" data-i18n="wm.image_label"
+                >Cover image</label
+              >
+              <input
+                type="file"
+                id="wm-image"
+                name="wm-image"
+                accept="image/png,image/jpeg"
+              />
+              <p
+                id="wm-capacity"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 4px;
+                "
+              ></p>
+            </div>
+            <div class="form-group" id="wm-secret-group">
+              <label for="wm-secret" data-i18n="wm.secret_label"
+                >Secret file</label
+              >
+              <input
+                type="file"
+                id="wm-secret"
+                name="wm-secret"
+                accept=".pdf,.doc,.docx,.txt,.csv,.xml,.json,.md"
+              />
+              <p
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 4px;
+                "
+                data-i18n="wm.secret_hint"
+              >
+                Required for algorithms 1-4, 6-9. Type 5 (Zero-bit) ignores
+                this.
+              </p>
+              <p
+                style="
+                  font-size: 0.7rem;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                  padding: 6px 8px;
+                  background: rgba(108, 92, 231, 0.1);
+                  border-radius: 6px;
+                "
+                data-i18n="wm.secret_size_note"
+              >
+                💡 The secret file must be smaller than the cover image. Select
+                a cover image first to see available capacity below.
+              </p>
+              <p
+                id="wm-secret-status"
+                style="font-size: 0.75rem; margin-top: 2px"
+              ></p>
+            </div>
+            <div
+              class="form-group"
+              id="wm-password-group"
+              style="display: none"
+            >
+              <label for="wm-password" data-i18n="wm.password_label"
+                >Password (required for algorithms 1-4,6-7,9)</label
+              >
+              <input
+                type="password"
+                id="wm-password"
+                name="wm-password"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleWatermarkEmbed()"
+              id="wm-btn"
+              data-i18n="wm.embed_submit"
+            >
+              Embed Watermark
+            </button>
+          </div>
+          <div id="wm-extract" style="display: none">
+            <div class="form-group">
+              <label for="wm-type-ex" data-i18n="wm.algo_label"
+                >Algorithm</label
+              >
+              <select id="wm-type-ex" name="wm-type-ex">
+                <option value="0" selected>Auto Detect</option>
+                <option value="1">1. Spatial LSB</option>
+                <option value="2">2. Frequency DCT</option>
+                <option value="3">3. Neural SS</option>
+                <option value="4">4. Latent DCT</option>
+                <option value="5">5. Zero-bit</option>
+                <option value="6">6. Multi-bit</option>
+                <option value="7">7. Forensic</option>
+                <option value="8">8. Fragile</option>
+                <option value="9">9. Imatag-style</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="wm-image-ex" data-i18n="wm.image_ex_label"
+                >Stego image</label
+              >
+              <input
+                type="file"
+                id="wm-image-ex"
+                name="wm-image-ex"
+                accept="image/png,image/jpeg"
+              />
+            </div>
+            <div
+              class="form-group"
+              id="wm-password-ex-group"
+              style="display: none"
+            >
+              <label for="wm-password-ex" data-i18n="wm.password_label"
+                >Password (required for algorithms 1-4,6-7,9)</label
+              >
+              <input
+                type="password"
+                id="wm-password-ex"
+                name="wm-password-ex"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleWatermarkExtract()"
+              id="wm-btn-ex"
+              data-i18n="wm.extract_submit"
+            >
+              Extract Watermark
+            </button>
+          </div>
+          <div class="spinner" id="wm-spinner"></div>
+        </div>
+        <div id="wm-result" style="display: none; margin-top: 16px">
+          <div class="result" id="wm-output"></div>
+          <div
+            id="wm-download"
+            style="margin-top: 12px; text-align: center"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Audio Watermark -->
+      <section id="page-audio-watermark" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="awm.heading">
+            Audio Watermarking
+          </h2>
+          <span
+            style="
+              font-size: 0.65rem;
+              color: var(--text-muted);
+              margin-left: auto;
+            "
+            >v7</span
+          >
+        </div>
+        <div class="card-form">
+          <div style="display: flex; gap: 8px; margin-bottom: 20px">
+            <button
+              class="btn tab-btn active"
+              data-awm-tab="embed"
+              onclick="switchAwmTab('embed')"
+              data-i18n="wm.embed_btn"
+            >
+              Embed
+            </button>
+            <button
+              class="btn tab-btn"
+              data-awm-tab="extract"
+              onclick="switchAwmTab('extract')"
+              data-i18n="wm.extract_btn"
+            >
+              Extract
+            </button>
+          </div>
+          <div id="awm-embed">
+            <div class="form-group">
+              <label for="awm-type" data-i18n="wm.algo_label">Algorithm</label>
+              <select
+                id="awm-type"
+                name="awm-type"
+                onchange="toggleAwmPassword();updateAwmCapacity();toggleAwmInput()"
+              >
+                <option value="1">1. LSB Audio</option>
+                <option value="2">2. Phase Coding</option>
+                <option value="3">3. Echo Hiding</option>
+                <option value="4">4. Spread Spectrum (DSSS)</option>
+                <option value="5">5. QIM</option>
+                <option value="6">6. DWT (Haar Wavelet)</option>
+                <option value="7">7. Patchwork</option>
+                <option value="8">8. DCT-based</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="awm-audio" data-i18n="awm.audio_label"
+                >Audio file (WAV recommended)</label
+              >
+              <input
+                type="file"
+                id="awm-audio"
+                name="awm-audio"
+                accept="audio/*"
+                onchange="updateAwmCapacity()"
+              />
+              <p
+                id="awm-capacity"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 4px;
+                "
+              ></p>
+            </div>
+            <div class="form-group" id="awm-file-group">
+              <label
+                for="awm-file"
+                id="awm-file-label"
+                data-i18n="awm.secret_file_label"
+                >Secret document</label
+              >
+              <input
+                type="file"
+                id="awm-file"
+                accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.md"
+                onchange="loadAwmFile(event)"
+              />
+              <p
+                id="awm-file-name"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              ></p>
+            </div>
+            <div class="form-group" id="awm-text-group" style="display: none">
+              <label for="awm-text" data-i18n="awm.msg_label"
+                >Secret message</label
+              >
+              <textarea
+                id="awm-text"
+                rows="3"
+                maxlength="500"
+                placeholder="Enter short secret message (limited capacity for this algorithm)"
+                oninput="updateAwmCapacity()"
+              ></textarea>
+              <p
+                id="awm-text-info"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              ></p>
+            </div>
+            <div class="form-group" id="awm-password-group">
+              <label for="awm-password" data-i18n="awm.password_label"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="awm-password"
+                name="awm-password"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <div class="form-group" id="awm-strength-group">
+              <label for="awm-strength" data-i18n="awm.strength_label"
+                >QIM Strength <span id="awm-strength-val">500</span></label
+              >
+              <input
+                type="range"
+                id="awm-strength"
+                min="100"
+                max="3000"
+                value="500"
+                step="100"
+                oninput="document.getElementById('awm-strength-val').textContent=this.value"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleAwmEmbed()"
+              id="awm-btn"
+              data-i18n="wm.embed_submit"
+            >
+              Embed Watermark
+            </button>
+          </div>
+          <div id="awm-extract" style="display: none">
+            <div class="form-group">
+              <label for="awm-type-ex" data-i18n="wm.algo_label"
+                >Algorithm</label
+              >
+              <select
+                id="awm-type-ex"
+                name="awm-type-ex"
+                onchange="toggleAwmPasswordEx()"
+              >
+                <option value="0">🔍 Auto Detect</option>
+                <option value="1">1. LSB Audio</option>
+                <option value="2">2. Phase Coding</option>
+                <option value="3">3. Echo Hiding</option>
+                <option value="4">4. Spread Spectrum (DSSS)</option>
+                <option value="5">5. QIM</option>
+                <option value="6">6. DWT (Haar Wavelet)</option>
+                <option value="7">7. Patchwork</option>
+                <option value="8">8. DCT-based</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="awm-audio-ex" data-i18n="awm.audio_label"
+                >Watermarked audio file</label
+              >
+              <input
+                type="file"
+                id="awm-audio-ex"
+                name="awm-audio-ex"
+                accept="audio/*"
+              />
+            </div>
+            <div class="form-group" id="awm-password-ex-group">
+              <label for="awm-password-ex" data-i18n="awm.password_label"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="awm-password-ex"
+                name="awm-password-ex"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <div class="form-group" id="awm-strength-ex-group">
+              <label for="awm-strength-ex" data-i18n="awm.strength_label"
+                >QIM Strength <span id="awm-strength-ex-val">400</span></label
+              >
+              <input
+                type="range"
+                id="awm-strength-ex"
+                min="100"
+                max="3000"
+                value="400"
+                step="100"
+                oninput="document.getElementById('awm-strength-ex-val').textContent=this.value"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleAwmExtract()"
+              id="awm-btn-ex"
+              data-i18n="wm.extract_submit"
+            >
+              Extract Watermark
+            </button>
+            <details
+              style="
+                margin-top: 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 8px 12px;
+              "
+            >
+              <summary
+                style="
+                  cursor: pointer;
+                  font-size: 0.82rem;
+                  color: var(--text-muted);
+                "
+                data-i18n="awm.dual_extract_label"
+              >
+                🔬 Dual Extract (for simplified mode protected audio)
+              </summary>
+              <div style="margin-top: 8px; text-align: left">
+                <div class="form-group">
+                  <label
+                    for="awm-dual-fp-algo"
+                    style="font-size: 0.75rem"
+                    data-i18n="awm.fp_algo_label"
+                    >Fingerprint (left ch) algorithm</label
+                  >
+                  <select
+                    id="awm-dual-fp-algo"
+                    style="
+                      width: 100%;
+                      padding: 6px 8px;
+                      border: 1px solid var(--border);
+                      border-radius: 6px;
+                      background: var(--bg);
+                      color: var(--text);
+                    "
+                  >
+                    <option value="0">🔍 Auto Detect</option>
+                    <option value="8">DCT-based (Recommended)</option>
+                    <option value="1">LSB Audio</option>
+                    <option value="2">FFT-QIM</option>
+                    <option value="3">Echo Hiding</option>
+                    <option value="5">QIM</option>
+                    <option value="6">DWT (Haar Wavelet)</option>
+                    <option value="7">Patchwork</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label
+                    for="awm-dual-did-algo"
+                    style="font-size: 0.75rem"
+                    data-i18n="awm.did_algo_label"
+                    >DID Identity (right ch) algorithm</label
+                  >
+                  <select
+                    id="awm-dual-did-algo"
+                    style="
+                      width: 100%;
+                      padding: 6px 8px;
+                      border: 1px solid var(--border);
+                      border-radius: 6px;
+                      background: var(--bg);
+                      color: var(--text);
+                    "
+                  >
+                    <option value="0">🔍 Auto Detect</option>
+                    <option value="6">DWT (Haar Wavelet) (Recommended)</option>
+                    <option value="2">FFT-QIM</option>
+                    <option value="8">DCT-based</option>
+                  </select>
+                </div>
+                <button
+                  class="btn"
+                  onclick="awmDualExtract()"
+                  style="width: 100%; font-size: 0.82rem"
+                  data-i18n="awm.dual_extract_btn"
+                >
+                  Extract Both Watermarks
+                </button>
+              </div>
+            </details>
+            <button
+              class="btn"
+              onclick="awmSelfTest()"
+              style="
+                margin-top: 8px;
+                background: var(--accent);
+                font-size: 0.8rem;
+              "
+              data-i18n="awm.self_test_btn"
+            >
+              🔬 Self-Test
+            </button>
+          </div>
+          <div class="spinner" id="awm-spinner"></div>
+          <div
+            class="awm-progress"
+            id="awm-progress"
+            style="display: none; margin: 12px 0"
+          >
+            <div class="awm-progress-bar" id="awm-progress-bar">
+              <div class="awm-progress-fill" id="awm-progress-fill"></div>
+            </div>
+            <span class="awm-progress-text" id="awm-progress-text">0%</span>
+          </div>
+        </div>
+        <div id="awm-result" style="display: none; margin-top: 16px">
+          <div class="result" id="awm-output"></div>
+          <div
+            id="awm-download"
+            style="margin-top: 12px; text-align: center"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Fingerprint -->
+      <section id="page-fingerprint" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="fp.heading">
+            File Fingerprinting
+          </h2>
+        </div>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="fp-file" data-i18n="fp.file_label">File</label>
+            <input
+              type="file"
+              id="fp-file"
+              name="fp-file"
+              accept="image/*,video/*,.pdf,.mp3,.wav,.ogg,.aac,.wma,.flac,.m4a,.opus,.webm,.aiff,.au,.amr,.mid,.midi"
+            />
+          </div>
+          <button
+            class="btn"
+            onclick="handleFingerprint()"
+            id="fp-btn"
+            data-i18n="fp.submit"
+          >
+            Generate Fingerprint
+          </button>
+          <div class="spinner" id="fp-spinner"></div>
+        </div>
+        <div id="fp-result" style="display: none; margin-top: 16px">
+          <div class="result" id="fp-output"></div>
+          <div
+            id="fp-download"
+            style="margin-top: 12px; text-align: center"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Search Results -->
+      <section id="page-search" class="page">
+        <h2 style="margin-bottom: 20px" data-i18n="search.heading">
+          Search Results
+        </h2>
+        <div id="search-output"></div>
+      </section>
+
+      <!-- Pixel Injection -->
+      <section id="page-pixel-injection" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="pi.heading">
+            Advanced Pixel Injection
+          </h2>
+        </div>
+        <div class="card-form">
+          <div style="display: flex; gap: 8px; margin-bottom: 20px">
+            <button
+              class="btn tab-btn active"
+              data-pi-tab="embed"
+              onclick="switchPiTab('embed')"
+              data-i18n="pi.embed_btn"
+            >
+              Embed
+            </button>
+            <button
+              class="btn tab-btn"
+              data-pi-tab="extract"
+              onclick="switchPiTab('extract')"
+              data-i18n="pi.extract_btn"
+            >
+              Extract
+            </button>
+            <button
+              class="btn tab-btn"
+              data-pi-tab="analyze"
+              onclick="switchPiTab('analyze')"
+              data-i18n="pi.analyze_btn"
+            >
+              Analyze
+            </button>
+          </div>
+          <div id="pi-embed">
+            <div class="form-group">
+              <label for="pi-category" data-i18n="pi.category_label"
+                >Algorithm Category</label
+              >
+              <select id="pi-category" name="pi-category">
+                <option value="spatial">Spatial Domain</option>
+                <option value="frequency">Frequency Domain</option>
+                <option value="deep_learning">Deep Learning</option>
+                <option value="professional">Professional Tools</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pi-algorithm" data-i18n="pi.algorithm_label"
+                >Algorithm</label
+              >
+              <select id="pi-algorithm" name="pi-algorithm">
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pi-image" data-i18n="pi.image_label">Image</label>
+              <input
+                type="file"
+                id="pi-image"
+                name="pi-image"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff"
+              />
+            </div>
+            <div class="form-group">
+              <label for="pi-secret-file" data-i18n="pi.message_label"
+                >Secret file</label
+              >
+              <input
+                type="file"
+                id="pi-secret-file"
+                name="pi-secret-file"
+                accept=".pdf,.doc,.docx,.txt,.csv,.xml,.json,.md"
+              />
+              <p
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 4px;
+                "
+                data-i18n="pi.secret_hint"
+              >
+                Document file to embed as secret message
+              </p>
+            </div>
+            <div class="form-group" id="pi-message-group" style="display: none">
+              <label for="pi-message" data-i18n="pi.message_label"
+                >Message</label
+              >
+              <textarea
+                id="pi-message"
+                name="pi-message"
+                placeholder="Enter your secret message..."
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="form-group" id="pi-password-group">
+              <label for="pi-password" data-i18n="pi.password_label"
+                >Password (optional)</label
+              >
+              <input
+                type="password"
+                id="pi-password"
+                name="pi-password"
+                placeholder="Enter password for encryption"
+              />
+            </div>
+            <div id="pi-advanced-options" style="display: none">
+              <h4
+                style="color: var(--primary); margin: 15px 0 10px 0"
+                data-i18n="pi.advanced_options"
+              >
+                Advanced Options
+              </h4>
+              <div id="pi-options-container"></div>
+            </div>
+            <button
+              class="btn"
+              onclick="showPiAdvancedOptions()"
+              id="pi-advanced-btn"
+              data-i18n="pi.show_advanced"
+            >
+              Show Advanced Options
+            </button>
+            <button
+              class="btn"
+              onclick="handlePixelInjection()"
+              id="pi-btn"
+              data-i18n="pi.embed_submit"
+            >
+              Inject Pixel
+            </button>
+            <div class="spinner" id="pi-spinner"></div>
+          </div>
+          <div id="pi-extract" style="display: none">
+            <div class="form-group">
+              <label
+                for="pi-watermarked-image"
+                data-i18n="pi.watermarked_image_label"
+                >Watermarked Image</label
+              >
+              <input
+                type="file"
+                id="pi-watermarked-image"
+                name="pi-watermarked-image"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff"
+              />
+            </div>
+            <div class="form-group">
+              <label for="pi-extract-algorithm" data-i18n="pi.algorithm_label"
+                >Algorithm</label
+              >
+              <select id="pi-extract-algorithm" name="pi-extract-algorithm">
+                <option value="auto" data-i18n="pi.auto_detect">
+                  Auto Detect
+                </option>
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group" id="pi-extract-password-group">
+              <label for="pi-extract-password" data-i18n="pi.password_label"
+                >Password (if required)</label
+              >
+              <input
+                type="password"
+                id="pi-extract-password"
+                name="pi-extract-password"
+                placeholder="Enter password for decryption"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handlePixelExtraction()"
+              id="pi-extract-btn"
+              data-i18n="pi.extract_submit"
+            >
+              Extract Message
+            </button>
+            <div class="spinner" id="pi-extract-spinner"></div>
+          </div>
+          <div id="pi-analyze" style="display: none">
+            <div class="form-group">
+              <label
+                for="pi-analyze-algorithm"
+                data-i18n="pi.analyze_algorithm_label"
+                >Analysis Algorithm</label
+              >
+              <select id="pi-analyze-algorithm" name="pi-analyze-algorithm">
+                <option value="auto_detect" data-i18n="pi.auto_detect">
+                  Auto Detect
+                </option>
+                <option
+                  value="statistical_detection"
+                  data-i18n="pi.statistical_detection"
+                >
+                  Statistical Detection
+                </option>
+                <option value="ml_detection" data-i18n="pi.ml_detection">
+                  ML Detection
+                </option>
+                <option value="blind_decoding" data-i18n="pi.blind_decoding">
+                  Blind Decoding
+                </option>
+                <option
+                  value="robustness_testing"
+                  data-i18n="pi.robustness_testing"
+                >
+                  Robustness Testing
+                </option>
+                <option value="quality_metrics" data-i18n="pi.quality_metrics">
+                  Quality Metrics
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pi-analyze-image" data-i18n="pi.analyze_image_label"
+                >Image to Analyze</label
+              >
+              <input
+                type="file"
+                id="pi-analyze-image"
+                name="pi-analyze-image"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff"
+              />
+            </div>
+            <div
+              class="form-group"
+              id="pi-analyze-compare-group"
+              style="display: none"
+            >
+              <label
+                for="pi-analyze-compare"
+                data-i18n="pi.analyze_compare_label"
+                >Original Image (for comparison)</label
+              >
+              <input
+                type="file"
+                id="pi-analyze-compare"
+                name="pi-analyze-compare"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handlePixelAnalysis()"
+              id="pi-analyze-btn"
+              data-i18n="pi.analyze_submit"
+            >
+              Analyze Image
+            </button>
+            <div class="spinner" id="pi-analyze-spinner"></div>
+          </div>
+        </div>
+        <div id="pi-result" style="display: none; margin-top: 16px">
+          <div class="result" id="pi-output"></div>
+          <div
+            id="pi-download"
+            style="margin-top: 12px; text-align: center"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Metadata -->
+      <section id="page-metadata" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="md.heading">
+            Metadata Reader
+          </h2>
+        </div>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="md-file" data-i18n="md.file_label">Image file</label>
+            <input
+              type="file"
+              id="md-file"
+              name="md-file"
+              accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff"
+            />
+          </div>
+          <p
+            style="
+              font-size: 0.8rem;
+              color: var(--text-muted);
+              margin-bottom: 14px;
+            "
+            data-i18n="md.desc"
+          >
+            Reads EXIF, dimensions, format, and color mode. All processing in
+            pure JavaScript.
+          </p>
+          <button
+            class="btn"
+            onclick="handleReadMetadata()"
+            id="md-btn"
+            data-i18n="md.submit"
+          >
+            Read Metadata
+          </button>
+          <div class="spinner" id="md-spinner"></div>
+        </div>
+        <div id="md-result" style="display: none; margin-top: 16px">
+          <div class="result" id="md-output"></div>
+          <div
+            id="md-download"
+            style="margin-top: 12px; text-align: center"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Timestamp -->
+      <section id="page-timestamp" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="ts.heading">
+            File Timestamping
+          </h2>
+        </div>
+        <div class="card-form">
+          <div style="display: flex; gap: 8px; margin-bottom: 16px">
+            <button
+              class="btn tab-btn active"
+              data-ots-tab="create"
+              onclick="switchOtsTab('create')"
+              data-i18n="ts.ots_create_btn"
+            >
+              Create .ots
+            </button>
+            <button
+              class="btn tab-btn"
+              data-ots-tab="verify"
+              onclick="switchOtsTab('verify')"
+              data-i18n="ts.ots_verify_btn"
+            >
+              Verify .ots
+            </button>
+          </div>
+          <div id="ots-create">
+            <p
+              style="
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                margin-bottom: 12px;
+              "
+              data-i18n="ts.ots_create_note"
+            >
+              Creates an OpenTimestamps (.ots) proof file from your file's
+              SHA-256 hash. Fully compatible with the OpenTimestamps protocol.
+              Automatically submits to the calendar aggregator for a blockchain
+              attestation.
+            </p>
+            <div class="form-group">
+              <label for="ts-create-file" data-i18n="ts.ots_file_label"
+                >File to timestamp</label
+              >
+              <input type="file" id="ts-create-file" name="ts-create-file" />
+            </div>
+            <button
+              class="btn"
+              onclick="handleOtsCreate()"
+              id="ts-create-btn"
+              data-i18n="ts.create_ots"
+            >
+              Create .ots
+            </button>
+            <button
+              class="btn"
+              onclick="document.getElementById('ts-create-file').click()"
+              id="ts-create-dl-btn"
+              style="
+                display: none;
+                margin-top: 10px;
+                background: var(--card-hover);
+                color: var(--text);
+                border: 1px solid var(--border);
+              "
+              data-i18n="ts.create_another"
+            >
+              Create Another
+            </button>
+          </div>
+          <div id="ots-verify" style="display: none">
+            <p
+              style="
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                margin-bottom: 12px;
+              "
+              data-i18n="ts.ots_verify_note"
+            >
+              Verify that a file matches its .ots proof. Select the original
+              file and its .ots proof to check if the file has been modified.
+            </p>
+            <div class="form-group">
+              <label for="ts-verify-file" data-i18n="ts.verify_file_label"
+                >Original file</label
+              >
+              <input type="file" id="ts-verify-file" name="ts-verify-file" />
+            </div>
+            <div class="form-group">
+              <label for="ts-ots-proof" data-i18n="ts.ots_proof_label"
+                >.ots proof file</label
+              >
+              <input
+                type="file"
+                id="ts-ots-proof"
+                name="ts-ots-proof"
+                accept=".ots"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleOtsVerify()"
+              id="ts-verify-btn"
+              data-i18n="ts.verify_ots"
+            >
+              Verify .ots
+            </button>
+          </div>
+          <div class="spinner" id="ts-spinner"></div>
+        </div>
+        <div id="ts-result" style="display: none; margin-top: 16px">
+          <div class="result" id="ts-output"></div>
+          <div
+            id="ts-download"
+            style="margin-top: 12px; text-align: center"
+          ></div>
+        </div>
+      </section>
+
+      <!-- DID Identity -->
+      <section id="page-did" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="did.heading">
+            Decentralized Identity (DID)
+          </h2>
+        </div>
+        <div class="card-form">
+          <p
+            style="
+              font-size: 0.8rem;
+              color: var(--text-muted);
+              margin-bottom: 14px;
+            "
+            data-i18n="did.desc"
+          >
+            Generate a Decentralized Identifier (DID) keypair and
+            cryptographically sign your file fingerprints to prove you created
+            this content.
+          </p>
+
+          <div
+            id="did-identity-section"
+            style="text-align: left; margin-bottom: 16px"
+          >
+            <div id="did-status-area">
+              <p
+                style="
+                  font-size: 0.82rem;
+                  color: var(--text-muted);
+                  margin: 8px 0;
+                "
+                id="did-status-text"
+                data-i18n="did.no_keys"
+              >
+                No DID identity found. Generate one above.
+              </p>
+            </div>
+            <div class="form-group" id="did-fp-group">
+              <label for="did-fp-file" data-i18n="did.fp_file_label"
+                >Fingerprint JSON file (optional)</label
+              >
+              <input
+                type="file"
+                id="did-fp-file"
+                accept=".json,text/plain"
+                onchange="didUpdateButtons()"
+              />
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 10px 0;
+                flex-wrap: wrap;
+              "
+            >
+              <label
+                for="did-algo-select"
+                style="font-size: 0.82rem; font-weight: 600"
+                data-i18n="did.algo_label"
+                >Algorithm:</label
+              >
+              <select id="did-algo-select">
+                <option value="Ed25519">Ed25519 (fast, 64-byte sig)</option>
+                <option value="P-256">ECDSA P-256 (widely compatible)</option>
+                <option value="RSA-2048">RSA 2048 (256-byte sig)</option>
+                <option value="RSA-4096">RSA 4096 (512-byte sig)</option>
+              </select>
+              <button
+                class="btn"
+                onclick="handleDidClear()"
+                id="did-clear-btn"
+                style="
+                  margin-left: auto;
+                  background: transparent;
+                  color: var(--danger);
+                  border: 1px solid var(--danger);
+                  display: none;
+                  padding: 5px 12px;
+                  font-size: 0.8rem;
+                "
+                data-i18n="did.clear_btn"
+              >
+                🗑️ Clear Identity
+              </button>
+            </div>
+            <div
+              id="did-key-display"
+              style="
+                display: none;
+                margin: 12px 0;
+                padding: 12px;
+                background: rgba(108, 92, 231, 0.08);
+                border-radius: 8px;
+              "
+            >
+              <p
+                style="
+                  font-size: 0.75rem;
+                  color: var(--text-muted);
+                  margin: 0 0 4px;
+                "
+                data-i18n="did.did_label"
+              >
+                Your DID
+              </p>
+              <p
+                id="did-did-value"
+                style="
+                  font-size: 0.78rem;
+                  word-break: break-all;
+                  margin: 0 0 8px;
+                  font-family: monospace;
+                "
+              ></p>
+              <p
+                style="
+                  font-size: 0.75rem;
+                  color: var(--text-muted);
+                  margin: 0 0 4px;
+                "
+                data-i18n="did.algorithm_label"
+              >
+                Algorithm
+              </p>
+              <p
+                id="did-algo-value"
+                style="font-size: 0.82rem; margin: 0 0 4px"
+              ></p>
+              <p
+                style="
+                  font-size: 0.7rem;
+                  color: var(--text-muted);
+                  margin: 8px 0 0;
+                "
+                data-i18n="did.stored"
+              >
+                Your keys are stored locally in this browser (localStorage).
+              </p>
+            </div>
+            <div
+              style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px"
+            >
+              <button
+                class="btn"
+                onclick="handleDidGenerate()"
+                id="did-gen-btn"
+                disabled
+                data-i18n="did.gen_btn"
+              >
+                🔑 Generate DID Identity
+              </button>
+              <button
+                class="btn"
+                onclick="handleDidSign()"
+                id="did-sign-btn"
+                style="display: none"
+                data-i18n="did.sign_btn"
+              >
+                ✍️ Sign Fingerprint
+              </button>
+            </div>
+          </div>
+
+          <hr
+            style="
+              border: none;
+              border-top: 1px solid var(--border);
+              margin: 16px 0;
+            "
+          />
+
+          <div id="did-signature-section" style="text-align: left">
+            <p
+              style="
+                font-size: 0.82rem;
+                color: var(--text-muted);
+                margin: 0 0 8px;
+              "
+              data-i18n="did.verify_btn"
+            >
+              Signature Status
+            </p>
+            <div
+              id="did-sig-display"
+              style="
+                display: none;
+                margin: 12px 0;
+                padding: 12px;
+                background: rgba(40, 167, 69, 0.08);
+                border-radius: 8px;
+              "
+            >
+              <p
+                style="
+                  font-size: 0.75rem;
+                  color: var(--text-muted);
+                  margin: 0 0 4px;
+                "
+                data-i18n="did.sig_label"
+              >
+                Signature
+              </p>
+              <p
+                id="did-sig-value"
+                style="
+                  font-size: 0.72rem;
+                  word-break: break-all;
+                  margin: 0 0 8px;
+                  font-family: monospace;
+                "
+              ></p>
+              <p
+                style="
+                  font-size: 0.75rem;
+                  color: var(--text-muted);
+                  margin: 0 0 4px;
+                "
+                data-i18n="did.did_label"
+              >
+                Signed By
+              </p>
+              <p
+                id="did-sig-did"
+                style="
+                  font-size: 0.78rem;
+                  word-break: break-all;
+                  margin: 0;
+                  font-family: monospace;
+                "
+              ></p>
+            </div>
+            <div id="did-result" style="margin-top: 8px"></div>
+            <div id="did-dl-container" style="margin-top: 10px; display: none">
+              <button
+                class="btn"
+                onclick="showDidDownloadModal()"
+                id="did-dl-btn"
+                data-i18n="did.dl_btn"
+              >
+                📥 Download
+              </button>
+            </div>
+          </div>
+
+          <div class="spinner" id="did-spinner"></div>
+        </div>
+      </section>
+
+      <!-- C2PA -->
+      <section id="page-c2pa" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="c2pa.heading">
+            C2PA Content Provenance
+          </h2>
+        </div>
+        <div class="card-form">
+          <div style="display: flex; gap: 8px; margin-bottom: 20px">
+            <button
+              class="btn tab-btn active"
+              data-c2pa-tab="read"
+              onclick="switchC2paTab('read')"
+              data-i18n="c2pa.read_btn"
+            >
+              Read
+            </button>
+            <button
+              class="btn tab-btn"
+              data-c2pa-tab="write"
+              onclick="switchC2paTab('write')"
+              data-i18n="c2pa.write_btn"
+            >
+              Sign
+            </button>
+            <button
+              class="btn tab-btn"
+              data-c2pa-tab="verify"
+              onclick="switchC2paTab('verify')"
+              data-i18n="c2pa.verify_btn"
+            >
+              Verify
+            </button>
+          </div>
+
+          <!-- Read Tab -->
+          <div id="c2pa-read">
+            <p
+              style="
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                margin-bottom: 14px;
+              "
+              data-i18n="c2pa.read_desc"
+            >
+              Read C2PA content provenance metadata from images. Displays
+              manifests, assertions, actions, ingredients, and signature info.
+            </p>
+            <div class="form-group">
+              <label for="c2pa-read-file" data-i18n="c2pa.read_file_label"
+                >Image with C2PA data</label
+              >
+              <input
+                type="file"
+                id="c2pa-read-file"
+                name="c2pa-read-file"
+                accept="image/png,image/jpeg,image/avif,image/webp,image/tiff"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleC2paRead()"
+              id="c2pa-read-btn"
+              data-i18n="c2pa.read_submit"
+            >
+              Read C2PA Data
+            </button>
+            <div class="spinner" id="c2pa-read-spinner"></div>
+            <button
+              class="btn"
+              onclick="showC2paDownloadModal()"
+              id="c2pa-read-dl-btn"
+              style="
+                display: none;
+                margin-top: 10px;
+                background: var(--card-hover);
+                color: var(--text);
+                border: 1px solid var(--border);
+              "
+              data-i18n="c2pa.download_btn"
+            >
+              Download Results
+            </button>
+          </div>
+
+          <!-- Write Tab -->
+          <div id="c2pa-write" style="display: none">
+            <p
+              style="
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                margin-bottom: 14px;
+              "
+              data-i18n="c2pa.write_desc"
+            >
+              Sign an image with C2PA provenance metadata using a test
+              certificate. Select the content type and add optional details.
+            </p>
+            <div class="form-group">
+              <span data-i18n="c2pa.content_type_label">Content Options</span>
+              <div id="c2pa-write-types">
+                <div class="c2pa-type-card" data-form-type="create">
+                  <label class="c2pa-type-header" for="c2pa-write-create">
+                    <input
+                      type="checkbox"
+                      id="c2pa-write-create"
+                      name="c2pa-write-create"
+                      value="create"
+                      onchange="updateC2paWriteForm()"
+                    />
+                    <span class="c2pa-type-name" data-i18n="c2pa.type_digital"
+                      >Digitally Created</span
+                    >
+                  </label>
+                  <div class="c2pa-type-fields">
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="title"
+                      data-type="create"
+                      id="c2pa-field-create-title"
+                      name="c2pa-field-create-title"
+                      placeholder="My Image"
+                    />
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="author"
+                      data-type="create"
+                      id="c2pa-field-create-author"
+                      name="c2pa-field-create-author"
+                      placeholder="Creator name"
+                    />
+                  </div>
+                </div>
+                <div class="c2pa-type-card" data-form-type="edit">
+                  <label class="c2pa-type-header" for="c2pa-write-edit">
+                    <input
+                      type="checkbox"
+                      id="c2pa-write-edit"
+                      name="c2pa-write-edit"
+                      value="edit"
+                      onchange="updateC2paWriteForm()"
+                    />
+                    <span class="c2pa-type-name" data-i18n="c2pa.type_edited"
+                      >Edited / Modified</span
+                    >
+                  </label>
+                  <div class="c2pa-type-fields">
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="title"
+                      data-type="edit"
+                      id="c2pa-field-edit-title"
+                      name="c2pa-field-edit-title"
+                      placeholder="Edited Image"
+                    />
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="author"
+                      data-type="edit"
+                      id="c2pa-field-edit-author"
+                      name="c2pa-field-edit-author"
+                      placeholder="Editor name"
+                    />
+                  </div>
+                </div>
+                <div
+                  class="c2pa-type-card"
+                  data-form-type="ai"
+                  data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+                >
+                  <label class="c2pa-type-header" for="c2pa-write-ai">
+                    <input
+                      type="checkbox"
+                      id="c2pa-write-ai"
+                      name="c2pa-write-ai"
+                      value="ai"
+                      onchange="updateC2paWriteForm()"
+                    />
+                    <span class="c2pa-type-name" data-i18n="c2pa.type_ai"
+                      >AI-Generated</span
+                    >
+                  </label>
+                  <div class="c2pa-type-fields">
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="title"
+                      data-type="ai"
+                      id="c2pa-field-ai-title"
+                      name="c2pa-field-ai-title"
+                      placeholder="AI Generated Image"
+                    />
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="author"
+                      data-type="ai"
+                      id="c2pa-field-ai-author"
+                      name="c2pa-field-ai-author"
+                      placeholder="Prompt Author name"
+                    />
+                  </div>
+                </div>
+                <div
+                  class="c2pa-type-card"
+                  data-form-type="capture"
+                  data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture"
+                >
+                  <label class="c2pa-type-header" for="c2pa-write-capture">
+                    <input
+                      type="checkbox"
+                      id="c2pa-write-capture"
+                      name="c2pa-write-capture"
+                      value="capture"
+                      onchange="updateC2paWriteForm()"
+                    />
+                    <span class="c2pa-type-name" data-i18n="c2pa.type_capture"
+                      >Digitally Captured</span
+                    >
+                  </label>
+                  <div class="c2pa-type-fields">
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="title"
+                      data-type="capture"
+                      id="c2pa-field-capture-title"
+                      name="c2pa-field-capture-title"
+                      placeholder="Photo title"
+                    />
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="author"
+                      data-type="capture"
+                      id="c2pa-field-capture-author"
+                      name="c2pa-field-capture-author"
+                      placeholder="Photographer name"
+                    />
+                  </div>
+                </div>
+                <div
+                  class="c2pa-type-card"
+                  data-form-type="composite"
+                  data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite"
+                >
+                  <label class="c2pa-type-header" for="c2pa-write-composite">
+                    <input
+                      type="checkbox"
+                      id="c2pa-write-composite"
+                      name="c2pa-write-composite"
+                      value="composite"
+                      onchange="updateC2paWriteForm()"
+                    />
+                    <span class="c2pa-type-name" data-i18n="c2pa.type_composite"
+                      >Composite</span
+                    >
+                  </label>
+                  <div class="c2pa-type-fields">
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="title"
+                      data-type="composite"
+                      id="c2pa-field-composite-title"
+                      name="c2pa-field-composite-title"
+                      placeholder="Composite Image"
+                    />
+                    <input
+                      type="text"
+                      class="c2pa-field"
+                      data-field="author"
+                      data-type="composite"
+                      id="c2pa-field-composite-author"
+                      name="c2pa-field-composite-author"
+                      placeholder="Creator name"
+                    />
+                  </div>
+                </div>
+                <div class="c2pa-type-card dnt-card">
+                  <label class="c2pa-type-header" for="c2pa-write-dnt">
+                    <input
+                      type="checkbox"
+                      id="c2pa-write-dnt"
+                      name="c2pa-write-dnt"
+                      onchange="updateC2paWriteForm()"
+                    />
+                    <span class="c2pa-type-name" data-i18n="c2pa.type_dnt"
+                      >Do Not Train AI</span
+                    >
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" id="c2pa-write-links-group">
+              <span data-i18n="c2pa.social_label">Social Links (optional)</span>
+              <div class="c2pa-links-grid">
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="instagram"
+                  id="c2pa-link-instagram"
+                  name="c2pa-link-instagram"
+                  placeholder="Instagram URL (e.g. https://instagram.com/username)"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="twitter"
+                  id="c2pa-link-twitter"
+                  name="c2pa-link-twitter"
+                  placeholder="X / Twitter URL"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="facebook"
+                  id="c2pa-link-facebook"
+                  name="c2pa-link-facebook"
+                  placeholder="Facebook URL"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="tiktok"
+                  id="c2pa-link-tiktok"
+                  name="c2pa-link-tiktok"
+                  placeholder="TikTok URL"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="youtube"
+                  id="c2pa-link-youtube"
+                  name="c2pa-link-youtube"
+                  placeholder="YouTube URL"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="website"
+                  id="c2pa-link-website"
+                  name="c2pa-link-website"
+                  placeholder="Website URL"
+                />
+              </div>
+              <span
+                style="margin-top: 10px; display: block"
+                data-i18n="c2pa.music_label"
+                >Music Streaming (optional)</span
+              >
+              <div class="c2pa-links-grid">
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="spotify"
+                  id="c2pa-link-spotify"
+                  name="c2pa-link-spotify"
+                  placeholder="Spotify URL"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="applemusic"
+                  id="c2pa-link-applemusic"
+                  name="c2pa-link-applemusic"
+                  placeholder="Apple Music URL"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="soundcloud"
+                  id="c2pa-link-soundcloud"
+                  name="c2pa-link-soundcloud"
+                  placeholder="SoundCloud URL"
+                />
+                <input
+                  type="url"
+                  class="c2pa-link"
+                  data-platform="bandcamp"
+                  id="c2pa-link-bandcamp"
+                  name="c2pa-link-bandcamp"
+                  placeholder="Bandcamp URL"
+                />
+              </div>
+            </div>
+
+            <div class="form-group" id="c2pa-write-image-group">
+              <label for="c2pa-write-file" data-i18n="c2pa.image_label"
+                >Image to sign</label
+              >
+              <input
+                type="file"
+                id="c2pa-write-file"
+                name="c2pa-write-file"
+                accept="image/png,image/jpeg,image/avif,image/webp"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleC2paWrite()"
+              id="c2pa-write-btn"
+              data-i18n="c2pa.write_submit"
+            >
+              Sign with C2PA
+            </button>
+            <div class="spinner" id="c2pa-write-spinner"></div>
+            <p
+              style="
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                margin-top: 10px;
+              "
+              data-i18n="c2pa.write_note"
+            >
+              Uses a test C2PA certificate. This is suitable for development and
+              testing purposes.
+            </p>
+          </div>
+
+          <!-- Verify Tab -->
+          <div id="c2pa-verify" style="display: none">
+            <p
+              style="
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                margin-bottom: 14px;
+              "
+              data-i18n="c2pa.verify_desc"
+            >
+              Quick verification of C2PA signatures. Upload an image to check if
+              it has valid C2PA provenance data.
+            </p>
+            <div class="form-group">
+              <label for="c2pa-verify-file" data-i18n="c2pa.verify_file_label"
+                >Image to verify</label
+              >
+              <input
+                type="file"
+                id="c2pa-verify-file"
+                name="c2pa-verify-file"
+                accept="image/png,image/jpeg,image/avif,image/webp,image/tiff"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleC2paVerify()"
+              id="c2pa-verify-btn"
+              data-i18n="c2pa.verify_submit"
+            >
+              Verify C2PA
+            </button>
+            <div class="spinner" id="c2pa-verify-spinner"></div>
+          </div>
+        </div>
+        <div id="c2pa-read-result" style="display: none; margin-top: 16px">
+          <div class="result" id="c2pa-read-output"></div>
+        </div>
+        <div id="c2pa-write-result" style="display: none; margin-top: 16px">
+          <div class="result" id="c2pa-write-output"></div>
+        </div>
+        <div id="c2pa-verify-result" style="display: none; margin-top: 16px">
+          <div class="result" id="c2pa-verify-output"></div>
+        </div>
+      </section>
+
+      <!-- Certificate / Digital Passport -->
+      <section id="page-certificate" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="cert.heading">
+            Digital Passport
+          </h2>
+        </div>
+        <div class="card-form">
+          <p
+            style="
+              font-size: 0.8rem;
+              color: var(--text-muted);
+              margin-bottom: 14px;
+            "
+            data-i18n="cert.desc"
+          >
+            Generate a signed Digital Passport PDF, DOCX, or EPUB with your
+            image, user info, and results from other tools. Paste your results
+            below, then click Generate.
+          </p>
+
+          <!-- Image upload -->
+          <div class="form-group">
+            <label for="cert-file" data-i18n="cert.image_label">Image</label>
+            <input
+              type="file"
+              id="cert-file"
+              name="cert-file"
+              accept="image/png,image/jpeg,image/bmp,image/tiff,image/webp"
+            />
+          </div>
+
+          <!-- User info (required) -->
+          <div class="form-group">
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.user_info_label"
+            >
+              Your Information <span style="color: var(--danger)">*</span>
+            </p>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
+            >
+              <div>
+                <input
+                  type="text"
+                  id="cert-name"
+                  class="cert-field"
+                  placeholder="Name"
+                  required
+                  maxlength="25"
+                />
+              </div>
+              <div>
+                <input
+                  type="email"
+                  id="cert-email"
+                  class="cert-field"
+                  placeholder="Email"
+                  required
+                  maxlength="40"
+                  oninput="validateEmailInput(this)"
+                />
+                <span
+                  id="cert-email-warn"
+                  class="simple-field-warn"
+                  style="display: none"
+                  >Please enter a valid email address</span
+                >
+              </div>
+              <div>
+                <div class="simple-phone-group">
+                  <select
+                    id="cert-phonecode"
+                    onchange="updatePhoneMaxLength()"
+                  ></select>
+                  <input
+                    type="tel"
+                    id="cert-phone"
+                    class="cert-field"
+                    placeholder="Phone"
+                    required
+                    maxlength="15"
+                    oninput="validatePhoneInput(this)"
+                  />
+                </div>
+                <span
+                  id="cert-phone-warn"
+                  class="simple-field-warn"
+                  style="display: none"
+                  >Please enter numbers only</span
+                >
+              </div>
+              <div>
+                <input
+                  type="url"
+                  id="cert-website"
+                  class="cert-field"
+                  placeholder="Website URL"
+                  required
+                  maxlength="30"
+                  oninput="validateUrlInput(this)"
+                  onfocus="prefixHttps(this)"
+                />
+                <span
+                  id="cert-website-warn"
+                  class="simple-field-warn"
+                  style="display: none"
+                  >Please enter a valid URL (e.g. https://example.com)</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Social links -->
+          <div class="form-group">
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.social_label"
+            >
+              Social Links (optional)
+            </p>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
+            >
+              <div>
+                <input
+                  type="url"
+                  id="cert-social-tiktok"
+                  class="cert-link"
+                  placeholder="TikTok URL"
+                  maxlength="80"
+                  oninput="validateSocialInput(this)"
+                />
+                <span
+                  id="cert-social-tiktok-warn"
+                  class="simple-field-warn"
+                  style="display: none"
+                  >Invalid URL</span
+                >
+              </div>
+              <div>
+                <input
+                  type="url"
+                  id="cert-social-facebook"
+                  class="cert-link"
+                  placeholder="Facebook URL"
+                  maxlength="80"
+                  oninput="validateSocialInput(this)"
+                />
+                <span
+                  id="cert-social-facebook-warn"
+                  class="simple-field-warn"
+                  style="display: none"
+                  >Invalid URL</span
+                >
+              </div>
+              <div>
+                <input
+                  type="url"
+                  id="cert-social-instagram"
+                  class="cert-link"
+                  placeholder="Instagram URL"
+                  maxlength="80"
+                  oninput="validateSocialInput(this)"
+                />
+                <span
+                  id="cert-social-instagram-warn"
+                  class="simple-field-warn"
+                  style="display: none"
+                  >Invalid URL</span
+                >
+              </div>
+              <div>
+                <input
+                  type="url"
+                  id="cert-social-youtube"
+                  class="cert-link"
+                  placeholder="YouTube URL"
+                  maxlength="80"
+                  oninput="validateSocialInput(this)"
+                />
+                <span
+                  id="cert-social-youtube-warn"
+                  class="simple-field-warn"
+                  style="display: none"
+                  >Invalid URL</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Music links -->
+          <div class="form-group" id="cert-music-group">
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.music_label"
+            >
+              Music Links (optional)
+            </p>
+            <div style="margin: 8px 0">
+              <label class="cert-music-toggle">
+                <input
+                  type="checkbox"
+                  id="cert-show-music"
+                  onchange="toggleCertMusicFields()"
+                />
+                <span data-i18n="cert.music_links_checkbox"
+                  >Add music platform links</span
+                >
+              </label>
+            </div>
+            <div id="cert-music-fields" style="display: none">
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
+              >
+                <div>
+                  <input
+                    type="url"
+                    id="cert-music-spotify"
+                    class="cert-link"
+                    placeholder="Spotify URL"
+                    maxlength="80"
+                    oninput="validateSocialInput(this)"
+                  />
+                  <span
+                    id="cert-music-spotify-warn"
+                    class="simple-field-warn"
+                    style="display: none"
+                    >Invalid URL</span
+                  >
+                </div>
+                <div>
+                  <input
+                    type="url"
+                    id="cert-music-applemusic"
+                    class="cert-link"
+                    placeholder="Apple Music URL"
+                    maxlength="80"
+                    oninput="validateSocialInput(this)"
+                  />
+                  <span
+                    id="cert-music-applemusic-warn"
+                    class="simple-field-warn"
+                    style="display: none"
+                    >Invalid URL</span
+                  >
+                </div>
+                <div>
+                  <input
+                    type="url"
+                    id="cert-music-ytmusic"
+                    class="cert-link"
+                    placeholder="YouTube Music URL"
+                    maxlength="80"
+                    oninput="validateSocialInput(this)"
+                  />
+                  <span
+                    id="cert-music-ytmusic-warn"
+                    class="simple-field-warn"
+                    style="display: none"
+                    >Invalid URL</span
+                  >
+                </div>
+                <div>
+                  <input
+                    type="url"
+                    id="cert-music-soundcloud"
+                    class="cert-link"
+                    placeholder="SoundCloud URL"
+                    maxlength="80"
+                    oninput="validateSocialInput(this)"
+                  />
+                  <span
+                    id="cert-music-soundcloud-warn"
+                    class="simple-field-warn"
+                    style="display: none"
+                    >Invalid URL</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result files (upload from other sections) -->
+          <div class="form-group">
+            <p
+              style="margin: 0 0 8px 0; font-weight: 600"
+              data-i18n="cert.results_label"
+            >
+              Tool Results (upload from other sections)
+            </p>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: 4px;
+              "
+            >
+              <div>
+                <label
+                  for="cert-result-wm"
+                  style="
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    display: block;
+                    margin-bottom: 2px;
+                  "
+                  data-i18n="cert.wm_label"
+                  >Watermark result file</label
+                >
+                <input
+                  type="file"
+                  id="cert-result-wm"
+                  accept=".json,.txt,.log"
+                />
+              </div>
+              <div>
+                <label
+                  for="cert-result-pi"
+                  style="
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    display: block;
+                    margin-bottom: 2px;
+                  "
+                  data-i18n="cert.pi_label"
+                  >Pixel injection result file</label
+                >
+                <input
+                  type="file"
+                  id="cert-result-pi"
+                  accept=".json,.txt,.log"
+                />
+              </div>
+              <div>
+                <label
+                  for="cert-result-fp"
+                  style="
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    display: block;
+                    margin-bottom: 2px;
+                  "
+                  data-i18n="cert.fp_label"
+                  >Fingerprint file (.json, .txt)</label
+                >
+                <input type="file" id="cert-result-fp" accept=".json,.txt" />
+              </div>
+              <div>
+                <label
+                  for="cert-result-ts"
+                  style="
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    display: block;
+                    margin-bottom: 2px;
+                  "
+                  data-i18n="cert.ts_label"
+                  >Timestamp file (.ots)</label
+                >
+                <input type="file" id="cert-result-ts" accept=".ots" />
+              </div>
+              <div>
+                <label
+                  for="cert-result-did"
+                  style="
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    display: block;
+                    margin-bottom: 2px;
+                  "
+                  data-i18n="cert.did_label"
+                  >DID Identity result (.json, .txt)</label
+                >
+                <input type="file" id="cert-result-did" accept=".json,.txt" />
+              </div>
+              <div>
+                <label
+                  for="cert-result-docw"
+                  style="
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    display: block;
+                    margin-bottom: 2px;
+                  "
+                  data-i18n="cert.docw_label"
+                  >Document watermark result (.txt)</label
+                >
+                <input
+                  type="file"
+                  id="cert-result-docw"
+                  accept=".txt,.pdf,.docx,.doc,.json,.csv,.log"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Generate button -->
+          <button
+            class="btn btn-primary"
+            onclick="generateProfessionalCert()"
+            id="cert-gen-btn"
+            style="width: 100%; padding: 12px; font-size: 1rem"
+          >
+            ⚡ Generate Digital Passport
+          </button>
+          <div class="spinner" id="cert-spinner"></div>
+          <p
+            id="cert-status"
+            style="
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              margin-top: 8px;
+              text-align: center;
+            "
+          ></p>
+
+          <!-- Download buttons (shown after generation) -->
+          <div
+            id="cert-download-section"
+            style="
+              display: none;
+              margin-top: 16px;
+              padding-top: 16px;
+              border-top: 1px solid var(--border);
+            "
+          >
+            <p
+              style="
+                font-size: 0.85rem;
+                margin-bottom: 10px;
+                text-align: center;
+              "
+              data-i18n="cert.download_label"
+            >
+              Certificate ready! Choose a format:
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <button
+                class="btn"
+                onclick="downloadProfessionalCert('pdf')"
+                style="
+                  background: #d32f2f;
+                  color: #fff;
+                  flex: 1;
+                  min-width: 100px;
+                "
+              >
+                📄 PDF
+              </button>
+              <button
+                class="btn"
+                onclick="downloadProfessionalCert('docx')"
+                style="
+                  background: #2b579a;
+                  color: #fff;
+                  flex: 1;
+                  min-width: 100px;
+                "
+              >
+                📝 DOCX
+              </button>
+              <button
+                class="btn"
+                onclick="downloadProfessionalCert('epub')"
+                style="
+                  background: #7ab55c;
+                  color: #fff;
+                  flex: 1;
+                  min-width: 100px;
+                "
+              >
+                📖 EPUB
+              </button>
+            </div>
+            <button
+              class="btn"
+              onclick="resetProfessionalCert()"
+              style="
+                margin-top: 12px;
+                width: 100%;
+                background: transparent;
+                color: var(--text-muted);
+                border: 1px solid var(--border);
+              "
+              data-i18n="cert.reset_btn"
+            >
+              ↻ Start Over
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Forensic Analyzer -->
+      <section id="page-forensic" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="forensic.heading">
+            Forensic Analyzer
+          </h2>
+        </div>
+        <p class="lead" data-i18n="forensic.desc">
+          Analyze images for tamper signals using ELA, noise inconsistency, JPEG
+          structure, and copy-move detection. Everything runs locally in your
+          browser.
+        </p>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="forensic-file" data-i18n="forensic.file_label"
+              >Image file</label
+            >
+            <input type="file" id="forensic-file" accept="image/*" />
+          </div>
+          <button
+            class="btn"
+            id="forensic-btn"
+            onclick="handleForensicAnalyze()"
+            data-i18n="forensic.submit"
+          >
+            Analyze Forensics
+          </button>
+          <span
+            id="forensic-spinner"
+            class="spinner"
+            style="display: none; margin-left: 8px"
+          ></span>
+        </div>
+        <div id="forensic-result" style="display: none; margin-top: 16px">
+          <div id="forensic-output" class="mono-box"></div>
+          <div
+            class="grid"
+            style="
+              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+              margin-top: 16px;
+            "
+          >
+            <div id="forensic-ela-map"></div>
+            <div id="forensic-noise-map"></div>
+            <div id="forensic-copy-map"></div>
+          </div>
+          <div
+            id="forensic-download"
+            style="text-align: center; margin-top: 16px"
+          ></div>
+        </div>
+      </section>
+
+      <!-- File Converter -->
+      <section id="page-converter" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="conv.heading">
+            File Converter
+          </h2>
+        </div>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="conv-file" data-i18n="conv.file_label"
+              >Select a file</label
+            >
+            <input
+              type="file"
+              id="conv-file"
+              accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt,.html,.htm,.csv,.json,.xml,.md,.rtf,.odt,.srt,.vtt,.ass,.ssa,.sub,.sbv,.smi,.lrc,.ttml,.dfxp,.mpl2,.pjs,.rt"
+              onchange="handleConvFile()"
+            />
+          </div>
+          <p
+            id="conv-file-type"
+            style="
+              font-size: 0.85rem;
+              color: var(--text-muted);
+              margin-top: 8px;
+            "
+          ></p>
+          <p
+            id="conv-file-name"
+            style="font-size: 0.85rem; color: var(--text-muted)"
+          ></p>
+          <div id="conv-options" style="display: none; margin-top: 12px"></div>
+          <button
+            class="btn"
+            id="conv-btn"
+            onclick="handleConvConvert()"
+            style="display: none; margin-top: 12px"
+            data-i18n="conv.submit"
+          >
+            Convert
+          </button>
+          <span
+            id="conv-spinner"
+            class="spinner"
+            style="display: none; margin-left: 8px"
+          ></span>
+          <p
+            id="conv-status"
+            style="
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              margin-top: 8px;
+            "
+          ></p>
+          <div
+            id="conv-progress"
+            style="
+              display: none;
+              margin-top: 6px;
+              height: 4px;
+              background: var(--border);
+              border-radius: 2px;
+              overflow: hidden;
+            "
+          >
+            <div
+              id="conv-progress-fill"
+              style="
+                height: 100%;
+                width: 0;
+                background: var(--primary);
+                border-radius: 2px;
+                transition: width 0.3s;
+              "
+            ></div>
+          </div>
+        </div>
+        <div id="conv-output" style="display: none; margin-top: 16px">
+          <div id="conv-download" style="text-align: center"></div>
+        </div>
+      </section>
+
+      <!-- Removal Tools -->
+      <section id="page-removal-tools" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="rt.heading">Removal Tools</h2>
+        </div>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="rt-file" data-i18n="rt.file_label"
+              >Select image or audio file</label
+            >
+            <input
+              type="file"
+              id="rt-file"
+              accept="image/*,audio/*,.txt,.pdf,.docx,.doc,.csv,.json"
+              onchange="onRtFileChange()"
+            />
+          </div>
+          <p
+            id="rt-file-info"
+            style="
+              font-size: 0.85rem;
+              color: var(--text-muted);
+              margin-top: 8px;
+            "
+          ></p>
+
+          <div id="rt-options" style="display: none; margin-top: 16px">
+            <div id="rt-image-options" style="display: none">
+              <p
+                style="font-weight: 600; margin-bottom: 8px"
+                data-i18n="rt.image_section"
+              >
+                Image Removal Options
+              </p>
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-wm" />
+                <span data-i18n="rt.remove_wm">Digital Watermark</span></label
+              >
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-pi" />
+                <span data-i18n="rt.remove_pi">Pixel Injection</span></label
+              >
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-c2pa" />
+                <span data-i18n="rt.remove_c2pa">C2PA Provenance</span></label
+              >
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-meta" />
+                <span data-i18n="rt.remove_meta">Metadata</span></label
+              >
+            </div>
+            <div id="rt-audio-options" style="display: none">
+              <p
+                style="font-weight: 600; margin-bottom: 8px"
+                data-i18n="rt.audio_section"
+              >
+                Audio Removal Options
+              </p>
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-audio-wm" />
+                <span data-i18n="rt.remove_audio_wm"
+                  >Audio Watermark</span
+                ></label
+              >
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-audio-meta" />
+                <span data-i18n="rt.remove_audio_meta">Metadata</span></label
+              >
+            </div>
+            <div id="rt-document-options" style="display: none">
+              <p
+                style="font-weight: 600; margin-bottom: 8px"
+                data-i18n="rt.document_section"
+              >
+                Document Cleaning Options
+              </p>
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-doc-wm" />
+                <span data-i18n="rt.remove_doc_wm"
+                  >Document Watermark</span
+                ></label
+              >
+              <label class="rt-check"
+                ><input type="checkbox" id="rt-doc-meta" />
+                <span data-i18n="rt.remove_doc_meta">Metadata</span></label
+              >
+            </div>
+
+            <div class="form-group" style="margin-top: 12px">
+              <label for="rt-password" data-i18n="rt.password_label"
+                >Watermark Password</label
+              >
+              <input
+                type="password"
+                id="rt-password"
+                placeholder="Enter password used during embedding"
+              />
+            </div>
+
+            <button
+              class="btn"
+              id="rt-btn"
+              onclick="handleRtRemove()"
+              style="margin-top: 16px"
+              data-i18n="rt.remove_btn"
+            >
+              Remove Selected
+            </button>
+            <span
+              id="rt-spinner"
+              class="spinner"
+              style="display: none; margin-left: 8px"
+            ></span>
+          </div>
+
+          <p
+            id="rt-status"
+            style="
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              margin-top: 8px;
+            "
+          ></p>
+        </div>
+        <div id="rt-result" style="display: none; margin-top: 16px">
+          <p id="rt-output" style="display: none"></p>
+          <div
+            id="rt-download"
+            style="text-align: center; margin-top: 12px"
+          ></div>
+        </div>
+      </section>
+
+      <!-- ID Forge -->
+      <section id="page-id_forge" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="card.id_forge.title">
+            ID Forge
+          </h2>
+        </div>
+        <p class="lead" data-i18n="card.id_forge.desc">
+          Generate UUIDs, ULIDs, Nano IDs, SWHIDs and more
+        </p>
+        <div class="card-form">
+          <div class="form-group">
+            <label for="if-type">ID Type</label>
+            <select id="if-type" onchange="idForgeShowInfo()">
+              <option value="swhid">
+                SWHID (SHA1 &amp; SHA-256 — ISO/IEC 18670)
+              </option>
+              <option value="uuidv4">UUID v4 (Random — RFC 9562)</option>
+              <option value="uuidv7">UUID v7 (Time-ordered — RFC 9562)</option>
+              <option value="ulid">ULID (Crockford Base32)</option>
+              <option value="nanoid">NanoID (URL-safe)</option>
+            </select>
+          </div>
+          <div
+            id="if-info"
+            class="card-info"
+            style="
+              display: none;
+              margin-bottom: 14px;
+              padding: 12px;
+              background: var(--card);
+              border: 1px solid var(--border);
+              border-radius: var(--radius);
+              font-size: 0.82rem;
+              line-height: 1.6;
+            "
+          ></div>
+          <div id="if-count-wrapper" class="form-group">
+            <label for="if-count">Count (1–10,000)</label>
+            <input
+              type="number"
+              id="if-count"
+              value="1"
+              min="1"
+              max="10000"
+              oninput="idForgeUpdateCount()"
+            />
+          </div>
+          <div id="if-nanoid-wrapper" class="form-group" style="display: none">
+            <label for="if-nanoid-len" data-i18n="id_forge.nanoid_len"
+              >NanoID Length</label
+            >
+            <input
+              type="number"
+              id="if-nanoid-len"
+              value="21"
+              min="4"
+              max="256"
+            />
+          </div>
+          <div id="if-swhid-source-wrapper" style="display: none">
+            <div
+              id="if-swhid-tabs"
+              style="
+                display: flex;
+                gap: 4px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                type="button"
+                class="btn-sm"
+                data-swhid-tab="file"
+                onclick="switchSwhidTab('file')"
+                data-i18n="id_forge.swhid_file"
+              >
+                Upload File
+              </button>
+              <button
+                type="button"
+                class="btn-sm"
+                data-swhid-tab="text"
+                onclick="switchSwhidTab('text')"
+                data-i18n="id_forge.swhid_text"
+              >
+                Insert Text
+              </button>
+            </div>
+            <div id="if-swhid-file-wrapper" class="form-group">
+              <label for="if-swhid-file" data-i18n="id_forge.swhid_file_label"
+                >Upload .ots / fingerprint.json / .txt for SHA-1 &amp; SHA-256
+                hash</label
+              >
+              <input type="file" id="if-swhid-file" accept=".ots,.json,.txt" />
+              <small
+                style="
+                  display: block;
+                  margin-top: 4px;
+                  opacity: 0.7;
+                  font-size: 0.75rem;
+                "
+                data-i18n="id_forge.swhid_file_hint"
+                >Accepts: .ots (extracts SHA-256), .json (fingerprint — uses
+                SHA-1), .txt (hashes content)</small
+              >
+            </div>
+            <div
+              id="if-swhid-text-wrapper"
+              class="form-group"
+              style="display: none"
+            >
+              <label for="if-swhid-text" data-i18n="id_forge.swhid_text_label"
+                >Enter or paste the text to compute SWHID</label
+              >
+              <textarea
+                id="if-swhid-text"
+                rows="3"
+                placeholder="Type or paste the text content here..."
+                oninput="validateSwhidText(this)"
+                style="
+                  width: 100%;
+                  box-sizing: border-box;
+                  font-family: monospace;
+                  font-size: 0.82rem;
+                  background: var(--bg);
+                  color: var(--text);
+                  border: 1px solid var(--border);
+                  border-radius: var(--radius);
+                  padding: 8px;
+                  resize: vertical;
+                "
+              ></textarea>
+              <small
+                id="if-swhid-text-warning"
+                style="
+                  display: none;
+                  color: #e74c3c;
+                  margin-top: 4px;
+                  font-size: 0.75rem;
+                "
+                data-i18n="id_forge.swhid_text_warning"
+                >English characters only. Non-English text will produce
+                incorrect SWHID.</small
+              >
+            </div>
+          </div>
+          <button
+            class="btn"
+            onclick="handleIdForgeGenerate()"
+            id="if-gen-btn"
+            data-i18n="id_forge.generate_btn"
+          >
+            Generate
+          </button>
+        </div>
+        <div id="if-result" style="display: none; margin-top: 16px">
+          <div class="result" style="text-align: left">
+            <textarea
+              id="if-output"
+              readonly
+              rows="8"
+              style="
+                width: 100%;
+                box-sizing: border-box;
+                resize: vertical;
+                font-family: monospace;
+                font-size: 0.78rem;
+                background: var(--bg);
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 10px;
+              "
+            ></textarea>
+            <div
+              style="
+                display: flex;
+                gap: 8px;
+                margin-top: 10px;
+                justify-content: center;
+              "
+            >
+              <button
+                class="btn"
+                onclick="idForgeCopy(this)"
+                data-i18n="id_forge.copy_btn"
+              >
+                Copy
+              </button>
+              <button
+                class="btn"
+                onclick="idForgeShowDownload()"
+                data-i18n="id_forge.download_btn"
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Document Watermark -->
+      <section id="page-document-watermark" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="docw.heading">
+            Document Watermarking
+          </h2>
+        </div>
+        <p class="lead" data-i18n="docw.desc">
+          Embed invisible watermarks in documents (TXT, PDF, DOCX, DOC). Three
+          algorithms for text steganography — 100% client-side.
+        </p>
+
+        <div class="card-form">
+          <div style="display: flex; gap: 8px; margin-bottom: 20px">
+            <button
+              class="btn tab-btn active"
+              data-docw-tab="embed"
+              onclick="switchDocwTab('embed')"
+              data-i18n="docw.embed_btn"
+            >
+              Embed
+            </button>
+            <button
+              class="btn tab-btn"
+              data-docw-tab="extract"
+              onclick="switchDocwTab('extract')"
+              data-i18n="docw.extract_btn"
+            >
+              Extract
+            </button>
+          </div>
+
+          <!-- Embed tab -->
+          <div id="docw-embed">
+            <div class="form-group">
+              <label for="docw-algo" data-i18n="docw.algo_label"
+                >Algorithm</label
+              >
+              <select id="docw-algo" onchange="docwAlgoChanged()">
+                <option value="1">1. Zero-Width Characters</option>
+                <option value="2">2. Unicode Homoglyphs</option>
+                <option value="3">3. Whitespace Replacement</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="docw-cover-file" data-i18n="docw.cover_label"
+                >Cover document</label
+              >
+              <input
+                type="file"
+                id="docw-cover-file"
+                accept=".txt,.pdf,.docx,.doc,.json,.csv"
+                onchange="loadDocwCoverFile(event)"
+              />
+              <p
+                id="docw-cover-name"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              ></p>
+              <p
+                id="docw-capacity"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 4px;
+                "
+              ></p>
+              <div
+                id="docw-cover-warning"
+                style="
+                  display: none;
+                  margin-top: 8px;
+                  padding: 12px;
+                  border-radius: var(--radius);
+                  background: var(--card);
+                  color: var(--text);
+                  border-left: 4px solid var(--danger);
+                  font-size: 0.78rem;
+                  line-height: 1.5;
+                "
+              ></div>
+            </div>
+            <div class="form-group">
+              <label for="docw-secret-file" data-i18n="docw.secret_file_label"
+                >Secret message file</label
+              >
+              <input
+                type="file"
+                id="docw-secret-file"
+                accept=".txt,.json,.csv,.pdf,.docx,.doc"
+                onchange="loadDocwSecretFile(event)"
+              />
+              <p
+                id="docw-secret-name"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              ></p>
+            </div>
+            <div class="form-group">
+              <label for="docw-password" data-i18n="docw.password_label"
+                >Password (optional)</label
+              >
+              <input
+                type="password"
+                id="docw-password"
+                data-i18n-placeholder="docw.password_placeholder"
+                placeholder="Enter password"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleDocwEmbed()"
+              id="docw-embed-btn"
+              data-i18n="docw.embed_submit"
+            >
+              Embed Watermark
+            </button>
+          </div>
+
+          <!-- Extract tab -->
+          <div id="docw-extract" style="display: none">
+            <div class="form-group">
+              <label for="docw-algo-ex" data-i18n="docw.algo_label"
+                >Algorithm</label
+              >
+              <select id="docw-algo-ex" onchange="docwExAlgoChanged()">
+                <option value="0">🔍 Auto Detect</option>
+                <option value="1">1. Zero-Width Characters</option>
+                <option value="2">2. Unicode Homoglyphs</option>
+                <option value="3">3. Whitespace Replacement</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="docw-extract-file" data-i18n="docw.extract_file_label"
+                >Watermarked document</label
+              >
+              <input
+                type="file"
+                id="docw-extract-file"
+                accept=".txt,.pdf,.docx,.doc,.json,.csv"
+                onchange="loadDocwExtractFile(event)"
+              />
+              <p
+                id="docw-extract-name"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              ></p>
+              <p
+                id="docw-ex-capacity"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 4px;
+                "
+              ></p>
+            </div>
+            <div class="form-group">
+              <label for="docw-password-ex" data-i18n="docw.password_label"
+                >Password (optional)</label
+              >
+              <input
+                type="password"
+                id="docw-password-ex"
+                data-i18n-placeholder="docw.password_placeholder"
+                placeholder="Enter password"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleDocwExtract()"
+              id="docw-extract-btn"
+              data-i18n="docw.extract_submit"
+            >
+              Extract Watermark
+            </button>
+          </div>
+        </div>
+
+        <!-- Embed Result -->
+        <div id="docw-embed-result" style="display: none; margin-top: 16px">
+          <div class="result" style="text-align: left">
+            <p
+              style="
+                font-size: 0.82rem;
+                color: var(--text-muted);
+                margin-bottom: 6px;
+              "
+            >
+              <span data-i18n="docw.algorithm_label">Algorithm:</span>
+              <span id="docw-embed-algo-name"></span>
+            </p>
+            <textarea
+              id="docw-embed-output"
+              readonly
+              rows="6"
+              style="
+                width: 100%;
+                box-sizing: border-box;
+                resize: vertical;
+                font-family: monospace;
+                font-size: 0.78rem;
+                background: var(--bg);
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 10px;
+              "
+            ></textarea>
+          </div>
+        </div>
+        <div id="docw-embed-buttons" style="display: none; margin-top: 12px">
+          <div
+            id="docw-embed-download"
+            style="margin-bottom: 8px; text-align: center"
+          ></div>
+          <div style="display: flex; gap: 8px; justify-content: center">
+            <button
+              class="btn"
+              onclick="docwCopyResult('docw-embed-output')"
+              data-i18n="docw.copy_btn"
+            >
+              Copy
+            </button>
+            <button
+              class="btn"
+              onclick="showDownloadModal()"
+              data-i18n="docw.download_results_btn"
+            >
+              Download Results
+            </button>
+          </div>
+        </div>
+
+        <!-- Extract Result -->
+        <div id="docw-extract-result" style="display: none; margin-top: 16px">
+          <div class="result" style="text-align: left">
+            <p
+              style="
+                font-size: 0.82rem;
+                color: var(--text-muted);
+                margin-bottom: 6px;
+              "
+            >
+              <span data-i18n="docw.algorithm_label">Algorithm:</span>
+              <span id="docw-extract-algo-name"></span>
+            </p>
+            <textarea
+              id="docw-extracted-msg"
+              readonly
+              rows="3"
+              style="
+                width: 100%;
+                box-sizing: border-box;
+                resize: vertical;
+                font-family: monospace;
+                font-size: 0.78rem;
+                background: var(--bg);
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 10px;
+              "
+            ></textarea>
+          </div>
+        </div>
+        <div id="docw-extract-buttons" style="display: none; margin-top: 12px">
+          <div style="display: flex; gap: 8px; justify-content: center">
+            <button
+              class="btn"
+              onclick="docwCopyResult('docw-extracted-msg')"
+              data-i18n="docw.copy_btn"
+            >
+              Copy
+            </button>
+            <button
+              class="btn"
+              onclick="showDownloadModal()"
+              data-i18n="docw.download_results_btn"
+            >
+              Download Results
+            </button>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Document Watermark full-page loading overlay -->
@@ -1343,7 +4627,6 @@
     <script src="Assistant/assistant_data.js" defer></script>
     <script src="Assistant/assistant.js" defer></script>
     <script src="Style/navigation.js" defer></script>
-    <script src="Style/mpa-router.js" defer></script>
     <script src="Watermark/utils.js?v=2" defer></script>
     <script src="Audio_Watermark/audio_watermark_core.js?v=7" defer></script>
     <script src="Audio_Watermark/audio_watermark.js?v=3" defer></script>

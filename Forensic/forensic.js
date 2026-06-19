@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -15,10 +15,6 @@
 
 var forensicLastResult = null;
 
-/**
- *
- * @param imgData
- */
 function forensicCanvasFromImageData(imgData) {
   var canvas = document.createElement("canvas");
   canvas.width = imgData.width || imgData.w;
@@ -28,12 +24,6 @@ function forensicCanvasFromImageData(imgData) {
   return canvas;
 }
 
-/**
- *
- * @param canvas
- * @param mime
- * @param quality
- */
 function forensicBlobFromCanvas(canvas, mime, quality) {
   return new Promise(function (resolve) {
     canvas.toBlob(
@@ -46,10 +36,6 @@ function forensicBlobFromCanvas(canvas, mime, quality) {
   });
 }
 
-/**
- *
- * @param blob
- */
 async function forensicLoadBlobImage(blob) {
   var file = new File([blob], "forensic-recompressed.jpg", {
     type: blob.type || "image/jpeg",
@@ -57,11 +43,6 @@ async function forensicLoadBlobImage(blob) {
   return await loadImage(file);
 }
 
-/**
- *
- * @param a
- * @param b
- */
 function forensicDiffImageData(a, b) {
   var w = a.width || a.w,
     h = a.height || a.h;
@@ -84,8 +65,8 @@ function forensicDiffImageData(a, b) {
   for (var p = 0; p < scores.length; p++)
     if (scores[p] > avg * 2.2 && scores[p] > 8) hot++;
 
-  for (const [j, score] of scores.entries()) {
-    var v = Math.min(255, Math.round((score / max) * 255 * 2.6));
+  for (var j = 0; j < scores.length; j++) {
+    var v = Math.min(255, Math.round((scores[j] / max) * 255 * 2.6));
     var idx = j * 4;
     out.data[idx] = v;
     out.data[idx + 1] = Math.round(v * 0.35);
@@ -104,11 +85,6 @@ function forensicDiffImageData(a, b) {
   };
 }
 
-/**
- *
- * @param imgData
- * @param noise
- */
 function forensicNoiseHeatmap(imgData, noise) {
   var w = imgData.width || imgData.w,
     h = imgData.height || imgData.h;
@@ -121,7 +97,8 @@ function forensicNoiseHeatmap(imgData, noise) {
   }
   var tiles = noise.suspicious_tiles || [];
   var max = Math.max(1, noise.high_residual || 1);
-  for (var tile of tiles) {
+  for (var t = 0; t < tiles.length; t++) {
+    var tile = tiles[t];
     var v = Math.min(255, Math.round((tile.score / max) * 255));
     for (var y = tile.y; y < tile.y + tile.h; y++) {
       for (var x = tile.x; x < tile.x + tile.w; x++) {
@@ -135,11 +112,6 @@ function forensicNoiseHeatmap(imgData, noise) {
   return out;
 }
 
-/**
- *
- * @param canvas
- * @param matches
- */
 function forensicDrawMatches(canvas, matches) {
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 2;
@@ -161,10 +133,6 @@ function forensicDrawMatches(canvas, matches) {
 
 var FORENSIC_MAX_DIMENSION = 4000;
 
-/**
- *
- * @param file
- */
 async function analyzeForensics(file) {
   var img = await loadImage(file);
   if (img.w > FORENSIC_MAX_DIMENSION || img.h > FORENSIC_MAX_DIMENSION) {
@@ -230,19 +198,14 @@ async function analyzeForensics(file) {
   };
 }
 
-/**
- *
- * @param level
- * @param score
- */
 function forensicRiskBadge(level, score) {
-  var cls = level === "high" ? "danger" : (level === "medium" ? "warn" : "ok");
+  var cls = level === "high" ? "danger" : level === "medium" ? "warn" : "ok";
   var color =
     cls === "danger"
       ? "var(--danger)"
-      : (cls === "warn"
+      : cls === "warn"
       ? "#f6a623"
-      : "var(--success)");
+      : "var(--success)";
   return (
     '<span style="display:inline-block;padding:6px 10px;border-radius:6px;background:' +
     color +
@@ -256,12 +219,6 @@ function forensicRiskBadge(level, score) {
   );
 }
 
-/**
- *
- * @param target
- * @param imgData
- * @param label
- */
 function forensicRenderCanvas(target, imgData, label) {
   var wrap = document.getElementById(target);
   if (!wrap) return;
@@ -274,17 +231,13 @@ function forensicRenderCanvas(target, imgData, label) {
   canvas.style.maxWidth = "100%";
   canvas.style.border = "1px solid var(--border)";
   canvas.style.borderRadius = "8px";
-  wrap.append(title);
-  wrap.append(canvas);
+  wrap.appendChild(title);
+  wrap.appendChild(canvas);
 }
 
-/**
- *
- * @param result
- */
 function renderForensicResult(result) {
-  var output = document.querySelector("#forensic-output");
-  var dl = document.querySelector("#forensic-download");
+  var output = document.getElementById("forensic-output");
+  var dl = document.getElementById("forensic-download");
   var cmCanvas = forensicCanvasFromImageData(result._visuals.source);
   forensicDrawMatches(cmCanvas, result.copy_move.matches || []);
 
@@ -334,13 +287,13 @@ function renderForensicResult(result) {
     result._visuals.noise,
     "Noise inconsistency map",
   );
-  var cmWrap = document.querySelector("#forensic-copy-map");
+  var cmWrap = document.getElementById("forensic-copy-map");
   cmWrap.innerHTML =
     '<div style="font-weight:700;margin-bottom:8px">Copy-move regions</div>';
   cmCanvas.style.maxWidth = "100%";
   cmCanvas.style.border = "1px solid var(--border)";
   cmCanvas.style.borderRadius = "8px";
-  cmWrap.append(cmCanvas);
+  cmWrap.appendChild(cmCanvas);
 
   var publicResult = JSON.parse(JSON.stringify(result));
   delete publicResult._visuals;
@@ -358,15 +311,12 @@ function renderForensicResult(result) {
     '.forensic.json" class="btn">Download JSON Report</a>';
 }
 
-/**
- *
- */
 async function handleForensicAnalyze() {
-  var btn = document.querySelector("#forensic-btn");
+  var btn = document.getElementById("forensic-btn");
   var file = await getFile("forensic-file");
-  var resultDiv = document.querySelector("#forensic-result");
-  var output = document.querySelector("#forensic-output");
-  var dl = document.querySelector("#forensic-download");
+  var resultDiv = document.getElementById("forensic-result");
+  var output = document.getElementById("forensic-output");
+  var dl = document.getElementById("forensic-download");
   if (!file) {
     resultDiv.style.display = "block";
     setText("forensic-output", "Please select an image first");
@@ -387,9 +337,9 @@ async function handleForensicAnalyze() {
   try {
     forensicLastResult = await analyzeForensics(file);
     renderForensicResult(forensicLastResult);
-  } catch (error) {
+  } catch (e) {
     output.innerHTML =
-      '<div class="result-error">Error: ' + escHtml(error.message) + "</div>";
+      '<div class="result-error">Error: ' + escHtml(e.message) + "</div>";
   } finally {
     btn.disabled = false;
     spinner("forensic-spinner", false);

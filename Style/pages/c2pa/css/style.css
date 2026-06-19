@@ -3,7 +3,6 @@
   flex-wrap: wrap;
   gap: 8px;
 }
-
 .c2pa-type-card {
   cursor: pointer;
   user-select: none;
@@ -13,17 +12,14 @@
   transition: 0.2s;
   overflow: hidden;
 }
-
 .c2pa-type-card:hover {
   border-color: var(--primary);
   background: var(--card-hover);
 }
-
 .c2pa-type-card:has(input:checked) {
   border-color: var(--primary);
   background: rgba(108, 92, 231, 0.12);
 }
-
 .c2pa-type-header {
   display: flex;
   align-items: center;
@@ -31,29 +27,24 @@
   padding: 8px 14px;
   cursor: pointer;
 }
-
 .c2pa-type-card input[type="checkbox"] {
   accent-color: var(--primary);
   margin: 0;
   width: 14px;
   height: 14px;
 }
-
 .c2pa-type-name {
   font-size: 0.85rem;
 }
-
 .c2pa-type-fields {
   display: none;
   padding: 0 14px 10px;
   gap: 6px;
   flex-direction: column;
 }
-
 .c2pa-type-card:has(input:checked) .c2pa-type-fields {
   display: flex;
 }
-
 .c2pa-type-fields .c2pa-field {
   font-size: 0.8rem;
   padding: 6px 10px;
@@ -64,26 +55,21 @@
   width: 100%;
   box-sizing: border-box;
 }
-
 .c2pa-type-fields .c2pa-ingredient-wrap {
   margin-top: 2px;
 }
-
 .c2pa-type-fields .c2pa-ingredient-wrap input {
   font-size: 0.75rem;
 }
-
 .dnt-card {
   margin-top: 6px;
 }
-
 .c2pa-links-grid {
   display: flex;
   flex-direction: column;
   gap: 5px;
   margin-top: 4px;
 }
-
 .c2pa-link {
   font-size: 0.8rem;
   padding: 6px 10px;
@@ -92,7 +78,6 @@
   background: var(--bg);
   color: var(--text);
 }
-
 /* ── C2PA ── */
 .c2pa-section {
   margin-bottom: 16px;
@@ -100,7 +85,6 @@
   background: var(--bg);
   border-radius: 8px;
 }
-
 .c2pa-section h3 {
   font-size: 0.85rem;
   color: var(--primary);
@@ -108,70 +92,58 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-
 .c2pa-details-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.8rem;
 }
-
 .c2pa-details-table td {
   padding: 4px 8px;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
 }
-
 .c2pa-details-table td:first-child {
   color: var(--text-muted);
   white-space: nowrap;
   width: 140px;
   font-size: 0.75rem;
 }
-
 .c2pa-details-table code {
   font-size: 0.7rem;
   word-break: break-all;
 }
-
 .c2pa-validation-list {
   list-style: none;
   padding: 0;
   margin: 6px 0;
 }
-
 .c2pa-validation-list li {
   font-size: 0.75rem;
   padding: 3px 0;
   border-bottom: 1px solid var(--border);
   color: var(--text-muted);
 }
-
 .c2pa-validation-list li:last-child {
   border-bottom: none;
 }
-
 .c2pa-validation-list code {
   font-size: 0.7rem;
   color: var(--text);
 }
-
 .c2pa-validation-category {
   margin: 8px 0 4px;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
-
 .c2pa-validation-category strong {
   color: var(--text);
 }
-
 .c2pa-validation-summary {
   font-size: 0.78rem;
   color: var(--text-muted);
   margin: 4px 0 8px;
 }
-
 .c2pa-action-item {
   display: flex;
   gap: 8px;
@@ -179,11 +151,9 @@
   border-bottom: 1px solid var(--border);
   align-items: flex-start;
 }
-
 .c2pa-action-item:last-child {
   border-bottom: none;
 }
-
 .c2pa-action-number {
   width: 22px;
   height: 22px;
@@ -197,7 +167,6 @@
   justify-content: center;
   flex-shrink: 0;
 }
-
 .c2pa-action-content {
   flex: 1;
   display: flex;
@@ -205,7 +174,6 @@
   gap: 4px 8px;
   align-items: center;
 }
-
 .c2pa-action-badge {
   display: inline-block;
   padding: 2px 10px;
@@ -215,7 +183,6 @@
   background: rgba(108, 92, 231, 0.15);
   color: var(--primary);
 }
-
 .c2pa-action-src {
   font-size: 0.7rem;
   color: var(--text-muted);
@@ -223,17 +190,14 @@
   padding: 1px 6px;
   border-radius: 4px;
 }
-
 .c2pa-action-desc {
   width: 100%;
   font-size: 0.78rem;
   color: var(--text-muted);
 }
-
 .c2pa-action-params {
   width: 100%;
 }
-
 .c2pa-action-params pre {
   font-size: 0.68rem;
   margin: 4px 0;
@@ -245,24 +209,20 @@
   white-space: pre-wrap;
   word-break: break-all;
 }
-
 .c2pa-action-agent {
   font-size: 0.72rem;
   color: var(--text-muted);
 }
-
 .c2pa-action-when {
   font-size: 0.72rem;
   color: var(--text-muted);
 }
-
 .c2pa-action-reason {
   font-size: 0.72rem;
   color: var(--text-muted);
   font-style: italic;
   width: 100%;
 }
-
 .c2pa-assertion-item {
   padding: 8px;
   margin-bottom: 6px;
@@ -270,11 +230,9 @@
   border: 1px solid var(--border);
   border-radius: 6px;
 }
-
 .c2pa-assertion-item strong {
   font-size: 0.78rem;
 }
-
 .c2pa-assertion-item pre {
   font-size: 0.7rem;
   margin-top: 4px;
@@ -284,76 +242,63 @@
   white-space: pre-wrap;
   word-break: break-all;
 }
-
 .c2pa-ingredient-item {
   padding: 6px 0;
   border-bottom: 1px solid var(--border);
   font-size: 0.8rem;
 }
-
 .c2pa-ingredient-item:last-child {
   border-bottom: none;
 }
-
 .c2pa-sig-info p {
   font-size: 0.8rem;
   margin: 2px 0;
 }
-
 .c2pa-empty {
   font-size: 0.78rem;
   color: var(--text-muted);
   font-style: italic;
 }
-
 .c2pa-no-data {
   text-align: center;
   padding: 24px;
   color: var(--text-muted);
 }
-
 .c2pa-no-data strong {
   display: block;
   font-size: 1rem;
   margin-bottom: 6px;
   color: var(--text);
 }
-
 .c2pa-error {
   color: var(--danger);
   padding: 12px;
   background: rgba(255, 82, 82, 0.08);
   border-radius: 8px;
 }
-
 .c2pa-success {
   text-align: center;
   padding: 16px;
   color: var(--success);
 }
-
 .c2pa-success strong {
   display: block;
   font-size: 1.1rem;
   margin-bottom: 8px;
 }
-
 .c2pa-verify-result {
   text-align: center;
   padding: 20px;
   border-radius: var(--radius);
 }
-
 .c2pa-verified {
   background: rgba(0, 230, 118, 0.08);
   border: 1px solid var(--success);
 }
-
 .c2pa-unverified {
   background: rgba(255, 193, 7, 0.08);
   border: 1px solid #ffc107;
 }
-
 .c2pa-verify-icon {
   width: 48px;
   height: 48px;
@@ -367,34 +312,28 @@
   background: var(--success);
   color: #000;
 }
-
 .c2pa-verify-icon-warn {
   background: #ffc107;
 }
-
 .c2pa-verify-result strong {
   display: block;
   font-size: 1.2rem;
   margin-bottom: 8px;
 }
-
 .c2pa-verify-result p {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin: 4px 0;
 }
-
 .c2pa-gen-info {
   font-size: 0.8rem;
   padding: 4px 0;
 }
-
 .c2pa-manifest-list {
   list-style: none;
   padding: 0;
   margin: 4px 0;
 }
-
 .c2pa-manifest-list li {
   font-size: 0.78rem;
   padding: 2px 0;

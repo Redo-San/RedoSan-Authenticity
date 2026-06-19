@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -13,20 +13,14 @@
 })();
 
 // Data has been moved to assistant_data.js
-/**
- *
- */
 function getAssistantLang() {
   try {
     if (typeof i18n !== "undefined" && i18n && i18n.lang) return i18n.lang;
-  } catch {}
+  } catch (e) {}
   var html = document.documentElement;
   return html.getAttribute("lang") || "en";
 }
 
-/**
- *
- */
 function getCurrentContext() {
   var active = document.querySelector(".page.active");
   if (!active) return "";
@@ -35,33 +29,24 @@ function getCurrentContext() {
 }
 
 // ── Arabic text normalization ──
-/**
- *
- * @param t
- */
 function normalizeArabic(t) {
   return t
-    .replaceAll(/[أإآ]/g, "ا")
-    .replaceAll(/[ة]/g, "ه")
-    .replaceAll(/[ى]/g, "ي")
-    .replaceAll(/[ـ]/g, "")
-    .replaceAll(/[\u064B-\u0652]/g, "");
+    .replace(/[أإآ]/g, "ا")
+    .replace(/[ة]/g, "ه")
+    .replace(/[ى]/g, "ي")
+    .replace(/[ـ]/g, "")
+    .replace(/[\u064B-\u0652]/g, "");
 }
 
 // ── Levenshtein distance (typo tolerance) ──
-/**
- *
- * @param a
- * @param b
- */
 function levenshtein(a, b) {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
   var m = [];
   for (var i = 0; i <= b.length; i++) m[i] = [i];
   for (var j = 0; j <= a.length; j++) m[0][j] = j;
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
+  for (var i = 1; i <= b.length; i++) {
+    for (var j = 1; j <= a.length; j++) {
       var cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
       m[i][j] = Math.min(
         m[i - 1][j] + 1,
@@ -74,22 +59,14 @@ function levenshtein(a, b) {
 }
 
 // ── Tokenizer with Arabic normalization ──
-/**
- *
- * @param t
- */
 function assistantTokenize(t) {
   return normalizeArabic(t.toLowerCase())
-    .replaceAll(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, "")
+    .replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, "")
     .split(/\s+/)
     .filter(Boolean);
 }
 
 // ── Intelligent intent matcher ──
-/**
- *
- * @param input
- */
 function matchAssistantIntent(input) {
   var tokens = assistantTokenize(input);
   if (tokens.length === 0) return null;
@@ -99,7 +76,8 @@ function matchAssistantIntent(input) {
   var bestScore = 0;
   var bestMatch = null;
 
-  for (var intent of ASSISTANT_KB) {
+  for (var i = 0; i < ASSISTANT_KB.length; i++) {
+    var intent = ASSISTANT_KB[i];
     for (var j = 0; j < intent.patterns.length; j++) {
       var normPattern = normalizeArabic(intent.patterns[j].toLowerCase());
       var patternTokens = normPattern.split(/\s+/);
@@ -117,19 +95,19 @@ function matchAssistantIntent(input) {
       var inTokens = {};
 
       for (var k = 0; k < tokens.length; k++) union[tokens[k]] = true;
-      for (let k = 0; k < patternTokens.length; k++)
+      for (var k = 0; k < patternTokens.length; k++)
         union[patternTokens[k]] = true;
-      for (let k = 0; k < tokens.length; k++) inTokens[tokens[k]] = true;
+      for (var k = 0; k < tokens.length; k++) inTokens[tokens[k]] = true;
 
-      for (let k = 0; k < patternTokens.length; k++) {
+      for (var k = 0; k < patternTokens.length; k++) {
         if (inTokens[patternTokens[k]]) {
           exactMatches++;
         } else {
-          for (const token of tokens) {
-            var maxL = Math.max(patternTokens[k].length, token.length);
+          for (var l = 0; l < tokens.length; l++) {
+            var maxL = Math.max(patternTokens[k].length, tokens[l].length);
             if (maxL === 0) continue;
             if (
-              1 - levenshtein(patternTokens[k], token) / maxL >=
+              1 - levenshtein(patternTokens[k], tokens[l]) / maxL >=
               FUZZY_THRESHOLD
             ) {
               fuzzyMatches++;
@@ -163,21 +141,12 @@ function matchAssistantIntent(input) {
   return bestScore >= 0.28 ? bestMatch : null;
 }
 
-/**
- *
- * @param inputText
- */
 function getResponseLang(inputText) {
   return inputText && /[\u0600-\u06FF]/.test(inputText)
     ? "ar"
     : getAssistantLang();
 }
 
-/**
- *
- * @param intent
- * @param lang
- */
 function getAssistantResponse(intent, lang) {
   if (!lang) lang = getAssistantLang();
   if (intent && intent.response) {
@@ -186,11 +155,6 @@ function getAssistantResponse(intent, lang) {
   return ASSISTANT_FALLBACK[lang] || ASSISTANT_FALLBACK.en;
 }
 
-/**
- *
- * @param intent
- * @param lang
- */
 function getAssistantSuggestions(intent, lang) {
   if (!lang) lang = getAssistantLang();
   if (intent && intent.suggestions) {
@@ -199,10 +163,6 @@ function getAssistantSuggestions(intent, lang) {
   return [];
 }
 
-/**
- *
- * @param lang
- */
 function getContextualSuggestions(lang) {
   if (!lang) lang = getAssistantLang();
   var ctx = getCurrentContext();
@@ -265,62 +225,49 @@ function getContextualSuggestions(lang) {
 }
 
 // ── Chat History ──
-/**
- *
- */
 function loadChatHistory() {
   try {
     var h = localStorage.getItem("redosan_chat");
     return h ? JSON.parse(h) : [];
-  } catch {
+  } catch (e) {
     return [];
   }
 }
 
-/**
- *
- * @param messages
- */
 function saveChatHistory(messages) {
   try {
     localStorage.setItem("redosan_chat", JSON.stringify(messages.slice(-50)));
-  } catch {}
+  } catch (e) {}
 }
 
-/**
- *
- */
 function clearChatHistory() {
   try {
     localStorage.removeItem("redosan_chat");
-  } catch {}
+  } catch (e) {}
 }
 
 // ── UI ──
 var ASSISTANT_OPEN = false;
 var ASSISTANT_TOGGLE_LOCK = false;
 
-/**
- *
- */
 function toggleAssistant() {
   if (ASSISTANT_TOGGLE_LOCK) return;
   ASSISTANT_TOGGLE_LOCK = true;
   setTimeout(function () {
     ASSISTANT_TOGGLE_LOCK = false;
   }, 300);
-  var panel = document.querySelector("#assistantPanel");
-  var bubble = document.querySelector("#assistantBubble");
+  var panel = document.getElementById("assistantPanel");
+  var bubble = document.getElementById("assistantBubble");
   if (!panel || !bubble) return;
   ASSISTANT_OPEN = !ASSISTANT_OPEN;
   if (ASSISTANT_OPEN) {
     panel.classList.add("open");
     bubble.style.display = "none";
-    var msgArea = document.querySelector("#assistantMessages");
+    var msgArea = document.getElementById("assistantMessages");
     if (msgArea && msgArea.children.length === 0) {
       showInitialGreeting();
     }
-    var input = document.querySelector("#assistantInput");
+    var input = document.getElementById("assistantInput");
     if (input)
       setTimeout(function () {
         input.focus();
@@ -331,11 +278,8 @@ function toggleAssistant() {
   }
 }
 
-/**
- *
- */
 function showInitialGreeting() {
-  var msgArea = document.querySelector("#assistantMessages");
+  var msgArea = document.getElementById("assistantMessages");
   if (!msgArea) return;
   var lang = getAssistantLang();
   if (
@@ -389,13 +333,8 @@ function showInitialGreeting() {
   showSuggestions(suggestions, lang);
 }
 
-/**
- *
- * @param suggestions
- * @param lang
- */
 function showSuggestions(suggestions, lang) {
-  var container = document.querySelector("#assistantSuggestions");
+  var container = document.getElementById("assistantSuggestions");
   if (!container) return;
   container.innerHTML = "";
   if (!suggestions || suggestions.length === 0) {
@@ -403,13 +342,13 @@ function showSuggestions(suggestions, lang) {
     return;
   }
   container.style.display = "flex";
-  for (const suggestion of suggestions) {
+  for (var i = 0; i < suggestions.length; i++) {
     var chip = document.createElement("button");
     chip.className = "ast-chip";
-    chip.textContent = suggestion;
-    chip.addEventListener('click', (function (s, l) {
+    chip.textContent = suggestions[i];
+    chip.onclick = (function (s, l) {
       return function () {
-        document.querySelector("#assistantSuggestions").style.display = "none";
+        document.getElementById("assistantSuggestions").style.display = "none";
         addMessage(s, "user");
         var matched = matchAssistantIntent(s);
         setTimeout(function () {
@@ -423,18 +362,13 @@ function showSuggestions(suggestions, lang) {
           );
         }, 300);
       };
-    })(suggestion, lang || getAssistantLang()));
-    container.append(chip);
+    })(suggestions[i], lang || getAssistantLang());
+    container.appendChild(chip);
   }
 }
 
-/**
- *
- * @param text
- * @param role
- */
 function addMessage(text, role) {
-  var msgArea = document.querySelector("#assistantMessages");
+  var msgArea = document.getElementById("assistantMessages");
   if (!msgArea) return;
   var div = document.createElement("div");
   div.className = "ast-msg ast-msg-" + role;
@@ -442,16 +376,16 @@ function addMessage(text, role) {
   if (isBot) {
     var avatar = document.createElement("span");
     avatar.className = "ast-avatar";
-    div.append(avatar);
+    div.appendChild(avatar);
   }
   var content = document.createElement("div");
   content.className = "ast-content";
   var formatted = text
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll('\'', "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
   var segments = formatted.split(/\*\*(.*?)\*\*/g);
   for (var s = 0; s < segments.length; s++) {
     if (s % 2 === 1) {
@@ -466,16 +400,12 @@ function addMessage(text, role) {
       }
     }
   }
-  div.append(content);
-  msgArea.append(div);
+  div.appendChild(content);
+  msgArea.appendChild(div);
   msgArea.scrollTop = msgArea.scrollHeight;
   return div;
 }
 
-/**
- *
- * @param text
- */
 function sendAssistantMessage(text) {
   if (
     typeof REDOSAN_BOT_CHECK !== "undefined" &&
@@ -491,7 +421,7 @@ function sendAssistantMessage(text) {
     );
     return;
   }
-  var input = document.querySelector("#assistantInput");
+  var input = document.getElementById("assistantInput");
   if (!text || text.trim() === "") {
     text = input ? input.value.trim() : "";
     if (!text) return;
@@ -503,15 +433,15 @@ function sendAssistantMessage(text) {
   history.push({ role: "user", text: text });
   saveChatHistory(history);
 
-  document.querySelector("#assistantSuggestions").style.display = "none";
+  document.getElementById("assistantSuggestions").style.display = "none";
 
   // Show typing indicator
   var typing = document.createElement("div");
   typing.className = "ast-msg ast-msg-bot ast-typing";
   typing.innerHTML =
     '<div class="ast-typing-dots"><span></span><span></span><span></span></div>';
-  var msgArea = document.querySelector("#assistantMessages");
-  msgArea.append(typing);
+  var msgArea = document.getElementById("assistantMessages");
+  msgArea.appendChild(typing);
   msgArea.scrollTop = msgArea.scrollHeight;
 
   // Simulate processing delay
@@ -538,10 +468,6 @@ function sendAssistantMessage(text) {
   );
 }
 
-/**
- *
- * @param e
- */
 function handleAssistantKeydown(e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -549,9 +475,6 @@ function handleAssistantKeydown(e) {
   }
 }
 
-/**
- *
- */
 function initAssistant() {
   var lang = getAssistantLang();
 
@@ -560,7 +483,7 @@ function initAssistant() {
   if (title)
     title.textContent = lang === "ar" ? "🤖 رايدو (Raido)" : "🤖 Raido";
 
-  var input = document.querySelector("#assistantInput");
+  var input = document.getElementById("assistantInput");
   if (input)
     input.placeholder =
       lang === "ar" ? "اكتب سؤالك هنا..." : "Type your question...";
@@ -570,9 +493,9 @@ function initAssistant() {
     clearBtn.title = lang === "ar" ? "مسح المحادثة" : "Clear chat";
     clearBtn.addEventListener("click", function (e) {
       e.stopPropagation();
-      document.querySelector("#assistantMessages").innerHTML = "";
+      document.getElementById("assistantMessages").innerHTML = "";
       clearChatHistory();
-      document.querySelector("#assistantSuggestions").style.display = "none";
+      document.getElementById("assistantSuggestions").style.display = "none";
     });
   }
 
@@ -585,7 +508,7 @@ function initAssistant() {
     });
   }
 
-  var bubble = document.querySelector("#assistantBubble");
+  var bubble = document.getElementById("assistantBubble");
   if (bubble) {
     bubble.setAttribute(
       "aria-label",
@@ -613,15 +536,11 @@ function initAssistant() {
 }
 
 // Auto-init
-/**
- *
- * @param fn
- */
 function ready(fn) {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", fn);
-  } else {
+  if (document.readyState !== "loading") {
     fn();
+  } else {
+    document.addEventListener("DOMContentLoaded", fn);
   }
 }
 ready(initAssistant);

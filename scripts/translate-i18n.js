@@ -14,8 +14,8 @@
  * Default model: llama-3.3-70b-versatile (Groq - free, no credit card required)
  */
 
-var fs = require("node:fs");
-var path = require("node:path");
+var fs = require("fs");
+var path = require("path");
 
 var LANG_DIR = path.join(__dirname, "..", "Style", "lang");
 var LANGS = ["ar", "fr", "de", "es", "zh", "ja", "ko"];
@@ -30,19 +30,10 @@ var LANG_NAMES = {
   ko: "Korean",
 };
 
-/**
- *
- * @param filePath
- */
 function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
-/**
- *
- * @param obj
- * @param prefix
- */
 function flatten(obj, prefix) {
   var result = {};
   for (var key in obj) {
@@ -60,10 +51,6 @@ function flatten(obj, prefix) {
   return result;
 }
 
-/**
- *
- * @param obj
- */
 function unflatten(obj) {
   var result = {};
   for (var flatKey in obj) {
@@ -73,16 +60,11 @@ function unflatten(obj) {
       if (!current[parts[i]]) current[parts[i]] = {};
       current = current[parts[i]];
     }
-    current[parts.at(-1)] = obj[flatKey];
+    current[parts[parts.length - 1]] = obj[flatKey];
   }
   return result;
 }
 
-/**
- *
- * @param source
- * @param target
- */
 function findMissing(source, target) {
   var missing = {};
   for (var key in source) {
@@ -101,17 +83,18 @@ function findMissing(source, target) {
   return missing;
 }
 
-/**
- *
- * @param base
- * @param overlay
- */
 function deepMerge(base, overlay) {
   var result = JSON.parse(JSON.stringify(base));
   for (var key in overlay) {
-    result[key] = typeof overlay[key] === "object" &&
+    if (
+      typeof overlay[key] === "object" &&
       overlay[key] !== null &&
-      !Array.isArray(overlay[key]) ? deepMerge(result[key] || {}, overlay[key]) : overlay[key];
+      !Array.isArray(overlay[key])
+    ) {
+      result[key] = deepMerge(result[key] || {}, overlay[key]);
+    } else {
+      result[key] = overlay[key];
+    }
   }
   return result;
 }
@@ -128,11 +111,6 @@ var XNX3_LANG_MAP = {
 
 var XNX3_API = "https://api.translate.zvo.cn/translate.json";
 
-/**
- *
- * @param texts
- * @param targetLang
- */
 async function translateViaXnx3(texts, targetLang) {
   var keys = Object.keys(texts);
   var langId = XNX3_LANG_MAP[targetLang];
@@ -158,12 +136,12 @@ async function translateViaXnx3(texts, targetLang) {
       if (data.result !== 1)
         throw new Error("xnx3 translate error: " + (data.info || "unknown"));
       var translated = {};
-      for (const [i, key] of keys.entries()) {
-        translated[key] = data.text[i] || texts[key];
+      for (var i = 0; i < keys.length; i++) {
+        translated[keys[i]] = data.text[i] || texts[keys[i]];
       }
       return translated;
-    } catch (error) {
-      lastError = error;
+    } catch (e) {
+      lastError = e;
       if (attempt < 2)
         await new Promise(function (r) {
           setTimeout(r, 2000 * (attempt + 1));
@@ -173,11 +151,6 @@ async function translateViaXnx3(texts, targetLang) {
   throw lastError;
 }
 
-/**
- *
- * @param texts
- * @param targetLang
- */
 async function translateViaAI(texts, targetLang) {
   var apiKey =
     process.env.OPENAI_API_KEY ||
@@ -264,9 +237,9 @@ async function translateViaAI(texts, targetLang) {
   responseText = await resp.text();
   if (!resp.ok) {
     if (resp.status === 429) {
-      var waitMs = 30_000;
+      var waitMs = 30000;
       var match = responseText.match(/(\d+(?:\.\d+)?)\s*s/);
-      if (match) waitMs = Math.ceil(Number.parseFloat(match[1]) * 1000) + 1000;
+      if (match) waitMs = Math.ceil(parseFloat(match[1]) * 1000) + 1000;
       console.warn(
         "  Rate limited, waiting " + (waitMs / 1000).toFixed(0) + "s...",
       );
@@ -293,12 +266,9 @@ async function translateViaAI(texts, targetLang) {
   return JSON.parse(jsonMatch[0]);
 }
 
-/**
- *
- */
 async function main() {
-  var apply = process.argv.includes("--apply");
-  var dryRun = process.argv.includes("--dry-run");
+  var apply = process.argv.indexOf("--apply") !== -1;
+  var dryRun = process.argv.indexOf("--dry-run") !== -1;
   var en = readJson(path.join(LANG_DIR, "en.json"));
 
   var allMissing = {};
@@ -308,8 +278,8 @@ async function main() {
     var target;
     try {
       target = readJson(filePath);
-    } catch (error) {
-      void error;
+    } catch (e) {
+      void e;
       target = {};
     }
     var missing = findMissing(en, target);
@@ -352,7 +322,7 @@ async function main() {
           Object.keys(translated).length +
           " keys)",
       );
-    } catch (error) {
+    } catch (e) {
       if (
         process.env.GITHUB_TOKEN &&
         !process.env.OPENAI_API_KEY &&
@@ -372,22 +342,22 @@ async function main() {
               Object.keys(translated).length +
               " keys)",
           );
-        } catch (error_) {
+        } catch (e2) {
           console.error(
             "  ✗ " +
               lang +
               " failed (both GitHub Models and xnx3): " +
-              error_.message,
+              e2.message,
           );
         }
       } else {
-        console.error("  ✗ " + lang + " failed: " + error.message);
+        console.error("  ✗ " + lang + " failed: " + e.message);
       }
     }
   }
 }
 
-main().catch(function (error) {
-  console.error(error);
+main().catch(function (e) {
+  console.error(e);
   process.exit(1);
 });
