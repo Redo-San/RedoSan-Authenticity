@@ -1,27 +1,19 @@
 #!/usr/bin/env node
-var fs = require('node:fs');
-var path = require('node:path');
+var fs = require('fs');
+var path = require('path');
 
 var ROOT = path.join(__dirname, '..');
 var SKIP_DIRS = ['node_modules', 'vendor', '.git', 'cli'];
 var FIXED_FILES = [];
 
-/**
- *
- * @param filePath
- */
 function shouldProcess(filePath) {
   var rel = path.relative(ROOT, filePath);
-  for (const SKIP_DIR of SKIP_DIRS) {
-    if (rel.startsWith(SKIP_DIR)) return false;
+  for (var i = 0; i < SKIP_DIRS.length; i++) {
+    if (rel.startsWith(SKIP_DIRS[i])) return false;
   }
   return /\.(html|js)$/i.test(filePath);
 }
 
-/**
- *
- * @param content
- */
 function findOrphanLabels(content) {
   var orphans = [];
   var re = /<label\b([^>]*)>([\s\S]*?)<\/label>/gi;
@@ -38,11 +30,6 @@ function findOrphanLabels(content) {
   return orphans;
 }
 
-/**
- *
- * @param content
- * @param fromIndex
- */
 function findNextInputId(content, fromIndex) {
   var re = /<(?:input|select|textarea)\b[^>]*?\s+id\s*=\s*["']([^"']*)["']/gi;
   re.lastIndex = fromIndex;
@@ -50,11 +37,6 @@ function findNextInputId(content, fromIndex) {
   return m ? m[1] : null;
 }
 
-/**
- *
- * @param content
- * @param filePath
- */
 function fixOrphans(content, filePath) {
   var orphans = findOrphanLabels(content);
   if (orphans.length === 0) return content;
@@ -74,19 +56,16 @@ function fixOrphans(content, filePath) {
   return content;
 }
 
-/**
- *
- * @param dir
- */
 function walkDir(dir) {
   var entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (var e of entries) {
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
     if (e.name.startsWith('.')) continue;
     var full = path.join(dir, e.name);
     if (e.isDirectory()) {
       walkDir(full);
     } else if (e.isFile() && shouldProcess(full)) {
-      var content = fs.readFileSync(full, 'utf8');
+      var content = fs.readFileSync(full, 'utf-8');
       var fixed = fixOrphans(content, full);
       if (fixed !== content) {
         fs.writeFileSync(full, fixed, 'utf-8');

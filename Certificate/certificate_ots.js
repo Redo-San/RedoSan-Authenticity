@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -23,22 +23,18 @@ var CT_AGGREGATORS = [
 ];
 
 var OTS_HEADER_MAGIC = [
-  0x00, 0x4F, 0x70, 0x65, 0x6E, 0x54, 0x69, 0x6D, 0x65, 0x73, 0x74, 0x61, 0x6D,
-  0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6F, 0x6F, 0x66, 0x00, 0xBF, 0x89, 0xE2,
-  0xE8, 0x84, 0xE8, 0x92, 0x94,
+  0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+  0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2,
+  0xe8, 0x84, 0xe8, 0x92, 0x94,
 ];
 
-/**
- *
- * @param hashHex
- */
 function generatePendingOts(hashHex) {
-  if (!globalThis.OpenTimestamps) return null;
+  if (!window.OpenTimestamps) return null;
   try {
-    var OTS = globalThis.OpenTimestamps;
+    var OTS = window.OpenTimestamps;
     var hash = new Uint8Array(
       hashHex.match(/.{2}/g).map(function (b) {
-        return Number.parseInt(b, 16);
+        return parseInt(b, 16);
       }),
     );
     var detached = OTS.DetachedTimestampFile.fromHash(
@@ -58,32 +54,28 @@ function generatePendingOts(hashHex) {
     var bytes = detached.serializeToBytes();
     var b64 = btoa(String.fromCharCode.apply(null, bytes));
     return b64;
-  } catch {
+  } catch (e) {
     return null;
   }
 }
 
-/**
- *
- * @param fileBuf
- */
 async function submitCertTransparency(fileBuf) {
   try {
     var hashBuf = await crypto.subtle.digest("SHA-256", fileBuf);
     var hashBytes = new Uint8Array(hashBuf);
-    var hashHex = [...hashBytes]
+    var hashHex = Array.from(hashBytes)
       .map(function (b) {
         return b.toString(16).padStart(2, "0");
       })
       .join("");
     var lastErr;
-    for (const CT_AGGREGATOR of CT_AGGREGATORS) {
+    for (var ui = 0; ui < CT_AGGREGATORS.length; ui++) {
       try {
         var ac = new AbortController();
         var to = setTimeout(function () {
           ac.abort();
-        }, 15_000);
-        var resp = await fetch(CT_AGGREGATOR, {
+        }, 15000);
+        var resp = await fetch(CT_AGGREGATORS[ui], {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: hashBytes,
@@ -102,17 +94,17 @@ async function submitCertTransparency(fileBuf) {
         var ctBase64 = btoa(String.fromCharCode.apply(null, fullOts));
         return {
           submitted: true,
-          aggregator: CT_AGGREGATOR,
+          aggregator: CT_AGGREGATORS[ui],
           otsProof: ctBase64,
           hash: hashHex,
           timestamp: new Date().toISOString(),
         };
-      } catch (error) {
-        lastErr = error;
+      } catch (e) {
+        lastErr = e;
       }
     }
     throw lastErr;
-  } catch (error) {
+  } catch (e) {
     var pendingB64 = generatePendingOts(hashHex);
     if (pendingB64) {
       return {
@@ -123,11 +115,11 @@ async function submitCertTransparency(fileBuf) {
         timestamp: new Date().toISOString(),
       };
     }
-    var friendlyMsg = error.message;
+    var friendlyMsg = e.message;
     if (location && location.protocol === "file:") {
       friendlyMsg =
         "Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.";
-    } else if (error.message === "Failed to fetch" || error.name === "TypeError") {
+    } else if (e.message === "Failed to fetch" || e.name === "TypeError") {
       friendlyMsg =
         "All OpenTimestamps calendar servers are unreachable from your network. Use the CLI: node cli timestamp create";
     }

@@ -1,4 +1,4 @@
-(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 
 var CONV_IMG_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', '.tif', '.svg', '.ico'];
 var CONV_AUDIO_EXTS = ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma', '.opus'];
@@ -6,104 +6,62 @@ var CONV_VIDEO_EXTS = ['.mp4', '.webm', '.avi', '.mov', '.mkv', '.flv', '.wmv', 
 var CONV_DOC_EXTS = ['.txt', '.md', '.html', '.htm', '.csv', '.json', '.xml', '.pdf', '.doc', '.docx', '.rtf', '.odt'];
 var CONV_SUB_EXTS = ['.srt', '.vtt', '.ass', '.ssa', '.sub', '.sbv', '.smi', '.lrc', '.ttml', '.dfxp', '.mpl2', '.pjs', '.rt'];
 
-/**
- *
- * @param file
- */
 function convDetectType(file) {
   var name = file.name.toLowerCase();
   for (var i = 0; i < CONV_IMG_EXTS.length; i++) { if (name.endsWith(CONV_IMG_EXTS[i])) return 'image'; }
-  for (let i = 0; i < CONV_AUDIO_EXTS.length; i++) { if (name.endsWith(CONV_AUDIO_EXTS[i])) return 'audio'; }
-  for (let i = 0; i < CONV_VIDEO_EXTS.length; i++) { if (name.endsWith(CONV_VIDEO_EXTS[i])) return 'video'; }
-  for (let i = 0; i < CONV_DOC_EXTS.length; i++) { if (name.endsWith(CONV_DOC_EXTS[i])) return 'document'; }
-  for (let i = 0; i < CONV_SUB_EXTS.length; i++) { if (name.endsWith(CONV_SUB_EXTS[i])) return 'subtitle'; }
+  for (var i = 0; i < CONV_AUDIO_EXTS.length; i++) { if (name.endsWith(CONV_AUDIO_EXTS[i])) return 'audio'; }
+  for (var i = 0; i < CONV_VIDEO_EXTS.length; i++) { if (name.endsWith(CONV_VIDEO_EXTS[i])) return 'video'; }
+  for (var i = 0; i < CONV_DOC_EXTS.length; i++) { if (name.endsWith(CONV_DOC_EXTS[i])) return 'document'; }
+  for (var i = 0; i < CONV_SUB_EXTS.length; i++) { if (name.endsWith(CONV_SUB_EXTS[i])) return 'subtitle'; }
   return 'unknown';
 }
 
-/**
- *
- * @param type
- */
 function convGetFormats(type) {
   switch (type) {
-    case 'image': { return ['png', 'jpeg', 'webp', 'bmp', 'gif'];
-    }
-    case 'audio': { return convAudioFormats();
-    }
-    case 'video': { return convVideoFormats();
-    }
-    case 'document': { return ['txt', 'html', 'md', 'pdf', 'docx', 'json', 'xml', 'csv'];
-    }
-    case 'subtitle': { return convSubFormats();
-    }
-    default: { return [];
-    }
+    case 'image': return ['png', 'jpeg', 'webp', 'bmp', 'gif'];
+    case 'audio': return convAudioFormats();
+    case 'video': return convVideoFormats();
+    case 'document': return ['txt', 'html', 'md', 'pdf', 'docx', 'json', 'xml', 'csv'];
+    case 'subtitle': return convSubFormats();
+    default: return [];
   }
 }
 
-/**
- *
- */
 function convAudioFormats() {
   return ['wav', 'aiff', 'au', 'raw', 'mp3', 'ogg', 'opus', 'm4a', 'aac', 'flac', 'amr'];
 }
 
-/**
- *
- */
 function convVideoFormats() {
   return ['wav', 'aiff', 'au', 'raw', 'mp3', 'ogg', 'opus', 'm4a', 'aac', 'flac', 'amr'];
 }
 
-/**
- *
- */
 function convSubFormats() {
   return ['srt', 'vtt', 'ass', 'sub', 'sbv', 'txt', 'lrc', 'ttml'];
 }
 
-/**
- *
- * @param fmt
- */
 function convGetFormatLabel(fmt) {
   var labels = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP', bmp: 'BMP', gif: 'GIF',
     wav: 'WAV', aiff: 'AIFF', au: 'AU', raw: 'RAW', mp3: 'MP3', ogg: 'OGG', opus: 'OPUS', m4a: 'M4A', aac: 'AAC', flac: 'FLAC', amr: 'AMR',
-    mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV',
+    mp4: 'MP4', webm: 'WebM', mkv: 'MKV', mov: 'MOV', avi: 'AVI', mpeg: 'MPEG', '3gp': '3GP', wmv: 'WMV', flv: 'FLV', gif: 'GIF',
     txt: 'TXT', html: 'HTML', md: 'Markdown', pdf: 'PDF', docx: 'DOCX',
     json: 'JSON', xml: 'XML', csv: 'CSV',
     srt: 'SRT', vtt: 'VTT', ass: 'ASS', sub: 'SUB', sbv: 'SBV', lrc: 'LRC', ttml: 'TTML' };
   return labels[fmt] || fmt.toUpperCase();
 }
 
-/**
- *
- * @param s
- */
-function escAttr(s) { return String(s).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('\'', '&#39;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
-/**
- *
- * @param s
- */
+function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function convStripHtml(s) {
   return new DOMParser().parseFromString(String(s), 'text/html').body.textContent.trim();
 }
-/**
- *
- */
 function convYield() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
 var _convFile = null;
 var _convType = '';
 var _convFormats = [];
 
-/**
- *
- * @param pct
- */
 function convSetProgress(pct) {
-  var bar = document.querySelector('#conv-progress');
-  var fill = document.querySelector('#conv-progress-fill');
+  var bar = document.getElementById('conv-progress');
+  var fill = document.getElementById('conv-progress-fill');
   if (!bar || !fill) return;
   if (pct < 0) {
     bar.style.display = 'block';
@@ -119,14 +77,11 @@ function convSetProgress(pct) {
   }
 }
 
-/**
- *
- */
 function handleConvFile() {
-  var input = document.querySelector('#conv-file');
-  var opts = document.querySelector('#conv-options');
-  var outDiv = document.querySelector('#conv-output');
-  var dl = document.querySelector('#conv-download');
+  var input = document.getElementById('conv-file');
+  var opts = document.getElementById('conv-options');
+  var outDiv = document.getElementById('conv-output');
+  var dl = document.getElementById('conv-download');
   outDiv.style.display = 'none';
   dl.innerHTML = '';
   if (!input || !input.files || !input.files[0]) return;
@@ -136,60 +91,50 @@ function handleConvFile() {
   _convFormats = convGetFormats(_convType);
   var srcExt = _convFile.name.split('.').pop().toLowerCase();
   var extMap = { jpg: 'jpeg', jpeg: 'jpg', tiff: 'tif', tif: 'tiff', htm: 'html', ssa: 'ass', dfxp: 'ttml' };
-  var skip = new Set([srcExt, extMap[srcExt] || '']);
-  _convFormats = _convFormats.filter(function(f) { return !skip.has(f); });
+  var skip = [srcExt, extMap[srcExt] || ''];
+  _convFormats = _convFormats.filter(function(f) { return skip.indexOf(f) === -1; });
   var typeLabel = { image: 'Image', audio: 'Audio', video: 'Video', document: 'Document', unknown: 'Unknown' }[_convType] || 'Unknown';
-  document.querySelector('#conv-file-type').textContent = __('conv.detected', 'Detected: ') + typeLabel;
-  document.querySelector('#conv-file-name').textContent = __('conv.file', 'File: ') + _convFile.name;
+  document.getElementById('conv-file-type').textContent = __('conv.detected', 'Detected: ') + typeLabel;
+  document.getElementById('conv-file-name').textContent = __('conv.file', 'File: ') + _convFile.name;
   if (_convType === 'unknown') {
     opts.innerHTML = '<p style="color:var(--danger)">' + __('conv.unknown_type', 'Unsupported file type. Please select an image, audio, video, or document file.') + '</p>';
     opts.style.display = 'block';
-    document.querySelector('#conv-btn').style.display = 'none';
+    document.getElementById('conv-btn').style.display = 'none';
     return;
   }
   var html = '<span style="margin-bottom:8px;display:block;font-size:0.8rem;color:var(--text-muted)">' + __('conv.format_label', 'Convert to:') + '</span>';
   html += '<div id="conv-format-grid" style="display:flex;flex-wrap:wrap;gap:8px">';
-  for (const [i, _convFormat] of _convFormats.entries()) {
+  for (var i = 0; i < _convFormats.length; i++) {
     var active = i === 0 ? ' active' : '';
-    html += '<button type="button" class="tab-btn btn' + active + '" data-fmt="' + _convFormat + '" onclick="convSelectFormat(this)">' + convGetFormatLabel(_convFormat) + '</button>';
+    html += '<button type="button" class="tab-btn btn' + active + '" data-fmt="' + _convFormats[i] + '" onclick="convSelectFormat(this)">' + convGetFormatLabel(_convFormats[i]) + '</button>';
   }
   html += '</div>';
   opts.innerHTML = html;
   opts.style.display = 'block';
-  document.querySelector('#conv-btn').style.display = 'inline-block';
+  document.getElementById('conv-btn').style.display = 'inline-block';
 }
 
-/**
- *
- * @param el
- */
 function convSelectFormat(el) {
-  var grid = document.querySelector('#conv-format-grid');
+  var grid = document.getElementById('conv-format-grid');
   if (!grid) return;
   var btns = grid.querySelectorAll('.tab-btn');
   for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
   el.classList.add('active');
 }
 
-/**
- *
- */
 function convGetSelectedFormat() {
-  var grid = document.querySelector('#conv-format-grid');
+  var grid = document.getElementById('conv-format-grid');
   if (!grid) return '';
   var active = grid.querySelector('.tab-btn.active');
-  return active ? active.dataset.fmt : '';
+  return active ? active.getAttribute('data-fmt') : '';
 }
 
-/**
- *
- */
 async function handleConvConvert() {
-  var btn = document.querySelector('#conv-btn');
-  var spinner = document.querySelector('#conv-spinner');
-  var outDiv = document.querySelector('#conv-output');
-  var dl = document.querySelector('#conv-download');
-  var status = document.querySelector('#conv-status');
+  var btn = document.getElementById('conv-btn');
+  var spinner = document.getElementById('conv-spinner');
+  var outDiv = document.getElementById('conv-output');
+  var dl = document.getElementById('conv-download');
+  var status = document.getElementById('conv-status');
   if (!_convFile) return;
   btn.disabled = true;
   spinner.style.display = 'inline-block';
@@ -208,70 +153,49 @@ async function handleConvConvert() {
       var a = document.createElement('a');
       a.textContent = __('conv.download', 'Download') + ' (' + escHtml(outName) + ')';
       a.className = 'btn';
-      a.addEventListener('click', function() {
+      a.onclick = function() {
         var blobUrl = URL.createObjectURL(result.blob);
         var tmp = document.createElement('a');
         tmp.href = blobUrl;
         tmp.download = outName;
-        document.body.append(tmp);
+        document.body.appendChild(tmp);
         tmp.click();
-        tmp.remove();
+        document.body.removeChild(tmp);
         setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
-      });
-      dl.append(a);
+      };
+      dl.appendChild(a);
       outDiv.style.display = 'block';
       status.textContent = __('conv.success', 'Conversion complete!');
     }
-  } catch (error) {
-    status.textContent = __('conv.error', 'Error: ') + error.message;
-    console.error('Convert error:', error);
+  } catch (e) {
+    status.textContent = __('conv.error', 'Error: ') + e.message;
+    console.error('Convert error:', e);
   }
   spinner.style.display = 'none';
   btn.disabled = false;
 }
 
-/**
- *
- * @param file
- * @param type
- * @param format
- */
 async function convRun(file, type, format) {
   switch (type) {
-    case 'image': { return await convImage(file, format);
-    }
-    case 'audio': { return await convAudio(file, format);
-    }
-    case 'video': { return await convVideo(file, format);
-    }
-    case 'document': { return await convDocument(file, format);
-    }
-    case 'subtitle': { return await convSubtitle(file, format);
-    }
-    default: { throw new Error(__('conv.unsupported', 'Unsupported file type'));
-    }
+    case 'image': return await convImage(file, format);
+    case 'audio': return await convAudio(file, format);
+    case 'video': return await convVideo(file, format);
+    case 'document': return await convDocument(file, format);
+    case 'subtitle': return await convSubtitle(file, format);
+    default: throw new Error(__('conv.unsupported', 'Unsupported file type'));
   }
 }
 
-/**
- *
- * @param file
- */
 function convLoadImage(file) {
   return new Promise(function(resolve, reject) {
     var img = new Image();
     var url = URL.createObjectURL(file);
-    img.addEventListener('load', function() { URL.revokeObjectURL(url); resolve(img); });
+    img.onload = function() { URL.revokeObjectURL(url); resolve(img); };
     img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
     img.src = url;
   });
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convImage(file, format) {
   var img = await convLoadImage(file);
   var canvas = document.createElement('canvas');
@@ -288,37 +212,28 @@ async function convImage(file, format) {
   });
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convAudio(file, format) {
   var buf = await file.arrayBuffer();
-  var audioCtx = new (globalThis.AudioContext || globalThis.webkitAudioContext)();
+  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') await audioCtx.resume();
-  var audioBuf = await audioCtx.decodeAudioData([...buf]);
+  var audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
   if (format === 'wav' || format === 'aiff' || format === 'au' || format === 'raw') {
     var numChannels = audioBuf.numberOfChannels;
     var sampleRate = audioBuf.sampleRate;
-    let buf, mime, ext;
+    var buf, mime, ext;
     switch (format) {
-      case 'wav': {
+      case 'wav':
         buf = convEncodeWav(audioBuf, numChannels, sampleRate);
         mime = 'audio/wav'; ext = 'wav'; break;
-      }
-      case 'aiff': {
+      case 'aiff':
         buf = convEncodeAiff(audioBuf, numChannels, sampleRate);
         mime = 'audio/aiff'; ext = 'aiff'; break;
-      }
-      case 'au': {
+      case 'au':
         buf = convEncodeAu(audioBuf, numChannels, sampleRate);
         mime = 'audio/basic'; ext = 'au'; break;
-      }
-      case 'raw': {
+      case 'raw':
         buf = convEncodeRaw(audioBuf, numChannels);
         mime = 'audio/L8'; ext = 'raw'; break;
-      }
     }
     audioCtx.close();
     return { blob: new Blob([buf], { type: mime }), ext: ext };
@@ -334,10 +249,10 @@ async function convAudio(file, format) {
   };
   var extMap = { ogg: 'ogg', opus: 'opus', mp3: 'mp3', m4a: 'm4a', aac: 'aac', flac: 'flac', amr: 'amr' };
   var mimeList = audioMimeMap[format] || [];
-  for (const element of mimeList) {
+  for (var mi = 0; mi < mimeList.length; mi++) {
     try {
-      return await convAudioEncode(audioCtx, audioBuf, element, extMap[format] || format);
-    } catch{}
+      return await convAudioEncode(audioCtx, audioBuf, mimeList[mi], extMap[format] || format);
+    } catch(e) {}
   }
   if (format === 'mp3' && typeof lamejs !== 'undefined') {
     return await convAudioToMp3(audioCtx, audioBuf);
@@ -346,13 +261,6 @@ async function convAudio(file, format) {
   throw new Error(__('conv.audio_limited', 'Audio conversion is not supported in this browser. Try WAV or MP3 format.'));
 }
 
-/**
- *
- * @param audioCtx
- * @param audioBuf
- * @param mimeType
- * @param ext
- */
 function convAudioEncode(audioCtx, audioBuf, mimeType, ext) {
   return new Promise(function(resolve, reject) {
     var source = audioCtx.createBufferSource();
@@ -376,11 +284,6 @@ function convAudioEncode(audioCtx, audioBuf, mimeType, ext) {
   });
 }
 
-/**
- *
- * @param audioCtx
- * @param audioBuf
- */
 function convAudioToMp3(audioCtx, audioBuf) {
   return new Promise(function(resolve, reject) {
     try {
@@ -391,13 +294,9 @@ function convAudioToMp3(audioCtx, audioBuf) {
       var mp3Data = [];
       var length = audioBuf.length;
       var blockSize = 1152;
-      /**
-       *
-       * @param val
-       */
       function floatToInt16(val) {
         var s = Math.max(-1, Math.min(1, val));
-        return s < 0 ? s * 0x80_00 : s * 0x7F_FF;
+        return s < 0 ? s * 0x8000 : s * 0x7FFF;
       }
       if (numChannels === 1) {
         var samples = audioBuf.getChannelData(0);
@@ -411,15 +310,15 @@ function convAudioToMp3(audioCtx, audioBuf) {
       } else {
         var left = audioBuf.getChannelData(0);
         var right = numChannels > 1 ? audioBuf.getChannelData(1) : left;
-        for (let i = 0; i < length; i += blockSize) {
-          let end = Math.min(i + blockSize, length);
+        for (var i = 0; i < length; i += blockSize) {
+          var end = Math.min(i + blockSize, length);
           var lChunk = new Int16Array(end - i);
           var rChunk = new Int16Array(end - i);
-          for (let j = i; j < end; j++) {
+          for (var j = i; j < end; j++) {
             lChunk[j - i] = floatToInt16(left[j]);
             rChunk[j - i] = floatToInt16(right[j]);
           }
-          let buf = mp3enc.encodeBuffer(lChunk, rChunk);
+          var buf = mp3enc.encodeBuffer(lChunk, rChunk);
           if (buf.length > 0) mp3Data.push(buf);
         }
       }
@@ -428,19 +327,13 @@ function convAudioToMp3(audioCtx, audioBuf) {
       var blob = new Blob(mp3Data, { type: 'audio/mpeg' });
       audioCtx.close();
       resolve({ blob: blob, ext: 'mp3' });
-    } catch (error) {
+    } catch (e) {
       audioCtx.close();
-      reject(error);
+      reject(e);
     }
   });
 }
 
-/**
- *
- * @param audioBuffer
- * @param numChannels
- * @param sampleRate
- */
 function convEncodeWav(audioBuffer, numChannels, sampleRate) {
   var length = audioBuffer.length;
   var bytesPerSample = 2;
@@ -448,11 +341,6 @@ function convEncodeWav(audioBuffer, numChannels, sampleRate) {
   var dataSize = length * blockAlign;
   var buffer = new ArrayBuffer(44 + dataSize);
   var view = new DataView(buffer);
-  /**
-   *
-   * @param offset
-   * @param str
-   */
   function writeString(offset, str) {
     for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
   }
@@ -473,7 +361,7 @@ function convEncodeWav(audioBuffer, numChannels, sampleRate) {
   for (var i = 0; i < length; i++) {
     for (var ch = 0; ch < numChannels; ch++) {
       var sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
-      sample = sample < 0 ? sample * 0x80_00 : sample * 0x7F_FF;
+      sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
       view.setInt16(offset, sample, true);
       offset += 2;
     }
@@ -481,34 +369,22 @@ function convEncodeWav(audioBuffer, numChannels, sampleRate) {
   return buffer;
 }
 
-/**
- *
- * @param val
- * @param view
- * @param off
- */
 function convExtended80(val, view, off) {
   if (val === 0 || !isFinite(val)) { for (var i = 0; i < 10; i++) view.setUint8(off + i, 0); return; }
   var sign = val < 0 ? 1 : 0;
   val = Math.abs(val);
   var exp = Math.floor(Math.log2(val));
   var mant = val / Math.pow(2, exp);
-  var biasedExp = exp + 16_383;
+  var biasedExp = exp + 16383;
   view.setUint16(off, (sign << 15) | biasedExp, false);
   var frac = mant - 1;
-  var scaled = frac * 2_147_483_648;
+  var scaled = frac * 2147483648;
   var hi = Math.floor(scaled);
-  var lo = Math.round((scaled - hi) * 4_294_967_296);
+  var lo = Math.round((scaled - hi) * 4294967296);
   view.setUint32(off + 2, hi, false);
   view.setUint32(off + 6, lo, false);
 }
 
-/**
- *
- * @param audioBuffer
- * @param numChannels
- * @param sampleRate
- */
 function convEncodeAiff(audioBuffer, numChannels, sampleRate) {
   var length = audioBuffer.length;
   var bytesPerSample = 2;
@@ -520,10 +396,6 @@ function convEncodeAiff(audioBuffer, numChannels, sampleRate) {
   var buffer = new ArrayBuffer(totalSize);
   var view = new DataView(buffer);
   var pos = 0;
-  /**
-   *
-   * @param s
-   */
   function wStr(s) { for (var i = 0; i < s.length; i++) view.setUint8(pos++, s.charCodeAt(i)); }
   wStr('FORM');
   view.setUint32(4, totalSize - 8, false); pos += 4;
@@ -541,45 +413,34 @@ function convEncodeAiff(audioBuffer, numChannels, sampleRate) {
   for (var i = 0; i < length; i++) {
     for (var ch = 0; ch < numChannels; ch++) {
       var sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
-      sample = sample < 0 ? sample * 0x80_00 : sample * 0x7F_FF;
+      sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
       view.setInt16(pos, sample, false); pos += 2;
     }
   }
   return buffer;
 }
 
-/**
- *
- * @param audioBuffer
- * @param numChannels
- * @param sampleRate
- */
 function convEncodeAu(audioBuffer, numChannels, sampleRate) {
   var length = audioBuffer.length;
   var dataSize = length * numChannels * 2;
   var headerSize = 24;
   var buffer = new ArrayBuffer(headerSize + dataSize);
   var view = new DataView(buffer);
-  view.setUint32(0, 0x2E_73_6E_64, false); // ".snd"
+  view.setUint32(0, 0x2E736E64, false); // ".snd"
   view.setUint32(4, headerSize, false);
-  view.setUint32(8, 0xFF_FF_FF_FF, false);
+  view.setUint32(8, 0xFFFFFFFF, false);
   view.setUint32(12, 3, false); // 16-bit linear PCM
   view.setUint32(16, sampleRate, false);
   view.setUint32(20, numChannels, false);
   for (var i = 0, off = headerSize; i < length; i++) {
     for (var ch = 0; ch < numChannels; ch++) {
       var s = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
-      view.setInt16(off, s < 0 ? s * 0x80_00 : s * 0x7F_FF, false); off += 2;
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, false); off += 2;
     }
   }
   return buffer;
 }
 
-/**
- *
- * @param audioBuffer
- * @param numChannels
- */
 function convEncodeRaw(audioBuffer, numChannels) {
   var length = audioBuffer.length;
   var dataSize = length * numChannels * 2;
@@ -588,58 +449,43 @@ function convEncodeRaw(audioBuffer, numChannels) {
   for (var i = 0, off = 0; i < length; i++) {
     for (var ch = 0; ch < numChannels; ch++) {
       var s = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
-      view.setInt16(off, s < 0 ? s * 0x80_00 : s * 0x7F_FF, true); off += 2;
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true); off += 2;
     }
   }
   return buffer;
 }
 
 
-/**
- *
- * @param promise
- * @param ms
- */
 function convTimeout(promise, ms) {
   return Promise.race([promise, new Promise(function(_, reject) { setTimeout(function() { reject(new Error('Timeout')); }, ms); })]);
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convVideo(file, format) {
   var videoContainers = ['mp4','webm','avi','mov','mkv','flv','wmv','m4v','3gp','mpeg','mpg','ogv','ts','mts','m2ts'];
   var ext = file.name.split('.').pop().toLowerCase();
-  var isVideoExt = videoContainers.includes(ext);
+  var isVideoExt = videoContainers.indexOf(ext) !== -1;
   if (!isVideoExt) {
     try {
       return await convTimeout(convAudio(file, format), 5000);
-    } catch{}
+    } catch(e) {}
   }
-  var status = document.querySelector('#conv-status');
+  var status = document.getElementById('conv-status');
   if (status) status.textContent = __('conv.converting', 'Extracting audio from video...');
   convSetProgress(-1);
   try {
     return await convVideoToAudioCapture(file, format);
-  } catch(error) {
+  } catch(e2) {
     try {
       return await convVideoToAudioFfmpeg(file, format);
-    } catch(error_) {
+    } catch(e3) {
       if (typeof FFmpeg === 'undefined') {
-        throw new TypeError(__('conv.video_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.'));
+        throw new Error(__('conv.video_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.'));
       }
-      throw new Error(e.message + ' | ' + error.message + ' | ' + error_.message);
+      throw new Error(e.message + ' | ' + e2.message + ' | ' + e3.message);
     }
   }
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convVideoToAudioCapture(file, format) {
   var url = URL.createObjectURL(file);
   return new Promise(function(resolve, reject) {
@@ -647,20 +493,17 @@ async function convVideoToAudioCapture(file, format) {
     video.muted = true;
     video.playsInline = true;
     video.preload = 'auto';
-    video.addEventListener('loadedmetadata', function() {
+    video.onloadedmetadata = function() {
       try {
       var duration = video.duration || 30;
-      var audioCtx = new (globalThis.AudioContext || globalThis.webkitAudioContext)();
+      var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
       var streamDest = audioCtx.createMediaStreamDestination();
       var source = audioCtx.createMediaElementSource(video);
       source.connect(streamDest);
       var stopped = false;
-      /**
-       *
-       */
       function cleanup() { if (stopped) return; stopped = true; URL.revokeObjectURL(url); video.pause(); video.remove(); audioCtx.close(); }
-      var isPcm = ['wav', 'aiff', 'au', 'raw'].includes(format);
+      var isPcm = ['wav', 'aiff', 'au', 'raw'].indexOf(format) !== -1;
       var prefs, extMap, pcmTarget;
       if (isPcm) {
         prefs = ['audio/wav', 'audio/webm; codecs=opus', 'audio/mp4'];
@@ -677,37 +520,32 @@ async function convVideoToAudioCapture(file, format) {
         };
         prefs = fmtPrefs[format] || ['audio/webm; codecs=opus', 'audio/mp4'];
       }
-      /**
-       *
-       * @param idx
-       */
       function tryMime(idx) {
         if (idx >= prefs.length) { cleanup(); reject(new Error('No supported audio format')); return; }
         var mime = prefs[idx];
         var recorder;
         try { recorder = new MediaRecorder(streamDest.stream, { mimeType: mime }); }
-        catch{ tryMime(idx + 1); return; }
+        catch(e) { tryMime(idx + 1); return; }
         var chunks = [];
         recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
         recorder.onstop = function() {
-          if (pcmTarget) {
+          if (!pcmTarget) {
+            cleanup();
+            resolve({ blob: new Blob(chunks, { type: recorder.mimeType }), ext: format });
+          } else {
             var capBlob = new Blob(chunks, { type: recorder.mimeType });
-            var readCtx = new (globalThis.AudioContext || globalThis.webkitAudioContext)();
+            var readCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (readCtx.state === 'suspended') readCtx.resume();
             capBlob.arrayBuffer().then(function(buf) {
-              readCtx.decodeAudioData([...buf]).then(function(audioBuf) {
+              readCtx.decodeAudioData(buf.slice(0)).then(function(audioBuf) {
                 cleanup(); readCtx.close();
                 var numCh = audioBuf.numberOfChannels, sr = audioBuf.sampleRate;
                 var result;
                 switch (pcmTarget) {
-                  case 'wav': { result = convEncodeWav(audioBuf, numCh, sr); break;
-                  }
-                  case 'aiff': { result = convEncodeAiff(audioBuf, numCh, sr); break;
-                  }
-                  case 'au': { result = convEncodeAu(audioBuf, numCh, sr); break;
-                  }
-                  case 'raw': { result = convEncodeRaw(audioBuf, numCh); break;
-                  }
+                  case 'wav': result = convEncodeWav(audioBuf, numCh, sr); break;
+                  case 'aiff': result = convEncodeAiff(audioBuf, numCh, sr); break;
+                  case 'au': result = convEncodeAu(audioBuf, numCh, sr); break;
+                  case 'raw': result = convEncodeRaw(audioBuf, numCh); break;
                 }
                 var mimeMap = { wav: 'audio/wav', aiff: 'audio/aiff', au: 'audio/basic', raw: 'audio/L8' };
                 resolve({ blob: new Blob([result], { type: mimeMap[pcmTarget] }), ext: pcmTarget });
@@ -716,32 +554,24 @@ async function convVideoToAudioCapture(file, format) {
                 resolve({ blob: capBlob, ext: pcmTarget });
               });
             }).catch(function() { cleanup(); reject(new Error('Failed to read captured audio')); });
-          } else {
-            cleanup();
-            resolve({ blob: new Blob(chunks, { type: recorder.mimeType }), ext: format });
           }
         };
         recorder.onerror = function() { cleanup(); reject(new Error('Recording failed')); };
         recorder.start();
         var rate = 4;
-        try { video.playbackRate = rate; } catch{ try { rate = 2; video.playbackRate = rate; } catch{ rate = 1; } }
-        video.play().catch(function(error) { cleanup(); reject(new Error('Playback: ' + error.message)); });
+        try { video.playbackRate = rate; } catch(e) { try { rate = 2; video.playbackRate = rate; } catch(e2) { rate = 1; } }
+        video.play().catch(function(err) { cleanup(); reject(new Error('Playback: ' + err.message)); });
         setTimeout(function() { if (recorder.state === 'recording') recorder.stop(); }, duration / rate * 1000 + 1000);
       }
       tryMime(0);
-    } catch(error) { URL.revokeObjectURL(url); reject(error); }
-    });
+    } catch(e) { URL.revokeObjectURL(url); reject(e); }
+    };
     video.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
     video.src = url;
     video.load();
   });
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convVideoToAudioFfmpeg(file, format) {
   var audioExtractArgs = {
     wav:  { ext: 'wav',  args: ['-vn', '-c:a', 'pcm_s16le'] },
@@ -762,10 +592,10 @@ async function convVideoToAudioFfmpeg(file, format) {
   var corePath = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js';
   var ff = FFmpeg.createFFmpeg({ corePath: corePath, mainName: 'main', log: true });
   ff.setProgress(function(p) { convSetProgress(20 + Math.round(p.ratio * 70)); });
-  var status = document.querySelector('#conv-status');
+  var status = document.getElementById('conv-status');
   if (status) status.textContent = __('conv.loading_decoder', 'Loading audio decoder...');
   convSetProgress(-1);
-  try { await convTimeout(ff.load(), 30_000); } catch{ throw new Error(__('conv.audio_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.')); }
+  try { await convTimeout(ff.load(), 30000); } catch(e) { throw new Error(__('conv.audio_limited', 'Audio extraction unavailable in this browser. Try a desktop browser.')); }
   if (status) status.textContent = __('conv.converting', 'Extracting audio...');
   convSetProgress(10);
   var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
@@ -774,12 +604,12 @@ async function convVideoToAudioFfmpeg(file, format) {
   var fileData = await convReadFileAsUint8(file);
   ff.FS('writeFile', inName, fileData);
   convSetProgress(20);
-  var runArgs = [...['-nostdin', '-y', '-i', inName].concat(fmt.args), outName];
+  var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
   await convYield();
-  try { await ff.run.apply(ff, runArgs); } catch(error) { ff.FS('unlink', inName); throw error; }
+  try { await ff.run.apply(ff, runArgs); } catch(e) { ff.FS('unlink', inName); throw e; }
   convSetProgress(90);
   var files = ff.FS('readdir', '/');
-  if (!files.includes(outName)) { ff.FS('unlink', inName); throw new Error(__('conv.audio_limited', 'Audio extraction failed.')); }
+  if (files.indexOf(outName) === -1) { ff.FS('unlink', inName); throw new Error(__('conv.audio_limited', 'Audio extraction failed.')); }
   var data = ff.FS('readFile', outName);
   convSetProgress(95);
   ff.FS('unlink', inName);
@@ -787,24 +617,15 @@ async function convVideoToAudioFfmpeg(file, format) {
   return { blob: new Blob([data.buffer], { type: 'audio/' + fmt.ext }), ext: fmt.ext };
 }
 
-/**
- *
- * @param file
- */
 async function convReadFileAsUint8(file) {
   return new Promise(function(resolve, reject) {
     var reader = new FileReader();
-    reader.addEventListener('load', function() { resolve(new Uint8Array(reader.result)); });
+    reader.onload = function() { resolve(new Uint8Array(reader.result)); };
     reader.onerror = reject;
     reader.readAsArrayBuffer(file);
   });
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convVideoFfmpeg(file, format) {
   var ffmpegArgs = {
     mp4:  { ext: 'mp4',  args: ['-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac'] },
@@ -819,7 +640,7 @@ async function convVideoFfmpeg(file, format) {
   };
   var fmt = ffmpegArgs[format];
   if (!fmt) throw new Error(__('conv.video_limited', 'Video format not recognized.'));
-  var status = document.querySelector('#conv-status');
+  var status = document.getElementById('conv-status');
   if (status) status.textContent = __('conv.loading_video_decoder', 'Loading video decoder...');
   convSetProgress(-1);
 
@@ -829,8 +650,8 @@ async function convVideoFfmpeg(file, format) {
   ff.setProgress(function(p) { convSetProgress(20 + Math.round(p.ratio * 70)); });
   try {
     await ff.load();
-  } catch(error) {
-    throw error;
+  } catch(e) {
+    throw e;
   }
   if (status) status.textContent = __('conv.converting', 'Converting...');
   convSetProgress(10);
@@ -842,18 +663,18 @@ async function convVideoFfmpeg(file, format) {
   ff.FS('writeFile', inName, fileData);
   convSetProgress(20);
 
-  var runArgs = [...['-nostdin', '-y', '-i', inName].concat(fmt.args), outName];
+  var runArgs = ['-nostdin', '-y', '-i', inName].concat(fmt.args).concat([outName]);
   await convYield();
   try {
     await ff.run.apply(ff, runArgs);
-  } catch(error) {
+  } catch(e) {
     ff.FS('unlink', inName);
-    throw error;
+    throw e;
   }
 
   convSetProgress(90);
   var files = ff.FS('readdir', '/');
-  if (!files.includes(outName)) {
+  if (files.indexOf(outName) === -1) {
     ff.FS('unlink', inName);
     throw new Error(__('conv.video_limited', 'Video conversion failed. The codec may not be supported.'));
   }
@@ -864,11 +685,6 @@ async function convVideoFfmpeg(file, format) {
   return { blob: new Blob([data.buffer], { type: mimeMap[format] || 'video/' + fmt.ext }), ext: fmt.ext };
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convVideoNative(file, format) {
   var videoMimeMap = {
     mp4: ['video/mp4; codecs=h264', 'video/mp4; codecs=avc1', 'video/mp4', 'video/x-mp4'],
@@ -895,10 +711,10 @@ async function convVideoNative(file, format) {
     try {
       if (video.captureStream && typeof video.captureStream === 'function') {
         stream = video.captureStream(30);
-        if (!stream || !stream.getVideoTracks || stream.getVideoTracks().length === 0)
+        if (!stream || !stream.getVideoTracks || !stream.getVideoTracks().length)
           stream = null;
       }
-    } catch{ stream = null; }
+    } catch(e) { stream = null; }
     if (!stream) {
       try {
         var canvas = document.createElement('canvas');
@@ -910,18 +726,18 @@ async function convVideoNative(file, format) {
         };
         drawFrame();
         stream = canvas.captureStream(30);
-      } catch{ stream = null; }
+      } catch(e) { stream = null; }
     }
     if (!stream) {
       video.pause();
       throw new Error('captureStream unsupported');
     }
-    for (const element of mimeList) {
+    for (var mi = 0; mi < mimeList.length; mi++) {
       try {
-        var result = await convVideoEncode(stream, element, extMap[format], video.duration);
+        var result = await convVideoEncode(stream, mimeList[mi], extMap[format], video.duration);
         video.pause();
         return result;
-      } catch{}
+      } catch(e) {}
     }
     video.pause();
     throw new Error(__('conv.video_limited', 'Video encoding not supported in this browser.'));
@@ -930,10 +746,6 @@ async function convVideoNative(file, format) {
   }
 }
 
-/**
- *
- * @param url
- */
 function convLoadVideo(url) {
   return new Promise(function(resolve, reject) {
     var v = document.createElement('video');
@@ -941,16 +753,13 @@ function convLoadVideo(url) {
     v.playsInline = true;
     v.preload = 'auto';
     var resolved = false;
-    /**
-     *
-     */
     function done() {
       if (resolved) return;
       resolved = true;
       resolve(v);
     }
-    v.addEventListener('loadedmetadata', done);
-    v.addEventListener('canplay', done);
+    v.onloadedmetadata = done;
+    v.oncanplay = done;
     v.onerror = function() {
       var msg = 'Failed to load video';
       if (v.error) msg += ' (code ' + v.error.code + ')';
@@ -961,18 +770,11 @@ function convLoadVideo(url) {
   });
 }
 
-/**
- *
- * @param stream
- * @param mimeType
- * @param ext
- * @param duration
- */
 function convVideoEncode(stream, mimeType, ext, duration) {
   return new Promise(function(resolve, reject) {
     var chunks = [];
     var recorder;
-    try { recorder = new MediaRecorder(stream, { mimeType: mimeType }); } catch(error) { reject(error); return; }
+    try { recorder = new MediaRecorder(stream, { mimeType: mimeType }); } catch(e) { reject(e); return; }
     recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
     recorder.onstop = function() { resolve({ blob: new Blob(chunks, { type: mimeType }), ext: ext }); };
     recorder.onerror = function() { reject(new Error('Encoding failed')); };
@@ -981,29 +783,10 @@ function convVideoEncode(stream, mimeType, ext, duration) {
   });
 }
 
-/**
- *
- * @param frames
- * @param delayCs
- * @param w
- * @param h
- */
 function convGifEncode(frames, delayCs, w, h) {
   var data = [];
-  /**
-   *
-   * @param b
-   */
   function put(b) { data.push(b); }
-  /**
-   *
-   * @param v
-   */
   function putS(v) { put(v & 0xFF); put((v >> 8) & 0xFF); }
-  /**
-   *
-   * @param s
-   */
   function putStr(s) { for (var i = 0; i < s.length; i++) put(s.charCodeAt(i)); }
 
   // Collect color frequencies across all frames, reduce to 5-bit
@@ -1024,7 +807,7 @@ function convGifEncode(frames, delayCs, w, h) {
   var palIndex = {};
   for (var i = 0; i < maxColors; i++) {
     var parts = sorted[i].split(',');
-    let ri = +parts[0], gi = +parts[1], bi = +parts[2];
+    var ri = +parts[0], gi = +parts[1], bi = +parts[2];
     palette.push([(ri << 3) | (ri >> 2), (gi << 3) | (gi >> 2), (bi << 3) | (bi >> 2)]);
     palIndex[sorted[i]] = i;
   }
@@ -1043,27 +826,27 @@ function convGifEncode(frames, delayCs, w, h) {
   putS(w); putS(h);
   put(0xF0 | ((Math.log2(palSize) - 1) & 0x07));
   put(0); put(0);
-  for (const element of palette) {
-    put(element[0]); put(element[1]); put(element[2]);
+  for (var pi = 0; pi < palette.length; pi++) {
+    put(palette[pi][0]); put(palette[pi][1]); put(palette[pi][2]);
   }
 
   // Re-map pixels to palette indices using nearest color
   var indices = [];
-  for (let fi = 0; fi < frames.length; fi++) {
-    let rgba = frames[fi];
+  for (var fi = 0; fi < frames.length; fi++) {
+    var rgba = frames[fi];
     var frameIndices = new Uint8Array(w * h);
-    for (let j = 0; j < w * h; j++) {
+    for (var j = 0; j < w * h; j++) {
       var r = rgba[j * 4], g = rgba[j * 4 + 1], b = rgba[j * 4 + 2];
-      let ri = r >> 3, gi = g >> 3, bi = b >> 3;
-      let key = ri + ',' + gi + ',' + bi;
+      var ri = r >> 3, gi = g >> 3, bi = b >> 3;
+      var key = ri + ',' + gi + ',' + bi;
       var idx = palIndex[key];
       if (idx !== undefined && idx < maxColors) {
         frameIndices[j] = idx;
       } else {
         // Nearest color in palette using 8-bit values
         var best = 0, bestDist = Infinity;
-        for (const [pi2, element] of palette.entries()) {
-          var dr = r - element[0], dg = g - element[1], db = b - element[2];
+        for (var pi2 = 0; pi2 < palette.length; pi2++) {
+          var dr = r - palette[pi2][0], dg = g - palette[pi2][1], db = b - palette[pi2][2];
           var dist = dr * dr + dg * dg + db * db;
           if (dist < bestDist) { bestDist = dist; best = pi2; }
         }
@@ -1073,7 +856,7 @@ function convGifEncode(frames, delayCs, w, h) {
     indices.push(frameIndices);
   }
 
-  for (let fi = 0; fi < frames.length; fi++) {
+  for (var fi = 0; fi < frames.length; fi++) {
     put(0x21); put(0xF9); put(4); put(0x00); putS(delayCs); put(0); put(0x00);
     put(0x2C); putS(0); putS(0); putS(w); putS(h); put(0x00);
     put(minCodeSize);
@@ -1086,11 +869,6 @@ function convGifEncode(frames, delayCs, w, h) {
   return new Uint8Array(data);
 }
 
-/**
- *
- * @param indices
- * @param minCodeSize
- */
 function convGifLzw(indices, minCodeSize) {
   var clearCode = 1 << minCodeSize;
   var eoiCode = clearCode + 1;
@@ -1099,10 +877,6 @@ function convGifLzw(indices, minCodeSize) {
   var nextCode = eoiCode + 1;
   var result = [];
   var bitBuf = 0, bitCount = 0;
-  /**
-   *
-   * @param code
-   */
   function outCode(code) {
     bitBuf |= (code << bitCount);
     bitCount += codeSize;
@@ -1110,8 +884,9 @@ function convGifLzw(indices, minCodeSize) {
   }
   outCode(clearCode);
   var s = [];
-  for (var c of indices) {
-    var sc = [...s, c];
+  for (var i = 0; i < indices.length; i++) {
+    var c = indices[i];
+    var sc = s.concat([c]);
     var key = sc.join(',');
     if (dict[key] !== undefined) { s = sc; continue; }
     outCode(s.length === 1 ? s[0] : dict[s.join(',')]);
@@ -1125,16 +900,12 @@ function convGifLzw(indices, minCodeSize) {
   return result;
 }
 
-/**
- *
- * @param file
- */
 function convVideoToGif(file) {
   return new Promise(function(resolve, reject) {
     var url = URL.createObjectURL(file);
     var v = document.createElement('video');
     v.muted = true; v.playsInline = true;
-    v.addEventListener('loadedmetadata', function() {
+    v.onloadedmetadata = function() {
       var w = Math.min(v.videoWidth, 320), h = Math.min(v.videoHeight, 240);
       var canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
@@ -1145,9 +916,6 @@ function convVideoToGif(file) {
       var interval = dur / totalFrames;
       if (dur <= 0 || !isFinite(dur)) { URL.revokeObjectURL(url); reject(new Error('Invalid video duration')); return; }
       var frames = [], frameNum = 0;
-      /**
-       *
-       */
       function captureSeek() {
         if (frameNum >= totalFrames) {
           v.pause(); URL.revokeObjectURL(url);
@@ -1155,30 +923,30 @@ function convVideoToGif(file) {
           try {
             var gifData = convGifEncode(frames, Math.round(interval * 100), w, h);
             resolve({ blob: new Blob([gifData], { type: 'image/gif' }), ext: 'gif' });
-          } catch(error) { reject(error); }
+          } catch(e) { reject(e); }
           return;
         }
         v.currentTime = frameNum * interval;
       }
-      v.addEventListener('seeked', function() {
+      v.onseeked = function() {
         requestAnimationFrame(function() {
           ctx.drawImage(v, 0, 0, w, h);
-          frames.push([...ctx.getImageData(0, 0, w, h).data]);
+          frames.push(ctx.getImageData(0, 0, w, h).data.slice(0));
           frameNum++;
           convSetProgress(Math.round(frameNum / totalFrames * 90));
           captureSeek();
         });
-      });
+      };
       v.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
       // Start: capture first frame (video already at time 0 after load)
       requestAnimationFrame(function() {
         ctx.drawImage(v, 0, 0, w, h);
-        frames.push([...ctx.getImageData(0, 0, w, h).data]);
+        frames.push(ctx.getImageData(0, 0, w, h).data.slice(0));
         frameNum++;
         convSetProgress(Math.round(frameNum / totalFrames * 90));
         captureSeek();
       });
-    });
+    };
     v.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to load video')); };
     v.src = url;
     v.load();
@@ -1186,35 +954,24 @@ function convVideoToGif(file) {
 }
 
 // ── Subtitle Converter ──
-/**
- *
- * @param start
- * @param end
- * @param text
- */
 function convSubCue(start, end, text) { return { start: start, end: end, text: text }; }
 
-/**
- *
- * @param text
- * @param ext
- */
 function convSubParse(text, ext) {
   var cues = [];
   switch (ext) {
     case 'srt': {
       var blocks = text.split(/\n\s*\n/);
-      for (const block of blocks) {
-        var lines = block.trim().split('\n');
+      for (var b = 0; b < blocks.length; b++) {
+        var lines = blocks[b].trim().split('\n');
         if (lines.length < 2) continue;
         var timeMatch = lines[1] ? lines[1].match(/(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/) : null;
         if (!timeMatch) {
           timeMatch = lines[0].match(/(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/);
           if (!timeMatch) continue;
-          lines = [...lines];
+          lines = lines.slice(0);
         }
-        var start = (+timeMatch[1])*3_600_000 + (+timeMatch[2])*60_000 + (+timeMatch[3])*1000 + (+timeMatch[4]);
-        var end = (+timeMatch[5])*3_600_000 + (+timeMatch[6])*60_000 + (+timeMatch[7])*1000 + (+timeMatch[8]);
+        var start = (+timeMatch[1])*3600000 + (+timeMatch[2])*60000 + (+timeMatch[3])*1000 + (+timeMatch[4]);
+        var end = (+timeMatch[5])*3600000 + (+timeMatch[6])*60000 + (+timeMatch[7])*1000 + (+timeMatch[8]);
         var textIdx = timeMatch === lines[0].match ? 1 : 2;
         var txt = lines.slice(textIdx).join('\n');
         cues.push(convSubCue(start, end, txt));
@@ -1224,18 +981,18 @@ function convSubParse(text, ext) {
     case 'vtt': {
       var parts = text.split(/\n\s*\n/);
       for (var i = 0; i < parts.length; i++) {
-        let lines = parts[i].trim().split('\n');
+        var lines = parts[i].trim().split('\n');
         if (lines.length < 2 || lines[0] === 'WEBVTT' || lines[0].startsWith('NOTE')) continue;
-        let timeMatch = lines[0].match(/(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})\.(\d{3})/) ||
+        var timeMatch = lines[0].match(/(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})\.(\d{3})/) ||
           lines[0].match(/(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2})\.(\d{3})/);
         if (!timeMatch) continue;
-        let start, end;
+        var start, end;
         if (timeMatch.length === 9) {
-          start = (+timeMatch[1])*3_600_000 + (+timeMatch[2])*60_000 + (+timeMatch[3])*1000 + (+timeMatch[4]);
-          end = (+timeMatch[5])*3_600_000 + (+timeMatch[6])*60_000 + (+timeMatch[7])*1000 + (+timeMatch[8]);
+          start = (+timeMatch[1])*3600000 + (+timeMatch[2])*60000 + (+timeMatch[3])*1000 + (+timeMatch[4]);
+          end = (+timeMatch[5])*3600000 + (+timeMatch[6])*60000 + (+timeMatch[7])*1000 + (+timeMatch[8]);
         } else {
-          start = (+timeMatch[1])*60_000 + (+timeMatch[2])*1000 + (+timeMatch[3]);
-          end = (+timeMatch[4])*60_000 + (+timeMatch[5])*1000 + (+timeMatch[6]);
+          start = (+timeMatch[1])*60000 + (+timeMatch[2])*1000 + (+timeMatch[3]);
+          end = (+timeMatch[4])*60000 + (+timeMatch[5])*1000 + (+timeMatch[6]);
         }
         cues.push(convSubCue(start, end, lines.slice(1).join('\n')));
       }
@@ -1244,36 +1001,32 @@ function convSubParse(text, ext) {
     case 'ass': case 'ssa': {
       var inEvents = false;
       var fmtLine = null;
-      let lines = text.split('\n');
-      for (let i = 0; i < lines.length; i++) {
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
         var l = lines[i].trim();
         if (l === '[Events]') { inEvents = true; continue; }
         if (l.startsWith('[')) { inEvents = false; continue; }
         if (inEvents && l.startsWith('Format:')) { fmtLine = l.substring(7).split(',').map(function(s) { return s.trim(); }); }
         if (inEvents && l.startsWith('Dialogue:')) {
-          let parts = l.substring(9).split(',');
+          var parts = l.substring(9).split(',');
           if (!fmtLine) continue;
           var idx = {};
           for (var f = 0; f < fmtLine.length; f++) idx[fmtLine[f].toLowerCase()] = f;
           if (idx.start === undefined || idx.end === undefined || idx.text === undefined) continue;
-          /**
-           *
-           * @param t
-           */
           function toMs(t) {
             var m = t.match(/(\d+):(\d+):(\d+)\.(\d+)/);
             if (!m) return 0;
-            return (+m[1])*3_600_000 + (+m[2])*60_000 + (+m[3])*1000 + (+m[4])*10;
+            return (+m[1])*3600000 + (+m[2])*60000 + (+m[3])*1000 + (+m[4])*10;
           }
-          let txt = parts.slice(idx.text).join(',').replaceAll(String.raw`\N`, '\n').replaceAll(/{[^}]*}/g, '');
+          var txt = parts.slice(idx.text).join(',').replace(/\\N/g, '\n').replace(/{[^}]*}/g, '');
           cues.push(convSubCue(toMs(parts[idx.start]), toMs(parts[idx.end]), txt));
         }
       }
       break;
     }
     case 'sub': {
-      let lines = text.split('\n');
-      for (let i = 0; i < lines.length; i++) {
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
         var m = lines[i].match(/\{(\d+)\}\{(\d+)\}(.*)/);
         if (m) {
           var fps = 23.976;
@@ -1283,51 +1036,47 @@ function convSubParse(text, ext) {
       break;
     }
     case 'sbv': {
-      let blocks = text.split(/\n\s*\n/);
-      for (let i = 0; i < blocks.length; i++) {
-        let lines = blocks[i].trim().split('\n');
+      var blocks = text.split(/\n\s*\n/);
+      for (var i = 0; i < blocks.length; i++) {
+        var lines = blocks[i].trim().split('\n');
         if (lines.length < 2) continue;
         var tm = lines[0].match(/(\d+):(\d+):(\d+)\.(\d+),(\d+):(\d+):(\d+)\.(\d+)/);
         if (!tm) continue;
-        cues.push(convSubCue((+tm[1])*3_600_000+(+tm[2])*60_000+(+tm[3])*1000+(+tm[4]), (+tm[5])*3_600_000+(+tm[6])*60_000+(+tm[7])*1000+(+tm[8]), lines.slice(1).join('\n')));
+        cues.push(convSubCue((+tm[1])*3600000+(+tm[2])*60000+(+tm[3])*1000+(+tm[4]), (+tm[5])*3600000+(+tm[6])*60000+(+tm[7])*1000+(+tm[8]), lines.slice(1).join('\n')));
       }
       break;
     }
     case 'lrc': {
-      let lines = text.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        let m = lines[i].match(/\[(\d+):(\d+)\.(\d+)\](.*)/);
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
+        var m = lines[i].match(/\[(\d+):(\d+)\.(\d+)\](.*)/);
         if (m) {
-          let start = (+m[1])*60_000 + (+m[2])*1000 + (+m[3])*10;
+          var start = (+m[1])*60000 + (+m[2])*1000 + (+m[3])*10;
           cues.push(convSubCue(start, start + 5000, m[3].trim()));
         }
       }
       break;
     }
     case 'ttml': case 'dfxp': {
-      let m;
+      var m;
       var re = /<p[^>]*begin=["']([^"']+)["'][^>]*end=["']([^"']+)["'][^>]*>(.*?)<\/p>/g;
       while ((m = re.exec(text)) !== null) {
-        /**
-         *
-         * @param t
-         */
         function ttmlToMs(t) {
-          if (t.includes(':')) {
+          if (t.indexOf(':') > -1) {
             var p = t.split(':');
-            if (p.length === 3) return (+p[0])*3_600_000 + (+p[1])*60_000 + Number.parseFloat(p[2])*1000;
-            return (+p[0])*60_000 + Number.parseFloat(p[1])*1000;
+            if (p.length === 3) return (+p[0])*3600000 + (+p[1])*60000 + parseFloat(p[2])*1000;
+            return (+p[0])*60000 + parseFloat(p[1])*1000;
           }
-          return Number.parseFloat(t.replace('s',''))*1000;
+          return parseFloat(t.replace('s',''))*1000;
         }
-        let txt = convStripHtml(m[3]);
+        var txt = convStripHtml(m[3]);
         cues.push(convSubCue(ttmlToMs(m[1]), ttmlToMs(m[2]), txt));
       }
       break;
     }
     default: {
-      let lines = text.split('\n');
-      for (let i = 0; i < lines.length; i++) {
+      var lines = text.split('\n');
+      for (var i = 0; i < lines.length; i++) {
         if (lines[i].trim()) cues.push(convSubCue(i*1000, (i+1)*1000, lines[i].trim()));
       }
     }
@@ -1335,170 +1084,113 @@ function convSubParse(text, ext) {
   return cues;
 }
 
-/**
- *
- * @param ms
- */
 function convSubFormatTime(ms) {
-  var h = Math.floor(ms / 3_600_000);
-  var m = Math.floor((ms % 3_600_000) / 60_000);
-  var s = Math.floor((ms % 60_000) / 1000);
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
   var ms2 = ms % 1000;
   return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+','+(ms2+'').padStart(3,'0');
 }
 
-/**
- *
- * @param ms
- */
 function convSubFormatTimeVtt(ms) {
-  var h = Math.floor(ms / 3_600_000);
-  var m = Math.floor((ms % 3_600_000) / 60_000);
-  var s = Math.floor((ms % 60_000) / 1000);
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
   var ms2 = ms % 1000;
   return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+'.'+(ms2+'').padStart(3,'0');
 }
 
-/**
- *
- * @param ms
- */
 function convSubFormatAss(ms) {
-  var h = Math.floor(ms / 3_600_000);
-  var m = Math.floor((ms % 3_600_000) / 60_000);
-  var s = Math.floor((ms % 60_000) / 1000);
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
   var cs = Math.floor((ms % 1000) / 10);
   return (h+'').padStart(1,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+'.'+(cs+'').padStart(2,'0');
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteSrt(cues) {
   var out = '';
-  for (const [i, cue] of cues.entries()) {
-    out += (i+1)+'\n' + convSubFormatTime(cue.start) + ' --> ' + convSubFormatTime(cue.end) + '\n' + cue.text + '\n\n';
+  for (var i = 0; i < cues.length; i++) {
+    out += (i+1)+'\n' + convSubFormatTime(cues[i].start) + ' --> ' + convSubFormatTime(cues[i].end) + '\n' + cues[i].text + '\n\n';
   }
   return out;
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteVtt(cues) {
   var out = 'WEBVTT\n\n';
-  for (const cue of cues) {
-    out += convSubFormatTimeVtt(cue.start) + ' --> ' + convSubFormatTimeVtt(cue.end) + '\n' + cue.text + '\n\n';
+  for (var i = 0; i < cues.length; i++) {
+    out += convSubFormatTimeVtt(cues[i].start) + ' --> ' + convSubFormatTimeVtt(cues[i].end) + '\n' + cues[i].text + '\n\n';
   }
   return out;
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteAss(cues) {
   var out = '[Script Info]\nScriptType: v4.00+\nWrapStyle: 0\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n';
-  for (const cue of cues) {
-    var txt = cue.text.replaceAll('\n', String.raw`\N`);
-    out += 'Dialogue: 0,' + convSubFormatAss(cue.start) + ',' + convSubFormatAss(cue.end) + ',Default,,0,0,0,,' + txt + '\n';
+  for (var i = 0; i < cues.length; i++) {
+    var txt = cues[i].text.replace(/\n/g, '\\N');
+    out += 'Dialogue: 0,' + convSubFormatAss(cues[i].start) + ',' + convSubFormatAss(cues[i].end) + ',Default,,0,0,0,,' + txt + '\n';
   }
   return out;
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteSub(cues) {
   var out = '';
   var fps = 23.976;
-  for (const cue of cues) {
-    var startFr = Math.round(cue.start / 1000 * fps);
-    var endFr = Math.round(cue.end / 1000 * fps);
-    out += '{' + startFr + '}{' + endFr + '}' + cue.text + '\n';
+  for (var i = 0; i < cues.length; i++) {
+    var startFr = Math.round(cues[i].start / 1000 * fps);
+    var endFr = Math.round(cues[i].end / 1000 * fps);
+    out += '{' + startFr + '}{' + endFr + '}' + cues[i].text + '\n';
   }
   return out;
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteSbv(cues) {
   var out = '';
-  for (const cue of cues) {
-    /**
-     *
-     * @param ms
-     */
+  for (var i = 0; i < cues.length; i++) {
     function sbvTime(ms) {
-      var h = Math.floor(ms / 3_600_000);
-      var m = Math.floor((ms % 3_600_000) / 60_000);
-      var s = Math.floor((ms % 60_000) / 1000);
+      var h = Math.floor(ms / 3600000);
+      var m = Math.floor((ms % 3600000) / 60000);
+      var s = Math.floor((ms % 60000) / 1000);
       var ms2 = ms % 1000;
       return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+(s+'').padStart(2,'0')+'.'+(ms2+'').padStart(3,'0');
     }
-    out += sbvTime(cue.start) + ',' + sbvTime(cue.end) + '\n' + cue.text + '\n\n';
+    out += sbvTime(cues[i].start) + ',' + sbvTime(cues[i].end) + '\n' + cues[i].text + '\n\n';
   }
   return out;
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteLrc(cues) {
   var out = '';
-  for (const cue of cues) {
-    var m = Math.floor(cue.start / 60_000);
-    var s = Math.floor((cue.start % 60_000) / 1000);
-    var cs = Math.floor((cue.start % 1000) / 10);
-    out += '[' + (m+'').padStart(2,'0') + ':' + (s+'').padStart(2,'0') + '.' + (cs+'').padStart(2,'0') + ']' + cue.text.split('\n')[0] + '\n';
+  for (var i = 0; i < cues.length; i++) {
+    var m = Math.floor(cues[i].start / 60000);
+    var s = Math.floor((cues[i].start % 60000) / 1000);
+    var cs = Math.floor((cues[i].start % 1000) / 10);
+    out += '[' + (m+'').padStart(2,'0') + ':' + (s+'').padStart(2,'0') + '.' + (cs+'').padStart(2,'0') + ']' + cues[i].text.split('\n')[0] + '\n';
   }
   return out;
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteTtml(cues) {
   var out = '<?xml version="1.0" encoding="UTF-8"?>\n<tt xmlns="http://www.w3.org/ns/ttml">\n<body>\n<div>\n';
-  for (const cue of cues) {
-    /**
-     *
-     * @param ms
-     */
+  for (var i = 0; i < cues.length; i++) {
     function ttmlTime(ms) {
-      var h = Math.floor(ms / 3_600_000);
-      var m = Math.floor((ms % 3_600_000) / 60_000);
-      var s = (ms % 60_000) / 1000;
+      var h = Math.floor(ms / 3600000);
+      var m = Math.floor((ms % 3600000) / 60000);
+      var s = (ms % 60000) / 1000;
       return (h+'').padStart(2,'0')+':'+(m+'').padStart(2,'0')+':'+s.toFixed(3);
     }
-    out += '  <p begin="' + ttmlTime(cue.start) + '" end="' + ttmlTime(cue.end) + '">' + escXml(cue.text) + '</p>\n';
+    out += '  <p begin="' + ttmlTime(cues[i].start) + '" end="' + ttmlTime(cues[i].end) + '">' + escXml(cues[i].text) + '</p>\n';
   }
   out += '</div>\n</body>\n</tt>';
   return out;
 }
 
-/**
- *
- * @param cues
- */
 function convSubWriteTxt(cues) {
   var out = '';
   for (var i = 0; i < cues.length; i++) out += cues[i].text + '\n';
   return out;
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convSubtitle(file, format) {
   var text = await file.text();
   var ext = file.name.split('.').pop().toLowerCase();
@@ -1513,74 +1205,41 @@ async function convSubtitle(file, format) {
   return { blob: new Blob([outText], { type: mimeMap[format] || 'text/plain' }), ext: format };
 }
 
-/**
- *
- * @param file
- * @param format
- */
 async function convDocument(file, format) {
   var text = await file.text();
   var name = file.name.replace(/\.[^.]+$/, '');
   var result;
   switch (format) {
-    case 'txt': { result = convDocToTxt(text, file.name); break;
-    }
-    case 'html': { result = convDocToHtml(text, file.name); break;
-    }
-    case 'md': { result = convDocToMd(text, file.name); break;
-    }
-    case 'pdf': { result = await convDocToPdf(text, name); break;
-    }
-    case 'docx': { result = await convDocToDocx(text, name); break;
-    }
-    case 'json': { result = convDocToJson(text, file.name); break;
-    }
-    case 'xml': { result = convDocToXml(text, file.name); break;
-    }
-    case 'csv': { result = convDocToCsv(text, file.name); break;
-    }
-    default: { throw new Error('Unsupported document format: ' + format);
-    }
+    case 'txt': result = convDocToTxt(text, file.name); break;
+    case 'html': result = convDocToHtml(text, file.name); break;
+    case 'md': result = convDocToMd(text, file.name); break;
+    case 'pdf': result = await convDocToPdf(text, name); break;
+    case 'docx': result = await convDocToDocx(text, name); break;
+    case 'json': result = convDocToJson(text, file.name); break;
+    case 'xml': result = convDocToXml(text, file.name); break;
+    case 'csv': result = convDocToCsv(text, file.name); break;
+    default: throw new Error('Unsupported document format: ' + format);
   }
   return result;
 }
 
-/**
- *
- * @param text
- */
 function convDocToTxt(text) {
-  var clean = text.replaceAll(/<\/?[^>]+(>|$)/g, '').replaceAll(/\s+/g, ' ').trim();
+  var clean = text.replace(/<\/?[^>]+(>|$)/g, '').replace(/\s+/g, ' ').trim();
   return { blob: new Blob([clean], { type: 'text/plain' }), ext: 'txt' };
 }
 
-/**
- *
- * @param text
- * @param fileName
- */
 function convDocToHtml(text, fileName) {
-  var body = text.replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('\n', '<br>');
+  var body = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escHtml(fileName) + '</title></head><body><pre>' + body + '</pre></body></html>';
   return { blob: new Blob([html], { type: 'text/html' }), ext: 'html' };
 }
 
-/**
- *
- * @param text
- * @param fileName
- */
 function convDocToMd(text, fileName) {
-  var md = text.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  var md = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   md = '# ' + fileName + '\n\n' + md;
   return { blob: new Blob([md], { type: 'text/markdown' }), ext: 'md' };
 }
 
-/**
- *
- * @param text
- * @param name
- */
 async function convDocToPdf(text, name) {
   if (typeof jspdf === 'undefined') throw new Error('PDF library not loaded. Try TXT format instead.');
   var doc = new jspdf.jsPDF();
@@ -1589,82 +1248,58 @@ async function convDocToPdf(text, name) {
   doc.setFontSize(12);
   doc.text(name, 105, y, { align: 'center' }); y += 10;
   doc.setFontSize(9);
-  for (const line of lines) {
+  for (var i = 0; i < lines.length; i++) {
     if (y > 280) { doc.addPage(); y = 20; }
-    doc.text(line, 15, y); y += 5;
+    doc.text(lines[i], 15, y); y += 5;
   }
   return { blob: doc.output('blob'), ext: 'pdf' };
 }
 
-/**
- *
- * @param text
- * @param name
- */
 async function convDocToDocx(text, name) {
   if (typeof docx === 'undefined') throw new Error('DOCX library not loaded. Try TXT format instead.');
   var Paragraph = docx.Paragraph, TextRun = docx.TextRun, Document = docx.Document, Packer = docx.Packer;
   var lines = text.split('\n');
   var children = [];
   children.push(new Paragraph({ children: [new TextRun({ text: name, bold: true, size: 24 })], spacing: { after: 200 } }));
-  for (const line of lines) {
-    children.push(new Paragraph({ children: [new TextRun({ text: line, size: 18 })] }));
+  for (var i = 0; i < lines.length; i++) {
+    children.push(new Paragraph({ children: [new TextRun({ text: lines[i], size: 18 })] }));
   }
   var doc = new Document({ sections: [{ children: children }] });
   var blob = await Packer.toBlob(doc);
   return { blob: blob, ext: 'docx' };
 }
 
-/**
- *
- * @param text
- * @param fileName
- */
 function convDocToJson(text, fileName) {
   try {
     var parsed = JSON.parse(text);
     return { blob: new Blob([JSON.stringify(parsed, null, 2)], { type: 'application/json' }), ext: 'json' };
-  } catch{
+  } catch(e) {
     return { blob: new Blob([JSON.stringify({ content: text, source: fileName }, null, 2)], { type: 'application/json' }), ext: 'json' };
   }
 }
 
-/**
- *
- * @param text
- * @param fileName
- */
 function convDocToXml(text, fileName) {
-  var escaped = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<document>\n  <source>' + escXml(fileName) + '</source>\n  <content>' + escaped + '</content>\n</document>';
   return { blob: new Blob([xml], { type: 'application/xml' }), ext: 'xml' };
 }
 
-/**
- *
- * @param s
- */
 function escXml(s) {
-  return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/**
- *
- * @param text
- * @param fileName
- */
 function convDocToCsv(text, fileName) {
   try {
     var parsed = JSON.parse(text);
     if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'object') {
       var keys = Object.keys(parsed[0]);
       var csv = keys.join(',') + '\n';
-      for (const element of parsed) {
-        csv += keys.map(function(k) { var v = element[k]; return v == null ? '' : String(v).replaceAll('\\', '\\\\').replaceAll(',', String.raw`\,`); }).join(',') + '\n';
+      for (var i = 0; i < parsed.length; i++) {
+        csv += keys.map(function(k) { var v = parsed[i][k]; return v != null ? String(v).replace(/\\/g, '\\\\').replace(/,/g, '\\,') : ''; }).join(',') + '\n';
       }
       return { blob: new Blob([csv], { type: 'text/csv' }), ext: 'csv' };
     }
-  } catch{}
-  var lines = text.split('\n').map(function(l) { return l.replaceAll('\\', '\\\\').replaceAll(',', String.raw`\,`); });
+  } catch(e) {}
+  var lines = text.split('\n').map(function(l) { return l.replace(/\\/g, '\\\\').replace(/,/g, '\\,'); });
   return { blob: new Blob([lines.join('\n')], { type: 'text/csv' }), ext: 'csv' };
 }

@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -12,10 +12,6 @@
     );
 })();
 
-/**
- *
- * @param body
- */
 function renderUpload(body) {
   var socialVal = simpleUserInfo.social || {};
   var musicVal = simpleUserInfo.music || {};
@@ -188,10 +184,6 @@ function renderUpload(body) {
   if (simpleFile) restoreUploadFileInfo();
 }
 
-/**
- *
- * @param body
- */
 function renderAiQuestion(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -213,10 +205,6 @@ function renderAiQuestion(body) {
     "</div></div>";
 }
 
-/**
- *
- * @param body
- */
 function renderC2paStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -375,10 +363,6 @@ function renderC2paStep(body) {
     '<div id="sc2pa-result"></div></div>';
 }
 
-/**
- *
- * @param body
- */
 function renderWatermarkStep(body) {
   var usingName = simpleFile ? simpleFile.name : "";
   body.innerHTML =
@@ -417,10 +401,6 @@ function renderWatermarkStep(body) {
     '<div id="swm-status"></div></div>';
 }
 
-/**
- *
- * @param body
- */
 function renderAudioWatermarkStep(body) {
   var usingName = simpleFile ? simpleFile.name : "";
   var fpSummary = "";
@@ -430,16 +410,16 @@ function renderAudioWatermarkStep(body) {
     var hashCount = hashKeys.length;
     fpSummary = hashCount + " hashes (";
     var shortList = ["SHA-256", "SHA-512", "BLAKE3", "SHA-1"];
-    for (const element of shortList) {
-      if (h[element]) {
+    for (var si = 0; si < shortList.length; si++) {
+      if (h[shortList[si]]) {
         fpSummary +=
-          element + ": " + h[element].substring(0, 8) + "… ";
+          shortList[si] + ": " + h[shortList[si]].substring(0, 8) + "… ";
       }
     }
     fpSummary = fpSummary.trim() + ")";
   }
   var tsSummary = simpleResults.tsResult
-    ? simpleResults.tsResult.substring(0, 100).replaceAll('\n', " ")
+    ? simpleResults.tsResult.substring(0, 100).replace(/\n/g, " ")
     : "";
   body.innerHTML =
     '<div class="simple-card"><h2>Audio Watermarking</h2><p>Embed both the fingerprint and DID signature as hidden watermarks in your audio. Choose one algorithm for each.</p>' +
@@ -484,24 +464,20 @@ function renderAudioWatermarkStep(body) {
     '<span id="sawm-progress-text" style="font-size:0.75rem;color:var(--text-muted);min-width:3em;text-align:right">0%</span></div></div></div>';
 }
 
-/**
- *
- * @param body
- */
 function renderPixelInjectStep(body) {
   var usingName = simpleFile ? simpleFile.name : "";
   var catOpts = "";
   var cats =
-    globalThis.pixelInjection && globalThis.pixelInjection.algorithms
-      ? globalThis.pixelInjection.algorithms
+    window.pixelInjection && window.pixelInjection.algorithms
+      ? window.pixelInjection.algorithms
       : { spatial: { enhanced_lsb: { name: "Enhanced LSB" } } };
   var catKeys = Object.keys(cats);
-  for (const catKey of catKeys) {
-    if (catKey === "detection") continue;
+  for (var ci = 0; ci < catKeys.length; ci++) {
+    if (catKeys[ci] === "detection") continue;
     var label =
-      catKey.charAt(0).toUpperCase() +
-      catKey.slice(1).replaceAll('_', " ");
-    catOpts += '<option value="' + catKey + '">' + label + "</option>";
+      catKeys[ci].charAt(0).toUpperCase() +
+      catKeys[ci].slice(1).replace(/_/g, " ");
+    catOpts += '<option value="' + catKeys[ci] + '">' + label + "</option>";
   }
   var defaultCat =
     catKeys[0] === "detection" ? catKeys[1] || catKeys[0] : catKeys[0];
@@ -546,10 +522,6 @@ function renderPixelInjectStep(body) {
     '<div id="spi-status"></div></div>';
 }
 
-/**
- *
- * @param body
- */
 function renderTimestampStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -563,10 +535,6 @@ function renderTimestampStep(body) {
   runTimestampStep();
 }
 
-/**
- *
- * @param body
- */
 function renderFingerprintStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -586,36 +554,17 @@ function renderFingerprintStep(body) {
   runFingerprintStep();
 }
 
-/**
- *
- * @param body
- */
 function renderDIDStep(body) {
   var hasKeys = didLoadKeys() !== null;
   var algos = didGetAlgorithmList();
   var algoOpts = "";
-  for (var label of algos) {
-    switch (label) {
-    case "Ed25519": {
-    label += " (fast, 64-byte sig)";
-    break;
-    }
-    case "P-256": {
-    label += " (widely compatible)";
-    break;
-    }
-    case "RSA-2048": {
-    label += " (256-byte sig)";
-    break;
-    }
-    case "RSA-4096": { {
-    label += " (512-byte sig)";
-    // No default
-    }
-    break;
-    }
-    }
-    algoOpts += '<option value="' + label + '">' + label + "</option>";
+  for (var ai = 0; ai < algos.length; ai++) {
+    var label = algos[ai];
+    if (algos[ai] === "Ed25519") label += " (fast, 64-byte sig)";
+    else if (algos[ai] === "P-256") label += " (widely compatible)";
+    else if (algos[ai] === "RSA-2048") label += " (256-byte sig)";
+    else if (algos[ai] === "RSA-4096") label += " (512-byte sig)";
+    algoOpts += '<option value="' + algos[ai] + '">' + label + "</option>";
   }
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -662,10 +611,6 @@ function renderDIDStep(body) {
     "</div></div>";
 }
 
-/**
- *
- * @param body
- */
 function renderDone(body) {
   var results = simpleResults;
   var sections = [];
@@ -893,7 +838,7 @@ function renderDone(body) {
     "</div></div>";
 
   body.innerHTML = mainHtml;
-  document.querySelector("#simplePrevBtn").style.display = "none";
-  document.querySelector("#simpleNextBtn").textContent =
+  document.getElementById("simplePrevBtn").style.display = "none";
+  document.getElementById("simpleNextBtn").textContent =
     __("simple.start_over");
 }

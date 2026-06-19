@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -13,41 +13,17 @@
 })();
 // ── Shared utilities used by all features ──
 
-/**
- *
- * @param s
- */
 function escHtml(s) {
   if (s == null) return "";
   return String(s)
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll('\'', "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-/**
- *
- * @param s
- */
-function escXml(s) {
-  if (s == null) return "";
-  return String(s)
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll('\'', "&#039;");
-}
-
-/**
- *
- * @param msg
- * @param cls
- */
 function setStatus(msg, cls) {
-  const el = document.querySelector("#py-status");
+  const el = document.getElementById("py-status");
   if (el) {
     el.textContent = msg;
     if (cls) el.className = "badge badge-" + cls;
@@ -55,13 +31,9 @@ function setStatus(msg, cls) {
 }
 setStatus("Ready - JS mode", "success");
 
-/**
- *
- * @param id
- */
 async function getFile(id) {
   var input = document.getElementById(id);
-  if (input && input.files && input.files.length > 0) {
+  if (input && input.files && input.files.length) {
     var file = input.files[0];
     if (isDangerousFile(file)) {
       alert(
@@ -133,60 +105,25 @@ async function getFile(id) {
   }
   return input ? input.files[0] : undefined;
 }
-/**
- *
- * @param id
- */
 function getVal(id) {
   return document.getElementById(id).value;
 }
-/**
- *
- * @param id
- * @param show
- */
 function spinner(id, show) {
   document.getElementById(id).style.display = show ? "block" : "none";
 }
-/**
- *
- * @param resultId
- * @param outputId
- * @param dlId
- */
 function showResult(resultId, outputId, dlId) {
   document.getElementById(resultId).style.display = "block";
 }
-/**
- *
- * @param id
- * @param html
- */
 function setOutput(id, html) {
   document.getElementById(id).innerHTML = html;
 }
-/**
- *
- * @param id
- * @param text
- */
 function setText(id, text) {
   document.getElementById(id).textContent = text;
 }
-/**
- *
- * @param key
- * @param fallback
- */
 function __(key, fallback) {
   return (i18n && i18n.data && i18n.data[key]) || fallback || key;
 }
 
-/**
- *
- * @param blob
- * @param fileName
- */
 function downloadBlobSimple(blob, fileName) {
   var url = URL.createObjectURL(blob);
   if (isInAppBrowser()) {
@@ -198,23 +135,20 @@ function downloadBlobSimple(blob, fileName) {
           'Please open this page in Safari or Chrome to download files. Tap the browser menu (⋯) and select "Open in Browser".',
         ),
       );
-      globalThis.location.href = url;
+      window.location.href = url;
     }
     setTimeout(function () {
       URL.revokeObjectURL(url);
-    }, 30_000);
+    }, 30000);
     return;
   }
   var a = document.createElement("a");
   a.href = url;
-  a.download = fileName.replaceAll(/[/\\]/g, "_");
+  a.download = fileName.replace(/[/\\]/g, "_");
   a.click();
   URL.revokeObjectURL(url);
 }
 
-/**
- *
- */
 function isInAppBrowser() {
   var ua = navigator.userAgent || "";
   var vendor = navigator.vendor || "";
@@ -226,34 +160,24 @@ function isInAppBrowser() {
   return false;
 }
 
-/**
- *
- * @param blob
- * @param name
- * @param containerId
- */
 function downloadBlob(blob, name, containerId) {
   const url = URL.createObjectURL(blob);
   var container = document.getElementById(containerId);
   if (!container) return;
   var link = document.createElement("a");
   link.href = url;
-  link.download = name.replaceAll(/[/\\]/g, "_");
+  link.download = name.replace(/[/\\]/g, "_");
   link.className = "btn";
   link.style.cssText = "margin:4px";
   link.textContent = __("shared.download") + " " + name;
-  container.append(link);
+  container.appendChild(link);
 }
 
-/**
- *
- * @param file
- */
 function loadImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image(),
       url = URL.createObjectURL(file);
-    img.addEventListener('load', () => {
+    img.onload = () => {
       const c = document.createElement("canvas");
       c.width = img.width;
       c.height = img.height;
@@ -264,7 +188,7 @@ function loadImage(file) {
       d.h = img.height;
       URL.revokeObjectURL(url);
       resolve({ canvas: c, ctx, imgData: d, w: img.width, h: img.height });
-    });
+    };
     img.onerror = () => {
       URL.revokeObjectURL(url);
       reject(new Error(__("shared.failed_load_image", "Failed to load image")));
@@ -273,19 +197,10 @@ function loadImage(file) {
   });
 }
 
-/**
- *
- * @param canvas
- * @param mime
- */
 function canvasToBlob(canvas, mime) {
   return new Promise((r) => canvas.toBlob((b) => r(b), mime || "image/png"));
 }
 
-/**
- *
- * @param imgData
- */
 function getRGB(imgData) {
   const r = new Uint8Array(imgData.w * imgData.h * 3);
   for (let i = 0; i < imgData.w * imgData.h; i++) {
@@ -296,21 +211,13 @@ function getRGB(imgData) {
   return r;
 }
 
-/**
- *
- * @param data
- */
 async function sha256Hex(data) {
   const h = await crypto.subtle.digest("SHA-256", data);
-  return [...new Uint8Array(h)]
+  return Array.from(new Uint8Array(h))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
-/**
- *
- * @param v
- */
 function pack32(v) {
   return new Uint8Array([
     (v >> 24) & 255,
@@ -319,35 +226,21 @@ function pack32(v) {
     v & 255,
   ]);
 }
-/**
- *
- * @param b
- */
 function unpack32(b) {
   return ((b[0] << 24) >>> 0) | (b[1] << 16) | (b[2] << 8) | b[3];
 }
 
 // ── Theme Toggle (light/dark) ──
-/**
- *
- * @param theme
- */
 function setTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  const btn = document.querySelector("#themeToggle");
+  document.documentElement.setAttribute("data-theme", theme);
+  const btn = document.getElementById("themeToggle");
   if (btn) btn.textContent = theme === "light" ? "☀️" : "🌙";
   localStorage.setItem("redosan_theme", theme);
 }
-/**
- *
- */
 function toggleTheme() {
-  const cur = document.documentElement.dataset.theme;
+  const cur = document.documentElement.getAttribute("data-theme");
   setTheme(cur === "light" ? "dark" : "light");
 }
-/**
- *
- */
 function initTheme() {
   const saved = localStorage.getItem("redosan_theme");
   if (saved) {
@@ -355,16 +248,13 @@ function initTheme() {
     return;
   }
   setTheme(
-    globalThis.matchMedia("(prefers-color-scheme: light)").matches
+    window.matchMedia("(prefers-color-scheme: light)").matches
       ? "light"
       : "dark",
   );
 }
 
 // ── File Drop Zones ──
-/**
- *
- */
 function initDropZones() {
   document
     .querySelectorAll('.form-group input[type="file"]')
@@ -373,18 +263,18 @@ function initDropZones() {
       const dz = document.createElement("div");
       dz.className = "file-drop-zone";
       input.parentNode.insertBefore(dz, input);
-      dz.append(input);
+      dz.appendChild(input);
       const icon = document.createElement("span");
       icon.className = "dz-icon";
       icon.textContent = "📁";
-      dz.append(icon);
+      dz.appendChild(icon);
       const text = document.createElement("div");
       text.className = "dz-text";
       text.innerHTML = "Drop file here or <strong>browse</strong>";
-      dz.append(text);
+      dz.appendChild(text);
       const fileDiv = document.createElement("div");
       fileDiv.className = "dz-file";
-      dz.append(fileDiv);
+      dz.appendChild(fileDiv);
       dz.addEventListener("click", (e) => {
         if (
           e.target === dz ||
@@ -393,11 +283,8 @@ function initDropZones() {
         )
           input.click();
       });
-      /**
-       *
-       */
       async function updateFile() {
-        if (input.files && input.files.length > 0) {
+        if (input.files && input.files.length) {
           if (input.files[0] && !(await validateFileInput(input))) {
             clearInputFiles(input);
             fileDiv.textContent = "";
@@ -426,7 +313,7 @@ function initDropZones() {
       );
       dz.addEventListener("drop", async (e) => {
         e.preventDefault();
-        if (e.dataTransfer.files.length > 0) {
+        if (e.dataTransfer.files.length) {
           const dt = new DataTransfer();
           for (const f of e.dataTransfer.files) dt.items.add(f);
           input.files = dt.files;
@@ -439,15 +326,12 @@ function initDropZones() {
           updateFile();
         }
       });
-      if (input.files && input.files.length > 0) updateFile();
+      if (input.files && input.files.length) updateFile();
     });
 }
 // ── Bot / Automation Detection (100% client-side) ──
 var REDOSAN_BOT_CHECK = null;
 
-/**
- *
- */
 function checkAutomation() {
   var score = 0,
     signals = [];
@@ -456,7 +340,7 @@ function checkAutomation() {
       score += 35;
       signals.push("webdriver");
     }
-    if (globalThis.callPhantom || globalThis._phantom || globalThis.__nightmare) {
+    if (window.callPhantom || window._phantom || window.__nightmare) {
       score += 50;
       signals.push("legacy_automation");
     }
@@ -465,7 +349,7 @@ function checkAutomation() {
         score += 35;
         signals.push("webdriver_attr");
       }
-    } catch {}
+    } catch (e) {}
     if (navigator.plugins && navigator.plugins.length === 0) {
       score += 10;
       signals.push("no_plugins");
@@ -502,7 +386,7 @@ function checkAutomation() {
       score += 10;
       signals.push("headless_chrome");
     }
-  } catch {}
+  } catch (e) {}
   return {
     score: Math.min(Math.max(score, 0), 100),
     signals: signals,
@@ -510,11 +394,8 @@ function checkAutomation() {
   };
 }
 
-/**
- *
- */
 function showBotOverlay() {
-  var o = document.querySelector("#botBlockOverlay");
+  var o = document.getElementById("botBlockOverlay");
   if (!o) return;
   var lang = document.documentElement.getAttribute("lang") || "en";
   var isAr = lang === "ar";
@@ -529,9 +410,6 @@ function showBotOverlay() {
 }
 
 // ── Async VPN diagnostic (no blocking — client-side detection is unreliable) ──
-/**
- *
- */
 function detectWebRTCIPs() {
   return new Promise(function (resolve) {
     var ips = [],
@@ -559,7 +437,7 @@ function detectWebRTCIPs() {
             clearTimeout(timer);
             try {
               pc.close();
-            } catch {}
+            } catch (ex) {}
             resolve(ips);
           }
           return;
@@ -567,12 +445,15 @@ function detectWebRTCIPs() {
         if (
           e.candidate.address &&
           typeof e.candidate.address === "string" &&
-          e.candidate.address.includes(".")
-         && !ips.includes(e.candidate.address)) ips.push(e.candidate.address);
+          e.candidate.address.indexOf(".") !== -1
+        ) {
+          if (ips.indexOf(e.candidate.address) === -1)
+            ips.push(e.candidate.address);
+        }
         var m = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
-        if (m && !ips.includes(m[1])) ips.push(m[1]);
+        if (m && ips.indexOf(m[1]) === -1) ips.push(m[1]);
       };
-    } catch {
+    } catch (e) {
       if (!done) {
         done = true;
         clearTimeout(timer);
@@ -582,20 +463,17 @@ function detectWebRTCIPs() {
   });
 }
 
-/**
- *
- */
 async function startAsyncVPNDetection() {
   if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) return;
   var ips = await detectWebRTCIPs();
   var publicIPs = [];
-  for (const ip of ips) {
+  for (var i = 0; i < ips.length; i++) {
     if (
       !/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(
-        ip,
+        ips[i],
       )
     )
-      publicIPs.push(ip);
+      publicIPs.push(ips[i]);
   }
   // Diagnostic only — WebRTC-based VPN detection is unreliable client-side
   // (false positives from CGNAT, multi-homed networks, IPv4/IPv6 dual-stack)
@@ -608,9 +486,6 @@ async function startAsyncVPNDetection() {
   }
 }
 
-/**
- *
- */
 function logSecurityStatus() {
   if (!REDOSAN_BOT_CHECK) return;
   var p = REDOSAN_BOT_CHECK;
@@ -622,12 +497,16 @@ function logSecurityStatus() {
       p.score +
       ")",
   ];
-  if (p.signals.length > 0) {
+  if (p.signals.length) {
     layers[0] += " [" + p.signals.join(",") + "]";
   }
-  // Security status logged silently (available via browser console if needed)
-  for (const layer of layers) {
-    var c = layer.includes("✗") ? "#FF5252" : "#4CAF50";
+  console.log(
+    "%c🔐 RedoSan Security",
+    "font-size:16px;font-weight:700;color:#6C5CE7",
+  );
+  for (var i = 0; i < layers.length; i++) {
+    var c = layers[i].indexOf("✗") === -1 ? "#4CAF50" : "#FF5252";
+    console.log("%c  " + layers[i], "color:" + c + ";font-size:13px");
   }
 }
 
@@ -647,10 +526,10 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
       .register("/RedoSan-Authenticity/sw.js?v=" + SW_VERSION)
       .then(
         function (reg) {
-          // SW registered — success
+          console.log("[SW] Registered scope:", reg.scope);
         },
-        function (error) {
-          // SW registration failed
+        function (err) {
+          console.warn("[SW] Registration failed:", err);
         },
       );
   });
@@ -658,72 +537,49 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 
 // ── Secure result storage (not on window) ──
 var _resultStore = {};
-/**
- *
- * @param key
- * @param data
- */
 function setResult(key, data) {
   _resultStore[key] = data;
 }
-/**
- *
- * @param key
- */
 function getResult(key) {
   return _resultStore[key];
 }
-/**
- *
- * @param key
- */
 function clearResult(key) {
   delete _resultStore[key];
 }
 
 // ── Download handler (single slot, not on window) ──
 var _dlHandler = null;
-/**
- *
- * @param fn
- */
 function setDownloadHandler(fn) {
   _dlHandler = fn;
 }
-/**
- *
- */
 function getDownloadHandler() {
   return _dlHandler;
 }
 
 // ── Navigate to home page from any standalone page ──
 var _homePath = "";
-/**
- *
- */
 function goHome() {
   if (!_homePath) {
-    var parts = globalThis.location.pathname.split("/");
+    var parts = window.location.pathname.split("/");
     var pagesIdx = -1;
-    for (const [i, part] of parts.entries()) {
-      if (part === "pages") {
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] === "pages") {
         pagesIdx = i;
         break;
       }
     }
-    if (pagesIdx === -1) {
-      parts = ["..", "home", "index.html"];
-    } else {
+    if (pagesIdx !== -1) {
       parts = parts.slice(0, pagesIdx + 1);
       parts.push("home", "index.html");
+    } else {
+      parts = ["..", "home", "index.html"];
     }
     var target = parts.join("/");
     // Only add a leading slash for absolute-style paths that are not relative ("..")
     if (target.indexOf("/") !== 0 && parts[0] !== "..") target = "/" + target;
     _homePath = target;
   }
-  globalThis.location.href = _homePath;
+  window.location.href = _homePath;
 }
 
 // ── Music player moved to Style/music-player.js ──
