@@ -1,40 +1,38 @@
 // ── CLI: Metadata Command ──
 // Reuses Metadata/metadata.js EXIF parser
 
-'use strict';
-
-const path = require('path');
-const crypto = require('crypto');
-const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, validateFile } = require('../utils');
+const path = require("node:path");
+const crypto = require("node:crypto");
+const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, validateFile } = require("../utils");
 
 // Patch crypto.subtle for Node.js
-if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
+if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
-      digest: async (algo, data) => {
-        const hash = crypto.createHash('sha256').update(Buffer.from(data)).digest();
+      digest: async (_algo, data) => {
+        const hash = crypto.createHash("sha256").update(Buffer.from(data)).digest();
         return hash.buffer;
-      }
-    }
+      },
+    },
   };
 }
 
 // Polyfill window for browser JS files
-if (typeof globalThis.window === 'undefined') {
+if (typeof globalThis.window === "undefined") {
   globalThis.window = globalThis;
 }
 
 // Suppress BLAKE3 self-check console.log at load time
 const _origLog = console.log;
 const _origWarn = console.warn;
-console.log = function() {};
-console.warn = function() {};
+console.log = () => {};
+console.warn = () => {};
 try {
-  const hashingPath = path.join(__dirname, '..', '..', 'Fingerprint', 'hashing.js');
+  const hashingPath = path.join(__dirname, "..", "..", "Fingerprint", "hashing.js");
   require(hashingPath);
 
   // Load metadata reading functions
-  const metadataPath = path.join(__dirname, '..', '..', 'Metadata', 'metadata.js');
+  const metadataPath = path.join(__dirname, "..", "..", "Metadata", "metadata.js");
   require(metadataPath);
 } finally {
   console.log = _origLog;
@@ -43,19 +41,21 @@ try {
 
 async function runMetadata(filePath, opts) {
   const absPath = path.resolve(filePath);
-  const allowDangerous = opts.allowDangerous || process.argv.includes('--allow-dangerous');
+  const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
 
   try {
-    try { validateFile(absPath, { allowDangerous }); } catch (e) {
+    try {
+      validateFile(absPath, { allowDangerous });
+    } catch (e) {
       console.error(`Validation failed: ${e.message}`);
-      if (e.message.includes('Blocked dangerous file type')) console.error('Use --allow-dangerous to bypass');
+      if (e.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
       process.exit(1);
     }
     const data = readFileBytes(absPath);
     const info = getFileInfo(filePath);
 
     // Compute SHA-256
-    const sha256 = await crypto.createHash('sha256').update(Buffer.from(data)).digest('hex');
+    const sha256 = await crypto.createHash("sha256").update(Buffer.from(data)).digest("hex");
 
     // Get image dimensions
     let imageInfo = {};
@@ -64,18 +64,18 @@ async function runMetadata(filePath, opts) {
       imageInfo = {
         width: imgData.width,
         height: imgData.height,
-        mode: 'RGBA',
-        format: info.ext.replace('.', '').toUpperCase(),
+        mode: "RGBA",
+        format: info.ext.replace(".", "").toUpperCase(),
       };
-    } catch(e) {
+    } catch (e) {
       imageInfo = { error: e.message };
     }
 
     // Parse EXIF (JPEG only)
     let exif = {};
-    if (data[0] === 0xFF && data[1] === 0xD8) {
+    if (data[0] === 0xff && data[1] === 0xd8) {
       // Call the parseJPEGExif function from metadata.js
-      if (typeof globalThis.parseJPEGExif === 'function') {
+      if (typeof globalThis.parseJPEGExif === "function") {
         exif = globalThis.parseJPEGExif(data) || {};
       }
     }
@@ -99,7 +99,7 @@ async function runMetadata(filePath, opts) {
       let text = `Metadata: ${info.name}\n`;
       text += `Size: ${fmtSize(info.size)}\n`;
       text += `SHA-256: ${sha256}\n`;
-      text += '─'.repeat(60) + '\n\n';
+      text += `${"─".repeat(60)}\n\n`;
 
       if (imageInfo.width) {
         text += `Dimensions: ${imageInfo.width} x ${imageInfo.height}\n`;
@@ -108,17 +108,16 @@ async function runMetadata(filePath, opts) {
       }
 
       if (Object.keys(exif).length > 0) {
-        text += 'EXIF:\n';
+        text += "EXIF:\n";
         for (const [key, val] of Object.entries(exif)) {
           text += `  ${key.padEnd(24)} ${val}\n`;
         }
       } else {
-        text += 'EXIF: Not found (not a JPEG or no EXIF data)\n';
+        text += "EXIF: Not found (not a JPEG or no EXIF data)\n";
       }
 
       outputResult(text, opts);
     }
-
   } catch (err) {
     console.error(`Error: ${err.message}`);
     process.exit(1);

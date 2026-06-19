@@ -42,14 +42,13 @@
   "files": {
     "includes": [
       "**/cli/**/*.js",
-      "!**/node_modules/",
-      "!**/vendor/",
+      "!**/node_modules/**",
+      "!**/vendor/**",
       "!**/*.min.js",
-      "!**/C2PA/",
-      "!**/Pixel_Injection/watermark_core_advanced.js",
-      "!**/Style/lang/i18n-data.js",
-      "!**/cli/tests/",
-      "!**/cli/lib/"
-    ]
+      "!**/C2PA/**",
+      "!**/cli/tests/**",
+      "!**/cli/lib/**"
+    ],
+    "maxSize": 5242880
   }
 }
