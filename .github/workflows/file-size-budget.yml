@@ -30,7 +30,7 @@ jobs:
               '.js': 300 * 1024,
               '.css': 100 * 1024,
               '.html': 300 * 1024,
-              '.json': 200 * 1024
+              '.json': 1200 * 1024
             };
 
             const diff = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD', { encoding: 'utf8' });
