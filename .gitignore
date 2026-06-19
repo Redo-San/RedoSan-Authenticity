@@ -68,7 +68,4 @@ deps.svg
 tmp_test*.txt
 test-results/
 
-# Local-only dev server
-dev-server.js
-
 

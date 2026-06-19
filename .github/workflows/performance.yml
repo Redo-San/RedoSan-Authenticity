@@ -1,8 +1,6 @@
 name: Performance
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -18,7 +16,6 @@ permissions:
 
 jobs:
   lighthouse:
-    if: github.event_name == 'push'
     name: Lighthouse CI
     runs-on: ubuntu-latest
     timeout-minutes: 10

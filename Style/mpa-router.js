@@ -182,6 +182,13 @@
     if (pageName === "audio-watermark" && typeof switchAwTab === "function")
       switchAwTab("embed");
 
+    // Pixel Injection: re-populate algorithm dropdowns, re-attach event listeners, reset to embed tab
+    if (pageName === "pixel-injection") {
+      if (typeof globalThis.pixelInjection?.reInit === "function")
+        globalThis.pixelInjection.reInit();
+      if (typeof switchPiTab === "function") switchPiTab("embed");
+    }
+
     // ID Forge: update info display
     if (pageName === "id_forge" && typeof idForgeShowInfo === "function")
       idForgeShowInfo();
