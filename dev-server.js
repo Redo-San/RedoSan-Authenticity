@@ -1,9 +1,14 @@
 var http = require("node:http"),
   fs = require("node:fs"),
   path = require("node:path");
-var ROOT = __dirname;
+var ROOT = path.resolve(__dirname);
+var REAL_ROOT = fs.realpathSync(ROOT);
+/**
+ *
+ * @param s
+ */
 function escHtml(s) {
-  return String(s).replace(/[&<>"']/g, function (c) {
+  return String(s).replaceAll(/[&<>"']/g, function (c) {
     return "&#" + c.charCodeAt(0) + ";";
   });
 }
@@ -77,9 +82,15 @@ http
  */
 function tryServe(filePath, req, res) {
   try {
-    var stat = fs.statSync(filePath);
-    if (stat.isDirectory()) filePath = path.join(filePath, "index.html");
-    stat = fs.statSync(filePath);
+    var realPath = fs.realpathSync(filePath);
+    if (!(realPath.startsWith(REAL_ROOT + path.sep) || realPath === REAL_ROOT))
+      return false;
+    var stat = fs.statSync(realPath);
+    if (stat.isDirectory()) {
+      realPath = path.join(realPath, "index.html");
+      stat = fs.statSync(realPath);
+    }
+    filePath = realPath;
     var ext = path.extname(filePath);
     var headers = {
       "Accept-Ranges": "bytes",
