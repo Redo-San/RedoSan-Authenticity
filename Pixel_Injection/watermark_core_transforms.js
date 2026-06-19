@@ -1,4 +1,4 @@
-(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 
 // ── Frequency Domain Algorithms ──
 
@@ -22,7 +22,7 @@ WatermarkCore.prototype.dct = function(imageData, message, password = null, opti
             
             // Read bit: 0 → c[5,2] > c[4,3], 1 → c[4,3] > c[5,2]
             const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
-            const bit = Number.parseInt(encoded[bitIdx++], 2);
+            const bit = parseInt(encoded[bitIdx++], 2);
             const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
             const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
             const needed = Math.max(gap, 5) + K;
@@ -63,7 +63,7 @@ WatermarkCore.prototype.dwt = function(imageData, message, password = null, opti
         if (!coeffs) continue;
         for (let i = 0; i < coeffs.length && messageIndex < encodedMessage.length; i++) {
             coeffs[i] = this.embedInCoefficient(Math.round(coeffs[i]), 
-                Number.parseInt(encodedMessage[messageIndex++], 2));
+                parseInt(encodedMessage[messageIndex++], 2));
         }
     }
     
@@ -90,7 +90,7 @@ WatermarkCore.prototype.dft = function(imageData, message, password = null, opti
             const dftBlock = this.applyDFT(block);
             
             const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
-            const bit = Number.parseInt(encoded[bitIdx++], 2);
+            const bit = parseInt(encoded[bitIdx++], 2);
             const gap = Math.abs(dftBlock[idxA].real - dftBlock[idxB].real);
             const avg = (dftBlock[idxA].real + dftBlock[idxB].real) / 2;
             const needed = Math.max(gap, 5) + K;
@@ -140,7 +140,7 @@ WatermarkCore.prototype.hybridDCTDWT = function(imageData, message, options = {}
             const block = this.extractBlock(data, x, y, width, blockSize);
             const dctBlock = this.applyDCT(block);
             
-            const bit = Number.parseInt(encodedMessage[messageIndex++], 2);
+            const bit = parseInt(encodedMessage[messageIndex++], 2);
             const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
             const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
             const needed = Math.max(gap, 5) + K;
@@ -169,7 +169,7 @@ WatermarkCore.prototype.hybridDCTDWT = function(imageData, message, options = {}
                 const coeffs = decomp[band];
                 const bandLen = decomp._bandLen;
                 for (let i = 0; i < bandLen && messageIndex < messageLength; i++) {
-                    coeffs[i] = this.embedInCoefficient(coeffs[i], Number.parseInt(encodedMessage[messageIndex++], 2));
+                    coeffs[i] = this.embedInCoefficient(coeffs[i], parseInt(encodedMessage[messageIndex++], 2));
                 }
             }
             
@@ -188,7 +188,7 @@ WatermarkCore.prototype.hybridDCTDWT = function(imageData, message, options = {}
 // DCT operations
 WatermarkCore.prototype.applyDCT = function(block) {
     const N = 8;
-    const transformed = Array.from({length: N * N});
+    const transformed = new Array(N * N);
     
     for (let u = 0; u < N; u++) {
         for (let v = 0; v < N; v++) {
@@ -233,7 +233,7 @@ WatermarkCore.prototype.applyDFT = function(block) {
 
 WatermarkCore.prototype.applyInverseDFT = function(spectrum) {
     const N = 8;
-    const block = Array.from({length: N * N});
+    const block = new Array(N * N);
     for (let x = 0; x < N; x++) {
         for (let y = 0; y < N; y++) {
             let sum = 0;
@@ -252,7 +252,7 @@ WatermarkCore.prototype.applyInverseDFT = function(spectrum) {
 
 WatermarkCore.prototype.applyInverseDCT = function(dctBlock) {
     const N = 8;
-    const block = Array.from({length: N * N});
+    const block = new Array(N * N);
     
     for (let x = 0; x < N; x++) {
         for (let y = 0; y < N; y++) {

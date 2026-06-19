@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -15,23 +15,15 @@ var CROCKFORD_B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 var NANOID_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-/**
- *
- * @param n
- * @param w
- */
 function hex(n, w) {
   return n.toString(16).padStart(w, "0");
 }
 
-/**
- *
- */
 function uuidv4() {
   var bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
-  bytes[6] = (bytes[6] & 0x0F) | 0x40;
-  bytes[8] = (bytes[8] & 0x3F) | 0x80;
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
   var i = 0;
   return (
     hex(bytes[i++], 2) +
@@ -57,21 +49,18 @@ function uuidv4() {
   );
 }
 
-/**
- *
- */
 function uuidv7() {
   var ts = Date.now();
   var bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
-  bytes[0] = (ts / 0x1_00_00_00_00_00) & 0xFF;
-  bytes[1] = (ts / 0x1_00_00_00_00) & 0xFF;
-  bytes[2] = (ts / 0x1_00_00_00) & 0xFF;
-  bytes[3] = (ts / 0x1_00_00) & 0xFF;
-  bytes[4] = (ts / 0x1_00) & 0xFF;
-  bytes[5] = ts & 0xFF;
-  bytes[6] = 0x70 | (bytes[6] & 0x0F);
-  bytes[8] = 0x80 | (bytes[8] & 0x3F);
+  bytes[0] = (ts / 0x10000000000) & 0xff;
+  bytes[1] = (ts / 0x100000000) & 0xff;
+  bytes[2] = (ts / 0x1000000) & 0xff;
+  bytes[3] = (ts / 0x10000) & 0xff;
+  bytes[4] = (ts / 0x100) & 0xff;
+  bytes[5] = ts & 0xff;
+  bytes[6] = 0x70 | (bytes[6] & 0x0f);
+  bytes[8] = 0x80 | (bytes[8] & 0x3f);
   var i = 0;
   return (
     hex(bytes[i++], 2) +
@@ -97,28 +86,17 @@ function uuidv7() {
   );
 }
 
-/**
- *
- * @param n
- */
 function uuidv7Bulk(n) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(uuidv7());
   return r;
 }
-/**
- *
- * @param n
- */
 function uuidv4Bulk(n) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(uuidv4());
   return r;
 }
 
-/**
- *
- */
 function ulid() {
   var ts = Date.now();
   var t = "";
@@ -134,23 +112,15 @@ function ulid() {
     r += CROCKFORD_B32[bytes[j] % 32];
     if (r.length === 4) r += "-";
   }
-  return t + r.replaceAll('-', "");
+  return t + r.replace(/-/g, "");
 }
 
-/**
- *
- * @param n
- */
 function ulidBulk(n) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(ulid());
   return r;
 }
 
-/**
- *
- * @param len
- */
 function nanoid(len) {
   len = len || 21;
   var bytes = new Uint8Array(len);
@@ -160,23 +130,15 @@ function nanoid(len) {
   return r;
 }
 
-/**
- *
- * @param n
- * @param len
- */
 function nanoidBulk(n, len) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(nanoid(len));
   return r;
 }
 
-/**
- *
- */
 async function swhid() {
-  var fileInput = document.querySelector("#if-swhid-file");
-  var textInput = document.querySelector("#if-swhid-text");
+  var fileInput = document.getElementById("if-swhid-file");
+  var textInput = document.getElementById("if-swhid-text");
 
   if (fileInput && fileInput.files && fileInput.files.length > 0) {
     return await computeSwhidFromFile(fileInput.files[0]);
@@ -193,33 +155,25 @@ async function swhid() {
   return "swh:1:cnt:" + h;
 }
 
-/**
- *
- * @param str
- */
 function sanitizeText(str) {
-  return str.replaceAll(/[<>&"'`]/g, function (c) {
+  return str.replace(/[<>&"'`]/g, function (c) {
     return "&#" + c.charCodeAt(0) + ";";
   });
 }
 
-/**
- *
- * @param el
- */
 function validateSwhidText(el) {
-  var warn = document.querySelector("#if-swhid-text-warning");
+  var warn = document.getElementById("if-swhid-text-warning");
   if (!warn) return;
   var val = el.value;
   var nonEnglish = /[\u0100-\uFFFF]/.test(val);
   warn.style.display = nonEnglish ? "block" : "none";
-  el.style.borderColor = nonEnglish ? "#e74c3c" : "";
+  if (nonEnglish) {
+    el.style.borderColor = "#e74c3c";
+  } else {
+    el.style.borderColor = "";
+  }
 }
 
-/**
- *
- * @param file
- */
 async function computeSwhidFromFile(file) {
   var ext = file.name.split(".").pop().toLowerCase();
   var buf = await file.arrayBuffer();
@@ -234,34 +188,30 @@ async function computeSwhidFromFile(file) {
     var obj;
     try {
       obj = JSON.parse(text);
-    } catch (error) {
-      throw new Error("Invalid fingerprint JSON: " + error.message);
+    } catch (e) {
+      throw new Error("Invalid fingerprint JSON: " + e.message);
     }
     var sha1 = obj && obj.hashes && obj.hashes["SHA-1"];
     if (sha1)
-      return "swh:1:cnt:" + sha1.replaceAll(/[^0-9a-fA-F]/g, "").toLowerCase();
+      return "swh:1:cnt:" + sha1.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
     var sha256 = obj && obj.hashes && obj.hashes["SHA-256"];
     if (sha256)
-      return "swh:1:cnt:" + sha256.replaceAll(/[^0-9a-fA-F]/g, "").toLowerCase();
+      return "swh:1:cnt:" + sha256.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
     throw new Error("No SHA-1 or SHA-256 hash found in fingerprint JSON");
   }
   var hash = await crypto.subtle.digest("SHA-1", buf);
   return "swh:1:cnt:" + hexFromDigest(hash);
 }
 
-/**
- *
- * @param buf
- */
 function extractHashFromOts(buf) {
   var data = new Uint8Array(buf);
   var OTS_HEADER = [
-    0x00, 0x4F, 0x70, 0x65, 0x6E, 0x54, 0x69, 0x6D, 0x65, 0x73, 0x74, 0x61,
-    0x6D, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6F, 0x6F, 0x66, 0x00, 0xBF,
-    0x89, 0xE2, 0xE8, 0x84, 0xE8, 0x92, 0x94,
+    0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+    0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf,
+    0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
   ];
-  for (const [i, element] of OTS_HEADER.entries()) {
-    if (data[i] !== element)
+  for (var i = 0; i < OTS_HEADER.length; i++) {
+    if (data[i] !== OTS_HEADER[i])
       throw new Error("Invalid OTS file: bad magic bytes");
   }
   if (data[OTS_HEADER.length] !== 1) throw new Error("Unsupported OTS version");
@@ -274,10 +224,6 @@ function extractHashFromOts(buf) {
   return h;
 }
 
-/**
- *
- * @param text
- */
 async function computeSwhidFromText(text) {
   var enc = new TextEncoder();
   var buf = enc.encode(text);
@@ -285,10 +231,6 @@ async function computeSwhidFromText(text) {
   return "swh:1:cnt:" + hexFromDigest(hash);
 }
 
-/**
- *
- * @param buf
- */
 function hexFromDigest(buf) {
   var v = new Uint8Array(buf);
   var h = "";
@@ -296,15 +238,12 @@ function hexFromDigest(buf) {
   return h;
 }
 
-/**
- *
- */
 function handleIdForgeGenerate() {
-  var type = document.querySelector("#if-type").value;
-  var count = Number.parseInt(document.querySelector("#if-count").value, 10) || 1;
-  var output = document.querySelector("#if-output");
-  var resultDiv = document.querySelector("#if-result");
-  var btn = document.querySelector("#if-gen-btn");
+  var type = document.getElementById("if-type").value;
+  var count = parseInt(document.getElementById("if-count").value, 10) || 1;
+  var output = document.getElementById("if-output");
+  var resultDiv = document.getElementById("if-result");
+  var btn = document.getElementById("if-gen-btn");
 
   btn.disabled = true;
   btn.textContent =
@@ -314,33 +253,27 @@ function handleIdForgeGenerate() {
     try {
       var ids;
       switch (type) {
-        case "uuidv4": {
+        case "uuidv4":
           ids = count === 1 ? [uuidv4()] : uuidv4Bulk(count);
           break;
-        }
-        case "uuidv7": {
+        case "uuidv7":
           ids = count === 1 ? [uuidv7()] : uuidv7Bulk(count);
           break;
-        }
-        case "ulid": {
+        case "ulid":
           ids = count === 1 ? [ulid()] : ulidBulk(count);
           break;
-        }
-        case "nanoid": {
+        case "nanoid":
           var nlen =
-            Number.parseInt(document.querySelector("#if-nanoid-len").value, 10) || 21;
+            parseInt(document.getElementById("if-nanoid-len").value, 10) || 21;
           ids = count === 1 ? [nanoid(nlen)] : nanoidBulk(count, nlen);
           break;
-        }
-        case "swhid": {
+        case "swhid":
           ids = [await swhid()];
           break;
-        }
-        default: {
+        default:
           ids = [uuidv4()];
-        }
       }
-      globalThis._ifResult = {
+      window._ifResult = {
         ids: ids,
         type: type,
         count: count,
@@ -348,8 +281,8 @@ function handleIdForgeGenerate() {
       };
       output.value = ids.join("\n");
       resultDiv.style.display = "block";
-    } catch (error) {
-      output.value = "Error: " + error.message;
+    } catch (e) {
+      output.value = "Error: " + e.message;
       resultDiv.style.display = "block";
     }
 
@@ -359,12 +292,8 @@ function handleIdForgeGenerate() {
   }, 50);
 }
 
-/**
- *
- * @param el
- */
 function idForgeCopy(el) {
-  var output = document.querySelector("#if-output");
+  var output = document.getElementById("if-output");
   if (!output.value) return;
   var orig = el.textContent;
   el.textContent =
@@ -382,13 +311,9 @@ function idForgeCopy(el) {
   }, 1500);
 }
 
-/**
- *
- * @param format
- */
 function idForgeDownload(format) {
   closeDownloadModal();
-  var r = globalThis._ifResult;
+  var r = window._ifResult;
   if (!r) return;
 
   if (format === "pdf") {
@@ -432,30 +357,20 @@ function idForgeDownload(format) {
 
   var content, ext, mime;
   switch (format) {
-    case "json": {
+    case "json":
       content = JSON.stringify(r, null, 2);
       ext = "json";
       mime = "application/json";
       break;
-    }
-    case "csv": {
+    case "csv":
       content = "Type,Count,Timestamp,ID\n";
       for (var s = 0; s < r.ids.length; s++)
         content +=
-          '"' +
-          String(r.type).replaceAll('"', '""') +
-          '","' +
-          r.count +
-          '","' +
-          String(r.timestamp).replaceAll('"', '""') +
-          '","' +
-          String(r.ids[s]).replaceAll('"', '""') +
-          '"\n';
+          r.type + "," + r.count + "," + r.timestamp + "," + r.ids[s] + "\n";
       ext = "csv";
       mime = "text/csv";
       break;
-    }
-    case "txt": {
+    case "txt":
       content =
         "ID Forge — " +
         r.type +
@@ -468,8 +383,7 @@ function idForgeDownload(format) {
       ext = "txt";
       mime = "text/plain";
       break;
-    }
-    case "xml": {
+    case "xml":
       content =
         '<?xml version="1.0" encoding="UTF-8"?>\n<id-forge>\n  <metadata>\n    <type>' +
         escXml(r.type) +
@@ -484,30 +398,20 @@ function idForgeDownload(format) {
       ext = "xml";
       mime = "application/xml";
       break;
-    }
   }
   if (content == null) return;
   var blob = new Blob([content], { type: mime });
   downloadBlobSimple(blob, "id-forge-" + r.type + "." + ext);
 }
 
-/**
- *
- * @param s
- */
 function escXml(s) {
   return String(s)
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
-    .replaceAll('"', "&quot;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-/**
- *
- * @param blob
- * @param name
- */
 function downloadBlobSimple(blob, name) {
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -516,12 +420,9 @@ function downloadBlobSimple(blob, name) {
   URL.revokeObjectURL(a.href);
 }
 
-/**
- *
- */
 function idForgeShowInfo() {
-  var type = document.querySelector("#if-type").value;
-  var info = document.querySelector("#if-info");
+  var type = document.getElementById("if-type").value;
+  var info = document.getElementById("if-info");
   var icon = {
     uuidv4: "🎲",
     uuidv7: "⏱️",
@@ -537,9 +438,9 @@ function idForgeShowInfo() {
     "</span> " +
     text;
 
-  var nanoWrap = document.querySelector("#if-nanoid-wrapper");
-  var swhidWrap = document.querySelector("#if-swhid-source-wrapper");
-  var countWrap = document.querySelector("#if-count-wrapper");
+  var nanoWrap = document.getElementById("if-nanoid-wrapper");
+  var swhidWrap = document.getElementById("if-swhid-source-wrapper");
+  var countWrap = document.getElementById("if-count-wrapper");
   if (nanoWrap) nanoWrap.style.display = type === "nanoid" ? "block" : "none";
   if (swhidWrap) swhidWrap.style.display = type === "swhid" ? "block" : "none";
   if (countWrap) countWrap.style.display = type === "swhid" ? "none" : "block";
@@ -547,46 +448,36 @@ function idForgeShowInfo() {
   if (type === "swhid") switchSwhidTab("file");
 }
 
-/**
- *
- * @param tab
- */
 function switchSwhidTab(tab) {
   var btns = document.querySelectorAll("[data-swhid-tab]");
-  for (const btn of btns) {
-    btn.style.background =
-      btn.dataset.swhidTab === tab
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].style.background =
+      btns[i].getAttribute("data-swhid-tab") === tab
         ? "var(--accent, #6c5ce7)"
         : "var(--card, #f0f0f0)";
-    btn.style.color =
-      btn.dataset.swhidTab === tab
+    btns[i].style.color =
+      btns[i].getAttribute("data-swhid-tab") === tab
         ? "#fff"
         : "var(--text, #333)";
   }
   var wrappers = ["if-swhid-file-wrapper", "if-swhid-text-wrapper"];
-  for (const wrapper of wrappers) {
-    document.getElementById(wrapper).style.display = "none";
+  for (var j = 0; j < wrappers.length; j++) {
+    document.getElementById(wrappers[j]).style.display = "none";
   }
   document.getElementById("if-swhid-" + tab + "-wrapper").style.display =
     "block";
 }
 
-/**
- *
- */
 function idForgeShowDownload() {
-  if (!globalThis._ifResult) return;
+  if (!window._ifResult) return;
   setDownloadHandler(idForgeDownload);
-  document.querySelector("#dl-modal-title").textContent = "Download — ID Forge";
+  document.getElementById("dl-modal-title").textContent = "Download — ID Forge";
   showDownloadModal();
 }
 
-/**
- *
- */
 function idForgeUpdateCount() {
-  var val = Number.parseInt(document.querySelector("#if-count").value, 10);
-  if (isNaN(val) || val < 1) document.querySelector("#if-count").value = 1;
-  if (val > 10_000) document.querySelector("#if-count").value = 10_000;
+  var val = parseInt(document.getElementById("if-count").value, 10);
+  if (isNaN(val) || val < 1) document.getElementById("if-count").value = 1;
+  if (val > 10000) document.getElementById("if-count").value = 10000;
 }
 /* exported handleIdForgeGenerate, idForgeCopy, idForgeShowDownload, idForgeUpdateCount, idForgeShowInfo, switchSwhidTab */

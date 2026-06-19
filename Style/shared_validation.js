@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -71,21 +71,17 @@ var BLOCKED_EXTS = [
   ".svgz",
 ];
 
-/**
- *
- * @param file
- */
 function isDangerousFile(file) {
   var name = file.name.toLowerCase();
-  for (const BLOCKED_EXT of BLOCKED_EXTS) {
-    if (name.endsWith(BLOCKED_EXT)) return true;
+  for (var i = 0; i < BLOCKED_EXTS.length; i++) {
+    if (name.endsWith(BLOCKED_EXTS[i])) return true;
   }
   return false;
 }
 
 var MAGIC_BYTES = {
-  "image/png": [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],
-  "image/jpeg": [[0xFF, 0xD8, 0xFF]],
+  "image/png": [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
+  "image/jpeg": [[0xff, 0xd8, 0xff]],
   "image/gif": [
     [0x47, 0x49, 0x46, 0x38, 0x39, 0x61],
     [0x47, 0x49, 0x46, 0x38, 0x37, 0x61],
@@ -107,21 +103,21 @@ var MAGIC_BYTES = {
       return false;
     return true;
   },
-  "image/bmp": [[0x42, 0x4D]],
+  "image/bmp": [[0x42, 0x4d]],
   "image/tiff": [
-    [0x49, 0x49, 0x2A, 0x00],
-    [0x4D, 0x4D, 0x00, 0x2A],
+    [0x49, 0x49, 0x2a, 0x00],
+    [0x4d, 0x4d, 0x00, 0x2a],
   ],
   "image/svg+xml": function (buf) {
     var s = String.fromCharCode.apply(null, buf.slice(0, 50)).toLowerCase();
-    return s.includes("<svg") || s.includes("<?xml");
+    return s.indexOf("<svg") !== -1 || s.indexOf("<?xml") !== -1;
   },
   "application/pdf": [[0x25, 0x50, 0x44, 0x46]],
   "audio/mpeg": [
     [0x49, 0x44, 0x33],
-    [0xFF, 0xFB],
-    [0xFF, 0xF3],
-    [0xFF, 0xF2],
+    [0xff, 0xfb],
+    [0xff, 0xf3],
+    [0xff, 0xf2],
   ],
   "audio/wav": function (buf) {
     if (
@@ -140,8 +136,8 @@ var MAGIC_BYTES = {
       return false;
     return true;
   },
-  "audio/flac": [[0x66, 0x4C, 0x61, 0x43]],
-  "audio/ogg": [[0x4F, 0x67, 0x67, 0x53]],
+  "audio/flac": [[0x66, 0x4c, 0x61, 0x43]],
+  "audio/ogg": [[0x4f, 0x67, 0x67, 0x53]],
   "video/mp4": function (buf) {
     if (
       buf[4] !== 0x66 ||
@@ -152,7 +148,7 @@ var MAGIC_BYTES = {
       return false;
     return true;
   },
-  "video/webm": [[0x1A, 0x45, 0xDF, 0xA3]],
+  "video/webm": [[0x1a, 0x45, 0xdf, 0xa3]],
   "video/avi": function (buf) {
     if (
       buf[0] !== 0x52 ||
@@ -172,10 +168,6 @@ var MAGIC_BYTES = {
   },
 };
 
-/**
- *
- * @param file
- */
 function matchesMagicBytes(file) {
   return new Promise(function (resolve) {
     var mime = file.type.toLowerCase();
@@ -191,10 +183,11 @@ function matchesMagicBytes(file) {
         resolve(expected(arr));
         return;
       }
-      for (var sig of expected) {
+      for (var m = 0; m < expected.length; m++) {
+        var sig = expected[m];
         var match = true;
-        for (const [i, element] of sig.entries()) {
-          if (arr[i] !== element) {
+        for (var i = 0; i < sig.length; i++) {
+          if (arr[i] !== sig[i]) {
             match = false;
             break;
           }
@@ -233,23 +226,15 @@ var DOC_THREAT_PATTERNS = [
   { pattern: /\/Launch[\s<]/i, label: "launch external app" },
 ];
 
-/**
- *
- * @param arr
- */
 function hasDangerousContent(arr) {
   var dec = new TextDecoder("utf-8", { fatal: false });
   var s = dec.decode(arr.slice(0, 4096));
-  for (const DANGEROUS_PATTERN of DANGEROUS_PATTERNS) {
-    if (DANGEROUS_PATTERN.test(s)) return true;
+  for (var i = 0; i < DANGEROUS_PATTERNS.length; i++) {
+    if (DANGEROUS_PATTERNS[i].test(s)) return true;
   }
   return false;
 }
 
-/**
- *
- * @param file
- */
 function checkDangerousContent(file) {
   return new Promise(function (resolve) {
     var reader = new FileReader();
@@ -263,10 +248,6 @@ function checkDangerousContent(file) {
   });
 }
 
-/**
- *
- * @param file
- */
 function checkDocumentThreats(file) {
   return new Promise(function (resolve) {
     if (file.type !== "application/pdf") {
@@ -282,8 +263,8 @@ function checkDocumentThreats(file) {
       var arr = new Uint8Array(reader.result);
       var dec = new TextDecoder("utf-8", { fatal: false });
       var s = dec.decode(arr);
-      for (const DOC_THREAT_PATTERN of DOC_THREAT_PATTERNS) {
-        if (DOC_THREAT_PATTERN.pattern.test(s)) {
+      for (var i = 0; i < DOC_THREAT_PATTERNS.length; i++) {
+        if (DOC_THREAT_PATTERNS[i].pattern.test(s)) {
           resolve(false);
           return;
         }
@@ -297,10 +278,6 @@ function checkDocumentThreats(file) {
   });
 }
 
-/**
- *
- * @param file
- */
 function checkFileStructure(file) {
   return new Promise(function (resolve) {
     var mime = file.type.toLowerCase();
@@ -314,8 +291,7 @@ function checkFileStructure(file) {
     reader.onloadend = function () {
       var arr = new Uint8Array(reader.result);
       var off = size - tailSize;
-      switch (mime) {
-      case "image/png": {
+      if (mime === "image/png") {
         // Last 12 bytes must be IEND chunk: 0-length, "IEND", CRC
         if (tailSize < 12) {
           resolve(false);
@@ -334,43 +310,30 @@ function checkFileStructure(file) {
         if (
           arr[i + 4] !== 0x49 ||
           arr[i + 5] !== 0x45 ||
-          arr[i + 6] !== 0x4E ||
+          arr[i + 6] !== 0x4e ||
           arr[i + 7] !== 0x44
         ) {
           resolve(false);
           return;
         }
         resolve(true);
-      
-      break;
-      }
-      case "image/jpeg": {
+      } else if (mime === "image/jpeg") {
         // Last 2 bytes must be EOI marker FF D9
         if (tailSize < 2) {
           resolve(false);
           return;
         }
-        if (arr.at(-2) !== 0xFF || arr.at(-1) !== 0xD9)
+        if (arr[arr.length - 2] !== 0xff || arr[arr.length - 1] !== 0xd9)
           resolve(false);
         else resolve(true);
-      
-      break;
-      }
-      case "image/gif": {
+      } else if (mime === "image/gif") {
         // Last byte must be GIF trailer 0x3B
-        if (arr.at(-1) === 0x3B) {resolve(true);}
-        else {resolve(false);}
-      
-      break;
-      }
-      case "image/webp": {
+        if (arr[arr.length - 1] !== 0x3b) resolve(false);
+        else resolve(true);
+      } else if (mime === "image/webp") {
         resolve(true);
-      
-      break;
-      }
-      default: {
+      } else {
         resolve(true);
-      }
       }
     };
     reader.onerror = function () {
@@ -380,42 +343,29 @@ function checkFileStructure(file) {
   });
 }
 
-/**
- *
- * @param file
- * @param acceptAttr
- */
 function matchesAccept(file, acceptAttr) {
   if (!acceptAttr) return true;
   var name = file.name.toLowerCase();
   var type = file.type.toLowerCase();
   var rules = acceptAttr.split(",");
-  for (const rule of rules) {
-    var r = rule.trim();
+  for (var i = 0; i < rules.length; i++) {
+    var r = rules[i].trim();
     if (r.endsWith("/*") && type.startsWith(r.split("/")[0] + "/")) return true;
-    else if (r.includes("/") && type === r) return true;
+    else if (r.indexOf("/") !== -1 && type === r) return true;
     else if (r.startsWith(".") && name.endsWith(r)) return true;
   }
   return false;
 }
 
-/**
- *
- * @param filename
- */
 function isEnglishFilename(filename) {
   return /^[A-Za-z0-9 _.\-()\u00C0-\u00FF]+$/.test(filename);
 }
 
-/**
- *
- * @param input
- */
 function clearInputFiles(input) {
   try {
     input.value = "";
-  } catch {}
-  if (input.files && input.files.length > 0) {
+  } catch (e) {}
+  if (input.files && input.files.length) {
     var dt = new DataTransfer();
     input.files = dt.files;
   }
@@ -423,53 +373,41 @@ function clearInputFiles(input) {
 
 // Magic signatures of dangerous file types (for files without extension)
 var DANGEROUS_MAGIC = [
-  { sig: [0x4D, 0x5A], name: "PE executable (exe/dll/sys)" },
-  { sig: [0x7F, 0x45, 0x4C, 0x46], name: "ELF executable" },
-  { sig: [0xCA, 0xFE, 0xBA, 0xBE], name: "Mach-O executable" },
-  { sig: [0xFE, 0xED, 0xFA, 0xCE], name: "Mach-O executable" },
-  { sig: [0xCE, 0xFA, 0xED, 0xFE], name: "Mach-O executable" },
-  { sig: [0xCF, 0xFA, 0xED, 0xFE], name: "Mach-O x86_64" },
-  { sig: [0x4D, 0x53, 0x43, 0x46], name: "CAB archive" },
+  { sig: [0x4d, 0x5a], name: "PE executable (exe/dll/sys)" },
+  { sig: [0x7f, 0x45, 0x4c, 0x46], name: "ELF executable" },
+  { sig: [0xca, 0xfe, 0xba, 0xbe], name: "Mach-O executable" },
+  { sig: [0xfe, 0xed, 0xfa, 0xce], name: "Mach-O executable" },
+  { sig: [0xce, 0xfa, 0xed, 0xfe], name: "Mach-O executable" },
+  { sig: [0xcf, 0xfa, 0xed, 0xfe], name: "Mach-O x86_64" },
+  { sig: [0x4d, 0x53, 0x43, 0x46], name: "CAB archive" },
 ];
 
-/**
- *
- * @param buf
- */
 function hasDangerousMagic(buf) {
-  for (const element of DANGEROUS_MAGIC) {
-    var sig = element.sig;
+  for (var i = 0; i < DANGEROUS_MAGIC.length; i++) {
+    var sig = DANGEROUS_MAGIC[i].sig;
     var match = true;
-    for (const [j, element_] of sig.entries()) {
-      if (buf[j] !== element_) {
+    for (var j = 0; j < sig.length; j++) {
+      if (buf[j] !== sig[j]) {
         match = false;
         break;
       }
     }
-    if (match) return element.name;
+    if (match) return DANGEROUS_MAGIC[i].name;
   }
   // Check for shebang (#!) indicating a script
   if (buf[0] === 0x23 && buf[1] === 0x21) return "script with shebang";
   return null;
 }
 
-/**
- *
- * @param file
- */
 function fileHasExtension(file) {
   var name = file.name || "";
   var dot = name.lastIndexOf(".");
   return dot > 0 && dot < name.length - 1;
 }
 
-/**
- *
- * @param input
- */
 function detectDangerousMagic(input) {
   return new Promise(function (resolve) {
-    if (!input || !input.files || input.files.length === 0) {
+    if (!input || !input.files || !input.files.length) {
       resolve(false);
       return;
     }
@@ -489,12 +427,8 @@ function detectDangerousMagic(input) {
   });
 }
 
-/**
- *
- * @param input
- */
 async function validateFileInput(input) {
-  if (!input || !input.files || input.files.length === 0) return true;
+  if (!input || !input.files || !input.files.length) return true;
   var file = input.files[0];
   if (!file) return true;
   if (isDangerousFile(file)) {
@@ -503,16 +437,6 @@ async function validateFileInput(input) {
         "shared.dangerous_file",
         "This file type is not allowed for security reasons.",
       ) || "This file type is not allowed for security reasons.",
-    );
-    clearInputFiles(input);
-    return false;
-  }
-  if (file.size > 200 * 1024 * 1024) {
-    alert(
-      __(
-        "shared.file_too_large",
-        "File is too large. Maximum size is 200 MB.",
-      ) || "File is too large. Maximum size is 200 MB.",
     );
     clearInputFiles(input);
     return false;

@@ -1,73 +1,44 @@
 (function (root) {
   "use strict";
 
-  /**
-   *
-   * @param n
-   * @param min
-   * @param max
-   */
   function clamp(n, min, max) {
     return Math.max(min, Math.min(max, n));
   }
 
-  /**
-   *
-   * @param data
-   * @param idx
-   */
   function luminance(data, idx) {
     return 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
   }
 
-  /**
-   *
-   * @param values
-   */
   function mean(values) {
-    if (values.length === 0) return 0;
+    if (!values.length) return 0;
     var s = 0;
     for (var i = 0; i < values.length; i++) s += values[i];
     return s / values.length;
   }
 
-  /**
-   *
-   * @param values
-   * @param avg
-   */
   function stddev(values, avg) {
-    if (values.length === 0) return 0;
+    if (!values.length) return 0;
     var s = 0;
-    for (const value of values) {
-      var d = value - avg;
+    for (var i = 0; i < values.length; i++) {
+      var d = values[i] - avg;
       s += d * d;
     }
     return Math.sqrt(s / values.length);
   }
 
-  /**
-   *
-   * @param values
-   * @param pct
-   */
   function percentile(values, pct) {
-    if (values.length === 0) return 0;
-    var copy = [...values].sort(function (a, b) {
+    if (!values.length) return 0;
+    var copy = values.slice().sort(function (a, b) {
       return a - b;
     });
     var idx = Math.floor((copy.length - 1) * pct);
     return copy[clamp(idx, 0, copy.length - 1)];
   }
 
-  /**
-   *
-   * @param bytes
-   */
   function parseJpegMarkers(bytes) {
     var info = {
       is_jpeg:
-        bytes && bytes.length > 3 && bytes[0] === 0xFF && bytes[1] === 0xD8,
+        bytes && bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8,
       has_eoi: false,
       trailing_bytes: 0,
       app_segments: [],
@@ -81,7 +52,7 @@
 
     var eoi = -1;
     for (var e = bytes.length - 2; e >= 0; e--) {
-      if (bytes[e] === 0xFF && bytes[e + 1] === 0xD9) {
+      if (bytes[e] === 0xff && bytes[e + 1] === 0xd9) {
         eoi = e;
         break;
       }
@@ -94,14 +65,14 @@
 
     var off = 2;
     while (off < bytes.length - 4) {
-      if (bytes[off] !== 0xFF) {
+      if (bytes[off] !== 0xff) {
         off++;
         continue;
       }
-      while (bytes[off] === 0xFF) off++;
+      while (bytes[off] === 0xff) off++;
       var marker = bytes[off++];
-      if (marker === 0xD9 || marker === 0xDA) break;
-      if (marker >= 0xD0 && marker <= 0xD7) continue;
+      if (marker === 0xd9 || marker === 0xda) break;
+      if (marker >= 0xd0 && marker <= 0xd7) continue;
       if (off + 2 > bytes.length) break;
       var len = (bytes[off] << 8) | bytes[off + 1];
       if (len < 2 || off + len > bytes.length) {
@@ -112,8 +83,8 @@
       }
       var payloadStart = off + 2;
       var payloadEnd = off + len;
-      if (marker >= 0xE0 && marker <= 0xEF) {
-        var label = "APP" + (marker - 0xE0);
+      if (marker >= 0xe0 && marker <= 0xef) {
+        var label = "APP" + (marker - 0xe0);
         info.app_segments.push(label);
         var text = "";
         for (
@@ -126,13 +97,13 @@
         if (text.indexOf("Exif") === 0) info.has_exif = true;
         if (
           text.slice(0, 28).indexOf("http://ns.adobe.com/xap/") === 0 ||
-          text.includes("XMP")
+          text.indexOf("XMP") >= 0
         )
           info.has_xmp = true;
-        if (text.includes("Photoshop") || text.includes("8BIM"))
+        if (text.indexOf("Photoshop") >= 0 || text.indexOf("8BIM") >= 0)
           info.has_photoshop = true;
       }
-      if (marker === 0xDB) info.quantization_tables++;
+      if (marker === 0xdb) info.quantization_tables++;
       off += len;
     }
 
@@ -143,11 +114,6 @@
     return info;
   }
 
-  /**
-   *
-   * @param imageData
-   * @param opts
-   */
   function analyzeNoise(imageData, opts) {
     opts = opts || {};
     var w = imageData.width || imageData.w;
@@ -196,7 +162,7 @@
             vals.push(Math.abs(cc - nn / 4));
           }
         }
-        if (vals.length > 0) {
+        if (vals.length) {
           var m = mean(vals);
           if (m > avg + sd * 0.9 || m > high) {
             tiles.push({
@@ -220,14 +186,6 @@
     };
   }
 
-  /**
-   *
-   * @param data
-   * @param w
-   * @param x
-   * @param y
-   * @param size
-   */
   function blockDescriptor(data, w, x, y, size) {
     var vals = [];
     var sum = 0,
@@ -260,10 +218,6 @@
     };
   }
 
-  /**
-   *
-   * @param desc
-   */
   function blockKey(desc) {
     return [
       desc.hash,
@@ -275,11 +229,6 @@
     ].join("|");
   }
 
-  /**
-   *
-   * @param a
-   * @param b
-   */
   function descriptorsClose(a, b) {
     return (
       Math.abs(a.mean - b.mean) <= 8 &&
@@ -290,11 +239,6 @@
     );
   }
 
-  /**
-   *
-   * @param a
-   * @param b
-   */
   function hamming(a, b) {
     var n = Math.min(a.length, b.length),
       d = Math.abs(a.length - b.length);
@@ -302,11 +246,6 @@
     return d;
   }
 
-  /**
-   *
-   * @param imageData
-   * @param opts
-   */
   function detectCopyMove(imageData, opts) {
     opts = opts || {};
     var w = imageData.width || imageData.w;
@@ -323,7 +262,8 @@
         var key = blockKey(desc);
         if (!buckets[key]) buckets[key] = [];
         var bucket = buckets[key];
-        for (var p of bucket) {
+        for (var i = 0; i < bucket.length; i++) {
+          var p = bucket[i];
           var dist = Math.sqrt(Math.pow(p.x - x, 2) + Math.pow(p.y - y, 2));
           if (dist >= size * 2) {
             matches.push({
@@ -385,12 +325,6 @@
     };
   }
 
-  /**
-   *
-   * @param bytes
-   * @param imageData
-   * @param fileName
-   */
   function metadataSignals(bytes, imageData, fileName) {
     var ext = (fileName || "").toLowerCase().split(".").pop();
     var jpeg = parseJpegMarkers(bytes || []);
@@ -403,7 +337,7 @@
       if (jpeg.has_photoshop) signals.push("Photoshop marker present");
       if (jpeg.quantization_tables > 2)
         signals.push("Multiple JPEG quantization tables detected");
-    } else if (["jpg", "jpeg"].includes(ext)) {
+    } else if (["jpg", "jpeg"].indexOf(ext) >= 0) {
       signals.push("File extension says JPEG but magic bytes do not match");
     }
     if (imageData) {
@@ -419,10 +353,6 @@
     };
   }
 
-  /**
-   *
-   * @param parts
-   */
   function combineFindings(parts) {
     var weights = { ela: 0.3, noise: 0.25, copy_move: 0.25, metadata: 0.2 };
     var score = 0;
@@ -435,14 +365,10 @@
     var pct = Math.round(clamp(score, 0, 1) * 100);
     return {
       risk_score: pct,
-      risk_level: pct >= 70 ? "high" : (pct >= 38 ? "medium" : "low"),
+      risk_level: pct >= 70 ? "high" : pct >= 38 ? "medium" : "low",
     };
   }
 
-  /**
-   *
-   * @param parts
-   */
   function buildSummary(parts) {
     var signals = [];
     if (parts.ela && parts.ela.suspicion > 0.45)
@@ -455,7 +381,7 @@
       );
     if (parts.metadata && parts.metadata.signals)
       signals = signals.concat(parts.metadata.signals);
-    if (signals.length === 0)
+    if (!signals.length)
       signals.push(
         "No strong tamper signal found by lightweight forensic checks",
       );
@@ -473,4 +399,4 @@
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.RedoSanForensicCore = api;
-})(typeof globalThis === "undefined" ? this : globalThis);
+})(typeof globalThis !== "undefined" ? globalThis : this);

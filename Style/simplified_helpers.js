@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -12,53 +12,42 @@
     );
 })();
 
-/* global simpleFile: writable, simpleType: writable, simpleBuf: writable, simpleSteps: writable, simpleStep: writable, simpleIsAI: writable, simpleUserInfo: writable */
-
-/**
- *
- */
 function toggleArtistFields() {
-  var cb = document.querySelector("#sinfo-isArtist");
-  var fields = document.querySelector("#sinfo-artist-fields");
+  var cb = document.getElementById("sinfo-isArtist");
+  var fields = document.getElementById("sinfo-artist-fields");
   if (fields) fields.style.display = cb && cb.checked ? "" : "none";
 }
 
-/**
- *
- */
 function saveSimpleUserInfo() {
   simpleUserInfo.name =
-    (document.querySelector("#sinfo-name") || {}).value || "";
+    (document.getElementById("sinfo-name") || {}).value || "";
   simpleUserInfo.email =
-    (document.querySelector("#sinfo-email") || {}).value || "";
+    (document.getElementById("sinfo-email") || {}).value || "";
   simpleUserInfo.phoneCode =
-    (document.querySelector("#sinfo-phonecode") || {}).value || "";
-  var phone = (document.querySelector("#sinfo-phone") || {}).value || "";
-  simpleUserInfo.phone = phone.replaceAll(/\D/g, "").slice(0, 15);
+    (document.getElementById("sinfo-phonecode") || {}).value || "";
+  var phone = (document.getElementById("sinfo-phone") || {}).value || "";
+  simpleUserInfo.phone = phone.replace(/\D/g, "").slice(0, 15);
   simpleUserInfo.website =
-    (document.querySelector("#sinfo-website") || {}).value || "";
+    (document.getElementById("sinfo-website") || {}).value || "";
   simpleUserInfo.social = {
-    tiktok: (document.querySelector("#sinfo-tiktok") || {}).value || "",
-    facebook: (document.querySelector("#sinfo-facebook") || {}).value || "",
-    instagram: (document.querySelector("#sinfo-instagram") || {}).value || "",
-    youtube: (document.querySelector("#sinfo-youtube") || {}).value || "",
+    tiktok: (document.getElementById("sinfo-tiktok") || {}).value || "",
+    facebook: (document.getElementById("sinfo-facebook") || {}).value || "",
+    instagram: (document.getElementById("sinfo-instagram") || {}).value || "",
+    youtube: (document.getElementById("sinfo-youtube") || {}).value || "",
   };
-  var cb = document.querySelector("#sinfo-isArtist");
+  var cb = document.getElementById("sinfo-isArtist");
   simpleUserInfo.isArtist = cb ? cb.checked : false;
   simpleUserInfo.music = {
-    spotify: (document.querySelector("#sinfo-spotify") || {}).value || "",
-    appleMusic: (document.querySelector("#sinfo-applemusic") || {}).value || "",
-    youtubeMusic: (document.querySelector("#sinfo-ytmusic") || {}).value || "",
-    soundcloud: (document.querySelector("#sinfo-soundcloud") || {}).value || "",
-    bandcamp: (document.querySelector("#sinfo-bandcamp") || {}).value || "",
+    spotify: (document.getElementById("sinfo-spotify") || {}).value || "",
+    appleMusic: (document.getElementById("sinfo-applemusic") || {}).value || "",
+    youtubeMusic: (document.getElementById("sinfo-ytmusic") || {}).value || "",
+    soundcloud: (document.getElementById("sinfo-soundcloud") || {}).value || "",
+    bandcamp: (document.getElementById("sinfo-bandcamp") || {}).value || "",
   };
 }
 
-/**
- *
- */
 function setupSimpleDropZone() {
-  var dz = document.querySelector("#simpleDropZone");
+  var dz = document.getElementById("simpleDropZone");
   if (!dz) return;
   dz.addEventListener("dragover", function (e) {
     e.preventDefault();
@@ -70,15 +59,11 @@ function setupSimpleDropZone() {
   dz.addEventListener("drop", function (e) {
     e.preventDefault();
     dz.classList.remove("drag-over");
-    if (e.dataTransfer.files.length > 0)
+    if (e.dataTransfer.files.length)
       simpleFileSelected({ files: e.dataTransfer.files });
   });
 }
 
-/**
- *
- * @param type
- */
 function getSimpleTypeLabel(type) {
   var labels = {
     image: __("simple.type_image", "image"),
@@ -90,12 +75,9 @@ function getSimpleTypeLabel(type) {
   return labels[type] || type;
 }
 
-/**
- *
- */
 function restoreUploadFileInfo() {
-  var dz = document.querySelector("#simpleDropZone");
-  var info = document.querySelector("#simpleFileInfo");
+  var dz = document.getElementById("simpleDropZone");
+  var info = document.getElementById("simpleFileInfo");
   if (!dz || !info || !simpleFile) return;
   dz.classList.add("has-file");
   var icon =
@@ -115,10 +97,6 @@ function restoreUploadFileInfo() {
     "</span></div></div>";
 }
 
-/**
- *
- * @param input
- */
 async function simpleFileSelected(input) {
   var file = input.files ? input.files[0] : input;
   if (!file) return;
@@ -145,11 +123,11 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch {}
+      } catch (e) {}
     }
     return;
   }
-  var acceptEl = document.querySelector("#simpleFileInput");
+  var acceptEl = document.getElementById("simpleFileInput");
   if (
     acceptEl &&
     acceptEl.getAttribute("accept") &&
@@ -174,7 +152,7 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch {}
+      } catch (e) {}
     }
     return;
   }
@@ -190,7 +168,7 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch {}
+      } catch (e) {}
     }
     return;
   }
@@ -206,14 +184,14 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch {}
+      } catch (e) {}
     }
     return;
   }
   simpleFile = file;
   var type = detectFileType(file);
-  var dz = document.querySelector("#simpleDropZone");
-  var info = document.querySelector("#simpleFileInfo");
+  var dz = document.getElementById("simpleDropZone");
+  var info = document.getElementById("simpleFileInfo");
   dz.classList.add("has-file");
   var icon =
     { image: "🖼️", audio: "🎵", video: "🎬", document: "📄", other: "📁" }[
@@ -233,24 +211,24 @@ async function simpleFileSelected(input) {
   simpleType = type;
   // Read file buffer
   var reader = new FileReader();
-  reader.addEventListener('load', function (e) {
+  reader.onload = function (e) {
     simpleBuf = e.target.result;
-  });
+  };
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
-  simpleSteps = type === "image" ? [
+  if (type === "image") {
+    simpleSteps = [
       { id: "upload", label: __("simple.step_upload", "Upload") },
       { id: "ai-question", label: __("simple.step_type", "Type") },
-    ] : buildSteps(type, false);
+    ];
+  } else {
+    simpleSteps = buildSteps(type, false);
+  }
   // Reset step position
   simpleStep = 0;
   renderStep();
 }
 
-/**
- *
- * @param isAI
- */
 function chooseAi(isAI) {
   simpleIsAI = isAI;
   simpleSteps = buildSteps("image", isAI);
@@ -261,12 +239,6 @@ function chooseAi(isAI) {
 }
 
 // Build combined fingerprint + DID payload, trimmed to fit maxBytes
-/**
- *
- * @param fpResult
- * @param didSig
- * @param maxBytes
- */
 function buildCombinedPayload(fpResult, didSig, maxBytes) {
   var didStr = "";
   if (didSig) {
@@ -294,46 +266,34 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
   var available = maxBytes - didBytes;
   if (available < 50) available = 50;
   fpText = fpText.substring(0, available);
-  combined = fpText + didStr;
+  var combined = fpText + didStr;
   if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
     combined = fpText;
   }
   return combined;
 }
 
-/**
- *
- * @param cats
- * @param cat
- */
 function getPiAlgoOptions(cats, cat) {
   var algos = cats[cat] || {};
   var keys = Object.keys(algos);
   var opts = "";
-  for (const key of keys) {
-    var algo = algos[key];
+  for (var i = 0; i < keys.length; i++) {
+    var algo = algos[keys[i]];
     opts +=
-      '<option value="' + key + '">' + (algo.name || key) + "</option>";
+      '<option value="' + keys[i] + '">' + (algo.name || keys[i]) + "</option>";
   }
   return opts;
 }
 
-/**
- *
- */
 function updateSpiAlgorithms() {
-  var sel = document.querySelector("#spi-category");
-  var algoSel = document.querySelector("#spi-algorithm");
+  var sel = document.getElementById("spi-category");
+  var algoSel = document.getElementById("spi-algorithm");
   if (!sel || !algoSel) return;
-  var cats = globalThis.pixelInjection && globalThis.pixelInjection.algorithms;
+  var cats = window.pixelInjection && window.pixelInjection.algorithms;
   if (!cats) return;
   algoSel.innerHTML = getPiAlgoOptions(cats, sel.value);
 }
 
-/**
- *
- * @param dataUrl
- */
 function dataUrlToBlob(dataUrl) {
   try {
     var parts = dataUrl.split(",");
@@ -342,62 +302,42 @@ function dataUrlToBlob(dataUrl) {
     var arr = new Uint8Array(raw.length);
     for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
     return new Blob([arr], { type: mime });
-  } catch {
+  } catch (e) {
     return null;
   }
 }
 
-/**
- *
- */
 function setupFpDownload() {
   setDownloadHandler(downloadFingerprint);
-  document.querySelector("#dl-modal-title").textContent = __("dl.title");
+  document.getElementById("dl-modal-title").textContent = __("dl.title");
   if (simpleResults.fpResult)
     setResult('fpResult', simpleResults.fpResult);
 }
 
-/**
- *
- */
 function setupDidDownload() {
   setDownloadHandler(downloadDID);
-  document.querySelector("#dl-modal-title").textContent =
+  document.getElementById("dl-modal-title").textContent =
     __("dl.title", "Download") + " — DID";
 }
 
-/**
- *
- */
 function toggleSimpleLangDropdown() {
-  var menu = document.querySelector("#simpleLangMenu");
+  var menu = document.getElementById("simpleLangMenu");
   if (menu) menu.classList.toggle("show");
 }
 
-/**
- *
- */
 function toggleModeLangDropdown() {
-  var menu = document.querySelector("#modeLangMenu");
+  var menu = document.getElementById("modeLangMenu");
   if (menu) menu.classList.toggle("show");
 }
 
-/**
- *
- * @param s
- */
 function escapeHtml(s) {
   var div = document.createElement("div");
   div.textContent = s;
   return div.innerHTML;
 }
 
-/**
- *
- * @param bytes
- */
 function formatSize(bytes) {
   if (bytes < 1024) return bytes + " B";
-  if (bytes < 1_048_576) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / 1_048_576).toFixed(1) + " MB";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1048576).toFixed(1) + " MB";
 }
