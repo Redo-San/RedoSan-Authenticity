@@ -1,2 +1,4 @@
 Style/lang/i18n-data.js
 Style/i18n.js
+Pixel_Injection/**/*.js
+Style/mpa-router.js
