@@ -1,8 +1,12 @@
-var fs = require("fs");
-var path = require("path");
+var fs = require("node:fs");
+var path = require("node:path");
 
 var ROOT = path.resolve(__dirname, "..");
 
+/**
+ *
+ * @param s
+ */
 function stripTags(s) {
   var out = "";
   var inTag = false;
@@ -21,30 +25,46 @@ function stripTags(s) {
   return out;
 }
 
+/**
+ *
+ * @param content
+ */
 function extractTitle(content) {
   var m = content.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-  return m ? stripTags(m[1]).replace(/\s+/g, " ").trim() : "";
+  return m ? stripTags(m[1]).replaceAll(/\s+/g, " ").trim() : "";
 }
 
+/**
+ *
+ * @param content
+ */
 function extractKeywords(content) {
   var re = /<h3[^>]*>([\s\S]*?)<\/h3>/gi;
   var kws = [];
   var m;
   while ((m = re.exec(content)) !== null) {
-    var kw = stripTags(m[1]).replace(/\s+/g, " ").trim();
+    var kw = stripTags(m[1]).replaceAll(/\s+/g, " ").trim();
     if (kw) kws.push(kw);
   }
   return kws;
 }
 
+/**
+ *
+ * @param content
+ */
 function extractText(content) {
-  return stripTags(content).replace(/\s+/g, " ").trim();
+  return stripTags(content).replaceAll(/\s+/g, " ").trim();
 }
 
+/**
+ *
+ * @param pageDir
+ */
 function buildForStandalonePage(pageDir) {
   var htmlPath = path.join(pageDir, "index.html");
   if (!fs.existsSync(htmlPath)) return null;
-  var html = fs.readFileSync(htmlPath, "utf-8");
+  var html = fs.readFileSync(htmlPath, "utf8");
 
   var m = html.match(/<main[^>]*id="app"[^>]*>([\s\S]*?)<\/main>/i);
   if (!m) return null;
@@ -61,6 +81,9 @@ function buildForStandalonePage(pageDir) {
   };
 }
 
+/**
+ *
+ */
 function buildIndex() {
   var pagesDir = path.join(ROOT, "Style", "pages");
   var index = [];

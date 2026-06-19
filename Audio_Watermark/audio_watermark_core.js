@@ -1,6 +1,10 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 
 // ── WAV I/O ──
+/**
+ *
+ * @param buf
+ */
 function awReadWav(buf) {
     const v = new DataView(buf);
     if (String.fromCharCode(v.getUint8(0),v.getUint8(1),v.getUint8(2),v.getUint8(3))!=='RIFF')
@@ -22,7 +26,7 @@ function awReadWav(buf) {
     }
     if (!fmt) throw new Error('fmt chunk not found');
     if (!dataSize) throw new Error('data chunk not found');
-    if (fmt.fmt !== 1 && fmt.fmt !== 0xFFFE) throw new Error('Only PCM WAV supported');
+    if (fmt.fmt !== 1 && fmt.fmt !== 0xFF_FE) throw new Error('Only PCM WAV supported');
     const totalSamples = Math.floor(dataSize / (fmt.bps / 8));
     const monoLen = Math.floor(totalSamples / fmt.ch);
     const m = new Int16Array(monoLen);
@@ -30,12 +34,24 @@ function awReadWav(buf) {
     return { samples: m, sr: fmt.sr, ch: fmt.ch, bps: fmt.bps,
              raw: new Int16Array(totalSamples), rawOff: dataOff };
 }
+/**
+ *
+ * @param buf
+ */
 function awReadWavRaw(buf) {
     const r = awReadWav(buf);
     const v = new DataView(buf);
     for (let i = 0; i < r.raw.length; i++) r.raw[i] = v.getInt16(r.rawOff + i * 2, true);
     return r;
 }
+/**
+ *
+ * @param mono
+ * @param sr
+ * @param ch
+ * @param rawData
+ * @param bps
+ */
 function awWriteWav(mono, sr, ch, rawData, bps) {
     const bpsOut = 16, ba = ch * (bpsOut / 8);
     const isDual = Array.isArray(mono);
@@ -58,12 +74,16 @@ function awWriteWav(mono, sr, ch, rawData, bps) {
             } else {
                 val = i < mono.length ? mono[i] : 0;
             }
-            v.setInt16(44 + (i * ch + c) * 2, Math.max(-32768, Math.min(32767, val||0)), true);
+            v.setInt16(44 + (i * ch + c) * 2, Math.max(-32_768, Math.min(32_767, val||0)), true);
         }
     }
     return buf;
 }
 
+/**
+ *
+ * @param buf
+ */
 function awReadRightChannel(buf) {
     const v = new DataView(buf);
     let off = 12, fmt = null, dataOff = 0, dataSize = 0;
@@ -81,23 +101,32 @@ function awReadRightChannel(buf) {
     for (let i = 0; i < monoLen; i++) r[i] = v.getInt16(dataOff + (i * fmt.ch + 1) * 2, true);
     return r;
 }
+/**
+ *
+ * @param file
+ */
 async function awLoadAudio(file) {
     const buf = await file.arrayBuffer();
     const h = new Uint8Array(buf, 0, 4);
     if (h[0]===0x52 && h[1]===0x49 && h[2]===0x46 && h[3]===0x46) return awReadWavRaw(buf);
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const ctx = new (globalThis.AudioContext||globalThis.webkitAudioContext)();
     const ab = await ctx.decodeAudioData(buf);
     const ch0 = ab.getChannelData(0);
     const s = new Int16Array(ch0.length);
-    for (let i = 0; i < ch0.length; i++) {
-        const v = Math.max(-1, Math.min(1, ch0[i]));
-        s[i] = v < 0 ? Math.round(v * 32768) : Math.round(v * 32767);
+    for (const [i, element] of ch0.entries()) {
+        const v = Math.max(-1, Math.min(1, element));
+        s[i] = v < 0 ? Math.round(v * 32_768) : Math.round(v * 32_767);
     }
     ctx.close();
     return { samples: s, sr: ab.sampleRate, ch: ab.numberOfChannels, bps: 16, raw: null };
 }
 
 // ── FFT (radix-2, in-place) ──
+/**
+ *
+ * @param re
+ * @param im
+ */
 function awFft(re, im) {
     const n = re.length;
     if (n < 2) return;
@@ -130,6 +159,11 @@ function awFft(re, im) {
         }
     }
 }
+/**
+ *
+ * @param re
+ * @param im
+ */
 function awIfft(re, im) {
     const n = re.length;
     for (let i = 0; i < n; i++) im[i] = -im[i];
@@ -138,6 +172,11 @@ function awIfft(re, im) {
 }
 
 // ── Payload helpers ──
+/**
+ *
+ * @param secretBytes
+ * @param key
+ */
 function awFormatPayload(secretBytes, key) {
     const marker = new Uint8Array([0xAA, 0xBB]);
     const raw = new Uint8Array(2 + secretBytes.length);
@@ -152,10 +191,15 @@ function awFormatPayload(secretBytes, key) {
     full.set(lenBytes, 0); full.set(encrypted, 4);
     return bits(full);
 }
+/**
+ *
+ * @param bitsStr
+ * @param key
+ */
 function awExtractPayload(bitsStr, key) {
     if (typeof bitsStr !== 'string' || bitsStr.length < 32) return null;
-    const dlen = parseInt(bitsStr.substring(0, 32), 2);
-    if (!dlen || dlen < 2 || dlen > 100000 || bitsStr.length < 32 + dlen * 8) return null;
+    const dlen = Number.parseInt(bitsStr.substring(0, 32), 2);
+    if (!dlen || dlen < 2 || dlen > 100_000 || bitsStr.length < 32 + dlen * 8) return null;
     const data = from_bits(bitsStr.substring(0, 32 + dlen * 8));
     const enc = data.slice(4);
     const dec = xor_bytes(enc, key);
@@ -164,13 +208,23 @@ function awExtractPayload(bitsStr, key) {
 }
 
 // ── Algorithm 1: LSB Audio ──
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ */
 function aw1_embed(s16, bitsStr) {
     const len = Math.min(s16.length, bitsStr.length);
     for (let i = 0; i < len; i++) s16[i] = (s16[i] & ~1) | (bitsStr[i] === '1' ? 1 : 0);
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param maxBits
+ */
 function aw1_extract(s16, maxBits) {
-    const limit = Math.min(s16.length, maxBits || s16.length * 8, 400032);
+    const limit = Math.min(s16.length, maxBits || s16.length * 8, 400_032);
     const out = new Array(limit);
     let needed = 0;
     for (let i = 0; i < limit; i++) {
@@ -179,8 +233,8 @@ function aw1_extract(s16, maxBits) {
         if (i < 31) continue;
         let h = '';
         for (let k = 0; k < 32; k++) h += out[k];
-        const dlen = parseInt(h, 2);
-        if (dlen > 0 && dlen < 50000) needed = 32 + dlen * 8;
+        const dlen = Number.parseInt(h, 2);
+        if (dlen > 0 && dlen < 50_000) needed = 32 + dlen * 8;
     }
     const end = needed || limit;
     return end === limit ? out.join('') : out.slice(0, end).join('');
@@ -190,11 +244,17 @@ function aw1_extract(s16, maxBits) {
 // QIM on FFT magnitude coefficients in mid-frequency band, non-overlapping frames
 var AWM2_FRAME = 2048;
 var AWM2_REPS = 5;
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ */
 function aw2_embed(s16, bitsStr, sr) {
     const F = AWM2_FRAME, REPS = AWM2_REPS;
     const totalFrames = Math.floor(s16.length / F);
     const effectiveBits = Math.min(bitsStr.length, totalFrames);
-    const LO = Math.floor(F * 0.10), HI = Math.floor(F * 0.30);
+    const LO = Math.floor(F * 0.1), HI = Math.floor(F * 0.3);
     const usableBins = HI - LO;
     const binsPerBit = Math.min(REPS, usableBins);
     const S = 800;
@@ -207,7 +267,7 @@ function aw2_embed(s16, bitsStr, sr) {
         const binStart = LO + (f * binsPerBit) % (usableBins - binsPerBit);
         for (let r = 0; r < binsPerBit; r++) {
             const bin = binStart + r;
-            const mag = Math.sqrt(re[bin]*re[bin] + im[bin]*im[bin]);
+            const mag = Math.hypot(re[bin], im[bin]);
             let q = Math.round(mag / S);
             if ((bit === '0' && (q & 1) !== 0) || (bit === '1' && (q & 1) === 0)) q += q >= 0 ? 1 : -1;
             const newMag = Math.max(0, q * S);
@@ -217,15 +277,21 @@ function aw2_embed(s16, bitsStr, sr) {
         }
         awIfft(re, im);
         for (let i = 0; i < F; i++)
-            s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(re[i])));
+            s16[off + i] = Math.max(-32_768, Math.min(32_767, Math.round(re[i])));
     }
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ */
 function aw2_extract(s16, sr, numBits) {
     const F = AWM2_FRAME, REPS = AWM2_REPS;
     const totalFrames = Math.floor(s16.length / F);
     const maxBits = Math.min(numBits || totalFrames, totalFrames);
-    const LO = Math.floor(F * 0.10), HI = Math.floor(F * 0.30);
+    const LO = Math.floor(F * 0.1), HI = Math.floor(F * 0.3);
     const usableBins = HI - LO;
     const binsPerBit = Math.min(REPS, usableBins);
     const S = 800;
@@ -239,18 +305,23 @@ function aw2_extract(s16, sr, numBits) {
         let ones = 0;
         for (let r = 0; r < binsPerBit; r++) {
             const bin = binStart + r;
-            const mag = Math.sqrt(re[bin]*re[bin] + im[bin]*im[bin]);
+            const mag = Math.hypot(re[bin], im[bin]);
             const q = Math.round(mag / S);
             if (q & 1) ones++;
         }
         b += ones > binsPerBit / 2 ? '1' : '0';
         if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
+            const dlen = Number.parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
+/**
+ *
+ * @param audioLen
+ * @param sr
+ */
 function aw2_maxBits(audioLen, sr) {
     return Math.floor(audioLen / AWM2_FRAME);
 }
@@ -259,9 +330,15 @@ function aw2_maxBits(audioLen, sr) {
 // Based on tam17aki implementation: echo at d0/d1, control_strength=0.2, overlap-add
 var AWM3_FRAME = 4096;
 var AWM3_CHIPS = 32;
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ */
 function aw3_embed(s16, bitsStr, sr) {
     const F = AWM3_FRAME, CHIPS = AWM3_CHIPS;
-    const S = Math.round((sr || 44100) / 100);
+    const S = Math.round((sr || 44_100) / 100);
     const totalFrames = Math.floor(s16.length / F);
     const effectiveBits = Math.min(bitsStr.length, totalFrames);
     const LO = Math.floor(F * 0.08), HI = Math.floor(F * 0.25);
@@ -282,13 +359,19 @@ function aw3_embed(s16, bitsStr, sr) {
         }
         const reconstructed = awIdct(dct);
         for (let i = 0; i < F; i++)
-            s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(reconstructed[i])));
+            s16[off + i] = Math.max(-32_768, Math.min(32_767, Math.round(reconstructed[i])));
     }
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ */
 function aw3_extract(s16, sr, numBits) {
     const F = AWM3_FRAME, CHIPS = AWM3_CHIPS;
-    const S = Math.round((sr || 44100) / 100);
+    const S = Math.round((sr || 44_100) / 100);
     const totalFrames = Math.floor(s16.length / F);
     const maxBits = Math.min(numBits || totalFrames, totalFrames);
     const LO = Math.floor(F * 0.08), HI = Math.floor(F * 0.25);
@@ -308,12 +391,17 @@ function aw3_extract(s16, sr, numBits) {
         }
         b += ones > CHIPS / 2 ? '1' : '0';
         if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
+            const dlen = Number.parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
+/**
+ *
+ * @param audioLen
+ * @param sr
+ */
 function aw3_maxBits(audioLen, sr) {
     return Math.floor(audioLen / AWM3_FRAME);
 }
@@ -322,11 +410,16 @@ function aw3_maxBits(audioLen, sr) {
 // Fixed PN sequence and chips per bit for consistent embed/extract
 var AWM4_FRAME = 2048;
 var AWM4_CHIPS = 256;
+/**
+ *
+ * @param seed
+ * @param len
+ */
 function aw4_pn(seed, len) {
     const pn = new Float64Array(len);
     let s = seed >>> 0;
     for (let i = 0; i < len; i++) {
-        s = (s * 16807) % 2147483647;
+        s = (s * 16_807) % 2_147_483_647;
         pn[i] = (s & 1) === 0 ? -1 : 1;
     }
     let sum = 0;
@@ -337,7 +430,7 @@ function aw4_pn(seed, len) {
         for (let i = half; i < len; i++) pn[i] = -1;
         for (let i = len - 1; i > 0; i--) {
             const j = s % (i + 1);
-            s = (s * 16807) % 2147483647;
+            s = (s * 16_807) % 2_147_483_647;
             const t = pn[i]; pn[i] = pn[j]; pn[j] = t;
         }
     }
@@ -345,14 +438,20 @@ function aw4_pn(seed, len) {
 }
 // Non-overlap DSSS: one FFT frame = one bit, using a balanced PN sequence.
 // Uses log-magnitude for robust detection on real audio.
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ */
 function aw4_embed(s16, bitsStr, sr) {
     const F = AWM4_FRAME, CHIPS = AWM4_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
     const effectiveBits = Math.min(bitsStr.length, totalFrames);
     const lo = 50, hi = (F >> 1) - 20;
     const cap = Math.min(CHIPS, hi - lo);
-    const PN = aw4_pn(12345, CHIPS);
-    const strength = Math.max(30, Math.min(1200, Math.round((sr || 44100) / 60)));
+    const PN = aw4_pn(12_345, CHIPS);
+    const strength = Math.max(30, Math.min(1200, Math.round((sr || 44_100) / 60)));
     const step = Math.max(1, Math.floor((hi - lo - cap) / Math.max(1, totalFrames)));
     for (let f = 0; f < effectiveBits; f++) {
         const off = f * F;
@@ -363,7 +462,7 @@ function aw4_embed(s16, bitsStr, sr) {
         const chipStart = lo + f * step;
         for (let c = 0; c < cap; c++) {
             const bin = chipStart + c;
-            const mag = Math.sqrt(re[bin]*re[bin] + im[bin]*im[bin]);
+            const mag = Math.hypot(re[bin], im[bin]);
             const newMag = Math.max(mag * 0.3, Math.min(mag * 3, mag + (bit === '1' ? 1 : -1) * PN[c] * strength));
             const scale = newMag / (mag + 0.001);
             re[bin] *= scale; im[bin] *= scale;
@@ -372,17 +471,23 @@ function aw4_embed(s16, bitsStr, sr) {
         }
         awIfft(re, im);
         for (let i = 0; i < F; i++)
-            s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(re[i])));
+            s16[off + i] = Math.max(-32_768, Math.min(32_767, Math.round(re[i])));
     }
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ */
 function aw4_extract(s16, sr, numBits) {
     const F = AWM4_FRAME, CHIPS = AWM4_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
     const maxBits = Math.min(numBits || totalFrames, totalFrames);
     const lo = 50, hi = (F >> 1) - 20;
     const cap = Math.min(CHIPS, hi - lo);
-    const PN = aw4_pn(12345, CHIPS);
+    const PN = aw4_pn(12_345, CHIPS);
     const step = Math.max(1, Math.floor((hi - lo - cap) / Math.max(1, totalFrames)));
     let b = '';
     for (let f = 0; f < maxBits; f++) {
@@ -392,54 +497,71 @@ function aw4_extract(s16, sr, numBits) {
         awFft(re, im);
         const chipStart = lo + f * step;
         let sumLog = 0;
-        for (let c = 0; c < cap; c++) { const bin = chipStart + c; sumLog += Math.log(1 + Math.sqrt(re[bin]*re[bin] + im[bin]*im[bin])); }
+        for (let c = 0; c < cap; c++) { const bin = chipStart + c; sumLog += Math.log(1 + Math.hypot(re[bin], im[bin])); }
         const avgLog = sumLog / cap;
         let corr = 0;
         for (let c = 0; c < cap; c++) {
             const bin = chipStart + c;
-            corr += (Math.log(1 + Math.sqrt(re[bin]*re[bin] + im[bin]*im[bin])) - avgLog) * PN[c];
+            corr += (Math.log(1 + Math.hypot(re[bin], im[bin])) - avgLog) * PN[c];
         }
         b += corr > 0 ? '1' : '0';
         if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
+            const dlen = Number.parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
+/**
+ *
+ * @param audioLen
+ * @param sr
+ */
 function aw4_maxBits(audioLen, sr) {
     return Math.floor(audioLen / AWM4_FRAME);
 }
 
 // ── Algorithm 5: QIM (sample-domain quantization index modulation) ──
 // One sample = one bit; S is derived from sample rate.
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ */
 function aw5_embed(s16, bitsStr, sr) {
-    const S = Math.round((sr || 44100) / 100);
+    const S = Math.round((sr || 44_100) / 100);
     const len = Math.min(s16.length, bitsStr.length);
     for (let i = 0; i < len; i++) {
         const x = s16[i];
         let q = Math.round(x / S);
         if (bitsStr[i] === '0') { if ((q & 1) !== 0) q += q >= 0 ? 1 : -1; }
         else { if ((q & 1) === 0) q += q >= 0 ? 1 : -1; }
-        s16[i] = Math.max(-32768, Math.min(32767, q * S));
+        s16[i] = Math.max(-32_768, Math.min(32_767, q * S));
     }
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ */
 function aw5_extract(s16, sr, numBits) {
-    const S = Math.round((sr || 44100) / 100);
-    const maxScan = Math.min(s16.length, numBits || s16.length, 100000);
+    const S = Math.round((sr || 44_100) / 100);
+    const maxScan = Math.min(s16.length, numBits || s16.length, 100_000);
     let b = '', h32 = '';
     for (let i = 0; i < maxScan; i++) {
         const bit = (Math.round(s16[i] / S) & 1) === 0 ? '0' : '1';
         b += bit;
         if (i < 32) h32 += bit;
         if (b.length === 32) {
-            const dlen = parseInt(h32, 2);
+            const dlen = Number.parseInt(h32, 2);
             if (dlen > 0 && dlen < 500) break;
         }
     }
     if (b.length >= 32) {
-        const dlen = parseInt(h32, 2);
+        const dlen = Number.parseInt(h32, 2);
         if (dlen > 0 && dlen < 500) {
             const need = 32 + dlen * 8;
             if (b.length < need) {
@@ -455,6 +577,10 @@ function aw5_extract(s16, sr, numBits) {
 
 // ── Algorithm 6: DWT (Haar Wavelet) ──
 // Haar DWT on segments, QIM on detail coefficients
+/**
+ *
+ * @param signal
+ */
 function awHaarFwd(signal) {
     const n = signal.length;
     const out = new Float64Array(n);
@@ -462,7 +588,7 @@ function awHaarFwd(signal) {
     let h = n;
     while (h > 1) {
         h >>= 1;
-        const snap = out.slice();
+        const snap = [...out];
         for (let i = 0; i < h; i++) {
             const a = snap[i * 2], b = snap[i * 2 + 1];
             out[i] = (a + b) / 2;
@@ -471,13 +597,18 @@ function awHaarFwd(signal) {
     }
     return out;
 }
+/**
+ *
+ * @param coeff
+ * @param origLen
+ */
 function awHaarInv(coeff, origLen) {
     const n = coeff.length;
     const out = new Float64Array(n);
     for (let i = 0; i < n; i++) out[i] = coeff[i];
     let h = 1;
     while (h < n) {
-        const snap = out.slice();
+        const snap = [...out];
         for (let i = 0; i < h; i++) {
             const avg = snap[i], diff = snap[i + h];
             out[i * 2] = avg + diff;
@@ -487,8 +618,14 @@ function awHaarInv(coeff, origLen) {
     }
     return out;
 }
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ */
 function aw6_embed(s16, bitsStr, sr) {
-    const S = Math.max(30, Math.min(150, Math.round((sr || 44100) / 400)));
+    const S = Math.max(30, Math.min(150, Math.round((sr || 44_100) / 400)));
     const SEG = 1024;
     const segs = Math.min(Math.floor(s16.length / SEG), bitsStr.length);
     for (let seg = 0; seg < segs; seg++) {
@@ -505,12 +642,18 @@ function aw6_embed(s16, bitsStr, sr) {
         }
         const reconstructed = awHaarInv(coeff, SEG);
         for (let i = 0; i < SEG; i++)
-            s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(reconstructed[i])));
+            s16[off + i] = Math.max(-32_768, Math.min(32_767, Math.round(reconstructed[i])));
     }
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ */
 function aw6_extract(s16, sr, numBits) {
-    const S = Math.max(30, Math.min(150, Math.round((sr || 44100) / 400)));
+    const S = Math.max(30, Math.min(150, Math.round((sr || 44_100) / 400)));
     const SEG = 1024;
     const maxSegs = Math.min(Math.floor(s16.length / SEG), numBits || 1000, 5000);
     let b = '';
@@ -526,12 +669,12 @@ function aw6_extract(s16, sr, numBits) {
         }
         b += sum > 31 ? '1' : '0';
         if (b.length === 32) {
-            const dlen = parseInt(b, 2);
+            const dlen = Number.parseInt(b, 2);
             if (dlen > 0 && dlen < 500) break;
         }
     }
     if (b.length >= 32) {
-        const dlen = parseInt(b.substring(0, 32), 2);
+        const dlen = Number.parseInt(b.substring(0, 32), 2);
         if (dlen > 0 && dlen < 500) {
             const need = 32 + dlen * 8;
             if (b.length < need) {
@@ -552,12 +695,21 @@ function aw6_extract(s16, sr, numBits) {
     }
     return b;
 }
+/**
+ *
+ * @param audioLen
+ * @param sr
+ */
 function aw6_maxBits(audioLen, sr) {
     return Math.floor(audioLen / 1024);
 }
 
 // ── DCT helpers (Type-II/III, orthogonal, precomputed matrix) ──
 var _awDctCos = null;
+/**
+ *
+ * @param N
+ */
 function awDctInit(N) {
     if (_awDctCos && _awDctCos.N === N) return;
     const T = new Float64Array(N * N);
@@ -566,6 +718,10 @@ function awDctInit(N) {
             T[k * N + n] = Math.cos(Math.PI * k * (n + 0.5) / N);
     _awDctCos = { N, T, scale0: 1 / Math.sqrt(N), scale: Math.sqrt(2 / N) };
 }
+/**
+ *
+ * @param signal
+ */
 function awDct(signal) {
     const N = signal.length;
     const half = N >> 1;
@@ -583,6 +739,10 @@ function awDct(signal) {
     }
     return X;
 }
+/**
+ *
+ * @param X
+ */
 function awIdct(X) {
     const N = X.length;
     awDctInit(N);
@@ -600,12 +760,18 @@ function awIdct(X) {
 // Similar to aw8 but with different frame size and chip count.
 var AWM7_FRAME = 512;
 var AWM7_CHIPS = 5;
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ */
 function aw7_embed(s16, bitsStr, sr) {
-    const S = Math.round((sr || 44100) / 80);
+    const S = Math.round((sr || 44_100) / 80);
     const F = AWM7_FRAME, CHIPS = AWM7_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
     const effectiveBits = Math.min(bitsStr.length, totalFrames);
-    const LO = Math.floor(F * 0.10), HI = Math.floor(F * 0.35);
+    const LO = Math.floor(F * 0.1), HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
     for (let f = 0; f < effectiveBits; f++) {
@@ -624,16 +790,22 @@ function aw7_embed(s16, bitsStr, sr) {
         }
         const reconstructed = awIdct(dct);
         for (let i = 0; i < F; i++)
-            s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(reconstructed[i])));
+            s16[off + i] = Math.max(-32_768, Math.min(32_767, Math.round(reconstructed[i])));
     }
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ */
 function aw7_extract(s16, sr, numBits) {
-    const S = Math.round((sr || 44100) / 80);
+    const S = Math.round((sr || 44_100) / 80);
     const F = AWM7_FRAME, CHIPS = AWM7_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
     const maxBits = Math.min(numBits || totalFrames, totalFrames);
-    const LO = Math.floor(F * 0.10), HI = Math.floor(F * 0.35);
+    const LO = Math.floor(F * 0.1), HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
     let b = '';
@@ -651,12 +823,17 @@ function aw7_extract(s16, sr, numBits) {
         }
         b += ones > CHIPS / 2 ? '1' : '0';
         if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
+            const dlen = Number.parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
+/**
+ *
+ * @param audioLen
+ * @param sr
+ */
 function aw7_maxBits(audioLen, sr) {
     return Math.floor(audioLen / AWM7_FRAME);
 }
@@ -664,12 +841,18 @@ function aw7_maxBits(audioLen, sr) {
 // ── Algorithm 8: DCT-based (DCT domain, QIM on mid-frequency coefficients, non-overlapping) ──
 var AWM8_FRAME = 1024;
 var AWM8_CHIPS = 5;
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ */
 function aw8_embed(s16, bitsStr, sr) {
-    const S = Math.round((sr || 44100) / 60);
+    const S = Math.round((sr || 44_100) / 60);
     const F = AWM8_FRAME, CHIPS = AWM8_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
     const effectiveBits = Math.min(bitsStr.length, totalFrames);
-    const LO = Math.floor(F * 0.10);
+    const LO = Math.floor(F * 0.1);
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
@@ -689,16 +872,22 @@ function aw8_embed(s16, bitsStr, sr) {
         }
         const reconstructed = awIdct(dct);
         for (let i = 0; i < F; i++)
-            s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(reconstructed[i])));
+            s16[off + i] = Math.max(-32_768, Math.min(32_767, Math.round(reconstructed[i])));
     }
     return s16;
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ */
 function aw8_extract(s16, sr, numBits) {
-    const S = Math.round((sr || 44100) / 60);
+    const S = Math.round((sr || 44_100) / 60);
     const F = AWM8_FRAME, CHIPS = AWM8_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
     const maxBits = Math.min(numBits || totalFrames, totalFrames);
-    const LO = Math.floor(F * 0.10);
+    const LO = Math.floor(F * 0.1);
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
@@ -717,27 +906,42 @@ function aw8_extract(s16, sr, numBits) {
         }
         b += ones > CHIPS / 2 ? '1' : '0';
         if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
+            const dlen = Number.parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
+/**
+ *
+ * @param audioLen
+ * @param sr
+ */
 function aw8_maxBits(audioLen, sr) {
     return Math.floor(audioLen / AWM8_FRAME);
 }
+/**
+ *
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ * @param onProgress
+ */
 function aw8_embed_async(s16, bitsStr, sr, onProgress) {
-    const S = Math.round((sr || 44100) / 60);
+    const S = Math.round((sr || 44_100) / 60);
     const F = AWM8_FRAME, CHIPS = AWM8_CHIPS;
     const totalFrames = Math.floor(s16.length / F);
     const effectiveBits = Math.min(bitsStr.length, totalFrames);
-    const LO = Math.floor(F * 0.10);
+    const LO = Math.floor(F * 0.1);
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const step = Math.max(1, Math.floor((usable - CHIPS) / Math.max(1, totalFrames)));
     const BATCH = 8;
     return new Promise(function(resolve) {
         var pos = 0;
+        /**
+         *
+         */
         function processBatch() {
             var until = Math.min(pos + BATCH, effectiveBits);
             for (var f = pos; f < until; f++) {
@@ -756,7 +960,7 @@ function aw8_embed_async(s16, bitsStr, sr, onProgress) {
                 }
                 var reconstructed = awIdct(dct);
                 for (var i = 0; i < F; i++)
-                    s16[off + i] = Math.max(-32768, Math.min(32767, Math.round(reconstructed[i])));
+                    s16[off + i] = Math.max(-32_768, Math.min(32_767, Math.round(reconstructed[i])));
             }
             pos = until;
             if (onProgress) onProgress(Math.min(1, pos / effectiveBits));
@@ -766,10 +970,17 @@ function aw8_embed_async(s16, bitsStr, sr, onProgress) {
         requestAnimationFrame(processBatch);
     });
 }
+/**
+ *
+ * @param s16
+ * @param sr
+ * @param numBits
+ * @param onProgress
+ */
 function aw8_extract_async(s16, sr, numBits, onProgress) {
-    const S = Math.round((sr || 44100) / 60);
+    const S = Math.round((sr || 44_100) / 60);
     const F = AWM8_FRAME, CHIPS = AWM8_CHIPS;
-    const LO = Math.floor(F * 0.10);
+    const LO = Math.floor(F * 0.1);
     const HI = Math.floor(F * 0.35);
     const usable = HI - LO;
     const totalFrames = Math.floor(s16.length / F);
@@ -792,7 +1003,7 @@ function aw8_extract_async(s16, sr, numBits, onProgress) {
         }
         b += ones > CHIPS / 2 ? '1' : '0';
         if (b.length >= 32) {
-            const dlen = parseInt(b.substring(0, 32), 2);
+            const dlen = Number.parseInt(b.substring(0, 32), 2);
             if (dlen > 0 && dlen < 500 && b.length >= 32 + dlen * 8) break;
         }
     }

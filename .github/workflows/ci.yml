@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["main"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -37,6 +41,7 @@ jobs:
         run: npm ci
       - name: Run unit tests
         run: npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt
+        timeout-minutes: 8
       - name: Run coverage
         run: npm run coverage
       - name: Upload coverage to Codecov
