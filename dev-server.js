@@ -2,6 +2,11 @@ var http = require("node:http"),
   fs = require("node:fs"),
   path = require("node:path");
 var ROOT = __dirname;
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return "&#" + c.charCodeAt(0) + ";";
+  });
+}
 var MIME = {
   ".html": "text/html",
   ".js": "application/javascript",
@@ -59,7 +64,7 @@ http
       var stylePath = path.join(ROOT, "Style", pathname.replace(/^\//, ""));
       if (tryServe(stylePath, req, res)) return;
       res.writeHead(404, { "Content-Type": "text/html" });
-      res.end("Not Found: " + pathname);
+      res.end("Not Found: " + escHtml(pathname));
     }
   })
   .listen(8080, "0.0.0.0");
