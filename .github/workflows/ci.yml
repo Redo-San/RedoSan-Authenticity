@@ -51,7 +51,6 @@ jobs:
           fail_ci_if_error: false
 
   e2e:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     strategy:
       matrix:

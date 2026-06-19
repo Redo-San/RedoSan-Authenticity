@@ -65,6 +65,11 @@ class PixelInjection {
         this.updatePiAlgorithms();
     }
     
+    // Re-init after dynamic content load (MPA router)
+    reInit() {
+        this.setupPixelInjectionUI();
+    }
+    
     initializeEventListeners() {
         // Add event listeners for pixel injection interface
         if (document.readyState === 'loading') {
