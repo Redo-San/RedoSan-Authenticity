@@ -40,7 +40,7 @@ http
   .createServer(function (req, res) {
     var pathname = "/" + req.url.split("?")[0].replaceAll(/^\/+|\/+$/g, "");
     if (pathname === "") pathname = "/index.html";
-    var filePath = path.join(ROOT, pathname.replaceAll('/', path.sep));
+    var filePath = path.join(ROOT, pathname.replaceAll("/", path.sep));
     if (!filePath.startsWith(ROOT)) {
       res.writeHead(403);
       res.end();
@@ -63,7 +63,6 @@ http
     }
   })
   .listen(8080, "0.0.0.0");
-console.log("Server running on http://127.0.0.1:8080 with Range support");
 
 /**
  *
