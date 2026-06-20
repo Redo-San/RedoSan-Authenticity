@@ -220,7 +220,7 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 
 ## 🏗️ Architecture
 
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │                    Web App (Browser)                     │
 │  ┌──────────────┐  ┌───────────────┐  ┌────────────────┐ │
@@ -285,6 +285,7 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 ### File Validation (6 Layers)
 
 Before processing any file, the CLI applies 6-layer validation:
+
 1. **Extension blocklist** — Rejects known-dangerous extensions
 2. **Magic bytes** — Verifies file header matches declared extension
 3. **Content signature scan** — Scans for embedded threat signatures
