@@ -1,4 +1,4 @@
-(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 // ── Advanced Watermarking UI ──
 // Enhanced UI for 20+ advanced watermarking algorithms
 
@@ -33,7 +33,7 @@ class AdvancedWatermarkUI {
     }
     
     createAdvancedOptions() {
-        const embedSection = document.querySelector('#wm-embed');
+        const embedSection = document.getElementById('wm-embed');
         if (!embedSection) return;
         
         // Create advanced options container
@@ -51,7 +51,7 @@ class AdvancedWatermarkUI {
             `;
             
             // Insert after password field
-            const passwordField = document.querySelector('#wm-password').parentElement;
+            const passwordField = document.getElementById('wm-password').parentElement;
             passwordField.parentNode.insertBefore(optionsContainer, passwordField.nextSibling);
         }
         
@@ -74,7 +74,7 @@ class AdvancedWatermarkUI {
             const title = document.createElement('h4');
             title.textContent = 'Advanced Options';
             title.style.cssText = 'margin: 0 0 15px 0; color: var(--primary);';
-            optionsContainer.append(title);
+            optionsContainer.appendChild(title);
             
             options.forEach(option => {
                 const optionDiv = document.createElement('div');
@@ -86,9 +86,9 @@ class AdvancedWatermarkUI {
                 
                 const input = this.createOptionInput(option);
                 
-                optionDiv.append(label);
-                optionDiv.append(input);
-                optionsContainer.append(optionDiv);
+                optionDiv.appendChild(label);
+                optionDiv.appendChild(input);
+                optionsContainer.appendChild(optionDiv);
             });
         } else {
             optionsContainer.style.display = 'none';
@@ -99,7 +99,7 @@ class AdvancedWatermarkUI {
         const options = [];
         
         switch (algorithm) {
-            case 'enhanced_lsb': {
+            case 'enhanced_lsb':
                 options.push(
                     { type: 'range', label: __('pi.embedding_strength', 'Embedding Strength'), min: 1, max: 8, value: 4, step: 1 },
                     { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true },
@@ -107,17 +107,15 @@ class AdvancedWatermarkUI {
                     { type: 'range', label: __('pi.redundancy_factor', 'Redundancy Factor'), min: 1, max: 5, value: 3, step: 1 }
                 );
                 break;
-            }
                 
-            case 'adaptive_lsb': {
+            case 'adaptive_lsb':
                 options.push(
                     { type: 'select', label: 'Adaptation Mode', options: ['Complexity', 'Edge Detection', 'Texture Analysis'], value: 'Complexity' },
-                    { type: 'range', label: 'Sensitivity', min: 0.1, max: 1, value: 0.7, step: 0.1 }
+                    { type: 'range', label: 'Sensitivity', min: 0.1, max: 1.0, value: 0.7, step: 0.1 }
                 );
                 break;
-            }
                 
-            case 'dct': {
+            case 'dct':
                 options.push(
                     { type: 'range', label: 'Strength', min: 0.01, max: 0.5, value: 0.1, step: 0.01 },
                     { type: 'select', label: 'Coefficient Selection', options: ['Mid-frequency', 'Low-frequency', 'Adaptive'], value: 'Mid-frequency' },
@@ -125,18 +123,16 @@ class AdvancedWatermarkUI {
                     { type: 'checkbox', label: __('pi.error_correction', 'Error Correction'), checked: true }
                 );
                 break;
-            }
                 
-            case 'dwt': {
+            case 'dwt':
                 options.push(
                     { type: 'select', label: 'Wavelet Type', options: ['Haar', 'Daubechies', 'Biorthogonal'], value: 'Haar' },
                     { type: 'range', label: 'Decomposition Levels', min: 1, max: 5, value: 3, step: 1 },
                     { type: 'select', label: 'Embedding Bands', options: ['HH, HL, LH', 'All Bands'], value: 'HH, HL, LH' }
                 );
                 break;
-            }
                 
-            case 'hybrid_dct_dwt': {
+            case 'hybrid_dct_dwt':
                 options.push(
                     { type: 'range', label: 'DCT Strength', min: 0.05, max: 0.2, value: 0.1, step: 0.01 },
                     { type: 'range', label: 'DWT Strength', min: 0.05, max: 0.2, value: 0.1, step: 0.01 },
@@ -144,33 +140,29 @@ class AdvancedWatermarkUI {
                     { type: 'checkbox', label: 'Adaptive Ratio', checked: true }
                 );
                 break;
-            }
                 
-            case 'vine': {
+            case 'vine':
                 options.push(
                     { type: 'text', label: 'Model Path', placeholder: 'Path to pre-trained model' },
                     { type: 'range', label: 'Adversarial Strength', min: 0.01, max: 0.2, value: 0.05, step: 0.01 },
                     { type: 'checkbox', label: 'Perceptual Masking', checked: true }
                 );
                 break;
-            }
                 
-            case 'pixel_seal': {
+            case 'pixel_seal':
                 options.push(
                     { type: 'range', label: 'JND Strength', min: 0.01, max: 0.1, value: 0.05, step: 0.01 },
                     { type: 'checkbox', label: 'Adversarial Training', checked: true },
                     { type: 'checkbox', label: 'High-resolution Adaptation', checked: true }
                 );
                 break;
-            }
                 
-            case 'nullguard': {
+            case 'nullguard':
                 options.push(
                     { type: 'text', label: 'Null Space Detection', placeholder: 'Auto-detect' },
                     { type: 'range', label: __('pi.embedding_strength', 'Embedding Strength'), min: 0.01, max: 0.1, value: 0.03, step: 0.01 }
                 );
                 break;
-            }
         }
         
         return options;
@@ -180,7 +172,7 @@ class AdvancedWatermarkUI {
         let input;
         
         switch (option.type) {
-            case 'range': {
+            case 'range':
                 input = document.createElement('input');
                 input.type = 'range';
                 input.min = option.min;
@@ -189,44 +181,40 @@ class AdvancedWatermarkUI {
                 input.step = option.step;
                 input.style.cssText = 'width: 100%; margin: 5px 0;';
                 break;
-            }
                 
-            case 'checkbox': {
+            case 'checkbox':
                 input = document.createElement('input');
                 input.type = 'checkbox';
                 input.checked = option.checked;
                 input.style.cssText = 'margin-right: 10px;';
                 break;
-            }
                 
-            case 'select': {
+            case 'select':
                 input = document.createElement('select');
                 option.options.forEach(opt => {
                     const optionElement = document.createElement('option');
                     optionElement.value = opt;
                     optionElement.textContent = opt;
-                    input.append(optionElement);
+                    input.appendChild(optionElement);
                 });
                 input.value = option.value;
                 input.style.cssText = 'width: 100%; margin: 5px 0;';
                 break;
-            }
                 
-            case 'text': {
+            case 'text':
                 input = document.createElement('input');
                 input.type = 'text';
                 input.placeholder = option.placeholder;
                 input.value = option.value || '';
                 input.style.cssText = 'width: 100%; margin: 5px 0; padding: 8px;';
                 break;
-            }
         }
         
         return input;
     }
     
     createQualityMetrics() {
-        const embedSection = document.querySelector('#wm-embed');
+        const embedSection = document.getElementById('wm-embed');
         if (!embedSection) return;
         
         // Create quality metrics container
@@ -243,7 +231,7 @@ class AdvancedWatermarkUI {
                 display: none;
             `;
             
-            embedSection.append(qualityContainer);
+            embedSection.appendChild(qualityContainer);
         }
         
         // Create quality metrics display
@@ -279,7 +267,7 @@ class AdvancedWatermarkUI {
     }
     
     createRobustnessTesting() {
-        const embedSection = document.querySelector('#wm-embed');
+        const embedSection = document.getElementById('wm-embed');
         if (!embedSection) return;
         
         // Create robustness testing container
@@ -296,7 +284,7 @@ class AdvancedWatermarkUI {
                 display: none;
             `;
             
-            embedSection.append(testingContainer);
+            embedSection.appendChild(testingContainer);
         }
         
         // Create robustness testing controls
@@ -325,7 +313,7 @@ class AdvancedWatermarkUI {
     }
     
     createExtractionPanel() {
-        const extractSection = document.querySelector('#wm-extract');
+        const extractSection = document.getElementById('wm-extract');
         if (!extractSection) return;
         
         // Create advanced extraction controls
@@ -341,7 +329,7 @@ class AdvancedWatermarkUI {
                 border-radius: var(--radius);
             `;
             
-            extractSection.append(extractControls);
+            extractSection.appendChild(extractControls);
         }
         
         extractControls.innerHTML = `
@@ -389,11 +377,11 @@ class AdvancedWatermarkUI {
     }
     
     async handleAdvancedEmbed() {
-        const fileInput = document.querySelector('#wm-image');
-        var messageInput = document.querySelector('#wm-message');
-        const passwordInput = document.querySelector('#wm-password');
+        const fileInput = document.getElementById('wm-image');
+        var messageInput = document.getElementById('wm-message');
+        const passwordInput = document.getElementById('wm-password');
         
-        if (fileInput.files.length === 0) {
+        if (!fileInput.files.length) {
             this.showMessage('Please select an image file', 'error');
             return;
         }
@@ -401,8 +389,8 @@ class AdvancedWatermarkUI {
         var message = messageInput ? messageInput.value : '';
         // Fallback: use secret file name as message if wm-message is not present
         if (!message) {
-            const secretInput = document.querySelector('#wm-secret');
-            if (secretInput && secretInput.files && secretInput.files.length > 0) {
+            const secretInput = document.getElementById('wm-secret');
+            if (secretInput && secretInput.files && secretInput.files.length) {
                 message = secretInput.files[0].name;
             }
         }
@@ -445,13 +433,13 @@ class AdvancedWatermarkUI {
     }
     
     async handleAdvancedExtract() {
-        const fileInput = document.querySelector('#wm-image-ex');
-        const algorithmSelect = document.querySelector('#extraction-algorithm');
-        const useOriginal = document.querySelector('#use-original-image').checked;
-        const errorCorrection = document.querySelector('#error-correction').checked;
-        const extractionStrength = Number.parseFloat(document.querySelector('#extraction-strength').value);
+        const fileInput = document.getElementById('wm-image-ex');
+        const algorithmSelect = document.getElementById('extraction-algorithm');
+        const useOriginal = document.getElementById('use-original-image').checked;
+        const errorCorrection = document.getElementById('error-correction').checked;
+        const extractionStrength = parseFloat(document.getElementById('extraction-strength').value);
         
-        if (fileInput.files.length === 0) {
+        if (!fileInput.files.length) {
             this.showMessage('Please select a watermarked image file', 'error');
             return;
         }
@@ -497,7 +485,7 @@ class AdvancedWatermarkUI {
                 if (input.type === 'checkbox') {
                     options[input.id] = input.checked;
                 } else if (input.type === 'range') {
-                    options[input.id] = Number.parseFloat(input.value);
+                    options[input.id] = parseFloat(input.value);
                 } else {
                     options[input.id] = input.value;
                 }
@@ -510,9 +498,9 @@ class AdvancedWatermarkUI {
     async loadImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.addEventListener('load', (e) => {
+            reader.onload = (e) => {
                 const img = new Image();
-                img.addEventListener('load', () => {
+                img.onload = () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
                     canvas.height = img.height;
@@ -523,10 +511,10 @@ class AdvancedWatermarkUI {
                     imageData.w = img.width;
                     imageData.h = img.height;
                     resolve(imageData);
-                });
+                };
                 img.onerror = reject;
                 img.src = e.target.result;
-            });
+            };
             reader.onerror = reject;
             reader.readAsDataURL(file);
         });
@@ -535,7 +523,7 @@ class AdvancedWatermarkUI {
     showWatermarkedImage() {
         if (!this.watermarkedImage) return;
         
-        const resultDiv = document.querySelector('#wm-result');
+        const resultDiv = document.getElementById('wm-result');
         if (!resultDiv) return;
         
         resultDiv.style.display = 'block';
@@ -555,12 +543,12 @@ class AdvancedWatermarkUI {
         downloadLink.className = 'btn';
         downloadLink.style.cssText = 'margin-top: 10px; display: inline-block;';
         
-        const downloadDiv = document.querySelector('#wm-download');
+        const downloadDiv = document.getElementById('wm-download');
         downloadDiv.innerHTML = '';
-        downloadDiv.append(downloadLink);
+        downloadDiv.appendChild(downloadLink);
         
         // Show image preview
-        const outputDiv = document.querySelector('#wm-output');
+        const outputDiv = document.getElementById('wm-output');
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
                 <h5 style="color: var(--primary); margin-bottom: 10px;">Watermarked Image</h5>
@@ -570,12 +558,12 @@ class AdvancedWatermarkUI {
     }
     
     showExtractedMessage() {
-        const resultDiv = document.querySelector('#wm-result');
+        const resultDiv = document.getElementById('wm-result');
         if (!resultDiv) return;
         
         resultDiv.style.display = 'block';
         
-        const outputDiv = document.querySelector('#wm-output');
+        const outputDiv = document.getElementById('wm-output');
         const safeMsg = escHtml(this.extractedMessage);
         outputDiv.innerHTML = `
             <div style="text-align: center; margin-bottom: 15px;">
@@ -587,9 +575,9 @@ class AdvancedWatermarkUI {
         `;
         
         // Add copy button
-        const downloadDiv = document.querySelector('#wm-download');
+        const downloadDiv = document.getElementById('wm-download');
         downloadDiv.innerHTML = '<button class="btn" id="wm-copy-btn" style="margin-top: 10px;">' + __('pi.copy_message', 'Copy Message') + '</button>';
-        const copyBtn = document.querySelector('#wm-copy-btn');
+        const copyBtn = document.getElementById('wm-copy-btn');
         if (copyBtn) {
             copyBtn.addEventListener('click', function() {
                 navigator.clipboard.writeText(escHtml(this.extractedMessage));
@@ -600,12 +588,12 @@ class AdvancedWatermarkUI {
     updateQualityDisplay() {
         if (!this.qualityMetrics) return;
         
-        document.querySelector('#psnr-value').textContent = this.qualityMetrics.psnr.toFixed(2);
-        document.querySelector('#ssim-value').textContent = this.qualityMetrics.ssim.toFixed(4);
-        document.querySelector('#lpips-value').textContent = this.qualityMetrics.lpips.toFixed(4);
-        document.querySelector('#ber-value').textContent = this.qualityMetrics.ber.toFixed(2);
-        document.querySelector('#capacity-value').textContent = this.calculateCapacity();
-        document.querySelector('#robustness-value').textContent = this.calculateRobustness();
+        document.getElementById('psnr-value').textContent = this.qualityMetrics.psnr.toFixed(2);
+        document.getElementById('ssim-value').textContent = this.qualityMetrics.ssim.toFixed(4);
+        document.getElementById('lpips-value').textContent = this.qualityMetrics.lpips.toFixed(4);
+        document.getElementById('ber-value').textContent = this.qualityMetrics.ber.toFixed(2);
+        document.getElementById('capacity-value').textContent = this.calculateCapacity();
+        document.getElementById('robustness-value').textContent = this.calculateRobustness();
         
         // Show quality metrics container
         document.querySelector('.wm-quality-metrics').style.display = 'block';
@@ -809,8 +797,8 @@ class AdvancedWatermarkUI {
     }
     
     async autoDetectAlgorithm() {
-        const fileInput = document.querySelector('#wm-image-ex');
-        if (fileInput.files.length === 0) {
+        const fileInput = document.getElementById('wm-image-ex');
+        if (!fileInput.files.length) {
             this.showMessage('Please select a watermarked image file', 'error');
             return;
         }
@@ -821,15 +809,15 @@ class AdvancedWatermarkUI {
         const imageData = await this.loadImage(file);
         const result = this.core.detection.statistical_detection(imageData);
         
-        document.querySelector('#extraction-algorithm').value = result.algorithm || 'dct';
+        document.getElementById('extraction-algorithm').value = result.algorithm || 'dct';
         this.showMessage(`Detected algorithm: ${result.algorithm || 'DCT'}`, 'success');
     }
     
     displayRobustnessResults(results) {
-        const resultsDiv = document.querySelector('#robustness-results');
+        const resultsDiv = document.getElementById('robustness-results');
         resultsDiv.style.display = 'block';
         
-        const outputDiv = document.querySelector('#robustness-output');
+        const outputDiv = document.getElementById('robustness-output');
         outputDiv.innerHTML = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <thead>
@@ -845,7 +833,7 @@ class AdvancedWatermarkUI {
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--border);">${result.test}</td>
                             <td style="padding: 8px; border: 1px solid var(--border); text-align: center;">${result.parameter || result.scale || result.angle || '--'}</td>
-                            <td style="padding: 8px; border: 1px solid var(--border); text-align: center; color: ${result.passed ? 'var(--success)' : 'var(--danger)'};">${result.ber === undefined ? (result.success ? 'PASS' : 'FAIL') : result.ber.toFixed(4)}</td>
+                            <td style="padding: 8px; border: 1px solid var(--border); text-align: center; color: ${result.passed ? 'var(--success)' : 'var(--danger)'};">${result.ber !== undefined ? result.ber.toFixed(4) : (result.success ? 'PASS' : 'FAIL')}</td>
                             <td style="padding: 8px; border: 1px solid var(--border); text-align: center; color: ${result.passed ? 'var(--success)' : 'var(--danger)'};">${result.passed ? 'PASS' : 'FAIL'}</td>
                         </tr>
                     `).join('')}
@@ -920,11 +908,11 @@ class AdvancedWatermarkUI {
     
     getOriginalMessage() {
         // Return the original message for BER calculation
-        return document.querySelector('#wm-message')?.value || 'Test Message';
+        return document.getElementById('wm-message')?.value || 'Test Message';
     }
     
     showLoading(show) {
-        const spinner = document.querySelector('#wm-spinner');
+        const spinner = document.getElementById('wm-spinner');
         if (spinner) {
             spinner.style.display = show ? 'block' : 'none';
         }
@@ -938,7 +926,7 @@ class AdvancedWatermarkUI {
             top: 20px;
             right: 20px;
             padding: 15px 20px;
-            background: ${type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--primary)')};
+            background: ${type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--primary)'};
             color: white;
             border-radius: var(--radius);
             z-index: 10000;
@@ -948,7 +936,7 @@ class AdvancedWatermarkUI {
         `;
         
         toast.textContent = message;
-        document.body.append(toast);
+        document.body.appendChild(toast);
         
         // Animate in
         setTimeout(() => {
@@ -961,7 +949,7 @@ class AdvancedWatermarkUI {
             toast.style.opacity = '0';
             toast.style.transform = 'translateX(100%)';
             setTimeout(() => {
-                toast.remove();
+                document.body.removeChild(toast);
             }, 300);
         }, 3000);
     }

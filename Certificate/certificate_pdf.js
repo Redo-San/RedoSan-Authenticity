@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -13,10 +13,6 @@
 })();
 // ── PDF Certificate Generator ──
 
-/**
- *
- * @param data
- */
 async function downloadCertPDF(data) {
   var doc = new jspdf.jsPDF({
     orientation: "portrait",
@@ -56,10 +52,6 @@ async function downloadCertPDF(data) {
   });
   qrDataUrl = generateQRDataURL(qrContent, 400);
 
-  /**
-   *
-   * @param need
-   */
   function checkPage(need) {
     if (y + need > ph - margin) {
       doc.addPage();
@@ -244,7 +236,8 @@ async function downloadCertPDF(data) {
       { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
       { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
     ];
-    for (var fam of families) {
+    for (var fi = 0; fi < families.length; fi++) {
+      var fam = families[fi];
       var has = false;
       for (var ki = 0; ki < fam.keys.length; ki++) {
         if (data.fpResult.hashes[fam.keys[ki]]) {
@@ -411,9 +404,9 @@ async function downloadCertPDF(data) {
   var a = document.createElement("a");
   a.href = url;
   a.download = "RedoSan_Digital_Passport.pdf";
-  document.body.append(a);
+  document.body.appendChild(a);
   a.click();
-  a.remove();
+  document.body.removeChild(a);
   setTimeout(function () {
     URL.revokeObjectURL(url);
   }, 1000);

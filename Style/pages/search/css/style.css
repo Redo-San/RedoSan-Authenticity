@@ -5,16 +5,13 @@
   padding: 16px 20px;
   margin-bottom: 10px;
 }
-
 #page-search .search-result-item:hover {
   background: var(--card-hover);
   transform: translateY(-1px);
 }
-
 #page-search .search-result-title {
   font-size: 0.95rem;
 }
-
 #page-search .search-result-snippet {
   font-size: 0.8rem;
   white-space: normal;
