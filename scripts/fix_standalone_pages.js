@@ -1,6 +1,6 @@
 'use strict';
-const fs = require('node:fs');
-const path = require('node:path');
+const fs = require('fs');
+const path = require('path');
 
 const PAGES_DIR = path.resolve(__dirname, '../Style/pages');
 // All 20 page directories
@@ -38,13 +38,22 @@ for (const pageId of PAGES) {
     continue;
   }
 
-  let content = fs.readFileSync(filePath, 'utf8');
+  let content = fs.readFileSync(filePath, 'utf-8');
   const original = content;
   let changed = false;
 
   // 1. Remove Mode Selection Overlay
   const msStart = content.indexOf(MODE_SELECT_START);
-  if (msStart === -1) {
+  if (msStart !== -1) {
+    const msEnd = content.indexOf(MODE_SELECT_END, msStart);
+    if (msEnd !== -1) {
+      content = content.slice(0, msStart) + content.slice(msEnd + MODE_SELECT_END.length);
+      changed = true;
+      console.log(`  Removed modeSelect from ${pageId}`);
+    } else {
+      console.log(`  WARN ${pageId}: found modeSelect start but no end marker`);
+    }
+  } else {
     // Try alternative: modeSelect might not have the exact same whitespace
     // Fall back to removing the div with id="modeSelect" up to <!-- Navigation bar -->
     const altStart = content.indexOf('<!-- Mode Selection Overlay -->');
@@ -56,15 +65,6 @@ for (const pageId of PAGES) {
         console.log(`  Removed modeSelect (alt) from ${pageId}`);
       }
     }
-  } else {
-    const msEnd = content.indexOf(MODE_SELECT_END, msStart);
-    if (msEnd === -1) {
-      console.log(`  WARN ${pageId}: found modeSelect start but no end marker`);
-    } else {
-      content = content.slice(0, msStart) + content.slice(msEnd + MODE_SELECT_END.length);
-      changed = true;
-      console.log(`  Removed modeSelect from ${pageId}`);
-    }
   }
 
   // 2. Replace inline init script
@@ -75,7 +75,7 @@ for (const pageId of PAGES) {
     const scriptEnd = content.indexOf('</script>', scriptIdx);
     if (scriptEnd !== -1) {
       const oldScript = content.slice(scriptIdx, scriptEnd + 9); // +9 for </script>
-      const newScript = NEW_INIT_SCRIPT.replaceAll('{PAGE_ID}', pageId);
+      const newScript = NEW_INIT_SCRIPT.replace(/\{PAGE_ID\}/g, pageId);
       content = content.replace(oldScript, newScript);
       changed = true;
       console.log(`  Updated init script for ${pageId}`);

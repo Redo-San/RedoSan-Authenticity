@@ -1,28 +1,25 @@
-(function(){if(globalThis.window!==undefined&&globalThis.location&&globalThis.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(globalThis.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 // ظ¤ظ¤ Internationalization ظ¤ظ¤
 var i18n = { lang: 'en', data: {} };
-var SUPPORTED = new Set(['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko']);
+var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
 
-/**
- *
- * @param html
- */
 function sanitizeHtml(html) {
   var allowed = /^(h[23]|p|ul|li|a|br|strong|em|b|i|code|pre|blockquote|ol|span|div)$/i;
   var prev;
   do {
     prev = html;
-    html = html.replaceAll(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, function(m, name) {
+    html = html.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, function(m, name) {
       if (!allowed.test(name)) return '';
       var result = '<' + name;
       var attrs = m.match(/\s+[a-zA-Z][a-zA-Z0-9-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/g) || [];
-      for (var a of attrs) {
+      for (var i = 0; i < attrs.length; i++) {
+        var a = attrs[i];
         var aname = a.match(/\s+([a-zA-Z][a-zA-Z0-9-]*)/)[1];
         if (/^on/i.test(aname)) continue;
         var val = a.replace(/^[^=]+=\s*/, '');
         var quote = val.charAt(0);
         if (quote === '"' || quote === "'") val = val.slice(1, -1);
-        if (!/^(https?|mailto):/i.test(val)) continue;
+        if (/^(javascript|data|vbscript|blob):/i.test(val)) continue;
         result += a;
       }
       result += '>';
@@ -46,41 +43,30 @@ var BROWSER_LANGUAGE_MAP = {
   'am': 'am', 'et': 'et'
 };
 
-/**
- *
- */
 async function detectLang() {
   var stored = localStorage.getItem('redosan_lang');
-  if (stored && SUPPORTED.has(stored)) return stored;
+  if (stored && SUPPORTED.includes(stored)) return stored;
 
   var navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
   var primaryLang = navLang.substring(0, 2);
   
-  if (SUPPORTED.has(primaryLang)) return primaryLang;
+  if (SUPPORTED.includes(primaryLang)) return primaryLang;
   
   var mappedLang = BROWSER_LANGUAGE_MAP[primaryLang];
-  if (mappedLang && SUPPORTED.has(mappedLang)) return mappedLang;
+  if (mappedLang && SUPPORTED.includes(mappedLang)) return mappedLang;
 
   var langWithRegion = navLang.substring(0, 5);
-  if (SUPPORTED.has(langWithRegion)) return langWithRegion;
+  if (SUPPORTED.includes(langWithRegion)) return langWithRegion;
 
   return 'en';
 }
 
-/**
- *
- * @param lang
- */
 function switchLang(lang) {
-  if (!SUPPORTED.has(lang)) lang = 'en';
+  if (!SUPPORTED.includes(lang)) lang = 'en';
   localStorage.setItem('redosan_lang', lang);
   loadLang(lang);
 }
 
-/**
- *
- * @param lang
- */
 function langBtnText(lang) {
   // Return the most common alternative language for the current language
   var alternatives = {
@@ -96,10 +82,6 @@ function langBtnText(lang) {
   return alternatives[lang] || 'English';
 }
 
-/**
- *
- * @param lang
- */
 function getLanguageDisplayName(lang) {
   // Try to get localized name from current language data
   if (i18n.data && i18n.data['lang.name.' + lang]) {
@@ -120,14 +102,10 @@ function getLanguageDisplayName(lang) {
   return names[lang] || lang;
 }
 
-/**
- *
- * @param lang
- */
 async function loadLang(lang) {
   try {
-    if (globalThis.__I18N_DATA && globalThis.__I18N_DATA[lang]) {
-      i18n.data = globalThis.__I18N_DATA[lang];
+    if (window.__I18N_DATA && window.__I18N_DATA[lang]) {
+      i18n.data = window.__I18N_DATA[lang];
       i18n.lang = lang;
       applyLang();
       return true;
@@ -139,8 +117,8 @@ async function loadLang(lang) {
     i18n.lang = lang;
     applyLang();
     return true;
-  } catch(error) { 
-    console.error('i18n load error:', error);
+  } catch(e) { 
+    console.error('i18n load error:', e);
     if (lang !== 'en') {
       return loadLang('en');
     }
@@ -148,38 +126,35 @@ async function loadLang(lang) {
   }
 }
 
-/**
- *
- */
 function applyLang() {
   document.documentElement.lang = i18n.lang;
   document.documentElement.dir = i18n.lang === 'ar' ? 'rtl' : 'ltr';
   
-  var btn = document.querySelector('#langBtn');
+  var btn = document.getElementById('langBtn');
   if (btn) {
     var displayName = getLanguageDisplayName(i18n.lang);
     btn.textContent = displayName;
     btn.title = 'Current: ' + displayName + '\nClick to change language';
   }
-  var sBtn = document.querySelector('#simpleLangBtn');
+  var sBtn = document.getElementById('simpleLangBtn');
   if (sBtn) {
     displayName = getLanguageDisplayName(i18n.lang);
     sBtn.textContent = displayName;
     sBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
-  var mBtn = document.querySelector('#modeLangBtn');
+  var mBtn = document.getElementById('modeLangBtn');
   if (mBtn) {
     displayName = getLanguageDisplayName(i18n.lang);
     mBtn.textContent = displayName;
     mBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
 
-  var richHtmlKeys = new Set(['page.about', 'page.privacy', 'page.contact', 'page.social']);
+  var richHtmlKeys = ['page.about', 'page.privacy', 'page.contact', 'page.social'];
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
-    var key = el.dataset.i18n;
+    var key = el.getAttribute('data-i18n');
     var text = i18n.data[key];
     if (text === undefined) return;
-    if (richHtmlKeys.has(key)) {
+    if (richHtmlKeys.indexOf(key) >= 0) {
       el.innerHTML = sanitizeHtml(text);
     } else {
       el.textContent = text;
@@ -187,13 +162,13 @@ function applyLang() {
   });
 
   document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
-    var key = el.dataset.i18nPlaceholder;
+    var key = el.getAttribute('data-i18n-placeholder');
     var text = i18n.data[key];
     if (text !== undefined) el.placeholder = text;
   });
 
   // Handle RTL CSS for Arabic only
-  var link = document.querySelector('#rtl-css');
+  var link = document.getElementById('rtl-css');
   if (i18n.lang === 'ar') {
     if (!link) {
       link = document.createElement('link');
@@ -201,7 +176,7 @@ function applyLang() {
       link.rel = 'stylesheet';
       var rtlBase = document.documentElement.dataset.standalone ? '../../' : 'Style/';
       link.href = rtlBase + 'rtl.css';
-      document.head.append(link);
+      document.head.appendChild(link);
     }
   } else {
     if (link) link.remove();
@@ -223,30 +198,27 @@ function applyLang() {
   });
 }
 
-/**
- *
- */
 function toggleLangDropdown() {
-  var menu = document.querySelector('#langMenu');
+  var menu = document.getElementById('langMenu');
   if (menu) menu.classList.toggle('show');
 }
 
 // Close language dropdown when clicking outside
 document.addEventListener('click', function(e) {
   // Close simplified language menu
-  var sMenu = document.querySelector('#simpleLangMenu');
+  var sMenu = document.getElementById('simpleLangMenu');
   var sDropdown = document.querySelector('#simplifiedMode .lang-dropdown');
   if (sDropdown && !sDropdown.contains(e.target) && sMenu) {
     sMenu.classList.remove('show');
   }
   // Close mode select language menu
-  var mMenus = document.querySelector('#modeLangMenu');
+  var mMenus = document.getElementById('modeLangMenu');
   var mDropdown = document.querySelector('#modeSelect .lang-dropdown');
   if (mDropdown && !mDropdown.contains(e.target) && mMenus) {
     mMenus.classList.remove('show');
   }
   // Close professional mode (nav) language menu
-  var pMenu = document.querySelector('#langMenu');
+  var pMenu = document.getElementById('langMenu');
   var pDropdown = document.querySelector('nav .lang-dropdown');
   if (pDropdown && !pDropdown.contains(e.target) && pMenu) {
     pMenu.classList.remove('show');
@@ -259,16 +231,12 @@ const originalConsoleWarn = console.warn;
 const originalConsoleLog = console.log;
 
 // Prevent multiple declarations
-if (globalThis.originalConsoleError === undefined) {
-    globalThis.originalConsoleError = console.error;
-    globalThis.originalConsoleWarn = console.warn;
-    globalThis.originalConsoleLog = console.log;
+if (typeof window.originalConsoleError === 'undefined') {
+    window.originalConsoleError = console.error;
+    window.originalConsoleWarn = console.warn;
+    window.originalConsoleLog = console.log;
 }
 
-/**
- *
- * @param message
- */
 function shouldFilterError(message) {
   if (!message) return false;
   const msg = message.toString().toLowerCase();
@@ -328,7 +296,7 @@ console.log = function(...args) {
 };
 
 // Handle uncaught promise rejections from browser extensions
-globalThis.addEventListener('unhandledrejection', function(event) {
+window.addEventListener('unhandledrejection', function(event) {
   if (event.reason) {
     const reasonStr = event.reason.toString().toLowerCase();
     if (shouldFilterError(reasonStr)) {
@@ -339,14 +307,14 @@ globalThis.addEventListener('unhandledrejection', function(event) {
 });
 
 // Also handle regular uncaught errors
-globalThis.addEventListener('error', function(event) {
+window.addEventListener('error', function(event) {
   if (event.message && shouldFilterError(event.message)) {
     event.preventDefault(); // Prevent the error from showing in console
   }
 });
 
 // Also handle console exceptions
-globalThis.addEventListener('error', function(event) {
+window.addEventListener('error', function(event) {
   if (event.error && event.error.message && shouldFilterError(event.error.message)) {
     event.preventDefault(); // Prevent the error from showing in console
   }
@@ -357,8 +325,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   try {
     const lang = await detectLang();
     await loadLang(lang);
-  } catch (error) {
-    console.error('Language initialization failed:', error);
+  } catch (e) {
+    console.error('Language initialization failed:', e);
     // Fallback to English
     loadLang('en');
   }

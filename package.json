@@ -5,29 +5,10 @@
   "bin": {
     "redosan": "./cli/index.js"
   },
-  "size-limit": [
-    {
-      "path": "Style/**/*.js",
-      "limit": "600 KB"
-    },
-    {
-      "path": "Style/**/*.css",
-      "limit": "100 KB"
-    },
-    {
-      "path": "vendor/**/*.js",
-      "limit": "1 MB"
-    }
-  ],
-  "lint-staged": {
-    "*.{js,mjs}": "eslint --fix",
-    "*.{css,scss}": "stylelint --fix",
-    "*.{json,yml,yaml,md}": "biome check --write"
-  },
   "scripts": {
     "start": "node cli/index.js",
     "link": "npm link",
-    "test": "npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:e2e-nav && npm run test:e2e-hybrid && npm run test:e2e-watermark && npm run test:e2e-fingerprint && npm run test:e2e-features && npm run test:e2e-docw && npm run test:e2e-metadata && npm run test:e2e-timestamp && npm run test:e2e-misc && npm run test:e2e-pixel && npm run test:e2e-forensic && npm run test:e2e-conv-rem && npm run test:e2e-c2pa && npm run test:e2e-did && npm run test:e2e-cert && npm run test:e2e-audio && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt",
+    "test": "npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:e2e-nav && npm run test:e2e-watermark && npm run test:e2e-fingerprint && npm run test:e2e-features && npm run test:e2e-docw && npm run test:e2e-metadata && npm run test:e2e-timestamp && npm run test:e2e-misc && npm run test:e2e-pixel && npm run test:e2e-forensic && npm run test:e2e-conv-rem && npm run test:e2e-c2pa && npm run test:e2e-did && npm run test:e2e-cert && npm run test:e2e-audio && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt",
     "test:core": "node --test --test-timeout=120000 cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/id_forge_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js",
     "test:pixel": "node --test --test-timeout=120000 cli/tests/pixel_injection_test.js",
     "test:advwm": "node --test --test-timeout=120000 cli/tests/advanced_watermarking_test.js",
@@ -56,41 +37,11 @@
     "test:e2e-pixel": "node --test --test-timeout=300000 cli/tests/e2e/e2e_pixel_injection_test.js",
     "test:e2e-forensic": "node --test --test-timeout=120000 cli/tests/e2e/e2e_forensic_test.js",
     "test:e2e-conv-rem": "node --test --test-timeout=120000 cli/tests/e2e/e2e_converter_removal_test.js",
-    "test:e2e-hybrid": "node --test --test-timeout=180000 cli/tests/e2e/e2e_hybrid_test.js",
-    "test:e2e-music": "node --test --test-timeout=180000 cli/tests/e2e/e2e_music_persistence_test.js",
-    "test:e2e-all": "node --test --test-concurrency=6 --test-timeout=300000 cli/tests/e2e/e2e_navigation_test.js cli/tests/e2e/e2e_hybrid_test.js cli/tests/e2e/e2e_watermark_test.js cli/tests/e2e/e2e_fingerprint_test.js cli/tests/e2e/e2e_features_test.js cli/tests/e2e/e2e_audio_test.js cli/tests/e2e/e2e_c2pa_test.js cli/tests/e2e/e2e_did_test.js cli/tests/e2e/e2e_certificate_test.js cli/tests/e2e/e2e_docw_test.js cli/tests/e2e/e2e_metadata_test.js cli/tests/e2e/e2e_timestamp_test.js cli/tests/e2e/e2e_misc_pages_test.js cli/tests/e2e/e2e_pixel_injection_test.js cli/tests/e2e/e2e_forensic_test.js cli/tests/e2e/e2e_converter_removal_test.js",
+    "test:e2e-all": "node --test --test-concurrency=15 --test-timeout=300000 cli/tests/e2e/e2e_navigation_test.js cli/tests/e2e/e2e_watermark_test.js cli/tests/e2e/e2e_fingerprint_test.js cli/tests/e2e/e2e_features_test.js cli/tests/e2e/e2e_audio_test.js cli/tests/e2e/e2e_c2pa_test.js cli/tests/e2e/e2e_did_test.js cli/tests/e2e/e2e_certificate_test.js cli/tests/e2e/e2e_docw_test.js cli/tests/e2e/e2e_metadata_test.js cli/tests/e2e/e2e_timestamp_test.js cli/tests/e2e/e2e_misc_pages_test.js cli/tests/e2e/e2e_pixel_injection_test.js cli/tests/e2e/e2e_forensic_test.js cli/tests/e2e/e2e_converter_removal_test.js",
     "coverage": "c8 --reporter=text --reporter=lcov node --test --test-timeout=120000 cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/id_forge_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js cli/tests/pixel_injection_test.js cli/tests/advanced_watermarking_test.js cli/tests/c2pa_cbor_test.js cli/tests/c2pa_advanced_test.js cli/tests/audio_watermark_core_test.js cli/tests/document_watermark_test.js cli/tests/document_watermark_ui_test.js cli/tests/converter_test.js cli/tests/timestamp_test.js cli/tests/metadata_test.js cli/tests/certificate_test.js cli/tests/text_extractor_test.js",
     "coverage:report": "echo No coverage report available",
     "dom-review": "node cli/tests/dom_check.js",
-    "id-forge": "node cli/lib/id_forge.js",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "lint:sonar": "eslint --rules-only sonarjs/recommended .",
-    "biome": "biome check .",
-    "biome:fix": "biome check --write .",
-    "pa11y": "pa11y https://redo-san.github.io/RedoSan-Authenticity/",
-    "lhci": "lhci autorun",
-    "stylelint": "stylelint Style/**/*.css",
-    "stylelint:fix": "stylelint Style/**/*.css --fix",
-    "size": "size-limit",
-    "backstop:init": "backstop init",
-    "backstop:test": "backstop test --config=backstop.json",
-    "backstop:approve": "backstop approve --config=backstop.json",
-    "cspell": "cspell lint --no-must-find-files \"**/*.{js,mjs,css,md,json,yml,yaml}\"",
-    "markdownlint": "markdownlint \"**/*.md\" --ignore node_modules --ignore vendor",
-    "markdownlint:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore vendor --fix",
-    "docs": "typedoc --options typedoc.json",
-    "madge": "madge --image deps.svg --extensions js Style/",
-    "madge:circular": "madge --circular --extensions js Style/",
-    "ncu": "ncu",
-    "ncu:upgrade": "ncu --upgrade",
-    "depcheck": "depcheck --ignores=acorn,canvas,commander,docx,jszip,pdfkit,qrcode,c8,eslint,playwright,globals",
-    "workbox": "workbox generateSW workbox-config.js",
-    "check": "pwsh -NoProfile scripts/local-check.ps1",
-    "check:quick": "pwsh -NoProfile scripts/local-check.ps1 -quick",
-    "check:fix": "pwsh -NoProfile scripts/local-check.ps1 -fix",
-    "check:full": "pwsh -NoProfile scripts/local-check.ps1 -full",
-    "prepare": "husky"
+    "id-forge": "node cli/lib/id_forge.js"
   },
   "keywords": [
     "watermark",
@@ -117,39 +68,10 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
-    "@biomejs/biome": "^2.5.0",
-    "@commitlint/cli": "^19.8.1",
-    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^10.0.1",
-    "@lhci/cli": "^0.15.1",
-    "@noble/hashes": "^1.8.0",
-    "@size-limit/preset-small-lib": "^11.2.0",
-    "backstopjs": "^6.3.25",
     "c8": "^11.0.0",
-    "caniuse-lite": "^1.0.30001799",
-    "cspell": "^10.0.1",
-    "depcheck": "^1.4.7",
     "eslint": "^10.3.0",
-    "eslint-plugin-compat": "^7.0.2",
-    "eslint-plugin-i18n": "^2.4.0",
-    "eslint-plugin-import-x": "^4.16.2",
-    "eslint-plugin-jsdoc": "^61.7.1",
-    "eslint-plugin-promise": "^7.3.0",
-    "eslint-plugin-security": "^4.0.1",
-    "eslint-plugin-sonarjs": "^4.0.3",
-    "eslint-plugin-unicorn": "^57.0.0",
     "globals": "^17.6.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
-    "madge": "^8.0.0",
-    "markdownlint-cli": "^0.44.0",
-    "npm-check-updates": "^17.1.18",
-    "pa11y": "^9.1.1",
-    "playwright": "^1.52.0",
-    "size-limit": "^11.2.0",
-    "stylelint": "^16.26.1",
-    "stylelint-config-standard": "^40.0.0",
-    "typedoc": "^0.28.19",
-    "workbox-cli": "^7.4.1"
+    "playwright": "^1.52.0"
   }
 }

@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -12,32 +12,28 @@
     );
 })();
 
-/**
- *
- * @param str
- */
 function _utf8Encode(str) {
   if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(str);
   var bytes = [];
   for (var i = 0; i < str.length; i++) {
     var cp = str.charCodeAt(i);
     if (cp < 0x80) bytes.push(cp);
-    else if (cp < 0x8_00) bytes.push(0xC0 | (cp >> 6), 0x80 | (cp & 0x3F));
-    else if (cp < 0xD8_00 || cp >= 0xE0_00)
+    else if (cp < 0x800) bytes.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f));
+    else if (cp < 0xd800 || cp >= 0xe000)
       bytes.push(
-        0xE0 | (cp >> 12),
-        0x80 | ((cp >> 6) & 0x3F),
-        0x80 | (cp & 0x3F),
+        0xe0 | (cp >> 12),
+        0x80 | ((cp >> 6) & 0x3f),
+        0x80 | (cp & 0x3f),
       );
-    else if (cp >= 0xD8_00 && cp <= 0xDB_FF && i + 1 < str.length) {
+    else if (cp >= 0xd800 && cp <= 0xdbff && i + 1 < str.length) {
       var cp2 = str.charCodeAt(i + 1);
-      if (cp2 >= 0xDC_00 && cp2 <= 0xDF_FF) {
-        var full = ((cp - 0xD8_00) << 10) + (cp2 - 0xDC_00) + 0x1_00_00;
+      if (cp2 >= 0xdc00 && cp2 <= 0xdfff) {
+        var full = ((cp - 0xd800) << 10) + (cp2 - 0xdc00) + 0x10000;
         bytes.push(
-          0xF0 | (full >> 18),
-          0x80 | ((full >> 12) & 0x3F),
-          0x80 | ((full >> 6) & 0x3F),
-          0x80 | (full & 0x3F),
+          0xf0 | (full >> 18),
+          0x80 | ((full >> 12) & 0x3f),
+          0x80 | ((full >> 6) & 0x3f),
+          0x80 | (full & 0x3f),
         );
         i++;
       }
@@ -46,10 +42,6 @@ function _utf8Encode(str) {
   return new Uint8Array(bytes);
 }
 
-/**
- *
- * @param bytes
- */
 function _utf8Decode(bytes) {
   if (typeof TextDecoder !== "undefined")
     return new TextDecoder().decode(bytes);
@@ -57,31 +49,27 @@ function _utf8Decode(bytes) {
   for (var i = 0; i < bytes.length; i++) {
     var b = bytes[i];
     if (b < 0x80) str += String.fromCharCode(b);
-    else if (b >= 0xC0 && b < 0xE0 && i + 1 < bytes.length)
-      str += String.fromCharCode(((b & 0x1F) << 6) | (bytes[++i] & 0x3F));
-    else if (b >= 0xE0 && b < 0xF0 && i + 2 < bytes.length)
+    else if (b >= 0xc0 && b < 0xe0 && i + 1 < bytes.length)
+      str += String.fromCharCode(((b & 0x1f) << 6) | (bytes[++i] & 0x3f));
+    else if (b >= 0xe0 && b < 0xf0 && i + 2 < bytes.length)
       str += String.fromCharCode(
-        ((b & 0x0F) << 12) | ((bytes[++i] & 0x3F) << 6) | (bytes[++i] & 0x3F),
+        ((b & 0x0f) << 12) | ((bytes[++i] & 0x3f) << 6) | (bytes[++i] & 0x3f),
       );
-    else if (b >= 0xF0 && i + 3 < bytes.length) {
+    else if (b >= 0xf0 && i + 3 < bytes.length) {
       var cp =
         ((b & 0x07) << 18) |
-        ((bytes[++i] & 0x3F) << 12) |
-        ((bytes[++i] & 0x3F) << 6) |
-        (bytes[++i] & 0x3F);
+        ((bytes[++i] & 0x3f) << 12) |
+        ((bytes[++i] & 0x3f) << 6) |
+        (bytes[++i] & 0x3f);
       str += String.fromCharCode(
-        0xD8_00 + ((cp - 0x1_00_00) >> 10),
-        0xDC_00 + ((cp - 0x1_00_00) & 0x3_FF),
+        0xd800 + ((cp - 0x10000) >> 10),
+        0xdc00 + ((cp - 0x10000) & 0x3ff),
       );
     }
   }
   return str;
 }
 
-/**
- *
- * @param bytes
- */
 async function _deflate(bytes) {
   if (typeof CompressionStream === "undefined")
     throw new Error("CompressionStream not available");
@@ -95,30 +83,26 @@ async function _deflate(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch { break; }
+      } catch (e) { break; }
     }
   })();
   readPromise.catch(function () {});
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch { /* suppress */ }
+  } catch (e) { /* suppress */ }
   await readPromise;
   var total = 0;
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
   var result = new Uint8Array(total);
   var offset = 0;
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
+  for (var i2 = 0; i2 < chunks.length; i2++) {
+    result.set(chunks[i2], offset);
+    offset += chunks[i2].length;
   }
   return result;
 }
 
-/**
- *
- * @param bytes
- */
 async function _inflate(bytes) {
   if (typeof DecompressionStream === "undefined")
     throw new Error("DecompressionStream not available");
@@ -132,7 +116,7 @@ async function _inflate(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch {
+      } catch (e) {
         break;
       }
     }
@@ -141,7 +125,7 @@ async function _inflate(bytes) {
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch {
+  } catch (e) {
     /* write/close errors — suppress */
   }
   await readPromise;
@@ -149,18 +133,13 @@ async function _inflate(bytes) {
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
   var result = new Uint8Array(total);
   var offset = 0;
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
+  for (var i2 = 0; i2 < chunks.length; i2++) {
+    result.set(chunks[i2], offset);
+    offset += chunks[i2].length;
   }
   return result;
 }
 
-/**
- *
- * @param message
- * @param password
- */
 async function _msgToBits(message, password) {
   if (!message) return null;
   var data = password ? password + ":" + message : message;
@@ -168,7 +147,7 @@ async function _msgToBits(message, password) {
   var compressed;
   try {
     compressed = await _deflate(bytes);
-  } catch {
+  } catch (e) {
     compressed = null;
   }
   var payload;
@@ -180,17 +159,13 @@ async function _msgToBits(message, password) {
     payload = bytes;
   }
   var bits = "";
-  for (var b of payload) {
+  for (var i = 0; i < payload.length; i++) {
+    var b = payload[i];
     for (var j = 7; j >= 0; j--) bits += (b >> j) & 1 ? "1" : "0";
   }
   return bits;
 }
 
-/**
- *
- * @param result
- * @param password
- */
 function _checkPassword(result, password) {
   if (!password) return result;
   var colonIdx = result.indexOf(":");
@@ -202,11 +177,6 @@ function _checkPassword(result, password) {
   return result;
 }
 
-/**
- *
- * @param bits
- * @param password
- */
 async function _bitsToMsg(bits, password) {
   if (bits.length < 8) return "";
   var bytes = [];
@@ -230,15 +200,15 @@ async function _bitsToMsg(bits, password) {
       decoded = decoded.slice(0, end);
       var result = _utf8Decode(decoded);
       return _checkPassword(result, password);
-    } catch (error) {
-      if (error.message === "WRONG_PASSWORD") throw error;
+    } catch (e) {
+      if (e.message === "WRONG_PASSWORD") throw e;
       return "";
     }
   }
-  result = "";
-  for (const byte of bytes) {
-    if (byte === 0) break;
-    result += String.fromCharCode(byte);
+  var result = "";
+  for (var k = 0; k < bytes.length; k++) {
+    if (bytes[k] === 0) break;
+    result += String.fromCharCode(bytes[k]);
   }
   return _checkPassword(result, password);
 }
@@ -284,13 +254,13 @@ var DOCW_ZWC = {
     }
     var result = "";
     var bitIdx = 0;
-    for (const element of text) {
-      result += element;
+    for (var i = 0; i < text.length; i++) {
+      result += text[i];
       if (bitIdx < bits.length) {
         for (var z = 0; z < perChar && bitIdx < bits.length; z++) {
           var chunk = bits.substr(bitIdx, this.BITS_PER_ZWC);
           while (chunk.length < this.BITS_PER_ZWC) chunk += "0";
-          result += this.CHARS[Number.parseInt(chunk, 2)];
+          result += this.CHARS[parseInt(chunk, 2)];
           bitIdx += this.BITS_PER_ZWC;
         }
       }
@@ -436,8 +406,8 @@ var DOCW_HOMOGLYPH = {
     for (var mk in this.MULTI_MAP) {
       this.MULTI_REV[mk] = { key: mk, idx: 0 };
       var arr = this.MULTI_MAP[mk];
-      for (const [vi, element] of arr.entries()) {
-        this.MULTI_REV[element] = { key: mk, idx: vi + 1 };
+      for (var vi = 0; vi < arr.length; vi++) {
+        this.MULTI_REV[arr[vi]] = { key: mk, idx: vi + 1 };
       }
     }
   },
@@ -450,13 +420,12 @@ var DOCW_HOMOGLYPH = {
     var bits = await _msgToBits(message, password);
     if (!bits) throw new Error("Empty message");
     var eligible = [];
-    var chars = [...text];
-    for (var i = 0; i < chars.length; i++) {
-      if (this._isEligible(chars[i])) eligible.push(i);
+    for (var i = 0; i < text.length; i++) {
+      if (this._isEligible(text[i])) eligible.push(i);
     }
     var maxBits = 0;
-    for (const element of eligible) {
-      maxBits += this.MULTI_MAP[text[element]] ? 2 : 1;
+    for (var e = 0; e < eligible.length; e++) {
+      maxBits += this.MULTI_MAP[text[eligible[e]]] ? 2 : 1;
     }
     if (bits.length > maxBits) {
       throw new Error(
@@ -469,13 +438,14 @@ var DOCW_HOMOGLYPH = {
     }
     var result = text.split("");
     var bitIdx = 0;
-    for (var idx of eligible) {
+    for (var e2 = 0; e2 < eligible.length; e2++) {
+      var idx = eligible[e2];
       var ch2 = text[idx];
       var multi = this.MULTI_MAP[ch2];
       if (multi) {
         var pair = bitIdx < bits.length ? bits.substr(bitIdx, 2) : "00";
         while (pair.length < 2) pair += "0";
-        var val = Number.parseInt(pair, 2);
+        var val = parseInt(pair, 2);
         if (val > 0) result[idx] = multi[val - 1];
         bitIdx += 2;
       } else {
@@ -490,7 +460,8 @@ var DOCW_HOMOGLYPH = {
   extract: async function (text, password) {
     this._initReverse();
     var bits = "";
-    for (var ch of text) {
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
       if (this.MULTI_REV[ch] !== undefined) {
         var info = this.MULTI_REV[ch];
         var pair = info.idx.toString(2);
@@ -535,8 +506,8 @@ var DOCW_WHITESPACE = {
     if (!bits) throw new Error("Empty message");
 
     var spaceCount = 0;
-    for (const element of text) {
-      if (element === " ") spaceCount++;
+    for (var j = 0; j < text.length; j++) {
+      if (text[j] === " ") spaceCount++;
     }
     var encodedCount = Math.ceil(bits.length / this.BITS_PER_SPACE);
     if (spaceCount < encodedCount) {
@@ -553,19 +524,19 @@ var DOCW_WHITESPACE = {
     ) {
       var quad = bits.substr(i, this.BITS_PER_SPACE);
       while (quad.length < this.BITS_PER_SPACE) quad += "0";
-      encoded.push(this.SPACES[Number.parseInt(quad, 2)]);
+      encoded.push(this.SPACES[parseInt(quad, 2)]);
     }
     var rem = bits.length % this.BITS_PER_SPACE;
     if (rem > 0) {
       var last = bits.substr(bits.length - rem, rem);
       while (last.length < this.BITS_PER_SPACE) last += "0";
-      encoded.push(this.SPACES[Number.parseInt(last, 2)]);
+      encoded.push(this.SPACES[parseInt(last, 2)]);
     }
 
     var result = "";
     var encIdx = 0;
-    for (const element of text) {
-      if (element === " ") {
+    for (var k = 0; k < text.length; k++) {
+      if (text[k] === " ") {
         if (encIdx < encoded.length) {
           result += encoded[encIdx];
           encIdx++;
@@ -573,7 +544,7 @@ var DOCW_WHITESPACE = {
           result += " ";
         }
       } else {
-        result += element;
+        result += text[k];
       }
     }
     return result;
@@ -581,14 +552,15 @@ var DOCW_WHITESPACE = {
 
   extract: async function (text, password) {
     var found = [];
-    for (var ch of text) {
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
       var idx = this.SPACES.indexOf(ch);
       if (idx >= 0) found.push(idx);
     }
     if (found.length === 0) return "";
     var bits = "";
-    for (const element of found) {
-      var b = element.toString(2);
+    for (var j = 0; j < found.length; j++) {
+      var b = found[j].toString(2);
       while (b.length < this.BITS_PER_SPACE) b = "0" + b;
       bits += b;
     }
@@ -603,35 +575,18 @@ var DOCW_ALGOS = {
   3: { name: "Whitespace Replacement", impl: DOCW_WHITESPACE },
 };
 
-/**
- *
- * @param text
- * @param message
- * @param algoId
- * @param password
- */
 async function docwEmbed(text, message, algoId, password) {
   var algo = DOCW_ALGOS[String(algoId)];
   if (!algo) throw new Error("Unknown algorithm: " + algoId);
   return await algo.impl.embed(text, message, password || "");
 }
 
-/**
- *
- * @param text
- * @param algoId
- * @param password
- */
 async function docwExtract(text, algoId, password) {
   var algo = DOCW_ALGOS[String(algoId)];
   if (!algo) throw new Error("Unknown algorithm: " + algoId);
   return await algo.impl.extract(text, password || "");
 }
 
-/**
- *
- * @param msg
- */
 function _isGarbageResult(msg) {
   if (!msg || msg.length < 2) return true;
   if (msg.length < 4) return false;
@@ -642,11 +597,6 @@ function _isGarbageResult(msg) {
   return unique < 2;
 }
 
-/**
- *
- * @param text
- * @param password
- */
 async function docwAutoDetect(text, password) {
   var pwError = false;
   var candidates = [];
@@ -658,8 +608,8 @@ async function docwAutoDetect(text, password) {
           return { algo: id, name: DOCW_ALGOS[id].name, message: result };
         candidates.push({ algo: id, name: DOCW_ALGOS[id].name, message: result });
       }
-    } catch (error) {
-      if (error.message === "WRONG_PASSWORD") pwError = true;
+    } catch (e) {
+      if (e.message === "WRONG_PASSWORD") pwError = true;
     }
   }
   if (candidates.length > 0) {
@@ -670,11 +620,6 @@ async function docwAutoDetect(text, password) {
   return null;
 }
 
-/**
- *
- * @param text
- * @param algoId
- */
 function docwEstimateCapacity(text, algoId) {
   if (!text) return 0;
   var algo = DOCW_ALGOS[String(algoId)];
@@ -688,7 +633,8 @@ function docwEstimateCapacity(text, algoId) {
     DOCW_HOMOGLYPH._initReverse();
     var count1 = 0,
       count2 = 0;
-    for (var ch of text) {
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
       if (DOCW_HOMOGLYPH.MULTI_MAP[ch] !== undefined) count2++;
       else if (DOCW_HOMOGLYPH.MAP[ch] !== undefined) count1++;
     }
@@ -696,8 +642,8 @@ function docwEstimateCapacity(text, algoId) {
   }
   if (impl === DOCW_WHITESPACE) {
     var sc = 0;
-    for (const element of text) {
-      if (element === " ") sc++;
+    for (var j = 0; j < text.length; j++) {
+      if (text[j] === " ") sc++;
     }
     return Math.floor((sc * impl.BITS_PER_SPACE) / 8);
   }

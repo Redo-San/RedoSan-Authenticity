@@ -1,39 +1,42 @@
-const { describe, it, before } = require("node:test");
-const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
+'use strict';
+const { describe, it, before } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
 
 // ── CBOR tests ──
 function loadCbor() {
-  const src = fs.readFileSync(path.join(__dirname, "../../C2PA/cbor.js"), "utf8");
-  const patched = src.replace(/\bexport function /g, "function ").replace(/\bexport /g, "");
-  vm.runInThisContext(patched, { filename: "cbor.js" });
+  const src = fs.readFileSync(path.join(__dirname, '../../C2PA/cbor.js'), 'utf8');
+  const patched = src
+    .replace(/\bexport function /g, 'function ')
+    .replace(/\bexport /g, '');
+  vm.runInThisContext(patched, { filename: 'cbor.js' });
 }
 
-describe("CBOR — encodeInt", () => {
+describe('CBOR — encodeInt', () => {
   before(() => loadCbor());
 
-  it("should encode small positive integers inline (0-23)", () => {
+  it('should encode small positive integers inline (0-23)', () => {
     assert.deepEqual(Array.from(encodeInt(0)), [0x00]);
     assert.deepEqual(Array.from(encodeInt(1)), [0x01]);
     assert.deepEqual(Array.from(encodeInt(23)), [0x17]);
   });
 
-  it("should encode larger positive integers with 1-byte extension", () => {
+  it('should encode larger positive integers with 1-byte extension', () => {
     const r = encodeInt(24);
     assert.equal(r[0], 0x18);
     assert.equal(r[1], 24);
     assert.equal(r.length, 2);
   });
 
-  it("should encode 255 with 1-byte extension", () => {
+  it('should encode 255 with 1-byte extension', () => {
     const r = encodeInt(255);
     assert.equal(r[0], 0x18);
     assert.equal(r[1], 255);
   });
 
-  it("should encode 256 with 2-byte extension", () => {
+  it('should encode 256 with 2-byte extension', () => {
     const r = encodeInt(256);
     assert.equal(r[0], 0x19);
     assert.equal(r[1], 0x01);
@@ -41,74 +44,74 @@ describe("CBOR — encodeInt", () => {
     assert.equal(r.length, 3);
   });
 
-  it("should encode large values with 4-byte extension", () => {
+  it('should encode large values with 4-byte extension', () => {
     const r = encodeInt(100000);
-    assert.equal(r[0], 0x1a);
+    assert.equal(r[0], 0x1A);
     assert.equal(r.length, 5);
   });
 });
 
-describe("CBOR — encodeBstr / encodeTstr", () => {
+describe('CBOR — encodeBstr / encodeTstr', () => {
   before(() => loadCbor());
 
-  it("should encode empty byte string", () => {
+  it('should encode empty byte string', () => {
     const r = encodeBstr(new Uint8Array([]));
     assert.deepEqual(Array.from(r), [0x40]);
   });
 
-  it("should encode byte string inline", () => {
+  it('should encode byte string inline', () => {
     const r = encodeBstr(new Uint8Array([1, 2, 3]));
     assert.equal(r[0], 0x43); // major 2, length 3 inline
     assert.deepEqual(Array.from(r.slice(1)), [1, 2, 3]);
   });
 
-  it("should encode text string", () => {
-    const r = encodeTstr("A");
+  it('should encode text string', () => {
+    const r = encodeTstr('A');
     assert.equal(r[0], 0x61); // major 3, length 1 inline
     assert.equal(r[1], 0x41); // 'A'
   });
 
-  it("should encode longer text string", () => {
-    const r = encodeTstr("hello");
+  it('should encode longer text string', () => {
+    const r = encodeTstr('hello');
     assert.equal(r[0], 0x65); // major 3, length 5 inline
-    assert.equal(new TextDecoder().decode(r.slice(1)), "hello");
+    assert.equal(new TextDecoder().decode(r.slice(1)), 'hello');
   });
 });
 
-describe("CBOR — encodeArray / encodeMap / encodeTag", () => {
+describe('CBOR — encodeArray / encodeMap / encodeTag', () => {
   before(() => loadCbor());
 
-  it("should encode empty array", () => {
+  it('should encode empty array', () => {
     const r = encodeArray([]);
     assert.deepEqual(Array.from(r), [0x80]);
   });
 
-  it("should encode array of integers", () => {
+  it('should encode array of integers', () => {
     const r = encodeArray([encodeInt(1), encodeInt(2), encodeInt(3)]);
     assert.equal(r[0], 0x83); // major 4, length 3
   });
 
-  it("should encode empty map", () => {
+  it('should encode empty map', () => {
     const r = encodeMap([]);
-    assert.deepEqual(Array.from(r), [0xa0]);
+    assert.deepEqual(Array.from(r), [0xA0]);
   });
 
-  it("should encode map with integer keys", () => {
-    const r = encodeMap([[1, encodeTstr("one")]]);
-    assert.equal(r[0], 0xa1); // major 5, length 1
+  it('should encode map with integer keys', () => {
+    const r = encodeMap([[1, encodeTstr('one')]]);
+    assert.equal(r[0], 0xA1); // major 5, length 1
   });
 
-  it("should encode tag", () => {
+  it('should encode tag', () => {
     const inner = encodeInt(42);
     const r = encodeTag(1, inner);
-    assert.equal(r[0], 0xc1); // tag 1
+    assert.equal(r[0], 0xC1); // tag 1
   });
 });
 
-describe("CBOR — decode", () => {
+describe('CBOR — decode', () => {
   before(() => loadCbor());
 
-  it("should decode small positive integers", () => {
+  it('should decode small positive integers', () => {
     const d = decode(new Uint8Array([0x00]), 0);
     assert.equal(d.val, 0);
     assert.equal(d.off, 1);
@@ -117,7 +120,7 @@ describe("CBOR — decode", () => {
     assert.equal(d2.val, 23);
   });
 
-  it("should decode negative integers", () => {
+  it('should decode negative integers', () => {
     const d = decode(new Uint8Array([0x20]), 0);
     assert.equal(d.val, -1);
 
@@ -125,20 +128,20 @@ describe("CBOR — decode", () => {
     assert.equal(d2.val, -2);
   });
 
-  it("should decode byte strings", () => {
-    const enc = encodeBstr(new Uint8Array([0xde, 0xad]));
+  it('should decode byte strings', () => {
+    const enc = encodeBstr(new Uint8Array([0xDE, 0xAD]));
     const d = decode(enc, 0);
     assert.ok(d.val instanceof Uint8Array);
-    assert.deepEqual(Array.from(d.val), [0xde, 0xad]);
+    assert.deepEqual(Array.from(d.val), [0xDE, 0xAD]);
   });
 
-  it("should decode text strings", () => {
-    const enc = encodeTstr("hello");
+  it('should decode text strings', () => {
+    const enc = encodeTstr('hello');
     const d = decode(enc, 0);
-    assert.equal(d.val, "hello");
+    assert.equal(d.val, 'hello');
   });
 
-  it("should decode arrays", () => {
+  it('should decode arrays', () => {
     const enc = encodeArray([encodeInt(10), encodeInt(20)]);
     const d = decode(enc, 0);
     assert.ok(Array.isArray(d.val));
@@ -147,17 +150,14 @@ describe("CBOR — decode", () => {
     assert.equal(d.val[1], 20);
   });
 
-  it("should decode maps to objects", () => {
-    const enc = encodeMap([
-      [1, encodeTstr("a")],
-      [2, encodeTstr("b")],
-    ]);
+  it('should decode maps to objects', () => {
+    const enc = encodeMap([[1, encodeTstr('a')], [2, encodeTstr('b')]]);
     const d = decode(enc, 0);
-    assert.equal(d.val["1"], "a");
-    assert.equal(d.val["2"], "b");
+    assert.equal(d.val['1'], 'a');
+    assert.equal(d.val['2'], 'b');
   });
 
-  it("should decode tagged values", () => {
+  it('should decode tagged values', () => {
     const enc = encodeTag(32, encodeInt(99));
     const d = decode(enc, 0);
     assert.ok(Array.isArray(d.val));
@@ -166,14 +166,14 @@ describe("CBOR — decode", () => {
   });
 });
 
-describe("CBOR — roundtrip", () => {
+describe('CBOR — roundtrip', () => {
   before(() => loadCbor());
 
-  it("should roundtrip a complex structure", () => {
+  it('should roundtrip a complex structure', () => {
     const original = {
-      alg: "es256",
+      alg: 'es256',
       sigT: 1700000000,
-      payload: new Uint8Array([0xaa, 0xbb]),
+      payload: new Uint8Array([0xAA, 0xBB]),
     };
     const encoded = encodeMap([
       [1, encodeTstr(original.alg)],
@@ -181,31 +181,31 @@ describe("CBOR — roundtrip", () => {
       [2, encodeBstr(original.payload)],
     ]);
     const d = decode(encoded, 0);
-    assert.equal(d.val["1"], original.alg);
-    assert.equal(d.val["6"], original.sigT);
-    assert.deepEqual(Array.from(d.val["2"]), [0xaa, 0xbb]);
+    assert.equal(d.val['1'], original.alg);
+    assert.equal(d.val['6'], original.sigT);
+    assert.deepEqual(Array.from(d.val['2']), [0xAA, 0xBB]);
   });
 });
 
 // ── C2PA utility function tests ──
 function loadC2paUtils() {
-  let src = fs.readFileSync(path.join(__dirname, "../../C2PA/c2pa.js"), "utf8");
-  src = src.replace(/^import .+$/m, "var createC2pa = null;");
+  let src = fs.readFileSync(path.join(__dirname, '../../C2PA/c2pa.js'), 'utf8');
+  src = src.replace(/^import .+$/m, 'var createC2pa = null;');
   // Use var instead of const/let to allow re-loading
-  src = src.replace(/\bconst\s+/g, "var ");
+  src = src.replace(/\bconst\s+/g, 'var ');
   if (!globalThis.window) globalThis.window = globalThis;
   globalThis.BigInt = BigInt;
   globalThis.window.__ = globalThis.window.__ || ((s, d) => d || s);
   globalThis.escXml = globalThis.escXml || ((s) => s);
-  vm.runInThisContext(src, { filename: "c2pa.js" });
+  vm.runInThisContext(src, { filename: 'c2pa.js' });
 }
 
 // Load once before all C2PA suites
 before(() => loadC2paUtils());
 
-describe("C2PA — parsePem", () => {
-  it("should parse a PEM-encoded key", () => {
-    const pem = "-----BEGIN TEST-----\nAAECAw==\n-----END TEST-----";
+describe('C2PA — parsePem', () => {
+  it('should parse a PEM-encoded key', () => {
+    const pem = '-----BEGIN TEST-----\nAAECAw==\n-----END TEST-----';
     const buf = parsePem(pem);
     assert.ok(buf instanceof ArrayBuffer);
     const bytes = new Uint8Array(buf);
@@ -213,53 +213,53 @@ describe("C2PA — parsePem", () => {
   });
 });
 
-describe("C2PA — splitCerts", () => {
-  it("should split concatenated PEM certs", () => {
-    const pem1 = "-----BEGIN CERTIFICATE-----\nAAEC\n-----END CERTIFICATE-----";
-    const pem2 = "-----BEGIN CERTIFICATE-----\nAwQF\n-----END CERTIFICATE-----";
-    const certs = splitCerts(`${pem1}\n${pem2}`);
+describe('C2PA — splitCerts', () => {
+  it('should split concatenated PEM certs', () => {
+    const pem1 = '-----BEGIN CERTIFICATE-----\nAAEC\n-----END CERTIFICATE-----';
+    const pem2 = '-----BEGIN CERTIFICATE-----\nAwQF\n-----END CERTIFICATE-----';
+    const certs = splitCerts(pem1 + '\n' + pem2);
     assert.equal(certs.length, 2);
     assert.ok(certs[0] instanceof Uint8Array);
     assert.ok(certs[1] instanceof Uint8Array);
   });
 
-  it("should handle single cert", () => {
-    const pem = "-----BEGIN CERTIFICATE-----\nAAECAwQ=\n-----END CERTIFICATE-----";
+  it('should handle single cert', () => {
+    const pem = '-----BEGIN CERTIFICATE-----\nAAECAwQ=\n-----END CERTIFICATE-----';
     const certs = splitCerts(pem);
     assert.equal(certs.length, 1);
   });
 });
 
-describe("C2PA — escHtml", () => {
-  it("should escape HTML entities", () => {
-    assert.equal(escHtml('&<>"'), "&amp;&lt;&gt;&quot;");
-    assert.equal(escHtml("hello"), "hello");
-    assert.equal(escHtml(""), "");
-    assert.equal(escHtml(null), "");
-    assert.equal(escHtml(undefined), "");
+describe('C2PA — escHtml', () => {
+  it('should escape HTML entities', () => {
+    assert.equal(escHtml('&<>"'), '&amp;&lt;&gt;&quot;');
+    assert.equal(escHtml('hello'), 'hello');
+    assert.equal(escHtml(''), '');
+    assert.equal(escHtml(null), '');
+    assert.equal(escHtml(undefined), '');
   });
 });
 
-describe("C2PA — safeUrl", () => {
-  it("should allow http/https/data URLs", () => {
-    assert.equal(safeUrl("http://example.com"), "http://example.com");
-    assert.equal(safeUrl("https://example.com"), "https://example.com");
-    assert.ok(safeUrl("data:text/plain,hello").startsWith("data:"));
+describe('C2PA — safeUrl', () => {
+  it('should allow http/https/data URLs', () => {
+    assert.equal(safeUrl('http://example.com'), 'http://example.com');
+    assert.equal(safeUrl('https://example.com'), 'https://example.com');
+    assert.ok(safeUrl('data:text/plain,hello').startsWith('data:'));
   });
 
-  it("should block javascript URLs", () => {
-    assert.equal(safeUrl("javascript:alert(1)"), "");
+  it('should block javascript URLs', () => {
+    assert.equal(safeUrl('javascript:alert(1)'), '');
   });
 });
 
-describe("C2PA — formatDate", () => {
-  it("should format a date string", () => {
-    const result = formatDate("2024-01-15T00:00:00Z");
-    assert.ok(typeof result === "string");
+describe('C2PA — formatDate', () => {
+  it('should format a date string', () => {
+    const result = formatDate('2024-01-15T00:00:00Z');
+    assert.ok(typeof result === 'string');
     assert.ok(result.length > 0);
   });
 
-  it("should return em-dash for null", () => {
-    assert.equal(formatDate(null), "\u2014");
+  it('should return em-dash for null', () => {
+    assert.equal(formatDate(null), '\u2014');
   });
 });

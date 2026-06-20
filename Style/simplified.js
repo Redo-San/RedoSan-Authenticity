@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -42,72 +42,50 @@ var simpleUserInfo = {
   },
 };
 
-/**
- *
- * @param disable
- */
 function setBodyOverflow(disable) {
   document.body.classList.toggle("no-scroll", disable);
 }
 
-/**
- *
- */
 function initMode() {
   // Don't lock body scroll here — the mode overlay CSS has overflow-y: auto
   // and setting overflow:hidden on <html> can prevent fixed children from scrolling on mobile.
 }
 
-/**
- *
- * @param mode
- */
 function setMode(mode) {
-  document.querySelector("#modeSelect").style.display = "none";
+  document.getElementById("modeSelect").style.display = "none";
   setBodyOverflow(false);
   try {
     history.pushState(
       { modeSet: mode },
       "",
-      globalThis.location.pathname.replace(/\/+$/, "") + "/",
+      window.location.pathname.replace(/\/+$/, "") + "/",
     );
-  } catch {}
+  } catch (e) {}
   if (mode === "simplified") {
-    document.querySelector("#mainNav").style.display = "none";
-    document.querySelector("#sidebar").style.display = "none";
-    document.querySelector("#sidebarOverlay").style.display = "none";
-    document.querySelector("#app").style.display = "none";
-    document.querySelector("#mainFooter").style.display = "none";
-    document.querySelector("#simplifiedMode").style.display = "";
+    document.getElementById("mainNav").style.display = "none";
+    document.getElementById("sidebar").style.display = "none";
+    document.getElementById("sidebarOverlay").style.display = "none";
+    document.getElementById("app").style.display = "none";
+    document.getElementById("mainFooter").style.display = "none";
+    document.getElementById("simplifiedMode").style.display = "";
     initSimplified();
   } else {
-    document.querySelector("#simplifiedMode").style.display = "none";
-    document.querySelector("#mainNav").style.display = "";
-    document.querySelector("#sidebar").style.display = "";
-    document.querySelector("#app").style.display = "";
-    document.querySelector("#mainFooter").style.display = "";
-    // Hybrid: use mpa-router to load home page content from standalone page
-    if (
-      typeof globalThis.__mpaGoHome === "function" &&
-      !document.querySelector("#page-home")
-    ) {
-      globalThis.__mpaGoHome();
-    } else {
-      document
-        .querySelectorAll(".page")
-        .forEach((p) => p.classList.remove("active"));
-      document
-        .querySelectorAll(".sidebar a[data-page]")
-        .forEach((a) => a.classList.remove("active"));
-      var home = document.querySelector("#page-home");
-      if (home) home.classList.add("active");
-    }
+    document.getElementById("simplifiedMode").style.display = "none";
+    document.getElementById("mainNav").style.display = "";
+    document.getElementById("sidebar").style.display = "";
+    document.getElementById("app").style.display = "";
+    document.getElementById("mainFooter").style.display = "";
+    document
+      .querySelectorAll(".page")
+      .forEach((p) => p.classList.remove("active"));
+    document
+      .querySelectorAll(".sidebar a[data-page]")
+      .forEach((a) => a.classList.remove("active"));
+    var home = document.getElementById("page-home");
+    if (home) home.classList.add("active");
   }
 }
 
-/**
- *
- */
 function resetProfessionalForms() {
   // Clear all file inputs in professional mode
   document.querySelectorAll('#app input[type="file"]').forEach(function (el) {
@@ -138,35 +116,25 @@ function resetProfessionalForms() {
   });
 }
 
-/**
- *
- */
 function switchMode() {
   showModeSelect();
 }
 
-/**
- *
- */
 function showModeSelect() {
   resetProfessionalForms();
   // Show mode overlay without page reload (keeps music playing)
-  document.querySelector("#modeSelect").style.display = "";
+  document.getElementById("modeSelect").style.display = "";
   document.documentElement.style.overflow = "hidden";
-  document.querySelector("#simplifiedMode").style.display = "none";
-  document.querySelector("#mainNav").style.display = "none";
-  document.querySelector("#sidebar").style.display = "none";
-  document.querySelector("#sidebarOverlay").style.display = "none";
-  document.querySelector("#app").style.display = "none";
-  document.querySelector("#mainFooter").style.display = "none";
+  document.getElementById("simplifiedMode").style.display = "none";
+  document.getElementById("mainNav").style.display = "none";
+  document.getElementById("sidebar").style.display = "none";
+  document.getElementById("sidebarOverlay").style.display = "none";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("mainFooter").style.display = "none";
 }
 
 // ── File type detection ──
 
-/**
- *
- * @param file
- */
 function detectFileType(file) {
   var name = file.name.toLowerCase();
   if (/\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|avif|tiff?)$/.test(name))
@@ -182,11 +150,6 @@ function detectFileType(file) {
   return "other";
 }
 
-/**
- *
- * @param type
- * @param isAI
- */
 function buildSteps(type, isAI) {
   var s = [{ id: "upload", label: __("simple.step_upload", "Upload") }];
   if (type === "image") {
@@ -214,7 +177,8 @@ function buildSteps(type, isAI) {
       id: "fingerprint",
       label: __("simple.step_fingerprint", "Fingerprint"),
     });
-    s.push({ id: "did-sign", label: __("simple.step_did", "DID Sign") }, { id: "audio-watermark", label: "Audio Watermark" });
+    s.push({ id: "did-sign", label: __("simple.step_did", "DID Sign") });
+    s.push({ id: "audio-watermark", label: "Audio Watermark" });
     s.push({
       id: "timestamp",
       label: __("simple.step_timestamp", "Timestamp"),
@@ -236,9 +200,6 @@ function buildSteps(type, isAI) {
 
 // ── Init & render ──
 
-/**
- *
- */
 function initSimplified() {
   simpleFile = null;
   simpleBuf = null;
@@ -265,19 +226,16 @@ function initSimplified() {
   };
   var steps = [{ id: "upload", label: __("simple.step_upload", "Upload") }];
   simpleSteps = steps;
-  document.querySelector("#simpleNav").style.display = "";
+  document.getElementById("simpleNav").style.display = "";
   renderStep();
 }
 
-/**
- *
- */
 function renderStep() {
   var step = simpleSteps[simpleStep];
   renderProgress();
-  var body = document.querySelector("#simpleBody");
-  var nextBtn = document.querySelector("#simpleNextBtn");
-  var prevBtn = document.querySelector("#simplePrevBtn");
+  var body = document.getElementById("simpleBody");
+  var nextBtn = document.getElementById("simpleNextBtn");
+  var prevBtn = document.getElementById("simplePrevBtn");
   prevBtn.style.display = simpleStep === 0 ? "none" : "";
   var isLast = simpleStep === simpleSteps.length - 1;
   nextBtn.textContent = isLast
@@ -292,59 +250,25 @@ function renderStep() {
       "watermark",
       "pixel-injection",
       "audio-watermark",
-    ].includes(step.id)
+    ].indexOf(step.id) >= 0
   ) {
     nextBtn.style.display = "none";
   } else {
     nextBtn.style.display = "";
     nextBtn.disabled =
-      step.id === "upload" ? !simpleFile : (step.id === "done" ? false : true);
+      step.id === "upload" ? !simpleFile : step.id === "done" ? false : true;
   }
-  switch (step.id) {
-  case "upload": {
-  renderUpload(body);
-  break;
-  }
-  case "ai-question": {
-  renderAiQuestion(body);
-  break;
-  }
-  case "c2pa": {
-  renderC2paStep(body);
-  break;
-  }
-  case "watermark": {
-  renderWatermarkStep(body);
-  break;
-  }
-  case "pixel-injection": {
-  renderPixelInjectStep(body);
-  break;
-  }
-  case "timestamp": {
-  renderTimestampStep(body);
-  break;
-  }
-  case "audio-watermark": {
-  renderAudioWatermarkStep(body);
-  break;
-  }
-  case "fingerprint": {
-  renderFingerprintStep(body);
-  break;
-  }
-  case "did-sign": {
-  renderDIDStep(body);
-  break;
-  }
-  case "done": { {
-  renderDone(body);
-  // No default
-  }
-  break;
-  }
-  }
-  document.querySelector("#simpleStepCounter").textContent = __(
+  if (step.id === "upload") renderUpload(body);
+  else if (step.id === "ai-question") renderAiQuestion(body);
+  else if (step.id === "c2pa") renderC2paStep(body);
+  else if (step.id === "watermark") renderWatermarkStep(body);
+  else if (step.id === "pixel-injection") renderPixelInjectStep(body);
+  else if (step.id === "timestamp") renderTimestampStep(body);
+  else if (step.id === "audio-watermark") renderAudioWatermarkStep(body);
+  else if (step.id === "fingerprint") renderFingerprintStep(body);
+  else if (step.id === "did-sign") renderDIDStep(body);
+  else if (step.id === "done") renderDone(body);
+  document.getElementById("simpleStepCounter").textContent = __(
     "simple.step_of",
     "Step {current} of {total}",
   )
@@ -352,15 +276,12 @@ function renderStep() {
     .replace("{total}", simpleSteps.length);
 }
 
-/**
- *
- */
 function renderProgress() {
-  var el = document.querySelector("#simpleProgress");
+  var el = document.getElementById("simpleProgress");
   el.innerHTML = simpleSteps
     .map(function (s, i) {
       var cls =
-        i === simpleStep ? "sp-active" : (i < simpleStep ? "sp-done" : "");
+        i === simpleStep ? "sp-active" : i < simpleStep ? "sp-done" : "";
       return (
         '<div class="sp-step ' +
         cls +
@@ -374,9 +295,6 @@ function renderProgress() {
 
 // ── Navigation ──
 
-/**
- *
- */
 function simpleNext() {
   var step = simpleSteps[simpleStep];
   if (step.id === "upload" && !simpleFile) return;
@@ -400,13 +318,13 @@ function simpleNext() {
           "simple.info_required",
           "Please fill in all required fields: Name, Email, Phone, Website.",
         );
-        infoSection.append(err);
+        infoSection.appendChild(err);
       }
       return;
     }
     // Deeper field validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(simpleUserInfo.email)) {
-      var warn = document.querySelector("#sinfo-email-warn");
+      var warn = document.getElementById("sinfo-email-warn");
       if (warn) warn.style.display = "block";
       return;
     }
@@ -414,7 +332,7 @@ function simpleNext() {
       simpleUserInfo.website === "https://" ||
       !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(simpleUserInfo.website)
     ) {
-      let warn = document.querySelector("#sinfo-website-warn");
+      var warn = document.getElementById("sinfo-website-warn");
       if (warn) warn.style.display = "block";
       return;
     }
@@ -430,14 +348,14 @@ function simpleNext() {
       "sinfo-soundcloud",
       "sinfo-bandcamp",
     ];
-    for (const socialField of socialFields) {
-      var fld = document.getElementById(socialField);
+    for (var si = 0; si < socialFields.length; si++) {
+      var fld = document.getElementById(socialFields[si]);
       if (
         fld &&
         fld.value &&
         !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(fld.value)
       ) {
-        var w = document.getElementById(socialField + "-warn");
+        var w = document.getElementById(socialFields[si] + "-warn");
         if (w) w.style.display = "block";
         return;
       }
@@ -463,9 +381,6 @@ function simpleNext() {
   renderStep();
 }
 
-/**
- *
- */
 function simplePrev() {
   if (simpleStep <= 0) return;
   simpleStep--;
@@ -473,21 +388,15 @@ function simplePrev() {
   renderStep();
 }
 
-/**
- *
- */
 function restartSimple() {
   initSimplified();
 }
 
-/**
- *
- */
 async function runC2paStep() {
   showProgress();
-  var btn = document.querySelector("#sc2pa-btn");
-  var statusEl = document.querySelector("#sc2pa-result");
-  if (!globalThis.handleC2paWrite) {
+  var btn = document.getElementById("sc2pa-btn");
+  var statusEl = document.getElementById("sc2pa-result");
+  if (!window.handleC2paWrite) {
     if (statusEl) {
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
@@ -502,9 +411,9 @@ async function runC2paStep() {
   // Validate C2PA social/music links before signing
   var c2paLinks = document.querySelectorAll(".sc2pa-link");
   var urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
-  for (const c2paLink of c2paLinks) {
-    if (c2paLink.value && !urlRegex.test(c2paLink.value)) {
-      var warnId = c2paLink.id + "-warn";
+  for (var ci = 0; ci < c2paLinks.length; ci++) {
+    if (c2paLinks[ci].value && !urlRegex.test(c2paLinks[ci].value)) {
+      var warnId = c2paLinks[ci].id + "-warn";
       var warn = document.getElementById(warnId);
       if (warn) warn.style.display = "block";
       hideProgress();
@@ -522,8 +431,8 @@ async function runC2paStep() {
     if (profCb && simpleCb) profCb.checked = simpleCb.checked;
   });
   // DNT checkbox (no data-form-type)
-  var simpleDnt = document.querySelector("#sc2pa-dnt");
-  var profDnt = document.querySelector("#c2pa-write-dnt");
+  var simpleDnt = document.getElementById("sc2pa-dnt");
+  var profDnt = document.getElementById("c2pa-write-dnt");
   if (profDnt && simpleDnt) profDnt.checked = simpleDnt.checked;
   // 2. Sync content type fields (title/author)
   var simpleFields = document.querySelectorAll(".sc2pa-field");
@@ -546,7 +455,7 @@ async function runC2paStep() {
       try {
         var resp = await fetch(simpleResults.piFinalUrl);
         simpleResults.piFinalBlob = await resp.blob();
-      } catch {}
+      } catch (e) {}
     } else {
       simpleResults.piFinalBlob = dataUrlToBlob(simpleResults.piFinalUrl);
     }
@@ -556,23 +465,23 @@ async function runC2paStep() {
   var srcFile = srcBlob
     ? new File([srcBlob], fname, { type: "image/png" })
     : simpleFile;
-  var fileInput = document.querySelector("#c2pa-write-file");
+  var fileInput = document.getElementById("c2pa-write-file");
   if (fileInput && srcFile) {
     var dt = new DataTransfer();
     dt.items.add(srcFile);
     fileInput.files = dt.files;
   }
-  btn = document.querySelector("#sc2pa-btn");
+  var btn = document.getElementById("sc2pa-btn");
   btn.disabled = true;
   btn.textContent = __("simple.signing");
-  statusEl = document.querySelector("#sc2pa-result");
+  var statusEl = document.getElementById("sc2pa-result");
   handleC2paWrite().then(function (result) {
     if (result && result.ok) {
       btn.textContent = __("simple.signed");
       simpleResults.c2pa = true;
-      simpleResults.c2paUrl = globalThis._c2paSignedUrl || "";
+      simpleResults.c2paUrl = window._c2paSignedUrl || "";
       simpleStepDone = true;
-      var nextBtn = document.querySelector("#simpleNextBtn");
+      var nextBtn = document.getElementById("simpleNextBtn");
       nextBtn.disabled = false;
       nextBtn.style.display = "";
       if (statusEl) statusEl.innerHTML = "";
@@ -592,17 +501,15 @@ async function runC2paStep() {
   });
 }
 
+
 // Build combined fingerprint + DID payload, trimmed to fit maxBytes
 
-/**
- *
- */
 function runWatermarkStep() {
   showProgress();
-  var algo = Number.parseInt(document.querySelector("#swm-type").value, 10);
-  var pass = document.querySelector("#swm-password").value || "";
-  var statusEl = document.querySelector("#swm-status");
-  var btn = document.querySelector("#swm-btn");
+  var algo = parseInt(document.getElementById("swm-type").value, 10);
+  var pass = document.getElementById("swm-password").value || "";
+  var statusEl = document.getElementById("swm-status");
+  var btn = document.getElementById("swm-btn");
   if (btn) {
     btn.disabled = true;
     btn.textContent = __("simple.embedding", "Embedding...");
@@ -631,7 +538,7 @@ function runWatermarkStep() {
         ? result.msg.replace(/^Type\s+\d+\s+\([^)]+\):\s*/, "")
         : "";
       simpleStepDone = true;
-      var nextBtn = document.querySelector("#simpleNextBtn");
+      var nextBtn = document.getElementById("simpleNextBtn");
       nextBtn.disabled = false;
       nextBtn.style.display = "";
       if (btn) {
@@ -663,25 +570,23 @@ function runWatermarkStep() {
   });
 }
 
-/**
- *
- */
+
 async function runAudioWatermarkStep() {
-  var fpAlgo = Number.parseInt(document.querySelector("#sawm-fp-type").value);
-  var tsAlgo = Number.parseInt(document.querySelector("#sawm-ts-type").value);
-  var pass = document.querySelector("#sawm-password").value || "";
+  var fpAlgo = parseInt(document.getElementById("sawm-fp-type").value);
+  var tsAlgo = parseInt(document.getElementById("sawm-ts-type").value);
+  var pass = document.getElementById("sawm-password").value || "";
   var strength =
-    Number.parseInt(document.querySelector("#sawm-strength").value) || 400;
+    parseInt(document.getElementById("sawm-strength").value) || 400;
   if (!pass) {
     alert("Password is required");
     return;
   }
   showProgress();
-  var statusEl = document.querySelector("#sawm-status");
-  var btn = document.querySelector("#sawm-btn");
-  var progContainer = document.querySelector("#sawm-progress");
-  var progFill = document.querySelector("#sawm-progress-fill");
-  var progText = document.querySelector("#sawm-progress-text");
+  var statusEl = document.getElementById("sawm-status");
+  var btn = document.getElementById("sawm-btn");
+  var progContainer = document.getElementById("sawm-progress");
+  var progFill = document.getElementById("sawm-progress-fill");
+  var progText = document.getElementById("sawm-progress-text");
   if (btn) {
     btn.disabled = true;
     btn.textContent = "Embedding...";
@@ -815,10 +720,10 @@ async function runAudioWatermarkStep() {
         chMode +
         " — zero interference.</div>";
     }
-    var nextBtn = document.querySelector("#simpleNextBtn");
+    var nextBtn = document.getElementById("simpleNextBtn");
     nextBtn.disabled = false;
     nextBtn.style.display = "";
-  } catch (error) {
+  } catch (e) {
     hideProgress();
     if (progContainer) progContainer.style.display = "none";
     if (btn) {
@@ -828,18 +733,12 @@ async function runAudioWatermarkStep() {
     if (statusEl) {
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-        escapeHtml(error.message) +
+        escapeHtml(e.message) +
         "</div>";
     }
   }
 }
 
-/**
- *
- * @param algo
- * @param audioLen
- * @param sr
- */
 function algoMaxBits(algo, audioLen, sr) {
   if (algo === 1 || algo === 5) return audioLen;
   var fns = {
@@ -853,47 +752,28 @@ function algoMaxBits(algo, audioLen, sr) {
   return fns[algo] ? fns[algo](audioLen, sr) : 0;
 }
 
-/**
- *
- * @param algo
- * @param s16
- * @param bitsStr
- * @param sr
- * @param strength
- * @param onProgress
- */
 async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
-  switch (algo) {
-  case 1: { return aw1_embed(s16, bitsStr);
-  }
-  case 2: { return aw2_embed(s16, bitsStr, sr);
-  }
-  case 3: { return aw3_embed(s16, bitsStr, sr);
-  }
-  case 4: { return aw4_embed(s16, bitsStr, sr);
-  }
-  case 5: { return aw5_embed(s16, bitsStr, sr);
-  }
-  case 6: { return aw6_embed(s16, bitsStr, sr);
-  }
-  case 7: { return aw7_embed(s16, bitsStr, sr);
-  }
-  case 8: { return await aw8_embed_async(s16, bitsStr, sr, onProgress);
-  }
-  // No default
-  }
+  if (algo === 1) return aw1_embed(s16, bitsStr);
+  else if (algo === 2) return aw2_embed(s16, bitsStr, sr);
+  else if (algo === 3) return aw3_embed(s16, bitsStr, sr);
+  else if (algo === 4) return aw4_embed(s16, bitsStr, sr);
+  else if (algo === 5) return aw5_embed(s16, bitsStr, sr);
+  else if (algo === 6) return aw6_embed(s16, bitsStr, sr);
+  else if (algo === 7) return aw7_embed(s16, bitsStr, sr);
+  else if (algo === 8)
+    return await aw8_embed_async(s16, bitsStr, sr, onProgress);
   throw new Error("Unknown algorithm: " + algo);
 }
 
-/**
- *
- */
+
+
+
 function runPixelInjectStep() {
   showProgress();
-  var cat = document.querySelector("#spi-category").value;
-  var pass = document.querySelector("#spi-password").value;
-  var statusEl = document.querySelector("#spi-status");
-  var btn = document.querySelector("#spi-btn");
+  var cat = document.getElementById("spi-category").value;
+  var pass = document.getElementById("spi-password").value;
+  var statusEl = document.getElementById("spi-status");
+  var btn = document.getElementById("spi-btn");
   if (btn) {
     btn.disabled = true;
     btn.textContent = __("simple.injecting", "Injecting...");
@@ -904,11 +784,11 @@ function runPixelInjectStep() {
     ? "DID Signature:\n" + JSON.stringify(simpleResults.didSig, null, 2)
     : "";
 
-  if (globalThis.switchPiTab) globalThis.switchPiTab("embed");
+  if (window.switchPiTab) window.switchPiTab("embed");
 
   setTimeout(function () {
     // Populate hidden professional form fields
-    var fileInput = document.querySelector("#pi-image");
+    var fileInput = document.getElementById("pi-image");
     if (fileInput) {
       var srcFile = simpleResults.watermarkBlob
         ? new File([simpleResults.watermarkBlob], simpleFile.name, {
@@ -922,22 +802,19 @@ function runPixelInjectStep() {
         fileInput.dispatchEvent(new Event("change"));
       }
     }
-    var catSelect = document.querySelector("#pi-category");
+    var catSelect = document.getElementById("pi-category");
     if (catSelect) {
       catSelect.value = cat;
       catSelect.dispatchEvent(new Event("change"));
     }
-    var algoSelect = document.querySelector("#pi-algorithm");
-    var srcAlgo = document.querySelector("#spi-algorithm");
+    var algoSelect = document.getElementById("pi-algorithm");
+    var srcAlgo = document.getElementById("spi-algorithm");
     if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
-    var msgInput = document.querySelector("#pi-message");
+    var msgInput = document.getElementById("pi-message");
     if (msgInput) msgInput.value = didMessage;
-    var passInput = document.querySelector("#pi-password");
+    var passInput = document.getElementById("pi-password");
     if (passInput) passInput.value = pass;
 
-    /**
-     *
-     */
     function cleanupPiFields() {
       if (msgInput) msgInput.value = "";
       if (passInput) passInput.value = "";
@@ -947,13 +824,13 @@ function runPixelInjectStep() {
       }
     }
 
-    var promise = globalThis.handlePixelInjection();
+    var promise = window.handlePixelInjection();
     if (promise && promise.then) {
       promise
         .then(function () {
           simpleResults["pixel-injection"] = true;
-          var piOutput = document.querySelector("#pi-output");
-          var piDownload = document.querySelector("#pi-download");
+          var piOutput = document.getElementById("pi-output");
+          var piDownload = document.getElementById("pi-download");
           if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
           if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
           if (piDownload) {
@@ -961,7 +838,7 @@ function runPixelInjectStep() {
             if (piLink) simpleResults.piFinalUrl = piLink.href;
           }
           simpleStepDone = true;
-          var nextBtn = document.querySelector("#simpleNextBtn");
+          var nextBtn = document.getElementById("simpleNextBtn");
           nextBtn.disabled = false;
           nextBtn.style.display = "";
 
@@ -979,7 +856,7 @@ function runPixelInjectStep() {
           }
           hideProgress();
         })
-        .catch(function (error) {
+        .catch(function (e) {
           hideProgress();
           if (btn) {
             btn.disabled = false;
@@ -989,8 +866,8 @@ function runPixelInjectStep() {
             statusEl.innerHTML =
               '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
               escapeHtml(
-                error && error.message
-                  ? error.message
+                e && e.message
+                  ? e.message
                   : __("simple.pi_failed", "Injection failed"),
               ) +
               "</div>";
@@ -1003,12 +880,11 @@ function runPixelInjectStep() {
   }, 50);
 }
 
-/**
- *
- */
+
+
 async function runTimestampStep() {
-  if (!globalThis.handleOtsCreate) return;
-  var fileInput = document.querySelector("#ts-create-file");
+  if (!window.handleOtsCreate) return;
+  var fileInput = document.getElementById("ts-create-file");
   if (fileInput) {
     // Use final output (C2PA/audio > injected > original) depending on available steps
     try {
@@ -1033,50 +909,52 @@ async function runTimestampStep() {
           fileInput.files = dt.files;
         }
       } else if (simpleFile) {
-        let dt = new DataTransfer();
+        var dt = new DataTransfer();
         dt.items.add(simpleFile);
         fileInput.files = dt.files;
       }
       var evt = new Event("change");
       fileInput.dispatchEvent(evt);
-    } catch {
+    } catch (e) {
       if (simpleFile) {
-        let dt = new DataTransfer();
+        var dt = new DataTransfer();
         dt.items.add(simpleFile);
         fileInput.files = dt.files;
-        let evt = new Event("change");
+        var evt = new Event("change");
         fileInput.dispatchEvent(evt);
       }
     }
   }
-  var promise = globalThis.handleOtsCreate();
+  var promise = window.handleOtsCreate();
   if (promise && promise.then) {
     promise
       .then(function () {
-        var resultDiv = document.querySelector("#sts-result");
+        var resultDiv = document.getElementById("sts-result");
         if (resultDiv) {
           var text = escapeHtml(
-            (document.querySelector("#ts-output") || {}).textContent || "",
+            (document.getElementById("ts-output") || {}).textContent || "",
           );
           resultDiv.innerHTML =
             '<div class="simple-success">' +
-            text.replaceAll('\n', "<br>") +
+            text.replace(/\n/g, "<br>") +
             "</div>";
         }
         simpleResults.timestamp = true;
-        var tsOut = document.querySelector("#ts-output");
+        var tsOut = document.getElementById("ts-output");
         if (tsOut) {
           var rawText = tsOut.textContent || "";
           var hashMatch = rawText.match(/[a-f0-9]{64}/i);
           var hash = hashMatch ? hashMatch[0] : "";
           var hasAttestation =
-            rawText.includes("blockchain") ||
-            rawText.includes("attestation");
+            rawText.indexOf("blockchain") >= 0 ||
+            rawText.indexOf("attestation") >= 0;
           var dateStr = new Date()
             .toISOString()
             .replace("T", " ")
             .substring(0, 19);
-          simpleResults.tsResult = hash ? "Certificate Transparency\n" +
+          if (hash) {
+            simpleResults.tsResult =
+              "Certificate Transparency\n" +
               "SHA-256: " +
               hash +
               "\n" +
@@ -1087,30 +965,31 @@ async function runTimestampStep() {
                 : "Created: " +
                   dateStr +
                   "\nStatus: Pending — awaiting blockchain attestation\n") +
-              "Verifiable at: https://opentimestamps.org" : rawText;
+              "Verifiable at: https://opentimestamps.org";
+          } else {
+            simpleResults.tsResult = rawText;
+          }
         }
-        var tsDl = document.querySelector("#ts-download");
+        var tsDl = document.getElementById("ts-download");
         if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
         simpleStepDone = true;
-        document.querySelector("#simpleNextBtn").disabled = false;
+        document.getElementById("simpleNextBtn").disabled = false;
       })
-      .catch(function (error) {
-        var resultDiv = document.querySelector("#sts-result");
+      .catch(function (e) {
+        var resultDiv = document.getElementById("sts-result");
         if (resultDiv)
           resultDiv.innerHTML =
             '<div class="simple-error">' +
-            __("simple.ts_failed").replace("{msg}", escapeHtml(error.message)) +
+            __("simple.ts_failed").replace("{msg}", escapeHtml(e.message)) +
             "</div>";
       });
   }
 }
 
-/**
- *
- */
+
 function runFingerprintStep() {
-  if (!globalThis.handleFingerprint) return;
-  var fileInput = document.querySelector("#fp-file");
+  if (!window.handleFingerprint) return;
+  var fileInput = document.getElementById("fp-file");
   if (fileInput && simpleFile) {
     var dt = new DataTransfer();
     dt.items.add(simpleFile);
@@ -1120,11 +999,11 @@ function runFingerprintStep() {
   }
   // Defer to next tick so the browser renders the spinner first
   setTimeout(function () {
-    if (globalThis.fastFingerprint) {
-      var statusEl = document.querySelector("#sfp-status");
+    if (window.fastFingerprint) {
+      var statusEl = document.getElementById("sfp-status");
       var _fpResultRef = null;
       var _fpPendingHashes = {};
-      globalThis
+      window
         .fastFingerprint(
           simpleFile,
           function (msg) {
@@ -1140,7 +1019,7 @@ function runFingerprintStep() {
         .then(function (result) {
           _fpResultRef = result;
           Object.assign(result.hashes, _fpPendingHashes);
-          var resultDiv = document.querySelector("#sfp-result");
+          var resultDiv = document.getElementById("sfp-result");
           if (resultDiv) {
             resultDiv.innerHTML =
               '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
@@ -1152,25 +1031,25 @@ function runFingerprintStep() {
           }
           simpleResults.fingerprint = true;
           simpleResults.fpResult = result;
-          setResult("fpResult", result);
+          setResult('fpResult', result);
           simpleStepDone = true;
-          document.querySelector("#simpleNextBtn").disabled = false;
+          document.getElementById("simpleNextBtn").disabled = false;
         })
-        .catch(function (error) {
-          var resultDiv = document.querySelector("#sfp-result");
+        .catch(function (e) {
+          var resultDiv = document.getElementById("sfp-result");
           if (resultDiv)
             resultDiv.innerHTML =
               '<div class="simple-error">' +
-              __("simple.fp_failed").replace("{msg}", escapeHtml(error.message)) +
+              __("simple.fp_failed").replace("{msg}", escapeHtml(e.message)) +
               "</div>";
         });
     } else {
-      var promise = globalThis.handleFingerprint();
+      var promise = window.handleFingerprint();
       if (promise && promise.then) {
         promise
           .then(function () {
-            var resultDiv = document.querySelector("#sfp-result");
-            var fpOutput = document.querySelector("#fp-output");
+            var resultDiv = document.getElementById("sfp-result");
+            var fpOutput = document.getElementById("fp-output");
             if (resultDiv) {
               resultDiv.innerHTML =
                 '<div class="simple-fp-result" style="font-size:0.85rem;color:var(--success);margin-top:12px;padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
@@ -1183,17 +1062,17 @@ function runFingerprintStep() {
             simpleResults.fingerprint = true;
             if (fpOutput) {
               simpleResults.fpHtml = fpOutput.innerHTML;
-              simpleResults.fpResult = getResult("fpResult") || null;
+              simpleResults.fpResult = getResult('fpResult') || null;
             }
             simpleStepDone = true;
-            document.querySelector("#simpleNextBtn").disabled = false;
+            document.getElementById("simpleNextBtn").disabled = false;
           })
-          .catch(function (error) {
-            var resultDiv = document.querySelector("#sfp-result");
+          .catch(function (e) {
+            var resultDiv = document.getElementById("sfp-result");
             if (resultDiv)
               resultDiv.innerHTML =
                 '<div class="simple-error">' +
-                __("simple.fp_failed").replace("{msg}", escapeHtml(error.message)) +
+                __("simple.fp_failed").replace("{msg}", escapeHtml(e.message)) +
                 "</div>";
           });
       }
@@ -1201,14 +1080,12 @@ function runFingerprintStep() {
   }, 50);
 }
 
-/**
- *
- */
+
 async function runDIDStepGenerate() {
-  var statusEl = document.querySelector("#sdid-result");
-  var genBtn = document.querySelector("#sdid-gen-btn");
-  var signBtn = document.querySelector("#sdid-sign-btn");
-  var algoSelect = document.querySelector("#sdid-algo-select");
+  var statusEl = document.getElementById("sdid-result");
+  var genBtn = document.getElementById("sdid-gen-btn");
+  var signBtn = document.getElementById("sdid-sign-btn");
+  var algoSelect = document.getElementById("sdid-algo-select");
   var algo = algoSelect ? algoSelect.value : "Ed25519";
   if (statusEl)
     statusEl.innerHTML =
@@ -1229,31 +1106,28 @@ async function runDIDStepGenerate() {
     }
     if (signBtn) signBtn.disabled = false;
     simpleResults.didIdentity = kp.did;
-  } catch (error) {
+  } catch (e) {
     if (statusEl)
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
         __("simple.did_failed", "❌ DID generation failed: {msg}").replace(
           "{msg}",
-          escapeHtml(error.message),
+          escapeHtml(e.message),
         ) +
         "</div>";
   }
 }
 
-/**
- *
- */
 async function runDIDStepSign() {
-  var statusEl = document.querySelector("#sdid-result");
-  var signBtn = document.querySelector("#sdid-sign-btn");
-  var genBtn = document.querySelector("#sdid-gen-btn");
+  var statusEl = document.getElementById("sdid-result");
+  var signBtn = document.getElementById("sdid-sign-btn");
+  var genBtn = document.getElementById("sdid-gen-btn");
   if (!_didKp) {
     var stored = didLoadKeys();
     if (stored) {
       try {
         _didKp = await didImportSignKey(stored);
-      } catch {
+      } catch (e) {
         didClearKeys();
         if (statusEl)
           statusEl.innerHTML =
@@ -1263,7 +1137,7 @@ async function runDIDStepSign() {
               "Stored DID keys are invalid. Please generate a new identity.",
             ) +
             "</div>";
-        let signBtn = document.querySelector("#sdid-sign-btn");
+        var signBtn = document.getElementById("sdid-sign-btn");
         if (signBtn) signBtn.disabled = true;
         return;
       }
@@ -1313,7 +1187,9 @@ async function runDIDStepSign() {
       _didKp.algorithm,
     );
     if (statusEl) {
-      statusEl.innerHTML = verifyOk ? '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
+      if (verifyOk) {
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
           __(
             "simple.did_signed_success",
             "✅ Fingerprint signed and verified successfully!",
@@ -1327,23 +1203,27 @@ async function runDIDStepSign() {
             "{algo}",
             _didKp.algorithm,
           ) +
-          "</span></div>" : '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          "</span></div>";
+      } else {
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
           __(
             "simple.did_verify_failed",
             "❌ Signature verification failed. Please regenerate your identity.",
           ) +
           "</div>";
+      }
     }
     simpleStepDone = true;
-    var nextBtn = document.querySelector("#simpleNextBtn");
+    var nextBtn = document.getElementById("simpleNextBtn");
     if (nextBtn) nextBtn.disabled = false;
-  } catch (error) {
+  } catch (e) {
     if (statusEl)
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
         __("simple.did_failed", "❌ DID signing failed: {msg}").replace(
           "{msg}",
-          escapeHtml(error.message),
+          escapeHtml(e.message),
         ) +
         "</div>";
   }
@@ -1352,7 +1232,14 @@ async function runDIDStepSign() {
   _didSig = null;
 }
 
+
+
+
+
+
 // ── Helpers ──
+
+
 
 // Init on DOM ready
 document.addEventListener("DOMContentLoaded", initMode);

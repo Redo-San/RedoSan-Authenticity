@@ -1,10 +1,10 @@
 (function () {
   if (
-    globalThis.window !== undefined &&
-    globalThis.location &&
-    globalThis.location.protocol !== "file:" &&
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      globalThis.location.href,
+      window.location.href,
     )
   )
     throw new Error(
@@ -16,31 +16,23 @@
 var _docwEscXml = (function () {
   var map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
   return function (s) {
-    return String(s).replaceAll(/[&<>"]/g, function (m) {
+    return String(s).replace(/[&<>"]/g, function (m) {
       return map[m];
     });
   };
 })();
 
-/**
- *
- * @param text
- */
 async function _docwHash(text) {
   var enc = new TextEncoder().encode(text);
   var hashBuf = await crypto.subtle.digest("SHA-256", enc);
   var hashArr = new Uint8Array(hashBuf);
   var hex = "";
-  for (const element of hashArr) {
-    hex += ("0" + element.toString(16)).slice(-2);
+  for (var i = 0; i < hashArr.length; i++) {
+    hex += ("0" + hashArr[i].toString(16)).slice(-2);
   }
   return hex;
 }
 
-/**
- *
- * @param text
- */
 function _docwQrDataURL(text) {
   if (typeof QRious === "undefined") return null;
   var canvas = document.createElement("canvas");
@@ -54,11 +46,6 @@ function _docwQrDataURL(text) {
   return canvas.toDataURL("image/png");
 }
 
-/**
- *
- * @param r
- * @param mode
- */
 async function _docwBuildReportPdf(r, mode) {
   var isExtract = mode === "extract";
   var algo = isExtract ? r.algo || "" : r.algo || "";
@@ -114,8 +101,8 @@ async function _docwBuildReportPdf(r, mode) {
   ];
   doc.setFontSize(9);
   doc.setTextColor(60, 60, 80);
-  for (const metaPair of metaPairs) {
-    doc.text(metaPair[0] + ":  " + metaPair[1], lm, y);
+  for (var mi = 0; mi < metaPairs.length; mi++) {
+    doc.text(metaPairs[mi][0] + ":  " + metaPairs[mi][1], lm, y);
     y += 5;
   }
   y += 4;
@@ -135,12 +122,12 @@ async function _docwBuildReportPdf(r, mode) {
   doc.setFontSize(8);
   doc.setTextColor(60, 60, 80);
   var textLines = doc.splitTextToSize(content, maxW);
-  for (const textLine of textLines) {
+  for (var li = 0; li < textLines.length; li++) {
     if (y + 4 > ph - 15) {
       doc.addPage();
       y = 15;
     }
-    doc.text(textLine, lm, y);
+    doc.text(textLines[li], lm, y);
     y += 4;
   }
   y += 6;
@@ -161,7 +148,7 @@ async function _docwBuildReportPdf(r, mode) {
     y += 3;
     try {
       doc.addImage(qrData, "PNG", pw / 2 - 30, y, 60, 60);
-    } catch {}
+    } catch (e) {}
     y += 64;
   }
 
@@ -178,11 +165,6 @@ async function _docwBuildReportPdf(r, mode) {
   return doc.output("blob");
 }
 
-/**
- *
- * @param r
- * @param mode
- */
 async function _docwBuildReportDocx(r, mode) {
   var isExtract = mode === "extract";
   var algo = isExtract ? r.algo || "" : r.algo || "";
@@ -223,14 +205,14 @@ async function _docwBuildReportDocx(r, mode) {
     ["Content Length", content.length + " characters"],
     ["SHA-256", hash],
   ];
-  for (const metaRow of metaRows) {
+  for (var mri = 0; mri < metaRows.length; mri++) {
     xml +=
       '<w:tr><w:tc><w:tcW w:w="2000" w:type="dxa"/><w:p><w:r><w:rPr><w:b/><w:sz w:val="18"/></w:rPr><w:t>' +
-      _docwEscXml(metaRow[0]) +
+      _docwEscXml(metaRows[mri][0]) +
       "</w:t></w:r></w:p></w:tc>";
     xml +=
       '<w:tc><w:tcW w:w="5000" w:type="dxa"/><w:p><w:r><w:rPr><w:sz w:val="18"/></w:rPr><w:t>' +
-      _docwEscXml(metaRow[1]) +
+      _docwEscXml(metaRows[mri][1]) +
       "</w:t></w:r></w:p></w:tc></w:tr>";
   }
   xml += "</w:tbl><w:p><w:r><w:br/></w:r></w:p>";
@@ -264,11 +246,6 @@ async function _docwBuildReportDocx(r, mode) {
   return await zip.generateAsync({ type: "blob" });
 }
 
-/**
- *
- * @param r
- * @param mode
- */
 function _docwBuildReportHtml(r, mode) {
   var isExtract = mode === "extract";
   var algo = isExtract ? r.algo || "" : r.algo || "";
