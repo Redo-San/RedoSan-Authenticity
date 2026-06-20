@@ -25,9 +25,9 @@ async function downloadCertEPUB(data) {
 
   var imgBase64 = "";
   if (data.file.dataUrl) {
-    imgBase64 = data.file.dataUrl.split(",")[1];
+    imgBase64 = data.file.dataUrl.split(",", 2)[1];
   }
-  var qrBase64 = qrDataUrl.split(",")[1];
+  var qrBase64 = qrDataUrl.split(",", 2)[1];
   var imgMime = data.file.type || "image/png";
 
   // Build HTML content
@@ -208,7 +208,7 @@ async function downloadCertEPUB(data) {
             escHtml(
               (data.ct.aggregator || "OTS")
                 .replace("https://", "")
-                .split("/")[0] || "OTS calendar",
+                .split("/", 1)[0] || "OTS calendar",
             ) +
             "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'

@@ -515,7 +515,7 @@ function generatePDF(data, qrPngBuf, qrContent) {
       if (!data.ct.pending) {
         doc.text(`Logged: ${(data.ct.timestamp || "").replace("T", " ").substring(0, 19)}`, margin, y);
         y += 3;
-        const shortAgg = (data.ct.aggregator || "").replace("https://", "").split("/")[0] || "OTS calendar";
+        const shortAgg = (data.ct.aggregator || "").replace("https://", "").split("/", 1)[0] || "OTS calendar";
         doc.text(`Transparency log: ${shortAgg}`, margin, y);
         y += 3;
       }
@@ -739,7 +739,7 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
     addLabelValue("SHA-256", data.ct.hash);
     if (!data.ct.pending) {
       addLabelValue("Logged", (data.ct.timestamp || "").replace("T", " ").substring(0, 19));
-      const shortAgg = (data.ct.aggregator || "").replace("https://", "").split("/")[0] || "OTS calendar";
+      const shortAgg = (data.ct.aggregator || "").replace("https://", "").split("/", 1)[0] || "OTS calendar";
       addLabelValue("Transparency log", shortAgg);
     }
     addBody("Verifiable at: https://opentimestamps.org");
@@ -896,7 +896,7 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
             escHtml((data.ct.timestamp || "").replace("T", " ").substring(0, 19)) +
             "</td></tr>" +
             "<tr><td><strong>Log</strong></td><td>" +
-            escHtml((data.ct.aggregator || "OTS").replace("https://", "").split("/")[0] || "OTS calendar") +
+            escHtml((data.ct.aggregator || "OTS").replace("https://", "").split("/", 1)[0] || "OTS calendar") +
             "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'
       : data.ct

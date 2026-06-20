@@ -20,8 +20,7 @@ var OTS_SHA256_TAG = 0x08;
  * @param sha256Bytes
  */
 function otsBuildDetached(sha256Bytes) {
-  var out = [...OTS_HEADER];
-  out.push(OTS_MAJOR_VERSION, OTS_SHA256_TAG);
+  var out = [...OTS_HEADER, OTS_MAJOR_VERSION, OTS_SHA256_TAG];
   for (let i = 0; i < 32; i++) out.push(sha256Bytes[i]);
   return new Uint8Array(out);
 }

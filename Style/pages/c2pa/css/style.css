@@ -21,7 +21,7 @@
 
 .c2pa-type-card:has(input:checked) {
   border-color: var(--primary);
-  background: rgba(108, 92, 231, 0.12);
+  background: rgb(108, 92, 231, 0.12);
 }
 
 .c2pa-type-header {
@@ -212,7 +212,7 @@
   border-radius: 12px;
   font-size: 0.72rem;
   font-weight: 600;
-  background: rgba(108, 92, 231, 0.15);
+  background: rgb(108, 92, 231, 0.15);
   color: var(--primary);
 }
 
@@ -322,7 +322,7 @@
 .c2pa-error {
   color: var(--danger);
   padding: 12px;
-  background: rgba(255, 82, 82, 0.08);
+  background: rgb(255, 82, 82, 0.08);
   border-radius: 8px;
 }
 
@@ -345,12 +345,12 @@
 }
 
 .c2pa-verified {
-  background: rgba(0, 230, 118, 0.08);
+  background: rgb(0, 230, 118, 0.08);
   border: 1px solid var(--success);
 }
 
 .c2pa-unverified {
-  background: rgba(255, 193, 7, 0.08);
+  background: rgb(255, 193, 7, 0.08);
   border: 1px solid #ffc107;
 }
 

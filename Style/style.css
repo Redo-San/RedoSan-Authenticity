@@ -234,7 +234,7 @@ body.no-scroll {
 
 .sidebar a.active {
   color: var(--primary);
-  background: rgba(108, 92, 231, 0.1);
+  background: rgb(108, 92, 231, 0.1);
   border-right: 3px solid var(--primary);
 }
 
@@ -242,7 +242,7 @@ body.no-scroll {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgb(0, 0, 0, 0.5);
   z-index: 250;
 }
 
@@ -442,7 +442,7 @@ body.no-scroll {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   max-height: 400px;
   overflow: auto;
   font-family: "SF Mono", "Fira Code", monospace;
@@ -459,17 +459,17 @@ body.no-scroll {
 }
 
 .badge-success {
-  background: rgba(0, 230, 118, 0.15);
+  background: rgb(0, 230, 118, 0.15);
   color: var(--success);
 }
 
 .badge-muted {
-  background: rgba(155, 155, 181, 0.15);
+  background: rgb(155, 155, 181, 0.15);
   color: var(--text-muted);
 }
 
 .badge-warning {
-  background: rgba(255, 193, 7, 0.15);
+  background: rgb(255, 193, 7, 0.15);
   color: #ffc107;
 }
 
@@ -571,7 +571,7 @@ body.no-scroll {
 
 .c2pa-type-card:has(input:checked) {
   border-color: var(--primary);
-  background: rgba(108, 92, 231, 0.12);
+  background: rgb(108, 92, 231, 0.12);
 }
 
 .c2pa-type-header {
@@ -769,7 +769,7 @@ body.no-scroll {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgb(0, 0, 0, 0.4);
   z-index: 1000;
 }
 
@@ -834,11 +834,11 @@ body.no-scroll {
 @keyframes glow404 {
   0%,
   100% {
-    filter: drop-shadow(0 0 20px rgba(108, 92, 231, 0.3));
+    filter: drop-shadow(0 0 20px rgb(108, 92, 231, 0.3));
   }
 
   50% {
-    filter: drop-shadow(0 0 40px rgba(108, 92, 231, 0.6));
+    filter: drop-shadow(0 0 40px rgb(108, 92, 231, 0.6));
   }
 }
 
@@ -876,7 +876,7 @@ body.no-scroll {
 
 .error-search input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+  box-shadow: 0 0 0 3px rgb(108, 92, 231, 0.15);
 }
 
 .error-links {
@@ -1022,7 +1022,7 @@ body.no-scroll {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgb(0, 0, 0, 0.6);
   z-index: 200;
   align-items: center;
   justify-content: center;
@@ -1248,7 +1248,7 @@ body.no-scroll {
   right: 12px;
   z-index: 999;
   background: var(--card);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgb(0, 0, 0, 0.15);
 }
 
 html[dir="rtl"] #themeToggle {
@@ -1269,12 +1269,12 @@ html[dir="rtl"] #themeToggle {
 
 .file-drop-zone:hover {
   border-color: var(--primary);
-  background: rgba(108, 92, 231, 0.04);
+  background: rgb(108, 92, 231, 0.04);
 }
 
 .file-drop-zone.drag-over {
   border-color: var(--primary);
-  background: rgba(108, 92, 231, 0.08);
+  background: rgb(108, 92, 231, 0.08);
   transform: scale(1.01);
 }
 
@@ -1305,7 +1305,7 @@ html[dir="rtl"] #themeToggle {
   font-size: 0.85rem;
   color: var(--text);
   margin-top: 8px;
-  background: rgba(108, 92, 231, 0.1);
+  background: rgb(108, 92, 231, 0.1);
   padding: 6px 14px;
   border-radius: 20px;
   word-break: break-all;
@@ -1410,7 +1410,7 @@ html[dir="rtl"] .back-btn:hover .back-arrow {
   border: 1px solid var(--border);
   border-radius: 8px;
   min-width: 140px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.3);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px);
@@ -1570,7 +1570,7 @@ html[dir="rtl"] .back-btn:hover .back-arrow {
   border-radius: 12px;
   font-size: 0.72rem;
   font-weight: 600;
-  background: rgba(108, 92, 231, 0.15);
+  background: rgb(108, 92, 231, 0.15);
   color: var(--primary);
 }
 
@@ -1680,7 +1680,7 @@ html[dir="rtl"] .back-btn:hover .back-arrow {
 .c2pa-error {
   color: var(--danger);
   padding: 12px;
-  background: rgba(255, 82, 82, 0.08);
+  background: rgb(255, 82, 82, 0.08);
   border-radius: 8px;
 }
 
@@ -1703,12 +1703,12 @@ html[dir="rtl"] .back-btn:hover .back-arrow {
 }
 
 .c2pa-verified {
-  background: rgba(0, 230, 118, 0.08);
+  background: rgb(0, 230, 118, 0.08);
   border: 1px solid var(--success);
 }
 
 .c2pa-unverified {
-  background: rgba(255, 193, 7, 0.08);
+  background: rgb(255, 193, 7, 0.08);
   border: 1px solid #ffc107;
 }
 
@@ -2217,7 +2217,7 @@ footer {
 .simple-upload-zone:hover,
 .simple-upload-zone.drag-over {
   border-color: var(--primary);
-  background: rgba(108, 92, 231, 0.05);
+  background: rgb(108, 92, 231, 0.05);
 }
 
 .simple-upload-zone.has-file {
@@ -2997,7 +2997,7 @@ footer {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgb(0, 0, 0, 0.9);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -3042,14 +3042,14 @@ footer {
   cursor: pointer;
   z-index: 9999;
   font-size: 22px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 12px rgb(0, 0, 0, 0.3);
   transition: transform 0.2s;
   touch-action: manipulation;
 }
 
 .ast-bubble:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 24px rgba(108, 92, 231, 0.6);
+  box-shadow: 0 6px 24px rgb(108, 92, 231, 0.6);
 }
 
 .ast-bubble:active {
@@ -3076,7 +3076,7 @@ footer {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgb(0, 0, 0, 0.3);
   z-index: 10000;
   display: flex;
   flex-direction: column;
@@ -3131,7 +3131,7 @@ footer {
 .ast-clear-btn:hover,
 .ast-close-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(255, 255, 255, 0.15);
 }
 
 .ast-messages {
@@ -3204,7 +3204,7 @@ footer {
   border-radius: 12px;
   font-size: 0.82rem;
   line-height: 1.5;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .ast-msg-bot .ast-content {
@@ -3232,8 +3232,8 @@ footer {
 }
 
 .ast-chip {
-  background: rgba(108, 92, 231, 0.1);
-  border: 1px solid rgba(108, 92, 231, 0.2);
+  background: rgb(108, 92, 231, 0.1);
+  border: 1px solid rgb(108, 92, 231, 0.2);
   border-radius: 16px;
   padding: 5px 12px;
   font-size: 0.75rem;
@@ -3372,7 +3372,7 @@ html[dir="rtl"] .ast-msg-user {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 15, 26, 0.97);
+  background: rgb(15, 15, 26, 0.97);
   display: none;
   align-items: center;
   justify-content: center;

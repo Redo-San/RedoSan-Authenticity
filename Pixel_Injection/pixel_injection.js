@@ -1288,7 +1288,7 @@ globalThis.switchPiTab = function(tab) {
     document.querySelectorAll('[data-pi-tab]').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[data-pi-tab="${tab}"]`).classList.add('active');
+    document.querySelector(`[data-pi-tab="${CSS.escape(tab)}"]`).classList.add('active');
 
     // Hide previous results when switching away from embed
     var resultDiv = document.querySelector('#pi-result');

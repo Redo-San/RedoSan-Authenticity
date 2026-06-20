@@ -129,11 +129,7 @@
     var links = document.querySelectorAll(".sidebar a[data-page]");
     for (const link of links) {
       var lp = link.dataset.page;
-      if (lp === pageName) {
-        link.classList.add("active");
-      } else {
-        link.classList.remove("active");
-      }
+      link.classList.toggle("active", lp === pageName);
     }
   }
 
@@ -149,6 +145,54 @@
         document.body.append(el);
       }
     }
+  }
+
+  /**
+   *
+   * @returns {{ el: (HTMLAudioElement|null), wasPlaying: boolean }}
+   */
+  function _saveAudioState() {
+    var a = document.querySelector("#bg-music");
+    if (typeof globalThis.__musicSaveTime === "function")
+      globalThis.__musicSaveTime();
+    var wasPlaying = false;
+    if (typeof globalThis.__musicPlayerState === "function") {
+      var st = globalThis.__musicPlayerState();
+      wasPlaying = st && st.playing === true;
+    }
+    if (!wasPlaying && a) wasPlaying = !a.paused;
+    return { el: a, wasPlaying: wasPlaying };
+  }
+
+  /**
+   *
+   * @param {{ el: (HTMLAudioElement|null), wasPlaying: boolean }} state
+   * @param {number} tries
+   */
+  function _resumeAudio(state, tries) {
+    if (!state || !state.el) return;
+    (function resume(el, t) {
+      if (el.paused) {
+        if (el.readyState < 2) {
+          el.addEventListener(
+            "canplay",
+            function onCanPlay() {
+              var p = el.play();
+              if (p && typeof p.catch === "function") p.catch(function () {});
+            },
+            { once: true },
+          );
+        } else {
+          var p = el.play();
+          if (p && typeof p.catch === "function") p.catch(function () {});
+        }
+      }
+      if (el.paused && t > 0) {
+        setTimeout(function () {
+          resume(el, t - 1);
+        }, 100);
+      }
+    })(state.el, tries);
   }
 
   // ── Page-specific re-init after content swap ──
@@ -223,25 +267,7 @@
    * @param skipPush
    */
   function loadContent(html, url, pageName, skipPush) {
-    // Save audio state before DOM manipulation
-    if (typeof globalThis.__musicSaveTime === "function") globalThis.__musicSaveTime();
-    var _audioSave = (function () {
-      var a = document.querySelector("#bg-music");
-      // Use the _playing flag first; fall back to audio.paused
-      var wasPlaying = false;
-      if (typeof globalThis.__musicPlayerState === "function") {
-        var st = globalThis.__musicPlayerState();
-        wasPlaying = st && st.playing === true;
-      }
-      if (!wasPlaying && a) wasPlaying = !a.paused;
-      console.warn(
-        "[mpa] audioSave: wasPlaying=" +
-          wasPlaying +
-          " paused=" +
-          (a ? a.paused : "no-el"),
-      );
-      return { el: a, wasPlaying: wasPlaying };
-    })();
+    var _audioSave = _saveAudioState();
 
     var parser = new DOMParser();
     var doc = parser.parseFromString(html, "text/html");
@@ -287,8 +313,9 @@
     if (!skipPush) {
       var st = history.state || {};
       st.routerPage = pageName;
-      // Use hash-only URLs for pushState so Back triggers popstate, not full reload
-      history.pushState(st, "", "#/page-" + pageName);
+      st.url = url;
+      // Use clean relative URL (preserves audio across AJAX navigations)
+      history.pushState(st, "", url);
     }
     _currentPage = pageName;
     _inFlight = false;
@@ -298,31 +325,7 @@
     if (typeof sanitizeRemovalTools === "function") sanitizeRemovalTools();
     reInitPage(pageName);
 
-    // Restore audio if it was playing before swap
-    if (_audioSave.wasPlaying && _audioSave.el) {
-      (function resumeAudio(el, tries) {
-        if (el.paused) {
-          if (el.readyState < 2) {
-            el.addEventListener(
-              "canplay",
-              function onCanPlay() {
-                var p = el.play();
-                if (p && typeof p.catch === "function") p.catch(function () {});
-              },
-              { once: true },
-            );
-          } else {
-            var p = el.play();
-            if (p && typeof p.catch === "function") p.catch(function () {});
-          }
-        }
-        if (el.paused && tries > 0) {
-          setTimeout(function () {
-            resumeAudio(el, tries - 1);
-          }, 100);
-        }
-      })(_audioSave.el, 5);
-    }
+    if (_audioSave.wasPlaying) _resumeAudio(_audioSave, 5);
   }
 
   // ── Navigation ──
@@ -412,6 +415,8 @@
     // Handle back to initial state (null state or mode overlay)
     if (!pageName) {
       if (_savedSection && document.querySelector("#app")) {
+        var _popAudio = _saveAudioState();
+
         // Restore original section without full page reload
         var app = document.querySelector("#app");
         var oldPage = app.querySelector("section.page");
@@ -430,6 +435,7 @@
           );
         updateActiveSidebar(_currentPage);
         ensurePreserved();
+        if (_popAudio.wasPlaying) _resumeAudio(_popAudio, 5);
         reInitPage(_currentPage);
         return;
       }

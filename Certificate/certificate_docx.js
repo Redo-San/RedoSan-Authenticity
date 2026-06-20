@@ -26,7 +26,7 @@ async function downloadCertDOCX(data) {
    * @param dataUrl
    */
   function dataURLToUint8Array(dataUrl) {
-    var base64 = dataUrl.split(",")[1];
+    var base64 = dataUrl.split(",", 2)[1];
     var binary = atob(base64);
     return Uint8Array.from(binary, function (c) {
       return c.charCodeAt(0);
@@ -63,7 +63,7 @@ async function downloadCertDOCX(data) {
    * @param height
    */
   function addImage(dataUrl, width, height) {
-    var mime = (dataUrl.split(",")[0].split(":")[1] || "").split(";")[0];
+    var mime = (dataUrl.split(",", 1)[0].split(":", 2)[1] || "").split(";", 1)[0];
     var type = imageTypeFromMime(mime);
     var imgData = dataURLToUint8Array(dataUrl);
     addParagraph([
@@ -289,7 +289,7 @@ async function downloadCertDOCX(data) {
         (data.ct.timestamp || "").replace("T", " ").substring(0, 19),
       );
       var shortAgg =
-        (data.ct.aggregator || "").replace("https://", "").split("/")[0] ||
+        (data.ct.aggregator || "").replace("https://", "").split("/", 1)[0] ||
         "OTS calendar";
       addLabelValue("Transparency log", shortAgg);
     }

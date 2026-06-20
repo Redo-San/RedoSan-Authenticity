@@ -392,7 +392,7 @@ function matchesAccept(file, acceptAttr) {
   var rules = acceptAttr.split(",");
   for (const rule of rules) {
     var r = rule.trim();
-    if (r.endsWith("/*") && type.startsWith(r.split("/")[0] + "/")) return true;
+    if (r.endsWith("/*") && type.startsWith(r.split("/", 1)[0] + "/")) return true;
     else if (r.includes("/") && type === r) return true;
     else if (r.startsWith(".") && name.endsWith(r)) return true;
   }

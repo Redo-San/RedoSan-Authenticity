@@ -125,7 +125,7 @@
         }
         if (text.indexOf("Exif") === 0) info.has_exif = true;
         if (
-          text.slice(0, 28).indexOf("http://ns.adobe.com/xap/") === 0 ||
+          text.slice(0, 28).indexOf("https://ns.adobe.com/xap/") === 0 ||
           text.includes("XMP")
         )
           info.has_xmp = true;

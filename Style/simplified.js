@@ -47,8 +47,7 @@ var simpleUserInfo = {
  * @param disable
  */
 function setBodyOverflow(disable) {
-  if (disable) document.body.classList.add("no-scroll");
-  else document.body.classList.remove("no-scroll");
+  document.body.classList.toggle("no-scroll", disable);
 }
 
 /**

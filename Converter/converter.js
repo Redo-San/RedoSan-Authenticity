@@ -1456,7 +1456,7 @@ function convSubWriteLrc(cues) {
     var m = Math.floor(cue.start / 60_000);
     var s = Math.floor((cue.start % 60_000) / 1000);
     var cs = Math.floor((cue.start % 1000) / 10);
-    out += '[' + (m+'').padStart(2,'0') + ':' + (s+'').padStart(2,'0') + '.' + (cs+'').padStart(2,'0') + ']' + cue.text.split('\n')[0] + '\n';
+    out += '[' + (m+'').padStart(2,'0') + ':' + (s+'').padStart(2,'0') + '.' + (cs+'').padStart(2,'0') + ']' + cue.text.split('\n', 1)[0] + '\n';
   }
   return out;
 }

@@ -20,7 +20,7 @@ function _findTool(name) {
     return execSync(`${cmd} ${name}`, { stdio: ["ignore", "pipe", "ignore"] })
       .toString()
       .trim()
-      .split("\n")[0]
+      .split("\n", 1)[0]
       .trim();
   } catch {
     return null;
