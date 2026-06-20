@@ -605,7 +605,7 @@
     "phone_digits_only": "数字のみを入力してください",
     "clear_confirm": "すべてのデータを消去しますか?現在の進行状況は失われます。",
     "email_invalid": "有効なメールアドレスを入力してください",
-    "url_invalid": "有効な URL を入力してください (例: https://example.com)",
+    "url_invalid": "有効な URL を入力してください (例: https://example.com）",
     "select_country": "国を選択してください",
     "digits": "数字",
     "info_website": "Webサイト",
