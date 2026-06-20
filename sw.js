@@ -103,6 +103,7 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Decentralized_Identity_DID/did.js",
   "/RedoSan-Authenticity/Fingerprint/hashing_perceptual.js",
   "/RedoSan-Authenticity/Fingerprint/hashing.js",
+  "/RedoSan-Authenticity/Fingerprint/hash_worker.js",
   "/RedoSan-Authenticity/Fingerprint/fingerprint_ui.js",
   "/RedoSan-Authenticity/C2PA/cbor.js",
   "/RedoSan-Authenticity/C2PA/c2pa.js",
