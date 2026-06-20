@@ -15,10 +15,18 @@ var CROCKFORD_B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 var NANOID_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
+/**
+ *
+ * @param n
+ * @param w
+ */
 function hex(n, w) {
   return n.toString(16).padStart(w, "0");
 }
 
+/**
+ *
+ */
 function uuidv4() {
   var bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
@@ -49,15 +57,18 @@ function uuidv4() {
   );
 }
 
+/**
+ *
+ */
 function uuidv7() {
   var ts = Date.now();
   var bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
-  bytes[0] = (ts / 0x10000000000) & 0xff;
-  bytes[1] = (ts / 0x100000000) & 0xff;
-  bytes[2] = (ts / 0x1000000) & 0xff;
-  bytes[3] = (ts / 0x10000) & 0xff;
-  bytes[4] = (ts / 0x100) & 0xff;
+  bytes[0] = (ts / 0x1_00_00_00_00_00) & 0xff;
+  bytes[1] = (ts / 0x1_00_00_00_00) & 0xff;
+  bytes[2] = (ts / 0x1_00_00_00) & 0xff;
+  bytes[3] = (ts / 0x1_00_00) & 0xff;
+  bytes[4] = (ts / 0x1_00) & 0xff;
   bytes[5] = ts & 0xff;
   bytes[6] = 0x70 | (bytes[6] & 0x0f);
   bytes[8] = 0x80 | (bytes[8] & 0x3f);
@@ -86,17 +97,28 @@ function uuidv7() {
   );
 }
 
+/**
+ *
+ * @param n
+ */
 function uuidv7Bulk(n) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(uuidv7());
   return r;
 }
+/**
+ *
+ * @param n
+ */
 function uuidv4Bulk(n) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(uuidv4());
   return r;
 }
 
+/**
+ *
+ */
 function ulid() {
   var ts = Date.now();
   var t = "";
@@ -115,12 +137,20 @@ function ulid() {
   return t + r.replace(/-/g, "");
 }
 
+/**
+ *
+ * @param n
+ */
 function ulidBulk(n) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(ulid());
   return r;
 }
 
+/**
+ *
+ * @param len
+ */
 function nanoid(len) {
   len = len || 21;
   var bytes = new Uint8Array(len);
@@ -130,12 +160,20 @@ function nanoid(len) {
   return r;
 }
 
+/**
+ *
+ * @param n
+ * @param len
+ */
 function nanoidBulk(n, len) {
   var r = [];
   for (var i = 0; i < n; i++) r.push(nanoid(len));
   return r;
 }
 
+/**
+ *
+ */
 async function swhid() {
   var fileInput = document.getElementById("if-swhid-file");
   var textInput = document.getElementById("if-swhid-text");
@@ -155,25 +193,33 @@ async function swhid() {
   return "swh:1:cnt:" + h;
 }
 
+/**
+ *
+ * @param str
+ */
 function sanitizeText(str) {
   return str.replace(/[<>&"'`]/g, function (c) {
     return "&#" + c.charCodeAt(0) + ";";
   });
 }
 
+/**
+ *
+ * @param el
+ */
 function validateSwhidText(el) {
   var warn = document.getElementById("if-swhid-text-warning");
   if (!warn) return;
   var val = el.value;
   var nonEnglish = /[\u0100-\uFFFF]/.test(val);
   warn.style.display = nonEnglish ? "block" : "none";
-  if (nonEnglish) {
-    el.style.borderColor = "#e74c3c";
-  } else {
-    el.style.borderColor = "";
-  }
+  el.style.borderColor = nonEnglish ? "#e74c3c" : "";
 }
 
+/**
+ *
+ * @param file
+ */
 async function computeSwhidFromFile(file) {
   var ext = file.name.split(".").pop().toLowerCase();
   var buf = await file.arrayBuffer();
@@ -188,8 +234,8 @@ async function computeSwhidFromFile(file) {
     var obj;
     try {
       obj = JSON.parse(text);
-    } catch (e) {
-      throw new Error("Invalid fingerprint JSON: " + e.message);
+    } catch (error) {
+      throw new Error("Invalid fingerprint JSON: " + error.message);
     }
     var sha1 = obj && obj.hashes && obj.hashes["SHA-1"];
     if (sha1)
@@ -203,6 +249,10 @@ async function computeSwhidFromFile(file) {
   return "swh:1:cnt:" + hexFromDigest(hash);
 }
 
+/**
+ *
+ * @param buf
+ */
 function extractHashFromOts(buf) {
   var data = new Uint8Array(buf);
   var OTS_HEADER = [
@@ -224,6 +274,10 @@ function extractHashFromOts(buf) {
   return h;
 }
 
+/**
+ *
+ * @param text
+ */
 async function computeSwhidFromText(text) {
   var enc = new TextEncoder();
   var buf = enc.encode(text);
@@ -231,6 +285,10 @@ async function computeSwhidFromText(text) {
   return "swh:1:cnt:" + hexFromDigest(hash);
 }
 
+/**
+ *
+ * @param buf
+ */
 function hexFromDigest(buf) {
   var v = new Uint8Array(buf);
   var h = "";
@@ -238,6 +296,9 @@ function hexFromDigest(buf) {
   return h;
 }
 
+/**
+ *
+ */
 function handleIdForgeGenerate() {
   var type = document.getElementById("if-type").value;
   var count = parseInt(document.getElementById("if-count").value, 10) || 1;
@@ -253,25 +314,31 @@ function handleIdForgeGenerate() {
     try {
       var ids;
       switch (type) {
-        case "uuidv4":
+        case "uuidv4": {
           ids = count === 1 ? [uuidv4()] : uuidv4Bulk(count);
           break;
-        case "uuidv7":
+        }
+        case "uuidv7": {
           ids = count === 1 ? [uuidv7()] : uuidv7Bulk(count);
           break;
-        case "ulid":
+        }
+        case "ulid": {
           ids = count === 1 ? [ulid()] : ulidBulk(count);
           break;
-        case "nanoid":
+        }
+        case "nanoid": {
           var nlen =
             parseInt(document.getElementById("if-nanoid-len").value, 10) || 21;
           ids = count === 1 ? [nanoid(nlen)] : nanoidBulk(count, nlen);
           break;
-        case "swhid":
+        }
+        case "swhid": {
           ids = [await swhid()];
           break;
-        default:
+        }
+        default: {
           ids = [uuidv4()];
+        }
       }
       window._ifResult = {
         ids: ids,
@@ -281,8 +348,8 @@ function handleIdForgeGenerate() {
       };
       output.value = ids.join("\n");
       resultDiv.style.display = "block";
-    } catch (e) {
-      output.value = "Error: " + e.message;
+    } catch (error) {
+      output.value = "Error: " + error.message;
       resultDiv.style.display = "block";
     }
 
@@ -292,6 +359,10 @@ function handleIdForgeGenerate() {
   }, 50);
 }
 
+/**
+ *
+ * @param el
+ */
 function idForgeCopy(el) {
   var output = document.getElementById("if-output");
   if (!output.value) return;
@@ -311,6 +382,10 @@ function idForgeCopy(el) {
   }, 1500);
 }
 
+/**
+ *
+ * @param format
+ */
 function idForgeDownload(format) {
   closeDownloadModal();
   var r = window._ifResult;
@@ -357,12 +432,13 @@ function idForgeDownload(format) {
 
   var content, ext, mime;
   switch (format) {
-    case "json":
+    case "json": {
       content = JSON.stringify(r, null, 2);
       ext = "json";
       mime = "application/json";
       break;
-    case "csv":
+    }
+    case "csv": {
       content = "Type,Count,Timestamp,ID\n";
       for (var s = 0; s < r.ids.length; s++)
         content +=
@@ -370,7 +446,8 @@ function idForgeDownload(format) {
       ext = "csv";
       mime = "text/csv";
       break;
-    case "txt":
+    }
+    case "txt": {
       content =
         "ID Forge — " +
         r.type +
@@ -383,7 +460,8 @@ function idForgeDownload(format) {
       ext = "txt";
       mime = "text/plain";
       break;
-    case "xml":
+    }
+    case "xml": {
       content =
         '<?xml version="1.0" encoding="UTF-8"?>\n<id-forge>\n  <metadata>\n    <type>' +
         escXml(r.type) +
@@ -398,12 +476,17 @@ function idForgeDownload(format) {
       ext = "xml";
       mime = "application/xml";
       break;
+    }
   }
   if (content == null) return;
   var blob = new Blob([content], { type: mime });
   downloadBlobSimple(blob, "id-forge-" + r.type + "." + ext);
 }
 
+/**
+ *
+ * @param s
+ */
 function escXml(s) {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -412,6 +495,11 @@ function escXml(s) {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ *
+ * @param blob
+ * @param name
+ */
 function downloadBlobSimple(blob, name) {
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -420,6 +508,9 @@ function downloadBlobSimple(blob, name) {
   URL.revokeObjectURL(a.href);
 }
 
+/**
+ *
+ */
 function idForgeShowInfo() {
   var type = document.getElementById("if-type").value;
   var info = document.getElementById("if-info");
@@ -448,15 +539,19 @@ function idForgeShowInfo() {
   if (type === "swhid") switchSwhidTab("file");
 }
 
+/**
+ *
+ * @param tab
+ */
 function switchSwhidTab(tab) {
   var btns = document.querySelectorAll("[data-swhid-tab]");
   for (var i = 0; i < btns.length; i++) {
     btns[i].style.background =
-      btns[i].getAttribute("data-swhid-tab") === tab
+      btns[i].dataset.swhidTab === tab
         ? "var(--accent, #6c5ce7)"
         : "var(--card, #f0f0f0)";
     btns[i].style.color =
-      btns[i].getAttribute("data-swhid-tab") === tab
+      btns[i].dataset.swhidTab === tab
         ? "#fff"
         : "var(--text, #333)";
   }
@@ -468,6 +563,9 @@ function switchSwhidTab(tab) {
     "block";
 }
 
+/**
+ *
+ */
 function idForgeShowDownload() {
   if (!window._ifResult) return;
   setDownloadHandler(idForgeDownload);
@@ -475,9 +573,12 @@ function idForgeShowDownload() {
   showDownloadModal();
 }
 
+/**
+ *
+ */
 function idForgeUpdateCount() {
   var val = parseInt(document.getElementById("if-count").value, 10);
   if (isNaN(val) || val < 1) document.getElementById("if-count").value = 1;
-  if (val > 10000) document.getElementById("if-count").value = 10000;
+  if (val > 10_000) document.getElementById("if-count").value = 10_000;
 }
 /* exported handleIdForgeGenerate, idForgeCopy, idForgeShowDownload, idForgeUpdateCount, idForgeShowInfo, switchSwhidTab */

@@ -12,6 +12,10 @@
     );
 })();
 
+/**
+ *
+ * @param body
+ */
 function renderUpload(body) {
   var socialVal = simpleUserInfo.social || {};
   var musicVal = simpleUserInfo.music || {};
@@ -184,6 +188,10 @@ function renderUpload(body) {
   if (simpleFile) restoreUploadFileInfo();
 }
 
+/**
+ *
+ * @param body
+ */
 function renderAiQuestion(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -205,6 +213,10 @@ function renderAiQuestion(body) {
     "</div></div>";
 }
 
+/**
+ *
+ * @param body
+ */
 function renderC2paStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -246,7 +258,7 @@ function renderC2paStep(body) {
     __("c2pa.author_label") +
     '">' +
     "</div></div>" +
-    '<div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">' +
+    '<div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="https://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">' +
     '<label class="c2pa-type-header" for="sc2pa-ai">' +
     '<input type="checkbox" id="sc2pa-ai" value="ai" checked>' +
     '<span class="c2pa-type-name">' +
@@ -260,7 +272,7 @@ function renderC2paStep(body) {
     __("c2pa.author_label") +
     '">' +
     "</div></div>" +
-    '<div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">' +
+    '<div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="https://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">' +
     '<label class="c2pa-type-header" for="sc2pa-capture">' +
     '<input type="checkbox" id="sc2pa-capture" value="capture">' +
     '<span class="c2pa-type-name">' +
@@ -274,7 +286,7 @@ function renderC2paStep(body) {
     __("c2pa.author_label") +
     '">' +
     "</div></div>" +
-    '<div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">' +
+    '<div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="https://cv.iptc.org/newscodes/digitalsourcetype/composite">' +
     '<label class="c2pa-type-header" for="sc2pa-composite">' +
     '<input type="checkbox" id="sc2pa-composite" value="composite">' +
     '<span class="c2pa-type-name">' +
@@ -363,6 +375,10 @@ function renderC2paStep(body) {
     '<div id="sc2pa-result"></div></div>';
 }
 
+/**
+ *
+ * @param body
+ */
 function renderWatermarkStep(body) {
   var usingName = simpleFile ? simpleFile.name : "";
   body.innerHTML =
@@ -401,6 +417,10 @@ function renderWatermarkStep(body) {
     '<div id="swm-status"></div></div>';
 }
 
+/**
+ *
+ * @param body
+ */
 function renderAudioWatermarkStep(body) {
   var usingName = simpleFile ? simpleFile.name : "";
   var fpSummary = "";
@@ -464,6 +484,10 @@ function renderAudioWatermarkStep(body) {
     '<span id="sawm-progress-text" style="font-size:0.75rem;color:var(--text-muted);min-width:3em;text-align:right">0%</span></div></div></div>';
 }
 
+/**
+ *
+ * @param body
+ */
 function renderPixelInjectStep(body) {
   var usingName = simpleFile ? simpleFile.name : "";
   var catOpts = "";
@@ -522,6 +546,10 @@ function renderPixelInjectStep(body) {
     '<div id="spi-status"></div></div>';
 }
 
+/**
+ *
+ * @param body
+ */
 function renderTimestampStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -535,6 +563,10 @@ function renderTimestampStep(body) {
   runTimestampStep();
 }
 
+/**
+ *
+ * @param body
+ */
 function renderFingerprintStep(body) {
   body.innerHTML =
     '<div class="simple-card"><h2>' +
@@ -554,16 +586,36 @@ function renderFingerprintStep(body) {
   runFingerprintStep();
 }
 
+/**
+ *
+ * @param body
+ */
 function renderDIDStep(body) {
   var hasKeys = didLoadKeys() !== null;
   var algos = didGetAlgorithmList();
   var algoOpts = "";
   for (var ai = 0; ai < algos.length; ai++) {
     var label = algos[ai];
-    if (algos[ai] === "Ed25519") label += " (fast, 64-byte sig)";
-    else if (algos[ai] === "P-256") label += " (widely compatible)";
-    else if (algos[ai] === "RSA-2048") label += " (256-byte sig)";
-    else if (algos[ai] === "RSA-4096") label += " (512-byte sig)";
+    switch (algos[ai]) {
+    case "Ed25519": {
+    label += " (fast, 64-byte sig)";
+    break;
+    }
+    case "P-256": {
+    label += " (widely compatible)";
+    break;
+    }
+    case "RSA-2048": {
+    label += " (256-byte sig)";
+    break;
+    }
+    case "RSA-4096": { {
+    label += " (512-byte sig)";
+    // No default
+    }
+    break;
+    }
+    }
     algoOpts += '<option value="' + algos[ai] + '">' + label + "</option>";
   }
   body.innerHTML =
@@ -611,6 +663,10 @@ function renderDIDStep(body) {
     "</div></div>";
 }
 
+/**
+ *
+ * @param body
+ */
 function renderDone(body) {
   var results = simpleResults;
   var sections = [];

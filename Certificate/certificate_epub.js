@@ -13,6 +13,10 @@
 })();
 // ── EPUB Certificate Generator ──
 
+/**
+ *
+ * @param data
+ */
 async function downloadCertEPUB(data) {
   var qrText = buildQRVerificationJSON(data);
   var docHash = await getDocHash(qrText);
@@ -21,9 +25,9 @@ async function downloadCertEPUB(data) {
 
   var imgBase64 = "";
   if (data.file.dataUrl) {
-    imgBase64 = data.file.dataUrl.split(",")[1];
+    imgBase64 = data.file.dataUrl.split(",", 2)[1];
   }
-  var qrBase64 = qrDataUrl.split(",")[1];
+  var qrBase64 = qrDataUrl.split(",", 2)[1];
   var imgMime = data.file.type || "image/png";
 
   // Build HTML content
@@ -205,7 +209,7 @@ async function downloadCertEPUB(data) {
             escHtml(
               (data.ct.aggregator || "OTS")
                 .replace("https://", "")
-                .split("/")[0] || "OTS calendar",
+                .split("/", 1)[0] || "OTS calendar",
             ) +
             "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'
@@ -335,9 +339,9 @@ async function downloadCertEPUB(data) {
   var a = document.createElement("a");
   a.href = url;
   a.download = "RedoSan_Digital_Passport.epub";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   setTimeout(function () {
     URL.revokeObjectURL(url);
   }, 1000);

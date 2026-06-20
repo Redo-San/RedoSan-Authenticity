@@ -15,6 +15,10 @@
 
 var forensicLastResult = null;
 
+/**
+ *
+ * @param imgData
+ */
 function forensicCanvasFromImageData(imgData) {
   var canvas = document.createElement("canvas");
   canvas.width = imgData.width || imgData.w;
@@ -24,6 +28,12 @@ function forensicCanvasFromImageData(imgData) {
   return canvas;
 }
 
+/**
+ *
+ * @param canvas
+ * @param mime
+ * @param quality
+ */
 function forensicBlobFromCanvas(canvas, mime, quality) {
   return new Promise(function (resolve) {
     canvas.toBlob(
@@ -36,6 +46,10 @@ function forensicBlobFromCanvas(canvas, mime, quality) {
   });
 }
 
+/**
+ *
+ * @param blob
+ */
 async function forensicLoadBlobImage(blob) {
   var file = new File([blob], "forensic-recompressed.jpg", {
     type: blob.type || "image/jpeg",
@@ -43,6 +57,11 @@ async function forensicLoadBlobImage(blob) {
   return await loadImage(file);
 }
 
+/**
+ *
+ * @param a
+ * @param b
+ */
 function forensicDiffImageData(a, b) {
   var w = a.width || a.w,
     h = a.height || a.h;
@@ -85,6 +104,11 @@ function forensicDiffImageData(a, b) {
   };
 }
 
+/**
+ *
+ * @param imgData
+ * @param noise
+ */
 function forensicNoiseHeatmap(imgData, noise) {
   var w = imgData.width || imgData.w,
     h = imgData.height || imgData.h;
@@ -112,6 +136,11 @@ function forensicNoiseHeatmap(imgData, noise) {
   return out;
 }
 
+/**
+ *
+ * @param canvas
+ * @param matches
+ */
 function forensicDrawMatches(canvas, matches) {
   var ctx = canvas.getContext("2d");
   ctx.lineWidth = 2;
@@ -133,6 +162,10 @@ function forensicDrawMatches(canvas, matches) {
 
 var FORENSIC_MAX_DIMENSION = 4000;
 
+/**
+ *
+ * @param file
+ */
 async function analyzeForensics(file) {
   var img = await loadImage(file);
   if (img.w > FORENSIC_MAX_DIMENSION || img.h > FORENSIC_MAX_DIMENSION) {
@@ -198,6 +231,11 @@ async function analyzeForensics(file) {
   };
 }
 
+/**
+ *
+ * @param level
+ * @param score
+ */
 function forensicRiskBadge(level, score) {
   var cls = level === "high" ? "danger" : level === "medium" ? "warn" : "ok";
   var color =
@@ -219,6 +257,12 @@ function forensicRiskBadge(level, score) {
   );
 }
 
+/**
+ *
+ * @param target
+ * @param imgData
+ * @param label
+ */
 function forensicRenderCanvas(target, imgData, label) {
   var wrap = document.getElementById(target);
   if (!wrap) return;
@@ -231,10 +275,14 @@ function forensicRenderCanvas(target, imgData, label) {
   canvas.style.maxWidth = "100%";
   canvas.style.border = "1px solid var(--border)";
   canvas.style.borderRadius = "8px";
-  wrap.appendChild(title);
-  wrap.appendChild(canvas);
+  wrap.append(title);
+  wrap.append(canvas);
 }
 
+/**
+ *
+ * @param result
+ */
 function renderForensicResult(result) {
   var output = document.getElementById("forensic-output");
   var dl = document.getElementById("forensic-download");
@@ -293,7 +341,7 @@ function renderForensicResult(result) {
   cmCanvas.style.maxWidth = "100%";
   cmCanvas.style.border = "1px solid var(--border)";
   cmCanvas.style.borderRadius = "8px";
-  cmWrap.appendChild(cmCanvas);
+  cmWrap.append(cmCanvas);
 
   var publicResult = JSON.parse(JSON.stringify(result));
   delete publicResult._visuals;
@@ -311,6 +359,9 @@ function renderForensicResult(result) {
     '.forensic.json" class="btn">Download JSON Report</a>';
 }
 
+/**
+ *
+ */
 async function handleForensicAnalyze() {
   var btn = document.getElementById("forensic-btn");
   var file = await getFile("forensic-file");
@@ -337,9 +388,9 @@ async function handleForensicAnalyze() {
   try {
     forensicLastResult = await analyzeForensics(file);
     renderForensicResult(forensicLastResult);
-  } catch (e) {
+  } catch (error) {
     output.innerHTML =
-      '<div class="result-error">Error: ' + escHtml(e.message) + "</div>";
+      '<div class="result-error">Error: ' + escHtml(error.message) + "</div>";
   } finally {
     btn.disabled = false;
     spinner("forensic-spinner", false);

@@ -1,5 +1,3 @@
-"use strict";
-
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
@@ -13,9 +11,7 @@ function makeTestImage(filePath, w, h) {
   const ctx = canvas.getContext("2d");
   for (let y = 0; y < (h || 96); y++) {
     for (let x = 0; x < (w || 96); x++) {
-      ctx.fillStyle = `rgb(${(x / (w || 96)) * 255},${(y / (h || 96)) * 255},${
-        128 + Math.sin((x + y) * 0.12) * 48
-      })`;
+      ctx.fillStyle = `rgb(${(x / (w || 96)) * 255},${(y / (h || 96)) * 255},${128 + Math.sin((x + y) * 0.12) * 48})`;
       ctx.fillRect(x, y, 1, 1);
     }
   }
@@ -132,10 +128,7 @@ describe("Forensic Core - detectCopyMove", () => {
       }
     const r = core.detectCopyMove(src);
     assert.ok(Array.isArray(r.matches));
-    assert.ok(
-      r.match_count > 0,
-      "Should detect at least one block-aligned copy-move pair",
-    );
+    assert.ok(r.match_count > 0, "Should detect at least one block-aligned copy-move pair");
     assert.ok(typeof r.suspicion === "number");
   });
 
@@ -150,11 +143,7 @@ describe("Forensic Core - detectCopyMove", () => {
 describe("Forensic Core - metadataSignals", () => {
   it("should analyze JPEG metadata and return signals", async () => {
     const jpeg = await jpegBytes();
-    const r = core.metadataSignals(
-      jpeg,
-      { width: 100, height: 100 },
-      "test.jpg",
-    );
+    const r = core.metadataSignals(jpeg, { width: 100, height: 100 }, "test.jpg");
     assert.ok(Array.isArray(r.signals));
     assert.ok(typeof r.suspicion === "number");
   });
@@ -165,14 +154,8 @@ describe("Forensic Core - metadataSignals", () => {
   });
 
   it("should flag JPEG extension with non-JPEG bytes", () => {
-    const r = core.metadataSignals(
-      new Uint8Array([137, 80, 78, 71]),
-      { width: 64, height: 64 },
-      "photo.jpg",
-    );
-    assert.ok(
-      r.signals.some((s) => s.includes("extension") && s.includes("JPEG")),
-    );
+    const r = core.metadataSignals(new Uint8Array([137, 80, 78, 71]), { width: 64, height: 64 }, "photo.jpg");
+    assert.ok(r.signals.some((s) => s.includes("extension") && s.includes("JPEG")));
   });
 });
 
@@ -262,9 +245,7 @@ describe("Forensic Analyzer - full pipeline", () => {
       assert.ok(Array.isArray(json.signals));
       assert.ok(json.ela && typeof json.ela.mean_difference === "number");
       assert.ok(json.noise && typeof json.noise.mean_residual === "number");
-      assert.ok(
-        json.copy_move && typeof json.copy_move.match_count === "number",
-      );
+      assert.ok(json.copy_move && typeof json.copy_move.match_count === "number");
       assert.ok(json.metadata && json.metadata.jpeg !== undefined);
     } finally {
       if (fs.existsSync(out)) fs.unlinkSync(out);

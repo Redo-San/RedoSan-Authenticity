@@ -2,6 +2,10 @@
 // ── Algorithm implementations (pure JS, no UI) ──
 
 // ── RGB ↔ YCbCr ──
+/**
+ *
+ * @param imgData
+ */
 function rgbToYcbcr(imgData) {
     const { data, w, h } = imgData;
     const Y = new Float64Array(w * h), Cb = new Float64Array(w * h), Cr = new Float64Array(w * h);
@@ -13,6 +17,14 @@ function rgbToYcbcr(imgData) {
     }
     return { Y, Cb, Cr, w, h };
 }
+/**
+ *
+ * @param Y
+ * @param Cb
+ * @param Cr
+ * @param w
+ * @param h
+ */
 function ycbcrToImageData(Y, Cb, Cr, w, h) {
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
@@ -30,6 +42,10 @@ function ycbcrToImageData(Y, Cb, Cr, w, h) {
 }
 
 // ── DCT 8×8 ──
+/**
+ *
+ * @param block
+ */
 function dct8x8(block) {
     const r = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]];
     for (let u = 0; u < 8; u++) {
@@ -44,6 +60,10 @@ function dct8x8(block) {
     }
     return r;
 }
+/**
+ *
+ * @param dct
+ */
 function idct8x8(dct) {
     const r = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]];
     for (let x = 0; x < 8; x++) {
@@ -62,6 +82,12 @@ function idct8x8(dct) {
 
 // ── Block helpers ──
 var MID = [[0,4],[1,3],[2,2],[3,1],[4,0],[0,5],[1,4],[2,3],[3,2],[4,1],[5,0]];
+/**
+ *
+ * @param w
+ * @param h
+ * @param bsize
+ */
 function blockIter(w, h, bsize) {
     const blocks = [];
     for (let y = 0; y < h - h % bsize; y += bsize)
@@ -69,6 +95,13 @@ function blockIter(w, h, bsize) {
             blocks.push([x, y]);
     return blocks;
 }
+/**
+ *
+ * @param arr
+ * @param w
+ * @param x
+ * @param y
+ */
 function getBlock8(arr, w, x, y) {
     const b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]];
     for (let dy = 0; dy < 8; dy++)
@@ -76,6 +109,14 @@ function getBlock8(arr, w, x, y) {
             b[dy][dx] = arr[(y+dy)*w + (x+dx)];
     return b;
 }
+/**
+ *
+ * @param arr
+ * @param w
+ * @param x
+ * @param y
+ * @param block
+ */
 function setBlock8(arr, w, x, y, block) {
     for (let dy = 0; dy < 8; dy++)
         for (let dx = 0; dx < 8; dx++)
@@ -83,6 +124,14 @@ function setBlock8(arr, w, x, y, block) {
 }
 
 // ── DCT embed/extract ──
+/**
+ *
+ * @param Y
+ * @param w
+ * @param h
+ * @param payloadBits
+ * @param strength
+ */
 function embedInDCT(Y, w, h, payloadBits, strength) {
     const blocks = blockIter(w, h, 8);
     let bidx = 0;
@@ -101,6 +150,13 @@ function embedInDCT(Y, w, h, payloadBits, strength) {
     }
     return Y;
 }
+/**
+ *
+ * @param Y
+ * @param w
+ * @param h
+ * @param numBits
+ */
 function extractFromDCT(Y, w, h, numBits) {
     const blocks = blockIter(w, h, 8);
     let result = '', bidx = 0;
@@ -116,14 +172,25 @@ function extractFromDCT(Y, w, h, numBits) {
     }
     return result;
 }
+/**
+ *
+ * @param w
+ * @param h
+ * @param bpb
+ */
 function maxDCTBits(w, h, bpb) {
     const cols = Math.floor(w / 8), rows = Math.floor(h / 8);
     return cols * rows * (bpb || 11);
 }
 
-var LSB_MAX_BITS = 100000;
+var LSB_MAX_BITS = 100_000;
 
 // ── Algorithm 1: Spatial LSB ──
+/**
+ *
+ * @param imgData
+ * @param payloadBits
+ */
 function wm1_embed(imgData, payloadBits) {
     const { data, w, h } = imgData;
     let idx = 0;
@@ -137,6 +204,10 @@ function wm1_embed(imgData, payloadBits) {
     }
     return imgData;
 }
+/**
+ *
+ * @param imgData
+ */
 function wm1_extract(imgData) {
     const { data, w, h } = imgData;
     let b = '';
@@ -147,22 +218,34 @@ function wm1_extract(imgData) {
             b += (data[i] & 1) + '' + (data[i+1] & 1) + '' + (data[i+2] & 1);
             if (b.length >= 32) {
                 const dlen = parseInt(b.substr(0, 32), 2);
-                if (dlen > 0 && dlen < w * h * 3 / 8 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
+                if (dlen > 0 && dlen < w * h * 3 / 8 && dlen < 100_000 && b.length >= 32 + dlen * 8) break;
             }
         }
         if (b.length >= 32) {
             const dlen = parseInt(b.substr(0, 32), 2);
-            if (dlen > 0 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
+            if (dlen > 0 && dlen < 100_000 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
 
 // ── Algorithm 3: Neural SS (seeded shuffle LSB) ──
+/**
+ *
+ * @param w
+ * @param h
+ * @param seed
+ */
 function wm3_order(w, h, seed) {
     const order = Array.from({length: w * h}, (_, i) => i);
     return seededShuffle(order, seed);
 }
+/**
+ *
+ * @param imgData
+ * @param payloadBits
+ * @param seed
+ */
 function wm3_embed(imgData, payloadBits, seed) {
     const { data, w, h } = imgData;
     const order = wm3_order(w, h, seed);
@@ -176,6 +259,11 @@ function wm3_embed(imgData, payloadBits, seed) {
     }
     return imgData;
 }
+/**
+ *
+ * @param imgData
+ * @param seed
+ */
 function wm3_extract(imgData, seed) {
     const { data, w, h } = imgData;
     const order = wm3_order(w, h, seed);
@@ -187,13 +275,18 @@ function wm3_extract(imgData, seed) {
         b += (data[i] & 1) + '' + (data[i+1] & 1) + '' + (data[i+2] & 1);
         if (b.length >= 32) {
             const dlen = parseInt(b.substr(0, 32), 2);
-            if (dlen > 0 && dlen < w * h * 3 / 8 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
+            if (dlen > 0 && dlen < w * h * 3 / 8 && dlen < 100_000 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
 
 // ── Algorithm 6: Multi-bit (2-bit LSB) ──
+/**
+ *
+ * @param imgData
+ * @param payloadBits
+ */
 function wm6_embed(imgData, payloadBits) {
     const { data, w, h } = imgData;
     let idx = 0;
@@ -216,6 +309,10 @@ function wm6_embed(imgData, payloadBits) {
     }
     return imgData;
 }
+/**
+ *
+ * @param imgData
+ */
 function wm6_extract(imgData) {
     const { data, w, h } = imgData;
     let b = '';
@@ -228,18 +325,24 @@ function wm6_extract(imgData) {
             b += ((data[i+2] >> 1) & 1) + '' + (data[i+2] & 1);
             if (b.length >= 32) {
                 const dlen = parseInt(b.substr(0, 32), 2);
-                if (dlen > 0 && dlen < w * h * 3 / 4 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
+                if (dlen > 0 && dlen < w * h * 3 / 4 && dlen < 100_000 && b.length >= 32 + dlen * 8) break;
             }
         }
         if (b.length >= 32) {
             const dlen = parseInt(b.substr(0, 32), 2);
-            if (dlen > 0 && dlen < 100000 && b.length >= 32 + dlen * 8) break;
+            if (dlen > 0 && dlen < 100_000 && b.length >= 32 + dlen * 8) break;
         }
     }
     return b;
 }
 
 // ── Algorithm 8: Fragile (SHA-256 hash embed) ──
+/**
+ *
+ * @param imgData
+ * @param secretData
+ * @param key
+ */
 async function wm8_embed(imgData, secretData, key) {
     const hash = await sha256Hex(secretData);
     const hashBytes = new TextEncoder().encode(hash);
@@ -254,6 +357,11 @@ async function wm8_embed(imgData, secretData, key) {
     const b = bits(payload);
     return wm1_embed(imgData, b);
 }
+/**
+ *
+ * @param imgData
+ * @param key
+ */
 function wm8_extract(imgData, key) {
     const { data, w, h } = imgData;
     const neededBits = (key && key.length) ? 528 : 512;

@@ -13,11 +13,20 @@
 })();
 // ── Certificate Utility Functions ──
 
+/**
+ *
+ * @param buf
+ * @param mime
+ */
 function makeCertDataURL(buf, mime) {
   var blob = new Blob([buf], { type: mime || "application/octet-stream" });
   return URL.createObjectURL(blob);
 }
 
+/**
+ *
+ * @param buf
+ */
 function bufToBase64(buf) {
   var bytes = new Uint8Array(buf);
   var binary = "";
@@ -26,6 +35,11 @@ function bufToBase64(buf) {
   return btoa(binary);
 }
 
+/**
+ *
+ * @param buf
+ * @param mime
+ */
 function bufToDataURL(buf, mime) {
   return (
     "data:" +
@@ -35,11 +49,24 @@ function bufToDataURL(buf, mime) {
   );
 }
 
+/**
+ *
+ * @param str
+ */
 function hasNonLatinChars(str) {
   return /[\u0100-\uFFFF]/.test(str);
 }
 
 // Render text with non-Latin chars (Arabic, etc.) as a canvas image for PDF
+/**
+ *
+ * @param doc
+ * @param text
+ * @param x
+ * @param y
+ * @param maxWidthMm
+ * @param fontSizePt
+ */
 function addTextSafe(doc, text, x, y, maxWidthMm, fontSizePt) {
   if (!hasNonLatinChars(text)) {
     doc.text(text, x, y);
@@ -74,6 +101,10 @@ function addTextSafe(doc, text, x, y, maxWidthMm, fontSizePt) {
   doc.addImage(url, "PNG", x, y, imgW, imgH);
 }
 
+/**
+ *
+ * @param dataUrl
+ */
 function loadImageDimensions(dataUrl) {
   return new Promise(function (resolve) {
     var img = new Image();
@@ -87,6 +118,10 @@ function loadImageDimensions(dataUrl) {
   });
 }
 
+/**
+ *
+ * @param buf
+ */
 async function getFileHashSha256(buf) {
   var hashBuf = await crypto.subtle.digest("SHA-256", buf);
   var arr = new Uint8Array(hashBuf);
@@ -97,6 +132,10 @@ async function getFileHashSha256(buf) {
     .join("");
 }
 
+/**
+ *
+ * @param data
+ */
 function buildQRVerificationJSON(data) {
   var qr = {
     v: 1,
@@ -133,6 +172,10 @@ function buildQRVerificationJSON(data) {
   return JSON.stringify(qr);
 }
 
+/**
+ *
+ * @param jsonStr
+ */
 function getDocHash(jsonStr) {
   var encoder = new TextEncoder();
   return crypto.subtle
@@ -147,6 +190,11 @@ function getDocHash(jsonStr) {
     });
 }
 
+/**
+ *
+ * @param text
+ * @param size
+ */
 function generateQRDataURL(text, size) {
   var canvas = document.createElement("canvas");
   new QRious({
@@ -159,6 +207,9 @@ function generateQRDataURL(text, size) {
   return canvas.toDataURL("image/png");
 }
 
+/**
+ *
+ */
 function makeUUID() {
   if (crypto.randomUUID) return crypto.randomUUID();
   // Fallback UUID v4 for older browsers
@@ -168,12 +219,20 @@ function makeUUID() {
   });
 }
 
+/**
+ *
+ * @param bytes
+ */
 function fmtSize(bytes) {
   if (bytes < 1024) return bytes + " B";
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / 1048576).toFixed(1) + " MB";
+  if (bytes < 1_048_576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1_048_576).toFixed(1) + " MB";
 }
 
+/**
+ *
+ * @param s
+ */
 function stripHtml(s) {
   if (!s) return "";
   do {
@@ -195,6 +254,10 @@ function stripHtml(s) {
     .trim();
 }
 
+/**
+ *
+ * @param s
+ */
 function escHtml(s) {
   if (s == null) return "";
   var d = document.createElement("div");

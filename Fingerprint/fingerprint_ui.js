@@ -1,136 +1,242 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function () {
+  if (
+    globalThis.window !== undefined &&
+    globalThis.location &&
+    globalThis.location.protocol !== "file:" &&
+    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
+      globalThis.location.href,
+    )
+  )
+    throw new Error(
+      "RedoSan Authenticity: This script is protected by GPL license.",
+    );
+})();
 // ── Fingerprint UI handlers + download exporters ──
 
+/**
+ *
+ * @param format
+ */
 async function downloadFingerprint(format) {
   closeDownloadModal();
-  var r = getResult('fpResult');
+  var r = getResult("fpResult");
   if (!r) return;
 
   var name = r.file_info.file_name;
 
-  if (format === 'pdf') {
-    var blob = await fpToPDF(r);
-    downloadBlobSimple(blob, name + '.fingerprint.pdf');
+  if (format === "pdf") {
+    let blob = await fpToPDF(r);
+    downloadBlobSimple(blob, name + ".fingerprint.pdf");
     return;
   }
-  if (format === 'doc') {
-    var blob = await fpToDOCX(r);
-    downloadBlobSimple(blob, name + '.fingerprint.docx');
+  if (format === "doc") {
+    let blob = await fpToDOCX(r);
+    downloadBlobSimple(blob, name + ".fingerprint.docx");
     return;
   }
 
   var content, ext, mime;
   switch (format) {
-    case 'json': content = JSON.stringify(r, null, 2); ext = 'json'; mime = 'application/json'; break;
-    case 'csv':  content = fpToCSV(r);  ext = 'csv';  mime = 'text/csv'; break;
-    case 'txt':  content = fpToTXT(r);  ext = 'txt';  mime = 'text/plain'; break;
-    case 'xml':  content = fpToXML(r);  ext = 'xml';  mime = 'application/xml'; break;
-    case 'html': content = fpToHTML(r); ext = 'html'; mime = 'text/html'; break;
+    case "json": {
+      content = JSON.stringify(r, null, 2);
+      ext = "json";
+      mime = "application/json";
+      break;
+    }
+    case "csv": {
+      content = fpToCSV(r);
+      ext = "csv";
+      mime = "text/csv";
+      break;
+    }
+    case "txt": {
+      content = fpToTXT(r);
+      ext = "txt";
+      mime = "text/plain";
+      break;
+    }
+    case "xml": {
+      content = fpToXML(r);
+      ext = "xml";
+      mime = "application/xml";
+      break;
+    }
+    case "html": {
+      content = fpToHTML(r);
+      ext = "html";
+      mime = "text/html";
+      break;
+    }
   }
   if (content == null) return;
-  var blob = new Blob([content], { type: mime });
-  downloadBlobSimple(blob, name + '.fingerprint.' + ext);
+  let blob = new Blob([content], { type: mime });
+  downloadBlobSimple(blob, name + ".fingerprint." + ext);
 }
 
 // ── Format converters ──
 
+/**
+ *
+ * @param r
+ */
 function fpToPDF(r) {
   var doc = new jspdf.jsPDF();
   var y = 20;
   doc.setFontSize(16);
   doc.setTextColor(108, 92, 231);
-  doc.text('RedoSan Authenticity - Fingerprint', 14, y);
+  doc.text("RedoSan Authenticity - Fingerprint", 14, y);
   y += 10;
   doc.setFontSize(10);
   doc.setTextColor(50, 50, 50);
-  doc.text('File: ' + r.file_info.file_name, 14, y); y += 6;
-  doc.text('Size: ' + r.file_info.file_size_bytes + ' bytes', 14, y); y += 6;
-  if (r.file_info.width) { doc.text('Dimensions: ' + r.file_info.width + ' x ' + r.file_info.height, 14, y); y += 6; }
-  if (r.file_info.format) { doc.text('Format: ' + r.file_info.format, 14, y); y += 6; }
+  doc.text("File: " + r.file_info.file_name, 14, y);
+  y += 6;
+  doc.text("Size: " + r.file_info.file_size_bytes + " bytes", 14, y);
+  y += 6;
+  if (r.file_info.width) {
+    doc.text(
+      "Dimensions: " + r.file_info.width + " x " + r.file_info.height,
+      14,
+      y,
+    );
+    y += 6;
+  }
+  if (r.file_info.format) {
+    doc.text("Format: " + r.file_info.format, 14, y);
+    y += 6;
+  }
   y += 4;
 
   var families = [
-    { label: 'SHA-1', keys: ['SHA-1'] },
-    { label: 'SHA-2', keys: ['SHA-224','SHA-256','SHA-384','SHA-512'] },
-    { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
-    { label: 'MD', keys: ['MD2','MD4','MD5'] },
-    { label: 'BLAKE', keys: ['BLAKE2b','BLAKE2s','BLAKE3'] },
-    { label: 'Other', keys: ['RIPEMD-160','Whirlpool'] },
+    { label: "SHA-1", keys: ["SHA-1"] },
+    { label: "SHA-2", keys: ["SHA-224", "SHA-256", "SHA-384", "SHA-512"] },
+    {
+      label: "SHA-3",
+      keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"],
+    },
+    { label: "MD", keys: ["MD2", "MD4", "MD5"] },
+    { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
+    { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
   ];
 
-  for (var fi = 0; fi < families.length; fi++) {
-    var f = families[fi];
-    var hasAny = f.keys.some(function(k) { return r.hashes[k]; });
+  for (var f of families) {
+    var hasAny = f.keys.some(function (k) {
+      return r.hashes[k];
+    });
     if (!hasAny) continue;
-    if (y > 250) { doc.addPage(); y = 20; }
+    if (y > 250) {
+      doc.addPage();
+      y = 20;
+    }
     doc.setFontSize(12);
     doc.setTextColor(108, 92, 231);
-    doc.text(f.label, 14, y); y += 6;
+    doc.text(f.label, 14, y);
+    y += 6;
     doc.setFontSize(9);
     doc.setTextColor(50, 50, 50);
     for (var ki = 0; ki < f.keys.length; ki++) {
       var v = r.hashes[f.keys[ki]];
       if (!v) continue;
-      if (y > 270) { doc.addPage(); y = 20; }
-      doc.text(f.keys[ki] + ': ' + v, 18, y); y += 5;
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(f.keys[ki] + ": " + v, 18, y);
+      y += 5;
     }
     y += 2;
   }
 
   if (r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0) {
-    if (y > 240) { doc.addPage(); y = 20; }
+    if (y > 240) {
+      doc.addPage();
+      y = 20;
+    }
     doc.setFontSize(12);
     doc.setTextColor(108, 92, 231);
-    doc.text('Perceptual (image hashes)', 14, y); y += 6;
+    doc.text("Perceptual (image hashes)", 14, y);
+    y += 6;
     doc.setFontSize(9);
     doc.setTextColor(50, 50, 50);
     for (var pk in r.perceptual_hashes) {
-      if (r.perceptual_hashes[pk]) { doc.text(pk + ': ' + r.perceptual_hashes[pk], 18, y); y += 5; }
+      if (r.perceptual_hashes[pk]) {
+        doc.text(pk + ": " + r.perceptual_hashes[pk], 18, y);
+        y += 5;
+      }
     }
   }
 
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('Generated by RedoSan Authenticity', 14, 285);
-  return doc.output('blob');
+  doc.text("Generated by RedoSan Authenticity", 14, 285);
+  return doc.output("blob");
 }
 
+/**
+ *
+ * @param r
+ */
 function fpToDOCX(r) {
-  var docx = window.docx;
+  var docx = globalThis.docx;
   var children = [];
 
-  children.push(new docx.Paragraph({
-    children: [new docx.TextRun({ text: 'RedoSan Authenticity - Fingerprint', bold: true, size: 28, color: '6C5CE7' })],
-    spacing: { after: 200 }
-  }));
+  children.push(
+    new docx.Paragraph({
+      children: [
+        new docx.TextRun({
+          text: "RedoSan Authenticity - Fingerprint",
+          bold: true,
+          size: 28,
+          color: "6C5CE7",
+        }),
+      ],
+      spacing: { after: 200 },
+    }),
+  );
 
   var infoRows = [
-    ['File', r.file_info.file_name],
-    ['Size', r.file_info.file_size_bytes + ' bytes'],
+    ["File", r.file_info.file_name],
+    ["Size", r.file_info.file_size_bytes + " bytes"],
   ];
-  if (r.file_info.width) infoRows.push(['Dimensions', r.file_info.width + ' x ' + r.file_info.height]);
-  if (r.file_info.format) infoRows.push(['Format', r.file_info.format]);
+  if (r.file_info.width)
+    infoRows.push([
+      "Dimensions",
+      r.file_info.width + " x " + r.file_info.height,
+    ]);
+  if (r.file_info.format) infoRows.push(["Format", r.file_info.format]);
 
   children.push(createDocxTable(docx, infoRows));
   children.push(new docx.Paragraph({ spacing: { before: 200, after: 100 } }));
 
   var families = [
-    { label: 'SHA-1', keys: ['SHA-1'] },
-    { label: 'SHA-2', keys: ['SHA-224','SHA-256','SHA-384','SHA-512'] },
-    { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
-    { label: 'MD', keys: ['MD2','MD4','MD5'] },
-    { label: 'BLAKE', keys: ['BLAKE2b','BLAKE2s','BLAKE3'] },
-    { label: 'Other', keys: ['RIPEMD-160','Whirlpool'] },
+    { label: "SHA-1", keys: ["SHA-1"] },
+    { label: "SHA-2", keys: ["SHA-224", "SHA-256", "SHA-384", "SHA-512"] },
+    {
+      label: "SHA-3",
+      keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"],
+    },
+    { label: "MD", keys: ["MD2", "MD4", "MD5"] },
+    { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
+    { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
   ];
 
-  for (var fi = 0; fi < families.length; fi++) {
-    var f = families[fi];
-    var hasAny = f.keys.some(function(k) { return r.hashes[k]; });
+  for (var f of families) {
+    var hasAny = f.keys.some(function (k) {
+      return r.hashes[k];
+    });
     if (!hasAny) continue;
-    children.push(new docx.Paragraph({
-      children: [new docx.TextRun({ text: f.label, bold: true, size: 22, color: '6C5CE7' })],
-      spacing: { before: 200, after: 100 }
-    }));
+    children.push(
+      new docx.Paragraph({
+        children: [
+          new docx.TextRun({
+            text: f.label,
+            bold: true,
+            size: 22,
+            color: "6C5CE7",
+          }),
+        ],
+        spacing: { before: 200, after: 100 },
+      }),
+    );
     var hashRows = [];
     for (var ki = 0; ki < f.keys.length; ki++) {
       var v = r.hashes[f.keys[ki]];
@@ -140,10 +246,19 @@ function fpToDOCX(r) {
   }
 
   if (r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0) {
-    children.push(new docx.Paragraph({
-      children: [new docx.TextRun({ text: 'Perceptual (image hashes)', bold: true, size: 22, color: '6C5CE7' })],
-      spacing: { before: 200, after: 100 }
-    }));
+    children.push(
+      new docx.Paragraph({
+        children: [
+          new docx.TextRun({
+            text: "Perceptual (image hashes)",
+            bold: true,
+            size: 22,
+            color: "6C5CE7",
+          }),
+        ],
+        spacing: { before: 200, after: 100 },
+      }),
+    );
     var pRows = [];
     for (var pk in r.perceptual_hashes) {
       if (r.perceptual_hashes[pk]) pRows.push([pk, r.perceptual_hashes[pk]]);
@@ -155,207 +270,362 @@ function fpToDOCX(r) {
   return docx.Packer.toBlob(d);
 }
 
+/**
+ *
+ * @param docx
+ * @param rows
+ */
 function createDocxTable(docx, rows) {
-  if (!rows || !rows.length) return null;
+  if (!rows || rows.length === 0) return null;
   return new docx.Table({
-    rows: rows.map(function(row, i) {
+    rows: rows.map(function (row, i) {
       return new docx.TableRow({
-        children: row.map(function(cell) {
+        children: row.map(function (cell) {
           return new docx.TableCell({
-            children: [new docx.Paragraph({
-              children: [new docx.TextRun({ text: String(cell), size: 18, font: 'Courier New' })],
-              spacing: { before: 40, after: 40 }
-            })]
+            children: [
+              new docx.Paragraph({
+                children: [
+                  new docx.TextRun({
+                    text: String(cell),
+                    size: 18,
+                    font: "Courier New",
+                  }),
+                ],
+                spacing: { before: 40, after: 40 },
+              }),
+            ],
           });
-        })
+        }),
       });
     }),
     width: { size: 100, type: docx.WidthType.PERCENTAGE },
   });
 }
 
+/**
+ *
+ * @param r
+ */
 function fpToCSV(r) {
-  var rows = [['Key', 'Value']];
-  rows.push(['File', r.file_info.file_name]);
-  rows.push(['Size (bytes)', r.file_info.file_size_bytes]);
-  if (r.file_info.width) rows.push(['Width', r.file_info.width]);
-  if (r.file_info.height) rows.push(['Height', r.file_info.height]);
-  if (r.file_info.format) rows.push(['Format', r.file_info.format]);
+  var rows = [
+    ["Key", "Value"],
+    ["File", r.file_info.file_name],
+    ["Size (bytes)", r.file_info.file_size_bytes],
+  ];
+
+  if (r.file_info.width) rows.push(["Width", r.file_info.width]);
+  if (r.file_info.height) rows.push(["Height", r.file_info.height]);
+  if (r.file_info.format) rows.push(["Format", r.file_info.format]);
   for (var k in r.hashes) {
     if (r.hashes[k]) rows.push([k, r.hashes[k]]);
   }
   if (r.perceptual_hashes) {
-    for (var k in r.perceptual_hashes) {
-      if (r.perceptual_hashes[k]) rows.push(['Perceptual_' + k, r.perceptual_hashes[k]]);
+    for (let k in r.perceptual_hashes) {
+      if (r.perceptual_hashes[k])
+        rows.push(["Perceptual_" + k, r.perceptual_hashes[k]]);
     }
   }
-  return rows.map(function(row) {
-    return row.map(function(cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(',');
-  }).join('\n');
+  return rows
+    .map(function (row) {
+      return row
+        .map(function (cell) {
+          return '"' + String(cell).replaceAll('"', '""') + '"';
+        })
+        .join(",");
+    })
+    .join("\n");
 }
 
+/**
+ *
+ * @param r
+ */
 function fpToTXT(r) {
-  var lines = [];
-  lines.push('=== RedoSan Authenticity - File Fingerprint ===');
-  lines.push('');
-  lines.push('File: ' + r.file_info.file_name);
-  lines.push('Size: ' + r.file_info.file_size_bytes + ' bytes');
-  if (r.file_info.width) lines.push('Dimensions: ' + r.file_info.width + ' x ' + r.file_info.height);
-  if (r.file_info.format) lines.push('Format: ' + r.file_info.format);
-  lines.push('');
-  lines.push('--- Hashes ---');
+  var lines = [
+    "=== RedoSan Authenticity - File Fingerprint ===",
+    "",
+    "File: " + r.file_info.file_name,
+    "Size: " + r.file_info.file_size_bytes + " bytes",
+  ];
+
+  if (r.file_info.width)
+    lines.push("Dimensions: " + r.file_info.width + " x " + r.file_info.height);
+  if (r.file_info.format) lines.push("Format: " + r.file_info.format);
+  lines.push("", "--- Hashes ---");
   for (var k in r.hashes) {
-    if (r.hashes[k]) lines.push(k + ': ' + r.hashes[k]);
+    if (r.hashes[k]) lines.push(k + ": " + r.hashes[k]);
   }
   if (r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0) {
-    lines.push('');
-    lines.push('--- Perceptual Hashes ---');
-    for (var k in r.perceptual_hashes) {
-      if (r.perceptual_hashes[k]) lines.push(k + ': ' + r.perceptual_hashes[k]);
+    lines.push("", "--- Perceptual Hashes ---");
+    for (let k in r.perceptual_hashes) {
+      if (r.perceptual_hashes[k]) lines.push(k + ": " + r.perceptual_hashes[k]);
     }
   }
-  lines.push('');
-  lines.push('Generated by RedoSan Authenticity');
-  return lines.join('\n');
+  lines.push("", "Generated by RedoSan Authenticity");
+  return lines.join("\n");
 }
 
+/**
+ *
+ * @param r
+ */
 function fpToXML(r) {
   var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<fingerprint>\n';
-  xml += '  <file_info>\n';
-  xml += '    <file_name>' + escXml(r.file_info.file_name) + '</file_name>\n';
-  xml += '    <file_size_bytes>' + r.file_info.file_size_bytes + '</file_size_bytes>\n';
-  if (r.file_info.width) xml += '    <width>' + r.file_info.width + '</width>\n';
-  if (r.file_info.height) xml += '    <height>' + r.file_info.height + '</height>\n';
-  if (r.file_info.format) xml += '    <format>' + escXml(r.file_info.format) + '</format>\n';
-  xml += '  </file_info>\n';
-  xml += '  <hashes>\n';
+  xml += "  <file_info>\n";
+  xml += "    <file_name>" + escXml(r.file_info.file_name) + "</file_name>\n";
+  xml +=
+    "    <file_size_bytes>" +
+    r.file_info.file_size_bytes +
+    "</file_size_bytes>\n";
+  if (r.file_info.width)
+    xml += "    <width>" + r.file_info.width + "</width>\n";
+  if (r.file_info.height)
+    xml += "    <height>" + r.file_info.height + "</height>\n";
+  if (r.file_info.format)
+    xml += "    <format>" + escXml(r.file_info.format) + "</format>\n";
+  xml += "  </file_info>\n";
+  xml += "  <hashes>\n";
   for (var k in r.hashes) {
-    if (r.hashes[k]) xml += '    <' + k + '>' + r.hashes[k] + '</' + k + '>\n';
+    if (r.hashes[k]) xml += "    <" + k + ">" + r.hashes[k] + "</" + k + ">\n";
   }
-  xml += '  </hashes>\n';
+  xml += "  </hashes>\n";
   if (r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0) {
-    xml += '  <perceptual_hashes>\n';
-    for (var k in r.perceptual_hashes) {
-      if (r.perceptual_hashes[k]) xml += '    <' + k + '>' + r.perceptual_hashes[k] + '</' + k + '>\n';
+    xml += "  <perceptual_hashes>\n";
+    for (let k in r.perceptual_hashes) {
+      if (r.perceptual_hashes[k])
+        xml += "    <" + k + ">" + r.perceptual_hashes[k] + "</" + k + ">\n";
     }
-    xml += '  </perceptual_hashes>\n';
+    xml += "  </perceptual_hashes>\n";
   }
-  xml += '</fingerprint>';
+  xml += "</fingerprint>";
   return xml;
 }
 
+/**
+ *
+ * @param r
+ */
 function fpToHTML(r) {
-  var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Fingerprint - ' + escHtml(r.file_info.file_name) + '</title>';
-  h += '<style>body{font-family:-apple-system,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;color:#222}';
-  h += 'h1{font-size:1.5rem;border-bottom:2px solid #6C5CE7;padding-bottom:8px}';
-  h += 'table{width:100%;border-collapse:collapse;margin:12px 0}';
-  h += 'td,th{padding:6px 12px;border:1px solid #ddd;text-align:left;font-size:0.85rem}';
-  h += 'td:first-child{font-weight:600;width:160px;background:#f5f5f5}';
-  h += 'code{font-size:0.75rem;word-break:break-all}';
-  h += '.section{margin-top:20px;font-weight:700;font-size:0.9rem;color:#6C5CE7}';
-  h += '.footer{margin-top:30px;font-size:0.75rem;color:#888;border-top:1px solid #ddd;padding-top:8px}</style></head><body>';
-  h += '<h1>RedoSan Authenticity - File Fingerprint</h1>';
-  h += '<table><tr><td>File</td><td>' + escHtml(r.file_info.file_name) + '</td></tr>';
-  h += '<tr><td>Size</td><td>' + r.file_info.file_size_bytes + ' bytes</td></tr>';
-  if (r.file_info.width) h += '<tr><td>Dimensions</td><td>' + r.file_info.width + ' x ' + r.file_info.height + '</td></tr>';
-  if (r.file_info.format) h += '<tr><td>Format</td><td>' + escHtml(r.file_info.format) + '</td></tr>';
-  h += '</table>';
+  var h =
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Fingerprint - ' +
+    escHtml(r.file_info.file_name) +
+    "</title>";
+  h +=
+    "<style>body{font-family:-apple-system,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;color:#222}";
+  h +=
+    "h1{font-size:1.5rem;border-bottom:2px solid #6C5CE7;padding-bottom:8px}";
+  h += "table{width:100%;border-collapse:collapse;margin:12px 0}";
+  h +=
+    "td,th{padding:6px 12px;border:1px solid #ddd;text-align:left;font-size:0.85rem}";
+  h += "td:first-child{font-weight:600;width:160px;background:#f5f5f5}";
+  h += "code{font-size:0.75rem;word-break:break-all}";
+  h +=
+    ".section{margin-top:20px;font-weight:700;font-size:0.9rem;color:#6C5CE7}";
+  h +=
+    ".footer{margin-top:30px;font-size:0.75rem;color:#888;border-top:1px solid #ddd;padding-top:8px}</style></head><body>";
+  h += "<h1>RedoSan Authenticity - File Fingerprint</h1>";
+  h +=
+    "<table><tr><td>File</td><td>" +
+    escHtml(r.file_info.file_name) +
+    "</td></tr>";
+  h +=
+    "<tr><td>Size</td><td>" + r.file_info.file_size_bytes + " bytes</td></tr>";
+  if (r.file_info.width)
+    h +=
+      "<tr><td>Dimensions</td><td>" +
+      r.file_info.width +
+      " x " +
+      r.file_info.height +
+      "</td></tr>";
+  if (r.file_info.format)
+    h += "<tr><td>Format</td><td>" + escHtml(r.file_info.format) + "</td></tr>";
+  h += "</table>";
   var families = [
-    { label: 'SHA-1', keys: ['SHA-1'] },
-    { label: 'SHA-2', keys: ['SHA-224','SHA-256','SHA-384','SHA-512'] },
-    { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
-    { label: 'MD', keys: ['MD2','MD4','MD5'] },
-    { label: 'BLAKE', keys: ['BLAKE2b','BLAKE2s','BLAKE3'] },
-    { label: 'Other', keys: ['RIPEMD-160','Whirlpool'] },
+    { label: "SHA-1", keys: ["SHA-1"] },
+    { label: "SHA-2", keys: ["SHA-224", "SHA-256", "SHA-384", "SHA-512"] },
+    {
+      label: "SHA-3",
+      keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"],
+    },
+    { label: "MD", keys: ["MD2", "MD4", "MD5"] },
+    { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
+    { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
   ];
-  for (var fi = 0; fi < families.length; fi++) {
-    var f = families[fi];
-    var hasAny = f.keys.some(function(k) { return r.hashes[k]; });
+  for (var f of families) {
+    var hasAny = f.keys.some(function (k) {
+      return r.hashes[k];
+    });
     if (!hasAny) continue;
-    h += '<div class="section">' + f.label + '</div><table>';
+    h += '<div class="section">' + f.label + "</div><table>";
     for (var ki = 0; ki < f.keys.length; ki++) {
       var v = r.hashes[f.keys[ki]];
-      if (v) h += '<tr><td>' + f.keys[ki] + '</td><td><code>' + v + '</code></td></tr>';
+      if (v)
+        h +=
+          "<tr><td>" + f.keys[ki] + "</td><td><code>" + v + "</code></td></tr>";
     }
-    h += '</table>';
+    h += "</table>";
   }
   if (r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0) {
     h += '<div class="section">Perceptual (image hashes)</div><table>';
     for (var pk in r.perceptual_hashes) {
-      if (r.perceptual_hashes[pk]) h += '<tr><td>' + pk + '</td><td><code>' + r.perceptual_hashes[pk] + '</code></td></tr>';
+      if (r.perceptual_hashes[pk])
+        h +=
+          "<tr><td>" +
+          pk +
+          "</td><td><code>" +
+          r.perceptual_hashes[pk] +
+          "</code></td></tr>";
     }
-    h += '</table>';
+    h += "</table>";
   }
-  h += '<div class="footer">Generated by RedoSan Authenticity</div></body></html>';
+  h +=
+    '<div class="footer">Generated by RedoSan Authenticity</div></body></html>';
   return h;
 }
 
+/**
+ *
+ * @param s
+ */
 function escXml(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
 }
 
 // ── Fingerprint tab handler ──
+/**
+ *
+ */
 async function handleFingerprint() {
-  const btn = document.getElementById('fp-btn');
-  const resultDiv = document.getElementById('fp-result');
-  const output = document.getElementById('fp-output');
-  const dl = document.getElementById('fp-download');
+  const btn = document.querySelector("#fp-btn");
+  const resultDiv = document.querySelector("#fp-result");
+  const output = document.querySelector("#fp-output");
+  const dl = document.querySelector("#fp-download");
 
-  const file = await getFile('fp-file');
-  if (!file) { setText('fp-output', __('shared.select_file') || 'Please select a file'); resultDiv.style.display = 'block'; return; }
+  const file = await getFile("fp-file");
+  if (!file) {
+    setText("fp-output", __("shared.select_file") || "Please select a file");
+    resultDiv.style.display = "block";
+    return;
+  }
 
-  btn.disabled = true; spinner('fp-spinner', true);
-  resultDiv.style.display = 'none'; dl.innerHTML = '';
-  setText('fp-output', __('shared.processing', 'Processing...'));
+  btn.disabled = true;
+  spinner("fp-spinner", true);
+  resultDiv.style.display = "none";
+  dl.innerHTML = "";
+  setText("fp-output", __("shared.processing", "Processing..."));
 
   try {
     const result = await fingerprintFile(file);
-    setResult('fpResult', result);
+    setResult("fpResult", result);
 
     let html = '<table class="meta-table">';
-    html += '<tr><td>' + __('fp.label_file', 'File') + '</td><td>' + escHtml(result.file_info.file_name) + '</td></tr>';
-    html += '<tr><td>' + __('fp.label_size', 'Size') + '</td><td>' + (result.file_info.file_size_bytes / 1024).toFixed(1) + ' KB</td></tr>';
+    html +=
+      "<tr><td>" +
+      __("fp.label_file", "File") +
+      "</td><td>" +
+      escHtml(result.file_info.file_name) +
+      "</td></tr>";
+    html +=
+      "<tr><td>" +
+      __("fp.label_size", "Size") +
+      "</td><td>" +
+      (result.file_info.file_size_bytes / 1024).toFixed(1) +
+      " KB</td></tr>";
     if (result.file_info.width) {
-      html += '<tr><td>' + __('fp.label_dimensions', 'Dimensions') + '</td><td>' + result.file_info.width + ' x ' + result.file_info.height + '</td></tr>';
-      html += '<tr><td>' + __('fp.label_format', 'Format') + '</td><td>' + escHtml(result.file_info.format) + '</td></tr>';
+      html +=
+        "<tr><td>" +
+        __("fp.label_dimensions", "Dimensions") +
+        "</td><td>" +
+        result.file_info.width +
+        " x " +
+        result.file_info.height +
+        "</td></tr>";
+      html +=
+        "<tr><td>" +
+        __("fp.label_format", "Format") +
+        "</td><td>" +
+        escHtml(result.file_info.format) +
+        "</td></tr>";
     }
-    html += '</table>';
+    html += "</table>";
 
+    var brokenWarning =
+      ' <span style="font-weight:400;font-size:0.7rem;opacity:0.65">(' +
+      (__("fp.broken", "legacy — superseded by SHA-2 and SHA-3") || "legacy") +
+      ")</span>";
     const familyOrder = [
-      { label: 'SHA-1', keys: ['SHA-1'] },
-      { label: 'SHA-2', keys: ['SHA-224','SHA-256','SHA-384','SHA-512'] },
-      { label: 'SHA-3', keys: ['SHA-3_224','SHA-3_256','SHA-3_384','SHA-3_512'] },
-      { label: 'MD', keys: ['MD2','MD4','MD5'] },
-      { label: 'BLAKE', keys: ['BLAKE2b','BLAKE2s','BLAKE3'] },
-      { label: __('fp.other_label', 'Other'), keys: ['RIPEMD-160','Whirlpool'] },
+      { label: "SHA-1" + brokenWarning, keys: ["SHA-1"] },
+      { label: "SHA-2", keys: ["SHA-224", "SHA-256", "SHA-384", "SHA-512"] },
+      {
+        label: "SHA-3",
+        keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"],
+      },
+      { label: "MD" + brokenWarning, keys: ["MD2", "MD4", "MD5"] },
+      { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
+      {
+        label: __("fp.other_label", "Other"),
+        keys: ["RIPEMD-160", "Whirlpool"],
+      },
     ];
     for (const family of familyOrder) {
-      const hasAny = family.keys.some(k => result.hashes[k]);
+      const hasAny = family.keys.some((k) => result.hashes[k]);
       if (!hasAny) continue;
-      html += '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">' + family.label + '</div>';
+      html +=
+        '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">' +
+        family.label +
+        "</div>";
       html += '<table class="meta-table">';
       for (const key of family.keys) {
         const v = result.hashes[key];
-        if (v) html += '<tr><td style="width:100px">' + escHtml(key) + '</td><td><code style="font-size:0.65rem">' + escHtml(v) + '</code></td></tr>';
+        if (v)
+          html +=
+            '<tr><td style="width:100px">' +
+            escHtml(key) +
+            '</td><td><code style="font-size:0.65rem">' +
+            escHtml(v) +
+            "</code></td></tr>";
       }
-      html += '</table>';
+      html += "</table>";
     }
 
-    if (result.perceptual_hashes && Object.keys(result.perceptual_hashes).length > 0) {
-      html += '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">' + __('fp.perceptual_label', 'Perceptual (image hashes)') + '</div>';
+    if (
+      result.perceptual_hashes &&
+      Object.keys(result.perceptual_hashes).length > 0
+    ) {
+      html +=
+        '<div style="margin-top:12px;font-weight:700;font-size:0.85rem">' +
+        __("fp.perceptual_label", "Perceptual (image hashes)") +
+        "</div>";
       html += '<table class="meta-table">';
       for (const [k, v] of Object.entries(result.perceptual_hashes)) {
-        html += '<tr><td style="width:100px">' + escHtml(k) + '</td><td><code style="font-size:0.65rem">' + escHtml(v) + '</code></td></tr>';
+        html +=
+          '<tr><td style="width:100px">' +
+          escHtml(k) +
+          '</td><td><code style="font-size:0.65rem">' +
+          escHtml(v) +
+          "</code></td></tr>";
       }
-      html += '</table>';
+      html += "</table>";
     }
 
     output.innerHTML = html;
 
     setDownloadHandler(downloadFingerprint);
-    document.getElementById('dl-modal-title').textContent = __('dl.title') || 'Download Fingerprint';
-    dl.innerHTML = '<button onclick="showDownloadModal()" class="btn">' + __('fp.results_btn', 'Download Results') + '</button>';
-  } catch (e) { setText('fp-output', __('shared.error_prefix', 'Error: ') + e.message); }
-  resultDiv.style.display = 'block';
-  btn.disabled = false; spinner('fp-spinner', false);
+    document.querySelector("#dl-modal-title").textContent =
+      __("dl.title") || "Download Fingerprint";
+    dl.innerHTML =
+      '<button onclick="showDownloadModal()" class="btn">' +
+      __("fp.results_btn", "Download Results") +
+      "</button>";
+  } catch (error) {
+    setText("fp-output", __("shared.error_prefix", "Error: ") + error.message);
+  }
+  resultDiv.style.display = "block";
+  btn.disabled = false;
+  spinner("fp-spinner", false);
 }

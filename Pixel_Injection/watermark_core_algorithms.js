@@ -99,18 +99,24 @@ WatermarkCore.prototype.imagewmark = function(imageData, message, password = nul
     
     // Use appropriate algorithm based on options
     switch (algorithm.toLowerCase()) {
-        case 'dct':
+        case 'dct': {
             return this.adaptiveDCT(imageData, message, strength, adaptiveStrength);
-        case 'dwt':
+        }
+        case 'dwt': {
             return this.dwt(imageData, message, 3, 'haar');
-        case 'hybrid':
+        }
+        case 'hybrid': {
             return this.hybridDCTDWT(imageData, message, {strength, ratio: 0.6});
-        case 'vine':
+        }
+        case 'vine': {
             return this.vine(imageData, message);
-        case 'pixel_seal':
+        }
+        case 'pixel_seal': {
             return this.pixelSeal(imageData, message, strength);
-        default:
+        }
+        default: {
             return this.adaptiveDCT(imageData, message, strength, adaptiveStrength);
+        }
     }
 };
 
@@ -119,14 +125,18 @@ WatermarkCore.prototype.metaSeal = function(imageData, message, password = null,
     const mediaType = options.mediaType || 'image';
     // Adapt watermarking based on media type
     switch (mediaType.toLowerCase()) {
-        case 'image':
+        case 'image': {
             return this.adaptiveDCT(imageData, message, 0.1, true);
-        case 'video':
+        }
+        case 'video': {
             return this.videoWatermark(imageData, message);
-        case 'audio':
+        }
+        case 'audio': {
             return this.audioWatermark(imageData, message);
-        default:
+        }
+        default: {
             return this.adaptiveDCT(imageData, message, null, {strength: 0.1, adaptiveStrength: true});
+        }
     }
 };
 
@@ -256,15 +266,15 @@ WatermarkCore.prototype.calculateSeed = function(message) {
     for (let i = 0; i < message.length; i++) {
         seed += message.charCodeAt(i) * (i + 1);
     }
-    return seed % 1000000;
+    return seed % 1_000_000;
 };
 
 // Seeded random number generator
 WatermarkCore.prototype.seededRandom = function(seed) {
     let current = seed;
     return function() {
-        current = (current * 9301 + 49297) % 233280;
-        return current / 233280;
+        current = (current * 9301 + 49_297) % 233_280;
+        return current / 233_280;
     };
 };
 
@@ -489,21 +499,17 @@ WatermarkCore.prototype.calculateFrequencyFeatures = function(imageData) {
 // Classify watermark
 WatermarkCore.prototype.classifyWatermark = function(features) {
     // Simple classification based on features
-    if (features.histogram.entropy > 7) {
-        return {
+    return features.histogram.entropy > 7 ? {
             detected: true,
             confidence: 0.85,
             algorithm: 'dct',
             robustness: 0.8
-        };
-    } else {
-        return {
+        } : {
             detected: false,
             confidence: 0.3,
             algorithm: 'none',
-            robustness: 0.0
+            robustness: 0
         };
-    }
 };
 
 // Test compression robustness
@@ -659,7 +665,7 @@ WatermarkCore.prototype.extractMessage = function(imageData) {
 
 // Calculate message similarity
 WatermarkCore.prototype.calculateMessageSimilarity = function(original, extracted) {
-    if (original === extracted) return 1.0;
+    if (original === extracted) return 1;
     
     let matches = 0;
     const minLength = Math.min(original.length, extracted.length);
@@ -678,21 +684,26 @@ WatermarkCore.prototype.generateRobustnessRecommendations = function(tests) {
     tests.forEach(test => {
         if (!test.passed) {
             switch (test.type) {
-                case 'compression':
+                case 'compression': {
                     recommendations.push('Increase redundancy for better compression resistance');
                     break;
-                case 'cropping':
+                }
+                case 'cropping': {
                     recommendations.push('Use spatial redundancy for cropping resistance');
                     break;
-                case 'rotation':
+                }
+                case 'rotation': {
                     recommendations.push('Consider rotation-invariant algorithms');
                     break;
-                case 'scaling':
+                }
+                case 'scaling': {
                     recommendations.push('Use multi-resolution embedding');
                     break;
-                case 'filtering':
+                }
+                case 'filtering': {
                     recommendations.push('Increase embedding strength in smooth areas');
                     break;
+                }
             }
         }
     });
@@ -733,7 +744,7 @@ WatermarkCore.prototype.calculateSSIM = function(original, watermarked) {
 WatermarkCore.prototype.calculateLPIPS = function(original, watermarked) {
     // Simplified LPIPS calculation (would normally require deep learning model)
     const mse = this.calculateMSE(original, watermarked);
-    return Math.min(1.0, mse / 1000);
+    return Math.min(1, mse / 1000);
 };
 
 WatermarkCore.prototype.calculateBER = function(original, watermarked) {
@@ -850,10 +861,10 @@ WatermarkCore.prototype.calculatePerceptualMask = function(data, width, height) 
 // Generate PN sequence
 WatermarkCore.prototype.generatePNSequence = function(length) {
     const sequence = [];
-    let seed = 12345;
+    let seed = 12_345;
     
     for (let i = 0; i < length; i++) {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        seed = (seed * 1_103_515_245 + 12_345) & 0x7f_ff_ff_ff;
         sequence.push(seed % 2 === 0 ? 1 : -1);
     }
     
@@ -940,7 +951,7 @@ WatermarkCore.prototype.calculateContrast = function(data) {
 // Generate diffusion pattern
 WatermarkCore.prototype.generateDiffusionPattern = function(width, height, password = null) {
     const pattern = new Float32Array(width * height);
-    const seed = password ? this.hashCode(password) : 12345;
+    const seed = password ? this.hashCode(password) : 12_345;
     const random = this.pseudoRandom(seed);
     
     // Generate diffusion pattern using pseudo-random values
@@ -1021,7 +1032,7 @@ WatermarkCore.prototype.selectOptimalCoefficients = function(dctBlock, strength)
 
 WatermarkCore.prototype.calculateCoefficientWeight = function(i, j) {
     // Calculate weight for coefficient selection
-    return 1.0;
+    return 1;
 };
 
 // ── Extraction Methods ──
@@ -1096,7 +1107,7 @@ WatermarkCore.prototype.extractHybridDCTDWT = function(watermarkedImageData) {
     const bandLen = decomp._bandLen;
     let dwtBits = '';
     for (const band of [decomp.LH, decomp.HL, decomp.HH]) {
-        for (let i = 0; i < bandLen && dwtBits.length < 100000; i++) {
+        for (let i = 0; i < bandLen && dwtBits.length < 100_000; i++) {
             dwtBits += Math.floor(Math.round(band[i]) / 2) & 1;
         }
     }
@@ -1135,7 +1146,7 @@ WatermarkCore.prototype.extractDWT = function(watermarkedImageData) {
     let bits = '';
     
     for (const band of [LH, HL, HH]) {
-        for (let i = 0; i < bandLen && bits.length < 100000; i++) {
+        for (let i = 0; i < bandLen && bits.length < 100_000; i++) {
             bits += Math.floor(Math.round(band[i]) / 2) & 1;
         }
     }
@@ -1202,7 +1213,7 @@ WatermarkCore.prototype.extractEnhancedLSB = function(watermarkedImageData) {
                 parseInt(bits.substring(8, 16), 2) << 8 |
                 parseInt(bits.substring(0, 8), 2);
 
-    if (len <= 0 || len > 100000) return 'No readable message found';
+    if (len <= 0 || len > 100_000) return 'No readable message found';
 
     const totalBits = 32 + len * 8;
     if (bits.length < totalBits) return 'No readable message found';
@@ -1271,7 +1282,7 @@ WatermarkCore.prototype.extractRandomLSB = function(watermarkedImageData, passwo
     let extractedChars = [];
     
     // Generate pseudo-random sequence based on password
-    const seed = password ? this.hashCode(password) : 12345;
+    const seed = password ? this.hashCode(password) : 12_345;
     const random = this.pseudoRandom(seed);
     
     // Generate random positions
