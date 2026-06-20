@@ -16,6 +16,10 @@
 // Supports: TXT, DOCX, PDF (browser + Node.js)
 
 var DOCX_EXTRACTOR = (function () {
+  /**
+   *
+   * @param raw
+   */
   function readDocx(raw) {
     return new Promise(function (resolve, reject) {
       if (typeof JSZip === "undefined") {
@@ -41,12 +45,16 @@ var DOCX_EXTRACTOR = (function () {
           var text = extractDocxText(xml);
           resolve(text);
         })
-        .catch(function (err) {
-          reject(new Error("Failed to read DOCX: " + err.message));
+        .catch(function (error) {
+          reject(new Error("Failed to read DOCX: " + error.message));
         });
     });
   }
 
+  /**
+   *
+   * @param xml
+   */
   function extractDocxText(xml) {
     var text = "";
     var inPara = false;
@@ -75,6 +83,11 @@ var DOCX_EXTRACTOR = (function () {
   // ── Simple PDF Text Extraction (browser) ──
   // Handles uncompressed and FlateDecode PDFs
 
+  /**
+   *
+   * @param data
+   * @param format
+   */
   async function inflateStream(data, format) {
     var stream = new ReadableStream({
       start: function (controller) {
@@ -90,8 +103,8 @@ var DOCX_EXTRACTOR = (function () {
         if (v.done) break;
         chunks.push(v.value);
       }
-    } catch (e) {
-      throw e;
+    } catch (error) {
+      throw error;
     }
     var total = 0;
     for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -104,37 +117,48 @@ var DOCX_EXTRACTOR = (function () {
     return result;
   }
 
+  /**
+   *
+   * @param data
+   */
   async function inflateRaw(data) {
     // PDF FlateDecode uses zlib wrapper (RFC 1950), but some PDFs use raw deflate.
     // Try both formats
     if (typeof DecompressionStream === "undefined") {
-      throw new Error(
+      throw new TypeError(
         "PDF compression not supported in this browser. Try a plain text file instead.",
       );
     }
     // Try zlib format first (per PDF spec)
     try {
       return await inflateStream(data, "deflate");
-    } catch (e1) {
-      console.warn("docw: deflate failed", e1);
+    } catch (error) {
+      console.warn("docw: deflate failed", error);
     }
     // Try raw deflate (some non-compliant PDF generators)
     try {
       return await inflateStream(data, "deflate-raw");
-    } catch (e2) {
-      console.warn("docw: deflate-raw failed", e2);
+    } catch (error) {
+      console.warn("docw: deflate-raw failed", error);
     }
     // Both failed — return empty instead of raw compressed data
     // (raw binary will cause regex processing to freeze the page)
     return new Uint8Array(0);
   }
 
+  /**
+   *
+   */
   function _yield() {
     return new Promise(function (r) {
       setTimeout(r, 0);
     });
   }
 
+  /**
+   *
+   * @param raw
+   */
   async function readPdf(raw) {
     var arr = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
     var src = latin1Decode(arr);
@@ -153,20 +177,20 @@ var DOCX_EXTRACTOR = (function () {
     var cmap = {};
     for (var objId in objMap) {
       var objContent = objMap[objId];
-      if (objContent.indexOf("FlateDecode") === -1) continue;
+      if (!objContent.includes("FlateDecode")) continue;
       var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
       if (!sm2) continue;
       var raw2 = sm2[1].replace(/[\r\n]+$/, "");
       // Skip large streams (likely image data, not CMap)
-      if (raw2.length > 100000) continue;
+      if (raw2.length > 100_000) continue;
       var dec2;
       try {
         dec2 = await inflateRaw(stringToBytes(raw2));
-      } catch (e) {
+      } catch {
         continue;
       }
       var data = latin1Decode(dec2);
-      if (data.indexOf("begincmap") === -1) continue;
+      if (!data.includes("begincmap")) continue;
 
       var bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
       var bm;
@@ -214,21 +238,33 @@ var DOCX_EXTRACTOR = (function () {
     if (pages.length === 0) return "";
     await _yield();
 
+    /**
+     *
+     * @param code
+     */
     function cmapChar(code) {
       if (cmap[code]) {
         try {
           return String.fromCodePoint(cmap[code]);
-        } catch (e) {
+        } catch {
           return "?";
         }
       }
       return "?";
     }
+    /**
+     *
+     * @param hex
+     */
     function cmapStr(hex) {
       var code = parseInt(hex, 16);
       return cmapChar(code);
     }
 
+    /**
+     *
+     * @param s
+     */
     function decodePdfString(s) {
       if (s.length < 2) return s;
       var asianCount = 0;
@@ -250,6 +286,10 @@ var DOCX_EXTRACTOR = (function () {
       return s;
     }
 
+    /**
+     *
+     * @param s
+     */
     function unescapePdfStr(s) {
       return s.replace(/\\([nrt])/g, " ").replace(/\\(.)/g, "$1");
     }
@@ -267,15 +307,11 @@ var DOCX_EXTRACTOR = (function () {
 
       var rawStream = sm[1].replace(/[\r\n]+$/, "");
       // Skip very large streams (likely image data, not text)
-      if (rawStream.length > 500000) continue;
+      if (rawStream.length > 500_000) continue;
 
       var decompressed;
 
-      if (contentObj.indexOf("FlateDecode") >= 0) {
-        decompressed = await inflateRaw(stringToBytes(rawStream));
-      } else {
-        decompressed = stringToBytes(rawStream);
-      }
+      decompressed = contentObj.includes("FlateDecode") ? (await inflateRaw(stringToBytes(rawStream))) : stringToBytes(rawStream);
 
       // Skip if decompression produced nothing
       if (!decompressed || decompressed.length === 0) continue;
@@ -315,6 +351,10 @@ var DOCX_EXTRACTOR = (function () {
       .trim();
   }
 
+  /**
+   *
+   * @param str
+   */
   function stringToBytes(str) {
     var buf = new Uint8Array(str.length);
     for (var i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xff;
@@ -325,6 +365,10 @@ var DOCX_EXTRACTOR = (function () {
   // Using TextDecoder('latin1') is unreliable because browsers may implement it as
   // Windows-1252, which maps bytes 0x80-0x9F to different code points (>255), causing
   // data corruption when round-tripping through stringToBytes.
+  /**
+   *
+   * @param arr
+   */
   function latin1Decode(arr) {
     var s = "";
     for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
@@ -339,6 +383,11 @@ var DOCX_EXTRACTOR = (function () {
 
 // ── Main extraction dispatcher ──
 
+/**
+ *
+ * @param file
+ * @param callback
+ */
 async function docwExtractText(file, callback) {
   var ext = file.name.split(".").pop().toLowerCase();
   var reader = new FileReader();
@@ -347,18 +396,22 @@ async function docwExtractText(file, callback) {
     callback("Error reading file: " + file.name);
   };
 
-  if (ext === "docx") {
+  switch (ext) {
+  case "docx": {
     reader.onload = function (e) {
       DOCX_EXTRACTOR.readDocx(e.target.result)
         .then(function (text) {
           callback(null, text, "docx");
         })
-        .catch(function (err) {
-          callback(err.message);
+        .catch(function (error) {
+          callback(error.message);
         });
     };
     reader.readAsArrayBuffer(file);
-  } else if (ext === "pdf") {
+  
+  break;
+  }
+  case "pdf": {
     reader.onload = function (e) {
       DOCX_EXTRACTOR.readPdf(new Uint8Array(e.target.result))
         .then(function (text) {
@@ -370,12 +423,15 @@ async function docwExtractText(file, callback) {
             );
           }
         })
-        .catch(function (err) {
-          callback("PDF extraction failed: " + err.message);
+        .catch(function (error) {
+          callback("PDF extraction failed: " + error.message);
         });
     };
     reader.readAsArrayBuffer(file);
-  } else if (ext === "doc") {
+  
+  break;
+  }
+  case "doc": {
     // DOC (binary OLE) - best-effort: read as binary, extract printable ASCII
     reader.onload = function (e) {
       var arr = new Uint8Array(e.target.result);
@@ -390,11 +446,15 @@ async function docwExtractText(file, callback) {
       callback(null, result || "No readable text found in DOC file.", "doc");
     };
     reader.readAsArrayBuffer(file);
-  } else {
+  
+  break;
+  }
+  default: {
     // TXT, JSON, CSV and others - read as text
     reader.onload = function (e) {
       callback(null, e.target.result, ext);
     };
     reader.readAsText(file, "UTF-8");
+  }
   }
 }

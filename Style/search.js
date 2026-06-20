@@ -15,6 +15,9 @@
 var SEARCH_INDEX = null;
 
 // Detect whether we are in the SPA (index.html) or MPA (standalone page)
+/**
+ *
+ */
 function _isMpaSearch() {
   return (
     document.documentElement.dataset.standalone === "search" ||
@@ -23,6 +26,9 @@ function _isMpaSearch() {
 }
 
 // SPA index builder — scans all .page sections in index.html
+/**
+ *
+ */
 function buildSearchIndex() {
   if (SEARCH_INDEX) return SEARCH_INDEX;
   SEARCH_INDEX = [];
@@ -44,6 +50,9 @@ function buildSearchIndex() {
 // MPA index loader — fetches the pre-built search-index.json
 var _mpaIndexPromise = null;
 
+/**
+ *
+ */
 function _loadMpaIndex() {
   if (_mpaIndexPromise) return _mpaIndexPromise;
   // On the MPA search page, the JSON is in the same directory
@@ -63,6 +72,9 @@ function _loadMpaIndex() {
   return _mpaIndexPromise;
 }
 
+/**
+ *
+ */
 function siteSearch() {
   var input = document.getElementById("searchInput");
   var query = input.value.trim().toLowerCase();
@@ -80,14 +92,14 @@ function siteSearch() {
         break;
       }
     }
-    if (pagesIdx !== -1) {
+    if (pagesIdx === -1) {
+      window.location.href =
+        "../search/index.html?q=" + encodeURIComponent(query);
+    } else {
       parts = parts.slice(0, pagesIdx + 1);
       parts.push("search", "index.html");
       window.location.href =
         parts.join("/") + "?q=" + encodeURIComponent(query);
-    } else {
-      window.location.href =
-        "../search/index.html?q=" + encodeURIComponent(query);
     }
     return;
   }
@@ -104,6 +116,12 @@ function siteSearch() {
   }
 }
 
+/**
+ *
+ * @param query
+ * @param idx
+ * @param isMpa
+ */
 function _executeSearch(query, idx, isMpa) {
   var results = [];
 
@@ -114,11 +132,11 @@ function _executeSearch(query, idx, isMpa) {
     var lowerTitle = page.title.toLowerCase();
 
     if (lowerTitle === query) score += 100;
-    else if (lowerTitle.indexOf(query) !== -1) score += 50;
+    else if (lowerTitle.includes(query)) score += 50;
 
     if (page.keywords) {
       page.keywords.forEach(function (k) {
-        if (k.toLowerCase().indexOf(query) !== -1) score += 30;
+        if (k.toLowerCase().includes(query)) score += 30;
       });
     }
 
@@ -144,6 +162,12 @@ function _executeSearch(query, idx, isMpa) {
   showSearchResults(query, results, isMpa);
 }
 
+/**
+ *
+ * @param query
+ * @param results
+ * @param isMpa
+ */
 function showSearchResults(query, results, isMpa) {
   var output = document.getElementById("search-output");
   var lang = i18n && i18n.data ? i18n.data : {};
@@ -200,6 +224,10 @@ function showSearchResults(query, results, isMpa) {
   closeSearchResults();
 }
 
+/**
+ *
+ * @param pageName
+ */
 function navigateToSearchResult(pageName) {
   // In MPA mode, navigation is handled by direct <a href> — this is only for SPA
   if (_isMpaSearch()) return;
@@ -207,6 +235,9 @@ function navigateToSearchResult(pageName) {
   document.getElementById("searchInput").value = "";
 }
 
+/**
+ *
+ */
 function closeSearchResults() {
   var el = document.getElementById("searchResults");
   if (el) el.innerHTML = "";
@@ -220,11 +251,11 @@ document.addEventListener("click", function (e) {
       return;
     }
     // SPA links use data-page
-    var pageName = item.getAttribute("data-page");
+    var pageName = item.dataset.page;
     if (
       pageName &&
       Array.isArray(PAGE_NAMES) &&
-      PAGE_NAMES.indexOf(pageName) !== -1
+      PAGE_NAMES.includes(pageName)
     ) {
       navigateToSearchResult(pageName);
     }

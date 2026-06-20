@@ -2,46 +2,55 @@
 // Each tool is wrapped with a JS fallback so nothing breaks when tools are missing.
 // Load via: const tools = require('./tools');
 
-"use strict";
-
-const { execFileSync, execSync } = require("child_process");
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
-const os = require("os");
+const { execFileSync, execSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const crypto = require("node:crypto");
+const os = require("node:os");
 
 // ── Helpers ──
 
+/**
+ *
+ * @param name
+ */
 function _findTool(name) {
   try {
     const cmd = process.platform === "win32" ? "where" : "which";
     return execSync(`${cmd} ${name}`, { stdio: ["ignore", "pipe", "ignore"] })
       .toString()
       .trim()
-      .split("\n")[0]
+      .split("\n", 1)[0]
       .trim();
   } catch {
     return null;
   }
 }
 
+/**
+ *
+ * @param cmd
+ * @param args
+ * @param opts
+ */
 function _runTool(cmd, args, opts) {
   try {
     return execFileSync(cmd, args, {
       encoding: "utf-8",
       maxBuffer: 64 * 1024 * 1024,
-      timeout: 30000,
+      timeout: 30_000,
       ...opts,
     });
-  } catch (e) {
-    return { error: e.message, stderr: e.stderr || "" };
+  } catch (error) {
+    return { error: error.message, stderr: error.stderr || "" };
   }
 }
 
-let _cache = {};
+const _cache = {};
 
 /**
  * Check if a tool is available. Cached after first check.
+ * @param name
  */
 function checkTool(name) {
   if (_cache[name] !== undefined) return _cache[name];
@@ -53,20 +62,25 @@ function checkTool(name) {
  * Check all tools at once. Returns { name: path|null }
  */
 function checkAllTools() {
-  return ["exiftool", "sox", "soxi", "pngcheck", "jpeginfo", "magick", "convert", "cbor-diag"].reduce(
-    (acc, t) => { acc[t] = checkTool(t); return acc; },
-    {}
-  );
+  return ["exiftool", "sox", "soxi", "pngcheck", "jpeginfo", "magick", "convert", "cbor-diag"].reduce((acc, t) => {
+    acc[t] = checkTool(t);
+    return acc;
+  }, {});
 }
 
 // ── exiftool ──
 
 /**
  * Read all EXIF/metadata from a file. Falls back to JS-based parsing (returns {from: 'js', ...}).
+ * @param filePath
  */
 function exifRead(filePath) {
   const tool = checkTool("exiftool");
-  if (!tool) return { from: "js", warning: "exiftool not installed — JS EXIF limited to JPEG" };
+  if (!tool)
+    return {
+      from: "js",
+      warning: "exiftool not installed — JS EXIF limited to JPEG",
+    };
   const out = _runTool(tool, ["-json", filePath]);
   if (out.error) return { from: "js", warning: out.error };
   try {
@@ -79,13 +93,20 @@ function exifRead(filePath) {
 
 /**
  * Read only GPS EXIF via exiftool. Falls back to coordinates extraction from exifRead.
+ * @param filePath
  */
 function exifReadGps(filePath) {
   const tool = checkTool("exiftool");
   if (!tool) return null;
   const out = _runTool(tool, [
-    "-GPSLatitude", "-GPSLongitude", "-GPSAltitude",
-    "-GPSLatitudeRef", "-GPSLongitudeRef", "-n", "-json", filePath,
+    "-GPSLatitude",
+    "-GPSLongitude",
+    "-GPSAltitude",
+    "-GPSLatitudeRef",
+    "-GPSLongitudeRef",
+    "-n",
+    "-json",
+    filePath,
   ]);
   if (out.error) return null;
   try {
@@ -98,16 +119,23 @@ function exifReadGps(filePath) {
 
 // ── sox / soxi ──
 
+/**
+ *
+ */
 function _soxTool() {
   return checkTool("sox");
 }
 
+/**
+ *
+ */
 function _soxiTool() {
   return checkTool("soxi");
 }
 
 /**
  * Get audio file info. Falls back to fs.stat + ext-based guess.
+ * @param filePath
  */
 function audioInfo(filePath) {
   const soxi = _soxiTool();
@@ -126,13 +154,20 @@ function audioInfo(filePath) {
 
 /**
  * Convert audio format using sox. Falls back to copying (no conversion).
+ * @param input
+ * @param output
  */
 function audioConvert(input, output) {
   const tool = _soxTool();
   if (!tool) {
     // No conversion possible — just copy
-    try { fs.copyFileSync(input, output); } catch {}
-    return { ok: false, warning: "sox not installed — file copied without conversion" };
+    try {
+      fs.copyFileSync(input, output);
+    } catch {}
+    return {
+      ok: false,
+      warning: "sox not installed — file copied without conversion",
+    };
   }
   const out = _runTool(tool, [input, output]);
   if (out.error) return { ok: false, error: out.error };
@@ -142,15 +177,31 @@ function audioConvert(input, output) {
 /**
  * Apply audio effects for robustness testing (noise, reverb, etc.) via sox.
  * Falls back silently.
+ * @param input
+ * @param output
+ * @param effect
  */
 function audioEffect(input, output, effect) {
   const tool = _soxTool();
   if (!tool) return { ok: false, warning: "sox not installed" };
   const args = [input, output];
-  if (effect === "noise") args.push("noise", "0.01");
-  else if (effect === "reverb") args.push("reverb");
-  else if (effect === "speed") args.push("speed", "0.95");
-  else if (typeof effect === "string") args.push(...effect.split(" "));
+  switch (effect) {
+    case "noise": {
+      args.push("noise", "0.01");
+      break;
+    }
+    case "reverb": {
+      args.push("reverb");
+      break;
+    }
+    case "speed": {
+      args.push("speed", "0.95");
+      break;
+    }
+    default: {
+      if (typeof effect === "string") args.push(...effect.split(" "));
+    }
+  }
   const out = _runTool(tool, args);
   if (out.error) return { ok: false, error: out.error };
   return { ok: true, from: "sox" };
@@ -160,6 +211,7 @@ function audioEffect(input, output, effect) {
 
 /**
  * Verify PNG file integrity. Returns null if tool missing or file not PNG.
+ * @param filePath
  */
 function pngVerify(filePath) {
   const tool = checkTool("pngcheck");
@@ -174,6 +226,7 @@ function pngVerify(filePath) {
 
 /**
  * Verify JPEG file integrity. Returns null if tool missing or file not JPEG.
+ * @param filePath
  */
 function jpegVerify(filePath) {
   const tool = checkTool("jpeginfo");
@@ -186,12 +239,16 @@ function jpegVerify(filePath) {
 
 // ── ImageMagick (magick / convert) ──
 
+/**
+ *
+ */
 function _magickTool() {
   return checkTool("magick") || checkTool("convert");
 }
 
 /**
  * Get image info via ImageMagick identify. Falls back to JS image info.
+ * @param filePath
  */
 function imageIdentify(filePath) {
   const tool = _magickTool();
@@ -203,12 +260,19 @@ function imageIdentify(filePath) {
 
 /**
  * Convert image format via ImageMagick. Falls back to copying.
+ * @param input
+ * @param output
  */
 function imageConvert(input, output) {
   const tool = _magickTool();
   if (!tool) {
-    try { fs.copyFileSync(input, output); } catch {}
-    return { ok: false, warning: "ImageMagick not installed — file copied without conversion" };
+    try {
+      fs.copyFileSync(input, output);
+    } catch {}
+    return {
+      ok: false,
+      warning: "ImageMagick not installed — file copied without conversion",
+    };
   }
   const out = _runTool(tool, [input, output]);
   if (out.error) return { ok: false, error: out.error };
@@ -217,6 +281,9 @@ function imageConvert(input, output) {
 
 /**
  * Resize/scale image for robustness testing. Falls back silently.
+ * @param input
+ * @param output
+ * @param scale
  */
 function imageResize(input, output, scale) {
   const tool = _magickTool();
@@ -229,6 +296,9 @@ function imageResize(input, output, scale) {
 
 /**
  * Apply JPEG compression for robustness testing. Falls back silently.
+ * @param input
+ * @param output
+ * @param quality
  */
 function imageJpegCompress(input, output, quality) {
   const tool = _magickTool();
@@ -240,6 +310,9 @@ function imageJpegCompress(input, output, quality) {
 
 /**
  * Crop image for robustness testing. Falls back silently.
+ * @param input
+ * @param output
+ * @param opts
  */
 function imageCrop(input, output, opts) {
   const tool = _magickTool();
@@ -255,6 +328,9 @@ function imageCrop(input, output, opts) {
 
 /**
  * Rotate image for robustness testing. Falls back silently.
+ * @param input
+ * @param output
+ * @param degrees
  */
 function imageRotate(input, output, degrees) {
   const tool = _magickTool();
@@ -268,6 +344,7 @@ function imageRotate(input, output, degrees) {
 
 /**
  * Decode CBOR hex/diag to diagnostic format. Falls back to JS parsing.
+ * @param hexStr
  */
 function cborDecode(hexStr) {
   const tool = checkTool("cbor-diag");
@@ -279,6 +356,7 @@ function cborDecode(hexStr) {
 
 /**
  * Encode diagnostic CBOR to hex. Falls back to JS.
+ * @param diagStr
  */
 function cborEncode(diagStr) {
   const tool = checkTool("cbor-diag");

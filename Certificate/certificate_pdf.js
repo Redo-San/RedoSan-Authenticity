@@ -13,6 +13,10 @@
 })();
 // ── PDF Certificate Generator ──
 
+/**
+ *
+ * @param data
+ */
 async function downloadCertPDF(data) {
   var doc = new jspdf.jsPDF({
     orientation: "portrait",
@@ -52,6 +56,10 @@ async function downloadCertPDF(data) {
   });
   qrDataUrl = generateQRDataURL(qrContent, 400);
 
+  /**
+   *
+   * @param need
+   */
   function checkPage(need) {
     if (y + need > ph - margin) {
       doc.addPage();
@@ -338,7 +346,7 @@ async function downloadCertPDF(data) {
       );
       y += 3;
       var shortAgg =
-        (data.ct.aggregator || "").replace("https://", "").split("/")[0] ||
+        (data.ct.aggregator || "").replace("https://", "").split("/", 1)[0] ||
         "OTS calendar";
       doc.text("Transparency log: " + shortAgg, margin, y);
       y += 3;
@@ -404,9 +412,9 @@ async function downloadCertPDF(data) {
   var a = document.createElement("a");
   a.href = url;
   a.download = "RedoSan_Digital_Passport.pdf";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   setTimeout(function () {
     URL.revokeObjectURL(url);
   }, 1000);

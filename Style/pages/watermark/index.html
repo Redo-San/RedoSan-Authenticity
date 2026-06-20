@@ -59,6 +59,47 @@
         top.location = self.location;
       }
     </script>
+    <style>
+      #page-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #f5f7fa;
+        pointer-events: auto;
+        opacity: 1;
+        transition: opacity 0.35s ease;
+      }
+      #page-loader.page-loader--hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #page-loader .loader-spinner {
+        width: 44px;
+        height: 44px;
+        border: 4px solid #e0e0e0;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        animation: page-loader-spin 0.8s linear infinite;
+      }
+      @keyframes page-loader-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        #page-loader {
+          background: #1a1a2e;
+        }
+        #page-loader .loader-spinner {
+          border-color: #2d2d4a;
+          border-top-color: #60a5fa;
+        }
+      }
+    </style>
     <link
       rel="canonical"
       href="https://redo-san.github.io/RedoSan-Authenticity/"
@@ -169,21 +210,25 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
       integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU="
       crossorigin="anonymous"
+      defer
     ></script>
     <script
       src="https://cdn.jsdelivr.net/npm/docx@8.5.0"
       integrity="sha384-TcLTgu6flPhnZ5dfHnHimsxNFjYWN0povfGgnOvgPJKbZe6IbuoC2ociiatSHl9E"
       crossorigin="anonymous"
+      defer
     ></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"
       integrity="sha512-pUhApVQtLbnpLtJn6DuzDD5o2xtmLJnJ7oBoMsBnzOkVkpqofGLGPaBJ6ayD2zQe3lCgCibhJBi4cj5wAxwVKA=="
       crossorigin="anonymous"
+      defer
     ></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
       integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
       crossorigin="anonymous"
+      defer
     ></script>
   </head>
   <body>
@@ -995,6 +1040,7 @@
       <img class="lightbox-img" id="lightboxImg" alt="" />
     </div>
 
+    <div role="region" aria-label="Music player">
     <!-- Music player -->
     <audio
       id="bg-music"
@@ -1008,10 +1054,11 @@
     <div
       id="music-credit"
       class="music-credit"
-      role="contentinfo"
+      role="note"
       aria-label="Music credit"
     >
       RedoSan
+    </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

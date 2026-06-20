@@ -13,14 +13,20 @@
 })();
 
 // Data has been moved to assistant_data.js
+/**
+ *
+ */
 function getAssistantLang() {
   try {
     if (typeof i18n !== "undefined" && i18n && i18n.lang) return i18n.lang;
-  } catch (e) {}
+  } catch {}
   var html = document.documentElement;
   return html.getAttribute("lang") || "en";
 }
 
+/**
+ *
+ */
 function getCurrentContext() {
   var active = document.querySelector(".page.active");
   if (!active) return "";
@@ -29,6 +35,10 @@ function getCurrentContext() {
 }
 
 // ── Arabic text normalization ──
+/**
+ *
+ * @param t
+ */
 function normalizeArabic(t) {
   return t
     .replace(/[أإآ]/g, "ا")
@@ -39,6 +49,11 @@ function normalizeArabic(t) {
 }
 
 // ── Levenshtein distance (typo tolerance) ──
+/**
+ *
+ * @param a
+ * @param b
+ */
 function levenshtein(a, b) {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
@@ -59,6 +74,10 @@ function levenshtein(a, b) {
 }
 
 // ── Tokenizer with Arabic normalization ──
+/**
+ *
+ * @param t
+ */
 function assistantTokenize(t) {
   return normalizeArabic(t.toLowerCase())
     .replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, "")
@@ -67,6 +86,10 @@ function assistantTokenize(t) {
 }
 
 // ── Intelligent intent matcher ──
+/**
+ *
+ * @param input
+ */
 function matchAssistantIntent(input) {
   var tokens = assistantTokenize(input);
   if (tokens.length === 0) return null;
@@ -141,12 +164,21 @@ function matchAssistantIntent(input) {
   return bestScore >= 0.28 ? bestMatch : null;
 }
 
+/**
+ *
+ * @param inputText
+ */
 function getResponseLang(inputText) {
   return inputText && /[\u0600-\u06FF]/.test(inputText)
     ? "ar"
     : getAssistantLang();
 }
 
+/**
+ *
+ * @param intent
+ * @param lang
+ */
 function getAssistantResponse(intent, lang) {
   if (!lang) lang = getAssistantLang();
   if (intent && intent.response) {
@@ -155,6 +187,11 @@ function getAssistantResponse(intent, lang) {
   return ASSISTANT_FALLBACK[lang] || ASSISTANT_FALLBACK.en;
 }
 
+/**
+ *
+ * @param intent
+ * @param lang
+ */
 function getAssistantSuggestions(intent, lang) {
   if (!lang) lang = getAssistantLang();
   if (intent && intent.suggestions) {
@@ -163,6 +200,10 @@ function getAssistantSuggestions(intent, lang) {
   return [];
 }
 
+/**
+ *
+ * @param lang
+ */
 function getContextualSuggestions(lang) {
   if (!lang) lang = getAssistantLang();
   var ctx = getCurrentContext();
@@ -225,31 +266,44 @@ function getContextualSuggestions(lang) {
 }
 
 // ── Chat History ──
+/**
+ *
+ */
 function loadChatHistory() {
   try {
     var h = localStorage.getItem("redosan_chat");
     return h ? JSON.parse(h) : [];
-  } catch (e) {
+  } catch {
     return [];
   }
 }
 
+/**
+ *
+ * @param messages
+ */
 function saveChatHistory(messages) {
   try {
     localStorage.setItem("redosan_chat", JSON.stringify(messages.slice(-50)));
-  } catch (e) {}
+  } catch {}
 }
 
+/**
+ *
+ */
 function clearChatHistory() {
   try {
     localStorage.removeItem("redosan_chat");
-  } catch (e) {}
+  } catch {}
 }
 
 // ── UI ──
 var ASSISTANT_OPEN = false;
 var ASSISTANT_TOGGLE_LOCK = false;
 
+/**
+ *
+ */
 function toggleAssistant() {
   if (ASSISTANT_TOGGLE_LOCK) return;
   ASSISTANT_TOGGLE_LOCK = true;
@@ -278,6 +332,9 @@ function toggleAssistant() {
   }
 }
 
+/**
+ *
+ */
 function showInitialGreeting() {
   var msgArea = document.getElementById("assistantMessages");
   if (!msgArea) return;
@@ -333,6 +390,11 @@ function showInitialGreeting() {
   showSuggestions(suggestions, lang);
 }
 
+/**
+ *
+ * @param suggestions
+ * @param lang
+ */
 function showSuggestions(suggestions, lang) {
   var container = document.getElementById("assistantSuggestions");
   if (!container) return;
@@ -363,10 +425,15 @@ function showSuggestions(suggestions, lang) {
         }, 300);
       };
     })(suggestions[i], lang || getAssistantLang());
-    container.appendChild(chip);
+    container.append(chip);
   }
 }
 
+/**
+ *
+ * @param text
+ * @param role
+ */
 function addMessage(text, role) {
   var msgArea = document.getElementById("assistantMessages");
   if (!msgArea) return;
@@ -376,7 +443,7 @@ function addMessage(text, role) {
   if (isBot) {
     var avatar = document.createElement("span");
     avatar.className = "ast-avatar";
-    div.appendChild(avatar);
+    div.append(avatar);
   }
   var content = document.createElement("div");
   content.className = "ast-content";
@@ -400,12 +467,16 @@ function addMessage(text, role) {
       }
     }
   }
-  div.appendChild(content);
-  msgArea.appendChild(div);
+  div.append(content);
+  msgArea.append(div);
   msgArea.scrollTop = msgArea.scrollHeight;
   return div;
 }
 
+/**
+ *
+ * @param text
+ */
 function sendAssistantMessage(text) {
   if (
     typeof REDOSAN_BOT_CHECK !== "undefined" &&
@@ -441,7 +512,7 @@ function sendAssistantMessage(text) {
   typing.innerHTML =
     '<div class="ast-typing-dots"><span></span><span></span><span></span></div>';
   var msgArea = document.getElementById("assistantMessages");
-  msgArea.appendChild(typing);
+  msgArea.append(typing);
   msgArea.scrollTop = msgArea.scrollHeight;
 
   // Simulate processing delay
@@ -468,6 +539,10 @@ function sendAssistantMessage(text) {
   );
 }
 
+/**
+ *
+ * @param e
+ */
 function handleAssistantKeydown(e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -475,6 +550,9 @@ function handleAssistantKeydown(e) {
   }
 }
 
+/**
+ *
+ */
 function initAssistant() {
   var lang = getAssistantLang();
 
@@ -536,11 +614,15 @@ function initAssistant() {
 }
 
 // Auto-init
+/**
+ *
+ * @param fn
+ */
 function ready(fn) {
-  if (document.readyState !== "loading") {
-    fn();
-  } else {
+  if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", fn);
+  } else {
+    fn();
   }
 }
 ready(initAssistant);

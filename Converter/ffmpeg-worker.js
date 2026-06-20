@@ -22,13 +22,13 @@ self.onmessage = async function(e) {
     } else if (msg.type === 'exec') {
       _ff.FS('writeFile', msg.inName, new Uint8Array(msg.fileData));
       var args = ['-nostdin', '-y', '-i', msg.inName].concat(msg.fmtArgs).concat([msg.outName]);
-      try { _ff.run.apply(_ff, args); } catch(e) {}
+      try { _ff.run.apply(_ff, args); } catch{}
       var data = _ff.FS('readFile', msg.outName);
       _ff.FS('unlink', msg.inName);
       _ff.FS('unlink', msg.outName);
       self.postMessage({ id: msg.id, type: 'result', data: data.buffer }, [data.buffer]);
     }
-  } catch(e) {
-    self.postMessage({ id: msg.id, type: 'error', message: e.message });
+  } catch(error) {
+    self.postMessage({ id: msg.id, type: 'error', message: error.message });
   }
 };

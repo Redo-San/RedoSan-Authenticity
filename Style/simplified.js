@@ -42,16 +42,26 @@ var simpleUserInfo = {
   },
 };
 
+/**
+ *
+ * @param disable
+ */
 function setBodyOverflow(disable) {
-  if (disable) document.body.classList.add("no-scroll");
-  else document.body.classList.remove("no-scroll");
+  document.body.classList.toggle("no-scroll", disable);
 }
 
+/**
+ *
+ */
 function initMode() {
   // Don't lock body scroll here — the mode overlay CSS has overflow-y: auto
   // and setting overflow:hidden on <html> can prevent fixed children from scrolling on mobile.
 }
 
+/**
+ *
+ * @param mode
+ */
 function setMode(mode) {
   document.getElementById("modeSelect").style.display = "none";
   setBodyOverflow(false);
@@ -61,7 +71,7 @@ function setMode(mode) {
       "",
       window.location.pathname.replace(/\/+$/, "") + "/",
     );
-  } catch (e) {}
+  } catch {}
   if (mode === "simplified") {
     document.getElementById("mainNav").style.display = "none";
     document.getElementById("sidebar").style.display = "none";
@@ -87,6 +97,9 @@ function setMode(mode) {
   }
 }
 
+/**
+ *
+ */
 function resetProfessionalForms() {
   // Clear all file inputs in professional mode
   document.querySelectorAll('#app input[type="file"]').forEach(function (el) {
@@ -117,10 +130,16 @@ function resetProfessionalForms() {
   });
 }
 
+/**
+ *
+ */
 function switchMode() {
   showModeSelect();
 }
 
+/**
+ *
+ */
 function showModeSelect() {
   resetProfessionalForms();
   // Show mode overlay without page reload (keeps music playing)
@@ -136,6 +155,10 @@ function showModeSelect() {
 
 // ── File type detection ──
 
+/**
+ *
+ * @param file
+ */
 function detectFileType(file) {
   var name = file.name.toLowerCase();
   if (/\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|avif|tiff?)$/.test(name))
@@ -151,6 +174,11 @@ function detectFileType(file) {
   return "other";
 }
 
+/**
+ *
+ * @param type
+ * @param isAI
+ */
 function buildSteps(type, isAI) {
   var s = [{ id: "upload", label: __("simple.step_upload", "Upload") }];
   if (type === "image") {
@@ -201,6 +229,9 @@ function buildSteps(type, isAI) {
 
 // ── Init & render ──
 
+/**
+ *
+ */
 function initSimplified() {
   simpleFile = null;
   simpleBuf = null;
@@ -231,6 +262,9 @@ function initSimplified() {
   renderStep();
 }
 
+/**
+ *
+ */
 function renderStep() {
   var step = simpleSteps[simpleStep];
   renderProgress();
@@ -251,7 +285,7 @@ function renderStep() {
       "watermark",
       "pixel-injection",
       "audio-watermark",
-    ].indexOf(step.id) >= 0
+    ].includes(step.id)
   ) {
     nextBtn.style.display = "none";
   } else {
@@ -259,16 +293,50 @@ function renderStep() {
     nextBtn.disabled =
       step.id === "upload" ? !simpleFile : step.id === "done" ? false : true;
   }
-  if (step.id === "upload") renderUpload(body);
-  else if (step.id === "ai-question") renderAiQuestion(body);
-  else if (step.id === "c2pa") renderC2paStep(body);
-  else if (step.id === "watermark") renderWatermarkStep(body);
-  else if (step.id === "pixel-injection") renderPixelInjectStep(body);
-  else if (step.id === "timestamp") renderTimestampStep(body);
-  else if (step.id === "audio-watermark") renderAudioWatermarkStep(body);
-  else if (step.id === "fingerprint") renderFingerprintStep(body);
-  else if (step.id === "did-sign") renderDIDStep(body);
-  else if (step.id === "done") renderDone(body);
+  switch (step.id) {
+  case "upload": {
+  renderUpload(body);
+  break;
+  }
+  case "ai-question": {
+  renderAiQuestion(body);
+  break;
+  }
+  case "c2pa": {
+  renderC2paStep(body);
+  break;
+  }
+  case "watermark": {
+  renderWatermarkStep(body);
+  break;
+  }
+  case "pixel-injection": {
+  renderPixelInjectStep(body);
+  break;
+  }
+  case "timestamp": {
+  renderTimestampStep(body);
+  break;
+  }
+  case "audio-watermark": {
+  renderAudioWatermarkStep(body);
+  break;
+  }
+  case "fingerprint": {
+  renderFingerprintStep(body);
+  break;
+  }
+  case "did-sign": {
+  renderDIDStep(body);
+  break;
+  }
+  case "done": { {
+  renderDone(body);
+  // No default
+  }
+  break;
+  }
+  }
   document.getElementById("simpleStepCounter").textContent = __(
     "simple.step_of",
     "Step {current} of {total}",
@@ -277,6 +345,9 @@ function renderStep() {
     .replace("{total}", simpleSteps.length);
 }
 
+/**
+ *
+ */
 function renderProgress() {
   var el = document.getElementById("simpleProgress");
   el.innerHTML = simpleSteps
@@ -296,6 +367,9 @@ function renderProgress() {
 
 // ── Navigation ──
 
+/**
+ *
+ */
 function simpleNext() {
   var step = simpleSteps[simpleStep];
   if (step.id === "upload" && !simpleFile) return;
@@ -319,7 +393,7 @@ function simpleNext() {
           "simple.info_required",
           "Please fill in all required fields: Name, Email, Phone, Website.",
         );
-        infoSection.appendChild(err);
+        infoSection.append(err);
       }
       return;
     }
@@ -382,6 +456,9 @@ function simpleNext() {
   renderStep();
 }
 
+/**
+ *
+ */
 function simplePrev() {
   if (simpleStep <= 0) return;
   simpleStep--;
@@ -389,10 +466,16 @@ function simplePrev() {
   renderStep();
 }
 
+/**
+ *
+ */
 function restartSimple() {
   initSimplified();
 }
 
+/**
+ *
+ */
 async function runC2paStep() {
   showProgress();
   var btn = document.getElementById("sc2pa-btn");
@@ -456,7 +539,7 @@ async function runC2paStep() {
       try {
         var resp = await fetch(simpleResults.piFinalUrl);
         simpleResults.piFinalBlob = await resp.blob();
-      } catch (e) {}
+      } catch {}
     } else {
       simpleResults.piFinalBlob = dataUrlToBlob(simpleResults.piFinalUrl);
     }
@@ -502,9 +585,11 @@ async function runC2paStep() {
   });
 }
 
-
 // Build combined fingerprint + DID payload, trimmed to fit maxBytes
 
+/**
+ *
+ */
 function runWatermarkStep() {
   showProgress();
   var algo = parseInt(document.getElementById("swm-type").value, 10);
@@ -571,7 +656,9 @@ function runWatermarkStep() {
   });
 }
 
-
+/**
+ *
+ */
 async function runAudioWatermarkStep() {
   var fpAlgo = parseInt(document.getElementById("sawm-fp-type").value);
   var tsAlgo = parseInt(document.getElementById("sawm-ts-type").value);
@@ -724,7 +811,7 @@ async function runAudioWatermarkStep() {
     var nextBtn = document.getElementById("simpleNextBtn");
     nextBtn.disabled = false;
     nextBtn.style.display = "";
-  } catch (e) {
+  } catch (error) {
     hideProgress();
     if (progContainer) progContainer.style.display = "none";
     if (btn) {
@@ -734,12 +821,18 @@ async function runAudioWatermarkStep() {
     if (statusEl) {
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-        escapeHtml(e.message) +
+        escapeHtml(error.message) +
         "</div>";
     }
   }
 }
 
+/**
+ *
+ * @param algo
+ * @param audioLen
+ * @param sr
+ */
 function algoMaxBits(algo, audioLen, sr) {
   if (algo === 1 || algo === 5) return audioLen;
   var fns = {
@@ -753,22 +846,41 @@ function algoMaxBits(algo, audioLen, sr) {
   return fns[algo] ? fns[algo](audioLen, sr) : 0;
 }
 
+/**
+ *
+ * @param algo
+ * @param s16
+ * @param bitsStr
+ * @param sr
+ * @param strength
+ * @param onProgress
+ */
 async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
-  if (algo === 1) return aw1_embed(s16, bitsStr);
-  else if (algo === 2) return aw2_embed(s16, bitsStr, sr);
-  else if (algo === 3) return aw3_embed(s16, bitsStr, sr);
-  else if (algo === 4) return aw4_embed(s16, bitsStr, sr);
-  else if (algo === 5) return aw5_embed(s16, bitsStr, sr);
-  else if (algo === 6) return aw6_embed(s16, bitsStr, sr);
-  else if (algo === 7) return aw7_embed(s16, bitsStr, sr);
-  else if (algo === 8)
-    return await aw8_embed_async(s16, bitsStr, sr, onProgress);
+  switch (algo) {
+  case 1: { return aw1_embed(s16, bitsStr);
+  }
+  case 2: { return aw2_embed(s16, bitsStr, sr);
+  }
+  case 3: { return aw3_embed(s16, bitsStr, sr);
+  }
+  case 4: { return aw4_embed(s16, bitsStr, sr);
+  }
+  case 5: { return aw5_embed(s16, bitsStr, sr);
+  }
+  case 6: { return aw6_embed(s16, bitsStr, sr);
+  }
+  case 7: { return aw7_embed(s16, bitsStr, sr);
+  }
+  case 8: { return await aw8_embed_async(s16, bitsStr, sr, onProgress);
+  }
+  // No default
+  }
   throw new Error("Unknown algorithm: " + algo);
 }
 
-
-
-
+/**
+ *
+ */
 function runPixelInjectStep() {
   showProgress();
   var cat = document.getElementById("spi-category").value;
@@ -816,6 +928,9 @@ function runPixelInjectStep() {
     var passInput = document.getElementById("pi-password");
     if (passInput) passInput.value = pass;
 
+    /**
+     *
+     */
     function cleanupPiFields() {
       if (msgInput) msgInput.value = "";
       if (passInput) passInput.value = "";
@@ -857,7 +972,7 @@ function runPixelInjectStep() {
           }
           hideProgress();
         })
-        .catch(function (e) {
+        .catch(function (error) {
           hideProgress();
           if (btn) {
             btn.disabled = false;
@@ -867,8 +982,8 @@ function runPixelInjectStep() {
             statusEl.innerHTML =
               '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
               escapeHtml(
-                e && e.message
-                  ? e.message
+                error && error.message
+                  ? error.message
                   : __("simple.pi_failed", "Injection failed"),
               ) +
               "</div>";
@@ -881,8 +996,9 @@ function runPixelInjectStep() {
   }, 50);
 }
 
-
-
+/**
+ *
+ */
 async function runTimestampStep() {
   if (!window.handleOtsCreate) return;
   var fileInput = document.getElementById("ts-create-file");
@@ -916,7 +1032,7 @@ async function runTimestampStep() {
       }
       var evt = new Event("change");
       fileInput.dispatchEvent(evt);
-    } catch (e) {
+    } catch {
       if (simpleFile) {
         var dt = new DataTransfer();
         dt.items.add(simpleFile);
@@ -947,15 +1063,13 @@ async function runTimestampStep() {
           var hashMatch = rawText.match(/[a-f0-9]{64}/i);
           var hash = hashMatch ? hashMatch[0] : "";
           var hasAttestation =
-            rawText.indexOf("blockchain") >= 0 ||
-            rawText.indexOf("attestation") >= 0;
+            rawText.includes("blockchain") ||
+            rawText.includes("attestation");
           var dateStr = new Date()
             .toISOString()
             .replace("T", " ")
             .substring(0, 19);
-          if (hash) {
-            simpleResults.tsResult =
-              "Certificate Transparency\n" +
+          simpleResults.tsResult = hash ? "Certificate Transparency\n" +
               "SHA-256: " +
               hash +
               "\n" +
@@ -966,28 +1080,27 @@ async function runTimestampStep() {
                 : "Created: " +
                   dateStr +
                   "\nStatus: Pending — awaiting blockchain attestation\n") +
-              "Verifiable at: https://opentimestamps.org";
-          } else {
-            simpleResults.tsResult = rawText;
-          }
+              "Verifiable at: https://opentimestamps.org" : rawText;
         }
         var tsDl = document.getElementById("ts-download");
         if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
         simpleStepDone = true;
         document.getElementById("simpleNextBtn").disabled = false;
       })
-      .catch(function (e) {
+      .catch(function (error) {
         var resultDiv = document.getElementById("sts-result");
         if (resultDiv)
           resultDiv.innerHTML =
             '<div class="simple-error">' +
-            __("simple.ts_failed").replace("{msg}", escapeHtml(e.message)) +
+            __("simple.ts_failed").replace("{msg}", escapeHtml(error.message)) +
             "</div>";
       });
   }
 }
 
-
+/**
+ *
+ */
 function runFingerprintStep() {
   if (!window.handleFingerprint) return;
   var fileInput = document.getElementById("fp-file");
@@ -1032,16 +1145,16 @@ function runFingerprintStep() {
           }
           simpleResults.fingerprint = true;
           simpleResults.fpResult = result;
-          setResult('fpResult', result);
+          setResult("fpResult", result);
           simpleStepDone = true;
           document.getElementById("simpleNextBtn").disabled = false;
         })
-        .catch(function (e) {
+        .catch(function (error) {
           var resultDiv = document.getElementById("sfp-result");
           if (resultDiv)
             resultDiv.innerHTML =
               '<div class="simple-error">' +
-              __("simple.fp_failed").replace("{msg}", escapeHtml(e.message)) +
+              __("simple.fp_failed").replace("{msg}", escapeHtml(error.message)) +
               "</div>";
         });
     } else {
@@ -1063,17 +1176,17 @@ function runFingerprintStep() {
             simpleResults.fingerprint = true;
             if (fpOutput) {
               simpleResults.fpHtml = fpOutput.innerHTML;
-              simpleResults.fpResult = getResult('fpResult') || null;
+              simpleResults.fpResult = getResult("fpResult") || null;
             }
             simpleStepDone = true;
             document.getElementById("simpleNextBtn").disabled = false;
           })
-          .catch(function (e) {
+          .catch(function (error) {
             var resultDiv = document.getElementById("sfp-result");
             if (resultDiv)
               resultDiv.innerHTML =
                 '<div class="simple-error">' +
-                __("simple.fp_failed").replace("{msg}", escapeHtml(e.message)) +
+                __("simple.fp_failed").replace("{msg}", escapeHtml(error.message)) +
                 "</div>";
           });
       }
@@ -1081,7 +1194,9 @@ function runFingerprintStep() {
   }, 50);
 }
 
-
+/**
+ *
+ */
 async function runDIDStepGenerate() {
   var statusEl = document.getElementById("sdid-result");
   var genBtn = document.getElementById("sdid-gen-btn");
@@ -1107,18 +1222,21 @@ async function runDIDStepGenerate() {
     }
     if (signBtn) signBtn.disabled = false;
     simpleResults.didIdentity = kp.did;
-  } catch (e) {
+  } catch (error) {
     if (statusEl)
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
         __("simple.did_failed", "❌ DID generation failed: {msg}").replace(
           "{msg}",
-          escapeHtml(e.message),
+          escapeHtml(error.message),
         ) +
         "</div>";
   }
 }
 
+/**
+ *
+ */
 async function runDIDStepSign() {
   var statusEl = document.getElementById("sdid-result");
   var signBtn = document.getElementById("sdid-sign-btn");
@@ -1128,7 +1246,7 @@ async function runDIDStepSign() {
     if (stored) {
       try {
         _didKp = await didImportSignKey(stored);
-      } catch (e) {
+      } catch {
         didClearKeys();
         if (statusEl)
           statusEl.innerHTML =
@@ -1188,9 +1306,7 @@ async function runDIDStepSign() {
       _didKp.algorithm,
     );
     if (statusEl) {
-      if (verifyOk) {
-        statusEl.innerHTML =
-          '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
+      statusEl.innerHTML = verifyOk ? '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
           __(
             "simple.did_signed_success",
             "✅ Fingerprint signed and verified successfully!",
@@ -1204,27 +1320,23 @@ async function runDIDStepSign() {
             "{algo}",
             _didKp.algorithm,
           ) +
-          "</span></div>";
-      } else {
-        statusEl.innerHTML =
-          '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          "</span></div>" : '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
           __(
             "simple.did_verify_failed",
             "❌ Signature verification failed. Please regenerate your identity.",
           ) +
           "</div>";
-      }
     }
     simpleStepDone = true;
     var nextBtn = document.getElementById("simpleNextBtn");
     if (nextBtn) nextBtn.disabled = false;
-  } catch (e) {
+  } catch (error) {
     if (statusEl)
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
         __("simple.did_failed", "❌ DID signing failed: {msg}").replace(
           "{msg}",
-          escapeHtml(e.message),
+          escapeHtml(error.message),
         ) +
         "</div>";
   }
@@ -1233,14 +1345,7 @@ async function runDIDStepSign() {
   _didSig = null;
 }
 
-
-
-
-
-
 // ── Helpers ──
-
-
 
 // Init on DOM ready
 document.addEventListener("DOMContentLoaded", initMode);

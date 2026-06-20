@@ -13,6 +13,13 @@
 })();
 // ── PDF rebuild — modifies original PDF, replacing text with watermarked version ──
 
+/**
+ *
+ * @param origFull
+ * @param wmFull
+ * @param segText
+ * @param startPos
+ */
 function _getWmAtPos(origFull, wmFull, segText, startPos) {
   // Verify segText is at startPos in origFull
   if (origFull.length - startPos < segText.length) return null;
@@ -40,9 +47,13 @@ function _getWmAtPos(origFull, wmFull, segText, startPos) {
   return wmFull.substring(wmStart, wmIdx);
 }
 
+/**
+ *
+ * @param bytes
+ */
 async function _decompressRaw(bytes) {
   if (typeof DecompressionStream === "undefined") {
-    throw new Error("DecompressionStream not available");
+    throw new TypeError("DecompressionStream not available");
   }
   var ds = new DecompressionStream("deflate-raw");
   var writer = ds.writable.getWriter();
@@ -54,14 +65,14 @@ async function _decompressRaw(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch (e) { break; }
+      } catch { break; }
     }
   })();
   readPromise.catch(function () {});
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch (e) { /* suppress */ }
+  } catch { /* suppress */ }
   await readPromise;
   var total = 0;
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -74,31 +85,39 @@ async function _decompressRaw(bytes) {
   return result;
 }
 
+/**
+ *
+ * @param str
+ */
 function _stringToBytes(str) {
   var buf = new Uint8Array(str.length);
   for (var i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xff;
   return buf;
 }
 
+/**
+ *
+ * @param src
+ */
 async function _pdfBuildCMap(src) {
   var cmap = { forward: {}, reverse: {} };
   var objRe = /(\d+)\s+\d+\s+obj([\s\S]*?)endobj/g;
   var m;
   while ((m = objRe.exec(src)) !== null) {
     var objContent = m[2];
-    if (objContent.indexOf("FlateDecode") === -1) continue;
+    if (!objContent.includes("FlateDecode")) continue;
     var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
     if (!sm2) continue;
     var raw2 = sm2[1].replace(/[\r\n]+$/, "");
-    if (raw2.length > 100000) continue;
+    if (raw2.length > 100_000) continue;
     var dec2;
     try {
       dec2 = await _decompressRaw(_stringToBytes(raw2));
-    } catch (e) { continue; }
+    } catch { continue; }
     if (!dec2 || dec2.length === 0) continue;
     var data = "";
     for (var di = 0; di < dec2.length; di++) data += String.fromCharCode(dec2[di]);
-    if (data.indexOf("begincmap") === -1) continue;
+    if (!data.includes("begincmap")) continue;
 
     var bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
     var bm;
@@ -138,6 +157,13 @@ async function _pdfBuildCMap(src) {
   return cmap;
 }
 
+/**
+ *
+ * @param content
+ * @param origFull
+ * @param wmFull
+ * @param cmap
+ */
 function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
   // ── 1. Locate all text segments (TJ arrays + Tj operators) ──
   var segs = [];
@@ -194,7 +220,7 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
       var ch;
       if (cmap && cmap.forward[cid] !== undefined) {
         try { ch = String.fromCodePoint(cmap.forward[cid]); }
-        catch (e) { ch = "?"; }
+        catch { ch = "?"; }
       } else {
         ch = String.fromCharCode(cid);
       }
@@ -213,11 +239,7 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
           if (wmChar) {
             var wmCode = wmChar.charCodeAt(0);
             var newCid;
-            if (cmap && cmap.reverse[wmCode] !== undefined) {
-              newCid = cmap.reverse[wmCode];
-            } else {
-              newCid = hexSegs[hi].cid;
-            }
+            newCid = cmap && cmap.reverse[wmCode] !== undefined ? cmap.reverse[wmCode] : hexSegs[hi].cid;
             var newHex = newCid.toString(16).toUpperCase();
             while (newHex.length < 4) newHex = "0" + newHex;
             content = content.substring(0, hexSegs[hi].start) + "<" + newHex + "> Tj" + content.substring(hexSegs[hi].end);
@@ -259,11 +281,11 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
       segs[si2].text,
       streamPos + segStartInStream,
     );
-    var chunk = wmSeg !== null ? wmSeg : segs[si2].text;
+    var chunk = wmSeg === null ? segs[si2].text : wmSeg;
     var esc = chunk
       .replace(/\\/g, "\\\\")
-      .replace(/\(/g, "\\(")
-      .replace(/\)/g, "\\)");
+      .replace(/\(/g, String.raw`\(`)
+      .replace(/\)/g, String.raw`\)`);
     content =
       content.substring(0, segs[si2].start) +
       "(" +
@@ -275,6 +297,12 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
   return content;
 }
 
+/**
+ *
+ * @param originalBytes
+ * @param originalText
+ * @param watermarkedText
+ */
 async function buildWatermarkedPdfDoc(
   originalBytes,
   originalText,
@@ -296,8 +324,12 @@ async function buildWatermarkedPdfDoc(
     wmUtf16Be += String.fromCharCode((code >> 8) & 0xff);
     wmUtf16Be += String.fromCharCode(code & 0xff);
   }
+  /**
+   *
+   * @param s
+   */
   function escPdfStr(s) {
-    return s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+    return s.replace(/\\/g, "\\\\").replace(/\(/g, String.raw`\(`).replace(/\)/g, String.raw`\)`);
   }
   var wmStreamSnippet =
     "\nBT\n/F0 12 Tf\n0 0 Td\n(" + escPdfStr(wmUtf16Be) + ") Tj\nET\n";
@@ -332,7 +364,7 @@ async function buildWatermarkedPdfDoc(
               if (v.done) break;
               sch.push(v.value);
             }
-          } catch (e) {
+          } catch {
             /* reader error — suppress */
           }
         })();
@@ -340,7 +372,7 @@ async function buildWatermarkedPdfDoc(
         try {
           await sw.write(rawBytes);
           await sw.close();
-        } catch (e) { /* suppress */ }
+        } catch { /* suppress */ }
         await srp;
         var sttl = 0;
         for (var si = 0; si < sch.length; si++) sttl += sch[si].length;
@@ -350,7 +382,7 @@ async function buildWatermarkedPdfDoc(
           dec.set(sch[sj], soff);
           soff += sch[sj].length;
         }
-      } catch (e) {
+      } catch {
         dec = null;
       }
     }
@@ -364,7 +396,7 @@ async function buildWatermarkedPdfDoc(
       var didReplace = newStr !== decStr;
       // Only append if the CMap replacement didn't already modify the content
       var pageStream =
-        !didReplace && wmUtf16Be && decStr.indexOf("BT") >= 0 && decStr.indexOf("ET") >= 0;
+        !didReplace && wmUtf16Be && decStr.includes("BT") && decStr.includes("ET");
       if (pageStream) {
         var lastEt = decStr.lastIndexOf("ET");
         decStr =
@@ -398,6 +430,10 @@ async function buildWatermarkedPdfDoc(
   return out;
 }
 
+/**
+ *
+ * @param r
+ */
 function _docwBuildCertificateText(r) {
   var DASHES = "------------------------------------------------------------";
   var s = "";
@@ -440,16 +476,24 @@ function _docwBuildCertificateText(r) {
   return s;
 }
 
+/**
+ *
+ * @param r
+ */
 function docwToTXT(r) {
   return _docwBuildCertificateText(r);
 }
 
+/**
+ *
+ * @param r
+ */
 function docwToCSV(r) {
   var rows = [["Key", "Value"]];
   var keys = ["algo", "message", "timestamp", "textLength", "hash", "resultLength"];
   for (var ki = 0; ki < keys.length; ki++) {
     var k = keys[ki];
-    rows.push([k, r[k] !== undefined ? String(r[k]) : ""]);
+    rows.push([k, r[k] === undefined ? "" : String(r[k])]);
   }
   return (
     rows
@@ -464,6 +508,10 @@ function docwToCSV(r) {
   );
 }
 
+/**
+ *
+ * @param r
+ */
 function docwToXML(r) {
   var xml = '<?xml version="1.0"?>\n<document_watermark>\n';
   var keys = ["algo", "message", "timestamp", "textLength", "hash", "resultLength"];
@@ -476,10 +524,18 @@ function docwToXML(r) {
   return xml;
 }
 
+/**
+ *
+ * @param r
+ */
 function docwToHTML(r) {
   return _docwBuildReportHtml(r, "embed");
 }
 
+/**
+ *
+ * @param format
+ */
 async function downloadDocw(format) {
   closeDownloadModal();
   var r = _docwResult;
@@ -499,7 +555,7 @@ async function downloadDocw(format) {
 
   var content, ext, mime;
   switch (format) {
-    case "json":
+    case "json": {
       content = JSON.stringify(
         {
           watermarkedText: r.watermarkedText,
@@ -515,26 +571,31 @@ async function downloadDocw(format) {
       ext = "json";
       mime = "application/json";
       break;
-    case "csv":
+    }
+    case "csv": {
       content = docwToCSV(r);
       ext = "csv";
       mime = "text/csv";
       break;
-    case "txt":
+    }
+    case "txt": {
       content = docwToTXT(r);
       ext = "txt";
       mime = "text/plain";
       break;
-    case "xml":
+    }
+    case "xml": {
       content = docwToXML(r);
       ext = "xml";
       mime = "application/xml";
       break;
-    case "html":
+    }
+    case "html": {
       content = docwToHTML(r);
       ext = "html";
       mime = "text/html";
       break;
+    }
   }
   if (content == null) return;
   var blob = new Blob([content], { type: mime });

@@ -12,6 +12,9 @@
     );
 })();
 // ── Yield helper: no-op in Web Workers, setTimeout on main thread ──
+/**
+ *
+ */
 function maybeYield() {
   // No yield needed in Web Worker (no DOM to paint)
   if (typeof window === "undefined") return Promise.resolve();
@@ -28,15 +31,19 @@ var SHA3_ROTC = [
   61, 20, 44,
 ];
 var SHA3_RC = [
-  0x00000001, 0x00000000, 0x00008082, 0x00000000, 0x80008000, 0x80000000,
-  0x00008080, 0x80000000, 0x00008009, 0x80000000, 0x0000008a, 0x80000000,
-  0x00000088, 0x80000000, 0x00808009, 0x80000000, 0x0000000e, 0x80000000,
-  0x0000008b, 0x80000000, 0x0080000b, 0x80000000, 0x0000808b, 0x80000000,
-  0x8000000b, 0x80000000, 0x8000800a, 0x80000000, 0x00000080, 0x80000000,
-  0x8000000f, 0x80000000, 0x80008008, 0x80000000, 0x00000093, 0x80000000,
-  0x8000800a, 0x80000000, 0x00000096, 0x80000000, 0x00808003, 0x80000000,
-  0x00808083, 0x80000000, 0x00000280, 0x80000000, 0x800000a5, 0x80000000,
+  0x00_00_00_01, 0x00_00_00_00, 0x00_00_80_82, 0x00_00_00_00, 0x80_00_80_00, 0x80_00_00_00,
+  0x00_00_80_80, 0x80_00_00_00, 0x00_00_80_09, 0x80_00_00_00, 0x00_00_00_8a, 0x80_00_00_00,
+  0x00_00_00_88, 0x80_00_00_00, 0x00_80_80_09, 0x80_00_00_00, 0x00_00_00_0e, 0x80_00_00_00,
+  0x00_00_00_8b, 0x80_00_00_00, 0x00_80_00_0b, 0x80_00_00_00, 0x00_00_80_8b, 0x80_00_00_00,
+  0x80_00_00_0b, 0x80_00_00_00, 0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_80, 0x80_00_00_00,
+  0x80_00_00_0f, 0x80_00_00_00, 0x80_00_80_08, 0x80_00_00_00, 0x00_00_00_93, 0x80_00_00_00,
+  0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_96, 0x80_00_00_00, 0x00_80_80_03, 0x80_00_00_00,
+  0x00_80_80_83, 0x80_00_00_00, 0x00_00_02_80, 0x80_00_00_00, 0x80_00_00_a5, 0x80_00_00_00,
 ];
+/**
+ *
+ * @param st
+ */
 function keccakF(st) {
   var C0 = [0, 0, 0, 0, 0],
     C1 = [0, 0, 0, 0, 0],
@@ -112,6 +119,11 @@ function keccakF(st) {
     st[1] ^= SHA3_RC[r * 2 + 1];
   }
 }
+/**
+ *
+ * @param data
+ * @param bits
+ */
 async function sha3(data, bits) {
   var rate = 1600 - bits * 2,
     r = rate >> 3,
@@ -133,8 +145,8 @@ async function sha3(data, bits) {
     st[(j >> 3) * 2 + half] ^= data[i + j] << ((j & 3) << 3);
   }
   st[(rem >> 3) * 2 + (rem & 4 ? 1 : 0)] ^= 0x06 << ((rem & 3) << 3);
-  st[(lanes - 1) * 2] ^= 0x80000000;
-  st[(lanes - 1) * 2 + 1] ^= 0x80000000;
+  st[(lanes - 1) * 2] ^= 0x80_00_00_00;
+  st[(lanes - 1) * 2 + 1] ^= 0x80_00_00_00;
   keccakF(st);
   var outBytes = bits >> 3,
     result = new Uint8Array(outBytes);
@@ -161,14 +173,14 @@ var sha3_512 = async function (d) {
 
 // ── BLAKE2b (64-byte digest) ──
 var B2IV = [
-  0x6a09e667f3bcc908n,
-  0xbb67ae8584caa73bn,
-  0x3c6ef372fe94f82bn,
-  0xa54ff53a5f1d36f1n,
-  0x510e527fade682d1n,
-  0x9b05688c2b3e6c1fn,
-  0x1f83d9abfb41bd6bn,
-  0x5be0cd19137e2179n,
+  0x6a_09_e6_67_f3_bc_c9_08n,
+  0xbb_67_ae_85_84_ca_a7_3bn,
+  0x3c_6e_f3_72_fe_94_f8_2bn,
+  0xa5_4f_f5_3a_5f_1d_36_f1n,
+  0x51_0e_52_7f_ad_e6_82_d1n,
+  0x9b_05_68_8c_2b_3e_6c_1fn,
+  0x1f_83_d9_ab_fb_41_bd_6bn,
+  0x5b_e0_cd_19_13_7e_21_79n,
 ];
 var B2SIG = [
   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
@@ -182,19 +194,39 @@ var B2SIG = [
   [6, 15, 14, 9, 11, 3, 0, 8, 12, 2, 13, 7, 1, 4, 10, 5],
   [10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0],
 ];
+/**
+ *
+ * @param v
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ * @param x
+ * @param y
+ */
 function blake2bG(v, a, b, c, d, x, y) {
-  v[a] = (v[a] + v[b] + x) & 0xffffffffffffffffn;
+  v[a] = (v[a] + v[b] + x) & 0xff_ff_ff_ff_ff_ff_ff_ffn;
   v[d] = blake2bRor(v[d] ^ v[a], 32);
-  v[c] = (v[c] + v[d]) & 0xffffffffffffffffn;
+  v[c] = (v[c] + v[d]) & 0xff_ff_ff_ff_ff_ff_ff_ffn;
   v[b] = blake2bRor(v[b] ^ v[c], 24);
-  v[a] = (v[a] + v[b] + y) & 0xffffffffffffffffn;
+  v[a] = (v[a] + v[b] + y) & 0xff_ff_ff_ff_ff_ff_ff_ffn;
   v[d] = blake2bRor(v[d] ^ v[a], 16);
-  v[c] = (v[c] + v[d]) & 0xffffffffffffffffn;
+  v[c] = (v[c] + v[d]) & 0xff_ff_ff_ff_ff_ff_ff_ffn;
   v[b] = blake2bRor(v[b] ^ v[c], 63);
 }
+/**
+ *
+ * @param x
+ * @param n
+ */
 function blake2bRor(x, n) {
   return (x >> BigInt(n)) | (x << BigInt(64 - n));
 }
+/**
+ *
+ * @param data
+ * @param off
+ */
 function blake2bLoad64(data, off) {
   return (
     BigInt(data[off]) |
@@ -207,14 +239,21 @@ function blake2bLoad64(data, off) {
     (BigInt(data[off + 7]) << 56n)
   );
 }
+/**
+ *
+ * @param h
+ * @param m
+ * @param counter
+ * @param final
+ */
 function blake2bCompress(h, m, counter, final) {
   var v = new Array(16);
   for (var i = 0; i < 8; i++) {
     v[i] = h[i];
     v[i + 8] = B2IV[i];
   }
-  v[12] ^= BigInt(counter) & 0xffffffffffffffffn;
-  v[13] ^= BigInt(counter >> 32) & 0xffffffffffffffffn;
+  v[12] ^= BigInt(counter) & 0xff_ff_ff_ff_ff_ff_ff_ffn;
+  v[13] ^= BigInt(counter >> 32) & 0xff_ff_ff_ff_ff_ff_ff_ffn;
   if (final) v[14] = ~v[14];
   for (var r = 0; r < 12; r++) {
     var s = B2SIG[r % 10];
@@ -228,13 +267,17 @@ function blake2bCompress(h, m, counter, final) {
     blake2bG(v, 3, 4, 9, 14, m[s[14]], m[s[15]]);
   }
   for (var i = 0; i < 8; i++)
-    h[i] = (h[i] ^ v[i] ^ v[i + 8]) & 0xffffffffffffffffn;
+    h[i] = (h[i] ^ v[i] ^ v[i + 8]) & 0xff_ff_ff_ff_ff_ff_ff_ffn;
 }
+/**
+ *
+ * @param data
+ */
 async function blake2b(data) {
   var outLen = 64,
     _bi = 0;
   var h = B2IV.slice();
-  h[0] ^= 0x01010000n ^ BigInt(outLen);
+  h[0] ^= 0x01_01_00_00n ^ BigInt(outLen);
   var offset = 0,
     counter = 0;
   while (offset + 128 <= data.length) {
@@ -264,8 +307,8 @@ async function blake2b(data) {
 }
 // ── BLAKE2s (32-bit version) ──
 var B2S_IV = [
-  0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
-  0x1f83d9ab, 0x5be0cd19,
+  0x6a_09_e6_67, 0xbb_67_ae_85, 0x3c_6e_f3_72, 0xa5_4f_f5_3a, 0x51_0e_52_7f, 0x9b_05_68_8c,
+  0x1f_83_d9_ab, 0x5b_e0_cd_19,
 ];
 var B2S_SIGMA = [
   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
@@ -279,9 +322,21 @@ var B2S_SIGMA = [
   [6, 15, 14, 9, 11, 3, 0, 8, 12, 2, 13, 7, 1, 4, 10, 5],
   [10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0],
 ];
+/**
+ *
+ * @param x
+ * @param n
+ */
 function b2s_ror32(x, n) {
   return (x >>> n) | (x << (32 - n));
 }
+/**
+ *
+ * @param h
+ * @param m
+ * @param counter
+ * @param final
+ */
 function b2s_compress(h, m, counter, final) {
   var v = new Uint32Array(16),
     i,
@@ -292,9 +347,18 @@ function b2s_compress(h, m, counter, final) {
   v[9] = B2S_IV[1];
   v[10] = B2S_IV[2];
   v[11] = B2S_IV[3];
-  v[12] = B2S_IV[4] ^ (counter & 0xffffffff);
-  v[13] = B2S_IV[5] ^ ((counter >>> 32) & 0xffffffff);
+  v[12] = B2S_IV[4] ^ (counter & 0xff_ff_ff_ff);
+  v[13] = B2S_IV[5] ^ ((counter >>> 32) & 0xff_ff_ff_ff);
   if (final) v[14] = ~v[14] >>> 0;
+  /**
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param x
+   * @param y
+   */
   function G(a, b, c, d, x, y) {
     v[a] = (v[a] + v[b] + x) >>> 0;
     v[d] = b2s_ror32(v[d] ^ v[a], 16);
@@ -318,14 +382,23 @@ function b2s_compress(h, m, counter, final) {
   }
   for (i = 0; i < 8; i++) h[i] = (h[i] ^ v[i] ^ v[i + 8]) >>> 0;
 }
+/**
+ *
+ * @param d
+ * @param o
+ */
 function b2s_load32(d, o) {
   return d[o] | (d[o + 1] << 8) | (d[o + 2] << 16) | (d[o + 3] << 24);
 }
+/**
+ *
+ * @param data
+ */
 async function blake2s(data) {
   var outLen = 32,
     h = B2S_IV.slice(),
     _ci = 0;
-  h[0] ^= 0x01010000 ^ outLen;
+  h[0] ^= 0x01_01_00_00 ^ outLen;
   var offset = 0,
     counter = 0;
   while (offset + 64 <= data.length) {
@@ -355,39 +428,116 @@ async function blake2s(data) {
 }
 
 // ── Minimal MD5 implementation ──
+/**
+ *
+ * @param data
+ */
 async function md5(data) {
-  var s = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+  var s = [0x67_45_23_01, 0xef_cd_ab_89, 0x98_ba_dc_fe, 0x10_32_54_76];
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function F(x, y, z) {
     return (x & y) | (~x & z);
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function G(x, y, z) {
     return (x & z) | (y & ~z);
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function H(x, y, z) {
     return x ^ y ^ z;
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function I(x, y, z) {
     return y ^ (x | ~z);
   }
+  /**
+   *
+   * @param x
+   * @param n
+   */
   function rot(x, n) {
     return (x << n) | (x >>> (32 - n));
   }
+  /**
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param x
+   * @param s
+   * @param ac
+   */
   function FF(a, b, c, d, x, s, ac) {
-    a = rot((a + F(b, c, d) + x + ac) & 0xffffffff, s) + b;
-    return a & 0xffffffff;
+    a = rot((a + F(b, c, d) + x + ac) & 0xff_ff_ff_ff, s) + b;
+    return a & 0xff_ff_ff_ff;
   }
+  /**
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param x
+   * @param s
+   * @param ac
+   */
   function GG(a, b, c, d, x, s, ac) {
-    a = rot((a + G(b, c, d) + x + ac) & 0xffffffff, s) + b;
-    return a & 0xffffffff;
+    a = rot((a + G(b, c, d) + x + ac) & 0xff_ff_ff_ff, s) + b;
+    return a & 0xff_ff_ff_ff;
   }
+  /**
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param x
+   * @param s
+   * @param ac
+   */
   function HH(a, b, c, d, x, s, ac) {
-    a = rot((a + H(b, c, d) + x + ac) & 0xffffffff, s) + b;
-    return a & 0xffffffff;
+    a = rot((a + H(b, c, d) + x + ac) & 0xff_ff_ff_ff, s) + b;
+    return a & 0xff_ff_ff_ff;
   }
+  /**
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param x
+   * @param s
+   * @param ac
+   */
   function II(a, b, c, d, x, s, ac) {
-    a = rot((a + I(b, c, d) + x + ac) & 0xffffffff, s) + b;
-    return a & 0xffffffff;
+    a = rot((a + I(b, c, d) + x + ac) & 0xff_ff_ff_ff, s) + b;
+    return a & 0xff_ff_ff_ff;
   }
+  /**
+   *
+   * @param d
+   */
   function toBytes(d) {
     var b = new Uint8Array(4);
     b[0] = d & 0xff;
@@ -411,74 +561,74 @@ async function md5(data) {
       b = s[1],
       c = s[2],
       d = s[3];
-    a = FF(a, b, c, d, w[0], 7, 0xd76aa478);
-    d = FF(d, a, b, c, w[1], 12, 0xe8c7b756);
-    c = FF(c, d, a, b, w[2], 17, 0x242070db);
-    b = FF(b, c, d, a, w[3], 22, 0xc1bdceee);
-    a = FF(a, b, c, d, w[4], 7, 0xf57c0faf);
-    d = FF(d, a, b, c, w[5], 12, 0x4787c62a);
-    c = FF(c, d, a, b, w[6], 17, 0xa8304613);
-    b = FF(b, c, d, a, w[7], 22, 0xfd469501);
-    a = FF(a, b, c, d, w[8], 7, 0x698098d8);
-    d = FF(d, a, b, c, w[9], 12, 0x8b44f7af);
-    c = FF(c, d, a, b, w[10], 17, 0xffff5bb1);
-    b = FF(b, c, d, a, w[11], 22, 0x895cd7be);
-    a = FF(a, b, c, d, w[12], 7, 0x6b901122);
-    d = FF(d, a, b, c, w[13], 12, 0xfd987193);
-    c = FF(c, d, a, b, w[14], 17, 0xa679438e);
-    b = FF(b, c, d, a, w[15], 22, 0x49b40821);
-    a = GG(a, b, c, d, w[1], 5, 0xf61e2562);
-    d = GG(d, a, b, c, w[6], 9, 0xc040b340);
-    c = GG(c, d, a, b, w[11], 14, 0x265e5a51);
-    b = GG(b, c, d, a, w[0], 20, 0xe9b6c7aa);
-    a = GG(a, b, c, d, w[5], 5, 0xd62f105d);
-    d = GG(d, a, b, c, w[10], 9, 0x02441453);
-    c = GG(c, d, a, b, w[15], 14, 0xd8a1e681);
-    b = GG(b, c, d, a, w[4], 20, 0xe7d3fbc8);
-    a = GG(a, b, c, d, w[9], 5, 0x21e1cde6);
-    d = GG(d, a, b, c, w[14], 9, 0xc33707d6);
-    c = GG(c, d, a, b, w[3], 14, 0xf4d50d87);
-    b = GG(b, c, d, a, w[8], 20, 0x455a14ed);
-    a = GG(a, b, c, d, w[13], 5, 0xa9e3e905);
-    d = GG(d, a, b, c, w[2], 9, 0xfcefa3f8);
-    c = GG(c, d, a, b, w[7], 14, 0x676f02d9);
-    b = GG(b, c, d, a, w[12], 20, 0x8d2a4c8a);
-    a = HH(a, b, c, d, w[5], 4, 0xfffa3942);
-    d = HH(d, a, b, c, w[8], 11, 0x8771f681);
-    c = HH(c, d, a, b, w[11], 16, 0x6d9d6122);
-    b = HH(b, c, d, a, w[14], 23, 0xfde5380c);
-    a = HH(a, b, c, d, w[1], 4, 0xa4beea44);
-    d = HH(d, a, b, c, w[4], 11, 0x4bdecfa9);
-    c = HH(c, d, a, b, w[7], 16, 0xf6bb4b60);
-    b = HH(b, c, d, a, w[10], 23, 0xbebfbc70);
-    a = HH(a, b, c, d, w[13], 4, 0x289b7ec6);
-    d = HH(d, a, b, c, w[0], 11, 0xeaa127fa);
-    c = HH(c, d, a, b, w[3], 16, 0xd4ef3085);
-    b = HH(b, c, d, a, w[6], 23, 0x04881d05);
-    a = HH(a, b, c, d, w[9], 4, 0xd9d4d039);
-    d = HH(d, a, b, c, w[12], 11, 0xe6db99e5);
-    c = HH(c, d, a, b, w[15], 16, 0x1fa27cf8);
-    b = HH(b, c, d, a, w[2], 23, 0xc4ac5665);
-    a = II(a, b, c, d, w[0], 6, 0xf4292244);
-    d = II(d, a, b, c, w[7], 10, 0x432aff97);
-    c = II(c, d, a, b, w[14], 15, 0xab9423a7);
-    b = II(b, c, d, a, w[5], 21, 0xfc93a039);
-    a = II(a, b, c, d, w[12], 6, 0x655b59c3);
-    d = II(d, a, b, c, w[3], 10, 0x8f0ccc92);
-    c = II(c, d, a, b, w[10], 15, 0xffeff47d);
-    b = II(b, c, d, a, w[1], 21, 0x85845dd1);
-    a = II(a, b, c, d, w[8], 6, 0x6fa87e4f);
-    d = II(d, a, b, c, w[15], 10, 0xfe2ce6e0);
-    c = II(c, d, a, b, w[6], 15, 0xa3014314);
-    b = II(b, c, d, a, w[13], 21, 0x4e0811a1);
-    a = II(a, b, c, d, w[4], 6, 0xf7537e82);
-    d = II(d, a, b, c, w[11], 10, 0xbd3af235);
-    c = II(c, d, a, b, w[2], 15, 0x2ad7d2bb);
-    b = II(b, c, d, a, w[9], 21, 0xeb86d391);
-    s[0] = (s[0] + a) & 0xffffffff;
-    s[1] = (s[1] + b) & 0xffffffff;
-    s[2] = (s[2] + c) & 0xffffffff;
-    s[3] = (s[3] + d) & 0xffffffff;
+    a = FF(a, b, c, d, w[0], 7, 0xd7_6a_a4_78);
+    d = FF(d, a, b, c, w[1], 12, 0xe8_c7_b7_56);
+    c = FF(c, d, a, b, w[2], 17, 0x24_20_70_db);
+    b = FF(b, c, d, a, w[3], 22, 0xc1_bd_ce_ee);
+    a = FF(a, b, c, d, w[4], 7, 0xf5_7c_0f_af);
+    d = FF(d, a, b, c, w[5], 12, 0x47_87_c6_2a);
+    c = FF(c, d, a, b, w[6], 17, 0xa8_30_46_13);
+    b = FF(b, c, d, a, w[7], 22, 0xfd_46_95_01);
+    a = FF(a, b, c, d, w[8], 7, 0x69_80_98_d8);
+    d = FF(d, a, b, c, w[9], 12, 0x8b_44_f7_af);
+    c = FF(c, d, a, b, w[10], 17, 0xff_ff_5b_b1);
+    b = FF(b, c, d, a, w[11], 22, 0x89_5c_d7_be);
+    a = FF(a, b, c, d, w[12], 7, 0x6b_90_11_22);
+    d = FF(d, a, b, c, w[13], 12, 0xfd_98_71_93);
+    c = FF(c, d, a, b, w[14], 17, 0xa6_79_43_8e);
+    b = FF(b, c, d, a, w[15], 22, 0x49_b4_08_21);
+    a = GG(a, b, c, d, w[1], 5, 0xf6_1e_25_62);
+    d = GG(d, a, b, c, w[6], 9, 0xc0_40_b3_40);
+    c = GG(c, d, a, b, w[11], 14, 0x26_5e_5a_51);
+    b = GG(b, c, d, a, w[0], 20, 0xe9_b6_c7_aa);
+    a = GG(a, b, c, d, w[5], 5, 0xd6_2f_10_5d);
+    d = GG(d, a, b, c, w[10], 9, 0x02_44_14_53);
+    c = GG(c, d, a, b, w[15], 14, 0xd8_a1_e6_81);
+    b = GG(b, c, d, a, w[4], 20, 0xe7_d3_fb_c8);
+    a = GG(a, b, c, d, w[9], 5, 0x21_e1_cd_e6);
+    d = GG(d, a, b, c, w[14], 9, 0xc3_37_07_d6);
+    c = GG(c, d, a, b, w[3], 14, 0xf4_d5_0d_87);
+    b = GG(b, c, d, a, w[8], 20, 0x45_5a_14_ed);
+    a = GG(a, b, c, d, w[13], 5, 0xa9_e3_e9_05);
+    d = GG(d, a, b, c, w[2], 9, 0xfc_ef_a3_f8);
+    c = GG(c, d, a, b, w[7], 14, 0x67_6f_02_d9);
+    b = GG(b, c, d, a, w[12], 20, 0x8d_2a_4c_8a);
+    a = HH(a, b, c, d, w[5], 4, 0xff_fa_39_42);
+    d = HH(d, a, b, c, w[8], 11, 0x87_71_f6_81);
+    c = HH(c, d, a, b, w[11], 16, 0x6d_9d_61_22);
+    b = HH(b, c, d, a, w[14], 23, 0xfd_e5_38_0c);
+    a = HH(a, b, c, d, w[1], 4, 0xa4_be_ea_44);
+    d = HH(d, a, b, c, w[4], 11, 0x4b_de_cf_a9);
+    c = HH(c, d, a, b, w[7], 16, 0xf6_bb_4b_60);
+    b = HH(b, c, d, a, w[10], 23, 0xbe_bf_bc_70);
+    a = HH(a, b, c, d, w[13], 4, 0x28_9b_7e_c6);
+    d = HH(d, a, b, c, w[0], 11, 0xea_a1_27_fa);
+    c = HH(c, d, a, b, w[3], 16, 0xd4_ef_30_85);
+    b = HH(b, c, d, a, w[6], 23, 0x04_88_1d_05);
+    a = HH(a, b, c, d, w[9], 4, 0xd9_d4_d0_39);
+    d = HH(d, a, b, c, w[12], 11, 0xe6_db_99_e5);
+    c = HH(c, d, a, b, w[15], 16, 0x1f_a2_7c_f8);
+    b = HH(b, c, d, a, w[2], 23, 0xc4_ac_56_65);
+    a = II(a, b, c, d, w[0], 6, 0xf4_29_22_44);
+    d = II(d, a, b, c, w[7], 10, 0x43_2a_ff_97);
+    c = II(c, d, a, b, w[14], 15, 0xab_94_23_a7);
+    b = II(b, c, d, a, w[5], 21, 0xfc_93_a0_39);
+    a = II(a, b, c, d, w[12], 6, 0x65_5b_59_c3);
+    d = II(d, a, b, c, w[3], 10, 0x8f_0c_cc_92);
+    c = II(c, d, a, b, w[10], 15, 0xff_ef_f4_7d);
+    b = II(b, c, d, a, w[1], 21, 0x85_84_5d_d1);
+    a = II(a, b, c, d, w[8], 6, 0x6f_a8_7e_4f);
+    d = II(d, a, b, c, w[15], 10, 0xfe_2c_e6_e0);
+    c = II(c, d, a, b, w[6], 15, 0xa3_01_43_14);
+    b = II(b, c, d, a, w[13], 21, 0x4e_08_11_a1);
+    a = II(a, b, c, d, w[4], 6, 0xf7_53_7e_82);
+    d = II(d, a, b, c, w[11], 10, 0xbd_3a_f2_35);
+    c = II(c, d, a, b, w[2], 15, 0x2a_d7_d2_bb);
+    b = II(b, c, d, a, w[9], 21, 0xeb_86_d3_91);
+    s[0] = (s[0] + a) & 0xff_ff_ff_ff;
+    s[1] = (s[1] + b) & 0xff_ff_ff_ff;
+    s[2] = (s[2] + c) & 0xff_ff_ff_ff;
+    s[3] = (s[3] + d) & 0xff_ff_ff_ff;
   }
   var r = "";
   for (var i = 0; i < 4; i++) {
@@ -489,23 +639,27 @@ async function md5(data) {
 }
 
 // ── SHA-224 ──
+/**
+ *
+ * @param data
+ */
 async function sha224(data) {
   var K = new Uint32Array([
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
-    0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
-    0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
-    0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
-    0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
-    0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+    0x42_8a_2f_98, 0x71_37_44_91, 0xb5_c0_fb_cf, 0xe9_b5_db_a5, 0x39_56_c2_5b, 0x59_f1_11_f1,
+    0x92_3f_82_a4, 0xab_1c_5e_d5, 0xd8_07_aa_98, 0x12_83_5b_01, 0x24_31_85_be, 0x55_0c_7d_c3,
+    0x72_be_5d_74, 0x80_de_b1_fe, 0x9b_dc_06_a7, 0xc1_9b_f1_74, 0xe4_9b_69_c1, 0xef_be_47_86,
+    0x0f_c1_9d_c6, 0x24_0c_a1_cc, 0x2d_e9_2c_6f, 0x4a_74_84_aa, 0x5c_b0_a9_dc, 0x76_f9_88_da,
+    0x98_3e_51_52, 0xa8_31_c6_6d, 0xb0_03_27_c8, 0xbf_59_7f_c7, 0xc6_e0_0b_f3, 0xd5_a7_91_47,
+    0x06_ca_63_51, 0x14_29_29_67, 0x27_b7_0a_85, 0x2e_1b_21_38, 0x4d_2c_6d_fc, 0x53_38_0d_13,
+    0x65_0a_73_54, 0x76_6a_0a_bb, 0x81_c2_c9_2e, 0x92_72_2c_85, 0xa2_bf_e8_a1, 0xa8_1a_66_4b,
+    0xc2_4b_8b_70, 0xc7_6c_51_a3, 0xd1_92_e8_19, 0xd6_99_06_24, 0xf4_0e_35_85, 0x10_6a_a0_70,
+    0x19_a4_c1_16, 0x1e_37_6c_08, 0x27_48_77_4c, 0x34_b0_bc_b5, 0x39_1c_0c_b3, 0x4e_d8_aa_4a,
+    0x5b_9c_ca_4f, 0x68_2e_6f_f3, 0x74_8f_82_ee, 0x78_a5_63_6f, 0x84_c8_78_14, 0x8c_c7_02_08,
+    0x90_be_ff_fa, 0xa4_50_6c_eb, 0xbe_f9_a3_f7, 0xc6_71_78_f2,
   ]);
   var H = new Uint32Array([
-    0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511,
-    0x64f98fa7, 0xbefa4fa4,
+    0xc1_05_9e_d8, 0x36_7c_d5_07, 0x30_70_dd_17, 0xf7_0e_59_39, 0xff_c0_0b_31, 0x68_58_15_11,
+    0x64_f9_8f_a7, 0xbe_fa_4f_a4,
   ]);
   var len = data.length,
     bits = len * 8;
@@ -586,6 +740,10 @@ async function sha224(data) {
 }
 
 // ── MD2 ──
+/**
+ *
+ * @param data
+ */
 function md2(data) {
   var S = [
     0x29, 0x2e, 0x43, 0xc9, 0xa2, 0xd8, 0x7c, 0x01, 0x3d, 0x36, 0x54, 0xa1,
@@ -649,16 +807,43 @@ function md2(data) {
 }
 
 // ── MD4 ──
+/**
+ *
+ * @param data
+ */
 function md4(data) {
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function F(x, y, z) {
     return (x & y) | (~x & z);
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function G(x, y, z) {
     return (x & y) | (x & z) | (y & z);
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function H(x, y, z) {
     return x ^ y ^ z;
   }
+  /**
+   *
+   * @param x
+   * @param n
+   */
   function rot(x, n) {
     return (x << n) | (x >>> (32 - n));
   }
@@ -674,10 +859,10 @@ function md4(data) {
   new DataView(lb).setUint32(0, origLen, true);
   new DataView(lb).setUint32(4, 0, true);
   pad = new Uint8Array([...pad, ...new Uint8Array(lb)]);
-  var A = 0x67452301,
-    B = 0xefcdab89,
-    C = 0x98badcfe,
-    D = 0x10325476;
+  var A = 0x67_45_23_01,
+    B = 0xef_cd_ab_89,
+    C = 0x98_ba_dc_fe,
+    D = 0x10_32_54_76;
   for (var i = 0; i < pad.length; i += 64) {
     var X = new Array(16);
     for (var j = 0; j < 16; j++)
@@ -702,7 +887,7 @@ function md4(data) {
     for (var n = 0; n < 16; n++) {
       var s = [3, 5, 9, 13][n % 4];
       var k = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15][n];
-      A = rot(A + G(B, C, D) + X[k] + 0x5a827999, s);
+      A = rot(A + G(B, C, D) + X[k] + 0x5a_82_79_99, s);
       var t = A;
       A = D;
       D = C;
@@ -712,17 +897,17 @@ function md4(data) {
     for (var n = 0; n < 16; n++) {
       var s = [3, 9, 11, 15][n % 4];
       var k = [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15][n];
-      A = rot(A + H(B, C, D) + X[k] + 0x6ed9eba1, s);
+      A = rot(A + H(B, C, D) + X[k] + 0x6e_d9_eb_a1, s);
       var t = A;
       A = D;
       D = C;
       C = B;
       B = t;
     }
-    A = (A + AA) & 0xffffffff;
-    B = (B + BB) & 0xffffffff;
-    C = (C + CC) & 0xffffffff;
-    D = (D + DD) & 0xffffffff;
+    A = (A + AA) & 0xff_ff_ff_ff;
+    B = (B + BB) & 0xff_ff_ff_ff;
+    C = (C + CC) & 0xff_ff_ff_ff;
+    D = (D + DD) & 0xff_ff_ff_ff;
   }
   var r = new Uint8Array(16);
   new DataView(r.buffer).setUint32(0, A, true);
@@ -737,27 +922,66 @@ function md4(data) {
 }
 
 // ── RIPEMD-160 ──
+/**
+ *
+ * @param data
+ */
 async function ripemd160(data) {
+  /**
+   *
+   * @param x
+   * @param n
+   */
   function rot(x, n) {
     return (x << n) | (x >>> (32 - n));
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function f1(x, y, z) {
     return x ^ y ^ z;
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function f2(x, y, z) {
     return (x & y) | (~x & z);
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function f3(x, y, z) {
     return (x | ~y) ^ z;
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function f4(x, y, z) {
     return (x & z) | (y & ~z);
   }
+  /**
+   *
+   * @param x
+   * @param y
+   * @param z
+   */
   function f5(x, y, z) {
     return x ^ (y | ~z);
   }
-  var K = [0, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e];
-  var Kp = [0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0];
+  var K = [0, 0x5a_82_79_99, 0x6e_d9_eb_a1, 0x8f_1b_bc_dc, 0xa9_53_fd_4e];
+  var Kp = [0x50_a2_8b_e6, 0x5c_4d_d1_24, 0x6d_70_3e_f3, 0x7a_6d_76_e9, 0];
   var R = [
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 7, 4, 13, 1, 10, 6,
     15, 3, 12, 0, 9, 5, 2, 14, 11, 8, 3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13,
@@ -784,11 +1008,11 @@ async function ripemd160(data) {
   new DataView(lb).setUint32(0, origLen, true);
   new DataView(lb).setUint32(4, 0, true);
   pad = new Uint8Array([...pad, ...new Uint8Array(lb)]);
-  var h0 = 0x67452301,
-    h1 = 0xefcdab89,
-    h2 = 0x98badcfe,
-    h3 = 0x10325476,
-    h4 = 0xc3d2e1f0;
+  var h0 = 0x67_45_23_01,
+    h1 = 0xef_cd_ab_89,
+    h2 = 0x98_ba_dc_fe,
+    h3 = 0x10_32_54_76,
+    h4 = 0xc3_d2_e1_f0;
   var _rc = 0;
   for (var i = 0; i < pad.length; i += 64) {
     if (++_rc % 2000 === 0) await maybeYield();
@@ -848,8 +1072,8 @@ async function ripemd160(data) {
 
 // ── BLAKE3 (pure JS implementation) ──
 var B3_IV = [
-  0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
-  0x1f83d9ab, 0x5be0cd19,
+  0x6a_09_e6_67, 0xbb_67_ae_85, 0x3c_6e_f3_72, 0xa5_4f_f5_3a, 0x51_0e_52_7f, 0x9b_05_68_8c,
+  0x1f_83_d9_ab, 0x5b_e0_cd_19,
 ];
 var B3_SIGMA = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 14, 10, 4, 8, 9, 15, 13,
@@ -858,18 +1082,44 @@ var B3_SIGMA = [
   10, 15, 14, 1, 11, 12, 6, 8, 3, 13, 2, 12, 6, 10, 0, 11, 8, 3, 4, 13, 7, 5,
   15, 14, 1, 9, 12, 5, 1, 15, 14, 13, 4, 10, 0, 7, 6, 3, 9, 2, 8, 11,
 ];
+/**
+ *
+ * @param x
+ * @param n
+ */
 function b3_rot32(x, n) {
   return (x >>> n) | (x << (32 - n));
 }
+/**
+ *
+ * @param b
+ * @param o
+ */
 function b3_ld32(b, o) {
   return b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24);
 }
+/**
+ *
+ * @param a
+ * @param o
+ * @param v
+ */
 function b3_st32(a, o, v) {
   a[o] = v & 255;
   a[o + 1] = (v >>> 8) & 255;
   a[o + 2] = (v >>> 16) & 255;
   a[o + 3] = (v >>> 24) & 255;
 }
+/**
+ *
+ * @param s
+ * @param blk
+ * @param off
+ * @param cl
+ * @param ch
+ * @param bl
+ * @param fl
+ */
 function b3_compress(s, blk, off, cl, ch, bl, fl) {
   var v = new Uint32Array(16),
     i,
@@ -889,6 +1139,15 @@ function b3_compress(s, blk, off, cl, ch, bl, fl) {
     m.push(b3_ld32(blk, off + i * 4));
     v[i] ^= m[i];
   }
+  /**
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param x
+   * @param y
+   */
   function G(a, b, c, d, x, y) {
     v[a] = (v[a] + v[b] + x) >>> 0;
     v[d] = b3_rot32(v[d] ^ v[a], 16);
@@ -912,6 +1171,16 @@ function b3_compress(s, blk, off, cl, ch, bl, fl) {
   }
   for (i = 0; i < 8; i++) s[i] = (s[i] ^ v[i] ^ v[i + 8]) >>> 0;
 }
+/**
+ *
+ * @param s
+ * @param blk
+ * @param off
+ * @param cl
+ * @param ch
+ * @param bl
+ * @param fl
+ */
 function b3_xof(s, blk, off, cl, ch, bl, fl) {
   var v = new Uint32Array(16),
     i,
@@ -931,6 +1200,15 @@ function b3_xof(s, blk, off, cl, ch, bl, fl) {
     m.push(b3_ld32(blk, off + i * 4));
     v[i] ^= m[i];
   }
+  /**
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param x
+   * @param y
+   */
   function G(a, b, c, d, x, y) {
     v[a] = (v[a] + v[b] + x) >>> 0;
     v[d] = b3_rot32(v[d] ^ v[a], 16);
@@ -954,6 +1232,10 @@ function b3_xof(s, blk, off, cl, ch, bl, fl) {
   }
   for (i = 0; i < 8; i++) s[i] = v[i] >>> 0;
 }
+/**
+ *
+ * @param data
+ */
 async function blake3(data) {
   var BL = 64,
     CH = 1024,
@@ -992,7 +1274,7 @@ async function blake3(data) {
         blk,
         0,
         co >>> 0,
-        Math.floor(co / 4294967296) >>> 0,
+        Math.floor(co / 4_294_967_296) >>> 0,
         bw,
         fl,
       );
@@ -1062,26 +1344,43 @@ var WP_MDS = [
   [0x04, 0x01, 0x08, 0x05, 0x02, 0x09, 0x01, 0x01],
   [0x01, 0x04, 0x01, 0x08, 0x05, 0x02, 0x09, 0x01],
 ];
+/**
+ *
+ * @param a
+ * @param b
+ */
 function wp_gf_mul(a, b) {
   var r = 0;
   for (var i = 0; i < 8; i++) {
     if (b & 1) r ^= a;
     var h = a & 0x80;
     a = (a << 1) & 0xff;
-    if (h) a ^= 0x11d;
+    if (h) a ^= 0x1_1d;
     b >>= 1;
   }
   return r;
 }
+/**
+ *
+ * @param s
+ */
 function wp_subBytes(s) {
   for (var i = 0; i < 64; i++) s[i] = WP_SBOX[s[i]];
 }
+/**
+ *
+ * @param s
+ */
 function wp_shiftColumns(s) {
   var t = new Uint8Array(64);
   for (var c = 0; c < 8; c++)
     for (var r = 0; r < 8; r++) t[((r + c) % 8) * 8 + c] = s[r * 8 + c];
   return t;
 }
+/**
+ *
+ * @param s
+ */
 function wp_mixRows(s) {
   var t = new Uint8Array(64);
   for (var r = 0; r < 8; r++)
@@ -1092,9 +1391,19 @@ function wp_mixRows(s) {
     }
   return t;
 }
+/**
+ *
+ * @param s
+ * @param k
+ */
 function wp_addRoundKey(s, k) {
   for (var i = 0; i < 64; i++) s[i] ^= k[i];
 }
+/**
+ *
+ * @param k
+ * @param rc
+ */
 function wp_keySchedule(k, rc) {
   wp_subBytes(k);
   k = wp_shiftColumns(k);
@@ -1102,6 +1411,11 @@ function wp_keySchedule(k, rc) {
   for (var i = 0; i < 8; i++) k[i * 8 + i] ^= rc[i];
   return k;
 }
+/**
+ *
+ * @param msg
+ * @param k
+ */
 function wp_cipher(msg, k) {
   var s = new Uint8Array(msg);
   for (var r = 0; r < 10; r++) {
@@ -1121,6 +1435,10 @@ var WP_RC = [];
     WP_RC.push(rc);
   }
 })();
+/**
+ *
+ * @param data
+ */
 async function whirlpool(data) {
   var bits = data.length * 8,
     _wc = 0;
@@ -1155,6 +1473,10 @@ async function whirlpool(data) {
 }
 
 // ── Full fingerprint ──
+/**
+ *
+ * @param file
+ */
 async function fingerprintFile(file) {
   var buf = await file.arrayBuffer();
   var data = new Uint8Array(buf);
@@ -1172,6 +1494,11 @@ async function fingerprintFile(file) {
   ];
 
   var hashes = {};
+  /**
+   *
+   * @param algo
+   * @param d
+   */
   async function hashAlgo(algo, d) {
     var h = await crypto.subtle.digest(algo, d);
     return Array.from(new Uint8Array(h))
@@ -1188,13 +1515,13 @@ async function fingerprintFile(file) {
   hashes["SHA-512"] = await hashAlgo("SHA-512", data);
   try {
     hashes["BLAKE3"] = await blake3(data);
-  } catch (e) {}
+  } catch {}
   try {
     hashes["MD2"] = md2(data);
-  } catch (e) {}
+  } catch {}
   try {
     hashes["MD4"] = md4(data);
-  } catch (e) {}
+  } catch {}
 
   var result = {
     file_info: { file_name: name, file_size_bytes: data.length },
@@ -1216,12 +1543,12 @@ async function fingerprintFile(file) {
       };
       try {
         result.perceptual_hashes.whash = whash(small);
-      } catch (e) {}
+      } catch {}
       result.file_info.width = loaded.w;
       result.file_info.height = loaded.h;
       result.file_info.format = ext.replace(".", "").toUpperCase();
-    } catch (e) {
-      result.file_info.image_error = e.message;
+    } catch (error) {
+      result.file_info.image_error = error.message;
     }
   }
 
@@ -1232,14 +1559,21 @@ async function fingerprintFile(file) {
       if (fp) Object.assign(fp.hashes, extraHashes);
     });
   }
-  await computeRemainingHashes(result.hashes, buf).catch(function (e) {
-    console.warn("Main-thread hash compute error:", e);
+  await computeRemainingHashes(result.hashes, buf).catch(function (error) {
+    console.warn("Main-thread hash compute error:", error);
   });
 
   return result;
 }
 
 // ── Background worker: fetch hashing.js and create self-contained worker ──
+/**
+ *
+ * @param hashesObj
+ * @param fileBuf
+ * @param onProgress
+ * @param onComplete
+ */
 function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
   return new Promise(function (resolve) {
     if (location.protocol === "file:") {
@@ -1299,21 +1633,32 @@ function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
             URL.revokeObjectURL(workerUrl);
           };
         })
-        .catch(function (e) {
-          console.warn("Background worker init failed:", e);
+        .catch(function (error) {
+          console.warn("Background worker init failed:", error);
           resolve();
         });
-    } catch (e) {
-      console.warn("Background worker unavailable:", e);
+    } catch (error) {
+      console.warn("Background worker unavailable:", error);
       resolve();
     }
   });
 }
 
 // ── Compute remaining hashes on main thread (fallback when Worker unavailable) ──
+/**
+ *
+ * @param hashesObj
+ * @param buf
+ * @param onProgress
+ * @param onComplete
+ */
 async function computeRemainingHashes(hashesObj, buf, onProgress, onComplete) {
   var data = new Uint8Array(buf);
   var extra = {};
+  /**
+   *
+   * @param msg
+   */
   function setProg(msg) {
     if (onProgress) onProgress(msg);
   }
@@ -1334,7 +1679,7 @@ async function computeRemainingHashes(hashesObj, buf, onProgress, onComplete) {
     setProg(fns[i].key + "…");
     try {
       extra[fns[i].key] = await fns[i].fn(data);
-    } catch (e) {}
+    } catch {}
     await maybeYield();
   }
   setProg("");
@@ -1344,6 +1689,12 @@ async function computeRemainingHashes(hashesObj, buf, onProgress, onComplete) {
 }
 
 // ── Fast fingerprint for simplified mode (fast hashes + background worker for the rest) ──
+/**
+ *
+ * @param file
+ * @param onProgress
+ * @param onRemainingHashes
+ */
 async function fastFingerprint(file, onProgress, onRemainingHashes) {
   var buf = await file.arrayBuffer();
   var data = new Uint8Array(buf);
@@ -1361,6 +1712,11 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
   ];
 
   var hashes = {};
+  /**
+   *
+   * @param algo
+   * @param d
+   */
   async function hashAlgo(algo, d) {
     var h = await crypto.subtle.digest(algo, d);
     return Array.from(new Uint8Array(h))
@@ -1369,6 +1725,10 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
       })
       .join("");
   }
+  /**
+   *
+   * @param msg
+   */
   function setProg(msg) {
     if (onProgress) onProgress(msg);
   }
@@ -1385,7 +1745,7 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
   setProg("BLAKE3…");
   try {
     hashes["BLAKE3"] = await blake3(data);
-  } catch (e) {}
+  } catch {}
 
   var result = {
     file_info: { file_name: name, file_size_bytes: data.length },
@@ -1414,12 +1774,12 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
         setProg("whash…");
         result.perceptual_hashes.whash = whash(small);
         await maybeYield();
-      } catch (e) {}
+      } catch {}
       result.file_info.width = loaded.w;
       result.file_info.height = loaded.h;
       result.file_info.format = ext.replace(".", "").toUpperCase();
-    } catch (e) {
-      result.file_info.image_error = e.message;
+    } catch (error) {
+      result.file_info.image_error = error.message;
     }
   }
 
@@ -1441,8 +1801,8 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
     buf,
     onProgress,
     onRemainingHashes,
-  ).catch(function (e) {
-    console.warn("Main-thread hash compute error:", e);
+  ).catch(function (error) {
+    console.warn("Main-thread hash compute error:", error);
   });
 
   return result;
@@ -1450,6 +1810,11 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
 if (typeof window !== "undefined") window.fastFingerprint = fastFingerprint;
 
 // ── Trim fingerprint JSON payload to fit within maxBits ──
+/**
+ *
+ * @param fpResult
+ * @param maxBytes
+ */
 function trimFingerprintPayload(fpResult, maxBytes) {
   var orderedKeys = [
     "SHA-256",
@@ -1522,7 +1887,7 @@ if (typeof window !== "undefined")
       console.log("Empty input hash:", tvEmpty, "(expected 292d4e1d...)");
       console.log("ABC input hash:", tvAbc, "(expected 56887470...)");
     }
-  } catch (e) {
-    console.warn("BLAKE3 self-check failed:", e.message);
+  } catch (error) {
+    console.warn("BLAKE3 self-check failed:", error.message);
   }
 })();

@@ -12,12 +12,18 @@
     );
 })();
 
+/**
+ *
+ */
 function toggleArtistFields() {
   var cb = document.getElementById("sinfo-isArtist");
   var fields = document.getElementById("sinfo-artist-fields");
   if (fields) fields.style.display = cb && cb.checked ? "" : "none";
 }
 
+/**
+ *
+ */
 function saveSimpleUserInfo() {
   simpleUserInfo.name =
     (document.getElementById("sinfo-name") || {}).value || "";
@@ -46,6 +52,9 @@ function saveSimpleUserInfo() {
   };
 }
 
+/**
+ *
+ */
 function setupSimpleDropZone() {
   var dz = document.getElementById("simpleDropZone");
   if (!dz) return;
@@ -64,6 +73,10 @@ function setupSimpleDropZone() {
   });
 }
 
+/**
+ *
+ * @param type
+ */
 function getSimpleTypeLabel(type) {
   var labels = {
     image: __("simple.type_image", "image"),
@@ -75,6 +88,9 @@ function getSimpleTypeLabel(type) {
   return labels[type] || type;
 }
 
+/**
+ *
+ */
 function restoreUploadFileInfo() {
   var dz = document.getElementById("simpleDropZone");
   var info = document.getElementById("simpleFileInfo");
@@ -97,6 +113,10 @@ function restoreUploadFileInfo() {
     "</span></div></div>";
 }
 
+/**
+ *
+ * @param input
+ */
 async function simpleFileSelected(input) {
   var file = input.files ? input.files[0] : input;
   if (!file) return;
@@ -123,7 +143,7 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch (e) {}
+      } catch {}
     }
     return;
   }
@@ -152,7 +172,7 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch (e) {}
+      } catch {}
     }
     return;
   }
@@ -168,7 +188,7 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch (e) {}
+      } catch {}
     }
     return;
   }
@@ -184,7 +204,7 @@ async function simpleFileSelected(input) {
     if (input && input.tagName === "INPUT") {
       try {
         input.value = "";
-      } catch (e) {}
+      } catch {}
     }
     return;
   }
@@ -216,19 +236,19 @@ async function simpleFileSelected(input) {
   };
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
-  if (type === "image") {
-    simpleSteps = [
+  simpleSteps = type === "image" ? [
       { id: "upload", label: __("simple.step_upload", "Upload") },
       { id: "ai-question", label: __("simple.step_type", "Type") },
-    ];
-  } else {
-    simpleSteps = buildSteps(type, false);
-  }
+    ] : buildSteps(type, false);
   // Reset step position
   simpleStep = 0;
   renderStep();
 }
 
+/**
+ *
+ * @param isAI
+ */
 function chooseAi(isAI) {
   simpleIsAI = isAI;
   simpleSteps = buildSteps("image", isAI);
@@ -239,6 +259,12 @@ function chooseAi(isAI) {
 }
 
 // Build combined fingerprint + DID payload, trimmed to fit maxBytes
+/**
+ *
+ * @param fpResult
+ * @param didSig
+ * @param maxBytes
+ */
 function buildCombinedPayload(fpResult, didSig, maxBytes) {
   var didStr = "";
   if (didSig) {
@@ -273,6 +299,11 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
   return combined;
 }
 
+/**
+ *
+ * @param cats
+ * @param cat
+ */
 function getPiAlgoOptions(cats, cat) {
   var algos = cats[cat] || {};
   var keys = Object.keys(algos);
@@ -285,6 +316,9 @@ function getPiAlgoOptions(cats, cat) {
   return opts;
 }
 
+/**
+ *
+ */
 function updateSpiAlgorithms() {
   var sel = document.getElementById("spi-category");
   var algoSel = document.getElementById("spi-algorithm");
@@ -294,6 +328,10 @@ function updateSpiAlgorithms() {
   algoSel.innerHTML = getPiAlgoOptions(cats, sel.value);
 }
 
+/**
+ *
+ * @param dataUrl
+ */
 function dataUrlToBlob(dataUrl) {
   try {
     var parts = dataUrl.split(",");
@@ -302,11 +340,14 @@ function dataUrlToBlob(dataUrl) {
     var arr = new Uint8Array(raw.length);
     for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
     return new Blob([arr], { type: mime });
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
+/**
+ *
+ */
 function setupFpDownload() {
   setDownloadHandler(downloadFingerprint);
   document.getElementById("dl-modal-title").textContent = __("dl.title");
@@ -314,30 +355,47 @@ function setupFpDownload() {
     setResult('fpResult', simpleResults.fpResult);
 }
 
+/**
+ *
+ */
 function setupDidDownload() {
   setDownloadHandler(downloadDID);
   document.getElementById("dl-modal-title").textContent =
     __("dl.title", "Download") + " — DID";
 }
 
+/**
+ *
+ */
 function toggleSimpleLangDropdown() {
   var menu = document.getElementById("simpleLangMenu");
   if (menu) menu.classList.toggle("show");
 }
 
+/**
+ *
+ */
 function toggleModeLangDropdown() {
   var menu = document.getElementById("modeLangMenu");
   if (menu) menu.classList.toggle("show");
 }
 
+/**
+ *
+ * @param s
+ */
 function escapeHtml(s) {
   var div = document.createElement("div");
   div.textContent = s;
   return div.innerHTML;
 }
 
+/**
+ *
+ * @param bytes
+ */
 function formatSize(bytes) {
   if (bytes < 1024) return bytes + " B";
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / 1048576).toFixed(1) + " MB";
+  if (bytes < 1_048_576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1_048_576).toFixed(1) + " MB";
 }

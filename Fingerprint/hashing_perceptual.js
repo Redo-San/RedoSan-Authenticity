@@ -14,6 +14,10 @@
 
 // ── Perceptual hashing (pure JS using Canvas) ──
 
+/**
+ *
+ * @param imgData
+ */
 function ahash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -35,6 +39,10 @@ function ahash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
+/**
+ *
+ * @param imgData
+ */
 function dhash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -58,6 +66,10 @@ function dhash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
+/**
+ *
+ * @param imgData
+ */
 function phash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -93,6 +105,10 @@ function phash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
+/**
+ *
+ * @param imgData
+ */
 function whash(imgData) {
   var data = imgData.data,
     w = imgData.w,
@@ -139,6 +155,11 @@ function whash(imgData) {
   return hash.toString(16).padStart(16, "0");
 }
 
+/**
+ *
+ * @param imgData
+ * @param targetSize
+ */
 function resizeImageData(imgData, targetSize) {
   var c = document.createElement("canvas");
   c.width = imgData.w;
