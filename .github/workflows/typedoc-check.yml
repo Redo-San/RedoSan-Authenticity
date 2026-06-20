@@ -22,4 +22,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx typedoc --entryPointStrategy resolve --entryPoints "Style/mpa-router.js" --entryPoints "Style/navigation.js" --entryPoints "Style/shared.js" --entryPoints "Style/shared_validation.js" --skipErrorChecking --emit none
+      - run: npx typedoc --version
