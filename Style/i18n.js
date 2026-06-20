@@ -1,8 +1,12 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 // ظ¤ظ¤ Internationalization ظ¤ظ¤
 var i18n = { lang: 'en', data: {} };
-var SUPPORTED = ['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko'];
+var SUPPORTED = new Set(['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko']);
 
+/**
+ *
+ * @param html
+ */
 function sanitizeHtml(html) {
   var allowed = /^(h[23]|p|ul|li|a|br|strong|em|b|i|code|pre|blockquote|ol|span|div)$/i;
   var prev;
@@ -43,30 +47,41 @@ var BROWSER_LANGUAGE_MAP = {
   'am': 'am', 'et': 'et'
 };
 
+/**
+ *
+ */
 async function detectLang() {
   var stored = localStorage.getItem('redosan_lang');
-  if (stored && SUPPORTED.includes(stored)) return stored;
+  if (stored && SUPPORTED.has(stored)) return stored;
 
   var navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
   var primaryLang = navLang.substring(0, 2);
   
-  if (SUPPORTED.includes(primaryLang)) return primaryLang;
+  if (SUPPORTED.has(primaryLang)) return primaryLang;
   
   var mappedLang = BROWSER_LANGUAGE_MAP[primaryLang];
-  if (mappedLang && SUPPORTED.includes(mappedLang)) return mappedLang;
+  if (mappedLang && SUPPORTED.has(mappedLang)) return mappedLang;
 
   var langWithRegion = navLang.substring(0, 5);
-  if (SUPPORTED.includes(langWithRegion)) return langWithRegion;
+  if (SUPPORTED.has(langWithRegion)) return langWithRegion;
 
   return 'en';
 }
 
+/**
+ *
+ * @param lang
+ */
 function switchLang(lang) {
-  if (!SUPPORTED.includes(lang)) lang = 'en';
+  if (!SUPPORTED.has(lang)) lang = 'en';
   localStorage.setItem('redosan_lang', lang);
   loadLang(lang);
 }
 
+/**
+ *
+ * @param lang
+ */
 function langBtnText(lang) {
   // Return the most common alternative language for the current language
   var alternatives = {
@@ -82,6 +97,10 @@ function langBtnText(lang) {
   return alternatives[lang] || 'English';
 }
 
+/**
+ *
+ * @param lang
+ */
 function getLanguageDisplayName(lang) {
   // Try to get localized name from current language data
   if (i18n.data && i18n.data['lang.name.' + lang]) {
@@ -102,6 +121,10 @@ function getLanguageDisplayName(lang) {
   return names[lang] || lang;
 }
 
+/**
+ *
+ * @param lang
+ */
 async function loadLang(lang) {
   try {
     if (window.__I18N_DATA && window.__I18N_DATA[lang]) {
@@ -117,8 +140,8 @@ async function loadLang(lang) {
     i18n.lang = lang;
     applyLang();
     return true;
-  } catch(e) { 
-    console.error('i18n load error:', e);
+  } catch(error) { 
+    console.error('i18n load error:', error);
     if (lang !== 'en') {
       return loadLang('en');
     }
@@ -126,6 +149,9 @@ async function loadLang(lang) {
   }
 }
 
+/**
+ *
+ */
 function applyLang() {
   document.documentElement.lang = i18n.lang;
   document.documentElement.dir = i18n.lang === 'ar' ? 'rtl' : 'ltr';
@@ -149,12 +175,12 @@ function applyLang() {
     mBtn.title = 'Current: ' + displayName + '\nClick to change language';
   }
 
-  var richHtmlKeys = ['page.about', 'page.privacy', 'page.contact', 'page.social'];
+  var richHtmlKeys = new Set(['page.about', 'page.privacy', 'page.contact', 'page.social']);
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
-    var key = el.getAttribute('data-i18n');
+    var key = el.dataset.i18n;
     var text = i18n.data[key];
     if (text === undefined) return;
-    if (richHtmlKeys.indexOf(key) >= 0) {
+    if (richHtmlKeys.has(key)) {
       el.innerHTML = sanitizeHtml(text);
     } else {
       el.textContent = text;
@@ -162,7 +188,7 @@ function applyLang() {
   });
 
   document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
-    var key = el.getAttribute('data-i18n-placeholder');
+    var key = el.dataset.i18nPlaceholder;
     var text = i18n.data[key];
     if (text !== undefined) el.placeholder = text;
   });
@@ -176,7 +202,7 @@ function applyLang() {
       link.rel = 'stylesheet';
       var rtlBase = document.documentElement.dataset.standalone ? '../../' : 'Style/';
       link.href = rtlBase + 'rtl.css';
-      document.head.appendChild(link);
+      document.head.append(link);
     }
   } else {
     if (link) link.remove();
@@ -198,6 +224,9 @@ function applyLang() {
   });
 }
 
+/**
+ *
+ */
 function toggleLangDropdown() {
   var menu = document.getElementById('langMenu');
   if (menu) menu.classList.toggle('show');
@@ -231,12 +260,16 @@ const originalConsoleWarn = console.warn;
 const originalConsoleLog = console.log;
 
 // Prevent multiple declarations
-if (typeof window.originalConsoleError === 'undefined') {
+if (window.originalConsoleError === undefined) {
     window.originalConsoleError = console.error;
     window.originalConsoleWarn = console.warn;
     window.originalConsoleLog = console.log;
 }
 
+/**
+ *
+ * @param message
+ */
 function shouldFilterError(message) {
   if (!message) return false;
   const msg = message.toString().toLowerCase();
@@ -325,8 +358,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   try {
     const lang = await detectLang();
     await loadLang(lang);
-  } catch (e) {
-    console.error('Language initialization failed:', e);
+  } catch (error) {
+    console.error('Language initialization failed:', error);
     // Fallback to English
     loadLang('en');
   }

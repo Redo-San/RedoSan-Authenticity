@@ -67,7 +67,7 @@
   function parseJpegMarkers(bytes) {
     var info = {
       is_jpeg:
-        bytes && bytes.length > 3 && bytes[0] === 0xFF && bytes[1] === 0xD8,
+        bytes && bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8,
       has_eoi: false,
       trailing_bytes: 0,
       app_segments: [],
@@ -81,7 +81,7 @@
 
     var eoi = -1;
     for (var e = bytes.length - 2; e >= 0; e--) {
-      if (bytes[e] === 0xFF && bytes[e + 1] === 0xD9) {
+      if (bytes[e] === 0xff && bytes[e + 1] === 0xd9) {
         eoi = e;
         break;
       }
@@ -94,14 +94,14 @@
 
     var off = 2;
     while (off < bytes.length - 4) {
-      if (bytes[off] !== 0xFF) {
+      if (bytes[off] !== 0xff) {
         off++;
         continue;
       }
-      while (bytes[off] === 0xFF) off++;
+      while (bytes[off] === 0xff) off++;
       var marker = bytes[off++];
-      if (marker === 0xD9 || marker === 0xDA) break;
-      if (marker >= 0xD0 && marker <= 0xD7) continue;
+      if (marker === 0xd9 || marker === 0xda) break;
+      if (marker >= 0xd0 && marker <= 0xd7) continue;
       if (off + 2 > bytes.length) break;
       var len = (bytes[off] << 8) | bytes[off + 1];
       if (len < 2 || off + len > bytes.length) {
@@ -112,8 +112,8 @@
       }
       var payloadStart = off + 2;
       var payloadEnd = off + len;
-      if (marker >= 0xE0 && marker <= 0xEF) {
-        var label = "APP" + (marker - 0xE0);
+      if (marker >= 0xe0 && marker <= 0xef) {
+        var label = "APP" + (marker - 0xe0);
         info.app_segments.push(label);
         var text = "";
         for (
@@ -132,7 +132,7 @@
         if (text.includes("Photoshop") || text.includes("8BIM"))
           info.has_photoshop = true;
       }
-      if (marker === 0xDB) info.quantization_tables++;
+      if (marker === 0xdb) info.quantization_tables++;
       off += len;
     }
 
@@ -435,7 +435,7 @@
     var pct = Math.round(clamp(score, 0, 1) * 100);
     return {
       risk_score: pct,
-      risk_level: pct >= 70 ? "high" : (pct >= 38 ? "medium" : "low"),
+      risk_level: pct >= 70 ? "high" : pct >= 38 ? "medium" : "low",
     };
   }
 

@@ -1,6 +1,6 @@
 'use strict';
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const PAGES_DIR = path.resolve(__dirname, '../Style/pages');
 // All 20 page directories
@@ -44,16 +44,7 @@ for (const pageId of PAGES) {
 
   // 1. Remove Mode Selection Overlay
   const msStart = content.indexOf(MODE_SELECT_START);
-  if (msStart !== -1) {
-    const msEnd = content.indexOf(MODE_SELECT_END, msStart);
-    if (msEnd !== -1) {
-      content = content.slice(0, msStart) + content.slice(msEnd + MODE_SELECT_END.length);
-      changed = true;
-      console.log(`  Removed modeSelect from ${pageId}`);
-    } else {
-      console.log(`  WARN ${pageId}: found modeSelect start but no end marker`);
-    }
-  } else {
+  if (msStart === -1) {
     // Try alternative: modeSelect might not have the exact same whitespace
     // Fall back to removing the div with id="modeSelect" up to <!-- Navigation bar -->
     const altStart = content.indexOf('<!-- Mode Selection Overlay -->');
@@ -64,6 +55,15 @@ for (const pageId of PAGES) {
         changed = true;
         console.log(`  Removed modeSelect (alt) from ${pageId}`);
       }
+    }
+  } else {
+    const msEnd = content.indexOf(MODE_SELECT_END, msStart);
+    if (msEnd === -1) {
+      console.log(`  WARN ${pageId}: found modeSelect start but no end marker`);
+    } else {
+      content = content.slice(0, msStart) + content.slice(msEnd + MODE_SELECT_END.length);
+      changed = true;
+      console.log(`  Removed modeSelect from ${pageId}`);
     }
   }
 

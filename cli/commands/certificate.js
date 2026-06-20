@@ -18,8 +18,16 @@ async function runCertificate(filePath, opts) {
 
   const qrVerData = buildQRVerificationJSON(data);
   const docHash = crypto.createHash("sha256").update(qrVerData).digest("hex");
-  const qrContent = JSON.stringify({ data: JSON.parse(qrVerData), hash: docHash });
-  const qrPngBuf = await QRCode.toBuffer(qrContent, { type: "png", width: 400, margin: 2, errorCorrectionLevel: "H" });
+  const qrContent = JSON.stringify({
+    data: JSON.parse(qrVerData),
+    hash: docHash,
+  });
+  const qrPngBuf = await QRCode.toBuffer(qrContent, {
+    type: "png",
+    width: 400,
+    margin: 2,
+    errorCorrectionLevel: "H",
+  });
 
   let output;
   switch (format) {
@@ -77,7 +85,15 @@ async function buildCertData(filePath, opts) {
         soundcloud: opts.musicSoundcloud || "",
       },
     },
-    file: { name: "", size: 0, type: "", width: 0, height: 0, buf: null, hash: "" },
+    file: {
+      name: "",
+      size: 0,
+      type: "",
+      width: 0,
+      height: 0,
+      buf: null,
+      hash: "",
+    },
     watermark: false,
     watermarkAlgo: "",
     watermarkResult: "",
@@ -245,7 +261,13 @@ function stripHtml(s) {
   } while (s !== p);
   return s
     .replaceAll(/&[^;]+;/g, (m) => {
-      const e = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" };
+      const e = {
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&#39;": "'",
+      };
       return e[m] || " ";
     })
     .replaceAll(/\s+/g, " ")
@@ -379,7 +401,10 @@ function generatePDF(data, qrPngBuf, qrContent) {
       }
       checkPage(imgH + 10);
       try {
-        doc.image(data.file.buf, (pw - imgW) / 2, y, { width: imgW, height: imgH });
+        doc.image(data.file.buf, (pw - imgW) / 2, y, {
+          width: imgW,
+          height: imgH,
+        });
         y += imgH + 6;
       } catch {
         y += 2;
@@ -397,7 +422,9 @@ function generatePDF(data, qrPngBuf, qrContent) {
       y += 5;
       if (data.watermarkResult) {
         doc.fontSize(8).font("Helvetica");
-        const wmLines = doc.text(data.watermarkResult, margin, y, { width: pageW });
+        const wmLines = doc.text(data.watermarkResult, margin, y, {
+          width: pageW,
+        });
         y += 5 + wmLines.length;
       }
       y += 2;
@@ -447,7 +474,10 @@ function generatePDF(data, qrPngBuf, qrContent) {
       const families = [
         { label: "SHA-1", keys: ["SHA-1"] },
         { label: "SHA-2", keys: ["SHA-224", "SHA-256", "SHA-384", "SHA-512"] },
-        { label: "SHA-3", keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"] },
+        {
+          label: "SHA-3",
+          keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"],
+        },
         { label: "MD", keys: ["MD2", "MD4", "MD5"] },
         { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
         { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
@@ -592,7 +622,11 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
    */
   function addImage(pngBuf, width, height) {
     addParagraph([
-      new docx.ImageRun({ data: pngBuf, type: "png", transformation: { width: width || 400, height: height || 300 } }),
+      new docx.ImageRun({
+        data: pngBuf,
+        type: "png",
+        transformation: { width: width || 400, height: height || 300 },
+      }),
     ]);
   }
 
@@ -604,7 +638,14 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
   function addHeading(text, level) {
     children.push(
       new docx.Paragraph({
-        children: [new docx.TextRun({ text: text, bold: true, size: level === 1 ? 32 : 24, font: "Calibri" })],
+        children: [
+          new docx.TextRun({
+            text: text,
+            bold: true,
+            size: level === 1 ? 32 : 24,
+            font: "Calibri",
+          }),
+        ],
         spacing: { after: 200 },
       }),
     );
@@ -633,7 +674,12 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
     children.push(
       new docx.Paragraph({
         children: [
-          new docx.TextRun({ text: `${label}: `, bold: true, size: 20, font: "Calibri" }),
+          new docx.TextRun({
+            text: `${label}: `,
+            bold: true,
+            size: 20,
+            font: "Calibri",
+          }),
           new docx.TextRun({ text: String(value), size: 20, font: "Calibri" }),
         ],
         spacing: { after: 60 },
@@ -696,7 +742,10 @@ async function generateDOCX(data, qrPngBuf, _qrContent) {
     const families = [
       { label: "SHA-1", keys: ["SHA-1"] },
       { label: "SHA-2", keys: ["SHA-224", "SHA-256", "SHA-384", "SHA-512"] },
-      { label: "SHA-3", keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"] },
+      {
+        label: "SHA-3",
+        keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"],
+      },
       { label: "MD", keys: ["MD2", "MD4", "MD5"] },
       { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
       { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
@@ -797,7 +846,9 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
       userSection += `<tr><td><strong>Website</strong></td><td>${escHtml(data.user.website)}</td></tr>`;
     for (const [k, v] of Object.entries(data.user.social)) {
       if (v)
-        userSection += `<tr><td><strong>${escHtml(k.charAt(0).toUpperCase() + k.slice(1))}</strong></td><td>${escHtml(v)}</td></tr>`;
+        userSection += `<tr><td><strong>${escHtml(
+          k.charAt(0).toUpperCase() + k.slice(1),
+        )}</strong></td><td>${escHtml(v)}</td></tr>`;
     }
     userSection += "</table>";
   }
@@ -808,7 +859,10 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
     const families = [
       { label: "SHA-1", keys: ["SHA-1"] },
       { label: "SHA-2", keys: ["SHA-224", "SHA-256", "SHA-384", "SHA-512"] },
-      { label: "SHA-3", keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"] },
+      {
+        label: "SHA-3",
+        keys: ["SHA-3_224", "SHA-3_256", "SHA-3_384", "SHA-3_512"],
+      },
       { label: "MD", keys: ["MD2", "MD4", "MD5"] },
       { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
       { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
@@ -820,7 +874,9 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
       for (const k of fam.keys) {
         const v = data.fpResult.hashes[k];
         if (v)
-          fpSection += `<tr><td><strong>${escHtml(k)}</strong></td><td style="font-size:0.7em;word-break:break-all">${escHtml(v)}</td></tr>`;
+          fpSection += `<tr><td><strong>${escHtml(
+            k,
+          )}</strong></td><td style="font-size:0.7em;word-break:break-all">${escHtml(v)}</td></tr>`;
       }
       fpSection += "</table>";
     }
@@ -859,10 +915,14 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
       : "") +
     "</table>" +
     (data.watermark
-      ? `<h2>Watermark</h2><p><strong>Result:</strong> ${escHtml(data.watermarkAlgo || "Completed")}</p><pre>${escHtml(data.watermarkResult || "")}</pre>`
+      ? `<h2>Watermark</h2><p><strong>Result:</strong> ${escHtml(
+          data.watermarkAlgo || "Completed",
+        )}</p><pre>${escHtml(data.watermarkResult || "")}</pre>`
       : "") +
     (data.pixelInjection
-      ? `<h2>Pixel Injection</h2><p><strong>Result:</strong> Completed</p><pre>${escHtml(data.piResultHtml || "")}</pre>`
+      ? `<h2>Pixel Injection</h2><p><strong>Result:</strong> Completed</p><pre>${escHtml(
+          data.piResultHtml || "",
+        )}</pre>`
       : "") +
     (data.timestamp
       ? `<h2>Timestamp</h2><pre>${escHtml(data.tsResult || "Timestamp created successfully.")}</pre>`
@@ -883,7 +943,9 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
         escHtml(`${(data.didSig.signature || "").substring(0, 64)}...`) +
         "</td></tr></table>"
       : data.didIdentity
-        ? `<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">${escHtml(data.didIdentity)}</td></tr></table>`
+        ? `<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">${escHtml(
+            data.didIdentity,
+          )}</td></tr></table>`
         : "") +
     (data.ct?.submitted && data.ct.hash
       ? "<h2>Certificate Transparency</h2><table>" +
@@ -900,7 +962,9 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
             "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'
       : data.ct
-        ? `<h2>Certificate Transparency</h2><p>Status: ${escHtml(data.ct.submitted ? "Submitted" : `Unavailable — ${data.ct.error || "offline"}`)}</p>`
+        ? `<h2>Certificate Transparency</h2><p>Status: ${escHtml(
+            data.ct.submitted ? "Submitted" : `Unavailable — ${data.ct.error || "offline"}`,
+          )}</p>`
         : "") +
     "<h2>Verification QR Code</h2>" +
     "<p>Scan this QR code to verify the document contents.</p>" +
@@ -951,7 +1015,11 @@ async function generateEPUB(data, qrPngBuf, qrContent) {
   ];
   const imgExt = data.file.type === "image/png" ? "png" : "jpg";
   if (data.file.buf) {
-    manifestItems.push({ id: "img", href: `images/photo.${imgExt}`, mt: data.file.type || "image/jpeg" });
+    manifestItems.push({
+      id: "img",
+      href: `images/photo.${imgExt}`,
+      mt: data.file.type || "image/jpeg",
+    });
   }
   manifestItems.push({ id: "qr", href: "images/qr.png", mt: "image/png" });
 

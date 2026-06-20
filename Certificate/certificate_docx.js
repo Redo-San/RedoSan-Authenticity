@@ -13,10 +13,18 @@
 })();
 // ── DOCX Certificate Generator ──
 
+/**
+ *
+ * @param data
+ */
 async function downloadCertDOCX(data) {
   var children = [];
 
   // Helper: convert data URL to Uint8Array
+  /**
+   *
+   * @param dataUrl
+   */
   function dataURLToUint8Array(dataUrl) {
     var base64 = dataUrl.split(",", 2)[1];
     var binary = atob(base64);
@@ -26,6 +34,10 @@ async function downloadCertDOCX(data) {
   }
 
   // Helper: detect image type from MIME
+  /**
+   *
+   * @param mime
+   */
   function imageTypeFromMime(mime) {
     if (mime === "image/png") return "png";
     if (mime === "image/jpeg" || mime === "image/jpg") return "jpeg";
@@ -34,14 +46,27 @@ async function downloadCertDOCX(data) {
     return "png";
   }
 
+  /**
+   *
+   * @param content
+   */
   function addParagraph(content) {
     children.push(
       new docx.Paragraph({ children: content, spacing: { after: 200 } }),
     );
   }
 
+  /**
+   *
+   * @param dataUrl
+   * @param width
+   * @param height
+   */
   function addImage(dataUrl, width, height) {
-    var mime = (dataUrl.split(",", 1)[0].split(":", 2)[1] || "").split(";", 1)[0];
+    var mime = (dataUrl.split(",", 1)[0].split(":", 2)[1] || "").split(
+      ";",
+      1,
+    )[0];
     var type = imageTypeFromMime(mime);
     var imgData = dataURLToUint8Array(dataUrl);
     addParagraph([
@@ -53,6 +78,11 @@ async function downloadCertDOCX(data) {
     ]);
   }
 
+  /**
+   *
+   * @param text
+   * @param level
+   */
   function addHeading(text, level) {
     children.push(
       new docx.Paragraph({
@@ -69,6 +99,10 @@ async function downloadCertDOCX(data) {
     );
   }
 
+  /**
+   *
+   * @param text
+   */
   function addBody(text) {
     children.push(
       new docx.Paragraph({
@@ -78,6 +112,11 @@ async function downloadCertDOCX(data) {
     );
   }
 
+  /**
+   *
+   * @param label
+   * @param value
+   */
   function addLabelValue(label, value) {
     if (!value) return;
     children.push(
@@ -296,9 +335,9 @@ async function downloadCertDOCX(data) {
   var a = document.createElement("a");
   a.href = url;
   a.download = "RedoSan_Digital_Passport.docx";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   setTimeout(function () {
     URL.revokeObjectURL(url);
   }, 1000);

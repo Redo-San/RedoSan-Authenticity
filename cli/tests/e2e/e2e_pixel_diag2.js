@@ -45,7 +45,11 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
   await page.waitForTimeout(500);
   await page.setInputFiles("#pi-secret-file", [
-    { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("PI ROUNDTRIP DCT") },
+    {
+      name: "secret.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("PI ROUNDTRIP DCT"),
+    },
   ]);
   await page.waitForTimeout(500);
 
@@ -63,7 +67,10 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   const embedCheck = await page.evaluate(() => {
     const output = document.getElementById("pi-output");
     const img = output ? output.querySelector("img") : null;
-    return { hasImg: !!img, imgSrcStart: img ? img.src.substring(0, 30) : "none" };
+    return {
+      hasImg: !!img,
+      imgSrcStart: img ? img.src.substring(0, 30) : "none",
+    };
   });
   console.log("EMBED CHECK:", JSON.stringify(embedCheck));
 
@@ -102,7 +109,10 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
 
   const afterSet = await page.evaluate(() => {
     const sel = document.getElementById("pi-extract-algorithm");
-    return { selected: sel ? sel.value : "N/A", opts: sel ? Array.from(sel.options).map((o) => o.value) : [] };
+    return {
+      selected: sel ? sel.value : "N/A",
+      opts: sel ? Array.from(sel.options).map((o) => o.value) : [],
+    };
   });
   console.log("AFTER SET DCT EXTRACT:", JSON.stringify(afterSet));
 

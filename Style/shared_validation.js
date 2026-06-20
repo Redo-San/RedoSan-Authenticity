@@ -84,8 +84,8 @@ function isDangerousFile(file) {
 }
 
 var MAGIC_BYTES = {
-  "image/png": [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],
-  "image/jpeg": [[0xFF, 0xD8, 0xFF]],
+  "image/png": [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
+  "image/jpeg": [[0xff, 0xd8, 0xff]],
   "image/gif": [
     [0x47, 0x49, 0x46, 0x38, 0x39, 0x61],
     [0x47, 0x49, 0x46, 0x38, 0x37, 0x61],
@@ -107,10 +107,10 @@ var MAGIC_BYTES = {
       return false;
     return true;
   },
-  "image/bmp": [[0x42, 0x4D]],
+  "image/bmp": [[0x42, 0x4d]],
   "image/tiff": [
-    [0x49, 0x49, 0x2A, 0x00],
-    [0x4D, 0x4D, 0x00, 0x2A],
+    [0x49, 0x49, 0x2a, 0x00],
+    [0x4d, 0x4d, 0x00, 0x2a],
   ],
   "image/svg+xml": function (buf) {
     var s = String.fromCharCode.apply(null, buf.slice(0, 50)).toLowerCase();
@@ -119,9 +119,9 @@ var MAGIC_BYTES = {
   "application/pdf": [[0x25, 0x50, 0x44, 0x46]],
   "audio/mpeg": [
     [0x49, 0x44, 0x33],
-    [0xFF, 0xFB],
-    [0xFF, 0xF3],
-    [0xFF, 0xF2],
+    [0xff, 0xfb],
+    [0xff, 0xf3],
+    [0xff, 0xf2],
   ],
   "audio/wav": function (buf) {
     if (
@@ -140,8 +140,8 @@ var MAGIC_BYTES = {
       return false;
     return true;
   },
-  "audio/flac": [[0x66, 0x4C, 0x61, 0x43]],
-  "audio/ogg": [[0x4F, 0x67, 0x67, 0x53]],
+  "audio/flac": [[0x66, 0x4c, 0x61, 0x43]],
+  "audio/ogg": [[0x4f, 0x67, 0x67, 0x53]],
   "video/mp4": function (buf) {
     if (
       buf[4] !== 0x66 ||
@@ -152,7 +152,7 @@ var MAGIC_BYTES = {
       return false;
     return true;
   },
-  "video/webm": [[0x1A, 0x45, 0xDF, 0xA3]],
+  "video/webm": [[0x1a, 0x45, 0xdf, 0xa3]],
   "video/avi": function (buf) {
     if (
       buf[0] !== 0x52 ||
@@ -315,62 +315,64 @@ function checkFileStructure(file) {
       var arr = new Uint8Array(reader.result);
       var off = size - tailSize;
       switch (mime) {
-      case "image/png": {
-        // Last 12 bytes must be IEND chunk: 0-length, "IEND", CRC
-        if (tailSize < 12) {
-          resolve(false);
-          return;
+        case "image/png": {
+          // Last 12 bytes must be IEND chunk: 0-length, "IEND", CRC
+          if (tailSize < 12) {
+            resolve(false);
+            return;
+          }
+          var i = arr.length - 12;
+          if (
+            arr[i] !== 0 ||
+            arr[i + 1] !== 0 ||
+            arr[i + 2] !== 0 ||
+            arr[i + 3] !== 0
+          ) {
+            resolve(false);
+            return;
+          }
+          if (
+            arr[i + 4] !== 0x49 ||
+            arr[i + 5] !== 0x45 ||
+            arr[i + 6] !== 0x4e ||
+            arr[i + 7] !== 0x44
+          ) {
+            resolve(false);
+            return;
+          }
+          resolve(true);
+
+          break;
         }
-        var i = arr.length - 12;
-        if (
-          arr[i] !== 0 ||
-          arr[i + 1] !== 0 ||
-          arr[i + 2] !== 0 ||
-          arr[i + 3] !== 0
-        ) {
-          resolve(false);
-          return;
+        case "image/jpeg": {
+          // Last 2 bytes must be EOI marker FF D9
+          if (tailSize < 2) {
+            resolve(false);
+            return;
+          }
+          if (arr.at(-2) !== 0xff || arr.at(-1) !== 0xd9) resolve(false);
+          else resolve(true);
+
+          break;
         }
-        if (
-          arr[i + 4] !== 0x49 ||
-          arr[i + 5] !== 0x45 ||
-          arr[i + 6] !== 0x4E ||
-          arr[i + 7] !== 0x44
-        ) {
-          resolve(false);
-          return;
+        case "image/gif": {
+          // Last byte must be GIF trailer 0x3B
+          if (arr.at(-1) === 0x3b) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+
+          break;
         }
-        resolve(true);
-      
-      break;
-      }
-      case "image/jpeg": {
-        // Last 2 bytes must be EOI marker FF D9
-        if (tailSize < 2) {
-          resolve(false);
-          return;
+        case "image/webp": {
+          resolve(true);
+
+          break;
         }
-        if (arr.at(-2) !== 0xFF || arr.at(-1) !== 0xD9)
-          resolve(false);
-        else resolve(true);
-      
-      break;
-      }
-      case "image/gif": {
-        // Last byte must be GIF trailer 0x3B
-        if (arr.at(-1) === 0x3B) {resolve(true);}
-        else {resolve(false);}
-      
-      break;
-      }
-      case "image/webp": {
-        resolve(true);
-      
-      break;
-      }
-      default: {
-        resolve(true);
-      }
+        default: {
+          resolve(true);
+        }
       }
     };
     reader.onerror = function () {
@@ -392,7 +394,8 @@ function matchesAccept(file, acceptAttr) {
   var rules = acceptAttr.split(",");
   for (const rule of rules) {
     var r = rule.trim();
-    if (r.endsWith("/*") && type.startsWith(r.split("/", 1)[0] + "/")) return true;
+    if (r.endsWith("/*") && type.startsWith(r.split("/", 1)[0] + "/"))
+      return true;
     else if (r.includes("/") && type === r) return true;
     else if (r.startsWith(".") && name.endsWith(r)) return true;
   }
@@ -423,13 +426,13 @@ function clearInputFiles(input) {
 
 // Magic signatures of dangerous file types (for files without extension)
 var DANGEROUS_MAGIC = [
-  { sig: [0x4D, 0x5A], name: "PE executable (exe/dll/sys)" },
-  { sig: [0x7F, 0x45, 0x4C, 0x46], name: "ELF executable" },
-  { sig: [0xCA, 0xFE, 0xBA, 0xBE], name: "Mach-O executable" },
-  { sig: [0xFE, 0xED, 0xFA, 0xCE], name: "Mach-O executable" },
-  { sig: [0xCE, 0xFA, 0xED, 0xFE], name: "Mach-O executable" },
-  { sig: [0xCF, 0xFA, 0xED, 0xFE], name: "Mach-O x86_64" },
-  { sig: [0x4D, 0x53, 0x43, 0x46], name: "CAB archive" },
+  { sig: [0x4d, 0x5a], name: "PE executable (exe/dll/sys)" },
+  { sig: [0x7f, 0x45, 0x4c, 0x46], name: "ELF executable" },
+  { sig: [0xca, 0xfe, 0xba, 0xbe], name: "Mach-O executable" },
+  { sig: [0xfe, 0xed, 0xfa, 0xce], name: "Mach-O executable" },
+  { sig: [0xce, 0xfa, 0xed, 0xfe], name: "Mach-O executable" },
+  { sig: [0xcf, 0xfa, 0xed, 0xfe], name: "Mach-O x86_64" },
+  { sig: [0x4d, 0x53, 0x43, 0x46], name: "CAB archive" },
 ];
 
 /**

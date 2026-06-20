@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-var fs = require('fs');
-var path = require('path');
+var fs = require('node:fs');
+var path = require('node:path');
 
 var ROOT = path.join(__dirname, '..');
 var SKIP_DIRS = ['node_modules', 'vendor', '.git', 'cli'];
 var FIXED_FILES = [];
 
+/**
+ *
+ * @param filePath
+ */
 function shouldProcess(filePath) {
   var rel = path.relative(ROOT, filePath);
   for (var i = 0; i < SKIP_DIRS.length; i++) {
@@ -14,6 +18,10 @@ function shouldProcess(filePath) {
   return /\.(html|js)$/i.test(filePath);
 }
 
+/**
+ *
+ * @param content
+ */
 function findOrphanLabels(content) {
   var orphans = [];
   var re = /<label\b([^>]*)>([\s\S]*?)<\/label>/gi;
@@ -30,6 +38,11 @@ function findOrphanLabels(content) {
   return orphans;
 }
 
+/**
+ *
+ * @param content
+ * @param fromIndex
+ */
 function findNextInputId(content, fromIndex) {
   var re = /<(?:input|select|textarea)\b[^>]*?\s+id\s*=\s*["']([^"']*)["']/gi;
   re.lastIndex = fromIndex;
@@ -37,6 +50,11 @@ function findNextInputId(content, fromIndex) {
   return m ? m[1] : null;
 }
 
+/**
+ *
+ * @param content
+ * @param filePath
+ */
 function fixOrphans(content, filePath) {
   var orphans = findOrphanLabels(content);
   if (orphans.length === 0) return content;
@@ -56,6 +74,10 @@ function fixOrphans(content, filePath) {
   return content;
 }
 
+/**
+ *
+ * @param dir
+ */
 function walkDir(dir) {
   var entries = fs.readdirSync(dir, { withFileTypes: true });
   for (var i = 0; i < entries.length; i++) {

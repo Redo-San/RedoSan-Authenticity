@@ -12,23 +12,27 @@
     );
 })();
 
+/**
+ *
+ * @param str
+ */
 function _utf8Encode(str) {
   if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(str);
   var bytes = [];
   for (var i = 0; i < str.length; i++) {
     var cp = str.charCodeAt(i);
     if (cp < 0x80) bytes.push(cp);
-    else if (cp < 0x800) bytes.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f));
-    else if (cp < 0xd800 || cp >= 0xe000)
+    else if (cp < 0x8_00) bytes.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f));
+    else if (cp < 0xd8_00 || cp >= 0xe0_00)
       bytes.push(
         0xe0 | (cp >> 12),
         0x80 | ((cp >> 6) & 0x3f),
         0x80 | (cp & 0x3f),
       );
-    else if (cp >= 0xd800 && cp <= 0xdbff && i + 1 < str.length) {
+    else if (cp >= 0xd8_00 && cp <= 0xdb_ff && i + 1 < str.length) {
       var cp2 = str.charCodeAt(i + 1);
-      if (cp2 >= 0xdc00 && cp2 <= 0xdfff) {
-        var full = ((cp - 0xd800) << 10) + (cp2 - 0xdc00) + 0x10000;
+      if (cp2 >= 0xdc_00 && cp2 <= 0xdf_ff) {
+        var full = ((cp - 0xd8_00) << 10) + (cp2 - 0xdc_00) + 0x1_00_00;
         bytes.push(
           0xf0 | (full >> 18),
           0x80 | ((full >> 12) & 0x3f),
@@ -42,6 +46,10 @@ function _utf8Encode(str) {
   return new Uint8Array(bytes);
 }
 
+/**
+ *
+ * @param bytes
+ */
 function _utf8Decode(bytes) {
   if (typeof TextDecoder !== "undefined")
     return new TextDecoder().decode(bytes);
@@ -62,14 +70,18 @@ function _utf8Decode(bytes) {
         ((bytes[++i] & 0x3f) << 6) |
         (bytes[++i] & 0x3f);
       str += String.fromCharCode(
-        0xd800 + ((cp - 0x10000) >> 10),
-        0xdc00 + ((cp - 0x10000) & 0x3ff),
+        0xd8_00 + ((cp - 0x1_00_00) >> 10),
+        0xdc_00 + ((cp - 0x1_00_00) & 0x3_ff),
       );
     }
   }
   return str;
 }
 
+/**
+ *
+ * @param bytes
+ */
 async function _deflate(bytes) {
   if (typeof CompressionStream === "undefined")
     throw new Error("CompressionStream not available");
@@ -83,14 +95,14 @@ async function _deflate(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch (e) { break; }
+      } catch { break; }
     }
   })();
   readPromise.catch(function () {});
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch (e) { /* suppress */ }
+  } catch { /* suppress */ }
   await readPromise;
   var total = 0;
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -103,6 +115,10 @@ async function _deflate(bytes) {
   return result;
 }
 
+/**
+ *
+ * @param bytes
+ */
 async function _inflate(bytes) {
   if (typeof DecompressionStream === "undefined")
     throw new Error("DecompressionStream not available");
@@ -116,7 +132,7 @@ async function _inflate(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch (e) {
+      } catch {
         break;
       }
     }
@@ -125,7 +141,7 @@ async function _inflate(bytes) {
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch (e) {
+  } catch {
     /* write/close errors — suppress */
   }
   await readPromise;
@@ -140,6 +156,11 @@ async function _inflate(bytes) {
   return result;
 }
 
+/**
+ *
+ * @param message
+ * @param password
+ */
 async function _msgToBits(message, password) {
   if (!message) return null;
   var data = password ? password + ":" + message : message;
@@ -147,7 +168,7 @@ async function _msgToBits(message, password) {
   var compressed;
   try {
     compressed = await _deflate(bytes);
-  } catch (e) {
+  } catch {
     compressed = null;
   }
   var payload;
@@ -166,6 +187,11 @@ async function _msgToBits(message, password) {
   return bits;
 }
 
+/**
+ *
+ * @param result
+ * @param password
+ */
 function _checkPassword(result, password) {
   if (!password) return result;
   var colonIdx = result.indexOf(":");
@@ -177,6 +203,11 @@ function _checkPassword(result, password) {
   return result;
 }
 
+/**
+ *
+ * @param bits
+ * @param password
+ */
 async function _bitsToMsg(bits, password) {
   if (bits.length < 8) return "";
   var bytes = [];
@@ -200,8 +231,8 @@ async function _bitsToMsg(bits, password) {
       decoded = decoded.slice(0, end);
       var result = _utf8Decode(decoded);
       return _checkPassword(result, password);
-    } catch (e) {
-      if (e.message === "WRONG_PASSWORD") throw e;
+    } catch (error) {
+      if (error.message === "WRONG_PASSWORD") throw error;
       return "";
     }
   }
@@ -575,18 +606,35 @@ var DOCW_ALGOS = {
   3: { name: "Whitespace Replacement", impl: DOCW_WHITESPACE },
 };
 
+/**
+ *
+ * @param text
+ * @param message
+ * @param algoId
+ * @param password
+ */
 async function docwEmbed(text, message, algoId, password) {
   var algo = DOCW_ALGOS[String(algoId)];
   if (!algo) throw new Error("Unknown algorithm: " + algoId);
   return await algo.impl.embed(text, message, password || "");
 }
 
+/**
+ *
+ * @param text
+ * @param algoId
+ * @param password
+ */
 async function docwExtract(text, algoId, password) {
   var algo = DOCW_ALGOS[String(algoId)];
   if (!algo) throw new Error("Unknown algorithm: " + algoId);
   return await algo.impl.extract(text, password || "");
 }
 
+/**
+ *
+ * @param msg
+ */
 function _isGarbageResult(msg) {
   if (!msg || msg.length < 2) return true;
   if (msg.length < 4) return false;
@@ -597,6 +645,11 @@ function _isGarbageResult(msg) {
   return unique < 2;
 }
 
+/**
+ *
+ * @param text
+ * @param password
+ */
 async function docwAutoDetect(text, password) {
   var pwError = false;
   var candidates = [];
@@ -608,8 +661,8 @@ async function docwAutoDetect(text, password) {
           return { algo: id, name: DOCW_ALGOS[id].name, message: result };
         candidates.push({ algo: id, name: DOCW_ALGOS[id].name, message: result });
       }
-    } catch (e) {
-      if (e.message === "WRONG_PASSWORD") pwError = true;
+    } catch (error) {
+      if (error.message === "WRONG_PASSWORD") pwError = true;
     }
   }
   if (candidates.length > 0) {
@@ -620,6 +673,11 @@ async function docwAutoDetect(text, password) {
   return null;
 }
 
+/**
+ *
+ * @param text
+ * @param algoId
+ */
 function docwEstimateCapacity(text, algoId) {
   if (!text) return 0;
   var algo = DOCW_ALGOS[String(algoId)];
