@@ -22,4 +22,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx markdownlint "**/*.md" --ignore node_modules
+      - run: npx markdownlint "**/*.md" --ignore node_modules --ignore skills

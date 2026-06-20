@@ -928,7 +928,8 @@
     "*.woff",
     "*.woff2",
     "*.eot",
-    "*.ttf"
+    "*.ttf",
+    "skills"
   ],
   "dictionaries": [
     "en_US",

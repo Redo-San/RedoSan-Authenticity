@@ -69,11 +69,11 @@ function base58Decode(str) {
     var carry = idx;
     for (var j = 0; j < num.length; j++) {
       carry += num[j] * 58;
-      num[j] = carry & 0xFF;
+      num[j] = carry & 0xff;
       carry = carry >> 8;
     }
     while (carry > 0) {
-      num.push(carry & 0xFF);
+      num.push(carry & 0xff);
       carry = carry >> 8;
     }
   }
@@ -92,10 +92,10 @@ function base58Decode(str) {
 function varintEncode(value) {
   var bytes = [];
   while (value >= 0x80) {
-    bytes.push((value & 0x7F) | 0x80);
+    bytes.push((value & 0x7f) | 0x80);
     value >>>= 7;
   }
-  bytes.push(value & 0x7F);
+  bytes.push(value & 0x7f);
   return new Uint8Array(bytes);
 }
 
@@ -112,7 +112,7 @@ function varintDecode(bytes, offset) {
   while (true) {
     if (i >= bytes.length) throw new Error("Incomplete varint");
     var b = bytes[i];
-    value |= (b & 0x7F) << shift;
+    value |= (b & 0x7f) << shift;
     if (!(b & 0x80)) break;
     shift += 7;
     i++;
@@ -121,8 +121,10 @@ function varintDecode(bytes, offset) {
 }
 
 // ── P-256 Key Compression ──
-var P256_P = 115_792_089_210_356_248_762_697_446_949_407_573_530_086_143_415_290_314_195_533_631_308_867_097_853_951n;
-var P256_B = 0x5a_c6_35_d8_aa_3a_93_e7_b3_eb_bd_55_76_98_86_bc_65_1d_06_b0_cc_53_b0_f6_3b_ce_3c_3e_27_d2_60_4bn;
+var P256_P =
+  115_792_089_210_356_248_762_697_446_949_407_573_530_086_143_415_290_314_195_533_631_308_867_097_853_951n;
+var P256_B =
+  0x5a_c6_35_d8_aa_3a_93_e7_b3_eb_bd_55_76_98_86_bc_65_1d_06_b0_cc_53_b0_f6_3b_ce_3c_3e_27_d2_60_4bn;
 
 /**
  *
@@ -247,7 +249,7 @@ function powMod(a, e, m) {
 
 // ── Multicodec Prefixes ──
 var MULTICODEC_MAP = {
-  ed25519: { code: 0xED, keyLength: 32 },
+  ed25519: { code: 0xed, keyLength: 32 },
   p256: { code: 0x12_00, keyLength: 33 },
   rsa: { code: 0x81, keyLength: null },
 };
@@ -275,46 +277,46 @@ function didGetAlgorithmList() {
 async function didIsAlgoSupported(algo) {
   try {
     switch (algo) {
-    case "Ed25519": {
-      var k = await crypto.subtle.generateKey({ name: "Ed25519" }, false, [
-        "sign",
-        "verify",
-      ]);
-      return !!k;
-    }
-    case "P-256": {
-      var k = await crypto.subtle.generateKey(
-        { name: "ECDSA", namedCurve: "P-256" },
-        false,
-        ["sign", "verify"],
-      );
-      return !!k;
-    }
-    case "RSA-2048": {
-      var k = await crypto.subtle.generateKey(
-        {
-          name: "RSASSA-PKCS1-v1_5",
-          modulusLength: 2048,
-          publicExponent: new Uint8Array([1, 0, 1]),
-        },
-        false,
-        ["sign", "verify"],
-      );
-      return !!k;
-    }
-    case "RSA-4096": {
-      var k = await crypto.subtle.generateKey(
-        {
-          name: "RSASSA-PKCS1-v1_5",
-          modulusLength: 4096,
-          publicExponent: new Uint8Array([1, 0, 1]),
-        },
-        false,
-        ["sign", "verify"],
-      );
-      return !!k;
-    }
-    // No default
+      case "Ed25519": {
+        var k = await crypto.subtle.generateKey({ name: "Ed25519" }, false, [
+          "sign",
+          "verify",
+        ]);
+        return !!k;
+      }
+      case "P-256": {
+        var k = await crypto.subtle.generateKey(
+          { name: "ECDSA", namedCurve: "P-256" },
+          false,
+          ["sign", "verify"],
+        );
+        return !!k;
+      }
+      case "RSA-2048": {
+        var k = await crypto.subtle.generateKey(
+          {
+            name: "RSASSA-PKCS1-v1_5",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([1, 0, 1]),
+          },
+          false,
+          ["sign", "verify"],
+        );
+        return !!k;
+      }
+      case "RSA-4096": {
+        var k = await crypto.subtle.generateKey(
+          {
+            name: "RSASSA-PKCS1-v1_5",
+            modulusLength: 4096,
+            publicExponent: new Uint8Array([1, 0, 1]),
+          },
+          false,
+          ["sign", "verify"],
+        );
+        return !!k;
+      }
+      // No default
     }
   } catch {
     return false;
@@ -445,7 +447,7 @@ function didKeyDecode(did) {
   // Backward compat: old format did:key:u... (base64url)
   if (did.indexOf("did:key:u") === 0) {
     var b64 = did.slice(9);
-    b64 = b64.replaceAll('-', "+").replaceAll('_', "/");
+    b64 = b64.replaceAll("-", "+").replaceAll("_", "/");
     while (b64.length % 4) b64 += "=";
     var bytes = new Uint8Array(
       atob(b64)
@@ -458,22 +460,23 @@ function didKeyDecode(did) {
     var pubKeyBytes = bytes.slice(1);
     var algo;
     switch (prefix) {
-    case 0xED: {
-    algo = "ed25519";
-    break;
-    }
-    case 0x80: {
-    algo = "p256";
-    break;
-    }
-    case 0x81: {
-    algo = "rsa";
-    break;
-    }
-    default: { throw new Error(
-        "Unknown old-format multicodec prefix: 0x" + prefix.toString(16),
-      );
-    }
+      case 0xed: {
+        algo = "ed25519";
+        break;
+      }
+      case 0x80: {
+        algo = "p256";
+        break;
+      }
+      case 0x81: {
+        algo = "rsa";
+        break;
+      }
+      default: {
+        throw new Error(
+          "Unknown old-format multicodec prefix: 0x" + prefix.toString(16),
+        );
+      }
     }
     return { pubKeyBytes: pubKeyBytes, algorithm: algo, legacy: true };
   }
@@ -536,9 +539,9 @@ async function didSign(keypair, data) {
   var enc =
     typeof data === "string"
       ? new TextEncoder().encode(data)
-      : (data instanceof Uint8Array
+      : data instanceof Uint8Array
       ? data
-      : new Uint8Array(data));
+      : new Uint8Array(data);
   var algo;
   if (keypair.algorithm === "Ed25519") algo = { name: "Ed25519" };
   else if (keypair.algorithm === "P-256")
@@ -559,9 +562,9 @@ async function didVerify(publicKey, signature, data, algorithm) {
   var enc =
     typeof data === "string"
       ? new TextEncoder().encode(data)
-      : (data instanceof Uint8Array
+      : data instanceof Uint8Array
       ? data
-      : new Uint8Array(data));
+      : new Uint8Array(data);
   var sig =
     signature instanceof Uint8Array ? signature : new Uint8Array(signature);
   var algo;
@@ -715,8 +718,8 @@ async function didImportSignKey(stored) {
  */
 function didSigToBase64(sigBytes) {
   return btoa(String.fromCharCode.apply(null, sigBytes))
-    .replaceAll('+', "-")
-    .replaceAll('/', "_")
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
     .replace(/=+$/, "");
 }
 
@@ -725,7 +728,7 @@ function didSigToBase64(sigBytes) {
  * @param b64
  */
 function didBase64ToBytes(b64) {
-  b64 = b64.replaceAll('-', "+").replaceAll('_', "/");
+  b64 = b64.replaceAll("-", "+").replaceAll("_", "/");
   while (b64.length % 4) b64 += "=";
   return new Uint8Array(
     atob(b64)
@@ -997,7 +1000,7 @@ async function handleDidSign() {
     if (fpFileInput && fpFileInput.files && fpFileInput.files[0]) {
       fpText = await new Promise(function (resolve) {
         var r = new FileReader();
-        r.addEventListener('load', function (e) {
+        r.addEventListener("load", function (e) {
           resolve(e.target.result);
         });
         r.onerror = function () {
@@ -1216,7 +1219,8 @@ function didToJSON(kp, didSig, createdAt) {
  * @param createdAt
  */
 function didToCSV(kp, didSig, createdAt) {
-  var lines = [ "did,algorithm,created_at,public_key"];
+  var lines = ["did,algorithm,created_at,public_key"];
+
   lines.push(
     '"' +
       kp.did +
@@ -1226,14 +1230,16 @@ function didToCSV(kp, didSig, createdAt) {
       createdAt +
       '","' +
       (kp.pubRaw ? btoa(String.fromCharCode.apply(null, kp.pubRaw)) : "") +
-      '"', ""
+      '"',
+    "",
   );
   var docStr = JSON.stringify(didGenerateDocument(kp));
   lines.push("did_document");
   lines.push('"' + docStr.replaceAll('"', '""') + '"');
   if (didSig) {
-    lines.push("", 
-      "signature_did,signature_algorithm,signature_value,signed_data,timestamp", 
+    lines.push(
+      "",
+      "signature_did,signature_algorithm,signature_value,signed_data,timestamp",
       '"' +
         didSig.did +
         '","' +
@@ -1245,7 +1251,6 @@ function didToCSV(kp, didSig, createdAt) {
         '","' +
         didSig.timestamp +
         '"',
-    
     );
     var vcStr = JSON.stringify(
       didCreateVerifiableCredential(kp, didSig.signedData, didSig.signature),
@@ -1263,7 +1268,14 @@ function didToCSV(kp, didSig, createdAt) {
  * @param createdAt
  */
 function didToTXT(kp, didSig, createdAt) {
-  var lines = [ "RedoSan Authenticity — Decentralized Identity (DID)", "===================================================", "", "DID:            " + kp.did, "Algorithm:      " + kp.algorithm];
+  var lines = [
+    "RedoSan Authenticity — Decentralized Identity (DID)",
+    "===================================================",
+    "",
+    "DID:            " + kp.did,
+    "Algorithm:      " + kp.algorithm,
+  ];
+
   if (createdAt) lines.push("Created:        " + createdAt);
   if (kp.pubRaw)
     lines.push(
@@ -1272,7 +1284,17 @@ function didToTXT(kp, didSig, createdAt) {
   lines.push("", "--- W3C DID Document ---");
   lines.push(JSON.stringify(didGenerateDocument(kp), null, 2));
   if (didSig) {
-    lines.push("", "--- Signature ---", "Signed By:      " + didSig.did, "Algorithm:      " + didSig.algorithm, "Timestamp:      " + didSig.timestamp, "Signed Data:    " + didSig.signedData, "Signature:      " + didSig.signature, "", "--- Verifiable Credential ---");
+    lines.push(
+      "",
+      "--- Signature ---",
+      "Signed By:      " + didSig.did,
+      "Algorithm:      " + didSig.algorithm,
+      "Timestamp:      " + didSig.timestamp,
+      "Signed Data:    " + didSig.signedData,
+      "Signature:      " + didSig.signature,
+      "",
+      "--- Verifiable Credential ---",
+    );
     lines.push(
       JSON.stringify(
         didCreateVerifiableCredential(kp, didSig.signedData, didSig.signature),
@@ -1333,11 +1355,11 @@ function didToXML(kp, didSig, createdAt) {
  */
 function escXml(s) {
   return String(s)
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll('\'', "&apos;");
+    .replaceAll("'", "&apos;");
 }
 
 /**

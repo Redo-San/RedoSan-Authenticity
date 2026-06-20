@@ -12,6 +12,9 @@
     );
 })();
 // ── Sanitize removal-tools on production ──
+/**
+ *
+ */
 function sanitizeRemovalTools() {
   if (window.location.hostname !== "redo-san.github.io") return;
   var sel =
@@ -26,12 +29,18 @@ var isStandalone =
   document.documentElement && document.documentElement.dataset.standalone;
 
 // ── Sidebar toggle ──
+/**
+ *
+ */
 function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("open");
   document.getElementById("sidebarOverlay").classList.toggle("open");
   document.body.classList.toggle("no-scroll");
 }
 
+/**
+ *
+ */
 function closeSidebar() {
   document.getElementById("sidebar").classList.remove("open");
   document.getElementById("sidebarOverlay").classList.remove("open");
@@ -121,7 +130,7 @@ var PAGE_DESCS = {
   social: "Social links and community resources for RedoSan Authenticity.",
 };
 
-var PAGE_NAMES = [
+var PAGE_NAMES = new Set([
   "about",
   "audio-watermark",
   "c2pa",
@@ -142,13 +151,17 @@ var PAGE_NAMES = [
   "social",
   "timestamp",
   "watermark",
-];
+]);
 
+/**
+ *
+ * @param name
+ */
 function showPage(name) {
   // Clear any residual no-scroll from mode overlay transitions
   document.body.classList.remove("no-scroll");
   // Validate name against whitelist to prevent CSS selector / path injection
-  if (name && PAGE_NAMES.indexOf(name) === -1) return;
+  if (name && !PAGE_NAMES.has(name)) return;
   const page = document.getElementById("page-" + name);
 
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
@@ -164,12 +177,12 @@ function showPage(name) {
         break;
       }
     }
-    if (pagesIdx !== -1) {
+    if (pagesIdx === -1) {
+      window.location.href = "./" + safeName + "/index.html";
+    } else {
       parts = parts.slice(0, pagesIdx + 1);
       parts.push(safeName, "index.html");
       window.location.href = parts.join("/");
-    } else {
-      window.location.href = "./" + safeName + "/index.html";
     }
     return;
   }
@@ -198,15 +211,9 @@ function showPage(name) {
     var m = document.querySelector('meta[name="description"]');
     if (m) m.setAttribute("content", PAGE_DESCS[name]);
   }
-  if (name === "timestamp") {
-    if (typeof switchOtsTab === "function") switchOtsTab("create");
-  }
-  if (name === "certificate") {
-    if (typeof initCertPhoneCode === "function") initCertPhoneCode();
-  }
-  if (name === "id_forge") {
-    if (typeof idForgeShowInfo === "function") idForgeShowInfo();
-  }
+  if (name === "timestamp" && typeof switchOtsTab === "function") switchOtsTab("create");
+  if (name === "certificate" && typeof initCertPhoneCode === "function") initCertPhoneCode();
+  if (name === "id_forge" && typeof idForgeShowInfo === "function") idForgeShowInfo();
   var isProfessional =
     document.getElementById("mainNav") &&
     document.getElementById("mainNav").style.display !== "none";
@@ -221,11 +228,15 @@ function showPage(name) {
           window.location.pathname.replace(/\/+$/, "") + "/",
         );
       }
-    } catch (e) {}
+    } catch {}
   }
 }
 
 // Show a static page (about/privacy/contact/social) from the mode overlay or simplified mode
+/**
+ *
+ * @param name
+ */
 function showStaticPage(name) {
   // Hide mode overlay
   var modeSelect = document.getElementById("modeSelect");
@@ -249,9 +260,13 @@ function showStaticPage(name) {
   showPage(name);
   try {
     history.pushState({ staticPage: name, fromOverlay: true }, "", "#/" + name);
-  } catch (e) {}
+  } catch {}
 }
 
+/**
+ *
+ * @param keep
+ */
 function hideAllExcept(keep) {
   var ids = [
     "modeSelect",
@@ -356,6 +371,9 @@ window.addEventListener("popstate", function (e) {
 });
 
 // Handle hash-based navigation on load
+/**
+ *
+ */
 function handleHashNav() {
   var hash = window.location.hash;
   if (hash && hash.indexOf("#/") === 0) {
@@ -386,6 +404,9 @@ function handleHashNav() {
   }
 }
 // Initialize first history state — deferred to first user gesture
+/**
+ *
+ */
 function initNav() {
   handleHashNav();
 }
@@ -400,7 +421,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .replace(/\/+$/, "")
           .replace(/\/index\.html$/i, "");
         history.replaceState({ modeOverlay: true }, "", p + "/");
-      } catch (e) {}
+      } catch {}
     }
     document.removeEventListener("pointerdown", deferredReplace);
     document.removeEventListener("keydown", deferredReplace);
@@ -410,6 +431,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ── Tab switching ──
+/**
+ *
+ * @param mode
+ */
 function switchWmTab(mode) {
   document
     .querySelectorAll(".tab-btn[data-wm-tab]")
@@ -423,6 +448,10 @@ function switchWmTab(mode) {
     .classList.add("active");
 }
 
+/**
+ *
+ * @param mode
+ */
 function switchOtsTab(mode) {
   document
     .querySelectorAll(".tab-btn[data-ots-tab]")
@@ -436,14 +465,24 @@ function switchOtsTab(mode) {
     .classList.add("active");
 }
 
+/**
+ *
+ */
 function showDownloadModal() {
   document.getElementById("dl-modal").classList.add("open");
 }
 
+/**
+ *
+ */
 function closeDownloadModal() {
   document.getElementById("dl-modal").classList.remove("open");
 }
 
+/**
+ *
+ * @param format
+ */
 function downloadResult(format) {
   var handler = getDownloadHandler();
   if (handler) {
@@ -455,6 +494,10 @@ function downloadResult(format) {
   }
 }
 
+/**
+ *
+ * @param mode
+ */
 function switchC2paTab(mode) {
   document
     .querySelectorAll(".tab-btn[data-c2pa-tab]")

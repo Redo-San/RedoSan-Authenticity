@@ -28,6 +28,10 @@ var OTS_HEADER_MAGIC = [
   0xe8, 0x84, 0xe8, 0x92, 0x94,
 ];
 
+/**
+ *
+ * @param hashHex
+ */
 function generatePendingOts(hashHex) {
   if (!window.OpenTimestamps) return null;
   try {
@@ -54,11 +58,15 @@ function generatePendingOts(hashHex) {
     var bytes = detached.serializeToBytes();
     var b64 = btoa(String.fromCharCode.apply(null, bytes));
     return b64;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
+/**
+ *
+ * @param fileBuf
+ */
 async function submitCertTransparency(fileBuf) {
   try {
     var hashBuf = await crypto.subtle.digest("SHA-256", fileBuf);
@@ -74,7 +82,7 @@ async function submitCertTransparency(fileBuf) {
         var ac = new AbortController();
         var to = setTimeout(function () {
           ac.abort();
-        }, 15000);
+        }, 15_000);
         var resp = await fetch(CT_AGGREGATORS[ui], {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -99,12 +107,12 @@ async function submitCertTransparency(fileBuf) {
           hash: hashHex,
           timestamp: new Date().toISOString(),
         };
-      } catch (e) {
-        lastErr = e;
+      } catch (error) {
+        lastErr = error;
       }
     }
     throw lastErr;
-  } catch (e) {
+  } catch (error) {
     var pendingB64 = generatePendingOts(hashHex);
     if (pendingB64) {
       return {
@@ -115,11 +123,11 @@ async function submitCertTransparency(fileBuf) {
         timestamp: new Date().toISOString(),
       };
     }
-    var friendlyMsg = e.message;
+    var friendlyMsg = error.message;
     if (location && location.protocol === "file:") {
       friendlyMsg =
         "Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.";
-    } else if (e.message === "Failed to fetch" || e.name === "TypeError") {
+    } else if (error.message === "Failed to fetch" || error.name === "TypeError") {
       friendlyMsg =
         "All OpenTimestamps calendar servers are unreachable from your network. Use the CLI: node cli timestamp create";
     }

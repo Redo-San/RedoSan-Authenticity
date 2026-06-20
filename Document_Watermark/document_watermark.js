@@ -20,6 +20,10 @@ var _docwSecretData = null;
 var _docwExtractText = "";
 var _docwExtractResult = null;
 
+/**
+ *
+ * @param mode
+ */
 function switchDocwTab(mode) {
   document.querySelectorAll(".tab-btn[data-docw-tab]").forEach(function (b) {
     b.classList.remove("active");
@@ -38,6 +42,11 @@ function switchDocwTab(mode) {
     .classList.add("active");
 }
 
+/**
+ *
+ * @param msg
+ * @param pct
+ */
 function showDocwLoading(msg, pct) {
   var ov = document.getElementById("docw-loading-overlay");
   if (!ov) return;
@@ -55,11 +64,18 @@ function showDocwLoading(msg, pct) {
     bp.textContent = "";
   }
 }
+/**
+ *
+ */
 function hideDocwLoading() {
   var ov = document.getElementById("docw-loading-overlay");
   if (ov) ov.style.display = "none";
 }
 
+/**
+ *
+ * @param cap
+ */
 function _docwShowNoTextWarning(cap) {
   var w = document.getElementById("docw-cover-warning");
   if (_docwCoverText && _docwCoverText.length <= 100) {
@@ -83,6 +99,9 @@ function _docwShowNoTextWarning(cap) {
   }
 }
 
+/**
+ *
+ */
 function docwAlgoChanged() {
   if (_docwCoverText) {
     var cap = docwEstimateCapacity(
@@ -107,6 +126,9 @@ function docwAlgoChanged() {
   }
 }
 
+/**
+ *
+ */
 function docwExAlgoChanged() {
   if (_docwExtractText) {
     var cap = docwEstimateCapacity(
@@ -126,6 +148,10 @@ function docwExAlgoChanged() {
   }
 }
 
+/**
+ *
+ * @param parsed
+ */
 function _formatFingerprint(parsed) {
   var lines = [];
   if (parsed.file_info) {
@@ -148,6 +174,10 @@ function _formatFingerprint(parsed) {
   return lines.join("\n");
 }
 
+/**
+ *
+ * @param parsed
+ */
 function _formatFingerprintShort(parsed) {
   var count = 0;
   if (parsed.hashes) count += Object.keys(parsed.hashes).length;
@@ -155,6 +185,10 @@ function _formatFingerprintShort(parsed) {
   return count + " hashes";
 }
 
+/**
+ *
+ * @param event
+ */
 function loadDocwSecretFile(event) {
   var file = event.target.files[0];
   if (!file) return;
@@ -197,8 +231,8 @@ function loadDocwSecretFile(event) {
             .replace("{len}", _docwSecretMessage.length);
         }
         document.getElementById("docw-secret-name").style.color = "#2ecc71";
-      } catch (e) {
-        alert("Invalid JSON file: " + e.message);
+      } catch (error) {
+        alert("Invalid JSON file: " + error.message);
       }
     };
     reader.readAsText(file);
@@ -221,6 +255,10 @@ function loadDocwSecretFile(event) {
   }
 }
 
+/**
+ *
+ * @param event
+ */
 function loadDocwCoverFile(event) {
   var file = event.target.files[0];
   if (!file) return;
@@ -258,15 +296,22 @@ function loadDocwCoverFile(event) {
     setTimeout(function () {
       var ext = file.name.split(".").pop().toLowerCase();
       var textPromise;
-      if (ext === "docx") {
+      switch (ext) {
+      case "docx": {
         textPromise = DOCX_EXTRACTOR.readDocx(buf);
-      } else if (ext === "pdf") {
+      
+      break;
+      }
+      case "pdf": {
         textPromise = DOCX_EXTRACTOR.readPdf(new Uint8Array(buf)).then(
           function (text) {
             return text || "";
           },
         );
-      } else if (ext === "doc") {
+      
+      break;
+      }
+      case "doc": {
         var arr = new Uint8Array(buf);
         var result = "";
         for (var i = 0; i < arr.length; i++) {
@@ -279,10 +324,14 @@ function loadDocwCoverFile(event) {
         textPromise = Promise.resolve(
           result || "No readable text found in DOC file.",
         );
-      } else {
+      
+      break;
+      }
+      default: {
         textPromise = Promise.resolve(
           new TextDecoder("UTF-8").decode(new Uint8Array(buf)),
         );
+      }
       }
       textPromise
         .then(function (text) {
@@ -315,9 +364,9 @@ function loadDocwCoverFile(event) {
           _docwShowNoTextWarning(cap);
           hideDocwLoading();
         })
-        .catch(function (err) {
+        .catch(function (error) {
           hideDocwLoading();
-          alert(err.message || err);
+          alert(error.message || error);
           nameEl.textContent = "";
           capEl.textContent = "";
         });
@@ -326,6 +375,10 @@ function loadDocwCoverFile(event) {
   reader.readAsArrayBuffer(file);
 }
 
+/**
+ *
+ * @param event
+ */
 function loadDocwExtractFile(event) {
   var file = event.target.files[0];
   if (!file) return;
@@ -391,25 +444,38 @@ function loadDocwExtractFile(event) {
   reader.readAsArrayBuffer(file);
 }
 
+/**
+ *
+ * @param file
+ * @param buf
+ * @param callback
+ */
 function docwExtractTextFromBuf(file, buf, callback) {
   var ext = file.name.split(".").pop().toLowerCase();
-  if (ext === "docx") {
+  switch (ext) {
+  case "docx": {
     DOCX_EXTRACTOR.readDocx(buf)
       .then(function (text) {
         callback(null, text, "docx");
       })
-      .catch(function (err) {
-        callback(err.message);
+      .catch(function (error) {
+        callback(error.message);
       });
-  } else if (ext === "pdf") {
+  
+  break;
+  }
+  case "pdf": {
     DOCX_EXTRACTOR.readPdf(new Uint8Array(buf))
       .then(function (text) {
         callback(null, text || "", "pdf");
       })
-      .catch(function (err) {
-        callback("PDF extraction failed: " + err.message);
+      .catch(function (error) {
+        callback("PDF extraction failed: " + error.message);
       });
-  } else if (ext === "doc") {
+  
+  break;
+  }
+  case "doc": {
     var arr = new Uint8Array(buf);
     var result = "";
     for (var i = 0; i < arr.length; i++) {
@@ -420,11 +486,21 @@ function docwExtractTextFromBuf(file, buf, callback) {
     }
     result = result.replace(/\s+/g, " ").trim();
     callback(null, result || "No readable text found in DOC file.", "doc");
-  } else {
+  
+  break;
+  }
+  default: {
     callback(null, new TextDecoder("UTF-8").decode(new Uint8Array(buf)), ext);
+  }
   }
 }
 
+/**
+ *
+ * @param data
+ * @param password
+ * @param coverText
+ */
 async function _buildPayloadForHomoglyph(data, password, coverText) {
   // Build ordered list of entries from fingerprint data
   var entries = [];
@@ -503,6 +579,9 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
   return payload;
 }
 
+/**
+ *
+ */
 async function handleDocwEmbed() {
   var algo = parseInt(document.getElementById("docw-algo").value);
   var password = document.getElementById("docw-password").value;
@@ -532,15 +611,11 @@ async function handleDocwEmbed() {
   try {
     // Build payload based on algorithm
     var message;
-    if (algo === 2 && _docwSecretData && _docwSecretData.hashes) {
-      message = await _buildPayloadForHomoglyph(
+    message = algo === 2 && _docwSecretData && _docwSecretData.hashes ? (await _buildPayloadForHomoglyph(
         _docwSecretData,
         password,
         _docwCoverText,
-      );
-    } else {
-      message = _docwSecretMessage;
-    }
+      )) : _docwSecretMessage;
     var result = await docwEmbed(
       _docwCoverText,
       message,
@@ -559,7 +634,7 @@ async function handleDocwEmbed() {
           hash += ("0" + harr[hi].toString(16)).slice(-2);
         hash = "SHA-256:" + hash;
       }
-    } catch (_e) { /* fallback: hash stays empty */ }
+    } catch { /* fallback: hash stays empty */ }
     var algoName = DOCW_ALGOS[String(algo)].name;
     _docwResult = {
       algo: algoName,
@@ -595,7 +670,7 @@ async function handleDocwEmbed() {
           '" class="btn">' +
           __("docw.direct_download", "Download Watermarked Document") +
           " (DOCX)</a>";
-      } catch (e) {
+      } catch {
         var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
         var outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
@@ -625,7 +700,7 @@ async function handleDocwEmbed() {
           '" class="btn">' +
           __("docw.direct_download", "Download Watermarked Document") +
           " (PDF)</a>";
-      } catch (e) {
+      } catch {
         var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
         var outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
@@ -651,9 +726,9 @@ async function handleDocwEmbed() {
         __("docw.direct_download", "Download Watermarked Document") +
         " (TXT)</a>";
     }
-  } catch (e) {
+  } catch (error) {
     hideDocwLoading();
-    alert("Error: " + e.message);
+    alert("Error: " + error.message);
   }
 
   hideDocwLoading();
@@ -661,6 +736,9 @@ async function handleDocwEmbed() {
   btn.disabled = false;
 }
 
+/**
+ *
+ */
 async function handleDocwExtract() {
   var algo = parseInt(document.getElementById("docw-algo-ex").value);
   var password = document.getElementById("docw-password-ex").value;
@@ -709,7 +787,7 @@ async function handleDocwExtract() {
         for (var pi = 0; pi < portions.length && !result; pi++) {
           try {
             result = await docwExtract(portions[pi], algo, password);
-          } catch (e2) { /* ignore */ }
+          } catch { /* ignore */ }
         }
       }
     }
@@ -726,8 +804,8 @@ async function handleDocwExtract() {
       timestamp: new Date().toISOString(),
     };
     setDownloadHandler(downloadDocwExtract);
-  } catch (e) {
-    if (e.message === "WRONG_PASSWORD") {
+  } catch (error) {
+    if (error.message === "WRONG_PASSWORD") {
       document.getElementById("docw-extract-result").style.display = "";
       document.getElementById("docw-extract-buttons").style.display = "none";
       document.getElementById("docw-extracted-msg").value = "";
@@ -736,7 +814,7 @@ async function handleDocwExtract() {
         "Password may be incorrect",
       );
     } else {
-      alert("Error: " + e.message);
+      alert("Error: " + error.message);
     }
   }
 
@@ -744,6 +822,10 @@ async function handleDocwExtract() {
   btn.disabled = false;
 }
 
+/**
+ *
+ * @param id
+ */
 function docwCopyResult(id) {
   var el = document.getElementById(id);
   if (!el) return;
@@ -751,6 +833,11 @@ function docwCopyResult(id) {
   document.execCommand("copy");
 }
 
+/**
+ *
+ * @param id
+ * @param filename
+ */
 function docwDownloadResult(id, filename) {
   var el = document.getElementById(id);
   if (!el) return;
@@ -759,9 +846,9 @@ function docwDownloadResult(id, filename) {
   var a = document.createElement("a");
   a.href = url;
   a.download = filename || "document_watermarked.txt";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   URL.revokeObjectURL(url);
 }
 
@@ -769,6 +856,11 @@ function docwDownloadResult(id, filename) {
 
 // ── Rebuild original document with watermarked text (preserves ZWC) ──
 
+/**
+ *
+ * @param originalBytes
+ * @param watermarkedText
+ */
 async function buildWatermarkedDocx(originalBytes, watermarkedText) {
   var zip = await JSZip.loadAsync(originalBytes);
   var xml = await zip.file("word/document.xml").async("string");
@@ -786,6 +878,10 @@ async function buildWatermarkedDocx(originalBytes, watermarkedText) {
 
 // ── Multi-format download for extraction result ──
 
+/**
+ *
+ * @param format
+ */
 async function downloadDocwExtract(format) {
   closeDownloadModal();
   var r = _docwExtractResult;
@@ -805,12 +901,13 @@ async function downloadDocwExtract(format) {
 
   var content, ext, mime;
   switch (format) {
-    case "json":
+    case "json": {
       content = JSON.stringify(r, null, 2);
       ext = "json";
       mime = "application/json";
       break;
-    case "csv":
+    }
+    case "csv": {
       content =
         '"Key","Value"\n' +
         '"message","' +
@@ -823,12 +920,14 @@ async function downloadDocwExtract(format) {
       ext = "csv";
       mime = "text/csv";
       break;
-    case "txt":
+    }
+    case "txt": {
       content = r.message || "";
       ext = "txt";
       mime = "text/plain";
       break;
-    case "xml":
+    }
+    case "xml": {
       content =
         '<?xml version="1.0"?>\n<extracted>\n  <message>' +
         _docwEscXml(r.message || "") +
@@ -840,11 +939,13 @@ async function downloadDocwExtract(format) {
       ext = "xml";
       mime = "application/xml";
       break;
-    case "html":
+    }
+    case "html": {
       content = _docwBuildReportHtml(r, "extract");
       ext = "html";
       mime = "text/html";
       break;
+    }
   }
   if (content == null) return;
   var blob = new Blob([content], { type: mime });

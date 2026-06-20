@@ -71,7 +71,11 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
   await page.waitForTimeout(500);
   await page.setInputFiles("#pi-secret-file", [
-    { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("PI ROUNDTRIP") },
+    {
+      name: "secret.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("PI ROUNDTRIP"),
+    },
   ]);
   await page.waitForTimeout(500);
 
@@ -133,7 +137,10 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
 
   const afterSetAlgo = await page.evaluate(() => {
     const sel = document.getElementById("pi-extract-algorithm");
-    return { selected: sel ? sel.value : null, options: sel ? Array.from(sel.options).map((o) => o.value) : [] };
+    return {
+      selected: sel ? sel.value : null,
+      options: sel ? Array.from(sel.options).map((o) => o.value) : [],
+    };
   });
   console.log("AFTER SET ALGO:", JSON.stringify(afterSetAlgo));
 

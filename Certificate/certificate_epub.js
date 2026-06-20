@@ -13,6 +13,10 @@
 })();
 // ── EPUB Certificate Generator ──
 
+/**
+ *
+ * @param data
+ */
 async function downloadCertEPUB(data) {
   var qrText = buildQRVerificationJSON(data);
   var docHash = await getDocHash(qrText);
@@ -335,9 +339,9 @@ async function downloadCertEPUB(data) {
   var a = document.createElement("a");
   a.href = url;
   a.download = "RedoSan_Digital_Passport.epub";
-  document.body.appendChild(a);
+  document.body.append(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   setTimeout(function () {
     URL.revokeObjectURL(url);
   }, 1000);
