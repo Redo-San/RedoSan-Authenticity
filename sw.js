@@ -137,6 +137,13 @@ var JS_WHITELIST = [
   "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
   "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
   "/RedoSan-Authenticity/scripts/fix-orphan-labels.js",
+  "/RedoSan-Authenticity/eslint.config.mjs",
+  "/RedoSan-Authenticity/commitlint.config.mjs",
+  "/RedoSan-Authenticity/madge.config.js",
+  "/RedoSan-Authenticity/workbox-config.js",
+  "/RedoSan-Authenticity/lighthouserc.js",
+  "/RedoSan-Authenticity/jsdom-test-config.js",
+  "/RedoSan-Authenticity/dev-server.js",
 ];
 
 // Whitelist of legitimate CSS files served by the site.
@@ -203,6 +210,13 @@ var YML_WHITELIST = [
   "/RedoSan-Authenticity/.github/labeler.yml",
   "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/bug_report.yml",
   "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/feature_request.yml",
+  "/RedoSan-Authenticity/.github/workflows/madge-check.yml",
+  "/RedoSan-Authenticity/.github/workflows/cspell-check.yml",
+  "/RedoSan-Authenticity/.github/workflows/depcheck.yml",
+  "/RedoSan-Authenticity/.github/workflows/markdownlint.yml",
+  "/RedoSan-Authenticity/.github/workflows/size-limit.yml",
+  "/RedoSan-Authenticity/.github/workflows/typedoc-check.yml",
+  "/RedoSan-Authenticity/.github/workflows/backstop.yml",
 ];
 
 // Whitelist of legitimate HTML pages served by the site.
@@ -232,6 +246,19 @@ var HTML_WHITELIST = [
   "/RedoSan-Authenticity/Style/pages/privacy/index.html",
   "/RedoSan-Authenticity/Style/pages/contact/index.html",
   "/RedoSan-Authenticity/Style/pages/social/index.html",
+];
+
+// Whitelist of legitimate JSON config files.
+// Any .json request not in this list is treated as a threat.
+var JSON_WHITELIST = [
+  "/RedoSan-Authenticity/.markdownlint.json",
+  "/RedoSan-Authenticity/.stylelintrc.json",
+  "/RedoSan-Authenticity/backstop.json",
+  "/RedoSan-Authenticity/biome.json",
+  "/RedoSan-Authenticity/cspell.json",
+  "/RedoSan-Authenticity/typedoc.json",
+  "/RedoSan-Authenticity/package.json",
+  "/RedoSan-Authenticity/package-lock.json",
 ];
 
 // Whitelist of known external libraries loaded from CDNs.
@@ -303,6 +330,9 @@ self.addEventListener("fetch", function (event) {
     // Unknown .yml/.yaml files not in YML_WHITELIST
     if (lower.endsWith(".yml") || lower.endsWith(".yaml"))
       isBlocked = isBlocked || YML_WHITELIST.indexOf(path) === -1;
+    // Unknown .json files not in JSON_WHITELIST
+    if (lower.endsWith(".json"))
+      isBlocked = isBlocked || JSON_WHITELIST.indexOf(path) === -1;
     // Unknown .html files not in HTML_WHITELIST
     if (lower.endsWith(".html")) {
       // Normalize: if path has /pages/<extra>/<service>/index.html where extra isn't a page dir,

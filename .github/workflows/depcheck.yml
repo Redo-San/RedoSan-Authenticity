@@ -1,0 +1,89 @@
+name: Depcheck
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  depcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const run = require('child_process').execSync;
+
+            let output;
+            try {
+              output = run('npx depcheck --json', { encoding: 'utf8' });
+            } catch (e) {
+              output = e.stdout || e.stderr || '{}';
+            }
+
+            const results = JSON.parse(output.toString() || '{}');
+            const unusedDeps = results.dependencies || [];
+            const unusedDevDeps = results.devDependencies || [];
+            const missingDeps = results.missing || {};
+
+            const lines = [];
+
+            if (unusedDeps.length > 0) {
+              lines.push('### Unused Dependencies\n');
+              for (const d of unusedDeps) lines.push('- `' + d + '`');
+              lines.push('');
+            }
+
+            if (unusedDevDeps.length > 0) {
+              lines.push('### Unused DevDependencies\n');
+              for (const d of unusedDevDeps) lines.push('- `' + d + '`');
+              lines.push('');
+            }
+
+            const missingKeys = Object.keys(missingDeps);
+            if (missingKeys.length > 0) {
+              lines.push('### Missing Dependencies\n');
+              for (const pkg of missingKeys) {
+                for (const file of missingDeps[pkg]) {
+                  lines.push('- `' + pkg + '` required by `' + file + '`');
+                }
+              }
+              lines.push('');
+            }
+
+            if (lines.length === 0) {
+              lines.push('No dependency issues found.');
+            }
+
+            const body = '## Depcheck\n\n' + lines.join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('## Depcheck')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: context.issue.number, body
+              });
+            }
