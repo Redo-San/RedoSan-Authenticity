@@ -98,6 +98,11 @@ export default [
       "unicorn/no-incorrect-template-string-interpolation": "off",
       "unicorn/no-unsafe-string-replacement": "off",
       "unicorn/prefer-object-iterable-methods": "off",
+      // ── Unicorn style preferences (intentional patterns, not bugs) ──
+      "unicorn/prefer-single-call": "off",
+      "unicorn/no-immediate-mutation": "off",
+      "unicorn/no-array-sort": "off",
+      "unicorn/no-array-from-fill": "off",
       // ── SonarJS style / redundancy (safe to suppress) ──
       "sonarjs/no-unused-vars": "off",
       "sonarjs/no-dead-store": "off",

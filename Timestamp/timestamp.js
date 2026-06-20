@@ -13,8 +13,7 @@ var OTS_SHA256_TAG = 0x08; // SHA-256 op tag
  */
 function otsBuildDetached(fileBytes, sha256Bytes) {
   // Build a minimal valid .ots byte array (incomplete timestamp)
-  var out = [...OTS_HEADER];
-  out.push(OTS_MAJOR_VERSION, OTS_SHA256_TAG);
+  var out = [...OTS_HEADER, OTS_MAJOR_VERSION, OTS_SHA256_TAG];
   for (var i = 0; i < 32; i++) out.push(sha256Bytes[i]);
   return new Uint8Array(out);
 }

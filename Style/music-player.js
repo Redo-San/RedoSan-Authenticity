@@ -169,7 +169,7 @@
     } catch (error) {
       void error;
     }
-    _audioBaseSrc = (audio.src || audioSrc()).split("#")[0];
+    _audioBaseSrc = (audio.src || audioSrc()).split("#", 1)[0];
     if (
       state &&
       state.isPlaying === true &&

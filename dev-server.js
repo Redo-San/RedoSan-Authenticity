@@ -3,6 +3,7 @@ var http = require("node:http"),
   path = require("node:path");
 var ROOT = path.resolve(__dirname);
 var REAL_ROOT = fs.realpathSync(ROOT);
+
 /**
  *
  * @param s
@@ -12,10 +13,12 @@ function escHtml(s) {
     return "&#" + c.charCodeAt(0) + ";";
   });
 }
+
 var MIME = {
   ".html": "text/html",
   ".js": "application/javascript",
   ".css": "text/css",
+  ".json": "application/json",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".mp3": "audio/mpeg",
@@ -23,6 +26,7 @@ var MIME = {
   ".wav": "audio/wav",
   ".ogg": "audio/ogg",
 };
+
 var PAGE_NAMES = new Set([
   "about",
   "audio-watermark",
@@ -48,8 +52,8 @@ var PAGE_NAMES = new Set([
 
 http
   .createServer(function (req, res) {
-    var pathname = "/" + req.url.split("?")[0].replaceAll(/^\/+|\/+$/g, "");
-    if (pathname === "") pathname = "/index.html";
+    var pathname = "/" + req.url.split("?", 1)[0].replaceAll(/^\/+|\/+$/g, "");
+    if (pathname === "/") pathname = "/index.html";
     var filePath = path.join(ROOT, pathname.replaceAll("/", path.sep));
     if (!filePath.startsWith(ROOT)) {
       res.writeHead(403);
@@ -59,15 +63,20 @@ http
 
     // Try direct path first; if 404, try rewrites
     if (!tryServe(filePath, req, res)) {
-      // Rewrite short page URLs → Style/pages/{name}/index.html
-      var m = pathname.match(/^\/([^\/]+)\/index\.html$/);
+      // Rewrite `/page_name/`, `/page_name/index.html`, or bare `/page_name`
+      // → Style/pages/{name}/index.html
+      var m = pathname.match(/^\/([^\/]+?)(?:\/index\.html|\/)?$/);
       if (m && PAGE_NAMES.has(m[1])) {
         var rewritten = path.join(ROOT, "Style", "pages", m[1], "index.html");
         if (tryServe(rewritten, req, res)) return;
       }
-      // Rewrite Style/ assets for standalone pages (css, js, etc.)
+      // Rewrite unmatched paths to Style/ directory
+      // (handles relative asset references from MPA pages, e.g. /style.css → Style/style.css)
       var stylePath = path.join(ROOT, "Style", pathname.replace(/^\//, ""));
       if (tryServe(stylePath, req, res)) return;
+      // Last resort: serve custom 404 page
+      var notFoundPath = path.join(ROOT, "404.html");
+      if (tryServe(notFoundPath, req, res)) return;
       res.writeHead(404, { "Content-Type": "text/html" });
       res.end("Not Found: " + escHtml(pathname));
     }

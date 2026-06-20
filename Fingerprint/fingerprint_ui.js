@@ -307,8 +307,7 @@ function createDocxTable(docx, rows) {
  * @param r
  */
 function fpToCSV(r) {
-  var rows = [["Key", "Value"]];
-  rows.push(["File", r.file_info.file_name], ["Size (bytes)", r.file_info.file_size_bytes]);
+  var rows = [["Key", "Value"], ["File", r.file_info.file_name], ["Size (bytes)", r.file_info.file_size_bytes]];
   if (r.file_info.width) rows.push(["Width", r.file_info.width]);
   if (r.file_info.height) rows.push(["Height", r.file_info.height]);
   if (r.file_info.format) rows.push(["Format", r.file_info.format]);
@@ -337,8 +336,7 @@ function fpToCSV(r) {
  * @param r
  */
 function fpToTXT(r) {
-  var lines = [];
-  lines.push("=== RedoSan Authenticity - File Fingerprint ===", "", "File: " + r.file_info.file_name, "Size: " + r.file_info.file_size_bytes + " bytes");
+  var lines = [ "=== RedoSan Authenticity - File Fingerprint ===", "", "File: " + r.file_info.file_name, "Size: " + r.file_info.file_size_bytes + " bytes"];
   if (r.file_info.width)
     lines.push("Dimensions: " + r.file_info.width + " x " + r.file_info.height);
   if (r.file_info.format) lines.push("Format: " + r.file_info.format);

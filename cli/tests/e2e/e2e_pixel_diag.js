@@ -1,14 +1,14 @@
 const { chromium } = require("playwright");
 const { startServer, stopServer } = require("./e2e_helpers");
-const path = require("path");
-const fs = require("fs");
+const path = require("node:path");
+const fs = require("node:fs");
 
 const PORT = 9903;
-const BASE = "http://localhost:" + PORT;
+const BASE = `http://localhost:${PORT}`;
 const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png"));
 
 (async () => {
-  const server = await startServer(PORT);
+  const _server = await startServer(PORT);
   const browser = await chromium.launch({ headless: true });
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
@@ -53,10 +53,16 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
     const hasExtractFn = hasCore ? typeof globalThis.pixelInjection.core.extractEnhancedLSB === "function" : false;
     const extractMap = hasPI ? globalThis.pixelInjection.extractMap : {};
     return {
-      extractOpts, embedOpts, catOpts,
-      hasPixelInjection: hasPI, currentAlgorithm: curAlgo,
-      currentCategory: curCat, hasCore, hasEmbedFn, hasExtractFn,
-      extractMap: JSON.parse(JSON.stringify(extractMap))
+      extractOpts,
+      embedOpts,
+      catOpts,
+      hasPixelInjection: hasPI,
+      currentAlgorithm: curAlgo,
+      currentCategory: curCat,
+      hasCore,
+      hasEmbedFn,
+      hasExtractFn,
+      extractMap: JSON.parse(JSON.stringify(extractMap)),
     };
   });
   console.log("AFTER NAV:", JSON.stringify(afterNav, null, 2));
@@ -76,7 +82,7 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
       const r = document.getElementById("pi-result");
       return r && r.style.display !== "none";
     },
-    { timeout: 30000 }
+    { timeout: 30000 },
   );
   await page.waitForTimeout(1000);
 
@@ -144,7 +150,7 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
       const r = document.getElementById("pi-result");
       return r && r.style.display !== "none";
     },
-    { timeout: 30000 }
+    { timeout: 30000 },
   );
   await page.waitForTimeout(1000);
 

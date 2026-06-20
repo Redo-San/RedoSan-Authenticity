@@ -121,12 +121,8 @@ function varintDecode(bytes, offset) {
 }
 
 // ── P-256 Key Compression ──
-var P256_P = BigInt(
-  "115792089210356248762697446949407573530086143415290314195533631308867097853951",
-);
-var P256_B = BigInt(
-  "0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b",
-);
+var P256_P = 115_792_089_210_356_248_762_697_446_949_407_573_530_086_143_415_290_314_195_533_631_308_867_097_853_951n;
+var P256_B = 0x5a_c6_35_d8_aa_3a_93_e7_b3_eb_bd_55_76_98_86_bc_65_1d_06_b0_cc_53_b0_f6_3b_ce_3c_3e_27_d2_60_4bn;
 
 /**
  *
@@ -1220,8 +1216,7 @@ function didToJSON(kp, didSig, createdAt) {
  * @param createdAt
  */
 function didToCSV(kp, didSig, createdAt) {
-  var lines = [];
-  lines.push("did,algorithm,created_at,public_key");
+  var lines = [ "did,algorithm,created_at,public_key"];
   lines.push(
     '"' +
       kp.did +
@@ -1268,8 +1263,7 @@ function didToCSV(kp, didSig, createdAt) {
  * @param createdAt
  */
 function didToTXT(kp, didSig, createdAt) {
-  var lines = [];
-  lines.push("RedoSan Authenticity — Decentralized Identity (DID)", "===================================================", "", "DID:            " + kp.did, "Algorithm:      " + kp.algorithm);
+  var lines = [ "RedoSan Authenticity — Decentralized Identity (DID)", "===================================================", "", "DID:            " + kp.did, "Algorithm:      " + kp.algorithm];
   if (createdAt) lines.push("Created:        " + createdAt);
   if (kp.pubRaw)
     lines.push(

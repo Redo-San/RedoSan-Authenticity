@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.4);
+  box-shadow: 0 4px 16px rgb(108, 92, 231, 0.4);
   transition: all 0.3s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -22,7 +22,7 @@
 
 .music-btn:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 24px rgba(108, 92, 231, 0.6);
+  box-shadow: 0 6px 24px rgb(108, 92, 231, 0.6);
 }
 
 .music-btn:active {
@@ -36,11 +36,11 @@
 @keyframes music-pulse {
   0%,
   100% {
-    box-shadow: 0 4px 16px rgba(108, 92, 231, 0.4);
+    box-shadow: 0 4px 16px rgb(108, 92, 231, 0.4);
   }
 
   50% {
-    box-shadow: 0 4px 28px rgba(108, 92, 231, 0.8);
+    box-shadow: 0 4px 28px rgb(108, 92, 231, 0.8);
   }
 }
 

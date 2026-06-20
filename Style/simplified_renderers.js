@@ -258,7 +258,7 @@ function renderC2paStep(body) {
     __("c2pa.author_label") +
     '">' +
     "</div></div>" +
-    '<div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">' +
+    '<div class="c2pa-type-card" data-form-type="ai" data-c2pa-src="https://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia">' +
     '<label class="c2pa-type-header" for="sc2pa-ai">' +
     '<input type="checkbox" id="sc2pa-ai" value="ai" checked>' +
     '<span class="c2pa-type-name">' +
@@ -272,7 +272,7 @@ function renderC2paStep(body) {
     __("c2pa.author_label") +
     '">' +
     "</div></div>" +
-    '<div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">' +
+    '<div class="c2pa-type-card" data-form-type="capture" data-c2pa-src="https://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture">' +
     '<label class="c2pa-type-header" for="sc2pa-capture">' +
     '<input type="checkbox" id="sc2pa-capture" value="capture">' +
     '<span class="c2pa-type-name">' +
@@ -286,7 +286,7 @@ function renderC2paStep(body) {
     __("c2pa.author_label") +
     '">' +
     "</div></div>" +
-    '<div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="http://cv.iptc.org/newscodes/digitalsourcetype/composite">' +
+    '<div class="c2pa-type-card" data-form-type="composite" data-c2pa-src="https://cv.iptc.org/newscodes/digitalsourcetype/composite">' +
     '<label class="c2pa-type-header" for="sc2pa-composite">' +
     '<input type="checkbox" id="sc2pa-composite" value="composite">' +
     '<span class="c2pa-type-name">' +

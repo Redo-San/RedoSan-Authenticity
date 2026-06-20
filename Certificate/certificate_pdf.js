@@ -345,7 +345,7 @@ async function downloadCertPDF(data) {
       );
       y += 3;
       var shortAgg =
-        (data.ct.aggregator || "").replace("https://", "").split("/")[0] ||
+        (data.ct.aggregator || "").replace("https://", "").split("/", 1)[0] ||
         "OTS calendar";
       doc.text("Transparency log: " + shortAgg, margin, y);
       y += 3;
