@@ -44,6 +44,9 @@ scripts/fix_standalone_pages.js
 AGENTS.md
 STATUS.md
 
+# AI agent skills (linked from addyosmani/agent-skills)
+skills/
+
 # Local AI tool config (OpenCode — machine-specific)
 opencode.json
 .opencode/
