@@ -184,6 +184,26 @@
       if (state && state.isPlaying === true) {
         _playing = true;
         setUI(true);
+        if (audio) {
+          if (_seekTarget > 0) {
+            var seekSrc = (_audioBaseSrc || audioSrc()) + "#t=" + _seekTarget;
+            audio.src = seekSrc;
+            audio.load();
+            _seekTarget = -1;
+            var onSeekReady = function () {
+              audio.removeEventListener("canplay", onSeekReady);
+              if (!_playing) return;
+              audio.play().catch(function () {});
+            };
+            if (audio.readyState >= 3) {
+              onSeekReady();
+            } else {
+              audio.addEventListener("canplay", onSeekReady, { once: true });
+            }
+          } else {
+            audio.play().catch(function () {});
+          }
+        }
         return;
       }
       if (!state) {
