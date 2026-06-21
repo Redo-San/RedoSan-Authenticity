@@ -68,3 +68,11 @@
     font-size: 0.65rem;
   }
 }
+
+/* Hide music player on MPA standalone pages (temporary until maintenance is complete) */
+[data-standalone] .music-btn,
+[data-standalone] #music-btn,
+[data-standalone] .music-credit,
+[data-standalone] #music-credit {
+  display: none !important;
+}
