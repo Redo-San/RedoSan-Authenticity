@@ -245,6 +245,14 @@
     if (typeof __ === "function" && typeof translatePage === "function")
       translatePage();
 
+    // Re-init file drop zones for newly swapped content
+    document.querySelectorAll("#app .file-drop-zone").forEach(function (dz) {
+      var inp = dz.querySelector('input[type="file"]');
+      if (inp) dz.parentNode.insertBefore(inp, dz);
+      dz.remove();
+    });
+    if (typeof initDropZones === "function") initDropZones();
+
     // Reset result sections and file inputs
     var results = document.querySelectorAll(
       ".result, .result-box, .output-area, .fingerprint-result, .c2pa-result",

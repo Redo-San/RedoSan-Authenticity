@@ -161,6 +161,10 @@ class PixelInjection {
     }
   }
 
+  reInit() {
+    this.setupPixelInjectionUI();
+  }
+
   setupPixelInjectionUI() {
     this.updatePiAlgorithms();
     this.updateExtractAlgorithms();
