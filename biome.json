@@ -45,7 +45,7 @@
     }
   },
   "files": {
-    "includes": ["**/cli/**/*.js", "!**/cli/tests/**", "!**/cli/lib/**"],
+    "includes": ["**/cli/**/*.js", "!**/cli/tests", "!**/cli/lib"],
     "ignoreUnknown": true
   }
 }

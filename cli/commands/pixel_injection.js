@@ -148,7 +148,7 @@ async function runPixelInjection(mode, opts) {
       if (outputFile) {
         let finalPath = path.resolve(outputFile);
         const stats = fs.existsSync(finalPath) ? fs.statSync(finalPath) : null;
-        if (stats && stats.isDirectory()) {
+        if (stats?.isDirectory()) {
           finalPath = path.join(finalPath, `extracted_${Date.now()}.txt`);
         }
         fs.writeFileSync(finalPath, buf);

@@ -10,6 +10,7 @@ body {
     env(safe-area-inset-bottom) env(safe-area-inset-left);
   max-width: 100vw;
 }
+
 /* Prevent iOS zoom on input focus — minimum 16px on all form elements */
 input,
 select,
@@ -22,6 +23,7 @@ button,
 .simple-mode-switch {
   font-size: 16px;
 }
+
 /* Remove tap highlight and 300ms delay on touch devices */
 a,
 button,
@@ -47,6 +49,7 @@ label,
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+
 .result,
 .search-results,
 .nav-search .search-results {
@@ -59,89 +62,103 @@ label,
 }
 
 /* ── Nav: hide links below 768px (keep lang dropdown) ── */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .nav-links a[data-page] {
     display: none;
   }
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .hamburger {
     display: none !important;
   }
 }
 
 /* ── Hero font sizes ── */
-@media (max-width: 359px) {
+@media (width <= 359px) {
   .hero h1 {
     font-size: 1.4rem;
   }
+
   .hero p {
     font-size: 0.82rem;
   }
 }
-@media (min-width: 360px) and (max-width: 413px) {
+
+@media (width >= 360px) and (width <= 413px) {
   .hero h1 {
     font-size: 1.6rem;
   }
+
   .hero p {
     font-size: 0.88rem;
   }
 }
-@media (min-width: 414px) and (max-width: 599px) {
+
+@media (width >= 414px) and (width <= 599px) {
   .hero h1 {
     font-size: 1.8rem;
   }
+
   .hero p {
     font-size: 0.92rem;
   }
 }
-@media (min-width: 600px) and (max-width: 767px) {
+
+@media (width >= 600px) and (width <= 767px) {
   .hero h1 {
     font-size: 2.2rem;
   }
+
   .hero p {
     font-size: 1rem;
   }
 }
-@media (min-width: 768px) {
+
+@media (width >= 768px) {
   .hero h1 {
     font-size: 2.5rem;
   }
+
   .hero p {
     font-size: 1rem;
   }
 }
 
 /* ── Card grid (homepage) ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .grid {
     grid-template-columns: 1fr;
   }
 }
-@media (min-width: 414px) and (max-width: 767px) {
+
+@media (width >= 414px) and (width <= 767px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (min-width: 768px) {
+
+@media (width >= 768px) {
   .grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 /* ── Forms ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .card-form {
     padding: 18px;
   }
+
   .form-group {
     margin-bottom: 10px;
   }
+
   .form-group input,
   .form-group select {
     padding: 10px 12px;
   }
+
   .btn {
     width: 100%;
     padding: 12px 16px;
@@ -151,44 +168,52 @@ label,
     justify-content: center;
     touch-action: manipulation;
   }
+
   .file-drop-zone {
     padding: 16px 14px;
   }
+
   .file-drop-zone .dz-icon {
     font-size: 1.5rem;
   }
+
   .file-drop-zone .dz-text {
     font-size: 0.78rem;
   }
 }
-@media (min-width: 414px) {
+
+@media (width >= 414px) {
   .btn {
     min-height: 44px;
   }
 }
+
 /* ── C2PA type cards (content checkboxes) on mobile ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .c2pa-type-card {
     padding: 10px 14px;
     min-height: 44px;
   }
+
   .c2pa-type-name {
     font-size: 0.8rem;
   }
 }
+
 /* ── C2PA tab buttons on mobile ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .tab-btn {
     touch-action: manipulation;
   }
 }
 
 /* ── Tab buttons stack on tiny screens ── */
-@media (max-width: 374px) {
+@media (width <= 374px) {
   .card-form > div:first-child {
     flex-direction: column;
     gap: 6px;
   }
+
   .tab-btn {
     font-size: 0.78rem;
     padding: 10px 6px;
@@ -197,7 +222,7 @@ label,
 }
 
 /* ── Result box ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .result {
     max-height: 250px;
     font-size: 0.7rem;
@@ -206,53 +231,64 @@ label,
 }
 
 /* ── Footer ── */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   footer {
     padding: 16px 12px;
     margin-top: 24px;
   }
+
   .footer-links {
     flex-direction: column;
     gap: 8px;
   }
+
   .footer-links a {
     font-size: 0.78rem;
   }
+
   .footer-social {
     gap: 6px;
   }
+
   .footer-social a {
     font-size: 0.72rem;
     padding: 6px 8px;
   }
+
   .footer-copy {
     font-size: 0.72rem;
   }
 }
 
 /* ── Search (nav) ── */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .nav-search input {
     font-size: 0.75rem;
   }
+
   .nav-search {
     width: 140px;
   }
+
   .nav-search.focused {
     width: 140px;
   }
+
   .nav-search .search-results {
     left: auto;
     right: 0;
   }
 }
-@media (max-width: 480px) {
+
+@media (width <= 480px) {
   .nav-search {
     width: 120px;
   }
+
   .nav-search.focused {
     width: 120px;
   }
+
   .nav-search .search-results {
     width: calc(100vw - 24px);
     left: auto;
@@ -260,13 +296,16 @@ label,
     max-height: 280px;
   }
 }
-@media (max-width: 359px) {
+
+@media (width <= 359px) {
   .nav-search {
     width: 80px;
   }
+
   .nav-search.focused {
     width: 80px;
   }
+
   .nav-search .search-results {
     width: calc(100vw - 24px);
     left: auto;
@@ -276,18 +315,20 @@ label,
 }
 
 /* ── Language dropdown overflow fix ── */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .lang-menu {
     right: 0;
     left: auto;
   }
 }
-@media (max-width: 359px) {
+
+@media (width <= 359px) {
   .lang-menu {
     left: 0;
     right: auto;
     min-width: 120px;
   }
+
   .lang-btn {
     font-size: 0.75rem;
     padding: 6px 8px;
@@ -296,27 +337,31 @@ label,
 }
 
 /* ── Download modal grid ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .dl-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (min-width: 414px) {
+
+@media (width >= 414px) {
   .dl-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-@media (max-width: 413px) {
+
+@media (width <= 413px) {
   .modal-box {
     padding: 20px 16px;
   }
+
   .dl-option {
     padding: 14px 6px;
     min-height: 44px;
     font-size: 0.75rem;
   }
 }
-@media (max-width: 359px) {
+
+@media (width <= 359px) {
   .dl-grid {
     grid-template-columns: 1fr 1fr;
     gap: 6px;
@@ -324,59 +369,68 @@ label,
 }
 
 /* ── Static pages (About, Privacy, Contact, Social) ── */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .static-page {
     padding: 0 4px;
   }
+
   .static-page h2 {
     font-size: 1.3rem;
   }
+
   .static-page p {
     font-size: 0.85rem;
   }
 }
-@media (max-width: 480px) {
+
+@media (width <= 480px) {
   .static-page h2 {
     font-size: 1.15rem;
   }
+
   .contact-card {
     padding: 14px;
   }
 }
-@media (max-width: 413px) {
+
+@media (width <= 413px) {
   .contact-card {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
+
   .contact-icon {
     font-size: 1.5rem;
   }
 }
 
 /* ── Social grid ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .social-grid {
     grid-template-columns: 1fr;
   }
 }
-@media (min-width: 414px) {
+
+@media (width >= 414px) {
   .social-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (max-width: 413px) {
+
+@media (width <= 413px) {
   .social-card {
     padding: 20px 16px;
     gap: 4px;
   }
+
   .social-icon {
     font-size: 1.8rem;
   }
 }
 
 /* ── Metadata table → card layout on small screens ── */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .meta-table,
   .meta-table tbody,
   .meta-table tr,
@@ -384,6 +438,7 @@ label,
     display: block;
     width: 100%;
   }
+
   .meta-table tr {
     background: var(--card);
     border: 1px solid var(--border);
@@ -391,6 +446,7 @@ label,
     padding: 10px;
     margin-bottom: 8px;
   }
+
   .meta-table td {
     border: none;
     padding: 3px 0;
@@ -398,6 +454,7 @@ label,
     flex-wrap: wrap;
     gap: 4px;
   }
+
   .meta-table td:first-child {
     width: auto;
     white-space: normal;
@@ -406,35 +463,42 @@ label,
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+
   .meta-table td:last-child {
     font-size: 0.75rem;
   }
 }
 
 /* ── 404 error page ── */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .error-code {
     font-size: 4rem;
   }
+
   .error-title {
     font-size: 1.1rem;
   }
+
   .error-desc {
     font-size: 0.82rem;
   }
+
   .error-shapes {
     display: none;
   }
 }
-@media (max-width: 359px) {
+
+@media (width <= 359px) {
   .error-code {
     font-size: 3rem;
   }
+
   .error-title {
     font-size: 1rem;
   }
 }
-@media (min-width: 481px) and (max-width: 767px) {
+
+@media (width >= 481px) and (width <= 767px) {
   .error-shape {
     animation-duration: 40s;
     opacity: 0.03;
@@ -442,51 +506,59 @@ label,
 }
 
 /* ── Container padding breakpoints ── */
-@media (min-width: 414px) {
+@media (width >= 414px) {
   .container {
     padding: 32px 20px;
   }
 }
-@media (min-width: 768px) {
+
+@media (width >= 768px) {
   .container {
     padding: 40px 32px;
   }
 }
-@media (max-width: 359px) {
+
+@media (width <= 359px) {
   .container {
     padding: 24px 12px;
   }
 }
 
 /* ── Sidebar refinements ── */
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .sidebar {
     left: -300px;
     width: 280px;
   }
+
   .sidebar.open {
     left: 0;
   }
 }
 
 /* ── Section gap tightening on small screens ── */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   section,
   .page > .card-form {
     margin-bottom: 14px;
   }
+
   .hero {
     padding: 32px 0;
   }
+
   .simple-top .simple-nav-links {
     display: none;
   }
+
   .simple-top {
     justify-content: space-between;
   }
+
   .simple-top-left {
     gap: 4px;
   }
+
   .simple-mode-switch {
     width: 44px;
     height: 44px;
@@ -496,6 +568,7 @@ label,
     border-radius: 50%;
     overflow: hidden;
   }
+
   .simple-clear-area {
     text-align: right;
     padding: 4px 12px 0;
@@ -503,19 +576,22 @@ label,
 }
 
 /* ── Adequate tap target spacing on mobile ── */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .card-form .form-group {
     margin-bottom: 14px;
   }
+
   .card-form .btn + .btn {
     margin-top: 8px;
   }
+
   .lang-option {
     padding: 10px 14px;
     min-height: 44px;
     display: flex;
     align-items: center;
   }
+
   .sidebar a,
   .sidebar .sidebar-item {
     min-height: 44px;
@@ -523,6 +599,7 @@ label,
     align-items: center;
     padding: 10px 16px;
   }
+
   .error-links a {
     min-height: 44px;
     display: inline-flex;
@@ -530,26 +607,31 @@ label,
     padding: 8px 14px;
   }
 }
-@media (min-width: 481px) and (max-width: 767px) {
+
+@media (width >= 481px) and (width <= 767px) {
   .hero {
     padding: 44px 0;
   }
 }
 
 /* ── General mobile tweaks ── */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .card {
     padding: 18px;
   }
+
   .card .icon {
     font-size: 1.5rem;
   }
+
   .card h2 {
     font-size: 0.9rem;
   }
+
   .card p {
     font-size: 0.75rem;
   }
+
   .badge {
     font-size: 0.72rem;
     padding: 4px 12px;
@@ -557,20 +639,23 @@ label,
     display: inline-flex;
     align-items: center;
   }
+
   /* Ensure minimum readable sizes */
   .result {
     font-size: 0.75rem;
   }
+
   .nav-search input {
     font-size: 16px;
   }
+
   .footer-copy {
     font-size: 0.78rem;
   }
 }
 
 /* ── Mode selection overlay: scroll fix & sizing on mobile ── */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .mode-select-overlay {
     padding: 12px;
     justify-content: flex-start;
@@ -578,81 +663,103 @@ label,
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
+
   .mode-select-box {
     padding: 0 16px 32px;
   }
+
   .mode-select-box h1 {
     font-size: 1.3rem;
   }
+
   .mode-subtitle {
     font-size: 0.82rem;
     margin-bottom: 20px;
   }
+
   .mode-tagline {
     font-size: 0.76rem;
     margin-bottom: 20px;
   }
+
   .mode-logo {
     width: 56px;
     height: 56px;
   }
+
   .mode-cards {
     flex-direction: column;
     gap: 12px;
   }
+
   .mode-card {
     padding: 16px;
   }
+
   .mode-card-icon {
     font-size: 1.8rem;
     margin-bottom: 8px;
   }
+
   .mode-card h2 {
     font-size: 0.9rem;
   }
+
   .mode-card p {
     font-size: 0.76rem;
   }
+
   .mode-links {
     gap: 12px;
   }
+
   .mode-links a {
     font-size: 0.76rem;
     padding: 8px 0;
     display: inline-block;
   }
+
   .mode-social {
     gap: 8px;
   }
+
   .mode-social a {
     font-size: 0.72rem;
   }
+
   .mode-select-bar {
     padding: 6px 10px;
   }
+
   html:has(#modeSelect:not([style*="display: none"])),
   body:has(#modeSelect:not([style*="display: none"])) {
     overflow: auto;
   }
 }
-@media (max-width: 360px) {
+
+@media (width <= 360px) {
   .mode-select-overlay {
     padding: 8px;
   }
+
   .mode-select-box {
     padding: 0 10px 24px;
   }
+
   .mode-select-box h1 {
     font-size: 1.1rem;
   }
+
   .mode-tagline {
     font-size: 0.7rem;
     margin-bottom: 16px;
   }
+
   .mode-logo {
     width: 48px;
     height: 48px;
   }
+
   .mode-card {
     padding: 12px;
   }
@@ -662,6 +769,7 @@ label,
 .hero h1 {
   font-size: clamp(1.4rem, 4.5vw, 2.5rem);
 }
+
 .hero p {
   font-size: clamp(0.82rem, 2.5vw, 1rem);
 }
@@ -681,7 +789,7 @@ video {
 }
 
 /* ── Theme toggle & lang dropdown compact on small nav ── */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .theme-btn {
     width: 44px;
     height: 44px;
@@ -690,6 +798,7 @@ video {
     align-items: center;
     justify-content: center;
   }
+
   .lang-btn {
     font-size: 0.85rem;
     padding: 10px 12px;
@@ -698,25 +807,29 @@ video {
     display: flex;
     align-items: center;
   }
+
   .mode-switch-btn {
     min-height: 44px;
     display: flex;
     align-items: center;
   }
+
   nav .logo-img {
     height: 28px;
   }
+
   nav {
     padding: 8px 12px;
     gap: 8px;
   }
+
   .nav-left {
     gap: 8px;
   }
 }
 
 /* ── Card-form heading on small screens ── */
-@media (max-width: 413px) {
+@media (width <= 413px) {
   .card-form h2 {
     font-size: 1.1rem;
     margin-bottom: 14px;
@@ -724,13 +837,15 @@ video {
 }
 
 /* ── Search results page mobile width ── */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   #page-search .search-result-item {
     padding: 12px 14px;
   }
+
   #page-search .search-result-title {
     font-size: 0.85rem;
   }
+
   #page-search .search-result-snippet {
     font-size: 0.72rem;
   }
@@ -746,21 +861,24 @@ video {
 }
 
 /* ── Nav items alignment on tight screens ── */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .nav-left .theme-btn {
     display: none;
   }
 }
-@media (max-width: 323px) {
+
+@media (width <= 323px) {
   .nav-left .nav-search {
     display: none;
   }
 }
-@media (max-width: 374px) {
+
+@media (width <= 374px) {
   .nav-left .theme-btn {
     display: none;
   }
 }
+
 /* ═══════════════════════════════════════════════
    ── Foldable & tri-fold device support ──
    Covers: cover screens (320-412px), inner displays
@@ -770,35 +888,41 @@ video {
 /* ── Extremely narrow foldable cover screens (320-359px) ──
      Samsung Z Fold 5/6/7 cover: 301-412px wide
      Hide non-essential nav items to prevent overflow */
-@media (max-width: 359px) {
+@media (width <= 359px) {
   .simple-progress {
     gap: 1px;
     padding: 3px 4px;
   }
+
   .sp-step {
     font-size: 0.55rem;
-    padding: 2px 2px;
+    padding: 2px;
     gap: 2px;
   }
+
   .sp-step-text {
     max-width: 40px;
   }
+
   .sp-dot {
     width: 14px;
     height: 14px;
     font-size: 0.45rem;
   }
+
   .sp-line {
     min-width: 5px;
     width: 8px;
     margin: 0 1px;
   }
 }
-@media (max-width: 323px) {
+
+@media (width <= 323px) {
   .nav-left .lang-btn,
   .nav-left .nav-search {
     display: none;
   }
+
   .simple-top-right .lang-btn {
     display: none;
   }
@@ -810,7 +934,7 @@ video {
      Motorola Razr Fold inner (~850px)
      These viewports are nearly square (1:1 to 1.3:1 aspect ratio),
      too wide for phone layouts but too narrow/nearly square for desktop */
-@media (min-width: 600px) and (max-width: 899px) {
+@media (width >= 600px) and (width <= 899px) {
   /* 2-column grid instead of 3 on near-square foldable screens */
   .grid {
     grid-template-columns: repeat(2, 1fr);
@@ -834,6 +958,7 @@ video {
   .hero h1 {
     font-size: clamp(1.8rem, 3vw, 2.4rem);
   }
+
   .hero p {
     font-size: clamp(0.88rem, 1.8vw, 1rem);
   }
@@ -853,7 +978,7 @@ video {
 /* ── Large foldable inner & tri-fold fully open (900-1100px) ──
      Devices: Galaxy Z TriFold fully open (~1080px wide),
      Surface Duo spanned mode (~1114px), large landscape foldables */
-@media (min-width: 900px) and (max-width: 1100px) {
+@media (width >= 900px) and (width <= 1100px) {
   /* 3-column grid back (was 2-col in 600-899 range) */
   .grid {
     grid-template-columns: repeat(3, 1fr);
@@ -879,7 +1004,7 @@ video {
 }
 
 /* ── Simplified mode: max-width centering on wide foldable screens ── */
-@media (min-width: 600px) {
+@media (width >= 600px) {
   .simple-card {
     max-width: 620px;
     margin-left: auto;
@@ -888,14 +1013,14 @@ video {
 }
 
 /* ── Back button text always visible on foldable wide screens ── */
-@media (min-width: 600px) {
+@media (width >= 600px) {
   .back-btn-label {
     display: inline !important;
   }
 }
 
 /* ── Floating AI Assistant (mobile) ── */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .ast-bubble,
   .ast-panel {
     display: none !important;

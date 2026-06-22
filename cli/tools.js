@@ -85,7 +85,7 @@ function exifRead(filePath) {
   if (out.error) return { from: "js", warning: out.error };
   try {
     const arr = JSON.parse(out);
-    return { from: "exiftool", data: (arr && arr[0]) || {} };
+    return { from: "exiftool", data: arr?.[0] || {} };
   } catch {
     return { from: "js", warning: "exiftool JSON parse failed" };
   }
@@ -111,7 +111,7 @@ function exifReadGps(filePath) {
   if (out.error) return null;
   try {
     const arr = JSON.parse(out);
-    return (arr && arr[0]) || null;
+    return arr?.[0] || null;
   } catch {
     return null;
   }
