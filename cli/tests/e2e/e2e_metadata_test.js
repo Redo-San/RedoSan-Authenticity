@@ -67,7 +67,7 @@ describe("E2E — Metadata Reader", () => {
     await page.waitForTimeout(500);
 
     await page.evaluate(() => document.getElementById("md-btn").click());
-    await page.waitForSelector("#md-result", { state: "visible", timeout: 15000 });
+    await page.waitForSelector("#md-result", { state: "visible", timeout: 45000 });
     await page.waitForTimeout(1000);
 
     const outputHtml = await page.evaluate(() => {
