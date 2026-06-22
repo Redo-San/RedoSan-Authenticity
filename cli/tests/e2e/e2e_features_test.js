@@ -163,8 +163,9 @@ describe("E2E — Download Formats", () => {
       await page.waitForTimeout(500);
 
       // Click format button directly
+      const dlPromise = page.waitForEvent("download", { timeout: 30000 });
       await page.evaluate((fmt) => downloadResult(fmt), format);
-      await page.waitForTimeout(2000);
+      await dlPromise;
 
       // Check download was triggered
       assert.ok(downloads.length > 0, `${format} download should start`);
