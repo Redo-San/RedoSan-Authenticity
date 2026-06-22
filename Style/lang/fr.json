@@ -332,7 +332,11 @@
     "secret_status_max": "Taille maximale du secret : ~{bytes} octets",
     "secret_status_ok": "✓ Fichier secret : {taille} octets – s'adapte à la capacité",
     "secret_status_exceed": "✗ Fichier secret : {size} octets – dépasse la capacité de {excess} octets",
-    "detect_found": "Algorithme détecté : {quelque chose}"
+    "detect_found": "Algorithme détecté : {quelque chose}",
+    "embed_help_title": "Comment intégrer un filigrane",
+    "embed_help": "Intégrez un filigrane numérique caché dans une image pour protéger votre contenu.\n\n Téléchargez une image de couverture à l’aide du sélecteur de fichiers ci-dessous. Ensuite, choisissez ou tapez un message secret : ce sont les données qui seront cachées à l'intérieur de l'image. Choisissez un algorithme de filigrane dans le menu déroulant ; chaque algorithme propose différents compromis entre capacité, robustesse contre les attaques et invisibilité visuelle. Un mot de passe est facultatif mais ajoute une couche de sécurité supplémentaire.\n\n Cliquez sur le bouton Intégrer pour démarrer le processus. Une fois terminée, l'image filigranée s'affiche à côté d'un rapport de qualité montrant les scores PSNR et SSIM afin que vous puissiez évaluer dans quelle mesure l'image a changé.\n\n ⚠️ Important : Téléchargez vos résultats avant de partir. Utilisez le bouton Télécharger sous les résultats pour enregistrer l'image filigranée ou un rapport au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. Les résultats sont stockés uniquement dans votre session de navigation actuelle et seront perdus si vous quittez cette page. ",
+    "extract_help_title": "Comment extraire un filigrane",
+    "extract_help": "Extrayez un message caché d'une image filigranée pour révéler son contenu secret.\n\n Téléchargez l'image filigranée (image stego) à l'aide du sélecteur de fichiers. Sélectionnez l'algorithme qui a été utilisé lors de l'intégration. Si vous n'êtes pas sûr, choisissez Détection automatique et le système analysera tous les algorithmes disponibles pour trouver une correspondance. Si un mot de passe a été utilisé lors de l'intégration, saisissez le même mot de passe ici.\n\n Cliquez sur le bouton Extraire pour récupérer le message masqué. Les données extraites seront affichées dans la zone de résultats ci-dessous.\n\n ⚠️ Important : Téléchargez vos résultats avant de partir. Utilisez le bouton Télécharger pour enregistrer les données extraites au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. Les résultats sont stockés uniquement dans votre session de navigateur actuelle. "
   },
   "fp": {
     "label_file": "Déposer",
@@ -341,7 +345,9 @@
     "label_format": "Format",
     "other_label": "Autre",
     "perceptual_label": "Perceptuel (hachages d'images)",
-    "results_btn": "Télécharger les résultats"
+    "results_btn": "Télécharger les résultats",
+    "help_title": "Comment prendre l'empreinte digitale d'un fichier",
+    "help": "Générez des hachages cryptographiques et des empreintes digitales perceptuelles pour n'importe quel fichier.\n\n Téléchargez un fichier à l'aide du sélecteur de fichiers. Le système calcule automatiquement tous les algorithmes de hachage pris en charge, notamment SHA-1, SHA-256, SHA-3, BLAKE2, BLAKE3, MD5, RIPEMD-160, Whirlpool et les hachages d'images perceptuelles (aHash, dHash, pHash, wHash).\n\n Chaque hachage identifie de manière unique le contenu du fichier. Comparez les hachages entre les systèmes pour vérifier l'intégrité des fichiers. Les hachages perceptuels peuvent détecter des images visuellement similaires même après redimensionnement ou compression.\n\n ⚠️ Important : téléchargez le rapport d'empreintes digitales avant de partir. Utilisez le bouton Télécharger pour enregistrer les résultats au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. "
   },
   "md": {
     "select_image": "Veuillez sélectionner une image",
@@ -352,7 +358,10 @@
     "label_mode": "Mode",
     "label_format": "Format",
     "label_exif": "EXIF",
-    "label_error": "Erreur"
+    "label_error": "Erreur",
+    "download": "Télécharger le rapport",
+    "help_title": "Comment lire les métadonnées",
+    "help": "Extrayez et affichez les métadonnées intégrées dans les fichiers image.\n\n Téléchargez un fichier image (JPEG recommandé pour les données EXIF). Le système lit les balises de métadonnées standard, notamment la marque et le modèle de l'appareil photo, les coordonnées GPS, la date et l'heure, les dimensions de l'image, le profil de couleur et toutes les vignettes intégrées.\n\n Cet outil est utile pour vérifier l'origine de l'image, vérifier l'historique des modifications et extraire les données de localisation des photographies.\n\n ⚠️ Important : Téléchargez le rapport de métadonnées avant de quitter. Utilisez le bouton Télécharger pour enregistrer au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. "
   },
   "ts": {
     "select_both": "Veuillez sélectionner à la fois le fichier original et sa preuve .ots",
@@ -365,7 +374,11 @@
     "option1_step2": "2. Faites glisser et déposez \"{name}.ots\" sur la page",
     "option1_step3": "3. Cliquez sur « Tampon » pour obtenir un .ots complet avec une preuve blockchain",
     "option2_title": "Option 2 — CLI officielle:",
-    "option3_title": "Option 3 — PowerShell (soumettre un hachage brut, 32 octets uniquement):"
+    "option3_title": "Option 3 — PowerShell (soumettre un hachage brut, 32 octets uniquement):",
+    "create_help_title": "Comment créer un OpenTimestamp",
+    "create_help": "Créez un horodatage cryptographique pour n'importe quel fichier à l'aide du protocole OpenTimestamps.\n\n Téléchargez un fichier vers l'horodatage. Le système calcule le hachage du fichier et le soumet à la blockchain Bitcoin via le réseau OpenTimestamps. Cela crée une preuve permanente et vérifiable que le fichier existait à un moment précis.\n\n Une fois l'horodatage créé, téléchargez le fichier .ots. Conservez ce fichier avec l'original : vous aurez besoin des deux pour une vérification ultérieure.\n\n ⚠️ Important : téléchargez le fichier .ots avant de partir. Vous pouvez également enregistrer un rapport au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. ",
+    "verify_help_title": "Comment vérifier un OpenTimestamp",
+    "verify_help": "Vérifiez qu'un fichier correspond à sa preuve OpenTimestamp.\n\n Téléchargez le fichier original et son fichier de preuve .ots correspondant. Le système recalcule le hachage du fichier et le compare à la preuve d'horodatage.\n\n Si la vérification réussit, elle confirme que le fichier existe inchangé depuis la date d'horodatage. En cas d'échec, le fichier peut avoir été modifié après la création de l'horodatage.\n\n ⚠️ Important : téléchargez le rapport de vérification avant de partir. Enregistrez-le au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. "
   },
   "c2pa": {
     "action_created": "📄 Créé",
@@ -403,7 +416,13 @@
     "no_manifests_desc": "Le fichier contient des données C2PA mais aucun manifeste lisible.",
     "no_manifests": "Aucun manifeste trouvé",
     "verified": "Vérifié",
-    "view_details": "Afficher tous les détails"
+    "view_details": "Afficher tous les détails",
+    "read_help_title": "Comment lire la provenance C2PA",
+    "read_help": "Lisez les données C2PA (Coalition for Content Provenance and Authenticity) à partir d’une image.\n\n Téléchargez un fichier image contenant des métadonnées de provenance C2PA. Le système analyse le manifeste C2PA et affiche la signature numérique, les informations d'identification du contenu, l'historique des modifications et toutes les réclamations faites par le créateur du contenu.\n\n Utilisez cet outil pour vérifier l'origine et l'historique d'édition des images provenant de caméras et de logiciels d'édition compatibles C2PA.\n\n ⚠️ Important : Téléchargez le rapport C2PA avant de partir. Enregistrez-le au format PDF, DOCX, JSON ou HTML. ",
+    "write_help_title": "Comment signer avec C2PA",
+    "write_help": "Ajoutez des données de provenance C2PA à une image, créant ainsi un identifiant de contenu vérifiable.\n\n Téléchargez une image et fournissez des informations sur le créateur telles que le nom, l'organisation et les affirmations sur le contenu. Sélectionnez un type de contenu (œuvres d'art, actualités, photographie, etc.) pour classer les informations d'identification. Le système crée un manifeste C2PA et le signe à l'aide d'une clé ECDSA intégrée à votre navigateur.\n\n L'image signée peut être partagée avec d'autres personnes, qui peuvent vérifier sa provenance à l'aide de l'outil de lecture C2PA.\n\n ⚠️ Important : Téléchargez l'image signée C2PA avant de partir. Vous pouvez également enregistrer le manifeste au format JSON. ",
+    "verify_help_title": "Comment vérifier une signature C2PA",
+    "verify_help": "Vérifiez la signature cryptographique d'une image provenant de C2PA.\n\n Téléchargez une image signée C2PA. Le système extrait le manifeste et valide la signature ECDSA par rapport à la clé publique intégrée. Il vérifie également l’intégrité des métadonnées et signale toute falsification.\n\n Une vérification réussie confirme que l'image n'a pas été modifiée depuis la création de ses informations d'identification C2PA.\n\n ⚠️ Important : téléchargez le rapport de vérification avant de partir. Enregistrez-le au format PDF, DOCX, JSON ou HTML. "
   },
   "cert": {
     "heading": "Passeport numérique",
@@ -420,7 +439,9 @@
     "download_label": "Certificat prêt ! Choisissez un format :",
     "reset_btn": "↻ Réinitialiser",
     "did_label": "Résultat d'identité DID (json, txt)",
-    "docw_label": "Résultat du filigrane du document (.txt)"
+    "docw_label": "Résultat du filigrane du document (.txt)",
+    "help_title": "Comment créer un passeport numérique",
+    "help": "Générez un certificat de passeport numérique complet pour vos actifs numériques.\n\n Remplissez les détails de l'actif : nom de l'actif, propriétaire, description et toute information sur la licence ou les droits applicables. Téléchargez le fichier d'actifs et ajoutez éventuellement un résultat de filigrane, un résultat d'empreinte digitale, une preuve d'horodatage ou une provenance C2PA comme preuve à l'appui.\n\n Le système génère un document de certificat formaté qui peut servir de preuve d'authenticité pour vos créations numériques.\n\n ⚠️ Important : Téléchargez le certificat avant de partir. Enregistrez-le au format PDF, DOCX, EPUB ou HTML. "
   },
   "conv": {
     "heading": "Convertisseur de fichiers",
@@ -437,7 +458,9 @@
     "unknown_type": "Type de fichier non pris en charge. Veuillez sélectionner un fichier image, audio, vidéo ou document. ",
     "unsupported": "Type de fichier non pris en charge",
     "audio_limited": "La conversion audio est limitée dans le navigateur. Essayez le format WAV. ",
-    "video_limited": "La conversion vidéo est limitée dans le navigateur. Utilisez un logiciel de montage vidéo dédié. "
+    "video_limited": "La conversion vidéo est limitée dans le navigateur. Utilisez un logiciel de montage vidéo dédié. ",
+    "help_title": "Comment convertir des fichiers",
+    "help": "Convertissez des fichiers entre différents formats à l'aide du convertisseur intégré.\n\n Téléchargez un fichier et sélectionnez le format cible. Les conversions prises en charge incluent les formats d'image (PNG, JPEG, WebP, BMP, GIF), les formats audio (WAV, MP3, OGG), les formats vidéo (MP4, WebM, AVI), les formats de documents (TXT, HTML, Markdown) et les formats de sous-titres (SRT, VTT).\n\n Les conversions d'images et de documents s'effectuent entièrement dans votre navigateur. Les conversions audio et vidéo utilisent ffmpeg.wasm et s'exécutent localement sur votre appareil.\n\n ⚠️ Important : téléchargez votre fichier converti avant de quitter. Les fichiers convertis n'existent que dans la mémoire de votre navigateur. "
   },
   "simple": {
     "upload_size_note": "💡 Pour la filigrane, utilisez une grande image de couverture (par exemple 1920×1080) pour qu'il y ait suffisamment de capacité pour intégrer une image secrète.",
@@ -532,7 +555,11 @@
   "awm": {
     "heading": "Filigranage audio",
     "audio_label": "Fichier audio (WAV recommandé)",
-    "secret_label": "Message secret"
+    "secret_label": "Message secret",
+    "embed_help_title": "Comment intégrer un filigrane audio",
+    "embed_help": "Cachez un message secret dans un fichier audio à l'aide du filigrane audio numérique.\n\n Téléchargez un fichier audio WAV en tant que support. Tapez ou téléchargez un message secret à cacher dans l'audio. Choisissez un algorithme de filigrane dans la liste déroulante : chaque algorithme équilibre la qualité audio, la capacité des données et la résistance à la compression ou au traitement du signal. Un mot de passe ajoute une protection contre les extractions non autorisées.\n\n Cliquez sur Intégrer pour procéder. Le fichier audio filigrané sera disponible en téléchargement avec un rapport de qualité.\n\n ⚠️ Important : Téléchargez vos résultats avant de partir. Utilisez le bouton Télécharger pour enregistrer l'audio filigrané ou un rapport au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. Les résultats concernent uniquement la session et seront perdus à la sortie. ",
+    "extract_help_title": "Comment extraire un filigrane audio",
+    "extract_help": "Révélez un message caché à partir d'un fichier audio filigrané.\n\n Téléchargez le fichier audio filigrané à l'aide du sélecteur de fichier. Choisissez le même algorithme que celui utilisé lors de l'intégration. Si un mot de passe a été défini, saisissez-le maintenant.\n\n Cliquez sur Extraire pour récupérer le message masqué. Les données extraites apparaissent dans la zone de résultats.\n\n ⚠️ Important : Téléchargez vos résultats avant de quitter la page. Utilisez le bouton Télécharger pour enregistrer au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. "
   },
   "simple.upload_size_note": "💡 Pour la filigrane, utilisez une grande image de couverture (par exemple 1920×1080) pour qu'il y ait suffisamment de capacité pour intégrer une image secrète.",
   "simple.usage_warning": "⚠️ Cet outil est destiné à une utilisation légale uniquement. Le téléchargement de contenu illégal ou nuisible est strictement interdit. Tous les traitements sont effectués localement — rien n'est stocké ou envoyé à un serveur.",
@@ -635,7 +662,9 @@
     "heading": "Analyseur médico-légal",
     "desc": "Analysez les images pour détecter les signaux de falsification à l'aide de l'ELA, de l'incohérence du bruit, de la structure JPEG et de la détection des mouvements de copie. Tout s'exécute localement dans votre navigateur. ",
     "file_label": "Fichier image",
-    "submit": "Analyser la médecine légale"
+    "submit": "Analyser la médecine légale",
+    "help_title": "Comment utiliser l'analyseur médico-légal",
+    "help": "Analysez une image à la recherche de signes de falsification, de manipulation ou d’artefacts médico-légaux.\n\n Téléchargez une image pour une analyse médico-légale. Le système exécute plusieurs techniques de détection, notamment l'analyse du niveau d'erreur (ELA), l'analyse du bruit, l'inspection des marqueurs JPEG et la détection des anomalies des métadonnées.\n\n Les résultats mettent en évidence les régions de manipulation potentielle et fournissent un score de confiance en matière de falsification. Utilisez cet outil pour vérifier l'authenticité des images dans des contextes journalistiques, juridiques ou d'enquête.\n\n ⚠️ Important : téléchargez le rapport médico-légal avant de partir. Enregistrez-le au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. "
   },
   "docw.password_label": "Mot de passe (optionnel)",
   "docw.password_placeholder": "Entrez le mot de passe",
@@ -685,7 +714,9 @@
     "document_section": "Options de nettoyage des documents",
     "remove_doc_wm": "Filigrane de document",
     "remove_doc_meta": "Métadonnées",
-    "download_doc_btn": "Télécharger le document nettoyé"
+    "download_doc_btn": "Télécharger le document nettoyé",
+    "help_title": "Comment utiliser les outils de suppression",
+    "help": "Détectez et supprimez les filigranes numériques des images, des fichiers audio et des documents.\n\n Sélectionnez le type de filigrane que vous souhaitez détecter (filigrane numérique, filigrane audio, injection de pixels ou filigrane de document). Téléchargez le fichier et sélectionnez la technique de suppression spécifique adaptée à votre cas.\n\n Le système analyse le fichier et tente de supprimer ou de neutraliser le filigrane détecté. Notez que le succès de la suppression dépend de la force et de l’algorithme du filigrane d’origine.\n\n ⚠️ Important : téléchargez le fichier traité avant de quitter. Enregistrez-le dans le format disponible. "
   },
   "pi": {
     "analyze_algorithm_label": "Algorithme d'analyse",
@@ -694,7 +725,13 @@
     "ml_detection": "Détection ML",
     "blind_decoding": "Décodage aveugle",
     "robustness_testing": "Tests de robustesse",
-    "quality_metrics": "Mesures de qualité"
+    "quality_metrics": "Mesures de qualité",
+    "embed_help_title": "Comment injecter un filigrane en pixels",
+    "embed_help": "Intégrez une charge utile secrète dans les pixels de l’image à l’aide d’algorithmes d’injection avancés.\n\n Téléchargez une image de transporteur. Entrez votre charge utile secrète : il peut s'agir de texte, d'un fichier ou d'un message. Sélectionnez une catégorie d'injection et un algorithme dans les menus ; chaque catégorie (spatiale, fréquentielle, deep learning, professionnelle) offre différents niveaux de capacité, d'invisibilité et de robustesse. Ajustez les options avancées telles que la force d’intégration, le mot de passe et la redondance selon vos besoins.\n\n Cliquez sur Injecter pour intégrer la charge utile. Le résultat inclut des métriques telles que PSNR, SSIM et BER pour évaluer la qualité et la robustesse.\n\n ⚠️ Important : Téléchargez vos résultats avant de partir. Utilisez le bouton Télécharger pour enregistrer l'image injectée ou un rapport au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. ",
+    "extract_help_title": "Comment extraire une charge utile de pixels",
+    "extract_help": "Extrayez une charge utile cachée à partir d’une image injectée de pixels.\n\n Téléchargez l'image contenant la charge utile cachée. Sélectionnez la même catégorie d’algorithme et le même algorithme utilisé lors de l’injection. Si un mot de passe a été défini, fournissez-le.\n\n Cliquez sur Extraire pour récupérer les données cachées. La charge utile extraite apparaît dans la zone de résultats.\n\n ⚠️ Important : Téléchargez vos données extraites avant de partir. Utilisez le bouton Télécharger pour enregistrer au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. ",
+    "analyze_help_title": "Comment analyser une image pour les filigranes",
+    "analyze_help": "Analysez une image pour détecter la présence de filigranes cachés ou de données injectées.\n\n Téléchargez une image pour analyse. Le système exécute des tests statistiques, un décodage aveugle et une détection facultative par apprentissage automatique pour identifier les traces de filigrane. Les résultats montrent la confiance de détection, l’algorithme estimé et les scores de robustesse.\n\n Utilisez cet outil lorsque vous soupçonnez qu'une image contient des données cachées mais que vous ne savez pas quel algorithme a été utilisé.\n\n ⚠️ Important : Téléchargez le rapport d'analyse avant de partir. Utilisez le bouton Télécharger pour enregistrer au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. "
   },
   "id_forge": {
     "nanoid_len": "Longueur du NanoID",
@@ -705,6 +742,22 @@
     "swhid_text_label": "Entrez ou collez le texte pour calculer SWHID",
     "swhid_url_label": "Récupérer l'URL et calculer SHA-1",
     "swhid_file_hint": "Accepte : .ots (extrait SHA-256), .json (empreinte digitale – utilise SHA-1), .txt (hachage du contenu)",
-    "swhid_text_warning": "Caractères anglais uniquement. Un texte non anglais produira un SWHID incorrect. "
+    "swhid_text_warning": "Caractères anglais uniquement. Un texte non anglais produira un SWHID incorrect. ",
+    "help_title": "Comment générer des identifiants",
+    "help": "Générez différents types d'identifiants uniques pour le développement de logiciels et la gestion des données.\n\n Sélectionnez un type d'identifiant dans la liste déroulante : UUID v4 (aléatoire), UUID v7 (ordonné dans le temps), ULID, Nano ID (longueur configurable) ou SWHID (Software Heritage Identifier). Configurez toutes les options spécifiques au type telles que le nombre d’ID ou la longueur du Nano ID.\n\n Pour SWHID, choisissez la méthode de saisie : téléchargez un fichier, saisissez du texte ou récupérez une URL. Le système calcule le hachage approprié et construit l'identifiant.\n\n ⚠️ Important : Téléchargez vos identifiants générés avant de partir. Enregistrez-les au format PDF, DOCX, JSON, CSV, TXT, XML ou HTML. "
+  },
+  "did": {
+    "create_help_title": "Comment créer un DID",
+    "create_help": "Créez un identifiant décentralisé (DID) et son document DID associé.\n\n Sélectionnez un type de clé cryptographique (Ed25519, ECDSA P-256 ou RSA). Le système génère la paire de clés et construit un document DID contenant la clé publique, les méthodes de vérification et les points de terminaison du service.\n\n Le document DID peut être exporté pour être utilisé avec des registres distribués ou d'autres registres de données vérifiables. Stockez la clé privée en toute sécurité : elle ne peut pas être récupérée en cas de perte.\n\n ⚠️ Important : Téléchargez le document DID avant de partir. Enregistrez-le au format PDF, DOCX, JSON ou HTML. ",
+    "sign_help_title": "Comment signer avec un DID",
+    "sign_help": "Signez un message ou un fichier à l'aide de votre clé privée DID pour prouver la paternité.\n\n Entrez ou téléchargez votre clé privée DID. Fournissez ensuite le message ou le fichier que vous souhaitez signer. Le système génère une signature numérique qui prouve cryptographiquement que vous êtes l'auteur du contenu.\n\n Partagez la signature avec le contenu afin que d'autres puissent la vérifier à l'aide de la clé publique de votre document DID.\n\n ⚠️ Important : Téléchargez le fichier de signature avant de partir. Enregistrez-le au format JSON ou TXT. ",
+    "verify_help_title": "Comment vérifier une signature DID",
+    "verify_help": "Vérifiez une signature numérique créée avec un DID.\n\n Téléchargez le message ou le fichier d'origine, le fichier de signature et le document DID contenant la clé publique. Le système vérifie si la signature correspond au contenu et à la clé publique.\n\n Une vérification réussie confirme que le contenu a été signé par le propriétaire du DID et n'a pas été falsifié.\n\n ⚠️ Important : téléchargez le rapport de vérification avant de partir. Enregistrez-le au format PDF, DOCX, JSON ou HTML. "
+  },
+  "docw": {
+    "embed_help_title": "Comment filigraner un document",
+    "embed_help": "Cachez un message secret dans un document texte à l'aide de techniques de filigrane de document.\n\n Téléchargez un document (TXT, DOCX ou PDF) en tant que support. Entrez votre message secret. Choisissez une technique de filigrane dans la liste déroulante : codage d'espaces, caractères de largeur nulle, substitution d'homoglyphes, décalage de ligne ou décalage de mot. Un mot de passe ajoute une protection supplémentaire.\n\n Cliquez sur Intégrer pour procéder. Le document filigrané préserve le texte visible d'origine tout en portant le message caché.\n\n ⚠️ Important : Téléchargez le document filigrané avant de partir. Enregistrez-le au format DOCX ou PDF. Vous pouvez également exporter un rapport au format TXT, CSV, XML ou HTML. ",
+    "extract_help_title": "Comment extraire un filigrane de document",
+    "extract_help": "Lire un message masqué à partir d'un document filigrané.\n\n Téléchargez le document filigrané (TXT, DOCX ou PDF). Sélectionnez la technique utilisée lors de l'intégration. Si un mot de passe a été défini, saisissez-le.\n\n Cliquez sur Extraire pour récupérer le message masqué. Le texte extrait apparaît dans la zone de résultats.\n\n ⚠️ Important : Téléchargez les données extraites avant de partir. Enregistrez-le au format TXT, CSV, XML, HTML ou sous forme de rapport DOCX ou PDF. "
   }
 }

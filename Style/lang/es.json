@@ -331,7 +331,11 @@
     "secret_status_max": "Tamaño máximo del secreto: ~{bytes} bytes",
     "secret_status_ok": "✓ Archivo secreto: {tamaño} bytes: cabe dentro de la capacidad",
     "secret_status_exceed": "✗ Archivo secreto: {size} bytes: excede la capacidad en {excess} bytes",
-    "detect_found": "Detected algorithm: {algo}"
+    "detect_found": "Detected algorithm: {algo}",
+    "embed_help_title": "Cómo incrustar una marca de agua",
+    "embed_help": "Incruste una marca de agua digital oculta en una imagen para proteger su contenido.\n\n Sube una imagen de portada usando el selector de archivos a continuación. Luego elige o escribe un mensaje secreto: estos son los datos que se ocultarán dentro de la imagen. Elija un algoritmo de marca de agua del menú desplegable; Cada algoritmo ofrece diferentes compensaciones entre capacidad, solidez contra ataques e invisibilidad visual. Una contraseña es opcional pero agrega una capa adicional de seguridad.\n\n Haga clic en el botón Insertar para iniciar el proceso. Una vez completada, la imagen con marca de agua se muestra junto con un informe de calidad que muestra las puntuaciones de PSNR y SSIM para que pueda evaluar cuánto cambió la imagen.\n\n ⚠️ Importante: descargue sus resultados antes de navegar. Utilice el botón Descargar debajo de los resultados para guardar la imagen con marca de agua o un informe en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. Los resultados se almacenan únicamente en la sesión actual de su navegador y se perderán si abandona esta página. ",
+    "extract_help_title": "Cómo extraer una marca de agua",
+    "extract_help": "Extraiga un mensaje oculto de una imagen con marca de agua para revelar su contenido secreto.\n\n Sube la imagen con marca de agua (imagen stego) usando el selector de archivos. Seleccione el algoritmo que se utilizó durante la incrustación; si no está seguro, elija Detección automática y el sistema escaneará todos los algoritmos disponibles para encontrar una coincidencia. Si se utilizó una contraseña durante la inserción, ingrese la misma contraseña aquí.\n\n Haga clic en el botón Extraer para recuperar el mensaje oculto. Los datos extraídos se mostrarán en el área de resultados a continuación.\n\n ⚠️ Importante: descargue sus resultados antes de navegar. Utilice el botón Descargar para guardar los datos extraídos en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. Los resultados se almacenan únicamente en la sesión actual de su navegador. "
   },
   "fp": {
     "label_file": "Archivo",
@@ -340,7 +344,9 @@
     "label_format": "Formato",
     "other_label": "Otro",
     "perceptual_label": "Perceptivo (hashes de imagen)",
-    "results_btn": "Descargar resultados"
+    "results_btn": "Descargar resultados",
+    "help_title": "Cómo tomar huellas digitales de un archivo",
+    "help": "Genere hashes criptográficos y huellas dactilares de percepción para cualquier archivo.\n\n Cargue un archivo usando el selector de archivos. El sistema calcula automáticamente todos los algoritmos hash admitidos, incluidos SHA-1, SHA-256, SHA-3, BLAKE2, BLAKE3, MD5, RIPEMD-160, Whirlpool y hashes de imágenes perceptuales (aHash, dHash, pHash, wHash).\n\n Cada hash identifica de forma única el contenido del archivo. Compare hashes entre sistemas para verificar la integridad de los archivos. Los hashes de percepción pueden detectar imágenes visualmente similares incluso después de cambiar el tamaño o comprimirlas.\n\n ⚠️ Importante: descargue el informe de huellas digitales antes de navegar. Utilice el botón Descargar para guardar los resultados en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. "
   },
   "md": {
     "select_image": "Por favor seleccione una imagen",
@@ -351,7 +357,10 @@
     "label_mode": "Modo",
     "label_format": "Formato",
     "label_exif": "EXIF",
-    "label_error": "Error"
+    "label_error": "Error",
+    "download": "Descargar Informe",
+    "help_title": "Cómo leer metadatos",
+    "help": "Extraiga y muestre metadatos incrustados en archivos de imagen.\n\n Cargue un archivo de imagen (se recomienda JPEG para datos EXIF). El sistema lee etiquetas de metadatos estándar, incluida la marca y el modelo de la cámara, las coordenadas GPS, la fecha y la hora, las dimensiones de la imagen, el perfil de color y cualquier miniatura incrustada.\n\n Esta herramienta es útil para verificar el origen de la imagen, comprobar el historial de edición y extraer datos de ubicación de las fotografías.\n\n ⚠️ Importante: descargue el informe de metadatos antes de navegar. Utilice el botón Descargar para guardar en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. "
   },
   "ts": {
     "select_both": "Seleccione tanto el archivo original como su prueba .ots.",
@@ -364,7 +373,11 @@
     "option1_step2": "2. Arrastre y suelte \"{name}.ots\" en la página",
     "option1_step3": "3. Haga clic en \"Sello\" para obtener .ots completos con prueba de blockchain",
     "option2_title": "Opción 2: CLI oficial:",
-    "option3_title": "Opción 3: PowerShell (enviar hash sin formato, solo 32 bytes):"
+    "option3_title": "Opción 3: PowerShell (enviar hash sin formato, solo 32 bytes):",
+    "create_help_title": "Cómo crear una marca de tiempo abierta",
+    "create_help": "Cree una marca de tiempo criptográfica para cualquier archivo utilizando el protocolo OpenTimestamps.\n\n Sube un archivo a la marca de tiempo. El sistema calcula el hash del archivo y lo envía a la cadena de bloques de Bitcoin a través de la red OpenTimestamps. Esto crea una prueba permanente y verificable de que el archivo existió en un momento específico.\n\n Una vez creada la marca de tiempo, descargue el archivo .ots. Guarde este archivo junto con el original; necesitará ambos para una verificación futura.\n\n ⚠️ Importante: descargue el archivo .ots antes de navegar. También puede guardar un informe en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. ",
+    "verify_help_title": "Cómo verificar un OpenTimestamp",
+    "verify_help": "Verifique que un archivo coincida con su prueba OpenTimestamp.\n\n Cargue el archivo original y su correspondiente archivo de prueba .ots. El sistema vuelve a calcular el hash del archivo y lo compara con la prueba de la marca de tiempo.\n\n Si la verificación tiene éxito, confirma que el archivo existió sin cambios desde la fecha de la marca de tiempo. Si falla, es posible que el archivo se haya modificado después de que se creó la marca de tiempo.\n\n ⚠️ Importante: descargue el informe de verificación antes de navegar. Guárdelo en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. "
   },
   "c2pa": {
     "action_created": "📄 Creado",
@@ -402,7 +415,13 @@
     "no_manifests_desc": "El archivo tiene datos C2PA pero no manifiestos legibles.",
     "no_manifests": "No se encontraron manifiestos",
     "verified": "Verificado",
-    "view_details": "Ver todos los detalles"
+    "view_details": "Ver todos los detalles",
+    "read_help_title": "Cómo leer la procedencia de C2PA",
+    "read_help": "Lea datos de C2PA (Coalición para la procedencia y autenticidad del contenido) de una imagen.\n\n Cargue un archivo de imagen que contenga metadatos de procedencia C2PA. El sistema analiza el manifiesto C2PA y muestra la firma digital, las credenciales del contenido, el historial de edición y cualquier reclamo realizado por el creador del contenido.\n\n Utilice esta herramienta para verificar el origen y el historial de edición de imágenes de cámaras y software de edición compatibles con C2PA.\n\n ⚠️ Importante: descargue el informe C2PA antes de navegar. Guárdelo en formato PDF, DOCX, JSON o HTML. ",
+    "write_help_title": "Cómo firmar con C2PA",
+    "write_help": "Agregue datos de procedencia C2PA a una imagen, creando una credencial de contenido verificable.\n\n Cargue una imagen y proporcione información del creador, como nombre, organización y afirmaciones sobre el contenido. Seleccione un tipo de contenido (obra de arte, noticias, fotografía, etc.) para categorizar la credencial. El sistema crea un manifiesto C2PA y lo firma utilizando una clave ECDSA integrada en su navegador.\n\n La imagen firmada se puede compartir con otras personas, quienes pueden verificar su procedencia utilizando la herramienta de lectura C2PA.\n\n ⚠️ Importante: descargue la imagen firmada por C2PA antes de navegar. También puede guardar el manifiesto en formato JSON. ",
+    "verify_help_title": "Cómo verificar una firma C2PA",
+    "verify_help": "Verifique la firma criptográfica de una imagen procedente de C2PA.\n\n Cargue una imagen firmada por C2PA. El sistema extrae el manifiesto y valida la firma ECDSA con la clave pública incorporada. También verifica la integridad de los metadatos e informa cualquier manipulación.\n\n Una verificación exitosa confirma que la imagen no ha sido alterada desde que se crearon sus credenciales C2PA.\n\n ⚠️ Importante: descargue el informe de verificación antes de navegar. Guárdelo en formato PDF, DOCX, JSON o HTML. "
   },
   "cert": {
     "heading": "Pasaporte Digital",
@@ -418,7 +437,9 @@
     "ts_label": "Archivo de marcador de tiempo (.ots)",
     "download_label": "Certificado listo. Elija un formato:",
     "reset_btn": "↻ Volver a empezar",
-    "docw_label": "Resultado de la marca de agua del documento (.txt)"
+    "docw_label": "Resultado de la marca de agua del documento (.txt)",
+    "help_title": "Cómo crear un pasaporte digital",
+    "help": "Genere un certificado de pasaporte digital completo para sus activos digitales.\n\n Complete los detalles del activo: nombre del activo, propietario, descripción y cualquier licencia o información de derechos aplicable. Cargue el archivo de activos y, opcionalmente, agregue un resultado de marca de agua, resultado de huella digital, prueba de marca de tiempo o procedencia C2PA como evidencia de respaldo.\n\n El sistema genera un documento certificado formateado que puede servir como prueba de autenticidad para sus creaciones digitales.\n\n ⚠️ Importante: descargue el certificado antes de navegar. Guárdelo en formato PDF, DOCX, EPUB o HTML. "
   },
   "conv": {
     "heading": "Convertidor de archivos",
@@ -435,7 +456,9 @@
     "unknown_type": "Tipo de archivo no compatible. Seleccione un archivo de imagen, audio, video o documento. ",
     "unsupported": "Tipo de archivo no compatible",
     "audio_limited": "La conversión de audio está limitada en el navegador. Pruebe el formato WAV. ",
-    "video_limited": "La conversión de video está limitada en el navegador. Utilice un software de edición de vídeo dedicado. "
+    "video_limited": "La conversión de video está limitada en el navegador. Utilice un software de edición de vídeo dedicado. ",
+    "help_title": "Cómo convertir archivos",
+    "help": "Convierta archivos entre diferentes formatos utilizando el convertidor incorporado.\n\n Cargue un archivo y seleccione el formato de destino. Las conversiones admitidas incluyen formatos de imagen (PNG, JPEG, WebP, BMP, GIF), formatos de audio (WAV, MP3, OGG), formatos de video (MP4, WebM, AVI), formatos de documentos (TXT, HTML, Markdown) y formatos de subtítulos (SRT, VTT).\n\n Las conversiones de imágenes y documentos se realizan completamente en su navegador. Las conversiones de audio y video usan ffmpeg.wasm y se ejecutan localmente en su dispositivo.\n\n ⚠️ Importante: descargue su archivo convertido antes de navegar. Los archivos convertidos existen sólo en la memoria de su navegador. "
   },
   "simple": {
     "upload_size_note": "💡 Para marcar agua, utilice una imagen de portada grande (por ejemplo, 1920×1080) para que haya suficiente capacidad para incrustar una imagen secreta.",
@@ -621,7 +644,9 @@
     "heading": "Analizador forense",
     "desc": "Analice imágenes en busca de señales de manipulación mediante ELA, inconsistencia de ruido, estructura JPEG y detección de movimiento de copia. Todo se ejecuta localmente en su navegador. ",
     "file_label": "Archivo de imagen",
-    "submit": "Analizar análisis forense"
+    "submit": "Analizar análisis forense",
+    "help_title": "Cómo utilizar el analizador forense",
+    "help": "Analice una imagen en busca de signos de alteración, manipulación o artefactos forenses.\n\n Sube una imagen para análisis forense. El sistema ejecuta múltiples técnicas de detección, incluido el análisis de nivel de error (ELA), el análisis de ruido, la inspección de marcadores JPEG y la detección de anomalías de metadatos.\n\n Los resultados resaltan regiones de posible manipulación y proporcionan una puntuación de confianza en la manipulación. Utilice esta herramienta para verificar la autenticidad de la imagen en contextos periodísticos, legales o de investigación.\n\n ⚠️ Importante: descargue el informe forense antes de navegar. Guárdelo en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. "
   },
   "docw.password_label": "Contraseña (opcional)",
   "docw.password_placeholder": "Ingrese contraseña",
@@ -671,7 +696,9 @@
     "document_section": "Opciones de limpieza de documentos",
     "remove_doc_wm": "Marca de agua del documento",
     "remove_doc_meta": "Metadatos",
-    "download_doc_btn": "Descargar documento limpio"
+    "download_doc_btn": "Descargar documento limpio",
+    "help_title": "Cómo utilizar herramientas de eliminación",
+    "help": "Detecte y elimine marcas de agua digitales de imágenes, archivos de audio y documentos.\n\n Seleccione el tipo de marca de agua que desea detectar (marca de agua digital, marca de agua de audio, inyección de píxeles o marca de agua de documento). Cargue el archivo y seleccione la técnica de eliminación específica adecuada para su caso.\n\n El sistema analiza el archivo e intenta eliminar o neutralizar la marca de agua detectada. Tenga en cuenta que el éxito de la eliminación depende de la solidez y el algoritmo de la marca de agua original.\n\n ⚠️ Importante: descargue el archivo procesado antes de navegar. Guárdalo en el formato disponible. "
   },
   "pi": {
     "analyze_algorithm_label": "Algoritmo de análisis",
@@ -680,7 +707,13 @@
     "ml_detection": "Detección de aprendizaje automático",
     "blind_decoding": "Decodificación ciega",
     "robustness_testing": "Pruebas de robustez",
-    "quality_metrics": "Métricas de calidad"
+    "quality_metrics": "Métricas de calidad",
+    "embed_help_title": "Cómo inyectar una marca de agua de píxel",
+    "embed_help": "Incruste una carga útil secreta en los píxeles de la imagen utilizando algoritmos de inyección avanzados.\n\n Sube una imagen del operador. Ingrese su carga útil secreta; puede ser texto, un archivo o un mensaje. Seleccione una categoría de inyección y un algoritmo de los menús; Cada categoría (espacial, de frecuencia, de aprendizaje profundo, profesional) ofrece diferentes niveles de capacidad, invisibilidad y solidez. Ajuste las opciones avanzadas, como la seguridad de inserción, la contraseña y la redundancia, según sea necesario.\n\n Haga clic en Inyectar para insertar la carga útil. El resultado incluye métricas como PSNR, SSIM y BER para evaluar la calidad y la solidez.\n\n ⚠️ Importante: descargue sus resultados antes de navegar. Utilice el botón Descargar para guardar la imagen inyectada o un informe en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. ",
+    "extract_help_title": "Cómo extraer una carga útil de píxeles",
+    "extract_help": "Extraiga una carga útil oculta de una imagen inyectada con píxeles.\n\n Sube la imagen que contiene la carga útil oculta. Seleccione la misma categoría de algoritmo y el mismo algoritmo utilizado durante la inyección. Si se estableció una contraseña, proporciónela.\n\n Haga clic en Extraer para recuperar los datos ocultos. La carga útil extraída aparece en el área de resultados.\n\n ⚠️ Importante: descarga tus datos extraídos antes de salir. Utilice el botón Descargar para guardar en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. ",
+    "analyze_help_title": "Cómo analizar una imagen en busca de marcas de agua",
+    "analyze_help": "Analiza una imagen para detectar la presencia de marcas de agua ocultas o datos inyectados.\n\n Sube una imagen para su análisis. El sistema ejecuta pruebas estadísticas, decodificación ciega y detección opcional de aprendizaje automático para identificar rastros de marcas de agua. Los resultados muestran la confianza en la detección, el algoritmo estimado y las puntuaciones de robustez.\n\n Utilice esta herramienta cuando sospeche que una imagen contiene datos ocultos pero no sepa qué algoritmo se utilizó.\n\n ⚠️ Importante: descargue el informe de análisis antes de navegar. Utilice el botón Descargar para guardar en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. "
   },
   "id_forge": {
     "nanoid_len": "Longitud de NanoID",
@@ -691,6 +724,28 @@
     "swhid_text_label": "Ingrese o pegue el texto para calcular SWHID",
     "swhid_url_label": "Obtener URL y calcular SHA-1",
     "swhid_file_hint": "Acepta: .ots (extrae SHA-256), .json (huella digital: usa SHA-1), .txt (hashes de contenido)",
-    "swhid_text_warning": "Sólo caracteres en inglés. El texto que no esté en inglés producirá un SWHID incorrecto. "
+    "swhid_text_warning": "Sólo caracteres en inglés. El texto que no esté en inglés producirá un SWHID incorrecto. ",
+    "help_title": "Cómo generar identificadores",
+    "help": "Genere varios tipos de identificadores únicos para el desarrollo de software y la gestión de datos.\n\n Seleccione un tipo de identificador del menú desplegable: UUID v4 (aleatorio), UUID v7 (ordenado por tiempo), ULID, Nano ID (longitud configurable) o SWHID (identificador de herencia de software). Configure cualquier opción específica del tipo, como el recuento de ID o la longitud de Nano ID.\n\n Para SWHID, elija el método de entrada: cargar un archivo, escribir texto o buscar una URL. El sistema calcula el hash apropiado y construye el identificador.\n\n ⚠️ Importante: descargue sus identificadores generados antes de navegar. Guárdelos en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. "
+  },
+  "awm": {
+    "embed_help_title": "Cómo incrustar una marca de agua de audio",
+    "embed_help": "Oculte un mensaje secreto dentro de un archivo de audio mediante marcas de agua de audio digital.\n\n Cargue un archivo de audio WAV como portador. Escribe o sube un mensaje secreto para ocultarlo dentro del audio. Elija un algoritmo de marca de agua del menú desplegable: cada algoritmo equilibra la calidad del audio, la capacidad de datos y la resistencia a la compresión o al procesamiento de la señal. Una contraseña agrega protección contra la extracción no autorizada.\n\n Haga clic en Insertar para procesar. El archivo de audio con marca de agua estará disponible para descargar junto con un informe de calidad.\n\n ⚠️ Importante: descargue sus resultados antes de navegar. Utilice el botón Descargar para guardar el audio con marca de agua o un informe en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. Los resultados son sólo para la sesión y se perderán al salir. ",
+    "extract_help_title": "Cómo extraer una marca de agua de audio",
+    "extract_help": "Revele un mensaje oculto de un archivo de audio con marca de agua.\n\n Cargue el archivo de audio con marca de agua usando el selector de archivos. Elija el mismo algoritmo que se utilizó durante la incrustación. Si se estableció una contraseña, ingrésela ahora.\n\n Haga clic en Extraer para recuperar el mensaje oculto. Los datos extraídos aparecen en el área de resultados.\n\n ⚠️ Importante: Descarga tus resultados antes de salir de la página. Utilice el botón Descargar para guardar en formato PDF, DOCX, JSON, CSV, TXT, XML o HTML. "
+  },
+  "did": {
+    "create_help_title": "Cómo crear un DID",
+    "create_help": "Cree un Identificador descentralizado (DID) y su documento DID asociado.\n\n Seleccione un tipo de clave criptográfica (Ed25519, ECDSA P-256 o RSA). El sistema genera el par de claves y construye un documento DID que contiene la clave pública, los métodos de verificación y los puntos finales del servicio.\n\n El documento DID se puede exportar para utilizarlo con libros de contabilidad distribuidos u otros registros de datos verificables. Guarde la clave privada de forma segura; no podrá recuperarla si se pierde.\n\n ⚠️ Importante: descargue el documento DID antes de navegar. Guárdelo en formato PDF, DOCX, JSON o HTML. ",
+    "sign_help_title": "Cómo firmar con un DID",
+    "sign_help": "Firme un mensaje o archivo usando su clave privada DID para demostrar la autoría.\n\n Ingrese o cargue su clave privada DID. Luego proporcione el mensaje o archivo que desea firmar. El sistema genera una firma digital que prueba criptográficamente que usted es el autor del contenido.\n\n Comparta la firma junto con el contenido para que otros puedan verificarla utilizando la clave pública de su documento DID.\n\n ⚠️ Importante: descargue el archivo de firma antes de navegar. Guárdalo en formato JSON o TXT. ",
+    "verify_help_title": "Cómo verificar una firma DID",
+    "verify_help": "Verificar una firma digital creada con un DID.\n\n Cargue el mensaje o archivo original, el archivo de firma y el documento DID que contiene la clave pública. El sistema comprueba si la firma coincide con el contenido y la clave pública.\n\n Una verificación exitosa confirma que el contenido fue firmado por el propietario del DID y no ha sido manipulado.\n\n ⚠️ Importante: descargue el informe de verificación antes de navegar. Guárdelo en formato PDF, DOCX, JSON o HTML. "
+  },
+  "docw": {
+    "embed_help_title": "Cómo poner una marca de agua en un documento",
+    "embed_help": "Oculte un mensaje secreto dentro de un documento de texto utilizando técnicas de marca de agua en documentos.\n\n Cargue un documento (TXT, DOCX o PDF) como transportista. Introduce tu mensaje secreto. Elija una técnica de marca de agua del menú desplegable: codificación de espacios en blanco, caracteres de ancho cero, sustitución de homoglifos, cambio de línea o cambio de palabra. Una contraseña agrega protección adicional.\n\n Haga clic en Insertar para procesar. El documento con marca de agua conserva el texto visible original y al mismo tiempo lleva el mensaje oculto.\n\n ⚠️ Importante: descargue el documento con marca de agua antes de navegar. Guárdelo en formato DOCX o PDF. También puede exportar un informe en formato TXT, CSV, XML o HTML. ",
+    "extract_help_title": "Cómo extraer una marca de agua de un documento",
+    "extract_help": "Lea un mensaje oculto de un documento con marca de agua.\n\n Cargue el documento con marca de agua (TXT, DOCX o PDF). Seleccione la técnica que se utilizó durante la incrustación. Si se estableció una contraseña, ingrésela.\n\n Haga clic en Extraer para recuperar el mensaje oculto. El texto extraído aparece en el área de resultados.\n\n ⚠️ Importante: Descarga los datos extraídos antes de salir. Guárdelo en TXT, CSV, XML, HTML o como informe DOCX o PDF. "
   }
 }
