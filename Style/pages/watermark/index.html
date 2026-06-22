@@ -518,17 +518,35 @@
           </div>
           <div id="wm-embed">
             <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>💡 <span data-i18n="wm.embed_help_title">How to embed a watermark</span></span>
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >💡
+                  <span data-i18n="wm.embed_help_title"
+                    >How to embed a watermark</span
+                  ></span
+                >
                 <span class="help-card-toggle">▾</span>
               </div>
-              <div class="help-card-body" data-i18n="wm.embed_help">Embed a hidden digital watermark into an image to protect your content.
-
-Upload a cover image using the file selector below. Then choose or type a secret message — this is the data that will be hidden inside the image. Pick a watermark algorithm from the dropdown menu; each algorithm offers different trade-offs between capacity, robustness against attacks, and visual invisibility. A password is optional but adds an extra layer of security.
-
-Click the Embed button to start the process. Once complete, the watermarked image is displayed alongside a quality report showing PSNR and SSIM scores so you can evaluate how much the image changed.
-
-⚠️ Important: Download your results before navigating away. Use the Download button below the results to save the watermarked image or a report in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format. Results are stored only in your current browser session and will be lost if you leave this page.</div>
+              <div class="help-card-body" data-i18n="wm.embed_help">
+                Embed a hidden digital watermark into an image to protect your
+                content. Upload a cover image using the file selector below.
+                Then choose or type a secret message — this is the data that
+                will be hidden inside the image. Pick a watermark algorithm from
+                the dropdown menu; each algorithm offers different trade-offs
+                between capacity, robustness against attacks, and visual
+                invisibility. A password is optional but adds an extra layer of
+                security. Click the Embed button to start the process. Once
+                complete, the watermarked image is displayed alongside a quality
+                report showing PSNR and SSIM scores so you can evaluate how much
+                the image changed. ⚠️ Important: Download your results before
+                navigating away. Use the Download button below the results to
+                save the watermarked image or a report in PDF, DOCX, JSON, CSV,
+                TXT, XML, or HTML format. Results are stored only in your
+                current browser session and will be lost if you leave this page.
+              </div>
             </div>
             <div class="form-group">
               <label for="wm-type" data-i18n="wm.algo_label">Algorithm</label>
@@ -630,17 +648,32 @@ Click the Embed button to start the process. Once complete, the watermarked imag
           </div>
           <div id="wm-extract" style="display: none">
             <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>🔍 <span data-i18n="wm.extract_help_title">How to extract a watermark</span></span>
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >🔍
+                  <span data-i18n="wm.extract_help_title"
+                    >How to extract a watermark</span
+                  ></span
+                >
                 <span class="help-card-toggle">▾</span>
               </div>
-              <div class="help-card-body" data-i18n="wm.extract_help">Extract a hidden message from a watermarked image to reveal its secret content.
-
-Upload the watermarked image (stego image) using the file selector. Select the algorithm that was used during embedding — if you are unsure, choose Auto Detect and the system will scan all available algorithms to find a match. If a password was used during embedding, enter the same password here.
-
-Click the Extract button to retrieve the hidden message. The extracted data will be displayed in the results area below.
-
-⚠️ Important: Download your results before navigating away. Use the Download button to save the extracted data in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format. Results are stored only in your current browser session.</div>
+              <div class="help-card-body" data-i18n="wm.extract_help">
+                Extract a hidden message from a watermarked image to reveal its
+                secret content. Upload the watermarked image (stego image) using
+                the file selector. Select the algorithm that was used during
+                embedding — if you are unsure, choose Auto Detect and the system
+                will scan all available algorithms to find a match. If a
+                password was used during embedding, enter the same password
+                here. Click the Extract button to retrieve the hidden message.
+                The extracted data will be displayed in the results area below.
+                ⚠️ Important: Download your results before navigating away. Use
+                the Download button to save the extracted data in PDF, DOCX,
+                JSON, CSV, TXT, XML, or HTML format. Results are stored only in
+                your current browser session.
+              </div>
             </div>
             <div class="form-group">
               <label for="wm-type-ex" data-i18n="wm.algo_label"
@@ -1067,24 +1100,24 @@ Click the Extract button to retrieve the hidden message. The extracted data will
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

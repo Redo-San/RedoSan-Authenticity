@@ -496,18 +496,31 @@
         </div>
         <div class="card-form">
           <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>💡 <span data-i18n="conv.help_title">How to convert files</span></span>
-                <span class="help-card-toggle">▾</span>
-              </div>
-              <div class="help-card-body" data-i18n="conv.help">Convert files between different formats using the built-in converter.
-
-Upload a file and select the target format. Supported conversions include image formats (PNG, JPEG, WebP, BMP, GIF), audio formats (WAV, MP3, OGG), video formats (MP4, WebM, AVI), document formats (TXT, HTML, Markdown), and subtitle formats (SRT, VTT).
-
-Image and document conversions happen entirely in your browser. Audio and video conversions use ffmpeg.wasm and run locally on your device.
-
-⚠️ Important: Download your converted file before navigating away. Converted files exist only in your browser memory.</div>
+            <div
+              class="help-card-header"
+              onclick="this.parentNode.classList.toggle('collapsed')"
+            >
+              <span
+                >💡
+                <span data-i18n="conv.help_title"
+                  >How to convert files</span
+                ></span
+              >
+              <span class="help-card-toggle">▾</span>
             </div>
+            <div class="help-card-body" data-i18n="conv.help">
+              Convert files between different formats using the built-in
+              converter. Upload a file and select the target format. Supported
+              conversions include image formats (PNG, JPEG, WebP, BMP, GIF),
+              audio formats (WAV, MP3, OGG), video formats (MP4, WebM, AVI),
+              document formats (TXT, HTML, Markdown), and subtitle formats (SRT,
+              VTT). Image and document conversions happen entirely in your
+              browser. Audio and video conversions use ffmpeg.wasm and run
+              locally on your device. ⚠️ Important: Download your converted file
+              before navigating away. Converted files exist only in your browser
+              memory.
+            </div>
+          </div>
           <div class="form-group">
             <label for="conv-file" data-i18n="conv.file_label"
               >Select a file</label
@@ -932,24 +945,24 @@ Image and document conversions happen entirely in your browser. Audio and video 
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

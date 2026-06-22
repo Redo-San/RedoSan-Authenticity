@@ -518,17 +518,30 @@
           </div>
           <div id="ots-create">
             <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>💡 <span data-i18n="ts.create_help_title">How to create an OpenTimestamp</span></span>
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >💡
+                  <span data-i18n="ts.create_help_title"
+                    >How to create an OpenTimestamp</span
+                  ></span
+                >
                 <span class="help-card-toggle">▾</span>
               </div>
-              <div class="help-card-body" data-i18n="ts.create_help">Create a cryptographic timestamp for any file using the OpenTimestamps protocol.
-
-Upload a file to timestamp. The system computes the file hash and submits it to the Bitcoin blockchain via the OpenTimestamps network. This creates a permanent, verifiable proof that the file existed at a specific point in time.
-
-Once the timestamp is created, download the .ots file. Keep this file alongside the original — you will need both for future verification.
-
-⚠️ Important: Download the .ots file before navigating away. You can also save a report in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+              <div class="help-card-body" data-i18n="ts.create_help">
+                Create a cryptographic timestamp for any file using the
+                OpenTimestamps protocol. Upload a file to timestamp. The system
+                computes the file hash and submits it to the Bitcoin blockchain
+                via the OpenTimestamps network. This creates a permanent,
+                verifiable proof that the file existed at a specific point in
+                time. Once the timestamp is created, download the .ots file.
+                Keep this file alongside the original — you will need both for
+                future verification. ⚠️ Important: Download the .ots file before
+                navigating away. You can also save a report in PDF, DOCX, JSON,
+                CSV, TXT, XML, or HTML format.
+              </div>
             </div>
             <p
               style="
@@ -575,17 +588,28 @@ Once the timestamp is created, download the .ots file. Keep this file alongside 
           </div>
           <div id="ots-verify" style="display: none">
             <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>🔍 <span data-i18n="ts.verify_help_title">How to verify an OpenTimestamp</span></span>
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >🔍
+                  <span data-i18n="ts.verify_help_title"
+                    >How to verify an OpenTimestamp</span
+                  ></span
+                >
                 <span class="help-card-toggle">▾</span>
               </div>
-              <div class="help-card-body" data-i18n="ts.verify_help">Verify that a file matches its OpenTimestamp proof.
-
-Upload the original file and its corresponding .ots proof file. The system re-computes the file hash and compares it against the timestamp proof.
-
-If the verification succeeds, it confirms the file existed unchanged since the timestamp date. If it fails, the file may have been modified after the timestamp was created.
-
-⚠️ Important: Download the verification report before navigating away. Save it in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+              <div class="help-card-body" data-i18n="ts.verify_help">
+                Verify that a file matches its OpenTimestamp proof. Upload the
+                original file and its corresponding .ots proof file. The system
+                re-computes the file hash and compares it against the timestamp
+                proof. If the verification succeeds, it confirms the file
+                existed unchanged since the timestamp date. If it fails, the
+                file may have been modified after the timestamp was created. ⚠️
+                Important: Download the verification report before navigating
+                away. Save it in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.
+              </div>
             </div>
             <p
               style="
@@ -996,24 +1020,24 @@ If the verification succeeds, it confirms the file existed unchanged since the t
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

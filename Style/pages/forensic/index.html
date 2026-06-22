@@ -504,18 +504,31 @@
         </p>
         <div class="card-form">
           <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>💡 <span data-i18n="forensic.help_title">How to use the forensic analyser</span></span>
-                <span class="help-card-toggle">▾</span>
-              </div>
-              <div class="help-card-body" data-i18n="forensic.help">Analyse an image for signs of tampering, manipulation, or forensic artefacts.
-
-Upload an image for forensic analysis. The system runs multiple detection techniques including Error Level Analysis (ELA), noise analysis, JPEG marker inspection, and metadata anomaly detection.
-
-Results highlight regions of potential manipulation and provide a tampering confidence score. Use this tool to verify image authenticity in journalistic, legal, or investigative contexts.
-
-⚠️ Important: Download the forensic report before navigating away. Save it in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+            <div
+              class="help-card-header"
+              onclick="this.parentNode.classList.toggle('collapsed')"
+            >
+              <span
+                >💡
+                <span data-i18n="forensic.help_title"
+                  >How to use the forensic analyser</span
+                ></span
+              >
+              <span class="help-card-toggle">▾</span>
             </div>
+            <div class="help-card-body" data-i18n="forensic.help">
+              Analyse an image for signs of tampering, manipulation, or forensic
+              artefacts. Upload an image for forensic analysis. The system runs
+              multiple detection techniques including Error Level Analysis
+              (ELA), noise analysis, JPEG marker inspection, and metadata
+              anomaly detection. Results highlight regions of potential
+              manipulation and provide a tampering confidence score. Use this
+              tool to verify image authenticity in journalistic, legal, or
+              investigative contexts. ⚠️ Important: Download the forensic report
+              before navigating away. Save it in PDF, DOCX, JSON, CSV, TXT, XML,
+              or HTML format.
+            </div>
+          </div>
           <div class="form-group">
             <label for="forensic-file" data-i18n="forensic.file_label"
               >Image file</label
@@ -917,24 +930,24 @@ Results highlight regions of potential manipulation and provide a tampering conf
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

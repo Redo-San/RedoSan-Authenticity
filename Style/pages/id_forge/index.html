@@ -495,19 +495,32 @@
           Generate UUIDs, ULIDs, Nano IDs, SWHIDs and more
         </p>
         <div class="card-form">
-            <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>💡 <span data-i18n="id_forge.help_title">How to generate identifiers</span></span>
-                <span class="help-card-toggle">▾</span>
-              </div>
-              <div class="help-card-body" data-i18n="id_forge.help">Generate various types of unique identifiers for software development and data management.
-
-Select an identifier type from the dropdown: UUID v4 (random), UUID v7 (time-ordered), ULID, Nano ID (configurable length), or SWHID (Software Heritage Identifier). Configure any type-specific options such as ID count or Nano ID length.
-
-For SWHID, choose the input method — upload a file, type text, or fetch a URL. The system computes the appropriate hash and constructs the identifier.
-
-⚠️ Important: Download your generated identifiers before navigating away. Save them in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+          <div class="help-card">
+            <div
+              class="help-card-header"
+              onclick="this.parentNode.classList.toggle('collapsed')"
+            >
+              <span
+                >💡
+                <span data-i18n="id_forge.help_title"
+                  >How to generate identifiers</span
+                ></span
+              >
+              <span class="help-card-toggle">▾</span>
             </div>
+            <div class="help-card-body" data-i18n="id_forge.help">
+              Generate various types of unique identifiers for software
+              development and data management. Select an identifier type from
+              the dropdown: UUID v4 (random), UUID v7 (time-ordered), ULID, Nano
+              ID (configurable length), or SWHID (Software Heritage Identifier).
+              Configure any type-specific options such as ID count or Nano ID
+              length. For SWHID, choose the input method — upload a file, type
+              text, or fetch a URL. The system computes the appropriate hash and
+              constructs the identifier. ⚠️ Important: Download your generated
+              identifiers before navigating away. Save them in PDF, DOCX, JSON,
+              CSV, TXT, XML, or HTML format.
+            </div>
+          </div>
           <div class="form-group">
             <label for="if-type">ID Type</label>
             <select id="if-type" onchange="idForgeShowInfo()">
@@ -1060,24 +1073,24 @@ For SWHID, choose the input method — upload a file, type text, or fetch a URL.
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

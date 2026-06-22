@@ -361,7 +361,10 @@
   function init() {
     if (document.documentElement.dataset.standalone) {
       var a = document.querySelector("#bg-music");
-      if (a) { a.removeAttribute("src"); a.load(); }
+      if (a) {
+        a.removeAttribute("src");
+        a.load();
+      }
       return;
     }
     var msEl = document.querySelector("#modeSelect");

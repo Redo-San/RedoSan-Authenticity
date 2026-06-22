@@ -526,17 +526,33 @@
           </div>
           <div id="pi-embed">
             <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>💡 <span data-i18n="pi.embed_help_title">How to inject a pixel watermark</span></span>
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >💡
+                  <span data-i18n="pi.embed_help_title"
+                    >How to inject a pixel watermark</span
+                  ></span
+                >
                 <span class="help-card-toggle">▾</span>
               </div>
-              <div class="help-card-body" data-i18n="pi.embed_help">Embed a secret payload into image pixels using advanced injection algorithms.
-
-Upload a carrier image. Enter your secret payload — this can be text, a file, or a message. Select an injection category and algorithm from the menus; each category (spatial, frequency, deep learning, professional) offers different levels of capacity, invisibility, and robustness. Adjust advanced options such as embedding strength, password, and redundancy as needed.
-
-Click Inject to embed the payload. The result includes metrics like PSNR, SSIM, and BER to evaluate quality and robustness.
-
-⚠️ Important: Download your results before navigating away. Use the Download button to save the injected image or a report in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+              <div class="help-card-body" data-i18n="pi.embed_help">
+                Embed a secret payload into image pixels using advanced
+                injection algorithms. Upload a carrier image. Enter your secret
+                payload — this can be text, a file, or a message. Select an
+                injection category and algorithm from the menus; each category
+                (spatial, frequency, deep learning, professional) offers
+                different levels of capacity, invisibility, and robustness.
+                Adjust advanced options such as embedding strength, password,
+                and redundancy as needed. Click Inject to embed the payload. The
+                result includes metrics like PSNR, SSIM, and BER to evaluate
+                quality and robustness. ⚠️ Important: Download your results
+                before navigating away. Use the Download button to save the
+                injected image or a report in PDF, DOCX, JSON, CSV, TXT, XML, or
+                HTML format.
+              </div>
             </div>
             <div class="form-group">
               <label for="pi-category" data-i18n="pi.category_label"
@@ -638,17 +654,28 @@ Click Inject to embed the payload. The result includes metrics like PSNR, SSIM, 
           </div>
           <div id="pi-extract" style="display: none">
             <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>🔍 <span data-i18n="pi.extract_help_title">How to extract a pixel payload</span></span>
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >🔍
+                  <span data-i18n="pi.extract_help_title"
+                    >How to extract a pixel payload</span
+                  ></span
+                >
                 <span class="help-card-toggle">▾</span>
               </div>
-              <div class="help-card-body" data-i18n="pi.extract_help">Extract a hidden payload from a pixel-injected image.
-
-Upload the image containing the hidden payload. Select the same algorithm category and algorithm used during injection. If a password was set, provide it.
-
-Click Extract to retrieve the hidden data. The extracted payload appears in the results area.
-
-⚠️ Important: Download your extracted data before leaving. Use the Download button to save in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+              <div class="help-card-body" data-i18n="pi.extract_help">
+                Extract a hidden payload from a pixel-injected image. Upload the
+                image containing the hidden payload. Select the same algorithm
+                category and algorithm used during injection. If a password was
+                set, provide it. Click Extract to retrieve the hidden data. The
+                extracted payload appears in the results area. ⚠️ Important:
+                Download your extracted data before leaving. Use the Download
+                button to save in PDF, DOCX, JSON, CSV, TXT, XML, or HTML
+                format.
+              </div>
             </div>
             <div class="form-group">
               <label
@@ -697,17 +724,29 @@ Click Extract to retrieve the hidden data. The extracted payload appears in the 
           </div>
           <div id="pi-analyze" style="display: none">
             <div class="help-card">
-              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
-                <span>🔬 <span data-i18n="pi.analyze_help_title">How to analyse an image for watermarks</span></span>
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >🔬
+                  <span data-i18n="pi.analyze_help_title"
+                    >How to analyse an image for watermarks</span
+                  ></span
+                >
                 <span class="help-card-toggle">▾</span>
               </div>
-              <div class="help-card-body" data-i18n="pi.analyze_help">Analyse an image to detect the presence of hidden watermarks or injected data.
-
-Upload an image for analysis. The system runs statistical tests, blind decoding, and optional machine-learning detection to identify watermark traces. Results show detection confidence, estimated algorithm, and robustness scores.
-
-Use this tool when you suspect an image contains hidden data but do not know which algorithm was used.
-
-⚠️ Important: Download the analysis report before navigating away. Use the Download button to save in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+              <div class="help-card-body" data-i18n="pi.analyze_help">
+                Analyse an image to detect the presence of hidden watermarks or
+                injected data. Upload an image for analysis. The system runs
+                statistical tests, blind decoding, and optional machine-learning
+                detection to identify watermark traces. Results show detection
+                confidence, estimated algorithm, and robustness scores. Use this
+                tool when you suspect an image contains hidden data but do not
+                know which algorithm was used. ⚠️ Important: Download the
+                analysis report before navigating away. Use the Download button
+                to save in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.
+              </div>
             </div>
             <div class="form-group">
               <label
@@ -1151,24 +1190,24 @@ Use this tool when you suspect an image contains hidden data but do not know whi
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->
