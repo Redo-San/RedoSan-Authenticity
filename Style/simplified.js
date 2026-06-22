@@ -65,6 +65,7 @@ function initMode() {
 function setMode(mode) {
   document.getElementById("modeSelect").style.display = "none";
   setBodyOverflow(false);
+  if (typeof globalThis.__musicInit === "function") globalThis.__musicInit();
   try {
     history.pushState(
       { modeSet: mode },

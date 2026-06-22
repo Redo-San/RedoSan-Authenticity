@@ -241,6 +241,7 @@ function showStaticPage(name) {
   // Hide mode overlay
   var modeSelect = document.getElementById("modeSelect");
   if (modeSelect) modeSelect.style.display = "none";
+  if (typeof globalThis.__musicInit === "function") globalThis.__musicInit();
   // Hide simplified mode
   var simplifiedMode = document.getElementById("simplifiedMode");
   if (simplifiedMode) simplifiedMode.style.display = "none";
