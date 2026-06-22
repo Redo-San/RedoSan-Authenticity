@@ -76,3 +76,11 @@
 [data-standalone] #music-credit {
   display: none !important;
 }
+
+/* Hide music player on the mode selection overlay (Choose your experience) */
+body:has(#modeSelect:not([style*="display: none"]))
+  [role="region"][aria-label="Music player"],
+body:has(#modeSelect:not([style*="display: none"])) #music-btn,
+body:has(#modeSelect:not([style*="display: none"])) #music-credit {
+  display: none !important;
+}

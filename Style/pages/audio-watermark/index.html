@@ -525,6 +525,34 @@
             </button>
           </div>
           <div id="awm-embed">
+            <div class="help-card">
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >💡
+                  <span data-i18n="awm.embed_help_title"
+                    >How to embed an audio watermark</span
+                  ></span
+                >
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="awm.embed_help">
+                Hide a secret message inside an audio file using digital audio
+                watermarking. Upload a WAV audio file as the carrier. Type or
+                upload a secret message to hide within the audio. Choose a
+                watermark algorithm from the dropdown — each algorithm balances
+                audio quality, data capacity, and resistance to compression or
+                signal processing. A password adds protection against
+                unauthorised extraction. Click Embed to process. The watermarked
+                audio file will be available for download along with a quality
+                report. ⚠️ Important: Download your results before navigating
+                away. Use the Download button to save the watermarked audio or a
+                report in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.
+                Results are session-only and will be lost on exit.
+              </div>
+            </div>
             <div class="form-group">
               <label for="awm-type" data-i18n="wm.algo_label">Algorithm</label>
               <select
@@ -640,6 +668,30 @@
             </button>
           </div>
           <div id="awm-extract" style="display: none">
+            <div class="help-card">
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >🔍
+                  <span data-i18n="awm.extract_help_title"
+                    >How to extract an audio watermark</span
+                  ></span
+                >
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="awm.extract_help">
+                Reveal a hidden message from a watermarked audio file. Upload
+                the watermarked audio file using the file selector. Choose the
+                same algorithm that was used during embedding. If a password was
+                set, enter it now. Click Extract to retrieve the hidden message.
+                The extracted data appears in the results area. ⚠️ Important:
+                Download your results before leaving the page. Use the Download
+                button to save in PDF, DOCX, JSON, CSV, TXT, XML, or HTML
+                format.
+              </div>
+            </div>
             <div class="form-group">
               <label for="awm-type-ex" data-i18n="wm.algo_label"
                 >Algorithm</label
@@ -1181,24 +1233,24 @@
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->
