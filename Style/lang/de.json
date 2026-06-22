@@ -444,7 +444,7 @@
     "c2pa_tiktok": "TikTok-URL",
     "c2pa_youtube": "YouTube-URL",
     "c2pa_music_label": "Musik-Streaming (optional)",
-    "c2pa_failed": "Die C2PA-Signierung ist fehlgeschlagen. Weitere Informationen finden Sie in der Konsole. ",
+    "c2pa_failed": "Die C2PA-Signatur ist fehlgeschlagen. Weitere Informationen finden Sie in der Konsole. ",
     "c2pa_no_module": "C2PA-Modul nicht geladen. Überprüfen Sie die Internetverbindung und aktualisieren Sie sie. ",
     "pi_msg_ph": "Geben Sie Ihre geheime Nachricht ein (erforderlich)",
     "final_image_title": "✅ Finales Bild",

@@ -356,10 +356,10 @@
   },
   "ts": {
     "select_both": "Veuillez sélectionner à la fois le fichier original et sa preuve .ots",
-    "created_success": "✓ Horodatage .ots complet créé avec attestation blockchain !\n\n SHA-256 : {hachage}\nTaille : {size} octets\n\n Ce fichier .ots inclut la preuve Merkle de l'agrégateur de calendrier OpenTimestamps. Vérifiez-le à tout moment en utilisant l'onglet Vérifier. ",
+    "created_success": "✓ Horodatage .ots complet créé avec attestation blockchain !\n\n SHA-256 : {hachage}\nTaille : {size} octets\n\n Ce fichier .ots inclut la preuve Merkle de l'agrégateur de calendrier OpenTimestamps. Vérifiez-le à tout moment en utilisant l'onglet Vérifier. ",
     "created_warning": "SHA-256 : {hachage}\n\n ⚠ Agrégateur de calendrier inaccessible. Création d'un horodatage .ots incomplet ({size} octets, format standard).\n\n Pour joindre une attestation blockchain, exécutez l'une de ces commandes:\n\n {commandes} ",
-    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\n Fichier SHA-256 : {fileHash}\n.ots SHA-256 : {otsHash}\n\n Le fichier n'a PAS changé depuis la création de l'horodatage. ",
-    "verified_mismatch": "✗ Hash MISMATCH ! Le fichier a été modifié.\n\n Fichier SHA-256 : {fileHash}\n.ots SHA-256 : {otsHash}\n\n Le fichier a changé depuis la création de l'horodatage. ",
+    "verified_match": "✓ Vérifié ! Le hachage correspond à la preuve .ots.\n\n Fichier SHA-256 : {fileHash}\n.ots SHA-256 : {otsHash}\n\n Le fichier n'a PAS changé depuis la création de l'horodatage. ",
+    "verified_mismatch": "✗ Hash MISMATCH ! Le fichier a été modifié.\n\n Fichier SHA-256 : {fileHash}\n.ots SHA-256 : {otsHash}\n\n Le fichier a changé depuis la création de l'horodatage. ",
     "option1_title": "Option 1 — Site Web OpenTimestamps (le plus simple):",
     "option1_step1": "1. Allez à https://opentimestamps.org ",
     "option1_step2": "2. Faites glisser et déposez \"{name}.ots\" sur la page",
