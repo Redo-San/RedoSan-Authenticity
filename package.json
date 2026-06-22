@@ -124,7 +124,7 @@
     "madge": "^8.0.0",
     "markdownlint-cli": "^0.44.0",
     "mocha": "^10.8.2",
-    "npm-check-updates": "^17.1.18",
+    "npm-check-updates": "^22.2.0",
     "pa11y": "^9.1.1",
     "playwright": "^1.52.0",
     "size-limit": "^11.2.0",
