@@ -511,6 +511,32 @@
             below, then click Generate.
           </p>
 
+          <div class="help-card">
+            <div
+              class="help-card-header"
+              onclick="this.parentNode.classList.toggle('collapsed')"
+            >
+              <span
+                >💡
+                <span data-i18n="cert.help_title"
+                  >How to create a digital passport</span
+                ></span
+              >
+              <span class="help-card-toggle">▾</span>
+            </div>
+            <div class="help-card-body" data-i18n="cert.help">
+              Generate a comprehensive digital passport certificate for your
+              digital assets. Fill in the asset details: asset name, owner,
+              description, and any applicable licence or rights information.
+              Upload the asset file and optionally add a watermark result,
+              fingerprint result, timestamp proof, or C2PA provenance as
+              supporting evidence. The system generates a formatted certificate
+              document that can serve as a proof of authenticity for your
+              digital creations. ⚠️ Important: Download the certificate before
+              navigating away. Save it in PDF, DOCX, EPUB, or HTML format.
+            </div>
+          </div>
+
           <!-- Image upload -->
           <div class="form-group">
             <label for="cert-file" data-i18n="cert.image_label">Image</label>
@@ -1346,24 +1372,24 @@
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

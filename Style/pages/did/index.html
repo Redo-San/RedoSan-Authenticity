@@ -515,6 +515,31 @@
             id="did-identity-section"
             style="text-align: left; margin-bottom: 16px"
           >
+            <div class="help-card">
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >💡
+                  <span data-i18n="did.create_help_title"
+                    >How to create a DID</span
+                  ></span
+                >
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="did.create_help">
+                Create a Decentralized Identifier (DID) and its associated DID
+                document. Select a cryptographic key type (Ed25519, ECDSA P-256,
+                or RSA). The system generates the key pair and constructs a DID
+                document containing the public key, verification methods, and
+                service endpoints. The DID document can be exported for use with
+                distributed ledgers or other verifiable data registries. Store
+                the private key securely — it cannot be recovered if lost. ⚠️
+                Important: Download the DID document before navigating away.
+                Save it in PDF, DOCX, JSON, or HTML format.
+              </div>
+            </div>
             <div id="did-status-area">
               <p
                 style="
@@ -665,6 +690,30 @@
           />
 
           <div id="did-signature-section" style="text-align: left">
+            <div class="help-card">
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >✍️
+                  <span data-i18n="did.sign_help_title"
+                    >How to sign and verify with a DID</span
+                  ></span
+                >
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="did.sign_help">
+                Sign a message or file using your DID private key to prove
+                authorship. Enter or upload your DID private key. Then provide
+                the message or file you want to sign. The system generates a
+                digital signature that cryptographically proves you authored the
+                content. Share the signature alongside the content so others can
+                verify it using your DID document's public key. ⚠️ Important:
+                Download the signature file before navigating away. Save it in
+                JSON or TXT format.
+              </div>
+            </div>
             <p
               style="
                 font-size: 0.82rem;
@@ -1102,24 +1151,24 @@
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

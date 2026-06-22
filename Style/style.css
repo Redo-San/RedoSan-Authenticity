@@ -149,19 +149,25 @@ nav .logo {
   top: 0;
   left: -280px;
   width: 260px;
+  height: 100dvh;
   height: 100vh;
   background: var(--card);
   border-right: 1px solid var(--border);
   z-index: 300;
   transition: left 0.3s ease;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   display: flex;
   flex-direction: column;
   padding-top: 14px;
 }
 body.no-scroll {
   overflow: hidden;
+}
+html:has(.sidebar.open) {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 .sidebar.open {
   left: 0;
@@ -1617,9 +1623,11 @@ footer {
   flex-direction: column;
   align-items: center;
   padding: 24px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overflow: hidden;
+}
+html:has(#modeSelect:not([style*="display: none"])),
+body:has(#modeSelect:not([style*="display: none"])) {
+  overflow: hidden;
 }
 .mode-select-bar {
   display: flex;
@@ -2959,6 +2967,50 @@ html[dir="rtl"] .ast-msg-user {
 }
 .bot-block-link:hover {
   color: var(--primary-dark);
+}
+
+/* ── Help card for professional mode service guides ── */
+.help-card {
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+}
+.help-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--card-hover);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  gap: 8px;
+}
+.help-card-header:hover {
+  background: var(--border);
+}
+.help-card-toggle {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.help-card.collapsed .help-card-toggle {
+  transform: rotate(-90deg);
+}
+.help-card-body {
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+.help-card.collapsed .help-card-body {
+  display: none;
 }
 
 /* Audio Watermark */

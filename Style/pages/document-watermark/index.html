@@ -524,6 +524,33 @@
 
           <!-- Embed tab -->
           <div id="docw-embed">
+            <div class="help-card">
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >💡
+                  <span data-i18n="docw.embed_help_title"
+                    >How to watermark a document</span
+                  ></span
+                >
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="docw.embed_help">
+                Hide a secret message inside a text document using document
+                watermarking techniques. Upload a document (TXT, DOCX, or PDF)
+                as the carrier. Enter your secret message. Choose a watermarking
+                technique from the dropdown: whitespace encoding, zero-width
+                characters, homoglyph substitution, line-shift, or word-shift. A
+                password adds extra protection. Click Embed to process. The
+                watermarked document preserves the original visible text while
+                carrying the hidden message. ⚠️ Important: Download the
+                watermarked document before navigating away. Save it in DOCX or
+                PDF format. You can also export a report in TXT, CSV, XML, or
+                HTML format.
+              </div>
+            </div>
             <div class="form-group">
               <label for="docw-algo" data-i18n="docw.algo_label"
                 >Algorithm</label
@@ -617,6 +644,29 @@
 
           <!-- Extract tab -->
           <div id="docw-extract" style="display: none">
+            <div class="help-card">
+              <div
+                class="help-card-header"
+                onclick="this.parentNode.classList.toggle('collapsed')"
+              >
+                <span
+                  >🔍
+                  <span data-i18n="docw.extract_help_title"
+                    >How to extract a document watermark</span
+                  ></span
+                >
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="docw.extract_help">
+                Read a hidden message from a watermarked document. Upload the
+                watermarked document (TXT, DOCX, or PDF). Select the technique
+                that was used during embedding. If a password was set, enter it.
+                Click Extract to retrieve the hidden message. The extracted text
+                appears in the results area. ⚠️ Important: Download the
+                extracted data before leaving. Save it in TXT, CSV, XML, HTML,
+                or as a DOCX or PDF report.
+              </div>
+            </div>
             <div class="form-group">
               <label for="docw-algo-ex" data-i18n="docw.algo_label"
                 >Algorithm</label
@@ -1295,24 +1345,24 @@
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->

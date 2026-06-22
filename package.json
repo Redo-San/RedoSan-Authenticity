@@ -133,6 +133,11 @@
     "typedoc": "^0.28.19",
     "workbox-cli": "^7.3.0"
   },
+  "lint-staged": {
+    "*.js": "eslint --fix",
+    "*.css": "stylelint --fix",
+    "*.{json,yml,yaml,md}": "biome check --write --no-emoji"
+  },
   "size-limit": [
     {
       "limit": "10 kB",
