@@ -837,10 +837,7 @@ window.__I18N_DATA.de = {
   "docw.more_lines": "weitere Zeilen",
 
     "mode.title": "Wählen Sie Ihre Erfahrung",
-    "page.privacy": "<h2>Datenschutzerklärung</h2><p><strong>Ihre Daten bleiben auf Ihrem Gerät.</strong> RedoSan Authenticity ist eine 100% Client-seitige Anwendung. Alle Verarbeitungen erfolgen in Ihrem Browser mit JavaScript. Es werden keine Dateien, Metadaten oder anderen Daten an einen Server übertragen.</p><h3>Was wir sammeln</h3><p>Nichts. Wir sammeln, speichern oder übertragen keine persönlichen Daten, Dateien oder Analysen. Die Anwendung läuft vollständig auf GitHub Pages und es ist kein Backend-Server involviert.</p><h3>Drittanbieter-Bibliotheken</h3><p>Wir laden JavaScript-Bibliotheken von CDNs (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> und <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) für PDF- und DOCX-Export-Funktionalität. Diese CDNs können eigene Logging- und Analysedienste haben. Es werden keine Daten aus Ihren Dateien mit diesen Diensten geteilt.</p><h3>Änderungen</h3><p>Diese Richtlinie kann gelegentlich aktualisiert werden. Die fortgesetzte Nutzung des Tools stellt die Akzeptanz der aktuellen Richtlinie dar.</p>",
-    "search.no_results": "Keine Ergebnisse für \"{query}\".",
-    "search.results_for": "Ergebnisse für \"{query}\":",
-    "dl.inapp_alert": "Bitte öffne diese Seite in Safari oder Chrome, um Dateien herunterzuladen. Tippe auf das Browsermenü (⋯) und wähle \"Im Browser öffnen\".",
+
     "sidebar.certificate": "Digitaler Reisepass",
     "sidebar.usage_warning": "⚠️ Nur rechtmäßige Verwendung. Illegale/schädliche Inhalte sind verboten. Die gesamte Verarbeitung erfolgt zu 100 % lokal. ",
     "sidebar.audio_watermark": "Digitales Audio-Wasserzeichen",
