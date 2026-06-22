@@ -739,9 +739,7 @@ window.__I18N_DATA.zh = {
   "docw.text_too_short": "文本太短，不适合此算法",
   "docw.more_lines": "更多行",
 
-    "page.privacy": "<h2>隐私政策</h2><p><strong>您的数据保留在您的设备上。</strong> RedoSan Authenticity是100%客户端应用程序。所有处理都在您的浏览器中使用JavaScript进行。没有任何文件、元数据或任何其他数据传输到任何服务器。</p><h3>我们收集什么</h3><p>什么都没有。我们不收集、存储或传输任何个人数据、文件或分析。应用程序完全在GitHub Pages上运行，不涉及后端服务器。</p><h3>第三方库</h3><p>我们从CDN（<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a>和<a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>）加载JavaScript库用于PDF和DOCX导出功能。这些CDN可能有自己的日志和分析。您文件的任何数据都不会与这些服务共享。</p><h3>变更</h3><p>本政策可能会偶尔更新。继续使用该工具即表示接受当前政策。</p>",
-    "search.no_results": "未找到 \"{query}\" 的结果。",
-    "search.results_for": "\"{query}\" 的结果：",
+
     "sidebar.certificate": "数字护照",
     "sidebar.usage_warning": "⚠️ 仅限合法使用。 禁止非法/有害内容。 所有处理都是 100% 本地化。",
     "sidebar.audio_watermark": "数字音频水印",

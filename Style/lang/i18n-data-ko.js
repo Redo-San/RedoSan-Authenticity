@@ -510,9 +510,7 @@ window.__I18N_DATA.ko = {
   "docw.text_too_short": "이 알고리즘에 텍스트가 너무 짧습니다",
   "docw.more_lines": "추가 줄",
 
-    "search.no_results": "\"{query}\"에 대한 결과가 없습니다.",
-    "search.results_for": "\"{query}\" 검색 결과:",
-    "dl.inapp_alert": "파일을 다운로드하려면 Safari 또는 Chrome에서 이 페이지를 여세요. 브라우저 메뉴(⋯)를 누르고 \"브라우저에서 열기\"를 선택하세요.",
+
     "sidebar.audio_watermark": "디지털 오디오 워터마크",
     "sidebar.forensic": "법의학 분석기",
     "sidebar.certificate": "디지털 여권",

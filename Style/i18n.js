@@ -223,6 +223,7 @@ function applyLang() {
     if (btn) btn.title = __('shared.lang_title', 'Current: ' + displayName + '\nClick to change language').replace('{lang}', displayName);
   });
 }
+globalThis.translatePage = applyLang;
 
 /**
  *
