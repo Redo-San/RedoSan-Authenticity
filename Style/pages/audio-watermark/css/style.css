@@ -3,6 +3,7 @@
   align-items: center;
   gap: 10px;
 }
+
 .awm-progress-bar {
   flex: 1;
   height: 6px;
@@ -10,12 +11,14 @@
   border-radius: 3px;
   overflow: hidden;
 }
+
 .awm-progress-fill {
   height: 100%;
   width: 0%;
   background: var(--primary);
   border-radius: 3px;
 }
+
 .awm-progress-text {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -37,9 +40,11 @@
   line-height: 1.6;
   margin-top: 8px;
 }
+
 #awm-strength-group {
   display: none;
 }
+
 #awm-strength-ex-group {
   display: none;
 }

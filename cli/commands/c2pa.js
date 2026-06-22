@@ -415,7 +415,7 @@ async function doRead(absPath, opts) {
  * @param absPath
  * @param opts
  */
-async function doVerify(absPath, opts) {
+async function doVerify(absPath, _opts) {
   const data = readFileBytes(absPath);
   const info = getFileInfo(absPath);
   const fileHash = crypto.createHash("sha256").update(Buffer.from(data)).digest("hex");
@@ -431,7 +431,7 @@ async function doVerify(absPath, opts) {
   }
 
   const parsed = parseC2PAFromBuffer(c2paData.data);
-  if (parsed.signature && parsed.signature.value) {
+  if (parsed.signature?.value) {
     try {
       const verify = crypto.createVerify("SHA256");
       const manifestWithoutSig = { ...parsed };

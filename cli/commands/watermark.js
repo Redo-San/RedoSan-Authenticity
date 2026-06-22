@@ -42,7 +42,7 @@ if (globalThis.crypto === undefined || !globalThis.crypto.subtle) {
         const hash = crypto.createHash(name.toLowerCase().replace("-", "")).update(Buffer.from(data)).digest();
         return hash.buffer;
       },
-      importKey: async (format, keyData, algorithm, extractable, keyUsages) => {
+      importKey: async (_format, keyData, algorithm, _extractable, _keyUsages) => {
         return { type: "secret", algorithm, keyData };
       },
       deriveBits: async (algorithm, baseKey, length) => {
@@ -183,7 +183,7 @@ function pack32(v) {
  * @param key
  */
 function xorBytes(data, key) {
-  if (!key || !key.length) return data;
+  if (!key?.length) return data;
   const r = new Uint8Array(data.length);
   for (let i = 0; i < data.length; i++) r[i] = data[i] ^ key[i % key.length];
   return r;
@@ -496,7 +496,7 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
  * @param isAdvanced
  * @param password
  */
-async function doExtract(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced, password) {
+async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdvanced, password) {
   const outputFile = opts.output;
   const { w, h } = imgData;
   const key = await deriveKey(password);
@@ -668,7 +668,7 @@ async function doExtract(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanc
  * @param outputFile
  * @param algoName
  */
-function writeExtracted(data, outputFile, algoName) {
+function writeExtracted(data, outputFile, _algoName) {
   if (outputFile) {
     fs.writeFileSync(path.resolve(outputFile), data);
     console.log(`Extracted data (${data.length} bytes) saved to: ${path.resolve(outputFile)}`);
