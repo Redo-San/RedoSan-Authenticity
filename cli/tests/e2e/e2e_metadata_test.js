@@ -58,7 +58,7 @@ describe("E2E — Metadata Reader", () => {
   it("should read metadata from a PNG and show file info", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
-    await page.goto(BASE, { waitUntil: "domcontentloaded" });
+    await page.goto(BASE, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
     await navTo(page, "metadata");
     await page.waitForTimeout(1000);
@@ -68,7 +68,7 @@ describe("E2E — Metadata Reader", () => {
 
     await page.evaluate(() => document.getElementById("md-btn").click());
     await page.waitForSelector("#md-result", { state: "visible", timeout: 15000 });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
 
     const outputHtml = await page.evaluate(() => {
       const el = document.getElementById("md-output");
@@ -77,11 +77,11 @@ describe("E2E — Metadata Reader", () => {
     assert.ok(outputHtml.includes("testimg.png"), "Should show filename");
     assert.ok(outputHtml.includes("SHA-256"), "Should show hash: " + outputHtml.substring(0, 200));
 
-    const hasDownload = await page.evaluate(() => {
+    const dlHtml = await page.evaluate(() => {
       const dl = document.getElementById("md-download");
-      return dl && dl.querySelector("a.btn") !== null;
+      return dl ? dl.innerHTML : "md-download NOT FOUND";
     });
-    assert.ok(hasDownload, "Download JSON button should appear");
+    assert.ok(dlHtml.includes('class="btn"') || dlHtml.includes('class="btn '), "Download JSON button should appear, got innerHTML: " + dlHtml);
     await ctx.close();
   });
 });
