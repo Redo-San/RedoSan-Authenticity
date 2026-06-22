@@ -4,84 +4,91 @@
   <img src="https://img.shields.io/github/downloads/Redo-San/RedoSan-Authenticity/total?style=flat-square&label=Downloads&color=orange" alt="Downloads">
   <img src="https://img.shields.io/github/deployments/Redo-San/RedoSan-Authenticity/github-pages?style=flat-square&label=Pages&color=6C5CE7" alt="GitHub Pages">
   <a href="https://redo-san.github.io/RedoSan-Authenticity/"><img src="https://img.shields.io/badge/Try%20Online-GitHub%20Pages-6C5CE7?style=flat-square&logo=github&logoColor=white" alt="Try Online"></a>
-  <img src="https://img.shields.io/github/actions/workflow/status/Redo-San/RedoSan-Authenticity/ci.yml?branch=beta-release&style=flat-square&label=CI&logo=github" alt="CI">
+  <img src="https://img.shields.io/github/actions/workflow/status/Redo-San/RedoSan-Authenticity/ci.yml?branch=main&style=flat-square&label=CI&logo=github" alt="CI">
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square&logo=node.js" alt="Node">
   <img src="https://img.shields.io/badge/100%25-Client%20Side-FAB972?style=flat-square" alt="Client Side">
 </p>
 
-<h1 align="center">🛡️ RedoSan Authenticity</h1>
+<h1 align="center"> RedoSan Authenticity</h1>
 
 <p align="center">
   <strong>Prove authenticity. Detect tampering. All in your browser — zero uploads.</strong>
 </p>
 
 <p align="center">
-  <a href="https://redo-san.github.io/RedoSan-Authenticity/"><strong>🌐 Try Online</strong></a> ·
-  <a href="#-installation"><strong>💻 CLI</strong></a> ·
-  <a href="#-usage"><strong>📖 Docs</strong></a> ·
-  <a href="https://github.com/Redo-San/RedoSan-Authenticity/releases"><strong>📦 Releases</strong></a>
+  <a href="https://redo-san.github.io/RedoSan-Authenticity/"><strong> Web Try Online</strong></a> ·
+  <a href="#-installation"><strong> CLI</strong></a> ·
+  <a href="#-usage"><strong> Docs</strong></a> ·
+  <a href="https://github.com/Redo-San/RedoSan-Authenticity/releases"><strong> Releases</strong></a>
 </p>
 
 ---
 
-## 📢 What's New in v1.5
+## What's New in v1.6
 
-- **DCT/DFT/DWT/Hybrid round-trip fixes** — All 4 frequency-domain algorithms now correctly extract embedded messages. DCT/DFT use guaranteed coefficient pair gaps, DWT uses step-2 embedding to survive Haar rounding, and Hybrid has a dedicated `extractHybridDCTDWT` function.
-- **Analyze tab** — Detection & Analysis algorithms moved from Embed to a dedicated tab with Auto Detect mode, professional card-based grid display, multi-format download (JSON/CSV/TXT/XML/PDF/DOCX).
-- **A11y fixes** — Automated orphan-label fixer workflow with PR creation (Scorecard score 9), all `<label>` elements properly associated with form controls.
-- **Translate workflow re-enabled** — LibreTranslate fallback, creates PRs on new i18n keys.
+- **MPA (Multi-Page Architecture)** — The SPA was split into 20 standalone HTML pages, one per service, each with its own direct URL (`Style/pages/{name}/index.html`). Hash-based SPA routing still works, but tools are now accessible directly without the mode-selection overlay. Music playback persists across MPA navigation via AJAX content swapping.
+- **Document Watermark** — New tool: embed/extract hidden messages in TXT/DOCX/PDF using whitespace encoding, zero-width characters, synonym replacement, line-shift, and word-shift. Password-protected payload.
+- **Full CLI parity** — All 12 tools available via CLI: `redosan watermark`, `audio-watermark`, `fingerprint`, `metadata`, `timestamp`, `c2pa`, `did`, `certificate`, `converter`, `document-watermark`, `pixel-injection`, `forensic`. Interactive menu mode included.
+- **Audio Watermark** — 8 algorithms (LSB, Phase Coding, Echo Hiding, DSSS, QIM, DWT Haar, Patchwork, DCT) for WAV files with Auto Detect and dual extract (fingerprint + DID).
+- **DID (Decentralized Identity)** — W3C DID Core compliant (`did:key:z…`). Generate keys (Ed25519/ECDSA P-256/RSA), create DID Documents, sign and verify messages.
+- **C2PA provenance** — Sign JPEG/PNG with ECDSA P-256, read and verify C2PA manifests (APP11 / custom `c2pa` PNG chunk).
+- **Digital Certificate** — Generate PDF/DOCX/EPUB certificates with identity, social links, QR verification code.
+- **File Converter** — Browser-side conversion for images (PNG/JPEG/WebP/BMP/GIF), audio (11 formats), video-to-audio, documents, and subtitles.
+- **35 test files, 277+ tests** — Core unit tests, advanced algorithm tests, and comprehensive E2E Playwright tests.
+- **i18n (8 languages)** — Full Arabic, German, Spanish, French, Japanese, Korean, Chinese translations alongside English. Real-time switching, RTL support.
+- **40+ CI/CD workflows** — Lint (ESLint + Biome + Stylelint), security (Semgrep + CodeQL + TruffleHog + npm audit), accessibility (Pa11y + axe-core), performance (Lighthouse CI), DOM review, dead CSS, broken links, automated translation PRs, and more.
 
 ---
 
-**RedoSan Authenticity** is a 100% client-side digital authenticity toolkit. Embed invisible watermarks, timestamp with OpenTimestamps, sign C2PA provenance metadata, cryptographically fingerprint files, and inject pixel-level messages — all without uploading data to any server.
+**RedoSan Authenticity** is a 100% client-side digital authenticity toolkit. Embed invisible watermarks, timestamp with OpenTimestamps, sign C2PA provenance metadata, cryptographically fingerprint files, inject pixel-level messages, and watermark documents — all without uploading data to any server.
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
-| **Dual Mode UI** | Simplified step wizard with smart AI/rephoto branching + Professional full-tool interface with sidebar navigation |
+| **Dual Mode UI** | Simplified step wizard + Professional full-tool interface with sidebar navigation; SPA and MPA modes |
 | **Watermark** | 9 core algorithms (LSB, DCT, Neural SS, Latent DCT, Zero-bit, Multi-bit, Forensic, Fragile, Imatag) + 4 perceptual hash detection modes |
-| **Digital Audio Watermark** | 8 algorithms (LSB, GMM, QIM, Phase Coding, Echo Hiding, DSSS, DWT, Patchwork, DCT) for WAV files with dual-extract (fingerprint + DID) and Auto Detect mode |
-| **Removal Tools** | Clean watermarks, fingerprints, metadata, pixels, EXIF, thumbnails, audio watermarks, and GPS from images and audio |
+| **Audio Watermark** | 8 algorithms (LSB, Phase Coding, Echo Hiding, DSSS, QIM, DWT Haar, Patchwork, DCT) for WAV with Auto Detect |
+| **Document Watermark** | Embed/extract hidden messages in TXT/DOCX/PDF — whitespace, zero-width chars, synonyms, line-shift, word-shift |
 | **Pixel Injection** | 23 advanced algorithms across spatial, frequency, deep learning, and professional domains |
 | **C2PA Provenance** | Sign JPEG/PNG with C2PA metadata (ECDSA P-256), read and verify manifests |
-| **Fingerprint** | 17 cryptographic hash algorithms + 4 perceptual image hashes; export as JSON, CSV, TXT, XML, PDF, DOCX |
-| **Decentralized Identity (DID)** | W3C DID Core compliant — `did:key:z…` (base58btc), DID Document, Verifiable Credentials (Ed25519 / P-256 / RSA) |
+| **Fingerprint** | 17 cryptographic hashes + 4 perceptual image hashes; export JSON/CSV/TXT/XML/PDF/DOCX |
+| **Decentralized Identity (DID)** | W3C DID Core — `did:key:z…`, Ed25519/P-256/RSA, DID Documents, signing & verification |
 | **Metadata** | Full EXIF reader, image dimensions, format detection, audio/video metadata |
 | **Timestamp** | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade |
-| **CLI** | Cross-platform Node.js CLI with interactive menu and direct command mode |
-| **Security Threat Blocker** | Service Worker + 404 page blocks dangerous file extensions and unknown `.js`/`.css`/`.html`/`.yml` files via 5 whitelists |
-| **File Converter** | Browser-side image (PNG/JPEG/WebP/BMP/GIF), audio (11 formats), video→audio, document, and subtitle conversion |
-| **Forensic Analyzer** | Detect image tampering via Error Level Analysis (ELA), noise inconsistency detection, JPEG structure analysis, and copy-move detection |
-| **ID Forge** | Generate UUID v4/v7, ULID, NanoID, and SWHID identifiers in bulk; copy, download (JSON/CSV/TXT/XML/PDF/DOCX), or use via CLI |
-| **AI Assistant Raido** | Built-in bilingual (AR/EN) rule-based chatbot for help, tool guidance, and app information, no API needed |
-| **Digital Passport** | Generate PDF, DOCX, or EPUB certificates with image, identity, social links, music links, tool results, and QR code verification |
+| **Digital Certificate** | Generate PDF/DOCX/EPUB certificates with QR verification, identity, social links |
+| **File Converter** | Browser-side image/audio/video-to-audio/document/subtitle conversion |
+| **Forensic Analyzer** | ELA, noise inconsistency, JPEG structure, copy-move detection |
+| **ID Forge** | Generate UUID v4/v7, ULID, NanoID, SWHID; copy/download (JSON/CSV/TXT/XML/PDF/DOCX) |
+| **Removal Tools** | Strip watermarks, fingerprints, metadata, EXIF, thumbnails, GPS from images/audio |
+| **AI Assistant Raido** | Built-in bilingual (AR/EN) rule-based chatbot, no API needed |
+| **CLI** | Cross-platform Node.js CLI: 12 commands + interactive menu |
+| **Security Threat Blocker** | Service Worker + 404 page blocks dangerous extensions, validates whitelisted scripts |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### 🌐 Web App (No Installation)
+### Web App (No Installation)
 
-Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.github.io/RedoSan-Authenticity/)** in any modern browser. Choose your mode on startup:
+Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.github.io/RedoSan-Authenticity/)** in any modern browser. Choose:
 
-- **Simplified Mode** — Upload a file and follow the smart step wizard: upload → type selection (photo / AI) → fingerprint → timestamp → watermark → pixel injection → C2PA (AI only) → done
-- **Professional Mode** — Full sidebar access to all tools with granular parameter control
+- **Simplified Mode** — Upload a file and follow the smart wizard
+- **Professional Mode** — Full sidebar access to all tools
+- **Direct MPA Links** — Use any tool directly at `Style/pages/{tool}/index.html`
 
-### 💻 CLI (Node.js 20+)
+### CLI (Node.js 20+)
 
-#### 🖱️ Interactive Menu (No Commands Needed)
+#### Interactive Menu
 
 | Platform | Command |
 |----------|---------|
 | Windows | Double-click **`start.bat`** |
 | Linux / macOS | `chmod +x start.sh && ./start.sh` |
 
-An interactive numbered menu guides you through all operations.
-
-#### ⌨️ Command Line
+#### Command Line
 
 ```bash
 git clone https://github.com/Redo-San/RedoSan-Authenticity.git
@@ -92,63 +99,77 @@ npm link    # makes 'redosan' available globally
 
 ---
 
-## 📋 CLI Reference
+## CLI Reference
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
-| `redosan fingerprint <file>` | 17 cryptographic hashes + 4 perceptual image hashes |
 | `redosan watermark embed -i <img> -s <secret> -o <out>` | Embed watermark (9 core algorithms) |
 | `redosan watermark extract -i <img>` | Extract watermark (single or auto-detect) |
+| `redosan audio-watermark embed -i <wav> -s <secret> -o <out>` | Embed audio watermark (8 algorithms) |
+| `redosan audio-watermark extract -i <wav>` | Extract audio watermark |
 | `redosan pixel-injection embed -i <img> -s <msg> -o <out>` | Embed with 23 advanced algorithms |
 | `redosan pixel-injection extract -i <img>` | Extract from advanced algorithms |
-| `redosan c2pa sign <file>` | Sign with C2PA provenance metadata |
-| `redosan c2pa read <file>` | Read C2PA manifest from JPEG/PNG |
-| `redosan c2pa verify <file>` | Verify C2PA digital signatures |
+| `redosan fingerprint <file>` | 17 cryptographic hashes + 4 perceptual image hashes |
 | `redosan metadata <file>` | Read EXIF, dimensions, format info |
 | `redosan timestamp create <file>` | Create OpenTimestamps `.ots` proof |
 | `redosan timestamp verify <file>` | Verify file against `.ots` proof |
-| `redosan forensic <file>` | Analyze image for tampering (ELA, noise, JPEG structure, copy-move) |
-| `redosan upgrade <file>` | Upgrade incomplete `.ots` proof |
-| `npm run id-forge` | Generate UUID v4/v7, ULID, NanoID, SWHID via CLI |
+| `redosan timestamp upgrade <file>` | Upgrade incomplete `.ots` proof |
+| `redosan c2pa sign <file>` | Sign with C2PA provenance metadata |
+| `redosan c2pa read <file>` | Read C2PA manifest from JPEG/PNG |
+| `redosan c2pa verify <file>` | Verify C2PA digital signatures |
+| `redosan did generate` | Generate DID key pair (Ed25519/P-256/RSA) |
+| `redosan did sign <file>` | Sign file with DID private key |
+| `redosan did verify <file>` | Verify DID signature |
+| `redosan certificate generate` | Generate PDF/DOCX/EPUB certificate |
+| `redosan forensic <file>` | Analyze image for tampering |
+| `redosan converter <file>` | Convert files between formats |
+| `redosan document-watermark embed -i <doc> -s <msg> -o <out>` | Embed document watermark |
+| `redosan document-watermark extract -i <doc>` | Extract document watermark |
+| `node cli/lib/id_forge.js <type>` | Generate UUID v4/v7, ULID, NanoID, SWHID |
 
 ### Global Flags
 
 | Flag | Description |
 |------|-------------|
-| `--allow-dangerous` | Bypass all 6-layer file validation (for trusted files only) |
+| `--allow-dangerous` | Bypass all 6-layer file validation (trusted files only) |
 
 ### Examples
 
 ```bash
 # Fingerprint
 redosan fingerprint photo.png --json -o hashes.json
-redosan fingerprint doc.pdf --algo sha256
 
 # Watermark
 redosan watermark embed -i cover.png -s secret.txt -o output.png -a dct -p "mypassword"
 redosan watermark extract -i watermarked.png -a dct -p "mypassword"
-redosan watermark extract -i watermarked.png --auto-detect
+
+# Audio Watermark
+redosan audio-watermark embed -i audio.wav -s "secret" -o out.wav -a phase
 
 # Pixel Injection
 redosan pixel-injection embed -i image.png -s "hidden message" -o output.png -a enhanced_lsb
-redosan pixel-injection extract -i output.png -a enhanced_lsb
+
+# Document Watermark
+redosan document-watermark embed -i doc.txt -s "secret" -o watermarked.txt -a whitespace
 
 # C2PA
 redosan c2pa sign document.pdf --claim "Created by Me" --author "Name"
-redosan c2pa read image.jpg
+
+# DID
+redosan did generate --algorithm Ed25519
+redosan did sign document.txt --private-key key.pem
+redosan did verify document.txt --signature sig.json --did-doc doc.json
 
 # Timestamp
 redosan timestamp create document.pdf -o proof.ots
-redosan timestamp verify document.pdf -o proof.ots
 
 # Forensic
 redosan forensic image.png --json
 
-# ID Forge (CLI)
-node cli/lib/id_forge.js uuidv4
-node cli/lib/id_forge.js nanoid 10 --json
+# Converter
+redosan converter image.png --format webp
 
 # Windows paths
 redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
@@ -161,50 +182,61 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 
 ---
 
-## 🔐 Algorithm Reference
+## Algorithm Reference
 
 ### 9 Core Watermark Algorithms
 
 | # | Name | Domain | Technique | Robustness |
 |---|------|--------|-----------|------------|
-| 1 | Spatial LSB | Pixel LSB | 3 bits/pixel in R,G,B | Low (fails at JPEG Q>0) |
-| 2 | Frequency DCT | DCT 8×8 | Coefficient pair comparison (c[5,2] vs c[4,3]), K=15, ×3 redundancy | Medium (survives JPEG to Q70) |
+| 1 | Spatial LSB | Pixel LSB | 3 bits/pixel in R,G,B | Low |
+| 2 | Frequency DCT | DCT 8×8 | Coefficient pair comparison (c[5,2] vs c[4,3]), K=15, ×3 redundancy | Medium |
 | 3 | Neural SS | Pixel LSB | Seeded-shuffle order embedding | Low |
 | 4 | Latent DCT | DCT 8×8 | 3× redundant DCT embedding, strength=30 | High |
 | 5 | Zero-bit | DCT 8×8 | Fixed signature "RedoSanZeroBit" (presence only) | Medium |
 | 6 | Multi-bit | Pixel 2-bit LSB | 2 bits/channel, 6 bits/pixel | Low |
 | 7 | Forensic | DCT 8×8 | DCT mid-frequency, strength=20 | Medium |
-| 8 | Fragile | Pixel LSB | SHA-256 hash (512 bits), tamper-evident | Very Low (detects modification) |
+| 8 | Fragile | Pixel LSB | SHA-256 hash (512 bits), tamper-evident | Very Low |
 | 9 | Imatag-style | DCT 8×8 | Dual-channel Y (K=15) + Cb (K=10) | High |
 
 **Payload format:** `[32-bit length][XOR-encrypted [0xAA, 0xBB || secret]]`  
 **Encryption:** PBKDF2-derived key via `pw_key(password)` with 100k iterations  
-**Redundancy:** ×3 repetition code with majority voting (corrects 1 error/triplet)
+**Redundancy:** ×3 repetition code with majority voting
 
-## 🗜️ File Converter
+### 8 Audio Watermark Algorithms
 
-The File Converter auto-detects file type (image, audio, video, document, subtitle) and offers browser-side conversion:
+| # | Name | Domain | Technique |
+|---|------|--------|-----------|
+| 1 | LSB | Sample LSB | 16-bit sample LSB embedding |
+| 2 | Phase Coding | Phase | Quantize phase of first N frames |
+| 3 | Echo Hiding | Time | Echo delay modulation (1ms/2ms) |
+| 4 | DSSS | Spread Spectrum | Direct-sequence spread spectrum |
+| 5 | QIM | Quantization | Quantization index modulation |
+| 6 | DWT Haar | Wavelet | 1-level Haar DWT coefficient modification |
+| 7 | Patchwork | Statistical | Mean-shift of two subsets |
+| 8 | DCT | Frequency | DCT coefficient pair comparison |
 
-| Category | Input Formats | Output Formats |
-|----------|--------------|----------------|
-| **Image** | PNG, JPEG, WebP, BMP, GIF, TIFF, SVG, ICO | PNG, JPEG, WebP, BMP, GIF (Canvas-based) |
-| **Audio** | MP3, WAV, OGG, AAC, FLAC, M4A, WMA, OPUS | WAV, AIFF, AU, RAW (pure-JS PCM), MP3 (lamejs), OGG, OPUS, M4A, AAC, FLAC, AMR (MediaRecorder) |
-| **Video→Audio** | MP4, WebM, AVI, MOV, MKV, FLV, WMV, M4V | Same 11 audio formats (capture + ffmpeg.wasm fallback) |
-| **Document** | TXT, MD, HTML, CSV, JSON, XML, PDF, DOC, DOCX, RTF, ODT | TXT, HTML, MD, PDF, DOCX, JSON, XML, CSV |
-| **Subtitle** | SRT, VTT, ASS, SSA, SUB, SBV, SMI, LRC, TTML, DFXP, MPL2, PJS, RT | SRT, VTT, ASS, SUB, SBV, TXT, LRC, TTML |
+### 5 Document Watermark Algorithms
+
+| # | Name | Technique | Capacity |
+|---|------|-----------|----------|
+| 1 | Whitespace | Space/tab encoding at line endings | ~1 bit/line |
+| 2 | Zero-Width | Zero-width joiners/non-joiners between chars | ~2 bits/char |
+| 3 | Synonym | Synonym substitution (WordNet-based) | ~1 bit/sentence |
+| 4 | Line-Shift | Vertical line position modulation | ~1 bit/line |
+| 5 | Word-Shift | Horizontal word spacing modulation | ~1 bit/word |
 
 ### 23 Advanced Pixel Injection Algorithms
 
 | Algorithm | Domain | Key Technique |
 |-----------|--------|---------------|
-| `enhanced_lsb` | Spatial | Adaptive complexity map, bit-positions 1-2, channels 3-4, repetition code |
+| `enhanced_lsb` | Spatial | Adaptive complexity map, bit-positions 1-2 |
 | `adaptive_lsb` | Spatial | Region-adaptive strategy (complexity/edge/texture) |
-| `multi_channel_lsb` | Spatial | Channel-alternating LSB with configurable bit depth |
-| `random_lsb` | Spatial | Seeded PRNG positioning (uses password for seed) |
-| `dct` | Frequency | DCT 8×8 coefficient pair comparison (guaranteed gap ≥20 survives IDCT rounding) |
-| `dwt` | Frequency | 1-level Haar DWT, step-2 embedding (survives /2 rounding in inverse transform) |
-| `dft` | Frequency | DFT 8×8 coefficient pair comparison (conjugate-symmetry preserved) |
-| `hybrid_dct_dwt` | Hybrid | DCT pair comparison + DWT step-2 sequential embedding (no pixel blending) |
+| `multi_channel_lsb` | Spatial | Channel-alternating LSB |
+| `random_lsb` | Spatial | Seeded PRNG positioning |
+| `dct` | Frequency | DCT 8×8 coefficient pair comparison (gap ≥20) |
+| `dwt` | Frequency | 1-level Haar DWT, step-2 embedding |
+| `dft` | Frequency | DFT 8×8 pair comparison (conjugate-symmetry) |
+| `hybrid_dct_dwt` | Hybrid | DCT + DWT sequential embedding |
 | `vine` | Deep Learning | Adversarial simulation for AI-editing resistance |
 | `pixel_seal` | Deep Learning | JND-based perceptual masking |
 | `nullguard` | Deep Learning | Null-space region detection |
@@ -218,148 +250,218 @@ The File Converter auto-detects file type (image, audio, video, document, subtit
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-```text
-┌──────────────────────────────────────────────────────────┐
-│                    Web App (Browser)                     │
-│  ┌──────────────┐  ┌───────────────┐  ┌────────────────┐ │
-│  │ Simplified   │  │ Professional  │  │ CLI Interface  │ │
-│  │ Mode (Steps) │  │  Mode (Tabs)  │  │ (menu/args)    │ │
-│  └──────┬───────┘  └──────┬────────┘  └───────┬────────┘ │
-│         │                 │                   │          │
-│         └─────────┬───────┴───────────────────┘          │
-│                   │                                      │
-│  ┌────────────────▼─────────────────────────────────┐    │
-│  │              Core Modules (ES5 Browser JS)       │    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
-│  │  │Watermark │ │ Pixel    │ │ Fingerprint /    │  │    │
-│  │  │Core      │ │ Injection│ │ Hashing          │  │    │
-│  │  │(9 algos) │ │(23 algos)│ │ (17+4 algos)     │  │    │
-│  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
-│  │  │ C2PA     │ │Timestamp │ │ File Converter   │  │    │
-│  │  │(APP11)   │ │(OTS)     │ │(image/audio/     │  │    │
-│  │  │          │ │          │ │ video→audio/doc/ │  │    │
-│  │  │          │ │          │ │ subtitle)        │  │    │
-│  │  │          │ │          │ │ + ffmpeg.wasm    │  │    │
-│  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
-│  │  │ Metadata │ │ DID (W3C)│ │ Removal Tools    │  │    │
-│  │  │          │ │did:key:z │ │ Image + Audio    │  │    │
-│  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │    │
-│  │  │ Forensic │ │ ID Forge │ │ AI Assistant     │  │    │
-│  │  │ Analyzer │ │(UUID/v7, │ │ Raido (rule-     │  │    │
-│  │  │(ELA,     │ │ ULID,    │ │ based, bilingual │  │    │
-│  │  │ copy-    │ │ NanoID,  │ │ AR/EN, no API)   │  │    │
-│  │  │ move)    │ │ SWHID)   │ │                  │  │    │
-│  │  └──────────┘ └──────────┘ └──────────────────┘  │    │
-│  ├──────────────────────────────────────────────────┤    │
-│  │        Security Threat Blocker (SW + 404)        │    │
-│  │  Blocks dangerous extensions + unknown scripts   │    │
-│  └──────────────────────────────────────────────────┘    │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐    │
-│  │           Node.js Polyfills (CLI only)           │    │
-│  │crypto.subtle · document.createElement · ImageData│    │
-│  └──────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────┘
+### MPA (Multi-Page Architecture)
+
+The project supports both SPA and MPA modes:
+
+```
+RedoSan-Authenticity/
+├── index.html                 ← SPA entry (hash-based routing, 4743 lines)
+├── sw.js                      ← Service Worker (cache whitelist, threat blocking)
+├── 404.html                   ← Offline + threat detection page
+├── Style/
+│   ├── pages/                 ← 20 standalone MPA pages
+│   │   ├── watermark/index.html
+│   │   ├── audio-watermark/index.html
+│   │   ├── fingerprint/index.html
+│   │   ├── c2pa/index.html
+│   │   ├── did/index.html
+│   │   ├── document-watermark/index.html
+│   │   ├── pixel-injection/index.html
+│   │   └── ... (20 total)
+│   ├── mpa-router.js          ← AJAX navigation with audio persistence
+│   ├── music-player.js        ← Background music with first-click activation
+│   ├── i18n.js                ← Translation system (8 languages)
+│   ├── navigation.js          ← SPA hash routing + standalone detection
+│   ├── shared.js              ← Common utilities (download, canvas, DOM)
+│   ├── shared_validation.js   ← File validation (6 layers)
+│   ├── music-player.css       ← Audio player styles
+│   ├── style.css              ← Main styles (2998 lines)
+│   ├── responsive.css         ← Mobile breakpoints
+│   ├── rtl.css                ← RTL overrides for Arabic
+│   └── lang/                  ← i18n data files (8 languages)
+├── Watermark/
+│   ├── watermark.js           ← UI + 9 algorithm dispatcher
+│   ├── watermark_core.js      ← Pure algorithm math
+│   └── utils.js               ← Crypto helpers
+├── Pixel_Injection/
+│   ├── pixel_injection.js     ← 23 algorithms UI
+│   ├── watermark_core_advanced.js
+│   └── watermark_advanced_ui.js
+├── Audio_Watermark/
+│   ├── audio_watermark.js     ← 8 algorithms UI
+│   └── audio_watermark_core.js
+├── Document_Watermark/
+│   ├── document_watermark.js  ← 5 algorithms UI
+│   ├── document_watermark_core.js
+│   ├── document_watermark_pdf.js
+│   ├── document_watermark_report.js
+│   └── text_extractor.js
+├── Fingerprint/
+│   ├── fingerprint_ui.js
+│   ├── hashing.js             ← 17 crypto + 4 perceptual hashes
+│   └── hash_worker.js
+├── C2PA/
+│   ├── c2pa.js                ← Provenance signing + verification
+│   └── cbor.js                ← Minimal CBOR encode/decode
+├── Decentralized_Identity_DID/
+│   └── did.js                 ← W3C DID Core implementation
+├── Certificate/
+│   └── certificate.js         ← PDF/DOCX/EPUB certificate generation
+├── Metadata/
+│   └── metadata.js            ← EXIF reader
+├── Timestamp/
+│   └── timestamp.js           ← OpenTimestamps
+├── Forensic/
+│   ├── forensic.js            ← UI + diff
+│   └── forensic_core.js       ← ELA, noise, JPEG analysis
+├── Converter/
+│   └── converter.js           ← Format conversion
+├── ID_Forge/
+│   └── id_forge.js            ← UUID/ULID/NanoID/SWHID
+├── Removal_Tools/
+│   └── ...                    ← Image + audio sanitization
+├── Assistant/
+│   └── assistant.js           ← Raido chatbot (80+ patterns, AR/EN)
+├── cli/
+│   ├── index.js               ← Commander entry (12 commands)
+│   ├── menu.js                ← Interactive menu
+│   ├── utils.js               ← CLI polyfills + file helpers
+│   ├── commands/              ← 12 command implementations
+│   ├── lib/id_forge.js        ← CLI ID generation
+│   └── tests/                 ← 35 test files (277+ tests)
+└── .github/workflows/         ← 40+ CI/CD workflows
+```
+
+### MPA Navigation Flow
+
+```
+User clicks sidebar link
+        ↓
+mpa-router.js intercepts click
+        ↓
+Fetch HTML of target page (AJAX, no full navigation)
+        ↓
+DOMParser extracts target <section>
+        ↓
+Replace current page content in #app
+        ↓
+Save/restore audio state → music continues uninterrupted
+        ↓
+Re-init page features + re-run translations
 ```
 
 ### Key Design Decisions
 
-- **100% client-side** — All crypto, hashing, and embedding happens in-browser or via CLI; no data ever leaves your machine
-- **Dual language UI** — Full Arabic and English interface with real-time switching via `i18n` system; `data-i18n` attributes for static text, `__(key, fallback)` for dynamic content. 8 language files updated with all feature-specific keys.
-- **W3C DID Core compliant** — `did:key:z…` format using base58btc multibase + unsigned varint multicodec prefixes. Generates DID Documents and Verifiable Credentials with per-algorithm cryptosuites (`eddsa-rdfc-2022`, `ecdsa-rdfc-2019`). Supports Ed25519, P-256 (secp256r1) key compression, RSA-2048, and RSA-4096.
-- **Removal Tools** — Checkbox-based UI for selective cleaning; preserves original file format (PNG lossless, JPEG quality 0.92, GIF, WebP) using `canvasToBlob`; audio cleaning uses step=2 quantization.
-- **`vm.runInThisContext`** over `require()` — Browser JS files use top-level `function`/`var` declarations; Node.js loads them via `vm.runInThisContext(src, { filename })` with polyfilled browser APIs
-- **PBKDF2 password derivation** — 100k iterations via `crypto.pbkdf2Sync` for watermark payload encryption
-- **C2PA JPEG APP11 / PNG chunk** — C2PA metadata embedded in JPEG APP11 marker or PNG `c2pa` chunk before IDAT; verified with ECDSA P-256. In Simplified Mode, C2PA signing is the final step wrapping the watermarked + pixel-injected output.
-- **OpenTimestamps** — Merkle tree proof creation and verification via Bitcoin blockchain calendar aggregation
-- **Coefficient pair comparison for DCT/DFT** — `c[5,2]` vs `c[4,3]` comparison with guaranteed minimum gap `max(|diff|, 5) + K` (K=15) survives IDCT rounding and pixel clamping
-- **Step-2 DWT embedding** — `floor(coeff/2)×2 + bit` instead of LSB; survives the 2×2 Haar DWT's `/2` rounding loss (~39% LSB flips → 0% step-2 flips)
-- **Hybrid DCT-DWT** — Sequential embedding: DCT pair comparison on 8×8 blocks, then DWT step-2 on LH/HL/HH sub-bands; no pixel blending (was 70/30 blend that corrupted both watermarks)
-- **×3 redundancy with majority voting** — Each message bit repeated 3×; decoder corrects 1 bit error per triplet (98.6% accuracy)
+- **100% client-side** — All crypto, hashing, and embedding happens in-browser or via CLI
+- **8-language i18n** — Arabic, German, Spanish, French, English, Japanese, Korean, Chinese. Real-time switching via `data-i18n` attributes, RTL support
+- **W3C DID Core compliant** — `did:key:z…` format using base58btc multibase. Ed25519, P-256, RSA support
+- **PBKDF2 password derivation** — 100k iterations for watermark payload encryption
+- **C2PA JPEG APP11 / PNG chunk** — Custom ECDSA P-256 implementation
+- **OpenTimestamps** — Merkle tree proof via Bitcoin blockchain calendar aggregation
+- **Coefficient pair comparison** — `c[5,2]` vs `c[4,3]` with guaranteed gap ≥20 for DCT/DFT
+- **Step-2 DWT embedding** — Survives Haar rounding loss
+- **×3 redundancy with majority voting** — 98.6% decode accuracy
 
 ### File Validation (6 Layers)
 
-Before processing any file, the CLI applies 6-layer validation:
-
-1. **Extension blocklist** — Rejects known-dangerous extensions
-2. **Magic bytes** — Verifies file header matches declared extension
-3. **Content signature scan** — Scans for embedded threat signatures
-4. **Document threat analysis** — Checks for macros/scripts in documents
-5. **Structural integrity** — Validates file structure
-6. **Size limits** — Enforces reasonable file size bounds
+1. Extension blocklist
+2. Magic bytes verification
+3. Content signature scan
+4. Document threat analysis
+5. Structural integrity
+6. Size limits
 
 Bypass with `--allow-dangerous` for testing trusted files.
 
 ---
 
-## 🛡️ Security Threat Blocker
+## Testing
+
+35 test files with 277+ tests using `node:test` (zero external dependencies):
+
+```bash
+npm test                         # All tests
+npm run test:core                # Core unit tests (87)
+npm run test:pixel               # Pixel injection
+npm run test:c2pa                # C2PA + CBOR
+npm run test:audio               # Audio watermark
+npm run test:docw                # Document watermark
+npm run test:e2e-watermark       # E2E Playwright tests
+npm run test:e2e-all             # All E2E tests (16 suites)
+```
+
+CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chromium.
+
+---
+
+## CI/CD Workflows
+
+The project includes 40+ GitHub Actions workflows:
+
+| Category | Workflows |
+|----------|-----------|
+| **Core** | CI (unit + E2E + coverage), ESLint, Biome, Stylelint, deploy-pages |
+| **Security** | Semgrep SAST, CodeQL, TruffleHog, npm audit, ClamAV, OpenSSF Scorecard, dependency-review, supply chain audit |
+| **Quality** | Pa11y + axe-core accessibility, Lighthouse CI, DOM review, dead CSS, file size budget |
+| **Maintenance** | Broken link checker, translation auto-PR, stale issue manager, TODO issue creator, spell check |
+| **PR Management** | Conventional Commits lint, auto-assign, PR size label, branch name lint, file size budget |
+| **AI Review** | OpenRouter code review, Gemini analysis, monthly codebase audit |
+
+---
+
+## Security Threat Blocker
 
 The web app includes a two-layer security system:
 
-1. **Service Worker** (`sw.js`) — Intercepts all HTTP requests; blocks file downloads with dangerous extensions (`.exe`, `.bat`, `.ps1`, `.py`, `.jar`, etc.) and rejects unknown files via 5 whitelists:
-   - `JS_WHITELIST` — allowed `.js` scripts
-   - `CSS_WHITELIST` — allowed `.css` stylesheets
-   - `HTML_WHITELIST` — allowed `.html` pages
-   - `YML_WHITELIST` — allowed `.yml` configuration files
-   - `EXT_WHITELIST` — allowed cross-origin CDN URLs
-2. **Enhanced 404 page** (`404.html`) — Same threat detection as the Service Worker, providing fallback protection when the SW is inactive
+1. **Service Worker** (`sw.js`) — Intercepts HTTP requests; blocks dangerous extensions; 5 whitelists for JS/CSS/HTML/YML/CDN
+2. **Enhanced 404 page** (`404.html`) — Same threat detection as fallback when SW is inactive
 
 ---
 
-## 🧪 Testing
-
-The project includes a test suite using `node:test` (zero external dependencies):
-
-```bash
-npm test
-```
-
-29 tests covering removal tools (watermark cleaning, audio cleaning, format preservation, file validation). Runs with `--test-concurrency=1` for resource-heavy operations. CI runs on Node.js 20 and 22 via GitHub Actions with `actions/checkout@v6` and `actions/setup-node@v6`.
-
----
-
-## 🛡️ Privacy
+## Privacy
 
 - **100% client-side** — No files are ever uploaded to any server
-- All processing happens in your browser using JavaScript (Web App) or your local machine (CLI)
-- Your files, messages, passwords, and data never leave your device
+- All processing happens in your browser (Web App) or your local machine (CLI)
 - No analytics, no tracking, no telemetry
 - Open source — audit the code yourself
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Component | Technology |
 |-----------|-----------|
 | **UI** | Vanilla HTML/CSS/JS (no frameworks) |
 | **Icons** | Font Awesome 5 |
 | **CLI** | Node.js 20+, Commander.js |
-| **Testing** | `node:test` (120+ tests, zero dependencies) |
-| **CI** | GitHub Actions (Node 20/22 matrix) |
-| **PDF Export** | jsPDF |
+| **Testing** | `node:test` (277+ tests, zero dependencies) + Playwright (E2E) |
+| **CI** | GitHub Actions (40+ workflows, Node 22/24 matrix) |
+| **PDF Export** | jsPDF + PDFKit |
 | **DOCX Export** | docx |
+| **EPUB Export** | Custom HTML-based generator |
 | **QR Codes** | QRious |
 | **ZIP** | JSZip |
 | **C2PA** | Custom ECDSA P-256 implementation |
 | **Canvas (CLI)** | `canvas` node package |
-| **Audio Encoding** | Pure-JS PCM (WAV/AIFF/AU/RAW), lamejs (MP3), MediaRecorder (OGG/OPUS/M4A/AAC/FLAC/AMR) |
-| **Video→Audio** | Browser capture (playbackRate-accelerated) + ffmpeg.wasm v0.11.6 (core-st) fallback |
+| **Audio Encoding** | Pure-JS PCM, lamejs (MP3), MediaRecorder |
+| **Video→Audio** | ffmpeg.wasm v0.11.6 |
+| **Linting** | ESLint + Biome + Stylelint + Markdownlint + CSpell |
+| **Security** | Semgrep, TruffleHog, CodeQL, npm audit |
+| **Accessibility** | Pa11y, axe-core/Playwright |
+| **Performance** | Lighthouse CI, size-limit |
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome. The project is in active development on the `beta-release` branch.
+Contributions are welcome. The project is in active development on `main`.
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feat/my-feature`
-3. Commit changes: `git commit -m "feat: add my feature"`
+3. Commit: `git commit -m "feat: add my feature"` (Conventional Commits)
 4. Push: `git push origin feat/my-feature`
 5. Open a Pull Request
 
@@ -372,9 +474,16 @@ npm install
 npm link
 ```
 
+### Pre-commit Checks
+
+```bash
+npm run check       # lint + biome + stylelint + madge + core tests
+npm run check:fix   # auto-fix all issues
+```
+
 ---
 
-## 📄 License
+## License
 
 **GNU General Public License v2.0** — See [LICENSE](LICENSE)
 
