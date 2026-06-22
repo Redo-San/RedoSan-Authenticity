@@ -364,6 +364,10 @@
       if (a) { a.removeAttribute("src"); a.load(); }
       return;
     }
+    var msEl = document.querySelector("#modeSelect");
+    if (msEl && msEl.style.display !== "none" && !msEl.getAttribute("style")) {
+      return;
+    }
     preloadAudio();
     inject();
     initAudioProtection();

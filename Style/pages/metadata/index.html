@@ -498,6 +498,19 @@
           </h2>
         </div>
         <div class="card-form">
+            <div class="help-card">
+              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
+                <span>💡 <span data-i18n="md.help_title">How to read metadata</span></span>
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="md.help">Extract and display metadata embedded in image files.
+
+Upload an image file (JPEG recommended for EXIF data). The system reads standard metadata tags including camera make and model, GPS coordinates, date and time, image dimensions, colour profile, and any embedded thumbnails.
+
+This tool is useful for verifying image origin, checking for editing history, and extracting location data from photographs.
+
+⚠️ Important: Download the metadata report before navigating away. Use the Download button to save in PDF, DOCX, JSON, CSV, TXT, XML, or HTML format.</div>
+            </div>
           <div class="form-group">
             <label for="md-file" data-i18n="md.file_label">Image file</label>
             <input

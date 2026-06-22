@@ -527,6 +527,19 @@
 
           <!-- Read Tab -->
           <div id="c2pa-read">
+            <div class="help-card">
+              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
+                <span>💡 <span data-i18n="c2pa.read_help_title">How to read C2PA provenance</span></span>
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="c2pa.read_help">Read C2PA (Coalition for Content Provenance and Authenticity) data from an image.
+
+Upload an image file that contains C2PA provenance metadata. The system parses the C2PA manifest and displays the digital signature, content credentials, editing history, and any claims made by the content creator.
+
+Use this tool to verify the origin and editing history of images from C2PA-compatible cameras and editing software.
+
+⚠️ Important: Download the C2PA report before navigating away. Save it in PDF, DOCX, JSON, or HTML format.</div>
+            </div>
             <p
               style="
                 font-size: 0.8rem;
@@ -577,6 +590,19 @@
 
           <!-- Write Tab -->
           <div id="c2pa-write" style="display: none">
+            <div class="help-card">
+              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
+                <span>✍️ <span data-i18n="c2pa.write_help_title">How to sign with C2PA</span></span>
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="c2pa.write_help">Add C2PA provenance data to an image, creating a verifiable content credential.
+
+Upload an image and provide creator information such as name, organisation, and assertions about the content. Select a content type (artwork, news, photography, etc.) to categorise the credential. The system creates a C2PA manifest and signs it using an ECDSA key embedded in your browser.
+
+The signed image can be shared with others, who can verify its provenance using the C2PA read tool.
+
+⚠️ Important: Download the C2PA-signed image before navigating away. You can also save the manifest in JSON format.</div>
+            </div>
             <p
               style="
                 font-size: 0.8rem;
@@ -917,6 +943,19 @@
 
           <!-- Verify Tab -->
           <div id="c2pa-verify" style="display: none">
+            <div class="help-card">
+              <div class="help-card-header" onclick="this.parentNode.classList.toggle('collapsed')">
+                <span>🔍 <span data-i18n="c2pa.verify_help_title">How to verify a C2PA signature</span></span>
+                <span class="help-card-toggle">▾</span>
+              </div>
+              <div class="help-card-body" data-i18n="c2pa.verify_help">Verify the cryptographic signature of a C2PA-provenanced image.
+
+Upload a C2PA-signed image. The system extracts the manifest and validates the ECDSA signature against the embedded public key. It also checks the integrity of the metadata and reports any tampering.
+
+A successful verification confirms the image has not been altered since its C2PA credentials were created.
+
+⚠️ Important: Download the verification report before navigating away. Save it in PDF, DOCX, JSON, or HTML format.</div>
+            </div>
             <p
               style="
                 font-size: 0.8rem;

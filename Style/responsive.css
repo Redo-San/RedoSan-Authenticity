@@ -47,7 +47,6 @@ label,
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-.sidebar,
 .result,
 .search-results,
 .nav-search .search-results {
@@ -631,6 +630,10 @@ label,
   .mode-select-bar {
     padding: 6px 10px;
   }
+  html:has(#modeSelect:not([style*="display: none"])),
+  body:has(#modeSelect:not([style*="display: none"])) {
+    overflow: auto;
+  }
 }
 @media (max-width: 360px) {
   .mode-select-overlay {
@@ -672,7 +675,6 @@ video {
 }
 
 /* ── Touch-friendly overscroll ── */
-.sidebar,
 .result,
 .nav-search .search-results {
   overscroll-behavior: contain;

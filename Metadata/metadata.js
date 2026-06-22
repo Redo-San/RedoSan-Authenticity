@@ -177,7 +177,9 @@ async function handleReadMetadata() {
 
   try {
     const result = await readMetadata(file);
-    const pretty = JSON.stringify(result, null, 2);
+
+    setResult('mdResult', result);
+    setDownloadHandler(downloadMetadata);
 
     let html = '<table class="meta-table">';
     html += '<tr><td>' + __('md.label_file', 'File') + '</td><td>' + escHtml(result.file) + '</td></tr>';
@@ -201,11 +203,170 @@ async function handleReadMetadata() {
     // codeql[js/xss-through-dom] — all values are HTML-escaped via escHtml()
     output.innerHTML = html;
 
-    const blob = new Blob([pretty], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    // codeql[js/xss-through-dom] — url is a safe blob URL, fileName is escaped
-    dl.innerHTML = '<a href="' + url + '" download="' + escHtml(file.name) + '.metadata.json" class="btn">' + __('md.download_json', 'Download JSON') + '</a>';
+    dl.innerHTML = '<button class="btn" onclick="showDownloadModal()">' + __('md.download', 'Download Report') + '</button>';
   } catch (error) { setText('md-output', __('shared.error_prefix', 'Error: ') + error.message); }
   resultDiv.style.display = 'block';
   btn.disabled = false; spinner('md-spinner', false);
+}
+
+// ── Multi-format download for metadata ──
+
+function downloadMetadata(format) {
+  closeDownloadModal();
+  var r = getResult('mdResult');
+  if (!r) return;
+
+  var name = r.file.replace(/\.[^.]+$/, '') || 'metadata';
+
+  if (format === 'pdf') { mdToPDF(r, name); return; }
+  if (format === 'doc') { mdToDOCX(r, name); return; }
+
+  var content, ext, mime;
+  switch (format) {
+    case 'json': { content = JSON.stringify(r, null, 2); ext = 'json'; mime = 'application/json'; break; }
+    case 'csv':  { content = mdToCSV(r);  ext = 'csv';  mime = 'text/csv';  break; }
+    case 'txt':  { content = mdToTXT(r);  ext = 'txt';  mime = 'text/plain'; break; }
+    case 'xml':  { content = mdToXML(r);  ext = 'xml';  mime = 'application/xml'; break; }
+    case 'html': { content = mdToHTML(r); ext = 'html'; mime = 'text/html'; break; }
+  }
+  if (content == null) return;
+  var blob = new Blob([content], { type: mime });
+  downloadBlobSimple(blob, name + '.metadata.' + ext);
+}
+
+function mdToCSV(r) {
+  var lines = ['Property,Value'];
+  var add = function(k, v) { lines.push(k + ',' + _csvEsc(v)); };
+  add('File', r.file);
+  add('Size (KB)', (r.size / 1024).toFixed(1));
+  add('SHA-256', r.sha256);
+  if (r.image) {
+    add('Dimensions', r.image.width + ' x ' + r.image.height);
+    add('Mode', r.image.mode);
+    add('Format', r.image.format);
+  }
+  if (r.exif) for (var k in r.exif) add(k, r.exif[k]);
+  return lines.join('\n');
+}
+
+function _csvEsc(v) {
+  if (v == null) return '';
+  v = String(v);
+  return v.includes(',') || v.includes('"') || v.includes('\n') ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+
+function mdToTXT(r) {
+  var lines = [];
+  var add = function(k, v) { lines.push(k + ': ' + v); };
+  add('File', r.file);
+  add('Size (KB)', (r.size / 1024).toFixed(1));
+  add('SHA-256', r.sha256);
+  if (r.image) {
+    add('Dimensions', r.image.width + ' x ' + r.image.height);
+    add('Mode', r.image.mode);
+    add('Format', r.image.format);
+  }
+  if (r.exif) for (var k in r.exif) add(k, r.exif[k]);
+  return lines.join('\n');
+}
+
+function mdToXML(r) {
+  var x = '<?xml version="1.0" encoding="UTF-8"?>\n<metadata>\n';
+  x += '  <file>' + _xmlEsc(r.file) + '</file>\n';
+  x += '  <size_kb>' + (r.size / 1024).toFixed(1) + '</size_kb>\n';
+  x += '  <sha256>' + r.sha256 + '</sha256>\n';
+  if (r.image) {
+    x += '  <image>\n';
+    x += '    <dimensions>' + r.image.width + ' x ' + r.image.height + '</dimensions>\n';
+    x += '    <mode>' + _xmlEsc(r.image.mode) + '</mode>\n';
+    x += '    <format>' + _xmlEsc(r.image.format) + '</format>\n';
+    x += '  </image>\n';
+  }
+  if (r.exif) {
+    x += '  <exif>\n';
+    for (var k in r.exif) x += '    <tag name="' + _xmlEsc(k) + '">' + _xmlEsc(r.exif[k]) + '</tag>\n';
+    x += '  </exif>\n';
+  }
+  x += '</metadata>';
+  return x;
+}
+
+function _xmlEsc(v) {
+  if (v == null) return '';
+  return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function mdToHTML(r) {
+  var h = '<!doctype html><html><head><meta charset="UTF-8"><title>Metadata Report</title>';
+  h += '<style>body{font-family:sans-serif;margin:2em}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:8px;text-align:left}th{background:#f5f5f5}</style></head><body>';
+  h += '<h1>Metadata Report</h1><table>';
+  h += '<tr><th>Property</th><th>Value</th></tr>';
+  var add = function(k, v) { h += '<tr><td>' + _xmlEsc(k) + '</td><td>' + _xmlEsc(v) + '</td></tr>'; };
+  add('File', r.file);
+  add('Size (KB)', (r.size / 1024).toFixed(1));
+  add('SHA-256', r.sha256);
+  if (r.image) {
+    add('Dimensions', r.image.width + ' x ' + r.image.height);
+    add('Mode', r.image.mode);
+    add('Format', r.image.format);
+  }
+  if (r.exif) for (var k in r.exif) add(k, r.exif[k]);
+  h += '</table></body></html>';
+  return h;
+}
+
+function mdToPDF(r, name) {
+  var doc = new jspdf.jsPDF();
+  var y = 20;
+  doc.setFontSize(16); doc.setTextColor(108, 92, 231);
+  doc.text('RedoSan Authenticity - Metadata Report', 14, y); y += 10;
+  doc.setFontSize(10); doc.setTextColor(50, 50, 50);
+  var add = function(k, v) {
+    if (y > 270) { doc.addPage(); y = 20; }
+    doc.text(k + ': ' + String(v), 14, y); y += 6;
+  };
+  add('File', r.file);
+  add('Size (KB)', (r.size / 1024).toFixed(1));
+  add('SHA-256', r.sha256);
+  if (r.image) {
+    add('Dimensions', r.image.width + ' x ' + r.image.height);
+    add('Mode', r.image.mode);
+    add('Format', r.image.format);
+  }
+  if (r.exif) {
+    y += 2; doc.setFontSize(12); doc.setTextColor(108, 92, 231);
+    doc.text('EXIF', 14, y); y += 6; doc.setFontSize(10); doc.setTextColor(50, 50, 50);
+    for (var k in r.exif) add(k, r.exif[k]);
+  }
+  var blob = doc.output('blob');
+  downloadBlobSimple(blob, name + '.metadata.pdf');
+}
+
+function mdToDOCX(r, name) {
+  var doc = new docx.Document({
+    sections: [{
+      children: [
+        new docx.Paragraph({ children: [new docx.TextRun({ text: 'RedoSan Authenticity - Metadata Report', bold: true, size: 28, color: '6C5CE7' })] }),
+        new docx.Paragraph({ children: [new docx.TextRun({ text: 'File: ' + r.file, size: 20 })] }),
+        new docx.Paragraph({ children: [new docx.TextRun({ text: 'Size (KB): ' + (r.size / 1024).toFixed(1), size: 20 })] }),
+        new docx.Paragraph({ children: [new docx.TextRun({ text: 'SHA-256: ' + r.sha256, size: 20 })] }),
+      ]
+    }]
+  });
+  if (r.image) {
+    doc.sections[0].children.push(
+      new docx.Paragraph({ children: [new docx.TextRun({ text: 'Dimensions: ' + r.image.width + ' x ' + r.image.height, size: 20 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: 'Mode: ' + r.image.mode, size: 20 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: 'Format: ' + r.image.format, size: 20 })] }),
+    );
+  }
+  if (r.exif) {
+    doc.sections[0].children.push(new docx.Paragraph({ spacing: { before: 200 }, children: [new docx.TextRun({ text: 'EXIF', bold: true, size: 24, color: '6C5CE7' })] }));
+    for (var k in r.exif) {
+      doc.sections[0].children.push(new docx.Paragraph({ children: [new docx.TextRun({ text: k + ': ' + r.exif[k], size: 20 })] }));
+    }
+  }
+  docx.Packer.toBlob(doc).then(function(blob) {
+    downloadBlobSimple(blob, name + '.metadata.docx');
+  });
 }
