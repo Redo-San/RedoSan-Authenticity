@@ -79,6 +79,7 @@
     if (!_fromRoot) return;
     var modeSelect = document.querySelector("#modeSelect");
     if (modeSelect) modeSelect.style.display = "none";
+    if (typeof globalThis.__musicInit === "function") globalThis.__musicInit();
     var simplifiedMode = document.querySelector("#simplifiedMode");
     if (simplifiedMode) simplifiedMode.style.display = "none";
     var mainNav = document.querySelector("#mainNav");
