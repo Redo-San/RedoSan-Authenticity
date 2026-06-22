@@ -821,10 +821,7 @@ window.__I18N_DATA.es = {
   "docw.text_too_short": "Texto demasiado corto para este algoritmo",
   "docw.more_lines": "líneas más",
 
-    "page.privacy": "<h2>Política de Privacidad</h2><p><strong>Sus datos permanecen en su dispositivo.</strong> RedoSan Authenticity es una aplicación 100% del lado del cliente. Todo procesamiento se realiza en su navegador usando JavaScript. No se transmiten archivos, metadatos o cualquier otro dato a ningún servidor.</p><h3>Qué recopilamos</h3><p>Nada. No recopilamos, almacenamos o transmitimos datos personales, archivos o análisis. La aplicación se ejecuta completamente en GitHub Pages y no hay servidor backend involucrado.</p><h3>Bibliotecas de terceros</h3><p>Cargamos bibliotecas JavaScript desde CDNs (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> y <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) para funcionalidad de exportación PDF y DOCX. Estos CDNs pueden tener su propio registro y análisis. No se comparten datos de sus archivos con estos servicios.</p><h3>Cambios</h3><p>Esta política puede actualizarse ocasionalmente. El uso continuado de la herramienta constituye la aceptación de la política actual.</p>",
-    "search.no_results": "Sin resultados para \"{query}\".",
-    "search.results_for": "Resultados para \"{query}\":",
-    "dl.inapp_alert": "Abre esta página en Safari o Chrome para descargar archivos. Toca el menú del navegador (⋯) y selecciona \"Abrir en el navegador\".",
+
     "sidebar.certificate": "Pasaporte Digital",
     "sidebar.usage_warning": "⚠️ Solo uso legal. El contenido ilegal/dañino está prohibido. Todo el procesamiento es 100% local. ",
     "sidebar.audio_watermark": "Marca de agua de audio digital",

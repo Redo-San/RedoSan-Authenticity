@@ -841,10 +841,7 @@ window.__I18N_DATA.fr = {
   "docw.text_too_short": "Texte trop court pour cet algorithme",
   "docw.more_lines": "lignes supplémentaires",
 
-    "page.privacy": "<h2>Politique de Confidentialité</h2><p><strong>Vos données restent sur votre appareil.</strong> RedoSan Authenticity est une application 100% côté client. Tout traitement est effectué dans votre navigateur en utilisant JavaScript. Aucun fichier, métadonnée ou autre donnée n'est transmis à aucun serveur.</p><h3>Ce que nous collectons</h3><p>Rien. Nous ne collectons, stockons ou transmettons aucune donnée personnelle, fichier ou analytique. L'application fonctionne entièrement sur GitHub Pages et aucun serveur backend n'est impliqué.</p><h3>Bibliothèques tierces</h3><p>Nous chargeons des bibliothèques JavaScript depuis des CDN (<a href=\"https://cdnjs.cloudflare.com\" target=\"_blank\" rel=\"noopener\">cdnjs</a> et <a href=\"https://www.jsdelivr.com\" target=\"_blank\" rel=\"noopener\">jsdelivr</a>) pour les fonctionnalités d'exportation PDF et DOCX. Ces CDN peuvent avoir leurs propres logs et analytiques. Aucune donnée de vos fichiers n'est partagée avec ces services.</p><h3>Changements</h3><p>Cette politique peut être mise à jour occasionnellement. L'utilisation continue de l'outil constitue l'acceptation de la politique actuelle.</p>",
-    "search.no_results": "Aucun résultat pour \"{query}\".",
-    "search.results_for": "Résultats pour \"{query}\":",
-    "dl.inapp_alert": "Veuillez ouvrir cette page dans Safari ou Chrome pour télécharger des fichiers. Appuyez sur le menu du navigateur (⋯) et sélectionnez \"Ouvrir dans le navigateur\".",
+
     "sidebar.certificate": "Passeport numérique",
     "sidebar.usage_warning": "⚠️ Utilisation licite uniquement. Le contenu illégal/préjudiciable est interdit. Toute la transformation est 100% locale. ",
     "sidebar.audio_watermark": "Filigrane audio numérique",
