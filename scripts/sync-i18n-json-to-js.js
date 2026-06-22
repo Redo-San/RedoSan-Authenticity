@@ -10,8 +10,8 @@
  *   node scripts/sync-i18n-json-to-js.js
  */
 
-var fs = require("fs");
-var path = require("path");
+var fs = require("node:fs");
+var path = require("node:path");
 
 var LANG_DIR = path.join(__dirname, "..", "Style", "lang");
 var LANGS = ["ar", "de", "es", "fr", "ja", "ko", "zh"];
@@ -35,11 +35,11 @@ function flatten(obj, prefix) {
 
 function jsEscape(str) {
   return str
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r")
-    .replace(/\t/g, "\\t");
+    .replace(/\\/g, String.raw`\\`)
+    .replace(/"/g, String.raw`\"`)
+    .replace(/\n/g, String.raw`\n`)
+    .replace(/\r/g, String.raw`\r`)
+    .replace(/\t/g, String.raw`\t`);
 }
 
 for (var i = 0; i < LANGS.length; i++) {
