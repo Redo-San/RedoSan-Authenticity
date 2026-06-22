@@ -19,6 +19,7 @@
   var _playing = false;
   var _playPromise = null;
   var _audioBaseSrc = "";
+  var _initialized = false;
 
   /**
    *
@@ -359,6 +360,7 @@
    *
    */
   function init() {
+    if (_initialized) return;
     if (document.documentElement.dataset.standalone) {
       var a = document.querySelector("#bg-music");
       if (a) {
@@ -371,6 +373,7 @@
     if (msEl && msEl.style.display !== "none" && !msEl.getAttribute("style")) {
       return;
     }
+    _initialized = true;
     preloadAudio();
     inject();
     initAudioProtection();
@@ -394,6 +397,7 @@
       saveState();
     }
   };
+  globalThis.__musicInit = init;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
