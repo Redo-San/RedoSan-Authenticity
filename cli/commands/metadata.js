@@ -9,7 +9,7 @@ const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, valida
 if (globalThis.crypto === undefined || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
-      digest: async (algo, data) => {
+      digest: async (_algo, data) => {
         const hash = crypto.createHash("sha256").update(Buffer.from(data)).digest();
         return hash.buffer;
       },

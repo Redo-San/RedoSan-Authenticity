@@ -19,25 +19,31 @@
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
 .music-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 24px rgb(108, 92, 231, 0.6);
 }
+
 .music-btn:active {
   transform: scale(0.95);
 }
+
 .music-btn.playing {
   animation: music-pulse 2s ease-in-out infinite;
 }
+
 @keyframes music-pulse {
   0%,
   100% {
     box-shadow: 0 4px 16px rgb(108, 92, 231, 0.4);
   }
+
   50% {
     box-shadow: 0 4px 28px rgb(108, 92, 231, 0.8);
   }
 }
+
 .music-credit {
   position: fixed;
   bottom: 84px;
@@ -51,10 +57,12 @@
   text-align: right;
   direction: ltr;
 }
+
 .music-credit.show {
   opacity: 1;
 }
-@media (max-width: 480px) {
+
+@media (width <= 480px) {
   .music-btn {
     width: 44px;
     height: 44px;
@@ -62,6 +70,7 @@
     bottom: 16px;
     right: 16px;
   }
+
   .music-credit {
     bottom: 68px;
     right: 16px;
