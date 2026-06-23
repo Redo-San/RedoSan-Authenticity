@@ -89,6 +89,13 @@ function findMissing(source, target) {
     if (!(key in target)) {
       missing[key] = source[key];
     } else if (
+      typeof source[key] === "string" &&
+      typeof target[key] === "string" &&
+      source[key] !== target[key]
+    ) {
+      // Value changed in source → re-translate
+      missing[key] = source[key];
+    } else if (
       typeof source[key] === "object" &&
       source[key] !== null &&
       typeof target[key] === "object" &&

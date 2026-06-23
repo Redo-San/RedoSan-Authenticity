@@ -211,6 +211,7 @@ export default [
       "C2PA/",
       "Pixel_Injection/watermark_core_advanced.js",
       "Style/lang/i18n-data.js",
+      "Style/lang/*.json",
       "cli/tests/",
       "cli/lib/",
     ],
