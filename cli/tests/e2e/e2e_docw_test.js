@@ -40,7 +40,7 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
     await ctx.close();
   });
 

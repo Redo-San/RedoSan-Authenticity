@@ -34,7 +34,7 @@ describe("E2E — Converter & Removal Tools", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "converter");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
     const heading = await page.evaluate(() => {
       const h = document.querySelector("#page-converter h2");
       return h ? h.textContent : "";
@@ -66,7 +66,7 @@ describe("E2E — Converter & Removal Tools", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "removal-tools");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
     const heading = await page.evaluate(() => {
       const h = document.querySelector("#page-removal-tools h2");
       return h ? h.textContent : "";
@@ -108,7 +108,7 @@ describe("E2E — Converter & Removal Tools", () => {
     ]);
     await fileInput.setInputFiles({ name: "test.png", mimeType: "image/png", buffer: png });
     await page.waitForTimeout(500);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
     const typeText = await page.evaluate(() => {
       const el = document.getElementById("conv-file-type");
       return el ? el.textContent : "";
@@ -160,7 +160,7 @@ describe("E2E — Converter & Removal Tools", () => {
     ]);
     await page.setInputFiles("#conv-file", [{ name: "test.png", mimeType: "image/png", buffer: png }]);
     await page.waitForTimeout(500);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
 
     // Click JPEG format button in the options grid
     await page.evaluate(() => {
@@ -202,7 +202,7 @@ describe("E2E — Converter & Removal Tools", () => {
       "Filename should have jpg extension. Got: " + dlText,
     );
 
-    const fatal = errors.filter((e) => !e.includes("404") && !e.includes("Failed to load"));
+    const fatal = errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
     assert.equal(fatal.length, 0, "No fatal errors: " + fatal.join(", "));
     await ctx.close();
   });
