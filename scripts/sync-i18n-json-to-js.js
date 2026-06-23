@@ -6,6 +6,9 @@
  * The translation bot (translate-i18n.js) only writes to .json files.
  * The browser reads from .js files only. This script bridges the gap.
  *
+ * Unlike the previous additive-only approach, this script rebuilds
+ * the data object from JSON, so BOTH new keys AND updated values are applied.
+ *
  * Usage:
  *   node scripts/sync-i18n-json-to-js.js
  */
@@ -42,52 +45,64 @@ function jsEscape(str) {
     .replace(/\t/g, String.raw`\t`);
 }
 
+function rebuildJS(jsPath, flat) {
+  var jsContent = fs.readFileSync(jsPath, "utf8");
+
+  // Extract header: everything up to and including the first '{' of the data object
+  var headerEnd = jsContent.indexOf("{");
+  if (headerEnd === -1) {
+    console.error("Cannot parse " + jsPath + ": no opening brace found");
+    return false;
+  }
+  // Scan back to the previous newline for clean split
+  var header = jsContent.slice(0, headerEnd + 1);
+
+  // Extract footer: everything from and including the final '};'
+  var footerStart = jsContent.lastIndexOf("};");
+  if (footerStart === -1) {
+    console.error("Cannot parse " + jsPath + ": no closing brace found");
+    return false;
+  }
+  var footer = jsContent.slice(footerStart);
+
+  // Build new ordered entries from JSON
+  var keys = Object.keys(flat);
+  var entries = keys.map(function (key) {
+    return '    "' + key + '": "' + jsEscape(flat[key]) + '"';
+  });
+
+  fs.writeFileSync(
+    jsPath,
+    header + "\n" + entries.join(",\n") + "\n" + footer,
+    "utf8",
+  );
+  return true;
+}
+
+var hasChanges = false;
 for (var i = 0; i < LANGS.length; i++) {
   var lang = LANGS[i];
   var jsonPath = path.join(LANG_DIR, lang + ".json");
   var jsPath = path.join(LANG_DIR, "i18n-data-" + lang + ".js");
 
+  if (!fs.existsSync(jsonPath)) {
+    console.log(lang + ": no JSON file, skipping");
+    continue;
+  }
+  if (!fs.existsSync(jsPath)) {
+    console.log(lang + ": no JS file, skipping");
+    continue;
+  }
+
   var flat = flatten(JSON.parse(fs.readFileSync(jsonPath, "utf8")), "");
-
-  var jsContent = fs.readFileSync(jsPath, "utf8");
-  var start = jsContent.indexOf("{");
-  var end = jsContent.lastIndexOf("};");
-  if (start === -1 || end === -1) {
-    console.error("Cannot parse " + jsPath);
-    continue;
+  if (rebuildJS(jsPath, flat)) {
+    console.log(lang + ": synced " + Object.keys(flat).length + " keys");
+    hasChanges = true;
   }
-  var body = jsContent.slice(start + 1, end);
+}
 
-  // Collect existing keys via simple regex
-  var existing = {};
-  var re = /^\s*"([^"]+)"\s*:/gm;
-  var m;
-  while ((m = re.exec(body)) !== null) {
-    existing[m[1]] = true;
-  }
-
-  var missing = [];
-  for (var key in flat) {
-    if (!existing[key]) {
-      missing.push({ key: key, value: flat[key] });
-    }
-  }
-
-  if (missing.length === 0) {
-    console.log(lang + ": no missing keys");
-    continue;
-  }
-
-  var insertAt = jsContent.lastIndexOf("};");
-  var before = jsContent.slice(0, insertAt);
-  var after = jsContent.slice(insertAt);
-
-  var newEntries = missing
-    .map(function (e) {
-      return '    "' + e.key + '": "' + jsEscape(e.value) + '",';
-    })
-    .join("\n");
-
-  fs.writeFileSync(jsPath, before + "\n" + newEntries + "\n" + after, "utf8");
-  console.log(lang + ": added " + missing.length + " keys");
+if (hasChanges) {
+  console.log("\nAll language JS files synced successfully.");
+} else {
+  console.log("No changes needed.");
 }
