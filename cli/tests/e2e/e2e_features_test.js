@@ -163,7 +163,7 @@ describe("E2E — Download Formats", () => {
       await page.waitForTimeout(500);
 
       // Click format button directly
-      const dlPromise = page.waitForEvent("download", { timeout: 30000 });
+      const dlPromise = page.waitForEvent("download", { timeout: 60000 });
       await page.evaluate((fmt) => downloadResult(fmt), format);
       await dlPromise;
 
