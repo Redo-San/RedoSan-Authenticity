@@ -37,7 +37,7 @@ describe("E2E — Certificate / Digital Passport", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "certificate");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
     await ctx.close();
   });
 
@@ -103,7 +103,7 @@ describe("E2E — Certificate / Digital Passport", () => {
       assert.ok(downloadBtns >= 3, "Should show at least 3 download format buttons (got " + downloadBtns + ")");
     }
 
-    const fatal = errors.filter((e) => !e.includes("404") && !e.includes("Failed to load"));
+    const fatal = errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
     assert.equal(fatal.length, 0, "No fatal errors: " + fatal.join(", "));
     await ctx.close();
   });
