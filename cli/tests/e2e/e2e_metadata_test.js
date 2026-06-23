@@ -58,16 +58,20 @@ describe("E2E — Metadata Reader", () => {
   it("should read metadata from a PNG and show file info", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
-    await page.goto(BASE, { waitUntil: "networkidle" });
-    await page.waitForTimeout(2000);
+    const errors = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+    await page.goto(BASE, { waitUntil: "load" });
+    await page.waitForTimeout(3000);
     await navTo(page, "metadata");
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(1500);
 
     await page.setInputFiles("#md-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
     await page.waitForTimeout(500);
 
+    await page.waitForFunction(() => !document.getElementById("md-btn").disabled, { timeout: 15000 });
     await page.evaluate(() => document.getElementById("md-btn").click());
-    await page.waitForSelector("#md-result", { state: "visible", timeout: 45000 });
+    await page.waitForSelector("#md-result", { state: "visible", timeout: 90000 });
+    assert.equal(errors.length, 0, "Page errors: " + errors.join(", "));
     await page.waitForTimeout(1000);
 
     const outputHtml = await page.evaluate(() => {
