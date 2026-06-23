@@ -93,7 +93,7 @@ jobs:
               for (const s of sections) {
                 if (['home','about','privacy','contact','social','search'].includes(s)) continue;
                 if (!html.includes(`data-page="${s}"`)) warn(`CrossRef: \`data-page="${s}"\` missing from sidebar/card in \`index.html\``);
-                if (!nav.includes(`'${s}'`)) warn(`CrossRef: \`${s}\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
+                if (!new RegExp(`['"\`]${s}['"\`]`).test(nav)) warn(`CrossRef: \`${s}\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
               }
             }
 

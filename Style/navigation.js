@@ -89,6 +89,7 @@ var PAGE_TITLES = {
   converter: "File Converter — RedoSan Authenticity",
   id_forge: "ID Forge — RedoSan Authenticity",
   "document-watermark": "Document Watermark — RedoSan Authenticity",
+  "removal-tools": "Removal Tools — RedoSan Authenticity",
   search: "Search — RedoSan Authenticity",
   about: "About — RedoSan Authenticity",
   privacy: "Privacy Policy — RedoSan Authenticity",
@@ -121,6 +122,8 @@ var PAGE_DESCS = {
     "Generate UUIDs, ULIDs, Nano IDs, and SWHIDs — unique identifiers for any project. Free online tool.",
   "document-watermark":
     "Embed and extract invisible watermarks in text documents using Zero-Width Characters, Unicode Homoglyphs, and Whitespace Replacement. Free online tool.",
+  "removal-tools":
+    "Detect and remove digital watermarks from images using statistical analysis and recovery algorithms. Free online tool.",
   search: "Search across all tools and pages. Free online tool.",
   about:
     "Learn about RedoSan Authenticity — a free, open-source digital authenticity tool.",
