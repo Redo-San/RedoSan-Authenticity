@@ -4213,36 +4213,177 @@
       </div>
       <div class="static-page" data-i18n="page.about">
         <h2>About RedoSan Authenticity</h2>
+
+        <h3>What is RedoSan Authenticity?</h3>
         <p>
-          <strong>RedoSan Authenticity</strong> is an open-source digital
-          authenticity tool that runs entirely in your browser. No files are
-          ever uploaded to any server — all processing happens client-side.
+          <strong>RedoSan Authenticity</strong> is a free, open-source,
+          client-side digital authenticity toolkit. It provides a comprehensive
+          suite of tools for watermarking, fingerprinting, forensic analysis,
+          provenance tracking, and content verification — all running entirely
+          in your browser or via a Node.js CLI. No files are ever uploaded to
+          any server; every operation happens locally on your machine.
         </p>
+
+        <h3>Why Was It Built?</h3>
         <p>
-          We provide a comprehensive suite of tools for digital forensics and
-          media verification:
+          Digital content authenticity is increasingly critical in an age of
+          AI-generated media, deepfakes, and misinformation. Existing solutions
+          often require uploading sensitive files to third-party servers or
+          expensive commercial software. RedoSan Authenticity was created to
+          provide a free, private, and comprehensive alternative that puts
+          control back in the hands of creators, journalists, and forensic
+          analysts.
         </p>
+
+        <h3>Complete Tool Suite</h3>
         <ul>
           <li>
-            <strong>Watermarking</strong> — 9 algorithms including LSB, DCT,
-            DWT, neural-style, and forensic watermarking
+            <strong>Image Watermarking</strong> — 9 algorithms (LSB, DCT,
+            Zero-bit, Fragile, Neural SS, Multi-bit, Patchwork, Adaptive,
+            Statistical) for embedding and extracting invisible watermarks
           </li>
           <li>
-            <strong>Fingerprinting</strong> — Cryptographic hashing (SHA-1/2/3,
-            BLAKE2/3, MD5, RIPEMD-160, Whirlpool) and perceptual image hashing
+            <strong>Audio Watermarking</strong> — 8 algorithms (LSB, Phase
+            Coding, Echo Hiding, DSSS, QIM, DWT Haar, Patchwork, DCT) for
+            embedding data in WAV audio files
           </li>
           <li>
-            <strong>Metadata</strong> — Read EXIF, dimensions, format, and color
-            mode from images
+            <strong>Document Watermarking</strong> — Embed watermarks into TXT,
+            DOCX, and PDF files using Zero-Width Characters, homoglyph
+            substitution, whitespace encoding, line-shift, and word-shift
+            techniques
           </li>
           <li>
-            <strong>Timestamping</strong> — SHA-256 hashing with OpenTimestamps
-            verification support
+            <strong>Pixel Injection</strong> — 23 algorithms across 4 categories
+            (spatial, frequency, deep learning, and professional) for advanced
+            pixel-level data embedding
+          </li>
+          <li>
+            <strong>Fingerprinting</strong> — 17 cryptographic hash algorithms
+            (SHA-1/2/3, BLAKE2/3, MD5, RIPEMD-160, Whirlpool) plus 4 perceptual
+            hashes (aHash, dHash, pHash, wHash)
+          </li>
+          <li>
+            <strong>C2PA Provenance</strong> — Read, write, and verify C2PA
+            Content Credentials with ECDSA signing for JPEG and PNG files
+          </li>
+          <li>
+            <strong>Decentralized Identity (DID)</strong> — Generate Ed25519,
+            ECDSA P-256, and RSA key pairs with full W3C DID Document creation
+          </li>
+          <li>
+            <strong>OpenTimestamps</strong> — Create, verify, and upgrade
+            blockchain-anchored timestamps using the OpenTimestamps protocol
+          </li>
+          <li>
+            <strong>Digital Certificates</strong> — Generate authenticity
+            passports in PDF, DOCX, and EPUB formats with QR code verification
+          </li>
+          <li>
+            <strong>Forensic Analysis</strong> — Error Level Analysis (ELA),
+            noise heatmaps, JPEG marker inspection, and metadata anomaly
+            detection
+          </li>
+          <li>
+            <strong>Metadata Reader</strong> — Extract EXIF, XMP, IPTC, and PNG
+            chunk metadata from images
+          </li>
+          <li>
+            <strong>File Converter</strong> — Convert between image, audio,
+            video, document, and subtitle formats using ffmpeg.wasm
+          </li>
+          <li>
+            <strong>ID Forge</strong> — Generate UUID v4/v7, ULID, NanoID, and
+            SWHID identifiers in bulk
+          </li>
+          <li>
+            <strong>Assistant</strong> — Built-in chatbot for guided help and
+            troubleshooting
           </li>
         </ul>
+
+        <h3>Technical Architecture</h3>
         <p>
-          Built with privacy as a core principle. Your files never leave your
-          device.
+          The application is built entirely with vanilla JavaScript — no
+          frameworks, no build tools, no backend. It runs as a Progressive Web
+          App (PWA) with offline support via Service Worker caching. The same
+          algorithms power both the browser interface and the Node.js CLI,
+          ensuring consistent results across environments.
+        </p>
+        <p>
+          All cryptographic operations use the Web Cryptography API
+          (<code>crypto.subtle</code>) in the browser and Node.js native crypto
+          in the CLI. Image manipulation uses the HTML5 Canvas API. Document
+          processing uses JSZip for DOCX, PDF-lib for PDF manipulation, and
+          jsPDF for PDF generation. Audio processing uses raw PCM data
+          manipulation with FFT transforms implemented from scratch.
+        </p>
+
+        <h3>Who Is It For?</h3>
+        <ul>
+          <li>
+            <strong>Journalists and fact-checkers</strong> — Verify the
+            authenticity of images and documents before publication
+          </li>
+          <li>
+            <strong>Photographers and artists</strong> — Protect your work with
+            invisible watermarks and prove ownership
+          </li>
+          <li>
+            <strong>Forensic analysts</strong> — Detect tampering, analyze
+            compression artifacts, and examine metadata anomalies
+          </li>
+          <li>
+            <strong>Developers</strong> — Integrate authenticity checks into
+            your workflow via the CLI or browser APIs
+          </li>
+          <li>
+            <strong>Legal professionals</strong> — Generate verifiable digital
+            passports and timestamps for evidence preservation
+          </li>
+          <li>
+            <strong>Content creators</strong> — Establish provenance chains for
+            your digital content from creation to publication
+          </li>
+        </ul>
+
+        <h3>Privacy by Design</h3>
+        <p>
+          Privacy is not a feature — it is the foundation. RedoSan Authenticity
+          processes everything locally in your browser. No images, no metadata,
+          no personal information ever leaves your device. The only network
+          requests are for loading CDN-hosted libraries (with SRI integrity
+          checks) and contacting OpenTimestamps calendar servers (for timestamp
+          creation and verification).
+        </p>
+
+        <h3>Open Source</h3>
+        <p>
+          RedoSan Authenticity is fully open source under the
+          <strong>GNU General Public License v2.0</strong>. The complete source
+          code is available on
+          <a
+            href="https://github.com/Redo-San/RedoSan-Authenticity"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >. Contributions, bug reports, and feature requests are welcome.
+        </p>
+
+        <h3>Internationalization</h3>
+        <p>
+          The interface is available in 8 languages: العربية (Arabic),
+          Deutsch (German), English, Español (Spanish), Français (French),
+          日本語 (Japanese), 한국어 (Korean), and 中文 (Chinese). Right-to-left
+          (RTL) layout is fully supported for Arabic.
+        </p>
+
+        <h3>Version</h3>
+        <p>
+          Current version: <strong>v1.6</strong> — featuring Multi-Page
+          Architecture (MPA), standalone tool pages, Document Watermarking,
+          Audio Watermarking, DID, C2PA, Digital Certificates, File Converter,
+          and 277+ unit tests across 35 test files with 40+ CI/CD workflows.
         </p>
       </div>
     </section>
@@ -4260,37 +4401,211 @@
       </div>
       <div class="static-page" data-i18n="page.privacy">
         <h2>Privacy Policy</h2>
+        <p><em>Last updated: June 2026</em></p>
+
+        <h3>Our Commitment to Privacy</h3>
         <p>
-          <strong>Your data stays on your device.</strong> RedoSan Authenticity
-          is a 100% client-side application. All processing is done in your
-          browser using JavaScript. No files, metadata, or any other data are
-          transmitted to any server.
+          <strong>RedoSan Authenticity is designed to be 100% private by
+          default.</strong> The application runs entirely client-side — in your
+          browser or via the Node.js CLI. No files, metadata, personal
+          information, or analytics data are ever collected, stored, or
+          transmitted to any server. Every watermark, fingerprint, timestamp,
+          and certificate is generated locally on your machine.
         </p>
-        <h3>What we collect</h3>
+
+        <h3>Data Collection</h3>
         <p>
-          Nothing. We do not collect, store, or transmit any personal data,
-          files, or analytics. The application runs entirely on GitHub Pages and
-          no backend server is involved.
+          <strong>We collect nothing.</strong> RedoSan Authenticity has no
+          backend server, no database, no user accounts, no tracking cookies,
+          no analytics service, and no telemetry. The application is hosted
+          statically on GitHub Pages and all processing occurs in your browser's
+          JavaScript runtime or the Node.js CLI environment.
         </p>
-        <h3>Third-party libraries</h3>
+        <ul>
+          <li>
+            <strong>No uploads:</strong> Files you process are never sent over
+            the network
+          </li>
+          <li>
+            <strong>No cookies:</strong> The application does not set or read
+            any tracking or analytics cookies
+          </li>
+          <li>
+            <strong>No localStorage:</strong> User preferences (theme, language)
+            are stored in your browser's localStorage for convenience only and
+            never transmitted
+          </li>
+          <li>
+            <strong>No accounts:</strong> There is no registration,
+            authentication, or user profiling
+          </li>
+        </ul>
+
+        <h3>How It Works</h3>
         <p>
-          We load JavaScript libraries from CDNs (<a
-            href="https://cdnjs.cloudflare.com"
+          When you upload a file to any tool in RedoSan Authenticity, the file
+          is read into your browser's memory using the HTML5 File API. All
+          subsequent processing — hashing, watermark embedding, pixel
+          manipulation, metadata extraction, timestamp creation, certificate
+          generation — happens entirely within the JavaScript runtime of your
+          browser. The processed result is offered as a downloadable file or
+          displayed on screen. No data is written to any disk on the server, nor
+          is any data transmitted over the network (with the explicit exception
+          of OpenTimestamps, described below).
+        </p>
+
+        <h3>Network Requests</h3>
+        <p>
+          The application makes the following network requests, all of which are
+          necessary for functionality:
+        </p>
+        <ul>
+          <li>
+            <strong>CDN library loading:</strong> JavaScript libraries (jsPDF,
+            JSZip, PDF-lib, QRious, LameJS, FFmpeg.wasm) are loaded from
+            <a
+              href="https://cdnjs.cloudflare.com"
+              target="_blank"
+              rel="noopener"
+              >cdnjs</a
+            >
+            and
+            <a href="https://www.jsdelivr.com" target="_blank" rel="noopener"
+              >jsdelivr</a
+            >
+            CDNs. All loaded scripts use Subresource Integrity (SRI) hashes to
+            ensure they have not been tampered with. These CDNs may log standard
+            HTTP request metadata (IP address, User-Agent, requested file) in
+            accordance with their own privacy policies. No data from your files
+            is included in these requests.
+          </li>
+          <li>
+            <strong>OpenTimestamps:</strong> When creating a timestamp, the
+            SHA-256 hash of your file (not the file itself) is sent to
+            OpenTimestamps calendar servers to be anchored in the Bitcoin
+            blockchain. The original file content cannot be reconstructed from
+            this hash. Verification and upgrade requests similarly send only
+            hash data.
+          </li>
+          <li>
+            <strong>Service Worker:</strong> The application registers a Service
+            Worker for offline caching and security enforcement. The SW operates
+            entirely within your browser and does not communicate with any
+            external server beyond the initial page load.
+          </li>
+          <li>
+            <strong>GitHub Pages hosting:</strong> The application is hosted on
+            GitHub Pages. GitHub may collect standard server logs in accordance
+            with their
+            <a
+              href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
+              target="_blank"
+              rel="noopener"
+              >Privacy Statement</a
+            >.
+          </li>
+        </ul>
+
+        <h3>Third-Party Code</h3>
+        <p>
+          The following third-party libraries are loaded and executed client-side:
+        </p>
+        <ul>
+          <li>
+            <strong>jsPDF</strong> — PDF generation for certificates and reports
+          </li>
+          <li>
+            <strong>JSZip</strong> — DOCX file creation and extraction
+          </li>
+          <li>
+            <strong>PDF-lib</strong> — PDF manipulation for document watermarking
+          </li>
+          <li>
+            <strong>QRious</strong> — QR code generation for certificates
+          </li>
+          <li>
+            <strong>LameJS</strong> — MP3 encoding for audio processing
+          </li>
+          <li>
+            <strong>FFmpeg.wasm</strong> — File format conversion
+          </li>
+          <li>
+            <strong>OpenTimestamps.js</strong> — Timestamp creation and
+            verification
+          </li>
+        </ul>
+        <p>
+          All libraries are loaded with SRI integrity hashes. No library has
+          access to your files beyond what is explicitly passed to it by the
+          application code. All libraries execute in your browser's sandboxed
+          JavaScript environment.
+        </p>
+
+        <h3>Security</h3>
+        <ul>
+          <li>
+            <strong>Content Security Policy:</strong> The application enforces
+            a strict CSP that restricts script sources, prevents inline script
+            execution, and blocks connections to untrusted origins.
+          </li>
+          <li>
+            <strong>Subresource Integrity:</strong> All CDN-loaded scripts and
+            stylesheets are verified against SHA-384 integrity hashes before
+            execution.
+          </li>
+          <li>
+            <strong>Service Worker:</strong> The SW acts as a security layer,
+            blocking 68+ dangerous file extensions, enforcing a JavaScript file
+            whitelist, and detecting embedded URLs at multiple encoding levels.
+          </li>
+          <li>
+            <strong>Domain origin check:</strong> All JavaScript files verify
+            they are executing on the expected domain (redo-san.github.io,
+            localhost, or 127.0.0.1) and silently refuse to run on untrusted
+            domains.
+          </li>
+          <li>
+            <strong>File validation:</strong> Uploaded files are validated
+            against a 6-layer security pipeline including extension blocklist,
+            magic byte verification, content scanning, and document threat
+            detection.
+          </li>
+        </ul>
+
+        <h3>Children's Privacy</h3>
+        <p>
+          RedoSan Authenticity does not knowingly collect any personal
+          information from children. The application is not directed at children
+          under the age of 13. As no data is collected from any user at any age,
+          there is no risk of inadvertent data collection from minors.
+        </p>
+
+        <h3>Changes to This Policy</h3>
+        <p>
+          This privacy policy may be updated occasionally to reflect changes in
+          the application or legal requirements. The date of the last update
+          will always be displayed at the top of this page. Continued use of the
+          tool after any changes constitutes acceptance of the updated policy.
+        </p>
+
+        <h3>Contact</h3>
+        <p>
+          If you have questions about this privacy policy or the privacy
+          practices of RedoSan Authenticity, please open an issue on
+          <a
+            href="https://github.com/Redo-San/RedoSan-Authenticity/issues"
             target="_blank"
             rel="noopener"
-            >cdnjs</a
+            >GitHub</a
           >
-          and
-          <a href="https://www.jsdelivr.com" target="_blank" rel="noopener"
-            >jsdelivr</a
-          >) for PDF and DOCX export functionality. These CDNs may have their
-          own logging and analytics. No data from your files is shared with
-          these services.
-        </p>
-        <h3>Changes</h3>
-        <p>
-          This policy may be updated occasionally. Continued use of the tool
-          constitutes acceptance of the current policy.
+          or start a discussion in the
+          <a
+            href="https://github.com/Redo-San/RedoSan-Authenticity/discussions"
+            target="_blank"
+            rel="noopener"
+            >Discussions</a
+          >
+          section.
         </p>
       </div>
     </section>
