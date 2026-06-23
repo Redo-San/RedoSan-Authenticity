@@ -1,4 +1,18 @@
 (function () {
+  if (
+    typeof window != "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
+    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
+      window.location.href,
+    )
+  )
+    throw new Error(
+      "RedoSan Authenticity: This script is protected by GPL license.",
+    );
+})();
+window.__I18N_DATA = window.__I18N_DATA || {};
+window.__I18N_DATA.de = {
     "nav.about": "Über",
     "nav.privacy": "Datenschutz",
     "nav.contact": "Kontakt",

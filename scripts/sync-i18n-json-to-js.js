@@ -48,14 +48,25 @@ function jsEscape(str) {
 function rebuildJS(jsPath, flat) {
   var jsContent = fs.readFileSync(jsPath, "utf8");
 
-  // Extract header: everything up to and including the first '{' of the data object
-  var headerEnd = jsContent.indexOf("{");
-  if (headerEnd === -1) {
+  // Find the `=` that assigns the `__I18N_DATA.<lang>` object
+  var assignMarker = jsContent.lastIndexOf("__I18N_DATA.");
+  if (assignMarker === -1) {
+    console.error("Cannot parse " + jsPath + ": no __I18N_DATA. marker");
+    return false;
+  }
+  // From the assignment marker, find the `=` sign, then the opening `{`
+  var eqPos = jsContent.indexOf("=", assignMarker);
+  if (eqPos === -1) {
+    console.error("Cannot parse " + jsPath + ": no = after __I18N_DATA.");
+    return false;
+  }
+  var bracePos = jsContent.indexOf("{", eqPos);
+  if (bracePos === -1) {
     console.error("Cannot parse " + jsPath + ": no opening brace found");
     return false;
   }
-  // Scan back to the previous newline for clean split
-  var header = jsContent.slice(0, headerEnd + 1);
+  // Header: everything up to and including the data object's '{'
+  var header = jsContent.slice(0, bracePos + 1);
 
   // Extract footer: everything from and including the final '};'
   var footerStart = jsContent.lastIndexOf("};");
