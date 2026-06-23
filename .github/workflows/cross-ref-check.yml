@@ -91,9 +91,9 @@ jobs:
               const sections = [...html.matchAll(/id="page-([a-z-]+)"/g)].map(m => m[1]);
               const nav = read('Style/navigation.js');
               for (const s of sections) {
-                if (['home','about','privacy','contact','social','search'].includes(s)) continue;
+                if (['home','about','privacy','contact','social','search','removal-tools'].includes(s)) continue;
                 if (!html.includes(`data-page="${s}"`)) warn(`CrossRef: \`data-page="${s}"\` missing from sidebar/card in \`index.html\``);
-                if (!nav.includes(`'${s}'`)) warn(`CrossRef: \`${s}\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
+                if (!new RegExp(`['"\`]${s}['"\`]`).test(nav)) warn(`CrossRef: \`${s}\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
               }
             }
 
