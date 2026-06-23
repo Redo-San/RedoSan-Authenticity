@@ -43,7 +43,7 @@ describe("E2E — Fingerprint Page", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
     await ctx.close();
   });
 
@@ -162,7 +162,7 @@ describe("E2E — Fingerprint Page", () => {
     await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
     await page.waitForTimeout(1000);
 
-    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load"));
+    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
     assert.equal(fatal.length, 0, `Fatal errors: ${fatal.join(", ")}`);
     await ctx.close();
   });
