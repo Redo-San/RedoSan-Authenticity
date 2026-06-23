@@ -4372,10 +4372,10 @@
 
         <h3>Internationalization</h3>
         <p>
-          The interface is available in 8 languages: العربية (Arabic),
-          Deutsch (German), English, Español (Spanish), Français (French),
-          日本語 (Japanese), 한국어 (Korean), and 中文 (Chinese). Right-to-left
-          (RTL) layout is fully supported for Arabic.
+          The interface is available in 8 languages: العربية (Arabic), Deutsch
+          (German), English, Español (Spanish), Français (French), 日本語
+          (Japanese), 한국어 (Korean), and 中文 (Chinese). Right-to-left (RTL)
+          layout is fully supported for Arabic.
         </p>
 
         <h3>Version</h3>
@@ -4405,19 +4405,22 @@
 
         <h3>Our Commitment to Privacy</h3>
         <p>
-          <strong>RedoSan Authenticity is designed to be 100% private by
-          default.</strong> The application runs entirely client-side — in your
-          browser or via the Node.js CLI. No files, metadata, personal
-          information, or analytics data are ever collected, stored, or
-          transmitted to any server. Every watermark, fingerprint, timestamp,
-          and certificate is generated locally on your machine.
+          <strong
+            >RedoSan Authenticity is designed to be 100% private by
+            default.</strong
+          >
+          The application runs entirely client-side — in your browser or via the
+          Node.js CLI. No files, metadata, personal information, or analytics
+          data are ever collected, stored, or transmitted to any server. Every
+          watermark, fingerprint, timestamp, and certificate is generated
+          locally on your machine.
         </p>
 
         <h3>Data Collection</h3>
         <p>
           <strong>We collect nothing.</strong> RedoSan Authenticity has no
-          backend server, no database, no user accounts, no tracking cookies,
-          no analytics service, and no telemetry. The application is hosted
+          backend server, no database, no user accounts, no tracking cookies, no
+          analytics service, and no telemetry. The application is hosted
           statically on GitHub Pages and all processing occurs in your browser's
           JavaScript runtime or the Node.js CLI environment.
         </p>
@@ -4508,27 +4511,21 @@
 
         <h3>Third-Party Code</h3>
         <p>
-          The following third-party libraries are loaded and executed client-side:
+          The following third-party libraries are loaded and executed
+          client-side:
         </p>
         <ul>
           <li>
             <strong>jsPDF</strong> — PDF generation for certificates and reports
           </li>
+          <li><strong>JSZip</strong> — DOCX file creation and extraction</li>
           <li>
-            <strong>JSZip</strong> — DOCX file creation and extraction
+            <strong>PDF-lib</strong> — PDF manipulation for document
+            watermarking
           </li>
-          <li>
-            <strong>PDF-lib</strong> — PDF manipulation for document watermarking
-          </li>
-          <li>
-            <strong>QRious</strong> — QR code generation for certificates
-          </li>
-          <li>
-            <strong>LameJS</strong> — MP3 encoding for audio processing
-          </li>
-          <li>
-            <strong>FFmpeg.wasm</strong> — File format conversion
-          </li>
+          <li><strong>QRious</strong> — QR code generation for certificates</li>
+          <li><strong>LameJS</strong> — MP3 encoding for audio processing</li>
+          <li><strong>FFmpeg.wasm</strong> — File format conversion</li>
           <li>
             <strong>OpenTimestamps.js</strong> — Timestamp creation and
             verification
@@ -4544,8 +4541,8 @@
         <h3>Security</h3>
         <ul>
           <li>
-            <strong>Content Security Policy:</strong> The application enforces
-            a strict CSP that restricts script sources, prevents inline script
+            <strong>Content Security Policy:</strong> The application enforces a
+            strict CSP that restricts script sources, prevents inline script
             execution, and blocks connections to untrusted origins.
           </li>
           <li>
@@ -4908,23 +4905,23 @@
 
     <!-- Music player -->
     <div role="region" aria-label="Music player">
-    <audio
-      id="bg-music"
-      src="Style/RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <audio
+        id="bg-music"
+        src="Style/RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <script src="Style/music-player.js" defer></script>

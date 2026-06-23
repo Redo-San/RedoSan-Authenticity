@@ -490,12 +490,15 @@
 
           <h3>Our Commitment to Privacy</h3>
           <p>
-            <strong>RedoSan Authenticity is designed to be 100% private by
-            default.</strong> The application runs entirely client-side — in your
-            browser or via the Node.js CLI. No files, metadata, personal
-            information, or analytics data are ever collected, stored, or
-            transmitted to any server. Every watermark, fingerprint, timestamp,
-            and certificate is generated locally on your machine.
+            <strong
+              >RedoSan Authenticity is designed to be 100% private by
+              default.</strong
+            >
+            The application runs entirely client-side — in your browser or via
+            the Node.js CLI. No files, metadata, personal information, or
+            analytics data are ever collected, stored, or transmitted to any
+            server. Every watermark, fingerprint, timestamp, and certificate is
+            generated locally on your machine.
           </p>
 
           <h3>Data Collection</h3>
@@ -503,8 +506,8 @@
             <strong>We collect nothing.</strong> RedoSan Authenticity has no
             backend server, no database, no user accounts, no tracking cookies,
             no analytics service, and no telemetry. The application is hosted
-            statically on GitHub Pages and all processing occurs in your browser's
-            JavaScript runtime or the Node.js CLI environment.
+            statically on GitHub Pages and all processing occurs in your
+            browser's JavaScript runtime or the Node.js CLI environment.
           </p>
           <ul>
             <li>
@@ -516,9 +519,9 @@
               any tracking or analytics cookies
             </li>
             <li>
-              <strong>No localStorage:</strong> User preferences (theme, language)
-              are stored in your browser's localStorage for convenience only and
-              never transmitted
+              <strong>No localStorage:</strong> User preferences (theme,
+              language) are stored in your browser's localStorage for
+              convenience only and never transmitted
             </li>
             <li>
               <strong>No accounts:</strong> There is no registration,
@@ -534,15 +537,15 @@
             manipulation, metadata extraction, timestamp creation, certificate
             generation — happens entirely within the JavaScript runtime of your
             browser. The processed result is offered as a downloadable file or
-            displayed on screen. No data is written to any disk on the server, nor
-            is any data transmitted over the network (with the explicit exception
-            of OpenTimestamps, described below).
+            displayed on screen. No data is written to any disk on the server,
+            nor is any data transmitted over the network (with the explicit
+            exception of OpenTimestamps, described below).
           </p>
 
           <h3>Network Requests</h3>
           <p>
-            The application makes the following network requests, all of which are
-            necessary for functionality:
+            The application makes the following network requests, all of which
+            are necessary for functionality:
           </p>
           <ul>
             <li>
@@ -559,10 +562,10 @@
                 >jsdelivr</a
               >
               CDNs. All loaded scripts use Subresource Integrity (SRI) hashes to
-              ensure they have not been tampered with. These CDNs may log standard
-              HTTP request metadata (IP address, User-Agent, requested file) in
-              accordance with their own privacy policies. No data from your files
-              is included in these requests.
+              ensure they have not been tampered with. These CDNs may log
+              standard HTTP request metadata (IP address, User-Agent, requested
+              file) in accordance with their own privacy policies. No data from
+              your files is included in these requests.
             </li>
             <li>
               <strong>OpenTimestamps:</strong> When creating a timestamp, the
@@ -573,15 +576,15 @@
               hash data.
             </li>
             <li>
-              <strong>Service Worker:</strong> The application registers a Service
-              Worker for offline caching and security enforcement. The SW operates
-              entirely within your browser and does not communicate with any
-              external server beyond the initial page load.
+              <strong>Service Worker:</strong> The application registers a
+              Service Worker for offline caching and security enforcement. The
+              SW operates entirely within your browser and does not communicate
+              with any external server beyond the initial page load.
             </li>
             <li>
-              <strong>GitHub Pages hosting:</strong> The application is hosted on
-              GitHub Pages. GitHub may collect standard server logs in accordance
-              with their
+              <strong>GitHub Pages hosting:</strong> The application is hosted
+              on GitHub Pages. GitHub may collect standard server logs in
+              accordance with their
               <a
                 href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
                 target="_blank"
@@ -593,27 +596,24 @@
 
           <h3>Third-Party Code</h3>
           <p>
-            The following third-party libraries are loaded and executed client-side:
+            The following third-party libraries are loaded and executed
+            client-side:
           </p>
           <ul>
             <li>
-              <strong>jsPDF</strong> — PDF generation for certificates and reports
+              <strong>jsPDF</strong> — PDF generation for certificates and
+              reports
             </li>
+            <li><strong>JSZip</strong> — DOCX file creation and extraction</li>
             <li>
-              <strong>JSZip</strong> — DOCX file creation and extraction
-            </li>
-            <li>
-              <strong>PDF-lib</strong> — PDF manipulation for document watermarking
+              <strong>PDF-lib</strong> — PDF manipulation for document
+              watermarking
             </li>
             <li>
               <strong>QRious</strong> — QR code generation for certificates
             </li>
-            <li>
-              <strong>LameJS</strong> — MP3 encoding for audio processing
-            </li>
-            <li>
-              <strong>FFmpeg.wasm</strong> — File format conversion
-            </li>
+            <li><strong>LameJS</strong> — MP3 encoding for audio processing</li>
+            <li><strong>FFmpeg.wasm</strong> — File format conversion</li>
             <li>
               <strong>OpenTimestamps.js</strong> — Timestamp creation and
               verification
@@ -640,8 +640,9 @@
             </li>
             <li>
               <strong>Service Worker:</strong> The SW acts as a security layer,
-              blocking 68+ dangerous file extensions, enforcing a JavaScript file
-              whitelist, and detecting embedded URLs at multiple encoding levels.
+              blocking 68+ dangerous file extensions, enforcing a JavaScript
+              file whitelist, and detecting embedded URLs at multiple encoding
+              levels.
             </li>
             <li>
               <strong>Domain origin check:</strong> All JavaScript files verify
@@ -660,17 +661,19 @@
           <h3>Children's Privacy</h3>
           <p>
             RedoSan Authenticity does not knowingly collect any personal
-            information from children. The application is not directed at children
-            under the age of 13. As no data is collected from any user at any age,
-            there is no risk of inadvertent data collection from minors.
+            information from children. The application is not directed at
+            children under the age of 13. As no data is collected from any user
+            at any age, there is no risk of inadvertent data collection from
+            minors.
           </p>
 
           <h3>Changes to This Policy</h3>
           <p>
-            This privacy policy may be updated occasionally to reflect changes in
-            the application or legal requirements. The date of the last update
-            will always be displayed at the top of this page. Continued use of the
-            tool after any changes constitutes acceptance of the updated policy.
+            This privacy policy may be updated occasionally to reflect changes
+            in the application or legal requirements. The date of the last
+            update will always be displayed at the top of this page. Continued
+            use of the tool after any changes constitutes acceptance of the
+            updated policy.
           </p>
 
           <h3>Contact</h3>
@@ -1056,24 +1059,24 @@
     </div>
 
     <div role="region" aria-label="Music player">
-    <!-- Music player -->
-    <audio
-      id="bg-music"
-      src="../../RedoSan_Music.mp3"
-      loop
-      preload="auto"
-    ></audio>
-    <button id="music-btn" class="music-btn" aria-label="Toggle Music">
-      &#x1F3B5;
-    </button>
-    <div
-      id="music-credit"
-      class="music-credit"
-      role="note"
-      aria-label="Music credit"
-    >
-      RedoSan
-    </div>
+      <!-- Music player -->
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+      ></audio>
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+        &#x1F3B5;
+      </button>
+      <div
+        id="music-credit"
+        class="music-credit"
+        role="note"
+        aria-label="Music credit"
+      >
+        RedoSan
+      </div>
     </div>
 
     <!-- MPA Router: seamless AJAX navigation for continuous audio -->
