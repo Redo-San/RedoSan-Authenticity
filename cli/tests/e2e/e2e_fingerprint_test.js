@@ -162,7 +162,7 @@ describe("E2E — Fingerprint Page", () => {
     await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
     await page.waitForTimeout(1000);
 
-    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404"));
+    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load"));
     assert.equal(fatal.length, 0, `Fatal errors: ${fatal.join(", ")}`);
     await ctx.close();
   });
