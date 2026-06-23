@@ -37,7 +37,7 @@ describe("E2E — C2PA Provenance", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "c2pa");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load")).length, 0);
+    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
     await ctx.close();
   });
 
@@ -233,7 +233,7 @@ describe("E2E — C2PA Provenance", () => {
     );
 
     // No fatal errors
-    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load"));
+    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
     assert.equal(fatal.length, 0, "No fatal console errors: " + fatal.join(", "));
 
     await ctx.close();

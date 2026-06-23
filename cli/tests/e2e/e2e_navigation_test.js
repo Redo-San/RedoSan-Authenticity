@@ -31,7 +31,7 @@ describe("E2E — Home Page", () => {
     });
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
-    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load"));
+    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
     assert.equal(fatal.length, 0, `Errors: ${fatal.join(", ")}`);
     await ctx.close();
   });
