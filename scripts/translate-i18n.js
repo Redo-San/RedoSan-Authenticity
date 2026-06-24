@@ -9,9 +9,10 @@
  *   node scripts/translate-i18n.js --apply --dry-run  # show what would be sent to AI
  *
  * Environment variables (required for --apply):
- *   ANTHROPIC_API_KEY, OPENAI_API_KEY, GROQ_API_KEY, or GOOGLE_API_KEY
+ *   ANTHROPIC_API_KEY, OPENAI_API_KEY, GROQ_API_KEY, GOOGLE_API_KEY, or GITHUB_TOKEN
  *
- * Default model: llama-3.3-70b-versatile (Groq - free, no credit card required)
+ * Fallback order: AI API (GitHub Models/OpenAI/Anthropic/Groq/Google) →
+ *   LibreTranslate (multiple public instances) → xnx3 (last resort)
  */
 
 var fs = require("node:fs");
@@ -180,6 +181,91 @@ async function translateViaXnx3(texts, targetLang) {
   throw lastError;
 }
 
+var LIBRETRANSLATE_LANG_MAP = {
+  ar: "ar",
+  fr: "fr",
+  de: "de",
+  es: "es",
+  zh: "zh",
+  ja: "ja",
+  ko: "ko",
+};
+
+var LIBRETRANSLATE_INSTANCES = [
+  { url: "https://translate.terraprint.co", needsKey: false },
+  { url: "https://trans.zillyhuhn.com", needsKey: false },
+  { url: "https://translate.lotigara.ru", needsKey: false },
+  { url: "https://translate.mstdn.social", needsKey: false },
+  { url: "https://api.translate.zvo.cn", needsKey: false },
+];
+
+var LIBRETRANSLATE_OFFICIAL = {
+  url: "https://libretranslate.com",
+  needsKey: true,
+};
+
+/**
+ * Translate via LibreTranslate API — tries multiple public instances.
+ * Falls through each instance on failure, then throws.
+ */
+async function translateViaLibreTranslate(texts, targetLang) {
+  var langCode = LIBRETRANSLATE_LANG_MAP[targetLang];
+  if (!langCode) throw new Error("Unsupported language: " + targetLang);
+
+  var keys = Object.keys(texts);
+  var values = keys.map(function (k) {
+    return texts[k];
+  });
+  var apiKey = process.env.LIBRETRANSLATE_API_KEY;
+
+  // Build list: official instance first if key available, then public instances
+  var instances = [];
+  if (apiKey) instances.push(LIBRETRANSLATE_OFFICIAL);
+  instances.push.apply(instances, LIBRETRANSLATE_INSTANCES);
+
+  for (var i = 0; i < instances.length; i++) {
+    var instance = instances[i];
+    var lastError;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        var body = { q: values, source: "en", target: langCode };
+        if (instance.needsKey && apiKey) body.api_key = apiKey;
+
+        var resp = await fetch(instance.url + "/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (!resp.ok) {
+          var respText = await resp.text();
+          throw new Error(
+            instance.url + " HTTP " + resp.status + ": " + respText,
+          );
+        }
+
+        var data = await resp.json();
+        var translatedTexts = Array.isArray(data.translatedText)
+          ? data.translatedText
+          : [data.translatedText];
+        var translated = {};
+        for (var j = 0; j < keys.length; j++) {
+          translated[keys[j]] = translatedTexts[j] || texts[keys[j]];
+        }
+        return translated;
+      } catch (error) {
+        lastError = error;
+        if (attempt < 1)
+          await new Promise(function (r) {
+            setTimeout(r, 3000);
+          });
+      }
+    }
+    console.warn("  LibreTranslate " + instance.url + " failed: " + lastError.message);
+  }
+  throw new Error("All LibreTranslate instances failed");
+}
+
 /**
  *
  * @param texts
@@ -196,7 +282,7 @@ async function translateViaAI(texts, targetLang) {
   var apiBase =
     process.env.OPENAI_API_BASE || "https://models.inference.ai.azure.com";
 
-  if (!apiKey) return translateViaXnx3(texts, targetLang);
+  if (!apiKey) return translateViaLibreTranslate(texts, targetLang);
 
   var provider, endpoint, headers;
   if (process.env.ANTHROPIC_API_KEY) {
@@ -360,35 +446,50 @@ async function main() {
           " keys)",
       );
     } catch (error) {
-      if (
-        process.env.GITHUB_TOKEN &&
-        !process.env.OPENAI_API_KEY &&
-        !process.env.ANTHROPIC_API_KEY &&
-        !process.env.GROQ_API_KEY &&
-        !process.env.GOOGLE_API_KEY
-      ) {
-        console.warn("  GitHub Models failed, falling back to xnx3...");
+      console.warn(
+        "  AI translation failed (" +
+          error.message +
+          "), trying LibreTranslate fallback...",
+      );
+      try {
+        translated = await translateViaLibreTranslate(info.flat, lang);
+        merged = deepMerge(info.target, unflatten(translated));
+        fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + "\n");
+        console.warn(
+          "  ✓ " +
+            lang +
+            " updated via LibreTranslate (" +
+            Object.keys(translated).length +
+            " keys)",
+        );
+      } catch (error_) {
+        console.warn(
+          "  LibreTranslate failed (" +
+            error_.message +
+            "), trying xnx3 fallback...",
+        );
         try {
           translated = await translateViaXnx3(info.flat, lang);
           merged = deepMerge(info.target, unflatten(translated));
-          fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + "\n");
-          console.log(
+          fs.writeFileSync(
+            info.file,
+            JSON.stringify(merged, null, 2) + "\n",
+          );
+          console.warn(
             "  ✓ " +
               lang +
               " updated via xnx3 fallback (" +
               Object.keys(translated).length +
               " keys)",
           );
-        } catch (error_) {
+        } catch (error__) {
           console.error(
             "  ✗ " +
               lang +
-              " failed (both GitHub Models and xnx3): " +
-              error_.message,
+              " failed (all backends exhausted): " +
+              error__.message,
           );
         }
-      } else {
-        console.error("  ✗ " + lang + " failed: " + error.message);
       }
     }
   }
