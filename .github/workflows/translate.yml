@@ -10,14 +10,17 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   translate:
     if: github.actor != 'github-actions[bot]'
 
     runs-on: ubuntu-latest
-    permissions: {}
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
@@ -26,7 +29,12 @@ jobs:
             api.github.com:443
             api.translate.zvo.cn:443
             github.com:443
+            libretranslate.com:443
             models.inference.ai.azure.com:443
+            translate.lotigara.ru:443
+            translate.mstdn.social:443
+            translate.terraprint.co:443
+            trans.zillyhuhn.com:443
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           persist-credentials: false
