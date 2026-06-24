@@ -455,7 +455,7 @@ async function main() {
         translated = await translateViaLibreTranslate(info.flat, lang);
         merged = deepMerge(info.target, unflatten(translated));
         fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + "\n");
-        console.log(
+        console.warn(
           "  ✓ " +
             lang +
             " updated via LibreTranslate (" +
@@ -475,7 +475,7 @@ async function main() {
             info.file,
             JSON.stringify(merged, null, 2) + "\n",
           );
-          console.log(
+          console.warn(
             "  ✓ " +
               lang +
               " updated via xnx3 fallback (" +
