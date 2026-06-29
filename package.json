@@ -131,7 +131,7 @@
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^40.0.0",
     "typedoc": "^0.28.19",
-    "workbox-cli": "^7.3.0"
+    "workbox-cli": "^7.4.1"
   },
   "lint-staged": {
     "*.js": "eslint --fix",
