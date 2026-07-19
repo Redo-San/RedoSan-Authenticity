@@ -1652,42 +1652,6 @@ async function whirlpool(data) {
     })
     .join("");
 }
-/**
- *
- * @param data
- */
-async function whirlpool(data) {
-  var bits = data.length * 8,
-    _wc = 0;
-  var padLen = (32 - ((data.length + 1) % 64) + 64) % 64;
-  var ml = data.length + 1 + padLen + 32;
-  var m = new Uint8Array(ml);
-  m.set(data);
-  m[data.length] = 0x80;
-  var lenOff = ml - 32;
-  for (var i = 0; i < 24; i++) m[lenOff + i] = 0;
-  m[lenOff + 24] = (bits >>> 56) & 0xff;
-  m[lenOff + 25] = (bits >>> 48) & 0xff;
-  m[lenOff + 26] = (bits >>> 40) & 0xff;
-  m[lenOff + 27] = (bits >>> 32) & 0xff;
-  m[lenOff + 28] = (bits >>> 24) & 0xff;
-  m[lenOff + 29] = (bits >>> 16) & 0xff;
-  m[lenOff + 30] = (bits >>> 8) & 0xff;
-  m[lenOff + 31] = bits & 0xff;
-  var H = new Uint8Array(64);
-  for (var off = 0; off < ml; off += 64) {
-    if (++_wc % 4000 === 0) await maybeYield();
-    var blk = m.subarray(off, off + 64);
-    var K = new Uint8Array(H);
-    var enc = wp_cipher(blk, K);
-    for (var i = 0; i < 64; i++) H[i] ^= blk[i] ^ enc[i];
-  }
-  return Array.from(H)
-    .map(function (b) {
-      return b.toString(16).padStart(2, "0");
-    })
-    .join("");
-}
 
 // ── Full fingerprint ──
 /**
