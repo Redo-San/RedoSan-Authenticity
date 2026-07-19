@@ -55,4 +55,14 @@ opencode.json
 repomix-output.xml
 repomix.config.json
 
+# Face Biometric (local-only, not committed)
+Face_Biometric/
+Style/pages/face-biometric/
+cli/tests/face_engine_test.js
+cli/tests/face_registry_test.js
+cli/tests/face_test_img.jpg
+cli/tests/face_test_real.mjs
+cli/tests/face_test_result.png
+cli/tests/face_ui_test.js
+
 
