@@ -324,8 +324,7 @@ self.addEventListener("fetch", function (event) {
   // 2. For same-origin requests: check local whitelists (JS/CSS/HTML/YML)
   if (url.origin === self.location.origin) {
     // Unknown .js files not in JS_WHITELIST
-    if (lower.endsWith(".js"))
-      isBlocked = isBlocked || !JS_WHITELIST.has(path);
+    if (lower.endsWith(".js")) isBlocked = isBlocked || !JS_WHITELIST.has(path);
     // Unknown .css files not in CSS_WHITELIST
     if (lower.endsWith(".css"))
       isBlocked = isBlocked || !CSS_WHITELIST.has(path);

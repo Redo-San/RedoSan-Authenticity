@@ -632,9 +632,11 @@ function didClearKeys() {
  * @param stored
  */
 function _jwkBase64urlDecode(str) {
-  str = str.replace(/-/g, '+').replace(/_/g, '/');
-  while (str.length % 4) str += '=';
-  return Uint8Array.from(atob(str), function (c) { return c.charCodeAt(0); });
+  str = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (str.length % 4) str += "=";
+  return Uint8Array.from(atob(str), function (c) {
+    return c.charCodeAt(0);
+  });
 }
 
 async function didImportSignKey(stored) {
@@ -703,7 +705,13 @@ async function didImportSignKey(stored) {
     var eBytes = _jwkBase64urlDecode(stored.privJwk.e);
     var publicKey = await crypto.subtle.importKey(
       "jwk",
-      { kty: stored.privJwk.kty, n: stored.privJwk.n, e: stored.privJwk.e, alg: stored.privJwk.alg, ext: true },
+      {
+        kty: stored.privJwk.kty,
+        n: stored.privJwk.n,
+        e: stored.privJwk.e,
+        alg: stored.privJwk.alg,
+        ext: true,
+      },
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       true,
       ["verify"],

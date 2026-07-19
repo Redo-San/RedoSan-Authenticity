@@ -344,7 +344,11 @@ async function downloadCertPDF(data) {
       y += 4;
     }
     if (data.faceBiometric.did) {
-      doc.text("DID: " + data.faceBiometric.did.substring(0, 60) + "...", margin, y);
+      doc.text(
+        "DID: " + data.faceBiometric.did.substring(0, 60) + "...",
+        margin,
+        y,
+      );
       y += 4;
     }
     doc.text("Exported: " + data.faceBiometric.exportedAt, margin, y);

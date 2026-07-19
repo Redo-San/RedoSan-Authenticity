@@ -51,4 +51,8 @@ skills/
 opencode.json
 .opencode/
 
+# Repomix output (local-only)
+repomix-output.xml
+repomix.config.json
+
 

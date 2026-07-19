@@ -215,9 +215,12 @@ function showPage(name) {
     var m = document.querySelector('meta[name="description"]');
     if (m) m.setAttribute("content", PAGE_DESCS[name]);
   }
-  if (name === "timestamp" && typeof switchOtsTab === "function") switchOtsTab("create");
-  if (name === "certificate" && typeof initCertPhoneCode === "function") initCertPhoneCode();
-  if (name === "id_forge" && typeof idForgeShowInfo === "function") idForgeShowInfo();
+  if (name === "timestamp" && typeof switchOtsTab === "function")
+    switchOtsTab("create");
+  if (name === "certificate" && typeof initCertPhoneCode === "function")
+    initCertPhoneCode();
+  if (name === "id_forge" && typeof idForgeShowInfo === "function")
+    idForgeShowInfo();
   var isProfessional =
     document.getElementById("mainNav") &&
     document.getElementById("mainNav").style.display !== "none";

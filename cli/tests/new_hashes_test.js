@@ -12,11 +12,19 @@ globalThis.document = {
   querySelector: () => null,
   querySelectorAll: () => [],
 };
-globalThis.location = { protocol: "file:", href: "file:///test/hashing.js", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/hashing.js",
+  hostname: "localhost",
+  origin: "null",
+};
 
 const origLog = console.log;
 console.log = () => {};
-const hashSrc = fs.readFileSync(path.join(__dirname, "../../Fingerprint/hashing.js"), "utf8");
+const hashSrc = fs.readFileSync(
+  path.join(__dirname, "../../Fingerprint/hashing.js"),
+  "utf8",
+);
 try {
   vm.runInThisContext(hashSrc, { filename: "hashing.js" });
 } finally {
@@ -24,7 +32,7 @@ try {
 }
 
 function hex(s) {
-  return new Uint8Array(s.match(/../g).map(b => parseInt(b, 16)));
+  return new Uint8Array(s.match(/../g).map((b) => parseInt(b, 16)));
 }
 
 describe("New hash algorithms", () => {
@@ -77,7 +85,10 @@ describe("New hash algorithms", () => {
     const data = new TextEncoder().encode("abc");
     const result = await globalThis.sha512_224(data);
     const crypto = require("crypto");
-    const expected = crypto.createHash("sha512-224").update("abc").digest("hex");
+    const expected = crypto
+      .createHash("sha512-224")
+      .update("abc")
+      .digest("hex");
     assert.equal(result, expected);
   });
 
@@ -85,7 +96,10 @@ describe("New hash algorithms", () => {
     const data = new TextEncoder().encode("abc");
     const result = await globalThis.sha512_256(data);
     const crypto = require("crypto");
-    const expected = crypto.createHash("sha512-256").update("abc").digest("hex");
+    const expected = crypto
+      .createHash("sha512-256")
+      .update("abc")
+      .digest("hex");
     assert.equal(result, expected);
   });
 
@@ -106,7 +120,9 @@ describe("New hash algorithms", () => {
   });
 
   it("SHAKE128 real file (binary data)", async () => {
-    const data = new Uint8Array([0x00, 0xFF, 0xAB, 0xCD, 0x12, 0x34, 0x56, 0x78, 0x9A]);
+    const data = new Uint8Array([
+      0x00, 0xff, 0xab, 0xcd, 0x12, 0x34, 0x56, 0x78, 0x9a,
+    ]);
     const result = await globalThis.shake128(data);
     assert.ok(result);
     assert.equal(result.length, 64);
@@ -114,7 +130,9 @@ describe("New hash algorithms", () => {
   });
 
   it("SHAKE256 real file (binary data)", async () => {
-    const data = new Uint8Array([0x00, 0xFF, 0xAB, 0xCD, 0x12, 0x34, 0x56, 0x78, 0x9A]);
+    const data = new Uint8Array([
+      0x00, 0xff, 0xab, 0xcd, 0x12, 0x34, 0x56, 0x78, 0x9a,
+    ]);
     const result = await globalThis.shake256(data);
     assert.ok(result);
     assert.equal(result.length, 128);
