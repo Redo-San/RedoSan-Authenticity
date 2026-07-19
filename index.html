@@ -208,6 +208,12 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
       integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
       crossorigin="anonymous"
+      defer
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/dist/human.js"
+      crossorigin="anonymous"
+      defer
     ></script>
   </head>
   <body>
@@ -731,6 +737,9 @@
         data-i18n="sidebar.pixel_injection"
         >Pixel Injection</a
       >
+      <a href="#" data-page="face-biometric" data-i18n="sidebar.face_biometric"
+        >Face Biometric</a
+      >
       <a href="#" data-page="forensic" data-i18n="sidebar.forensic"
         >Forensic Analyzer</a
       >
@@ -794,6 +803,13 @@
               <h2 data-i18n="card.pixel_injection.title">Pixel Injection</h2>
               <p data-i18n="card.pixel_injection.desc">
                 20+ advanced pixel injection algorithms
+              </p>
+            </a>
+            <a href="#" data-page="face-biometric" class="card">
+              <div class="icon">👤</div>
+              <h2 data-i18n="card.face_biometric.title">Face Biometric</h2>
+              <p data-i18n="card.face_biometric.desc">
+                Register &amp; verify face descriptors for visual rights
               </p>
             </a>
             <a href="#" data-page="forensic" class="card">
@@ -1468,6 +1484,15 @@
             Generate Fingerprint
           </button>
           <div class="spinner" id="fp-spinner"></div>
+          <div id="fp-progress" style="display: none; margin-top: 12px">
+            <div class="fp-progress">
+              <div class="fp-progress-track">
+                <div id="fp-progress-fill" class="fp-progress-fill"></div>
+              </div>
+              <span id="fp-progress-pct" class="fp-progress-pct">0%</span>
+            </div>
+            <div id="fp-progress-label" class="fp-progress-label"></div>
+          </div>
         </div>
         <div id="fp-result" style="display: none; margin-top: 16px">
           <div class="result" id="fp-output"></div>
@@ -1757,6 +1782,258 @@
           <div
             id="pi-download"
             style="margin-top: 12px; text-align: center"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Face Biometric -->
+      <section id="page-face-biometric" class="page">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="#"
+            onclick="showPage('home');return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="face.heading">
+            Face Biometric Rights
+          </h2>
+        </div>
+        <div class="card-form">
+          <div style="display: flex; gap: 8px; margin-bottom: 20px">
+            <button
+              class="btn tab-btn face-tab-btn active"
+              data-face-tab="register"
+              onclick="switchFaceTab('register')"
+              data-i18n="face.register_tab"
+            >
+              Register
+            </button>
+            <button
+              class="btn tab-btn face-tab-btn"
+              data-face-tab="verify"
+              onclick="switchFaceTab('verify')"
+              data-i18n="face.verify_tab"
+            >
+              Verify
+            </button>
+            <button
+              class="btn tab-btn face-tab-btn"
+              data-face-tab="manage"
+              onclick="switchFaceTab('manage')"
+              data-i18n="face.manage_tab"
+            >
+              Manage
+            </button>
+          </div>
+          <p
+            style="
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              margin-bottom: 16px;
+            "
+            data-i18n="face.privacy_note"
+          >
+            🔒 All face processing is 100% local. Data never leaves your device.
+          </p>
+
+          <div id="face-register" class="face-tab">
+            <div class="form-group">
+              <label for="face-image" data-i18n="face.image_label">Photo</label>
+              <input
+                type="file"
+                id="face-image"
+                accept="image/png,image/jpeg"
+              />
+            </div>
+            <div class="form-group">
+              <label for="face-label" data-i18n="face.label_label"
+                >Name / Label</label
+              >
+              <input
+                type="text"
+                id="face-label"
+                placeholder="e.g. Artist Name"
+              />
+            </div>
+            <button
+              class="btn"
+              onclick="handleFaceDetect()"
+              data-i18n="face.detect_btn"
+            >
+              Detect Face
+            </button>
+            <button
+              class="btn"
+              onclick="handleFaceRegister()"
+              data-i18n="face.register_btn"
+            >
+              Register Face
+            </button>
+            <div
+              style="
+                display: flex;
+                gap: 8px;
+                margin-top: 8px;
+                align-items: center;
+              "
+            >
+              <button
+                class="btn btn-sm"
+                onclick="handleFaceSignWithDid()"
+                data-i18n="face.sign_btn"
+              >
+                Sign with DID
+              </button>
+              <span
+                id="face-did-status"
+                style="font-size: 0.75rem; color: var(--text-muted)"
+              ></span>
+            </div>
+            <div
+              id="face-did-import"
+              class="form-group"
+              style="display: none; margin-top: 10px"
+            >
+              <label>Upload DID JSON (DID page → Download → JSON)</label>
+              <input
+                type="file"
+                id="face-did-import-file"
+                accept=".json"
+                style="padding: 8px 10px; font-size: 0.82rem"
+              />
+              <div style="display: flex; gap: 8px; margin-top: 6px">
+                <button class="btn btn-sm" onclick="handleFaceImportDid()">
+                  Import &amp; Sign
+                </button>
+                <button
+                  class="btn btn-sm"
+                  onclick="document.getElementById('face-did-import').style.display='none'"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            <div id="face-did-result" style="display: none"></div>
+            <canvas
+              id="face-preview"
+              style="
+                max-width: 100%;
+                margin-top: 12px;
+                border-radius: 8px;
+                display: block;
+              "
+            ></canvas>
+          </div>
+
+          <div id="face-verify" class="face-tab" style="display: none">
+            <div class="form-group">
+              <label for="face-image-verify" data-i18n="face.image_verify_label"
+                >Photo to Verify</label
+              >
+              <input
+                type="file"
+                id="face-image-verify"
+                accept="image/png,image/jpeg"
+              />
+            </div>
+            <div class="form-group">
+              <label for="face-threshold" data-i18n="face.threshold_label"
+                >Match threshold</label
+              >
+              <select id="face-threshold">
+                <option value="0.6">Strict (0.6)</option>
+                <option value="0.5" selected>Normal (0.5)</option>
+                <option value="0.4">Loose (0.4)</option>
+              </select>
+            </div>
+            <button
+              class="btn"
+              onclick="handleFaceDetectVerify()"
+              data-i18n="face.detect_btn"
+            >
+              Detect Face
+            </button>
+            <button
+              class="btn"
+              onclick="handleFaceVerify()"
+              data-i18n="face.verify_btn"
+            >
+              Verify Identity
+            </button>
+            <canvas
+              id="face-preview-verify"
+              style="
+                max-width: 100%;
+                margin-top: 12px;
+                border-radius: 8px;
+                display: block;
+              "
+            ></canvas>
+            <div
+              id="face-verify-result"
+              class="result"
+              style="margin-top: 12px"
+            ></div>
+            <div
+              style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap"
+            >
+              <button
+                class="btn btn-sm"
+                onclick="handleFaceExportC2pa()"
+                data-i18n="face.export_c2pa_btn"
+              >
+                Export C2PA Report
+              </button>
+              <button
+                class="btn btn-sm"
+                onclick="handleFaceSetCertData()"
+                data-i18n="face.cert_btn"
+              >
+                Use in Certificate
+              </button>
+            </div>
+          </div>
+
+          <div id="face-manage" class="face-tab" style="display: none">
+            <p style="margin-bottom: 12px">
+              <strong id="face-count" data-i18n="face.count_label"
+                >Registered faces: 0</strong
+              >
+            </p>
+            <div id="face-list" style="margin-bottom: 12px"></div>
+            <button
+              class="btn"
+              onclick="listRegisteredFaces()"
+              data-i18n="face.refresh_btn"
+            >
+              Refresh List
+            </button>
+            <button
+              class="btn"
+              onclick="handleFaceClear()"
+              data-i18n="face.clear_btn"
+            >
+              Clear All
+            </button>
+          </div>
+
+          <div class="spinner" id="face-spinner" style="display: none"></div>
+          <div
+            id="face-status"
+            style="
+              margin-top: 12px;
+              color: var(--text-muted);
+              font-size: 0.85rem;
+            "
           ></div>
         </div>
       </section>
@@ -4992,6 +5269,9 @@
     <script src="Metadata/metadata.js" defer></script>
     <script src="Timestamp/timestamp.js" defer></script>
     <script src="Decentralized_Identity_DID/did.js" defer></script>
+    <script src="Face_Biometric/face_engine.js" defer></script>
+    <script src="Face_Biometric/face_registry.js" defer></script>
+    <script src="Face_Biometric/face_ui.js" defer></script>
     <script src="Style/simplified_countries.js" defer></script>
     <script src="Style/simplified_helpers.js" defer></script>
     <script src="Style/simplified_renderers.js" defer></script>

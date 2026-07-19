@@ -36,6 +36,7 @@ var PAGE_NAMES = new Set([
   "converter",
   "did",
   "document-watermark",
+  "face-biometric",
   "fingerprint",
   "forensic",
   "home",

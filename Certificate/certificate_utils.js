@@ -166,6 +166,9 @@ function buildQRVerificationJSON(data) {
   } else if (data.didIdentity) {
     qr.did = data.didIdentity.substring(0, 60);
   }
+  if (data.faceBiometric && data.faceBiometric.detected) {
+    qr.fc = data.faceBiometric.faceCount;
+  }
   qr.wm = data.watermark ? 1 : 0;
   qr.pi = data.pixelInjection ? 1 : 0;
   qr.ts = data.timestamp ? 1 : 0;

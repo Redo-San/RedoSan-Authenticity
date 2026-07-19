@@ -326,6 +326,10 @@ async function handleReadMetadata() {
 
 // ── Multi-format download for metadata ──
 
+/**
+ *
+ * @param format
+ */
 function downloadMetadata(format) {
   closeDownloadModal();
   var r = getResult("mdResult");
@@ -380,6 +384,10 @@ function downloadMetadata(format) {
   downloadBlobSimple(blob, name + ".metadata." + ext);
 }
 
+/**
+ *
+ * @param r
+ */
 function mdToCSV(r) {
   var lines = ["Property,Value"];
   var add = function (k, v) {
@@ -397,6 +405,10 @@ function mdToCSV(r) {
   return lines.join("\n");
 }
 
+/**
+ *
+ * @param v
+ */
 function _csvEsc(v) {
   if (v == null) return "";
   v = String(v);
@@ -405,6 +417,10 @@ function _csvEsc(v) {
     : v;
 }
 
+/**
+ *
+ * @param r
+ */
 function mdToTXT(r) {
   var lines = [];
   var add = function (k, v) {
@@ -422,6 +438,10 @@ function mdToTXT(r) {
   return lines.join("\n");
 }
 
+/**
+ *
+ * @param r
+ */
 function mdToXML(r) {
   var x = '<?xml version="1.0" encoding="UTF-8"?>\n<metadata>\n';
   x += "  <file>" + _xmlEsc(r.file) + "</file>\n";
@@ -450,6 +470,10 @@ function mdToXML(r) {
   return x;
 }
 
+/**
+ *
+ * @param v
+ */
 function _xmlEsc(v) {
   if (v == null) return "";
   return String(v)
@@ -459,6 +483,10 @@ function _xmlEsc(v) {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ *
+ * @param r
+ */
 function mdToHTML(r) {
   var h =
     '<!doctype html><html><head><meta charset="UTF-8"><title>Metadata Report</title>';
@@ -482,6 +510,11 @@ function mdToHTML(r) {
   return h;
 }
 
+/**
+ *
+ * @param r
+ * @param name
+ */
 function mdToPDF(r, name) {
   var doc = new jspdf.jsPDF();
   var y = 20;
@@ -521,6 +554,11 @@ function mdToPDF(r, name) {
   downloadBlobSimple(blob, name + ".metadata.pdf");
 }
 
+/**
+ *
+ * @param r
+ * @param name
+ */
 function mdToDOCX(r, name) {
   var doc = new docx.Document({
     sections: [

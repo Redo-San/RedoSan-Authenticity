@@ -78,6 +78,7 @@ var PAGE_TITLES = {
   home: "RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool",
   watermark: "Digital Watermark — RedoSan Authenticity",
   "audio-watermark": "Audio Watermark — RedoSan Authenticity",
+  "face-biometric": "Face Biometric Rights — RedoSan Authenticity",
   "pixel-injection": "Pixel Injection — RedoSan Authenticity",
   forensic: "Forensic Analyzer — RedoSan Authenticity",
   fingerprint: "Fingerprint &amp; Image Hashing — RedoSan Authenticity",
@@ -101,6 +102,8 @@ var PAGE_DESCS = {
     "Embed and extract digital watermarks in images using LSB, DCT, DWT, and neural-style algorithms. Free online tool.",
   "audio-watermark":
     "Embed and extract hidden messages in WAV audio files using LSB, Echo Hiding, and QIM algorithms. 100% browser-based.",
+  "face-biometric":
+    "Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded.",
   "pixel-injection":
     "Advanced pixel injection for steganography with 20+ algorithms including enhanced LSB, DCT, and DWT. Free online tool.",
   forensic:
@@ -134,6 +137,7 @@ var PAGE_NAMES = new Set([
   "about",
   "audio-watermark",
   "c2pa",
+  "face-biometric",
   "certificate",
   "contact",
   "converter",
@@ -211,9 +215,12 @@ function showPage(name) {
     var m = document.querySelector('meta[name="description"]');
     if (m) m.setAttribute("content", PAGE_DESCS[name]);
   }
-  if (name === "timestamp" && typeof switchOtsTab === "function") switchOtsTab("create");
-  if (name === "certificate" && typeof initCertPhoneCode === "function") initCertPhoneCode();
-  if (name === "id_forge" && typeof idForgeShowInfo === "function") idForgeShowInfo();
+  if (name === "timestamp" && typeof switchOtsTab === "function")
+    switchOtsTab("create");
+  if (name === "certificate" && typeof initCertPhoneCode === "function")
+    initCertPhoneCode();
+  if (name === "id_forge" && typeof idForgeShowInfo === "function")
+    idForgeShowInfo();
   var isProfessional =
     document.getElementById("mainNav") &&
     document.getElementById("mainNav").style.display !== "none";

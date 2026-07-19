@@ -2967,6 +2967,41 @@ body:has(#modeSelect:not([style*="display: none"])) {
   }
 }
 
+.fp-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fp-progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fp-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--primary);
+  border-radius: 4px;
+  transition: width 0.2s ease;
+}
+
+.fp-progress-pct {
+  font-size: 0.75rem;
+  min-width: 36px;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.fp-progress-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 @keyframes conv-progress-indeterminate {
   0% {
     width: 0;

@@ -14,8 +14,6 @@
 // ── Digital Passport / Certificate Generator ──
 // Generates PDF, DOCX, EPUB with all results + QR verification
 
-
-
 /**
  *
  */
@@ -57,6 +55,7 @@ async function collectCertData() {
     didSig: results.didSig || window._didSig || null,
     didIdentity:
       results.didIdentity || (window._didKeypair ? window._didKeypair.did : ""),
+    faceBiometric: window._faceData || null,
     ct: { submitted: false },
   };
   if (buf && file) {
@@ -89,8 +88,6 @@ async function collectCertData() {
   return data;
 }
 
-
-
 /**
  *
  * @param blob
@@ -108,7 +105,7 @@ async function stampCertFile(blob, format) {
       .join("");
     var pendingB64 = generatePendingOts(hashHex);
     if (pendingB64) {
-      setResult('certCtResult', {
+      setResult("certCtResult", {
         submitted: true,
         pending: true,
         otsProof: pendingB64,
@@ -221,7 +218,7 @@ function hideCertOverlay() {
  *
  */
 function downloadCertOtsProof() {
-  var ct = getResult('certCtResult');
+  var ct = getResult("certCtResult");
   if (!ct || !ct.otsProof) return;
   try {
     var bytes = Uint8Array.from(atob(ct.otsProof), function (c) {
@@ -247,7 +244,7 @@ function downloadCertOtsProof() {
  *
  */
 function downloadOtsProof() {
-  var ct = getResult('lastCtResult');
+  var ct = getResult("lastCtResult");
   if (!ct || !ct.otsProof) return;
   try {
     var bytes = Uint8Array.from(atob(ct.otsProof), function (c) {
@@ -301,7 +298,7 @@ async function downloadCert(format, btn) {
     if (certBlob) {
       stampCertFile(certBlob, format);
     }
-    setResult('lastCtResult', (data && data.ct) ? data.ct : null);
+    setResult("lastCtResult", data && data.ct ? data.ct : null);
     if (data.ct && data.ct.otsProof) {
       var otsBtn = document.getElementById("ots-dl-btn");
       if (otsBtn) otsBtn.style.display = "inline-block";
@@ -562,6 +559,7 @@ async function generateProfessionalCert() {
       didIdentity:
         (window._didKeypair ? window._didKeypair.did : "") ||
         (didUploadData ? didUploadData.did : ""),
+      faceBiometric: window._faceData || null,
       ct: { submitted: false },
     };
     // Submit ORIGINAL FILE to transparency log
@@ -620,30 +618,31 @@ async function downloadProfessionalCert(format) {
   var certBlob;
   try {
     switch (format) {
-    case "pdf": {
-      if (typeof jspdf === "undefined")
-        throw new Error(
-          "PDF library (jspdf) did not load. Try disabling ad blockers or check your internet connection.",
-        );
-      certBlob = await downloadCertPDF(_certData);
-    
-    break;
-    }
-    case "docx": {
-      if (typeof QRious === "undefined")
-        throw new Error(
-          "QR library (QRious) did not load. Try disabling ad blockers or check your internet connection.",
-        );
-      certBlob = await downloadCertDOCX(_certData);
-    
-    break;
-    }
-    case "epub": { {
-    certBlob = await downloadCertEPUB(_certData);
-    // No default
-    }
-    break;
-    }
+      case "pdf": {
+        if (typeof jspdf === "undefined")
+          throw new Error(
+            "PDF library (jspdf) did not load. Try disabling ad blockers or check your internet connection.",
+          );
+        certBlob = await downloadCertPDF(_certData);
+
+        break;
+      }
+      case "docx": {
+        if (typeof QRious === "undefined")
+          throw new Error(
+            "QR library (QRious) did not load. Try disabling ad blockers or check your internet connection.",
+          );
+        certBlob = await downloadCertDOCX(_certData);
+
+        break;
+      }
+      case "epub": {
+        {
+          certBlob = await downloadCertEPUB(_certData);
+          // No default
+        }
+        break;
+      }
     }
     if (certBlob) stampCertFile(certBlob, format);
     if (status)
