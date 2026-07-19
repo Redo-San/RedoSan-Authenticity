@@ -115,6 +115,8 @@ function fpToPDF(r) {
     },
     { label: "MD", keys: ["MD2", "MD4", "MD5"] },
     { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
+    { label: "SHA-2 (64-bit)", keys: ["SHA-512/224", "SHA-512/256"] },
+    { label: "SHAKE", keys: ["SHAKE128", "SHAKE256"] },
     { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
   ];
 
@@ -216,6 +218,8 @@ function fpToDOCX(r) {
     },
     { label: "MD", keys: ["MD2", "MD4", "MD5"] },
     { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
+    { label: "SHA-2 (64-bit)", keys: ["SHA-512/224", "SHA-512/256"] },
+    { label: "SHAKE", keys: ["SHAKE128", "SHAKE256"] },
     { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
   ];
 
@@ -449,6 +453,8 @@ function fpToHTML(r) {
     },
     { label: "MD", keys: ["MD2", "MD4", "MD5"] },
     { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
+    { label: "SHA-2 (64-bit)", keys: ["SHA-512/224", "SHA-512/256"] },
+    { label: "SHAKE", keys: ["SHAKE128", "SHAKE256"] },
     { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
   ];
   for (var f of families) {
@@ -518,9 +524,23 @@ async function handleFingerprint() {
   resultDiv.style.display = "none";
   dl.innerHTML = "";
   setText("fp-output", __("shared.processing", "Processing..."));
+  const progressDiv = document.querySelector("#fp-progress");
+  const progressFill = document.querySelector("#fp-progress-fill");
+  const progressPct = document.querySelector("#fp-progress-pct");
+  const progressLabel = document.querySelector("#fp-progress-label");
+  const ALL_STEPS = 14;
+  var _step = 0;
+  if (progressDiv) progressDiv.style.display = "block";
 
   try {
-    const result = await fingerprintFile(file);
+    const result = await fingerprintFile(file, function (msg) {
+      if (!progressFill) return;
+      _step++;
+      var pct = Math.min(Math.round((_step / ALL_STEPS) * 100), 99);
+      progressFill.style.width = pct + "%";
+      if (progressPct) progressPct.textContent = pct + "%";
+      if (progressLabel) progressLabel.textContent = msg || "";
+    });
     setResult("fpResult", result);
 
     let html = '<table class="meta-table">';
@@ -568,6 +588,11 @@ async function handleFingerprint() {
       { label: "MD" + brokenWarning, keys: ["MD2", "MD4", "MD5"] },
       { label: "BLAKE", keys: ["BLAKE2b", "BLAKE2s", "BLAKE3"] },
       {
+        label: "SHA-2 (64-bit)",
+        keys: ["SHA-512/224", "SHA-512/256"],
+      },
+      { label: "SHAKE (FIPS 202 XOF)", keys: ["SHAKE128", "SHAKE256"] },
+      {
         label: __("fp.other_label", "Other"),
         keys: ["RIPEMD-160", "Whirlpool"],
       },
@@ -614,6 +639,7 @@ async function handleFingerprint() {
     }
 
     output.innerHTML = html;
+    if (progressDiv) progressDiv.style.display = "none";
 
     setDownloadHandler(downloadFingerprint);
     document.querySelector("#dl-modal-title").textContent =
@@ -625,6 +651,7 @@ async function handleFingerprint() {
   } catch (error) {
     setText("fp-output", __("shared.error_prefix", "Error: ") + error.message);
   }
+  if (progressDiv) progressDiv.style.display = "none";
   resultDiv.style.display = "block";
   btn.disabled = false;
   spinner("fp-spinner", false);

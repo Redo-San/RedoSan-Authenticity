@@ -19,6 +19,11 @@ var path = require("node:path");
 var LANG_DIR = path.join(__dirname, "..", "Style", "lang");
 var LANGS = ["ar", "de", "es", "fr", "ja", "ko", "zh"];
 
+/**
+ *
+ * @param obj
+ * @param prefix
+ */
 function flatten(obj, prefix) {
   var result = {};
   for (var key in obj) {
@@ -36,6 +41,10 @@ function flatten(obj, prefix) {
   return result;
 }
 
+/**
+ *
+ * @param str
+ */
 function jsEscape(str) {
   return str
     .replace(/\\/g, String.raw`\\`)
@@ -45,6 +54,11 @@ function jsEscape(str) {
     .replace(/\t/g, String.raw`\t`);
 }
 
+/**
+ *
+ * @param jsPath
+ * @param flat
+ */
 function rebuildJS(jsPath, flat) {
   var jsContent = fs.readFileSync(jsPath, "utf8");
 

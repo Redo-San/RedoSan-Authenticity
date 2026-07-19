@@ -489,6 +489,8 @@ async function doEmbed(canvas, ctx, imgData, opts, algoName, algoNum, isAdvanced
  *
  * @param canvas
  * @param ctx
+ * @param _canvas
+ * @param _ctx
  * @param imgData
  * @param opts
  * @param algoName
@@ -667,6 +669,7 @@ async function doExtract(_canvas, _ctx, imgData, opts, algoName, algoNum, isAdva
  * @param data
  * @param outputFile
  * @param algoName
+ * @param _algoName
  */
 function writeExtracted(data, outputFile, _algoName) {
   if (outputFile) {

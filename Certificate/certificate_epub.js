@@ -193,6 +193,28 @@ async function downloadCertEPUB(data) {
         escHtml(data.didIdentity) +
         "</td></tr></table>"
       : "") +
+    (data.faceBiometric && data.faceBiometric.detected
+      ? "<h2>Face Biometric</h2><table>" +
+        '<tr><td><strong>Faces detected</strong></td><td>' +
+        escHtml(String(data.faceBiometric.faceCount)) +
+        "</td></tr>" +
+        (data.faceBiometric.matchLabel
+          ? '<tr><td><strong>Match result</strong></td><td>' +
+            escHtml(data.faceBiometric.matchLabel) +
+            "</td></tr>"
+          : "") +
+        '<tr><td><strong>DID Signed</strong></td><td>' +
+        (data.faceBiometric.didSigned ? "Yes" : "No") +
+        "</td></tr>" +
+        (data.faceBiometric.did
+          ? '<tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">' +
+            escHtml(data.faceBiometric.did) +
+            "</td></tr>"
+          : "") +
+        '<tr><td><strong>Exported</strong></td><td>' +
+        escHtml(data.faceBiometric.exportedAt) +
+        "</td></tr></table>"
+      : "") +
     (data.ct && data.ct.submitted && data.ct.hash
       ? "<h2>Certificate Transparency</h2><table>" +
         '<tr><td><strong>SHA-256</strong></td><td style="font-size:0.6em;word-break:break-all">' +

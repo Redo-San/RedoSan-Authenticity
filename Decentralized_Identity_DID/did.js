@@ -631,6 +631,12 @@ function didClearKeys() {
  *
  * @param stored
  */
+function _jwkBase64urlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return Uint8Array.from(atob(str), function (c) { return c.charCodeAt(0); });
+}
+
 async function didImportSignKey(stored) {
   if (stored.algorithm === "Ed25519") {
     var privateKey = await crypto.subtle.importKey(
@@ -640,9 +646,7 @@ async function didImportSignKey(stored) {
       true,
       ["sign"],
     );
-    var pubRaw = new Uint8Array(
-      await crypto.subtle.exportKey("raw", privateKey),
-    );
+    var pubRaw = _jwkBase64urlDecode(stored.privJwk.x);
     var publicKey = await crypto.subtle.importKey(
       "raw",
       pubRaw,
@@ -665,9 +669,12 @@ async function didImportSignKey(stored) {
       true,
       ["sign"],
     );
-    var pubRaw = new Uint8Array(
-      await crypto.subtle.exportKey("raw", privateKey),
-    );
+    var xBytes = _jwkBase64urlDecode(stored.privJwk.x);
+    var yBytes = _jwkBase64urlDecode(stored.privJwk.y);
+    var pubRaw = new Uint8Array(65);
+    pubRaw[0] = 0x04;
+    pubRaw.set(xBytes, 1);
+    pubRaw.set(yBytes, 33);
     var publicKey = await crypto.subtle.importKey(
       "raw",
       pubRaw,
@@ -692,12 +699,11 @@ async function didImportSignKey(stored) {
       true,
       ["sign"],
     );
-    var pubRaw = new Uint8Array(
-      await crypto.subtle.exportKey("spki", privateKey),
-    );
+    var nBytes = _jwkBase64urlDecode(stored.privJwk.n);
+    var eBytes = _jwkBase64urlDecode(stored.privJwk.e);
     var publicKey = await crypto.subtle.importKey(
-      "spki",
-      pubRaw,
+      "jwk",
+      { kty: stored.privJwk.kty, n: stored.privJwk.n, e: stored.privJwk.e, alg: stored.privJwk.alg, ext: true },
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       true,
       ["verify"],
@@ -706,7 +712,7 @@ async function didImportSignKey(stored) {
       did: stored.did,
       publicKey: publicKey,
       privateKey: privateKey,
-      pubRaw: pubRaw,
+      pubRaw: nBytes,
       algorithm: algoName,
     };
   }
@@ -1193,6 +1199,7 @@ function didToJSON(kp, didSig, createdAt) {
     public_key_base64: kp.pubRaw
       ? btoa(String.fromCharCode.apply(null, kp.pubRaw))
       : "",
+    privJwk: kp.privJwk || null,
     didDocument: doc,
   };
   if (didSig) {

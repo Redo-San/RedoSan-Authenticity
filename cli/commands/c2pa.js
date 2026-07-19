@@ -414,6 +414,7 @@ async function doRead(absPath, opts) {
  *
  * @param absPath
  * @param opts
+ * @param _opts
  */
 async function doVerify(absPath, _opts) {
   const data = readFileBytes(absPath);

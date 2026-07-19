@@ -10,27 +10,16 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>
-      RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool
-    </title>
-    <meta
-      name="description"
-      content="Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded."
-    />
+    <title>RedoSan Authenticity — Online Digital Authenticity Tool</title>
+    <meta name="description" content="Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server." />
     <meta
       name="keywords"
-      content="digital watermark, image fingerprint, steganography, LSB, DCT, DWT, SHA-256, BLAKE3, EXIF reader, photo metadata, OpenTimestamps, image hashing, perceptual hash, digital authenticity"
+      content="digital watermark, image fingerprint, steganography, LSB, DCT, DWT, SHA-256, BLAKE3, EXIF reader, photo metadata, OpenTimestamps, image hashing, perceptual hash, digital authenticity, face biometric, face recognition, visual rights"
     />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="Redo_San" />
-    <meta
-      property="og:title"
-      content="RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool"
-    />
-    <meta
-      property="og:description"
-      content="Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded."
-    />
+    <meta property="og:title" content="RedoSan Authenticity — Online Digital Authenticity Tool" />
+    <meta property="og:description" content="Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server." />
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
@@ -42,14 +31,8 @@
     />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="RedoSan Authenticity — Digital Watermark, Fingerprint &amp; Metadata Tool"
-    />
-    <meta
-      name="twitter:description"
-      content="Free online digital authenticity tool for watermarking, fingerprinting, metadata reading, and timestamping images. 100% browser-based, nothing uploaded."
-    />
+    <meta name="twitter:title" content="RedoSan Authenticity — Online Digital Authenticity Tool" />
+    <meta name="twitter:description" content="Online digital authenticity tool — 100% browser-based. Nothing is uploaded to any server." />
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
@@ -202,7 +185,8 @@
           "OpenTimestamps proof generation and verification",
           "C2PA content provenance",
           "File format converter",
-          "Digital passport certificate generation"
+          "Digital passport certificate generation",
+          "Face biometric registration and verification"
         ],
         "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style/logo.png",
         "license": "https://www.gnu.org/licenses/gpl-3.0.html"
@@ -230,6 +214,7 @@
       crossorigin="anonymous"
       defer
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/dist/human.js" crossorigin="anonymous" defer></script>
   </head>
   <body>
     <!-- Page loading spinner -->
@@ -247,11 +232,7 @@
         >
           <span></span><span></span><span></span>
         </button>
-        <a
-          href="../home/index.html"
-          class="logo"
-          onclick="if(!document.documentElement.dataset.standalone){var m=document.getElementById('modeSelect');var a=document.getElementById('app');if(m)m.style.display='';if(a)a.style.display='none';event.preventDefault()}"
-        >
+        <a href="../home/index.html" data-page="home" class="logo">
           <div
             class="logo-img logo-white"
             role="img"
@@ -284,9 +265,9 @@
         </div>
         <button
           class="theme-btn mode-switch-btn"
-          onclick="window.location.href='../../../../index.html'"
-          title="Choose mode"
-          aria-label="Choose mode"
+          onclick="window.location.href='../../../index.html'"
+          title="Back to Home"
+          aria-label="Back to Home"
         >
           🏠
         </button>
@@ -418,6 +399,12 @@
         >Pixel Injection</a
       >
       <a
+        href="../face-biometric/index.html"
+        data-page="face-biometric"
+        data-i18n="sidebar.face_biometric"
+        >Face Biometric</a
+      >
+      <a
         href="../forensic/index.html"
         data-page="forensic"
         data-i18n="sidebar.forensic"
@@ -479,7 +466,6 @@
       >
     </div>
 
-    <!-- App container: page-specific content -->
     <main class="container" id="app">
       <section id="page-home" class="page active">
         <div class="hero">
@@ -492,22 +478,14 @@
             class="grid"
             style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))"
           >
-            <a
-              href="../watermark/index.html"
-              data-page="watermark"
-              class="card"
-            >
+            <a href="../watermark/index.html" data-page="watermark" class="card">
               <div class="icon">💧</div>
               <h2 data-i18n="card.watermark.title">Digital Watermark</h2>
               <p data-i18n="card.watermark.desc">
                 9 algorithms: LSB, DCT, DWT and more
               </p>
             </a>
-            <a
-              href="../audio-watermark/index.html"
-              data-page="audio-watermark"
-              class="card"
-            >
+            <a href="../audio-watermark/index.html" data-page="audio-watermark" class="card">
               <div class="icon">🎵</div>
               <h2 data-i18n="card.audio_watermark.title">Audio Watermark</h2>
               <p data-i18n="card.audio_watermark.desc">
@@ -515,15 +493,18 @@
                 DWT, Patchwork, DCT
               </p>
             </a>
-            <a
-              href="../pixel-injection/index.html"
-              data-page="pixel-injection"
-              class="card"
-            >
+            <a href="../pixel-injection/index.html" data-page="pixel-injection" class="card">
               <div class="icon">🔬</div>
               <h2 data-i18n="card.pixel_injection.title">Pixel Injection</h2>
               <p data-i18n="card.pixel_injection.desc">
                 20+ advanced pixel injection algorithms
+              </p>
+            </a>
+            <a href="../face-biometric/index.html" data-page="face-biometric" class="card">
+              <div class="icon">👤</div>
+              <h2 data-i18n="card.face_biometric.title">Face Biometric</h2>
+              <p data-i18n="card.face_biometric.desc">
+                Register &amp; verify face descriptors for visual rights
               </p>
             </a>
             <a href="../forensic/index.html" data-page="forensic" class="card">
@@ -540,11 +521,7 @@
                 Generate UUIDs, ULIDs, Nano IDs, SWHIDs and more
               </p>
             </a>
-            <a
-              href="../fingerprint/index.html"
-              data-page="fingerprint"
-              class="card"
-            >
+            <a href="../fingerprint/index.html" data-page="fingerprint" class="card">
               <div class="icon">🔍</div>
               <h2 data-i18n="card.fingerprint.title">Fingerprint</h2>
               <p data-i18n="card.fingerprint.desc">
@@ -558,11 +535,7 @@
                 EXIF, dimensions, format info
               </p>
             </a>
-            <a
-              href="../timestamp/index.html"
-              data-page="timestamp"
-              class="card"
-            >
+            <a href="../timestamp/index.html" data-page="timestamp" class="card">
               <div class="icon">🕒</div>
               <h2 data-i18n="card.timestamp.title">Timestamp</h2>
               <p data-i18n="card.timestamp.desc">
@@ -583,33 +556,21 @@
                 Read & write content provenance metadata
               </p>
             </a>
-            <a
-              href="../certificate/index.html"
-              data-page="certificate"
-              class="card"
-            >
+            <a href="../certificate/index.html" data-page="certificate" class="card">
               <div class="icon">📜</div>
               <h2 data-i18n="card.certificate.title">Digital Passport</h2>
               <p data-i18n="card.certificate.desc">
                 Generate signed PDF/DOCX/EPUB certificate
               </p>
             </a>
-            <a
-              href="../converter/index.html"
-              data-page="converter"
-              class="card"
-            >
+            <a href="../converter/index.html" data-page="converter" class="card">
               <div class="icon">🔄</div>
               <h2 data-i18n="card.converter.title">File Converter</h2>
               <p data-i18n="card.converter.desc">
                 Convert images between PNG, JPEG, WebP and more
               </p>
             </a>
-            <a
-              href="../removal-tools/index.html"
-              data-page="removal-tools"
-              class="card"
-            >
+            <a href="../removal-tools/index.html" data-page="removal-tools" class="card">
               <div class="icon">🗑️</div>
               <h2 data-i18n="card.removal_tools.title">Removal Tools</h2>
               <p data-i18n="card.removal_tools.desc">
@@ -617,11 +578,7 @@
                 audio
               </p>
             </a>
-            <a
-              href="../document-watermark/index.html"
-              data-page="document-watermark"
-              class="card"
-            >
+            <a href="../document-watermark/index.html" data-page="document-watermark" class="card">
               <div class="icon">📝</div>
               <h2 data-i18n="card.document_watermark.title">
                 Document Watermark
@@ -766,7 +723,7 @@
       </div>
       <div style="margin-top: 12px; font-size: 0.75rem">
         <a
-          href="../../../../index.html?spa"
+          href="../../../index.html?spa"
           style="color: var(--text-muted); text-decoration: none"
           data-i18n="footer.classic_mode"
           >Classic Version</a
@@ -865,6 +822,9 @@
     <script src="../../../Metadata/metadata.js" defer></script>
     <script src="../../../Timestamp/timestamp.js" defer></script>
     <script src="../../../Decentralized_Identity_DID/did.js" defer></script>
+    <script src="../../../Face_Biometric/face_engine.js" defer></script>
+    <script src="../../../Face_Biometric/face_registry.js" defer></script>
+    <script src="../../../Face_Biometric/face_ui.js" defer></script>
     <script src="../../simplified_countries.js" defer></script>
     <script src="../../simplified_helpers.js" defer></script>
     <script src="../../simplified_renderers.js" defer></script>
@@ -882,7 +842,6 @@
     <script src="../../../Certificate/certificate.js" defer></script>
     <script
       src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js"
-      `n
       defer
     ></script>
     <script src="../../../Converter/ffmpeg.min.js" defer></script>
@@ -994,8 +953,8 @@
       <img class="lightbox-img" id="lightboxImg" alt="" />
     </div>
 
-    <div role="region" aria-label="Music player">
     <!-- Music player -->
+    <div role="region" aria-label="Music player">
     <audio
       id="bg-music"
       src="../../RedoSan_Music.mp3"
@@ -1055,8 +1014,10 @@
       document.addEventListener("DOMContentLoaded", function () {
         document.documentElement.style.overflow = "";
         document.documentElement.dataset.standalone = "home";
-        var app = document.getElementById("app");
-        if (app) app.style.display = "";
+        var modeSelect = document.getElementById("modeSelect");
+        if (modeSelect) modeSelect.style.display = "none";
+        var simplified = document.getElementById("simplifiedMode");
+        if (simplified) simplified.style.display = "none";
         if (typeof showPage === "function") {
           showPage("home");
         }

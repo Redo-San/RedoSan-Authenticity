@@ -281,6 +281,21 @@ async function downloadCertDOCX(data) {
     children.push(new docx.Paragraph({ spacing: { after: 200 } }));
   }
 
+  // 8b. Face Biometric
+  if (data.faceBiometric && data.faceBiometric.detected) {
+    addHeading("Face Biometric", 2);
+    addLabelValue("Faces detected", String(data.faceBiometric.faceCount));
+    if (data.faceBiometric.matchLabel) {
+      addLabelValue("Match result", data.faceBiometric.matchLabel);
+    }
+    addLabelValue("DID Signed", data.faceBiometric.didSigned ? "Yes" : "No");
+    if (data.faceBiometric.did) {
+      addLabelValue("DID", data.faceBiometric.did);
+    }
+    addLabelValue("Exported", data.faceBiometric.exportedAt);
+    children.push(new docx.Paragraph({ spacing: { after: 200 } }));
+  }
+
   // 9. Certificate Transparency
   if (data.ct && data.ct.submitted && data.ct.hash) {
     addHeading("Certificate Transparency", 2);

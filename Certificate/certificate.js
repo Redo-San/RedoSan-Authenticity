@@ -57,6 +57,7 @@ async function collectCertData() {
     didSig: results.didSig || window._didSig || null,
     didIdentity:
       results.didIdentity || (window._didKeypair ? window._didKeypair.did : ""),
+    faceBiometric: window._faceData || null,
     ct: { submitted: false },
   };
   if (buf && file) {
@@ -562,6 +563,7 @@ async function generateProfessionalCert() {
       didIdentity:
         (window._didKeypair ? window._didKeypair.did : "") ||
         (didUploadData ? didUploadData.did : ""),
+      faceBiometric: window._faceData || null,
       ct: { submitted: false },
     };
     // Submit ORIGINAL FILE to transparency log

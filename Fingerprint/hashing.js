@@ -171,6 +171,58 @@ var sha3_512 = async function (d) {
   return await sha3(d, 512);
 };
 
+// ── SHAKE128 / SHAKE256 (FIPS 202 XOF, reuses keccakF) ──
+/**
+ *
+ * @param data
+ * @param bits
+ * @param outBytes
+ */
+async function shake(data, bits, outBytes) {
+  var rate = 1600 - bits * 2,
+    r = rate >> 3,
+    lanes = (rate / 64) | 0,
+    st = new Uint32Array(50);
+  var i = 0,
+    _sc = 0;
+  for (; i + r <= data.length; i += r) {
+    for (var j = 0; j < r; j++) {
+      var half = j & 4 ? 1 : 0;
+      st[(j >> 3) * 2 + half] ^= data[i + j] << ((j & 3) << 3);
+    }
+    keccakF(st);
+    if (++_sc % 200 === 0) await maybeYield();
+  }
+  var rem = data.length - i;
+  for (var j = 0; j < rem; j++) {
+    var half = j & 4 ? 1 : 0;
+    st[(j >> 3) * 2 + half] ^= data[i + j] << ((j & 3) << 3);
+  }
+  st[(rem >> 3) * 2 + (rem & 4 ? 1 : 0)] ^= 0x1f << ((rem & 3) << 3);
+  st[(lanes - 1) * 2] ^= 0x80_00_00_00;
+  st[(lanes - 1) * 2 + 1] ^= 0x80_00_00_00;
+  keccakF(st);
+  var result = new Uint8Array(outBytes);
+  var off = 0;
+  while (off < outBytes) {
+    for (var j = 0; j < r && off < outBytes; j++, off++)
+      result[off] =
+        (st[(j >> 3) * 2 + (j & 4 ? 1 : 0)] >> ((j & 3) << 3)) & 0xff;
+    if (off < outBytes) keccakF(st);
+  }
+  return Array.from(result)
+    .map(function (b) {
+      return b.toString(16).padStart(2, "0");
+    })
+    .join("");
+}
+var shake128 = async function (d) {
+  return await shake(d, 128, 32);
+};
+var shake256 = async function (d) {
+  return await shake(d, 256, 64);
+};
+
 // ── BLAKE2b (64-byte digest) ──
 var B2IV = [
   0x6a_09_e6_67_f3_bc_c9_08n,
@@ -739,6 +791,154 @@ async function sha224(data) {
     .join("");
 }
 
+// ── SHA-512/224 and SHA-512/256 (FIPS 180-4, Uint32-pair optimized) ──
+function add64(x, y) {
+  var lo = (x[1] + y[1]) >>> 0;
+  var carry = (lo < x[1] || lo < y[1]) ? 1 : 0;
+  var hi = (x[0] + y[0] + carry) >>> 0;
+  return [hi, lo];
+}
+function xor64(x, y) { return [(x[0] ^ y[0]) >>> 0, (x[1] ^ y[1]) >>> 0]; }
+function and64(x, y) { return [(x[0] & y[0]) >>> 0, (x[1] & y[1]) >>> 0]; }
+function not64(x) { return [~x[0] >>> 0, ~x[1] >>> 0]; }
+function rotr64(x, n) {
+  var hi = x[0], lo = x[1];
+  var nh, nl;
+  if (n < 32) {
+    nh = (hi >>> n) | (lo << (32 - n));
+    nl = (lo >>> n) | (hi << (32 - n));
+  } else {
+    nh = (lo >>> (n - 32)) | (hi << (64 - n));
+    nl = (hi >>> (n - 32)) | (lo << (64 - n));
+  }
+  return [nh >>> 0, nl >>> 0];
+}
+function shr64(x, n) {
+  var hi = x[0], lo = x[1];
+  if (n < 32) {
+    return [hi >>> n >>> 0, ((lo >>> n) | (hi << (32 - n))) >>> 0];
+  }
+  return [0, (hi >>> (n - 32)) >>> 0];
+}
+
+var SHA512_K = [
+  [0x428a2f98, 0xd728ae22], [0x71374491, 0x23ef65cd], [0xb5c0fbcf, 0xec4d3b2f], [0xe9b5dba5, 0x8189dbbc],
+  [0x3956c25b, 0xf348b538], [0x59f111f1, 0xb605d019], [0x923f82a4, 0xaf194f9b], [0xab1c5ed5, 0xda6d8118],
+  [0xd807aa98, 0xa3030242], [0x12835b01, 0x45706fbe], [0x243185be, 0x4ee4b28c], [0x550c7dc3, 0xd5ffb4e2],
+  [0x72be5d74, 0xf27b896f], [0x80deb1fe, 0x3b1696b1], [0x9bdc06a7, 0x25c71235], [0xc19bf174, 0xcf692694],
+  [0xe49b69c1, 0x9ef14ad2], [0xefbe4786, 0x384f25e3], [0x0fc19dc6, 0x8b8cd5b5], [0x240ca1cc, 0x77ac9c65],
+  [0x2de92c6f, 0x592b0275], [0x4a7484aa, 0x6ea6e483], [0x5cb0a9dc, 0xbd41fbd4], [0x76f988da, 0x831153b5],
+  [0x983e5152, 0xee66dfab], [0xa831c66d, 0x2db43210], [0xb00327c8, 0x98fb213f], [0xbf597fc7, 0xbeef0ee4],
+  [0xc6e00bf3, 0x3da88fc2], [0xd5a79147, 0x930aa725], [0x06ca6351, 0xe003826f], [0x14292967, 0x0a0e6e70],
+  [0x27b70a85, 0x46d22ffc], [0x2e1b2138, 0x5c26c926], [0x4d2c6dfc, 0x5ac42aed], [0x53380d13, 0x9d95b3df],
+  [0x650a7354, 0x8baf63de], [0x766a0abb, 0x3c77b2a8], [0x81c2c92e, 0x47edaee6], [0x92722c85, 0x1482353b],
+  [0xa2bfe8a1, 0x4cf10364], [0xa81a664b, 0xbc423001], [0xc24b8b70, 0xd0f89791], [0xc76c51a3, 0x0654be30],
+  [0xd192e819, 0xd6ef5218], [0xd6990624, 0x5565a910], [0xf40e3585, 0x5771202a], [0x106aa070, 0x32bbd1b8],
+  [0x19a4c116, 0xb8d2d0c8], [0x1e376c08, 0x5141ab53], [0x2748774c, 0xdf8eeb99], [0x34b0bcb5, 0xe19b48a8],
+  [0x391c0cb3, 0xc5c95a63], [0x4ed8aa4a, 0xe3418acb], [0x5b9cca4f, 0x7763e373], [0x682e6ff3, 0xd6b2b8a3],
+  [0x748f82ee, 0x5defb2fc], [0x78a5636f, 0x43172f60], [0x84c87814, 0xa1f0ab72], [0x8cc70208, 0x1a6439ec],
+  [0x90befffa, 0x23631e28], [0xa4506ceb, 0xde82bde9], [0xbef9a3f7, 0xb2c67915], [0xc67178f2, 0xe372532b],
+  [0xca273ece, 0xea26619c], [0xd186b8c7, 0x21c0c207], [0xeada7dd6, 0xcde0eb1e], [0xf57d4f7f, 0xee6ed178],
+  [0x06f067aa, 0x72176fba], [0x0a637dc5, 0xa2c898a6], [0x113f9804, 0xbef90dae], [0x1b710b35, 0x131c471b],
+  [0x28db77f5, 0x23047d84], [0x32caab7b, 0x40c72493], [0x3c9ebe0a, 0x15c9bebc], [0x431d67c4, 0x9c100d4c],
+  [0x4cc5d4be, 0xcb3e42b6], [0x597f299c, 0xfc657e2a], [0x5fcb6fab, 0x3ad6faec], [0x6c44198c, 0x4a475817],
+];
+
+function sha512Core(H, block) {
+  var W = new Array(80);
+  for (var t = 0; t < 16; t++) {
+    var i = t * 8;
+    W[t] = [
+      (block[i] << 24) | (block[i + 1] << 16) | (block[i + 2] << 8) | block[i + 3],
+      (block[i + 4] << 24) | (block[i + 5] << 16) | (block[i + 6] << 8) | block[i + 7],
+    ];
+  }
+  for (var t = 16; t < 80; t++) {
+    var ws2 = W[t - 2], ws15 = W[t - 15];
+    var s0 = xor64(xor64(rotr64(ws15, 1), rotr64(ws15, 8)), shr64(ws15, 7));
+    var s1 = xor64(xor64(rotr64(ws2, 19), rotr64(ws2, 61)), shr64(ws2, 6));
+    W[t] = add64(add64(add64(W[t - 16], s0), W[t - 7]), s1);
+  }
+  var a = H[0], b = H[1], c = H[2], d = H[3];
+  var e = H[4], f = H[5], g = H[6], h = H[7];
+  for (var t = 0; t < 80; t++) {
+    var S1 = xor64(xor64(rotr64(e, 14), rotr64(e, 18)), rotr64(e, 41));
+    var ch = xor64(and64(e, f), and64(not64(e), g));
+    var t1 = add64(add64(add64(add64(h, S1), ch), SHA512_K[t]), W[t]);
+    var S0 = xor64(xor64(rotr64(a, 28), rotr64(a, 34)), rotr64(a, 39));
+    var maj = xor64(xor64(and64(a, b), and64(a, c)), and64(b, c));
+    var t2 = add64(S0, maj);
+    h = g; g = f; f = e;
+    e = add64(d, t1);
+    d = c; c = b; b = a;
+    a = add64(t1, t2);
+  }
+  H[0] = add64(H[0], a);
+  H[1] = add64(H[1], b);
+  H[2] = add64(H[2], c);
+  H[3] = add64(H[3], d);
+  H[4] = add64(H[4], e);
+  H[5] = add64(H[5], f);
+  H[6] = add64(H[6], g);
+  H[7] = add64(H[7], h);
+}
+
+async function sha512_224(data) {
+  var H = [
+    [0x8c3d37c8, 0x19544da2], [0x73e19966, 0x89dcd4d6], [0x1dfab7ae, 0x32ff9c82], [0x679dd514, 0x582f9fcf],
+    [0x0f6d2b69, 0x7bd44da8], [0x77e36f73, 0x04c48942], [0x3f9d85a8, 0x6a1d36c8], [0x1112e6ad, 0x91d692a1],
+  ];
+  var len = data.length, bits = len * 8;
+  var padLen = (112 - ((len + 1) % 128) + 128) % 128;
+  var ml = len + 1 + padLen + 16;
+  var m = new Uint8Array(ml);
+  m.set(data);
+  m[len] = 0x80;
+  var dv = new DataView(m.buffer, m.byteOffset, m.byteLength);
+  dv.setUint32(ml - 16, 0, false);
+  dv.setUint32(ml - 12, 0, false);
+  dv.setUint32(ml - 8, (bits / 0x100000000) >>> 0, false);
+  dv.setUint32(ml - 4, bits >>> 0, false);
+  var _sc = 0;
+  for (var off = 0; off < ml; off += 128) {
+    if (++_sc % 4000 === 0) await maybeYield();
+    sha512Core(H, m.subarray(off, off + 128));
+  }
+  var out = new Uint8Array(28);
+  for (var i = 0; i < 28; i++) {
+    out[i] = ((i & 4) === 0 ? H[(i / 8) | 0][0] : H[(i / 8) | 0][1]) >>> ((3 - (i & 3)) * 8) & 0xff;
+  }
+  return Array.from(out).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+}
+
+async function sha512_256(data) {
+  var H = [
+    [0x22312194, 0xfc2bf72c], [0x9f555fa3, 0xc84c64c2], [0x2393b86b, 0x6f53b151], [0x96387719, 0x5940eabd],
+    [0x96283ee2, 0xa88effe3], [0xbe5e1e25, 0x53863992], [0x2b0199fc, 0x2c85b8aa], [0x0eb72ddc, 0x81c52ca2],
+  ];
+  var len = data.length, bits = len * 8;
+  var padLen = (112 - ((len + 1) % 128) + 128) % 128;
+  var ml = len + 1 + padLen + 16;
+  var m = new Uint8Array(ml);
+  m.set(data);
+  m[len] = 0x80;
+  var dv = new DataView(m.buffer, m.byteOffset, m.byteLength);
+  dv.setUint32(ml - 16, 0, false);
+  dv.setUint32(ml - 12, 0, false);
+  dv.setUint32(ml - 8, (bits / 0x100000000) >>> 0, false);
+  dv.setUint32(ml - 4, bits >>> 0, false);
+  var _sc = 0;
+  for (var off = 0; off < ml; off += 128) {
+    if (++_sc % 4000 === 0) await maybeYield();
+    sha512Core(H, m.subarray(off, off + 128));
+  }
+  var out = new Uint8Array(32);
+  for (var i = 0; i < 32; i++) {
+    out[i] = ((i & 4) === 0 ? H[(i / 8) | 0][0] : H[(i / 8) | 0][1]) >>> ((3 - (i & 3)) * 8) & 0xff;
+  }
+  return Array.from(out).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+}
+
 // ── MD2 ──
 /**
  *
@@ -996,33 +1196,26 @@ async function ripemd160(data) {
   ];
   var S = [11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8];
   var Sp = [10, 13, 14, 11, 12, 7, 6, 8, 9, 11, 13, 14, 5, 6, 7, 9];
-  var bytes = new Uint8Array(data);
-  var origLen = bytes.length * 8;
-  var pad = new Uint8Array([...bytes, 0x80]);
-  while ((pad.length * 8) % 512 !== 448) {
-    var p2 = new Uint8Array(pad.length + 1);
-    p2.set(pad);
-    pad = p2;
-  }
-  var lb = new ArrayBuffer(8);
-  new DataView(lb).setUint32(0, origLen, true);
-  new DataView(lb).setUint32(4, 0, true);
-  pad = new Uint8Array([...pad, ...new Uint8Array(lb)]);
+  var len = data.length,
+    bits = len * 8;
+  var padLen = (56 - ((len + 1) % 64) + 64) % 64;
+  var ml = len + 1 + padLen + 8;
+  var m = new Uint8Array(ml);
+  m.set(data);
+  m[len] = 0x80;
+  var dv = new DataView(m.buffer, m.byteOffset, m.byteLength);
+  dv.setUint32(ml - 8, bits, true);
+  dv.setUint32(ml - 4, 0, true);
   var h0 = 0x67_45_23_01,
     h1 = 0xef_cd_ab_89,
     h2 = 0x98_ba_dc_fe,
     h3 = 0x10_32_54_76,
     h4 = 0xc3_d2_e1_f0;
   var _rc = 0;
-  for (var i = 0; i < pad.length; i += 64) {
+  var X = new Uint32Array(16);
+  for (var off = 0; off < ml; off += 64) {
     if (++_rc % 2000 === 0) await maybeYield();
-    var X = new Array(16);
-    for (var j = 0; j < 16; j++)
-      X[j] =
-        pad[i + j * 4] |
-        (pad[i + j * 4 + 1] << 8) |
-        (pad[i + j * 4 + 2] << 16) |
-        (pad[i + j * 4 + 3] << 24);
+    for (var j = 0; j < 16; j++) X[j] = dv.getUint32(off + j * 4, true);
     var A = h0,
       B = h1,
       C = h2,
@@ -1355,77 +1548,10 @@ function wp_gf_mul(a, b) {
     if (b & 1) r ^= a;
     var h = a & 0x80;
     a = (a << 1) & 0xff;
-    if (h) a ^= 0x1_1d;
+    if (h) a ^= 0x11d;
     b >>= 1;
   }
   return r;
-}
-/**
- *
- * @param s
- */
-function wp_subBytes(s) {
-  for (var i = 0; i < 64; i++) s[i] = WP_SBOX[s[i]];
-}
-/**
- *
- * @param s
- */
-function wp_shiftColumns(s) {
-  var t = new Uint8Array(64);
-  for (var c = 0; c < 8; c++)
-    for (var r = 0; r < 8; r++) t[((r + c) % 8) * 8 + c] = s[r * 8 + c];
-  return t;
-}
-/**
- *
- * @param s
- */
-function wp_mixRows(s) {
-  var t = new Uint8Array(64);
-  for (var r = 0; r < 8; r++)
-    for (var c = 0; c < 8; c++) {
-      var v = 0;
-      for (var k = 0; k < 8; k++) v ^= wp_gf_mul(WP_MDS[c][k], s[r * 8 + k]);
-      t[r * 8 + c] = v;
-    }
-  return t;
-}
-/**
- *
- * @param s
- * @param k
- */
-function wp_addRoundKey(s, k) {
-  for (var i = 0; i < 64; i++) s[i] ^= k[i];
-}
-/**
- *
- * @param k
- * @param rc
- */
-function wp_keySchedule(k, rc) {
-  wp_subBytes(k);
-  k = wp_shiftColumns(k);
-  k = wp_mixRows(k);
-  for (var i = 0; i < 8; i++) k[i * 8 + i] ^= rc[i];
-  return k;
-}
-/**
- *
- * @param msg
- * @param k
- */
-function wp_cipher(msg, k) {
-  var s = new Uint8Array(msg);
-  for (var r = 0; r < 10; r++) {
-    wp_subBytes(s);
-    s = wp_shiftColumns(s);
-    s = wp_mixRows(s);
-    wp_addRoundKey(s, k);
-    k = wp_keySchedule(k, WP_RC[r]);
-  }
-  return s;
 }
 var WP_RC = [];
 (function () {
@@ -1435,6 +1561,97 @@ var WP_RC = [];
     WP_RC.push(rc);
   }
 })();
+/**
+ *
+ * @param s
+ * @param t
+ */
+function wp_shiftColumnsInplace(s, t) {
+  for (var c = 0; c < 8; c++)
+    for (var r = 0; r < 8; r++)
+      t[((r + c) & 7) * 8 + c] = s[r * 8 + c];
+  for (var i = 0; i < 64; i++) s[i] = t[i];
+}
+/**
+ *
+ * @param s
+ * @param t
+ */
+function wp_mixRowsInplace(s, t) {
+  for (var r = 0; r < 8; r++) {
+    var off = r * 8;
+    for (var c = 0; c < 8; c++) {
+      var v = 0;
+      var row = WP_MDS[c];
+      v ^= wp_gf_mul(row[0], s[off]);
+      v ^= wp_gf_mul(row[1], s[off + 1]);
+      v ^= wp_gf_mul(row[2], s[off + 2]);
+      v ^= wp_gf_mul(row[3], s[off + 3]);
+      v ^= wp_gf_mul(row[4], s[off + 4]);
+      v ^= wp_gf_mul(row[5], s[off + 5]);
+      v ^= wp_gf_mul(row[6], s[off + 6]);
+      v ^= wp_gf_mul(row[7], s[off + 7]);
+      t[off + c] = v;
+    }
+  }
+  for (var i = 0; i < 64; i++) s[i] = t[i];
+}
+/**
+ *
+ * @param msg
+ * @param k
+ */
+function wp_cipher(msg, k) {
+  var s = new Uint8Array(msg);
+  var t = new Uint8Array(64);
+  for (var r = 0; r < 10; r++) {
+    for (var i = 0; i < 64; i++) s[i] = WP_SBOX[s[i]];
+    wp_shiftColumnsInplace(s, t);
+    wp_mixRowsInplace(s, t);
+    for (var i = 0; i < 64; i++) s[i] ^= k[i];
+    for (var i = 0; i < 64; i++) k[i] = WP_SBOX[k[i]];
+    wp_shiftColumnsInplace(k, t);
+    wp_mixRowsInplace(k, t);
+    for (var i = 0; i < 8; i++) k[i * 8 + i] ^= WP_RC[r][i];
+  }
+  return s;
+}
+/**
+ *
+ * @param data
+ */
+async function whirlpool(data) {
+  var bits = data.length * 8,
+    _wc = 0;
+  var padLen = (32 - ((data.length + 1) % 64) + 64) % 64;
+  var ml = data.length + 1 + padLen + 32;
+  var m = new Uint8Array(ml);
+  m.set(data);
+  m[data.length] = 0x80;
+  var lenOff = ml - 32;
+  for (var i = 0; i < 24; i++) m[lenOff + i] = 0;
+  m[lenOff + 24] = (bits >>> 56) & 0xff;
+  m[lenOff + 25] = (bits >>> 48) & 0xff;
+  m[lenOff + 26] = (bits >>> 40) & 0xff;
+  m[lenOff + 27] = (bits >>> 32) & 0xff;
+  m[lenOff + 28] = (bits >>> 24) & 0xff;
+  m[lenOff + 29] = (bits >>> 16) & 0xff;
+  m[lenOff + 30] = (bits >>> 8) & 0xff;
+  m[lenOff + 31] = bits & 0xff;
+  var H = new Uint8Array(64);
+  for (var off = 0; off < ml; off += 64) {
+    if (++_wc % 4000 === 0) await maybeYield();
+    var blk = m.subarray(off, off + 64);
+    var K = new Uint8Array(H);
+    var enc = wp_cipher(blk, K);
+    for (var i = 0; i < 64; i++) H[i] ^= blk[i] ^ enc[i];
+  }
+  return Array.from(H)
+    .map(function (b) {
+      return b.toString(16).padStart(2, "0");
+    })
+    .join("");
+}
 /**
  *
  * @param data
@@ -1477,7 +1694,7 @@ async function whirlpool(data) {
  *
  * @param file
  */
-async function fingerprintFile(file) {
+async function fingerprintFile(file, onProgress) {
   var buf = await file.arrayBuffer();
   var data = new Uint8Array(buf);
   var name = file.name;
@@ -1552,16 +1769,19 @@ async function fingerprintFile(file) {
     }
   }
 
-  // Step 3: Background worker + main thread fallback for remaining hashes (SHA-3, BLAKE2, SHA-224, MD5, RIPEMD-160, Whirlpool)
+  // Step 3: Background worker (off main thread) + main thread fallback
   if (typeof Worker !== "undefined" && typeof window !== "undefined") {
-    startBackgroundWorker(result.hashes, buf, null, function (extraHashes) {
+    await startBackgroundWorker(result.hashes, buf, onProgress, function (extraHashes) {
       var fp = getResult("fpResult");
       if (fp) Object.assign(fp.hashes, extraHashes);
     });
   }
-  await computeRemainingHashes(result.hashes, buf).catch(function (error) {
-    console.warn("Main-thread hash compute error:", error);
-  });
+  // If worker didn't populate hashes (e.g. failed silently), fall back to main thread
+  if (!result.hashes["SHA-3_224"]) {
+    await computeRemainingHashes(result.hashes, buf).catch(function (error) {
+      console.warn("Main-thread hash compute error:", error);
+    });
+  }
 
   return result;
 }
@@ -1589,7 +1809,7 @@ function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
             .substring(0, location.href.lastIndexOf("/"))
             .replace("/Style", "") + "/Fingerprint/hashing.js";
       }
-      fetch(hashingUrl)
+      fetch(hashingUrl + "?v=" + Date.now())
         .then(function (resp) {
           if (!resp.ok) throw new Error("fetch failed");
           return resp.text();
@@ -1599,21 +1819,25 @@ function startBackgroundWorker(hashesObj, fileBuf, onProgress, onComplete) {
             hashingCode +
             "\n" +
             'self.onmessage=async function(e){var msg=e.data;if(msg.type!=="compute-remaining")return;var d=new Uint8Array(msg.buf);var h={};' +
-            'try{h["SHA-3_224"]=await sha3_224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_224"});' +
-            'try{h["SHA-3_256"]=await sha3_256(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_256"});' +
-            'try{h["SHA-3_384"]=await sha3_384(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_384"});' +
-            'try{h["SHA-3_512"]=await sha3_512(d);}catch(e){}self.postMessage({type:"p",key:"SHA-3_512"});' +
-            'try{h["BLAKE2b"]=await blake2b(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2b"});' +
-            'try{h["BLAKE2s"]=await blake2s(d);}catch(e){}self.postMessage({type:"p",key:"BLAKE2s"});' +
-            'try{h["SHA-224"]=await sha224(d);}catch(e){}self.postMessage({type:"p",key:"SHA-224"});' +
-            'try{h["MD5"]=await md5(d);}catch(e){}self.postMessage({type:"p",key:"MD5"});' +
-            'try{h["RIPEMD-160"]=await ripemd160(d);}catch(e){}self.postMessage({type:"p",key:"RIPEMD-160"});' +
-            'try{h["Whirlpool"]=await whirlpool(d);}catch(e){}self.postMessage({type:"p",key:"Whirlpool"});' +
+            'self.postMessage({type:"p",key:"SHA-3_224"});try{h["SHA-3_224"]=await sha3_224(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHA-3_256"});try{h["SHA-3_256"]=await sha3_256(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHA-3_384"});try{h["SHA-3_384"]=await sha3_384(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHA-3_512"});try{h["SHA-3_512"]=await sha3_512(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"BLAKE2b"});try{h["BLAKE2b"]=await blake2b(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"BLAKE2s"});try{h["BLAKE2s"]=await blake2s(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHA-224"});try{h["SHA-224"]=await sha224(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"MD5"});try{h["MD5"]=await md5(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"RIPEMD-160"});try{h["RIPEMD-160"]=await ripemd160(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"Whirlpool"});try{h["Whirlpool"]=await whirlpool(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHA-512/224"});try{h["SHA-512/224"]=await sha512_224(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHA-512/256"});try{h["SHA-512/256"]=await sha512_256(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHAKE128"});try{h["SHAKE128"]=await shake128(d);}catch(e){}' +
+            'self.postMessage({type:"p",key:"SHAKE256"});try{h["SHAKE256"]=await shake256(d);}catch(e){}' +
             'self.postMessage({type:"done",hashes:h});}';
           var blob = new Blob([workerCode], { type: "application/javascript" });
           var workerUrl = URL.createObjectURL(blob);
           var w = new Worker(workerUrl);
-          w.postMessage({ type: "compute-remaining", buf: fileBuf }, [fileBuf]);
+          w.postMessage({ type: "compute-remaining", buf: fileBuf });
           w.onmessage = function (ev) {
             var m = ev.data;
             if (m.type === "p") {
@@ -1674,6 +1898,10 @@ async function computeRemainingHashes(hashesObj, buf, onProgress, onComplete) {
     { key: "MD5", fn: md5 },
     { key: "RIPEMD-160", fn: ripemd160 },
     { key: "Whirlpool", fn: whirlpool },
+    { key: "SHA-512/224", fn: sha512_224 },
+    { key: "SHA-512/256", fn: sha512_256 },
+    { key: "SHAKE128", fn: shake128 },
+    { key: "SHAKE256", fn: shake256 },
   ];
   for (var i = 0; i < fns.length; i++) {
     setProg(fns[i].key + "…");
@@ -1785,7 +2013,7 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
 
   setProg("");
 
-  // Phase 2: Start worker (fast path) AND main thread fallback (slow but guaranteed)
+  // Phase 2: Background worker (off main thread) + main thread fallback
   window._fpWorkerPromise = Promise.resolve();
   if (typeof Worker !== "undefined" && typeof window !== "undefined") {
     window._fpWorkerPromise = startBackgroundWorker(
@@ -1794,16 +2022,19 @@ async function fastFingerprint(file, onProgress, onRemainingHashes) {
       onProgress,
       onRemainingHashes,
     );
+    await window._fpWorkerPromise;
   }
-  // Main thread fallback — ensures all hashes are present when returning
-  await computeRemainingHashes(
-    result.hashes,
-    buf,
-    onProgress,
-    onRemainingHashes,
-  ).catch(function (error) {
-    console.warn("Main-thread hash compute error:", error);
-  });
+  // Fallback: if worker didn't populate hashes, compute on main thread
+  if (!result.hashes["SHA-3_224"]) {
+    await computeRemainingHashes(
+      result.hashes,
+      buf,
+      onProgress,
+      onRemainingHashes,
+    ).catch(function (error) {
+      console.warn("Main-thread hash compute error:", error);
+    });
+  }
 
   return result;
 }

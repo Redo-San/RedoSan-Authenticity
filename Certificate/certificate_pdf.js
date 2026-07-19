@@ -324,6 +324,33 @@ async function downloadCertPDF(data) {
     y += 4;
   }
 
+  // ── 7b. Face Biometric ──
+  if (data.faceBiometric && data.faceBiometric.detected) {
+    checkPage(12);
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.text("Face Biometric", margin, y);
+    y += 5;
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(7);
+    doc.text("Faces detected: " + data.faceBiometric.faceCount, margin, y);
+    y += 4;
+    if (data.faceBiometric.matchLabel) {
+      doc.text("Match: " + data.faceBiometric.matchLabel, margin, y);
+      y += 4;
+    }
+    if (data.faceBiometric.didSigned) {
+      doc.text("DID Signed: Yes", margin, y);
+      y += 4;
+    }
+    if (data.faceBiometric.did) {
+      doc.text("DID: " + data.faceBiometric.did.substring(0, 60) + "...", margin, y);
+      y += 4;
+    }
+    doc.text("Exported: " + data.faceBiometric.exportedAt, margin, y);
+    y += 4;
+  }
+
   // ── 8. Certificate Transparency ──
   if (data.ct && data.ct.submitted && data.ct.hash) {
     checkPage(12);
