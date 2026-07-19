@@ -14,6 +14,23 @@
     "social": "Social",
     "back": "Zurück"
   },
+  "face": {
+    "heading": "Face Biometric Rights",
+    "register_tab": "Register",
+    "verify_tab": "Verify",
+    "manage_tab": "Manage",
+    "privacy_note": "🔒 All face processing is 100% local. Data never leaves your device.",
+    "image_label": "Photo",
+    "image_verify_label": "Photo to Verify",
+    "label_label": "Name / Label",
+    "threshold_label": "Match threshold",
+    "detect_btn": "Detect Face",
+    "register_btn": "Register Face",
+    "verify_btn": "Verify Identity",
+    "count_label": "Registered faces: {0}",
+    "refresh_btn": "Refresh List",
+    "clear_btn": "Clear All"
+  },
   "sidebar": {
     "title": "Speisekarte",
     "home": "Heim",
@@ -31,6 +48,7 @@
     "usage_warning": "⚠️ Nur rechtmäßige Verwendung. Illegale/schädliche Inhalte sind verboten. Die gesamte Verarbeitung erfolgt zu 100 % lokal. ",
     "audio_watermark": "Digitales Audio-Wasserzeichen",
     "forensic": "Forensischer Analysator",
+    "face_biometric": "Face Biometric",
     "document_watermark": "Dokument-Wasserzeichen"
   },
   "home": {
@@ -88,6 +106,11 @@
     "forensic": {
       "title": "Forensischer Analysator",
       "desc": "ELA-, Rausch-, JPEG- und Copy-Move-Manipulationsprüfungen"
+    },
+    "face_biometric": "Face Biometric",
+    "face_biometric": {
+      "title": "Face Biometric",
+      "desc": "Register &amp; verify face descriptors for visual rights"
     },
     "document_watermark": {
       "title": "Dokument-Wasserzeichen",

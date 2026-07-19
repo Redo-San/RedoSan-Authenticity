@@ -201,6 +201,7 @@ export default [
       "no-self-compare": "off",
       "no-sequences": "off",
       "no-unsafe-negation": "off",
+      "unicorn/numeric-separators-style": "off",
     },
   },
   {

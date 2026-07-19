@@ -207,6 +207,8 @@ var LIBRETRANSLATE_OFFICIAL = {
 /**
  * Translate via LibreTranslate API — tries multiple public instances.
  * Falls through each instance on failure, then throws.
+ * @param texts
+ * @param targetLang
  */
 async function translateViaLibreTranslate(texts, targetLang) {
   var langCode = LIBRETRANSLATE_LANG_MAP[targetLang];

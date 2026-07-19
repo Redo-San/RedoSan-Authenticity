@@ -14,6 +14,23 @@
     "social": "Social",
     "back": "Dos"
   },
+  "face": {
+    "heading": "Face Biometric Rights",
+    "register_tab": "Register",
+    "verify_tab": "Verify",
+    "manage_tab": "Manage",
+    "privacy_note": "🔒 All face processing is 100% local. Data never leaves your device.",
+    "image_label": "Photo",
+    "image_verify_label": "Photo to Verify",
+    "label_label": "Name / Label",
+    "threshold_label": "Match threshold",
+    "detect_btn": "Detect Face",
+    "register_btn": "Register Face",
+    "verify_btn": "Verify Identity",
+    "count_label": "Registered faces: {0}",
+    "refresh_btn": "Refresh List",
+    "clear_btn": "Clear All"
+  },
   "sidebar": {
     "title": "Menu",
     "home": "Maison",
@@ -31,6 +48,7 @@
     "usage_warning": "⚠️ Utilisation licite uniquement. Le contenu illégal/préjudiciable est interdit. Toute la transformation est 100% locale. ",
     "audio_watermark": "Filigrane audio numérique",
     "forensic": "Analyseur médico-légal",
+    "face_biometric": "Face Biometric",
     "document_watermark": "Filigrane de documents"
   },
   "home": {
@@ -88,6 +106,11 @@
     "forensic": {
       "title": "Analyseur médico-légal",
       "desc": "Vérifications ELA, bruit, JPEG et altération des mouvements de copie"
+    },
+    "face_biometric": "Face Biometric",
+    "face_biometric": {
+      "title": "Face Biometric",
+      "desc": "Register &amp; verify face descriptors for visual rights"
     },
     "document_watermark": {
       "title": "Filigrane de documents",
