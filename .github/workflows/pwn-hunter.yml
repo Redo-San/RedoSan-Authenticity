@@ -12,7 +12,6 @@ env:
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   scan:
