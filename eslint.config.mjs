@@ -128,7 +128,7 @@ export default [
       "unicorn/prefer-else-if": "off",
       "unicorn/prefer-logical-operator-over-ternary": "off",
       "unicorn/prefer-object-from-entries": "off",
-      "unicorn/prefer-path": "off",
+      "unicorn/prefer-path": "off", "unicorn/prefer-path2d": "off", "unicorn/prefer-uint8array-base64": "off",
       "unicorn/prefer-ternary": "off",
       // 🎯 SonarJS style / redundancy (safe to suppress) 🎯
       "sonarjs/no-unused-vars": "off",
