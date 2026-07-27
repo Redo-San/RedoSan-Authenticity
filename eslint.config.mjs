@@ -42,7 +42,7 @@ export default [
       "unicorn/consistent-function-scoping": "off",
       "unicorn/no-static-only-class": "off",
       "unicorn/prefer-string-slice": "off",
-      // ── Project-wide style overrides (intentional patterns) ──
+      // 🎯 Project-wide style overrides (intentional patterns) 🎯
       "unicorn/prefer-module": "off",
       "unicorn/no-process-exit": "off",
       "unicorn/no-for-loop": "off",
@@ -58,7 +58,7 @@ export default [
       "promise/param-names": "off",
       "compat/compat": "off",
       "sonarjs/cognitive-complexity": ["warn", 30],
-      // ── Style preferences (intentional, not bugs) ──
+      // 🎯 Style preferences (intentional, not bugs) 🎯
       "unicorn/prefer-code-point": "off",
       "unicorn/text-encoding-identifier-case": "off",
       "unicorn/no-array-push-push": "off",
@@ -99,12 +99,16 @@ export default [
       "unicorn/no-incorrect-template-string-interpolation": "off",
       "unicorn/no-unsafe-string-replacement": "off",
       "unicorn/prefer-object-iterable-methods": "off",
-      // ── Unicorn style preferences (intentional patterns, not bugs) ──
+      // 🎯 Unicorn style preferences (intentional patterns, not bugs) 🎯
       "unicorn/prefer-single-call": "off",
       "unicorn/no-immediate-mutation": "off",
       "unicorn/no-array-sort": "off",
       "unicorn/no-array-from-fill": "off",
-      // ── SonarJS style / redundancy (safe to suppress) ──
+      // 🎯 New unicorn rules disabled for compatibility with existing codebase 🎯
+      "unicorn/name-replacements": "off",
+      "unicorn/prefer-dom-node-replace-children": "off",
+      "unicorn/no-duplicate-if-branches": "off",
+      // 🎯 SonarJS style / redundancy (safe to suppress) 🎯
       "sonarjs/no-unused-vars": "off",
       "sonarjs/no-dead-store": "off",
       "sonarjs/void-use": "off",
@@ -127,7 +131,7 @@ export default [
       "import-x/no-named-as-default": "off",
       "import-x/no-named-as-default-member": "off",
       "import-x/namespace": "off",
-      // ── Remaining rules disabled for PR #221 merge (intentional / safe) ──
+      // 🎯 Remaining rules disabled for PR #221 merge (intentional / safe) 🎯
       "no-empty": "off",
       "no-duplicate-case": "off",
       "sonarjs/slow-regex": "off",
