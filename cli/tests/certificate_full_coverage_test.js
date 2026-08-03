@@ -55,6 +55,7 @@ function mockElement(id, overrides) {
 function clearMockElements() {
   _domElements = {};
   _createdElements = [];
+  clearOTSMock();
 }
 
 // ── Global setup ──
@@ -147,6 +148,11 @@ function clearOTSMock() {
   delete globalThis.OpenTimestamps;
 }
 
+function mockDocumentElements() {
+  globalThis.document.documentElement = { dataset: { standalone: true } };
+  globalThis.document.body = { append: function() {}, remove: function() {} };
+}
+
 // ── Load certificate modules ──
 function loadModule(filePath) {
   var src = fs.readFileSync(filePath, "utf8");
@@ -157,6 +163,7 @@ function loadModule(filePath) {
 
 before(function () {
   clearMockElements();
+  mockDocumentElements();
   loadModule(path.join(__dirname, "../../Certificate/certificate_utils.js"));
   loadModule(path.join(__dirname, "../../Certificate/certificate_ots.js"));
   loadModule(path.join(__dirname, "../../Certificate/certificate_epub.js"));

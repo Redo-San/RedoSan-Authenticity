@@ -601,10 +601,11 @@
               </div>
               <div>
                 <div class="simple-phone-group">
-                  <select
-                    id="cert-phonecode"
-                    onchange="updatePhoneMaxLength()"
-                  ></select>
+                   <select
+                     id="cert-phonecode"
+                     aria-label="Country phone code"
+                     onchange="updatePhoneMaxLength()"
+                   ></select>
                   <input
                     type="tel"
                     id="cert-phone"
@@ -1214,11 +1215,11 @@
       })();
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0" crossorigin="anonymous" defer></script>
-    <script src="../../../vendor/jspdf.umd.min.js" defer></script>
-    <script src="../../../vendor/qrious.min.js" defer></script>
-    <script src="../../../vendor/jszip.min.js" defer></script>
-    <script src="../../../vendor/opentimestamps.min.js" defer></script>
+    <script>
+      // Certificate vendors (jspdf, qrious, jszip, OpenTimestamps, docx) are
+      // lazy-loaded on demand via ensureLib() in certificate.js when the user
+      // exports/timestamps — they no longer block first paint / TBT.
+    </script>
     <script src="../../../Certificate/certificate_ots.js" defer></script>
     <script src="../../../Certificate/certificate_utils.js" defer></script>
     <script src="../../../Certificate/certificate_pdf.js" defer></script>

@@ -5232,7 +5232,7 @@
         loop
         preload="none"
       ></audio>
-      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music" onclick="lazyLoadMusic(event)">
         &#x1F3B5;
       </button>
       <div
@@ -5245,9 +5245,7 @@
       </div>
     </div>
 
-    <script src="Style/music-player.js" defer></script>
-    
-    <script src="Style/shared_validation.js" defer></script>
+     <script src="Style/shared_validation.js" defer></script>
     <script src="Style/shared.js" defer></script>
         <script>
       (function () {
@@ -5272,8 +5270,18 @@
       })();
     </script>
     <script src="Style/search.js" defer></script>
-    <script src="Assistant/assistant_data.js" defer></script>
-    <script src="Assistant/assistant.js" defer></script>
+    <script>
+      // Music player is lazy-loaded on first click (defers non-essential
+      // audio init out of the SPA shell critical path / TBT). music-player.js
+      // exposes globalThis.__musicInit once loaded.
+      (function(){var _m=false;window.lazyLoadMusic=function(e){if(_m){var fn=window.__musicInit;if(typeof fn==='function')fn();return}_m=true;var d=document,s=document.createElement('script');s.src='Style/music-player.js';s.defer=true;s.onload=function(){var fn=window.__musicInit;if(typeof fn==='function')fn();};d.body.appendChild(s);}})();
+    </script>
+    <script>
+      // Assistant is lazy-loaded on bubble click (mirrors the per-page
+      // lazyLoadAssistant pattern) so assistant_data.js + assistant.js no
+      // longer block the SPA shell's first paint / TBT.
+      (function(){var _a=false;window.lazyLoadAssistant=function(e){if(_a){if(typeof toggleAssistant==='function')toggleAssistant();return}_a=true;var d=document,s1=d.createElement('script');s1.src='Assistant/assistant_data.js';s1.onload=function(){var s2=d.createElement('script');s2.src='Assistant/assistant.js';s2.onload=function(){if(typeof initAssistant==='function')initAssistant();if(typeof toggleAssistant==='function')toggleAssistant()};d.body.appendChild(s2)};d.body.appendChild(s1)}})();
+    </script>
     <script src="Style/loader.js" defer></script>
     <script src="Style/navigation.js" defer></script>
     <script>
@@ -5419,7 +5427,7 @@
       role="button"
       aria-label="Open assistant"
       tabindex="0"
-      onclick="toggleAssistant()"
+      onclick="lazyLoadAssistant(event)"
     >
       <span>💬</span>
     </div>

@@ -97,6 +97,7 @@ async function collectCertData() {
  */
 async function stampCertFile(blob, format) {
   try {
+    await ensureLib("OpenTimestamps");
     var buf = await blob.arrayBuffer();
     var hashBuf = await crypto.subtle.digest("SHA-256", buf);
     var hashBytes = new Uint8Array(hashBuf);
@@ -134,27 +135,50 @@ function ensureLib(name) {
     if (name === "jspdf" && typeof jspdf !== "undefined") return resolve();
     if (name === "QRious" && typeof QRious !== "undefined") return resolve();
     if (name === "JSZip" && typeof JSZip !== "undefined") return resolve();
-    // Static vendor script didn't load — try CDN fallbacks
-    /* c8 ignore next 18 */
+    if (name === "docx" && typeof docx !== "undefined") return resolve();
+    if (name === "OpenTimestamps" && typeof OpenTimestamps !== "undefined") return resolve();
+    // Static vendor script didn't load yet — try local vendor first, then CDN fallbacks.
+    /* c8 ignore next 40 */
+    var vbase = document.documentElement.dataset.standalone ? "../../../vendor/" : "vendor/";
     var urls;
-    if (name === "jspdf")
-      urls = [
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
-        "https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js",
-        "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
-      ];
-    else if (name === "QRious")
-      urls = [
-        "https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js",
-        "https://unpkg.com/qrious@4.0.2/dist/qrious.min.js",
-        "https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js",
-      ];
-    else
-      urls = [
-        "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
-        "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js",
-        "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
-      ];
+    switch (name) {
+      case "jspdf": {
+        urls = [
+          "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+          "https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js",
+          "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
+        ];
+        break;
+      }
+      case "QRious": {
+        urls = [
+          "https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js",
+          "https://unpkg.com/qrious@4.0.2/dist/qrious.min.js",
+          "https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js",
+        ];
+        break;
+      }
+      case "docx": {
+        urls = [
+          "https://cdn.jsdelivr.net/npm/docx@8.5.0",
+          "https://unpkg.com/docx@8.5.0/build/index.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js",
+        ];
+        break;
+      }
+      case "OpenTimestamps": {
+        urls = [vbase + "opentimestamps.min.js"];
+        break;
+      }
+      default: {
+        urls = [
+          "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+          "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js",
+          "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+        ];
+        break;
+      }
+    }
     var idx = 0;
     /**
      *
@@ -293,11 +317,13 @@ async function downloadCert(format, btn) {
       certBlob = await downloadCertPDF(data);
     } else if (format === "docx" || format === "epub") {
       await ensureLib("QRious");
-      if (format === "docx") certBlob = await downloadCertDOCX(data);
-      else {
-        await ensureLib("JSZip");
-        certBlob = await downloadCertEPUB(data);
-      }
+       if (format === "docx") {
+         await ensureLib("docx");
+         certBlob = await downloadCertDOCX(data);
+       } else {
+         await ensureLib("JSZip");
+         certBlob = await downloadCertEPUB(data);
+       }
     }
     // Stamp the certificate file itself
     if (certBlob) {
