@@ -159,6 +159,84 @@ describe("Forensic Core - metadataSignals", () => {
   });
 });
 
+describe("Forensic Core — JPEG edge cases", () => {
+  it("should handle padding non-FF bytes before marker (lines 98-100)", () => {
+    // bytes[2]=0xEE is not 0xFF, so the loop at line 98-100 increments off and continues
+    const buf = new Uint8Array([
+      0xFF, 0xD8, // SOI
+      0xEE,       // Non-FF padding byte (line 98: bytes[off] !== 0xff → off++; continue)
+      0xFF, 0xE0, // APP0
+      0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00,
+      0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
+      0xFF, 0xD9, // EOI
+    ]);
+    const r = core.parseJpegMarkers(buf);
+    assert.equal(r.is_jpeg, true);
+    assert.equal(r.has_eoi, true);
+  });
+
+  it("should warn on invalid segment length (lines 108-112)", () => {
+    const buf = new Uint8Array([
+      0xFF, 0xD8, // SOI
+      0xFF, 0xE0, // APP0
+      0x00, 0x00, // length = 0 (< 2, invalid)
+      0xFF, 0xD9, // EOI
+    ]);
+    const r = core.parseJpegMarkers(buf);
+    assert.equal(r.is_jpeg, true);
+    assert.ok(
+      r.warnings.some(function (w) { return w.indexOf("Invalid") !== -1 || w.indexOf("segment") !== -1; }),
+      "Expected invalid segment warning, got: " + JSON.stringify(r.warnings),
+    );
+  });
+
+  it("should handle segment length that exceeds buffer (lines 108-112)", () => {
+    const buf = new Uint8Array([
+      0xFF, 0xD8, // SOI
+      0xFF, 0xE0, // APP0
+      0x00, 0x64, // length = 100 (exceeds buffer)
+      0xFF, 0xD9, // EOI
+    ]);
+    const r = core.parseJpegMarkers(buf);
+    assert.equal(r.is_jpeg, true);
+    assert.ok(
+      r.warnings.some(function (w) { return w.indexOf("Invalid") !== -1; }),
+      "Expected invalid segment warning",
+    );
+  });
+});
+
+describe("Forensic Core — analyzeNoise: high-residual tiles (lines 202-209)", () => {
+  it("should detect suspicious tiles in high-contrast region", () => {
+    var w = 64, h = 64;
+    var data = new Uint8ClampedArray(w * h * 4);
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var idx = (y * w + x) * 4;
+        var val;
+        if (x < 32) {
+          // Smooth left half
+          val = Math.min(255, Math.floor((x / 32) * 80 + (y / 64) * 40));
+        } else {
+          // High-frequency checkerboard right half
+          val = ((x + y) % 2 === 0) ? 240 : 16;
+        }
+        data[idx] = val;
+        data[idx + 1] = val;
+        data[idx + 2] = val;
+        data[idx + 3] = 255;
+      }
+    }
+    var img = { width: w, height: h, data: data };
+    var r = core.analyzeNoise(img);
+    assert.ok(Array.isArray(r.suspicious_tiles));
+    assert.ok(typeof r.mean_residual === "number");
+    assert.ok(typeof r.stddev_residual === "number");
+    assert.ok(typeof r.high_residual === "number");
+    assert.ok(typeof r.suspicion === "number");
+  });
+});
+
 describe("Forensic Core - combineFindings", () => {
   it("should return low risk for clean inputs", () => {
     const r = core.combineFindings({
@@ -290,6 +368,63 @@ describe("Forensic CLI - runForensic output", () => {
     } finally {
       console.log = origLog;
       if (fs.existsSync(out)) fs.unlinkSync(out);
+    }
+  });
+});
+
+describe("Forensic CLI - error paths", () => {
+  it("should reject image exceeding max dimension", async () => {
+    const out = path.join(__dirname, "tmp_forensic_large.png");
+    // Create a test image larger than FORENSIC_MAX_DIMENSION (4000px)
+    makeTestImage(out, 5000, 10);
+    try {
+      await assert.rejects(
+        () => analyzeForensicFile(out),
+        /exceed maximum allowed/
+      );
+    } finally {
+      if (fs.existsSync(out)) fs.unlinkSync(out);
+    }
+  });
+
+  it("should handle blocked dangerous file type via runForensic", async () => {
+    const out = path.join(__dirname, "tmp_forensic_dangerous.svg");
+    fs.writeFileSync(out, "<svg></svg>");
+    let output = "";
+    const origLog = console.log;
+    const origError = console.error;
+    const origExit = process.exit;
+    console.log = () => {};
+    console.error = (...args) => { output += args.join(" "); };
+    let exitCode = null;
+    process.exit = (code) => { exitCode = code; };
+    try {
+      await runForensic(out, {});
+      assert.ok(output.includes("Blocked dangerous file type"), `Expected blocked error in: "${output}"`);
+      assert.equal(exitCode, 1);
+    } finally {
+      console.log = origLog;
+      console.error = origError;
+      process.exit = origExit;
+      if (fs.existsSync(out)) fs.unlinkSync(out);
+    }
+  });
+
+  it("should handle generic file read error", async () => {
+    const out = path.join(__dirname, "nonexistent_file_xyz.png");
+    let output = "";
+    const origError = console.error;
+    const origExit = process.exit;
+    console.error = (...args) => { output += args.join(" "); };
+    let exitCode = null;
+    process.exit = (code) => { exitCode = code; };
+    try {
+      await runForensic(out, {});
+      assert.ok(output.includes("File not found"), `Expected 'File not found' error in: "${output}"`);
+      assert.equal(exitCode, 1);
+    } finally {
+      console.error = origError;
+      process.exit = origExit;
     }
   });
 });

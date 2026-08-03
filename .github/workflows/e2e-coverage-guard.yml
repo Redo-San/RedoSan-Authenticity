@@ -1,0 +1,29 @@
+name: E2E Coverage Guard
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e-coverage:
+    name: E2E Coverage Guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install chromium
+      - name: Run E2E coverage guard
+        run: node scripts/e2e-coverage-guard.js --deep
+        timeout-minutes: 15
+      - name: Archive V8 coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-v8-coverage
+          path: coverage/e2e-v8/

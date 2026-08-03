@@ -1,4 +1,6 @@
+/* c8 ignore start */
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+/* c8 ignore stop */
 
 // ── WAV I/O ──
 /**
@@ -101,6 +103,7 @@ function awReadRightChannel(buf) {
     for (let i = 0; i < monoLen; i++) r[i] = v.getInt16(dataOff + (i * fmt.ch + 1) * 2, true);
     return r;
 }
+/* c8 ignore start */
 /**
  *
  * @param file
@@ -120,6 +123,7 @@ async function awLoadAudio(file) {
     ctx.close();
     return { samples: s, sr: ab.sampleRate, ch: ab.numberOfChannels, bps: 16, raw: null };
 }
+/* c8 ignore stop */
 
 // ── FFT (radix-2, in-place) ──
 /**

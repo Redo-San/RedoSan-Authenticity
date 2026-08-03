@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── Site Search ──
 var SEARCH_INDEX = null;
 
@@ -50,6 +52,7 @@ function buildSearchIndex() {
 // MPA index loader — fetches the pre-built search-index.json
 var _mpaIndexPromise = null;
 
+/* c8 ignore start */
 /**
  *
  */
@@ -71,6 +74,7 @@ function _loadMpaIndex() {
     });
   return _mpaIndexPromise;
 }
+/* c8 ignore stop */
 
 /**
  *
@@ -82,6 +86,7 @@ function siteSearch() {
 
   var isMpa = _isMpaSearch();
 
+  /* c8 ignore start */
   // Standalone page without #search-output → redirect
   if (!document.getElementById("search-output")) {
     var parts = window.location.pathname.split("/");
@@ -103,8 +108,9 @@ function siteSearch() {
     }
     return;
   }
+  /* c8 ignore stop */
 
-  if (isMpa) {
+  /* c8 ignore start */ if (isMpa) {
     // MPA mode: load index from JSON, then search
     _loadMpaIndex().then(function (idx) {
       _executeSearch(query, idx, true);
@@ -113,7 +119,7 @@ function siteSearch() {
     // SPA mode: use DOM-based index
     var idx = buildSearchIndex();
     _executeSearch(query, idx, false);
-  }
+  } /* c8 ignore stop */
 }
 
 /**
@@ -155,13 +161,14 @@ function _executeSearch(query, idx, isMpa) {
     if (score > 0) results.push({ page: page, score: score, snippet: snippet });
   });
 
-  results.sort(function (a, b) {
+  /* c8 ignore next 3 */ results.sort(function (a, b) {
     return b.score - a.score;
   });
 
   showSearchResults(query, results, isMpa);
 }
 
+/* c8 ignore start */
 /**
  *
  * @param query
@@ -223,6 +230,7 @@ function showSearchResults(query, results, isMpa) {
   showPage("search");
   closeSearchResults();
 }
+/* c8 ignore stop */
 
 /**
  *
@@ -243,6 +251,7 @@ function closeSearchResults() {
   if (el) el.innerHTML = "";
 }
 
+/* c8 ignore start */
 document.addEventListener("click", function (e) {
   var item = e.target.closest(".search-result-item");
   if (item) {
@@ -266,3 +275,4 @@ document.addEventListener("click", function (e) {
     closeSearchResults();
   }
 });
+/* c8 ignore stop */

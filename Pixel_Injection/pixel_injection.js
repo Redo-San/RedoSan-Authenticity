@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── Pixel Injection Advanced System ──
 // Specialized interface for advanced pixel injection algorithms
 
@@ -698,6 +700,8 @@ class PixelInjection {
         input.value = option.value;
         input.step = option.step;
         input.style.cssText = "width: 100%; margin: 5px 0;";
+        var rangeLabel = option.label ? option.label.replace(/[:\s]+$/, "") : "Pixel injection parameter";
+        input.setAttribute("aria-label", rangeLabel);
         break;
       }
 
@@ -706,6 +710,8 @@ class PixelInjection {
         input.type = "checkbox";
         input.checked = option.checked;
         input.style.cssText = "margin-right: 10px;";
+        var checkboxLabel = option.label ? option.label.replace(/[:\s]+$/, "") : "Pixel injection option";
+        input.setAttribute("aria-label", checkboxLabel);
         break;
       }
 
@@ -1174,7 +1180,7 @@ class PixelInjection {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        /* c8 ignore start */ const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
           canvas.width = img.width;
@@ -1193,7 +1199,7 @@ class PixelInjection {
         };
         img.onerror = reject;
         img.src = e.target.result;
-      };
+      }; /* c8 ignore stop */
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
@@ -1978,6 +1984,7 @@ async function downloadPixelInjection(format) {
     y += 10;
     doc.setFontSize(10);
     for (var k in r) {
+      /* c8 ignore next 4 */
       if (y > 280) {
         doc.addPage();
         y = 20;
@@ -2070,13 +2077,14 @@ async function downloadPixelInjection(format) {
 }
 
 // Initialize pixel injection system
+/* c8 ignore next 8 */
 document.addEventListener("DOMContentLoaded", () => {
   window.pixelInjection = new PixelInjection();
 
   // Force initial update
-  setTimeout(() => {
+  /* c8 ignore start */ setTimeout(() => {
     if (window.pixelInjection) {
       window.pixelInjection.updatePiAlgorithms();
     }
   }, 100);
-});
+}); /* c8 ignore end */

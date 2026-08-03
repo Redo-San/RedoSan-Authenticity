@@ -18,7 +18,7 @@ globalThis.AbortController = class {
 };
 
 const src = fs.readFileSync(path.join(__dirname, "../../Timestamp/timestamp.js"), "utf8");
-vm.runInThisContext(src, { filename: "timestamp.js" });
+vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Timestamp/timestamp.js") });
 
 describe("Timestamp — otsBuildDetached", () => {
   it("should build a valid OTS byte array", () => {
@@ -114,5 +114,56 @@ describe("Timestamp — getOtsUpgradeCommand", () => {
   it("should handle empty file name", () => {
     const cmd = getOtsUpgradeCommand("");
     assert.ok(typeof cmd === "string");
+  });
+});
+
+describe("Timestamp — upgradeOts", () => {
+  // Fetch is already stubbed in global setup to throw "no network"
+  // upgradeOts tries both aggregators and re-throws the last error
+
+  it("should throw when all aggregators fail (fetch stub)", async () => {
+    await assert.rejects(
+      () => upgradeOts(new Uint8Array([1, 2, 3])),
+      /no network/,
+    );
+  });
+
+  it("should throw when fetch returns non-ok HTTP response", async () => {
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = async (url, opts) => {
+      return {
+        ok: false,
+        status: 503,
+        arrayBuffer: async () => new Uint8Array(0).buffer,
+      };
+    };
+    try {
+      await assert.rejects(
+        () => upgradeOts(new Uint8Array([1, 2, 3])),
+        /HTTP 503/,
+      );
+    } finally {
+      globalThis.fetch = origFetch;
+    }
+  });
+
+  it("should succeed when fetch returns ok response", async () => {
+    // Temporarily override fetch to return a successful response
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = async (url, opts) => {
+      return {
+        ok: true,
+        arrayBuffer: async () => new Uint8Array([0x01, 0x02, 0x03]).buffer,
+      };
+    };
+    try {
+      const result = await upgradeOts(new Uint8Array([1, 2, 3]));
+      assert.ok(result instanceof Uint8Array);
+      assert.equal(result.length, 3);
+      assert.equal(result[0], 0x01);
+      assert.equal(result[1], 0x02);
+    } finally {
+      globalThis.fetch = origFetch;
+    }
   });
 });

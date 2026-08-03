@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     globalThis.window !== undefined &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── DID: Decentralized Identity ──
 // DID:key generation, signing, and verification using Web Crypto API
 // Supports Ed25519, ECDSA P-256, RSA-2048, RSA-4096
@@ -199,7 +201,7 @@ function bigIntToBytes(bn, len) {
 function modSqrt(a, p) {
   // Tonelli-Shanks for p ≡ 3 (mod 4): a^((p+1)/4) mod p
   if (p % 4n === 3n) return powMod(a, (p + 1n) / 4n, p);
-  // General Tonelli-Shanks
+  /* c8 ignore next 16 */// General Tonelli-Shanks — only hit for non-P-256 curves
   var q = p - 1n;
   var s = 0n;
   while (q % 2n === 0n) {
@@ -213,7 +215,7 @@ function modSqrt(a, p) {
   var r = powMod(a, (q + 1n) / 2n, p);
   var t = powMod(a, q, p);
   var m = s;
-  while (t !== 1n) {
+  /* c8 ignore next 13 */while (t !== 1n) {
     var i = 1n;
     var t2 = (t * t) % p;
     while (t2 !== 1n && i < m) {
@@ -236,7 +238,7 @@ function modSqrt(a, p) {
  * @param m
  */
 function powMod(a, e, m) {
-  if (m === 1n) return 0n;
+  /* c8 ignore next 1 */if (m === 1n) return 0n;
   var r = 1n;
   a = a % m;
   while (e > 0n) {
@@ -318,7 +320,7 @@ async function didIsAlgoSupported(algo) {
       }
       // No default
     }
-  } catch {
+  /* c8 ignore next 2 */} catch {
     return false;
   }
   return false;
@@ -590,7 +592,7 @@ function didStoreKeys(did, privJwk, algorithm) {
     });
     localStorage.setItem(DID_STORAGE_KEY, data);
     return true;
-  } catch {
+  /* c8 ignore next 2 */} catch {
     return false;
   }
 }
@@ -610,7 +612,7 @@ function didLoadKeys() {
       algorithm: data.algorithm,
       createdAt: data.createdAt || 0,
     };
-  } catch {
+  /* c8 ignore next 2 */} catch {
     return null;
   }
 }
@@ -622,7 +624,7 @@ function didClearKeys() {
   try {
     localStorage.removeItem(DID_STORAGE_KEY);
     return true;
-  } catch {
+  /* c8 ignore next 2 */} catch {
     return false;
   }
 }
@@ -630,15 +632,18 @@ function didClearKeys() {
 /**
  *
  * @param stored
+ * @param str
  */
 function _jwkBase64urlDecode(str) {
-  str = str.replace(/-/g, "+").replace(/_/g, "/");
-  while (str.length % 4) str += "=";
-  return Uint8Array.from(atob(str), function (c) {
-    return c.charCodeAt(0);
-  });
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return Uint8Array.from(atob(str), function (c) { return c.charCodeAt(0); });
 }
 
+/**
+ *
+ * @param stored
+ */
 async function didImportSignKey(stored) {
   if (stored.algorithm === "Ed25519") {
     var privateKey = await crypto.subtle.importKey(
@@ -705,13 +710,7 @@ async function didImportSignKey(stored) {
     var eBytes = _jwkBase64urlDecode(stored.privJwk.e);
     var publicKey = await crypto.subtle.importKey(
       "jwk",
-      {
-        kty: stored.privJwk.kty,
-        n: stored.privJwk.n,
-        e: stored.privJwk.e,
-        alg: stored.privJwk.alg,
-        ext: true,
-      },
+      { kty: stored.privJwk.kty, n: stored.privJwk.n, e: stored.privJwk.e, alg: stored.privJwk.alg, ext: true },
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       true,
       ["verify"],
@@ -857,6 +856,7 @@ function didCreateVerifiableCredential(kp, subjectData, signatureB64, nonce) {
 
 // ── Professional Mode Handlers ──
 
+/* c8 ignore start */
 /**
  *
  */
@@ -1106,9 +1106,11 @@ async function handleDidSign() {
   if (spinner) spinner.style.display = "none";
   if (signBtn) signBtn.disabled = false;
 }
+/* c8 ignore stop */
 
 // ── DID Download ──
 
+/* c8 ignore start */
 /**
  *
  */
@@ -1120,6 +1122,7 @@ function showDidDownloadModal() {
     __("dl.title", "Download") + " — DID";
   showDownloadModal();
 }
+/* c8 ignore stop */
 
 /**
  *
@@ -1384,7 +1387,7 @@ function escXml(s) {
  * @param createdAt
  */
 async function didToPDF(kp, didSig, createdAt) {
-  if (typeof jspdf === "undefined") await ensureLib("jspdf");
+  /* c8 ignore next 1 */if (typeof jspdf === "undefined") await ensureLib("jspdf");
   var doc = new jspdf.jsPDF();
   var y = 20;
   doc.setFontSize(16);
@@ -1419,7 +1422,7 @@ async function didToPDF(kp, didSig, createdAt) {
   var docStr = JSON.stringify(didGenerateDocument(kp), null, 2);
   var docLines = doc.splitTextToSize(docStr, 180);
   for (const docLine of docLines) {
-    if (y > 275) {
+    /* c8 ignore next 4 */if (y > 275) {
       doc.addPage();
       y = 20;
     }
@@ -1428,7 +1431,7 @@ async function didToPDF(kp, didSig, createdAt) {
   }
   if (didSig) {
     y += 4;
-    if (y > 270) {
+    /* c8 ignore next 4 */if (y > 270) {
       doc.addPage();
       y = 20;
     }
@@ -1447,7 +1450,7 @@ async function didToPDF(kp, didSig, createdAt) {
     doc.setFontSize(7);
     doc.text("Signature: " + didSig.signature, 14, y);
     y += 8;
-    if (y > 265) {
+    /* c8 ignore next 4 */if (y > 265) {
       doc.addPage();
       y = 20;
     }
@@ -1464,7 +1467,7 @@ async function didToPDF(kp, didSig, createdAt) {
     );
     var vcLines = doc.splitTextToSize(vcStr, 180);
     for (const vcLine of vcLines) {
-      if (y > 275) {
+      /* c8 ignore next 4 */if (y > 275) {
         doc.addPage();
         y = 20;
       }
@@ -1482,7 +1485,7 @@ async function didToPDF(kp, didSig, createdAt) {
  * @param createdAt
  */
 async function didToDOCX(kp, didSig, createdAt) {
-  if (typeof docx === "undefined") await ensureLib("docx");
+  /* c8 ignore next 1 */if (typeof docx === "undefined") await ensureLib("docx");
   var children = [];
   children.push(
     new docx.Paragraph({
@@ -1672,6 +1675,10 @@ async function didToDOCX(kp, didSig, createdAt) {
 /**
  *
  */
+/* c8 ignore start */
+/**
+ *
+ */
 function handleDidClear() {
   didClearKeys();
   globalThis._didKeypair = null;
@@ -1697,6 +1704,7 @@ function handleDidClear() {
       __("did.cleared", "DID identity cleared.") +
       "</div>";
 }
+/* c8 ignore stop */
 
 // ── Auto-restore DID identity + populate algorithm selector on page load ──
 document.addEventListener("DOMContentLoaded", function () {

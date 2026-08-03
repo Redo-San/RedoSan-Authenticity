@@ -19,39 +19,7 @@
       href="/RedoSan-Authenticity/favicon.ico"
     />
     <link rel="stylesheet" href="/RedoSan-Authenticity/Style/style.css" />
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-ar.js"
-      defer
-    ></script>
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-de.js"
-      defer
-    ></script>
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-en.js"
-      defer
-    ></script>
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-es.js"
-      defer
-    ></script>
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-fr.js"
-      defer
-    ></script>
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-ja.js"
-      defer
-    ></script>
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-ko.js"
-      defer
-    ></script>
-    <script
-      src="/RedoSan-Authenticity/Style/lang/i18n-data-zh.js"
-      defer
-    ></script>
-    <script src="/RedoSan-Authenticity/Style/lang/i18n-data.js" defer></script>
+    
     <script src="/RedoSan-Authenticity/Style/i18n.js" defer></script>
     <script
       src="/RedoSan-Authenticity/Style/shared_validation.js"
@@ -128,7 +96,7 @@
 
     <nav>
       <div class="nav-left">
-        <a href="/RedoSan-Authenticity/" class="logo">
+        <a href="/RedoSan-Authenticity/" class="logo" aria-label="RedoSan Authenticity">
           <div
             class="logo-img logo-white"
             role="img"
@@ -354,10 +322,6 @@
         "/RedoSan-Authenticity/sw.js",
         "/RedoSan-Authenticity/Style/shared_validation.js",
         "/RedoSan-Authenticity/Style/shared.js",
-        "/RedoSan-Authenticity/Style/simplified_countries.js",
-        "/RedoSan-Authenticity/Style/simplified_helpers.js",
-        "/RedoSan-Authenticity/Style/simplified_renderers.js",
-        "/RedoSan-Authenticity/Style/simplified.js",
         "/RedoSan-Authenticity/Style/navigation.js",
         "/RedoSan-Authenticity/Style/i18n.js",
         "/RedoSan-Authenticity/Style/search.js",
@@ -400,6 +364,21 @@
         "/RedoSan-Authenticity/vendor/jszip.min.js",
         "/RedoSan-Authenticity/vendor/opentimestamps.min.js",
         "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
+        
+        "/RedoSan-Authenticity/Document_Watermark/document_watermark_core.js",
+        "/RedoSan-Authenticity/Document_Watermark/document_watermark_report.js",
+        "/RedoSan-Authenticity/Document_Watermark/document_watermark_pdf.js",
+        "/RedoSan-Authenticity/Document_Watermark/text_extractor.js",
+        "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
+        "/RedoSan-Authenticity/Style/mpa-router.js",
+        "/RedoSan-Authenticity/Style/music-player.js",
+        "/RedoSan-Authenticity/stryker.conf.js",
+        "/RedoSan-Authenticity/sw-precache.js",
+        "/RedoSan-Authenticity/Style/simplified.js",
+        "/RedoSan-Authenticity/Style/simplified_countries.js",
+        "/RedoSan-Authenticity/Style/simplified_helpers.js",
+        "/RedoSan-Authenticity/Style/simplified_renderers.js",
+        "/RedoSan-Authenticity/Style/lang/i18n-data.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-ar.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-de.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-en.js",
@@ -408,15 +387,203 @@
         "/RedoSan-Authenticity/Style/lang/i18n-data-ja.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-ko.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-zh.js",
-        "/RedoSan-Authenticity/Style/lang/i18n-data.js",
-        "/RedoSan-Authenticity/Document_Watermark/document_watermark_core.js",
-        "/RedoSan-Authenticity/Document_Watermark/document_watermark_report.js",
-        "/RedoSan-Authenticity/Document_Watermark/document_watermark_pdf.js",
-        "/RedoSan-Authenticity/Document_Watermark/text_extractor.js",
-        "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
-        "/RedoSan-Authenticity/Style/mpa-router.js",
-        "/RedoSan-Authenticity/Style/music-player.js",
+        "/RedoSan-Authenticity/scripts/build-search-index.js",
+        "/RedoSan-Authenticity/scripts/e2e-coverage-guard.js",
+        "/RedoSan-Authenticity/scripts/fix-orphan-labels.js",
+        "/RedoSan-Authenticity/scripts/sync-i18n-json-to-js.js",
+        "/RedoSan-Authenticity/scripts/translate-i18n.js",
+        "/RedoSan-Authenticity/eslint.config.mjs",
+        "/RedoSan-Authenticity/commitlint.config.mjs",
+        "/RedoSan-Authenticity/madge.config.js",
+        "/RedoSan-Authenticity/workbox-config.js",
+        "/RedoSan-Authenticity/lighthouserc.js",
+        "/RedoSan-Authenticity/jsdom-test-config.js",
+        "/RedoSan-Authenticity/dev-server.js",
       ];
+
+      var CSS_WHITELIST = [
+        "/RedoSan-Authenticity/Style/style.css",
+        "/RedoSan-Authenticity/Style/rtl.css",
+        "/RedoSan-Authenticity/Style/responsive.css",
+        "/RedoSan-Authenticity/Style/music-player.css",
+        "/RedoSan-Authenticity/Style/pages/about/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/about/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/audio-watermark/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/audio-watermark/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/c2pa/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/c2pa/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/certificate/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/certificate/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/contact/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/contact/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/converter/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/converter/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/did/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/did/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/document-watermark/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/document-watermark/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/fingerprint/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/fingerprint/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/forensic/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/forensic/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/home/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/home/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/id_forge/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/id_forge/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/metadata/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/metadata/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/pixel-injection/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/pixel-injection/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/privacy/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/privacy/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/removal-tools/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/removal-tools/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/search/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/search/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/social/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/social/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/timestamp/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/timestamp/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/watermark/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/watermark/css/responsive.css",
+      ];
+
+      var YML_WHITELIST = [
+        "/RedoSan-Authenticity/.github/workflows/deploy-pages.yml",
+        "/RedoSan-Authenticity/.github/workflows/a11y-fix.yml",
+        "/RedoSan-Authenticity/.github/workflows/ci.yml",
+        "/RedoSan-Authenticity/.github/workflows/codeql.yml",
+        "/RedoSan-Authenticity/.github/workflows/codebase-audit.yml",
+        "/RedoSan-Authenticity/.github/workflows/scorecards.yml",
+        "/RedoSan-Authenticity/.github/workflows/review.yml",
+        "/RedoSan-Authenticity/.github/workflows/malware-scan.yml",
+        "/RedoSan-Authenticity/.github/workflows/labeler.yml",
+        "/RedoSan-Authenticity/.github/workflows/zizmor.yml",
+        "/RedoSan-Authenticity/.github/workflows/npm-audit-checker.yml",
+        "/RedoSan-Authenticity/.github/workflows/translate.yml",
+        "/RedoSan-Authenticity/.github/workflows/pwn-hunter.yml",
+        "/RedoSan-Authenticity/.github/workflows/welcome.yml",
+        "/RedoSan-Authenticity/.github/workflows/abom.yml",
+        "/RedoSan-Authenticity/.github/workflows/dependency-review.yml",
+        "/RedoSan-Authenticity/.github/workflows/css-lint.yml",
+        "/RedoSan-Authenticity/.github/workflows/dead-css.yml",
+        "/RedoSan-Authenticity/.github/workflows/html-hint.yml",
+        "/RedoSan-Authenticity/.github/workflows/spell-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/broken-links.yml",
+        "/RedoSan-Authenticity/.github/workflows/todo-issues.yml",
+        "/RedoSan-Authenticity/.github/workflows/console-log-detector.yml",
+        "/RedoSan-Authenticity/.github/workflows/file-size-budget.yml",
+        "/RedoSan-Authenticity/.github/workflows/js-syntax-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/cross-ref-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/permissions-sheriff.yml",
+        "/RedoSan-Authenticity/.github/workflows/prettier-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/secret-scanner.yml",
+        "/RedoSan-Authenticity/.github/workflows/auto-assign.yml",
+        "/RedoSan-Authenticity/.github/workflows/branch-name-lint.yml",
+        "/RedoSan-Authenticity/.github/workflows/issue-labeler.yml",
+        "/RedoSan-Authenticity/.github/workflows/lock-closed.yml",
+        "/RedoSan-Authenticity/.github/workflows/pr-size-label.yml",
+        "/RedoSan-Authenticity/.github/workflows/pr-stats.yml",
+        "/RedoSan-Authenticity/.github/workflows/pr-title-lint.yml",
+        "/RedoSan-Authenticity/.github/workflows/pr-body-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/eslint-review.yml",
+        "/RedoSan-Authenticity/.github/workflows/stale.yml",
+        "/RedoSan-Authenticity/.github/workflows/dom-review.yml",
+        "/RedoSan-Authenticity/.github/workflows/copilot-setup-steps.yml",
+        "/RedoSan-Authenticity/.github/workflows/gemini-analysis.yml",
+        "/RedoSan-Authenticity/.github/workflows/semgrep.yml",
+        "/RedoSan-Authenticity/.github/workflows/ollama-analysis.yml",
+        "/RedoSan-Authenticity/.github/workflows/code-review-openrouter.yml",
+        "/RedoSan-Authenticity/.github/workflows/minimal-dispatch.yml",
+        "/RedoSan-Authenticity/.github/dependabot.yml",
+        "/RedoSan-Authenticity/.github/labeler.yml",
+        "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/bug_report.yml",
+        "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/feature_request.yml",
+        "/RedoSan-Authenticity/.github/workflows/madge-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/cspell-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/depcheck.yml",
+        "/RedoSan-Authenticity/.github/workflows/markdownlint.yml",
+        "/RedoSan-Authenticity/.github/workflows/size-limit.yml",
+        "/RedoSan-Authenticity/.github/workflows/typedoc-check.yml",
+        "/RedoSan-Authenticity/.github/workflows/backstop.yml",
+        "/RedoSan-Authenticity/.github/ISSUE_TEMPLATE/security_vulnerability.yml",
+        "/RedoSan-Authenticity/.github/workflows/a11y.yml",
+        "/RedoSan-Authenticity/.github/workflows/e2e-coverage-guard.yml",
+        "/RedoSan-Authenticity/.github/workflows/lint.yml",
+        "/RedoSan-Authenticity/.github/workflows/openrouter-analysis.yml",
+        "/RedoSan-Authenticity/.github/workflows/performance.yml",
+        "/RedoSan-Authenticity/.github/workflows/security.yml",
+      ];
+
+      var HTML_WHITELIST = [
+        "/RedoSan-Authenticity/index.html",
+        "/RedoSan-Authenticity/404.html",
+        "/RedoSan-Authenticity/Style/index.html",
+        "/RedoSan-Authenticity/Style/pages/home/index.html",
+        "/RedoSan-Authenticity/Style/pages/watermark/index.html",
+        "/RedoSan-Authenticity/Style/pages/audio-watermark/index.html",
+        "/RedoSan-Authenticity/Style/pages/fingerprint/index.html",
+        "/RedoSan-Authenticity/Style/pages/search/index.html",
+        "/RedoSan-Authenticity/Style/pages/pixel-injection/index.html",
+        "/RedoSan-Authenticity/Style/pages/face-biometric/index.html",
+        "/RedoSan-Authenticity/Style/pages/metadata/index.html",
+        "/RedoSan-Authenticity/Style/pages/timestamp/index.html",
+        "/RedoSan-Authenticity/Style/pages/did/index.html",
+        "/RedoSan-Authenticity/Style/pages/c2pa/index.html",
+        "/RedoSan-Authenticity/Style/pages/certificate/index.html",
+        "/RedoSan-Authenticity/Style/pages/forensic/index.html",
+        "/RedoSan-Authenticity/Style/pages/converter/index.html",
+        "/RedoSan-Authenticity/Style/pages/removal-tools/index.html",
+        "/RedoSan-Authenticity/Style/pages/id_forge/index.html",
+        "/RedoSan-Authenticity/Style/pages/document-watermark/index.html",
+        "/RedoSan-Authenticity/Style/pages/about/index.html",
+        "/RedoSan-Authenticity/Style/pages/privacy/index.html",
+        "/RedoSan-Authenticity/Style/pages/contact/index.html",
+        "/RedoSan-Authenticity/Style/pages/social/index.html",
+        "/RedoSan-Authenticity/Style/pages/_page_template.html",
+      ];
+
+      var JSON_WHITELIST = [
+        "/RedoSan-Authenticity/.markdownlint.json",
+        "/RedoSan-Authenticity/.stylelintrc.json",
+        "/RedoSan-Authenticity/backstop.json",
+        "/RedoSan-Authenticity/biome.json",
+        "/RedoSan-Authenticity/cspell.json",
+        "/RedoSan-Authenticity/typedoc.json",
+        "/RedoSan-Authenticity/package.json",
+        "/RedoSan-Authenticity/package-lock.json",
+        "/RedoSan-Authenticity/.c8rc.json",
+        "/RedoSan-Authenticity/Style/lang/ar.json",
+        "/RedoSan-Authenticity/Style/lang/de.json",
+        "/RedoSan-Authenticity/Style/lang/en.json",
+        "/RedoSan-Authenticity/Style/lang/es.json",
+        "/RedoSan-Authenticity/Style/lang/fr.json",
+        "/RedoSan-Authenticity/Style/lang/ja.json",
+        "/RedoSan-Authenticity/Style/lang/ko.json",
+        "/RedoSan-Authenticity/Style/lang/zh.json",
+        "/RedoSan-Authenticity/Style/pages/search/search-index.json",
+      ];
+
+      var MD_WHITELIST = [
+        "/RedoSan-Authenticity/README.md",
+        "/RedoSan-Authenticity/CONTRIBUTING.md",
+        "/RedoSan-Authenticity/AGENTS.md",
+        "/RedoSan-Authenticity/.github/PULL_REQUEST_TEMPLATE.md",
+        "/RedoSan-Authenticity/.github/SECURITY.md",
+      ];
+
+      var XML_WHITELIST = [
+        "/RedoSan-Authenticity/sitemap.xml",
+      ];
+
+      function inWhitelist(list, p) {
+        if (list.indexOf(p) !== -1) return true;
+        // Dev/test servers serve the repo at root: match the repo-prefixed form too.
+        if (p.indexOf("/RedoSan-Authenticity") !== 0) {
+          return list.indexOf("/RedoSan-Authenticity" + p) !== -1;
+        }
+        return false;
+      }
 
       function isThreatPath(p) {
         var lower = p.toLowerCase();
@@ -425,7 +592,31 @@
           if (lower.endsWith(DANGEROUS_EXTS[i])) return true;
         }
         // Block unknown .js files not in whitelist
-        if (lower.endsWith(".js") && JS_WHITELIST.indexOf(p) === -1)
+        if (lower.endsWith(".js") && !inWhitelist(JS_WHITELIST, p))
+          return true;
+        // Block unknown .mjs files not in whitelist
+        if (lower.endsWith(".mjs") && !inWhitelist(JS_WHITELIST, p))
+          return true;
+        // Block unknown .css files not in whitelist
+        if (lower.endsWith(".css") && !inWhitelist(CSS_WHITELIST, p))
+          return true;
+        // Block unknown .yml/.yaml files not in whitelist
+        if (
+          (lower.endsWith(".yml") || lower.endsWith(".yaml")) &&
+          !inWhitelist(YML_WHITELIST, p)
+        )
+          return true;
+        // Block unknown .json files not in whitelist
+        if (lower.endsWith(".json") && !inWhitelist(JSON_WHITELIST, p))
+          return true;
+        // Block unknown .html files not in whitelist
+        if (lower.endsWith(".html") && !inWhitelist(HTML_WHITELIST, p))
+          return true;
+        // Block unknown .md files not in whitelist
+        if (lower.endsWith(".md") && !inWhitelist(MD_WHITELIST, p))
+          return true;
+        // Block unknown .xml files not in whitelist
+        if (lower.endsWith(".xml") && !inWhitelist(XML_WHITELIST, p))
           return true;
         // Block embedded URLs in path (e.g., /Base/https://evil.com/script  or  /Base//evil.com/script)
         // Catches single, double, and triple URL-encoded variants

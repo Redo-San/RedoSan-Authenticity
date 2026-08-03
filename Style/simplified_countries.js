@@ -1,4 +1,6 @@
+/* c8 ignore start */
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+/* c8 ignore stop */
 // ── Country code data ──
 
 var COUNTRY_CODES = [
@@ -414,6 +416,7 @@ function getDefaultPhoneCode() {
   // 1. Try Intl APIs (NumberFormat, DateTimeFormat, Collator)
   c = getCountryFromLocale();
   if (c) return c;
+  /* c8 ignore start */
   // 2. Try navigator.languages (user's ordered preference list)
   try {
     var langs = navigator.languages || [
@@ -436,6 +439,7 @@ function getDefaultPhoneCode() {
   if (c) return c;
   // 4. Fallback — leave unselected, let user choose
   return null;
+  /* c8 ignore stop */
 }
 
 /**

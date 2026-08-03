@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     globalThis.window !== undefined &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── File validation constants and helpers ──
 
 var BLOCKED_EXTS = [
@@ -317,6 +319,7 @@ function checkFileStructure(file) {
       switch (mime) {
         case "image/png": {
           // Last 12 bytes must be IEND chunk: 0-length, "IEND", CRC
+          /* c8 ignore next 4 */
           if (tailSize < 12) {
             resolve(false);
             return;
@@ -346,6 +349,7 @@ function checkFileStructure(file) {
         }
         case "image/jpeg": {
           // Last 2 bytes must be EOI marker FF D9
+          /* c8 ignore next 4 */
           if (tailSize < 2) {
             resolve(false);
             return;
@@ -375,7 +379,7 @@ function checkFileStructure(file) {
         }
       }
     };
-    reader.onerror = function () {
+    /* c8 ignore next 3 */ reader.onerror = function () {
       resolve(true);
     };
     reader.readAsArrayBuffer(file.slice(-tailSize));

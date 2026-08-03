@@ -47,9 +47,19 @@ STATUS.md
 # AI agent skills (linked from addyosmani/agent-skills)
 skills/
 
+# AI agent tools & memory (machine-specific, not committed)
+.agents/
+.claude/
+agent/
+skills-lock.json
+
 # Local AI tool config (OpenCode — machine-specific)
 opencode.json
 .opencode/
+
+# Local check scripts (machine-specific)
+scripts/local-check.ps1
+scripts/check_opencode_health.ps1
 
 # Repomix output (local-only)
 repomix-output.xml
@@ -64,5 +74,18 @@ cli/tests/face_test_img.jpg
 cli/tests/face_test_real.mjs
 cli/tests/face_test_result.png
 cli/tests/face_ui_test.js
+
+# Generated test artifacts
+.lighthouseci/
+backstop_data/
+.stryker-tmp/
+test-results/
+.playwright-mcp/
+
+# Generated documentation
+docs/
+
+# Coverage improvement plan (local working notes)
+coverage-improvement-plan.md
 
 

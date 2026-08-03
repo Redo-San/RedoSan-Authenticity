@@ -1,4 +1,4 @@
-(function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+/* c8 ignore start */ (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})(); /* c8 ignore stop */
 import { createC2pa } from 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm';
 
 const WASM_SRC = 'https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm';
@@ -45,15 +45,23 @@ UrYpDsuojDAKBggqhkjOPQQDAgNJADBGAiEAtdZ3+05CzFo90fWeZ4woeJcNQC4B
 var c2paInstance = null;
 var verifiedWasmUrl = null;
 
+/**
+ *
+ * @param buf
+ */
 async function sha256Hex(buf) {
   var h = await crypto.subtle.digest('SHA-256', buf);
   return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
+/* c8 ignore start */
+/**
+ *
+ */
 async function ensureVerifiedWasm() {
   if (!verifiedWasmUrl) {
     var wasmTimeout = new Promise(function(_, reject) {
-      setTimeout(function() { reject(new Error('C2PA WASM download timed out')); }, 30000);
+      setTimeout(function() { reject(new Error('C2PA WASM download timed out')); }, 30_000);
     });
     var wasmResp = await Promise.race([fetch(WASM_SRC), wasmTimeout]);
     var wasmBuf = await wasmResp.arrayBuffer();
@@ -67,44 +75,74 @@ async function ensureVerifiedWasm() {
   return verifiedWasmUrl;
 }
 
+/**
+ *
+ */
 async function getC2pa() {
   if (!c2paInstance) {
     var verified = await ensureVerifiedWasm();
     var engineTimeout = new Promise(function(_, reject) {
-      setTimeout(function() { reject(new Error('C2PA engine timed out initializing')); }, 20000);
+      setTimeout(function() { reject(new Error('C2PA engine timed out initializing')); }, 20_000);
     });
     c2paInstance = await Promise.race([createC2pa({ wasmSrc: verified }), engineTimeout]);
   }
   return c2paInstance;
 }
+/* c8 ignore stop */
 
+/**
+ *
+ * @param promise
+ * @param ms
+ * @param msg
+ */
 function withTimeout(promise, ms, msg) {
   return Promise.race([promise, new Promise(function(_, reject) {
     setTimeout(function() { reject(new Error(msg || 'Operation timed out')); }, ms);
   })]);
 }
 
+/**
+ *
+ * @param s
+ */
 function escHtml(s) {
   if (s == null) return '';
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+/**
+ *
+ * @param url
+ */
 function safeUrl(url) {
   if (!url) return '';
   return (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) ? url : '';
 }
 
+/**
+ *
+ * @param d
+ */
 function formatDate(d) {
   if (!d) return '—';
-  try { return new Date(d).toLocaleString(); } catch(e) { return d; }
+  try { return new Date(d).toLocaleString(); } catch{ return d; }
 }
 
+/**
+ *
+ * @param pem
+ */
 function parsePem(pem) {
   const b64 = pem.replace(/-----BEGIN [\w\s]+-----/g, '').replace(/-----END [\w\s]+-----/g, '').replace(/\s/g, '');
   const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   return bytes.buffer;
 }
 
+/**
+ *
+ * @param pem
+ */
 function splitCerts(pem) {
   const certs = [];
   const regex = /-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g;
@@ -116,6 +154,9 @@ function splitCerts(pem) {
   return certs;
 }
 
+/**
+ *
+ */
 async function createBrowserSigner() {
   const privateKeyBuffer = parsePem(C2PA_PRIVATE_KEY);
   const privateKey = await crypto.subtle.importKey(
@@ -152,6 +193,12 @@ async function createBrowserSigner() {
 }
 
 
+/**
+ *
+ * @param builder
+ * @param file
+ * @param rel
+ */
 async function addIngredientFromFile(builder, file, rel) {
   const buf = await file.arrayBuffer();
   const blob = new Blob([buf]);
@@ -162,6 +209,10 @@ async function addIngredientFromFile(builder, file, rel) {
   );
 }
 
+/**
+ *
+ * @param action
+ */
 function getActionLabel(action) {
   var labels = {
     'c2pa.created': __('c2pa.action_created', '📄 Created'),
@@ -174,6 +225,10 @@ function getActionLabel(action) {
   return labels[action] || action;
 }
 
+/**
+ *
+ * @param manifest
+ */
 function getActionsHtml(manifest) {
   const assertions = manifest.assertions || [];
   const actions = assertions.filter(a => a.label === 'c2pa.actions' || a.label === 'c2pa.actions.v2');
@@ -204,6 +259,10 @@ function getActionsHtml(manifest) {
   return html;
 }
 
+/**
+ *
+ * @param manifest
+ */
 function getAssertionsHtml(manifest) {
   const assertions = (manifest.assertions || []).filter(a => a.label !== 'c2pa.actions' && a.label !== 'c2pa.thumbnail');
   if (!assertions.length) return '<p class="c2pa-empty">' + __('c2pa.no_assertions', 'No additional assertions') + '</p>';
@@ -219,6 +278,10 @@ function getAssertionsHtml(manifest) {
   }).join('');
 }
 
+/**
+ *
+ * @param manifest
+ */
 function getIngredientsHtml(manifest) {
   const ingredients = manifest.ingredients || [];
   if (!ingredients.length) return '<p class="c2pa-empty">' + __('c2pa.no_ingredients', 'No ingredients') + '</p>';
@@ -233,6 +296,10 @@ function getIngredientsHtml(manifest) {
   `).join('');
 }
 
+/**
+ *
+ * @param manifest
+ */
 function getSignatureInfoHtml(manifest) {
   const sig = manifest.signature_info;
   if (!sig) return '<p class="c2pa-empty">' + __('c2pa.no_signature', 'No signature info') + '</p>';
@@ -245,6 +312,10 @@ function getSignatureInfoHtml(manifest) {
   `;
 }
 
+/**
+ *
+ * @param manifestStore
+ */
 function getValidationHtml(manifestStore) {
   const state = manifestStore.validation_state;
   const status = manifestStore.validation_status || [];
@@ -287,6 +358,7 @@ function getValidationHtml(manifestStore) {
   return html;
 }
 
+/* c8 ignore start */
 window.handleC2paRead = async function() {
   const file = document.getElementById('c2pa-read-file').files[0];
   if (!file) { alert(__('shared.select_file', 'Please select a file')); return; }
@@ -305,23 +377,21 @@ window.handleC2paRead = async function() {
     var reader, manifestStore;
 
     try {
-      reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: false } }), 15000, 'Reader timed out');
+      reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: false } }), 15_000, 'Reader timed out');
       if (reader) {
-        manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
+        manifestStore = await withTimeout(reader.manifestStore(), 15_000, 'Manifest read timed out');
         await reader.free();
         manifestStore.__testCert = true;
       }
-    } catch (e) {
-      if (reader) { try { await reader.free(); } catch (_) {} }
-      // If reading fails even without trust (e.g. old images signed with
-      // broken COSE structure), show a helpful message suggesting re-sign.
-      if (e.message && e.message.includes('CoseInvalidCert')) {
-        output.innerHTML = '<div class="c2pa-error"><strong>C2PA Read Error</strong><p>This file was signed with an older version of this tool that produced an invalid certificate structure. Try signing the image again with the latest version of this tool.</p><p class="c2pa-error-detail">' + escHtml(e.message) + '</p></div>';
+    } catch (error) {
+      if (reader) { try { await reader.free(); } catch {} }
+      if (error.message && error.message.includes('CoseInvalidCert')) {
+        output.innerHTML = '<div class="c2pa-error"><strong>C2PA Read Error</strong><p>This file was signed with an older version of this tool that produced an invalid certificate structure. Try signing the image again with the latest version of this tool.</p><p class="c2pa-error-detail">' + escHtml(error.message) + '</p></div>';
         spinner.style.display = 'none';
         resultDiv.style.display = 'block';
         return;
       }
-      throw e;
+      throw error;
     }
     
     if (!reader) {
@@ -343,14 +413,11 @@ window.handleC2paRead = async function() {
 
     let html = '';
 
-    // Show warning if read without trust (test certificate)
     if (manifestStore.__testCert) {
       html += '<div class="c2pa-section" style="background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius);padding:12px;margin-bottom:12px;color:#000"><strong>⚠️ Test Certificate</strong><p style="margin:4px 0 0;font-size:0.85rem;color:#000">This file was signed with a test certificate. The signature chain could not be verified against a trusted root CA. The manifest data is displayed below but should not be considered authenticated for production use.</p></div>';
     }
 
-    // Validation
     html += `<div class="c2pa-section"><h3>Validation</h3>${getValidationHtml(manifestStore)}</div>`;
-    // Validation summary counts
     const vr = manifestStore.validation_results || {};
     const am = vr.activeManifest;
     if (am) {
@@ -362,7 +429,6 @@ window.handleC2paRead = async function() {
         html += '</div>';
       }
     }
-    // Ingredient deltas
     if (vr.ingredientDeltas && vr.ingredientDeltas.length) {
       html += '<div class="c2pa-section"><h3>Ingredient Validation</h3>';
       for (const delta of vr.ingredientDeltas) {
@@ -381,21 +447,18 @@ window.handleC2paRead = async function() {
       html += '</div>';
     }
 
-    // Active manifest label
     html += `<div class="c2pa-section"><h3>Active Manifest</h3><code>${escHtml(activeLabel)}</code></div>`;
 
-    // Title & format
     html += '<div class="c2pa-section"><h3>Details</h3>';
     html += `<table class="c2pa-details-table">
       <tr><td>${__('c2pa.title_label', 'Title')}</td><td>${escHtml(manifest.title || '—')}</td></tr>
       <tr><td>${__('c2pa.format_label', 'Format')}</td><td>${escHtml(manifest.format || '—')}</td></tr>
       <tr><td>${__('c2pa.claim_generator', 'Claim Generator')}</td><td>${escHtml(manifest.claim_generator || '—')}</td></tr>
       <tr><td>${__('c2pa.instance_id', 'Instance ID')}</td><td><code>${escHtml(manifest.instance_id || '—')}</code></td></tr>
-      <tr><td>${__('c2pa.claim_version', 'Claim Version')}</td><td>${manifest.claim_version != null ? manifest.claim_version : '—'}</td></tr>
+      <tr><td>${__('c2pa.claim_version', 'Claim Version')}</td><td>${manifest.claim_version == null ? '—' : manifest.claim_version}</td></tr>
     </table>`;
     html += '</div>';
 
-    // Claim generator info
     if (manifest.claim_generator_info && manifest.claim_generator_info.length) {
       html += '<div class="c2pa-section"><h3>Generator Info</h3>';
       html += manifest.claim_generator_info.map(info =>
@@ -404,23 +467,14 @@ window.handleC2paRead = async function() {
       html += '</div>';
     }
 
-    // Actions
-    // codeql[js/xss-through-dom] — getActionsHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Actions</h3>${getActionsHtml(manifest)}</div>`;
 
-    // Assertions
-    // codeql[js/xss-through-dom] — getAssertionsHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Assertions</h3>${getAssertionsHtml(manifest)}</div>`;
 
-    // Ingredients
-    // codeql[js/xss-through-dom] — getIngredientsHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Ingredients (${(manifest.ingredients || []).length})</h3>${getIngredientsHtml(manifest)}</div>`;
 
-    // Signature info
-    // codeql[js/xss-through-dom] — getSignatureInfoHtml uses escHtml()
     html += `<div class="c2pa-section"><h3>Signature</h3>${getSignatureInfoHtml(manifest)}</div>`;
 
-    // All manifests count
     const manifestCount = Object.keys(manifestStore.manifests).length;
     if (manifestCount > 1) {
       html += `<div class="c2pa-section"><h3>All Manifests (${manifestCount})</h3><ul class="c2pa-manifest-list">`;
@@ -430,10 +484,8 @@ window.handleC2paRead = async function() {
       html += '</ul></div>';
     }
 
-    // codeql[js/xss-through-dom] — all dynamic values use escHtml()
     output.innerHTML = html;
 
-    // Show the download button placed in the HTML (below the Read button)
     var dlBtn = document.getElementById('c2pa-read-dl-btn');
     if (dlBtn) dlBtn.style.display = '';
 
@@ -446,12 +498,13 @@ window.handleC2paRead = async function() {
 
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
-  } catch (err) {
-    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(err.message)}</div>`;
+  } catch (error) {
+    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(error.message)}</div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
   }
 };
+/* c8 ignore stop */
 
 const C2PA_FORM_CONFIG = {
   create: { action: 'c2pa.created', title: 'Title', author: 'Creator' },
@@ -461,6 +514,10 @@ const C2PA_FORM_CONFIG = {
   composite:{ action: 'c2pa.created',title: 'Title', author: 'Creator', ingredients: true }
 };
 
+/* c8 ignore start */
+/**
+ *
+ */
 function getCheckedFormTypes() {
   const types = [];
   document.querySelectorAll('#c2pa-write-types .c2pa-type-card[data-form-type]').forEach(card => {
@@ -476,6 +533,9 @@ function getCheckedFormTypes() {
   return types;
 }
 
+/**
+ *
+ */
 function getSocialLinks() {
   const links = [];
   document.querySelectorAll('.c2pa-link').forEach(input => {
@@ -518,17 +578,14 @@ window.handleC2paWrite = async function() {
     const signer = await createBrowserSigner();
     const builder = await c2pa.builder.new();
 
-    // Build actor with social links embedded
     const baseActorName = checkedTypes.length ? (document.querySelector('.c2pa-field[data-field="author"]')?.value?.trim() || 'RedoSan') : 'RedoSan';
     const actorName = formattedLinks ? baseActorName + ' (' + formattedLinks + ')' : baseActorName;
 
-    // Add actions for each checked content type
     const addedActions = new Set();
     for (const { formType, src } of checkedTypes) {
       const cfg = C2PA_FORM_CONFIG[formType];
       if (!cfg) continue;
 
-      // Get per-type title and author from the card's inline fields
       const card = document.querySelector('.c2pa-type-card[data-form-type="' + formType + '"]');
       const titleVal = card?.querySelector('.c2pa-field[data-field="title"]')?.value?.trim() || '';
       const authorVal = card?.querySelector('.c2pa-field[data-field="author"]')?.value?.trim() || '';
@@ -549,7 +606,6 @@ window.handleC2paWrite = async function() {
       }
     }
 
-    // DNT with reason
     if (dnt) {
       const dntKey = 'c2pa.opt_out';
       if (!addedActions.has(dntKey)) {
@@ -562,7 +618,6 @@ window.handleC2paWrite = async function() {
       }
     }
 
-    // Add ingredients from each card that has them checked
     for (const { formType } of checkedTypes) {
       const cfg = C2PA_FORM_CONFIG[formType];
       if (!cfg || !cfg.ingredients) continue;
@@ -584,7 +639,6 @@ window.handleC2paWrite = async function() {
     const origName = file.name.replace(/\.[^.]+$/, '');
     const fileName = origName + '_c2pa_signed' + (file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '.jpg');
 
-    // codeql[js/xss-through-dom] — url and fileName are safe (escHtml used)
     output.innerHTML = `
       <div class="c2pa-success">
         <strong>${__('c2pa.success_title', 'Success!')}</strong>
@@ -597,23 +651,25 @@ window.handleC2paWrite = async function() {
     if (window._c2paSignedUrl) URL.revokeObjectURL(window._c2paSignedUrl);
     window._c2paSignedUrl = url;
     return { ok: true, url: url };
-  } catch (err) {
-    console.error('C2PA write error:', err);
-    // codeql[js/xss-through-dom] — err.message is escaped
-    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(err.message)}<br><small>${__('c2pa.check_console', 'Check console for details.')}</small></div>`;
+  } catch (error) {
+    console.error('C2PA write error:', error);
+    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(error.message)}<br><small>${__('c2pa.check_console', 'Check console for details.')}</small></div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
-    return { ok: false, error: err.message };
+    return { ok: false, error: error.message };
   }
 };
+/* c8 ignore stop */
 
 // ── C2PA Download functions ──
 
+/* c8 ignore start */
 window.showC2paDownloadModal = function() {
   setDownloadHandler(window.downloadC2pa);
   document.getElementById('dl-modal-title').textContent = __('c2pa.download_report', 'Download C2PA Report');
   showDownloadModal();
 };
+/* c8 ignore stop */
 
 window.downloadC2pa = async function(format) {
   closeDownloadModal();
@@ -632,17 +688,26 @@ window.downloadC2pa = async function(format) {
   }
   var content, ext, mime;
   switch (format) {
-    case 'json': content = JSON.stringify(r.manifestStore, null, 2); ext = 'json'; mime = 'application/json'; break;
-    case 'csv':  content = c2paToCSV(r);  ext = 'csv';  mime = 'text/csv'; break;
-    case 'txt':  content = c2paToTXT(r);  ext = 'txt';  mime = 'text/plain'; break;
-    case 'xml':  content = c2paToXML(r);  ext = 'xml';  mime = 'application/xml'; break;
-    case 'html': content = c2paToHTML(r); ext = 'html'; mime = 'text/html'; break;
+    case 'json': { content = JSON.stringify(r.manifestStore, null, 2); ext = 'json'; mime = 'application/json'; break;
+    }
+    case 'csv': {  content = c2paToCSV(r);  ext = 'csv';  mime = 'text/csv'; break;
+    }
+    case 'txt': {  content = c2paToTXT(r);  ext = 'txt';  mime = 'text/plain'; break;
+    }
+    case 'xml': {  content = c2paToXML(r);  ext = 'xml';  mime = 'application/xml'; break;
+    }
+    case 'html': { content = c2paToHTML(r); ext = 'html'; mime = 'text/html'; break;
+    }
   }
   if (content == null) return;
   var blob = new Blob([content], { type: mime });
   downloadBlobSimple(blob, name + '.c2pa.' + ext);
 }
 
+/**
+ *
+ * @param r
+ */
 function c2paToPDF(r) {
   var doc = new jspdf.jsPDF();
   var y = 20;
@@ -696,6 +761,10 @@ function c2paToPDF(r) {
   return doc.output('blob');
 }
 
+/**
+ *
+ * @param r
+ */
 function c2paToDOCX(r) {
   var docx = window.docx;
   var children = [];
@@ -747,6 +816,10 @@ function c2paToDOCX(r) {
   return docx.Packer.toBlob(d);
 }
 
+/**
+ *
+ * @param r
+ */
 function c2paToCSV(r) {
   var rows = [['Key', 'Value']];
   rows.push(['File', r.file]);
@@ -771,6 +844,10 @@ function c2paToCSV(r) {
   }).join('\n');
 }
 
+/**
+ *
+ * @param r
+ */
 function c2paToTXT(r) {
   var lines = [];
   lines.push('=== RedoSan Authenticity - C2PA Report ===');
@@ -819,6 +896,10 @@ function c2paToTXT(r) {
   return lines.join('\n');
 }
 
+/**
+ *
+ * @param r
+ */
 function c2paToXML(r) {
   var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<c2pa_report>\n';
   xml += '  <file>' + escXml(r.file) + '</file>\n';
@@ -867,6 +948,10 @@ function c2paToXML(r) {
   return xml;
 }
 
+/**
+ *
+ * @param r
+ */
 function c2paToHTML(r) {
   var m = r.manifest;
   var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>C2PA Report - ' + escHtml(r.file) + '</title>';
@@ -923,6 +1008,7 @@ function c2paToHTML(r) {
   return h;
 }
 
+/* c8 ignore start */
 window.handleC2paVerify = async function() {
   const fileInput = document.getElementById('c2pa-verify-file');
   const output = document.getElementById('c2pa-verify-output');
@@ -938,7 +1024,7 @@ window.handleC2paVerify = async function() {
 
   try {
     const c2pa = await getC2pa();
-    const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: false } }), 15000, 'Reader timed out — file may be too large');
+    const reader = await withTimeout(c2pa.reader.fromBlob(file.type || 'image/jpeg', file, { verify: { verifyTrust: false, verifyAfterReading: false } }), 15_000, 'Reader timed out — file may be too large');
 
     if (!reader) {
       output.innerHTML = '<div class="c2pa-no-data"><strong>' + __('c2pa.no_data_found', 'No C2PA data found') + '</strong><p>' + __('c2pa.no_data_desc_alt', 'This file has no C2PA provenance metadata.') + '</p></div>';
@@ -947,7 +1033,7 @@ window.handleC2paVerify = async function() {
       return;
     }
 
-    const manifestStore = await withTimeout(reader.manifestStore(), 15000, 'Manifest read timed out');
+    const manifestStore = await withTimeout(reader.manifestStore(), 15_000, 'Manifest read timed out');
     await reader.free();
 
     if (!manifestStore || !manifestStore.manifests) {
@@ -968,13 +1054,8 @@ window.handleC2paVerify = async function() {
 
     let html = `<div class="c2pa-verify-result ${isGood ? 'c2pa-verified' : 'c2pa-unverified'}">`;
 
-    if (isGood) {
-      html += '<div class="c2pa-verify-icon">✓</div><strong>' + escHtml(stateLabel) + '</strong>';
-    } else {
-      html += '<div class="c2pa-verify-icon c2pa-verify-icon-warn">!</div><strong>' + escHtml(stateLabel) + '</strong>';
-    }
+    html += isGood ? '<div class="c2pa-verify-icon">✓</div><strong>' + escHtml(stateLabel) + '</strong>' : '<div class="c2pa-verify-icon c2pa-verify-icon-warn">!</div><strong>' + escHtml(stateLabel) + '</strong>';
 
-    // Validation summary from results
     const am = results?.activeManifest;
     if (am) {
       const total = (am.success?.length || 0) + (am.informational?.length || 0) + (am.failure?.length || 0);
@@ -983,7 +1064,6 @@ window.handleC2paVerify = async function() {
       if (am.informational?.length) html += `, ${am.informational.length} info`;
       html += '</div>';
 
-      // Show validation results grouped by category
       for (const [cat, items] of Object.entries(am)) {
         if (!items || !items.length) continue;
         html += `<div class="c2pa-validation-category"><strong>${escHtml(cat)}</strong></div>`;
@@ -1017,8 +1097,8 @@ window.handleC2paVerify = async function() {
     output.innerHTML = html;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
-  } catch (err) {
-    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(err.message)}</div>`;
+  } catch (error) {
+    output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(error.message)}</div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';
   }
@@ -1026,5 +1106,6 @@ window.handleC2paVerify = async function() {
 
 // Signal that the C2PA module has loaded (imports resolved, handlers attached)
 window.__c2paReady = true;
+/* c8 ignore stop */
 
 

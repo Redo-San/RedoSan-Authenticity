@@ -8,7 +8,7 @@ globalThis.window = globalThis;
 globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
 
 const src = fs.readFileSync(path.join(__dirname, "../../Document_Watermark/document_watermark_core.js"), "utf8");
-vm.runInThisContext(src, { filename: "document_watermark_core.js" });
+vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Document_Watermark/document_watermark_core.js") });
 
 const PWD = "secret";
 const MSG = "hello-docwm";

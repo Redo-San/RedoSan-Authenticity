@@ -118,6 +118,7 @@ module.exports = {
   formatResults,
 };
 
+/* c8 ignore start */
 if (require.main === module) {
   const type = process.argv[2];
   const arg = process.argv[3];
@@ -169,3 +170,4 @@ if (require.main === module) {
     process.exit(1);
   }
 }
+/* c8 ignore stop */

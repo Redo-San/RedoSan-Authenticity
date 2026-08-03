@@ -10,5 +10,5 @@ module.exports = {
   globIgnores: ["Style/lang/i18n-data.js", "Style/pages/"],
   swDest: "sw-precache.js",
   inlineWorkboxRuntime: true,
-  sourceMap: false,
+  sourcemap: false,
 };

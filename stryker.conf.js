@@ -1,0 +1,47 @@
+// Stryker configuration for RedoSan Authenticity
+// Uses command runner since project tests use node:test (not mocha/jest)
+// @type {import('@stryker-mutator/api/core').StrykerOptions}
+module.exports = {
+  ignorePatterns: [
+    '.opencode',
+    'reports',
+    'vendor',
+    'Style',
+    'skills',
+    'node_modules',
+    '.git',
+    '**/*.min.js',
+    '**/*.json',
+    'coverage',
+  ],
+  mutate: [
+    'Watermark/*.js',
+    '!Watermark/utils.js',
+    'Pixel_Injection/*.js',
+    'Audio_Watermark/*.js',
+    'Fingerprint/hashing.js',
+    'Fingerprint/fingerprint_ui.js',
+    'Document_Watermark/*.js',
+    'C2PA/c2pa.js',
+    'C2PA/cbor.js',
+    'Decentralized_Identity_DID/did.js',
+    'ID_Forge/id_forge.js',
+    'Timestamp/timestamp.js',
+    'Metadata/metadata.js',
+    'Certificate/*.js',
+    'Forensic/*.js',
+    'Converter/converter.js',
+  ],
+  testRunner: 'command',
+  reporters: ['progress', 'clear-text', 'html'],
+  htmlReporter: {
+    fileName: 'reports/mutation/mutation-report.html',
+  },
+  coverageAnalysis: 'off',
+  concurrency: 2,
+  timeoutMS: 120_000,
+  timeoutFactor: 2,
+  cleanTempDir: true,
+  incremental: true,
+  incrementalFile: '.stryker-tmp/incremental.json',
+};

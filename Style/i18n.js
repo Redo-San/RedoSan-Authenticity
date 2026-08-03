@@ -1,7 +1,16 @@
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
-// ظ¤ظ¤ Internationalization ظ¤ظ¤
+// ◆◆ Internationalization ◆◆
 var i18n = { lang: 'en', data: {} };
 var SUPPORTED = new Set(['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko']);
+
+/**
+ *
+ * @param key
+ * @param fallback
+ */
+function __(key, fallback) {
+  return (i18n && i18n.data && i18n.data[key]) || fallback || key;
+}
 
 /**
  *
@@ -84,8 +93,8 @@ function switchLang(lang) {
  */
 function langBtnText(lang) {
   // Return the most common alternative language for the current language
-  var alternatives = {
-    'en': '╪د┘╪╣╪▒╪ذ┘è╪ر',
+    var alternatives = {
+    'en': 'العربية',
     'ar': 'English',
     'fr': 'English',
     'de': 'English',
@@ -108,15 +117,15 @@ function getLanguageDisplayName(lang) {
   }
   
   // Fallback to default names
-  var names = {
+    var names = {
     'en': 'English',
-    'ar': '╪د┘╪╣╪▒╪ذ┘è╪ر',
-    'fr': 'Fran├دais',
+    'ar': 'العربية',
+    'fr': 'Français',
     'de': 'Deutsch',
-    'es': 'Espa├▒ol',
-    'zh': 'غ╕صµûç',
-    'ja': 'µùحµ£شكزئ',
-    'ko': 'وـ£م╡صهû┤'
+    'es': 'Español',
+    'zh': '中文',
+    'ja': '日本語',
+    'ko': '한국어'
   };
   return names[lang] || lang;
 }
@@ -136,7 +145,10 @@ async function loadLang(lang) {
     var base = document.documentElement.dataset.standalone ? '../../' : 'Style/';
     var resp = await fetch(base + 'lang/' + lang + '.json');
     if (!resp.ok) throw new Error('Language file not found: ' + lang);
-    i18n.data = await resp.json();
+    var data = await resp.json();
+    if (!window.__I18N_DATA) window.__I18N_DATA = {};
+    window.__I18N_DATA[lang] = data;
+    i18n.data = data;
     i18n.lang = lang;
     applyLang();
     return true;
@@ -191,6 +203,24 @@ function applyLang() {
     var key = el.dataset.i18nPlaceholder;
     var text = i18n.data[key];
     if (text !== undefined) el.placeholder = text;
+  });
+
+  // Clean up any empty heading or anchor elements that may have been generated
+  var richSections = document.querySelectorAll('#page-about .static-page, #page-privacy .static-page');
+  richSections.forEach(function(section) {
+    var emptyH2 = section.querySelectorAll('h2:empty, h2:not(:empty)');
+    emptyH2.forEach(function(h) {
+      if (!h.textContent.trim()) h.remove();
+    });
+    var emptyA = section.querySelectorAll('a:not([href]):not([aria-label])');
+    emptyA.forEach(function(a) {
+      if (!a.textContent.trim()) a.remove();
+    });
+    // Also remove empty <a> with href="#" that have no text content
+    var emptyLinkA = section.querySelectorAll('a[href="#"]');
+    emptyLinkA.forEach(function(a) {
+      if (!a.textContent.trim()) a.remove();
+    });
   });
 
   // Handle RTL CSS for Arabic only
@@ -353,6 +383,48 @@ window.addEventListener('error', function(event) {
     event.preventDefault(); // Prevent the error from showing in console
   }
 });
+
+// Early i18n application: when loaded from <head> (window.__I18N_EARLY), translate
+// nodes as the DOM is being parsed so text swaps finish before first paint (no CLS).
+// The DOMContentLoaded boot below still runs as a safe idempotent fallback.
+if (window.__I18N_EARLY) {
+  (function () {
+    var applying = false;
+    /**
+     *
+     */
+    function scheduleApply() {
+      if (applying) return;
+      applying = true;
+      requestAnimationFrame(function () {
+        if (document.body) {
+          applyLang();
+          // Keep the guard on until the mutation records produced by
+          // applyLang (textContent/innerHTML swaps) have been delivered to
+          // the observer; otherwise they re-trigger an endless translate loop.
+          Promise.resolve().then(function () {
+            applying = false;
+          });
+        } else {
+          applying = false;
+        }
+      });
+    }
+    detectLang().then(function (lang) {
+      loadLang(lang).then(function () {
+        new MutationObserver(function (muts) {
+          for (var i = 0; i < muts.length; i++) {
+            if (muts[i].addedNodes.length) {
+              scheduleApply();
+              break;
+            }
+          }
+        }).observe(document.documentElement, { childList: true, subtree: true });
+        scheduleApply();
+      });
+    });
+  })();
+}
 
 // Initialize language system
 document.addEventListener('DOMContentLoaded', async function() { 

@@ -8,7 +8,7 @@ const vm = require("vm");
 function loadCbor() {
   const src = fs.readFileSync(path.join(__dirname, "../../C2PA/cbor.js"), "utf8");
   const patched = src.replace(/\bexport function /g, "function ").replace(/\bexport /g, "");
-  vm.runInThisContext(patched, { filename: "cbor.js" });
+  vm.runInThisContext(patched, { filename: path.resolve(__dirname, "../../C2PA/cbor.js") });
 }
 
 describe("CBOR — encodeInt", () => {
@@ -46,6 +46,25 @@ describe("CBOR — encodeInt", () => {
     assert.equal(r[0], 0x1a);
     assert.equal(r.length, 5);
   });
+
+  it("should encode negative int with 2-byte extension (n <= -256)", () => {
+    const r = encodeInt(-257);
+    assert.equal(r[0], 0x39);
+    assert.equal(r.length, 3);
+  });
+
+  it("should encode negative -1 inline (0x20)", () => {
+    const r = encodeInt(-1);
+    assert.equal(r[0], 0x20);
+    assert.equal(r.length, 1);
+  });
+
+  it("should encode negative 1-byte extension (n -25 to -256)", () => {
+    const r = encodeInt(-25);
+    assert.equal(r[0], 0x38);
+    assert.equal(r[1], 24);
+    assert.equal(r.length, 2);
+  });
 });
 
 describe("CBOR — encodeBstr / encodeTstr", () => {
@@ -72,6 +91,38 @@ describe("CBOR — encodeBstr / encodeTstr", () => {
     const r = encodeTstr("hello");
     assert.equal(r[0], 0x65); // major 3, length 5 inline
     assert.equal(new TextDecoder().decode(r.slice(1)), "hello");
+  });
+
+  it("should encode bstr with 2-byte prefix (len 24-255)", () => {
+    const data = new Uint8Array(100);
+    const r = encodeBstr(data);
+    assert.equal(r[0], 0x58); // major 2, 1-byte length
+    assert.equal(r[1], 100);
+    assert.equal(r.length, 102);
+  });
+
+  it("should encode bstr with 3-byte prefix (len 256-65535)", () => {
+    const data = new Uint8Array(300);
+    const r = encodeBstr(data);
+    assert.equal(r[0], 0x59); // major 2, 2-byte length
+    assert.equal(r[1], 0x01);
+    assert.equal(r[2], 0x2c);
+    assert.equal(r.length, 303);
+  });
+
+  it("should encode tstr with 2-byte prefix (len 24-255)", () => {
+    const str = "x".repeat(100);
+    const r = encodeTstr(str);
+    assert.equal(r[0], 0x78); // major 3, 1-byte length
+    assert.equal(r[1], 100);
+  });
+
+  it("should encode tstr with 3-byte prefix (len 256-65535)", () => {
+    const str = "x".repeat(300);
+    const r = encodeTstr(str);
+    assert.equal(r[0], 0x79); // major 3, 2-byte length
+    assert.equal(r[1], 0x01);
+    assert.equal(r[2], 0x2c);
   });
 });
 
@@ -102,6 +153,44 @@ describe("CBOR — encodeArray / encodeMap / encodeTag", () => {
     const inner = encodeInt(42);
     const r = encodeTag(1, inner);
     assert.equal(r[0], 0xc1); // tag 1
+  });
+
+  it("should encode array with 2-byte header (24-255 items)", () => {
+    const items = [];
+    for (let i = 0; i < 24; i++) items.push(encodeInt(i));
+    const r = encodeArray(items);
+    assert.equal(r[0], 0x98); // major 4, 1-byte count
+    assert.equal(r[1], 24);
+  });
+
+  it("should encode map with 2-byte header (24-255 entries)", () => {
+    const entries = [];
+    for (let i = 0; i < 24; i++) entries.push([i, encodeInt(i)]);
+    const r = encodeMap(entries);
+    assert.equal(r[0], 0xb8); // major 5, 1-byte count
+    assert.equal(r[1], 24);
+  });
+
+  it("should encode tag with 2-byte header (tagNum 24-255)", () => {
+    const r = encodeTag(24, encodeInt(0));
+    assert.equal(r[0], 0xd8); // tag 24, 1-byte extension
+    assert.equal(r[1], 24);
+  });
+
+  it("should encode tag with 3-byte header (tagNum 256-65535)", () => {
+    const r = encodeTag(256, encodeInt(0));
+    assert.equal(r[0], 0xd9); // tag 256, 2-byte extension
+    assert.equal(r[1], 0x01);
+    assert.equal(r[2], 0x00);
+  });
+
+  it("should encode array with 4-byte header (256+ items, line 45)", () => {
+    const items = [];
+    for (let i = 0; i < 256; i++) items.push(encodeInt(0));
+    const r = encodeArray(items);
+    assert.equal(r[0], 0x99); // major 4, 2-byte count
+    assert.equal(r[1], 0x01);
+    assert.equal(r[2], 0x00);
   });
 });
 
@@ -164,6 +253,15 @@ describe("CBOR — decode", () => {
     assert.equal(d.val[0], 32);
     assert.equal(d.val[1], 99);
   });
+
+  it("should throw on unsupported major type", () => {
+    // major type 7 (0xE0+info) is unsupported
+    assert.throws(() => decode(new Uint8Array([0xe0]), 0), /unsupported major type/);
+  });
+
+  it("should throw when offset exceeds data length", () => {
+    assert.throws(() => decode(new Uint8Array([0x01]), 10), /unexpected end/);
+  });
 });
 
 describe("CBOR — roundtrip", () => {
@@ -197,7 +295,7 @@ function loadC2paUtils() {
   globalThis.BigInt = BigInt;
   globalThis.window.__ = globalThis.window.__ || ((s, d) => d || s);
   globalThis.escXml = globalThis.escXml || ((s) => s);
-  vm.runInThisContext(src, { filename: "c2pa.js" });
+  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../C2PA/c2pa.js") });
 }
 
 // Load once before all C2PA suites

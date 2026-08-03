@@ -39,7 +39,9 @@ start_server() {
   echo $! > "$PID_FILE"
   echo ""
   echo "Dev server started (PID $(cat "$PID_FILE")) on http://localhost:8080"
-  sleep 2
+  echo ""
+  printf "Press ENTER to return to menu..."
+  read -r _unused
   menu
 }
 
@@ -51,7 +53,9 @@ restart_server() {
   nohup node dev-server.js > /dev/null 2>&1 &
   echo $! > "$PID_FILE"
   echo "Dev server restarted (PID $(cat "$PID_FILE")) on http://localhost:8080"
-  sleep 2
+  echo ""
+  printf "Press ENTER to return to menu..."
+  read -r _unused
   menu
 }
 
@@ -59,7 +63,9 @@ stop_server() {
   echo ""
   kill_server
   echo "Dev server stopped."
-  sleep 2
+  echo ""
+  printf "Press ENTER to return to menu..."
+  read -r _unused
   menu
 }
 

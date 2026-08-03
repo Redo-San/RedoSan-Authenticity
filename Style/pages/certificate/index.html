@@ -36,7 +36,7 @@
     />
     <meta
       property="og:image"
-      content="https://redo-san.github.io/RedoSan-Authenticity/Style/logo.png"
+      content="https://redo-san.github.io/RedoSan-Authenticity/Style/logo.webp"
     />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -50,10 +50,47 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'"
     />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <script>
+      (function () {
+        var SUPPORTED = ['en','ar','fr','de','es','zh','ja','ko'];
+        var MAP = {'en':'en','ar':'ar','fr':'fr','de':'de','es':'es','zh':'zh','ja':'ja','ko':'ko','pt':'pt','it':'it','ru':'ru','hi':'hi','ur':'ur','bn':'bn','id':'id','ms':'ms','th':'th','vi':'vi','tl':'tl','tr':'tr','fa':'fa','he':'he','nl':'nl','sv':'sv','no':'no','da':'da','fi':'fi','pl':'pl','cs':'cs','hu':'hu','el':'el','uk':'uk','ro':'ro','bg':'bg','hr':'hr','sr':'sr','am':'am','et':'et'};
+        var lang = 'en';
+        try {
+          var stored = localStorage.getItem('redosan_lang');
+          if (stored && SUPPORTED.indexOf(stored) !== -1) lang = stored;
+        } catch (e) {}
+        if (lang === 'en') {
+          var nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+          var primary = nav.substring(0, 2);
+          if (SUPPORTED.indexOf(primary) !== -1) lang = primary;
+          else if (MAP[primary] && SUPPORTED.indexOf(MAP[primary]) !== -1) lang = MAP[primary];
+          else if (SUPPORTED.indexOf(nav.substring(0, 5)) !== -1) lang = nav.substring(0, 5);
+        }
+        var root = document.documentElement;
+        root.lang = lang;
+        root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        var base = root.dataset.standalone ? '../../' : 'Style/';
+        if (lang === 'ar' && !document.getElementById('rtl-css')) {
+          var l = document.createElement('link');
+          l.id = 'rtl-css';
+          l.rel = 'stylesheet';
+          l.href = base + 'rtl.css';
+          document.head.appendChild(l);
+        }
+        window.__I18N_EARLY = true;
+        if (lang !== 'en') {
+          document.write('<script src="' + base + 'lang/i18n-data-' + lang + '.js"><\/script>');
+        } else {
+          if (window.__I18N_DATA === undefined) window.__I18N_DATA = {};
+          window.__I18N_DATA.en = window.__I18N_DATA.en || {};
+        }
+        document.write('<script src="' + base + 'i18n.js"><\/script>');
+      })();
+    </script>
     <script>
       if (top !== self) {
         top.location = self.location;
@@ -202,32 +239,10 @@
           "File format converter",
           "Digital passport certificate generation"
         ],
-        "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style/logo.png",
+        "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style/logo.webp",
         "license": "https://www.gnu.org/licenses/gpl-3.0.html"
       }
     </script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-      integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU="
-      crossorigin="anonymous"
-      defer
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/docx@8.5.0"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"
-      integrity="sha512-pUhApVQtLbnpLtJn6DuzDD5o2xtmLJnJ7oBoMsBnzOkVkpqofGLGPaBJ6ayD2zQe3lCgCibhJBi4cj5wAxwVKA=="
-      crossorigin="anonymous"
-      defer
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
-      integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
-      crossorigin="anonymous"
-      defer
-    ></script>
   </head>
   <body>
     <!-- Page loading spinner -->
@@ -475,7 +490,7 @@
 
     <!-- App container: page-specific content -->
     <main class="container" id="app">
-      <section id="page-certificate" class="page">
+      <section id="page-certificate" class="page active">
         <div
           style="
             display: flex;
@@ -1149,31 +1164,36 @@
       </div>
     </footer>
 
-    <script src="../../lang/i18n-data-ar.js" defer></script>
-    <script src="../../lang/i18n-data-de.js" defer></script>
-    <script src="../../lang/i18n-data-en.js" defer></script>
-    <script src="../../lang/i18n-data-es.js" defer></script>
-    <script src="../../lang/i18n-data-fr.js" defer></script>
-    <script src="../../lang/i18n-data-ja.js" defer></script>
-    <script src="../../lang/i18n-data-ko.js" defer></script>
-    <script src="../../lang/i18n-data-zh.js" defer></script>
-    <script src="../../i18n.js" defer></script>
+    
     <script src="../../shared_validation.js" defer></script>
+    <script src="../../simplified_countries.js" defer></script>
     <script src="../../shared.js" defer></script>
+        <script>
+      (function () {
+        document.querySelectorAll('.form-group input[type="file"]').forEach(function (input) {
+          if (input.parentElement.classList.contains("file-drop-zone")) return;
+          var dz = document.createElement("div");
+          dz.className = "file-drop-zone";
+          input.parentNode.insertBefore(dz, input);
+          dz.append(input);
+          var icon = document.createElement("span");
+          icon.className = "dz-icon";
+          icon.textContent = "\u{1F4C1}";
+          dz.append(icon);
+          var text = document.createElement("div");
+          text.className = "dz-text";
+          text.innerHTML = "Drop file here or <strong>browse</strong>";
+          dz.append(text);
+          var fileDiv = document.createElement("div");
+          fileDiv.className = "dz-file";
+          dz.append(fileDiv);
+        });
+      })();
+    </script>
     <script src="../../search.js" defer></script>
-    <script src="../../../Assistant/assistant_data.js" defer></script>
-    <script src="../../../Assistant/assistant.js" defer></script>
+    <!-- assistant_data.js and assistant.js are lazy-loaded on bubble click -->
     <script src="../../navigation.js" defer></script>
-    <script src="../../../Watermark/utils.js?v=2" defer></script>
-    <script
-      src="../../../Audio_Watermark/audio_watermark_core.js?v=7"
-      defer
-    ></script>
-    <script
-      src="../../../Audio_Watermark/audio_watermark.js?v=3"
-      defer
-    ></script>
-    <script src="../../../Watermark/watermark_core.js" defer></script>
+
     <script>
       !(function () {
         var e = location.href;
@@ -1193,75 +1213,19 @@
         }
       })();
     </script>
-    <script
-      src="../../../Pixel_Injection/watermark_core_advanced.js"
-      defer
-    ></script>
-    <script
-      src="../../../Pixel_Injection/watermark_core_transforms.js"
-      defer
-    ></script>
-    <script
-      src="../../../Pixel_Injection/watermark_core_algorithms.js"
-      defer
-    ></script>
-    <script
-      src="../../../Pixel_Injection/watermark_advanced_ui.js"
-      defer
-    ></script>
-    <script src="../../../Pixel_Injection/pixel_injection.js" defer></script>
-    <script src="../../../Forensic/forensic_core.js" defer></script>
-    <script src="../../../Forensic/forensic.js" defer></script>
-    <script src="../../../ID_Forge/id_forge.js" defer></script>
-    <script
-      src="../../../Document_Watermark/document_watermark_core.js?v=3"
-      defer
-    ></script>
-    <script
-      src="../../../Document_Watermark/document_watermark_report.js?v=1"
-      defer
-    ></script>
-    <script
-      src="../../../Document_Watermark/document_watermark_pdf.js?v=1"
-      defer
-    ></script>
-    <script
-      src="../../../Document_Watermark/text_extractor.js?v=5"
-      defer
-    ></script>
-    <script
-      src="../../../Document_Watermark/document_watermark.js?v=3"
-      defer
-    ></script>
-    <script src="../../../Watermark/watermark.js" defer></script>
-    <script src="../../../Fingerprint/hashing_perceptual.js" defer></script>
-    <script src="../../../Fingerprint/hashing.js" defer></script>
-    <script src="../../../Fingerprint/fingerprint_ui.js" defer></script>
-    <script src="../../../Metadata/metadata.js" defer></script>
-    <script src="../../../Timestamp/timestamp.js" defer></script>
-    <script src="../../../Decentralized_Identity_DID/did.js" defer></script>
-    <script src="../../simplified_countries.js" defer></script>
-    <script src="../../simplified_helpers.js" defer></script>
-    <script src="../../simplified_renderers.js" defer></script>
-    <script src="../../simplified.js" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0" crossorigin="anonymous" defer></script>
     <script src="../../../vendor/jspdf.umd.min.js" defer></script>
     <script src="../../../vendor/qrious.min.js" defer></script>
     <script src="../../../vendor/jszip.min.js" defer></script>
     <script src="../../../vendor/opentimestamps.min.js" defer></script>
-    <script src="../../../vendor/pdf-lib.min.js" defer></script>
     <script src="../../../Certificate/certificate_ots.js" defer></script>
     <script src="../../../Certificate/certificate_utils.js" defer></script>
     <script src="../../../Certificate/certificate_pdf.js" defer></script>
     <script src="../../../Certificate/certificate_docx.js" defer></script>
     <script src="../../../Certificate/certificate_epub.js" defer></script>
     <script src="../../../Certificate/certificate.js" defer></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js"
-      `n
-      defer
-    ></script>
-    <script src="../../../Converter/ffmpeg.min.js" defer></script>
-    <script src="../../../Converter/converter.js" defer></script>
+
     <script>
       (function () {
         var TAP_BTN_IDS = {
@@ -1336,7 +1300,6 @@
         }, 30000);
       })();
     </script>
-    <script type="module" src="../../../C2PA/c2pa.js"></script>
 
     <!-- Bot / Automation block overlay -->
     <div
@@ -1373,9 +1336,8 @@
       <!-- Music player -->
       <audio
         id="bg-music"
-        src="../../RedoSan_Music.mp3"
         loop
-        preload="auto"
+        preload="none"
       ></audio>
       <button id="music-btn" class="music-btn" aria-label="Toggle Music">
         &#x1F3B5;
@@ -1401,7 +1363,7 @@
       role="button"
       aria-label="Open assistant"
       tabindex="0"
-      onclick="toggleAssistant()"
+      onclick="lazyLoadAssistant(event)"
     >
       <span>💬</span>
     </div>
@@ -1471,5 +1433,12 @@
         );
       })();
     </script>
+    <script>
+      (function(){var _a=false;window.lazyLoadAssistant=function(e){if(_a){if(typeof toggleAssistant==='function')toggleAssistant();return}_a=true;var d=document,s1=d.createElement('script');s1.src='../../../Assistant/assistant_data.js';s1.onload=function(){var s2=d.createElement('script');s2.src='../../../Assistant/assistant.js';s2.onload=function(){if(typeof initAssistant==='function')initAssistant();if(typeof toggleAssistant==='function')toggleAssistant()};d.body.appendChild(s2)};d.body.appendChild(s1)}})();
+    </script>
   </body>
 </html>
+
+
+
+

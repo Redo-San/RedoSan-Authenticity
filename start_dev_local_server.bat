@@ -27,8 +27,10 @@ goto menu
 :start
 if exist "%PID_FILE%" (
   echo.
-  echo Server is already running.
-  timeout /t 2 >nul
+  echo Server is already running on http://localhost:8080
+  echo.
+  echo Press any key to return to menu...
+  pause >nul
   goto menu
 )
 powershell -NoProfile -Command ^
@@ -36,7 +38,9 @@ powershell -NoProfile -Command ^
   "$p.Id | Out-File -Encoding ascii '%PID_FILE%';" >nul
 echo.
 echo Dev server started on http://localhost:8080
-timeout /t 2 >nul
+echo.
+echo Press any key to return to menu...
+pause >nul
 goto menu
 
 :restart
@@ -49,7 +53,9 @@ powershell -NoProfile -Command ^
   "$p = Start-Process -FilePath 'node' -ArgumentList 'dev-server.js' -WindowStyle Hidden -PassThru;" ^
   "$p.Id | Out-File -Encoding ascii '%PID_FILE%';" >nul
 echo Dev server restarted on http://localhost:8080
-timeout /t 2 >nul
+echo.
+echo Press any key to return to menu...
+pause >nul
 goto menu
 
 :stop
@@ -57,7 +63,9 @@ echo.
 call :kill
 if exist "%PID_FILE%" del "%PID_FILE%" 2>nul
 echo Dev server stopped.
-timeout /t 2 >nul
+echo.
+echo Press any key to return to menu...
+pause >nul
 goto menu
 
 :status

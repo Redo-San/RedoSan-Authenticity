@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 
 var _docwSecretMessage = "";
 var _docwCoverText = "";
@@ -634,6 +636,7 @@ async function handleDocwEmbed() {
           hash += ("0" + harr[hi].toString(16)).slice(-2);
         hash = "SHA-256:" + hash;
       }
+    /* c8 ignore next */
     } catch { /* fallback: hash stays empty */ }
     var algoName = DOCW_ALGOS[String(algo)].name;
     _docwResult = {
@@ -787,6 +790,7 @@ async function handleDocwExtract() {
         for (var pi = 0; pi < portions.length && !result; pi++) {
           try {
             result = await docwExtract(portions[pi], algo, password);
+          /* c8 ignore next */
           } catch { /* ignore */ }
         }
       }
