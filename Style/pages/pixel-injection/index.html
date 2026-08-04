@@ -10,6 +10,20 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+
+    <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="../../style.css" />
+
+    <link
+      rel="stylesheet"
+      href="../../responsive.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
+    <link rel="stylesheet" href="../../music-player.css" />
     <title>Pixel Injection — RedoSan Authenticity</title>
     <meta
       name="description"
@@ -186,21 +200,7 @@
       hreflang="x-default"
       href="https://redo-san.github.io/RedoSan-Authenticity/"
     />
-    <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="stylesheet" href="../../style.css" />
-
-    <link
-      rel="stylesheet"
-      href="../../responsive.css"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
-    <link rel="stylesheet" href="../../music-player.css" />
-    <link rel="preload" as="audio" href="../../RedoSan_Music.mp3" />
-    <script type="application/ld+json">
+<script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -1046,10 +1046,28 @@
       src="../../../Pixel_Injection/watermark_advanced_ui.js"
       defer
     ></script>
-    <script src="../../../Pixel_Injection/pixel_injection.js" defer></script>
+    <script src="../../../Pixel_Injection/pixel_injection.js" defer fetchpriority="low"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0" crossorigin="anonymous" defer></script>
-    <script src="../../../vendor/jspdf.umd.min.js" defer></script>
+        <script>
+      (function () {
+        var _l = false;
+        function loadExportLibs() {
+          if (_l) return;
+          _l = true;
+          var s1 = document.createElement("script");
+          s1.src = "https://cdn.jsdelivr.net/npm/docx@8.5.0";
+          s1.crossOrigin = "anonymous";
+          var s2 = document.createElement("script");
+          s2.src = "../../../vendor/jspdf.umd.min.js";
+          document.body.appendChild(s1);
+          document.body.appendChild(s2);
+        }
+        document.addEventListener("pointerdown", function once() {
+          loadExportLibs();
+          document.removeEventListener("pointerdown", once);
+        });
+      })();
+    </script>
 
     <script>
       (function () {

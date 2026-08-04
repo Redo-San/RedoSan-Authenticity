@@ -648,10 +648,19 @@ function logSecurityStatus() {
 document.addEventListener("DOMContentLoaded", () => {
   REDOSAN_BOT_CHECK = checkAutomation();
   if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) showBotOverlay();
-  startAsyncVPNDetection();
-  logSecurityStatus();
   initTheme();
   initDropZones();
+  logSecurityStatus();
+  // WebRTC VPN diagnostic is NOT run on load: the first RTCPeerConnection
+  // initializes the WebRTC stack and blocks the main thread for ~600ms,
+  // destroying TBT on every page. It runs lazily on first user interaction.
+  var vpnOnce = function () {
+    document.removeEventListener("pointerdown", vpnOnce);
+    document.removeEventListener("keydown", vpnOnce);
+    startAsyncVPNDetection();
+  };
+  document.addEventListener("pointerdown", vpnOnce);
+  document.addEventListener("keydown", vpnOnce);
 });
 /* c8 ignore stop */
 

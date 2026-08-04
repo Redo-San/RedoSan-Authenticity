@@ -149,11 +149,25 @@ describe("Music Persistence — Hybrid Navigation", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
+    // Dismiss the mode-selection overlay like a real user picking a mode.
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(".mode-card-pro, .mode-card");
       if (card) card.click();
     });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1500);
+
+    // Music player is lazy-loaded on first music-btn click; a second click
+    // toggles playback on (defers audio init out of the SPA critical path).
+    await page.evaluate(() => {
+      const b = document.getElementById("music-btn");
+      if (b) b.click();
+    });
+    await page.waitForTimeout(1500);
+    await page.evaluate(() => {
+      const b = document.getElementById("music-btn");
+      if (b) b.click();
+    });
+    await page.waitForTimeout(1500);
 
     const pages = ["watermark", "fingerprint", "c2pa", "certificate", "timestamp"];
     for (const p of pages) {

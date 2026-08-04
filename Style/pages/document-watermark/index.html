@@ -10,6 +10,20 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+
+    <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="../../style.css" />
+
+    <link
+      rel="stylesheet"
+      href="../../responsive.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
+    <link rel="stylesheet" href="../../music-player.css" />
     <title>Document Watermark — RedoSan Authenticity</title>
     <meta
       name="description"
@@ -186,21 +200,7 @@
       hreflang="x-default"
       href="https://redo-san.github.io/RedoSan-Authenticity/"
     />
-    <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="stylesheet" href="../../style.css" />
-
-    <link
-      rel="stylesheet"
-      href="../../responsive.css"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
-    <link rel="stylesheet" href="../../music-player.css" />
-    <link rel="preload" as="audio" href="../../RedoSan_Music.mp3" />
-    <script type="application/ld+json">
+<script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -1207,9 +1207,28 @@
       defer
     ></script>
 
-    <script src="../../../vendor/jspdf.umd.min.js" defer></script>
-    <script src="../../../vendor/qrious.min.js" defer></script>
-    <script src="../../../vendor/jszip.min.js" defer></script>
+    <script>
+      (function () {
+        var _l = false;
+        function loadExportLibs() {
+          if (_l) return;
+          _l = true;
+          var s = document.createElement("script");
+          s.src = "../../../vendor/jspdf.umd.min.js";
+          document.body.appendChild(s);
+          var s2 = document.createElement("script");
+          s2.src = "../../../vendor/qrious.min.js";
+          document.body.appendChild(s2);
+          var s3 = document.createElement("script");
+          s3.src = "../../../vendor/jszip.min.js";
+          document.body.appendChild(s3);
+        }
+        document.addEventListener("pointerdown", function once() {
+          loadExportLibs();
+          document.removeEventListener("pointerdown", once);
+        });
+      })();
+    </script>
 
     <script>
       (function () {
