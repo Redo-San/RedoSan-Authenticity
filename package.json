@@ -134,7 +134,7 @@
     "playwright": "^1.52.0",
     "repomix": "^1.15.0",
     "size-limit": "^11.2.0",
-    "stylelint": "^17.14.0",
+    "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
     "typedoc": "^0.28.19",
     "workbox-cli": "^7.4.1"
