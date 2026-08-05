@@ -125,7 +125,7 @@
     "eslint-plugin-unicorn": "^69.0.0",
     "globals": "^17.7.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.8",
+    "lint-staged": "^17.1.1",
     "madge": "^8.0.0",
     "markdownlint-cli": "^0.44.0",
     "mocha": "^10.8.2",
