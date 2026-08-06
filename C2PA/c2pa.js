@@ -652,7 +652,7 @@ window.handleC2paWrite = async function() {
     window._c2paSignedUrl = url;
     return { ok: true, url: url };
   } catch (error) {
-    console.error('C2PA write error:', error);
+    console.warn('C2PA write error:', error);
     output.innerHTML = `<div class="c2pa-error"><strong>${__('c2pa.error_label', 'Error:')}</strong> ${escHtml(error.message)}<br><small>${__('c2pa.check_console', 'Check console for details.')}</small></div>`;
     spinner.style.display = 'none';
     resultDiv.style.display = 'block';

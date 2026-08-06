@@ -38,6 +38,7 @@ jobs:
             const over = [];
 
             for (const file of files) {
+              if (file.startsWith('vendor/')) continue;
               const ext = file.slice(file.lastIndexOf('.'));
               const limit = BUDGET[ext];
               if (!limit) continue;

@@ -49,7 +49,10 @@ jobs:
               }
             } catch (e) {
               const unformatted = e.stdout || '';
-              const list = unformatted.trim().split('\n').filter(Boolean).slice(0, 20);
+              const list = unformatted.trim().split('\n')
+                .filter(Boolean)
+                .filter(l => l.trim() !== 'Checking formatting...' && !/^(Warnings?|Errors?):/.test(l.trim()))
+                .slice(0, 20);
 
               const body = '## Prettier Check\n\nFound ' + list.length + ' unformatted file(s):\n\n' +
                 list.map(f => '- `' + f.replace('[warn] ', '').replace(' (code)', '').trim() + '`').join('\n') +

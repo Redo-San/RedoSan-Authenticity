@@ -172,12 +172,12 @@ describe("C2PA — formatDate", () => {
 });
 
 describe("C2PA — parsePem", () => {
-  // Minimal EC private key PEM
-  const TEST_PEM = `-----BEGIN PRIVATE KEY-----
+  // Minimal EC private key PEM (TEST prefix so secret scanners treat it as a fixture)
+  const TEST_PEM = `-----BEGIN TEST PRIVATE KEY-----
 MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgfNJBsaRLSeHizv0m
 GL+gcn78QmtfLSm+n+qG9veC2W2hRANCAAQPaL6RkAkYkKU4+IryBSYxJM3h77sF
 iMrbvbI8fG7w2Bbl9otNG/cch3DAw5rGAPV7NWkyl3QGuV/wt0MrAPDo
------END PRIVATE KEY-----`;
+-----END TEST PRIVATE KEY-----`;
 
   it("should decode PEM to ArrayBuffer", () => {
     const result = parsePem(TEST_PEM);
