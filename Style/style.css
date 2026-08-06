@@ -1126,7 +1126,7 @@ html:has(.sidebar.open) {
 .static-page ul li {
   font-size: 0.9rem;
   line-height: 1.7;
-  color: #b4b4c8;
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
@@ -3455,7 +3455,7 @@ html[dir="rtl"] .ast-msg-user {
 .bot-block-text {
   font-size: 16px;
   line-height: 1.7;
-  color: var(--text-muted);
+  color: #b4b4c8;
   margin-bottom: 24px;
 }
 

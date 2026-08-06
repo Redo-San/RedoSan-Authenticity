@@ -27,11 +27,24 @@ jobs:
 
             const diff = run('git diff ' + base + '...HEAD -- "*.js" "*.html" "*.css"', { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
 
+            const blocks = [];
+            const reFile = /^diff --git a\/(.*?) b\//gm;
+            let m, last = null;
+            while ((m = reFile.exec(diff)) !== null) {
+              if (last) last.content = diff.slice(last.start, m.index);
+              last = { file: m[1], start: m.index };
+            }
+            if (last) last.content = diff.slice(last.start);
+
+            const excluded = ['vendor/', 'cli/', 'scripts/', 'Converter/ffmpeg.min.js'];
             const lines = [];
             const re = /^\+\s*(.*console\.log\s*\(.*)/gm;
-            let match;
-            while ((match = re.exec(diff)) !== null) {
-              lines.push(match[1].trim());
+            for (const block of blocks) {
+              if (excluded.some(x => block.file.includes(x))) continue;
+              let match;
+              while ((match = re.exec(block.content)) !== null) {
+                lines.push(match[1].trim());
+              }
             }
 
             const num = context.issue.number;

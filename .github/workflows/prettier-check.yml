@@ -48,7 +48,7 @@ jobs:
                 });
               }
             } catch (e) {
-              const unformatted = e.stdout || '';
+              const unformatted = (e.stdout || '') + (e.stderr || '');
               const list = unformatted.trim().split('\n')
                 .filter(Boolean)
                 .filter(l => l.trim() !== 'Checking formatting...' && !/^(Warnings?|Errors?):/.test(l.trim()))
