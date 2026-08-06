@@ -50,8 +50,9 @@ jobs:
             } catch (e) {
               const unformatted = (e.stdout || '') + (e.stderr || '');
               const list = unformatted.trim().split('\n')
+                .map(l => l.replace(/\x1b\[\d+m/g, ''))
                 .filter(Boolean)
-                .filter(l => l.trim() !== 'Checking formatting...' && !/^(Warnings?|Errors?):/.test(l.trim()))
+                .filter(l => !l.includes('npm warn') && l.trim() !== 'Checking formatting...' && !/^(Warnings?|Errors?):/.test(l.trim()))
                 .slice(0, 20);
 
               const body = '## Prettier Check\n\nFound ' + list.length + ' unformatted file(s):\n\n' +

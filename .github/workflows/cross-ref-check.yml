@@ -100,6 +100,13 @@ jobs:
             // ── Report ──
             if (issues.length === 0) {
               console.log('✅ All cross-references OK');
+              const num = context.issue.number;
+              const { data: comments } = await github.rest.issues.listComments({...context.repo, issue_number: num});
+              for (const c of comments) {
+                if (c.user.type === 'Bot' && c.body.includes('Cross-Reference Checker')) {
+                  await github.rest.issues.deleteComment({...context.repo, comment_id: c.id});
+                }
+              }
               return;
             }
 
