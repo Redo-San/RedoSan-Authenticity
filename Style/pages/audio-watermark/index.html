@@ -1129,20 +1129,14 @@
             t('.card[data-page="removal-tools"]'),
             t("#page-removal-tools");
         } else {
-          fetch("../../../Removal_Tools/removal_tools.js", {
-            method: "HEAD",
-            cache: "no-store",
-          })
-            .then(function (r) {
-              if (!r.ok) return;
-              var ct = (r.headers.get("content-type") || "").toLowerCase();
-              if (ct.indexOf("javascript") === -1) return;
-              var s = document.createElement("script");
-              (s.src = "../../../Removal_Tools/removal_tools.js?v=4"),
-                (s.defer = !0),
-                document.body.appendChild(s);
-            })
-            .catch(function () {});
+          (function () {
+            function init() {
+              if (window.RedoSanLoadRemovalTools)
+                window.RedoSanLoadRemovalTools();
+            }
+            if (window.RedoSanLoadRemovalTools) init();
+            else window.addEventListener("DOMContentLoaded", init);
+          })();
         }
       })();
     </script>
