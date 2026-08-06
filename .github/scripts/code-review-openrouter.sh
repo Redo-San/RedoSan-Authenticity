@@ -6,7 +6,8 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
 fi
 
 echo "Fetching PR diff..."
-DIFF=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 || true)
+gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt || true
+DIFF=$(cat /tmp/pr_diff.txt)
 if [ -z "$DIFF" ]; then
   echo "No code changes to review."
   printf '%s' "_No code changes to review._" > /tmp/review.md
@@ -26,7 +27,7 @@ jq -n \
   --arg system "$SYSTEM_PROMPT" \
   --arg title "$TITLE" \
   --arg body "$BODY" \
-  --arg diff "$DIFF" \
+  --rawfile diff /tmp/pr_diff.txt \
   '{model: $model, messages: [{role: "system", content: $system}, {role: "user", content: ("PR Title: " + $title + "\n\nDescription: " + $body + "\n\n```diff\n" + $diff + "\n```")}], temperature: 0.1, max_tokens: 32000, stream: false}' > request.json
 
 echo "Sending request to OpenRouter API..."
