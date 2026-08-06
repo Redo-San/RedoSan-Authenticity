@@ -694,7 +694,7 @@
 
         var input = document.getElementById("errorSearchInput");
         if (input) {
-          input.addEventListener("keydown", function (e) {
+          input.addEventListener("keydown", (e) => {
             if (e.key === "Enter") doErrorSearch();
           });
           input.addEventListener("focus", function () {
