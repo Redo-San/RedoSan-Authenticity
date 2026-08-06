@@ -42,7 +42,12 @@ jobs:
             prod.app-api.stepsecurity.io:443
       - name: Debug script presence
         run: |
-          ls -la .github/scripts/ || echo "DIR MISSING"
+          pwd
+          ls -la | head -20
+          echo "--- .github ---"
+          ls -la .github/ 2>&1 | head -10
+          echo "--- .github/scripts ---"
+          ls -la .github/scripts/ 2>&1 | head -10
           test -f .github/scripts/code-review-openrouter.sh && echo FILE_OK || echo FILE_MISSING
       - name: Run OpenRouter Code Review
         env:
