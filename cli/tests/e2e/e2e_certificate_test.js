@@ -87,6 +87,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should navigate to certificate page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -98,6 +99,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should have form fields and generate button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
     const els = await page.evaluate(function () {
@@ -122,6 +124,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should generate certificate and show download links", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -146,6 +149,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should generate a certificate (or show status from UI flow)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
     await fillCertForm(page);
@@ -167,6 +171,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should show missing required fields error when name is empty", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
     await fillCertForm(page, "name");
@@ -185,6 +190,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should show email warning for invalid email", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
     await fillCertForm(page, "email");
@@ -204,6 +210,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should show website warning for invalid URL", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -235,6 +242,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should show missing fields error when all fields are empty", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
     await page.evaluate(function () { var b = document.getElementById("cert-gen-btn"); if (b) b.click(); });
@@ -253,6 +261,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should toggle music fields visibility via checkbox", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -298,6 +307,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should initialize phone code select with country options", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -321,6 +331,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should generate certificate with all result files uploaded", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -390,6 +401,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should show alert when attempting to download before generating", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     var alertMsg = "";
     page.on("dialog", function (d) { alertMsg = d.message(); d.accept().catch(function () {}); });
@@ -408,6 +420,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should reset form fields and hide download section", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -460,6 +473,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should download certificate OTS proof via downloadCertOtsProof", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -483,6 +497,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should download OTS proof via downloadOtsProof", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -506,6 +521,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should trigger stampCertFile via download after successful generation", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -532,6 +548,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should have downloadCert function defined globally", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -545,6 +562,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should show and hide loading overlay via showCertOverlay and hideCertOverlay", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -615,6 +633,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should collect certificate data from window globals via collectCertData", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -691,6 +710,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should resolve ensureLib when library is already defined globally", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -741,6 +761,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should stamp a certificate blob via stampCertFile and show OTS button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -792,6 +813,7 @@ describe("E2E — Certificate / Digital Passport", { timeout: 600000 }, () => {
   it("should generate PDF via downloadCert in simple mode with mocked dependencies", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", function (err) { errors.push(err.message); });
@@ -905,6 +927,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should load MPA page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -918,6 +941,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should have form fields and generate button (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -942,6 +966,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should show missing required fields error (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -955,6 +980,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should show email warning for invalid email (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -974,6 +1000,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should show website warning for invalid URL (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -995,6 +1022,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should toggle music fields via checkbox (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -1014,6 +1042,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should generate certificate with result files and show download section (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -1046,6 +1075,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should reset form and hide download section (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -1066,6 +1096,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should show alert when downloading before generation (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     var alertMsg = "";
     page.on("dialog", function (d) { alertMsg = d.message(); d.accept().catch(function () {}); });
@@ -1080,6 +1111,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should have phone code select populated with country options (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -1091,6 +1123,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should have all certificate functions defined (MPA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(MPA_URL, { waitUntil: "networkidle" });
     await page.waitForTimeout(2000);
@@ -1124,6 +1157,7 @@ describe("E2E — Certificate / Digital Passport (MPA)", { timeout: 600000 }, ()
   it("should download professional certificate PDF successfully with stubs and trigger stampCertFile", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     // Define library stubs via addInitScript — runs before page scripts
     // If the real vendor scripts load, they override stubs; if not, stubs provide fallback
@@ -1250,6 +1284,7 @@ describe("E2E — Certificate expanded coverage", () => {
   it("should create fallback script tags in ensureLib when global is temporarily missing", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await gotoCertPage(page);
 
@@ -1284,6 +1319,7 @@ describe("E2E — Certificate expanded coverage", () => {
   it("should call downloadCert with DOCX format and button parameter in simple mode", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", function (err) { errors.push(err.message); });
@@ -1335,6 +1371,7 @@ describe("E2E — Certificate expanded coverage", () => {
   it("should call downloadCert with EPUB format in simple mode", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", function (err) { errors.push(err.message); });
@@ -1388,6 +1425,7 @@ describe("E2E — Certificate expanded coverage", () => {
   it("should generate a REAL PDF via downloadCert with vendored jspdf/QRious and real OTS proof", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", function (err) { errors.push(err.message); });
@@ -1396,6 +1434,17 @@ describe("E2E — Certificate expanded coverage", () => {
     await gotoCertPage(page);
 
     // Check the real vendor libraries actually loaded on the page
+    // Vendor scripts are lazy-loaded via loader.js when the section activates,
+    // so wait for them instead of checking instantly (race under parallel load)
+    await page.waitForFunction(function () {
+      return (
+        typeof jspdf !== "undefined" && typeof jspdf.jsPDF === "function" &&
+        typeof QRious !== "undefined" &&
+        typeof OpenTimestamps !== "undefined" &&
+        typeof downloadCertPDF === "function" &&
+        typeof generatePendingOts === "function"
+      );
+    }, { timeout: 30000 });
     var libs = await page.evaluate(function () {
       return {
         jspdf: typeof jspdf !== "undefined" && typeof jspdf.jsPDF === "function",
@@ -1482,6 +1531,7 @@ describe("E2E — Certificate expanded coverage", () => {
   it("should generate REAL DOCX and EPUB blobs via the actual generator functions", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     const errors = [];
     page.on("pageerror", function (err) { errors.push(err.message); });
