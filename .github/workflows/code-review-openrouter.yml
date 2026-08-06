@@ -45,6 +45,9 @@ jobs:
         run: |
           if ! command -v jq >/dev/null 2>&1; then
             curl -fsSL -o /tmp/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+            curl -fsSL https://github.com/jqlang/jq/releases/download/jq-1.7.1/sha256sums.txt | grep -F "jq-linux-amd64" > /tmp/jq.sha256
+            echo "  /tmp/jq" >> /tmp/jq.sha256
+            (cd /tmp && sha256sum -c jq.sha256)
             sudo mv /tmp/jq /usr/local/bin/jq
             sudo chmod +x /usr/local/bin/jq
           fi

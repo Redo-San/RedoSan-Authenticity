@@ -6,7 +6,12 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
 fi
 
 echo "Fetching PR diff..."
-gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt || true
+if ! gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
+  echo "Failed to fetch PR diff."
+  printf '%s' "_Failed to fetch PR diff._" > /tmp/review.md
+  gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file /tmp/review.md
+  exit 1
+fi
 DIFF=$(cat /tmp/pr_diff.txt)
 if [ -z "$DIFF" ]; then
   echo "No code changes to review."

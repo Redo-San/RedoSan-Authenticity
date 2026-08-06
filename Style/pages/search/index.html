@@ -747,8 +747,7 @@
               if (window.RedoSanLoadRemovalTools)
                 window.RedoSanLoadRemovalTools();
             }
-            if (window.RedoSanLoadRemovalTools) init();
-            else window.addEventListener("DOMContentLoaded", init);
+            document.readyState === "loading"\n              ? document.addEventListener("DOMContentLoaded", init)\n              : init();
           })();
         }
       })();
