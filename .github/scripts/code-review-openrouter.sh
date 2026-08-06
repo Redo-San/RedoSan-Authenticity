@@ -22,7 +22,7 @@ BODY=$(echo "$PR_DATA" | jq -r '.body // ""' | head -c 20000)
 echo "Creating OpenRouter request..."
 cat > request.json << 'EOF'
 {
-  "model": "google/gemini-2.0-flash-exp",
+  "model": "nex-agi/nex-n2-pro",
   "messages": [
     {
       "role": "system",
