@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "SCRIPT_V3_MARKER_RUNNING"
+
 if [ -z "$OPENROUTER_API_KEY" ]; then
   echo "OPENROUTER_API_KEY is not set"; exit 1
 fi
