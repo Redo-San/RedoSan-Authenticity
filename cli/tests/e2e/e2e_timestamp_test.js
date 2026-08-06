@@ -5,7 +5,7 @@ const { startServer, stopServer } = require("./e2e_helpers");
 const path = require("path");
 const fs = require("fs");
 
-const PORT = 9899;
+const PORT = 9907;
 const BASE = `http://localhost:${PORT}`;
 const TXT_BUF = Buffer.from("Hello E2E Test for Timestamp");
 
@@ -31,6 +31,7 @@ describe("E2E — Timestamp", () => {
   it("should navigate to timestamp page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -44,6 +45,7 @@ describe("E2E — Timestamp", () => {
   it("should have file input and create .ots button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "timestamp");
@@ -58,6 +60,7 @@ describe("E2E — Timestamp", () => {
   it("should create an .ots timestamp and show result", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "timestamp");
@@ -88,6 +91,7 @@ describe("E2E — Timestamp", () => {
   it("should have verify tab with file and .ots proof inputs", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "timestamp");

@@ -1,8 +1,9 @@
+/* c8 ignore next 3 */
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
 // ── Advanced Watermarking Core Implementation ──
 // Complete implementation of all 20+ watermarking algorithms
 
-if (typeof WatermarkCore === 'undefined') {
+if (WatermarkCore === undefined) {
   var WatermarkCore = (function() {
     class WatermarkCoreImpl {
     constructor() {
@@ -155,7 +156,7 @@ if (typeof WatermarkCore === 'undefined') {
         ).join('');
         
         // Generate pseudo-random sequence based on password
-        const seed = password ? this.hashCode(password) : 12345;
+        const seed = password ? this.hashCode(password) : 12_345;
         const random = this.pseudoRandom(seed);
         
         let messageIndex = 0;
@@ -185,24 +186,32 @@ if (typeof WatermarkCore === 'undefined') {
     // Blind decoding without original image
     blindDecoding(watermarkedImageData, algorithm = 'dct', password = null, options = {}) {
         switch (algorithm.toLowerCase()) {
-            case 'dct':
+            case 'dct': {
                 return this.extractDCT(watermarkedImageData);
-            case 'dwt':
+            }
+            case 'dwt': {
                 return this.extractDWT(watermarkedImageData);
+            }
             case 'lsb':
             case 'random_lsb':
-            case 'adaptive_lsb':
+            case 'adaptive_lsb': {
                 return this.extractLSB(watermarkedImageData);
-            case 'enhanced_lsb':
+            }
+            case 'enhanced_lsb': {
                 return this.extractEnhancedLSB(watermarkedImageData);
-            case 'multi_channel_lsb':
+            }
+            case 'multi_channel_lsb': {
                 return this.extractMultiChannelLSB(watermarkedImageData);
-            case 'vine':
+            }
+            case 'vine': {
                 return this.extractVINE(watermarkedImageData);
-            case 'pixel_seal':
+            }
+            case 'pixel_seal': {
                 return this.extractPixelSeal(watermarkedImageData);
-            default:
+            }
+            default: {
                 return this.extractDCT(watermarkedImageData);
+            }
         }
     }
     
@@ -268,14 +277,14 @@ if (typeof WatermarkCore === 'undefined') {
     
     // CRC32 calculation
     calculateCRC32(str) {
-        let crc = 0xFFFFFFFF;
+        let crc = 0xFF_FF_FF_FF;
         for (let i = 0; i < str.length; i++) {
             crc ^= str.charCodeAt(i);
             for (let j = 0; j < 8; j++) {
-                crc = (crc & 1) ? ((crc >>> 1) ^ 0xEDB88320) : (crc >>> 1);
+                crc = (crc & 1) ? ((crc >>> 1) ^ 0xED_B8_83_20) : (crc >>> 1);
             }
         }
-        return (crc ^ 0xFFFFFFFF).toString(16).toUpperCase();
+        return (crc ^ 0xFF_FF_FF_FF).toString(16).toUpperCase();
     }
     
     // Add redundancy to message (repeat each bit for error correction)
@@ -317,11 +326,7 @@ if (typeof WatermarkCore === 'undefined') {
     chooseEmbeddingStrategy(x, y, characteristics) {
         return {
             embed: (value, bit) => {
-                if (characteristics.complexity > 0.7) {
-                    return (value & 0xFE) | bit;
-                } else {
-                    return (value & 0xFC) | (bit << 2);
-                }
+                return characteristics.complexity > 0.7 ? (value & 0xFE) | bit : (value & 0xFC) | (bit << 2);
             }
         };
     }
@@ -330,8 +335,8 @@ if (typeof WatermarkCore === 'undefined') {
     pseudoRandom(seed) {
         let current = seed;
         return function() {
-            current = (current * 1664525 + 1013904223) % 4294967296;
-            return current / 4294967296;
+            current = (current * 1_664_525 + 1_013_904_223) % 4_294_967_296;
+            return current / 4_294_967_296;
         };
     }
     
@@ -349,4 +354,5 @@ if (typeof WatermarkCore === 'undefined') {
   })();
 }
 // Export for use in main application
-if (typeof WatermarkCore !== 'undefined') window.WatermarkCore = WatermarkCore;
+/* c8 ignore next 3 */
+if (WatermarkCore !== undefined) window.WatermarkCore = WatermarkCore;

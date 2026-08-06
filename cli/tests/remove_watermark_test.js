@@ -62,7 +62,7 @@ const MODULES = [
 ];
 for (const [rel, name] of MODULES) {
   const src = fs.readFileSync(path.join(__dirname, rel), "utf8");
-  vm.runInThisContext(src, { filename: name });
+  vm.runInThisContext(src, { filename: path.resolve(__dirname, rel) });
 }
 
 // Create WatermarkCore instance for advanced algorithms
@@ -77,7 +77,7 @@ let audioCoreLoaded = false;
 if (fs.existsSync(audioCorePath)) {
   const src = fs.readFileSync(audioCorePath, "utf8");
   try {
-    vm.runInThisContext(src, { filename: "audio_watermark_core.js" });
+    vm.runInThisContext(src, { filename: audioCorePath });
     audioCoreLoaded = true;
   } catch (e) {
     console.warn("Warning: Could not load audio_watermark_core.js:", e.message);

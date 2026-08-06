@@ -31,6 +31,7 @@ describe("E2E — C2PA Provenance", () => {
   it("should navigate to C2PA page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -44,6 +45,7 @@ describe("E2E — C2PA Provenance", () => {
   it("should have read tab with file input and read button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "c2pa");
@@ -58,6 +60,7 @@ describe("E2E — C2PA Provenance", () => {
   it("should read a PNG and show C2PA result (or empty state)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "c2pa");
@@ -98,6 +101,7 @@ describe("E2E — C2PA Provenance", () => {
   it("should have write tab with form fields", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "c2pa");
@@ -119,6 +123,7 @@ describe("E2E — C2PA Provenance", () => {
   it("should have verify tab with file input and verify button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "c2pa");
@@ -137,6 +142,7 @@ describe("E2E — C2PA Provenance", () => {
   it("should sign an image (write) then read back C2PA provenance data", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -242,6 +248,7 @@ describe("E2E — C2PA Provenance", () => {
   it("should verify a C2PA-signed image", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "c2pa");

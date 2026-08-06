@@ -256,7 +256,7 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 
 The project supports both SPA and MPA modes:
 
-```
+```text
 RedoSan-Authenticity/
 ├── index.html                 ← SPA entry (hash-based routing, 4743 lines)
 ├── sw.js                      ← Service Worker (cache whitelist, threat blocking)
@@ -337,7 +337,7 @@ RedoSan-Authenticity/
 
 ### MPA Navigation Flow
 
-```
+```text
 User clicks sidebar link
         ↓
 mpa-router.js intercepts click

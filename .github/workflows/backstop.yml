@@ -24,8 +24,8 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Generate reference images
-        run: npx backstop reference --config backstop.json
+        run: npx backstop reference --config .tools/Developer_Toolkit/backstop.json
         continue-on-error: true
       - name: Run visual tests
-        run: npx backstop test --config backstop.json
+        run: npx backstop test --config .tools/Developer_Toolkit/backstop.json
         continue-on-error: true

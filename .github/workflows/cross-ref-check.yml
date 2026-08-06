@@ -55,7 +55,7 @@ jobs:
               }
               // converter-specific extra checks
               if (js === 'Converter/converter.js') {
-                if (!read('Style/navigation.js').includes("'converter'")) warn(`CrossRef: \`converter\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
+                if (!/['"`]converter['"`]/.test(read('Style/navigation.js'))) warn(`CrossRef: \`converter\` missing from \`navigation.js\` PAGE_TITLES/PAGE_DESCS`);
                 if (!read('index.html').includes('id="page-converter"')) warn(`CrossRef: \`<section id="page-converter">\` missing from \`index.html\``);
                 if (!read('index.html').includes('data-page="converter"')) warn(`CrossRef: \`data-page="converter"\` sidebar/card link missing from \`index.html\``);
               }
@@ -100,6 +100,13 @@ jobs:
             // ── Report ──
             if (issues.length === 0) {
               console.log('✅ All cross-references OK');
+              const num = context.issue.number;
+              const { data: comments } = await github.rest.issues.listComments({...context.repo, issue_number: num});
+              for (const c of comments) {
+                if (c.user.type === 'Bot' && c.body.includes('Cross-Reference Checker')) {
+                  await github.rest.issues.deleteComment({...context.repo, comment_id: c.id});
+                }
+              }
               return;
             }
 

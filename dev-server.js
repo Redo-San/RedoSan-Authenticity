@@ -1,6 +1,7 @@
 var http = require("node:http"),
   fs = require("node:fs"),
-  path = require("node:path");
+  path = require("node:path"),
+  zlib = require("node:zlib");
 var ROOT = path.resolve(__dirname);
 var REAL_ROOT = fs.realpathSync(ROOT);
 
@@ -75,9 +76,18 @@ http
       // (handles relative asset references from MPA pages, e.g. /style.css → Style/style.css)
       var stylePath = path.join(ROOT, "Style", pathname.replace(/^\//, ""));
       if (tryServe(stylePath, req, res)) return;
-      // Last resort: serve custom 404 page
+      // Last resort: serve custom 404 page with a real 404 status (never 200+
+      // text/html for missing assets — that makes <script> requests fail with a
+      // "script has an unsupported MIME type" console error)
       var notFoundPath = path.join(ROOT, "404.html");
-      if (tryServe(notFoundPath, req, res)) return;
+      if (fs.existsSync(notFoundPath)) {
+        res.writeHead(404, {
+          "Content-Type": "text/html",
+          "Cache-Control": "no-store",
+        });
+        res.end(fs.readFileSync(notFoundPath));
+        return;
+      }
       res.writeHead(404, { "Content-Type": "text/html" });
       res.end("Not Found: " + escHtml(pathname));
     }
@@ -102,10 +112,13 @@ function tryServe(filePath, req, res) {
     }
     filePath = realPath;
     var ext = path.extname(filePath);
+    var isHtml = ext === ".html";
     var headers = {
       "Accept-Ranges": "bytes",
-      "Cache-Control": "no-store",
+      "Cache-Control": isHtml ? "max-age=0, must-revalidate" : "max-age=3600",
     };
+    var COMPRESSIBLE = [".html", ".js", ".css", ".json", ".svg", ".xml", ".md", ".txt"];
+    var acceptGzip = COMPRESSIBLE.includes(ext) && req.headers["accept-encoding"] && req.headers["accept-encoding"].includes("gzip");
     var range = req.headers.range;
     if (range) {
       var parts = range.replace(/bytes=/, "").split("-");
@@ -120,6 +133,12 @@ function tryServe(filePath, req, res) {
       headers["Content-Length"] = end - start + 1;
       res.writeHead(206, headers);
       fs.createReadStream(filePath, { start: start, end: end }).pipe(res);
+    } else if (acceptGzip) {
+      headers["Content-Encoding"] = "gzip";
+      headers["Content-Type"] = MIME[ext] || "application/octet-stream";
+      delete headers["Content-Length"];
+      res.writeHead(200, headers);
+      fs.createReadStream(filePath).pipe(zlib.createGzip()).pipe(res);
     } else {
       headers["Content-Length"] = stat.size;
       headers["Content-Type"] = MIME[ext] || "application/octet-stream";

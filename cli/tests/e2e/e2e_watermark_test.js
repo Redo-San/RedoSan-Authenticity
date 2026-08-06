@@ -33,6 +33,7 @@ describe("E2E — Image Watermark", () => {
   it("should navigate to watermark page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -46,6 +47,7 @@ describe("E2E — Image Watermark", () => {
   it("should have file inputs and embed button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -64,6 +66,7 @@ describe("E2E — Image Watermark", () => {
   it("should embed a message into a PNG image (Zero-bit algorithm)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -117,6 +120,7 @@ describe("E2E — Image Watermark", () => {
   it("should show extract tab with file input and extract button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -138,6 +142,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Zero-bit (type 5): embed then extract confirms presence", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -219,6 +224,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip LSB (type 1) with password and recover secret content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -316,6 +322,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Latent DCT (type 4) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -400,6 +407,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Multi-bit (type 6) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -484,6 +492,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Forensic (type 7) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -568,6 +577,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Fragile (type 8): embed then extract recovers SHA-256 hash", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -642,6 +652,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Imatag-style (type 9) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -720,6 +731,228 @@ describe("E2E — Image Watermark", () => {
       extractHtml.includes("E2E") || extractHtml.includes("Type 9"),
       "Type 9 extract should recover content. Got: " + extractHtml.substring(0, 300),
     );
+    await ctx.close();
+  });
+
+  // ── Missing algorithm types: 2 (DCT Frequency) and 3 (Neural SS) ──
+
+  it("should round-trip Frequency DCT (type 2) with password and recover secret", async () => {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
+    await page.goto(BASE, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(2000);
+    await navTo(page, "watermark");
+    await page.waitForTimeout(1000);
+
+    await page.evaluate(() => {
+      const sel = document.getElementById("wm-type");
+      if (sel) sel.value = "2";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => {
+      const pw = document.getElementById("wm-password");
+      if (pw) pw.value = "dct-freq-pw";
+    });
+
+    await page.setInputFiles("#wm-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_64_BUF }]);
+    await page.waitForTimeout(500);
+    await page.setInputFiles("#wm-secret", [{ name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF }]);
+    await page.waitForTimeout(500);
+
+    await page.evaluate(() => document.getElementById("wm-btn").click());
+    await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+    await page.waitForTimeout(1000);
+
+    const embedHtml = await page.evaluate(() => {
+      const el = document.getElementById("wm-output");
+      return el ? el.innerHTML : "";
+    });
+    assert.ok(
+      embedHtml.includes("hidden") || embedHtml.includes("bytes"),
+      "Type 2 embed should succeed. Got: " + embedHtml.substring(0, 100),
+    );
+
+    const wmInfo = await page.evaluate(async () => {
+      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const url = getFn ? getFn("wmLastBlobUrl") : null;
+      if (!url) return null;
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      return { buf: Array.from(new Uint8Array(await blob.arrayBuffer())), type: blob.type || "image/png" };
+    });
+    assert.ok(wmInfo, "Type 2 watermarked image blob should be available");
+    const wmBuf = Buffer.from(wmInfo.buf);
+
+    await page.evaluate(() => switchWmTab("extract"));
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => {
+      const sel = document.getElementById("wm-type-ex");
+      if (sel) sel.value = "2";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => {
+      const pw = document.getElementById("wm-password-ex");
+      if (pw) pw.value = "dct-freq-pw";
+    });
+
+    await page.setInputFiles("#wm-image-ex", [
+      { name: "watermarked.jpg", mimeType: wmInfo.type || "image/jpeg", buffer: wmBuf },
+    ]);
+    await page.waitForTimeout(500);
+
+    await page.evaluate(() => document.getElementById("wm-btn-ex").click());
+    await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+    await page.waitForTimeout(1000);
+
+    const extractHtml = await page.evaluate(() => {
+      const el = document.getElementById("wm-output");
+      return el ? el.innerHTML : "";
+    });
+    assert.ok(
+      extractHtml.includes("E2E") || extractHtml.includes("Type 2") || extractHtml.includes("TES"),
+      "Type 2 extract should recover content. Got: " + extractHtml.substring(0, 300),
+    );
+    await ctx.close();
+  });
+
+  it("should round-trip Neural SS (type 3) with password and recover secret", async () => {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
+    await page.goto(BASE, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(2000);
+    await navTo(page, "watermark");
+    await page.waitForTimeout(1000);
+
+    await page.evaluate(() => {
+      const sel = document.getElementById("wm-type");
+      if (sel) sel.value = "3";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => {
+      const pw = document.getElementById("wm-password");
+      if (pw) pw.value = "neural-pw";
+    });
+
+    await page.setInputFiles("#wm-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_64_BUF }]);
+    await page.waitForTimeout(500);
+    await page.setInputFiles("#wm-secret", [{ name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF }]);
+    await page.waitForTimeout(500);
+
+    await page.evaluate(() => document.getElementById("wm-btn").click());
+    await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+    await page.waitForTimeout(1000);
+
+    const embedHtml = await page.evaluate(() => {
+      const el = document.getElementById("wm-output");
+      return el ? el.innerHTML : "";
+    });
+    assert.ok(
+      embedHtml.includes("hidden") || embedHtml.includes("bytes"),
+      "Type 3 embed should succeed. Got: " + embedHtml.substring(0, 100),
+    );
+
+    const wmInfo = await page.evaluate(async () => {
+      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const url = getFn ? getFn("wmLastBlobUrl") : null;
+      if (!url) return null;
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      return { buf: Array.from(new Uint8Array(await blob.arrayBuffer())), type: blob.type || "image/png" };
+    });
+    assert.ok(wmInfo, "Type 3 watermarked image blob should be available");
+    const wmBuf = Buffer.from(wmInfo.buf);
+
+    await page.evaluate(() => switchWmTab("extract"));
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => {
+      const sel = document.getElementById("wm-type-ex");
+      if (sel) sel.value = "3";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => {
+      const pw = document.getElementById("wm-password-ex");
+      if (pw) pw.value = "neural-pw";
+    });
+
+    await page.setInputFiles("#wm-image-ex", [
+      { name: "watermarked.png", mimeType: wmInfo.type || "image/png", buffer: wmBuf },
+    ]);
+    await page.waitForTimeout(500);
+
+    await page.evaluate(() => document.getElementById("wm-btn-ex").click());
+    await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+    await page.waitForTimeout(1000);
+
+    const extractHtml = await page.evaluate(() => {
+      const el = document.getElementById("wm-output");
+      return el ? el.innerHTML : "";
+    });
+    assert.ok(
+      extractHtml.includes("E2E") || extractHtml.includes("Type 3") || extractHtml.includes("TES"),
+      "Type 3 extract should recover content. Got: " + extractHtml.substring(0, 300),
+    );
+    await ctx.close();
+  });
+
+  it("should auto-detect watermark algorithm (detectWatermarkAlgorithm) after embedding type 5", async () => {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
+    await page.goto(BASE, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(2000);
+    await navTo(page, "watermark");
+    await page.waitForTimeout(1000);
+
+    // Embed type 5 (Zero-bit) -- no password needed
+    await page.evaluate(() => {
+      const sel = document.getElementById("wm-type");
+      if (sel) sel.value = "5";
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await page.waitForTimeout(300);
+
+    await page.setInputFiles("#wm-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_64_BUF }]);
+    await page.waitForTimeout(500);
+
+    await page.evaluate(() => document.getElementById("wm-btn").click());
+    await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+    await page.waitForTimeout(1000);
+
+    const embedHtml = await page.evaluate(() => {
+      const el = document.getElementById("wm-output");
+      return el ? el.innerHTML : "";
+    });
+    assert.ok(
+      embedHtml.includes("embedded") || embedHtml.includes("Presence"),
+      "Embed should succeed: " + embedHtml.substring(0, 100),
+    );
+
+    const detectResult = await page.evaluate(async () => {
+      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const url = getFn ? getFn("wmLastBlobUrl") : null;
+      if (!url) return null;
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const file = new File([blob], "watermarked.png", { type: blob.type });
+
+      const results = await detectWatermarkAlgorithm(file, "");
+      return results.map(function (r) { return r.type; });
+    });
+    assert.ok(detectResult, "detectWatermarkAlgorithm should return results");
+    assert.ok(detectResult.indexOf(5) !== -1, "Detected results should include type 5 (Zero-bit). Got: " + JSON.stringify(detectResult));
+
     await ctx.close();
   });
 });

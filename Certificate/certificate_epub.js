@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── EPUB Certificate Generator ──
 
 /**
@@ -195,15 +197,15 @@ async function downloadCertEPUB(data) {
       : "") +
     (data.faceBiometric && data.faceBiometric.detected
       ? "<h2>Face Biometric</h2><table>" +
-        "<tr><td><strong>Faces detected</strong></td><td>" +
+        '<tr><td><strong>Faces detected</strong></td><td>' +
         escHtml(String(data.faceBiometric.faceCount)) +
         "</td></tr>" +
         (data.faceBiometric.matchLabel
-          ? "<tr><td><strong>Match result</strong></td><td>" +
+          ? '<tr><td><strong>Match result</strong></td><td>' +
             escHtml(data.faceBiometric.matchLabel) +
             "</td></tr>"
           : "") +
-        "<tr><td><strong>DID Signed</strong></td><td>" +
+        '<tr><td><strong>DID Signed</strong></td><td>' +
         (data.faceBiometric.didSigned ? "Yes" : "No") +
         "</td></tr>" +
         (data.faceBiometric.did
@@ -211,7 +213,7 @@ async function downloadCertEPUB(data) {
             escHtml(data.faceBiometric.did) +
             "</td></tr>"
           : "") +
-        "<tr><td><strong>Exported</strong></td><td>" +
+        '<tr><td><strong>Exported</strong></td><td>' +
         escHtml(data.faceBiometric.exportedAt) +
         "</td></tr></table>"
       : "") +

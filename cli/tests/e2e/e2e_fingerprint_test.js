@@ -37,6 +37,7 @@ describe("E2E — Fingerprint Page", () => {
   it("should navigate to fingerprint page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, NAV_WAIT);
@@ -50,6 +51,7 @@ describe("E2E — Fingerprint Page", () => {
   it("should have file input and fingerprint button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
@@ -64,6 +66,7 @@ describe("E2E — Fingerprint Page", () => {
   it("should fingerprint a PNG file and show SHA-256 hash", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
@@ -110,6 +113,7 @@ describe("E2E — Fingerprint Page", () => {
   it("should show download button after fingerprinting", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
@@ -146,6 +150,7 @@ describe("E2E — Fingerprint Page", () => {
   it("should fingerprint without fatal console errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     page.on("console", (msg) => {

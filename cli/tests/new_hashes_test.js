@@ -26,7 +26,7 @@ const hashSrc = fs.readFileSync(
   "utf8",
 );
 try {
-  vm.runInThisContext(hashSrc, { filename: "hashing.js" });
+  vm.runInThisContext(hashSrc, { filename: path.resolve(__dirname, "../../Fingerprint/hashing.js") });
 } finally {
   console.log = origLog;
 }

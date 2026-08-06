@@ -14,9 +14,9 @@ globalThis.document = {
 globalThis.requestAnimationFrame = (fn) => setTimeout(fn, 0);
 
 const src = fs.readFileSync(path.join(__dirname, "../../Audio_Watermark/audio_watermark_core.js"), "utf8");
-vm.runInThisContext(src, { filename: "audio_watermark_core.js" });
+vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Audio_Watermark/audio_watermark_core.js") });
 const utils = fs.readFileSync(path.join(__dirname, "../../Watermark/utils.js"), "utf8");
-vm.runInThisContext(utils, { filename: "utils.js" });
+vm.runInThisContext(utils, { filename: path.resolve(__dirname, "../../Watermark/utils.js") });
 
 function makeTestWav(numSamples, sr) {
   sr = sr || 44100;
@@ -247,5 +247,127 @@ describe("Audio Watermark — Algorithm 8: DCT (async)", () => {
     const bits = await aw8_extract_async(embedded, 44100, s16.length);
     const result = awExtractPayload(bits, KEY);
     assert.equal(new TextDecoder().decode(result), "hi");
+  });
+});
+
+describe("Audio Watermark — capacity helpers (maxBits)", () => {
+  it("aw4_maxBits should compute DSSS capacity", () => {
+    // aw4_maxBits returns floor(audioLen / 2048)
+    var bits = aw4_maxBits(20480, 44100); // AWM4_FRAME = 2048
+    assert.equal(bits, 10);
+    bits = aw4_maxBits(0, 44100);
+    assert.equal(bits, 0);
+  });
+
+  it("aw6_maxBits should compute DWT capacity (floor(audioLen / 1024))", () => {
+    var bits = aw6_maxBits(10240, 44100);
+    assert.equal(bits, 10);
+    bits = aw6_maxBits(0, 44100);
+    assert.equal(bits, 0);
+  });
+
+  it("aw7_maxBits should compute DCT-QIM capacity (floor(audioLen / 512))", () => {
+    var bits = aw7_maxBits(10240, 44100); // AWM7_FRAME = 512
+    assert.equal(bits, 20);
+    bits = aw7_maxBits(0, 44100);
+    assert.equal(bits, 0);
+  });
+
+  it("aw8_maxBits should compute DCT capacity (floor(audioLen / 1024))", () => {
+    var bits = aw8_maxBits(20480, 44100); // AWM8_FRAME = 1024
+    assert.equal(bits, 20);
+    bits = aw8_maxBits(0, 44100);
+    assert.equal(bits, 0);
+  });
+
+  it("aw2_maxBits should compute Phase Coding capacity (line 327-329)", () => {
+    // aw2_maxBits returns floor(audioLen / AWM2_FRAME) where AWM2_FRAME = 2048
+    var bits = aw2_maxBits(20480, 44100);
+    assert.equal(bits, 10);
+    bits = aw2_maxBits(0, 44100);
+    assert.equal(bits, 0);
+  });
+
+  it("aw3_maxBits should compute Echo Hiding capacity (line 407-409)", () => {
+    // aw3_maxBits returns floor(audioLen / AWM3_FRAME) where AWM3_FRAME = 4096
+    var bits = aw3_maxBits(40960, 44100);
+    assert.equal(bits, 10);
+    bits = aw3_maxBits(0, 44100);
+    assert.equal(bits, 0);
+  });
+});
+
+// ── Additional coverage: awReadWavRaw, awReadRightChannel, awWriteWav dual path ──
+describe("Audio Watermark — awReadWavRaw", () => {
+  it("should read raw interleaved samples from a WAV", () => {
+    const buf = makeTestWav(1000, 44100);
+    const result = awReadWavRaw(buf);
+    assert.ok(result.samples instanceof Int16Array);
+    assert.equal(result.samples.length, 1000);
+    assert.ok(result.raw instanceof Int16Array);
+    assert.equal(result.raw.length, 1000);
+    assert.equal(result.ch, 1);
+    assert.equal(result.sr, 44100);
+  });
+});
+
+describe("Audio Watermark — awReadRightChannel", () => {
+  it("should return null for mono WAV", () => {
+    const monoBuf = makeTestWav(1000, 44100);
+    const result = awReadRightChannel(monoBuf);
+    assert.equal(result, null);
+  });
+
+  it("should extract right channel from stereo WAV", () => {
+    // Build a stereo WAV manually
+    const numSamples = 200;
+    const sr = 44100;
+    const bps = 16, ch = 2, ba = ch * (bps / 8);
+    const dataSize = numSamples * ba;
+    const buf = new ArrayBuffer(44 + dataSize);
+    const v = new DataView(buf);
+    const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    w(0, "RIFF"); v.setUint32(4, 36 + dataSize, true); w(8, "WAVE");
+    w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+    v.setUint16(22, ch, true); v.setUint32(24, sr, true);
+    v.setUint32(28, sr * ba, true); v.setUint16(32, ba, true);
+    v.setUint16(34, bps, true); w(36, "data"); v.setUint32(40, dataSize, true);
+    // Fill left=1000, right=2000
+    for (let i = 0; i < numSamples; i++) {
+      v.setInt16(44 + i * ba, 1000, true);     // left
+      v.setInt16(44 + i * ba + 2, 2000, true); // right
+    }
+    const result = awReadRightChannel(buf);
+    assert.ok(result instanceof Int16Array);
+    assert.equal(result.length, numSamples);
+    assert.equal(result[0], 2000);
+    assert.equal(result[99], 2000);
+  });
+});
+
+describe("Audio Watermark — awWriteWav dual path", () => {
+  it("should write stereo from dual mono arrays", () => {
+    const sr = 44100;
+    const len = 100;
+    const left = new Int16Array(len);
+    const right = new Int16Array(len);
+    for (let i = 0; i < len; i++) {
+      left[i] = 100;
+      right[i] = 200;
+    }
+    const buf = awWriteWav([left, right], sr, 2);
+    // Verify the WAV has proper RIFF header
+    const v = new DataView(buf);
+    const riff = String.fromCharCode(v.getUint8(0), v.getUint8(1), v.getUint8(2), v.getUint8(3));
+    assert.equal(riff, "RIFF");
+    const wave = String.fromCharCode(v.getUint8(8), v.getUint8(9), v.getUint8(10), v.getUint8(11));
+    assert.equal(wave, "WAVE");
+    // Check channels = 2
+    assert.equal(v.getUint16(22, true), 2);
+    // Check sample rate
+    assert.equal(v.getUint32(24, true), sr);
+    // Check left and right channel data
+    assert.equal(v.getInt16(44, true), 100);
+    assert.equal(v.getInt16(46, true), 200);
   });
 });

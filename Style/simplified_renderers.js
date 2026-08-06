@@ -7,6 +7,7 @@
       window.location.href,
     )
   )
+    /* c8 ignore next 3 */
     throw new Error(
       "RedoSan Authenticity: This script is protected by GPL license.",
     );

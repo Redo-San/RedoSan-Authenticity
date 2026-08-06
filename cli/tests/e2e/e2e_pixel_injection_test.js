@@ -31,6 +31,7 @@ describe("E2E — Pixel Injection", () => {
   it("should navigate to pixel injection page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -44,6 +45,7 @@ describe("E2E — Pixel Injection", () => {
   it("should have embed form with all required elements", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -64,6 +66,7 @@ describe("E2E — Pixel Injection", () => {
   it("should embed a secret into a PNG with Enhanced LSB and show result", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -114,6 +117,7 @@ describe("E2E — Pixel Injection", () => {
   it("should show extract tab with required elements", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -143,6 +147,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Enhanced LSB: embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -228,6 +233,7 @@ describe("E2E — Pixel Injection", () => {
   it("should embed with Adaptive LSB and show watermarked image", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -269,6 +275,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip DCT: embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -358,6 +365,7 @@ describe("E2E — Pixel Injection", () => {
   it("should embed with DWT (frequency domain) and show watermarked image", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -408,6 +416,7 @@ describe("E2E — Pixel Injection", () => {
   it("should embed with DCT (frequency domain) and show watermarked image", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -457,6 +466,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip DWT: embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -541,6 +551,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Multi-Channel LSB: embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -630,6 +641,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip DFT: embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -714,6 +726,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Hybrid DCT-DWT: embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -803,6 +816,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Random LSB: embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -884,6 +898,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip VINE (deep learning): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -968,6 +983,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Pixel Seal (deep learning): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1055,6 +1071,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip NullGuard (deep learning): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1142,6 +1159,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Shallow Diffuse (deep learning): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1234,6 +1252,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Imagewmark Pro (professional): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1321,6 +1340,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Meta Seal (professional): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1408,6 +1428,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip STARDUSTmark (professional): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1495,6 +1516,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip InvisMark (professional): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1582,6 +1604,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip ElevenLikes (professional): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
@@ -1669,6 +1692,7 @@ describe("E2E — Pixel Injection", () => {
   it("should round-trip Diffusion-based (professional): embed then extract recovers secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");

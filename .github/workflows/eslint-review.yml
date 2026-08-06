@@ -21,4 +21,4 @@ jobs:
         with:
            node-version: 24
       - run: npm ci
-      - run: npx eslint --max-warnings 10000 .
+      - run: npx eslint --max-warnings 10000 --config .tools/Developer_Toolkit/eslint.config.mjs .

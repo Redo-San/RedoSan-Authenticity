@@ -38,7 +38,7 @@
     />
     <meta
       property="og:image"
-      content="https://redo-san.github.io/RedoSan-Authenticity/Style/logo.png"
+      content="https://redo-san.github.io/RedoSan-Authenticity/Style/logo.webp"
     />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -49,10 +49,47 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'"
     />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <script>
+      (function () {
+        var SUPPORTED = ['en','ar','fr','de','es','zh','ja','ko'];
+        var MAP = {'en':'en','ar':'ar','fr':'fr','de':'de','es':'es','zh':'zh','ja':'ja','ko':'ko','pt':'pt','it':'it','ru':'ru','hi':'hi','ur':'ur','bn':'bn','id':'id','ms':'ms','th':'th','vi':'vi','tl':'tl','tr':'tr','fa':'fa','he':'he','nl':'nl','sv':'sv','no':'no','da':'da','fi':'fi','pl':'pl','cs':'cs','hu':'hu','el':'el','uk':'uk','ro':'ro','bg':'bg','hr':'hr','sr':'sr','am':'am','et':'et'};
+        var lang = 'en';
+        try {
+          var stored = localStorage.getItem('redosan_lang');
+          if (stored && SUPPORTED.indexOf(stored) !== -1) lang = stored;
+        } catch (e) {}
+        if (lang === 'en') {
+          var nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+          var primary = nav.substring(0, 2);
+          if (SUPPORTED.indexOf(primary) !== -1) lang = primary;
+          else if (MAP[primary] && SUPPORTED.indexOf(MAP[primary]) !== -1) lang = MAP[primary];
+          else if (SUPPORTED.indexOf(nav.substring(0, 5)) !== -1) lang = nav.substring(0, 5);
+        }
+        var root = document.documentElement;
+        root.lang = lang;
+        root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        var base = root.dataset.standalone ? '../../' : 'Style/';
+        if (lang === 'ar' && !document.getElementById('rtl-css')) {
+          var l = document.createElement('link');
+          l.id = 'rtl-css';
+          l.rel = 'stylesheet';
+          l.href = base + 'rtl.css';
+          document.head.appendChild(l);
+        }
+        window.__I18N_EARLY = true;
+        if (lang !== 'en') {
+          document.write('<script src="' + base + 'lang/i18n-data-' + lang + '.js"><\/script>');
+        } else {
+          if (window.__I18N_DATA === undefined) window.__I18N_DATA = {};
+          window.__I18N_DATA.en = window.__I18N_DATA.en || {};
+        }
+        document.write('<script src="' + base + 'i18n.js"><\/script>');
+      })();
+    </script>
     <script>
       if (top !== self) {
         top.location = self.location;
@@ -139,7 +176,6 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="Style/style.css" />
     <link rel="stylesheet" href="Style/music-player.css" />
-    <link rel="preload" as="audio" href="Style/RedoSan_Music.mp3" />
     <link
       rel="stylesheet"
       href="Style/responsive.css"
@@ -186,35 +222,10 @@
           "File format converter",
           "Digital passport certificate generation"
         ],
-        "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style/logo.png",
+        "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style/logo.webp",
         "license": "https://www.gnu.org/licenses/gpl-3.0.html"
       }
     </script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-      integrity="sha256-mMzxeqEMILsTAXYmGPzJtqs6Tn8mtgcdZNC0EVTfOHU="
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/docx@8.5.0"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"
-      integrity="sha512-pUhApVQtLbnpLtJn6DuzDD5o2xtmLJnJ7oBoMsBnzOkVkpqofGLGPaBJ6ayD2zQe3lCgCibhJBi4cj5wAxwVKA=="
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
-      integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
-      crossorigin="anonymous"
-      defer
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/dist/human.js"
-      crossorigin="anonymous"
-      defer
-    ></script>
   </head>
   <body>
     <!-- Mode Selection Overlay -->
@@ -439,7 +450,7 @@
     >
       <div class="simple-top">
         <div class="simple-top-left">
-          <a href="/RedoSan-Authenticity/" class="simple-logo-link">
+          <a href="/RedoSan-Authenticity/" class="simple-logo-link" aria-label="RedoSan Authenticity">
             <div
               class="logo-img logo-white simple-logo"
               role="img"
@@ -588,7 +599,7 @@
         >
           <span></span><span></span><span></span>
         </button>
-        <a href="/RedoSan-Authenticity/" class="logo">
+        <a href="/RedoSan-Authenticity/" class="logo" aria-label="RedoSan Authenticity">
           <div
             class="logo-img logo-white"
             role="img"
@@ -1013,7 +1024,6 @@
             <div
               class="form-group"
               id="wm-password-group"
-              style="display: none"
             >
               <label for="wm-password" data-i18n="wm.password_label"
                 >Password (required for algorithms 1-4,6-7,9)</label
@@ -1067,7 +1077,6 @@
             <div
               class="form-group"
               id="wm-password-ex-group"
-              style="display: none"
             >
               <label for="wm-password-ex" data-i18n="wm.password_label"
                 >Password (required for algorithms 1-4,6-7,9)</label
@@ -1909,6 +1918,7 @@
                 id="face-did-import-file"
                 accept=".json"
                 style="padding: 8px 10px; font-size: 0.82rem"
+                aria-label="Import face DID JSON file"
               />
               <div style="display: flex; gap: 8px; margin-top: 6px">
                 <button class="btn btn-sm" onclick="handleFaceImportDid()">
@@ -2634,6 +2644,7 @@
                       id="c2pa-field-create-title"
                       name="c2pa-field-create-title"
                       placeholder="My Image"
+                      aria-label="C2PA creation title"
                     />
                     <input
                       type="text"
@@ -2643,6 +2654,7 @@
                       id="c2pa-field-create-author"
                       name="c2pa-field-create-author"
                       placeholder="Creator name"
+                      aria-label="C2PA creation author"
                     />
                   </div>
                 </div>
@@ -2668,6 +2680,7 @@
                       id="c2pa-field-edit-title"
                       name="c2pa-field-edit-title"
                       placeholder="Edited Image"
+                      aria-label="C2PA edit title"
                     />
                     <input
                       type="text"
@@ -2677,6 +2690,7 @@
                       id="c2pa-field-edit-author"
                       name="c2pa-field-edit-author"
                       placeholder="Editor name"
+                      aria-label="C2PA edit author"
                     />
                   </div>
                 </div>
@@ -2706,6 +2720,7 @@
                       id="c2pa-field-ai-title"
                       name="c2pa-field-ai-title"
                       placeholder="AI Generated Image"
+                      aria-label="C2PA AI title"
                     />
                     <input
                       type="text"
@@ -2715,6 +2730,7 @@
                       id="c2pa-field-ai-author"
                       name="c2pa-field-ai-author"
                       placeholder="Prompt Author name"
+                      aria-label="C2PA AI author"
                     />
                   </div>
                 </div>
@@ -2744,6 +2760,7 @@
                       id="c2pa-field-capture-title"
                       name="c2pa-field-capture-title"
                       placeholder="Photo title"
+                      aria-label="C2PA capture title"
                     />
                     <input
                       type="text"
@@ -2753,6 +2770,7 @@
                       id="c2pa-field-capture-author"
                       name="c2pa-field-capture-author"
                       placeholder="Photographer name"
+                      aria-label="C2PA capture author"
                     />
                   </div>
                 </div>
@@ -2782,6 +2800,7 @@
                       id="c2pa-field-composite-title"
                       name="c2pa-field-composite-title"
                       placeholder="Composite Image"
+                      aria-label="C2PA composite title"
                     />
                     <input
                       type="text"
@@ -2791,6 +2810,7 @@
                       id="c2pa-field-composite-author"
                       name="c2pa-field-composite-author"
                       placeholder="Creator name"
+                      aria-label="C2PA composite author"
                     />
                   </div>
                 </div>
@@ -2820,6 +2840,7 @@
                   id="c2pa-link-instagram"
                   name="c2pa-link-instagram"
                   placeholder="Instagram URL (e.g. https://instagram.com/username)"
+                  aria-label="Instagram URL"
                 />
                 <input
                   type="url"
@@ -2828,6 +2849,7 @@
                   id="c2pa-link-twitter"
                   name="c2pa-link-twitter"
                   placeholder="X / Twitter URL"
+                  aria-label="Twitter URL"
                 />
                 <input
                   type="url"
@@ -2836,6 +2858,7 @@
                   id="c2pa-link-facebook"
                   name="c2pa-link-facebook"
                   placeholder="Facebook URL"
+                  aria-label="Facebook URL"
                 />
                 <input
                   type="url"
@@ -2844,6 +2867,7 @@
                   id="c2pa-link-tiktok"
                   name="c2pa-link-tiktok"
                   placeholder="TikTok URL"
+                  aria-label="TikTok URL"
                 />
                 <input
                   type="url"
@@ -2852,6 +2876,7 @@
                   id="c2pa-link-youtube"
                   name="c2pa-link-youtube"
                   placeholder="YouTube URL"
+                  aria-label="YouTube URL"
                 />
                 <input
                   type="url"
@@ -2860,6 +2885,7 @@
                   id="c2pa-link-website"
                   name="c2pa-link-website"
                   placeholder="Website URL"
+                  aria-label="Website URL"
                 />
               </div>
               <span
@@ -2875,6 +2901,7 @@
                   id="c2pa-link-spotify"
                   name="c2pa-link-spotify"
                   placeholder="Spotify URL"
+                  aria-label="Spotify URL"
                 />
                 <input
                   type="url"
@@ -2883,6 +2910,7 @@
                   id="c2pa-link-applemusic"
                   name="c2pa-link-applemusic"
                   placeholder="Apple Music URL"
+                  aria-label="Apple Music URL"
                 />
                 <input
                   type="url"
@@ -2891,6 +2919,7 @@
                   id="c2pa-link-soundcloud"
                   name="c2pa-link-soundcloud"
                   placeholder="SoundCloud URL"
+                  aria-label="SoundCloud URL"
                 />
                 <input
                   type="url"
@@ -2899,6 +2928,7 @@
                   id="c2pa-link-bandcamp"
                   name="c2pa-link-bandcamp"
                   placeholder="Bandcamp URL"
+                  aria-label="Bandcamp URL"
                 />
               </div>
             </div>
@@ -3040,25 +3070,27 @@
               style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
             >
               <div>
-                <input
-                  type="text"
-                  id="cert-name"
-                  class="cert-field"
-                  placeholder="Name"
-                  required
-                  maxlength="25"
-                />
-              </div>
-              <div>
-                <input
-                  type="email"
-                  id="cert-email"
-                  class="cert-field"
-                  placeholder="Email"
-                  required
-                  maxlength="40"
-                  oninput="validateEmailInput(this)"
-                />
+                  <input
+                    type="text"
+                    id="cert-name"
+                    class="cert-field"
+                    placeholder="Name"
+                    required
+                    maxlength="25"
+                    aria-label="Certificate recipient name"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    id="cert-email"
+                    class="cert-field"
+                    placeholder="Email"
+                    required
+                    maxlength="40"
+                    oninput="validateEmailInput(this)"
+                    aria-label="Certificate recipient email"
+                  />
                 <span
                   id="cert-email-warn"
                   class="simple-field-warn"
@@ -3070,6 +3102,7 @@
                 <div class="simple-phone-group">
                   <select
                     id="cert-phonecode"
+                    aria-label="Country phone code"
                     onchange="updatePhoneMaxLength()"
                   ></select>
                   <input
@@ -3080,6 +3113,7 @@
                     required
                     maxlength="15"
                     oninput="validatePhoneInput(this)"
+                    aria-label="Phone number"
                   />
                 </div>
                 <span
@@ -3099,6 +3133,7 @@
                   maxlength="30"
                   oninput="validateUrlInput(this)"
                   onfocus="prefixHttps(this)"
+                  aria-label="Website URL"
                 />
                 <span
                   id="cert-website-warn"
@@ -3129,6 +3164,7 @@
                   placeholder="TikTok URL"
                   maxlength="80"
                   oninput="validateSocialInput(this)"
+                  aria-label="TikTok social link"
                 />
                 <span
                   id="cert-social-tiktok-warn"
@@ -3145,6 +3181,7 @@
                   placeholder="Facebook URL"
                   maxlength="80"
                   oninput="validateSocialInput(this)"
+                  aria-label="Facebook social link"
                 />
                 <span
                   id="cert-social-facebook-warn"
@@ -3161,6 +3198,7 @@
                   placeholder="Instagram URL"
                   maxlength="80"
                   oninput="validateSocialInput(this)"
+                  aria-label="Instagram social link"
                 />
                 <span
                   id="cert-social-instagram-warn"
@@ -3177,6 +3215,7 @@
                   placeholder="YouTube URL"
                   maxlength="80"
                   oninput="validateSocialInput(this)"
+                  aria-label="YouTube social link"
                 />
                 <span
                   id="cert-social-youtube-warn"
@@ -3220,6 +3259,7 @@
                     placeholder="Spotify URL"
                     maxlength="80"
                     oninput="validateSocialInput(this)"
+                    aria-label="Spotify music link"
                   />
                   <span
                     id="cert-music-spotify-warn"
@@ -3236,6 +3276,7 @@
                     placeholder="Apple Music URL"
                     maxlength="80"
                     oninput="validateSocialInput(this)"
+                    aria-label="Apple Music link"
                   />
                   <span
                     id="cert-music-applemusic-warn"
@@ -3252,6 +3293,7 @@
                     placeholder="YouTube Music URL"
                     maxlength="80"
                     oninput="validateSocialInput(this)"
+                    aria-label="YouTube Music link"
                   />
                   <span
                     id="cert-music-ytmusic-warn"
@@ -3268,6 +3310,7 @@
                     placeholder="SoundCloud URL"
                     maxlength="80"
                     oninput="validateSocialInput(this)"
+                    aria-label="SoundCloud link"
                   />
                   <span
                     id="cert-music-soundcloud-warn"
@@ -3989,6 +4032,7 @@
                 border-radius: var(--radius);
                 padding: 10px;
               "
+              aria-label="Generated identifiers output"
             ></textarea>
             <div
               style="
@@ -4247,6 +4291,7 @@
                 border-radius: var(--radius);
                 padding: 10px;
               "
+              aria-label="Document watermark embedded output"
             ></textarea>
           </div>
         </div>
@@ -4302,6 +4347,7 @@
                 border-radius: var(--radius);
                 padding: 10px;
               "
+              aria-label="Extracted watermark message"
             ></textarea>
           </div>
         </div>
@@ -5183,11 +5229,10 @@
     <div role="region" aria-label="Music player">
       <audio
         id="bg-music"
-        src="Style/RedoSan_Music.mp3"
         loop
-        preload="auto"
+        preload="none"
       ></audio>
-      <button id="music-btn" class="music-btn" aria-label="Toggle Music">
+      <button id="music-btn" class="music-btn" aria-label="Toggle Music" onclick="lazyLoadMusic(event)">
         &#x1F3B5;
       </button>
       <div
@@ -5200,27 +5245,46 @@
       </div>
     </div>
 
-    <script src="Style/music-player.js" defer></script>
-    <script src="Style/lang/i18n-data-ar.js" defer></script>
-    <script src="Style/lang/i18n-data-de.js" defer></script>
-    <script src="Style/lang/i18n-data-en.js" defer></script>
-    <script src="Style/lang/i18n-data-es.js" defer></script>
-    <script src="Style/lang/i18n-data-fr.js" defer></script>
-    <script src="Style/lang/i18n-data-ja.js" defer></script>
-    <script src="Style/lang/i18n-data-ko.js" defer></script>
-    <script src="Style/lang/i18n-data-zh.js" defer></script>
-    <script src="Style/lang/i18n-data.js" defer></script>
-    <script src="Style/i18n.js" defer></script>
-    <script src="Style/shared_validation.js" defer></script>
+     <script src="Style/shared_validation.js" defer></script>
     <script src="Style/shared.js" defer></script>
+        <script>
+      (function () {
+        document.querySelectorAll('.form-group input[type="file"]').forEach(function (input) {
+          if (input.parentElement.classList.contains("file-drop-zone")) return;
+          var dz = document.createElement("div");
+          dz.className = "file-drop-zone";
+          input.parentNode.insertBefore(dz, input);
+          dz.append(input);
+          var icon = document.createElement("span");
+          icon.className = "dz-icon";
+          icon.textContent = "\u{1F4C1}";
+          dz.append(icon);
+          var text = document.createElement("div");
+          text.className = "dz-text";
+          text.innerHTML = "Drop file here or <strong>browse</strong>";
+          dz.append(text);
+          var fileDiv = document.createElement("div");
+          fileDiv.className = "dz-file";
+          dz.append(fileDiv);
+        });
+      })();
+    </script>
     <script src="Style/search.js" defer></script>
-    <script src="Assistant/assistant_data.js" defer></script>
-    <script src="Assistant/assistant.js" defer></script>
-    <script src="Style/navigation.js" defer></script>
+    <script>
+      // Music player is lazy-loaded on first click (defers non-essential
+      // audio init out of the SPA shell critical path / TBT). music-player.js
+      // exposes globalThis.__musicInit once loaded.
+      (function(){var _m=false;window.lazyLoadMusic=function(e){if(_m){var fn=window.__musicInit;if(typeof fn==='function')fn();return}_m=true;var d=document,s=document.createElement('script');s.src='Style/music-player.js';s.defer=true;s.onload=function(){var fn=window.__musicInit;if(typeof fn==='function')fn();};d.body.appendChild(s);}})();
+    </script>
+    <script>
+      // Assistant is lazy-loaded on bubble click (mirrors the per-page
+      // lazyLoadAssistant pattern) so assistant_data.js + assistant.js no
+      // longer block the SPA shell's first paint / TBT.
+      (function(){var _a=false;window.lazyLoadAssistant=function(e){if(_a){if(typeof toggleAssistant==='function')toggleAssistant();return}_a=true;var d=document,s1=d.createElement('script');s1.src='Assistant/assistant_data.js';s1.onload=function(){var s2=d.createElement('script');s2.src='Assistant/assistant.js';s2.onload=function(){if(typeof initAssistant==='function')initAssistant();if(typeof toggleAssistant==='function')toggleAssistant()};d.body.appendChild(s2)};d.body.appendChild(s1)}})();
+    </script>
+    <script src="Style/loader.js" defer></script>
     <script src="Watermark/utils.js?v=2" defer></script>
-    <script src="Audio_Watermark/audio_watermark_core.js?v=7" defer></script>
-    <script src="Audio_Watermark/audio_watermark.js?v=3" defer></script>
-    <script src="Watermark/watermark_core.js" defer></script>
+    <script src="Style/navigation.js" defer></script>
     <script>
       !(function () {
         var e = location.href;
@@ -5240,59 +5304,10 @@
         }
       })();
     </script>
-    <script src="Pixel_Injection/watermark_core_advanced.js" defer></script>
-    <script src="Pixel_Injection/watermark_core_transforms.js" defer></script>
-    <script src="Pixel_Injection/watermark_core_algorithms.js" defer></script>
-    <script src="Pixel_Injection/watermark_advanced_ui.js" defer></script>
-    <script src="Pixel_Injection/pixel_injection.js" defer></script>
-    <script src="Forensic/forensic_core.js" defer></script>
-    <script src="Forensic/forensic.js" defer></script>
-    <script src="ID_Forge/id_forge.js" defer></script>
-    <script
-      src="Document_Watermark/document_watermark_core.js?v=3"
-      defer
-    ></script>
-    <script
-      src="Document_Watermark/document_watermark_report.js?v=1"
-      defer
-    ></script>
-    <script
-      src="Document_Watermark/document_watermark_pdf.js?v=1"
-      defer
-    ></script>
-    <script src="Document_Watermark/text_extractor.js?v=5" defer></script>
-    <script src="Document_Watermark/document_watermark.js?v=3" defer></script>
-    <script src="Watermark/watermark.js" defer></script>
-    <script src="Fingerprint/hashing_perceptual.js" defer></script>
-    <script src="Fingerprint/hashing.js" defer></script>
-    <script src="Fingerprint/fingerprint_ui.js" defer></script>
-    <script src="Metadata/metadata.js" defer></script>
-    <script src="Timestamp/timestamp.js" defer></script>
-    <script src="Decentralized_Identity_DID/did.js" defer></script>
-    <script src="Face_Biometric/face_engine.js" defer></script>
-    <script src="Face_Biometric/face_registry.js" defer></script>
-    <script src="Face_Biometric/face_ui.js" defer></script>
     <script src="Style/simplified_countries.js" defer></script>
     <script src="Style/simplified_helpers.js" defer></script>
     <script src="Style/simplified_renderers.js" defer></script>
     <script src="Style/simplified.js" defer></script>
-    <script src="vendor/jspdf.umd.min.js" defer></script>
-    <script src="vendor/qrious.min.js" defer></script>
-    <script src="vendor/jszip.min.js" defer></script>
-    <script src="vendor/opentimestamps.min.js" defer></script>
-    <script src="vendor/pdf-lib.min.js" defer></script>
-    <script src="Certificate/certificate_ots.js" defer></script>
-    <script src="Certificate/certificate_utils.js" defer></script>
-    <script src="Certificate/certificate_pdf.js" defer></script>
-    <script src="Certificate/certificate_docx.js" defer></script>
-    <script src="Certificate/certificate_epub.js" defer></script>
-    <script src="Certificate/certificate.js" defer></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js"
-      defer
-    ></script>
-    <script src="Converter/ffmpeg.min.js" defer></script>
-    <script src="Converter/converter.js" defer></script>
     <script>
       // C2PA boot loader — shows spinner + auto-retries once the module+CDN finish loading.
       (function () {
@@ -5339,6 +5354,12 @@
           return placeholder;
         }
 
+        // Safe no-op fallback so inline onchange handlers never throw while
+        // the lazy C2PA module is still loading.
+        if (typeof window.updateC2paWriteForm !== "function") {
+          window.updateC2paWriteForm = function () {};
+        }
+
         for (var fn in TAP_BTN_IDS) {
           if (!window[fn]) window[fn] = showC2paSpinner(fn);
         }
@@ -5373,10 +5394,6 @@
           }
         }, 30000);
       })();
-    </script>
-    <script type="module" src="C2PA/c2pa.js"></script>
-    <script>
-      //
     </script>
 
     <!-- Bot / Automation block overlay -->
@@ -5417,7 +5434,7 @@
       role="button"
       aria-label="Open assistant"
       tabindex="0"
-      onclick="toggleAssistant()"
+      onclick="lazyLoadAssistant(event)"
     >
       <span>💬</span>
     </div>
@@ -5437,9 +5454,13 @@
           class="ast-input"
           placeholder="Type your question..."
           rows="1"
+          aria-label="Assistant chat input"
         ></textarea>
         <button class="ast-send-btn">➤</button>
       </div>
     </div>
   </body>
 </html>
+
+
+

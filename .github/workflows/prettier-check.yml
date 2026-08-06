@@ -41,15 +41,19 @@ jobs:
             );
 
             try {
-              run('npx prettier --check ' + files.join(' '), { encoding: 'utf8', stdio: 'pipe' });
+              run('npx prettier --config .tools/Developer_Toolkit/.prettierrc --ignore-path .tools/Developer_Toolkit/.prettierignore --check ' + files.join(' '), { encoding: 'utf8', stdio: 'pipe' });
               if (existing) {
                 await github.rest.issues.deleteComment({
                   ...context.repo, comment_id: existing.id
                 });
               }
             } catch (e) {
-              const unformatted = e.stdout || '';
-              const list = unformatted.trim().split('\n').filter(Boolean).slice(0, 20);
+              const unformatted = (e.stdout || '') + (e.stderr || '');
+              const list = unformatted.trim().split('\n')
+                .map(l => l.replace(/\x1b\[\d+m/g, ''))
+                .filter(Boolean)
+                .filter(l => !l.includes('npm warn') && l.trim() !== 'Checking formatting...' && !/^(Warnings?|Errors?):/.test(l.trim()))
+                .slice(0, 20);
 
               const body = '## Prettier Check\n\nFound ' + list.length + ' unformatted file(s):\n\n' +
                 list.map(f => '- `' + f.replace('[warn] ', '').replace(' (code)', '').trim() + '`').join('\n') +

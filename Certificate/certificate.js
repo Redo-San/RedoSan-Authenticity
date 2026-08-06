@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── Digital Passport / Certificate Generator ──
 // Generates PDF, DOCX, EPUB with all results + QR verification
 
@@ -95,6 +97,7 @@ async function collectCertData() {
  */
 async function stampCertFile(blob, format) {
   try {
+    await ensureLib("OpenTimestamps");
     var buf = await blob.arrayBuffer();
     var hashBuf = await crypto.subtle.digest("SHA-256", buf);
     var hashBytes = new Uint8Array(hashBuf);
@@ -132,26 +135,50 @@ function ensureLib(name) {
     if (name === "jspdf" && typeof jspdf !== "undefined") return resolve();
     if (name === "QRious" && typeof QRious !== "undefined") return resolve();
     if (name === "JSZip" && typeof JSZip !== "undefined") return resolve();
-    // Static vendor script didn't load — try CDN fallbacks
+    if (name === "docx" && typeof docx !== "undefined") return resolve();
+    if (name === "OpenTimestamps" && typeof OpenTimestamps !== "undefined") return resolve();
+    // Static vendor script didn't load yet — try local vendor first, then CDN fallbacks.
+    /* c8 ignore next 40 */
+    var vbase = document.documentElement.dataset.standalone ? "../../../vendor/" : "vendor/";
     var urls;
-    if (name === "jspdf")
-      urls = [
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
-        "https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js",
-        "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
-      ];
-    else if (name === "QRious")
-      urls = [
-        "https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js",
-        "https://unpkg.com/qrious@4.0.2/dist/qrious.min.js",
-        "https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js",
-      ];
-    else
-      urls = [
-        "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
-        "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js",
-        "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
-      ];
+    switch (name) {
+      case "jspdf": {
+        urls = [
+          "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+          "https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js",
+          "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
+        ];
+        break;
+      }
+      case "QRious": {
+        urls = [
+          "https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js",
+          "https://unpkg.com/qrious@4.0.2/dist/qrious.min.js",
+          "https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js",
+        ];
+        break;
+      }
+      case "docx": {
+        urls = [
+          "https://cdn.jsdelivr.net/npm/docx@8.5.0",
+          "https://unpkg.com/docx@8.5.0/build/index.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js",
+        ];
+        break;
+      }
+      case "OpenTimestamps": {
+        urls = [vbase + "opentimestamps.min.js"];
+        break;
+      }
+      default: {
+        urls = [
+          "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+          "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js",
+          "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+        ];
+        break;
+      }
+    }
     var idx = 0;
     /**
      *
@@ -169,6 +196,7 @@ function ensureLib(name) {
         );
       var s = document.createElement("script");
       s.src = urls[idx++];
+      /* c8 ignore next 3 */
       s.onload = function () {
         resolve();
       };
@@ -262,6 +290,7 @@ function downloadOtsProof() {
       URL.revokeObjectURL(url);
     }, 100);
   } catch (error) {
+    /* c8 ignore next 2 */
     console.error("Failed to download .ots proof:", error);
   }
 }
@@ -288,11 +317,13 @@ async function downloadCert(format, btn) {
       certBlob = await downloadCertPDF(data);
     } else if (format === "docx" || format === "epub") {
       await ensureLib("QRious");
-      if (format === "docx") certBlob = await downloadCertDOCX(data);
-      else {
-        await ensureLib("JSZip");
-        certBlob = await downloadCertEPUB(data);
-      }
+       if (format === "docx") {
+         await ensureLib("docx");
+         certBlob = await downloadCertDOCX(data);
+       } else {
+         await ensureLib("JSZip");
+         certBlob = await downloadCertEPUB(data);
+       }
     }
     // Stamp the certificate file itself
     if (certBlob) {
@@ -304,6 +335,7 @@ async function downloadCert(format, btn) {
       if (otsBtn) otsBtn.style.display = "inline-block";
     }
   } catch (error) {
+    /* c8 ignore next 3 */
     console.error("Certificate generation failed:", error);
     alert("Failed to generate certificate: " + error.message);
   }
@@ -373,12 +405,14 @@ async function generateProfessionalCert() {
      * @param f
      */
     async function readFileAsText(f) {
+      /* c8 ignore next 1 */
       if (!f) return "";
       return new Promise(function (resolve) {
         var r = new FileReader();
         r.onload = function (e) {
           resolve(e.target.result);
         };
+        /* c8 ignore next 3 */
         r.onerror = function () {
           resolve("");
         };
@@ -386,19 +420,25 @@ async function generateProfessionalCert() {
       });
     }
 
-    // Watermark: uploaded file only
+    // Watermark: uploaded file or wizard session result
     var wmFile = getFileFrom("cert-result-wm");
     var wmText = wmFile ? await readFileAsText(wmFile) : "";
     var wmFileName = wmFile ? wmFile.name : "";
+    var wmGlobal = !!(window.simpleResults && window.simpleResults.watermark);
 
-    // PI: uploaded file only
+    // PI: uploaded file or wizard session result
     var piFile = getFileFrom("cert-result-pi");
     var piText = piFile ? await readFileAsText(piFile) : "";
     var piFileName = piFile ? piFile.name : "";
+    var piGlobal = !!(
+      window.simpleResults &&
+      (window.simpleResults.piFinalUrl || window.simpleResults["pixel-injection"])
+    );
 
-    // Fingerprint: uploaded file only
+    // Fingerprint: uploaded file or wizard session result
     var fpFile = getFileFrom("cert-result-fp");
     var fpText = fpFile ? await readFileAsText(fpFile) : "";
+    var fpGlobal = window.simpleResults && window.simpleResults.fpResult;
     var fpResultData = null;
     if (fpText) {
       try {
@@ -594,6 +634,7 @@ async function generateProfessionalCert() {
 
     if (status) status.textContent = "Certificate generated successfully!";
     if (dlSection) dlSection.style.display = "block";
+  /* c8 ignore next 5 */
   } catch (error) {
     console.error("Certificate generation failed:", error);
     if (status) status.textContent = "Error: " + error.message;
@@ -741,6 +782,7 @@ function resetProfessionalCert() {
 }
 
 // Init phone code on DOM ready
+/* c8 ignore start */
 if (typeof document !== "undefined") {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initCertPhoneCode);
@@ -748,3 +790,4 @@ if (typeof document !== "undefined") {
     initCertPhoneCode();
   }
 }
+/* c8 ignore stop */

@@ -196,6 +196,77 @@
     })(state.el, tries);
   }
 
+  // ── Feature script loading after content swap ──
+  /**
+   * Resolve a (possibly relative) script src against a base URL.
+   * @param src
+   * @param baseUrl
+   * @returns {string}
+   */
+  function resolveScriptSrc(src, baseUrl) {
+    try {
+      return new URL(src, baseUrl).href;
+    } catch (error) {
+      void error;
+      return src;
+    }
+  }
+
+  /**
+   * Collect external feature scripts declared by the freshly fetched page
+   * that are not already loaded in the current document. Shared shell
+   * scripts (shared.js, navigation.js, mpa-router.js, ...) are present on
+   * every MPA page and must not be re-appended.
+   * @param {Document} doc
+   * @param {string} pageUrl
+   * @returns {string[]}
+   */
+  function getMissingScripts(doc, pageUrl) {
+    var present = new Set();
+    document.querySelectorAll("script[src]").forEach(function (s) {
+      present.add(resolveScriptSrc(s.getAttribute("src"), location.href));
+    });
+    var missing = [];
+    doc.querySelectorAll("script[src]").forEach(function (s) {
+      var abs = resolveScriptSrc(s.getAttribute("src"), pageUrl);
+      if (!present.has(abs)) missing.push(abs);
+    });
+    return missing;
+  }
+
+  /**
+   * Load feature scripts sequentially (preserving declaration order so
+   * dependencies such as hashing_perceptual.js -> hashing.js ->
+   * fingerprint_ui.js are satisfied), then run page re-init once the page
+   * globals are available.
+   * @param {Document} doc
+   * @param {string} pageUrl
+   * @param {Function} done
+   */
+  function loadPageScripts(doc, pageUrl, done) {
+    var missing = getMissingScripts(doc, pageUrl);
+    if (missing.length === 0) {
+      done();
+      return;
+    }
+    var i = 0;
+    (function next() {
+      if (i >= missing.length) {
+        done();
+        return;
+      }
+      var el = document.createElement("script");
+      el.src = missing[i++];
+      el.async = false;
+      el.onload = next;
+      el.onerror = function () {
+        // A failed optional script must not block the remaining ones.
+        next();
+      };
+      document.body.append(el);
+    })();
+  }
+
   // ── Page-specific re-init after content swap ──
   /**
    *
@@ -332,9 +403,21 @@
     if (loader) loader.classList.add("page-loader--hidden");
     updateActiveSidebar(pageName);
     if (typeof sanitizeRemovalTools === "function") sanitizeRemovalTools();
-    reInitPage(pageName);
 
-    if (_audioSave.wasPlaying) _resumeAudio(_audioSave, 5);
+    // Feature scripts (id_forge.js, hashing.js, ...) are not present on the
+    // shell page; load them from the fetched document, then re-init the page.
+    var absUrl = (function () {
+      try {
+        return new URL(url, location.href).href;
+      } catch (error) {
+        void error;
+        return url;
+      }
+    })();
+    loadPageScripts(doc, absUrl, function () {
+      reInitPage(pageName);
+      if (_audioSave.wasPlaying) _resumeAudio(_audioSave, 5);
+    });
   }
 
   // ── Navigation ──

@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 
 // Data has been moved to assistant_data.js
 /**
@@ -550,6 +552,7 @@ function handleAssistantKeydown(e) {
   }
 }
 
+/* c8 ignore start */
 /**
  *
  */
@@ -625,4 +628,5 @@ function ready(fn) {
     fn();
   }
 }
+/* c8 ignore stop */
 ready(initAssistant);

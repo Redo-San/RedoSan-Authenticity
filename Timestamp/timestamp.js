@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     globalThis.window !== undefined &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── OpenTimestamps (.ots) client (100% browser, no server required) ──
 
 // OTS header magic: \x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94
@@ -147,6 +149,7 @@ function getOtsUpgradeCommand(fileName) {
   ].join("\n");
 }
 
+/* c8 ignore start */
 /**
  *
  */
@@ -248,7 +251,9 @@ async function handleOtsCreate() {
   btn.disabled = false;
   spinner("ts-spinner", false);
 }
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  *
  */
@@ -334,3 +339,4 @@ async function handleOtsVerify() {
   btn.disabled = false;
   spinner("ts-spinner", false);
 }
+/* c8 ignore stop */

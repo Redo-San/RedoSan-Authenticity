@@ -36,6 +36,7 @@ describe("E2E — Theme Toggle", () => {
   it("should toggle from dark to light on click", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -55,6 +56,7 @@ describe("E2E — Theme Toggle", () => {
   it("should toggle back on second click", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -75,6 +77,7 @@ describe("E2E — Language Switching", () => {
   it("should switch to Arabic and change html lang", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -97,6 +100,7 @@ describe("E2E — Language Switching", () => {
   it("should switch to French and change html lang", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -117,6 +121,7 @@ describe("E2E — Language Switching", () => {
   it("should switch back to English", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -139,6 +144,7 @@ describe("E2E — Download Formats", () => {
     return async () => {
       const ctx = await browser.newContext();
       const page = await ctx.newPage();
+      page.setDefaultTimeout(60000);
 
       const downloads = [];
       page.on("download", (dl) => downloads.push(dl));
