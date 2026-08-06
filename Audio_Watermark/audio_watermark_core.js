@@ -708,20 +708,7 @@ function aw6_maxBits(audioLen, sr) {
     return Math.floor(audioLen / 1024);
 }
 
-// ── DCT helpers (Type-II/III, orthogonal, precomputed matrix) ──
-var _awDctCos = null;
-/**
- *
- * @param N
- */
-function awDctInit(N) {
-    if (_awDctCos && _awDctCos.N === N) return;
-    const T = new Float64Array(N * N);
-    for (let k = 0; k < N; k++)
-        for (let n = 0; n < N; n++)
-            T[k * N + n] = Math.cos(Math.PI * k * (n + 0.5) / N);
-    _awDctCos = { N, T, scale0: 1 / Math.sqrt(N), scale: Math.sqrt(2 / N) };
-}
+// ── DCT helpers (Type-II/III, orthogonal, FFT-based) ──
 /**
  *
  * @param signal
@@ -749,13 +736,30 @@ function awDct(signal) {
  */
 function awIdct(X) {
     const N = X.length;
-    awDctInit(N);
-    const { T, scale0, scale } = _awDctCos;
+    const scale0 = 1 / Math.sqrt(N), scale = Math.sqrt(2 / N);
+    const sc = (k) => (k === 0 ? scale0 : scale);
+    const re = new Float64Array(N), im = new Float64Array(N);
+    for (let k = 0; k < N; k++) {
+        const theta = Math.PI * k / (2 * N);
+        const Wk = X[k] / sc(k);
+        if (k === 0) { re[0] = Wk; im[0] = 0; continue; }
+        let Wnk;
+        if (2 * k === N) {
+            Wnk = Wk;
+            re[k] = Wk / Math.cos(theta);
+            im[k] = 0;
+            continue;
+        }
+        Wnk = X[N - k] / sc(N - k);
+        re[k] = Wk * Math.cos(theta) + Wnk * Math.sin(theta);
+        im[k] = -Wk * Math.sin(theta) + Wnk * Math.cos(theta);
+    }
+    awIfft(re, im);
     const x = new Float64Array(N);
-    for (let n = 0; n < N; n++) {
-        let sum = X[0] * scale0;
-        for (let k = 1; k < N; k++) sum += X[k] * scale * T[k * N + n];
-        x[n] = sum;
+    const half = N >> 1;
+    for (let i = 0; i < half; i++) {
+        x[2 * i] = re[i];
+        x[2 * i + 1] = re[N - 1 - i];
     }
     return x;
 }

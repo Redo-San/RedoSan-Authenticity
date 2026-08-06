@@ -2077,8 +2077,15 @@ async function downloadPixelInjection(format) {
 }
 
 // Initialize pixel injection system
+/**
+ * Initializes the pixel injection instance. Runs eagerly when the lazy
+ * section script is loaded after DOMContentLoaded has already fired.
+ */
 /* c8 ignore next 8 */
-document.addEventListener("DOMContentLoaded", () => {
+/**
+ *
+ */
+function initPixelInjection() {
   window.pixelInjection = new PixelInjection();
 
   // Force initial update
@@ -2087,4 +2094,9 @@ document.addEventListener("DOMContentLoaded", () => {
       window.pixelInjection.updatePiAlgorithms();
     }
   }, 100);
-}); /* c8 ignore end */
+} /* c8 ignore end */
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPixelInjection);
+} else {
+  initPixelInjection();
+}

@@ -286,11 +286,20 @@ describe("ID Forge UI — handleIdForgeGenerate", () => {
   it("should generate swhid from random bytes", () => {
     elStore["if-type"].value = "swhid";
     handleIdForgeGenerate();
-    return new Promise(function (resolve) {
-      setTimeout(function () {
-        assert.ok(elStore["if-output"].value.startsWith("swh:1:cnt:"));
-        resolve();
-      }, 100);
+    return new Promise(function (resolve, reject) {
+      var deadline = Date.now() + 2000;
+      (function poll() {
+        if (elStore["if-output"].value) {
+          try {
+            assert.ok(elStore["if-output"].value.startsWith("swh:1:cnt:"));
+            resolve();
+          } catch (e) { reject(e); }
+        } else if (Date.now() > deadline) {
+          reject(new Error("swhid generation timed out"));
+        } else {
+          setTimeout(poll, 25);
+        }
+      })();
     });
   });
 

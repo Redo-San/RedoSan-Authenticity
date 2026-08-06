@@ -39,6 +39,7 @@
       "docx",
     ],
     "audio-watermark": [
+      "Watermark/utils.js?v=2",
       "Audio_Watermark/audio_watermark_core.js?v=7",
       "Audio_Watermark/audio_watermark.js?v=3",
       "lamejs",

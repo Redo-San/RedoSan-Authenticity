@@ -3,7 +3,8 @@
   "vcs": {
     "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": true
+    "useIgnoreFile": true,
+    "root": "../.."
   },
   "linter": {
     "enabled": true,
@@ -45,7 +46,6 @@
     }
   },
   "files": {
-    "includes": ["**/cli/**/*.js", "!**/cli/tests", "!**/cli/lib"],
     "ignoreUnknown": true
   }
 }

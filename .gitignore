@@ -56,10 +56,12 @@ skills-lock.json
 # Local AI tool config (OpenCode — machine-specific)
 opencode.json
 .opencode/
+start_opencode_server.bat
 
 # Local check scripts (machine-specific)
 scripts/local-check.ps1
 scripts/check_opencode_health.ps1
+check_server.ps1
 
 # Repomix output (local-only)
 repomix-output.xml
@@ -88,5 +90,5 @@ docs/
 
 # Coverage improvement plan (local working notes)
 coverage-improvement-plan.md
-
+lighthouse-100-plan.md
 

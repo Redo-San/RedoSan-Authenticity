@@ -26,7 +26,9 @@ module.exports = {
       numberOfRuns: 2,
       settings: {
         chromeFlags: "--no-sandbox",
+        headless: true,
       },
+      lighthouseVersion: "local",
     },
     assert: {
       assertions: {

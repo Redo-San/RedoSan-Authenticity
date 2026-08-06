@@ -13,5 +13,5 @@
     "keyframes-name-pattern": null,
     "selector-id-pattern": null
   },
-  "ignoreFiles": ["vendor/**/*.css", "node_modules/**/*.css", "docs/api/**/*.css"]
+  "ignoreFiles": ["../../vendor/**/*.css", "../../node_modules/**/*.css", "../../docs/api/**/*.css"]
 }

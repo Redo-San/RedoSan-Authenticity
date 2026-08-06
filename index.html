@@ -5283,6 +5283,7 @@
       (function(){var _a=false;window.lazyLoadAssistant=function(e){if(_a){if(typeof toggleAssistant==='function')toggleAssistant();return}_a=true;var d=document,s1=d.createElement('script');s1.src='Assistant/assistant_data.js';s1.onload=function(){var s2=d.createElement('script');s2.src='Assistant/assistant.js';s2.onload=function(){if(typeof initAssistant==='function')initAssistant();if(typeof toggleAssistant==='function')toggleAssistant()};d.body.appendChild(s2)};d.body.appendChild(s1)}})();
     </script>
     <script src="Style/loader.js" defer></script>
+    <script src="Watermark/utils.js?v=2" defer></script>
     <script src="Style/navigation.js" defer></script>
     <script>
       !(function () {
@@ -5351,6 +5352,12 @@
           // Mark as placeholder so the poll check can compare
           placeholder._c2paPlaceholder = true;
           return placeholder;
+        }
+
+        // Safe no-op fallback so inline onchange handlers never throw while
+        // the lazy C2PA module is still loading.
+        if (typeof window.updateC2paWriteForm !== "function") {
+          window.updateC2paWriteForm = function () {};
         }
 
         for (var fn in TAP_BTN_IDS) {

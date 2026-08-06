@@ -70,6 +70,7 @@ function setupDOM() {
       if (evt === "keydown") globalThis.__navKeydownCb = cb;
       if (evt === "pointerdown") globalThis.__navPointerdownCb = cb;
     },
+    removeEventListener: function () {},
   };
 
   var _winEventListeners = {};
@@ -498,6 +499,9 @@ describe("navigation.js — DOMContentLoaded main callback (lines 423-439)", () 
     assert.ok(cbs && cbs.length >= 1, "DOMContentLoaded callbacks should exist");
     var mainCb = cbs[0];
     assert.ok(mainCb, "main DOMContentLoaded callback should exist");
+
+    // Fire the DOMContentLoaded callback — this is what registers the listeners
+    mainCb();
 
     // Capture pointerdown/keydown handler
     var ptrHandler = globalThis.__navPointerdownCb;

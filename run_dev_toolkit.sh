@@ -163,7 +163,7 @@ run_lhci() {
   # ── Run LHCI ──
   set +e
   start_s=$(date +%s)
-  "$BIN"lhci autorun
+  "$BIN"lhci autorun --config "$ROOT/.tools/Developer_Toolkit/lighthouserc.js"
   ec=$?
   end_s=$(date +%s)
   set -e
@@ -311,25 +311,25 @@ menu() {
   fi
 
   case "$CHOICE" in
-    1)  run "Biome"          "$BIN"biome check . ;;
-    2)  run "ESLint"         "$BIN"eslint . --cache --cache-location .eslintcache ;;
-    3)  run "Stylelint"      "$BIN"stylelint "**/*.css" ;;
+    1)  run "Biome"          sh -c "cd '$ROOT/.tools/Developer_Toolkit' && '$BIN'biome check '../..'" ;;
+    2)  run "ESLint"         "$BIN"eslint . --cache --cache-location .eslintcache --config "$ROOT/.tools/Developer_Toolkit/eslint.config.mjs" ;;
+    3)  run "Stylelint"      "$BIN"stylelint "**/*.css" --config "$ROOT/.tools/Developer_Toolkit/.stylelintrc.json" --ignore-path "$ROOT/.tools/Developer_Toolkit/.stylelintignore" ;;
     4)  run "Madge"          "$BIN"madge --circular --extensions js C2PA Watermark Pixel_Injection Audio_Watermark Fingerprint Document_Watermark Timestamp Metadata Forensic ID_Forge Decentralized_Identity_DID Certificate Assistant Converter Style cli ;;
     5)  run "Core Tests"     node --no-warnings --test --test-timeout=120000 cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/id_forge_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js ;;
     6)  run "All Tests"      npm test ;;
     7)  run "Coverage"       npm run coverage ;;
     8)  run_cloc ;;
-    9)  run "TypeDoc"        "$BIN"typedoc ;;
-    10) run "Markdownlint"   "$BIN"markdownlint "**/*.md" --ignore node_modules --ignore skills --ignore agent --ignore .agents ;;
-    11) run "Depcheck"       "$BIN"depcheck ;;
+    9)  run "TypeDoc"        "$BIN"typedoc --options "$ROOT/.tools/Developer_Toolkit/typedoc.json" ;;
+    10) run "Markdownlint"   "$BIN"markdownlint --config "$ROOT/.tools/Developer_Toolkit/.markdownlint.json" "**/*.md" --ignore node_modules --ignore skills --ignore agent --ignore .agents ;;
+    11) run "Depcheck"       "$BIN"depcheck --config "$ROOT/.tools/Developer_Toolkit/.depcheckrc" ;;
     12) run "Size Limit"     "$BIN"size-limit ;;
-    13) run "CSpell"         "$BIN"cspell --no-progress "**/*.js" "**/*.css" "**/*.html" "**/*.md" "**/*.yml" "**/*.json" ;;
-    14) run "Commitlint"     sh -c "printf 'feat: test\n' | \"${BIN}commitlint\"" ;;
+    13) run "CSpell"         "$BIN"cspell --config "$ROOT/.tools/Developer_Toolkit/cspell.json" --no-progress "**/*.js" "**/*.css" "**/*.html" "**/*.md" "**/*.yml" "**/*.json" ;;
+    14) run "Commitlint"     sh -c "printf 'feat: test\n' | '$BIN'commitlint --config '$ROOT/.tools/Developer_Toolkit/commitlint.config.mjs'" ;;
     15) run "Husky"          "$BIN"husky ;;
-    16) run "Workbox"        "$BIN"workbox generateSW workbox-config.js ;;
+    16) run "Workbox"        "$BIN"workbox generateSW "$ROOT/.tools/Developer_Toolkit/workbox-config.js" ;;
     17) run_with_server "Pa11y" "$BIN"pa11y http://127.0.0.1:8080/ ;;
     18) run_lhci ;;
-    19) run_with_server "BackstopJS" "$BIN"backstop test --config backstop.json ;;
+    19) run_with_server "BackstopJS" "$BIN"backstop test --config "$ROOT/.tools/Developer_Toolkit/backstop.json" ;;
     c|C) run "Full Check"    npm run check ;;
     q|Q) printf '\n'; exit 0 ;;
   esac

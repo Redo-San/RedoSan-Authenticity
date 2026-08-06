@@ -30,7 +30,7 @@ jobs:
 
             let output;
             try {
-              output = run('npx depcheck --json', { encoding: 'utf8' });
+              output = run('npx depcheck --config .tools/Developer_Toolkit/.depcheckrc --json', { encoding: 'utf8' });
             } catch (e) {
               output = e.stdout || e.stderr || '{}';
             }

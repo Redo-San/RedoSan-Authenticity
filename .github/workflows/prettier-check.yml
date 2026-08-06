@@ -41,7 +41,7 @@ jobs:
             );
 
             try {
-              run('npx prettier --check ' + files.join(' '), { encoding: 'utf8', stdio: 'pipe' });
+              run('npx prettier --config .tools/Developer_Toolkit/.prettierrc --ignore-path .tools/Developer_Toolkit/.prettierignore --check ' + files.join(' '), { encoding: 'utf8', stdio: 'pipe' });
               if (existing) {
                 await github.rest.issues.deleteComment({
                   ...context.repo, comment_id: existing.id
