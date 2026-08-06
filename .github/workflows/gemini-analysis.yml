@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-           node-version: 24
+          node-version: 24
       - name: Run Gemini Code Review
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -37,8 +37,8 @@ jobs:
           TITLE=$(echo "$PR_DATA" | jq -r '.title')
           BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
 
-          set +e
-          npx -y @google/gemini-cli -p "You are an expert code reviewer. Review this GitHub pull request.
+          cat > /tmp/gemini_prompt.txt << EOF
+          You are an expert code reviewer. Review this GitHub pull request.
 
           Title: $TITLE
           Description: $BODY
@@ -55,7 +55,11 @@ jobs:
           4. Missing edge cases
           5. Performance problems
 
-          Format as concise bullet points with file:line references. Respond in Arabic and English." > review.txt 2>&1
+          Format as concise bullet points with file:line references. Respond in Arabic and English.
+          EOF
+
+          set +e
+          npx -y @google/gemini-cli -p @/tmp/gemini_prompt.txt > review.txt 2>&1
           RC=$?
           set -e
           if [ $RC -ne 0 ]; then
