@@ -74,15 +74,13 @@ jobs:
           fi
 
           REVIEW=$(cat review.txt)
-          echo "REVIEW<<EOF" >> $GITHUB_ENV
-          echo "$REVIEW" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          printf '%s' "$REVIEW" > /tmp/gemini_review.txt
+          echo "Review body (first 200 chars):"
+          head -c 200 /tmp/gemini_review.txt
       - name: Post Review Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
-          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "## 🤖 Gemini AI Review
-
-          $REVIEW" 2>/dev/null || echo "Posted review comment"
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/gemini_review.txt 2>/dev/null || echo "Posted review comment"
