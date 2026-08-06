@@ -17,3 +17,5 @@ coverage/
 test-results/
 .tools/
 
+Style/pages/
+Style/shared.js

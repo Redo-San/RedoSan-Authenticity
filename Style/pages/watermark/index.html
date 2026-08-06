@@ -934,10 +934,14 @@
             t('.card[data-page="removal-tools"]'),
             t("#page-removal-tools");
         } else {
-          var s = document.createElement("script");
-          (s.src = "../../../Removal_Tools/removal_tools.js?v=4"),
-            (s.defer = !0),
-            document.body.appendChild(s);
+          (function () {
+            function init() {
+              if (window.RedoSanLoadRemovalTools) window.RedoSanLoadRemovalTools();
+            }
+            document.readyState === "loading"
+              ? document.addEventListener("DOMContentLoaded", init)
+              : init();
+          })();
         }
       })();
     </script>
