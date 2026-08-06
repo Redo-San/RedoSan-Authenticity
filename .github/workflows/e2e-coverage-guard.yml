@@ -26,4 +26,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-v8-coverage
-          path: coverage/e2e-v8/
+          path: coverage/e2e-v8-*/

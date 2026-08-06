@@ -4,7 +4,7 @@ const path = require("node:path");
 const assert = require("node:assert/strict");
 let { startCoverage, stopCoverage } = require("./e2e_coverage");
 
-const PORT = 9180;
+const PORT = 9455;
 const BASE = `http://localhost:${PORT}`;
 const ROOT = path.resolve(__dirname, "../../..");
 const REAL_ROOT = fs.realpathSync(ROOT);
@@ -145,6 +145,7 @@ function pageURL(pageId) {
 async function openPage(browser, pageId) {
   var ctx = await browser.newContext({ locale: "en-US" });
   var page = await ctx.newPage();
+  page.setDefaultTimeout(60000);
   var errors = [];
   page.on("pageerror", function (e) { errors.push(e.message); });
   page.on("console", function (msg) {

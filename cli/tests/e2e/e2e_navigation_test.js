@@ -24,6 +24,7 @@ describe("E2E — Home Page", () => {
   it("should load without fatal console errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     page.on("console", (msg) => {
@@ -39,6 +40,7 @@ describe("E2E — Home Page", () => {
   it("should have correct title", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     const title = await page.title();
     assert.ok(title.length > 0);
@@ -48,6 +50,7 @@ describe("E2E — Home Page", () => {
   it("should have sidebar with data-page links", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     const count = await page.evaluate(() => document.querySelectorAll("#sidebar a[data-page]").length);
     assert.ok(count >= 10, `Expected >=10 sidebar links, got ${count}`);
@@ -57,6 +60,7 @@ describe("E2E — Home Page", () => {
   it("should have footer", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     const footer = await page.$("footer");
     assert.ok(footer);
@@ -68,6 +72,7 @@ describe("E2E — Hash Routing & Page Navigation", () => {
   it("should navigate via sidebar click to watermark", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
@@ -86,6 +91,7 @@ describe("E2E — Hash Routing & Page Navigation", () => {
   it("should navigate to ID forge via sidebar", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
@@ -104,6 +110,7 @@ describe("E2E — Hash Routing & Page Navigation", () => {
   it("should update hash after navigation", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
@@ -121,6 +128,7 @@ describe("E2E — ID Forge Functionality", () => {
   it("should have type selector and generate button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
@@ -140,6 +148,7 @@ describe("E2E — ID Forge Functionality", () => {
   it("should generate UUID v4", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
@@ -166,6 +175,7 @@ describe("E2E — ID Forge Functionality", () => {
   it("should generate ULID", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
@@ -191,6 +201,7 @@ describe("E2E — ID Forge Functionality", () => {
   it("should generate NanoID with custom length", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await page.evaluate(() => {

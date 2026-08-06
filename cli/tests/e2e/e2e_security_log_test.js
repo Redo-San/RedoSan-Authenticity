@@ -24,6 +24,7 @@ describe("E2E — Security Console Output", () => {
   it("should log '🔐 RedoSan Security' to console on page load", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     const consoleLines = [];
     page.on("console", (msg) => {
@@ -48,6 +49,7 @@ describe("E2E — Security Console Output", () => {
   it("should log bot/automation status line (PASS or BLOCKED)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     const consoleLines = [];
     page.on("console", (msg) => {
@@ -73,6 +75,7 @@ describe("E2E — Security Console Output", () => {
   it("should show BLOCKED when webdriver is enabled", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     const consoleLines = [];
     page.on("console", (msg) => {
@@ -93,6 +96,7 @@ describe("E2E — Security Console Output", () => {
   it("should show security icon styling in console", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     const consoleArgs = [];
     page.on("console", (msg) => {
@@ -123,6 +127,7 @@ describe("E2E — Security Status Report", () => {
   it("should produce score and signals in console", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     const consoleLines = [];
     page.on("console", (msg) => {

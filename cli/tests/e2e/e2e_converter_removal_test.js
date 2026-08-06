@@ -28,6 +28,7 @@ describe("E2E — Converter & Removal Tools", () => {
   it("should navigate to converter page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -46,6 +47,7 @@ describe("E2E — Converter & Removal Tools", () => {
   it("should have converter file input and button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "converter");
@@ -60,6 +62,7 @@ describe("E2E — Converter & Removal Tools", () => {
   it("should navigate to removal tools page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -78,6 +81,7 @@ describe("E2E — Converter & Removal Tools", () => {
   it("should have removal tools form elements", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "removal-tools");
@@ -92,6 +96,7 @@ describe("E2E — Converter & Removal Tools", () => {
   it("should detect file type after uploading to converter", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -130,6 +135,7 @@ describe("E2E — Converter & Removal Tools", () => {
   it("should have service worker support (PWA)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
     const swSupported = await page.evaluate(() => "serviceWorker" in navigator);
@@ -145,6 +151,7 @@ describe("E2E — Converter & Removal Tools", () => {
   it("should convert PNG to JPEG and produce download", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });

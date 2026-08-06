@@ -39,6 +39,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise escHtml with all edge cases", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -78,6 +79,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise __ translation function", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -100,6 +102,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise pack32/unpack32 and sha256Hex", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -129,6 +132,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise theme toggle functions", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -152,6 +156,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise isInAppBrowser and downloadBlobSimple", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -172,6 +177,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise checkAutomation and showBotOverlay", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -199,6 +205,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise setStatus, spinner, showResult, setOutput, setText on home page", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -270,6 +277,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise downloadBlob with container", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -296,6 +304,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise getRGB and canvasToBlob", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -340,6 +349,7 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
   it("should exercise loadImage via canvas-based blob", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -389,6 +399,7 @@ describe("E2E Deep Coverage — search.js", () => {
   it("should exercise buildSearchIndex and siteSearch", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -411,6 +422,7 @@ describe("E2E Deep Coverage — search.js", () => {
   it("should exercise siteSearch with 'watermark' query", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -442,6 +454,7 @@ describe("E2E Deep Coverage — search.js", () => {
   it("should exercise siteSearch with empty query", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -459,6 +472,7 @@ describe("E2E Deep Coverage — search.js", () => {
   it("should exercise navigateToSearchResult", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -479,6 +493,7 @@ describe("E2E Deep Coverage — search.js", () => {
   it("should exercise siteSearch with no-results query", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -510,6 +525,7 @@ describe("E2E Deep Coverage — search.js", () => {
   it("should exercise closeSearchResults", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -529,6 +545,7 @@ describe("E2E Deep Coverage — converter module", () => {
   it("should exercise PNG to JPEG conversion", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -561,6 +578,7 @@ describe("E2E Deep Coverage — ID Forge", () => {
   it("should generate UUID v4 and v7", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -604,6 +622,7 @@ describe("E2E Deep Coverage — ID Forge", () => {
   it("should generate ULID and NanoID", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -637,6 +656,7 @@ describe("E2E Deep Coverage — ID Forge", () => {
   it("should generate SWHID from text", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -666,6 +686,7 @@ describe("E2E Deep Coverage — ID Forge", () => {
   it("should exercise idForgeShowInfo and idForgeUpdateCount", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -690,6 +711,7 @@ describe("E2E Deep Coverage — Metadata module", () => {
   it("should exercise readMetadata on a PNG", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -725,6 +747,7 @@ describe("E2E Deep Coverage — Document Watermark", () => {
   it("should exercise document watermark tab switching and form fields", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
@@ -792,6 +815,7 @@ describe("E2E Deep Coverage — C2PA Provenance", () => {
   it("should exercise C2PA tab switching", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -827,6 +851,7 @@ describe("E2E Deep Coverage — Certificate", () => {
   it("should exercise certificate form fields and generate", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -868,6 +893,7 @@ describe("E2E Deep Coverage — DID Identity", () => {
   it("should generate Ed25519 DID", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -904,6 +930,7 @@ describe("E2E Deep Coverage — DID Identity", () => {
   it("should exercise DID sign button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);

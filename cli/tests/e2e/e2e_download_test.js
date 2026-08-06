@@ -40,6 +40,7 @@ describe("E2E — File Download Verification", () => {
   it("should navigate to fingerprint page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -60,6 +61,7 @@ describe("E2E — File Download Verification", () => {
   it("should navigate to watermark page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -82,6 +84,7 @@ describe("E2E — File Download Verification", () => {
   it("should fingerprint a PNG and trigger JSON download via modal", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     page.on("console", (msg) => {
@@ -215,6 +218,7 @@ describe("E2E — File Download Verification", () => {
   it("should download fingerprint as CSV and verify content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -280,6 +284,7 @@ describe("E2E — File Download Verification", () => {
   it("should download watermarked image directly via download link", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -371,6 +376,7 @@ describe("E2E — File Download Verification", () => {
   it("should download watermark results as JSON via modal and verify content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
 
@@ -499,6 +505,7 @@ describe("E2E — File Download Verification", () => {
   it("should download watermark results as PDF via modal", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -588,6 +595,7 @@ describe("E2E — File Download Verification", () => {
   it("should download metadata results as XML via modal", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);

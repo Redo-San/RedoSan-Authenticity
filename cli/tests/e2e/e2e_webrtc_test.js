@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
 const { startServer, stopServer } = require("./e2e_helpers");
 
-const PORT = 9898;
+const PORT = 9882;
 const BASE = `http://localhost:${PORT}`;
 const NAV_WAIT = { waitUntil: "domcontentloaded" };
 
@@ -24,6 +24,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should set REDOSAN_BOT_CHECK after page load", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     // Wait for DOMContentLoaded handlers (checkAutomation, startAsyncVPNDetection)
     await page.waitForTimeout(3000);
@@ -44,6 +45,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should detect headless Chromium as automated (score >= 40)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -59,6 +61,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should include 'webdriver' signal for headless Chromium", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -75,6 +78,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should show bot overlay in headless mode", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -91,6 +95,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should have Access Denied message in the bot overlay", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -117,6 +122,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should call startAsyncVPNDetection (may be skipped in headless)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -140,6 +146,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should not block non-automated access (backstop signal bypass)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     // Simulate the backstop bypass flag
     await page.goto(BASE + "?backstop=1", NAV_WAIT);
     await page.waitForTimeout(3000);
@@ -166,6 +173,7 @@ describe("E2E — WebRTC / VPN Detection", () => {
   it("should not produce fatal console errors during detection", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     page.on("console", (msg) => {

@@ -29,6 +29,7 @@ describe("E2E — DID Sign & Verify", () => {
   it("should navigate to DID page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -51,6 +52,7 @@ describe("E2E — DID Sign & Verify", () => {
   it("should have key form elements for sign flow", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");
@@ -84,6 +86,7 @@ describe("E2E — DID Sign & Verify", () => {
   it("should generate Ed25519 identity", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");
@@ -163,6 +166,7 @@ describe("E2E — DID Sign & Verify", () => {
   it("should sign fingerprint and auto-verify", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");

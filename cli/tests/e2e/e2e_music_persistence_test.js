@@ -24,6 +24,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should have music elements on initial load", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -43,6 +44,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should have music elements outside #app", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -62,6 +64,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should simulate play via JavaScript (set _playing + doPlay)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -109,6 +112,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should persist music elements after navigating to watermark", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -146,6 +150,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should persist music elements across 5 tool navigations", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -206,6 +211,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should persist music elements after back/forward navigation", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -257,6 +263,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should have exactly one button and toggleable", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -287,6 +294,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
   it("should not remove music elements when content swap replaces section", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -324,6 +332,7 @@ describe("Music Persistence — Hybrid Navigation", () => {
     // Simulate entering a standalone page URL directly, then navigating back
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     // Go to standalone watermark page first
     await page.goto(`${BASE}/Style/pages/watermark/index.html`, NAV_WAIT);

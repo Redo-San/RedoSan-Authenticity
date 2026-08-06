@@ -28,6 +28,7 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
   it("should navigate to search page without errors", async () => {
     const ctx = await browser.newContext({ locale: "en-US" });
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -46,6 +47,7 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
   it("should navigate to about page and show content", async () => {
     const ctx = await browser.newContext({ locale: "en-US" });
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -68,6 +70,7 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
   it("should navigate to privacy page and show content", async () => {
     const ctx = await browser.newContext({ locale: "en-US" });
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -90,6 +93,7 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
   it("should navigate to contact page and show content", async () => {
     const ctx = await browser.newContext({ locale: "en-US" });
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -112,6 +116,7 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
   it("should navigate to social page and show links", async () => {
     const ctx = await browser.newContext({ locale: "en-US" });
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -133,6 +138,7 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
   it('should search for "watermark" and show results', async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
 
@@ -163,6 +169,7 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
   it("should open assistant panel, type a message, and show greeting", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
 

@@ -81,6 +81,7 @@ describe("E2E — File Drop Zones", () => {
   it("should create file-drop-zone elements from file inputs", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -108,6 +109,7 @@ describe("E2E — File Drop Zones", () => {
   it("should have dz-icon and dz-text children in drop zone", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -139,6 +141,7 @@ describe("E2E — File Drop Zones", () => {
   it("should add drag-over class on dragover event", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -164,6 +167,7 @@ describe("E2E — File Drop Zones", () => {
   it("should remove drag-over class on dragleave event", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -192,6 +196,7 @@ describe("E2E — File Drop Zones", () => {
   it("should add has-file class when a valid PNG is dropped", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -223,6 +228,7 @@ describe("E2E — File Drop Zones", () => {
   it("should display the dropped file name in dz-file", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -251,6 +257,7 @@ describe("E2E — File Drop Zones", () => {
   it("should reject dangerous extension (.exe) and not add has-file", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     // Capture alert dialogs to auto-dismiss
     let alertMessage = "";
     page.on("dialog", async (dialog) => {
@@ -295,6 +302,7 @@ describe("E2E — File Drop Zones", () => {
   it("should reject dangerous extension (.js) and clear the input", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     let alertShown = false;
     page.on("dialog", async (dialog) => {
       alertShown = true;
@@ -328,6 +336,7 @@ describe("E2E — File Drop Zones", () => {
   it("should handle multiple drop zones across pages", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
@@ -366,6 +375,7 @@ describe("E2E — File Drop Zones", () => {
   it("should not produce fatal console errors during drop operations", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     page.on("console", (msg) => {

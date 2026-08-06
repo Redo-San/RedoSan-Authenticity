@@ -36,6 +36,7 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
   it("should navigate to fingerprint page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, NAV_WAIT);
@@ -56,6 +57,7 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
   it("should show progress bar after uploading file and clicking fingerprint", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, NAV_WAIT);
@@ -124,6 +126,7 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
   it("should compute SHA-256 hash and show in results", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, NAV_WAIT);
@@ -181,6 +184,7 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
   it("should populate all hash families in result output", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
@@ -235,6 +239,7 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
   it("should have fpResult stored after fingerprinting", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
@@ -293,6 +298,7 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
   it("should show progress label updates during worker processing", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
@@ -354,6 +360,7 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
   it("should show download button after successful fingerprint", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");

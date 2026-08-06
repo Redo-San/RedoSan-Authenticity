@@ -33,6 +33,7 @@ describe("E2E — Image Watermark", () => {
   it("should navigate to watermark page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -46,6 +47,7 @@ describe("E2E — Image Watermark", () => {
   it("should have file inputs and embed button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -64,6 +66,7 @@ describe("E2E — Image Watermark", () => {
   it("should embed a message into a PNG image (Zero-bit algorithm)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -117,6 +120,7 @@ describe("E2E — Image Watermark", () => {
   it("should show extract tab with file input and extract button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -138,6 +142,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Zero-bit (type 5): embed then extract confirms presence", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -219,6 +224,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip LSB (type 1) with password and recover secret content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -316,6 +322,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Latent DCT (type 4) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -400,6 +407,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Multi-bit (type 6) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -484,6 +492,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Forensic (type 7) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -568,6 +577,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Fragile (type 8): embed then extract recovers SHA-256 hash", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -642,6 +652,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Imatag-style (type 9) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -728,6 +739,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Frequency DCT (type 2) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -812,6 +824,7 @@ describe("E2E — Image Watermark", () => {
   it("should round-trip Neural SS (type 3) with password and recover secret", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -896,6 +909,7 @@ describe("E2E — Image Watermark", () => {
   it("should auto-detect watermark algorithm (detectWatermarkAlgorithm) after embedding type 5", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");

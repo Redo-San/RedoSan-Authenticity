@@ -46,6 +46,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should navigate to watermark page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -66,6 +67,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should navigate to forensic page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -86,6 +88,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should navigate to certificate page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -108,6 +111,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should embed watermark and render watermarked image in output (Zero-bit)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -203,6 +207,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should embed with LSB and render watermarked image using real PNG", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "watermark");
@@ -276,6 +281,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should render forensic ELA canvas after analysis", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
@@ -339,6 +345,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should render forensic noise heatmap canvas after analysis", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
@@ -395,6 +402,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should render both ELA and noise canvases with different dimensions", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
@@ -449,6 +457,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should generate certificate and render QR code canvas", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -588,6 +597,7 @@ describe("E2E — Canvas Rendering Pipeline", () => {
   it("should verify forensic canvases have valid 2D rendering context", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");

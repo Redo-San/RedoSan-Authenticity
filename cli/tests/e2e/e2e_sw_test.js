@@ -24,6 +24,7 @@ describe("E2E — Service Worker Registration", () => {
   it("should attempt SW registration with console output", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     // Collect SW-related console messages
     const swMessages = [];
@@ -48,6 +49,7 @@ describe("E2E — Service Worker Registration", () => {
   it("should have navigator.serviceWorker available", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
@@ -64,6 +66,7 @@ describe("E2E — Service Worker Registration", () => {
   it("should have SW_VERSION variable defined", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
@@ -81,6 +84,7 @@ describe("E2E — Service Worker Registration", () => {
   it("should trigger SW registration on window load event", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     // Intercept the SW register call to see what URL it uses
     const registerCalls = [];
@@ -107,6 +111,7 @@ describe("E2E — 404 Page Access", () => {
   it("should load 404.html with correct title", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(`${BASE}/404.html`, NAV_WAIT);
     await page.waitForTimeout(2000);
@@ -123,6 +128,7 @@ describe("E2E — 404 Page Access", () => {
   it("should show error-code element on 404 page", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(`${BASE}/404.html`, NAV_WAIT);
     await page.waitForTimeout(2000);
@@ -141,6 +147,7 @@ describe("E2E — 404 Page Access", () => {
   it("should have error-title and navigation links on 404 page", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(`${BASE}/404.html`, NAV_WAIT);
     await page.waitForTimeout(2000);
@@ -164,6 +171,7 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
   it("should have DANGEROUS_EXTS defined in SW", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     // Check SW blocking logic by evaluating the SW code directly
     const hasDangerousExts = await page.evaluate(() => {
@@ -189,6 +197,7 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
   it("should block dangerous extensions via SW threat detection logic", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
@@ -227,6 +236,7 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
   it("should have JS_WHITELIST matching expected files", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
@@ -266,6 +276,7 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
   it("should have CSS_WHITELIST entries in sw.js", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);

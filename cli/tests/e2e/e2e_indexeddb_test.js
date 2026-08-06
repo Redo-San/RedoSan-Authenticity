@@ -39,6 +39,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should navigate to face biometric page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, NAV_WAIT);
@@ -59,6 +60,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should have FaceRegistry and IDBStore available globally", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
@@ -78,6 +80,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should add a face entry to IndexedDB and retrieve it", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
@@ -117,6 +120,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should persist face across page navigation (same origin)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
@@ -150,6 +154,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should list all registered faces from IndexedDB", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
@@ -193,6 +198,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should delete a face from IndexedDB", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
@@ -247,6 +253,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should clear all faces from IndexedDB", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
@@ -287,6 +294,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should find faces by label in IndexedDB", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
@@ -324,6 +332,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should update a face entry in IndexedDB", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");

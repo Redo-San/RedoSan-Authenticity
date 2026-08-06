@@ -31,6 +31,7 @@ describe("E2E — Metadata Download Formats", () => {
   it("should navigate to metadata page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -44,6 +45,7 @@ describe("E2E — Metadata Download Formats", () => {
   it("should have file input and read button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "metadata");
@@ -56,6 +58,7 @@ describe("E2E — Metadata Download Formats", () => {
   it("should read metadata from PNG and show download button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "metadata");
@@ -78,6 +81,7 @@ describe("E2E — Metadata Download Formats", () => {
   it("should open download modal and close it after format selection", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     page.on("console", (msg) => {

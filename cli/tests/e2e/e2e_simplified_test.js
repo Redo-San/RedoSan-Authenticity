@@ -6,7 +6,7 @@ const { startCoverage, stopCoverage } = require("./e2e_coverage");
 const path = require("path");
 const fs = require("fs");
 
-const PORT = 9897;
+const PORT = 9906;
 const BASE = `http://localhost:${PORT}`;
 const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg.png"));
 const WAV_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "silence.wav"));
@@ -26,6 +26,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
   it("should show mode selection overlay on load and activate simplified mode", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await startCoverage(page);
@@ -66,6 +67,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
   it("should upload an image and show file info in simplified step 1", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -98,6 +100,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
   it("should fill owner info and advance to AI question step", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -146,6 +149,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
   it("should process image through simplified wizard steps", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
@@ -192,6 +196,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
   it("should handle audio file upload in simplified mode", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await startCoverage(page);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);

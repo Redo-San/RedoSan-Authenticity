@@ -31,6 +31,7 @@ describe("E2E — Forensic Analyzer", () => {
   it("should navigate to forensic page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -44,6 +45,7 @@ describe("E2E — Forensic Analyzer", () => {
   it("should have file input and analyze button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
@@ -58,6 +60,7 @@ describe("E2E — Forensic Analyzer", () => {
   it("should analyze a PNG and show forensic results", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
@@ -82,6 +85,7 @@ describe("E2E — Forensic Analyzer", () => {
   it("should show ELA (Error Level Analysis) results", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
@@ -111,6 +115,7 @@ describe("E2E — Forensic Analyzer", () => {
   it("should show noise analysis results", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");

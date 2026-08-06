@@ -3,7 +3,37 @@ const path = require("node:path");
 const fs = require("node:fs");
 
 const ROOT = path.resolve(__dirname, "..");
-const V8_DIR = path.resolve(ROOT, "coverage/e2e-v8");
+
+// V8 coverage is written to per-process folders (coverage/e2e-v8-<pid>) so
+// parallel test files never clobber each other's data.
+/**
+ *
+ */
+function v8DirList() {
+  const covDir = path.join(ROOT, "coverage");
+  if (!fs.existsSync(covDir)) return [];
+  return fs
+    .readdirSync(covDir)
+    .filter((d) => d.startsWith("e2e-v8-"))
+    .map((d) => path.join(covDir, d));
+}
+
+/**
+ *
+ */
+function v8Files() {
+  const files = [];
+  for (const dir of v8DirList()) {
+    try {
+      for (const f of fs.readdirSync(dir)) {
+        if (f.endsWith(".json")) files.push(path.join(dir, f));
+      }
+    } catch (error) {
+      void error; // A parallel process may have cleaned the dir — skip.
+    }
+  }
+  return files;
+}
 
 /**
  *
@@ -15,12 +45,12 @@ function main() {
   console.log(`Running E2E coverage guard: npm run ${suite}`);
   execSync(`npm run ${suite}`, { cwd: ROOT, stdio: "inherit" });
 
-  if (!fs.existsSync(V8_DIR)) {
-    console.error("FAIL: No coverage/e2e-v8 directory found");
+  if (v8DirList().length === 0) {
+    console.error("FAIL: No coverage/e2e-v8-* directory found");
     process.exit(1);
   }
 
-  const files = fs.readdirSync(V8_DIR).filter(f => f.endsWith(".json"));
+  const files = v8Files();
   if (files.length === 0) {
     console.error("FAIL: No V8 coverage JSON files produced");
     process.exit(1);
@@ -29,7 +59,7 @@ function main() {
   let totalScripts = 0;
   let styleScripts = 0;
   for (const f of files) {
-    const raw = JSON.parse(fs.readFileSync(path.join(V8_DIR, f), "utf8"));
+    const raw = JSON.parse(fs.readFileSync(f, "utf8"));
     for (const entry of raw) {
       totalScripts++;
       if (entry.url && (entry.url.includes("/Style/") || entry.url.includes("/Watermark/") || entry.url.includes("/Fingerprint/"))) {

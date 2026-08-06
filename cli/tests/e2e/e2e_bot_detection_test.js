@@ -24,6 +24,7 @@ describe("E2E — checkAutomation() detection", () => {
   it("should detect webdriver=true in headless Playwright", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -46,6 +47,7 @@ describe("E2E — checkAutomation() detection", () => {
   it("should detect no_plugins in headless browser", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -64,6 +66,7 @@ describe("E2E — checkAutomation() detection", () => {
   it("should detect few_languages signal in headless mode", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -84,6 +87,7 @@ describe("E2E — showBotOverlay() behavior", () => {
   it("should show the bot overlay when called", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -104,6 +108,7 @@ describe("E2E — showBotOverlay() behavior", () => {
   it("should display 'Access Denied' title in overlay", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -126,6 +131,7 @@ describe("E2E — showBotOverlay() behavior", () => {
   it("should show shield icon in overlay", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -148,6 +154,7 @@ describe("E2E — showBotOverlay() behavior", () => {
   it("should have report link in overlay", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
 
@@ -168,6 +175,7 @@ describe("E2E — Bot detection console messages", () => {
   it("should log security status to console on DOMContentLoaded", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     const consoleLines = [];
     page.on("console", (msg) => {
@@ -192,6 +200,7 @@ describe("E2E — Bot detection console messages", () => {
   it("should show accumulated score in console status", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
 
     const consoleLines = [];
     page.on("console", (msg) => {
