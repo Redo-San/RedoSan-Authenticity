@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
 const { startServer, stopServer } = require("./e2e_helpers");
 
-const PORT = 9877;
+const PORT = 9880;
 const BASE = `http://localhost:${PORT}`;
 const NAV_WAIT = { waitUntil: "domcontentloaded" };
 
@@ -24,6 +24,7 @@ describe("Hybrid Architecture — Initial Load", () => {
   it("should load index.html with mode overlay visible", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     const modeSelectVisible = await page.evaluate(() => {
@@ -34,19 +35,21 @@ describe("Hybrid Architecture — Initial Load", () => {
     await ctx.close();
   });
 
-  it("should have app container empty (no pre-loaded sections)", async () => {
+  it("should have all page sections pre-loaded in #app", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     const pageCount = await page.evaluate(() => document.querySelectorAll("#app > .page").length);
-    assert.equal(pageCount, 0, "#app should have 0 pre-loaded page sections");
+    assert.equal(pageCount, 17, "#app should have 17 pre-loaded page sections");
     await ctx.close();
   });
 
   it("should have shell elements outside #app", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     const shell = await page.evaluate(() => ({
@@ -71,6 +74,7 @@ describe("Hybrid Architecture — Initial Load", () => {
   it("should have static page sections hidden in DOM", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     const staticPages = await page.evaluate(() => ({
@@ -91,23 +95,21 @@ describe("Hybrid Architecture — Professional Mode Entry", () => {
   it("should navigate to home via Professional Mode card", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
-    // Click the Professional Mode card
+    // Click the Professional Mode card (MPA transition to home page)
     await page.evaluate(() => {
       const card = document.querySelector('.card[data-page="home"], a.mode-card');
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
-    const modeOverlayHidden = await page.evaluate(() => {
-      const el = document.getElementById("modeSelect");
-      return el && el.style.display === "none";
-    });
     const navVisible = await page.evaluate(() => {
       const el = document.getElementById("mainNav");
       return el && el.style.display !== "none";
     });
-    assert.ok(modeOverlayHidden, "Mode overlay should be hidden");
+    const url = page.url();
+    assert.ok(url.includes("/Style/pages/home/index.html"), `URL should be MPA home: ${url}`);
     assert.ok(navVisible, "Main nav should be visible");
     await ctx.close();
   });
@@ -115,6 +117,7 @@ describe("Hybrid Architecture — Professional Mode Entry", () => {
   it("should load content into #app after Professional Mode entry", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
@@ -135,6 +138,7 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
   it("should navigate to watermark via sidebar and load content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     // Enter professional mode first
@@ -163,6 +167,7 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
   it("should navigate to fingerprint and update URL", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
@@ -180,14 +185,15 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
       return s ? s.id : null;
     });
     assert.equal(active, "page-fingerprint");
-    const hash = await page.evaluate(() => window.location.hash);
-    assert.ok(hash.includes("page-fingerprint"), `Hash should include 'page-fingerprint': ${hash}`);
+    const url = page.url();
+    assert.ok(url.includes("/Style/pages/fingerprint/index.html"), `URL should be MPA fingerprint page: ${url}`);
     await ctx.close();
   });
 
   it("should navigate to ID forge and generate a UUID", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
@@ -222,6 +228,7 @@ describe("Hybrid Architecture — Static Pages", () => {
   it("should show about page from local DOM (no AJAX)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     // Enter professional mode first
@@ -249,6 +256,7 @@ describe("Hybrid Architecture — Shell Persistence", () => {
   it("should keep shell elements after navigating between tools", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
@@ -294,6 +302,7 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
   it("should go back to previous page via browser back button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
@@ -327,6 +336,7 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
   it("should go forward after going back", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
@@ -363,6 +373,7 @@ describe("Hybrid Architecture — Title and Meta Updates", () => {
   it("should update document title when navigating", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {

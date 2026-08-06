@@ -1,0 +1,15 @@
+ignores:
+  - "@commitlint/cli"
+  - "@commitlint/config-conventional"
+  - "acorn"
+  - "@noble/hashes"
+  - "@size-limit/preset-small-lib"
+  - "caniuse-lite"
+  - "husky"
+  - "mocha"
+  - "stylelint-config-standard"
+  - "undici-types"
+skipMissing:
+  - "./vendor/jspdf.umd.min.js"
+  - "./cli/commands/converter.js"
+  - "./backstop_data/html_report/diverged.js"

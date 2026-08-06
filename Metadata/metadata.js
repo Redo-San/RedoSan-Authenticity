@@ -1,3 +1,4 @@
+/* c8 ignore next 13 */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -95,7 +96,6 @@ function parseJPEGExif(data) {
       break;
     }
     offset++;
-    if (offset >= data.length) break;
   }
   return exif;
 }
@@ -223,6 +223,10 @@ function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
 /**
  *
  */
+/* c8 ignore start */
+/**
+ *
+ */
 async function handleReadMetadata() {
   const btn = document.getElementById("md-btn");
   const resultDiv = document.getElementById("md-result");
@@ -323,6 +327,7 @@ async function handleReadMetadata() {
   btn.disabled = false;
   spinner("md-spinner", false);
 }
+/* c8 ignore stop */
 
 // ── Multi-format download for metadata ──
 

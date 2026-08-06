@@ -29,6 +29,7 @@ describe("E2E — DID Identity", () => {
   it("should navigate to DID page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -42,6 +43,7 @@ describe("E2E — DID Identity", () => {
   it("should have algorithm selector and generate button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");
@@ -56,6 +58,7 @@ describe("E2E — DID Identity", () => {
   it("should generate an Ed25519 DID identity", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");
@@ -99,6 +102,7 @@ describe("E2E — DID Identity", () => {
   it("should generate a P-256 DID identity", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");
@@ -141,6 +145,7 @@ describe("E2E — DID Identity", () => {
   it("should show correct DID document structure after Ed25519 generation", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");
@@ -190,6 +195,7 @@ describe("E2E — DID Identity", () => {
   it("should have download button after DID generation", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "did");

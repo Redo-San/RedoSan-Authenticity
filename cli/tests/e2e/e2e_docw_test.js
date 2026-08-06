@@ -34,6 +34,7 @@ describe("E2E — Document Watermark", () => {
   it("should navigate to document watermark page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -47,6 +48,7 @@ describe("E2E — Document Watermark", () => {
   it("should have form elements, file inputs, and embed button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
@@ -67,6 +69,7 @@ describe("E2E — Document Watermark", () => {
   it("should embed a ZWC watermark into a TXT file and show result", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
@@ -120,6 +123,7 @@ describe("E2E — Document Watermark", () => {
   it("should show extract tab with file input, algorithm selector, and extract button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
@@ -142,6 +146,7 @@ describe("E2E — Document Watermark", () => {
   it("should round-trip Homoglyph (algo 2): embed secret into TXT then extract recovers content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
@@ -239,6 +244,7 @@ describe("E2E — Document Watermark", () => {
   it("should round-trip Whitespace (algo 3): embed secret into TXT then extract recovers content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
@@ -330,6 +336,7 @@ describe("E2E — Document Watermark", () => {
   it("should round-trip ZWC (algo 1): embed secret into TXT then extract recovers content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");

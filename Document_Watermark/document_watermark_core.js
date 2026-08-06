@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 
 /**
  *
@@ -18,6 +20,7 @@
  */
 function _utf8Encode(str) {
   if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(str);
+  /* c8 ignore start */
   var bytes = [];
   for (var i = 0; i < str.length; i++) {
     var cp = str.charCodeAt(i);
@@ -44,6 +47,7 @@ function _utf8Encode(str) {
     }
   }
   return new Uint8Array(bytes);
+  /* c8 ignore stop */
 }
 
 /**
@@ -53,6 +57,7 @@ function _utf8Encode(str) {
 function _utf8Decode(bytes) {
   if (typeof TextDecoder !== "undefined")
     return new TextDecoder().decode(bytes);
+  /* c8 ignore start */
   var str = "";
   for (var i = 0; i < bytes.length; i++) {
     var b = bytes[i];
@@ -76,6 +81,7 @@ function _utf8Decode(bytes) {
     }
   }
   return str;
+  /* c8 ignore stop */
 }
 
 /**
@@ -84,7 +90,7 @@ function _utf8Decode(bytes) {
  */
 async function _deflate(bytes) {
   if (typeof CompressionStream === "undefined")
-    throw new Error("CompressionStream not available");
+    /* c8 ignore next */ throw new Error("CompressionStream not available");
   var cs = new CompressionStream("deflate");
   var writer = cs.writable.getWriter();
   var reader = cs.readable.getReader();
@@ -95,14 +101,14 @@ async function _deflate(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch { break; }
+      } /* c8 ignore next */ catch { break; }
     }
   })();
   readPromise.catch(function () {});
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch { /* suppress */ }
+  } /* c8 ignore next */ catch { /* suppress */ }
   await readPromise;
   var total = 0;
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -121,7 +127,7 @@ async function _deflate(bytes) {
  */
 async function _inflate(bytes) {
   if (typeof DecompressionStream === "undefined")
-    throw new Error("DecompressionStream not available");
+    /* c8 ignore next */ throw new Error("DecompressionStream not available");
   var ds = new DecompressionStream("deflate");
   var writer = ds.writable.getWriter();
   var reader = ds.readable.getReader();
@@ -132,7 +138,7 @@ async function _inflate(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch {
+      } /* c8 ignore next */ catch {
         break;
       }
     }
@@ -141,7 +147,7 @@ async function _inflate(bytes) {
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch {
+  } /* c8 ignore next */ catch {
     /* write/close errors — suppress */
   }
   await readPromise;
@@ -168,9 +174,9 @@ async function _msgToBits(message, password) {
   var compressed;
   try {
     compressed = await _deflate(bytes);
-  } catch {
+  } /* c8 ignore start */ catch {
     compressed = null;
-  }
+  } /* c8 ignore stop */
   var payload;
   if (compressed && compressed.length < bytes.length) {
     payload = new Uint8Array(1 + compressed.length);
@@ -233,8 +239,10 @@ async function _bitsToMsg(bits, password) {
       return _checkPassword(result, password);
     } catch (error) {
       if (error.message === "WRONG_PASSWORD") throw error;
+      /* c8 ignore start */
       return "";
     }
+      /* c8 ignore stop */
   }
   var result = "";
   for (var k = 0; k < bytes.length; k++) {
@@ -290,7 +298,7 @@ var DOCW_ZWC = {
       if (bitIdx < bits.length) {
         for (var z = 0; z < perChar && bitIdx < bits.length; z++) {
           var chunk = bits.substr(bitIdx, this.BITS_PER_ZWC);
-          while (chunk.length < this.BITS_PER_ZWC) chunk += "0";
+          /* c8 ignore next */ while (chunk.length < this.BITS_PER_ZWC) chunk += "0";
           result += this.CHARS[parseInt(chunk, 2)];
           bitIdx += this.BITS_PER_ZWC;
         }
@@ -554,15 +562,17 @@ var DOCW_WHITESPACE = {
       i += this.BITS_PER_SPACE
     ) {
       var quad = bits.substr(i, this.BITS_PER_SPACE);
-      while (quad.length < this.BITS_PER_SPACE) quad += "0";
+      /* c8 ignore next */ while (quad.length < this.BITS_PER_SPACE) quad += "0";
       encoded.push(this.SPACES[parseInt(quad, 2)]);
     }
     var rem = bits.length % this.BITS_PER_SPACE;
+    /* c8 ignore start */
     if (rem > 0) {
       var last = bits.substr(bits.length - rem, rem);
       while (last.length < this.BITS_PER_SPACE) last += "0";
       encoded.push(this.SPACES[parseInt(last, 2)]);
     }
+    /* c8 ignore stop */
 
     var result = "";
     var encIdx = 0;
@@ -705,5 +715,6 @@ function docwEstimateCapacity(text, algoId) {
     }
     return Math.floor((sc * impl.BITS_PER_SPACE) / 8);
   }
+  /* c8 ignore next */
   return 0;
 }

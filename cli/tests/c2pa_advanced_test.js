@@ -12,7 +12,7 @@ function loadC2pa() {
   globalThis.BigInt = BigInt;
   globalThis.window.__ = globalThis.window.__ || ((s, d) => d || s);
   globalThis.window.escXml = globalThis.window.escXml || ((s) => s);
-  vm.runInThisContext(src, { filename: "c2pa.js" });
+  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../C2PA/c2pa.js") });
 }
 
 before(() => loadC2pa());

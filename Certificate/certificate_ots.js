@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── OpenTimestamps — Certificate Transparency ──
 
 var CT_AGGREGATORS = [

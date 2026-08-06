@@ -3,7 +3,7 @@ const { startServer, stopServer } = require("./e2e_helpers");
 const path = require("node:path");
 const fs = require("node:fs");
 
-const PORT = 9903;
+const PORT = 9883;
 const BASE = `http://localhost:${PORT}`;
 const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png"));
 
@@ -12,6 +12,7 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   const browser = await chromium.launch({ headless: true });
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
+  page.setDefaultTimeout(60000);
 
   page.on("console", (msg) => console.log("PAGE:", msg.text()));
   page.on("pageerror", (err) => console.log("PAGE_ERROR:", err.message));

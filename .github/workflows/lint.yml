@@ -25,7 +25,7 @@ jobs:
            node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx eslint .
+      - run: npx eslint --config .tools/Developer_Toolkit/eslint.config.mjs .
 
   biome:
     name: Biome
@@ -39,4 +39,4 @@ jobs:
            node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx @biomejs/biome check .
+      - run: cd .tools/Developer_Toolkit && npx @biomejs/biome check ../..

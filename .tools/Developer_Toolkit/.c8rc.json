@@ -1,0 +1,18 @@
+{
+  "include": ["../../**"],
+  "exclude": [
+    "../../node_modules",
+    "../../vendor",
+    "../../coverage",
+    "../../scripts",
+    "../../docs",
+    "../../.agents",
+    "../../agent",
+    "../../backstop_data",
+    "../../sw.js",
+    "../../dev-server.js",
+    "../../**/*.min.js",
+    "../../**/*.config.js",
+    "../../**/*.config.mjs"
+  ]
+}

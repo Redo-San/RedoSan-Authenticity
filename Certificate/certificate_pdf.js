@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 // ── PDF Certificate Generator ──
 
 /**
@@ -344,11 +346,7 @@ async function downloadCertPDF(data) {
       y += 4;
     }
     if (data.faceBiometric.did) {
-      doc.text(
-        "DID: " + data.faceBiometric.did.substring(0, 60) + "...",
-        margin,
-        y,
-      );
+      doc.text("DID: " + data.faceBiometric.did.substring(0, 60) + "...", margin, y);
       y += 4;
     }
     doc.text("Exported: " + data.faceBiometric.exportedAt, margin, y);

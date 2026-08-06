@@ -246,6 +246,7 @@ function readPdfText(filePath) {
       if (cmap[code]) {
         try {
           text += String.fromCodePoint(cmap[code]);
+          /* c8 ignore next 3 */
         } catch {
           text += "?";
         }

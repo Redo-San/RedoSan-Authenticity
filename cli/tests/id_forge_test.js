@@ -2,6 +2,12 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
+const vm = require("vm");
+globalThis.window = globalThis;
+globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+var idForgeSrc = fs.readFileSync(path.resolve(__dirname, "../../ID_Forge/id_forge.js"), "utf8");
+vm.runInThisContext(idForgeSrc, { filename: path.resolve(__dirname, "../../ID_Forge/id_forge.js") });
 const {
   uuidv4,
   uuidv7,
@@ -13,6 +19,7 @@ const {
   uuidv7Bulk,
   ulidBulk,
   nanoidBulk,
+  formatResults,
 } = require("../lib/id_forge");
 
 const UUID4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -214,5 +221,130 @@ describe("ID Forge — NanoID", () => {
   it("should be unique across bulk generation", () => {
     const ids = nanoidBulk(1000);
     assert.equal(new Set(ids).size, ids.length);
+  });
+});
+
+describe("ID Forge — hex utility", () => {
+  it("should pad numbers to width", () => {
+    assert.equal(hex(15, 2), "0f");
+    assert.equal(hex(255, 4), "00ff");
+    assert.equal(hex(0, 1), "0");
+  });
+});
+
+describe("ID Forge — sanitizeText", () => {
+  it("should escape HTML special chars", () => {
+    const result = sanitizeText('<tag>"value"&');
+    assert.ok(result.includes("&#60;"));
+    assert.ok(result.includes("&#62;"));
+    assert.ok(result.includes("&#34;"));
+    assert.ok(result.includes("&#38;"));
+  });
+  it("should pass through safe text", () => {
+    assert.equal(sanitizeText("hello world"), "hello world");
+  });
+  it("should handle empty string", () => {
+    assert.equal(sanitizeText(""), "");
+  });
+});
+
+describe("ID Forge — escXml", () => {
+  it("should escape XML special chars", () => {
+    assert.equal(escXml('<tag attr="value">&'), "&lt;tag attr=&quot;value&quot;&gt;&amp;");
+  });
+  it("should pass through safe text", () => {
+    assert.equal(escXml("hello"), "hello");
+  });
+  it("should escape all five XML entities", () => {
+    assert.equal(escXml("a&b<c>d\"e'"), "a&amp;b&lt;c&gt;d&quot;e'");
+  });
+});
+
+describe("ID Forge — hexFromDigest", () => {
+  it("should convert buffer to hex string", () => {
+    const buf = new Uint8Array([0x00, 0xff, 0xab, 0x12]).buffer;
+    assert.equal(hexFromDigest(buf), "00ffab12");
+  });
+  it("should handle empty buffer", () => {
+    assert.equal(hexFromDigest(new Uint8Array([]).buffer), "");
+  });
+  it("should handle full byte range", () => {
+    const buf = new Uint8Array([0x00, 0x01, 0x10, 0x7f, 0x80, 0xff]).buffer;
+    assert.equal(hexFromDigest(buf), "0001107f80ff");
+  });
+});
+
+describe("ID Forge — extractHashFromOts", () => {
+  const OTS_HEADER = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+
+  it("should extract SHA-256 from valid OTS buffer", () => {
+    const hashBytes = new Uint8Array(32);
+    for (let i = 0; i < 32; i++) hashBytes[i] = 0xab;
+    const buf = new Uint8Array([...OTS_HEADER, 0x01, 0x08, ...hashBytes]).buffer;
+    assert.equal(extractHashFromOts(buf), "ab".repeat(32));
+  });
+  it("should throw on bad magic bytes", () => {
+    const buf = new Uint8Array(100).buffer;
+    assert.throws(() => extractHashFromOts(buf), /bad magic bytes/);
+  });
+  it("should throw on unsupported version", () => {
+    const buf = new Uint8Array([...OTS_HEADER, 0x02, 0x08]).buffer;
+    assert.throws(() => extractHashFromOts(buf), /Unsupported OTS version/);
+  });
+  it("should throw on unsupported hash algorithm", () => {
+    const buf = new Uint8Array([...OTS_HEADER, 0x01, 0x07]).buffer;
+    assert.throws(() => extractHashFromOts(buf), /Unsupported OTS hash/);
+  });
+  it("should throw on too short buffer", () => {
+    const buf = new Uint8Array([...OTS_HEADER, 0x01, 0x08, 0x00, 0x01, 0x02]).buffer;
+    assert.throws(() => extractHashFromOts(buf), /OTS file too short/);
+  });
+});
+
+describe("ID Forge — computeSwhidFromText", () => {
+  it("should produce swh:1:cnt: format from text", async () => {
+    const result = await computeSwhidFromText("hello");
+    assert.ok(result.startsWith("swh:1:cnt:"));
+    assert.equal(result.length, 50); // "swh:1:cnt:" + 40 hex chars
+  });
+  it("should produce different hashes for different texts", async () => {
+    const a = await computeSwhidFromText("hello");
+    const b = await computeSwhidFromText("world");
+    assert.notEqual(a, b);
+  });
+});
+
+describe("ID Forge — formatResults", () => {
+  const ids = ["abc-123", "def-456", "ghi-789"];
+
+  it("should produce text format (default) as newline-separated", () => {
+    const result = formatResults(ids, "text", "nanoid");
+    assert.equal(result, "abc-123\ndef-456\nghi-789");
+  });
+
+  it("should produce CSV format with fileName prefix", () => {
+    const result = formatResults(ids, "csv", "nanoid");
+    assert.equal(result, "nanoid,abc-123\nnanoid,def-456\nnanoid,ghi-789");
+  });
+
+  it("should produce CSV format with 'id' prefix when fileName missing", () => {
+    const result = formatResults(ids, "csv");
+    assert.equal(result, "id,abc-123\nid,def-456\nid,ghi-789");
+  });
+
+  it("should produce JSON format", () => {
+    const result = formatResults(ids, "json");
+    const parsed = JSON.parse(result);
+    assert.deepEqual(parsed, ids);
+  });
+
+  it("should produce JSON with pretty-print", () => {
+    const result = formatResults(ids, "json");
+    assert.ok(result.includes("\n  "));
+  });
+
+  it("should default to text for unknown format", () => {
+    const result = formatResults(ids, "xml", "test");
+    assert.equal(result, "abc-123\ndef-456\nghi-789");
   });
 });

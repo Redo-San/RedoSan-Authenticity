@@ -22,4 +22,4 @@ jobs:
            node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx cspell --no-progress "**/*.js" "**/*.css" "**/*.html" "**/*.md" "**/*.yml" "**/*.json"
+      - run: npx cspell --config .tools/Developer_Toolkit/cspell.json --no-progress "**/*.js" "**/*.css" "**/*.html" "**/*.md" "**/*.yml" "**/*.json"

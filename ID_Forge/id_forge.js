@@ -1,3 +1,4 @@
+/* c8 ignore start */
 (function () {
   if (
     typeof window != "undefined" &&
@@ -11,6 +12,7 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })();
+/* c8 ignore stop */
 var CROCKFORD_B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 var NANOID_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";

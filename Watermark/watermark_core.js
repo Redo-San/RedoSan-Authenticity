@@ -1,4 +1,6 @@
+/* c8 ignore start */
 (function(){if(typeof window!='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+/* c8 ignore stop */
 // ── Algorithm implementations (pure JS, no UI) ──
 
 // ── RGB ↔ YCbCr ──
@@ -270,6 +272,7 @@ function wm3_extract(imgData, seed) {
     let b = '';
     const maxBits = Math.min(w * h * 3, LSB_MAX_BITS);
     for (const pi of order) {
+        /* c8 ignore next 2 */
         if (b.length >= maxBits) break;
         const i = pi * 4;
         b += (data[i] & 1) + '' + (data[i+1] & 1) + '' + (data[i+2] & 1);

@@ -1,0 +1,16 @@
+coverage/
+node_modules/
+vendor/
+.opencode/
+.agents/
+agent/
+.claude/
+skills/
+backstop_data/
+docs/
+.lighthouseci/
+.playwright-mcp/
+.stryker-tmp/
+coverage/
+test-results/
+.tools/

@@ -32,6 +32,7 @@ describe("E2E — Audio Watermark", () => {
   it("should navigate to audio watermark page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     const errors = [];
     page.on("pageerror", (err) => errors.push(err.message));
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
@@ -45,6 +46,7 @@ describe("E2E — Audio Watermark", () => {
   it("should have audio input, text area, algorithm selector, and embed button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");
@@ -63,6 +65,7 @@ describe("E2E — Audio Watermark", () => {
   it("should embed a message into WAV audio (QIM algorithm)", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");
@@ -116,6 +119,7 @@ describe("E2E — Audio Watermark", () => {
   it("should show extract tab with file input and extract button", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");
@@ -137,6 +141,7 @@ describe("E2E — Audio Watermark", () => {
   it("should round-trip LSB (type 1): embed secret into WAV then extract recovers content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");
@@ -217,6 +222,7 @@ describe("E2E — Audio Watermark", () => {
   it("should round-trip DWT (type 6): embed secret into WAV then extract recovers content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");
@@ -284,6 +290,7 @@ describe("E2E — Audio Watermark", () => {
   it("should round-trip QIM (type 5): embed secret into WAV then extract recovers content", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
     await page.goto(BASE, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");

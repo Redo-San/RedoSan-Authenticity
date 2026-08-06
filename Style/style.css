@@ -1,6 +1,7 @@
 :root {
   --primary: #6c5ce7;
   --primary-dark: #5a4bd1;
+  --primary-text: #8a7bf0;
   --bg: #0f0f1a;
   --card: #1a1a2e;
   --card-hover: #252540;
@@ -16,6 +17,7 @@
   --bg: #f5f5fa;
   --card: #fff;
   --card-hover: #eeeef5;
+  --primary-text: #6c5ce7;
   --text: #1a1a2e;
   --text-muted: #6b6b85;
   --border: #d0d0e0;
@@ -76,7 +78,7 @@ nav .logo {
 }
 
 .logo-white {
-  background-image: url("logo.png");
+  background-image: url("logo.webp");
 }
 
 .logo-black {
@@ -1095,11 +1097,12 @@ html:has(.sidebar.open) {
 .static-page {
   max-width: 650px;
   margin: 0 auto;
+  min-height: 60vh;
 }
 
 .static-page h2 {
   font-size: 1.6rem;
-  color: var(--primary);
+  color: var(--primary-text);
   margin-bottom: 16px;
 }
 
@@ -1132,7 +1135,7 @@ html:has(.sidebar.open) {
 }
 
 .static-page a {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .contact-links {
@@ -1298,10 +1301,12 @@ html[dir="rtl"] #themeToggle {
 .file-drop-zone .dz-text {
   font-size: 0.85rem;
   color: var(--text-muted);
+  min-height: 2.4em;
+  overflow: hidden;
 }
 
 .file-drop-zone .dz-text strong {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .file-drop-zone .dz-file {
@@ -1916,7 +1921,7 @@ body:has(#modeSelect:not([style*="display: none"])) {
 }
 
 .mode-logo.logo-white {
-  background-image: url("logo.png");
+  background-image: url("logo.webp");
 }
 
 .mode-logo.logo-black {
@@ -3450,7 +3455,7 @@ html[dir="rtl"] .ast-msg-user {
 .bot-block-text {
   font-size: 16px;
   line-height: 1.7;
-  color: var(--text-muted);
+  color: #b4b4c8;
   margin-bottom: 24px;
 }
 
