@@ -753,3 +753,37 @@ function goHome() {
 }
 
 // ── Music player moved to Style/music-player.js ──
+
+// Load the local-only Removal Tools script only when the server actually
+// serves it as JavaScript (Removal_Tools/ is gitignored, so fresh checkouts
+// would otherwise receive 404.html with HTTP 200 + text/html).
+window.RedoSanLoadRemovalTools = function () {
+  if (window.location.hostname === "redo-san.github.io") return;
+  var REMOVAL_JS = "../../../Removal_Tools/removal_tools.js";
+  var probe = function (method) {
+    return fetch(REMOVAL_JS, { method: method, cache: "no-store" }).then(
+      function (r) {
+        var ct = (r.headers.get("content-type") || "").toLowerCase();
+        if (!r.ok || !ct.includes("javascript")) return null;
+        return r;
+      },
+    );
+  };
+  var inject = function () {
+    var s = document.createElement("script");
+    (s.src = REMOVAL_JS + "?v=4"), (s.defer = !0), document.body.append(s);
+  };
+  var controller = new AbortController();
+  var timer = setTimeout(function () {
+    controller.abort();
+  }, 5000);
+  probe("HEAD")
+    .catch(function () {
+      return probe("GET");
+    })
+    .then(function (r) {
+      clearTimeout(timer);
+      if (r) inject();
+    })
+    .catch(function () {});
+};

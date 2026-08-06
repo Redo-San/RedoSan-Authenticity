@@ -25,7 +25,7 @@ permissions:
 jobs:
   review:
     if: |
-      github.event_name == 'workflow_dispatch' && github.event.inputs.pr_number != '' ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository)
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -40,9 +40,24 @@ jobs:
             results-receiver.actions.githubusercontent.com:443
             agent.api.stepsecurity.io:443
             prod.app-api.stepsecurity.io:443
-            files.openssf.org:443
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Sync from head branch (stale merge ref bypass)
+        run: |
+          git fetch origin "$GITHUB_HEAD_REF" --depth=1
+          git checkout "origin/$GITHUB_HEAD_REF" -- .
+      - name: Install jq (if missing)
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            curl -fsSL -o /tmp/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+            curl -fsSL https://github.com/jqlang/jq/releases/download/jq-1.7.1/sha256sums.txt | grep -F "jq-linux-amd64" > /tmp/jq.sha256
+            echo "  /tmp/jq" >> /tmp/jq.sha256
+            (cd /tmp && sha256sum -c jq.sha256)
+            sudo mv /tmp/jq /usr/local/bin/jq
+            sudo chmod +x /usr/local/bin/jq
+          fi
+          jq --version
       - name: Run OpenRouter Code Review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

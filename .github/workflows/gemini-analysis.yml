@@ -24,38 +24,47 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+      - name: Sync from head branch (stale merge ref bypass)
+        run: |
+          git fetch origin "$GITHUB_HEAD_REF" --depth=1
+          git checkout "origin/$GITHUB_HEAD_REF" -- .
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-           node-version: 24
+          node-version: 24
       - name: Run Gemini Code Review
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }} 2>/dev/null | head -5000)
-          PR_DATA=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title,body 2>/dev/null)
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo "$REPO" 2>/dev/null | head -5000)
+          PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json title,body 2>/dev/null)
           TITLE=$(echo "$PR_DATA" | jq -r '.title')
           BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
 
+          {
+            echo "You are an expert code reviewer. Review this GitHub pull request."
+            echo ""
+            echo "Title: $TITLE"
+            echo "Description: $BODY"
+            echo ""
+            echo '```diff'
+            echo "$DIFF"
+            echo '```'
+            echo ""
+            echo "Focus on:"
+            echo "1. Security vulnerabilities"
+            echo "2. Logic bugs in algorithms (watermark, fingerprint, C2PA, etc.)"
+            echo "3. Code quality issues"
+            echo "4. Missing edge cases"
+            echo "5. Performance problems"
+            echo ""
+            echo "Format as concise bullet points with file:line references. Respond in Arabic and English."
+          } > /tmp/gemini_prompt.txt
+
           set +e
-          npx -y @google/gemini-cli -p "You are an expert code reviewer. Review this GitHub pull request.
-
-          Title: $TITLE
-          Description: $BODY
-
-          Diff:
-          \`\`\`diff
-          $DIFF
-          \`\`\`
-
-          Focus on:
-          1. Security vulnerabilities
-          2. Logic bugs in algorithms (watermark, fingerprint, C2PA, etc.)
-          3. Code quality issues
-          4. Missing edge cases
-          5. Performance problems
-
-          Format as concise bullet points with file:line references. Respond in Arabic and English." > review.txt 2>&1
+          npx -y @google/gemini-cli -p @/tmp/gemini_prompt.txt > review.txt 2>&1
           RC=$?
           set -e
           if [ $RC -ne 0 ]; then
@@ -65,13 +74,13 @@ jobs:
           fi
 
           REVIEW=$(cat review.txt)
-          echo "REVIEW<<EOF" >> $GITHUB_ENV
-          echo "$REVIEW" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          printf '%s' "$REVIEW" > /tmp/gemini_review.txt
+          echo "Review body (first 200 chars):"
+          head -c 200 /tmp/gemini_review.txt
       - name: Post Review Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "## 🤖 Gemini AI Review
-
-          $REVIEW" 2>/dev/null || echo "Posted review comment"
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/gemini_review.txt 2>/dev/null || echo "Posted review comment"
