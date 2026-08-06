@@ -420,19 +420,25 @@ async function generateProfessionalCert() {
       });
     }
 
-    // Watermark: uploaded file only
+    // Watermark: uploaded file or wizard session result
     var wmFile = getFileFrom("cert-result-wm");
     var wmText = wmFile ? await readFileAsText(wmFile) : "";
     var wmFileName = wmFile ? wmFile.name : "";
+    var wmGlobal = !!(window.simpleResults && window.simpleResults.watermark);
 
-    // PI: uploaded file only
+    // PI: uploaded file or wizard session result
     var piFile = getFileFrom("cert-result-pi");
     var piText = piFile ? await readFileAsText(piFile) : "";
     var piFileName = piFile ? piFile.name : "";
+    var piGlobal = !!(
+      window.simpleResults &&
+      (window.simpleResults.piFinalUrl || window.simpleResults["pixel-injection"])
+    );
 
-    // Fingerprint: uploaded file only
+    // Fingerprint: uploaded file or wizard session result
     var fpFile = getFileFrom("cert-result-fp");
     var fpText = fpFile ? await readFileAsText(fpFile) : "";
+    var fpGlobal = window.simpleResults && window.simpleResults.fpResult;
     var fpResultData = null;
     if (fpText) {
       try {

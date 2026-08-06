@@ -803,10 +803,12 @@ describe("Certificate — generateProfessionalCert — success paths", function 
   it("should handle fpGlobal for fingerprint filename", async function () {
     clearMockElements();
     _resultStore = {};
-    // Provide fingerprint data via fpGlobal with file_info
-    globalThis.fpGlobal = {
-      file_info: { file_name: "test-photo.jpg", algorithm: "SHA-256" },
-      hash: "abc123",
+    // Provide fingerprint data via simpleResults.fpResult with file_info
+    window.simpleResults = {
+      fpResult: {
+        file_info: { file_name: "test-photo.jpg", algorithm: "SHA-256" },
+        hash: "abc123",
+      },
     };
     mockElement("cert-status", { textContent: "" });
     mockElement("cert-spinner", { style: { display: "none" } });
@@ -845,7 +847,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
       assert.ok(globalThis._certData.fpFileName.indexOf("test-photo.jpg") !== -1);
     } finally {
       globalThis.submitCertTransparency = origSubmit;
-      globalThis.fpGlobal = null;
+      delete window.simpleResults;
     }
   });
 
@@ -924,13 +926,13 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     mockElement("cert-result-docw", { files: null });
     mockElement("cert-result-ts", { files: null });
 
-    // fpGlobal present but WITHOUT file_info → line 556 ("") branch
+    // fpGlobal (simpleResults.fpResult) present but WITHOUT file_info → line 556 ("") branch
     // window._didKeypair present → line 567 truthy branch
-    var origFpGlobal = globalThis.fpGlobal;
+    var origSimpleResults = window.simpleResults;
     var origDidKeypair = globalThis._didKeypair;
     var origSubmit = globalThis.submitCertTransparency;
     try {
-      globalThis.fpGlobal = {};
+      window.simpleResults = { fpResult: {} };
       globalThis._didKeypair = { did: "did:key:z6MkhaXjBZDURTZEb7GoRf6bY2eW7p" };
       globalThis.submitCertTransparency = async function () {
         return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
@@ -944,7 +946,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
       assert.equal(globalThis._certData.fpFileName, "", "fpGlobal without file_info");
       assert.equal(globalThis._certData.didIdentity, "did:key:z6MkhaXjBZDURTZEb7GoRf6bY2eW7p");
     } finally {
-      globalThis.fpGlobal = origFpGlobal;
+      window.simpleResults = origSimpleResults;
       globalThis._didKeypair = origDidKeypair;
       globalThis.submitCertTransparency = origSubmit;
     }
