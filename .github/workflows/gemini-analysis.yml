@@ -35,32 +35,33 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }} 2>/dev/null | head -5000)
-          PR_DATA=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title,body 2>/dev/null)
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo "$REPO" 2>/dev/null | head -5000)
+          PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json title,body 2>/dev/null)
           TITLE=$(echo "$PR_DATA" | jq -r '.title')
           BODY=$(echo "$PR_DATA" | jq -r '.body' | head -500)
 
-          cat > /tmp/gemini_prompt.txt << EOF
-          You are an expert code reviewer. Review this GitHub pull request.
-
-          Title: $TITLE
-          Description: $BODY
-
-          Diff:
-          \`\`\`diff
-          $DIFF
-          \`\`\`
-
-          Focus on:
-          1. Security vulnerabilities
-          2. Logic bugs in algorithms (watermark, fingerprint, C2PA, etc.)
-          3. Code quality issues
-          4. Missing edge cases
-          5. Performance problems
-
-          Format as concise bullet points with file:line references. Respond in Arabic and English.
-          EOF
+          {
+            echo "You are an expert code reviewer. Review this GitHub pull request."
+            echo ""
+            echo "Title: $TITLE"
+            echo "Description: $BODY"
+            echo ""
+            echo '```diff'
+            echo "$DIFF"
+            echo '```'
+            echo ""
+            echo "Focus on:"
+            echo "1. Security vulnerabilities"
+            echo "2. Logic bugs in algorithms (watermark, fingerprint, C2PA, etc.)"
+            echo "3. Code quality issues"
+            echo "4. Missing edge cases"
+            echo "5. Performance problems"
+            echo ""
+            echo "Format as concise bullet points with file:line references. Respond in Arabic and English."
+          } > /tmp/gemini_prompt.txt
 
           set +e
           npx -y @google/gemini-cli -p @/tmp/gemini_prompt.txt > review.txt 2>&1
@@ -79,7 +80,9 @@ jobs:
       - name: Post Review Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "## 🤖 Gemini AI Review
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "## 🤖 Gemini AI Review
 
           $REVIEW" 2>/dev/null || echo "Posted review comment"
