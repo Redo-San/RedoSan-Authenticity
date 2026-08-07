@@ -5,30 +5,87 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.document = { createElement: () => ({ innerHTML: "", textContent: "", innerText: "" }) };
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.document = {
+  createElement: () => ({ innerHTML: "", textContent: "", innerText: "" }),
+};
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.setTimeout = setTimeout;
-globalThis.escHtml = (s) => { if (s == null) return ""; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+globalThis.escHtml = (s) => {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+};
+globalThis.ensureLib = async (name) => {
+  if (name === "jspdf" && typeof globalThis.jspdf === "undefined")
+    throw new Error("jspdf unavailable");
+  if (name === "docx" && typeof globalThis.docx === "undefined")
+    throw new Error("docx unavailable");
+};
 globalThis.jspdf = {
   jsPDF: class {
-    constructor() { this._pages = 1; this._y = 20; }
-    setFontSize(s) { this._fs = s; }
-    setTextColor(r, g, b) { this._tc = [r, g, b]; }
-    text(t, x, y, opts) { this._y = y + 5; }
-    addPage() { this._pages++; this._y = 20; }
-    splitTextToSize(t, w) { return t.split("\n"); }
-    output(format) { return new Blob(["mock pdf"], { type: "application/pdf" }); }
+    constructor() {
+      this._pages = 1;
+      this._y = 20;
+    }
+    setFontSize(s) {
+      this._fs = s;
+    }
+    setTextColor(r, g, b) {
+      this._tc = [r, g, b];
+    }
+    text(t, x, y, opts) {
+      this._y = y + 5;
+    }
+    addPage() {
+      this._pages++;
+      this._y = 20;
+    }
+    splitTextToSize(t, w) {
+      return t.split("\n");
+    }
+    output(format) {
+      return new Blob(["mock pdf"], { type: "application/pdf" });
+    }
   },
 };
 globalThis.docx = {
-  Paragraph: class { constructor(opts) { this.opts = opts; } },
-  TextRun: class { constructor(opts) { this.opts = opts; } },
-  Document: class { constructor(opts) { this.opts = opts; this.sections = opts.sections; } },
-  Packer: { toBlob: async (doc) => new Blob(["mock docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }) },
+  Paragraph: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  TextRun: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  Document: class {
+    constructor(opts) {
+      this.opts = opts;
+      this.sections = opts.sections;
+    }
+  },
+  Packer: {
+    toBlob: async (doc) =>
+      new Blob(["mock docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      }),
+  },
 };
 
 var _origURL = globalThis.URL;
-globalThis.URL = { createObjectURL: () => "blob:test", revokeObjectURL: () => {} };
+globalThis.URL = {
+  createObjectURL: () => "blob:test",
+  revokeObjectURL: () => {},
+};
 
 function makeTextFile(text, baseName, ext) {
   return {
@@ -37,7 +94,10 @@ function makeTextFile(text, baseName, ext) {
   };
 }
 
-const src = fs.readFileSync(path.join(__dirname, "../../Converter/converter.js"), "utf8");
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Converter/converter.js"),
+  "utf8",
+);
 
 // Replace DOM-dependent functions that we don't test
 const modified = src.replace(
@@ -45,7 +105,9 @@ const modified = src.replace(
   'function convStripHtml(s) { return String(s).replace(/<[^>]*>/g, "").trim(); }',
 );
 
-vm.runInThisContext(modified, { filename: path.resolve(__dirname, "../../Converter/converter.js") });
+vm.runInThisContext(modified, {
+  filename: path.resolve(__dirname, "../../Converter/converter.js"),
+});
 
 describe("Converter — convDetectType", () => {
   const mockFile = (name) => ({ name });
@@ -282,7 +344,8 @@ describe("Converter — convSubFormatAss", () => {
 
 describe("Converter — convSubParse", () => {
   it("parses SRT format", () => {
-    var srt = "1\n00:00:01,000 --> 00:00:04,000\nHello world\n\n2\n00:00:05,000 --> 00:00:08,000\nLine two";
+    var srt =
+      "1\n00:00:01,000 --> 00:00:04,000\nHello world\n\n2\n00:00:05,000 --> 00:00:08,000\nLine two";
     var cues = convSubParse(srt, "srt");
     assert.equal(cues.length, 2);
     assert.equal(cues[0].start, 1000);
@@ -298,7 +361,8 @@ describe("Converter — convSubParse", () => {
   });
 
   it("parses VTT format", () => {
-    var vtt = "WEBVTT\n\n00:00:01.000 --> 00:00:04.000\nVTT text\n\n00:00:05.000 --> 00:00:08.000\nSecond";
+    var vtt =
+      "WEBVTT\n\n00:00:01.000 --> 00:00:04.000\nVTT text\n\n00:00:05.000 --> 00:00:08.000\nSecond";
     var cues = convSubParse(vtt, "vtt");
     assert.equal(cues.length, 2);
     assert.equal(cues[0].text, "VTT text");
@@ -312,7 +376,8 @@ describe("Converter — convSubParse", () => {
   });
 
   it("parses ASS format", () => {
-    var ass = "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,Hello ASS";
+    var ass =
+      "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,Hello ASS";
     var cues = convSubParse(ass, "ass");
     assert.equal(cues.length, 1);
     assert.equal(cues[0].text, "Hello ASS");
@@ -340,7 +405,8 @@ describe("Converter — convSubParse", () => {
   });
 
   it("parses TTML format", () => {
-    var ttml = '<tt><body><div><p begin="00:00:01.000" end="00:00:04.000">TTML text</p></div></body></tt>';
+    var ttml =
+      '<tt><body><div><p begin="00:00:01.000" end="00:00:04.000">TTML text</p></div></body></tt>';
     var cues = convSubParse(ttml, "ttml");
     assert.equal(cues.length, 1);
     assert.equal(cues[0].text, "TTML text");
@@ -352,7 +418,8 @@ describe("Converter — convSubParse", () => {
   });
 
   it("skips NOTE and WEBVTT headers in VTT", () => {
-    var vtt = "WEBVTT\n\nNOTE comment\n\n00:00:01.000 --> 00:00:04.000\nReal text";
+    var vtt =
+      "WEBVTT\n\nNOTE comment\n\n00:00:01.000 --> 00:00:04.000\nReal text";
     var cues = convSubParse(vtt, "vtt");
     assert.equal(cues.length, 1);
   });
@@ -476,7 +543,9 @@ describe("Converter — convDoc conversion functions", () => {
     var orig = globalThis.jspdf;
     delete globalThis.jspdf;
     try {
-      await assert.rejects(function () { return convDocToPdf("test", "x"); });
+      await assert.rejects(function () {
+        return convDocToPdf("test", "x");
+      });
     } finally {
       globalThis.jspdf = orig;
     }
@@ -492,7 +561,9 @@ describe("Converter — convDoc conversion functions", () => {
     var orig = globalThis.docx;
     delete globalThis.docx;
     try {
-      await assert.rejects(function () { return convDocToDocx("test", "x"); });
+      await assert.rejects(function () {
+        return convDocToDocx("test", "x");
+      });
     } finally {
       globalThis.docx = orig;
     }
@@ -501,7 +572,9 @@ describe("Converter — convDoc conversion functions", () => {
 
 describe("Converter — convRun dispatcher", () => {
   it("throws for unknown type", async () => {
-    await assert.rejects(function () { return convRun(null, "unknown", "txt"); });
+    await assert.rejects(function () {
+      return convRun(null, "unknown", "txt");
+    });
   });
 
   it("dispatches document type", async () => {
@@ -513,7 +586,11 @@ describe("Converter — convRun dispatcher", () => {
   });
 
   it("dispatches subtitle type", async () => {
-    var file = makeTextFile("00:00:01,000 --> 00:00:04,000\nSubtitle", "test", "srt");
+    var file = makeTextFile(
+      "00:00:01,000 --> 00:00:04,000\nSubtitle",
+      "test",
+      "srt",
+    );
     var result = await convRun(file, "subtitle", "srt");
     assert.ok(result);
     assert.equal(result.ext, "srt");
@@ -571,26 +648,38 @@ describe("Converter — convDocument", () => {
 
   it("throws for unsupported format", async () => {
     var file = makeTextFile("hello", "doc", "txt");
-    await assert.rejects(function () { return convDocument(file, "bogus"); });
+    await assert.rejects(function () {
+      return convDocument(file, "bogus");
+    });
   });
 });
 
 describe("Converter — convSubtitle", () => {
   it("converts SRT to SRT", async () => {
-    var file = makeTextFile("1\n00:00:01,000 --> 00:00:04,000\nHello", "sub", "srt");
+    var file = makeTextFile(
+      "1\n00:00:01,000 --> 00:00:04,000\nHello",
+      "sub",
+      "srt",
+    );
     var result = await convSubtitle(file, "srt");
     assert.equal(result.ext, "srt");
   });
 
   it("converts SSA to ASS", async () => {
-    var file = makeTextFile("[Events]\nFormat: Start, End, Text\nDialogue: 0:00:01.00,0:00:04.00,Hello", "sub", "ssa");
+    var file = makeTextFile(
+      "[Events]\nFormat: Start, End, Text\nDialogue: 0:00:01.00,0:00:04.00,Hello",
+      "sub",
+      "ssa",
+    );
     var result = await convSubtitle(file, "vtt");
     assert.equal(result.ext, "vtt");
   });
 
   it("throws for unsupported subtitle format", async () => {
     var file = makeTextFile("hello", "sub", "srt");
-    await assert.rejects(function () { return convSubtitle(file, "bogus"); });
+    await assert.rejects(function () {
+      return convSubtitle(file, "bogus");
+    });
   });
 });
 
@@ -601,7 +690,9 @@ describe("Converter — convTimeout", () => {
   });
 
   it("rejects on timeout", async () => {
-    await assert.rejects(function () { return convTimeout(new Promise(function () {}), 1); });
+    await assert.rejects(function () {
+      return convTimeout(new Promise(function () {}), 1);
+    });
   });
 });
 
@@ -622,7 +713,7 @@ function makeMockAudioBuffer(length, numChannels, sampleRate) {
     getChannelData: function (ch) {
       var data = new Float32Array(length);
       for (var i = 0; i < length; i++) {
-        data[i] = Math.sin(2 * Math.PI * 440 * i / sampleRate) * 0.3;
+        data[i] = Math.sin((2 * Math.PI * 440 * i) / sampleRate) * 0.3;
       }
       return data;
     },
@@ -636,8 +727,14 @@ describe("Converter — convEncodeWav", () => {
     assert.ok(result instanceof ArrayBuffer);
     assert.ok(result.byteLength > 44);
     var view = new DataView(result);
-    assert.equal(new TextDecoder().decode(new Uint8Array(result, 0, 4)), "RIFF");
-    assert.equal(new TextDecoder().decode(new Uint8Array(result, 8, 4)), "WAVE");
+    assert.equal(
+      new TextDecoder().decode(new Uint8Array(result, 0, 4)),
+      "RIFF",
+    );
+    assert.equal(
+      new TextDecoder().decode(new Uint8Array(result, 8, 4)),
+      "WAVE",
+    );
   });
 
   it("encodes stereo WAV", () => {
@@ -690,8 +787,14 @@ describe("Converter — convEncodeAiff", () => {
     var result = convEncodeAiff(buf, 1, 44100);
     assert.ok(result instanceof ArrayBuffer);
     var view = new DataView(result);
-    assert.equal(new TextDecoder().decode(new Uint8Array(result, 0, 4)), "FORM");
-    assert.equal(new TextDecoder().decode(new Uint8Array(result, 8, 4)), "AIFF");
+    assert.equal(
+      new TextDecoder().decode(new Uint8Array(result, 0, 4)),
+      "FORM",
+    );
+    assert.equal(
+      new TextDecoder().decode(new Uint8Array(result, 8, 4)),
+      "AIFF",
+    );
   });
 
   it("encodes stereo AIFF", () => {
@@ -744,7 +847,10 @@ describe("Converter — convEncodeRaw", () => {
     var view = new DataView(result);
     var allZero = true;
     for (var i = 0; i < result.byteLength; i += 2) {
-      if (view.getInt16(i, true) !== 0) { allZero = false; break; }
+      if (view.getInt16(i, true) !== 0) {
+        allZero = false;
+        break;
+      }
     }
     assert.ok(!allZero);
   });
@@ -753,21 +859,24 @@ describe("Converter — convEncodeRaw", () => {
 describe("Converter — ASS parsing section header edge cases", () => {
   it("handles section headers before [Events]", () => {
     // Use standard ASS Format with many fields so idx.text correctly extracts just the text
-    var ass = "[Script Info]\nTitle: Test\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,After header";
+    var ass =
+      "[Script Info]\nTitle: Test\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,After header";
     var cues = convSubParse(ass, "ass");
     assert.equal(cues.length, 1);
     assert.equal(cues[0].text, "After header");
   });
 
   it("skips non-Dialogue lines inside [Events]", () => {
-    var ass = "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nComment: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,skipped\nDialogue: 0,0:00:05.00,0:00:08.00,Default,,0,0,0,,Real dialogue";
+    var ass =
+      "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nComment: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,skipped\nDialogue: 0,0:00:05.00,0:00:08.00,Default,,0,0,0,,Real dialogue";
     var cues = convSubParse(ass, "ass");
     assert.equal(cues.length, 1);
     assert.equal(cues[0].text, "Real dialogue");
   });
 
   it("handles missing Format line", () => {
-    var ass = "[Events]\nDialogue: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,No format";
+    var ass =
+      "[Events]\nDialogue: 0,0:00:01.00,0:00:04.00,Default,,0,0,0,,No format";
     var cues = convSubParse(ass, "ass");
     assert.equal(cues.length, 0);
   });
@@ -775,16 +884,18 @@ describe("Converter — ASS parsing section header edge cases", () => {
 
 describe("Converter — TTML time formats", () => {
   it("parses TTML with 2-part time (mm:ss.xxx)", () => {
-    var ttml = '<tt><body><div><p begin="01:30.500" end="02:45.750">Short time</p></div></body></tt>';
+    var ttml =
+      '<tt><body><div><p begin="01:30.500" end="02:45.750">Short time</p></div></body></tt>';
     var cues = convSubParse(ttml, "ttml");
     assert.equal(cues.length, 1);
     assert.equal(cues[0].start, 90500); // 1*60000 + 30*1000 + 500
-    assert.equal(cues[0].end, 165750);  // 2*60000 + 45*1000 + 750
+    assert.equal(cues[0].end, 165750); // 2*60000 + 45*1000 + 750
     assert.equal(cues[0].text, "Short time");
   });
 
   it("parses TTML with seconds-only time (Xs)", () => {
-    var ttml = '<tt><body><div><p begin="1.5s" end="3.5s">Seconds format</p></div></body></tt>';
+    var ttml =
+      '<tt><body><div><p begin="1.5s" end="3.5s">Seconds format</p></div></body></tt>';
     var cues = convSubParse(ttml, "ttml");
     assert.equal(cues.length, 1);
     assert.equal(cues[0].start, 1500);
@@ -792,7 +903,8 @@ describe("Converter — TTML time formats", () => {
   });
 
   it("parses TTML with 3-part time (hh:mm:ss.xxx)", () => {
-    var ttml = '<tt><body><div><p begin="00:00:01.000" end="00:00:04.500">Standard time</p></div></body></tt>';
+    var ttml =
+      '<tt><body><div><p begin="00:00:01.000" end="00:00:04.500">Standard time</p></div></body></tt>';
     var cues = convSubParse(ttml, "ttml");
     assert.equal(cues.length, 1);
     assert.equal(cues[0].start, 1000);

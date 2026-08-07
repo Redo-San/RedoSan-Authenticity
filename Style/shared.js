@@ -664,7 +664,115 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 /* c8 ignore stop */
 
-var SW_VERSION = 2;
+// ── Shared lazy vendor loading (PDF/DOCX/QR/JSZip/OpenTimestamps) ──
+// Exposed globally so every tool page (SPA + MPA) can lazily load vendor
+// libraries before generating exports. Prefers the local vendor/ copy,
+// falls back to CDNs. Mirrors the pattern in Certificate/certificate.js.
+/* c8 ignore start */
+if (typeof ensureLib === "undefined") {
+  var __ensureLibGlobals = {
+    jspdf: function () { return typeof jspdf !== "undefined"; },
+    QRious: function () { return typeof QRious !== "undefined"; },
+    JSZip: function () { return typeof JSZip !== "undefined"; },
+    docx: function () { return typeof docx !== "undefined"; },
+    OpenTimestamps: function () { return typeof OpenTimestamps !== "undefined"; },
+  };
+  var __ensureLibUrls = {
+    jspdf: [
+      "vendor/jspdf.umd.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+      "https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js",
+      "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
+    ],
+    QRious: [
+      "vendor/qrious.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js",
+      "https://unpkg.com/qrious@4.0.2/dist/qrious.min.js",
+      "https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js",
+    ],
+    JSZip: [
+      "vendor/jszip.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+      "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js",
+      "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+    ],
+    docx: [
+      "https://cdn.jsdelivr.net/npm/docx@8.5.0/dist/index.js",
+      "https://unpkg.com/docx@8.5.0/build/index.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js",
+    ],
+    OpenTimestamps: [
+      "vendor/opentimestamps.min.js",
+      "https://cdn.jsdelivr.net/npm/opentimestamps.min.js",
+    ],
+  };
+  /**
+   * Ensure a vendor library global (jspdf, docx, QRious, JSZip,
+   * OpenTimestamps) is loaded before use.
+   * @param {string} name
+   * @returns {Promise<void>}
+   */
+  function ensureLib(name) {
+    return new Promise(function (resolve, reject) {
+      var check = __ensureLibGlobals[name];
+      if (check && check()) return resolve();
+      var urls = (__ensureLibUrls[name] || []).slice();
+      if (!urls.length) return reject(new Error("Unknown library: " + name));
+      if (name !== "docx" && urls[0].indexOf("vendor/") === 0) {
+        var vbase = document.documentElement.dataset.standalone
+          ? "../../../vendor/"
+          : "vendor/";
+        urls[0] = vbase + urls[0].slice(7);
+      }
+      var cache = (typeof window === "undefined") ? null : window.__ensureLibCache;
+      if (!cache) {
+        window.__ensureLibCache = {};
+        cache = window.__ensureLibCache;
+      }
+      if (cache[name] && check && check()) return resolve();
+      var idx = 0;
+      (function load(i) {
+        if (i >= urls.length) {
+          cache[name] = false;
+          reject(
+            new Error(
+              "Library " + name + " not available (vendor + CDNs all failed)",
+            ),
+          );
+          return;
+        }
+        var s = document.createElement("script");
+        s.src = urls[i];
+        s.onload = function () {
+          if (check && check()) {
+            cache[name] = true;
+            resolve();
+          } else {
+            cache[name] = false;
+            reject(new Error("Library " + name + " loaded but global missing"));
+          }
+        };
+        s.onerror = function () {
+          setTimeout(function () { load(i + 1); }, 1000);
+        };
+        document.head.append(s);
+      })(idx);
+    });
+  }
+  /**
+   * Ensure several vendor libraries are loaded in order.
+   * @param {string[]} names
+   * @returns {Promise<void>}
+   */
+  function ensureLibs(names) {
+    return names.reduce(function (p, n) {
+      return p.then(function () { return ensureLib(n); });
+    }, Promise.resolve());
+  }
+}
+/* c8 ignore stop */
+
+var SW_VERSION = 3;
 /* c8 ignore next 16 */
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", function () {

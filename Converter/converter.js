@@ -2448,8 +2448,7 @@ function convDocToMd(text, fileName) {
  * @param name
  */
 async function convDocToPdf(text, name) {
-  if (typeof jspdf === "undefined")
-    throw new Error("PDF library not loaded. Try TXT format instead.");
+  await ensureLib("jspdf");
   var doc = new jspdf.jsPDF();
   var lines = doc.splitTextToSize(text || "(empty)", 180);
   var y = 20;

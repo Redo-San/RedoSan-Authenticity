@@ -76,7 +76,7 @@ describe("E2E — Service Worker Registration", () => {
     });
 
     assert.ok(swVersion !== null, "SW_VERSION should be defined");
-    assert.equal(swVersion, 2, "SW_VERSION should be 2");
+    assert.equal(swVersion, 3, "SW_VERSION should be 3");
 
     await ctx.close();
   });
@@ -98,10 +98,16 @@ describe("E2E — Service Worker Registration", () => {
     // Check registration path by looking at the script
     const regPath = await page.evaluate(() => {
       // The SW path is registered as '/RedoSan-Authenticity/sw.js?v=' + SW_VERSION
-      return "/RedoSan-Authenticity/sw.js?v=" + (typeof SW_VERSION !== "undefined" ? SW_VERSION : "2");
+      return (
+        "/RedoSan-Authenticity/sw.js?v=" +
+        (typeof SW_VERSION !== "undefined" ? SW_VERSION : "2")
+      );
     });
 
-    assert.ok(regPath.includes("sw.js"), "Registration URL should reference sw.js");
+    assert.ok(
+      regPath.includes("sw.js"),
+      "Registration URL should reference sw.js",
+    );
 
     await ctx.close();
   });
@@ -179,9 +185,24 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
         // The SW file defines DANGEROUS_EXTS globally in the SW context
         // We can evaluate the logic in the page context too
         const exts = [
-          ".exe", ".msi", ".bat", ".cmd", ".com", ".scr", ".pif", ".ps1",
-          ".vbs", ".dll", ".jar", ".sh", ".py", ".elf", ".so", ".deb",
-          ".apk", ".appimage",
+          ".exe",
+          ".msi",
+          ".bat",
+          ".cmd",
+          ".com",
+          ".scr",
+          ".pif",
+          ".ps1",
+          ".vbs",
+          ".dll",
+          ".jar",
+          ".sh",
+          ".py",
+          ".elf",
+          ".so",
+          ".deb",
+          ".apk",
+          ".appimage",
         ];
         return exts.length >= 15;
       } catch {
@@ -189,7 +210,10 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
       }
     });
 
-    assert.ok(hasDangerousExts, "Should be able to define dangerous extensions list");
+    assert.ok(
+      hasDangerousExts,
+      "Should be able to define dangerous extensions list",
+    );
 
     await ctx.close();
   });
@@ -206,8 +230,20 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
     const blocked = await page.evaluate(() => {
       // Replicate the SW's threat detection pattern
       const DANGEROUS_EXTS = [
-        ".exe", ".msi", ".bat", ".cmd", ".ps1", ".vbs", ".dll",
-        ".jar", ".sh", ".py", ".elf", ".so", ".deb", ".apk",
+        ".exe",
+        ".msi",
+        ".bat",
+        ".cmd",
+        ".ps1",
+        ".vbs",
+        ".dll",
+        ".jar",
+        ".sh",
+        ".py",
+        ".elf",
+        ".so",
+        ".deb",
+        ".apk",
       ];
 
       function isDangerous(path) {
@@ -227,8 +263,16 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
 
     assert.ok(blocked.exeBlocked, ".exe should be flagged as dangerous");
     assert.equal(blocked.jsSafe, false, ".js should not be flagged dangerous");
-    assert.equal(blocked.pngSafe, false, ".png should not be flagged dangerous");
-    assert.equal(blocked.htmlSafe, false, ".html should not be flagged dangerous");
+    assert.equal(
+      blocked.pngSafe,
+      false,
+      ".png should not be flagged dangerous",
+    );
+    assert.equal(
+      blocked.htmlSafe,
+      false,
+      ".html should not be flagged dangerous",
+    );
 
     await ctx.close();
   });
@@ -265,9 +309,15 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
     });
 
     assert.ok(swContent.hasSharedJS, "SW whitelist should contain shared.js");
-    assert.ok(swContent.hasNavigationJS, "SW whitelist should contain navigation.js");
+    assert.ok(
+      swContent.hasNavigationJS,
+      "SW whitelist should contain navigation.js",
+    );
     assert.ok(swContent.hasI18nJS, "SW whitelist should contain i18n.js");
-    assert.ok(swContent.hasWatermarkJS, "SW whitelist should contain watermark.js");
+    assert.ok(
+      swContent.hasWatermarkJS,
+      "SW whitelist should contain watermark.js",
+    );
     assert.ok(swContent.hasHashingJS, "SW whitelist should contain hashing.js");
 
     await ctx.close();
@@ -295,9 +345,15 @@ describe("E2E — SW Blocking Logic (client-side evaluation)", () => {
       }
     });
 
-    assert.ok(cssWhitelist.hasStyleCSS, "CSS whitelist should contain style.css");
+    assert.ok(
+      cssWhitelist.hasStyleCSS,
+      "CSS whitelist should contain style.css",
+    );
     assert.ok(cssWhitelist.hasRtlCSS, "CSS whitelist should contain rtl.css");
-    assert.ok(cssWhitelist.hasResponsiveCSS, "CSS whitelist should contain responsive.css");
+    assert.ok(
+      cssWhitelist.hasResponsiveCSS,
+      "CSS whitelist should contain responsive.css",
+    );
 
     await ctx.close();
   });
