@@ -87,7 +87,7 @@ else
 fi
 if [ "$NPM_NEEDED" = 1 ]; then
     echo "     > Installing..."
-    npm install --no-fund --no-audit
+    npm ci --no-fund --no-audit
     echo "     > Done"
 else
     echo "     > Skipping (already present)"
