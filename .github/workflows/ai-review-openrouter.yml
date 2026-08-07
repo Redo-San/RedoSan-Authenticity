@@ -64,4 +64,4 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.pull_request.number }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: bash .github/scripts/code-review-openrouter.sh
+        run: bash .github/scripts/ai-review-openrouter.sh
