@@ -46,6 +46,13 @@
     }
   },
   "files": {
+    "includes": [
+      "**/cli/**/*.js",
+      "!**/cli/tests",
+      "!**/cli/lib",
+      "!**/vendor",
+      "!**/*.min.js"
+    ],
     "ignoreUnknown": true
   }
 }

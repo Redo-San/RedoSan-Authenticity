@@ -1139,5 +1139,15 @@
     "../../Style/lang/**",
     "../../Assistant/assistant_data.js"
   ],
-  "dictionaries": ["en_US", "en-gb", "softwareTerms", "npm", "node", "typescript", "html", "css", "fonts"]
+  "dictionaries": [
+    "en_US",
+    "en-gb",
+    "softwareTerms",
+    "npm",
+    "node",
+    "typescript",
+    "html",
+    "css",
+    "fonts"
+  ]
 }
