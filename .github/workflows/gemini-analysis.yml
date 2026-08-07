@@ -35,6 +35,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_CLI_TRUST_WORKSPACE: "true"
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
@@ -61,26 +62,30 @@ jobs:
             echo "5. Performance problems"
             echo ""
             echo "Format as concise bullet points with file:line references. Respond in Arabic and English."
-          } > /tmp/gemini_prompt.txt
+          } > "$GITHUB_WORKSPACE/gemini_prompt.txt"
 
           set +e
-          npx -y @google/gemini-cli -p @/tmp/gemini_prompt.txt > review.txt 2>&1
+          npx -y @google/gemini-cli -p @"$GITHUB_WORKSPACE/gemini_prompt.txt" > review.txt 2>&1
           RC=$?
           set -e
           if [ $RC -ne 0 ]; then
             echo "Gemini CLI exit code: $RC"
             cat review.txt
-            echo "Gemini review failed. Exit code $RC." > review.txt
+            if grep -qi "quota\|rate limit" review.txt; then
+              echo "Gemini review skipped: API quota exceeded (daily free-tier limit). The review will run automatically again once quota resets." > review.txt
+            else
+              echo "Gemini review failed. Exit code $RC." > review.txt
+            fi
           fi
 
           REVIEW=$(cat review.txt)
-          printf '%s' "$REVIEW" > /tmp/gemini_review.txt
+          printf '%s' "$REVIEW" > "$GITHUB_WORKSPACE/gemini_review.txt"
           echo "Review body (first 200 chars):"
-          head -c 200 /tmp/gemini_review.txt
+          head -c 200 "$GITHUB_WORKSPACE/gemini_review.txt"
       - name: Post Review Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
-          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/gemini_review.txt 2>/dev/null || echo "Posted review comment"
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file "$GITHUB_WORKSPACE/gemini_review.txt" 2>/dev/null || echo "Posted review comment"
