@@ -1141,7 +1141,8 @@ describe("Certificate — submitCertTransparency", function () {
     assert.equal(result.submitted, true);
     assert.ok(result.otsProof);
     assert.ok(result.hash);
-    assert.ok(result.aggregator.indexOf("opentimestamps.org") !== -1);
+    var aggHost = new URL(result.aggregator).hostname;
+    assert.ok(aggHost === "opentimestamps.org" || aggHost.endsWith(".opentimestamps.org"));
   });
 
   it("should return pending when all aggregators fail but OTS is available", async function () {
