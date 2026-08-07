@@ -71,7 +71,11 @@ jobs:
           if [ $RC -ne 0 ]; then
             echo "Gemini CLI exit code: $RC"
             cat review.txt
-            echo "Gemini review failed. Exit code $RC." > review.txt
+            if grep -qi "quota\|rate limit" review.txt; then
+              echo "Gemini review skipped: API quota exceeded (daily free-tier limit). The review will run automatically again once quota resets." > review.txt
+            else
+              echo "Gemini review failed. Exit code $RC." > review.txt
+            fi
           fi
 
           REVIEW=$(cat review.txt)
