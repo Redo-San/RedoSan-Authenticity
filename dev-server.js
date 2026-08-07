@@ -102,16 +102,16 @@ http
  */
 function tryServe(filePath, req, res) {
   try {
-    var realPath = fs.realpathSync(filePath);
-    if (!(realPath.startsWith(REAL_ROOT + path.sep) || realPath === REAL_ROOT))
+    var resolved = path.resolve(filePath);
+    if (!(resolved.startsWith(REAL_ROOT + path.sep) || resolved === REAL_ROOT))
       return false;
-    var stat = fs.statSync(realPath);
+    var stat = fs.statSync(resolved);
+    var target = resolved;
     if (stat.isDirectory()) {
-      realPath = path.join(realPath, "index.html");
-      stat = fs.statSync(realPath);
+      target = path.join(resolved, "index.html");
+      stat = fs.statSync(target);
     }
-    filePath = realPath;
-    var ext = path.extname(filePath);
+    var ext = path.extname(target);
     var isHtml = ext === ".html";
     var headers = {
       "Accept-Ranges": "bytes",

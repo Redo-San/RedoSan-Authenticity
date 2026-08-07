@@ -28,7 +28,7 @@ globalThis.TextDecoder = require("util").TextDecoder;
 
 // Mock CSS.escape
 if (typeof CSS === "undefined") {
-  globalThis.CSS = { escape: (s) => s.replace(/[!"#$%&'()*+,./:;<=>?@[\]^`{|}~]/g, "\\$&") };
+  globalThis.CSS = { escape: (s) => s.replace(/[\\!"#$%&'()*+,./:;<=>?@[\]^`{|}~]/g, "\\$&") };
 }
 
 // ── Global helpers that pixel_injection.js references ──

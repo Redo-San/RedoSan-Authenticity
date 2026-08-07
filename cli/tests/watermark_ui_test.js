@@ -47,7 +47,7 @@ globalThis.downloadBlob = (blob, name, containerId) => {
       container.append(link);
     } else {
       // Fallback for mock elements without .append()
-      container.innerHTML += `<a href="${link.href}" download="${link.download}">${link.textContent}</a>`;
+      container.innerHTML += `<a href="${escHtml(link.href)}" download="${escHtml(link.download)}">${escHtml(link.textContent)}</a>`;
     }
   }
 };

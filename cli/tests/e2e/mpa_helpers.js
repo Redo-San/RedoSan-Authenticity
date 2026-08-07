@@ -71,19 +71,29 @@ setRE("face-biometric", "Face Biometric Rights ");
 let server = null;
 let started = false;
 
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function tryServe(filePath, res) {
   try {
-    var realPath = fs.realpathSync(filePath);
-    if (!(realPath.startsWith(REAL_ROOT + path.sep) || realPath === REAL_ROOT))
+    var resolved = path.resolve(filePath);
+    if (!(resolved.startsWith(REAL_ROOT + path.sep) || resolved === REAL_ROOT))
       return false;
-    var stat = fs.statSync(realPath);
+    var stat = fs.statSync(resolved);
+    var target = resolved;
     if (stat.isDirectory()) {
-      realPath = path.join(realPath, "index.html");
-      stat = fs.statSync(realPath);
+      target = path.join(resolved, "index.html");
+      stat = fs.statSync(target);
     }
-    var ext = path.extname(realPath);
+    var ext = path.extname(target);
     res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
-    fs.createReadStream(realPath).pipe(res);
+    fs.createReadStream(target).pipe(res);
     return true;
   } catch {
     return false;
@@ -121,7 +131,7 @@ function ensureServer() {
         if (tryServe(notFoundPath, res)) return;
 
         res.writeHead(404, { "Content-Type": "text/html" });
-        res.end("Not Found: " + pathname);
+        res.end("Not Found: " + escHtml(pathname));
       });
       server.on("error", function (err) {
         if (err.code === "EADDRINUSE") {
