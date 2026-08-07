@@ -1090,7 +1090,13 @@
     "fbclid",
     "seclog",
     "botdet",
-    "indexeddb"
+    "indexeddb",
+    "vbase",
+    "stylelintignore",
+    "depcheckrc",
+    "openagent",
+    "supermemory",
+    "vibeguard"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[\u0600-\u06FF]+/"],
@@ -1102,6 +1108,7 @@
     "../../backstop_data",
     "../../docs/api",
     "../../*.min.js",
+    "../../**/*.min.js",
     "../../*.map",
     "../../package-lock.json",
     "../../Style/lang/i18n-data.js",
