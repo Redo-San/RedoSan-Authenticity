@@ -17,6 +17,7 @@ globalThis.document = {
 globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
 globalThis.URL.createObjectURL = () => "blob:test";
 globalThis.URL.revokeObjectURL = () => {};
+globalThis.ensureLib = async () => {};
 
 if (!globalThis.crypto || !globalThis.crypto.subtle) {
   globalThis.crypto = {

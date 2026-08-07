@@ -8,12 +8,10 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
 fi
 
 echo "Fetching PR diff..."
-if ! gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
-  echo "Failed to fetch PR diff."
-  printf '%s' "_Failed to fetch PR diff._" > /tmp/review.md
-  gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file /tmp/review.md
-  exit 1
-fi
+# `head -c` closes the pipe early for large diffs; with `pipefail` that makes
+# gh exit 141 (SIGPIPE) and the review wrongly report "Failed to fetch PR diff".
+# The emptiness check below is what actually matters.
+gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt || true
 DIFF=$(cat /tmp/pr_diff.txt)
 if [ -z "$DIFF" ]; then
   echo "No code changes to review."

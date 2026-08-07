@@ -47,14 +47,11 @@ const biomeConfig = JSON.parse(
 );
 const includes = biomeConfig.files?.includes ?? [];
 const allowed = visible.filter((p) => {
-	let match = false;
-	for (const pattern of includes) {
-		if (pattern.startsWith("!")) continue;
-		const negated = includes.filter((inc) => inc.startsWith("!"));
-		if (negated.some((inc) => matchPattern(p, inc.slice(1)))) return false;
-		if (matchPattern(p, pattern)) match = true;
-	}
-	return match;
+	const negated = includes.filter((inc) => inc.startsWith("!"));
+	if (negated.some((inc) => globMatches(p, inc.slice(1)))) return false;
+	return includes.some(
+		(inc) => !inc.startsWith("!") && globMatches(p, inc),
+	);
 });
 if (allowed.length === 0) process.exit(0);
 
@@ -66,19 +63,18 @@ const res = spawnSync(cmd, {
 });
 process.exit(res.status === null ? 1 : res.status);
 
-function matchPattern(p, pattern) {
+function globMatches(p, pattern) {
 	const rel = p.split("/");
-	const segs = pattern.split("/");
-	if (segs[0] === "**") segs.shift();
-	if (segs[segs.length - 1] === "**") segs.pop();
-	const isDirGlob = segs.some((s) => s.includes("**"));
-	return rel.some((_, i) =>
-		segs.every((s, j) => (rel[i + j] ?? "").match(globToRegExp(s))),
-	);
-}
-
-function globToRegExp(glob) {
-	return new RegExp(
-		`^${glob.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`,
+	const pat = pattern.split("/");
+	if (pat[0] === "**") pat.shift();
+	if (pat.at(-1) === "**") pat.pop();
+	const star = pat.indexOf("**");
+	const prefix = star === -1 ? pat : pat.slice(0, star);
+	const suffix = star === -1 ? [] : pat.slice(star + 1);
+	if (prefix.length > rel.length) return false;
+	if (suffix.length > rel.length) return false;
+	return (
+		prefix.every((s, i) => rel[i] === s) &&
+		suffix.every((s, i) => rel[rel.length - suffix.length + i] === s)
 	);
 }
