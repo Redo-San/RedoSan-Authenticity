@@ -1,13 +1,13 @@
 import js from "@eslint/js";
-import globals from "globals";
-import sonarjs from "eslint-plugin-sonarjs";
-import security from "eslint-plugin-security";
-import jsdoc from "eslint-plugin-jsdoc";
-import i18n from "eslint-plugin-i18n";
-import unicorn from "eslint-plugin-unicorn";
-import importX from "eslint-plugin-import-x";
-import promise from "eslint-plugin-promise";
 import compat from "eslint-plugin-compat";
+import i18n from "eslint-plugin-i18n";
+import importX from "eslint-plugin-import-x";
+import jsdoc from "eslint-plugin-jsdoc";
+import promise from "eslint-plugin-promise";
+import security from "eslint-plugin-security";
+import sonarjs from "eslint-plugin-sonarjs";
+import unicorn from "eslint-plugin-unicorn";
+import globals from "globals";
 
 export default [
   js.configs.recommended,
@@ -237,11 +237,11 @@ export default [
       "node_modules/",
       "vendor/",
       "**/*.min.js",
-	  ".opencode/",
+      ".opencode/",
       ".agents/",
       "agent/",
-	  ".claude/",
-	  "skills/",
+      ".claude/",
+      "skills/",
       "Style/lang/i18n-data-*.js",
       "Style/lang/i18n-data.js",
       "Style/lang/*.json",
@@ -252,13 +252,12 @@ export default [
       "sw-precache.js",
       "test_opts.js",
       "Face_Biometric/",
-	  ".lighthouseci/",
-	  ".playwright-mcp/",
-	  ".stryker-tmp/",
-	  "coverage/",
-	  "test-results/",
-	  ".tools/",
-	  
+      ".lighthouseci/",
+      ".playwright-mcp/",
+      ".stryker-tmp/",
+      "coverage/",
+      "test-results/",
+      ".tools/",
     ],
   },
 ];

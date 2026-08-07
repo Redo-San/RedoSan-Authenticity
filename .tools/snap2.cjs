@@ -1,30 +1,42 @@
-const { chromium } = require('playwright');
+const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
   const pg = await ctx.newPage();
-  await pg.goto('http://localhost:8080/Style/pages/timestamp/index.html', { waitUntil: 'load' });
+  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
   await pg.waitForTimeout(600);
-  const snap = (label) => pg.evaluate((lbl) => {
-    const sec = document.querySelector('#page-timestamp');
-    const out = { lbl, secH: sec ? sec.getBoundingClientRect().height : -1 };
-    out.children = [];
-    if (sec) Array.from(sec.children).forEach((c) => { if (c.children.length || c.tagName === 'DIV') out.children.push(c.tagName + '.' + (c.className || '').split(' ')[0] + '=' + Math.round(c.getBoundingClientRect().height)); });
-    out.ots = [];
-    const ots = document.querySelector('#ots-create');
-    if (ots) Array.from(ots.children).forEach((c) => out.ots.push(c.tagName + '.' + (c.className || '').split(' ')[0] + '=' + Math.round(c.getBoundingClientRect().height)));
-    const fb = document.querySelector('#mainFooter');
-    out.footerH = fb ? fb.getBoundingClientRect().height : -1;
-    const btn = document.querySelector('#ts-create-btn');
-    out.btnText = btn ? btn.textContent.slice(0, 40) : '';
-    const dz = document.querySelector('.dz-text');
-    out.dzText = dz ? dz.textContent.slice(0, 30) : '';
-    const hc = document.querySelector('.help-card');
-    out.help = hc ? Math.round(hc.getBoundingClientRect().height) : -1;
-    return out;
-  }, label);
-  console.log(JSON.stringify(await snap('@600')));
+  const snap = (label) =>
+    pg.evaluate((lbl) => {
+      const sec = document.querySelector("#page-timestamp");
+      const out = { lbl, secH: sec ? sec.getBoundingClientRect().height : -1 };
+      out.children = [];
+      if (sec)
+        Array.from(sec.children).forEach((c) => {
+          if (c.children.length || c.tagName === "DIV")
+            out.children.push(
+              c.tagName + "." + (c.className || "").split(" ")[0] + "=" + Math.round(c.getBoundingClientRect().height),
+            );
+        });
+      out.ots = [];
+      const ots = document.querySelector("#ots-create");
+      if (ots)
+        Array.from(ots.children).forEach((c) =>
+          out.ots.push(
+            c.tagName + "." + (c.className || "").split(" ")[0] + "=" + Math.round(c.getBoundingClientRect().height),
+          ),
+        );
+      const fb = document.querySelector("#mainFooter");
+      out.footerH = fb ? fb.getBoundingClientRect().height : -1;
+      const btn = document.querySelector("#ts-create-btn");
+      out.btnText = btn ? btn.textContent.slice(0, 40) : "";
+      const dz = document.querySelector(".dz-text");
+      out.dzText = dz ? dz.textContent.slice(0, 30) : "";
+      const hc = document.querySelector(".help-card");
+      out.help = hc ? Math.round(hc.getBoundingClientRect().height) : -1;
+      return out;
+    }, label);
+  console.log(JSON.stringify(await snap("@600")));
   await pg.waitForTimeout(900);
-  console.log(JSON.stringify(await snap('@1500')));
+  console.log(JSON.stringify(await snap("@1500")));
   await browser.close();
 })();

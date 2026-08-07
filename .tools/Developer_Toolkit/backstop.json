@@ -18,27 +18,174 @@
     }
   ],
   "scenarios": [
-    { "label": "Home", "url": "http://localhost:8080/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#app"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Watermark", "url": "http://localhost:8080/Style/pages/watermark/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-watermark"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Audio Watermark", "url": "http://localhost:8080/Style/pages/audio-watermark/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-audio-watermark"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Search", "url": "http://localhost:8080/Style/pages/search/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-search"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Pixel Injection", "url": "http://localhost:8080/Style/pages/pixel-injection/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-pixel-injection"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Metadata", "url": "http://localhost:8080/Style/pages/metadata/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-metadata"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Timestamp", "url": "http://localhost:8080/Style/pages/timestamp/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-timestamp"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Fingerprint", "url": "http://localhost:8080/Style/pages/fingerprint/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-fingerprint"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "DID", "url": "http://localhost:8080/Style/pages/did/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-did"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "C2PA", "url": "http://localhost:8080/Style/pages/c2pa/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-c2pa"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Certificate", "url": "http://localhost:8080/Style/pages/certificate/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-certificate"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Forensic", "url": "http://localhost:8080/Style/pages/forensic/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-forensic"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Converter", "url": "http://localhost:8080/Style/pages/converter/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-converter"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Removal Tools", "url": "http://localhost:8080/Style/pages/removal-tools/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-removal-tools"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "ID Forge", "url": "http://localhost:8080/Style/pages/id_forge/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-id_forge"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Document Watermark", "url": "http://localhost:8080/Style/pages/document-watermark/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-document-watermark"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "About", "url": "http://localhost:8080/Style/pages/about/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-about"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Privacy", "url": "http://localhost:8080/Style/pages/privacy/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-privacy"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Contact", "url": "http://localhost:8080/Style/pages/contact/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-contact"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "Social", "url": "http://localhost:8080/Style/pages/social/?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#page-social"], "misMatchThreshold": 0.1, "requireSameDimensions": false },
-    { "label": "404", "url": "http://localhost:8080/404.html?backstop=1", "hideSelectors": ["#music-player", ".sidebar"], "selectors": ["#main-content"], "misMatchThreshold": 0.1, "requireSameDimensions": false }
+    {
+      "label": "Home",
+      "url": "http://localhost:8080/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#app"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Watermark",
+      "url": "http://localhost:8080/Style/pages/watermark/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-watermark"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Audio Watermark",
+      "url": "http://localhost:8080/Style/pages/audio-watermark/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-audio-watermark"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Search",
+      "url": "http://localhost:8080/Style/pages/search/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-search"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Pixel Injection",
+      "url": "http://localhost:8080/Style/pages/pixel-injection/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-pixel-injection"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Metadata",
+      "url": "http://localhost:8080/Style/pages/metadata/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-metadata"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Timestamp",
+      "url": "http://localhost:8080/Style/pages/timestamp/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-timestamp"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Fingerprint",
+      "url": "http://localhost:8080/Style/pages/fingerprint/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-fingerprint"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "DID",
+      "url": "http://localhost:8080/Style/pages/did/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-did"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "C2PA",
+      "url": "http://localhost:8080/Style/pages/c2pa/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-c2pa"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Certificate",
+      "url": "http://localhost:8080/Style/pages/certificate/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-certificate"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Forensic",
+      "url": "http://localhost:8080/Style/pages/forensic/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-forensic"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Converter",
+      "url": "http://localhost:8080/Style/pages/converter/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-converter"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Removal Tools",
+      "url": "http://localhost:8080/Style/pages/removal-tools/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-removal-tools"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "ID Forge",
+      "url": "http://localhost:8080/Style/pages/id_forge/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-id_forge"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Document Watermark",
+      "url": "http://localhost:8080/Style/pages/document-watermark/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-document-watermark"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "About",
+      "url": "http://localhost:8080/Style/pages/about/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-about"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Privacy",
+      "url": "http://localhost:8080/Style/pages/privacy/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-privacy"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Contact",
+      "url": "http://localhost:8080/Style/pages/contact/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-contact"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "Social",
+      "url": "http://localhost:8080/Style/pages/social/?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#page-social"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    },
+    {
+      "label": "404",
+      "url": "http://localhost:8080/404.html?backstop=1",
+      "hideSelectors": ["#music-player", ".sidebar"],
+      "selectors": ["#main-content"],
+      "misMatchThreshold": 0.1,
+      "requireSameDimensions": false
+    }
   ],
   "paths": {
     "bitmaps_reference": "backstop_data/bitmaps_reference",

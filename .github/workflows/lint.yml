@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-           node-version: 24
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npx eslint --config .tools/Developer_Toolkit/eslint.config.mjs .
@@ -36,7 +36,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-           node-version: 24
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: cd .tools/Developer_Toolkit && npx @biomejs/biome check ../..
