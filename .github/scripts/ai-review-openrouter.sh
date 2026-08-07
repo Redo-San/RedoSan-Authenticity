@@ -10,10 +10,17 @@ fi
 echo "Fetching PR diff..."
 # `head -c` closes the pipe early for large diffs; with `pipefail` that makes
 # gh exit 141 (SIGPIPE) and the review wrongly report "Failed to fetch PR diff".
-# The emptiness check below is what actually matters.
-gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt || true
+# 141 is expected, so only treat other non-zero exit codes as failures.
+gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt
+DIFF_STATUS=${PIPESTATUS[0]:-0}
 DIFF=$(cat /tmp/pr_diff.txt)
 if [ -z "$DIFF" ]; then
+  if [ "$DIFF_STATUS" != "0" ] && [ "$DIFF_STATUS" != "141" ]; then
+    echo "Failed to fetch PR diff (gh exited $DIFF_STATUS)."
+    printf '%s' "_Failed to fetch PR diff._" > /tmp/review.md
+    gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file /tmp/review.md
+    exit 1
+  fi
   echo "No code changes to review."
   printf '%s' "_No code changes to review._" > /tmp/review.md
   gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file /tmp/review.md
