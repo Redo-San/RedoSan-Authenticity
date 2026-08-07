@@ -35,6 +35,21 @@ function navTo(page, id) {
   }, id);
 }
 
+/**
+ * Wait until the face section's lazy-loaded scripts are actually available.
+ * The SPA loads Face_Biometric/*.js asynchronously (Style/loader.js), so a
+ * fixed waitForTimeout is not enough on slow CI runners.
+ */
+async function waitFaceReady(page) {
+  await page.waitForFunction(
+    () =>
+      typeof window.FaceRegistry === "function" &&
+      typeof window.IDBStore === "function",
+    null,
+    { timeout: 60000 },
+  );
+}
+
 describe("E2E — IndexedDB Face Registry Persistence", () => {
   it("should navigate to face biometric page without errors", async () => {
     const ctx = await browser.newContext();
@@ -45,7 +60,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
     const fatal = errors.filter(
       (e) =>
         !e.includes("404") &&
@@ -64,7 +79,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     const hasRegistry = await page.evaluate(
       () => typeof window.FaceRegistry === "function",
@@ -84,7 +99,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     const id = await page.evaluate(async () => {
       // Create a synthetic 128-dimension Float32Array descriptor
@@ -124,7 +139,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     // Add a face
     const id = await page.evaluate(async () => {
@@ -138,7 +153,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await navTo(page, "home");
     await page.waitForTimeout(800);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     // Verify the face still exists
     const stored = await page.evaluate(async (fid) => {
@@ -158,7 +173,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     // First clear any existing data
     await page.evaluate(async () => {
@@ -202,7 +217,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     // Clear and add one face
     await page.evaluate(async () => {
@@ -257,7 +272,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     // Add several faces
     await page.evaluate(async () => {
@@ -298,7 +313,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     // Clear and add faces with same label
     await page.evaluate(async () => {
@@ -336,7 +351,7 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
     await navTo(page, "face-biometric");
-    await page.waitForTimeout(1000);
+    await waitFaceReady(page);
 
     // Clear and add one face
     await page.evaluate(async () => {

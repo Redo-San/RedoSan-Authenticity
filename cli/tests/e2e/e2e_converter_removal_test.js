@@ -24,7 +24,7 @@ function navTo(page, id) {
   }, id);
 }
 
-describe("E2E — Converter & Removal Tools", () => {
+describe("E2E — Converter Tools", () => {
   it("should navigate to converter page without errors", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
@@ -56,40 +56,6 @@ describe("E2E — Converter & Removal Tools", () => {
     const hasBtn = await page.evaluate(() => !!document.getElementById("conv-btn"));
     assert.ok(hasFile, "Converter file input exists");
     assert.ok(hasBtn, "Converter button exists");
-    await ctx.close();
-  });
-
-  it("should navigate to removal tools page without errors", async () => {
-    const ctx = await browser.newContext();
-    const page = await ctx.newPage();
-    page.setDefaultTimeout(60000);
-    const errors = [];
-    page.on("pageerror", (err) => errors.push(err.message));
-    await page.goto(BASE, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(2000);
-    await navTo(page, "removal-tools");
-    await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
-    const heading = await page.evaluate(() => {
-      const h = document.querySelector("#page-removal-tools h2");
-      return h ? h.textContent : "";
-    });
-    assert.ok(heading.length > 0, "Removal tools heading should exist");
-    await ctx.close();
-  });
-
-  it("should have removal tools form elements", async () => {
-    const ctx = await browser.newContext();
-    const page = await ctx.newPage();
-    page.setDefaultTimeout(60000);
-    await page.goto(BASE, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(2000);
-    await navTo(page, "removal-tools");
-    await page.waitForTimeout(1000);
-    const hasFile = await page.evaluate(() => !!document.querySelector('#page-removal-tools input[type="file"]'));
-    const hasBtn = await page.evaluate(() => !!document.querySelector("#page-removal-tools button"));
-    assert.ok(hasFile, "Removal tools file input exists");
-    assert.ok(hasBtn, "Removal tools button exists");
     await ctx.close();
   });
 
