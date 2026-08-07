@@ -216,10 +216,13 @@
    * Collect external feature scripts declared by the freshly fetched page
    * that are not already loaded in the current document. Shared shell
    * scripts (shared.js, navigation.js, mpa-router.js, ...) are present on
-   * every MPA page and must not be re-appended.
+   * every MPA page and must not be re-appended. Inline scripts (e.g. lazy
+   * vendor loaders like loadExportLibs) are collected separately and
+   * executed after all external scripts, so library globals exist before
+   * the page logic runs.
    * @param {Document} doc
    * @param {string} pageUrl
-   * @returns {string[]}
+   * @returns {{src: (string|null), type: string}[]}
    */
   function getMissingScripts(doc, pageUrl) {
     var present = new Set();
@@ -227,9 +230,15 @@
       present.add(resolveScriptSrc(s.getAttribute("src"), location.href));
     });
     var missing = [];
-    doc.querySelectorAll("script[src]").forEach(function (s) {
-      var abs = resolveScriptSrc(s.getAttribute("src"), pageUrl);
-      if (!present.has(abs)) missing.push(abs);
+    doc.querySelectorAll("script").forEach(function (s) {
+      var src = s.getAttribute("src");
+      if (src) {
+        var abs = resolveScriptSrc(src, pageUrl);
+        if (present.has(abs)) return;
+        missing.push({ src: abs, type: s.type || "text/javascript" });
+      } else {
+        missing.push({ src: null, type: "inline", code: s.textContent || "" });
+      }
     });
     return missing;
   }
@@ -238,32 +247,84 @@
    * Load feature scripts sequentially (preserving declaration order so
    * dependencies such as hashing_perceptual.js -> hashing.js ->
    * fingerprint_ui.js are satisfied), then run page re-init once the page
-   * globals are available.
+   * globals are available. `type="module"` scripts (e.g. C2PA) keep their
+   * module type so `import` statements resolve; inline scripts (lazy
+   * vendor loaders) run last inside try/catch so one failure never blocks
+   * page init.
    * @param {Document} doc
    * @param {string} pageUrl
    * @param {Function} done
    */
   function loadPageScripts(doc, pageUrl, done) {
     var missing = getMissingScripts(doc, pageUrl);
-    if (missing.length === 0) {
-      done();
+    var externals = missing.filter(function (m) {
+      return m.src !== null;
+    });
+    var inlines = missing.filter(function (m) {
+      return m.src === null;
+    });
+    if (externals.length === 0) {
+      runInlineScripts(inlines, done);
       return;
     }
     var i = 0;
     (function next() {
-      if (i >= missing.length) {
-        done();
+      if (i >= externals.length) {
+        runInlineScripts(inlines, done);
         return;
       }
+      var entry = externals[i++];
       var el = document.createElement("script");
-      el.src = missing[i++];
+      el.src = entry.src;
       el.async = false;
+      if (entry.type === "module") el.type = "module";
       el.onload = next;
       el.onerror = function () {
         // A failed optional script must not block the remaining ones.
         next();
       };
       document.body.append(el);
+    })();
+  }
+
+  /**
+   * Execute the fetched page's inline scripts in declaration order. Used to
+   * run lazy vendor loaders (jspdf/docx/qrious/...) that external pages
+   * attach as inline blocks. Failures are logged but never fatal.
+   * @param {{src: (string|null), type: string}[]} inlines
+   * @param {Function} done
+   */
+  function runInlineScripts(inlines, done) {
+    var i = 0;
+    (function next() {
+      if (i >= inlines.length) {
+        done();
+        return;
+      }
+      var entry = inlines[i++];
+      if (!entry || entry.type !== "inline") {
+        next();
+        return;
+      }
+      // Inline language loader blocks use document.write() to inject
+      // i18n-data-{lang}.js + i18n.js. After parsing, document.write()
+      // wipes the document, and both scripts are already present in the
+      // shell page — so these blocks must be skipped entirely.
+      var code = entry.code || "";
+      if (/document\.write\s*\(/.test(code)) {
+        next();
+        return;
+      }
+      var el = document.createElement("script");
+      el.type = "text/javascript";
+      el.textContent = code;
+      if (el.textContent.trim()) {
+        el.onload = next;
+        el.onerror = next;
+        document.body.append(el);
+      } else {
+        next();
+      }
     })();
   }
 

@@ -5,12 +5,22 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.JSZip = require("jszip");
 
 function loadDocwFile(name) {
-  const src = fs.readFileSync(path.join(__dirname, "../../Document_Watermark/" + name), "utf8");
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Document_Watermark/" + name) });
+  const src = fs.readFileSync(
+    path.join(__dirname, "../../Document_Watermark/" + name),
+    "utf8",
+  );
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../Document_Watermark/" + name),
+  });
 }
 loadDocwFile("document_watermark_core.js");
 loadDocwFile("document_watermark_report.js");
@@ -18,18 +28,34 @@ loadDocwFile("document_watermark_pdf.js");
 loadDocwFile("document_watermark.js");
 
 // Global mocks needed by UI functions
-globalThis.__ = function (key, def) { return def; };
+globalThis.__ = function (key, def) {
+  return def;
+};
 globalThis.closeDownloadModal = function () {};
 globalThis.downloadBlobSimple = function () {};
 globalThis.setDownloadHandler = function () {};
-globalThis.escHtml = function (s) { return s; };
-globalThis.URL.createObjectURL = function () { return "blob:test"; };
+globalThis.ensureLib = async (name) => {
+  if (name === "QRious" && typeof globalThis.QRious === "undefined") {
+    throw new Error("QRious unavailable");
+  }
+};
+globalThis.escHtml = function (s) {
+  return s;
+};
+globalThis.URL.createObjectURL = function () {
+  return "blob:test";
+};
 globalThis.URL.revokeObjectURL = function () {};
 
 describe("Document Watermark UI — _formatFingerprint", () => {
   it("should format a complete fingerprint", () => {
     const parsed = {
-      file_info: { file_name: "test.jpg", width: 1920, height: 1080, file_size_bytes: 12345 },
+      file_info: {
+        file_name: "test.jpg",
+        width: 1920,
+        height: 1080,
+        file_size_bytes: 12345,
+      },
       hashes: { "SHA-256": "abc123" },
       perceptual_hashes: { dHash: "dhashval" },
     };
@@ -130,7 +156,14 @@ describe("Document Watermark UI — docwToCSV", () => {
   });
 
   it("should escape double quotes in message", () => {
-    const r = { algo: "test", message: 'say "hello"', timestamp: "", textLength: 0, hash: "", resultLength: 0 };
+    const r = {
+      algo: "test",
+      message: 'say "hello"',
+      timestamp: "",
+      textLength: 0,
+      hash: "",
+      resultLength: 0,
+    };
     const csv = docwToCSV(r);
     assert.ok(csv.includes('""'));
   });
@@ -155,7 +188,14 @@ describe("Document Watermark UI — docwToXML", () => {
   });
 
   it("should escape XML special chars", () => {
-    const r = { algo: "test", message: "a&b<c>", timestamp: "", textLength: 0, hash: "", resultLength: 0 };
+    const r = {
+      algo: "test",
+      message: "a&b<c>",
+      timestamp: "",
+      textLength: 0,
+      hash: "",
+      resultLength: 0,
+    };
     const xml = docwToXML(r);
     assert.ok(xml.includes("a&amp;b&lt;c&gt;"));
   });
@@ -179,7 +219,13 @@ describe("Document Watermark UI — _docwBuildCertificateText", () => {
   });
 
   it("should include separator lines", () => {
-    const r = { algo: "test", message: "msg", timestamp: "t", textLength: 1, hash: "h" };
+    const r = {
+      algo: "test",
+      message: "msg",
+      timestamp: "t",
+      textLength: 1,
+      hash: "h",
+    };
     const cert = _docwBuildCertificateText(r);
     assert.ok(cert.includes("==="));
     assert.ok(cert.includes("---"));
@@ -188,7 +234,13 @@ describe("Document Watermark UI — _docwBuildCertificateText", () => {
 
 describe("Document Watermark UI — docwToTXT", () => {
   it("should delegate to _docwBuildCertificateText", () => {
-    const r = { algo: "ZWC", message: "test", timestamp: "t", textLength: 5, hash: "h" };
+    const r = {
+      algo: "ZWC",
+      message: "test",
+      timestamp: "t",
+      textLength: 5,
+      hash: "h",
+    };
     const txt = docwToTXT(r);
     assert.equal(txt, _docwBuildCertificateText(r));
   });
@@ -196,7 +248,14 @@ describe("Document Watermark UI — docwToTXT", () => {
 
 describe("Document Watermark UI — docwToHTML", () => {
   it("should produce HTML with result info", () => {
-    const r = { algo: "ZWC", message: "test msg", timestamp: "t", textLength: 50, hash: "abc", resultLength: 25 };
+    const r = {
+      algo: "ZWC",
+      message: "test msg",
+      timestamp: "t",
+      textLength: 50,
+      hash: "abc",
+      resultLength: 25,
+    };
     const html = docwToHTML(r);
     assert.ok(html.includes("ZWC"));
     assert.ok(html.includes("test msg"));
@@ -206,7 +265,12 @@ describe("Document Watermark UI — docwToHTML", () => {
 
 describe("Document Watermark UI — _docwBuildReportHtml (branch coverage)", () => {
   it("should build extract-mode HTML", async () => {
-    const r = { algo: "ZWC", message: "extracted msg", timestamp: "2024-06-01T00:00:00Z", textLength: 30 };
+    const r = {
+      algo: "ZWC",
+      message: "extracted msg",
+      timestamp: "2024-06-01T00:00:00Z",
+      textLength: 30,
+    };
     const html = _docwBuildReportHtml(r, "extract");
     assert.ok(html.includes("Extracted Watermark Report"));
     assert.ok(html.includes("extracted msg"));
@@ -214,7 +278,13 @@ describe("Document Watermark UI — _docwBuildReportHtml (branch coverage)", () 
   });
 
   it("should build embed-mode HTML", async () => {
-    const r = { algo: "LSB", message: "secret", timestamp: "", textLength: 50, hash: "SHA-256:abc123" };
+    const r = {
+      algo: "LSB",
+      message: "secret",
+      timestamp: "",
+      textLength: 50,
+      hash: "SHA-256:abc123",
+    };
     const html = _docwBuildReportHtml(r, "embed");
     assert.ok(html.includes("Document Watermark Report"));
     assert.ok(html.includes("LSB"));
@@ -224,14 +294,25 @@ describe("Document Watermark UI — _docwBuildReportHtml (branch coverage)", () 
 
 describe("Document Watermark UI — _docwBuildReportDocx (branch coverage)", () => {
   it("should build extract-mode DOCX blob", async () => {
-    const r = { algo: "ZWC", message: "docx extract", timestamp: "2024-06-01T00:00:00Z", textLength: 30 };
+    const r = {
+      algo: "ZWC",
+      message: "docx extract",
+      timestamp: "2024-06-01T00:00:00Z",
+      textLength: 30,
+    };
     const blob = await _docwBuildReportDocx(r, "extract");
     assert.ok(blob instanceof Blob);
     assert.ok(blob.size > 0);
   });
 
   it("should build embed-mode DOCX blob", async () => {
-    const r = { algo: "LSB", message: "embedded", timestamp: "", textLength: 50, hash: "SHA-256:def456" };
+    const r = {
+      algo: "LSB",
+      message: "embedded",
+      timestamp: "",
+      textLength: 50,
+      hash: "SHA-256:def456",
+    };
     const blob = await _docwBuildReportDocx(r, "embed");
     assert.ok(blob instanceof Blob);
     assert.ok(blob.size > 0);
@@ -242,23 +323,33 @@ describe("Document Watermark UI — _docwBuildReportDocx (branch coverage)", () 
 
 function docwMakeEl(overrides) {
   var el = {
-    style: { display: '', width: '', color: '' },
-    value: '1',
-    innerHTML: '',
-    textContent: '',
+    style: { display: "", width: "", color: "" },
+    value: "1",
+    innerHTML: "",
+    textContent: "",
     select: function () {},
-    classList: { add: function () {}, remove: function () {}, contains: function () { return false; } },
+    classList: {
+      add: function () {},
+      remove: function () {},
+      contains: function () {
+        return false;
+      },
+    },
     files: [],
     addEventListener: function () {},
-    href: '',
-    download: '',
+    href: "",
+    download: "",
     append: function () {},
     remove: function () {},
     disabled: false,
     width: 0,
     height: 0,
-    toDataURL: function () { return 'data:image/png;base64,mock'; },
-    getContext: function () { return null; },
+    toDataURL: function () {
+      return "data:image/png;base64,mock";
+    },
+    getContext: function () {
+      return null;
+    },
     click: function () {},
   };
   if (overrides) for (var k in overrides) el[k] = overrides[k];
@@ -268,16 +359,34 @@ function docwMakeEl(overrides) {
 function docwSetupDom() {
   var els = {};
   var ids = [
-    'docw-embed', 'docw-extract', 'docw-embed-result',
-    'docw-extract-result', 'docw-embed-buttons', 'docw-extract-buttons',
-    'docw-embed-download', 'docw-loading-overlay', 'docw-loading-text',
-    'docw-loading-bar-wrap', 'docw-loading-bar', 'docw-loading-pct',
-    'docw-cover-warning', 'docw-algo', 'docw-capacity',
-    'docw-cover-name', 'docw-secret-name', 'docw-algo-ex',
-    'docw-ex-capacity', 'docw-extract-name', 'docw-password',
-    'docw-password-ex', 'docw-embed-btn', 'docw-extract-btn',
-    'docw-embed-output', 'docw-embed-algo-name', 'docw-extracted-msg',
-    'docw-extract-algo-name',
+    "docw-embed",
+    "docw-extract",
+    "docw-embed-result",
+    "docw-extract-result",
+    "docw-embed-buttons",
+    "docw-extract-buttons",
+    "docw-embed-download",
+    "docw-loading-overlay",
+    "docw-loading-text",
+    "docw-loading-bar-wrap",
+    "docw-loading-bar",
+    "docw-loading-pct",
+    "docw-cover-warning",
+    "docw-algo",
+    "docw-capacity",
+    "docw-cover-name",
+    "docw-secret-name",
+    "docw-algo-ex",
+    "docw-ex-capacity",
+    "docw-extract-name",
+    "docw-password",
+    "docw-password-ex",
+    "docw-embed-btn",
+    "docw-extract-btn",
+    "docw-embed-output",
+    "docw-embed-algo-name",
+    "docw-extracted-msg",
+    "docw-extract-algo-name",
   ];
   for (var i = 0; i < ids.length; i++) {
     els[ids[i]] = docwMakeEl();
@@ -285,19 +394,31 @@ function docwSetupDom() {
 
   var origDoc = globalThis.document;
   globalThis.document = {
-    getElementById: function (id) { return els[id] || null; },
-    querySelectorAll: function () { return [docwMakeEl()]; },
-    querySelector: function () { return docwMakeEl(); },
-    execCommand: function () { return true; },
+    getElementById: function (id) {
+      return els[id] || null;
+    },
+    querySelectorAll: function () {
+      return [docwMakeEl()];
+    },
+    querySelector: function () {
+      return docwMakeEl();
+    },
+    execCommand: function () {
+      return true;
+    },
     body: docwMakeEl(),
     createElement: function (tag) {
-      if (tag === 'canvas') {
+      if (tag === "canvas") {
         var c = docwMakeEl();
-        c.getContext = function () { return null; };
-        c.toDataURL = function () { return 'data:image/png;base64,mock'; };
+        c.getContext = function () {
+          return null;
+        };
+        c.toDataURL = function () {
+          return "data:image/png;base64,mock";
+        };
         return c;
       }
-      if (tag === 'a') {
+      if (tag === "a") {
         var a = docwMakeEl();
         a.click = function () {};
         a.remove = function () {};
@@ -307,7 +428,12 @@ function docwSetupDom() {
     },
   };
 
-  return { els: els, restore: function () { globalThis.document = origDoc; } };
+  return {
+    els: els,
+    restore: function () {
+      globalThis.document = origDoc;
+    },
+  };
 }
 
 describe("Document Watermark UI — switchDocwTab", function () {
@@ -321,7 +447,9 @@ describe("Document Watermark UI — switchDocwTab", function () {
       assert.equal(dom.els["docw-extract-result"].style.display, "none");
       assert.equal(dom.els["docw-embed-buttons"].style.display, "none");
       assert.equal(dom.els["docw-extract-buttons"].style.display, "none");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should switch to extract tab", function () {
@@ -330,7 +458,9 @@ describe("Document Watermark UI — switchDocwTab", function () {
       switchDocwTab("extract");
       assert.equal(dom.els["docw-embed"].style.display, "none");
       assert.equal(dom.els["docw-extract"].style.display, "");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 });
 
@@ -344,7 +474,9 @@ describe("Document Watermark UI — showDocwLoading / hideDocwLoading", function
       assert.equal(dom.els["docw-loading-bar-wrap"].style.display, "");
       assert.equal(dom.els["docw-loading-bar"].style.width, "50%");
       assert.equal(dom.els["docw-loading-pct"].textContent, "50%");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should show loading without percentage", function () {
@@ -354,7 +486,9 @@ describe("Document Watermark UI — showDocwLoading / hideDocwLoading", function
       assert.equal(dom.els["docw-loading-overlay"].style.display, "flex");
       assert.equal(dom.els["docw-loading-bar-wrap"].style.display, "none");
       assert.equal(dom.els["docw-loading-pct"].textContent, "");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should hide loading overlay", function () {
@@ -362,7 +496,9 @@ describe("Document Watermark UI — showDocwLoading / hideDocwLoading", function
     try {
       hideDocwLoading();
       assert.equal(dom.els["docw-loading-overlay"].style.display, "none");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should not throw when overlay missing", function () {
@@ -371,7 +507,9 @@ describe("Document Watermark UI — showDocwLoading / hideDocwLoading", function
       dom.els["docw-loading-overlay"] = null;
       showDocwLoading("test", 10);
       hideDocwLoading();
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should use default message when msg is null", function () {
@@ -379,7 +517,9 @@ describe("Document Watermark UI — showDocwLoading / hideDocwLoading", function
     try {
       showDocwLoading(null, 50);
       assert.equal(dom.els["docw-loading-text"].textContent, "Processing...");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 });
 
@@ -390,8 +530,13 @@ describe("Document Watermark UI — _docwShowNoTextWarning", function () {
       _docwCoverText = "Short text";
       _docwShowNoTextWarning(10);
       assert.equal(dom.els["docw-cover-warning"].style.display, "");
-      assert.ok(dom.els["docw-cover-warning"].innerHTML.includes("Very little text"));
-    } finally { _docwCoverText = ""; dom.restore(); }
+      assert.ok(
+        dom.els["docw-cover-warning"].innerHTML.includes("Very little text"),
+      );
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should show low capacity warning", function () {
@@ -400,8 +545,13 @@ describe("Document Watermark UI — _docwShowNoTextWarning", function () {
       _docwCoverText = "A".repeat(200);
       _docwShowNoTextWarning(50);
       assert.equal(dom.els["docw-cover-warning"].style.display, "");
-      assert.ok(dom.els["docw-cover-warning"].innerHTML.includes("Low capacity"));
-    } finally { _docwCoverText = ""; dom.restore(); }
+      assert.ok(
+        dom.els["docw-cover-warning"].innerHTML.includes("Low capacity"),
+      );
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should hide warning when capacity sufficient", function () {
@@ -410,7 +560,10 @@ describe("Document Watermark UI — _docwShowNoTextWarning", function () {
       _docwCoverText = "A".repeat(200);
       _docwShowNoTextWarning(500);
       assert.equal(dom.els["docw-cover-warning"].style.display, "none");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should hide warning when cover text empty", function () {
@@ -419,7 +572,10 @@ describe("Document Watermark UI — _docwShowNoTextWarning", function () {
       _docwCoverText = "";
       _docwShowNoTextWarning(10);
       assert.equal(dom.els["docw-cover-warning"].style.display, "none");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 });
 
@@ -431,7 +587,10 @@ describe("Document Watermark UI — docwAlgoChanged / docwExAlgoChanged", functi
       dom.els["docw-algo"].value = "1";
       docwAlgoChanged();
       assert.ok(dom.els["docw-capacity"].textContent.length > 0);
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should show text too short for algorithm", function () {
@@ -441,7 +600,10 @@ describe("Document Watermark UI — docwAlgoChanged / docwExAlgoChanged", functi
       docwAlgoChanged();
       // When no cover text, the if (_docwCoverText) is false, so nothing happens
       assert.equal(dom.els["docw-capacity"].textContent, "");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("docwExAlgoChanged should update extract capacity", function () {
@@ -451,7 +613,10 @@ describe("Document Watermark UI — docwAlgoChanged / docwExAlgoChanged", functi
       dom.els["docw-algo-ex"].value = "1";
       docwExAlgoChanged();
       assert.ok(dom.els["docw-ex-capacity"].textContent.length > 0);
-    } finally { _docwExtractText = ""; dom.restore(); }
+    } finally {
+      _docwExtractText = "";
+      dom.restore();
+    }
   });
 
   it("docwExAlgoChanged should clear capacity when cap <= 0", function () {
@@ -459,7 +624,10 @@ describe("Document Watermark UI — docwAlgoChanged / docwExAlgoChanged", functi
     try {
       _docwExtractText = "";
       docwExAlgoChanged();
-    } finally { _docwExtractText = ""; dom.restore(); }
+    } finally {
+      _docwExtractText = "";
+      dom.restore();
+    }
   });
 
   it("docwAlgoChanged should show text too short when algo has zero capacity", function () {
@@ -470,7 +638,10 @@ describe("Document Watermark UI — docwAlgoChanged / docwExAlgoChanged", functi
       docwAlgoChanged();
       assert.ok(dom.els["docw-capacity"].textContent.includes("too short"));
       assert.equal(dom.els["docw-capacity"].style.color, "#e74c3c");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("docwExAlgoChanged should clear capacity when algo has zero capacity", function () {
@@ -480,7 +651,10 @@ describe("Document Watermark UI — docwAlgoChanged / docwExAlgoChanged", functi
       dom.els["docw-algo-ex"].value = "99";
       docwExAlgoChanged();
       assert.equal(dom.els["docw-ex-capacity"].textContent, "");
-    } finally { _docwExtractText = ""; dom.restore(); }
+    } finally {
+      _docwExtractText = "";
+      dom.restore();
+    }
   });
 });
 
@@ -489,18 +663,28 @@ describe("Document Watermark UI — docwCopyResult", function () {
     var dom = docwSetupDom();
     try {
       var called = false;
-      dom.els["test-el"] = docwMakeEl({ select: function () { called = true; } });
-      globalThis.document.getElementById = function (id) { return dom.els[id] || null; };
+      dom.els["test-el"] = docwMakeEl({
+        select: function () {
+          called = true;
+        },
+      });
+      globalThis.document.getElementById = function (id) {
+        return dom.els[id] || null;
+      };
       docwCopyResult("test-el");
       assert.ok(called);
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should not throw for missing element", function () {
     var dom = docwSetupDom();
     try {
       docwCopyResult("non-existent");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 });
 
@@ -510,27 +694,37 @@ describe("Document Watermark UI — docwDownloadResult", function () {
     try {
       var selectedEl = null;
       dom.els["test-dl"] = docwMakeEl({ value: "hello world" });
-      globalThis.document.getElementById = function (id) { return id === "test-dl" ? dom.els["test-dl"] : null; };
+      globalThis.document.getElementById = function (id) {
+        return id === "test-dl" ? dom.els["test-dl"] : null;
+      };
       docwDownloadResult("test-dl", "out.txt");
       // Should not throw
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should not throw for missing element", function () {
     var dom = docwSetupDom();
     try {
       docwDownloadResult("missing-id", "out.txt");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should use default filename when not provided", function () {
     var dom = docwSetupDom();
     try {
       dom.els["test-dl2"] = docwMakeEl({ value: "test content" });
-      globalThis.document.getElementById = function (id) { return id === "test-dl2" ? dom.els["test-dl2"] : null; };
+      globalThis.document.getElementById = function (id) {
+        return id === "test-dl2" ? dom.els["test-dl2"] : null;
+      };
       docwDownloadResult("test-dl2");
       // Should not throw — uses default "document_watermarked.txt"
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 });
 
@@ -552,16 +746,18 @@ describe("Document Watermark UI — _docwHash", function () {
 });
 
 describe("Document Watermark UI — _docwQrDataURL", function () {
-  it("should return null when QRious is undefined", function () {
+  it("should return null when QRious is undefined", async function () {
     var origQR = globalThis.QRious;
     globalThis.QRious = undefined;
     try {
-      var result = _docwQrDataURL("test");
+      var result = await _docwQrDataURL("test");
       assert.equal(result, null);
-    } finally { globalThis.QRious = origQR; }
+    } finally {
+      globalThis.QRious = origQR;
+    }
   });
 
-  it("should generate QR code data URL", function () {
+  it("should generate QR code data URL", async function () {
     var qrCalled = false;
     var origQR = globalThis.QRious;
     globalThis.QRious = function (opts) {
@@ -573,15 +769,19 @@ describe("Document Watermark UI — _docwQrDataURL", function () {
     var origCreateEl = globalThis.document && globalThis.document.createElement;
     if (!globalThis.document) globalThis.document = {};
     globalThis.document.createElement = function (tag) {
-      if (tag === 'canvas') {
-        return { toDataURL: function () { return 'data:image/png;base64,qrcode'; } };
+      if (tag === "canvas") {
+        return {
+          toDataURL: function () {
+            return "data:image/png;base64,qrcode";
+          },
+        };
       }
       return {};
     };
     try {
-      var result = _docwQrDataURL("qr content");
+      var result = await _docwQrDataURL("qr content");
       assert.ok(qrCalled);
-      assert.equal(result, 'data:image/png;base64,qrcode');
+      assert.equal(result, "data:image/png;base64,qrcode");
     } finally {
       globalThis.QRious = origQR;
       globalThis.document.createElement = origCreateEl;
@@ -595,26 +795,41 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
     if (!globalThis.QRious) {
       globalThis.QRious = function (opts) {
         if (opts.element && !opts.element.toDataURL) {
-          opts.element.toDataURL = function () { return 'data:image/png;base64,iVBOR'; };
+          opts.element.toDataURL = function () {
+            return "data:image/png;base64,iVBOR";
+          };
         }
       };
     }
     // Ensure document.createElement works for QR code canvas
     var origDoc = globalThis.document;
-    if (!globalThis.document || typeof globalThis.document.createElement !== 'function') {
+    if (
+      !globalThis.document ||
+      typeof globalThis.document.createElement !== "function"
+    ) {
       globalThis.document = {
         createElement: function (tag) {
-          if (tag === 'canvas') {
+          if (tag === "canvas") {
             return {
-              toDataURL: function () { return 'data:image/png;base64,iVBOR'; },
-              getContext: function () { return null; },
+              toDataURL: function () {
+                return "data:image/png;base64,iVBOR";
+              },
+              getContext: function () {
+                return null;
+              },
             };
           }
           return {};
         },
-        getElementById: function () { return null; },
-        querySelectorAll: function () { return []; },
-        querySelector: function () { return null; },
+        getElementById: function () {
+          return null;
+        },
+        querySelectorAll: function () {
+          return [];
+        },
+        querySelector: function () {
+          return null;
+        },
       };
     }
   });
@@ -625,13 +840,24 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
     globalThis.jspdf = {
       jsPDF: function (opts) {
         return {
-          internal: { pageSize: { getWidth: function () { return 210; }, getHeight: function () { return 297; } } },
+          internal: {
+            pageSize: {
+              getWidth: function () {
+                return 210;
+              },
+              getHeight: function () {
+                return 297;
+              },
+            },
+          },
           setFontSize: function () {},
           setTextColor: function () {},
           text: function () {},
           setDrawColor: function () {},
           line: function () {},
-          splitTextToSize: function (t) { return t.split("\n"); },
+          splitTextToSize: function (t) {
+            return t.split("\n");
+          },
           addPage: function () {},
           addImage: function () {},
           output: function (type) {
@@ -642,11 +868,17 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
       },
     };
     try {
-      var r = { algo: "ZWC", message: "extracted msg", timestamp: "2024-06-01T00:00:00Z" };
+      var r = {
+        algo: "ZWC",
+        message: "extracted msg",
+        timestamp: "2024-06-01T00:00:00Z",
+      };
       var blob = await _docwBuildReportPdf(r, "extract");
       assert.ok(blob instanceof Blob);
       assert.ok(outputCalled);
-    } finally { globalThis.jspdf = origJspdf; }
+    } finally {
+      globalThis.jspdf = origJspdf;
+    }
   });
 
   it("should build embed-mode PDF blob with hash", async function () {
@@ -655,13 +887,24 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
     globalThis.jspdf = {
       jsPDF: function (opts) {
         return {
-          internal: { pageSize: { getWidth: function () { return 210; }, getHeight: function () { return 297; } } },
+          internal: {
+            pageSize: {
+              getWidth: function () {
+                return 210;
+              },
+              getHeight: function () {
+                return 297;
+              },
+            },
+          },
           setFontSize: function () {},
           setTextColor: function () {},
           text: function () {},
           setDrawColor: function () {},
           line: function () {},
-          splitTextToSize: function (t) { return t.split("\n"); },
+          splitTextToSize: function (t) {
+            return t.split("\n");
+          },
           addPage: function () {},
           addImage: function () {},
           output: function (type) {
@@ -672,11 +915,20 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
       },
     };
     try {
-      var r = { algo: "ZWC", message: "test", timestamp: "t", textLength: 10, hash: "SHA-256:abc123", watermarkedText: "wm text" };
+      var r = {
+        algo: "ZWC",
+        message: "test",
+        timestamp: "t",
+        textLength: 10,
+        hash: "SHA-256:abc123",
+        watermarkedText: "wm text",
+      };
       var blob = await _docwBuildReportPdf(r, "embed");
       assert.ok(blob instanceof Blob);
       assert.ok(outputCalled);
-    } finally { globalThis.jspdf = origJspdf; }
+    } finally {
+      globalThis.jspdf = origJspdf;
+    }
   });
 
   it("should handle addImage failure gracefully", async function () {
@@ -684,15 +936,28 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
     globalThis.jspdf = {
       jsPDF: function (opts) {
         return {
-          internal: { pageSize: { getWidth: function () { return 210; }, getHeight: function () { return 297; } } },
+          internal: {
+            pageSize: {
+              getWidth: function () {
+                return 210;
+              },
+              getHeight: function () {
+                return 297;
+              },
+            },
+          },
           setFontSize: function () {},
           setTextColor: function () {},
           text: function () {},
           setDrawColor: function () {},
           line: function () {},
-          splitTextToSize: function (t) { return t.split("\n"); },
+          splitTextToSize: function (t) {
+            return t.split("\n");
+          },
           addPage: function () {},
-          addImage: function () { throw new Error("addImage failed"); },
+          addImage: function () {
+            throw new Error("addImage failed");
+          },
           output: function (type) {
             return new Blob(["mock pdf"], { type: "application/pdf" });
           },
@@ -700,10 +965,19 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
       },
     };
     try {
-      var r = { algo: "ZWC", message: "test", timestamp: "t", textLength: 10, hash: "SHA-256:abc123", watermarkedText: "wm" };
+      var r = {
+        algo: "ZWC",
+        message: "test",
+        timestamp: "t",
+        textLength: 10,
+        hash: "SHA-256:abc123",
+        watermarkedText: "wm",
+      };
       var blob = await _docwBuildReportPdf(r, "embed");
       assert.ok(blob instanceof Blob);
-    } finally { globalThis.jspdf = origJspdf; }
+    } finally {
+      globalThis.jspdf = origJspdf;
+    }
   });
 
   it("should handle page break when content exceeds page height", async function () {
@@ -712,15 +986,28 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
     globalThis.jspdf = {
       jsPDF: function (opts) {
         return {
-          internal: { pageSize: { getWidth: function () { return 210; }, getHeight: function () { return 297; } } },
+          internal: {
+            pageSize: {
+              getWidth: function () {
+                return 210;
+              },
+              getHeight: function () {
+                return 297;
+              },
+            },
+          },
           setFontSize: function () {},
           setTextColor: function () {},
           text: function () {},
           setDrawColor: function () {},
           line: function () {},
           // Return 200 lines to trigger page break (y+4 > 297-15, i.e. y > 278)
-          splitTextToSize: function (t) { return new Array(200).fill("line content"); },
-          addPage: function () { addPageCalled = true; },
+          splitTextToSize: function (t) {
+            return new Array(200).fill("line content");
+          },
+          addPage: function () {
+            addPageCalled = true;
+          },
           addImage: function () {},
           output: function (type) {
             return new Blob(["mock pdf"], { type: "application/pdf" });
@@ -729,11 +1016,23 @@ describe("Document Watermark UI — _docwBuildReportPdf", function () {
       },
     };
     try {
-      var r = { algo: "ZWC", message: "test", timestamp: "t", textLength: 10, hash: "SHA-256:abc123", watermarkedText: "wm" };
+      var r = {
+        algo: "ZWC",
+        message: "test",
+        timestamp: "t",
+        textLength: 10,
+        hash: "SHA-256:abc123",
+        watermarkedText: "wm",
+      };
       var blob = await _docwBuildReportPdf(r, "embed");
       assert.ok(blob instanceof Blob);
-      assert.ok(addPageCalled, "addPage should have been called for page break");
-    } finally { globalThis.jspdf = origJspdf; }
+      assert.ok(
+        addPageCalled,
+        "addPage should have been called for page break",
+      );
+    } finally {
+      globalThis.jspdf = origJspdf;
+    }
   });
 });
 
@@ -741,7 +1040,10 @@ describe("Document Watermark UI — buildWatermarkedDocx", function () {
   it("should rebuild DOCX with watermarked text", async function () {
     // Create a minimal DOCX in memory
     var zip = new JSZip();
-    zip.file("word/document.xml", '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Original text</w:t></w:r></w:p></w:body></w:document>');
+    zip.file(
+      "word/document.xml",
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Original text</w:t></w:r></w:p></w:body></w:document>',
+    );
     var buf = await zip.generateAsync({ type: "uint8array" });
 
     var result = await buildWatermarkedDocx(buf, "WATERMARKED");
@@ -753,12 +1055,18 @@ describe("Document Watermark UI — buildWatermarkedDocx", function () {
     var resultZip = await JSZip.loadAsync(resultBuf);
     var xml = await resultZip.file("word/document.xml").async("string");
     assert.ok(xml.includes("WATERMARKED"), "should contain watermarked text");
-    assert.ok(!xml.includes("Original text"), "should not contain original text");
+    assert.ok(
+      !xml.includes("Original text"),
+      "should not contain original text",
+    );
   });
 
   it("should handle empty watermarked text", async function () {
     var zip = new JSZip();
-    zip.file("word/document.xml", '<w:document><w:body><w:p><w:r><w:t>Content</w:t></w:r></w:p></w:body></w:document>');
+    zip.file(
+      "word/document.xml",
+      "<w:document><w:body><w:p><w:r><w:t>Content</w:t></w:r></w:p></w:body></w:document>",
+    );
     var buf = await zip.generateAsync({ type: "uint8array" });
     var result = await buildWatermarkedDocx(buf, "");
     assert.ok(result instanceof Blob);
@@ -766,14 +1074,20 @@ describe("Document Watermark UI — buildWatermarkedDocx", function () {
 
   it("should replace only first run, clear subsequent runs", async function () {
     var zip = new JSZip();
-    zip.file("word/document.xml", '<w:document><w:body><w:p><w:r><w:t>First</w:t></w:r><w:r><w:t>Second</w:t></w:r><w:r><w:t>Third</w:t></w:r></w:p></w:body></w:document>');
+    zip.file(
+      "word/document.xml",
+      "<w:document><w:body><w:p><w:r><w:t>First</w:t></w:r><w:r><w:t>Second</w:t></w:r><w:r><w:t>Third</w:t></w:r></w:p></w:body></w:document>",
+    );
     var buf = await zip.generateAsync({ type: "uint8array" });
     var result = await buildWatermarkedDocx(buf, "WATERMARKED");
     var resultBuf = await result.arrayBuffer();
     var resultZip = await JSZip.loadAsync(resultBuf);
     var xml = await resultZip.file("word/document.xml").async("string");
     // First run should have watermarked text
-    assert.ok(xml.indexOf("WATERMARKED") >= 0, "should contain watermarked text in first run");
+    assert.ok(
+      xml.indexOf("WATERMARKED") >= 0,
+      "should contain watermarked text in first run",
+    );
     // Subsequent runs should be empty
     var firstEnd = xml.indexOf("</w:t>");
     var rest = xml.substring(firstEnd + 6);
@@ -786,14 +1100,19 @@ describe("Document Watermark UI — handleDocwEmbed error paths", function () {
   it("should alert when no secret message", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (msg) { alertMsg = msg; };
+    globalThis.alert = function (msg) {
+      alertMsg = msg;
+    };
     _docwSecretMessage = "";
     _docwCoverText = "some cover text";
     dom.els["docw-password"].value = "password";
     dom.els["docw-algo"].value = "1";
     try {
       await handleDocwEmbed();
-      assert.ok(alertMsg.includes("secret message"), "should alert about missing secret");
+      assert.ok(
+        alertMsg.includes("secret message"),
+        "should alert about missing secret",
+      );
     } finally {
       _docwSecretMessage = "";
       _docwCoverText = "";
@@ -805,14 +1124,19 @@ describe("Document Watermark UI — handleDocwEmbed error paths", function () {
   it("should alert when no cover text", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (msg) { alertMsg = msg; };
+    globalThis.alert = function (msg) {
+      alertMsg = msg;
+    };
     _docwSecretMessage = "secret";
     _docwCoverText = "";
     dom.els["docw-password"].value = "password";
     dom.els["docw-algo"].value = "1";
     try {
       await handleDocwEmbed();
-      assert.ok(alertMsg.includes("cover document"), "should alert about missing cover");
+      assert.ok(
+        alertMsg.includes("cover document"),
+        "should alert about missing cover",
+      );
     } finally {
       _docwSecretMessage = "";
       _docwCoverText = "";
@@ -824,14 +1148,19 @@ describe("Document Watermark UI — handleDocwEmbed error paths", function () {
   it("should alert when no password", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (msg) { alertMsg = msg; };
+    globalThis.alert = function (msg) {
+      alertMsg = msg;
+    };
     _docwSecretMessage = "secret";
     _docwCoverText = "cover text";
     dom.els["docw-password"].value = "";
     dom.els["docw-algo"].value = "1";
     try {
       await handleDocwEmbed();
-      assert.ok(alertMsg.includes("Password"), "should alert about missing password");
+      assert.ok(
+        alertMsg.includes("Password"),
+        "should alert about missing password",
+      );
     } finally {
       _docwSecretMessage = "";
       _docwCoverText = "";
@@ -845,13 +1174,18 @@ describe("Document Watermark UI — handleDocwExtract error paths", function () 
   it("should alert when no extract text", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (msg) { alertMsg = msg; };
+    globalThis.alert = function (msg) {
+      alertMsg = msg;
+    };
     _docwExtractText = "";
     dom.els["docw-password-ex"].value = "pw";
     dom.els["docw-algo-ex"].value = "1";
     try {
       await handleDocwExtract();
-      assert.ok(alertMsg.includes("watermarked document"), "should alert about missing doc");
+      assert.ok(
+        alertMsg.includes("watermarked document"),
+        "should alert about missing doc",
+      );
     } finally {
       _docwExtractText = "";
       delete globalThis.alert;
@@ -862,13 +1196,18 @@ describe("Document Watermark UI — handleDocwExtract error paths", function () 
   it("should alert when no password for extract", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (msg) { alertMsg = msg; };
+    globalThis.alert = function (msg) {
+      alertMsg = msg;
+    };
     _docwExtractText = "some watermarked text";
     dom.els["docw-password-ex"].value = "";
     dom.els["docw-algo-ex"].value = "1";
     try {
       await handleDocwExtract();
-      assert.ok(alertMsg.includes("Password"), "should alert about missing password");
+      assert.ok(
+        alertMsg.includes("Password"),
+        "should alert about missing password",
+      );
     } finally {
       _docwExtractText = "";
       delete globalThis.alert;
@@ -881,7 +1220,9 @@ describe("Document Watermark UI — handleDocwEmbed error catch", function () {
   it("should catch errors and alert", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (msg) { alertMsg = msg; };
+    globalThis.alert = function (msg) {
+      alertMsg = msg;
+    };
     _docwSecretMessage = "secret";
     _docwCoverText = "cover text for embedding";
     dom.els["docw-password"].value = "password123";
@@ -890,7 +1231,9 @@ describe("Document Watermark UI — handleDocwEmbed error catch", function () {
     _docwCoverBytes = new TextEncoder().encode("cover text");
     // Make docwEmbed throw to trigger the outer catch
     var origEmbed = globalThis.docwEmbed;
-    globalThis.docwEmbed = async function () { throw new Error("embed failed"); };
+    globalThis.docwEmbed = async function () {
+      throw new Error("embed failed");
+    };
     try {
       await handleDocwEmbed();
       assert.ok(alertMsg.includes("embed failed"), "should show error message");
@@ -916,16 +1259,28 @@ describe("Document Watermark UI — handleDocwEmbed success paths", function () 
     dom.els["docw-password"].value = "password123";
     dom.els["docw-algo"].value = "1";
     var origEmbed = globalThis.docwEmbed;
-    globalThis.docwEmbed = async function () { return "watermarked text content"; };
+    globalThis.docwEmbed = async function () {
+      return "watermarked text content";
+    };
     try {
       await handleDocwEmbed();
       // Verify embed output was set
-      assert.ok(dom.els["docw-embed-output"].value.length > 0, "output should have certificate text");
+      assert.ok(
+        dom.els["docw-embed-output"].value.length > 0,
+        "output should have certificate text",
+      );
       assert.equal(dom.els["docw-embed-result"].style.display, "");
       assert.equal(dom.els["docw-embed-buttons"].style.display, "");
-      assert.equal(dom.els["docw-embed-algo-name"].textContent, "Zero-Width Characters");
+      assert.equal(
+        dom.els["docw-embed-algo-name"].textContent,
+        "Zero-Width Characters",
+      );
       // Should have created a download link for TXT
-      assert.ok(dom.els["docw-embed-download"].innerHTML.includes("Download Watermarked Document"));
+      assert.ok(
+        dom.els["docw-embed-download"].innerHTML.includes(
+          "Download Watermarked Document",
+        ),
+      );
       assert.equal(dom.els["docw-embed-btn"].disabled, false);
     } finally {
       _docwSecretMessage = "";
@@ -946,11 +1301,17 @@ describe("Document Watermark UI — handleDocwEmbed success paths", function () 
     dom.els["docw-password"].value = "password123";
     dom.els["docw-algo"].value = "1";
     var origEmbed = globalThis.docwEmbed;
-    globalThis.docwEmbed = async function () { return "watermarked pdf text"; };
+    globalThis.docwEmbed = async function () {
+      return "watermarked pdf text";
+    };
     try {
       await handleDocwEmbed();
       // Verify download link was created (PDF path)
-      assert.ok(dom.els["docw-embed-download"].innerHTML.includes("Download Watermarked Document"));
+      assert.ok(
+        dom.els["docw-embed-download"].innerHTML.includes(
+          "Download Watermarked Document",
+        ),
+      );
       assert.ok(dom.els["docw-embed-btn"].disabled === false);
     } finally {
       _docwSecretMessage = "";
@@ -973,13 +1334,21 @@ describe("Document Watermark UI — handleDocwEmbed success paths", function () 
     // Mock buildWatermarkedDocx to succeed so the DOCX success path is hit
     var origBuildDocx = globalThis.buildWatermarkedDocx;
     globalThis.buildWatermarkedDocx = async function () {
-      return new Blob(["mock docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      return new Blob(["mock docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
     };
     var origEmbed = globalThis.docwEmbed;
-    globalThis.docwEmbed = async function () { return "watermarked docx text"; };
+    globalThis.docwEmbed = async function () {
+      return "watermarked docx text";
+    };
     try {
       await handleDocwEmbed();
-      assert.ok(dom.els["docw-embed-download"].innerHTML.includes("Download Watermarked Document"));
+      assert.ok(
+        dom.els["docw-embed-download"].innerHTML.includes(
+          "Download Watermarked Document",
+        ),
+      );
       assert.ok(dom.els["docw-embed-download"].innerHTML.includes("DOCX"));
     } finally {
       _docwSecretMessage = "";
@@ -1001,11 +1370,17 @@ describe("Document Watermark UI — handleDocwEmbed success paths", function () 
     dom.els["docw-password"].value = "password123";
     dom.els["docw-algo"].value = "1";
     var origEmbed = globalThis.docwEmbed;
-    globalThis.docwEmbed = async function () { return "watermarked docx text"; };
+    globalThis.docwEmbed = async function () {
+      return "watermarked docx text";
+    };
     try {
       await handleDocwEmbed();
       // buildWatermarkedDocx should throw on invalid bytes, landing in TXT fallback
-      assert.ok(dom.els["docw-embed-download"].innerHTML.includes("Download Watermarked Document"));
+      assert.ok(
+        dom.els["docw-embed-download"].innerHTML.includes(
+          "Download Watermarked Document",
+        ),
+      );
       // The catch path produces TXT (not DOCX) fallback link
       assert.ok(dom.els["docw-embed-download"].innerHTML.includes(".txt"));
     } finally {
@@ -1028,12 +1403,18 @@ describe("Document Watermark UI — handleDocwEmbed success paths", function () 
     dom.els["docw-algo"].value = "1";
     // Make buildWatermarkedPdfDoc throw to trigger the PDF catch fallback
     var origBuildPdf = globalThis.buildWatermarkedPdfDoc;
-    globalThis.buildWatermarkedPdfDoc = async function () { throw new Error("PDF build failed"); };
+    globalThis.buildWatermarkedPdfDoc = async function () {
+      throw new Error("PDF build failed");
+    };
     var origEmbed = globalThis.docwEmbed;
-    globalThis.docwEmbed = async function () { return "watermarked pdf text"; };
+    globalThis.docwEmbed = async function () {
+      return "watermarked pdf text";
+    };
     try {
       await handleDocwEmbed();
-      assert.ok(dom.els["docw-embed-download"].innerHTML.includes("PDF rebuild failed"));
+      assert.ok(
+        dom.els["docw-embed-download"].innerHTML.includes("PDF rebuild failed"),
+      );
       assert.ok(dom.els["docw-embed-download"].innerHTML.includes("TXT"));
     } finally {
       _docwSecretMessage = "";
@@ -1068,7 +1449,11 @@ describe("Document Watermark UI — handleDocwEmbed success paths", function () 
     try {
       await handleDocwEmbed();
       assert.equal(embedCalledWith, "homoglyph-payload-message");
-      assert.ok(dom.els["docw-embed-download"].innerHTML.includes("Download Watermarked Document"));
+      assert.ok(
+        dom.els["docw-embed-download"].innerHTML.includes(
+          "Download Watermarked Document",
+        ),
+      );
     } finally {
       _docwSecretMessage = "";
       _docwSecretData = null;
@@ -1094,7 +1479,10 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
     };
     try {
       await handleDocwExtract();
-      assert.equal(dom.els["docw-extract-btn"].textContent, "Extract Watermark");
+      assert.equal(
+        dom.els["docw-extract-btn"].textContent,
+        "Extract Watermark",
+      );
       assert.equal(dom.els["docw-extract-btn"].disabled, false);
       assert.equal(dom.els["docw-extract-result"].style.display, "");
       assert.equal(dom.els["docw-extract-buttons"].style.display, "");
@@ -1112,11 +1500,16 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
     dom.els["docw-password-ex"].value = "password123";
     dom.els["docw-algo-ex"].value = "0";
     var origAutoDetect = globalThis.docwAutoDetect;
-    globalThis.docwAutoDetect = async function () { return null; };
+    globalThis.docwAutoDetect = async function () {
+      return null;
+    };
     try {
       await handleDocwExtract();
       assert.equal(dom.els["docw-extracted-msg"].value, "");
-      assert.equal(dom.els["docw-extract-algo-name"].textContent, "No watermark found");
+      assert.equal(
+        dom.els["docw-extract-algo-name"].textContent,
+        "No watermark found",
+      );
       assert.equal(dom.els["docw-extract-result"].style.display, "");
       assert.equal(dom.els["docw-extract-buttons"].style.display, "none");
     } finally {
@@ -1132,11 +1525,16 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
     dom.els["docw-password-ex"].value = "mypassword";
     dom.els["docw-algo-ex"].value = "1";
     var origExtract = globalThis.docwExtract;
-    globalThis.docwExtract = async function () { return "extracted message"; };
+    globalThis.docwExtract = async function () {
+      return "extracted message";
+    };
     try {
       await handleDocwExtract();
       assert.equal(dom.els["docw-extracted-msg"].value, "extracted message");
-      assert.equal(dom.els["docw-extract-algo-name"].textContent, "Zero-Width Characters");
+      assert.equal(
+        dom.els["docw-extract-algo-name"].textContent,
+        "Zero-Width Characters",
+      );
       assert.equal(dom.els["docw-extract-btn"].disabled, false);
     } finally {
       _docwExtractText = "";
@@ -1162,7 +1560,10 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
     try {
       await handleDocwExtract();
       assert.ok(callCount >= 2, "should have attempted fallback extraction");
-      assert.equal(dom.els["docw-extracted-msg"].value, "fallback extracted message");
+      assert.equal(
+        dom.els["docw-extracted-msg"].value,
+        "fallback extracted message",
+      );
     } finally {
       _docwExtractText = "";
       globalThis.docwExtract = origExtract;
@@ -1176,7 +1577,9 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
     dom.els["docw-password-ex"].value = "password";
     dom.els["docw-algo-ex"].value = "1";
     var origExtract = globalThis.docwExtract;
-    globalThis.docwExtract = async function () { return ""; };
+    globalThis.docwExtract = async function () {
+      return "";
+    };
     try {
       await handleDocwExtract();
       assert.equal(dom.els["docw-extracted-msg"].value, "No watermark found");
@@ -1193,11 +1596,16 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
     dom.els["docw-password-ex"].value = "wrong";
     dom.els["docw-algo-ex"].value = "1";
     var origExtract = globalThis.docwExtract;
-    globalThis.docwExtract = async function () { throw new Error("WRONG_PASSWORD"); };
+    globalThis.docwExtract = async function () {
+      throw new Error("WRONG_PASSWORD");
+    };
     try {
       await handleDocwExtract();
       assert.equal(dom.els["docw-extracted-msg"].value, "");
-      assert.equal(dom.els["docw-extract-algo-name"].textContent, "Password may be incorrect");
+      assert.equal(
+        dom.els["docw-extract-algo-name"].textContent,
+        "Password may be incorrect",
+      );
       assert.equal(dom.els["docw-extract-buttons"].style.display, "none");
       assert.equal(dom.els["docw-extract-btn"].disabled, false);
     } finally {
@@ -1210,12 +1618,16 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
   it("should handle general errors with alert", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (msg) { alertMsg = msg; };
+    globalThis.alert = function (msg) {
+      alertMsg = msg;
+    };
     _docwExtractText = "some watermarked text";
     dom.els["docw-password-ex"].value = "pw";
     dom.els["docw-algo-ex"].value = "1";
     var origExtract = globalThis.docwExtract;
-    globalThis.docwExtract = async function () { throw new Error("generic error"); };
+    globalThis.docwExtract = async function () {
+      throw new Error("generic error");
+    };
     try {
       await handleDocwExtract();
       assert.ok(alertMsg.includes("generic error"));
@@ -1232,8 +1644,12 @@ describe("Document Watermark UI — handleDocwExtract success paths", function (
 describe("Document Watermark UI — docwExtractTextFromBuf", function () {
   before(function () {
     globalThis.DOCX_EXTRACTOR = {
-      readDocx: function (buf) { return Promise.resolve("extracted docx text"); },
-      readPdf: function (buf) { return Promise.resolve("extracted pdf text"); },
+      readDocx: function (buf) {
+        return Promise.resolve("extracted docx text");
+      },
+      readPdf: function (buf) {
+        return Promise.resolve("extracted pdf text");
+      },
     };
   });
 
@@ -1242,7 +1658,9 @@ describe("Document Watermark UI — docwExtractTextFromBuf", function () {
       fn(function (err, text, ext) {
         try {
           resolve({ err: err, text: text, ext: ext });
-        } catch (e) { reject(e); }
+        } catch (e) {
+          reject(e);
+        }
       });
     });
   }
@@ -1266,7 +1684,7 @@ describe("Document Watermark UI — docwExtractTextFromBuf", function () {
   });
 
   it("should extract text from DOC buffer using ASCII extraction", async function () {
-    var arr = new Uint8Array([0x48, 0x65, 0x6C, 0x6C, 0x6F]); // "Hello"
+    var arr = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // "Hello"
     var result = await docwCallbackToPromise(function (cb) {
       docwExtractTextFromBuf({ name: "test.doc" }, arr.buffer, cb);
     });
@@ -1296,7 +1714,9 @@ describe("Document Watermark UI — docwExtractTextFromBuf", function () {
   });
 
   it("should report DOCX extraction error", async function () {
-    globalThis.DOCX_EXTRACTOR.readDocx = function () { return Promise.reject(new Error("corrupt zip")); };
+    globalThis.DOCX_EXTRACTOR.readDocx = function () {
+      return Promise.reject(new Error("corrupt zip"));
+    };
     var result = await docwCallbackToPromise(function (cb) {
       docwExtractTextFromBuf({ name: "test.docx" }, new ArrayBuffer(10), cb);
     });
@@ -1305,7 +1725,9 @@ describe("Document Watermark UI — docwExtractTextFromBuf", function () {
   });
 
   it("should report PDF extraction error", async function () {
-    globalThis.DOCX_EXTRACTOR.readPdf = function () { return Promise.reject(new Error("pdf error")); };
+    globalThis.DOCX_EXTRACTOR.readPdf = function () {
+      return Promise.reject(new Error("pdf error"));
+    };
     var result = await docwCallbackToPromise(function (cb) {
       docwExtractTextFromBuf({ name: "test.pdf" }, new ArrayBuffer(10), cb);
     });
@@ -1314,14 +1736,18 @@ describe("Document Watermark UI — docwExtractTextFromBuf", function () {
   });
 
   it("should handle PDF returning null text (empty fallback)", async function () {
-    globalThis.DOCX_EXTRACTOR.readPdf = function () { return Promise.resolve(null); };
+    globalThis.DOCX_EXTRACTOR.readPdf = function () {
+      return Promise.resolve(null);
+    };
     var result = await docwCallbackToPromise(function (cb) {
       docwExtractTextFromBuf({ name: "test.pdf" }, new ArrayBuffer(10), cb);
     });
     assert.equal(result.err, null);
     assert.equal(result.text, "");
     assert.equal(result.ext, "pdf");
-    globalThis.DOCX_EXTRACTOR.readPdf = function () { return Promise.resolve("extracted pdf text"); };
+    globalThis.DOCX_EXTRACTOR.readPdf = function () {
+      return Promise.resolve("extracted pdf text");
+    };
   });
 });
 
@@ -1329,7 +1755,9 @@ describe("Document Watermark UI — downloadDocwExtract", function () {
   before(function () {
     globalThis.closeDownloadModal = function () {};
     globalThis.downloadBlobSimple = function () {};
-    globalThis.__ = function (key, def) { return def; };
+    globalThis.__ = function (key, def) {
+      return def;
+    };
   });
 
   it("should return early when no extract result", function () {
@@ -1337,11 +1765,18 @@ describe("Document Watermark UI — downloadDocwExtract", function () {
     _docwExtractResult = null;
     try {
       downloadDocwExtract("txt");
-    } finally { _docwExtractResult = orig; }
+    } finally {
+      _docwExtractResult = orig;
+    }
   });
 
   it("should download as PDF", async function () {
-    var result = { message: "test", algo: "ZWC", timestamp: "2024-06-01T00:00:00Z", algoId: 1 };
+    var result = {
+      message: "test",
+      algo: "ZWC",
+      timestamp: "2024-06-01T00:00:00Z",
+      algoId: 1,
+    };
     _docwExtractResult = result;
     var origPdf = globalThis._docwBuildReportPdf;
     var called = false;
@@ -1361,14 +1796,20 @@ describe("Document Watermark UI — downloadDocwExtract", function () {
   });
 
   it("should download as DOCX", async function () {
-    var result = { message: "test", algo: "ZWC", timestamp: "2024-06-01T00:00:00Z" };
+    var result = {
+      message: "test",
+      algo: "ZWC",
+      timestamp: "2024-06-01T00:00:00Z",
+    };
     _docwExtractResult = result;
     var orig = globalThis._docwBuildReportDocx;
     var called = false;
     globalThis._docwBuildReportDocx = async function (r, mode) {
       called = true;
       assert.equal(mode, "extract");
-      return new Blob(["docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      return new Blob(["docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
     };
     try {
       await downloadDocwExtract("doc");
@@ -1380,39 +1821,58 @@ describe("Document Watermark UI — downloadDocwExtract", function () {
   });
 
   it("should download as JSON", async function () {
-    var result = { message: "hello", algo: "ZWC", timestamp: "2024-06-01T00:00:00Z", algoId: 1 };
+    var result = {
+      message: "hello",
+      algo: "ZWC",
+      timestamp: "2024-06-01T00:00:00Z",
+      algoId: 1,
+    };
     _docwExtractResult = result;
     try {
       await downloadDocwExtract("json");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should download as CSV", async function () {
-    _docwExtractResult = { message: "test", algo: "ZWC", timestamp: "2024-06-01T00:00:00Z" };
+    _docwExtractResult = {
+      message: "test",
+      algo: "ZWC",
+      timestamp: "2024-06-01T00:00:00Z",
+    };
     try {
       await downloadDocwExtract("csv");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should download as TXT", async function () {
     _docwExtractResult = { message: "plain text", algo: "ZWC", timestamp: "t" };
     try {
       await downloadDocwExtract("txt");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should download as XML", async function () {
     _docwExtractResult = { message: "xml msg", algo: "ZWC", timestamp: "t" };
     try {
       await downloadDocwExtract("xml");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should download as HTML", async function () {
     _docwExtractResult = { message: "html msg", algo: "ZWC", timestamp: "t" };
     try {
       await downloadDocwExtract("html");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should skip unknown format", async function () {
@@ -1420,28 +1880,36 @@ describe("Document Watermark UI — downloadDocwExtract", function () {
     try {
       // Unknown format should not throw
       await downloadDocwExtract("unknown");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should handle null fields in CSV format", async function () {
     _docwExtractResult = { message: null, algo: null, timestamp: null };
     try {
       await downloadDocwExtract("csv");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should handle null message in TXT format", async function () {
     _docwExtractResult = { message: null, algo: null, timestamp: null };
     try {
       await downloadDocwExtract("txt");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 
   it("should handle null fields in XML format", async function () {
     _docwExtractResult = { message: null, algo: null, timestamp: null };
     try {
       await downloadDocwExtract("xml");
-    } finally { _docwExtractResult = null; }
+    } finally {
+      _docwExtractResult = null;
+    }
   });
 });
 
@@ -1463,16 +1931,23 @@ describe("Document Watermark UI - loadDocwSecretFile", function () {
         result: null,
         onload: null,
         readAsText: function () {
-          fr.result = JSON.stringify({ file_info: { file_name: "fp.jpg" }, hashes: { "SHA-256": "abc123" } });
+          fr.result = JSON.stringify({
+            file_info: { file_name: "fp.jpg" },
+            hashes: { "SHA-256": "abc123" },
+          });
           fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       loadDocwSecretFile({ target: { files: [{ name: "fp.json" }] } });
       assert.ok(_docwSecretMessage.includes("SHA-256"), "should have SHA-256");
       assert.ok(_docwSecretMessage.includes("fp.jpg"), "should have filename");
       assert.equal(dom.els["docw-secret-name"].style.color, "#2ecc71");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should load JSON string file", function () {
@@ -1484,12 +1959,16 @@ describe("Document Watermark UI - loadDocwSecretFile", function () {
         readAsText: function () {
           fr.result = '"hello secret"';
           fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       loadDocwSecretFile({ target: { files: [{ name: "msg.json" }] } });
       assert.equal(_docwSecretMessage, "hello secret");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should load JSON object file (non-fingerprint)", function () {
@@ -1501,20 +1980,29 @@ describe("Document Watermark UI - loadDocwSecretFile", function () {
         readAsText: function () {
           fr.result = '{"key":"value","num":42}';
           fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       loadDocwSecretFile({ target: { files: [{ name: "obj.json" }] } });
-      assert.ok(_docwSecretMessage.includes("key"), "should stringify the object");
+      assert.ok(
+        _docwSecretMessage.includes("key"),
+        "should stringify the object",
+      );
       assert.ok(_docwSecretMessage.includes("42"), "should include values");
       assert.equal(_docwSecretData, null);
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should alert on invalid JSON file", function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (m) { alertMsg = m; };
+    globalThis.alert = function (m) {
+      alertMsg = m;
+    };
     try {
       var fr = {
         result: null,
@@ -1522,33 +2010,47 @@ describe("Document Watermark UI - loadDocwSecretFile", function () {
         readAsText: function () {
           fr.result = "not json at all";
           fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       loadDocwSecretFile({ target: { files: [{ name: "bad.json" }] } });
       assert.ok(alertMsg.includes("Invalid JSON"), "should show parse error");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should load non-JSON text file via docwExtractText", function () {
     var dom = docwSetupDom();
     try {
-      globalThis.docwExtractText = function (file, cb) { cb(null, "extracted plain text"); };
+      globalThis.docwExtractText = function (file, cb) {
+        cb(null, "extracted plain text");
+      };
       loadDocwSecretFile({ target: { files: [{ name: "doc.txt" }] } });
       // The callback is sync so it fires immediately
       assert.equal(_docwSecretMessage, "extracted plain text");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should alert on non-JSON extraction error", function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (m) { alertMsg = m; };
+    globalThis.alert = function (m) {
+      alertMsg = m;
+    };
     try {
-      globalThis.docwExtractText = function (file, cb) { cb("Extraction failed"); };
+      globalThis.docwExtractText = function (file, cb) {
+        cb("Extraction failed");
+      };
       loadDocwSecretFile({ target: { files: [{ name: "doc.txt" }] } });
       assert.ok(alertMsg.includes("Extraction failed"), "should report error");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should return early when no file selected", function () {
@@ -1557,15 +2059,23 @@ describe("Document Watermark UI - loadDocwSecretFile", function () {
       loadDocwSecretFile({ target: { files: [] } });
       // No state should change
       assert.equal(_docwSecretMessage, "");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should return early when validateFileInput fails", function () {
     var dom = docwSetupDom();
     try {
-      globalThis.validateFileInput = function () { return false; };
+      globalThis.validateFileInput = function () {
+        return false;
+      };
       loadDocwSecretFile({ target: { files: [{ name: "test.json" }] } });
-      assert.equal(_docwSecretMessage, "", "should skip loading when validation fails");
+      assert.equal(
+        _docwSecretMessage,
+        "",
+        "should skip loading when validation fails",
+      );
     } finally {
       dom.restore();
       delete globalThis.validateFileInput;
@@ -1578,8 +2088,12 @@ describe("Document Watermark UI - loadDocwSecretFile", function () {
 describe("Document Watermark UI - loadDocwCoverFile", function () {
   before(function () {
     globalThis.DOCX_EXTRACTOR = {
-      readDocx: function (buf) { return Promise.resolve("extracted docx cover text"); },
-      readPdf: function (buf) { return Promise.resolve("extracted pdf cover text"); },
+      readDocx: function (buf) {
+        return Promise.resolve("extracted docx cover text");
+      },
+      readPdf: function (buf) {
+        return Promise.resolve("extracted pdf cover text");
+      },
     };
   });
 
@@ -1603,21 +2117,28 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
         onprogress: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("plain text cover");
-          if (typeof fr.onprogress === 'function')
+          if (typeof fr.onprogress === "function")
             fr.onprogress({ lengthComputable: true, loaded: 16, total: 16 });
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo"].value = "1";
       loadDocwCoverFile({ target: { files: [{ name: "cover.txt" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.equal(_docwCoverText, "plain text cover");
       assert.equal(_docwCoverFileName, "cover.txt");
       assert.ok(dom.els["docw-cover-name"].textContent.includes("cover.txt"));
       assert.equal(dom.els["docw-cover-name"].style.color, "#2ecc71");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should load a DOCX cover file", async function () {
@@ -1629,17 +2150,24 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
         onprogress: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("docx content");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo"].value = "2";
       loadDocwCoverFile({ target: { files: [{ name: "report.docx" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.equal(_docwCoverText, "extracted docx cover text");
       assert.equal(_docwCoverFileName, "report.docx");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should load a PDF cover file", async function () {
@@ -1651,37 +2179,51 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
         onprogress: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("pdf content");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo"].value = "1";
       loadDocwCoverFile({ target: { files: [{ name: "doc.pdf" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.equal(_docwCoverText, "extracted pdf cover text");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should load a DOC cover file (ASCII extraction)", async function () {
     var dom = docwSetupDom();
     try {
-      var buf = new Uint8Array([0x48, 0x65, 0x6C, 0x6C, 0x6F]); // "Hello"
+      var buf = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // "Hello"
       var fr = {
         result: null,
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = buf.buffer;
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo"].value = "1";
       loadDocwCoverFile({ target: { files: [{ name: "old.doc" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.equal(_docwCoverText, "Hello");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should handle DOC with no readable text", async function () {
@@ -1693,43 +2235,60 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = buf.buffer;
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo"].value = "1";
       loadDocwCoverFile({ target: { files: [{ name: "old.doc" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.equal(_docwCoverText, "No readable text found in DOC file.");
-    } finally { _docwCoverText = ""; dom.restore(); }
+    } finally {
+      _docwCoverText = "";
+      dom.restore();
+    }
   });
 
   it("should handle extraction error in cover file", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (m) { alertMsg = m; };
+    globalThis.alert = function (m) {
+      alertMsg = m;
+    };
     try {
       var fr = {
         result: null,
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("error content");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
-      globalThis.DOCX_EXTRACTOR.readDocx = function () { return Promise.reject(new Error("corrupt")); };
+      globalThis.FileReader = function () {
+        return fr;
+      };
+      globalThis.DOCX_EXTRACTOR.readDocx = function () {
+        return Promise.reject(new Error("corrupt"));
+      };
       dom.els["docw-algo"].value = "1";
       loadDocwCoverFile({ target: { files: [{ name: "bad.docx" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.ok(alertMsg.includes("corrupt"), "should report error");
       assert.equal(dom.els["docw-cover-name"].textContent, "");
     } finally {
       _docwCoverText = "";
       delete globalThis.alert;
-      globalThis.DOCX_EXTRACTOR.readDocx = function () { return Promise.resolve("extracted docx cover text"); };
+      globalThis.DOCX_EXTRACTOR.readDocx = function () {
+        return Promise.resolve("extracted docx cover text");
+      };
       dom.restore();
     }
   });
@@ -1737,28 +2296,41 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
   it("should handle extraction error without .message property", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (m) { alertMsg = m; };
+    globalThis.alert = function (m) {
+      alertMsg = m;
+    };
     try {
       var fr = {
         result: null,
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("error content");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       // Reject with a plain string (no .message property) to trigger error.message || error
-      globalThis.DOCX_EXTRACTOR.readDocx = function () { return Promise.reject("raw string error"); };
+      globalThis.DOCX_EXTRACTOR.readDocx = function () {
+        return Promise.reject("raw string error");
+      };
       dom.els["docw-algo"].value = "1";
       loadDocwCoverFile({ target: { files: [{ name: "bad.docx" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
-      assert.ok(alertMsg.includes("raw string error"), "should use the raw error value");
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
+      assert.ok(
+        alertMsg.includes("raw string error"),
+        "should use the raw error value",
+      );
     } finally {
       _docwCoverText = "";
       delete globalThis.alert;
-      globalThis.DOCX_EXTRACTOR.readDocx = function () { return Promise.resolve("extracted docx cover text"); };
+      globalThis.DOCX_EXTRACTOR.readDocx = function () {
+        return Promise.resolve("extracted docx cover text");
+      };
       dom.restore();
     }
   });
@@ -1768,15 +2340,23 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
     try {
       loadDocwCoverFile({ target: { files: [] } });
       assert.equal(_docwCoverFileName, "");
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 
   it("should return early when validateFileInput fails", function () {
     var dom = docwSetupDom();
     try {
-      globalThis.validateFileInput = function () { return false; };
+      globalThis.validateFileInput = function () {
+        return false;
+      };
       loadDocwCoverFile({ target: { files: [{ name: "test.txt" }] } });
-      assert.equal(_docwCoverFileName, "", "should skip loading when validation fails");
+      assert.equal(
+        _docwCoverFileName,
+        "",
+        "should skip loading when validation fails",
+      );
     } finally {
       dom.restore();
       delete globalThis.validateFileInput;
@@ -1787,24 +2367,32 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
     var dom = docwSetupDom();
     try {
       dom.els["docw-algo"].value = "1";
-      globalThis.DOCX_EXTRACTOR.readPdf = function () { return Promise.resolve(null); };
+      globalThis.DOCX_EXTRACTOR.readPdf = function () {
+        return Promise.resolve(null);
+      };
       var fr = {
         result: null,
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("pdf content");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       loadDocwCoverFile({ target: { files: [{ name: "test.pdf" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.equal(_docwCoverText, "", "should fallback to empty string");
     } finally {
       _docwCoverText = "";
       delete globalThis.FileReader;
-      globalThis.DOCX_EXTRACTOR.readPdf = function (buf) { return Promise.resolve("extracted pdf cover text"); };
+      globalThis.DOCX_EXTRACTOR.readPdf = function (buf) {
+        return Promise.resolve("extracted pdf cover text");
+      };
       dom.restore();
     }
   });
@@ -1818,13 +2406,17 @@ describe("Document Watermark UI - loadDocwCoverFile", function () {
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("some text data");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       loadDocwCoverFile({ target: { files: [{ name: "test.txt" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.ok(dom.els["docw-capacity"].textContent.includes("too short"));
       assert.equal(dom.els["docw-capacity"].style.color, "#e74c3c");
     } finally {
@@ -1856,20 +2448,27 @@ describe("Document Watermark UI - loadDocwExtractFile", function () {
         onprogress: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("watermarked text content");
-          if (typeof fr.onprogress === 'function')
+          if (typeof fr.onprogress === "function")
             fr.onprogress({ lengthComputable: true, loaded: 24, total: 24 });
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo-ex"].value = "1";
       loadDocwExtractFile({ target: { files: [{ name: "wm.txt" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.ok(_docwExtractText.length > 0, "text should be extracted");
       assert.ok(dom.els["docw-extract-name"].textContent.includes("wm.txt"));
       assert.equal(dom.els["docw-extract-name"].style.color, "#2ecc71");
-    } finally { _docwExtractText = ""; dom.restore(); }
+    } finally {
+      _docwExtractText = "";
+      dom.restore();
+    }
   });
 
   it("should load a DOCX file for extraction", async function () {
@@ -1880,44 +2479,66 @@ describe("Document Watermark UI - loadDocwExtractFile", function () {
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("docx content");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo-ex"].value = "1";
-      loadDocwExtractFile({ target: { files: [{ name: "watermarked.docx" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      loadDocwExtractFile({
+        target: { files: [{ name: "watermarked.docx" }] },
+      });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.ok(_docwExtractText.length > 0, "should extract docx text");
-    } finally { _docwExtractText = ""; dom.restore(); }
+    } finally {
+      _docwExtractText = "";
+      dom.restore();
+    }
   });
 
   it("should handle extraction error via callback", async function () {
     var dom = docwSetupDom();
     var alertMsg = "";
-    globalThis.alert = function (m) { alertMsg = m; };
+    globalThis.alert = function (m) {
+      alertMsg = m;
+    };
     try {
       // Make DOCX_EXTRACTOR.readPdf reject to trigger the error callback path
-      globalThis.DOCX_EXTRACTOR.readPdf = function () { return Promise.reject(new Error("PDF extraction error")); };
+      globalThis.DOCX_EXTRACTOR.readPdf = function () {
+        return Promise.reject(new Error("PDF extraction error"));
+      };
       var fr = {
         result: null,
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("data");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       dom.els["docw-algo-ex"].value = "1";
       loadDocwExtractFile({ target: { files: [{ name: "test.pdf" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
-      assert.ok(alertMsg.includes("PDF extraction failed"), "should report PDF error");
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
+      assert.ok(
+        alertMsg.includes("PDF extraction failed"),
+        "should report PDF error",
+      );
     } finally {
       _docwExtractText = "";
       delete globalThis.alert;
       // Restore readPdf mock
-      globalThis.DOCX_EXTRACTOR.readPdf = function (buf) { return Promise.resolve("extracted text"); };
+      globalThis.DOCX_EXTRACTOR.readPdf = function (buf) {
+        return Promise.resolve("extracted text");
+      };
       dom.restore();
     }
   });
@@ -1931,13 +2552,17 @@ describe("Document Watermark UI - loadDocwExtractFile", function () {
         onload: null,
         readAsArrayBuffer: function () {
           fr.result = makeReadableBuf("some text data");
-          if (typeof fr.onload === 'function')
+          if (typeof fr.onload === "function")
             fr.onload({ target: { result: fr.result } });
-        }
+        },
       };
-      globalThis.FileReader = function () { return fr; };
+      globalThis.FileReader = function () {
+        return fr;
+      };
       loadDocwExtractFile({ target: { files: [{ name: "test.txt" }] } });
-      await new Promise(function (r) { setTimeout(r, 100); });
+      await new Promise(function (r) {
+        setTimeout(r, 100);
+      });
       assert.equal(dom.els["docw-ex-capacity"].textContent, "");
     } finally {
       _docwExtractText = "";
@@ -1951,7 +2576,9 @@ describe("Document Watermark UI - loadDocwExtractFile", function () {
     try {
       loadDocwExtractFile({ target: { files: [] } });
       _docwExtractText = "";
-    } finally { dom.restore(); }
+    } finally {
+      dom.restore();
+    }
   });
 });
 
@@ -1959,7 +2586,7 @@ describe("Document Watermark UI - loadDocwExtractFile", function () {
 
 describe("Document Watermark UI - _buildPayloadForHomoglyph", function () {
   before(function () {
-    if (typeof DOCW_HOMOGLYPH !== 'undefined') {
+    if (typeof DOCW_HOMOGLYPH !== "undefined") {
       DOCW_HOMOGLYPH._initReverse();
     }
   });
@@ -1969,13 +2596,20 @@ describe("Document Watermark UI - _buildPayloadForHomoglyph", function () {
   // So we need ~4 eligible uppercase chars per payload char.
   function eligibleText(count) {
     // Repeat groups of uppercase letters to build capacity
-    return Array(Math.ceil(count / 26)).fill("ABCDEFGHIJKLMNOPQRSTUVWXYZ").join("");
+    return Array(Math.ceil(count / 26))
+      .fill("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+      .join("");
   }
 
   it("should build payload with fingerprint data", async function () {
     var data = {
-      file_info: { file_name: "photo.jpg", width: 1920, height: 1080, file_size_bytes: 12345 },
-      hashes: { "SHA-256": "abc123def456", "MD5": "md5hash" },
+      file_info: {
+        file_name: "photo.jpg",
+        width: 1920,
+        height: 1080,
+        file_size_bytes: 12345,
+      },
+      hashes: { "SHA-256": "abc123def456", MD5: "md5hash" },
       perceptual_hashes: { dHash: "dhashval", pHash: "phashval" },
     };
     // ~107 payload chars * 8 bits / 2 bits-per-char = ~428 eligible uppercase needed
@@ -2004,23 +2638,17 @@ describe("Document Watermark UI - _buildPayloadForHomoglyph", function () {
   it("should throw when cover text has no eligible characters", async function () {
     var data = { hashes: { "SHA-256": "abc123" } };
     var coverText = "\u0100\u0101\u0102";
-    await assert.rejects(
-      async function () {
-        await _buildPayloadForHomoglyph(data, "pw", coverText);
-      },
-      /Cover text has no eligible characters/,
-    );
+    await assert.rejects(async function () {
+      await _buildPayloadForHomoglyph(data, "pw", coverText);
+    }, /Cover text has no eligible characters/);
   });
 
   it("should throw when first entry doesn't fit maxBits", async function () {
     var data = { hashes: { "SHA-256": "abc123" } };
     var coverText = "A";
-    await assert.rejects(
-      async function () {
-        await _buildPayloadForHomoglyph(data, "password", coverText);
-      },
-      /Text too short|Cover text has no eligible characters/,
-    );
+    await assert.rejects(async function () {
+      await _buildPayloadForHomoglyph(data, "password", coverText);
+    }, /Text too short|Cover text has no eligible characters/);
   });
 
   it("should fall back to SHA-256 value when only hash fits", async function () {
@@ -2067,17 +2695,17 @@ describe("Document Watermark UI - _buildPayloadForHomoglyph", function () {
     // "File: unknown 100x200 (? bytes)" = 27 chars = ~216 bits → need ~108 eligible uppercase
     var coverText = eligibleText(200);
     var result = await _buildPayloadForHomoglyph(data, "", coverText);
-    assert.ok(result.includes("unknown"), "should use 'unknown' for missing file_name");
+    assert.ok(
+      result.includes("unknown"),
+      "should use 'unknown' for missing file_name",
+    );
   });
 
   it("should handle empty password in error path", async function () {
     var data = { hashes: { "SHA-256": "abc123" } };
     var coverText = "A";
-    await assert.rejects(
-      async function () {
-        await _buildPayloadForHomoglyph(data, "", coverText);
-      },
-      /Text too short/,
-    );
+    await assert.rejects(async function () {
+      await _buildPayloadForHomoglyph(data, "", coverText);
+    }, /Text too short/);
   });
 });

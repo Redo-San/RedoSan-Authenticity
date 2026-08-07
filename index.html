@@ -55,34 +55,85 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <script>
       (function () {
-        var SUPPORTED = ['en','ar','fr','de','es','zh','ja','ko'];
-        var MAP = {'en':'en','ar':'ar','fr':'fr','de':'de','es':'es','zh':'zh','ja':'ja','ko':'ko','pt':'pt','it':'it','ru':'ru','hi':'hi','ur':'ur','bn':'bn','id':'id','ms':'ms','th':'th','vi':'vi','tl':'tl','tr':'tr','fa':'fa','he':'he','nl':'nl','sv':'sv','no':'no','da':'da','fi':'fi','pl':'pl','cs':'cs','hu':'hu','el':'el','uk':'uk','ro':'ro','bg':'bg','hr':'hr','sr':'sr','am':'am','et':'et'};
-        var lang = 'en';
+        var SUPPORTED = ["en", "ar", "fr", "de", "es", "zh", "ja", "ko"];
+        var MAP = {
+          en: "en",
+          ar: "ar",
+          fr: "fr",
+          de: "de",
+          es: "es",
+          zh: "zh",
+          ja: "ja",
+          ko: "ko",
+          pt: "pt",
+          it: "it",
+          ru: "ru",
+          hi: "hi",
+          ur: "ur",
+          bn: "bn",
+          id: "id",
+          ms: "ms",
+          th: "th",
+          vi: "vi",
+          tl: "tl",
+          tr: "tr",
+          fa: "fa",
+          he: "he",
+          nl: "nl",
+          sv: "sv",
+          no: "no",
+          da: "da",
+          fi: "fi",
+          pl: "pl",
+          cs: "cs",
+          hu: "hu",
+          el: "el",
+          uk: "uk",
+          ro: "ro",
+          bg: "bg",
+          hr: "hr",
+          sr: "sr",
+          am: "am",
+          et: "et",
+        };
+        var lang = "en";
         try {
-          var stored = localStorage.getItem('redosan_lang');
+          var stored = localStorage.getItem("redosan_lang");
           if (stored && SUPPORTED.indexOf(stored) !== -1) lang = stored;
         } catch (e) {}
-        if (lang === 'en') {
-          var nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        if (lang === "en") {
+          var nav = (
+            navigator.language ||
+            navigator.userLanguage ||
+            ""
+          ).toLowerCase();
           var primary = nav.substring(0, 2);
           if (SUPPORTED.indexOf(primary) !== -1) lang = primary;
-          else if (MAP[primary] && SUPPORTED.indexOf(MAP[primary]) !== -1) lang = MAP[primary];
-          else if (SUPPORTED.indexOf(nav.substring(0, 5)) !== -1) lang = nav.substring(0, 5);
+          else if (MAP[primary] && SUPPORTED.indexOf(MAP[primary]) !== -1)
+            lang = MAP[primary];
+          else if (SUPPORTED.indexOf(nav.substring(0, 5)) !== -1)
+            lang = nav.substring(0, 5);
         }
         var root = document.documentElement;
         root.lang = lang;
-        root.dir = lang === 'ar' ? 'rtl' : 'ltr';
-        var base = root.dataset.standalone ? '../../' : 'Style/';
-        if (lang === 'ar' && !document.getElementById('rtl-css')) {
-          var l = document.createElement('link');
-          l.id = 'rtl-css';
-          l.rel = 'stylesheet';
-          l.href = base + 'rtl.css';
+        root.dir = lang === "ar" ? "rtl" : "ltr";
+        var base = root.dataset.standalone ? "../../" : "Style/";
+        if (lang === "ar" && !document.getElementById("rtl-css")) {
+          var l = document.createElement("link");
+          l.id = "rtl-css";
+          l.rel = "stylesheet";
+          l.href = base + "rtl.css";
           document.head.appendChild(l);
         }
         window.__I18N_EARLY = true;
-        if (lang !== 'en') {
-          document.write('<script src="' + base + 'lang/i18n-data-' + lang + '.js"><\/script>');
+        if (lang !== "en") {
+          document.write(
+            '<script src="' +
+              base +
+              "lang/i18n-data-" +
+              lang +
+              '.js"><\/script>',
+          );
         } else {
           if (window.__I18N_DATA === undefined) window.__I18N_DATA = {};
           window.__I18N_DATA.en = window.__I18N_DATA.en || {};
@@ -450,7 +501,11 @@
     >
       <div class="simple-top">
         <div class="simple-top-left">
-          <a href="/RedoSan-Authenticity/" class="simple-logo-link" aria-label="RedoSan Authenticity">
+          <a
+            href="/RedoSan-Authenticity/"
+            class="simple-logo-link"
+            aria-label="RedoSan Authenticity"
+          >
             <div
               class="logo-img logo-white simple-logo"
               role="img"
@@ -599,7 +654,11 @@
         >
           <span></span><span></span><span></span>
         </button>
-        <a href="/RedoSan-Authenticity/" class="logo" aria-label="RedoSan Authenticity">
+        <a
+          href="/RedoSan-Authenticity/"
+          class="logo"
+          aria-label="RedoSan Authenticity"
+        >
           <div
             class="logo-img logo-white"
             role="img"
@@ -1021,10 +1080,7 @@
                 style="font-size: 0.75rem; margin-top: 2px"
               ></p>
             </div>
-            <div
-              class="form-group"
-              id="wm-password-group"
-            >
+            <div class="form-group" id="wm-password-group">
               <label for="wm-password" data-i18n="wm.password_label"
                 >Password (required for algorithms 1-4,6-7,9)</label
               >
@@ -1074,10 +1130,7 @@
                 accept="image/png,image/jpeg"
               />
             </div>
-            <div
-              class="form-group"
-              id="wm-password-ex-group"
-            >
+            <div class="form-group" id="wm-password-ex-group">
               <label for="wm-password-ex" data-i18n="wm.password_label"
                 >Password (required for algorithms 1-4,6-7,9)</label
               >
@@ -2177,21 +2230,6 @@
             >
               Create .ots
             </button>
-            <button
-              class="btn"
-              onclick="document.getElementById('ts-create-file').click()"
-              id="ts-create-dl-btn"
-              style="
-                display: none;
-                margin-top: 10px;
-                background: var(--card-hover);
-                color: var(--text);
-                border: 1px solid var(--border);
-              "
-              data-i18n="ts.create_another"
-            >
-              Create Another
-            </button>
           </div>
           <div id="ots-verify" style="display: none">
             <p
@@ -3070,27 +3108,27 @@
               style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
             >
               <div>
-                  <input
-                    type="text"
-                    id="cert-name"
-                    class="cert-field"
-                    placeholder="Name"
-                    required
-                    maxlength="25"
-                    aria-label="Certificate recipient name"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="email"
-                    id="cert-email"
-                    class="cert-field"
-                    placeholder="Email"
-                    required
-                    maxlength="40"
-                    oninput="validateEmailInput(this)"
-                    aria-label="Certificate recipient email"
-                  />
+                <input
+                  type="text"
+                  id="cert-name"
+                  class="cert-field"
+                  placeholder="Name"
+                  required
+                  maxlength="25"
+                  aria-label="Certificate recipient name"
+                />
+              </div>
+              <div>
+                <input
+                  type="email"
+                  id="cert-email"
+                  class="cert-field"
+                  placeholder="Email"
+                  required
+                  maxlength="40"
+                  oninput="validateEmailInput(this)"
+                  aria-label="Certificate recipient email"
+                />
                 <span
                   id="cert-email-warn"
                   class="simple-field-warn"
@@ -4303,13 +4341,6 @@
           <div style="display: flex; gap: 8px; justify-content: center">
             <button
               class="btn"
-              onclick="docwCopyResult('docw-embed-output')"
-              data-i18n="docw.copy_btn"
-            >
-              Copy
-            </button>
-            <button
-              class="btn"
               onclick="showDownloadModal()"
               data-i18n="docw.download_results_btn"
             >
@@ -4353,13 +4384,6 @@
         </div>
         <div id="docw-extract-buttons" style="display: none; margin-top: 12px">
           <div style="display: flex; gap: 8px; justify-content: center">
-            <button
-              class="btn"
-              onclick="docwCopyResult('docw-extracted-msg')"
-              data-i18n="docw.copy_btn"
-            >
-              Copy
-            </button>
             <button
               class="btn"
               onclick="showDownloadModal()"
@@ -5227,12 +5251,13 @@
 
     <!-- Music player -->
     <div role="region" aria-label="Music player">
-      <audio
-        id="bg-music"
-        loop
-        preload="none"
-      ></audio>
-      <button id="music-btn" class="music-btn" aria-label="Toggle Music" onclick="lazyLoadMusic(event)">
+      <audio id="bg-music" loop preload="none"></audio>
+      <button
+        id="music-btn"
+        class="music-btn"
+        aria-label="Toggle Music"
+        onclick="lazyLoadMusic(event)"
+      >
         &#x1F3B5;
       </button>
       <div
@@ -5245,28 +5270,31 @@
       </div>
     </div>
 
-     <script src="Style/shared_validation.js" defer></script>
+    <script src="Style/shared_validation.js" defer></script>
     <script src="Style/shared.js" defer></script>
-        <script>
+    <script>
       (function () {
-        document.querySelectorAll('.form-group input[type="file"]').forEach(function (input) {
-          if (input.parentElement.classList.contains("file-drop-zone")) return;
-          var dz = document.createElement("div");
-          dz.className = "file-drop-zone";
-          input.parentNode.insertBefore(dz, input);
-          dz.append(input);
-          var icon = document.createElement("span");
-          icon.className = "dz-icon";
-          icon.textContent = "\u{1F4C1}";
-          dz.append(icon);
-          var text = document.createElement("div");
-          text.className = "dz-text";
-          text.innerHTML = "Drop file here or <strong>browse</strong>";
-          dz.append(text);
-          var fileDiv = document.createElement("div");
-          fileDiv.className = "dz-file";
-          dz.append(fileDiv);
-        });
+        document
+          .querySelectorAll('.form-group input[type="file"]')
+          .forEach(function (input) {
+            if (input.parentElement.classList.contains("file-drop-zone"))
+              return;
+            var dz = document.createElement("div");
+            dz.className = "file-drop-zone";
+            input.parentNode.insertBefore(dz, input);
+            dz.append(input);
+            var icon = document.createElement("span");
+            icon.className = "dz-icon";
+            icon.textContent = "\u{1F4C1}";
+            dz.append(icon);
+            var text = document.createElement("div");
+            text.className = "dz-text";
+            text.innerHTML = "Drop file here or <strong>browse</strong>";
+            dz.append(text);
+            var fileDiv = document.createElement("div");
+            fileDiv.className = "dz-file";
+            dz.append(fileDiv);
+          });
       })();
     </script>
     <script src="Style/search.js" defer></script>
@@ -5274,13 +5302,54 @@
       // Music player is lazy-loaded on first click (defers non-essential
       // audio init out of the SPA shell critical path / TBT). music-player.js
       // exposes globalThis.__musicInit once loaded.
-      (function(){var _m=false;window.lazyLoadMusic=function(e){if(_m){var fn=window.__musicInit;if(typeof fn==='function')fn();return}_m=true;var d=document,s=document.createElement('script');s.src='Style/music-player.js';s.defer=true;s.onload=function(){var fn=window.__musicInit;if(typeof fn==='function')fn();};d.body.appendChild(s);}})();
+      (function () {
+        var _m = false;
+        window.lazyLoadMusic = function (e) {
+          if (_m) {
+            var fn = window.__musicInit;
+            if (typeof fn === "function") fn();
+            return;
+          }
+          _m = true;
+          var d = document,
+            s = document.createElement("script");
+          s.src = "Style/music-player.js";
+          s.defer = true;
+          s.onload = function () {
+            var fn = window.__musicInit;
+            if (typeof fn === "function") fn();
+          };
+          d.body.appendChild(s);
+        };
+      })();
     </script>
     <script>
       // Assistant is lazy-loaded on bubble click (mirrors the per-page
       // lazyLoadAssistant pattern) so assistant_data.js + assistant.js no
       // longer block the SPA shell's first paint / TBT.
-      (function(){var _a=false;window.lazyLoadAssistant=function(e){if(_a){if(typeof toggleAssistant==='function')toggleAssistant();return}_a=true;var d=document,s1=d.createElement('script');s1.src='Assistant/assistant_data.js';s1.onload=function(){var s2=d.createElement('script');s2.src='Assistant/assistant.js';s2.onload=function(){if(typeof initAssistant==='function')initAssistant();if(typeof toggleAssistant==='function')toggleAssistant()};d.body.appendChild(s2)};d.body.appendChild(s1)}})();
+      (function () {
+        var _a = false;
+        window.lazyLoadAssistant = function (e) {
+          if (_a) {
+            if (typeof toggleAssistant === "function") toggleAssistant();
+            return;
+          }
+          _a = true;
+          var d = document,
+            s1 = d.createElement("script");
+          s1.src = "Assistant/assistant_data.js";
+          s1.onload = function () {
+            var s2 = d.createElement("script");
+            s2.src = "Assistant/assistant.js";
+            s2.onload = function () {
+              if (typeof initAssistant === "function") initAssistant();
+              if (typeof toggleAssistant === "function") toggleAssistant();
+            };
+            d.body.appendChild(s2);
+          };
+          d.body.appendChild(s1);
+        };
+      })();
     </script>
     <script src="Style/loader.js" defer></script>
     <script src="Watermark/utils.js?v=2" defer></script>
@@ -5461,6 +5530,3 @@
     </div>
   </body>
 </html>
-
-
-

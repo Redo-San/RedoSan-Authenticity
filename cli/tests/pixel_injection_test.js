@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // ── Polyfill globals that pixel_injection.js expects ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.ImageData = class ImageData {
   constructor(data, width, height) {
     this.data = data;
@@ -15,9 +20,11 @@ globalThis.ImageData = class ImageData {
   }
 };
 try {
-  Object.defineProperty(globalThis, 'navigator', {
+  Object.defineProperty(globalThis, "navigator", {
     value: { clipboard: { writeText: () => {} } },
-    writable: true, configurable: true, enumerable: true
+    writable: true,
+    configurable: true,
+    enumerable: true,
   });
 } catch (e) {
   // Fallback if defineProperty fails
@@ -28,42 +35,108 @@ globalThis.TextDecoder = require("util").TextDecoder;
 
 // Mock CSS.escape
 if (typeof CSS === "undefined") {
-  globalThis.CSS = { escape: (s) => s.replace(/[\\!"#$%&'()*+,./:;<=>?@[\]^`{|}~]/g, "\\$&") };
+  globalThis.CSS = {
+    escape: (s) => s.replace(/[\\!"#$%&'()*+,./:;<=>?@[\]^`{|}~]/g, "\\$&"),
+  };
 }
 
 // ── Global helpers that pixel_injection.js references ──
 globalThis.__ = (key, fallback) => fallback || key;
 globalThis.escHtml = (s) => {
   if (s == null) return "";
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 };
 globalThis.escXml = (s) => {
   if (s == null) return "";
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 };
 globalThis.validateFileInput = () => true;
+globalThis.ensureLib = async (name) => {};
 
 var _resultStore = {};
-globalThis.setResult = (key, data) => { _resultStore[key] = data; };
+globalThis.setResult = (key, data) => {
+  _resultStore[key] = data;
+};
 globalThis.getResult = (key) => _resultStore[key];
-globalThis.clearResult = (key) => { delete _resultStore[key]; };
+globalThis.clearResult = (key) => {
+  delete _resultStore[key];
+};
 var _dlHandler = null;
-globalThis.setDownloadHandler = (fn) => { _dlHandler = fn; };
+globalThis.setDownloadHandler = (fn) => {
+  _dlHandler = fn;
+};
 globalThis.getDownloadHandler = () => _dlHandler;
 globalThis.showDownloadModal = () => {};
 globalThis.closeDownloadModal = () => {};
 globalThis.downloadBlobSimple = () => {};
 
-globalThis.jspdf = { jsPDF: class { constructor() { this._pages = [[]]; this._fontSize = 10; } setFontSize(s) { this._fontSize = s; } text(t, x, y) { this._pages[0].push({ t, x, y }); } addPage() { this._pages.push([]); } output(type) { return new Blob(["pdf"], { type: "application/pdf" }); } } };
+globalThis.jspdf = {
+  jsPDF: class {
+    constructor() {
+      this._pages = [[]];
+      this._fontSize = 10;
+    }
+    setFontSize(s) {
+      this._fontSize = s;
+    }
+    text(t, x, y) {
+      this._pages[0].push({ t, x, y });
+    }
+    addPage() {
+      this._pages.push([]);
+    }
+    output(type) {
+      return new Blob(["pdf"], { type: "application/pdf" });
+    }
+  },
+};
 globalThis.docx = {
-  Paragraph: class { constructor(cfg) { this.cfg = cfg; } },
-  TextRun: class { constructor(cfg) { this.cfg = cfg; } },
-  Table: class { constructor(cfg) { this.cfg = cfg; } },
-  TableRow: class { constructor(cfg) { this.cfg = cfg; } },
-  TableCell: class { constructor(cfg) { this.cfg = cfg; } },
-  Document: class { constructor(cfg) { this.cfg = cfg; } },
-  Packer: { toBlob: async () => new Blob(["docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }) },
-  WidthType: { PERCENTAGE: "PERCENTAGE" }
+  Paragraph: class {
+    constructor(cfg) {
+      this.cfg = cfg;
+    }
+  },
+  TextRun: class {
+    constructor(cfg) {
+      this.cfg = cfg;
+    }
+  },
+  Table: class {
+    constructor(cfg) {
+      this.cfg = cfg;
+    }
+  },
+  TableRow: class {
+    constructor(cfg) {
+      this.cfg = cfg;
+    }
+  },
+  TableCell: class {
+    constructor(cfg) {
+      this.cfg = cfg;
+    }
+  },
+  Document: class {
+    constructor(cfg) {
+      this.cfg = cfg;
+    }
+  },
+  Packer: {
+    toBlob: async () =>
+      new Blob(["docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      }),
+  },
+  WidthType: { PERCENTAGE: "PERCENTAGE" },
 };
 
 // ── Mock document for pixel_injection.js DOM tests ──
@@ -77,14 +150,21 @@ function buildMockDocument() {
       let _value = "";
       Object.defineProperty(el, "value", {
         get: function () {
-          if (_value !== "" && this._children.some(c => c.tagName === "OPTION" && c.value === _value)) {
+          if (
+            _value !== "" &&
+            this._children.some(
+              (c) => c.tagName === "OPTION" && c.value === _value,
+            )
+          ) {
             return _value;
           }
           // Find first option
-          const firstOpt = this._children.find(c => c.tagName === "OPTION");
+          const firstOpt = this._children.find((c) => c.tagName === "OPTION");
           return firstOpt ? firstOpt.value : _value;
         },
-        set: function (v) { _value = v; }
+        set: function (v) {
+          _value = v;
+        },
       });
       return el;
     }
@@ -112,12 +192,16 @@ function buildMockDocument() {
       files: null,
       href: "",
       download: "",
-      append: function (child) { this._children.push(child); },
-      appendChild: function (child) { this._children.push(child); },
+      append: function (child) {
+        this._children.push(child);
+      },
+      appendChild: function (child) {
+        this._children.push(child);
+      },
       remove: function () {},
       click: function () {
         const handlers = this._listeners["click"] || [];
-        handlers.forEach(fn => fn({ type: "click", target: this }));
+        handlers.forEach((fn) => fn({ type: "click", target: this }));
       },
       addEventListener: function (evt, fn) {
         if (!this._listeners[evt]) this._listeners[evt] = [];
@@ -125,52 +209,75 @@ function buildMockDocument() {
       },
       removeEventListener: function (evt, fn) {
         if (!this._listeners[evt]) return;
-        this._listeners[evt] = this._listeners[evt].filter(f => f !== fn);
+        this._listeners[evt] = this._listeners[evt].filter((f) => f !== fn);
       },
       dispatchEvent: function (evt) {
         const handlers = this._listeners[evt.type] || [];
-        handlers.forEach(fn => fn(evt));
+        handlers.forEach((fn) => fn(evt));
       },
-      setAttribute: function (name, val) { this[name] = val; },
-      getAttribute: function (name) { return this[name]; },
+      setAttribute: function (name, val) {
+        this[name] = val;
+      },
+      getAttribute: function (name) {
+        return this[name];
+      },
       querySelector: function (sel) {
         if (sel.startsWith('option[value="')) {
           const val = sel.match(/value="([^"]+)"/)[1];
-          const child = this._children.find(c => c.tagName === "OPTION" && c.value === val);
+          const child = this._children.find(
+            (c) => c.tagName === "OPTION" && c.value === val,
+          );
           return child || null;
         }
         return null;
       },
       querySelectorAll: function (sel) {
         if (sel === "input, select") {
-          return this._children.filter(c => c.tagName === "INPUT" || c.tagName === "SELECT");
+          return this._children.filter(
+            (c) => c.tagName === "INPUT" || c.tagName === "SELECT",
+          );
         }
         if (sel === "[data-pi-tab]") {
-          return this._children.filter(c => c.getAttribute && c.getAttribute("data-pi-tab"));
+          return this._children.filter(
+            (c) => c.getAttribute && c.getAttribute("data-pi-tab"),
+          );
         }
         return [];
       },
-      classList: { add: () => {}, remove: () => {}, contains: () => false, toggle: () => {} },
+      classList: {
+        add: () => {},
+        remove: () => {},
+        contains: () => false,
+        toggle: () => {},
+      },
       getContext: function () {
         return {
           drawImage: () => {},
-          getImageData: () => ({ data: new Uint8ClampedArray(16), width: 1, height: 1 }),
-          putImageData: () => {}
+          getImageData: () => ({
+            data: new Uint8ClampedArray(16),
+            width: 1,
+            height: 1,
+          }),
+          putImageData: () => {},
         };
       },
       toDataURL: () => "data:image/png;base64,iVBORw0KGgo=",
-      focus: () => {}
+      focus: () => {},
     };
     Object.defineProperty(el, "innerHTML", {
-      get: function () { return this._innerHTML; },
+      get: function () {
+        return this._innerHTML;
+      },
       set: function (val) {
         this._innerHTML = val;
-        if (val === "") { this._children = []; }
+        if (val === "") {
+          this._children = [];
+        }
         // If this is a SELECT and children are cleared, reset value so browser-like behavior applies
         if (val === "" && this.tagName === "SELECT") {
           this.value = "";
         }
-      }
+      },
     });
     return el;
   }
@@ -185,22 +292,28 @@ function buildMockDocument() {
     },
     dispatchEvent: function (evt) {
       const handlers = this._listeners[evt.type] || [];
-      handlers.forEach(fn => fn(evt));
+      handlers.forEach((fn) => fn(evt));
     },
-    createElement: function (tag) { return createElement(tag); },
+    createElement: function (tag) {
+      return createElement(tag);
+    },
     body: (() => {
       const b = createElement("body");
       b.contains = () => true;
       return b;
     })(),
-    contains: function () { return true; },
+    contains: function () {
+      return true;
+    },
     querySelector: function (sel) {
       // Search through all elements by id
       if (sel.startsWith("[data-pi-tab=")) {
         const match = sel.match(/data-pi-tab="([^"]+)"/);
         if (match) {
           const val = match[1];
-          const found = Object.values(this._elements).find(el => el.getAttribute && el.getAttribute("data-pi-tab") === val);
+          const found = Object.values(this._elements).find(
+            (el) => el.getAttribute && el.getAttribute("data-pi-tab") === val,
+          );
           return found || this.createElement("div");
         }
       }
@@ -210,10 +323,12 @@ function buildMockDocument() {
     },
     querySelectorAll: function (sel) {
       if (sel === "[data-pi-tab]") {
-        return Object.values(this._elements).filter(el => el.getAttribute && el.getAttribute("data-pi-tab"));
+        return Object.values(this._elements).filter(
+          (el) => el.getAttribute && el.getAttribute("data-pi-tab"),
+        );
       }
       return [];
-    }
+    },
   };
 
   doc.getElementById = function (id) {
@@ -254,12 +369,20 @@ function buildMockDocument() {
 
   const extractPwGroup = createElement("div");
   extractPwGroup.id = "pi-extract-password-group";
-  extractPwGroup.style = { display: "block", visibility: "visible", cssText: "" };
+  extractPwGroup.style = {
+    display: "block",
+    visibility: "visible",
+    cssText: "",
+  };
   elements["pi-extract-password-group"] = extractPwGroup;
 
   const optionsContainer = createElement("div");
   optionsContainer.id = "pi-options-container";
-  optionsContainer.style = { display: "block", visibility: "visible", cssText: "" };
+  optionsContainer.style = {
+    display: "block",
+    visibility: "visible",
+    cssText: "",
+  };
   elements["pi-options-container"] = optionsContainer;
 
   const resultDiv = createElement("div");
@@ -365,21 +488,42 @@ function buildMockDocument() {
 }
 
 // ── Load WatermarkCore dependencies ──
-const coreSrc = fs.readFileSync(path.join(__dirname, "../../Pixel_Injection/watermark_core_advanced.js"), "utf8");
-vm.runInThisContext(coreSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/watermark_core_advanced.js") });
+const coreSrc = fs.readFileSync(
+  path.join(__dirname, "../../Pixel_Injection/watermark_core_advanced.js"),
+  "utf8",
+);
+vm.runInThisContext(coreSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Pixel_Injection/watermark_core_advanced.js",
+  ),
+});
 const transformsSrc = fs.readFileSync(
   path.join(__dirname, "../../Pixel_Injection/watermark_core_transforms.js"),
   "utf8",
 );
-vm.runInThisContext(transformsSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/watermark_core_transforms.js") });
+vm.runInThisContext(transformsSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Pixel_Injection/watermark_core_transforms.js",
+  ),
+});
 const algorithmsSrc = fs.readFileSync(
   path.join(__dirname, "../../Pixel_Injection/watermark_core_algorithms.js"),
   "utf8",
 );
-vm.runInThisContext(algorithmsSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/watermark_core_algorithms.js") });
+vm.runInThisContext(algorithmsSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Pixel_Injection/watermark_core_algorithms.js",
+  ),
+});
 
 // ── Load pixel_injection.js ──
-const piSrc = fs.readFileSync(path.join(__dirname, "../../Pixel_Injection/pixel_injection.js"), "utf8");
+const piSrc = fs.readFileSync(
+  path.join(__dirname, "../../Pixel_Injection/pixel_injection.js"),
+  "utf8",
+);
 
 function makeImage(w, h) {
   const data = new Uint8ClampedArray(w * h * 4);
@@ -416,7 +560,10 @@ describe("Pixel Injection — Helpers", () => {
     assert.equal(core.bytesToBinary(new Uint8Array([0x00])), "00000000");
     assert.equal(core.bytesToBinary(new Uint8Array([0xff])), "11111111");
     assert.equal(core.bytesToBinary(new Uint8Array([0x61])), "01100001");
-    assert.equal(core.bytesToBinary(new Uint8Array([0x00, 0xff])), "0000000011111111");
+    assert.equal(
+      core.bytesToBinary(new Uint8Array([0x00, 0xff])),
+      "0000000011111111",
+    );
   });
 
   it("stringToBinary should convert string to bit string", () => {
@@ -576,9 +723,16 @@ describe("Pixel Injection — blindDecoding dispatcher", () => {
 
 describe("Pixel Injection — All algorithm embeds (VINE, PixelSeal, etc.)", () => {
   const stubAlgos = [
-    "vine", "pixel_seal", "nullguard", "shallow_diffuse",
-    "diffusion_based", "imagewmark", "meta_seal",
-    "stardustmark", "invisimark", "elevenlikes",
+    "vine",
+    "pixel_seal",
+    "nullguard",
+    "shallow_diffuse",
+    "diffusion_based",
+    "imagewmark",
+    "meta_seal",
+    "stardustmark",
+    "invisimark",
+    "elevenlikes",
   ];
 
   for (const algo of stubAlgos) {
@@ -671,7 +825,7 @@ describe("Pixel Injection — hashCode and calculateComplexityMap", () => {
   it("hashCode should produce different values for different inputs", () => {
     const core = new WatermarkCore();
     const vals = ["", "a", "ab", "abc", "hello world"];
-    const hashes = vals.map(v => core.hashCode(v));
+    const hashes = vals.map((v) => core.hashCode(v));
     assert.equal(new Set(hashes).size, hashes.length);
   });
 
@@ -689,7 +843,10 @@ describe("Pixel Injection — hashCode and calculateComplexityMap", () => {
     const core = new WatermarkCore();
     const data = new Uint8ClampedArray(4 * 4 * 4);
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 128; data[i+1] = 128; data[i+2] = 128; data[i+3] = 255;
+      data[i] = 128;
+      data[i + 1] = 128;
+      data[i + 2] = 128;
+      data[i + 3] = 255;
     }
     const map = core.calculateComplexityMap(data, 4, 4);
     // All pixels same → complexity = 0
@@ -774,7 +931,10 @@ describe("Pixel Injection — stardustmark with tamper detection", () => {
   it("should embed with tamper_detection enabled", () => {
     const core = new WatermarkCore();
     const img = makeImage(32, 32);
-    const wm = core.stardustmark(img, "test", null, { tamper_detection: true, forensic_strength: 0.1 });
+    const wm = core.stardustmark(img, "test", null, {
+      tamper_detection: true,
+      forensic_strength: 0.1,
+    });
     assert.ok(wm instanceof ImageData);
   });
 });
@@ -783,7 +943,7 @@ describe("Pixel Injection — classifyWatermark branches", () => {
   it("should return detected=false for low-entropy features", () => {
     const core = new WatermarkCore();
     const result = core.classifyWatermark({
-      histogram: { entropy: 6 }
+      histogram: { entropy: 6 },
     });
     assert.equal(result.detected, false);
     assert.equal(result.confidence, 0.3);
@@ -793,25 +953,37 @@ describe("Pixel Injection — classifyWatermark branches", () => {
 describe("Pixel Injection — calculateAdaptiveStrength branches", () => {
   it("should return higher strength for high complexity", () => {
     const core = new WatermarkCore();
-    const strength = core.calculateAdaptiveStrength({ complexity: 0.9, noise: 0.1 });
+    const strength = core.calculateAdaptiveStrength({
+      complexity: 0.9,
+      noise: 0.1,
+    });
     assert.ok(Math.abs(strength - 0.15) < 0.001);
   });
 
   it("should return increased strength for high noise", () => {
     const core = new WatermarkCore();
-    const strength = core.calculateAdaptiveStrength({ complexity: 0.5, noise: 0.5 });
+    const strength = core.calculateAdaptiveStrength({
+      complexity: 0.5,
+      noise: 0.5,
+    });
     assert.equal(strength, 0.12);
   });
 
   it("should return lower strength for low complexity", () => {
     const core = new WatermarkCore();
-    const strength = core.calculateAdaptiveStrength({ complexity: 0.1, noise: 0.1 });
+    const strength = core.calculateAdaptiveStrength({
+      complexity: 0.1,
+      noise: 0.1,
+    });
     assert.ok(Math.abs(strength - 0.07) < 0.001);
   });
 
   it("should return base strength for average characteristics", () => {
     const core = new WatermarkCore();
-    const strength = core.calculateAdaptiveStrength({ complexity: 0.5, noise: 0.1 });
+    const strength = core.calculateAdaptiveStrength({
+      complexity: 0.5,
+      noise: 0.1,
+    });
     assert.equal(strength, 0.1);
   });
 });
@@ -910,7 +1082,10 @@ describe("Pixel Injection — getBlock from image data (transforms)", () => {
     const h = 16;
     const data = new Uint8ClampedArray(w * h * 4);
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 100; data[i+1] = 100; data[i+2] = 100; data[i+3] = 255;
+      data[i] = 100;
+      data[i + 1] = 100;
+      data[i + 2] = 100;
+      data[i + 3] = 255;
     }
     const block = core.getBlock(data, 0, 0, w);
     assert.equal(block.length, 64);
@@ -925,7 +1100,10 @@ describe("Pixel Injection — apply2DDFT and applyInverse2DDFT (transforms)", ()
     const h = 4;
     const data = new Uint8ClampedArray(w * h * 4);
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 128; data[i+1] = 128; data[i+2] = 128; data[i+3] = 255;
+      data[i] = 128;
+      data[i + 1] = 128;
+      data[i + 2] = 128;
+      data[i + 3] = 255;
     }
     const spectrum = core.apply2DDFT(data, w, h);
     assert.equal(spectrum.length, h);
@@ -940,7 +1118,10 @@ describe("Pixel Injection — apply2DDFT and applyInverse2DDFT (transforms)", ()
     const h = 4;
     const data = new Uint8ClampedArray(w * h * 4);
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 128; data[i+1] = 128; data[i+2] = 128; data[i+3] = 255;
+      data[i] = 128;
+      data[i + 1] = 128;
+      data[i + 2] = 128;
+      data[i + 3] = 255;
     }
     const spectrum = core.apply2DDFT(data, w, h);
     const reconstructed = core.applyInverse2DDFT(spectrum, w, h);
@@ -968,7 +1149,7 @@ describe("Pixel Injection — embedInCoefficient DWT step-2 (transforms)", () =>
 describe("Pixel Injection — distributeMessageInSubBands", () => {
   it("should distribute message across sub-bands", () => {
     const core = new WatermarkCore();
-    const decomp = { LL: [1,2], LH: [3,4], HL: [5,6], HH: [7,8] };
+    const decomp = { LL: [1, 2], LH: [3, 4], HL: [5, 6], HH: [7, 8] };
     const result = core.distributeMessageInSubBands("test", decomp);
     assert.ok(result.LL);
     assert.ok(result.LH);
@@ -1018,7 +1199,9 @@ describe("Pixel Injection — Quality metrics", () => {
 globalThis.document = buildMockDocument();
 
 // ── Load pixel_injection.js ──
-vm.runInThisContext(piSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/pixel_injection.js") });
+vm.runInThisContext(piSrc, {
+  filename: path.resolve(__dirname, "../../Pixel_Injection/pixel_injection.js"),
+});
 
 // ══════════════════════════════════════════════════════════════════
 // PixelInjection UI class tests
@@ -1087,7 +1270,9 @@ describe("PixelInjection — Constructor", () => {
     const pi = new PixelInjection();
     let called = false;
     const origSetup = pi.setupPixelInjectionUI;
-    pi.setupPixelInjectionUI = () => { called = true; };
+    pi.setupPixelInjectionUI = () => {
+      called = true;
+    };
     pi.reInit();
     assert.ok(called, "setupPixelInjectionUI should be called on reInit");
     pi.setupPixelInjectionUI = origSetup;
@@ -1240,7 +1425,14 @@ describe("PixelInjection — createOptionInput", () => {
   });
 
   it("should create range input", () => {
-    const input = pi.createOptionInput({ type: "range", label: "Test", min: 1, max: 10, value: 5, step: 1 });
+    const input = pi.createOptionInput({
+      type: "range",
+      label: "Test",
+      min: 1,
+      max: 10,
+      value: 5,
+      step: 1,
+    });
     assert.equal(input.type, "range");
     assert.equal(input.min, 1);
     assert.equal(input.max, 10);
@@ -1249,20 +1441,34 @@ describe("PixelInjection — createOptionInput", () => {
   });
 
   it("should create checkbox input", () => {
-    const input = pi.createOptionInput({ type: "checkbox", label: "Test", checked: true });
+    const input = pi.createOptionInput({
+      type: "checkbox",
+      label: "Test",
+      checked: true,
+    });
     assert.equal(input.type, "checkbox");
     assert.equal(input.checked, true);
   });
 
   it("should create select input with options", () => {
-    const input = pi.createOptionInput({ type: "select", label: "Test", options: ["A", "B", "C"], value: "B" });
+    const input = pi.createOptionInput({
+      type: "select",
+      label: "Test",
+      options: ["A", "B", "C"],
+      value: "B",
+    });
     assert.equal(input.tagName, "SELECT");
     assert.equal(input.value, "B");
     assert.equal(input._children.length, 3);
   });
 
   it("should create text input", () => {
-    const input = pi.createOptionInput({ type: "text", label: "Test", placeholder: "Enter value", value: "hello" });
+    const input = pi.createOptionInput({
+      type: "text",
+      label: "Test",
+      placeholder: "Enter value",
+      value: "hello",
+    });
     assert.equal(input.type, "text");
     assert.equal(input.placeholder, "Enter value");
     assert.equal(input.value, "hello");
@@ -1282,7 +1488,10 @@ describe("PixelInjection — UI toggle methods", () => {
   it("togglePiPassword should show group for random_lsb", () => {
     pi.currentAlgorithm = "random_lsb";
     pi.togglePiPassword();
-    assert.equal(doc.getElementById("pi-password-group").style.display, "block");
+    assert.equal(
+      doc.getElementById("pi-password-group").style.display,
+      "block",
+    );
   });
 
   it("togglePiPassword should hide group for non-random_lsb", () => {
@@ -1311,21 +1520,30 @@ describe("PixelInjection — UI toggle methods", () => {
     const algoSel = doc.getElementById("pi-analyze-algorithm");
     algoSel.value = "robustness_testing";
     pi.toggleAnalyzeCompareInput();
-    assert.equal(doc.getElementById("pi-analyze-compare-group").style.display, "block");
+    assert.equal(
+      doc.getElementById("pi-analyze-compare-group").style.display,
+      "block",
+    );
   });
 
   it("toggleAnalyzeCompareInput should show compare group for quality_metrics", () => {
     const algoSel = doc.getElementById("pi-analyze-algorithm");
     algoSel.value = "quality_metrics";
     pi.toggleAnalyzeCompareInput();
-    assert.equal(doc.getElementById("pi-analyze-compare-group").style.display, "block");
+    assert.equal(
+      doc.getElementById("pi-analyze-compare-group").style.display,
+      "block",
+    );
   });
 
   it("toggleAnalyzeCompareInput should hide compare group for auto_detect", () => {
     const algoSel = doc.getElementById("pi-analyze-algorithm");
     algoSel.value = "auto_detect";
     pi.toggleAnalyzeCompareInput();
-    assert.equal(doc.getElementById("pi-analyze-compare-group").style.display, "none");
+    assert.equal(
+      doc.getElementById("pi-analyze-compare-group").style.display,
+      "none",
+    );
   });
 });
 
@@ -1413,7 +1631,9 @@ describe("PixelInjection — showLoading and showMessage", () => {
   it("showMessage should create a toast element", () => {
     const bodySpy = { appended: null };
     const origAppend = doc.body.append;
-    doc.body.append = (el) => { bodySpy.appended = el; };
+    doc.body.append = (el) => {
+      bodySpy.appended = el;
+    };
     pi.showMessage("Test message", "success");
     assert.ok(bodySpy.appended);
     assert.equal(bodySpy.appended.textContent, "Test message");
@@ -1517,7 +1737,7 @@ describe("PixelInjection — generateRecommendations", () => {
     for (let i = 0; i < data.length; i++) data[i] = 128;
     const img = { data, width: 4, height: 4 };
     const recs = pi.generateRecommendations(img);
-    const hasAdaptive = recs.some(r => r.includes("adaptive"));
+    const hasAdaptive = recs.some((r) => r.includes("adaptive"));
     assert.ok(hasAdaptive);
   });
 });
@@ -1573,7 +1793,14 @@ describe("PixelInjection — show methods", () => {
   });
 
   it("showQualityMetrics should display when qualityMetrics is set", () => {
-    pi.qualityMetrics = { psnr: 45.67, ssim: 0.9876, lpips: 0.0123, ber: 1.23, mse: 0.5, mad: 0.3 };
+    pi.qualityMetrics = {
+      psnr: 45.67,
+      ssim: 0.9876,
+      lpips: 0.0123,
+      ber: 1.23,
+      mse: 0.5,
+      mad: 0.3,
+    };
     pi.showQualityMetrics();
     const outputDiv = doc.getElementById("pi-output");
     assert.ok(outputDiv.innerHTML.includes("PSNR"));
@@ -1586,7 +1813,10 @@ describe("PixelInjection — show methods", () => {
   });
 
   it("showSingleAnalysisResult should display result", () => {
-    pi.showSingleAnalysisResult("statistical_detection", { hasWatermark: true, confidence: 0.95 });
+    pi.showSingleAnalysisResult("statistical_detection", {
+      hasWatermark: true,
+      confidence: 0.95,
+    });
     const outputDiv = doc.getElementById("pi-output");
     assert.ok(outputDiv.innerHTML.length > 0);
   });
@@ -1598,12 +1828,39 @@ describe("PixelInjection — show methods", () => {
 
   it("showAutoAnalysisResults should display when analysisResults is set", () => {
     pi.analysisResults = {
-      statistical: { hasWatermark: true, watermarkProbability: 0.85, likelyAlgorithm: "LSB", strength: 0.5 },
-      ml: { detected: true, confidence: 0.9, algorithm: "LSB", robustness: 0.8 },
+      statistical: {
+        hasWatermark: true,
+        watermarkProbability: 0.85,
+        likelyAlgorithm: "LSB",
+        strength: 0.5,
+      },
+      ml: {
+        detected: true,
+        confidence: 0.9,
+        algorithm: "LSB",
+        robustness: 0.8,
+      },
       blind_decoding: "secret data here",
-      robustness: { overall_score: 0.75, individual_tests: [{ test: "JPEG", score: 0.8 }] },
-      quality: { psnr: 40, ssim: 0.99, lpips: 0.01, ber: 0, mse: 0.1, mad: 0.05 },
-      characteristics: { complexity: 0.5, noise: 0.1, brightness: 0.5, contrast: 0.3, texture: 0.4, edges: 50 },
+      robustness: {
+        overall_score: 0.75,
+        individual_tests: [{ test: "JPEG", score: 0.8 }],
+      },
+      quality: {
+        psnr: 40,
+        ssim: 0.99,
+        lpips: 0.01,
+        ber: 0,
+        mse: 0.1,
+        mad: 0.05,
+      },
+      characteristics: {
+        complexity: 0.5,
+        noise: 0.1,
+        brightness: 0.5,
+        contrast: 0.3,
+        texture: 0.4,
+        edges: 50,
+      },
       recommendations: ["Test robustness", "Use adaptive algorithms"],
       timestamp: "2025-01-01T00:00:00.000Z",
     };
@@ -1666,19 +1923,37 @@ describe("PixelInjection — runDetectionAlgorithm", () => {
 
   it("statistical_detection should return detection result", async () => {
     const img = makeImage(8, 8);
-    const result = await pi.runDetectionAlgorithm("statistical_detection", img, null, null, {});
+    const result = await pi.runDetectionAlgorithm(
+      "statistical_detection",
+      img,
+      null,
+      null,
+      {},
+    );
     assert.ok(typeof result === "object" || typeof result === "string");
   });
 
   it("ml_detection should return ml result", async () => {
     const img = makeImage(8, 8);
-    const result = await pi.runDetectionAlgorithm("ml_detection", img, null, null, {});
+    const result = await pi.runDetectionAlgorithm(
+      "ml_detection",
+      img,
+      null,
+      null,
+      {},
+    );
     assert.ok(result !== undefined);
   });
 
   it("blind_decoding should return decoded result", async () => {
     const img = makeImage(8, 8);
-    const result = await pi.runDetectionAlgorithm("blind_decoding", img, "dct", null, {});
+    const result = await pi.runDetectionAlgorithm(
+      "blind_decoding",
+      img,
+      "dct",
+      null,
+      {},
+    );
     assert.ok(result !== undefined);
   });
 
@@ -1686,14 +1961,26 @@ describe("PixelInjection — runDetectionAlgorithm", () => {
     const img = makeImage(8, 8);
     // Add message property that robustness testing expects
     img.message = "test_message";
-    const result = await pi.runDetectionAlgorithm("robustness_testing", img, null, null, { compareImage: img });
+    const result = await pi.runDetectionAlgorithm(
+      "robustness_testing",
+      img,
+      null,
+      null,
+      { compareImage: img },
+    );
     assert.ok(typeof result === "object");
     assert.ok(typeof result.overall_score === "number");
   });
 
   it("quality_metrics should return metrics result", async () => {
     const img = makeImage(8, 8);
-    const result = await pi.runDetectionAlgorithm("quality_metrics", img, null, null, { compareImage: img });
+    const result = await pi.runDetectionAlgorithm(
+      "quality_metrics",
+      img,
+      null,
+      null,
+      { compareImage: img },
+    );
     assert.ok(typeof result === "object");
     assert.ok(result.psnr !== undefined);
   });
@@ -1702,7 +1989,7 @@ describe("PixelInjection — runDetectionAlgorithm", () => {
     const img = makeImage(8, 8);
     await assert.rejects(
       () => pi.runDetectionAlgorithm("unknown_algo", img, null, null, {}),
-      /Unknown detection algorithm/
+      /Unknown detection algorithm/,
     );
   });
 });
@@ -1739,11 +2026,13 @@ describe("PixelInjection — handlePixelInjection validation", () => {
   it("should work with message text", async () => {
     const imageInput = doc.getElementById("pi-image");
     // Mock a small valid image file
-    imageInput.files = [{
-      name: "test.png",
-      type: "image/png",
-      size: 1000,
-    }];
+    imageInput.files = [
+      {
+        name: "test.png",
+        type: "image/png",
+        size: 1000,
+      },
+    ];
     const msgInput = doc.getElementById("pi-message");
     msgInput.value = "test message content";
     const secretFile = doc.getElementById("pi-secret-file");
@@ -1758,7 +2047,11 @@ describe("PixelInjection — handlePixelInjection validation", () => {
     // Inject a proper algorithm
     const core = pi.core;
     core.enhanced_lsb = (img, msg, pw, opts) => {
-      return new ImageData(new Uint8ClampedArray(img.data), img.width, img.height);
+      return new ImageData(
+        new Uint8ClampedArray(img.data),
+        img.width,
+        img.height,
+      );
     };
     pi.currentAlgorithm = "enhanced_lsb";
     pi.currentCategory = "spatial";
@@ -1820,7 +2113,9 @@ describe("PixelInjection — Global functions", () => {
     window.pixelInjection = pi;
     let called = false;
     const orig = pi.updatePiAlgorithms;
-    pi.updatePiAlgorithms = () => { called = true; };
+    pi.updatePiAlgorithms = () => {
+      called = true;
+    };
     window.updatePiAlgorithms();
     assert.ok(called);
     pi.updatePiAlgorithms = orig;
@@ -1830,7 +2125,9 @@ describe("PixelInjection — Global functions", () => {
     const pi = window.pixelInjection;
     let called = false;
     const orig = pi.updatePiOptions;
-    pi.updatePiOptions = () => { called = true; };
+    pi.updatePiOptions = () => {
+      called = true;
+    };
     window.updatePiOptions();
     assert.ok(called);
     pi.updatePiOptions = orig;
@@ -1856,7 +2153,9 @@ describe("PixelInjection — Global functions", () => {
     const pi = window.pixelInjection;
     let called = false;
     const orig = pi.handlePixelInjection;
-    pi.handlePixelInjection = async () => { called = true; };
+    pi.handlePixelInjection = async () => {
+      called = true;
+    };
     window.handlePixelInjection();
     assert.ok(called);
     pi.handlePixelInjection = orig;
@@ -1866,7 +2165,9 @@ describe("PixelInjection — Global functions", () => {
     const pi = window.pixelInjection;
     let called = false;
     const orig = pi.handlePixelExtraction;
-    pi.handlePixelExtraction = async () => { called = true; };
+    pi.handlePixelExtraction = async () => {
+      called = true;
+    };
     window.handlePixelExtraction();
     assert.ok(called);
     pi.handlePixelExtraction = orig;
@@ -1876,7 +2177,9 @@ describe("PixelInjection — Global functions", () => {
     const pi = window.pixelInjection;
     let called = false;
     const orig = pi.handlePixelAnalysis;
-    pi.handlePixelAnalysis = async () => { called = true; };
+    pi.handlePixelAnalysis = async () => {
+      called = true;
+    };
     window.handlePixelAnalysis();
     assert.ok(called);
     pi.handlePixelAnalysis = orig;
@@ -1988,9 +2291,14 @@ describe("PixelInjection — initializeEventListeners with loading state", () =>
     const pi = new PixelInjection();
     let called = false;
     const orig = pi.setupPixelInjectionUI;
-    pi.setupPixelInjectionUI = () => { called = true; };
+    pi.setupPixelInjectionUI = () => {
+      called = true;
+    };
     doc.dispatchEvent({ type: "DOMContentLoaded" });
-    assert.ok(called, "setupPixelInjectionUI should be called on DOMContentLoaded");
+    assert.ok(
+      called,
+      "setupPixelInjectionUI should be called on DOMContentLoaded",
+    );
     pi.setupPixelInjectionUI = orig;
   });
 });
@@ -2013,7 +2321,9 @@ describe("PixelInjection — setupPixelInjectionUI event callbacks", () => {
     const catSel = doc.getElementById("pi-category");
     let called = false;
     const orig = pi.updatePiAlgorithms;
-    pi.updatePiAlgorithms = () => { called = true; };
+    pi.updatePiAlgorithms = () => {
+      called = true;
+    };
     catSel.dispatchEvent({ type: "change" });
     assert.ok(called, "updatePiAlgorithms should be called on category change");
     pi.updatePiAlgorithms = orig;
@@ -2026,8 +2336,12 @@ describe("PixelInjection — setupPixelInjectionUI event callbacks", () => {
     let pwCalled = false;
     const origOpts = pi.updatePiOptions;
     const origPw = pi.togglePiPassword;
-    pi.updatePiOptions = () => { optsCalled = true; };
-    pi.togglePiPassword = () => { pwCalled = true; };
+    pi.updatePiOptions = () => {
+      optsCalled = true;
+    };
+    pi.togglePiPassword = () => {
+      pwCalled = true;
+    };
     algoSel.dispatchEvent({ type: "change" });
     assert.ok(optsCalled, "updatePiOptions should be called");
     assert.ok(pwCalled, "togglePiPassword should be called");
@@ -2039,7 +2353,9 @@ describe("PixelInjection — setupPixelInjectionUI event callbacks", () => {
     const extractSel = doc.getElementById("pi-extract-algorithm");
     let called = false;
     const orig = pi.toggleExtractPiPassword;
-    pi.toggleExtractPiPassword = () => { called = true; };
+    pi.toggleExtractPiPassword = () => {
+      called = true;
+    };
     extractSel.dispatchEvent({ type: "change" });
     assert.ok(called, "toggleExtractPiPassword should be called");
     pi.toggleExtractPiPassword = orig;
@@ -2049,7 +2365,9 @@ describe("PixelInjection — setupPixelInjectionUI event callbacks", () => {
     const analyzeSel = doc.getElementById("pi-analyze-algorithm");
     let called = false;
     const orig = pi.toggleAnalyzeCompareInput;
-    pi.toggleAnalyzeCompareInput = () => { called = true; };
+    pi.toggleAnalyzeCompareInput = () => {
+      called = true;
+    };
     analyzeSel.dispatchEvent({ type: "change" });
     assert.ok(called, "toggleAnalyzeCompareInput should be called");
     pi.toggleAnalyzeCompareInput = orig;
@@ -2106,10 +2424,14 @@ describe("PixelInjection — handlePixelInjection secret file path", () => {
     // Mock FileReader using a class (avoids prototype issues)
     const origFileReader = globalThis.FileReader;
     globalThis.FileReader = class {
-      constructor() { this.onload = null; this.onerror = null; }
+      constructor() {
+        this.onload = null;
+        this.onerror = null;
+      }
       readAsText() {
         setTimeout(() => {
-          if (this.onload) this.onload({ target: { result: "secret file content" } });
+          if (this.onload)
+            this.onload({ target: { result: "secret file content" } });
         }, 0);
       }
     };
@@ -2118,12 +2440,20 @@ describe("PixelInjection — handlePixelInjection secret file path", () => {
     pi.currentCategory = "spatial";
     const core = pi.core;
     core.enhanced_lsb = (img, msg, pw, opts) => {
-      return new ImageData(new Uint8ClampedArray(img.data), img.width, img.height);
+      return new ImageData(
+        new Uint8ClampedArray(img.data),
+        img.width,
+        img.height,
+      );
     };
 
     await pi.handlePixelInjection();
     assert.ok(pi.watermarkedImage !== null, "should have watermarkedImage");
-    assert.equal(pi._secretFileName, "secret.txt", "should store secret filename");
+    assert.equal(
+      pi._secretFileName,
+      "secret.txt",
+      "should store secret filename",
+    );
 
     pi.loadImage = origLoad;
     globalThis.FileReader = origFileReader;
@@ -2133,7 +2463,9 @@ describe("PixelInjection — handlePixelInjection secret file path", () => {
     const imageInput = doc.getElementById("pi-image");
     imageInput.files = [{ name: "test.png", type: "image/png" }];
     const secretFile = doc.getElementById("pi-secret-file");
-    secretFile.files = [{ name: "secret.exe", type: "application/x-msdownload" }];
+    secretFile.files = [
+      { name: "secret.exe", type: "application/x-msdownload" },
+    ];
     const msgInput = doc.getElementById("pi-message");
     msgInput.value = "";
 
@@ -2165,7 +2497,10 @@ describe("PixelInjection — handlePixelInjection secret file path", () => {
     // Mock FileReader class that returns empty content
     const origFileReader = globalThis.FileReader;
     globalThis.FileReader = class {
-      constructor() { this.onload = null; this.onerror = null; }
+      constructor() {
+        this.onload = null;
+        this.onerror = null;
+      }
       readAsText() {
         setTimeout(() => {
           if (this.onload) this.onload({ target: { result: "" } });
@@ -2198,7 +2533,10 @@ describe("PixelInjection — handlePixelInjection secret file path", () => {
     // Mock FileReader to trigger onerror path
     const frOrig = globalThis.FileReader;
     globalThis.FileReader = class {
-      constructor() { this.onload = null; this.onerror = null; }
+      constructor() {
+        this.onload = null;
+        this.onerror = null;
+      }
       readAsText() {
         setTimeout(() => {
           if (this.onerror) this.onerror(new Error("File read error"));
@@ -2210,7 +2548,11 @@ describe("PixelInjection — handlePixelInjection secret file path", () => {
     piLocal.currentCategory = "spatial";
     const core = piLocal.core;
     core.enhanced_lsb = (img, msg, pw, opts) => {
-      return new ImageData(new Uint8ClampedArray(img.data), img.width, img.height);
+      return new ImageData(
+        new Uint8ClampedArray(img.data),
+        img.width,
+        img.height,
+      );
     };
 
     await piLocal.handlePixelInjection();
@@ -2397,7 +2739,8 @@ describe("PixelInjection — handlePixelExtraction full flow", () => {
     pi.loadImage = async () => makeImage(16, 16);
 
     // Mock core.extractDCT to return ImageData-like object
-    pi.core.extractDCT = async (img) => new ImageData(new Uint8ClampedArray(64), 4, 4);
+    pi.core.extractDCT = async (img) =>
+      new ImageData(new Uint8ClampedArray(64), 4, 4);
 
     await pi.handlePixelExtraction();
     assert.ok(pi.extractedMessage.includes("embedding result"));
@@ -2423,7 +2766,9 @@ describe("PixelInjection — handlePixelExtraction full flow", () => {
     pi.loadImage = async () => makeImage(16, 16);
 
     // Mock core.detection.statistical_detection
-    pi.core.detection.statistical_detection = async (img) => ({ hasWatermark: true });
+    pi.core.detection.statistical_detection = async (img) => ({
+      hasWatermark: true,
+    });
 
     await pi.handlePixelExtraction();
     // Should handle object message with no message property
@@ -2443,7 +2788,9 @@ describe("PixelInjection — handlePixelExtraction full flow", () => {
     pwInput.value = "";
 
     const origLoad = pi.loadImage;
-    pi.loadImage = async () => { throw new Error("Load failed"); };
+    pi.loadImage = async () => {
+      throw new Error("Load failed");
+    };
 
     await pi.handlePixelExtraction();
     // Should handle error without crashing
@@ -2507,7 +2854,11 @@ describe("PixelInjection — extraction dispatch chain", () => {
     pi.loadImage = async () => makeImage(16, 16);
 
     pi.core.extractRandomLSB = async (img, pw) => {
-      assert.equal(pw, "testpw", "should pass password to random_lsb extraction");
+      assert.equal(
+        pw,
+        "testpw",
+        "should pass password to random_lsb extraction",
+      );
       return "random extracted";
     };
 
@@ -2634,7 +2985,9 @@ describe("PixelInjection — extraction dispatch chain", () => {
     pi.loadImage = async () => makeImage(16, 16);
 
     // Return object with .message property to hit that code path
-    pi.core.msg_prop_algo = async (img, msg, pw, opts) => ({ message: "found via property" });
+    pi.core.msg_prop_algo = async (img, msg, pw, opts) => ({
+      message: "found via property",
+    });
 
     await pi.handlePixelExtraction();
     assert.equal(pi.extractedMessage, "found via property");
@@ -2685,8 +3038,14 @@ describe("PixelInjection — handlePixelAnalysis full flow", () => {
 
     await pi.handlePixelAnalysis();
     assert.ok(pi.analysisResults !== null, "should have analysis results");
-    assert.ok(pi.analysisResults.statistical, "should have statistical results");
-    assert.ok(pi.analysisResults.recommendations, "should have recommendations");
+    assert.ok(
+      pi.analysisResults.statistical,
+      "should have statistical results",
+    );
+    assert.ok(
+      pi.analysisResults.recommendations,
+      "should have recommendations",
+    );
 
     pi.showLoading = origShowLoading;
     pi.loadImage = origLoad;
@@ -2767,7 +3126,9 @@ describe("PixelInjection — handlePixelAnalysis full flow", () => {
     ai.files = [{ name: "test.png", type: "image/png" }];
 
     const origLoad = pi.loadImage;
-    pi.loadImage = async () => { throw new Error("Analysis load error"); };
+    pi.loadImage = async () => {
+      throw new Error("Analysis load error");
+    };
 
     await pi.handlePixelAnalysis();
     // Should handle error without crashing
@@ -2792,7 +3153,10 @@ describe("PixelInjection — loadImage error path", () => {
     // Override loadImage to test rejection path via FileReader
     const origFileReader = globalThis.FileReader;
     globalThis.FileReader = class {
-      constructor() { this.onload = null; this.onerror = null; }
+      constructor() {
+        this.onload = null;
+        this.onerror = null;
+      }
       readAsDataURL() {
         const self = this;
         setTimeout(() => {
@@ -2803,7 +3167,7 @@ describe("PixelInjection — loadImage error path", () => {
 
     await assert.rejects(
       () => pi.loadImage({ name: "test.png" }),
-      /FileReader error/
+      /FileReader error/,
     );
 
     globalThis.FileReader = origFileReader;
@@ -2824,7 +3188,10 @@ describe("PixelInjection — extractMessageFromImageData second branch", () => {
   });
 
   it("should return 'No message found' for non-ImageData objects with data", () => {
-    const result = pi.extractMessageFromImageData({ data: "some string", other: true });
+    const result = pi.extractMessageFromImageData({
+      data: "some string",
+      other: true,
+    });
     // First check passes (data exists, typeof "string" is "object"? No, typeof "string" is "string")
     // The check is: !imageData || !imageData.data || typeof imageData.data !== "object"
     // data = "some string" => typeof "some string" !== "object" => true => returns "No valid image data found"
@@ -2882,7 +3249,11 @@ describe("PixelInjection — extractLSBMessage charCode edge cases", () => {
     }
     const imgData = { data, width: w, height: h };
     const result = pi.extractLSBMessage(imgData);
-    assert.equal(result, "A", "should extract printable character 'A' when charCode is in printable range");
+    assert.equal(
+      result,
+      "A",
+      "should extract printable character 'A' when charCode is in printable range",
+    );
   });
 });
 
@@ -2903,7 +3274,9 @@ describe("PixelInjection — showExtractedMessage edge cases", () => {
     pi.showExtractedMessage();
     const outputDiv = doc.getElementById("pi-output");
     // typeof null === "object", so this goes through JSON.stringify(null, null, 2) => "null"
-    assert.ok(outputDiv.innerHTML.includes("null") || outputDiv.innerHTML.length > 0);
+    assert.ok(
+      outputDiv.innerHTML.includes("null") || outputDiv.innerHTML.length > 0,
+    );
   });
 
   it("should handle undefined extractedMessage", () => {
@@ -2913,7 +3286,10 @@ describe("PixelInjection — showExtractedMessage edge cases", () => {
     pi.showExtractedMessage();
     const outputDiv = doc.getElementById("pi-output");
     // undefined is the else-if branch: messageText = "No message extracted"
-    assert.ok(outputDiv.innerHTML.includes("No message extracted"), "should show No message extracted for undefined");
+    assert.ok(
+      outputDiv.innerHTML.includes("No message extracted"),
+      "should show No message extracted for undefined",
+    );
   });
 
   it("should copy message to clipboard on copy button click", () => {
@@ -2928,7 +3304,9 @@ describe("PixelInjection — showExtractedMessage edge cases", () => {
     // Trigger click
     let clipText = "";
     const origClip = globalThis.navigator.clipboard.writeText;
-    globalThis.navigator.clipboard.writeText = (t) => { clipText = t; };
+    globalThis.navigator.clipboard.writeText = (t) => {
+      clipText = t;
+    };
     copyBtn.click();
     assert.ok(clipText.length > 0);
     globalThis.navigator.clipboard.writeText = origClip;
@@ -2952,7 +3330,7 @@ describe("PixelInjection — generateRecommendations all paths", () => {
     });
     const img = makeImage(4, 4);
     const recs = pi.generateRecommendations(img);
-    const hasNoiseRec = recs.some(r => r.includes("noise"));
+    const hasNoiseRec = recs.some((r) => r.includes("noise"));
     assert.ok(hasNoiseRec, "should recommend noise-resistant algorithms");
     pi.analyzeImageCharacteristics = origAnalyze;
   });
@@ -2966,8 +3344,11 @@ describe("PixelInjection — generateRecommendations all paths", () => {
     });
     const img = makeImage(4, 4);
     const recs = pi.generateRecommendations(img);
-    const hasBrightnessRec = recs.some(r => r.includes("brightness"));
-    assert.ok(hasBrightnessRec, "should recommend adjusting for extreme brightness");
+    const hasBrightnessRec = recs.some((r) => r.includes("brightness"));
+    assert.ok(
+      hasBrightnessRec,
+      "should recommend adjusting for extreme brightness",
+    );
     pi.analyzeImageCharacteristics = origAnalyze;
   });
 
@@ -2980,8 +3361,11 @@ describe("PixelInjection — generateRecommendations all paths", () => {
     });
     const img = makeImage(4, 4);
     const recs = pi.generateRecommendations(img);
-    const hasBrightnessRec = recs.some(r => r.includes("brightness"));
-    assert.ok(hasBrightnessRec, "should recommend adjusting for high brightness");
+    const hasBrightnessRec = recs.some((r) => r.includes("brightness"));
+    assert.ok(
+      hasBrightnessRec,
+      "should recommend adjusting for high brightness",
+    );
     pi.analyzeImageCharacteristics = origAnalyze;
   });
 });
@@ -2995,15 +3379,26 @@ describe("PixelInjection — switchPiTab complete coverage", () => {
     // Create data-pi-tab elements for the switchPiTab forEach loop
     const embedBtn = doc.createElement("div");
     embedBtn.setAttribute("data-pi-tab", "embed");
-    embedBtn.classList = { add: () => {}, remove: () => {}, contains: () => false, toggle: () => {} };
+    embedBtn.classList = {
+      add: () => {},
+      remove: () => {},
+      contains: () => false,
+      toggle: () => {},
+    };
     doc._elements["pi-tab-embed"] = embedBtn;
-    embedBtn.getAttribute = (name) => name === "data-pi-tab" ? "embed" : null;
+    embedBtn.getAttribute = (name) => (name === "data-pi-tab" ? "embed" : null);
 
     const extractBtn = doc.createElement("div");
     extractBtn.setAttribute("data-pi-tab", "extract");
-    extractBtn.classList = { add: () => {}, remove: () => {}, contains: () => false, toggle: () => {} };
+    extractBtn.classList = {
+      add: () => {},
+      remove: () => {},
+      contains: () => false,
+      toggle: () => {},
+    };
     doc._elements["pi-tab-extract"] = extractBtn;
-    extractBtn.getAttribute = (name) => name === "data-pi-tab" ? "extract" : null;
+    extractBtn.getAttribute = (name) =>
+      name === "data-pi-tab" ? "extract" : null;
 
     // Create a new PixelInjection instance so setupPixelInjectionUI runs
     new PixelInjection();
@@ -3018,7 +3413,11 @@ describe("PixelInjection — switchPiTab complete coverage", () => {
 
 describe("PixelInjection — downloadPixelInjection DOCX path", () => {
   it("should generate DOCX download", async () => {
-    setResult("piResult", { type: "embed", algorithm: "Enhanced LSB", data: "test data with enough chars to fill rows" });
+    setResult("piResult", {
+      type: "embed",
+      algorithm: "Enhanced LSB",
+      data: "test data with enough chars to fill rows",
+    });
     await downloadPixelInjection("doc");
     assert.ok(true);
   });
@@ -3157,13 +3556,16 @@ describe("WatermarkCore — extractHybridDCTDWT fallback paths (algorithms)", ()
     const data = new Uint8ClampedArray(w * h * 4);
     // Uniform gray image
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 128; data[i+1] = 128; data[i+2] = 128; data[i+3] = 255;
+      data[i] = 128;
+      data[i + 1] = 128;
+      data[i + 2] = 128;
+      data[i + 3] = 255;
     }
     const img = new ImageData(data, w, h);
     // An unwatermarked image should not yield a valid hybrid message
     const result = core.extractHybridDCTDWT(img);
     // Should be empty string (no pipe separator found)
-    assert.equal(result, '');
+    assert.equal(result, "");
   });
 });
 
@@ -3219,7 +3621,7 @@ describe("WatermarkCore — classifyWatermark high-entropy path", () => {
     const features = {
       histogram: { entropy: 7.5 },
       spatial: { complexity: 0.9 },
-      frequency: { highFreqEnergy: 0.8 }
+      frequency: { highFreqEnergy: 0.8 },
     };
     const result = core.classifyWatermark(features);
     assert.ok(result.detected, "Should detect with high entropy");
@@ -3234,10 +3636,16 @@ describe("WatermarkCore — stardustmark with tamper_detection disabled", () => 
     const h = 16;
     const data = new Uint8ClampedArray(w * h * 4);
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 128; data[i+1] = 128; data[i+2] = 128; data[i+3] = 255;
+      data[i] = 128;
+      data[i + 1] = 128;
+      data[i + 2] = 128;
+      data[i + 3] = 255;
     }
     const img = new ImageData(data, w, h);
-    const result = core.stardustmark(img, "test", null, { tamper_detection: false, forensic_strength: 0.1 });
+    const result = core.stardustmark(img, "test", null, {
+      tamper_detection: false,
+      forensic_strength: 0.1,
+    });
     assert.ok(result instanceof ImageData);
   });
 });
