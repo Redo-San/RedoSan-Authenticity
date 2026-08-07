@@ -102,16 +102,17 @@ http
  */
 function tryServe(filePath, req, res) {
   try {
-    var realPath = fs.realpathSync(filePath);
-    if (!(realPath.startsWith(REAL_ROOT + path.sep) || realPath === REAL_ROOT))
-      return false;
-    var stat = fs.statSync(realPath);
+    var resolved = path.resolve(filePath);
+    if (resolved === REAL_ROOT) resolved = path.join(REAL_ROOT, "index.html");
+    if (!resolved.startsWith(REAL_ROOT + path.sep)) return false;
+    var stat = fs.statSync(resolved);
+    var target = resolved;
     if (stat.isDirectory()) {
-      realPath = path.join(realPath, "index.html");
-      stat = fs.statSync(realPath);
+      target = path.join(resolved, "index.html");
+      if (!target.startsWith(REAL_ROOT + path.sep)) return false;
+      stat = fs.statSync(target);
     }
-    filePath = realPath;
-    var ext = path.extname(filePath);
+    var ext = path.extname(target);
     var isHtml = ext === ".html";
     var headers = {
       "Accept-Ranges": "bytes",
@@ -132,18 +133,18 @@ function tryServe(filePath, req, res) {
       headers["Content-Range"] = "bytes " + start + "-" + end + "/" + stat.size;
       headers["Content-Length"] = end - start + 1;
       res.writeHead(206, headers);
-      fs.createReadStream(filePath, { start: start, end: end }).pipe(res);
+      fs.createReadStream(target, { start: start, end: end }).pipe(res);
     } else if (acceptGzip) {
       headers["Content-Encoding"] = "gzip";
       headers["Content-Type"] = MIME[ext] || "application/octet-stream";
       delete headers["Content-Length"];
       res.writeHead(200, headers);
-      fs.createReadStream(filePath).pipe(zlib.createGzip()).pipe(res);
+      fs.createReadStream(target).pipe(zlib.createGzip()).pipe(res);
     } else {
       headers["Content-Length"] = stat.size;
       headers["Content-Type"] = MIME[ext] || "application/octet-stream";
       res.writeHead(200, headers);
-      fs.createReadStream(filePath).pipe(res);
+      fs.createReadStream(target).pipe(res);
     }
     return true;
   } catch {
