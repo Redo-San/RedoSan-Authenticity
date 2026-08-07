@@ -103,12 +103,13 @@ http
 function tryServe(filePath, req, res) {
   try {
     var resolved = path.resolve(filePath);
-    if (!(resolved.startsWith(REAL_ROOT + path.sep) || resolved === REAL_ROOT))
-      return false;
+    if (resolved === REAL_ROOT) resolved = path.join(REAL_ROOT, "index.html");
+    if (!resolved.startsWith(REAL_ROOT + path.sep)) return false;
     var stat = fs.statSync(resolved);
     var target = resolved;
     if (stat.isDirectory()) {
       target = path.join(resolved, "index.html");
+      if (!target.startsWith(REAL_ROOT + path.sep)) return false;
       stat = fs.statSync(target);
     }
     var ext = path.extname(target);
@@ -132,18 +133,18 @@ function tryServe(filePath, req, res) {
       headers["Content-Range"] = "bytes " + start + "-" + end + "/" + stat.size;
       headers["Content-Length"] = end - start + 1;
       res.writeHead(206, headers);
-      fs.createReadStream(filePath, { start: start, end: end }).pipe(res);
+      fs.createReadStream(target, { start: start, end: end }).pipe(res);
     } else if (acceptGzip) {
       headers["Content-Encoding"] = "gzip";
       headers["Content-Type"] = MIME[ext] || "application/octet-stream";
       delete headers["Content-Length"];
       res.writeHead(200, headers);
-      fs.createReadStream(filePath).pipe(zlib.createGzip()).pipe(res);
+      fs.createReadStream(target).pipe(zlib.createGzip()).pipe(res);
     } else {
       headers["Content-Length"] = stat.size;
       headers["Content-Type"] = MIME[ext] || "application/octet-stream";
       res.writeHead(200, headers);
-      fs.createReadStream(filePath).pipe(res);
+      fs.createReadStream(target).pipe(res);
     }
     return true;
   } catch {

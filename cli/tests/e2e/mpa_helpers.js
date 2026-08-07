@@ -83,12 +83,13 @@ function escHtml(s) {
 function tryServe(filePath, res) {
   try {
     var resolved = path.resolve(filePath);
-    if (!(resolved.startsWith(REAL_ROOT + path.sep) || resolved === REAL_ROOT))
-      return false;
+    if (resolved === REAL_ROOT) resolved = path.join(REAL_ROOT, "index.html");
+    if (!resolved.startsWith(REAL_ROOT + path.sep)) return false;
     var stat = fs.statSync(resolved);
     var target = resolved;
     if (stat.isDirectory()) {
       target = path.join(resolved, "index.html");
+      if (!target.startsWith(REAL_ROOT + path.sep)) return false;
       stat = fs.statSync(target);
     }
     var ext = path.extname(target);
