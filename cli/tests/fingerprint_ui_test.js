@@ -14,7 +14,12 @@ globalThis.document = {
   querySelector: () => null,
   querySelectorAll: () => [],
 };
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.URL.createObjectURL = () => "blob:test";
 globalThis.URL.revokeObjectURL = () => {};
 globalThis.ensureLib = async () => {};
@@ -22,14 +27,26 @@ globalThis.ensureLib = async () => {};
 if (!globalThis.crypto || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
-      digest: async (algo, data) => crypto.createHash("sha256").update(Buffer.from(data)).digest(),
+      digest: async (algo, data) =>
+        crypto.createHash("sha256").update(Buffer.from(data)).digest(),
       importKey: async (f, kd) => ({ type: "secret", keyData: kd }),
-      deriveBits: async (algo, key, len) => crypto.pbkdf2Sync(Buffer.from(key.keyData), algo.salt || Buffer.from(key.keyData), algo.iterations || 1, len / 8, "sha256"),
+      deriveBits: async (algo, key, len) =>
+        crypto.pbkdf2Sync(
+          Buffer.from(key.keyData),
+          algo.salt || Buffer.from(key.keyData),
+          algo.iterations || 1,
+          len / 8,
+          "sha256",
+        ),
       generateKey: async () => ({ publicKey: {}, privateKey: {} }),
       sign: async () => new Uint8Array(64),
       verify: async () => true,
     },
-    getRandomValues: (arr) => { for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256); return arr; },
+    getRandomValues: (arr) => {
+      for (let i = 0; i < arr.length; i++)
+        arr[i] = Math.floor(Math.random() * 256);
+      return arr;
+    },
   };
 }
 
@@ -38,13 +55,26 @@ console.log = () => {};
 
 // Mock shared.js functions
 globalThis._resultStore = {};
-globalThis.setResult = (k, d) => { globalThis._resultStore[k] = d; };
+globalThis.setResult = (k, d) => {
+  globalThis._resultStore[k] = d;
+};
 globalThis.getResult = (k) => globalThis._resultStore[k];
 globalThis._dlHandler = null;
-globalThis.setDownloadHandler = (fn) => { globalThis._dlHandler = fn; };
-globalThis.escHtml = (s) => { if (s == null) return ""; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+globalThis.setDownloadHandler = (fn) => {
+  globalThis._dlHandler = fn;
+};
+globalThis.escHtml = (s) => {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+};
 globalThis.setText = (id, msg) => {
-  var el = globalThis.document.getElementById(id) || globalThis.document.querySelector("#" + id);
+  var el =
+    globalThis.document.getElementById(id) ||
+    globalThis.document.querySelector("#" + id);
   if (el) el.textContent = msg;
 };
 globalThis.spinner = () => {};
@@ -62,37 +92,87 @@ globalThis.jspdf = {
       this._pages = 1;
       this._y = 20;
     }
-    setFontSize(s) { this._fs = s; }
-    setTextColor(r, g, b) { this._tc = [r, g, b]; }
-    text(t, x, y) { this._y = y + 6; }
-    addPage() { this._pages++; this._y = 20; }
-    output(format) { return Buffer.from("mock pdf content"); }
+    setFontSize(s) {
+      this._fs = s;
+    }
+    setTextColor(r, g, b) {
+      this._tc = [r, g, b];
+    }
+    text(t, x, y) {
+      this._y = y + 6;
+    }
+    addPage() {
+      this._pages++;
+      this._y = 20;
+    }
+    output(format) {
+      return Buffer.from("mock pdf content");
+    }
   },
 };
 
 // Mock docx for fpToDOCX
 globalThis.docx = {
-  Paragraph: class { constructor(opts) { this.opts = opts; } },
-  TextRun: class { constructor(opts) { this.opts = opts; } },
-  Table: class { constructor(opts) { this.opts = opts; } },
-  TableRow: class { constructor(opts) { this.opts = opts; } },
-  TableCell: class { constructor(opts) { this.opts = opts; } },
-  Document: class { constructor(opts) { this.opts = opts; } },
+  Paragraph: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  TextRun: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  Table: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  TableRow: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  TableCell: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  Document: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
   WidthType: { PERCENTAGE: "percentage" },
-  Packer: { toBlob: async (doc) => new Blob(["mock docx content"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }) },
+  Packer: {
+    toBlob: async (doc) =>
+      new Blob(["mock docx content"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      }),
+  },
 };
 
 // Load hashing module (suppress BLAKE3 self-test output)
-const hashSrc = fs.readFileSync(path.join(__dirname, "../../Fingerprint/hashing.js"), "utf8");
+const hashSrc = fs.readFileSync(
+  path.join(__dirname, "../../Fingerprint/hashing.js"),
+  "utf8",
+);
 try {
-  vm.runInThisContext(hashSrc, { filename: path.resolve(__dirname, "../../Fingerprint/hashing.js") });
+  vm.runInThisContext(hashSrc, {
+    filename: path.resolve(__dirname, "../../Fingerprint/hashing.js"),
+  });
 } finally {
   console.log = origLog;
 }
 
 // Load fingerprint_ui module
-const fpSrc = fs.readFileSync(path.join(__dirname, "../../Fingerprint/fingerprint_ui.js"), "utf8");
-vm.runInThisContext(fpSrc, { filename: path.resolve(__dirname, "../../Fingerprint/fingerprint_ui.js") });
+const fpSrc = fs.readFileSync(
+  path.join(__dirname, "../../Fingerprint/fingerprint_ui.js"),
+  "utf8",
+);
+vm.runInThisContext(fpSrc, {
+  filename: path.resolve(__dirname, "../../Fingerprint/fingerprint_ui.js"),
+});
 
 // ── Sample fingerprint result ──
 const sampleResult = {
@@ -104,10 +184,10 @@ const sampleResult = {
   hashes: {
     "SHA-256": "abc123",
     "SHA-1": "def456",
-    "MD5": "789ghi",
+    MD5: "789ghi",
   },
   perceptual_hashes: {
-    "ahash": "00001111",
+    ahash: "00001111",
   },
 };
 
@@ -131,7 +211,10 @@ describe("Fingerprint UI — fpToTXT", () => {
   });
 
   it("should handle missing optional fields", () => {
-    const minimal = { file_info: { file_name: "x.bin", file_size_bytes: 100 }, hashes: {} };
+    const minimal = {
+      file_info: { file_name: "x.bin", file_size_bytes: 100 },
+      hashes: {},
+    };
     const txt = globalThis.fpToTXT(minimal);
     assert.ok(txt.includes("x.bin"));
     assert.ok(txt.includes("100 bytes"));
@@ -165,7 +248,10 @@ describe("Fingerprint UI — fpToXML", () => {
   });
 
   it("should handle minimal result", () => {
-    const minimal = { file_info: { file_name: "x.bin", file_size_bytes: 100 }, hashes: {} };
+    const minimal = {
+      file_info: { file_name: "x.bin", file_size_bytes: 100 },
+      hashes: {},
+    };
     const xml = globalThis.fpToXML(minimal);
     assert.ok(xml.includes("x.bin"));
   });
@@ -183,7 +269,13 @@ describe("Fingerprint UI — fpToHTML", () => {
 
   it("should include dimensions and format when present", () => {
     const result = {
-      file_info: { file_name: "photo.jpg", file_size_bytes: 100000, width: 1920, height: 1080, format: "JPEG" },
+      file_info: {
+        file_name: "photo.jpg",
+        file_size_bytes: 100000,
+        width: 1920,
+        height: 1080,
+        format: "JPEG",
+      },
       hashes: {},
     };
     const html = globalThis.fpToHTML(result);
@@ -197,7 +289,9 @@ describe("Fingerprint UI — fpToHTML", () => {
 describe("Fingerprint UI — fpToPDF", () => {
   it("should produce a PDF blob", async () => {
     const blob = await globalThis.fpToPDF(sampleResult);
-    assert.ok(blob instanceof Blob || Buffer.isBuffer(blob) || blob !== undefined);
+    assert.ok(
+      blob instanceof Blob || Buffer.isBuffer(blob) || blob !== undefined,
+    );
   });
 
   it("should handle result without perceptual hashes", () => {
@@ -208,7 +302,13 @@ describe("Fingerprint UI — fpToPDF", () => {
 
   it("should include dimensions when width/height present", () => {
     const result = {
-      file_info: { file_name: "photo.jpg", file_size_bytes: 50000, width: 1920, height: 1080, format: "JPEG" },
+      file_info: {
+        file_name: "photo.jpg",
+        file_size_bytes: 50000,
+        width: 1920,
+        height: 1080,
+        format: "JPEG",
+      },
       hashes: { "SHA-256": "abc" },
     };
     const blob = globalThis.fpToPDF(result);
@@ -225,7 +325,13 @@ describe("Fingerprint UI — fpToDOCX", () => {
 
   it("should include dimensions when width/height present", async () => {
     const result = {
-      file_info: { file_name: "img.png", file_size_bytes: 50000, width: 800, height: 600, format: "PNG" },
+      file_info: {
+        file_name: "img.png",
+        file_size_bytes: 50000,
+        width: 800,
+        height: 600,
+        format: "PNG",
+      },
       hashes: { "SHA-256": "abc" },
     };
     const blob = await globalThis.fpToDOCX(result);
@@ -250,7 +356,9 @@ describe("Fingerprint UI — createDocxTable", () => {
   });
 
   it("should create a table for valid rows", () => {
-    const result = globalThis.createDocxTable(globalThis.docx, [["Key", "Value"]]);
+    const result = globalThis.createDocxTable(globalThis.docx, [
+      ["Key", "Value"],
+    ]);
     assert.ok(result);
   });
 });
@@ -266,7 +374,9 @@ describe("Fingerprint UI — downloadFingerprint", () => {
     globalThis._resultStore = {};
     globalThis.setResult("fpResult", sampleResult);
     let captured = null;
-    globalThis.downloadBlobSimple = (blob, name) => { captured = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured = { blob, name };
+    };
     await globalThis.downloadFingerprint("txt");
     assert.ok(captured);
     assert.ok(captured.name.endsWith(".txt"));
@@ -276,7 +386,9 @@ describe("Fingerprint UI — downloadFingerprint", () => {
     globalThis._resultStore = {};
     globalThis.setResult("fpResult", sampleResult);
     let captured = null;
-    globalThis.downloadBlobSimple = (blob, name) => { captured = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured = { blob, name };
+    };
     await globalThis.downloadFingerprint("csv");
     assert.ok(captured.name.endsWith(".csv"));
   });
@@ -285,7 +397,9 @@ describe("Fingerprint UI — downloadFingerprint", () => {
     globalThis._resultStore = {};
     globalThis.setResult("fpResult", sampleResult);
     let captured = null;
-    globalThis.downloadBlobSimple = (blob, name) => { captured = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured = { blob, name };
+    };
     await globalThis.downloadFingerprint("json");
     assert.ok(captured.name.endsWith(".json"));
   });
@@ -294,7 +408,9 @@ describe("Fingerprint UI — downloadFingerprint", () => {
     globalThis._resultStore = {};
     globalThis.setResult("fpResult", sampleResult);
     let captured = null;
-    globalThis.downloadBlobSimple = (blob, name) => { captured = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured = { blob, name };
+    };
     await globalThis.downloadFingerprint("xml");
     assert.ok(captured.name.endsWith(".xml"));
   });
@@ -303,7 +419,9 @@ describe("Fingerprint UI — downloadFingerprint", () => {
     globalThis._resultStore = {};
     globalThis.setResult("fpResult", sampleResult);
     let captured = null;
-    globalThis.downloadBlobSimple = (blob, name) => { captured = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured = { blob, name };
+    };
     await globalThis.downloadFingerprint("html");
     assert.ok(captured.name.endsWith(".html"));
   });
@@ -312,7 +430,9 @@ describe("Fingerprint UI — downloadFingerprint", () => {
     globalThis._resultStore = {};
     globalThis.setResult("fpResult", sampleResult);
     let captured = null;
-    globalThis.downloadBlobSimple = (blob, name) => { captured = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured = { blob, name };
+    };
     await globalThis.downloadFingerprint("pdf");
     assert.ok(captured.name.endsWith(".pdf"));
   });
@@ -321,7 +441,9 @@ describe("Fingerprint UI — downloadFingerprint", () => {
     globalThis._resultStore = {};
     globalThis.setResult("fpResult", sampleResult);
     let captured = null;
-    globalThis.downloadBlobSimple = (blob, name) => { captured = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured = { blob, name };
+    };
     await globalThis.downloadFingerprint("doc");
     assert.ok(captured.name.endsWith(".docx"));
   });
@@ -353,7 +475,9 @@ describe("Fingerprint UI — handleFingerprint", () => {
       }
       return queryMap[sel];
     };
-    globalThis.document.querySelectorAll = function () { return []; };
+    globalThis.document.querySelectorAll = function () {
+      return [];
+    };
   });
 
   afterEach(() => {
@@ -364,7 +488,9 @@ describe("Fingerprint UI — handleFingerprint", () => {
   it("should show error when no file selected", async () => {
     globalThis.getFile = async () => null;
     var shown = null;
-    globalThis.setText = (id, msg) => { shown = msg; };
+    globalThis.setText = (id, msg) => {
+      shown = msg;
+    };
     var resultDiv = globalThis.document.querySelector("#fp-result");
     await globalThis.handleFingerprint();
     assert.ok(shown);
@@ -379,17 +505,29 @@ describe("Fingerprint UI — handleFingerprint", () => {
     var progressFill = globalThis.document.querySelector("#fp-progress-fill");
     var progressDiv = globalThis.document.querySelector("#fp-progress");
 
-    globalThis.getFile = async () => ({ name: "test.png", size: 2048, type: "image/png" });
+    globalThis.getFile = async () => ({
+      name: "test.png",
+      size: 2048,
+      type: "image/png",
+    });
     globalThis.fingerprintFile = async (file, onProgress) => {
       onProgress("Hashing...");
       return {
-        file_info: { file_name: "test.png", file_size_bytes: 2048, format: "PNG", width: 100, height: 100 },
+        file_info: {
+          file_name: "test.png",
+          file_size_bytes: 2048,
+          format: "PNG",
+          width: 100,
+          height: 100,
+        },
         hashes: { "SHA-256": "abc123" },
         perceptual_hashes: {},
       };
     };
     var downloadHandlerSet = null;
-    globalThis.setDownloadHandler = (fn) => { downloadHandlerSet = fn; };
+    globalThis.setDownloadHandler = (fn) => {
+      downloadHandlerSet = fn;
+    };
 
     await globalThis.handleFingerprint();
 
@@ -407,14 +545,19 @@ describe("Fingerprint UI — handleFingerprint", () => {
 
   it("should handle errors from fingerprintFile", async () => {
     globalThis.getFile = async () => ({ name: "bad.txt", size: 100 });
-    globalThis.fingerprintFile = async () => { throw new Error("Processing failed"); };
+    globalThis.fingerprintFile = async () => {
+      throw new Error("Processing failed");
+    };
     var output = globalThis.document.querySelector("#fp-output");
     var btn = globalThis.document.querySelector("#fp-btn");
 
     await globalThis.handleFingerprint();
 
     assert.equal(btn.disabled, false);
-    assert.equal(globalThis.document.querySelector("#fp-result").style.display, "block");
+    assert.equal(
+      globalThis.document.querySelector("#fp-result").style.display,
+      "block",
+    );
   });
 
   it("should render perceptual hashes when present", async () => {
@@ -422,8 +565,8 @@ describe("Fingerprint UI — handleFingerprint", () => {
     globalThis.getFile = async () => ({ name: "img.png", size: 500 });
     globalThis.fingerprintFile = async () => ({
       file_info: { file_name: "img.png", file_size_bytes: 500 },
-      hashes: { "MD5": "xyz" },
-      perceptual_hashes: { "ahash": "abc", "dhash": "def" },
+      hashes: { MD5: "xyz" },
+      perceptual_hashes: { ahash: "abc", dhash: "def" },
     });
 
     await globalThis.handleFingerprint();

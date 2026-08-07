@@ -761,7 +761,9 @@ class PixelInjection {
         input.value = option.value;
         input.step = option.step;
         input.style.cssText = "width: 100%; margin: 5px 0;";
-        var rangeLabel = option.label ? option.label.replace(/[:\s]+$/, "") : "Pixel injection parameter";
+        var rangeLabel = option.label
+          ? option.label.replace(/[:\s]+$/, "")
+          : "Pixel injection parameter";
         input.setAttribute("aria-label", rangeLabel);
         break;
       }
@@ -771,7 +773,9 @@ class PixelInjection {
         input.type = "checkbox";
         input.checked = option.checked;
         input.style.cssText = "margin-right: 10px;";
-        var checkboxLabel = option.label ? option.label.replace(/[:\s]+$/, "") : "Pixel injection option";
+        var checkboxLabel = option.label
+          ? option.label.replace(/[:\s]+$/, "")
+          : "Pixel injection option";
         input.setAttribute("aria-label", checkboxLabel);
         break;
       }
@@ -801,7 +805,6 @@ class PixelInjection {
 
     return input;
   }
-
 
   async handlePixelInjection() {
     const imageInput = document.getElementById("pi-image");
@@ -1046,10 +1049,9 @@ class PixelInjection {
         extractMethodName &&
         typeof this.core[extractMethodName] === "function"
       ) {
-        extractedMessage = await (algorithm === "random_lsb" ? this.core[extractMethodName](
-            imageData,
-            password,
-          ) : this.core[extractMethodName](imageData));
+        extractedMessage = await (algorithm === "random_lsb"
+          ? this.core[extractMethodName](imageData, password)
+          : this.core[extractMethodName](imageData));
       } else if (this.core.detection && this.core.detection[algorithm]) {
         extractedMessage = await this.core.detection[algorithm](imageData);
       } else if (
@@ -2181,4 +2183,3 @@ if (document.readyState === "loading") {
 } else {
   initPixelInjection();
 }
-

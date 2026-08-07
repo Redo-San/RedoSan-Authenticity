@@ -713,5 +713,13 @@ window.__I18N_DATA.zh = {
     "md.download_json": "下载 JSON",
     "simple.cert_desc": "下载带有所有结果、图像预览和 QR 验证码的签名文档。",
     "cert.music_links_checkbox": "添加音乐平台链接",
-    "test.translate": "这是一个测试翻译键"
+    "test.translate": "这是一个测试翻译键",
+    "ast.context_face_biometric": "我看到您在**人脸生物识别**页面。需要帮助吗？",
+    "face.cert_btn": "在证书中使用",
+    "face.export_c2pa_btn": "导出 C2PA 报告",
+    "face.sign_btn": "使用 DID 签名",
+    "pi.analyzing_msg": "正在分析图像中的水印…",
+    "pi.embedding_msg": "正在将水印嵌入图像…",
+    "pi.extracting_msg": "正在从图像中提取水印…",
+    "pi.overlay_hint": "重算法可能需要一些时间"
 };

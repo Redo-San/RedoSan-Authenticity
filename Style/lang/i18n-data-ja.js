@@ -711,5 +711,13 @@ window.__I18N_DATA.ja = {
     "docw.extract_help_title": "文書の透かしを抽出する方法",
     "docw.extract_help": "透かし入りの文書から隠されたメッセージを読み取ります。\n\n透かし入りのドキュメント (TXT、DOCX、または PDF) をアップロードします。埋め込み中に使用された手法を選択します。 パスワードが設定されている場合は、パスワードを入力します。\n\n「抽出」をクリックして、非表示のメッセージを取得します。 抽出されたテキストが結果領域に表示されます。\n\n⚠️ 重要: 出発する前に、抽出したデータをダウンロードしてください。 TXT、CSV、XML、HTML、または DOCX または PDF レポートとして保存します。",
     "md.download_json": "JSONをダウンロード",
-    "cert.music_links_checkbox": "音楽プラットフォームリンクを追加"
+    "cert.music_links_checkbox": "音楽プラットフォームリンクを追加",
+    "ast.context_face_biometric": "**顔生体認証**ページにいるようですね。お手伝いしましょうか？",
+    "face.cert_btn": "証明書で使用",
+    "face.export_c2pa_btn": "C2PAレポートをエクスポート",
+    "face.sign_btn": "DIDで署名",
+    "pi.analyzing_msg": "画像の透かしを分析中…",
+    "pi.embedding_msg": "画像に透かしを埋め込み中…",
+    "pi.extracting_msg": "画像から透かしを抽出中…",
+    "pi.overlay_hint": "重いアルゴリズムには時間がかかる場合があります"
 };

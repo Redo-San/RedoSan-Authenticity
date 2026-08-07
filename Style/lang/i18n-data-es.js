@@ -712,5 +712,13 @@ window.__I18N_DATA.es = {
     "docw.extract_help": "Lea un mensaje oculto de un documento con marca de agua.\n\n Cargue el documento con marca de agua (TXT, DOCX o PDF). Seleccione la técnica que se utilizó durante la incrustación. Si se estableció una contraseña, ingrésela.\n\n Haga clic en Extraer para recuperar el mensaje oculto. El texto extraído aparece en el área de resultados.\n\n ⚠️ Importante: Descarga los datos extraídos antes de salir. Guárdelo en TXT, CSV, XML, HTML o como informe DOCX o PDF. ",
     "md.download_json": "Descargar JSON",
     "simple.cert_desc": "Descargue un documento firmado con todos los resultados, vista previa de la imagen y código de verificación QR.",
-    "cert.music_links_checkbox": "Agregar enlaces de plataformas musicales"
+    "cert.music_links_checkbox": "Agregar enlaces de plataformas musicales",
+    "ast.context_face_biometric": "Veo que estás en la página de **biometría facial**. ¿Necesitas ayuda?",
+    "face.cert_btn": "Usar en certificado",
+    "face.export_c2pa_btn": "Exportar informe C2PA",
+    "face.sign_btn": "Firmar con DID",
+    "pi.analyzing_msg": "Analizando la imagen en busca de marcas de agua…",
+    "pi.embedding_msg": "Insertando la marca de agua en la imagen…",
+    "pi.extracting_msg": "Extrayendo la marca de agua de la imagen…",
+    "pi.overlay_hint": "Los algoritmos pesados pueden tardar un momento"
 };

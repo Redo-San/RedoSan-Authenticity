@@ -711,5 +711,13 @@ window.__I18N_DATA.ko = {
     "docw.extract_help_title": "문서 워터마크 추출 방법",
     "docw.extract_help": "워터마크가 있는 문서에서 숨겨진 메시지를 읽어보세요.\n\n워터마크가 있는 문서(TXT, DOCX 또는 PDF)를 업로드하세요. 삽입 중에 사용된 기술을 선택합니다. 비밀번호가 설정되어 있으면 입력하세요.\n\n숨겨진 메시지를 검색하려면 추출을 클릭하세요. 추출된 텍스트가 결과 영역에 나타납니다.\n\n⚠️ 중요: 떠나기 전에 추출된 데이터를 다운로드하세요. TXT, CSV, XML, HTML로 저장하거나 DOCX 또는 PDF 보고서로 저장하세요.",
     "md.download_json": "JSON 다운로드",
-    "cert.music_links_checkbox": "음악 플랫폼 링크 추가"
+    "cert.music_links_checkbox": "음악 플랫폼 링크 추가",
+    "ast.context_face_biometric": "**얼굴 생체인식** 페이지에 계시네요. 도움이 필요하신가요?",
+    "face.cert_btn": "인증서에서 사용",
+    "face.export_c2pa_btn": "C2PA 보고서 내보내기",
+    "face.sign_btn": "DID로 서명",
+    "pi.analyzing_msg": "이미지의 워터마크를 분석하는 중…",
+    "pi.embedding_msg": "이미지에 워터마크를 삽입하는 중…",
+    "pi.extracting_msg": "이미지에서 워터마크를 추출하는 중…",
+    "pi.overlay_hint": "무거운 알고리즘은 시간이 걸릴 수 있습니다"
 };

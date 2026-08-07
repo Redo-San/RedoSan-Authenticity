@@ -114,7 +114,8 @@ function tryServe(filePath, req, res) {
     }
     var ext = path.extname(target);
     var isHtml = ext === ".html";
-    var etag = '"' + stat.mtimeMs.toString(36) + "-" + stat.size.toString(36) + '"';
+    var etag =
+      '"' + stat.mtimeMs.toString(36) + "-" + stat.size.toString(36) + '"';
     var headers = {
       "Accept-Ranges": "bytes",
       "Cache-Control": "no-cache",
@@ -125,8 +126,20 @@ function tryServe(filePath, req, res) {
       res.end();
       return true;
     }
-    var COMPRESSIBLE = [".html", ".js", ".css", ".json", ".svg", ".xml", ".md", ".txt"];
-    var acceptGzip = COMPRESSIBLE.includes(ext) && req.headers["accept-encoding"] && req.headers["accept-encoding"].includes("gzip");
+    var COMPRESSIBLE = [
+      ".html",
+      ".js",
+      ".css",
+      ".json",
+      ".svg",
+      ".xml",
+      ".md",
+      ".txt",
+    ];
+    var acceptGzip =
+      COMPRESSIBLE.includes(ext) &&
+      req.headers["accept-encoding"] &&
+      req.headers["accept-encoding"].includes("gzip");
     var range = req.headers.range;
     if (range) {
       var parts = range.replace(/bytes=/, "").split("-");

@@ -699,5 +699,13 @@
   "md.download_json": "Télécharger JSON",
   "simple.cert_desc": "Télécharger un document signé avec tous les résultats, une prévisualisation d'image et un code de vérification QR.",
   "cert.music_links_checkbox": "Ajouter des liens de plateformes musicales",
-  "test.translate": "Ceci est une clé de traduction de test"
+  "test.translate": "Ceci est une clé de traduction de test",
+  "ast.context_face_biometric": "Je vois que vous êtes sur la page **biométrie faciale**. Besoin d'aide ?",
+  "face.cert_btn": "Utiliser dans le certificat",
+  "face.export_c2pa_btn": "Exporter le rapport C2PA",
+  "face.sign_btn": "Signer avec DID",
+  "pi.analyzing_msg": "Analyse de l'image à la recherche de filigranes…",
+  "pi.embedding_msg": "Intégration du filigrane dans l'image…",
+  "pi.extracting_msg": "Extraction du filigrane de l'image…",
+  "pi.overlay_hint": "Les algorithmes lourds peuvent prendre un moment"
 }

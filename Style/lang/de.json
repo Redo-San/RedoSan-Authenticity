@@ -699,5 +699,13 @@
   "md.download_json": "Laden Sie JSON herunter",
   "simple.cert_desc": "Lade ein signiertes Dokument mit allen Ergebnissen, Bildvorschau und QR-Verifizierungs-Code herunter.",
   "cert.music_links_checkbox": "Musikplattform-Links hinzufügen",
-  "test.translate": "Dies ist ein Test-Übersetzungs-Schlüssel"
+  "test.translate": "Dies ist ein Test-Übersetzungs-Schlüssel",
+  "ast.context_face_biometric": "Ich sehe, du bist auf der **Face-Biometrie**-Seite. Brauchst du Hilfe?",
+  "face.cert_btn": "In Zertifikat verwenden",
+  "face.export_c2pa_btn": "C2PA-Bericht exportieren",
+  "face.sign_btn": "Mit DID signieren",
+  "pi.analyzing_msg": "Analysiere Bild auf Wasserzeichen…",
+  "pi.embedding_msg": "Bette Wasserzeichen in Bild ein…",
+  "pi.extracting_msg": "Extrahiere Wasserzeichen aus Bild…",
+  "pi.overlay_hint": "Schwere Algorithmen können einen Moment dauern"
 }
