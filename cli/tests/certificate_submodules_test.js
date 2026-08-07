@@ -1911,7 +1911,8 @@ describe("certificate_ots — submitCertTransparency", function () {
     assert.equal(result.submitted, true);
     assert.ok(result.otsProof);
     assert.ok(result.hash);
-    assert.ok(result.aggregator.indexOf("opentimestamps.org") !== -1);
+    var aggHost = new URL(result.aggregator).hostname;
+    assert.ok(aggHost === "opentimestamps.org" || aggHost.endsWith(".opentimestamps.org"));
   });
 
   it("returns pending when all aggregators fail but OTS is available", async function () {
@@ -2006,8 +2007,10 @@ describe("certificate_ots — constants", function () {
     assert.equal(CT_AGGREGATORS.length, 6);
   });
   it("CT_AGGREGATORS contains expected URLs", function () {
-    assert.ok(CT_AGGREGATORS[0].indexOf("opentimestamps.org") !== -1);
-    assert.ok(CT_AGGREGATORS[CT_AGGREGATORS.length - 1].indexOf("eternitywall.com") !== -1);
+    var firstHost = new URL(CT_AGGREGATORS[0]).hostname;
+    var lastHost = new URL(CT_AGGREGATORS[CT_AGGREGATORS.length - 1]).hostname;
+    assert.ok(firstHost === "opentimestamps.org" || firstHost.endsWith(".opentimestamps.org"));
+    assert.ok(lastHost === "eternitywall.com" || lastHost.endsWith(".eternitywall.com"));
   });
   it("OTS_HEADER_MAGIC has 31 bytes", function () {
     assert.equal(OTS_HEADER_MAGIC.length, 31);
