@@ -10,9 +10,12 @@ fi
 echo "Fetching PR diff..."
 # `head -c` closes the pipe early for large diffs; with `pipefail` that makes
 # gh exit 141 (SIGPIPE) and the review wrongly report "Failed to fetch PR diff".
-# 141 is expected, so only treat other non-zero exit codes as failures.
-gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt
-DIFF_STATUS=${PIPESTATUS[0]:-0}
+# The if-condition suppresses set -e so PIPESTATUS can be inspected; 141 is
+# expected, other non-zero exit codes are real failures.
+DIFF_STATUS=0
+if ! gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
+  DIFF_STATUS=${PIPESTATUS[0]:-0}
+fi
 DIFF=$(cat /tmp/pr_diff.txt)
 if [ -z "$DIFF" ]; then
   if [ "$DIFF_STATUS" != "0" ] && [ "$DIFF_STATUS" != "141" ]; then
