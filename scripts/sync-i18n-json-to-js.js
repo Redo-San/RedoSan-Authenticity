@@ -17,7 +17,7 @@ var fs = require("node:fs");
 var path = require("node:path");
 
 var LANG_DIR = path.join(__dirname, "..", "Style", "lang");
-var LANGS = ["ar", "de", "es", "fr", "ja", "ko", "zh"];
+var LANGS = ["en", "ar", "de", "es", "fr", "ja", "ko", "zh"];
 
 /**
  *

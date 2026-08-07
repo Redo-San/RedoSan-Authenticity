@@ -9,7 +9,10 @@ var SUPPORTED = new Set(['en', 'ar', 'fr', 'de', 'es', 'zh', 'ja', 'ko']);
  * @param fallback
  */
 function __(key, fallback) {
-  return (i18n && i18n.data && i18n.data[key]) || fallback || key;
+  if (i18n && i18n.data && i18n.data[key]) return i18n.data[key];
+  var en = window.__I18N_DATA && window.__I18N_DATA.en;
+  if (en && en[key]) return en[key];
+  return fallback || key;
 }
 
 /**
@@ -131,18 +134,32 @@ function getLanguageDisplayName(lang) {
 }
 
 /**
+ * Resolve the Style/ base directory for language files. Works from the SPA
+ * root (Style/...), standalone MPA pages (../../), and deep 404 fallback
+ * paths (absolute /Style/... under the site root).
+ * @returns {string}
+ */
+function i18nLangBase() {
+  if (document.documentElement.dataset.standalone) return '../../';
+  var m = globalThis.location.pathname.match(/^(.*?\/)Style\/pages\//);
+  if (m) return m[1] + 'Style/';
+  return 'Style/';
+}
+
+/**
  *
  * @param lang
  */
 async function loadLang(lang) {
   try {
-    if (window.__I18N_DATA && window.__I18N_DATA[lang]) {
-      i18n.data = window.__I18N_DATA[lang];
+    var cached = window.__I18N_DATA && window.__I18N_DATA[lang];
+    if (cached && Object.keys(cached).length > 0) {
+      i18n.data = cached;
       i18n.lang = lang;
       applyLang();
       return true;
     }
-    var base = document.documentElement.dataset.standalone ? '../../' : 'Style/';
+    var base = i18nLangBase();
     var resp = await fetch(base + 'lang/' + lang + '.json');
     if (!resp.ok) throw new Error('Language file not found: ' + lang);
     var data = await resp.json();
@@ -150,6 +167,15 @@ async function loadLang(lang) {
     window.__I18N_DATA[lang] = data;
     i18n.data = data;
     i18n.lang = lang;
+    // Keep English cached as a fallback for missing keys in other languages
+    if (lang !== 'en' && !window.__I18N_DATA.en) {
+      fetch(base + 'lang/en.json')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (enData) {
+          if (enData) window.__I18N_DATA.en = enData;
+        })
+        .catch(function () {});
+    }
     applyLang();
     return true;
   } catch(error) { 
@@ -191,6 +217,10 @@ function applyLang() {
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.dataset.i18n;
     var text = i18n.data[key];
+    if (text === undefined) {
+      var enFallback = window.__I18N_DATA && window.__I18N_DATA.en;
+      if (enFallback && enFallback[key]) text = enFallback[key];
+    }
     if (text === undefined) return;
     if (richHtmlKeys.has(key)) {
       el.innerHTML = sanitizeHtml(text);
@@ -202,6 +232,10 @@ function applyLang() {
   document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
     var key = el.dataset.i18nPlaceholder;
     var text = i18n.data[key];
+    if (text === undefined) {
+      var enFallback = window.__I18N_DATA && window.__I18N_DATA.en;
+      if (enFallback && enFallback[key]) text = enFallback[key];
+    }
     if (text !== undefined) el.placeholder = text;
   });
 

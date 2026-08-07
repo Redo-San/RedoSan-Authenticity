@@ -9,6 +9,10 @@ globalThis.document = { createElement: () => ({ innerHTML: "", textContent: "", 
 globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
 globalThis.setTimeout = setTimeout;
 globalThis.escHtml = (s) => { if (s == null) return ""; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+globalThis.ensureLib = async (name) => {
+  if (name === "jspdf" && typeof globalThis.jspdf === "undefined") throw new Error("jspdf unavailable");
+  if (name === "docx" && typeof globalThis.docx === "undefined") throw new Error("docx unavailable");
+};
 globalThis.jspdf = {
   jsPDF: class {
     constructor() { this._pages = 1; this._y = 20; }

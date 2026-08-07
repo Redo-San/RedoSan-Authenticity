@@ -151,6 +151,67 @@ class PixelInjection {
     this.updatePiAlgorithms();
   }
 
+  // ── Processing overlay (blur + progress bar during heavy algorithms) ──
+  /**
+   *
+   * @param message
+   */
+  #piShowOverlay(message) {
+    if (this._piOverlayEl) return;
+    const o = document.createElement("div");
+    o.id = "pi-processing-overlay";
+    o.setAttribute("role", "status");
+    o.setAttribute("aria-live", "polite");
+    o.style.cssText =
+      "position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);" +
+      "display:flex;flex-direction:column;align-items:center;justify-content:center;" +
+      "backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)";
+    o.innerHTML =
+      '<div style="width:240px;height:6px;background:rgba(255,255,255,0.25);' +
+      'border-radius:3px;overflow:hidden">' +
+      '<div id="pi-progress-bar" style="width:30%;height:100%;background:#d32f2f;' +
+      'border-radius:3px;animation:piProgressSlide 1.1s ease-in-out infinite">' +
+      "</div></div>" +
+      '<div style="color:#fff;margin-top:14px;font:15px/1.4 sans-serif">' +
+      (message || "Processing image…") +
+      "</div>" +
+      '<div style="color:rgba(255,255,255,0.65);margin-top:6px;' +
+      'font:12px/1.4 sans-serif">' +
+      __("pi.overlay_hint", "Heavy algorithms may take a moment") +
+      "</div>";
+    document.body.append(o);
+    this._piOverlayEl = o;
+    if (!document.getElementById("pi-progress-style")) {
+      const s = document.createElement("style");
+      s.id = "pi-progress-style";
+      s.textContent =
+        "@keyframes piProgressSlide{0%{transform:translateX(-120%)}" +
+        "100%{transform:translateX(420%)}}";
+      document.head.append(s);
+    }
+  }
+
+  /**
+   *
+   */
+  #piHideOverlay() {
+    if (this._piOverlayEl) {
+      this._piOverlayEl.remove();
+      this._piOverlayEl = null;
+    }
+  }
+
+  /**
+   * Let the overlay paint before the heavy synchronous algorithm runs.
+   * @param {string} message
+   */
+  async #piBeforeHeavyWork(message) {
+    this.#piShowOverlay(message);
+    await new Promise(function (r) {
+      setTimeout(r, 40);
+    });
+  }
+
   initializeEventListeners() {
     // Add event listeners for pixel injection interface
     if (document.readyState === "loading") {
@@ -741,6 +802,7 @@ class PixelInjection {
     return input;
   }
 
+
   async handlePixelInjection() {
     const imageInput = document.getElementById("pi-image");
     const messageFileInput = document.getElementById("pi-secret-file");
@@ -808,6 +870,9 @@ class PixelInjection {
     try {
       // Show loading state
       this.showLoading(true);
+      await this.#piBeforeHeavyWork(
+        __("pi.embedding_msg", "Embedding watermark into image…"),
+      );
 
       // Read and process image
       const imageData = await this.loadImage(file);
@@ -857,9 +922,11 @@ class PixelInjection {
       // Show result
       this.showWatermarkedImage();
       this.showQualityMetrics();
+      this.#piHideOverlay();
       this.showLoading(false);
     } catch (error) {
       console.error("Pixel injection error:", error);
+      this.#piHideOverlay();
       this.showLoading(false);
       this.showMessage(`Pixel injection error: ${error.message}`, "error");
     }
@@ -955,6 +1022,9 @@ class PixelInjection {
     try {
       // Show loading state
       this.showLoading(true);
+      await this.#piBeforeHeavyWork(
+        __("pi.extracting_msg", "Extracting watermark from image…"),
+      );
 
       // Read and process image
       const imageData = await this.loadImage(file);
@@ -1038,6 +1108,7 @@ class PixelInjection {
 
       // Show result
       this.showExtractedMessage();
+      this.#piHideOverlay();
       this.showLoading(false);
 
       this.showMessage(
@@ -1045,6 +1116,7 @@ class PixelInjection {
         "success",
       );
     } catch (error) {
+      this.#piHideOverlay();
       this.showLoading(false);
       this.showMessage(`Error: ${error.message}`, "error");
     }
@@ -1073,6 +1145,9 @@ class PixelInjection {
 
     try {
       this.showLoading(true);
+      await this.#piBeforeHeavyWork(
+        __("pi.analyzing_msg", "Analyzing image for watermarks…"),
+      );
 
       const imageData = await this.loadImage(file);
 
@@ -1140,8 +1215,10 @@ class PixelInjection {
         );
       }
 
+      this.#piHideOverlay();
       this.showLoading(false);
     } catch (error) {
+      this.#piHideOverlay();
       this.showLoading(false);
       this.showMessage(`Error: ${error.message}`, "error");
     }
@@ -1386,13 +1463,15 @@ class PixelInjection {
       '<button class="btn" id="pi-copy-btn" style="margin-top: 10px;">' +
       __("pi.copy_message", "Copy Message") +
       "</button>" +
-      '<br><button class="btn" id="pi-dl-btn" style="margin-top: 8px;" onclick="showDownloadModal()">' +
+      '<button class="btn" id="pi-dl-btn" style="margin-top: 8px;" onclick="showDownloadModal()">' +
       __("fp.results_btn", "Download Results") +
       "</button>";
     const copyBtn = document.getElementById("pi-copy-btn");
     if (copyBtn) {
       copyBtn.addEventListener("click", function () {
-        navigator.clipboard.writeText(escHtml(messageText));
+        if (typeof navigator !== "undefined" && navigator.clipboard) {
+          navigator.clipboard.writeText(escHtml(messageText));
+        }
       });
     }
   }
@@ -1977,6 +2056,7 @@ async function downloadPixelInjection(format) {
   var name = "pixel_injection_" + r.type;
 
   if (format === "pdf") {
+    await ensureLib("jspdf");
     var doc = new jspdf.jsPDF();
     var y = 20;
     doc.setFontSize(16);
@@ -1998,6 +2078,7 @@ async function downloadPixelInjection(format) {
     return;
   }
   if (format === "doc") {
+    await ensureLib("docx");
     var docx = window.docx;
     var children = [];
     children.push(
@@ -2100,3 +2181,4 @@ if (document.readyState === "loading") {
 } else {
   initPixelInjection();
 }
+

@@ -43,8 +43,13 @@ async function _docwHash(text) {
  *
  * @param text
  */
-function _docwQrDataURL(text) {
-  if (typeof QRious === "undefined") return null;
+async function _docwQrDataURL(text) {
+  try {
+    await ensureLib("QRious");
+  } catch (error) {
+    void error;
+    return null;
+  }
   var canvas = document.createElement("canvas");
   new QRious({
     element: canvas,
@@ -76,8 +81,9 @@ async function _docwBuildReportPdf(r, mode) {
     timestamp: ts,
     type: isExtract ? "extract" : "embed",
   });
-  var qrData = _docwQrDataURL(qrContent);
+  var qrData = await _docwQrDataURL(qrContent);
 
+  await ensureLib("jspdf");
   var doc = new jspdf.jsPDF({
     orientation: "portrait",
     unit: "mm",

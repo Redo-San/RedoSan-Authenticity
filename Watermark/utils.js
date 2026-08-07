@@ -81,3 +81,90 @@ function extractData(bitsStr, key) {
         return { data: data.slice(2), reason: 'ok' };
     return { data: null, reason: 'bad-password' };
 }
+
+// ── Shared lazy vendor loading (PDF/DOCX/QR/JSZip/OpenTimestamps) ──
+// Defined in Style/shared.js for every page; this copy only activates when
+// shared.js did not run first (isolated test/embed contexts).
+/* c8 ignore start */
+if (typeof ensureLib === 'undefined') {
+const __ensureLibGlobals = {
+    jspdf: () => typeof jspdf !== 'undefined',
+    QRious: () => typeof QRious !== 'undefined',
+    JSZip: () => typeof JSZip !== 'undefined',
+    docx: () => typeof docx !== 'undefined',
+    OpenTimestamps: () => typeof OpenTimestamps !== 'undefined',
+};
+const __ensureLibUrls = {
+    jspdf: [
+        'vendor/jspdf.umd.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+        'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
+        'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    ],
+    QRious: [
+        'vendor/qrious.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js',
+        'https://unpkg.com/qrious@4.0.2/dist/qrious.min.js',
+        'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js',
+    ],
+    JSZip: [
+        'vendor/jszip.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+        'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js',
+        'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
+    ],
+    docx: [
+        'https://cdn.jsdelivr.net/npm/docx@8.5.0/dist/index.js',
+        'https://unpkg.com/docx@8.5.0/build/index.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js',
+    ],
+    OpenTimestamps: [
+        'vendor/opentimestamps.min.js',
+        'https://cdn.jsdelivr.net/npm/opentimestamps.min.js',
+    ],
+};
+/**
+ *
+ * @param name
+ */
+function ensureLib(name) {
+    return new Promise(function (resolve, reject) {
+        const check = __ensureLibGlobals[name];
+        if (check && check()) return resolve();
+        let urls = (__ensureLibUrls[name] || []).slice();
+        if (!urls.length) return reject(new Error('Unknown library: ' + name));
+        if (name !== 'docx') {
+            const rel = urls[0];
+            if (rel.indexOf('vendor/') === 0) {
+                const vbase = document.documentElement.dataset.standalone
+                    ? '../../../vendor/'
+                    : 'vendor/';
+                urls[0] = vbase + rel.slice('vendor/'.length);
+            }
+        }
+        const loaded = (typeof window !== 'undefined') && window.__ensureLibCache;
+        if (loaded && loaded[name] && check && check()) return resolve();
+        if (!loaded) window.__ensureLibCache = {};
+        const load = (i) => {
+            if (i >= urls.length) {
+                window.__ensureLibCache[name] = false;
+                return reject(new Error('Library ' + name + ' not available (vendor + CDNs all failed)'));
+            }
+            const s = document.createElement('script');
+            s.src = urls[i];
+            s.onload = () => {
+                if (check && check()) {
+                    window.__ensureLibCache[name] = true;
+                    return resolve();
+                }
+                window.__ensureLibCache[name] = false;
+                reject(new Error('Library ' + name + ' loaded but global not defined'));
+            };
+            s.onerror = () => setTimeout(() => load(i + 1), 1000);
+            document.head.append(s);
+        };
+        load(0);
+    });
+}
+}
+/* c8 ignore stop */

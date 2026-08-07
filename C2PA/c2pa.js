@@ -677,7 +677,7 @@ window.downloadC2pa = async function(format) {
   if (!r) return;
   var name = (r.file || 'c2pa_report').replace(/\.[^.]+$/, '');
   if (format === 'pdf') {
-    var blob = c2paToPDF(r);
+    var blob = await c2paToPDF(r);
     downloadBlobSimple(blob, name + '.c2pa.pdf');
     return;
   }
@@ -708,7 +708,8 @@ window.downloadC2pa = async function(format) {
  *
  * @param r
  */
-function c2paToPDF(r) {
+async function c2paToPDF(r) {
+  await ensureLib("jspdf");
   var doc = new jspdf.jsPDF();
   var y = 20;
   doc.setFontSize(16);
@@ -765,7 +766,8 @@ function c2paToPDF(r) {
  *
  * @param r
  */
-function c2paToDOCX(r) {
+async function c2paToDOCX(r) {
+  await ensureLib("docx");
   var docx = window.docx;
   var children = [];
   children.push(new docx.Paragraph({

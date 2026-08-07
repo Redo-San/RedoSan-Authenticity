@@ -22,6 +22,11 @@ globalThis.__ = function (key, def) { return def; };
 globalThis.closeDownloadModal = function () {};
 globalThis.downloadBlobSimple = function () {};
 globalThis.setDownloadHandler = function () {};
+globalThis.ensureLib = async (name) => {
+  if (name === "QRious" && typeof globalThis.QRious === "undefined") {
+    throw new Error("QRious unavailable");
+  }
+};
 globalThis.escHtml = function (s) { return s; };
 globalThis.URL.createObjectURL = function () { return "blob:test"; };
 globalThis.URL.revokeObjectURL = function () {};
@@ -552,16 +557,16 @@ describe("Document Watermark UI — _docwHash", function () {
 });
 
 describe("Document Watermark UI — _docwQrDataURL", function () {
-  it("should return null when QRious is undefined", function () {
+  it("should return null when QRious is undefined", async function () {
     var origQR = globalThis.QRious;
     globalThis.QRious = undefined;
     try {
-      var result = _docwQrDataURL("test");
+      var result = await _docwQrDataURL("test");
       assert.equal(result, null);
     } finally { globalThis.QRious = origQR; }
   });
 
-  it("should generate QR code data URL", function () {
+  it("should generate QR code data URL", async function () {
     var qrCalled = false;
     var origQR = globalThis.QRious;
     globalThis.QRious = function (opts) {
@@ -579,7 +584,7 @@ describe("Document Watermark UI — _docwQrDataURL", function () {
       return {};
     };
     try {
-      var result = _docwQrDataURL("qr content");
+      var result = await _docwQrDataURL("qr content");
       assert.ok(qrCalled);
       assert.equal(result, 'data:image/png;base64,qrcode');
     } finally {

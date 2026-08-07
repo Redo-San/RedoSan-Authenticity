@@ -76,7 +76,7 @@ describe("E2E — Service Worker Registration", () => {
     });
 
     assert.ok(swVersion !== null, "SW_VERSION should be defined");
-    assert.equal(swVersion, 2, "SW_VERSION should be 2");
+    assert.equal(swVersion, 3, "SW_VERSION should be 3");
 
     await ctx.close();
   });

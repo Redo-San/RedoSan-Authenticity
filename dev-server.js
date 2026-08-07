@@ -114,10 +114,17 @@ function tryServe(filePath, req, res) {
     }
     var ext = path.extname(target);
     var isHtml = ext === ".html";
+    var etag = '"' + stat.mtimeMs.toString(36) + "-" + stat.size.toString(36) + '"';
     var headers = {
       "Accept-Ranges": "bytes",
-      "Cache-Control": isHtml ? "max-age=0, must-revalidate" : "max-age=3600",
+      "Cache-Control": "no-cache",
+      ETag: etag,
     };
+    if (!isHtml && req.headers["if-none-match"] === etag) {
+      res.writeHead(304, headers);
+      res.end();
+      return true;
+    }
     var COMPRESSIBLE = [".html", ".js", ".css", ".json", ".svg", ".xml", ".md", ".txt"];
     var acceptGzip = COMPRESSIBLE.includes(ext) && req.headers["accept-encoding"] && req.headers["accept-encoding"].includes("gzip");
     var range = req.headers.range;

@@ -42,6 +42,7 @@ globalThis.escXml = (s) => {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 };
 globalThis.validateFileInput = () => true;
+globalThis.ensureLib = async (name) => {};
 
 var _resultStore = {};
 globalThis.setResult = (key, data) => { _resultStore[key] = data; };

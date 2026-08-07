@@ -678,6 +678,7 @@ async function downloadWatermark(format) {
   var name = 'watermark_' + r.type;
 
   if (format === 'pdf') {
+    await ensureLib('jspdf');
     var doc = new jspdf.jsPDF();
     var y = 20;
     doc.setFontSize(16); doc.text('Watermark Result', 14, y); y += 10; doc.setFontSize(10);
@@ -690,6 +691,7 @@ async function downloadWatermark(format) {
     return;
   }
   if (format === 'doc') {
+    await ensureLib('docx');
     var docx = window.docx;
     var children = [];
     children.push(new docx.Paragraph({ children: [new docx.TextRun({ text: 'Watermark Result', bold: true, size: 28 })], spacing: { after: 200 } }));

@@ -81,7 +81,8 @@ async function downloadFingerprint(format) {
  *
  * @param r
  */
-function fpToPDF(r) {
+async function fpToPDF(r) {
+  await ensureLib("jspdf");
   var doc = new jspdf.jsPDF();
   var y = 20;
   doc.setFontSize(16);
@@ -182,7 +183,8 @@ function fpToPDF(r) {
  *
  * @param r
  */
-function fpToDOCX(r) {
+async function fpToDOCX(r) {
+  await ensureLib("docx");
   var docx = globalThis.docx;
   var children = [];
 
