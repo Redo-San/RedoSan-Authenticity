@@ -7,7 +7,9 @@ const fs = require("fs");
 
 const PORT = 9902;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg_200x200.png"),
+);
 
 let browser, server;
 
@@ -38,7 +40,15 @@ describe("E2E — Pixel Injection", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -50,11 +60,21 @@ describe("E2E — Pixel Injection", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "pixel-injection");
     await page.waitForTimeout(1000);
-    const hasCategory = await page.evaluate(() => !!document.getElementById("pi-category"));
-    const hasAlgo = await page.evaluate(() => !!document.getElementById("pi-algorithm"));
-    const hasImage = await page.evaluate(() => !!document.getElementById("pi-image"));
-    const hasSecret = await page.evaluate(() => !!document.getElementById("pi-secret-file"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("pi-btn"));
+    const hasCategory = await page.evaluate(
+      () => !!document.getElementById("pi-category"),
+    );
+    const hasAlgo = await page.evaluate(
+      () => !!document.getElementById("pi-algorithm"),
+    );
+    const hasImage = await page.evaluate(
+      () => !!document.getElementById("pi-image"),
+    );
+    const hasSecret = await page.evaluate(
+      () => !!document.getElementById("pi-secret-file"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("pi-btn"),
+    );
     assert.ok(hasCategory, "Category selector exists");
     assert.ok(hasAlgo, "Algorithm selector exists");
     assert.ok(hasImage, "Image input exists");
@@ -74,12 +94,18 @@ describe("E2E — Pixel Injection", () => {
 
     // Category should default to 'spatial', algorithm to 'enhanced_lsb'
     // Upload image
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     // Upload secret file
     await page.setInputFiles("#pi-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("PI E2E TEST") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("PI E2E TEST"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -126,10 +152,18 @@ describe("E2E — Pixel Injection", () => {
     await page.evaluate(() => switchPiTab("extract"));
     await page.waitForTimeout(500);
 
-    const hasImage = await page.evaluate(() => !!document.getElementById("pi-watermarked-image"));
-    const hasAlgo = await page.evaluate(() => !!document.getElementById("pi-extract-algorithm"));
-    const hasPw = await page.evaluate(() => !!document.getElementById("pi-extract-password"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("pi-extract-btn"));
+    const hasImage = await page.evaluate(
+      () => !!document.getElementById("pi-watermarked-image"),
+    );
+    const hasAlgo = await page.evaluate(
+      () => !!document.getElementById("pi-extract-algorithm"),
+    );
+    const hasPw = await page.evaluate(
+      () => !!document.getElementById("pi-extract-password"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("pi-extract-btn"),
+    );
     assert.ok(hasImage, "Watermarked image input exists");
     assert.ok(hasAlgo, "Extract algorithm selector exists");
     assert.ok(hasPw, "Extract password input exists");
@@ -140,7 +174,10 @@ describe("E2E — Pixel Injection", () => {
       const sel = document.getElementById("pi-extract-algorithm");
       return sel ? sel.options.length : 0;
     });
-    assert.ok(algoOptions > 1, "Algorithm selector should have options (got " + algoOptions + ")");
+    assert.ok(
+      algoOptions > 1,
+      "Algorithm selector should have options (got " + algoOptions + ")",
+    );
     await ctx.close();
   });
 
@@ -154,12 +191,18 @@ describe("E2E — Pixel Injection", () => {
     await page.waitForTimeout(1000);
 
     // Upload image
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     // Upload secret file
     await page.setInputFiles("#pi-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("PI ROUNDTRIP") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("PI ROUNDTRIP"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -181,7 +224,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "Watermarked image data URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "Watermarked image data URL should be available",
+    );
 
     // Convert data URL to buffer
     const base64Data = imgDataUrl.split(",")[1];
@@ -208,7 +254,9 @@ describe("E2E — Pixel Injection", () => {
     await page.waitForTimeout(500);
 
     // Click extract
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -224,7 +272,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("PI ROUNDTRIP"),
-      "Extracted message should contain secret. Got: " + outputHtml.substring(0, 300),
+      "Extracted message should contain secret. Got: " +
+        outputHtml.substring(0, 300),
     );
 
     await ctx.close();
@@ -248,10 +297,16 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("ADAPTIVE TEST") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("ADAPTIVE TEST"),
+      },
     ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("pi-btn").click());
@@ -298,7 +353,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     // 64×64 image has 64 blocks → ~64 bits capacity → ~2 chars after 3x redundancy
     await page.setInputFiles("#pi-secret-file", [
@@ -322,7 +379,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "DCT watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "DCT watermarked image URL should be available",
+    );
 
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
@@ -344,7 +404,9 @@ describe("E2E — Pixel Injection", () => {
     ]);
     await page.waitForTimeout(500);
 
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -358,7 +420,10 @@ describe("E2E — Pixel Injection", () => {
       const el = document.getElementById("pi-output");
       return el ? el.innerHTML : "";
     });
-    assert.ok(outputHtml.includes("OK"), "DCT extract should recover secret. Got: " + outputHtml.substring(0, 300));
+    assert.ok(
+      outputHtml.includes("OK"),
+      "DCT extract should recover secret. Got: " + outputHtml.substring(0, 300),
+    );
     await ctx.close();
   });
 
@@ -388,7 +453,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -439,10 +506,16 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("DCT TEST") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("DCT TEST"),
+      },
     ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("pi-btn").click());
@@ -489,7 +562,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -512,7 +587,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "DWT watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "DWT watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -530,7 +608,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -544,7 +624,10 @@ describe("E2E — Pixel Injection", () => {
       const el = document.getElementById("pi-output");
       return el ? el.innerHTML : "";
     });
-    assert.ok(outputHtml.includes("OK"), "DWT extract should recover secret. Got: " + outputHtml.substring(0, 300));
+    assert.ok(
+      outputHtml.includes("OK"),
+      "DWT extract should recover secret. Got: " + outputHtml.substring(0, 300),
+    );
     await ctx.close();
   });
 
@@ -574,10 +657,16 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("MC ROUNDTRIP") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("MC ROUNDTRIP"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -597,7 +686,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "MC LSB watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "MC LSB watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -615,7 +707,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -631,7 +725,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("MC ROUNDTRIP"),
-      "MC LSB extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "MC LSB extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -664,7 +759,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -687,7 +784,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "DFT watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "DFT watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -705,7 +805,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -719,7 +821,10 @@ describe("E2E — Pixel Injection", () => {
       const el = document.getElementById("pi-output");
       return el ? el.innerHTML : "";
     });
-    assert.ok(outputHtml.includes("OK"), "DFT extract should recover secret. Got: " + outputHtml.substring(0, 300));
+    assert.ok(
+      outputHtml.includes("OK"),
+      "DFT extract should recover secret. Got: " + outputHtml.substring(0, 300),
+    );
     await ctx.close();
   });
 
@@ -749,7 +854,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -772,7 +879,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "Hybrid DCT-DWT watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "Hybrid DCT-DWT watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -790,7 +900,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -806,7 +918,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "Hybrid DCT-DWT extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "Hybrid DCT-DWT extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -831,10 +944,16 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("RANDOM LSB") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("RANDOM LSB"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -854,7 +973,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "Random LSB watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "Random LSB watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -872,7 +994,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -888,7 +1012,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("RANDOM LSB"),
-      "Random LSB extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "Random LSB extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -921,7 +1046,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -944,7 +1071,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "VINE watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "VINE watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -962,7 +1092,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -976,7 +1108,11 @@ describe("E2E — Pixel Injection", () => {
       const el = document.getElementById("pi-output");
       return el ? el.innerHTML : "";
     });
-    assert.ok(outputHtml.includes("OK"), "VINE extract should recover secret. Got: " + outputHtml.substring(0, 300));
+    assert.ok(
+      outputHtml.includes("OK"),
+      "VINE extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
+    );
     await ctx.close();
   });
 
@@ -1006,7 +1142,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1029,7 +1167,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "Pixel Seal watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "Pixel Seal watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -1047,7 +1188,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1063,7 +1206,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "Pixel Seal extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "Pixel Seal extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1094,7 +1238,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1117,7 +1263,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "NullGuard watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "NullGuard watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -1135,7 +1284,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1151,7 +1302,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "NullGuard extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "NullGuard extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1182,7 +1334,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1226,7 +1380,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1242,7 +1398,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "Shallow Diffuse extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "Shallow Diffuse extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1275,7 +1432,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1298,7 +1457,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "Imagewmark watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "Imagewmark watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -1316,7 +1478,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1332,7 +1496,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "Imagewmark extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "Imagewmark extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1363,7 +1528,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1386,7 +1553,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "Meta Seal watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "Meta Seal watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -1404,7 +1574,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1420,7 +1592,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "Meta Seal extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "Meta Seal extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1451,7 +1624,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1474,7 +1649,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "STARDUSTmark watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "STARDUSTmark watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -1492,7 +1670,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1508,7 +1688,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "STARDUSTmark extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "STARDUSTmark extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1539,7 +1720,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1562,7 +1745,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "InvisMark watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "InvisMark watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -1580,7 +1766,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1596,7 +1784,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "InvisMark extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "InvisMark extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1627,7 +1816,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1650,7 +1841,10 @@ describe("E2E — Pixel Injection", () => {
       const img = output.querySelector("img");
       return img ? img.src : null;
     });
-    assert.ok(imgDataUrl && imgDataUrl.startsWith("data:"), "ElevenLikes watermarked image URL should be available");
+    assert.ok(
+      imgDataUrl && imgDataUrl.startsWith("data:"),
+      "ElevenLikes watermarked image URL should be available",
+    );
     const base64Data = imgDataUrl.split(",")[1];
     const imgBuf = Buffer.from(base64Data, "base64");
 
@@ -1668,7 +1862,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1684,7 +1880,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "ElevenLikes extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "ElevenLikes extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -1715,7 +1912,9 @@ describe("E2E — Pixel Injection", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#pi-image", [
+      { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.setInputFiles("#pi-secret-file", [
       { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("OK") },
@@ -1759,7 +1958,9 @@ describe("E2E — Pixel Injection", () => {
       { name: "watermarked.png", mimeType: "image/png", buffer: imgBuf },
     ]);
     await page.waitForTimeout(500);
-    await page.evaluate(() => document.getElementById("pi-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("pi-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("pi-result");
@@ -1775,7 +1976,8 @@ describe("E2E — Pixel Injection", () => {
     });
     assert.ok(
       outputHtml.includes("OK"),
-      "Diffusion-based extract should recover secret. Got: " + outputHtml.substring(0, 300),
+      "Diffusion-based extract should recover secret. Got: " +
+        outputHtml.substring(0, 300),
     );
     await ctx.close();
   });
