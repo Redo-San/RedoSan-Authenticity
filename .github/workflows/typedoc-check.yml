@@ -6,6 +6,11 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # puppeteer (via pa11y dependency) tries to download Chrome during
+  # `npm ci`; storage.googleapis.com now returns 403 for pinned old builds,
+  # breaking installs. TypeDoc does not need a browser, so skip the download.
+  PUPPETEER_SKIP_DOWNLOAD: true
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
 
 permissions:
   contents: read
