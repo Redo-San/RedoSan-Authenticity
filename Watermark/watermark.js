@@ -1181,21 +1181,31 @@ async function downloadWatermark(format) {
 
 // ── Live capacity updates ──
 /* c8 ignore next 16 */
-document.addEventListener("DOMContentLoaded", function () {
-  var imgInput = document.getElementById("wm-image");
-  var secretInput = document.getElementById("wm-secret");
-  var typeSelect = document.getElementById("wm-type");
-  if (imgInput) imgInput.addEventListener("change", updateCapacity);
-  if (secretInput) secretInput.addEventListener("change", updateCapacity);
-  if (typeSelect) typeSelect.addEventListener("change", updateCapacity);
+(function initWatermarkUi() {
+  /**
+   *
+   */
+  function init() {
+    var imgInput = document.getElementById("wm-image");
+    var secretInput = document.getElementById("wm-secret");
+    var typeSelect = document.getElementById("wm-type");
+    if (imgInput) imgInput.addEventListener("change", updateCapacity);
+    if (secretInput) secretInput.addEventListener("change", updateCapacity);
+    if (typeSelect) typeSelect.addEventListener("change", updateCapacity);
 
-  toggleWmPassword();
-  toggleWmExtractPassword();
+    toggleWmPassword();
+    toggleWmExtractPassword();
 
-  var embedType = document.getElementById("wm-type");
-  if (embedType) embedType.addEventListener("change", toggleWmPassword);
+    var embedType = document.getElementById("wm-type");
+    if (embedType) embedType.addEventListener("change", toggleWmPassword);
 
-  var extractType = document.getElementById("wm-type-ex");
-  if (extractType)
-    extractType.addEventListener("change", toggleWmExtractPassword);
-});
+    var extractType = document.getElementById("wm-type-ex");
+    if (extractType)
+      extractType.addEventListener("change", toggleWmExtractPassword);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
