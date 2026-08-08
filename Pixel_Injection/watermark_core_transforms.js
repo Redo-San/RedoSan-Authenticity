@@ -101,6 +101,24 @@ WatermarkCore.prototype.dwt = function (
     waveletDecomposition,
   );
 
+  // Only coefficients up to _bandLen are written by applyDWT; anything
+  // beyond is zero padding that would silently swallow bits on extraction.
+  const bandLen = waveletDecomposition._bandLen;
+  const dwtCapacity = bandLen * 3;
+  if (encodedMessage.length > dwtCapacity) {
+    throw new Error(
+      "Message too long for image capacity: needs " +
+        encodedMessage.length +
+        " bits but image supports " +
+        dwtCapacity +
+        " (" +
+        width +
+        "x" +
+        height +
+        "). Use a larger image or a shorter message.",
+    );
+  }
+
   let messageIndex = 0;
   for (const band of ["LH", "HL", "HH"]) {
     const coeffs = distribution[band];
@@ -110,8 +128,9 @@ WatermarkCore.prototype.dwt = function (
       i < coeffs.length && messageIndex < encodedMessage.length;
       i++
     ) {
+      // embedInCoefficient rounds internally, so no Math.round() here.
       coeffs[i] = this.embedInCoefficient(
-        Math.round(coeffs[i]),
+        coeffs[i],
         parseInt(encodedMessage[messageIndex++], 2),
       );
     }
@@ -224,8 +243,7 @@ WatermarkCore.prototype.hybridDCTDWT = function (
   // Capacity = DCT blocks + full DWT coefficient pool (LH/HL/HH)
   const dctCapacity =
     Math.floor(width / blockSize) * Math.floor(height / blockSize) * 3;
-  const dwtCapacity =
-    Math.floor(width / 2) * Math.floor(height / 2) * 4 * 3;
+  const dwtCapacity = Math.floor(width / 2) * Math.floor(height / 2) * 4 * 3;
   if (encodedMessage.length > dctCapacity + dwtCapacity) {
     throw new Error(
       "Message too long for image capacity: needs " +
@@ -462,12 +480,15 @@ WatermarkCore.prototype.applyDWT = function (
 ) {
   const halfW = Math.floor(width / 2);
   const halfH = Math.floor(height / 2);
+  const bandLen = halfW * halfH * 4;
   // Float64: coefficients must not be clamped/rounded, otherwise embedding
-  // bits (and the reconstructed colors) are destroyed by saturation.
-  const LL = new Float64Array(data.length);
-  const LH = new Float64Array(data.length);
-  const HL = new Float64Array(data.length);
-  const HH = new Float64Array(data.length);
+  // bits (and the reconstructed colors) are destroyed by saturation. Only
+  // bandLen entries are written, so allocate exactly that instead of the
+  // 4x-wasteful full image size.
+  const LL = new Float64Array(bandLen);
+  const LH = new Float64Array(bandLen);
+  const HL = new Float64Array(bandLen);
+  const HH = new Float64Array(bandLen);
   for (let y = 0; y < halfH * 2; y += 2) {
     for (let x = 0; x < halfW * 2; x += 2) {
       const idx00 = (y * width + x) * 4;
@@ -487,7 +508,7 @@ WatermarkCore.prototype.applyDWT = function (
       }
     }
   }
-  return { LL, LH, HL, HH, _bandLen: halfW * halfH * 4 };
+  return { LL, LH, HL, HH, _bandLen: bandLen };
 };
 
 WatermarkCore.prototype.optimizeMessageDistribution = function (

@@ -61,7 +61,7 @@ function renderUpload(body) {
     __("simple.info_name_ph", "e.g. John Doe") +
     '" value="' +
     escHtml(simpleUserInfo.name) +
-    '" required maxlength="25"></div>' +
+    '" required maxlength="100"></div>' +
     '<div class="form-group"><label for="sinfo-email">' +
     __("simple.info_email", "Email") +
     ' <span style="color:var(--danger)">*</span></label>' +
@@ -96,7 +96,7 @@ function renderUpload(body) {
     __("simple.info_website_ph", "e.g. https://example.com") +
     '" value="' +
     escHtml(simpleUserInfo.website || "https://") +
-    '" required maxlength="30" oninput="validateUrlInput(this)" onfocus="prefixHttps(this)">' +
+    '" required maxlength="200" oninput="validateUrlInput(this)" onfocus="prefixHttps(this)">' +
     '<span id="sinfo-website-warn" class="simple-field-warn" style="display:none">' +
     __(
       "simple.url_invalid",

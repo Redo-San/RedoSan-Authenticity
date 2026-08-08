@@ -333,7 +333,18 @@ function renderStep() {
     }
     case "did-sign": {
       if (typeof didLoadKeys !== "function") {
+        // Show a loading state instead of leaving the previous step's UI
+        // visible while the DID engine loads.
+        if (body)
+          body.innerHTML =
+            '<div style="padding:16px;text-align:center"><div class="spinner" style="display:inline-block;margin:8px auto"></div><p style="font-size:0.82rem;color:var(--text-muted)">' +
+            escapeHtml(__("simple.did_loading", "Loading DID engine...")) +
+            "</p></div>";
         simpleEnsureSection("did").then(function () {
+          // Only re-render if the user is still on the DID step; otherwise
+          // the resolved load would wipe whatever step is now active.
+          var current = simpleSteps[simpleStep];
+          if (!current || current.id !== "did-sign") return;
           if (typeof didLoadKeys === "function") {
             renderStep();
             return;
@@ -524,7 +535,11 @@ async function runC2paStep() {
   var btn = document.getElementById("sc2pa-btn");
   var statusEl = document.getElementById("sc2pa-result");
   if (!window.handleC2paWrite) {
+    // Disable the button while the section loads to prevent double-clicks
+    // from starting parallel loads.
+    if (btn) btn.disabled = true;
     await simpleEnsureSection("c2pa");
+    if (btn) btn.disabled = false;
     if (!window.handleC2paWrite) {
       hideProgress();
       if (statusEl) {
@@ -640,8 +655,11 @@ async function runC2paStep() {
  *
  */
 async function runWatermarkStep() {
+  var wmBtn = document.getElementById("swm-btn");
+  if (wmBtn) wmBtn.disabled = true;
   if (typeof watermarkEmbed !== "function") {
     await simpleEnsureSection("watermark");
+    if (wmBtn) wmBtn.disabled = false;
     if (typeof watermarkEmbed !== "function") {
       hideProgress();
       var statusEl = document.getElementById("swm-status");
@@ -733,8 +751,11 @@ async function runWatermarkStep() {
  *
  */
 async function runAudioWatermarkStep() {
+  var awBtn = document.getElementById("sawm-btn");
+  if (awBtn) awBtn.disabled = true;
   if (typeof awLoadAudio !== "function") {
     await simpleEnsureSection("audio-watermark");
+    if (awBtn) awBtn.disabled = false;
     if (typeof awLoadAudio !== "function") {
       hideProgress();
       var statusEl = document.getElementById("sawm-status");
@@ -988,8 +1009,11 @@ async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
  *
  */
 async function runPixelInjectStep() {
+  var piBtn = document.getElementById("spi-btn");
+  if (piBtn) piBtn.disabled = true;
   if (typeof window.handlePixelInjection !== "function") {
     await simpleEnsureSection("pixel-injection");
+    if (piBtn) piBtn.disabled = false;
     if (typeof window.handlePixelInjection !== "function") {
       hideProgress();
       var statusEl = document.getElementById("spi-status");
@@ -1380,8 +1404,13 @@ async function runFingerprintStep() {
  */
 async function runDIDStepGenerate() {
   var statusEl = document.getElementById("sdid-result");
+  var genBtn = document.getElementById("sdid-gen-btn");
   if (typeof didGenerateKeypair !== "function") {
+    // Disable the button while the section loads to prevent double-clicks
+    // from starting parallel loads.
+    if (genBtn) genBtn.disabled = true;
     await simpleEnsureSection("did");
+    if (genBtn) genBtn.disabled = false;
     if (typeof didGenerateKeypair !== "function") {
       if (statusEl)
         statusEl.innerHTML =
@@ -1396,7 +1425,6 @@ async function runDIDStepGenerate() {
       return;
     }
   }
-  var genBtn = document.getElementById("sdid-gen-btn");
   var signBtn = document.getElementById("sdid-sign-btn");
   var algoSelect = document.getElementById("sdid-algo-select");
   var algo = algoSelect ? algoSelect.value : "Ed25519";
@@ -1439,7 +1467,11 @@ async function runDIDStepSign() {
   var signBtn = document.getElementById("sdid-sign-btn");
   var genBtn = document.getElementById("sdid-gen-btn");
   if (typeof didLoadKeys !== "function") {
+    // Disable the button while the section loads to prevent double-clicks
+    // from starting parallel loads.
+    if (signBtn) signBtn.disabled = true;
     await simpleEnsureSection("did");
+    if (signBtn) signBtn.disabled = false;
     if (typeof didLoadKeys !== "function") {
       if (statusEl)
         statusEl.innerHTML =

@@ -249,11 +249,14 @@
       } else {
         // Skip non-JavaScript inline blocks (e.g. application/ld+json) —
         // they are not meant to be executed and would throw a SyntaxError.
-        var itype = s.type || "text/javascript";
+        var scriptType = s.type || "text/javascript";
+        // Inline ES module scripts cannot be re-executed synchronously:
+        // forcing them to "text/javascript" breaks `import`/`export` and
+        // their native async timing cannot be preserved, so they are
+        // skipped like the other non-executable blocks.
         if (
-          itype !== "text/javascript" &&
-          itype !== "module" &&
-          itype !== "application/javascript"
+          scriptType !== "text/javascript" &&
+          scriptType !== "application/javascript"
         )
           return;
         missing.push({ src: null, type: "inline", code: s.textContent || "" });

@@ -2303,6 +2303,14 @@ describe("simplified_renderers.js — renderUpload", function () {
     assert.ok(body.innerHTML.includes("john@test.com"));
   });
 
+  it("uses practical maxlength limits for name, email and website", function () {
+    var body = getMockEl("simpleBody");
+    renderUpload(body);
+    assert.ok(body.innerHTML.includes('maxlength="100"'));
+    assert.ok(body.innerHTML.includes('maxlength="64"'));
+    assert.ok(body.innerHTML.includes('maxlength="200"'));
+  });
+
   it("shows artist-specific fields when isArtist is true", function () {
     var body = getMockEl("simpleBody");
     renderUpload(body);
