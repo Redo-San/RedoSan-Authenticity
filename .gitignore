@@ -92,3 +92,29 @@ docs/
 coverage-improvement-plan.md
 lighthouse-100-plan.md
 
+# ── Secrets — NEVER commit, never share ────────────────────────────
+# Environment & credentials (highest protection: whole .env tree)
+.env/
+.env
+.env.*
+!.env.example
+
+# Private keys & certificates (any location)
+*.pem
+*.key
+*.p12
+*.pfx
+*.p8
+*.pem.pub
+*.asc
+id_rsa
+id_ed25519
+
+# Token / credential files
+*.token
+*credential*
+*_credentials.json
+service-account*.json
+secrets.*
+
+
