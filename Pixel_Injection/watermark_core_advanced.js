@@ -92,23 +92,20 @@ if (WatermarkCore === undefined) {
         const height = imageData.height;
         const data = new Uint8ClampedArray(imageData.data);
         
-        // Analyze image characteristics
-        const characteristics = this.analyzeImageCharacteristics(data, width, height);
-        const binaryMessage = this.stringToBinary(message);
+        // Payload: 4-byte length prefix (little-endian) + message bytes
+        const msgBytes = new TextEncoder().encode(message);
+        const payload = new Uint8Array(4 + msgBytes.length);
+        payload[0] = msgBytes.length & 0xFF;
+        payload[1] = (msgBytes.length >> 8) & 0xFF;
+        payload[2] = (msgBytes.length >> 16) & 0xFF;
+        payload[3] = (msgBytes.length >> 24) & 0xFF;
+        payload.set(msgBytes, 4);
+        const binaryMessage = this.bytesToBinary(payload);
         
         let messageIndex = 0;
-        for (let y = 0; y < height && messageIndex < binaryMessage.length; y++) {
-            for (let x = 0; x < width && messageIndex < binaryMessage.length; x++) {
-                const pixelIndex = (y * width + x) * 4;
-                
-                // Choose embedding strategy based on region
-                const strategy = this.chooseEmbeddingStrategy(x, y, characteristics);
-                
-                for (let channel = 0; channel < 3 && messageIndex < binaryMessage.length; channel++) {
-                    const bit = parseInt(binaryMessage[messageIndex++], 2);
-                    data[pixelIndex + channel] = strategy.embed(data[pixelIndex + channel], bit);
-                }
-            }
+        for (let i = 0; i < data.length && messageIndex < binaryMessage.length; i += 4) {
+            data[i + 3] = 255; // ensure visible alpha
+            data[i + 2] = (data[i + 2] & 0xFE) | parseInt(binaryMessage[messageIndex++], 2);
         }
         
         return new ImageData(data, width, height);
@@ -120,10 +117,15 @@ if (WatermarkCore === undefined) {
         const height = imageData.height;
         const data = new Uint8ClampedArray(imageData.data);
         
-        // Convert message to binary
-        const binaryMessage = message.split('').map(char => 
-            char.charCodeAt(0).toString(2).padStart(8, '0')
-        ).join('');
+        // Payload: 4-byte length prefix (little-endian) + message bytes
+        const msgBytes = new TextEncoder().encode(message);
+        const payload = new Uint8Array(4 + msgBytes.length);
+        payload[0] = msgBytes.length & 0xFF;
+        payload[1] = (msgBytes.length >> 8) & 0xFF;
+        payload[2] = (msgBytes.length >> 16) & 0xFF;
+        payload[3] = (msgBytes.length >> 24) & 0xFF;
+        payload.set(msgBytes, 4);
+        const binaryMessage = this.bytesToBinary(payload);
         
         let messageIndex = 0;
         
@@ -131,6 +133,7 @@ if (WatermarkCore === undefined) {
         for (let y = 0; y < height && messageIndex < binaryMessage.length; y++) {
             for (let x = 0; x < width && messageIndex < binaryMessage.length; x++) {
                 const pixelIndex = (y * width + x) * 4;
+                data[pixelIndex + 3] = 255;
                 
                 // Embed in different channels based on position
                 const channel = (x + y) % 3;
@@ -150,10 +153,15 @@ if (WatermarkCore === undefined) {
         const height = imageData.height;
         const data = new Uint8ClampedArray(imageData.data);
         
-        // Convert message to binary
-        const binaryMessage = message.split('').map(char => 
-            char.charCodeAt(0).toString(2).padStart(8, '0')
-        ).join('');
+        // Payload: 4-byte length prefix (little-endian) + message bytes
+        const msgBytes = new TextEncoder().encode(message);
+        const payload = new Uint8Array(4 + msgBytes.length);
+        payload[0] = msgBytes.length & 0xFF;
+        payload[1] = (msgBytes.length >> 8) & 0xFF;
+        payload[2] = (msgBytes.length >> 16) & 0xFF;
+        payload[3] = (msgBytes.length >> 24) & 0xFF;
+        payload.set(msgBytes, 4);
+        const binaryMessage = this.bytesToBinary(payload);
         
         // Generate pseudo-random sequence based on password
         const seed = password ? this.hashCode(password) : 12_345;
@@ -161,14 +169,20 @@ if (WatermarkCore === undefined) {
         
         let messageIndex = 0;
         const positions = [];
+        const seen = new Set();
         
-        // Generate random positions
-        for (let i = 0; i < binaryMessage.length; i++) {
-            positions.push({
+        // Generate unique random positions (skip collisions so re-read matches exactly)
+        while (positions.length < binaryMessage.length) {
+            const pos = {
                 x: Math.floor(random() * width),
                 y: Math.floor(random() * height),
                 channel: Math.floor(random() * 3)
-            });
+            };
+            const key = (pos.y * width + pos.x) * 4 + pos.channel;
+            if (!seen.has(key)) {
+                seen.add(key);
+                positions.push(pos);
+            }
         }
         
         // Embed at random positions
@@ -189,13 +203,21 @@ if (WatermarkCore === undefined) {
             case 'dct': {
                 return this.extractDCT(watermarkedImageData);
             }
+            case 'dft': {
+                return this.extractDFT(watermarkedImageData);
+            }
             case 'dwt': {
                 return this.extractDWT(watermarkedImageData);
             }
+            case 'hybrid_dct_dwt': {
+                return this.extractHybridDCTDWT(watermarkedImageData);
+            }
             case 'lsb':
-            case 'random_lsb':
             case 'adaptive_lsb': {
                 return this.extractLSB(watermarkedImageData);
+            }
+            case 'random_lsb': {
+                return this.extractRandomLSB(watermarkedImageData, password);
             }
             case 'enhanced_lsb': {
                 return this.extractEnhancedLSB(watermarkedImageData);
@@ -229,10 +251,11 @@ if (WatermarkCore === undefined) {
     
     // Message encoding with advanced error correction
     encodeMessage(message) {
-        // Add CRC, redundancy, and error correction
+        // Add length header, CRC, redundancy, and error correction
         const crc = this.calculateCRC32(message);
-        const withCRC = message + '|' + crc;
-        return this.addRedundancy(withCRC, 3);
+        const len = String(message.length).padStart(8, '0');
+        const withLen = len + '|' + message + '|' + crc;
+        return this.addRedundancy(withLen, 3);
     }
     
     // Bytes to binary conversion

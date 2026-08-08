@@ -15,28 +15,30 @@ WatermarkCore.prototype.dct = function(imageData, message, password = null, opti
     const encoded = this.encodeMessage(message);
     let bitIdx = 0;
     
-    // Embed one bit per 8×8 block using coefficient pair comparison
+    // Embed one bit per 8×8 block per color channel using coefficient pair comparison
     for (let y = 0; y < height - blockSize + 1 && bitIdx < encoded.length; y += blockSize) {
         for (let x = 0; x < width - blockSize + 1 && bitIdx < encoded.length; x += blockSize) {
-            const block = this.extractBlock(data, x, y, width, blockSize);
-            const dctBlock = this.applyDCT(block);
-            
-            // Read bit: 0 → c[5,2] > c[4,3], 1 → c[4,3] > c[5,2]
-            const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
-            const bit = parseInt(encoded[bitIdx++], 2);
-            const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
-            const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
-            const needed = Math.max(gap, 5) + K;
-            if (bit === 0) {
-                dctBlock[idxA] = avg + needed / 2;
-                dctBlock[idxB] = avg - needed / 2;
-            } else {
-                dctBlock[idxA] = avg - needed / 2;
-                dctBlock[idxB] = avg + needed / 2;
+            for (let channel = 0; channel < 3 && bitIdx < encoded.length; channel++) {
+                const block = this.extractBlock(data, x, y, width, blockSize, channel);
+                const dctBlock = this.applyDCT(block);
+                
+                // Read bit: 0 → c[5,2] > c[4,3], 1 → c[4,3] > c[5,2]
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                const bit = parseInt(encoded[bitIdx++], 2);
+                const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
+                const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
+                const needed = Math.max(gap, 5) + K;
+                if (bit === 0) {
+                    dctBlock[idxA] = avg + needed / 2;
+                    dctBlock[idxB] = avg - needed / 2;
+                } else {
+                    dctBlock[idxA] = avg - needed / 2;
+                    dctBlock[idxB] = avg + needed / 2;
+                }
+                
+                const watermarkedBlock = this.applyInverseDCT(dctBlock);
+                this.putBlock(data, watermarkedBlock, x, y, width, channel);
             }
-            
-            const watermarkedBlock = this.applyInverseDCT(dctBlock);
-            this.putBlock(data, watermarkedBlock, x, y, width);
         }
     }
     
@@ -87,30 +89,48 @@ WatermarkCore.prototype.dft = function(imageData, message, password = null, opti
     
     for (let y = 0; y < height - blockSize + 1 && bitIdx < encoded.length; y += blockSize) {
         for (let x = 0; x < width - blockSize + 1 && bitIdx < encoded.length; x += blockSize) {
-            const block = this.extractBlock(data, x, y, width, blockSize);
-            const dftBlock = this.applyDFT(block);
-            
-            const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
-            const bit = parseInt(encoded[bitIdx++], 2);
-            const gap = Math.abs(dftBlock[idxA].real - dftBlock[idxB].real);
-            const avg = (dftBlock[idxA].real + dftBlock[idxB].real) / 2;
-            const needed = Math.max(gap, 5) + K;
-            if (bit === 0) {
-                dftBlock[idxA].real = avg + needed / 2;
-                dftBlock[idxB].real = avg - needed / 2;
-            } else {
-                dftBlock[idxA].real = avg - needed / 2;
-                dftBlock[idxB].real = avg + needed / 2;
+            for (let channel = 0; channel < 3 && bitIdx < encoded.length; channel++) {
+                const block = this.extractBlock(data, x, y, width, blockSize, channel);
+                const dftBlock = this.applyDFT(block);
+                
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                const bit = parseInt(encoded[bitIdx++], 2);
+                const magA = Math.hypot(dftBlock[idxA].real, dftBlock[idxA].imag) || 1;
+                const magB = Math.hypot(dftBlock[idxB].real, dftBlock[idxB].imag) || 1;
+                const gap = Math.abs(magA - magB);
+                // IDFT divides by N*N (64) and conjugate symmetry doubles the contribution,
+                // so an amplitude gap needs a ~32x boost to survive the round trip
+                const needed = (Math.max(gap, 5) + K) * 32;
+                let targetA, targetB;
+                if (bit === 0) {
+                    targetA = magA + needed / 2;
+                    targetB = Math.max(magB - needed / 2, 0.5);
+                } else {
+                    targetA = Math.max(magA - needed / 2, 0.5);
+                    targetB = magB + needed / 2;
+                }
+                // Scale the full vectors (real + imag) so Hermitian symmetry is preserved
+                const scaleA = targetA / magA;
+                const scaleB = targetB / magB;
+                const applyScale = (idx, scale) => {
+                    const r = dftBlock[idx].real * scale;
+                    const im = dftBlock[idx].imag * scale;
+                    return { real: r, imag: im };
+                };
+                const newA = applyScale(idxA, scaleA);
+                const newB = applyScale(idxB, scaleB);
+                dftBlock[idxA] = newA;
+                dftBlock[idxB] = newB;
+                
+                const conjA = 3 * 8 + 6, conjB = 4 * 8 + 5;
+                dftBlock[conjA].real = newA.real;
+                dftBlock[conjA].imag = -newA.imag;
+                dftBlock[conjB].real = newB.real;
+                dftBlock[conjB].imag = -newB.imag;
+                
+                const watermarkedBlock = this.applyInverseDFT(dftBlock);
+                this.putBlock(data, watermarkedBlock, x, y, width, channel);
             }
-            
-            const conjA = 3 * 8 + 6, conjB = 4 * 8 + 5;
-            dftBlock[conjA].real = dftBlock[idxA].real;
-            dftBlock[conjA].imag = -dftBlock[idxA].imag;
-            dftBlock[conjB].real = dftBlock[idxB].real;
-            dftBlock[conjB].imag = -dftBlock[idxB].imag;
-            
-            const watermarkedBlock = this.applyInverseDFT(dftBlock);
-            this.putBlock(data, watermarkedBlock, x, y, width);
         }
     }
     
@@ -118,10 +138,10 @@ WatermarkCore.prototype.dft = function(imageData, message, password = null, opti
 };
 
 // 6. Hybrid DCT-DWT for maximum robustness
-WatermarkCore.prototype.hybridDCTDWT = function(imageData, message, options = {}) {
+WatermarkCore.prototype.hybridDCTDWT = function(imageData, message, password = null, options = {}) {
     const {
         dctStrength = 15
-    } = options;
+    } = options || {};
     
     const width = imageData.width;
     const height = imageData.height;
@@ -131,30 +151,32 @@ WatermarkCore.prototype.hybridDCTDWT = function(imageData, message, options = {}
     const encodedMessage = this.encodeMessage(message);
     const messageLength = encodedMessage.length;
     
-    // DCT portion: one bit per 8x8 block via coefficient pair comparison
+    // DCT portion: one bit per 8x8 block per channel via coefficient pair comparison
     const K = dctStrength;
     const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
     let messageIndex = 0;
     
     for (let y = 0; y < height - blockSize + 1 && messageIndex < messageLength; y += blockSize) {
         for (let x = 0; x < width - blockSize + 1 && messageIndex < messageLength; x += blockSize) {
-            const block = this.extractBlock(data, x, y, width, blockSize);
-            const dctBlock = this.applyDCT(block);
-            
-            const bit = parseInt(encodedMessage[messageIndex++], 2);
-            const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
-            const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
-            const needed = Math.max(gap, 5) + K;
-            if (bit === 0) {
-                dctBlock[idxA] = avg + needed / 2;
-                dctBlock[idxB] = avg - needed / 2;
-            } else {
-                dctBlock[idxA] = avg - needed / 2;
-                dctBlock[idxB] = avg + needed / 2;
+            for (let channel = 0; channel < 3 && messageIndex < messageLength; channel++) {
+                const block = this.extractBlock(data, x, y, width, blockSize, channel);
+                const dctBlock = this.applyDCT(block);
+                
+                const bit = parseInt(encodedMessage[messageIndex++], 2);
+                const gap = Math.abs(dctBlock[idxA] - dctBlock[idxB]);
+                const avg = (dctBlock[idxA] + dctBlock[idxB]) / 2;
+                const needed = Math.max(gap, 5) + K;
+                if (bit === 0) {
+                    dctBlock[idxA] = avg + needed / 2;
+                    dctBlock[idxB] = avg - needed / 2;
+                } else {
+                    dctBlock[idxA] = avg - needed / 2;
+                    dctBlock[idxB] = avg + needed / 2;
+                }
+                
+                const watermarkedBlock = this.applyInverseDCT(dctBlock);
+                this.putBlock(data, watermarkedBlock, x, y, width, channel);
             }
-            
-            const watermarkedBlock = this.applyInverseDCT(dctBlock);
-            this.putBlock(data, watermarkedBlock, x, y, width);
         }
     }
     
@@ -204,8 +226,8 @@ WatermarkCore.prototype.applyDCT = function(block) {
                 }
             }
             const result = sum * 0.25 * 
-                          ((u === 0) ? 1/Math.sqrt(2) : Math.sqrt(2)) *
-                          ((v === 0) ? 1/Math.sqrt(2) : Math.sqrt(2));
+                          ((u === 0) ? 1/Math.sqrt(2) : 1) *
+                          ((v === 0) ? 1/Math.sqrt(2) : 1);
             transformed[u * N + v] = isNaN(result) ? 0 : result; // Handle NaN results
         }
     }
@@ -266,8 +288,8 @@ WatermarkCore.prototype.applyInverseDCT = function(dctBlock) {
                     sum += coefficient * 
                            Math.cos((2 * x + 1) * u * Math.PI / (2 * N)) *
                            Math.cos((2 * y + 1) * v * Math.PI / (2 * N)) *
-                           ((u === 0) ? 1/Math.sqrt(2) : Math.sqrt(2)) *
-                           ((v === 0) ? 1/Math.sqrt(2) : Math.sqrt(2));
+                           ((u === 0) ? 1/Math.sqrt(2) : 1) *
+                           ((v === 0) ? 1/Math.sqrt(2) : 1);
                 }
             }
             const result = sum * 0.25;
@@ -277,29 +299,27 @@ WatermarkCore.prototype.applyInverseDCT = function(dctBlock) {
     return block;
 };
 
-// Get block from image data
-WatermarkCore.prototype.getBlock = function(data, x, y, width) {
+// Get block from image data (single channel to preserve color)
+WatermarkCore.prototype.getBlock = function(data, x, y, width, channel = 1) {
     const block = [];
     for (let dy = 0; dy < 8; dy++) {
         for (let dx = 0; dx < 8; dx++) {
             const pixelIndex = ((y + dy) * width + (x + dx)) * 4;
-            block[dy * 8 + dx] = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3;
+            block[dy * 8 + dx] = data[pixelIndex + channel];
         }
     }
     return block;
 };
 
-// Put block back to image data
-WatermarkCore.prototype.putBlock = function(data, block, x, y, width) {
+// Put block back to image data (single channel to preserve color)
+WatermarkCore.prototype.putBlock = function(data, block, x, y, width, channel = 1) {
     for (let dy = 0; dy < 8; dy++) {
         for (let dx = 0; dx < 8; dx++) {
             const pixelIndex = ((y + dy) * width + (x + dx)) * 4;
             const value = block[dy * 8 + dx];
             // Clamp values to valid range and ensure they're numbers
             const clampedValue = Math.max(0, Math.min(255, isNaN(value) ? 0 : value));
-            data[pixelIndex] = clampedValue;
-            data[pixelIndex + 1] = clampedValue;
-            data[pixelIndex + 2] = clampedValue;
+            data[pixelIndex + channel] = clampedValue;
             // Alpha channel remains unchanged
             data[pixelIndex + 3] = data[pixelIndex + 3] || 255;
         }
@@ -430,13 +450,13 @@ WatermarkCore.prototype.applyInverse2DDFT = function(spectrum, width, height) {
     return data;
 };
 
-// Extract block from image data
-WatermarkCore.prototype.extractBlock = function(data, x, y, width, blockSize) {
+// Extract block from image data (single channel to preserve color)
+WatermarkCore.prototype.extractBlock = function(data, x, y, width, blockSize, channel = 0) {
     const block = new Array(blockSize * blockSize);
     for (let i = 0; i < blockSize; i++) {
         for (let j = 0; j < blockSize; j++) {
             const pixelIndex = ((y + i) * width + (x + j)) * 4;
-            block[i * blockSize + j] = data[pixelIndex];
+            block[i * blockSize + j] = data[pixelIndex + channel];
         }
     }
     return block;

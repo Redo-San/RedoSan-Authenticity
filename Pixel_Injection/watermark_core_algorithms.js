@@ -8,7 +8,10 @@ WatermarkCore.prototype.vine = function(imageData, message, password = null, opt
     const width = imageData.width;
     const height = imageData.height;
     const modelConfig = options.modelConfig || null;
-    const watermarked = this.dct(imageData, message, password, options);
+    const watermarked = this.dct(imageData, message, password, {
+        ...options,
+        strength: Math.max((options && options.strength) || 8, 15)
+    });
     const data = new Uint8ClampedArray(watermarked.data);
     const adversarialPattern = this.generateAdversarialPattern(
         this.encodeMessage(message));
@@ -16,10 +19,10 @@ WatermarkCore.prototype.vine = function(imageData, message, password = null, opt
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const pi = (y * width + x) * 4;
-            for (let c = 1; c < 3; c++) {
+            for (let c = 0; c < 3; c++) {
                 data[pi + c] = Math.max(0, Math.min(255,
                     data[pi + c] + adversarialPattern[(y * width + x) % adversarialPattern.length] *
-                    perceptualMask[pi + c]));
+                    perceptualMask[y * width + x]));
             }
         }
     }
@@ -38,10 +41,10 @@ WatermarkCore.prototype.pixelSeal = function(imageData, message, password = null
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const pi = (y * width + x) * 4;
-            for (let c = 1; c < 3; c++) {
+            for (let c = 0; c < 3; c++) {
                 data[pi + c] = Math.max(0, Math.min(255,
                     data[pi + c] + watermarkPattern[(y * width + x) % watermarkPattern.length] *
-                    strength * jndMask[pi + c]));
+                    strength * jndMask[y * width + x]));
             }
         }
     }
@@ -78,7 +81,7 @@ WatermarkCore.prototype.shallowDiffuse = function(imageData, message, password =
             const pi = (y * width + x) * 4;
             const pv = diffusionPattern[y * width + x];
             if (Math.abs(pv) > 0.3) {
-                for (let c = 1; c < 3; c++) {
+                for (let c = 0; c < 3; c++) {
                     data[pi + c] = Math.max(0, Math.min(255,
                         data[pi + c] + Math.round(pv * 3)));
                 }
@@ -193,7 +196,7 @@ WatermarkCore.prototype.diffusionBased = function(imageData, message, password =
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const pi = (y * width + x) * 4;
-            for (let c = 1; c < 3; c++) {
+            for (let c = 0; c < 3; c++) {
                 data[pi + c] = Math.max(0, Math.min(255,
                     data[pi + c] + diffusionPattern[(y * width + x) % diffusionPattern.length] * 2));
             }
@@ -1044,6 +1047,16 @@ WatermarkCore.prototype.calculateCoefficientWeight = function(i, j) {
 
 // ── Extraction Methods ──
 
+// Parse message from decoded string using the length header (len|message|crc)
+WatermarkCore.prototype.parseDecodedMessage = function(str) {
+    if (!str) return '';
+    const firstPipe = str.indexOf('|');
+    if (firstPipe === -1) return '';
+    const len = parseInt(str.substring(0, firstPipe), 10);
+    if (isNaN(len) || len < 0 || len > 1_000_000) return '';
+    return str.substring(firstPipe + 1, firstPipe + 1 + len);
+};
+
 WatermarkCore.prototype.extractDCT = function(watermarkedImageData, password = null, options = {}) {
     const blockSize = 8;
     const width = watermarkedImageData.width;
@@ -1053,20 +1066,21 @@ WatermarkCore.prototype.extractDCT = function(watermarkedImageData, password = n
 
     for (let y = 0; y < height - blockSize + 1; y += blockSize) {
         for (let x = 0; x < width - blockSize + 1; x += blockSize) {
-            const block = this.extractBlock(data, x, y, width, blockSize);
-            const dctBlock = this.applyDCT(block);
+            for (let channel = 0; channel < 3; channel++) {
+                const block = this.extractBlock(data, x, y, width, blockSize, channel);
+                const dctBlock = this.applyDCT(block);
 
-            // Extract bit from coefficient pair comparison
-            const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
-            bits += dctBlock[idxA] > dctBlock[idxB] ? 0 : 1;
+                // Extract bit from coefficient pair comparison
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                bits += dctBlock[idxA] > dctBlock[idxB] ? 0 : 1;
+            }
         }
     }
 
     // Decode redundancy (each bit repeated 3 times → majority vote)
     const decoded = this.decodeRedundancy(bits, 3);
     const str = this.binaryToString(decoded);
-    const pipeIdx = str.indexOf('|');
-    return pipeIdx >= 0 ? str.substring(0, pipeIdx) : str;
+    return this.parseDecodedMessage(str);
 };
 
 WatermarkCore.prototype.extractDFT = function(watermarkedImageData, password = null, options = {}) {
@@ -1078,18 +1092,21 @@ WatermarkCore.prototype.extractDFT = function(watermarkedImageData, password = n
 
     for (let y = 0; y < height - blockSize + 1; y += blockSize) {
         for (let x = 0; x < width - blockSize + 1; x += blockSize) {
-            const block = this.extractBlock(data, x, y, width, blockSize);
-            const dftBlock = this.applyDFT(block);
+            for (let channel = 0; channel < 3; channel++) {
+                const block = this.extractBlock(data, x, y, width, blockSize, channel);
+                const dftBlock = this.applyDFT(block);
 
-            const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
-            bits += dftBlock[idxA].real > dftBlock[idxB].real ? 0 : 1;
+                const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
+                const magA = Math.hypot(dftBlock[idxA].real, dftBlock[idxA].imag);
+                const magB = Math.hypot(dftBlock[idxB].real, dftBlock[idxB].imag);
+                bits += magA > magB ? 0 : 1;
+            }
         }
     }
 
     const decoded = this.decodeRedundancy(bits, 3);
     const str = this.binaryToString(decoded);
-    const pipeIdx = str.indexOf('|');
-    return pipeIdx >= 0 ? str.substring(0, pipeIdx) : str;
+    return this.parseDecodedMessage(str);
 };
 
 WatermarkCore.prototype.extractHybridDCTDWT = function(watermarkedImageData) {
@@ -1099,13 +1116,15 @@ WatermarkCore.prototype.extractHybridDCTDWT = function(watermarkedImageData) {
     const blockSize = 8;
     const idxA = 5 * 8 + 2, idxB = 4 * 8 + 3;
     
-    // Extract DCT bits from pair comparison
+    // Extract DCT bits from pair comparison (3 channels per block)
     let dctBits = '';
     for (let y = 0; y < height - blockSize + 1; y += blockSize) {
         for (let x = 0; x < width - blockSize + 1; x += blockSize) {
-            const block = this.extractBlock(data, x, y, width, blockSize);
-            const dctBlock = this.applyDCT(block);
-            dctBits += dctBlock[idxA] > dctBlock[idxB] ? 0 : 1;
+            for (let channel = 0; channel < 3; channel++) {
+                const block = this.extractBlock(data, x, y, width, blockSize, channel);
+                const dctBlock = this.applyDCT(block);
+                dctBits += dctBlock[idxA] > dctBlock[idxB] ? 0 : 1;
+            }
         }
     }
     
@@ -1125,9 +1144,9 @@ WatermarkCore.prototype.extractHybridDCTDWT = function(watermarkedImageData) {
     if (trimLen >= 3) {
         const decoded = this.decodeRedundancy(allBits.substring(0, trimLen), 3);
         const str = this.binaryToString(decoded);
-        const pipeIdx = str.indexOf('|');
-        if (pipeIdx >= 0) {
-            return str.substring(0, pipeIdx);
+        const parsed = this.parseDecodedMessage(str);
+        if (parsed) {
+            return parsed;
         }
     }
     
@@ -1136,10 +1155,10 @@ WatermarkCore.prototype.extractHybridDCTDWT = function(watermarkedImageData) {
     if (dctTrim >= 3) {
         const decoded = this.decodeRedundancy(dctBits.substring(0, dctTrim), 3);
         const str = this.binaryToString(decoded);
-        const pipeIdx = str.indexOf('|');
         /* c8 ignore next 3 */
-        if (pipeIdx >= 0) {
-            return str.substring(0, pipeIdx);
+        const parsed = this.parseDecodedMessage(str);
+        if (parsed) {
+            return parsed;
         }
     }
     
@@ -1161,46 +1180,42 @@ WatermarkCore.prototype.extractDWT = function(watermarkedImageData) {
     
     const decoded = this.decodeRedundancy(bits, 3);
     const str = this.binaryToString(decoded);
+    const parsed = this.parseDecodedMessage(str);
+    if (parsed) {
+        return parsed;
+    }
     const nullIdx = str.indexOf('\0');
-    const pipeIdx = str.indexOf('|');
-    return pipeIdx >= 0 ? str.substring(0, pipeIdx) : nullIdx >= 0 ? str.substring(0, nullIdx) : str;
+    return nullIdx >= 0 ? str.substring(0, nullIdx) : str;
 };
 
 WatermarkCore.prototype.extractLSB = function(watermarkedImageData) {
-    // Extract message from LSB watermarked image
+    // Extract message from LSB watermarked image (matches adaptiveLSB embed:
+    // 4-byte length prefix + message in blue channel LSB)
     const data = watermarkedImageData.data;
-    const width = watermarkedImageData.width;
-    const height = watermarkedImageData.height;
-    let binaryMessage = '';
-    let extractedChars = [];
+    let bits = '';
     
-    // Extract bits from LSB of blue channel
     for (let i = 0; i < data.length; i += 4) {
-        const bit = data[i + 2] & 1; // Blue channel LSB
-        binaryMessage += bit;
-        
-        // Check if we have enough bits for a complete character (8 bits)
-        if (binaryMessage.length >= 8) {
-            const byte = binaryMessage.substring(0, 8);
-            const charCode = parseInt(byte, 2);
-            
-            // Stop if we encounter null terminator or invalid character
-            if (charCode > 255) break;
-            
-            // Only add valid printable characters
-            if (charCode >= 32 && charCode <= 126) {
-                extractedChars.push(String.fromCharCode(charCode));
-            }
-            
-            binaryMessage = binaryMessage.substring(8);
-            
-            // Stop if we've extracted a reasonable amount of text
-            if (extractedChars.length > 1000) break;
-        }
+        bits += data[i + 2] & 1; // Blue channel LSB
+        if (bits.length >= 32) break;
     }
+    if (bits.length < 32) return 'No readable message found';
     
-    const result = extractedChars.join('');
-    return result.length > 0 ? result : 'No readable message found';
+    // Little-endian 4-byte length prefix
+    const b0 = parseInt(bits.substring(0, 8), 2);
+    const b1 = parseInt(bits.substring(8, 16), 2);
+    const b2 = parseInt(bits.substring(16, 24), 2);
+    const b3 = parseInt(bits.substring(24, 32), 2);
+    const len = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+    if (isNaN(len) || len <= 0 || len > 100_000) return 'No readable message found';
+    
+    const totalBits = (4 + len) * 8;
+    for (let i = 32; i < totalBits; i++) {
+        bits += data[i * 4 + 2] & 1;
+    }
+    if (bits.length < totalBits) return 'No readable message found';
+    
+    const str = this.binaryToString(bits.substring(0, totalBits));
+    return str.substring(4, 4 + len);
 };
 
 // Enhanced LSB extraction (matches enhancedLSB embed: 4-byte length prefix + message)
@@ -1236,102 +1251,96 @@ WatermarkCore.prototype.extractEnhancedLSB = function(watermarkedImageData) {
     return new TextDecoder('utf-8', { fatal: false }).decode(new Uint8Array(msgBytes));
 };
 
-// Multi-channel LSB extraction
+// Multi-channel LSB extraction (matches multiChannelLSB embed: 4-byte length prefix + message)
 WatermarkCore.prototype.extractMultiChannelLSB = function(watermarkedImageData) {
     const data = watermarkedImageData.data;
     const width = watermarkedImageData.width;
     const height = watermarkedImageData.height;
-    let binaryMessage = '';
-    let extractedChars = [];
     
-    // Extract bits from all RGB channels with different patterns
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const pixelIndex = (y * width + x) * 4;
-            
-            // Extract from different channels based on position
-            const channel = (x + y) % 3;
-            const bit = data[pixelIndex + channel] & 1;
-            binaryMessage += bit;
-            
-            // Check if we have enough bits for a complete character (8 bits)
-            if (binaryMessage.length >= 8) {
-                const byte = binaryMessage.substring(0, 8);
-                const charCode = parseInt(byte, 2);
-                
-                // Stop if we encounter null terminator or invalid character
-                if (charCode > 255) break;
-                
-                // Only add valid printable characters
-                if (charCode >= 32 && charCode <= 126) {
-                    extractedChars.push(String.fromCharCode(charCode));
-                }
-                
-                binaryMessage = binaryMessage.substring(8);
-                
-                // Stop if we've extracted a reasonable amount of text
-                if (extractedChars.length > 1000) break;
+    // Read bits in raster order until we know the message length
+    const readBits = (limit) => {
+        let bits = '';
+        outer:
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const pixelIndex = (y * width + x) * 4;
+                const channel = (x + y) % 3;
+                bits += data[pixelIndex + channel] & 1;
+                if (bits.length >= limit) break outer;
             }
         }
-        
-        if (extractedChars.length > 1000) break;
-    }
+        return bits;
+    };
     
-    const result = extractedChars.join('');
-    return result.length > 0 ? result : 'No readable message found';
+    let bits = readBits(32);
+    if (bits.length < 32) return '';
+    // Little-endian 4-byte length prefix
+    const b0 = parseInt(bits.substring(0, 8), 2);
+    const b1 = parseInt(bits.substring(8, 16), 2);
+    const b2 = parseInt(bits.substring(16, 24), 2);
+    const b3 = parseInt(bits.substring(24, 32), 2);
+    const len = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+    if (isNaN(len) || len < 0 || len > 1_000_000) return '';
+    
+    bits = readBits((4 + len) * 8);
+    if (bits.length < (4 + len) * 8) return '';
+    const str = this.binaryToString(bits.substring(0, (4 + len) * 8));
+    return str.substring(4, 4 + len);
 };
 
-// Random LSB extraction
+// Random LSB extraction (matches randomLSB embed: 4-byte length prefix + message)
 WatermarkCore.prototype.extractRandomLSB = function(watermarkedImageData, password = null) {
     const data = watermarkedImageData.data;
     const width = watermarkedImageData.width;
     const height = watermarkedImageData.height;
-    let binaryMessage = '';
-    let extractedChars = [];
     
     // Generate pseudo-random sequence based on password
     const seed = password ? this.hashCode(password) : 12_345;
     const random = this.pseudoRandom(seed);
     
-    // Generate random positions
+    // Generate positions on demand, skipping collisions (must match randomLSB embed exactly)
     const positions = [];
-    const maxBits = width * height * 3; // Maximum possible bits
-    for (let i = 0; i < Math.min(maxBits, 8000); i++) {
-        positions.push({
-            x: Math.floor(random() * width),
-            y: Math.floor(random() * height),
-            channel: Math.floor(random() * 3)
-        });
-    }
-    
-    // Extract bits from random positions
-    for (const pos of positions) {
-        const pixelIndex = (pos.y * width + pos.x) * 4;
-        const bit = data[pixelIndex + pos.channel] & 1;
-        binaryMessage += bit;
-        
-        // Check if we have enough bits for a complete character (8 bits)
-        if (binaryMessage.length >= 8) {
-            const byte = binaryMessage.substring(0, 8);
-            const charCode = parseInt(byte, 2);
-            
-            // Stop if we encounter null terminator or invalid character
-            if (charCode > 255) break;
-            
-            // Only add valid printable characters
-            if (charCode >= 32 && charCode <= 126) {
-                extractedChars.push(String.fromCharCode(charCode));
+    const seen = new Set();
+    const genPositions = (count) => {
+        while (positions.length < count) {
+            const pos = {
+                x: Math.floor(random() * width),
+                y: Math.floor(random() * height),
+                channel: Math.floor(random() * 3)
+            };
+            const key = (pos.y * width + pos.x) * 4 + pos.channel;
+            if (!seen.has(key)) {
+                seen.add(key);
+                positions.push(pos);
             }
-            
-            binaryMessage = binaryMessage.substring(8);
-            
-            // Stop if we've extracted a reasonable amount of text
-            if (extractedChars.length > 1000) break;
         }
-    }
+    };
     
-    const result = extractedChars.join('');
-    return result.length > 0 ? result : 'No readable message found';
+    // First 32 positions → 32-bit little-endian length
+    genPositions(32);
+    const readBitsAt = (start, end) => {
+        let out = '';
+        for (let i = start; i < end && i < positions.length; i++) {
+            const pos = positions[i];
+            const pixelIndex = (pos.y * width + pos.x) * 4;
+            out += data[pixelIndex + pos.channel] & 1;
+        }
+        return out;
+    };
+    const bits = readBitsAt(0, 32);
+    const b0 = parseInt(bits.substring(0, 8), 2);
+    const b1 = parseInt(bits.substring(8, 16), 2);
+    const b2 = parseInt(bits.substring(16, 24), 2);
+    const b3 = parseInt(bits.substring(24, 32), 2);
+    const len = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+    if (isNaN(len) || len < 0 || len > 1_000_000) return '';
+    
+    const totalBits = (4 + len) * 8;
+    genPositions(totalBits);
+    const fullBits = readBitsAt(0, totalBits);
+    
+    const str = this.binaryToString(fullBits);
+    return str.substring(4, 4 + len);
 };
 
 // Adaptive LSB extraction

@@ -233,6 +233,12 @@ class PixelInjection {
     this.updateExtractAlgorithms();
     this.toggleExtractPiPassword();
 
+    // Always show the text-message input (it was hidden by default, so the
+    // "Enter your secret message" field was unusable on first entry).
+    const piMsgGroup = document.getElementById("pi-message-group");
+    if (piMsgGroup && piMsgGroup.style.display === "none")
+      piMsgGroup.style.display = "";
+
     const categorySelect = document.getElementById("pi-category");
     if (categorySelect) {
       categorySelect.addEventListener("change", () => {
