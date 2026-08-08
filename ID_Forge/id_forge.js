@@ -555,9 +555,7 @@ function switchSwhidTab(tab) {
         ? "var(--accent, #6c5ce7)"
         : "var(--card, #f0f0f0)";
     btns[i].style.color =
-      btns[i].dataset.swhidTab === tab
-        ? "#fff"
-        : "var(--text, #333)";
+      btns[i].dataset.swhidTab === tab ? "#fff" : "var(--text, #333)";
   }
   var wrappers = ["if-swhid-file-wrapper", "if-swhid-text-wrapper"];
   for (var j = 0; j < wrappers.length; j++) {
