@@ -332,6 +332,28 @@ function renderStep() {
       break;
     }
     case "did-sign": {
+      if (typeof didLoadKeys !== "function") {
+        simpleEnsureSection("did").then(function () {
+          if (typeof didLoadKeys === "function") {
+            renderStep();
+            return;
+          }
+          var body = document.getElementById("simpleBody");
+          var nextBtn = document.getElementById("simpleNextBtn");
+          if (body)
+            body.innerHTML =
+              '<div class="simple-error">' +
+              escapeHtml(
+                __(
+                  "simple.did_no_engine",
+                  "DID engine could not be loaded. Please refresh and try again.",
+                ),
+              ) +
+              "</div>";
+          if (nextBtn) nextBtn.disabled = false;
+        });
+        break;
+      }
       renderDIDStep(body);
       break;
     }
@@ -482,6 +504,19 @@ function restartSimple() {
 }
 
 /**
+ * Ensure a lazy-loaded feature section is available in simplified mode.
+ * The SPA only loads section scripts for the current route, so simplified
+ * steps must request the section they depend on explicitly.
+ * @param name
+ */
+function simpleEnsureSection(name) {
+  if (window.RedoSanLoader) {
+    return window.RedoSanLoader.loadSection(name).catch(function () {});
+  }
+  return Promise.resolve();
+}
+
+/**
  *
  */
 async function runC2paStep() {
@@ -489,16 +524,20 @@ async function runC2paStep() {
   var btn = document.getElementById("sc2pa-btn");
   var statusEl = document.getElementById("sc2pa-result");
   if (!window.handleC2paWrite) {
-    if (statusEl) {
-      statusEl.innerHTML =
-        '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
-        __(
-          "simple.c2pa_no_module",
-          "C2PA module not loaded. Check internet connection and refresh.",
-        ) +
-        "</div>";
+    await simpleEnsureSection("c2pa");
+    if (!window.handleC2paWrite) {
+      hideProgress();
+      if (statusEl) {
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px;margin-top:12px">' +
+          __(
+            "simple.c2pa_no_module",
+            "C2PA module not loaded. Check internet connection and refresh.",
+          ) +
+          "</div>";
+      }
+      return;
     }
-    return;
   }
   // Validate C2PA social/music links before signing
   var c2paLinks = document.querySelectorAll(".sc2pa-link");
@@ -600,7 +639,31 @@ async function runC2paStep() {
 /**
  *
  */
-function runWatermarkStep() {
+async function runWatermarkStep() {
+  if (typeof watermarkEmbed !== "function") {
+    await simpleEnsureSection("watermark");
+    if (typeof watermarkEmbed !== "function") {
+      hideProgress();
+      var statusEl = document.getElementById("swm-status");
+      var btn = document.getElementById("swm-btn");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = __("simple.watermark_btn", "Embed Watermark");
+      }
+      if (statusEl) {
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          escapeHtml(
+            __(
+              "simple.wm_no_engine",
+              "Watermark engine could not be loaded. Please refresh and try again.",
+            ),
+          ) +
+          "</div>";
+      }
+      return;
+    }
+  }
   showProgress();
   var algo = parseInt(document.getElementById("swm-type").value, 10);
   var pass = document.getElementById("swm-password").value || "";
@@ -670,6 +733,30 @@ function runWatermarkStep() {
  *
  */
 async function runAudioWatermarkStep() {
+  if (typeof awLoadAudio !== "function") {
+    await simpleEnsureSection("audio-watermark");
+    if (typeof awLoadAudio !== "function") {
+      hideProgress();
+      var statusEl = document.getElementById("sawm-status");
+      var btn = document.getElementById("sawm-btn");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = __("simple.audio_btn", "Embed Audio Watermark");
+      }
+      if (statusEl) {
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          escapeHtml(
+            __(
+              "simple.aw_no_engine",
+              "Audio watermark engine could not be loaded. Please refresh and try again.",
+            ),
+          ) +
+          "</div>";
+      }
+      return;
+    }
+  }
   var fpAlgo = parseInt(document.getElementById("sawm-fp-type").value);
   var tsAlgo = parseInt(document.getElementById("sawm-ts-type").value);
   var pass = document.getElementById("sawm-password").value || "";
@@ -900,7 +987,31 @@ async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
 /**
  *
  */
-function runPixelInjectStep() {
+async function runPixelInjectStep() {
+  if (typeof window.handlePixelInjection !== "function") {
+    await simpleEnsureSection("pixel-injection");
+    if (typeof window.handlePixelInjection !== "function") {
+      hideProgress();
+      var statusEl = document.getElementById("spi-status");
+      var btn = document.getElementById("spi-btn");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = __("simple.pi_btn", "Inject Message");
+      }
+      if (statusEl) {
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          escapeHtml(
+            __(
+              "simple.pi_no_engine",
+              "Injection engine could not be loaded. Please refresh and try again.",
+            ),
+          ) +
+          "</div>";
+      }
+      return;
+    }
+  }
   showProgress();
   var cat = document.getElementById("spi-category").value;
   var pass = document.getElementById("spi-password").value;
@@ -1031,7 +1142,23 @@ function runPixelInjectStep() {
  *
  */
 async function runTimestampStep() {
-  if (!window.handleOtsCreate) return;
+  if (!window.handleOtsCreate) {
+    await simpleEnsureSection("timestamp");
+    if (!window.handleOtsCreate) {
+      var resultDiv = document.getElementById("sts-result");
+      if (resultDiv)
+        resultDiv.innerHTML =
+          '<div class="simple-error">' +
+          escapeHtml(
+            __(
+              "simple.ts_no_engine",
+              "Timestamp engine could not be loaded. Please refresh and try again.",
+            ),
+          ) +
+          "</div>";
+      return;
+    }
+  }
   var fileInput = document.getElementById("ts-create-file");
   if (fileInput) {
     // Use final output (C2PA/audio > injected > original) depending on available steps
@@ -1133,8 +1260,24 @@ async function runTimestampStep() {
 /**
  *
  */
-function runFingerprintStep() {
-  if (!window.handleFingerprint) return;
+async function runFingerprintStep() {
+  if (!window.handleFingerprint && !window.fastFingerprint) {
+    await simpleEnsureSection("fingerprint");
+    if (!window.handleFingerprint && !window.fastFingerprint) {
+      var resultDiv = document.getElementById("sfp-result");
+      if (resultDiv)
+        resultDiv.innerHTML =
+          '<div class="simple-error">' +
+          escapeHtml(
+            __(
+              "simple.fp_no_engine",
+              "Fingerprint engine could not be loaded. Please refresh and try again.",
+            ),
+          ) +
+          "</div>";
+      return;
+    }
+  }
   var fileInput = document.getElementById("fp-file");
   if (fileInput && simpleFile) {
     var dt = new DataTransfer();
@@ -1237,6 +1380,22 @@ function runFingerprintStep() {
  */
 async function runDIDStepGenerate() {
   var statusEl = document.getElementById("sdid-result");
+  if (typeof didGenerateKeypair !== "function") {
+    await simpleEnsureSection("did");
+    if (typeof didGenerateKeypair !== "function") {
+      if (statusEl)
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          escapeHtml(
+            __(
+              "simple.did_no_engine",
+              "DID engine could not be loaded. Please refresh and try again.",
+            ),
+          ) +
+          "</div>";
+      return;
+    }
+  }
   var genBtn = document.getElementById("sdid-gen-btn");
   var signBtn = document.getElementById("sdid-sign-btn");
   var algoSelect = document.getElementById("sdid-algo-select");
@@ -1279,6 +1438,22 @@ async function runDIDStepSign() {
   var statusEl = document.getElementById("sdid-result");
   var signBtn = document.getElementById("sdid-sign-btn");
   var genBtn = document.getElementById("sdid-gen-btn");
+  if (typeof didLoadKeys !== "function") {
+    await simpleEnsureSection("did");
+    if (typeof didLoadKeys !== "function") {
+      if (statusEl)
+        statusEl.innerHTML =
+          '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          escapeHtml(
+            __(
+              "simple.did_no_engine",
+              "DID engine could not be loaded. Please refresh and try again.",
+            ),
+          ) +
+          "</div>";
+      return;
+    }
+  }
   if (!_didKp) {
     var stored = didLoadKeys();
     if (stored) {
