@@ -514,8 +514,10 @@ function downloadBlobSimple(blob, name) {
  *
  */
 function idForgeShowInfo() {
-  var type = document.getElementById("if-type").value;
+  var typeEl = document.getElementById("if-type");
   var info = document.getElementById("if-info");
+  if (!typeEl || !info) return;
+  var type = typeEl.value;
   var icon = {
     uuidv4: "🎲",
     uuidv7: "⏱️",
@@ -553,9 +555,7 @@ function switchSwhidTab(tab) {
         ? "var(--accent, #6c5ce7)"
         : "var(--card, #f0f0f0)";
     btns[i].style.color =
-      btns[i].dataset.swhidTab === tab
-        ? "#fff"
-        : "var(--text, #333)";
+      btns[i].dataset.swhidTab === tab ? "#fff" : "var(--text, #333)";
   }
   var wrappers = ["if-swhid-file-wrapper", "if-swhid-text-wrapper"];
   for (var j = 0; j < wrappers.length; j++) {
@@ -584,3 +584,22 @@ function idForgeUpdateCount() {
   if (val > 10_000) document.getElementById("if-count").value = 10_000;
 }
 /* exported handleIdForgeGenerate, idForgeCopy, idForgeShowDownload, idForgeUpdateCount, idForgeShowInfo, switchSwhidTab */
+
+// Self-init: show the type-specific controls as soon as the script loads.
+// Runs both on direct MPA page loads and on lazy SPA section loads, so the
+// upload/text inputs are never hidden on first entry.
+(function () {
+  if (typeof document === "undefined") return; // CLI/Node context
+  /**
+   *
+   */
+  function init() {
+    var t = document.getElementById("if-type");
+    if (t && typeof idForgeShowInfo === "function") idForgeShowInfo();
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
