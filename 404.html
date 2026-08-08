@@ -19,7 +19,7 @@
       href="/RedoSan-Authenticity/favicon.ico"
     />
     <link rel="stylesheet" href="/RedoSan-Authenticity/Style/style.css" />
-    
+
     <script src="/RedoSan-Authenticity/Style/i18n.js" defer></script>
     <script
       src="/RedoSan-Authenticity/Style/shared_validation.js"
@@ -96,7 +96,11 @@
 
     <nav>
       <div class="nav-left">
-        <a href="/RedoSan-Authenticity/" class="logo" aria-label="RedoSan Authenticity">
+        <a
+          href="/RedoSan-Authenticity/"
+          class="logo"
+          aria-label="RedoSan Authenticity"
+        >
           <div
             class="logo-img logo-white"
             role="img"
@@ -120,18 +124,24 @@
       </div>
       <div class="nav-links">
         <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
-        <a href="/RedoSan-Authenticity/#watermark" data-i18n="sidebar.watermark"
+        <a
+          href="/RedoSan-Authenticity/Style/pages/watermark/index.html"
+          data-i18n="sidebar.watermark"
           >Watermark</a
         >
         <a
-          href="/RedoSan-Authenticity/#fingerprint"
+          href="/RedoSan-Authenticity/Style/pages/fingerprint/index.html"
           data-i18n="sidebar.fingerprint"
           >Fingerprint</a
         >
-        <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata"
+        <a
+          href="/RedoSan-Authenticity/Style/pages/metadata/index.html"
+          data-i18n="sidebar.metadata"
           >Metadata</a
         >
-        <a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp"
+        <a
+          href="/RedoSan-Authenticity/Style/pages/timestamp/index.html"
+          data-i18n="sidebar.timestamp"
           >Timestamp</a
         >
         <div class="lang-dropdown">
@@ -210,20 +220,22 @@
         <div class="error-links">
           <a href="/RedoSan-Authenticity/" data-i18n="sidebar.home">Home</a>
           <a
-            href="/RedoSan-Authenticity/#watermark"
+            href="/RedoSan-Authenticity/Style/pages/watermark/index.html"
             data-i18n="sidebar.watermark"
             >Watermark</a
           >
           <a
-            href="/RedoSan-Authenticity/#fingerprint"
+            href="/RedoSan-Authenticity/Style/pages/fingerprint/index.html"
             data-i18n="sidebar.fingerprint"
             >Fingerprint</a
           >
-          <a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata"
+          <a
+            href="/RedoSan-Authenticity/Style/pages/metadata/index.html"
+            data-i18n="sidebar.metadata"
             >Metadata</a
           >
           <a
-            href="/RedoSan-Authenticity/#timestamp"
+            href="/RedoSan-Authenticity/Style/pages/timestamp/index.html"
             data-i18n="sidebar.timestamp"
             >Timestamp</a
           >
@@ -365,7 +377,7 @@
         "/RedoSan-Authenticity/vendor/jszip.min.js",
         "/RedoSan-Authenticity/vendor/opentimestamps.min.js",
         "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
-        
+
         "/RedoSan-Authenticity/Document_Watermark/document_watermark_core.js",
         "/RedoSan-Authenticity/Document_Watermark/document_watermark_report.js",
         "/RedoSan-Authenticity/Document_Watermark/document_watermark_pdf.js",
@@ -573,9 +585,7 @@
         "/RedoSan-Authenticity/.github/SECURITY.md",
       ];
 
-      var XML_WHITELIST = [
-        "/RedoSan-Authenticity/sitemap.xml",
-      ];
+      var XML_WHITELIST = ["/RedoSan-Authenticity/sitemap.xml"];
 
       function inWhitelist(list, p) {
         if (list.indexOf(p) !== -1) return true;
@@ -593,8 +603,7 @@
           if (lower.endsWith(DANGEROUS_EXTS[i])) return true;
         }
         // Block unknown .js files not in whitelist
-        if (lower.endsWith(".js") && !inWhitelist(JS_WHITELIST, p))
-          return true;
+        if (lower.endsWith(".js") && !inWhitelist(JS_WHITELIST, p)) return true;
         // Block unknown .mjs files not in whitelist
         if (lower.endsWith(".mjs") && !inWhitelist(JS_WHITELIST, p))
           return true;
@@ -614,8 +623,7 @@
         if (lower.endsWith(".html") && !inWhitelist(HTML_WHITELIST, p))
           return true;
         // Block unknown .md files not in whitelist
-        if (lower.endsWith(".md") && !inWhitelist(MD_WHITELIST, p))
-          return true;
+        if (lower.endsWith(".md") && !inWhitelist(MD_WHITELIST, p)) return true;
         // Block unknown .xml files not in whitelist
         if (lower.endsWith(".xml") && !inWhitelist(XML_WHITELIST, p))
           return true;
