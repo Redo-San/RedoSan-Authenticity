@@ -19,6 +19,16 @@
     for (var i = 0; i < parts.length; i++) {
       if (parts[i] === "pages") return parts.slice(0, i + 1).join("/");
     }
+    // Rewritten URLs (e.g. the test server's /watermark/) don't contain
+    // "pages". Derive the base from a relative script src like
+    // "../../shared.js" (two levels up from Style/pages/{name}/).
+    var src = document.querySelector('script[src^="../"]');
+    if (src) {
+      var up = (src.getAttribute("src") || "").split("/").filter(function (s) {
+        return s === "..";
+      }).length;
+      if (up > 0) return Array(up + 1).join("../") + "Style/pages";
+    }
     return "Style/pages";
   }
 
@@ -237,6 +247,15 @@
         if (present.has(abs)) return;
         missing.push({ src: abs, type: s.type || "text/javascript" });
       } else {
+        // Skip non-JavaScript inline blocks (e.g. application/ld+json) —
+        // they are not meant to be executed and would throw a SyntaxError.
+        var itype = s.type || "text/javascript";
+        if (
+          itype !== "text/javascript" &&
+          itype !== "module" &&
+          itype !== "application/javascript"
+        )
+          return;
         missing.push({ src: null, type: "inline", code: s.textContent || "" });
       }
     });
@@ -319,9 +338,15 @@
       el.type = "text/javascript";
       el.textContent = code;
       if (el.textContent.trim()) {
-        el.onload = next;
-        el.onerror = next;
-        document.body.append(el);
+        // Inline scripts execute synchronously on append; browsers never
+        // fire load events for them, so continue immediately instead of
+        // waiting for onload (which would stall the chain and skip reInit).
+        try {
+          document.body.append(el);
+        } catch (error) {
+          void error;
+        }
+        next();
       } else {
         next();
       }
