@@ -221,7 +221,24 @@ WatermarkCore.prototype.hybridDCTDWT = function (
   const blockSize = 8;
 
   const encodedMessage = this.encodeMessage(message);
-  this.assertEmbedCapacity(width, height, encodedMessage.length, blockSize);
+  // Capacity = DCT blocks + full DWT coefficient pool (LH/HL/HH)
+  const dctCapacity =
+    Math.floor(width / blockSize) * Math.floor(height / blockSize) * 3;
+  const dwtCapacity =
+    Math.floor(width / 2) * Math.floor(height / 2) * 4 * 3;
+  if (encodedMessage.length > dctCapacity + dwtCapacity) {
+    throw new Error(
+      "Message too long for image capacity: needs " +
+        encodedMessage.length +
+        " bits but image supports " +
+        (dctCapacity + dwtCapacity) +
+        " (" +
+        width +
+        "x" +
+        height +
+        "). Use a larger image or a shorter message.",
+    );
+  }
   const messageLength = encodedMessage.length;
 
   // DCT portion: one bit per 8x8 block per channel via coefficient pair comparison
@@ -445,10 +462,12 @@ WatermarkCore.prototype.applyDWT = function (
 ) {
   const halfW = Math.floor(width / 2);
   const halfH = Math.floor(height / 2);
-  const LL = new Uint8ClampedArray(data.length);
-  const LH = new Uint8ClampedArray(data.length);
-  const HL = new Uint8ClampedArray(data.length);
-  const HH = new Uint8ClampedArray(data.length);
+  // Float64: coefficients must not be clamped/rounded, otherwise embedding
+  // bits (and the reconstructed colors) are destroyed by saturation.
+  const LL = new Float64Array(data.length);
+  const LH = new Float64Array(data.length);
+  const HL = new Float64Array(data.length);
+  const HH = new Float64Array(data.length);
   for (let y = 0; y < halfH * 2; y += 2) {
     for (let x = 0; x < halfW * 2; x += 2) {
       const idx00 = (y * width + x) * 4;
@@ -461,10 +480,10 @@ WatermarkCore.prototype.applyDWT = function (
           b = data[idx01 + c];
         const d = data[idx10 + c],
           e = data[idx11 + c];
-        LL[outIdx + c] = (a + b + d + e) / 2;
-        LH[outIdx + c] = (a + b - d - e) / 2;
-        HL[outIdx + c] = (a - b + d - e) / 2;
-        HH[outIdx + c] = (a - b - d + e) / 2;
+        LL[outIdx + c] = (a + b + d + e) / 4;
+        LH[outIdx + c] = (a + b - d - e) / 4;
+        HL[outIdx + c] = (a - b + d - e) / 4;
+        HH[outIdx + c] = (a - b - d + e) / 4;
       }
     }
   }
@@ -507,19 +526,19 @@ WatermarkCore.prototype.applyInverseDWT = function (
 
         data[outIdx00 + c] = Math.max(
           0,
-          Math.min(255, Math.round((ll + lh + hl + hh) / 2)),
+          Math.min(255, Math.round(ll + lh + hl + hh)),
         );
         data[outIdx01 + c] = Math.max(
           0,
-          Math.min(255, Math.round((ll + lh - hl - hh) / 2)),
+          Math.min(255, Math.round(ll + lh - hl - hh)),
         );
         data[outIdx10 + c] = Math.max(
           0,
-          Math.min(255, Math.round((ll - lh + hl - hh) / 2)),
+          Math.min(255, Math.round(ll - lh + hl - hh)),
         );
         data[outIdx11 + c] = Math.max(
           0,
-          Math.min(255, Math.round((ll - lh - hl + hh) / 2)),
+          Math.min(255, Math.round(ll - lh - hl + hh)),
         );
       }
     }
@@ -621,9 +640,9 @@ WatermarkCore.prototype.modifyCoefficient = function (
   return modified * weight;
 };
 
-// Embed in wavelet coefficient (step=2 to survive inverse/forward DWT rounding)
+// Embed a bit in the LSB of a wavelet coefficient (change ≤1, survives the
+// Uint8ClampedArray rounding introduced by the balanced /4 decomposition)
 WatermarkCore.prototype.embedInCoefficient = function (coefficient, bit) {
   const rounded = Math.round(coefficient);
-  const quantized = Math.floor(rounded / 2);
-  return ((quantized & ~1) | bit) * 2;
+  return (rounded & ~1) | bit;
 };

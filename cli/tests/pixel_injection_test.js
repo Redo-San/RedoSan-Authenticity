@@ -1144,18 +1144,18 @@ describe("Pixel Injection — apply2DDFT and applyInverse2DDFT (transforms)", ()
   });
 });
 
-describe("Pixel Injection — embedInCoefficient DWT step-2 (transforms)", () => {
+describe("Pixel Injection — embedInCoefficient DWT LSB (transforms)", () => {
   it("should embed bit=1 into coefficient", () => {
     const core = new WatermarkCore();
-    // 100 / 2 = 50, (50 & ~1 | 1) = 51, 51 * 2 = 102
+    // 100 is even; setting LSB to 1 keeps the change minimal (≤1)
     const result = core.embedInCoefficient(100, 1);
-    assert.equal(result, 102);
+    assert.equal(result, 101);
   });
 
   it("should embed bit=0 into coefficient", () => {
     const core = new WatermarkCore();
-    // 100 / 2 = 50, (50 & ~1 | 0) = 50, 50 * 2 = 100
-    const result = core.embedInCoefficient(100, 0);
+    // 101 is odd; clearing the LSB to 0 keeps the change minimal (≤1)
+    const result = core.embedInCoefficient(101, 0);
     assert.equal(result, 100);
   });
 });
