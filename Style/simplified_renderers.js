@@ -61,7 +61,7 @@ function renderUpload(body) {
     __("simple.info_name_ph", "e.g. John Doe") +
     '" value="' +
     escHtml(simpleUserInfo.name) +
-    '" required maxlength="25"></div>' +
+    '" required maxlength="100"></div>' +
     '<div class="form-group"><label for="sinfo-email">' +
     __("simple.info_email", "Email") +
     ' <span style="color:var(--danger)">*</span></label>' +
@@ -69,7 +69,7 @@ function renderUpload(body) {
     __("simple.info_email_ph", "e.g. john@example.com") +
     '" value="' +
     escHtml(simpleUserInfo.email) +
-    '" required maxlength="20" oninput="validateEmailInput(this)">' +
+    '" required maxlength="64" oninput="validateEmailInput(this)">' +
     '<span id="sinfo-email-warn" class="simple-field-warn" style="display:none">' +
     __("simple.email_invalid", "Please enter a valid email address") +
     "</span></div>" +
@@ -96,7 +96,7 @@ function renderUpload(body) {
     __("simple.info_website_ph", "e.g. https://example.com") +
     '" value="' +
     escHtml(simpleUserInfo.website || "https://") +
-    '" required maxlength="30" oninput="validateUrlInput(this)" onfocus="prefixHttps(this)">' +
+    '" required maxlength="200" oninput="validateUrlInput(this)" onfocus="prefixHttps(this)">' +
     '<span id="sinfo-website-warn" class="simple-field-warn" style="display:none">' +
     __(
       "simple.url_invalid",
@@ -598,24 +598,25 @@ function renderDIDStep(body) {
   for (var ai = 0; ai < algos.length; ai++) {
     var label = algos[ai];
     switch (algos[ai]) {
-    case "Ed25519": {
-    label += " (fast, 64-byte sig)";
-    break;
-    }
-    case "P-256": {
-    label += " (widely compatible)";
-    break;
-    }
-    case "RSA-2048": {
-    label += " (256-byte sig)";
-    break;
-    }
-    case "RSA-4096": { {
-    label += " (512-byte sig)";
-    // No default
-    }
-    break;
-    }
+      case "Ed25519": {
+        label += " (fast, 64-byte sig)";
+        break;
+      }
+      case "P-256": {
+        label += " (widely compatible)";
+        break;
+      }
+      case "RSA-2048": {
+        label += " (256-byte sig)";
+        break;
+      }
+      case "RSA-4096": {
+        {
+          label += " (512-byte sig)";
+          // No default
+        }
+        break;
+      }
     }
     algoOpts += '<option value="' + algos[ai] + '">' + label + "</option>";
   }

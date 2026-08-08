@@ -755,6 +755,58 @@ describe("simplified.js — runFingerprintStep", function () {
     assert.ok(true);
     globalThis.handleFingerprint = origHandleFp;
   });
+
+  it("requests the fingerprint section when engines are missing", async function () {
+    var origFp = globalThis.fastFingerprint;
+    var origHandle = globalThis.handleFingerprint;
+    var loadedSections = [];
+    globalThis.fastFingerprint = null;
+    globalThis.handleFingerprint = null;
+    globalThis.RedoSanLoader = {
+      loadSection: function (name) {
+        loadedSections.push(name);
+        globalThis.handleFingerprint = function () {
+          return Promise.resolve({ ok: true, data: { sha256: "abc" } });
+        };
+        return Promise.resolve();
+      },
+    };
+    try {
+      runFingerprintStep();
+      await Promise.resolve();
+      await Promise.resolve();
+      assert.ok(loadedSections.indexOf("fingerprint") !== -1);
+    } finally {
+      globalThis.fastFingerprint = origFp;
+      globalThis.handleFingerprint = origHandle;
+      delete globalThis.RedoSanLoader;
+    }
+  });
+
+  it("shows an error when the fingerprint section fails to load", async function () {
+    var origFp = globalThis.fastFingerprint;
+    var origHandle = globalThis.handleFingerprint;
+    var resultEl = getMockEl("sfp-result");
+    resultEl.innerHTML = "";
+    globalThis.fastFingerprint = null;
+    globalThis.handleFingerprint = null;
+    globalThis.RedoSanLoader = {
+      loadSection: function () {
+        return Promise.reject(new Error("network down"));
+      },
+    };
+    try {
+      runFingerprintStep();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      assert.ok(resultEl.innerHTML.indexOf("simple-error") !== -1);
+    } finally {
+      globalThis.fastFingerprint = origFp;
+      globalThis.handleFingerprint = origHandle;
+      delete globalThis.RedoSanLoader;
+    }
+  });
 });
 
 describe("simplified.js — runTimestampStep branches", function () {
@@ -2249,6 +2301,14 @@ describe("simplified_renderers.js — renderUpload", function () {
     renderUpload(body);
     assert.ok(body.innerHTML.includes("John"));
     assert.ok(body.innerHTML.includes("john@test.com"));
+  });
+
+  it("uses practical maxlength limits for name, email and website", function () {
+    var body = getMockEl("simpleBody");
+    renderUpload(body);
+    assert.ok(body.innerHTML.includes('maxlength="100"'));
+    assert.ok(body.innerHTML.includes('maxlength="64"'));
+    assert.ok(body.innerHTML.includes('maxlength="200"'));
   });
 
   it("shows artist-specific fields when isArtist is true", function () {

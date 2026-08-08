@@ -682,6 +682,40 @@ describe("Pixel Injection — DWT (Haar wavelet)", () => {
   });
 });
 
+describe("Pixel Injection — DWT capacity guard", () => {
+  it("should throw when message exceeds DWT coefficient capacity", () => {
+    const core = new WatermarkCore();
+    const img = makeImage(64, 64);
+    // 64x64 -> bandLen = 32*32*4 = 4096; 3 bands = 12288 bits max
+    const longMsg = "x".repeat(2000);
+    assert.throws(
+      () => core.algorithms.dwt(img, longMsg, "key", {}),
+      /Message too long for image capacity/,
+    );
+  });
+
+  it("should accept a message that fits the DWT capacity", () => {
+    const core = new WatermarkCore();
+    const img = makeImage(128, 128);
+    // 128x128 -> bandLen = 64*64*4 = 16384; 3 bands = 49152 bits
+    const wm = core.algorithms.dwt(img, "fits", "key", {});
+    const extracted = core.extractDWT(wm);
+    assert.equal(extracted, "fits");
+  });
+
+  it("should allocate only bandLen coefficients in applyDWT", () => {
+    const core = new WatermarkCore();
+    const data = new Uint8ClampedArray(makeImage(64, 64).data);
+    const decomp = core.applyDWT(data, 64, 64, 1, "haar");
+    const bandLen = 32 * 32 * 4;
+    assert.equal(decomp.LL.length, bandLen);
+    assert.equal(decomp.LH.length, bandLen);
+    assert.equal(decomp.HL.length, bandLen);
+    assert.equal(decomp.HH.length, bandLen);
+    assert.equal(decomp._bandLen, bandLen);
+  });
+});
+
 describe("Pixel Injection — DFT (8x8 blocks, frequency domain)", () => {
   it("should embed and extract message", () => {
     const core = new WatermarkCore();
@@ -1144,18 +1178,18 @@ describe("Pixel Injection — apply2DDFT and applyInverse2DDFT (transforms)", ()
   });
 });
 
-describe("Pixel Injection — embedInCoefficient DWT step-2 (transforms)", () => {
+describe("Pixel Injection — embedInCoefficient DWT LSB (transforms)", () => {
   it("should embed bit=1 into coefficient", () => {
     const core = new WatermarkCore();
-    // 100 / 2 = 50, (50 & ~1 | 1) = 51, 51 * 2 = 102
+    // 100 is even; setting LSB to 1 keeps the change minimal (≤1)
     const result = core.embedInCoefficient(100, 1);
-    assert.equal(result, 102);
+    assert.equal(result, 101);
   });
 
   it("should embed bit=0 into coefficient", () => {
     const core = new WatermarkCore();
-    // 100 / 2 = 50, (50 & ~1 | 0) = 50, 50 * 2 = 100
-    const result = core.embedInCoefficient(100, 0);
+    // 101 is odd; clearing the LSB to 0 keeps the change minimal (≤1)
+    const result = core.embedInCoefficient(101, 0);
     assert.equal(result, 100);
   });
 });
