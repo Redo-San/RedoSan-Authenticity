@@ -5,7 +5,12 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.ImageData = class ImageData {
   constructor(data, width, height) {
     this.data = data;
@@ -14,21 +19,47 @@ globalThis.ImageData = class ImageData {
   }
 };
 
-const coreSrc = fs.readFileSync(path.join(__dirname, "../../Pixel_Injection/watermark_core_advanced.js"), "utf8");
-vm.runInThisContext(coreSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/watermark_core_advanced.js") });
+const coreSrc = fs.readFileSync(
+  path.join(__dirname, "../../Pixel_Injection/watermark_core_advanced.js"),
+  "utf8",
+);
+vm.runInThisContext(coreSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Pixel_Injection/watermark_core_advanced.js",
+  ),
+});
 const transformsSrc = fs.readFileSync(
   path.join(__dirname, "../../Pixel_Injection/watermark_core_transforms.js"),
   "utf8",
 );
-vm.runInThisContext(transformsSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/watermark_core_transforms.js") });
+vm.runInThisContext(transformsSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Pixel_Injection/watermark_core_transforms.js",
+  ),
+});
 const algorithmsSrc = fs.readFileSync(
   path.join(__dirname, "../../Pixel_Injection/watermark_core_algorithms.js"),
   "utf8",
 );
-vm.runInThisContext(algorithmsSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/watermark_core_algorithms.js") });
+vm.runInThisContext(algorithmsSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Pixel_Injection/watermark_core_algorithms.js",
+  ),
+});
 
-const advSrc = fs.readFileSync(path.join(__dirname, "../../Pixel_Injection/advanced_watermarking.js"), "utf8");
-vm.runInThisContext(advSrc, { filename: path.resolve(__dirname, "../../Pixel_Injection/advanced_watermarking.js") });
+const advSrc = fs.readFileSync(
+  path.join(__dirname, "../../Pixel_Injection/advanced_watermarking.js"),
+  "utf8",
+);
+vm.runInThisContext(advSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Pixel_Injection/advanced_watermarking.js",
+  ),
+});
 
 function makeImage(w, h) {
   const data = new Uint8ClampedArray(w * h * 4);
@@ -65,126 +96,126 @@ describe("AdvancedWatermarking — constructor", () => {
 describe("AdvancedWatermarking — delegation to WatermarkCore", () => {
   it("should delegate enhanced_lsb to WatermarkCore", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.enhanced_lsb(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate multi_channel_lsb", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.multi_channel_lsb(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate random_lsb", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.random_lsb(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate adaptive_lsb", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.adaptive_lsb(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate dct", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.dct(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate dwt", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.dwt(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate dft", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.dft(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate hybrid_dct_dwt", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.hybrid_dct_dwt(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate vine", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.vine(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate pixel_seal", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.pixel_seal(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate nullguard", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.nullguard(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate shallow_diffuse", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.shallow_diffuse(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate diffusion_based", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.diffusion_based(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate imagewmark", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.imagewmark(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate meta_seal", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.meta_seal(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate stardustmark", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.stardustmark(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate invisimark", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.invisimark(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
 
   it("should delegate elevenlikes", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.elevenlikes(img, "test msg", "pw", {});
     assert.ok(wm instanceof ImageData);
   });
@@ -201,7 +232,7 @@ describe("AdvancedWatermarking — detection delegation", () => {
 
   it("should delegate blind_decoding for lsb", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.enhanced_lsb(img, "hello", "key", {});
     const result = aw.detection.blind_decoding(wm, "enhanced_lsb");
     assert.ok(typeof result === "string");
@@ -209,7 +240,7 @@ describe("AdvancedWatermarking — detection delegation", () => {
 
   it("should delegate quality_metrics", () => {
     const aw = new AdvancedWatermarking();
-    const img = makeImage(16, 16);
+    const img = makeImage(200, 200);
     const wm = aw.algorithms.enhanced_lsb(img, "hello", "key", {});
     const q = aw.detection.quality_metrics(img, wm);
     assert.ok(q.psnr > 0);
@@ -419,7 +450,7 @@ describe("AdvancedWatermarking — Block operations (extractBlock, putBlock)", (
     const data = new Uint8ClampedArray(w * h * 4);
     // Fill with test pattern: pixel at (2,2) in red channel should be unique
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 50;     // R
+      data[i] = 50; // R
       data[i + 1] = 100; // G
       data[i + 2] = 150; // B
       data[i + 3] = 255; // A
@@ -450,8 +481,8 @@ describe("AdvancedWatermarking — Block operations (extractBlock, putBlock)", (
     aw.putBlock(data, block, 0, 0, w);
     // Verify pixel (0,0) = 1, (1,0) = 2, (0,1) = 3, (1,1) = 4
     assert.equal(data[0], 1);
-    assert.equal(data[4], 2);  // (1,0): 1*4=4 bytes offset
-    assert.equal(data[w * 4], 3);  // (0,1): 8*4=32 bytes offset
+    assert.equal(data[4], 2); // (1,0): 1*4=4 bytes offset
+    assert.equal(data[w * 4], 3); // (0,1): 8*4=32 bytes offset
     assert.equal(data[w * 4 + 4], 4); // (1,1)
   });
 
@@ -561,7 +592,7 @@ describe("AdvancedWatermarking — Spread spectrum and PN sequence", () => {
     const aw = new AdvancedWatermarking();
     const seq = aw.generatePNSequence(10);
     assert.equal(seq.length, 10);
-    seq.forEach(v => {
+    seq.forEach((v) => {
       assert.ok(v === 1 || v === -1);
     });
   });
@@ -577,7 +608,7 @@ describe("AdvancedWatermarking — Spread spectrum and PN sequence", () => {
     const aw = new AdvancedWatermarking();
     const seq = aw.generatePNSequence(100);
     assert.equal(seq.length, 100);
-    seq.forEach(v => {
+    seq.forEach((v) => {
       assert.ok(v === 1 || v === -1, `expected ±1 but got ${v}`);
     });
   });
@@ -612,7 +643,7 @@ describe("AdvancedWatermarking — Adversarial pattern generation", () => {
     assert.ok(Array.isArray(pattern));
     assert.equal(pattern.length, message.length);
     // Each value should be ±1 * PN sequence value
-    pattern.forEach(v => {
+    pattern.forEach((v) => {
       assert.ok(typeof v === "number");
     });
   });
