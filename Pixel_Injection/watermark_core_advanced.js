@@ -323,6 +323,33 @@ if (WatermarkCore === undefined) {
         return this.addRedundancy(withLen, 3);
       }
 
+      // Fail loudly instead of silently truncating the payload
+      assertEmbedCapacity(
+        width,
+        height,
+        encodedLength,
+        blockSize = 8,
+        channels = 3,
+      ) {
+        const capacity =
+          Math.floor(width / blockSize) *
+          Math.floor(height / blockSize) *
+          channels;
+        if (encodedLength > capacity) {
+          throw new Error(
+            "Message too long for image capacity: needs " +
+              encodedLength +
+              " bits but image supports " +
+              capacity +
+              " (" +
+              width +
+              "x" +
+              height +
+              "). Use a larger image or a shorter message.",
+          );
+        }
+      }
+
       // Bytes to binary conversion
       bytesToBinary(bytes) {
         let binary = "";

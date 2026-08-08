@@ -7,6 +7,20 @@ const {
   getMockEl,
 } = require("./simplified_test_setup");
 
+globalThis.DataTransfer = class {
+  constructor() {
+    this.files = [];
+    this.items = { add: function () {} };
+  }
+};
+globalThis.File = class {
+  constructor(parts, name, opts) {
+    this.name = name;
+    this.type = opts && opts.type ? opts.type : "";
+    this._parts = parts;
+  }
+};
+
 var _origSimpleFileSelected;
 
 before(function () {
@@ -136,47 +150,94 @@ describe("simplified.js — embedAlgo", function () {
 
   it("throws for unknown algorithm", async function () {
     var s16 = new Int16Array(100);
-    await assert.rejects(
-      function () { return embedAlgo(99, s16, "010101", 44_100, 50, function () {}); },
-      /Unknown algorithm/
-    );
+    await assert.rejects(function () {
+      return embedAlgo(99, s16, "010101", 44_100, 50, function () {});
+    }, /Unknown algorithm/);
   });
 });
 
 describe("simplified.js — buildSteps", function () {
   it("builds correct steps for image type (non-AI)", function () {
     var steps = buildSteps("image", false);
-    var ids = steps.map(function (s) { return s.id; });
+    var ids = steps.map(function (s) {
+      return s.id;
+    });
     assert.deepEqual(ids, [
-      "upload", "ai-question", "fingerprint", "did-sign",
-      "watermark", "pixel-injection", "timestamp", "done",
+      "upload",
+      "ai-question",
+      "fingerprint",
+      "did-sign",
+      "watermark",
+      "pixel-injection",
+      "timestamp",
+      "done",
     ]);
   });
 
   it("builds correct steps for image type (AI)", function () {
     var steps = buildSteps("image", true);
-    var ids = steps.map(function (s) { return s.id; });
+    var ids = steps.map(function (s) {
+      return s.id;
+    });
     assert.deepEqual(ids, [
-      "upload", "ai-question", "fingerprint", "did-sign",
-      "watermark", "pixel-injection", "c2pa", "timestamp", "done",
+      "upload",
+      "ai-question",
+      "fingerprint",
+      "did-sign",
+      "watermark",
+      "pixel-injection",
+      "c2pa",
+      "timestamp",
+      "done",
     ]);
   });
 
   it("builds correct steps for audio type", function () {
     var steps = buildSteps("audio", false);
-    var ids = steps.map(function (s) { return s.id; });
+    var ids = steps.map(function (s) {
+      return s.id;
+    });
     assert.deepEqual(ids, [
-      "upload", "fingerprint", "did-sign", "audio-watermark", "timestamp", "done",
+      "upload",
+      "fingerprint",
+      "did-sign",
+      "audio-watermark",
+      "timestamp",
+      "done",
     ]);
   });
 
   it("builds minimal steps for other types", function () {
-    var ids1 = buildSteps("video", false).map(function (s) { return s.id; });
-    assert.deepEqual(ids1, ["upload", "fingerprint", "timestamp", "did-sign", "done"]);
-    var ids2 = buildSteps("document", false).map(function (s) { return s.id; });
-    assert.deepEqual(ids2, ["upload", "fingerprint", "timestamp", "did-sign", "done"]);
-    var ids3 = buildSteps("other", false).map(function (s) { return s.id; });
-    assert.deepEqual(ids3, ["upload", "fingerprint", "timestamp", "did-sign", "done"]);
+    var ids1 = buildSteps("video", false).map(function (s) {
+      return s.id;
+    });
+    assert.deepEqual(ids1, [
+      "upload",
+      "fingerprint",
+      "timestamp",
+      "did-sign",
+      "done",
+    ]);
+    var ids2 = buildSteps("document", false).map(function (s) {
+      return s.id;
+    });
+    assert.deepEqual(ids2, [
+      "upload",
+      "fingerprint",
+      "timestamp",
+      "did-sign",
+      "done",
+    ]);
+    var ids3 = buildSteps("other", false).map(function (s) {
+      return s.id;
+    });
+    assert.deepEqual(ids3, [
+      "upload",
+      "fingerprint",
+      "timestamp",
+      "did-sign",
+      "done",
+    ]);
   });
 
   it("each step has id and label", function () {
@@ -224,7 +285,9 @@ describe("simplified.js — DOM interaction functions", function () {
 
   it("calls __musicInit when setMode is called and function exists (line 70)", function () {
     var musicInitCalled = false;
-    globalThis.__musicInit = function () { musicInitCalled = true; };
+    globalThis.__musicInit = function () {
+      musicInitCalled = true;
+    };
     getMockEl("modeSelect");
     getMockEl("simplifiedMode");
     getMockEl("mainNav");
@@ -239,7 +302,9 @@ describe("simplified.js — DOM interaction functions", function () {
 
   it("handles history.pushState error gracefully (line 77)", function () {
     var origPushState = globalThis.history.pushState;
-    globalThis.history.pushState = function () { throw new Error("push failed"); };
+    globalThis.history.pushState = function () {
+      throw new Error("push failed");
+    };
     getMockEl("modeSelect");
     getMockEl("simplifiedMode");
     getMockEl("mainNav");
@@ -371,7 +436,10 @@ describe("simplified.js — saveSimpleUserInfo (from helpers)", function () {
     assert.equal(simpleUserInfo.website, "https://example.com");
     assert.equal(simpleUserInfo.social.tiktok, "https://tiktok.com/@john");
     assert.equal(simpleUserInfo.isArtist, true);
-    assert.equal(simpleUserInfo.music.spotify, "https://spotify.com/artist/john");
+    assert.equal(
+      simpleUserInfo.music.spotify,
+      "https://spotify.com/artist/john",
+    );
   });
 
   it("handles missing DOM elements gracefully", function () {
@@ -475,8 +543,16 @@ describe("simplified.js — simpleNext validation", function () {
     simpleSteps = buildSteps("image", false);
     simpleStep = 0;
     simpleFile = { name: "test.jpg" };
-    simpleUserInfo = { name: "", email: "", phone: "", phoneCode: "", website: "",
-      social: {}, isArtist: false, music: {} };
+    simpleUserInfo = {
+      name: "",
+      email: "",
+      phone: "",
+      phoneCode: "",
+      website: "",
+      social: {},
+      isArtist: false,
+      music: {},
+    };
 
     // Mock document.querySelector to return a section with append capability
     var appended = false;
@@ -485,7 +561,9 @@ describe("simplified.js — simpleNext validation", function () {
         if (sel === ".simple-info-error") return null;
         return null;
       },
-      append: function (el) { appended = true; },
+      append: function (el) {
+        appended = true;
+      },
     };
     var origQs = document.querySelector;
     document.querySelector = function (sel) {
@@ -654,14 +732,18 @@ describe("simplified.js — runFingerprintStep", function () {
 
   it("falls back to handleFingerprint when fastFingerprint is missing", function () {
     globalThis.fastFingerprint = null;
-    globalThis.handleFingerprint = function () { return Promise.resolve(); };
+    globalThis.handleFingerprint = function () {
+      return Promise.resolve();
+    };
     runFingerprintStep();
     assert.ok(true);
   });
 
   it("handles handleFingerprint rejection", function () {
     globalThis.fastFingerprint = null;
-    globalThis.handleFingerprint = function () { return Promise.reject(new Error("hash failed")); };
+    globalThis.handleFingerprint = function () {
+      return Promise.reject(new Error("hash failed"));
+    };
     runFingerprintStep();
     assert.ok(true);
   });
@@ -687,7 +769,8 @@ describe("simplified.js — runTimestampStep branches", function () {
   });
 
   it("creates timestamp result with blockchain attestation", async function () {
-    getMockEl("ts-output").textContent = "abc" + "a".repeat(61) + " blockchain attestation";
+    getMockEl("ts-output").textContent =
+      "abc" + "a".repeat(61) + " blockchain attestation";
     await runTimestampStep();
     assert.ok(simpleResults.timestamp === true);
   });
@@ -706,14 +789,18 @@ describe("simplified.js — runTimestampStep branches", function () {
 
   it("handles timestamp with empty textContent (line 1061)", async function () {
     getMockEl("ts-output").textContent = "";
-    globalThis.handleOtsCreate = function () { return Promise.resolve({ ok: true }); };
+    globalThis.handleOtsCreate = function () {
+      return Promise.resolve({ ok: true });
+    };
     await runTimestampStep();
     assert.ok(simpleResults.timestamp === true);
   });
 
   it("handles timestamp with non-empty textContent (line 1061 truthy branch)", async function () {
     getMockEl("ts-output").textContent = "some attestation hash abc123";
-    globalThis.handleOtsCreate = function () { return Promise.resolve({ ok: true }); };
+    globalThis.handleOtsCreate = function () {
+      return Promise.resolve({ ok: true });
+    };
     await runTimestampStep();
     assert.ok(simpleResults.timestamp === true);
   });
@@ -724,7 +811,9 @@ describe("simplified.js — runTimestampStep branches", function () {
       if (id === "ts-output") return null;
       return origGet(id);
     };
-    globalThis.handleOtsCreate = function () { return Promise.resolve({ ok: true }); };
+    globalThis.handleOtsCreate = function () {
+      return Promise.resolve({ ok: true });
+    };
     await runTimestampStep();
     globalThis.document.getElementById = origGet;
     assert.ok(simpleResults.timestamp === true);
@@ -788,7 +877,11 @@ describe("simplified.js — runDIDStepSign", function () {
 
   it("signs and verifies successfully", async function () {
     globalThis.didLoadKeys = function () {
-      return Promise.resolve({ algo: "Ed25519", publicKey: "pub", privateKey: "priv" });
+      return Promise.resolve({
+        algo: "Ed25519",
+        publicKey: "pub",
+        privateKey: "priv",
+      });
     };
     await runDIDStepSign();
     assert.ok(simpleResults.didSig !== undefined);
@@ -796,9 +889,15 @@ describe("simplified.js — runDIDStepSign", function () {
 
   it("reports verification failure", async function () {
     globalThis.didLoadKeys = function () {
-      return Promise.resolve({ algo: "Ed25519", publicKey: "pub", privateKey: "priv" });
+      return Promise.resolve({
+        algo: "Ed25519",
+        publicKey: "pub",
+        privateKey: "priv",
+      });
     };
-    globalThis.didVerify = function () { return Promise.resolve(false); };
+    globalThis.didVerify = function () {
+      return Promise.resolve(false);
+    };
     await runDIDStepSign();
     var html = getMockEl("sdid-result").innerHTML;
     assert.ok(html.includes("verify_failed") || html.includes("danger"));
@@ -806,9 +905,15 @@ describe("simplified.js — runDIDStepSign", function () {
 
   it("handles signing error", async function () {
     globalThis.didLoadKeys = function () {
-      return Promise.resolve({ algo: "Ed25519", publicKey: "pub", privateKey: "priv" });
+      return Promise.resolve({
+        algo: "Ed25519",
+        publicKey: "pub",
+        privateKey: "priv",
+      });
     };
-    globalThis.didSign = function () { return Promise.reject(new Error("sign failed")); };
+    globalThis.didSign = function () {
+      return Promise.reject(new Error("sign failed"));
+    };
     await runDIDStepSign();
     var html = getMockEl("sdid-result").innerHTML;
     assert.ok(html.includes("failed") || html.includes("danger"));
@@ -820,8 +925,12 @@ describe("simplified.js — runDIDStepSign", function () {
   });
 
   it("handles error in didImportSignKey (stored keys invalid)", async function () {
-    globalThis.didLoadKeys = function () { return { algo: "Ed25519" }; };
-    globalThis.didImportSignKey = function () { return Promise.reject(new Error("import failed")); };
+    globalThis.didLoadKeys = function () {
+      return { algo: "Ed25519" };
+    };
+    globalThis.didImportSignKey = function () {
+      return Promise.reject(new Error("import failed"));
+    };
     getMockEl("sdid-sign-btn");
     await runDIDStepSign();
     var html = getMockEl("sdid-result").innerHTML;
@@ -829,7 +938,9 @@ describe("simplified.js — runDIDStepSign", function () {
   });
 
   it("handles null stored keys", async function () {
-    globalThis.didLoadKeys = function () { return null; };
+    globalThis.didLoadKeys = function () {
+      return null;
+    };
     await runDIDStepSign();
     var html = getMockEl("sdid-result").innerHTML;
     assert.ok(html.includes("no_keys") || html.includes("danger"));
@@ -838,11 +949,26 @@ describe("simplified.js — runDIDStepSign", function () {
   it("handles fpResult with missing hashes (line 1301)", async function () {
     simpleResults.fpResult = { hashes: null };
     globalThis.didLoadKeys = function () {
-      return Promise.resolve({ algo: "Ed25519", publicKey: "pub", privateKey: "priv" });
+      return Promise.resolve({
+        algo: "Ed25519",
+        publicKey: "pub",
+        privateKey: "priv",
+      });
     };
-    globalThis.didImportSignKey = function () { return Promise.resolve({ publicKey: "pub", privateKey: "priv", algorithm: "Ed25519", did: "did:key:z6Mk" }); };
-    globalThis.didSign = function () { return Promise.resolve(new Uint8Array(64)); };
-    globalThis.didVerify = function () { return Promise.resolve(true); };
+    globalThis.didImportSignKey = function () {
+      return Promise.resolve({
+        publicKey: "pub",
+        privateKey: "priv",
+        algorithm: "Ed25519",
+        did: "did:key:z6Mk",
+      });
+    };
+    globalThis.didSign = function () {
+      return Promise.resolve(new Uint8Array(64));
+    };
+    globalThis.didVerify = function () {
+      return Promise.resolve(true);
+    };
     getMockEl("sdid-sign-btn");
     await runDIDStepSign();
     assert.ok(simpleResults.didSig !== undefined);
@@ -962,7 +1088,8 @@ describe("simplified.js — runC2paStep", function () {
     var profCb = getMockEl("c2pa-write-content");
 
     document.querySelectorAll = function (sel) {
-      if (sel === "#sc2pa-write-types .c2pa-type-card[data-form-type]") return [cardEl];
+      if (sel === "#sc2pa-write-types .c2pa-type-card[data-form-type]")
+        return [cardEl];
       if (sel === ".sc2pa-link") return [];
       return origQsa(sel);
     };
@@ -986,36 +1113,48 @@ describe("simplified.js — runWatermarkStep", function () {
     getMockEl("swm-status");
     getMockEl("swm-btn");
     getMockEl("simpleNextBtn");
-    globalThis.URL.createObjectURL = function () { return "blob:wm"; };
+    globalThis.URL.createObjectURL = function () {
+      return "blob:wm";
+    };
   });
 
   it("triggers watermark embedding without throwing", function () {
-    globalThis.watermarkEmbed = function () { return Promise.resolve({ ok: true, data: new Blob(), msg: "done" }); };
+    globalThis.watermarkEmbed = function () {
+      return Promise.resolve({ ok: true, data: new Blob(), msg: "done" });
+    };
     runWatermarkStep();
     assert.ok(true);
   });
 
   it("handles watermark embed failure", function () {
-    globalThis.watermarkEmbed = function () { return Promise.resolve({ ok: false, error: "embed failed" }); };
+    globalThis.watermarkEmbed = function () {
+      return Promise.resolve({ ok: false, error: "embed failed" });
+    };
     runWatermarkStep();
     assert.ok(true);
   });
 
   it("handles watermark embed with empty fpResult (line 614)", function () {
     simpleResults.fpResult = null;
-    globalThis.watermarkEmbed = function () { return Promise.resolve({ ok: true, data: new Blob(), msg: "done" }); };
+    globalThis.watermarkEmbed = function () {
+      return Promise.resolve({ ok: true, data: new Blob(), msg: "done" });
+    };
     runWatermarkStep();
     assert.ok(true);
   });
 
   it("handles watermark embed success without msg (line 634)", function () {
-    globalThis.watermarkEmbed = function () { return Promise.resolve({ ok: true, data: new Blob() }); };
+    globalThis.watermarkEmbed = function () {
+      return Promise.resolve({ ok: true, data: new Blob() });
+    };
     runWatermarkStep();
     assert.ok(true);
   });
 
   it("handles watermark embed failure without error property (line 661)", function () {
-    globalThis.watermarkEmbed = function () { return Promise.resolve({ ok: false }); };
+    globalThis.watermarkEmbed = function () {
+      return Promise.resolve({ ok: false });
+    };
     runWatermarkStep();
     assert.ok(true);
   });
@@ -1049,7 +1188,9 @@ describe("simplified.js — runAudioWatermarkStep", function () {
     getMockEl("sawm-strength").value = "400";
     globalThis.awLoadAudio = function () {
       return {
-        sr: 44_100, ch: 2, samples: new Int16Array(44_100),
+        sr: 44_100,
+        ch: 2,
+        samples: new Int16Array(44_100),
         raw: new Int16Array(88_200),
       };
     };
@@ -1064,7 +1205,9 @@ describe("simplified.js — runAudioWatermarkStep", function () {
     getMockEl("sawm-strength").value = "400";
     globalThis.awLoadAudio = function () {
       return {
-        sr: 44_100, ch: 1, samples: new Int16Array(44_100),
+        sr: 44_100,
+        ch: 1,
+        samples: new Int16Array(44_100),
         raw: new Int16Array(44_100),
       };
     };
@@ -1073,7 +1216,9 @@ describe("simplified.js — runAudioWatermarkStep", function () {
   });
 
   it("handles error gracefully", async function () {
-    globalThis.awLoadAudio = function () { return Promise.reject(new Error("load failed")); };
+    globalThis.awLoadAudio = function () {
+      return Promise.reject(new Error("load failed"));
+    };
     await runAudioWatermarkStep();
     assert.ok(simpleResults.audioWatermark === undefined);
   });
@@ -1092,10 +1237,14 @@ describe("simplified.js — runAudioWatermarkStep", function () {
     simpleResults.didSig = null;
     simpleResults.fpResult = null;
     var origBits = globalThis.aw3_maxBits;
-    globalThis.aw3_maxBits = function () { return 0; };
+    globalThis.aw3_maxBits = function () {
+      return 0;
+    };
     globalThis.awLoadAudio = function () {
       return {
-        sr: 44100, ch: 2, samples: new Int16Array(44100),
+        sr: 44100,
+        ch: 2,
+        samples: new Int16Array(44100),
         raw: new Int16Array(88200),
       };
     };
@@ -1113,7 +1262,9 @@ describe("simplified.js — runAudioWatermarkStep", function () {
     getMockEl("sawm-strength").value = "400";
     globalThis.awLoadAudio = function () {
       return {
-        sr: 44100, ch: 2, samples: new Int16Array(44100),
+        sr: 44100,
+        ch: 2,
+        samples: new Int16Array(44100),
         raw: new Int16Array(88200),
       };
     };
@@ -1137,41 +1288,54 @@ describe("simplified.js — runPixelInjectStep", function () {
     getMockEl("pi-category");
     getMockEl("pi-algorithm");
     getMockEl("pi-message");
+    getMockEl("pi-secret-file");
     getMockEl("pi-password");
     getMockEl("pi-output");
     getMockEl("pi-download");
     getMockEl("simpleNextBtn");
-    globalThis.URL.createObjectURL = function () { return "blob:pi"; };
+    globalThis.URL.createObjectURL = function () {
+      return "blob:pi";
+    };
   });
 
   it("triggers pixel injection without throwing", function () {
-    globalThis.handlePixelInjection = function () { return Promise.resolve(); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.resolve();
+    };
     runPixelInjectStep();
     assert.ok(true);
   });
 
   it("handles pixel injection failure", function () {
-    globalThis.handlePixelInjection = function () { return Promise.reject(new Error("inject failed")); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.reject(new Error("inject failed"));
+    };
     runPixelInjectStep();
     assert.ok(true);
   });
 
   it("handles pixel injection without didSig (line 907)", function () {
     simpleResults.didSig = null;
-    globalThis.handlePixelInjection = function () { return Promise.resolve(); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.resolve();
+    };
     runPixelInjectStep();
     assert.ok(true);
   });
 
   it("handles pixel injection without watermarkBlob (line 916)", function () {
     simpleResults.watermarkBlob = null;
-    globalThis.handlePixelInjection = function () { return Promise.resolve(); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.resolve();
+    };
     runPixelInjectStep();
     assert.ok(true);
   });
 
   it("handles pixel injection failure without error message (line 996)", function () {
-    globalThis.handlePixelInjection = function () { return Promise.reject({}); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.reject({});
+    };
     runPixelInjectStep();
     assert.ok(true);
   });
@@ -1198,38 +1362,56 @@ describe("simplified.js — runPixelInjectStep setTimeout branches (lines 916, 9
     getMockEl("pi-download");
     getMockEl("simpleNextBtn");
     _origSetTimeout = globalThis.setTimeout;
-    globalThis.setTimeout = function (fn) { _origSetTimeout(fn, 0); };
+    globalThis.setTimeout = function (fn) {
+      _origSetTimeout(fn, 0);
+    };
   });
   afterEach(function () {
     globalThis.setTimeout = _origSetTimeout;
   });
 
   it("pixel injection success inside setTimeout", async function () {
-    globalThis.handlePixelInjection = function () { return Promise.resolve(); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.resolve();
+    };
     runPixelInjectStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(simpleResults["pixel-injection"] === true);
   });
 
   it("pixel injection failure inside setTimeout", async function () {
-    globalThis.handlePixelInjection = function () { return Promise.reject(new Error("inject failed")); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.reject(new Error("inject failed"));
+    };
     runPixelInjectStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(true);
   });
 
   it("pixel injection failure without error.message (line 995)", async function () {
-    globalThis.handlePixelInjection = function () { return Promise.reject({}); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.reject({});
+    };
     runPixelInjectStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(true);
   });
 
   it("pixel injection with null watermarkBlob (line 916)", async function () {
     simpleResults.watermarkBlob = null;
-    globalThis.handlePixelInjection = function () { return Promise.resolve(); };
+    globalThis.handlePixelInjection = function () {
+      return Promise.resolve();
+    };
     runPixelInjectStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(simpleResults["pixel-injection"] === true);
   });
 });
@@ -1246,7 +1428,9 @@ describe("simplified.js — setTimeout callback coverage (runFingerprintStep)", 
     getMockEl("fp-file");
     getMockEl("fp-output");
     _origSetTimeout = globalThis.setTimeout;
-    globalThis.setTimeout = function (fn) { _origSetTimeout(fn, 0); };
+    globalThis.setTimeout = function (fn) {
+      _origSetTimeout(fn, 0);
+    };
   });
   afterEach(function () {
     globalThis.setTimeout = _origSetTimeout;
@@ -1258,7 +1442,9 @@ describe("simplified.js — setTimeout callback coverage (runFingerprintStep)", 
     };
     simpleResults.fpResult = null;
     runFingerprintStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(simpleResults.fingerprint === true);
   });
 
@@ -1267,24 +1453,34 @@ describe("simplified.js — setTimeout callback coverage (runFingerprintStep)", 
       return Promise.reject(new Error("hash failed"));
     };
     runFingerprintStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(true);
   });
 
   it("handleFingerprint fallback success path inside setTimeout", async function () {
     globalThis.fastFingerprint = null;
-    globalThis.handleFingerprint = function () { return Promise.resolve(); };
+    globalThis.handleFingerprint = function () {
+      return Promise.resolve();
+    };
     getMockEl("fp-output").innerHTML = "<div>fp data</div>";
     runFingerprintStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(simpleResults.fingerprint === true);
   });
 
   it("handleFingerprint fallback catch path inside setTimeout", async function () {
     globalThis.fastFingerprint = null;
-    globalThis.handleFingerprint = function () { return Promise.reject(new Error("hash failed")); };
+    globalThis.handleFingerprint = function () {
+      return Promise.reject(new Error("hash failed"));
+    };
     runFingerprintStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(true);
   });
 
@@ -1292,11 +1488,17 @@ describe("simplified.js — setTimeout callback coverage (runFingerprintStep)", 
     getMockEl("sfp-status");
     globalThis.fastFingerprint = function (file, onStatus, onExtra) {
       onStatus("Processing hashes...");
-      return Promise.resolve({ sha256: "abc123", md5: "def456", hashes: { sha256: "abc123" } });
+      return Promise.resolve({
+        sha256: "abc123",
+        md5: "def456",
+        hashes: { sha256: "abc123" },
+      });
     };
     simpleResults.fpResult = null;
     runFingerprintStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(simpleResults.fingerprint === true);
   });
 
@@ -1306,11 +1508,17 @@ describe("simplified.js — setTimeout callback coverage (runFingerprintStep)", 
       _origSetTimeout(function () {
         onExtra({ sha384: "extra-hash-value" });
       }, 0);
-      return Promise.resolve({ sha256: "abc123", md5: "def456", hashes: { sha256: "abc123" } });
+      return Promise.resolve({
+        sha256: "abc123",
+        md5: "def456",
+        hashes: { sha256: "abc123" },
+      });
     };
     simpleResults.fpResult = null;
     runFingerprintStep();
-    await new Promise(function (r) { _origSetTimeout(r, 20); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 20);
+    });
     assert.ok(simpleResults.fingerprint === true);
   });
 
@@ -1318,11 +1526,16 @@ describe("simplified.js — setTimeout callback coverage (runFingerprintStep)", 
     getMockEl("sfp-status");
     globalThis.fastFingerprint = function (file, onStatus, onExtra) {
       onStatus("");
-      return Promise.resolve({ sha256: "abc123", hashes: { sha256: "abc123" } });
+      return Promise.resolve({
+        sha256: "abc123",
+        hashes: { sha256: "abc123" },
+      });
     };
     simpleResults.fpResult = null;
     runFingerprintStep();
-    await new Promise(function (r) { _origSetTimeout(r, 10); });
+    await new Promise(function (r) {
+      _origSetTimeout(r, 10);
+    });
     assert.ok(simpleResults.fingerprint === true);
   });
 });
@@ -1337,7 +1550,9 @@ describe("simplified.js — runTimestampStep catch block (fetch error)", functio
     getMockEl("ts-output");
     getMockEl("ts-download");
     getMockEl("simpleNextBtn");
-    globalThis.handleOtsCreate = function () { return Promise.resolve({ ok: true }); };
+    globalThis.handleOtsCreate = function () {
+      return Promise.resolve({ ok: true });
+    };
   });
 
   it("handles fetch error in timestamp step try block", async function () {
@@ -1356,10 +1571,16 @@ describe("simplified.js — runTimestampStep with C2PA/audio URL (blob fetch pat
     getMockEl("ts-output");
     getMockEl("ts-download");
     getMockEl("simpleNextBtn");
-    globalThis.handleOtsCreate = function () { return Promise.resolve({ ok: true }); };
+    globalThis.handleOtsCreate = function () {
+      return Promise.resolve({ ok: true });
+    };
     globalThis.fetch = function (url) {
       return Promise.resolve({
-        blob: function () { return Promise.resolve(new Blob(["test-data"], { type: "image/jpeg" })); },
+        blob: function () {
+          return Promise.resolve(
+            new Blob(["test-data"], { type: "image/jpeg" }),
+          );
+        },
       });
     };
   });
@@ -1373,7 +1594,10 @@ describe("simplified.js — runTimestampStep with C2PA/audio URL (blob fetch pat
     var fileInput = document.getElementById("ts-create-file");
     assert.equal(fileInput.files, undefined);
     await runTimestampStep();
-    assert.ok(fileInput.files !== undefined, "fileInput.files should be set after runTimestampStep");
+    assert.ok(
+      fileInput.files !== undefined,
+      "fileInput.files should be set after runTimestampStep",
+    );
     assert.ok(simpleStepDone === true);
   });
 
@@ -1427,12 +1651,26 @@ describe("simplified_helpers.js — toggleArtistFields", function () {
 describe("simplified_helpers.js — setupSimpleDropZone", function () {
   beforeEach(function () {
     var _el = {};
-    _el.simpleDropZone = { classList: { add: function () {}, remove: function () {}, contains: function () { return false; } }, addEventListener: function () {}, style: {} };
-    globalThis.document.getElementById = function (id) { return _el[id] || null; };
+    _el.simpleDropZone = {
+      classList: {
+        add: function () {},
+        remove: function () {},
+        contains: function () {
+          return false;
+        },
+      },
+      addEventListener: function () {},
+      style: {},
+    };
+    globalThis.document.getElementById = function (id) {
+      return _el[id] || null;
+    };
   });
 
   it("does nothing if drop zone element is missing", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     setupSimpleDropZone();
     assert.ok(true);
   });
@@ -1440,7 +1678,9 @@ describe("simplified_helpers.js — setupSimpleDropZone", function () {
   it("attaches drag/drop event listeners", function () {
     var events = {};
     var dz = document.getElementById("simpleDropZone");
-    dz.addEventListener = function (evt, fn) { events[evt] = fn; };
+    dz.addEventListener = function (evt, fn) {
+      events[evt] = fn;
+    };
     setupSimpleDropZone();
     assert.equal(typeof events.dragover, "function");
     assert.equal(typeof events.dragleave, "function");
@@ -1452,10 +1692,18 @@ describe("simplified_helpers.js — setupSimpleDropZone", function () {
     var prevented = false;
     var addCalled = false;
     var dz = document.getElementById("simpleDropZone");
-    dz.addEventListener = function (evt, fn) { events[evt] = fn; };
-    dz.classList.add = function (c) { if (c === "drag-over") addCalled = true; };
+    dz.addEventListener = function (evt, fn) {
+      events[evt] = fn;
+    };
+    dz.classList.add = function (c) {
+      if (c === "drag-over") addCalled = true;
+    };
     setupSimpleDropZone();
-    events.dragover({ preventDefault: function () { prevented = true; } });
+    events.dragover({
+      preventDefault: function () {
+        prevented = true;
+      },
+    });
     assert.ok(prevented);
     assert.ok(addCalled);
   });
@@ -1464,8 +1712,12 @@ describe("simplified_helpers.js — setupSimpleDropZone", function () {
     var events = {};
     var removeCalled = false;
     var dz = document.getElementById("simpleDropZone");
-    dz.addEventListener = function (evt, fn) { events[evt] = fn; };
-    dz.classList.remove = function (c) { if (c === "drag-over") removeCalled = true; };
+    dz.addEventListener = function (evt, fn) {
+      events[evt] = fn;
+    };
+    dz.classList.remove = function (c) {
+      if (c === "drag-over") removeCalled = true;
+    };
     setupSimpleDropZone();
     events.dragleave({});
     assert.ok(removeCalled);
@@ -1478,7 +1730,9 @@ describe("simplified_helpers.js — setupSimpleDropZone", function () {
     };
     var dropFn;
     var dz = document.getElementById("simpleDropZone");
-    dz.addEventListener = function (evt, fn) { if (evt === "drop") dropFn = fn; };
+    dz.addEventListener = function (evt, fn) {
+      if (evt === "drop") dropFn = fn;
+    };
     setupSimpleDropZone();
     dropFn({ preventDefault: function () {}, dataTransfer: { files: [{}] } });
     assert.ok(called);
@@ -1491,16 +1745,27 @@ describe("simplified_helpers.js — restoreUploadFileInfo", function () {
     simpleType = "image";
     globalThis.escapeHtml = function (s) {
       if (s == null) return "";
-      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     };
     var _r = {};
-    _r.simpleDropZone = { classList: { add: function () {}, remove: function () {} }, style: {} };
+    _r.simpleDropZone = {
+      classList: { add: function () {}, remove: function () {} },
+      style: {},
+    };
     _r.simpleFileInfo = { innerHTML: "" };
-    globalThis.document.getElementById = function (id) { return _r[id] || null; };
+    globalThis.document.getElementById = function (id) {
+      return _r[id] || null;
+    };
   });
 
   it("returns early if drop zone is missing", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     restoreUploadFileInfo();
     assert.ok(true);
   });
@@ -1521,19 +1786,45 @@ describe("simplified_helpers.js — simpleFileSelected", function () {
     var _s = {};
     _s.simpleDropZone = { classList: { add: function () {} }, style: {} };
     _s.simpleFileInfo = { innerHTML: "" };
-    _s.simpleFileInput = { value: "", getAttribute: function () { return null; }, tagName: "INPUT" };
-    globalThis.document.getElementById = function (id) { return _s[id] || null; };
-    globalThis.isDangerousFile = function () { return false; };
-    globalThis.isEnglishFilename = function () { return true; };
-    globalThis.matchesAccept = function () { return true; };
-    globalThis.matchesMagicBytes = function () { return Promise.resolve(true); };
-    globalThis.checkDangerousContent = function () { return Promise.resolve(false); };
-    globalThis.checkFileStructure = function () { return Promise.resolve(true); };
+    _s.simpleFileInput = {
+      value: "",
+      getAttribute: function () {
+        return null;
+      },
+      tagName: "INPUT",
+    };
+    globalThis.document.getElementById = function (id) {
+      return _s[id] || null;
+    };
+    globalThis.isDangerousFile = function () {
+      return false;
+    };
+    globalThis.isEnglishFilename = function () {
+      return true;
+    };
+    globalThis.matchesAccept = function () {
+      return true;
+    };
+    globalThis.matchesMagicBytes = function () {
+      return Promise.resolve(true);
+    };
+    globalThis.checkDangerousContent = function () {
+      return Promise.resolve(false);
+    };
+    globalThis.checkFileStructure = function () {
+      return Promise.resolve(true);
+    };
     globalThis.escapeHtml = function (s) {
       if (s == null) return "";
-      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     };
-    globalThis.__ = function (k, d) { return d || k || ""; };
+    globalThis.__ = function (k, d) {
+      return d || k || "";
+    };
     globalThis.renderStep = function () {};
     globalThis.FileReader = function () {
       this.readAsArrayBuffer = function () {
@@ -1554,18 +1845,26 @@ describe("simplified_helpers.js — simpleFileSelected", function () {
   });
 
   it("rejects dangerous file extensions", async function () {
-    globalThis.isDangerousFile = function () { return true; };
+    globalThis.isDangerousFile = function () {
+      return true;
+    };
     var alerted = false;
-    globalThis.alert = function () { alerted = true; };
+    globalThis.alert = function () {
+      alerted = true;
+    };
     await simpleFileSelected({ files: [{ name: "virus.exe" }] });
     assert.equal(simpleFile, null);
     assert.ok(alerted);
   });
 
   it("rejects non-English filenames", async function () {
-    globalThis.isEnglishFilename = function () { return false; };
+    globalThis.isEnglishFilename = function () {
+      return false;
+    };
     var alerted = false;
-    globalThis.alert = function () { alerted = true; };
+    globalThis.alert = function () {
+      alerted = true;
+    };
     await simpleFileSelected({ files: [{ name: "文件名.png" }] });
     assert.equal(simpleFile, null);
     assert.ok(alerted);
@@ -1573,37 +1872,55 @@ describe("simplified_helpers.js — simpleFileSelected", function () {
 
   it("rejects files not matching accept attribute", async function () {
     var el = document.getElementById("simpleFileInput");
-    el.getAttribute = function (a) { return a === "accept" ? ".png" : null; };
-    globalThis.matchesAccept = function () { return false; };
+    el.getAttribute = function (a) {
+      return a === "accept" ? ".png" : null;
+    };
+    globalThis.matchesAccept = function () {
+      return false;
+    };
     var alerted = false;
-    globalThis.alert = function () { alerted = true; };
+    globalThis.alert = function () {
+      alerted = true;
+    };
     await simpleFileSelected({ files: [{ name: "doc.pdf" }] });
     assert.equal(simpleFile, null);
     assert.ok(alerted);
   });
 
   it("rejects files with bad magic bytes", async function () {
-    globalThis.matchesMagicBytes = function () { return Promise.resolve(false); };
+    globalThis.matchesMagicBytes = function () {
+      return Promise.resolve(false);
+    };
     var alerted = false;
-    globalThis.alert = function () { alerted = true; };
+    globalThis.alert = function () {
+      alerted = true;
+    };
     await simpleFileSelected({ files: [{ name: "corrupt.png" }] });
     assert.equal(simpleFile, null);
     assert.ok(alerted);
   });
 
   it("rejects files with dangerous content", async function () {
-    globalThis.checkDangerousContent = function () { return Promise.resolve(true); };
+    globalThis.checkDangerousContent = function () {
+      return Promise.resolve(true);
+    };
     var alerted = false;
-    globalThis.alert = function () { alerted = true; };
+    globalThis.alert = function () {
+      alerted = true;
+    };
     await simpleFileSelected({ files: [{ name: "test.png" }] });
     assert.equal(simpleFile, null);
     assert.ok(alerted);
   });
 
   it("rejects files with bad structure", async function () {
-    globalThis.checkFileStructure = function () { return Promise.resolve(false); };
+    globalThis.checkFileStructure = function () {
+      return Promise.resolve(false);
+    };
     var alerted = false;
-    globalThis.alert = function () { alerted = true; };
+    globalThis.alert = function () {
+      alerted = true;
+    };
     await simpleFileSelected({ files: [{ name: "test.png" }] });
     assert.equal(simpleFile, null);
     assert.ok(alerted);
@@ -1611,7 +1928,9 @@ describe("simplified_helpers.js — simpleFileSelected", function () {
 
   it("accepts valid image file", async function () {
     var rendered = false;
-    globalThis.renderStep = function () { rendered = true; };
+    globalThis.renderStep = function () {
+      rendered = true;
+    };
     await simpleFileSelected({ files: [{ name: "photo.png", size: 1024 }] });
     assert.equal(simpleType, "image");
     assert.ok(rendered);
@@ -1642,7 +1961,9 @@ describe("simplified_helpers.js — simpleFileSelected", function () {
     var _d = {};
     _d.simpleDropZone = { classList: { add: function () {} }, style: {} };
     _d.simpleFileInfo = { innerHTML: "" };
-    globalThis.document.getElementById = function (id) { return _d[id] || null; };
+    globalThis.document.getElementById = function (id) {
+      return _d[id] || null;
+    };
     await simpleFileSelected({ files: [{ name: "dropped.png", size: 500 }] });
     assert.equal(simpleType, "image");
   });
@@ -1676,7 +1997,11 @@ describe("simplified_helpers.js — buildCombinedPayload", function () {
     var str = typeof s === "string" ? s : JSON.stringify(s);
     if (str.length <= max) return s;
     if (typeof s === "string") return str.slice(0, max);
-    try { return JSON.parse(str.slice(0, max)); } catch { return str.slice(0, max); }
+    try {
+      return JSON.parse(str.slice(0, max));
+    } catch {
+      return str.slice(0, max);
+    }
   }
 
   beforeEach(function () {
@@ -1726,7 +2051,11 @@ describe("simplified_helpers.js — buildCombinedPayload", function () {
     var orig = globalThis.trimFingerprintPayload;
     globalThis.trimFingerprintPayload = null;
     try {
-      var result = buildCombinedPayload({ sha256: "abc", md5: "def" }, null, 5000);
+      var result = buildCombinedPayload(
+        { sha256: "abc", md5: "def" },
+        null,
+        5000,
+      );
       assert.ok(result.includes("sha256"));
       assert.ok(result.includes("abc"));
     } finally {
@@ -1750,7 +2079,12 @@ describe("simplified_helpers.js — buildCombinedPayload", function () {
 
 describe("simplified_helpers.js — getPiAlgoOptions", function () {
   it("generates option HTML from algorithm categories", function () {
-    var cats = { spatial: { enhancedLSB: { name: "Enhanced LSB" }, basicLSB: { name: "Basic LSB" } } };
+    var cats = {
+      spatial: {
+        enhancedLSB: { name: "Enhanced LSB" },
+        basicLSB: { name: "Basic LSB" },
+      },
+    };
     var opts = getPiAlgoOptions(cats, "spatial");
     assert.ok(opts.includes("enhancedLSB"));
     assert.ok(opts.includes("Enhanced LSB"));
@@ -1765,12 +2099,19 @@ describe("simplified_helpers.js — getPiAlgoOptions", function () {
 describe("simplified_helpers.js — updateSpiAlgorithms", function () {
   beforeEach(function () {
     globalThis.pixelInjection = {
-      algorithms: { spatial: { enhancedLSB: { name: "Enhanced LSB" }, basicLSB: { name: "Basic LSB" } } },
+      algorithms: {
+        spatial: {
+          enhancedLSB: { name: "Enhanced LSB" },
+          basicLSB: { name: "Basic LSB" },
+        },
+      },
     };
     var _spi = {};
     _spi["spi-category"] = { value: "spatial" };
     _spi["spi-algorithm"] = { innerHTML: "" };
-    globalThis.document.getElementById = function (id) { return _spi[id] || null; };
+    globalThis.document.getElementById = function (id) {
+      return _spi[id] || null;
+    };
   });
 
   it("updates algorithm select from category select", function () {
@@ -1779,7 +2120,9 @@ describe("simplified_helpers.js — updateSpiAlgorithms", function () {
   });
 
   it("returns early if selects are missing", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     updateSpiAlgorithms();
     assert.ok(true);
   });
@@ -1796,10 +2139,16 @@ describe("simplified_helpers.js — setupFpDownload and setupDidDownload", funct
     globalThis.simpleResults = { fpResult: { sha256: "abc" } };
     globalThis.simpleFile = { name: "test.jpg" };
     globalThis.downloadBlobSimple = function () {};
-    globalThis.__ = function (k, d) { return d || k || ""; };
+    globalThis.__ = function (k, d) {
+      return d || k || "";
+    };
     globalThis.escapeHtml = function (s) {
       if (s == null) return "";
-      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     };
     var _d = {};
     _d["dl-modal-title"] = { textContent: "" };
@@ -1811,7 +2160,9 @@ describe("simplified_helpers.js — setupFpDownload and setupDidDownload", funct
     _d["fp-dl-html"] = { addEventListener: function () {}, textContent: "" };
     _d["fp-dl-pdf"] = { addEventListener: function () {}, textContent: "" };
     _d["fp-dl-docx"] = { addEventListener: function () {}, textContent: "" };
-    globalThis.document.getElementById = function (id) { return _d[id] || null; };
+    globalThis.document.getElementById = function (id) {
+      return _d[id] || null;
+    };
   });
 
   it("setupFpDownload sets download handler", function () {
@@ -1839,7 +2190,9 @@ describe("simplified_helpers.js — toggleSimpleLangDropdown and toggleModeLangD
   });
 
   it("toggleSimpleLangDropdown handles missing element", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     toggleSimpleLangDropdown();
     assert.ok(true);
   });
@@ -1870,13 +2223,24 @@ describe("simplified_renderers.js — renderUpload", function () {
   beforeEach(function () {
     globalThis.setupSimpleDropZone = function () {};
     globalThis.restoreUploadFileInfo = function () {};
-    globalThis.getDefaultPhoneCode = function () { return { dial: "+966" }; };
+    globalThis.getDefaultPhoneCode = function () {
+      return { dial: "+966" };
+    };
     simpleUserInfo = {
-      name: "John", email: "john@test.com", phone: "5551234", phoneCode: "+1",
+      name: "John",
+      email: "john@test.com",
+      phone: "5551234",
+      phoneCode: "+1",
       website: "https://example.com",
       social: { tiktok: "", facebook: "", instagram: "", youtube: "" },
       isArtist: true,
-      music: { spotify: "https://spotify.com/artist", appleMusic: "", youtubeMusic: "", soundcloud: "", bandcamp: "" },
+      music: {
+        spotify: "https://spotify.com/artist",
+        appleMusic: "",
+        youtubeMusic: "",
+        soundcloud: "",
+        bandcamp: "",
+      },
     };
   });
 
@@ -1896,7 +2260,9 @@ describe("simplified_renderers.js — renderUpload", function () {
 
   it("calls restoreUploadFileInfo when simpleFile exists", function () {
     var called = false;
-    globalThis.restoreUploadFileInfo = function () { called = true; };
+    globalThis.restoreUploadFileInfo = function () {
+      called = true;
+    };
     simpleFile = { name: "test.png" };
     renderUpload(getMockEl("simpleBody"));
     assert.ok(called);
@@ -1957,7 +2323,12 @@ describe("simplified_renderers.js — renderAudioWatermarkStep", function () {
   });
 
   it("renders fingerprint summary when hashes exist", function () {
-    simpleResults.fpResult = { hashes: { "SHA-256": "abcdef1234567890abcdef1234567890", "SHA-512": "xyz" } };
+    simpleResults.fpResult = {
+      hashes: {
+        "SHA-256": "abcdef1234567890abcdef1234567890",
+        "SHA-512": "xyz",
+      },
+    };
     simpleResults.tsResult = "timestamp proof data";
     var body = getMockEl("simpleBody");
     renderAudioWatermarkStep(body);
@@ -1989,7 +2360,12 @@ describe("simplified_renderers.js — renderPixelInjectStep", function () {
       var keys = Object.keys(algos);
       var opts = "";
       for (var i = 0; i < keys.length; i++) {
-        opts += '<option value="' + keys[i] + '">' + (algos[keys[i]].name || keys[i]) + "</option>";
+        opts +=
+          '<option value="' +
+          keys[i] +
+          '">' +
+          (algos[keys[i]].name || keys[i]) +
+          "</option>";
       }
       return opts;
     };
@@ -2017,7 +2393,9 @@ describe("simplified_renderers.js — renderTimestampStep", function () {
 
   it("renders spinner and calls runTimestampStep", function () {
     var called = false;
-    globalThis.runTimestampStep = function () { called = true; };
+    globalThis.runTimestampStep = function () {
+      called = true;
+    };
     renderTimestampStep(getMockEl("simpleBody"));
     assert.ok(called);
   });
@@ -2030,7 +2408,9 @@ describe("simplified_renderers.js — renderFingerprintStep", function () {
 
   it("renders processing indicator and calls runFingerprintStep", function () {
     var called = false;
-    globalThis.runFingerprintStep = function () { called = true; };
+    globalThis.runFingerprintStep = function () {
+      called = true;
+    };
     renderFingerprintStep(getMockEl("simpleBody"));
     assert.ok(called);
   });
@@ -2040,27 +2420,35 @@ describe("simplified_renderers.js — renderDIDStep", function () {
   beforeEach(function () {
     globalThis.runDIDStepGenerate = function () {};
     globalThis.runDIDStepSign = function () {};
-    globalThis.didGetAlgorithmList = function () { return ["Ed25519", "P-256", "RSA-2048", "RSA-4096"]; };
+    globalThis.didGetAlgorithmList = function () {
+      return ["Ed25519", "P-256", "RSA-2048", "RSA-4096"];
+    };
   });
 
   it("shows key generation prompt when no keys exist", function () {
-    globalThis.didLoadKeys = function () { return null; };
+    globalThis.didLoadKeys = function () {
+      return null;
+    };
     var body = getMockEl("simpleBody");
     renderDIDStep(body);
     assert.ok(body.innerHTML.includes("sdid-gen-btn"));
-    assert.ok(body.innerHTML.includes('disabled'));
+    assert.ok(body.innerHTML.includes("disabled"));
   });
 
   it("shows sign button enabled when keys exist", function () {
-    globalThis.didLoadKeys = function () { return { algo: "Ed25519" }; };
+    globalThis.didLoadKeys = function () {
+      return { algo: "Ed25519" };
+    };
     var body = getMockEl("simpleBody");
     renderDIDStep(body);
     assert.ok(body.innerHTML.includes("sdid-sign-btn"));
-    assert.ok(!body.innerHTML.includes('disabled'));
+    assert.ok(!body.innerHTML.includes("disabled"));
   });
 
   it("renders algorithm options with descriptions", function () {
-    globalThis.didLoadKeys = function () { return null; };
+    globalThis.didLoadKeys = function () {
+      return null;
+    };
     var body = getMockEl("simpleBody");
     renderDIDStep(body);
     assert.ok(body.innerHTML.includes("Ed25519"));
@@ -2106,7 +2494,13 @@ describe("simplified_renderers.js — renderDone C2PA branch", function () {
   });
 
   it("shows DID signature section", function () {
-    simpleResults = { didSig: { did: "did:example:abc", algorithm: "Ed25519", timestamp: "2025-01-01T00:00:00Z" } };
+    simpleResults = {
+      didSig: {
+        did: "did:example:abc",
+        algorithm: "Ed25519",
+        timestamp: "2025-01-01T00:00:00Z",
+      },
+    };
     renderDone(getMockEl("simpleBody"));
     var h = getMockEl("simpleBody").innerHTML;
     assert.ok(h.includes("did:example:abc"));
@@ -2134,7 +2528,13 @@ describe("simplified_renderers.js — renderDone C2PA branch", function () {
   });
 
   it("shows audio watermark section", function () {
-    simpleResults = { audioWatermark: true, audioWatermarkUrl: "blob:audio", audioWatermarkFpAlgo: 1, audioWatermarkTsAlgo: 2, audioWatermarkFilename: "test.wav" };
+    simpleResults = {
+      audioWatermark: true,
+      audioWatermarkUrl: "blob:audio",
+      audioWatermarkFpAlgo: 1,
+      audioWatermarkTsAlgo: 2,
+      audioWatermarkFilename: "test.wav",
+    };
     renderDone(getMockEl("simpleBody"));
     var h = getMockEl("simpleBody").innerHTML;
     assert.ok(h.includes("audio") || h.includes("LSB Audio"));
@@ -2180,7 +2580,9 @@ describe("simplified_countries.js — COUNTRY_CODES", function () {
   });
 
   it("includes major countries (SA, US, GB, CA)", function () {
-    var codes = COUNTRY_CODES.map(function (c) { return c.code; });
+    var codes = COUNTRY_CODES.map(function (c) {
+      return c.code;
+    });
     assert.ok(codes.indexOf("SA") !== -1);
     assert.ok(codes.indexOf("US") !== -1);
     assert.ok(codes.indexOf("GB") !== -1);
@@ -2193,13 +2595,25 @@ describe("simplified_countries.js — getCountryFromLocale", function () {
     // Mock Intl to return a locale without country
     var origNF = globalThis.Intl.NumberFormat;
     globalThis.Intl.NumberFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en" };
+        },
+      };
     };
     globalThis.Intl.DateTimeFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en" };
+        },
+      };
     };
     globalThis.Intl.Collator = function () {
-      return { resolvedOptions: function () { return { locale: "en" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en" };
+        },
+      };
     };
     var result = getCountryFromLocale();
     assert.equal(result, null);
@@ -2212,13 +2626,25 @@ describe("simplified_countries.js — getCountryFromLocale", function () {
   it("returns country from locale with region", function () {
     var origNF = globalThis.Intl.NumberFormat;
     globalThis.Intl.NumberFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en-US" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en-US" };
+        },
+      };
     };
     globalThis.Intl.DateTimeFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en-US" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en-US" };
+        },
+      };
     };
     globalThis.Intl.Collator = function () {
-      return { resolvedOptions: function () { return { locale: "en-US" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en-US" };
+        },
+      };
     };
     var result = getCountryFromLocale();
     assert.ok(result !== null);
@@ -2233,7 +2659,11 @@ describe("simplified_countries.js — getCountryFromTimezone", function () {
   it("returns country for a known timezone city (Riyadh)", function () {
     var origDTF = globalThis.Intl.DateTimeFormat;
     globalThis.Intl.DateTimeFormat = function () {
-      return { resolvedOptions: function () { return { timeZone: "Asia/Riyadh" }; } };
+      return {
+        resolvedOptions: function () {
+          return { timeZone: "Asia/Riyadh" };
+        },
+      };
     };
     var result = getCountryFromTimezone();
     assert.ok(result !== null);
@@ -2244,7 +2674,11 @@ describe("simplified_countries.js — getCountryFromTimezone", function () {
   it("returns null for unknown timezone city", function () {
     var origDTF = globalThis.Intl.DateTimeFormat;
     globalThis.Intl.DateTimeFormat = function () {
-      return { resolvedOptions: function () { return { timeZone: "Mars/Olympus_Mons" }; } };
+      return {
+        resolvedOptions: function () {
+          return { timeZone: "Mars/Olympus_Mons" };
+        },
+      };
     };
     var result = getCountryFromTimezone();
     assert.equal(result, null);
@@ -2254,7 +2688,11 @@ describe("simplified_countries.js — getCountryFromTimezone", function () {
   it("returns null when timeZone is unavailable", function () {
     var origDTF = globalThis.Intl.DateTimeFormat;
     globalThis.Intl.DateTimeFormat = function () {
-      return { resolvedOptions: function () { return {}; } };
+      return {
+        resolvedOptions: function () {
+          return {};
+        },
+      };
     };
     var result = getCountryFromTimezone();
     assert.equal(result, null);
@@ -2266,10 +2704,18 @@ describe("simplified_countries.js — getDefaultPhoneCode", function () {
   it("returns country from locale first", function () {
     var origNF = globalThis.Intl.NumberFormat;
     globalThis.Intl.NumberFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en-US" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en-US" };
+        },
+      };
     };
     globalThis.Intl.DateTimeFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en-US" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en-US" };
+        },
+      };
     };
     var result = getDefaultPhoneCode();
     assert.ok(result !== null);
@@ -2283,20 +2729,40 @@ describe("simplified_countries.js — getDefaultPhoneCode", function () {
     var origDTF = globalThis.Intl.DateTimeFormat;
     var origColl = globalThis.Intl.Collator;
     globalThis.Intl.NumberFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en" };
+        },
+      };
     };
     globalThis.Intl.DateTimeFormat = function () {
-      return { resolvedOptions: function () { return { locale: "en" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en" };
+        },
+      };
     };
     globalThis.Intl.Collator = function () {
-      return { resolvedOptions: function () { return { locale: "en" }; } };
+      return {
+        resolvedOptions: function () {
+          return { locale: "en" };
+        },
+      };
     };
     // Mock navigator to avoid matching via languages
     var origNavLangs = globalThis.navigator.languages;
     var origNavLang = globalThis.navigator.language;
     try {
-      Object.defineProperty(globalThis.navigator, "languages", { value: ["en"], configurable: true, writable: true });
-      Object.defineProperty(globalThis.navigator, "language", { value: "en", configurable: true, writable: true });
+      Object.defineProperty(globalThis.navigator, "languages", {
+        value: ["en"],
+        configurable: true,
+        writable: true,
+      });
+      Object.defineProperty(globalThis.navigator, "language", {
+        value: "en",
+        configurable: true,
+        writable: true,
+      });
     } catch (e) {}
     var result = getDefaultPhoneCode();
     // May be null or a country object depending on timezone
@@ -2305,8 +2771,16 @@ describe("simplified_countries.js — getDefaultPhoneCode", function () {
     globalThis.Intl.DateTimeFormat = origDTF;
     globalThis.Intl.Collator = origColl;
     try {
-      Object.defineProperty(globalThis.navigator, "languages", { value: origNavLangs, configurable: true, writable: true });
-      Object.defineProperty(globalThis.navigator, "language", { value: origNavLang, configurable: true, writable: true });
+      Object.defineProperty(globalThis.navigator, "languages", {
+        value: origNavLangs,
+        configurable: true,
+        writable: true,
+      });
+      Object.defineProperty(globalThis.navigator, "language", {
+        value: origNavLang,
+        configurable: true,
+        writable: true,
+      });
     } catch (e) {}
   });
 });
@@ -2316,7 +2790,9 @@ describe("simplified_countries.js — updatePhoneMaxLength", function () {
     var _p = {};
     _p["cert-phone"] = { value: "123456789", maxLength: 15 };
     _p["cert-phonecode"] = { value: "+966" };
-    globalThis.document.getElementById = function (id) { return _p[id] || null; };
+    globalThis.document.getElementById = function (id) {
+      return _p[id] || null;
+    };
   });
 
   it("updates maxLength when dial matches", function () {
@@ -2334,13 +2810,17 @@ describe("simplified_countries.js — updatePhoneMaxLength", function () {
     var _f = {};
     _f["sinfo-phone"] = { value: "12345678", maxLength: 15 };
     _f["sinfo-phonecode"] = { value: "+966" };
-    globalThis.document.getElementById = function (id) { return _f[id] || null; };
+    globalThis.document.getElementById = function (id) {
+      return _f[id] || null;
+    };
     updatePhoneMaxLength();
     assert.ok(true);
   });
 
   it("returns early when elements missing", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     updatePhoneMaxLength();
     assert.ok(true);
   });
@@ -2463,7 +2943,10 @@ describe("simplified_countries.js — prefixHttps", function () {
   });
 
   it("does not change when already prefixed", function () {
-    var el = { value: "https://example.com", setSelectionRange: function () {} };
+    var el = {
+      value: "https://example.com",
+      setSelectionRange: function () {},
+    };
     prefixHttps(el);
     assert.equal(el.value, "https://example.com");
   });
@@ -2479,7 +2962,7 @@ describe("simplified_countries.js — phoneCodeOptionsHtml", function () {
 
   it("marks selected option when matching", function () {
     var html = phoneCodeOptionsHtml("+1");
-    assert.ok(html.includes('selected'));
+    assert.ok(html.includes("selected"));
     assert.ok(html.includes("US"));
   });
 });
@@ -2487,26 +2970,34 @@ describe("simplified_countries.js — phoneCodeOptionsHtml", function () {
 describe("simplified_countries.js — showProgress / hideProgress", function () {
   it("showProgress displays the progress bar", function () {
     var el = { style: { display: "none" } };
-    globalThis.document.getElementById = function () { return el; };
+    globalThis.document.getElementById = function () {
+      return el;
+    };
     showProgress();
     assert.equal(el.style.display, "");
   });
 
   it("showProgress handles missing element", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     showProgress();
     assert.ok(true);
   });
 
   it("hideProgress hides the progress bar", function () {
     var el = { style: { display: "" } };
-    globalThis.document.getElementById = function () { return el; };
+    globalThis.document.getElementById = function () {
+      return el;
+    };
     hideProgress();
     assert.equal(el.style.display, "none");
   });
 
   it("hideProgress handles missing element", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     hideProgress();
     assert.ok(true);
   });
@@ -2525,7 +3016,9 @@ describe("simplified_countries.js — openLightbox / closeLightbox", function ()
 
   it("openLightbox handles missing elements", function () {
     var origGet = globalThis.document.getElementById;
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     openLightbox("test");
     assert.ok(true);
     globalThis.document.getElementById = origGet;
@@ -2540,7 +3033,9 @@ describe("simplified_countries.js — openLightbox / closeLightbox", function ()
 
   it("closeLightbox handles missing element", function () {
     var origGet = globalThis.document.getElementById;
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     closeLightbox();
     assert.ok(true);
     globalThis.document.getElementById = origGet;
@@ -2557,15 +3052,21 @@ describe("simplified_countries.js — clearSimpleData", function () {
   });
 
   it("cancels when confirm returns false", function () {
-    globalThis.confirm = function () { return false; };
+    globalThis.confirm = function () {
+      return false;
+    };
     clearSimpleData();
     assert.ok(true);
   });
 
   it("clears data and re-inits when confirmed", function () {
-    globalThis.confirm = function () { return true; };
+    globalThis.confirm = function () {
+      return true;
+    };
     var cleared = false;
-    globalThis.initSimplified = function () { cleared = true; };
+    globalThis.initSimplified = function () {
+      cleared = true;
+    };
     clearSimpleData();
     assert.ok(cleared);
   });
@@ -2619,12 +3120,15 @@ describe("simplified_helpers.js — formatSize", function () {
 });
 
 describe("simplified_helpers.js — escapeHtml", function () {
-  it("escapes & < > \" characters", function () {
+  it('escapes & < > " characters', function () {
     assert.equal(escapeHtml("&"), "&amp;");
     assert.equal(escapeHtml("<"), "&lt;");
     assert.equal(escapeHtml(">"), "&gt;");
     assert.equal(escapeHtml('"'), "&quot;");
-    assert.equal(escapeHtml("<script>alert(1)</script>"), "&lt;script&gt;alert(1)&lt;/script&gt;");
+    assert.equal(
+      escapeHtml("<script>alert(1)</script>"),
+      "&lt;script&gt;alert(1)&lt;/script&gt;",
+    );
   });
 });
 
@@ -2636,19 +3140,45 @@ describe("simplified_helpers.js — simpleFileSelected INPUT branches", function
     var _s = {};
     _s.simpleDropZone = { classList: { add: function () {} }, style: {} };
     _s.simpleFileInfo = { innerHTML: "" };
-    _s.simpleFileInput = { value: "", getAttribute: function () { return null; }, tagName: "INPUT" };
-    globalThis.document.getElementById = function (id) { return _s[id] || null; };
-    globalThis.isDangerousFile = function () { return false; };
-    globalThis.isEnglishFilename = function () { return true; };
-    globalThis.matchesAccept = function () { return true; };
-    globalThis.matchesMagicBytes = function () { return Promise.resolve(true); };
-    globalThis.checkDangerousContent = function () { return Promise.resolve(false); };
-    globalThis.checkFileStructure = function () { return Promise.resolve(true); };
+    _s.simpleFileInput = {
+      value: "",
+      getAttribute: function () {
+        return null;
+      },
+      tagName: "INPUT",
+    };
+    globalThis.document.getElementById = function (id) {
+      return _s[id] || null;
+    };
+    globalThis.isDangerousFile = function () {
+      return false;
+    };
+    globalThis.isEnglishFilename = function () {
+      return true;
+    };
+    globalThis.matchesAccept = function () {
+      return true;
+    };
+    globalThis.matchesMagicBytes = function () {
+      return Promise.resolve(true);
+    };
+    globalThis.checkDangerousContent = function () {
+      return Promise.resolve(false);
+    };
+    globalThis.checkFileStructure = function () {
+      return Promise.resolve(true);
+    };
     globalThis.escapeHtml = function (s) {
       if (s == null) return "";
-      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     };
-    globalThis.__ = function (k, d) { return d || k || ""; };
+    globalThis.__ = function (k, d) {
+      return d || k || "";
+    };
     globalThis.renderStep = function () {};
     globalThis.FileReader = function () {
       this.readAsArrayBuffer = function () {
@@ -2659,56 +3189,100 @@ describe("simplified_helpers.js — simpleFileSelected INPUT branches", function
   });
 
   it("resets INPUT value via tagName check on dangerous file", async function () {
-    globalThis.isDangerousFile = function () { return true; };
-    var inputEl = { files: [{ name: "virus.exe" }], value: "virus.exe", tagName: "INPUT" };
+    globalThis.isDangerousFile = function () {
+      return true;
+    };
+    var inputEl = {
+      files: [{ name: "virus.exe" }],
+      value: "virus.exe",
+      tagName: "INPUT",
+    };
     await simpleFileSelected(inputEl);
     assert.equal(inputEl.value, "");
   });
 
   it("resets INPUT value via tagName check on non-English filename", async function () {
-    globalThis.isEnglishFilename = function () { return false; };
-    var inputEl = { files: [{ name: "照片.png" }], value: "照片.png", tagName: "INPUT" };
+    globalThis.isEnglishFilename = function () {
+      return false;
+    };
+    var inputEl = {
+      files: [{ name: "照片.png" }],
+      value: "照片.png",
+      tagName: "INPUT",
+    };
     await simpleFileSelected(inputEl);
     assert.equal(inputEl.value, "");
   });
 
   it("resets INPUT value on wrong type", async function () {
-    globalThis.matchesAccept = function () { return false; };
+    globalThis.matchesAccept = function () {
+      return false;
+    };
     var el = document.getElementById("simpleFileInput");
-    el.getAttribute = function (a) { return a === "accept" ? ".png" : null; };
-    var inputEl = { files: [{ name: "doc.pdf" }], value: "doc.pdf", tagName: "INPUT" };
+    el.getAttribute = function (a) {
+      return a === "accept" ? ".png" : null;
+    };
+    var inputEl = {
+      files: [{ name: "doc.pdf" }],
+      value: "doc.pdf",
+      tagName: "INPUT",
+    };
     await simpleFileSelected(inputEl);
     assert.equal(inputEl.value, "");
   });
 
   it("resets INPUT value on corrupt file", async function () {
-    globalThis.matchesMagicBytes = function () { return Promise.resolve(false); };
-    var inputEl = { files: [{ name: "corrupt.png" }], value: "corrupt.png", tagName: "INPUT" };
+    globalThis.matchesMagicBytes = function () {
+      return Promise.resolve(false);
+    };
+    var inputEl = {
+      files: [{ name: "corrupt.png" }],
+      value: "corrupt.png",
+      tagName: "INPUT",
+    };
     await simpleFileSelected(inputEl);
     assert.equal(inputEl.value, "");
   });
 
   it("resets INPUT value on dangerous content", async function () {
-    globalThis.checkDangerousContent = function () { return Promise.resolve(true); };
-    var inputEl = { files: [{ name: "test.png" }], value: "test.png", tagName: "INPUT" };
+    globalThis.checkDangerousContent = function () {
+      return Promise.resolve(true);
+    };
+    var inputEl = {
+      files: [{ name: "test.png" }],
+      value: "test.png",
+      tagName: "INPUT",
+    };
     await simpleFileSelected(inputEl);
     assert.equal(inputEl.value, "");
   });
 
   it("resets INPUT value on bad structure", async function () {
-    globalThis.checkFileStructure = function () { return Promise.resolve(false); };
-    var inputEl = { files: [{ name: "bad.png" }], value: "bad.png", tagName: "INPUT" };
+    globalThis.checkFileStructure = function () {
+      return Promise.resolve(false);
+    };
+    var inputEl = {
+      files: [{ name: "bad.png" }],
+      value: "bad.png",
+      tagName: "INPUT",
+    };
     await simpleFileSelected(inputEl);
     assert.equal(inputEl.value, "");
   });
 
   it("handles try/catch when setting INPUT value throws", async function () {
-    globalThis.isEnglishFilename = function () { return false; };
+    globalThis.isEnglishFilename = function () {
+      return false;
+    };
     var throwingInput = {
       files: [{ name: "test.png" }],
       tagName: "INPUT",
-      get value() { return "test.png"; },
-      set value(v) { throw new Error("no"); },
+      get value() {
+        return "test.png";
+      },
+      set value(v) {
+        throw new Error("no");
+      },
     };
     try {
       await simpleFileSelected(throwingInput);

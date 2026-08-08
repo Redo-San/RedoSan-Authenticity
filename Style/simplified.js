@@ -299,50 +299,51 @@ function renderStep() {
       step.id === "upload" ? !simpleFile : step.id === "done" ? false : true;
   }
   switch (step.id) {
-  case "upload": {
-  renderUpload(body);
-  break;
-  }
-  case "ai-question": {
-  renderAiQuestion(body);
-  break;
-  }
-  case "c2pa": {
-  renderC2paStep(body);
-  break;
-  }
-  case "watermark": {
-  renderWatermarkStep(body);
-  break;
-  }
-  case "pixel-injection": {
-  renderPixelInjectStep(body);
-  break;
-  }
-  case "timestamp": {
-  renderTimestampStep(body);
-  break;
-  }
-  case "audio-watermark": {
-  renderAudioWatermarkStep(body);
-  break;
-  }
-  case "fingerprint": {
-  renderFingerprintStep(body);
-  break;
-  }
-  case "did-sign": {
-  renderDIDStep(body);
-  break;
-  }
-  /* c8 ignore start */
-  case "done": { {
-  renderDone(body);
-  // No default
-  }
-  break;
-  }
-  /* c8 ignore end */
+    case "upload": {
+      renderUpload(body);
+      break;
+    }
+    case "ai-question": {
+      renderAiQuestion(body);
+      break;
+    }
+    case "c2pa": {
+      renderC2paStep(body);
+      break;
+    }
+    case "watermark": {
+      renderWatermarkStep(body);
+      break;
+    }
+    case "pixel-injection": {
+      renderPixelInjectStep(body);
+      break;
+    }
+    case "timestamp": {
+      renderTimestampStep(body);
+      break;
+    }
+    case "audio-watermark": {
+      renderAudioWatermarkStep(body);
+      break;
+    }
+    case "fingerprint": {
+      renderFingerprintStep(body);
+      break;
+    }
+    case "did-sign": {
+      renderDIDStep(body);
+      break;
+    }
+    /* c8 ignore start */
+    case "done": {
+      {
+        renderDone(body);
+        // No default
+      }
+      break;
+    }
+    /* c8 ignore end */
   }
   document.getElementById("simpleStepCounter").textContent = __(
     "simple.step_of",
@@ -756,7 +757,7 @@ async function runAudioWatermarkStep() {
           " (" +
           Math.round(pct * 100) +
           "%)";
-      }, /* c8 ignore stop */
+      } /* c8 ignore stop */,
     );
     progFill.style.width = "50%";
     await new Promise(function (r) {
@@ -778,7 +779,7 @@ async function runAudioWatermarkStep() {
           " (" +
           Math.round(pct * 100) +
           "%)";
-      }, /* c8 ignore stop */
+      } /* c8 ignore stop */,
     );
     progFill.style.width = "100%";
     progText.textContent = "Finalizing...";
@@ -820,7 +821,8 @@ async function runAudioWatermarkStep() {
     var nextBtn = document.getElementById("simpleNextBtn");
     nextBtn.disabled = false;
     nextBtn.style.display = "";
-  /* c8 ignore start */ } catch (error) {
+    /* c8 ignore start */
+  } catch (error) {
     hideProgress();
     if (progContainer) progContainer.style.display = "none";
     if (btn) {
@@ -866,23 +868,31 @@ function algoMaxBits(algo, audioLen, sr) {
  */
 async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
   switch (algo) {
-  case 1: { return aw1_embed(s16, bitsStr);
-  }
-  case 2: { return aw2_embed(s16, bitsStr, sr);
-  }
-  case 3: { return aw3_embed(s16, bitsStr, sr);
-  }
-  case 4: { return aw4_embed(s16, bitsStr, sr);
-  }
-  case 5: { return aw5_embed(s16, bitsStr, sr);
-  }
-  case 6: { return aw6_embed(s16, bitsStr, sr);
-  }
-  case 7: { return aw7_embed(s16, bitsStr, sr);
-  }
-  case 8: { return await aw8_embed_async(s16, bitsStr, sr, onProgress);
-  }
-  // No default
+    case 1: {
+      return aw1_embed(s16, bitsStr);
+    }
+    case 2: {
+      return aw2_embed(s16, bitsStr, sr);
+    }
+    case 3: {
+      return aw3_embed(s16, bitsStr, sr);
+    }
+    case 4: {
+      return aw4_embed(s16, bitsStr, sr);
+    }
+    case 5: {
+      return aw5_embed(s16, bitsStr, sr);
+    }
+    case 6: {
+      return aw6_embed(s16, bitsStr, sr);
+    }
+    case 7: {
+      return aw7_embed(s16, bitsStr, sr);
+    }
+    case 8: {
+      return await aw8_embed_async(s16, bitsStr, sr, onProgress);
+    }
+    // No default
   }
   throw new Error("Unknown algorithm: " + algo);
 }
@@ -914,7 +924,8 @@ function runPixelInjectStep() {
     if (fileInput) {
       var srcFile = simpleResults.watermarkBlob
         ? new File([simpleResults.watermarkBlob], simpleFile.name, {
-            /* c8 ignore next */ type: simpleResults.watermarkBlob.type || simpleFile.type,
+            /* c8 ignore next */ type:
+              simpleResults.watermarkBlob.type || simpleFile.type,
           })
         : simpleFile;
       if (srcFile) {
@@ -932,8 +943,16 @@ function runPixelInjectStep() {
     var algoSelect = document.getElementById("pi-algorithm");
     var srcAlgo = document.getElementById("spi-algorithm");
     if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
-    var msgInput = document.getElementById("pi-message");
-    if (msgInput) msgInput.value = didMessage;
+    var msgFileInput = document.getElementById("pi-secret-file");
+    if (msgFileInput && didMessage) {
+      var msgBlob = new Blob([didMessage], { type: "text/plain" });
+      var dtMsg = new DataTransfer();
+      dtMsg.items.add(
+        new File([msgBlob], "did-signature.txt", { type: "text/plain" }),
+      );
+      msgFileInput.files = dtMsg.files;
+      msgFileInput.dispatchEvent(new Event("change"));
+    }
     var passInput = document.getElementById("pi-password");
     if (passInput) passInput.value = pass;
 
@@ -941,7 +960,10 @@ function runPixelInjectStep() {
      *
      */
     function cleanupPiFields() {
-      if (msgInput) msgInput.value = "";
+      if (msgFileInput) {
+        var dt3 = new DataTransfer();
+        msgFileInput.files = dt3.files;
+      }
       if (passInput) passInput.value = "";
       if (fileInput) {
         var dt2 = new DataTransfer();
@@ -1072,13 +1094,13 @@ async function runTimestampStep() {
           var hashMatch = rawText.match(/[a-f0-9]{64}/i);
           var hash = hashMatch ? hashMatch[0] : "";
           var hasAttestation =
-            rawText.includes("blockchain") ||
-            rawText.includes("attestation");
+            rawText.includes("blockchain") || rawText.includes("attestation");
           var dateStr = new Date()
             .toISOString()
             .replace("T", " ")
             .substring(0, 19);
-          simpleResults.tsResult = hash ? "Certificate Transparency\n" +
+          simpleResults.tsResult = hash
+            ? "Certificate Transparency\n" +
               "SHA-256: " +
               hash +
               "\n" +
@@ -1089,7 +1111,8 @@ async function runTimestampStep() {
                 : "Created: " +
                   dateStr +
                   "\nStatus: Pending — awaiting blockchain attestation\n") +
-              "Verifiable at: https://opentimestamps.org" : rawText;
+              "Verifiable at: https://opentimestamps.org"
+            : rawText;
         }
         var tsDl = document.getElementById("ts-download");
         if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
@@ -1163,7 +1186,10 @@ function runFingerprintStep() {
           if (resultDiv)
             resultDiv.innerHTML =
               '<div class="simple-error">' +
-              __("simple.fp_failed").replace("{msg}", escapeHtml(error.message)) +
+              __("simple.fp_failed").replace(
+                "{msg}",
+                escapeHtml(error.message),
+              ) +
               "</div>";
         });
     } else {
@@ -1195,7 +1221,10 @@ function runFingerprintStep() {
             if (resultDiv)
               resultDiv.innerHTML =
                 '<div class="simple-error">' +
-                __("simple.fp_failed").replace("{msg}", escapeHtml(error.message)) +
+                __("simple.fp_failed").replace(
+                  "{msg}",
+                  escapeHtml(error.message),
+                ) +
                 "</div>";
           });
       }
@@ -1315,7 +1344,8 @@ async function runDIDStepSign() {
       _didKp.algorithm,
     );
     if (statusEl) {
-      statusEl.innerHTML = verifyOk ? '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
+      statusEl.innerHTML = verifyOk
+        ? '<div style="font-size:0.85rem;color:var(--success);padding:10px;background:rgba(40,167,69,.1);border-radius:8px">' +
           __(
             "simple.did_signed_success",
             "✅ Fingerprint signed and verified successfully!",
@@ -1329,7 +1359,8 @@ async function runDIDStepSign() {
             "{algo}",
             _didKp.algorithm,
           ) +
-          "</span></div>" : '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
+          "</span></div>"
+        : '<div style="font-size:0.85rem;color:var(--danger);padding:10px;background:rgba(220,53,69,.1);border-radius:8px">' +
           __(
             "simple.did_verify_failed",
             "❌ Signature verification failed. Please regenerate your identity.",

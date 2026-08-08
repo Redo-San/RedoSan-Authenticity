@@ -33,6 +33,20 @@ try {
 globalThis.TextEncoder = require("util").TextEncoder;
 globalThis.TextDecoder = require("util").TextDecoder;
 
+// Mock FileReader so handlePixelInjection can read mock secret files in Node.
+// A mock secret file carries its content in a `_text` property.
+globalThis.FileReader =
+  globalThis.FileReader ||
+  class MockFileReader {
+    constructor() {
+      this.result = "";
+    }
+    readAsText(file) {
+      this.result = (file && file._text) || "";
+      if (this.onload) this.onload({ target: this });
+    }
+  };
+
 // Mock CSS.escape
 if (typeof CSS === "undefined") {
   globalThis.CSS = {
@@ -738,11 +752,11 @@ describe("Pixel Injection — All algorithm embeds (VINE, PixelSeal, etc.)", () 
   for (const algo of stubAlgos) {
     it(`${algo} should embed without error`, () => {
       const core = new WatermarkCore();
-      const img = makeImage(32, 32);
+      const img = makeImage(200, 200);
       const wm = core.algorithms[algo](img, "test", null, {});
       assert.ok(wm instanceof ImageData);
-      assert.equal(wm.width, 32);
-      assert.equal(wm.height, 32);
+      assert.equal(wm.width, 200);
+      assert.equal(wm.height, 200);
     });
   }
 
@@ -795,7 +809,7 @@ describe("Pixel Injection — blindDecoding extended routes", () => {
 
   it("should route vine to extractVINE", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.algorithms.dct(img, "test", "key", {});
     const result = core.blindDecoding(wm, "vine");
     assert.ok(typeof result === "string");
@@ -803,7 +817,7 @@ describe("Pixel Injection — blindDecoding extended routes", () => {
 
   it("should route pixel_seal to extractPixelSeal", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.algorithms.dct(img, "test", "key", {});
     const result = core.blindDecoding(wm, "pixel_seal");
     assert.ok(typeof result === "string");
@@ -870,35 +884,35 @@ describe("Pixel Injection — addErrorCorrection", () => {
 describe("Pixel Injection — imagewmark algorithm variants", () => {
   it("imagewmark with algorithm=dwt should embed", () => {
     const core = new WatermarkCore();
-    const img = makeImage(64, 64);
+    const img = makeImage(200, 200);
     const wm = core.imagewmark(img, "test", null, { algorithm: "dwt" });
     assert.ok(wm instanceof ImageData);
   });
 
   it("imagewmark with algorithm=hybrid should embed", () => {
     const core = new WatermarkCore();
-    const img = makeImage(64, 64);
+    const img = makeImage(200, 200);
     const wm = core.imagewmark(img, "test", null, { algorithm: "hybrid" });
     assert.ok(wm instanceof ImageData);
   });
 
   it("imagewmark with algorithm=vine should embed", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.imagewmark(img, "test", null, { algorithm: "vine" });
     assert.ok(wm instanceof ImageData);
   });
 
   it("imagewmark with algorithm=pixel_seal should embed", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.imagewmark(img, "test", null, { algorithm: "pixel_seal" });
     assert.ok(wm instanceof ImageData);
   });
 
   it("imagewmark with unknown algorithm should default to adaptiveDCT", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.imagewmark(img, "test", null, { algorithm: "unknown" });
     assert.ok(wm instanceof ImageData);
   });
@@ -907,21 +921,21 @@ describe("Pixel Injection — imagewmark algorithm variants", () => {
 describe("Pixel Injection — metaSeal algorithm variants", () => {
   it("metaSeal with video mediaType", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.metaSeal(img, "test", null, { mediaType: "video" });
     assert.ok(wm instanceof ImageData);
   });
 
   it("metaSeal with audio mediaType", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.metaSeal(img, "test", null, { mediaType: "audio" });
     assert.ok(wm instanceof ImageData);
   });
 
   it("metaSeal with unknown mediaType should default", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.metaSeal(img, "test", null, { mediaType: "document" });
     assert.ok(wm instanceof ImageData);
   });
@@ -930,7 +944,7 @@ describe("Pixel Injection — metaSeal algorithm variants", () => {
 describe("Pixel Injection — stardustmark with tamper detection", () => {
   it("should embed with tamper_detection enabled", () => {
     const core = new WatermarkCore();
-    const img = makeImage(32, 32);
+    const img = makeImage(200, 200);
     const wm = core.stardustmark(img, "test", null, {
       tamper_detection: true,
       forensic_strength: 0.1,
@@ -2034,9 +2048,11 @@ describe("PixelInjection — handlePixelInjection validation", () => {
       },
     ];
     const msgInput = doc.getElementById("pi-message");
-    msgInput.value = "test message content";
+    msgInput.value = "";
     const secretFile = doc.getElementById("pi-secret-file");
-    secretFile.files = [];
+    secretFile.files = [
+      { name: "secret.txt", type: "text/plain", _text: "test message content" },
+    ];
     const pwInput = doc.getElementById("pi-password");
     pwInput.value = "testpw";
 
@@ -2608,7 +2624,11 @@ describe("PixelInjection — handlePixelInjection core algorithm fallback", () =
     const imageInput = doc.getElementById("pi-image");
     imageInput.files = [{ name: "test.png", type: "image/png" }];
     const msgInput = doc.getElementById("pi-message");
-    msgInput.value = "test";
+    msgInput.value = "";
+    const secretFile = doc.getElementById("pi-secret-file");
+    secretFile.files = [
+      { name: "secret.txt", type: "text/plain", _text: "test" },
+    ];
     const pwInput = doc.getElementById("pi-password");
     pwInput.value = "";
 
@@ -2629,7 +2649,11 @@ describe("PixelInjection — handlePixelInjection core algorithm fallback", () =
     const imageInput = doc.getElementById("pi-image");
     imageInput.files = [{ name: "test.png", type: "image/png" }];
     const msgInput = doc.getElementById("pi-message");
-    msgInput.value = "test";
+    msgInput.value = "";
+    const secretFile = doc.getElementById("pi-secret-file");
+    secretFile.files = [
+      { name: "secret.txt", type: "text/plain", _text: "test" },
+    ];
     const pwInput = doc.getElementById("pi-password");
     pwInput.value = "";
 
@@ -2653,7 +2677,11 @@ describe("PixelInjection — handlePixelInjection core algorithm fallback", () =
     const imageInput = doc.getElementById("pi-image");
     imageInput.files = [{ name: "test.png", type: "image/png" }];
     const msgInput = doc.getElementById("pi-message");
-    msgInput.value = "test";
+    msgInput.value = "";
+    const secretFile = doc.getElementById("pi-secret-file");
+    secretFile.files = [
+      { name: "secret.txt", type: "text/plain", _text: "test" },
+    ];
 
     const origLoad = pi.loadImage;
     pi.loadImage = async () => makeImage(16, 16);
@@ -3632,8 +3660,8 @@ describe("WatermarkCore — classifyWatermark high-entropy path", () => {
 describe("WatermarkCore — stardustmark with tamper_detection disabled", () => {
   it("should return watermarked directly when tamper_detection is false", () => {
     const core = new WatermarkCore();
-    const w = 16;
-    const h = 16;
+    const w = 200;
+    const h = 200;
     const data = new Uint8ClampedArray(w * h * 4);
     for (let i = 0; i < data.length; i += 4) {
       data[i] = 128;
