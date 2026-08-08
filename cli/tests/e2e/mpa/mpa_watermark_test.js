@@ -1,15 +1,27 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors , closePage } = require("../mpa_helpers");
+var {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 var path = require("path");
 var fs = require("fs");
 
 var PAGE_ID = "watermark";
 var browser;
-var PNG_BUF = fs.readFileSync(path.resolve(__dirname, "../../fixtures/testimg.png"));
-var PNG_64_BUF = fs.readFileSync(path.resolve(__dirname, "../../fixtures/testimg_64x64.png"));
-var SECRET_BUF = fs.readFileSync(path.resolve(__dirname, "../../fixtures/secret.txt"));
+var PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "../../fixtures/testimg.png"),
+);
+var PNG_64_BUF = fs.readFileSync(
+  path.resolve(__dirname, "../../fixtures/testimg_64x64.png"),
+);
+var SECRET_BUF = fs.readFileSync(
+  path.resolve(__dirname, "../../fixtures/secret.txt"),
+);
 
 before(async function () {
   await ensureServer();
@@ -34,9 +46,15 @@ describe("MPA — Watermark", function () {
   it("should have key form elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      var hasType = await page.evaluate(function () { return !!document.getElementById("wm-type"); });
-      var hasImage = await page.evaluate(function () { return !!document.getElementById("wm-image"); });
-      var hasBtn = await page.evaluate(function () { return !!document.getElementById("wm-btn"); });
+      var hasType = await page.evaluate(function () {
+        return !!document.getElementById("wm-type");
+      });
+      var hasImage = await page.evaluate(function () {
+        return !!document.getElementById("wm-image");
+      });
+      var hasBtn = await page.evaluate(function () {
+        return !!document.getElementById("wm-btn");
+      });
       assert.ok(hasType, "Algorithm select should exist");
       assert.ok(hasImage, "Image input should exist");
       assert.ok(hasBtn, "Embed button should exist");
@@ -55,17 +73,20 @@ describe("MPA — Watermark", function () {
       });
       await page.waitForTimeout(300);
       await page.setInputFiles("#wm-image", [
-        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }
+        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
       ]);
       await page.waitForTimeout(300);
       await page.setInputFiles("#wm-secret", [
-        { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF }
+        { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF },
       ]);
       await page.waitForTimeout(300);
       await page.evaluate(function () {
         document.getElementById("wm-btn").click();
       });
-      await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+      await page.waitForSelector("#wm-result", {
+        state: "visible",
+        timeout: 30000,
+      });
       await page.waitForTimeout(1000);
       var outputHtml = await page.evaluate(function () {
         var el = document.getElementById("wm-output");
@@ -95,16 +116,23 @@ describe("MPA — Watermark", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       await page.setInputFiles("#wm-image", [
-        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }
+        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
       ]);
       await page.waitForTimeout(1000);
       var capText = await page.evaluate(function () {
         var el = document.getElementById("wm-capacity");
         return el ? el.textContent : "";
       });
-      assert.ok(capText.length > 0, "Capacity text should be populated. Got: '" + capText + "'");
-      assert.ok(capText.includes("Capacity") || capText.includes("capacity") || capText.includes("byte"),
-        "Capacity text should mention bytes. Got: " + capText);
+      assert.ok(
+        capText.length > 0,
+        "Capacity text should be populated. Got: '" + capText + "'",
+      );
+      assert.ok(
+        capText.includes("Capacity") ||
+          capText.includes("capacity") ||
+          capText.includes("byte"),
+        "Capacity text should mention bytes. Got: " + capText,
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -113,11 +141,19 @@ describe("MPA — Watermark", function () {
   it("should switch to extract tab and have extract elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { switchWmTab("extract"); });
+      await page.evaluate(function () {
+        switchWmTab("extract");
+      });
       await page.waitForTimeout(500);
-      var hasImageEx = await page.evaluate(function () { return !!document.getElementById("wm-image-ex"); });
-      var hasTypeEx = await page.evaluate(function () { return !!document.getElementById("wm-type-ex"); });
-      var hasBtnEx = await page.evaluate(function () { return !!document.getElementById("wm-btn-ex"); });
+      var hasImageEx = await page.evaluate(function () {
+        return !!document.getElementById("wm-image-ex");
+      });
+      var hasTypeEx = await page.evaluate(function () {
+        return !!document.getElementById("wm-type-ex");
+      });
+      var hasBtnEx = await page.evaluate(function () {
+        return !!document.getElementById("wm-btn-ex");
+      });
       assert.ok(hasImageEx, "Extract image input should exist");
       assert.ok(hasTypeEx, "Extract algorithm selector should exist");
       assert.ok(hasBtnEx, "Extract button should exist");
@@ -147,30 +183,45 @@ describe("MPA — Watermark", function () {
       await page.fill("#wm-password", "lsb-test-pw");
       await page.waitForTimeout(200);
       await page.setInputFiles("#wm-image", [
-        { name: "cover.png", mimeType: "image/png", buffer: PNG_64_BUF }
+        { name: "cover.png", mimeType: "image/png", buffer: PNG_64_BUF },
       ]);
       await page.waitForTimeout(300);
       await page.setInputFiles("#wm-secret", [
-        { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("LSB SECRET DATA") }
+        {
+          name: "secret.txt",
+          mimeType: "text/plain",
+          buffer: Buffer.from("LSB SECRET DATA"),
+        },
       ]);
       await page.waitForTimeout(300);
-      await page.evaluate(function () { document.getElementById("wm-btn").click(); });
-      await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+      await page.evaluate(function () {
+        document.getElementById("wm-btn").click();
+      });
+      await page.waitForSelector("#wm-result", {
+        state: "visible",
+        timeout: 30000,
+      });
       await page.waitForTimeout(1000);
 
       var wmInfo = await page.evaluate(async function () {
-        var getFn = typeof getResult === "function" ? getResult : window.getResult;
+        var getFn =
+          typeof getResult === "function" ? getResult : window.getResult;
         var url = getFn ? getFn("wmLastBlobUrl") : null;
         if (!url) return null;
         var resp = await fetch(url);
         var blob = await resp.blob();
-        return { buf: Array.from(new Uint8Array(await blob.arrayBuffer())), type: blob.type || "image/png" };
+        return {
+          buf: Array.from(new Uint8Array(await blob.arrayBuffer())),
+          type: blob.type || "image/png",
+        };
       });
       assert.ok(wmInfo, "Watermarked blob should be available");
       var wmBuf = Buffer.from(wmInfo.buf);
 
       // Switch to extract tab
-      await page.evaluate(function () { switchWmTab("extract"); });
+      await page.evaluate(function () {
+        switchWmTab("extract");
+      });
       await page.waitForTimeout(500);
 
       await page.evaluate(function () {
@@ -181,19 +232,109 @@ describe("MPA — Watermark", function () {
       await page.fill("#wm-password-ex", "lsb-test-pw");
       await page.waitForTimeout(200);
       await page.setInputFiles("#wm-image-ex", [
-        { name: "watermarked.png", mimeType: "image/png", buffer: wmBuf }
+        { name: "watermarked.png", mimeType: "image/png", buffer: wmBuf },
       ]);
       await page.waitForTimeout(500);
-      await page.evaluate(function () { document.getElementById("wm-btn-ex").click(); });
-      await page.waitForSelector("#wm-result", { state: "visible", timeout: 30000 });
+      await page.evaluate(function () {
+        document.getElementById("wm-btn-ex").click();
+      });
+      await page.waitForSelector("#wm-result", {
+        state: "visible",
+        timeout: 30000,
+      });
       await page.waitForTimeout(1000);
 
       var extractHtml = await page.evaluate(function () {
         var el = document.getElementById("wm-output");
         return el ? el.innerHTML : "";
       });
-      assert.ok(extractHtml.includes("LSB SECRET DATA"),
-        "LSB extract should recover secret. Got: " + extractHtml.substring(0, 200));
+      assert.ok(
+        extractHtml.includes("LSB SECRET DATA"),
+        "LSB extract should recover secret. Got: " +
+          extractHtml.substring(0, 200),
+      );
+    } finally {
+      await closePage(ctx, page);
+    }
+  });
+
+  it("should rebuild file drop zones after AJAX navigation between pages", async function () {
+    var { ctx, page } = await openPage(browser, PAGE_ID);
+    try {
+      // Full load: all watermark file inputs are wrapped into drop zones
+      var idsAfterLoad = await page.evaluate(function () {
+        return Array.from(document.querySelectorAll(".file-drop-zone"))
+          .map(function (d) {
+            var i = d.querySelector('input[type="file"]');
+            return i ? i.id : null;
+          })
+          .filter(Boolean)
+          .sort();
+      });
+      assert.deepEqual(
+        idsAfterLoad,
+        ["wm-image", "wm-image-ex", "wm-secret"],
+        "Full load should wrap all file inputs into drop zones",
+      );
+
+      // AJAX navigate to the fingerprint page: its drop zone must be rebuilt
+      await page.evaluate(function () {
+        __mpaNavigate("fingerprint");
+      });
+      await page.waitForSelector("#fp-file", {
+        state: "attached",
+        timeout: 15000,
+      });
+      await page.waitForFunction(
+        function () {
+          return document.querySelectorAll(".file-drop-zone").length === 1;
+        },
+        null,
+        { timeout: 15000 },
+      );
+      var fpIds = await page.evaluate(function () {
+        return Array.from(document.querySelectorAll(".file-drop-zone"))
+          .map(function (d) {
+            var i = d.querySelector('input[type="file"]');
+            return i ? i.id : null;
+          })
+          .filter(Boolean);
+      });
+      assert.deepEqual(
+        fpIds,
+        ["fp-file"],
+        "Fingerprint drop zone should exist after AJAX nav",
+      );
+
+      // Navigate back to watermark via the router: drop zones must be rebuilt
+      await page.evaluate(function () {
+        __mpaNavigate("watermark");
+      });
+      await page.waitForSelector("#wm-image", {
+        state: "attached",
+        timeout: 15000,
+      });
+      await page.waitForFunction(
+        function () {
+          return document.querySelectorAll(".file-drop-zone").length === 3;
+        },
+        null,
+        { timeout: 15000 },
+      );
+      var idsBack = await page.evaluate(function () {
+        return Array.from(document.querySelectorAll(".file-drop-zone"))
+          .map(function (d) {
+            var i = d.querySelector('input[type="file"]');
+            return i ? i.id : null;
+          })
+          .filter(Boolean)
+          .sort();
+      });
+      assert.deepEqual(
+        idsBack,
+        ["wm-image", "wm-image-ex", "wm-secret"],
+        "Drop zones should be rebuilt after navigating back",
+      );
     } finally {
       await closePage(ctx, page);
     }
