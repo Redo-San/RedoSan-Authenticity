@@ -30,6 +30,7 @@ WatermarkCore.prototype.dct = function (
 
   // Encode message with redundancy (each bit × 3 for majority-vote correction)
   const encoded = this.encodeMessage(message);
+  this.assertEmbedCapacity(width, height, encoded.length, blockSize);
   let bitIdx = 0;
 
   // Embed one bit per 8×8 block per color channel using coefficient pair comparison
@@ -142,6 +143,7 @@ WatermarkCore.prototype.dft = function (
   const data = new Uint8ClampedArray(imageData.data);
 
   const encoded = this.encodeMessage(message);
+  this.assertEmbedCapacity(width, height, encoded.length, blockSize);
   let bitIdx = 0;
 
   for (
@@ -219,6 +221,7 @@ WatermarkCore.prototype.hybridDCTDWT = function (
   const blockSize = 8;
 
   const encodedMessage = this.encodeMessage(message);
+  this.assertEmbedCapacity(width, height, encodedMessage.length, blockSize);
   const messageLength = encodedMessage.length;
 
   // DCT portion: one bit per 8x8 block per channel via coefficient pair comparison

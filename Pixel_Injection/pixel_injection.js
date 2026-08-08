@@ -233,12 +233,6 @@ class PixelInjection {
     this.updateExtractAlgorithms();
     this.toggleExtractPiPassword();
 
-    // Always show the text-message input (it was hidden by default, so the
-    // "Enter your secret message" field was unusable on first entry).
-    const piMsgGroup = document.getElementById("pi-message-group");
-    if (piMsgGroup && piMsgGroup.style.display === "none")
-      piMsgGroup.style.display = "";
-
     const categorySelect = document.getElementById("pi-category");
     if (categorySelect) {
       categorySelect.addEventListener("change", () => {
@@ -815,7 +809,6 @@ class PixelInjection {
   async handlePixelInjection() {
     const imageInput = document.getElementById("pi-image");
     const messageFileInput = document.getElementById("pi-secret-file");
-    const messageTextInput = document.getElementById("pi-message");
     const passwordInput = document.getElementById("pi-password");
 
     if (!imageInput.files.length) {
@@ -823,7 +816,7 @@ class PixelInjection {
       return;
     }
 
-    // Determine message source: secret file or textarea
+    // Secret message must come from the uploaded document file
     var message,
       secretFileName = "";
     if (
@@ -856,8 +849,6 @@ class PixelInjection {
         return;
       }
       message = secretText;
-    } else if (messageTextInput && messageTextInput.value) {
-      message = messageTextInput.value;
     } else {
       this.showMessage("Please select a secret document file", "error");
       return;
