@@ -10,70 +10,28 @@ var _createdElements = [];
 var _resultStore = {};
 
 globalThis.document = {
-  getElementById: function (id) {
-    return _domElements[id] || null;
-  },
+  getElementById: function (id) { return _domElements[id] || null; },
   createElement: function (tag) {
-    var el = {
-      tagName: tag,
-      href: "",
-      download: "",
-      children: [],
-      style: {},
-      value: "",
-      checked: false,
-      textContent: "",
-      innerHTML: "",
-      id: "",
-      files: null,
-      display: "",
-      type: "text",
-    };
+    var el = { tagName: tag, href: "", download: "", children: [], style: {}, value: "", checked: false, textContent: "", innerHTML: "", id: "", files: null, display: "", type: "text" };
     el.addEventListener = function () {};
-    el.remove = function () {
-      var ix = _createdElements.indexOf(this);
-      if (ix >= 0) _createdElements.splice(ix, 1);
-    };
+    el.remove = function () { var ix = _createdElements.indexOf(this); if (ix >= 0) _createdElements.splice(ix, 1); };
     el.click = function () {};
     el.setAttribute = function () {};
-    el.getAttribute = function () {
-      return null;
-    };
+    el.getAttribute = function () { return null; };
     if (tag === "canvas") {
-      el.width = 0;
-      el.height = 0;
+      el.width = 0; el.height = 0;
       el.getContext = function () {
-        return {
-          font: "",
-          fillStyle: "",
-          textBaseline: "",
-          measureText: function (t) {
-            return { width: t.length * 5 };
-          },
-          fillText: function () {},
-          scale: function () {},
-        };
+        return { font: "", fillStyle: "", textBaseline: "", measureText: function (t) { return { width: t.length * 5 }; }, fillText: function () {}, scale: function () {} };
       };
-      el.toDataURL = function () {
-        return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
-      };
+      el.toDataURL = function () { return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="; };
     }
     if (tag === "script") {
-      el.src = "";
-      el.onload = null;
-      el.onerror = null;
-      process.nextTick(function () {
-        if (typeof el.onerror === "function") el.onerror();
-      });
+      el.src = ""; el.onload = null; el.onerror = null;
+      process.nextTick(function () { if (typeof el.onerror === "function") el.onerror(); });
     }
     Object.defineProperty(el, "textContent", {
-      get: function () {
-        return this._tc || "";
-      },
-      set: function (v) {
-        this._tc = String(v);
-        this.innerHTML = v;
-      },
+      get: function () { return this._tc || ""; },
+      set: function (v) { this._tc = String(v); this.innerHTML = v; },
       configurable: true,
     });
     _createdElements.push(el);
@@ -86,46 +44,9 @@ globalThis.document = {
 };
 
 function mockElement(id, overrides) {
-  var el = {
-    tagName: "input",
-    href: "",
-    download: "",
-    children: [],
-    style: {},
-    value: "",
-    checked: false,
-    textContent: "",
-    innerHTML: "",
-    id: id,
-    files: null,
-    remove: function () {},
-    click: function () {},
-    setAttribute: function () {},
-    getAttribute: function () {
-      return null;
-    },
-    display: "",
-    type: "text",
-  };
-  Object.defineProperty(el, "textContent", {
-    get: function () {
-      return this._tc || "";
-    },
-    set: function (v) {
-      this._tc = String(v);
-      this.innerHTML = v;
-    },
-    configurable: true,
-  });
-  Object.defineProperty(el, "style", {
-    get: function () {
-      return this._style || {};
-    },
-    set: function (v) {
-      this._style = v;
-    },
-    configurable: true,
-  });
+  var el = { tagName: "input", href: "", download: "", children: [], style: {}, value: "", checked: false, textContent: "", innerHTML: "", id: id, files: null, remove: function() {}, click: function() {}, setAttribute: function() {}, getAttribute: function() { return null; }, display: "", type: "text" };
+  Object.defineProperty(el, "textContent", { get: function() { return this._tc || ""; }, set: function(v) { this._tc = String(v); this.innerHTML = v; }, configurable: true });
+  Object.defineProperty(el, "style", { get: function() { return this._style || {}; }, set: function(v) { this._style = v; }, configurable: true });
   if (overrides) Object.assign(el, overrides);
   _domElements[id] = el;
   return el;
@@ -139,142 +60,56 @@ function clearMockElements() {
 
 // ── Global setup ──
 globalThis.window = globalThis;
-globalThis.location = {
-  protocol: "file:",
-  href: "file:///test/",
-  hostname: "localhost",
-  origin: "null",
-};
-globalThis.URL.createObjectURL = function () {
-  return "blob:stub";
-};
+globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.URL.createObjectURL = function () { return "blob:stub"; };
 globalThis.URL.revokeObjectURL = function () {};
 globalThis.Image = class {
-  constructor() {
-    this.naturalWidth = 100;
-    this.naturalHeight = 100;
-  }
-  set src(v) {
-    if (this.onload) setTimeout(this.onload.bind(this), 0);
-  }
+  constructor() { this.naturalWidth = 100; this.naturalHeight = 100; }
+  set src(v) { if (this.onload) setTimeout(this.onload.bind(this), 0); }
 };
 globalThis.COUNTRY_CODES = [
-  { code: "US", dial: "+1" },
-  { code: "GB", dial: "+44" },
-  { code: "SA", dial: "+966" },
-  { code: "JP", dial: "+81" },
+  { code: "US", dial: "+1" }, { code: "GB", dial: "+44" },
+  { code: "SA", dial: "+966" }, { code: "JP", dial: "+81" },
 ];
 globalThis.getDefaultPhoneCode = function () {};
 globalThis.updatePhoneMaxLength = function () {};
-globalThis.__ = function (k, d) {
-  return d || k;
-};
+globalThis.__ = function (k, d) { return d || k; };
 globalThis.alert = function () {};
 globalThis.wmGlobal = null;
 globalThis.fpGlobal = null;
 globalThis.piGlobal = null;
 
 // ── setResult/getResult mocks ──
-globalThis.setResult = function (key, data) {
-  _resultStore[key] = data;
-};
-globalThis.getResult = function (key) {
-  return _resultStore[key] || null;
-};
+globalThis.setResult = function (key, data) { _resultStore[key] = data; };
+globalThis.getResult = function (key) { return _resultStore[key] || null; };
 
 // ── Mock jspdf ──
 if (!globalThis.jspdf) {
   globalThis.jspdf = {};
   globalThis.jspdf.jsPDF = class {
-    constructor() {
-      this.constructor.lastInstance = this;
-      this._calls = [];
-    }
-    setFontSize(s) {
-      this._calls.push(["setFontSize", s]);
-      return this;
-    }
-    setTextColor(r, g, b) {
-      this._calls.push(["setTextColor", r, g, b]);
-      return this;
-    }
-    setFont() {
-      return this;
-    }
-    text(str, x, y, opts) {
-      this._calls.push(["text", str, x, y, opts]);
-      return this;
-    }
-    addPage() {
-      this._calls.push(["addPage"]);
-      return this;
-    }
-    addImage() {
-      this._calls.push(["addImage"]);
-      return this;
-    }
-    splitTextToSize(t, w) {
-      var lines = [];
-      var s = String(t);
-      while (s.length > 0) {
-        lines.push(s.substring(0, 60));
-        s = s.substring(60);
-      }
-      if (lines.length === 0) lines.push("");
-      return lines;
-    }
-    output(fmt) {
-      this._calls.push(["output", fmt]);
-      return new Blob(["pdf"], { type: "application/pdf" });
-    }
+    constructor() { this.constructor.lastInstance = this; this._calls = []; }
+    setFontSize(s) { this._calls.push(["setFontSize", s]); return this; }
+    setTextColor(r, g, b) { this._calls.push(["setTextColor", r, g, b]); return this; }
+    setFont() { return this; }
+    text(str, x, y, opts) { this._calls.push(["text", str, x, y, opts]); return this; }
+    addPage() { this._calls.push(["addPage"]); return this; }
+    addImage() { this._calls.push(["addImage"]); return this; }
+    splitTextToSize(t, w) { var lines = []; var s = String(t); while (s.length > 0) { lines.push(s.substring(0, 60)); s = s.substring(60); } if (lines.length === 0) lines.push(""); return lines; }
+    output(fmt) { this._calls.push(["output", fmt]); return new Blob(["pdf"], { type: "application/pdf" }); }
   };
 }
 
 // ── Mock docx ──
 if (!globalThis.docx) {
   globalThis.docx = {
-    Paragraph: class {
-      constructor(o) {
-        this.opts = o;
-      }
-    },
-    TextRun: class {
-      constructor(o) {
-        this.opts = o;
-      }
-    },
-    Table: class {
-      constructor(o) {
-        this.opts = o;
-      }
-    },
-    TableRow: class {
-      constructor(o) {
-        this.opts = o;
-      }
-    },
-    TableCell: class {
-      constructor(o) {
-        this.opts = o;
-      }
-    },
-    Document: class {
-      constructor(o) {
-        this.opts = o;
-      }
-    },
-    ImageRun: class {
-      constructor(o) {
-        this.opts = o;
-      }
-    },
-    Packer: {
-      toBlob: async function () {
-        return new Blob(["docx"], {
-          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        });
-      },
-    },
+    Paragraph: class { constructor(o) { this.opts = o; } },
+    TextRun: class { constructor(o) { this.opts = o; } },
+    Table: class { constructor(o) { this.opts = o; } },
+    TableRow: class { constructor(o) { this.opts = o; } },
+    TableCell: class { constructor(o) { this.opts = o; } },
+    Document: class { constructor(o) { this.opts = o; } },
+    ImageRun: class { constructor(o) { this.opts = o; } },
+    Packer: { toBlob: async function () { return new Blob(["docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }); } },
     WidthType: { PERCENTAGE: "percentage" },
   };
 }
@@ -282,13 +117,7 @@ if (!globalThis.docx) {
 // ── Mock QRious ──
 if (!globalThis.QRious) {
   globalThis.QRious = class {
-    constructor(o) {
-      this.element = o.element;
-      this.value = o.value;
-      this.size = o.size;
-      this.level = o.level;
-      this.padding = o.padding;
-    }
+    constructor(o) { this.element = o.element; this.value = o.value; this.size = o.size; this.level = o.level; this.padding = o.padding; }
   };
 }
 
@@ -296,52 +125,21 @@ if (!globalThis.QRious) {
 if (!globalThis.JSZip) {
   globalThis.JSZip = function () {
     this.file = function () {};
-    this.folder = function () {
-      return this;
-    };
-    this.generateAsync = function () {
-      return Promise.resolve(new ArrayBuffer(0));
-    };
+    this.folder = function () { return this; };
+    this.generateAsync = function () { return Promise.resolve(new ArrayBuffer(0)); };
   };
 }
 
 // ── Mock OpenTimestamps for generatePendingOts tests ──
 function setupOTSMock() {
   var OpSHA256 = function () {};
-  var OpAppend = function (bytes) {
-    this.bytes = bytes;
-  };
-  var PendingAttestation = function (url) {
-    this.url = url;
-  };
-  var tsObj = {
-    add: function (op) {
-      this._added = this._added || [];
-      this._added.push(op);
-      return this;
-    },
-    attestations: [],
-  };
+  var OpAppend = function (bytes) { this.bytes = bytes; };
+  var PendingAttestation = function (url) { this.url = url; };
+  var tsObj = { add: function (op) { this._added = this._added || []; this._added.push(op); return this; }, attestations: [] };
   globalThis.OpenTimestamps = {
     Ops: { OpSHA256: OpSHA256, OpAppend: OpAppend },
-    Utils: {
-      randBytes: function (n) {
-        return new Uint8Array(n);
-      },
-      arrayToBytes: function (arr) {
-        return String.fromCharCode.apply(null, arr);
-      },
-    },
-    DetachedTimestampFile: {
-      fromHash: function (op, hash) {
-        return {
-          timestamp: tsObj,
-          serializeToBytes: function () {
-            return new Uint8Array([0, 1, 2, 3]);
-          },
-        };
-      },
-    },
+    Utils: { randBytes: function (n) { return new Uint8Array(n); }, arrayToBytes: function (arr) { return String.fromCharCode.apply(null, arr); } },
+    DetachedTimestampFile: { fromHash: function (op, hash) { return { timestamp: tsObj, serializeToBytes: function () { return new Uint8Array([0, 1, 2, 3]); } }; } },
     Notary: { PendingAttestation: PendingAttestation },
   };
 }
@@ -352,7 +150,7 @@ function clearOTSMock() {
 
 function mockDocumentElements() {
   globalThis.document.documentElement = { dataset: { standalone: true } };
-  globalThis.document.body = { append: function () {}, remove: function () {} };
+  globalThis.document.body = { append: function() {}, remove: function() {} };
 }
 
 // ── Load certificate modules ──
@@ -401,9 +199,7 @@ function restoreFileReaderMock() {
 // 1. initCertPhoneCode
 // =========================================================================
 describe("Certificate — initCertPhoneCode", function () {
-  before(function () {
-    clearMockElements();
-  });
+  before(function () { clearMockElements(); });
 
   it("should populate country code selector with options", function () {
     var sel = mockElement("cert-phonecode", { innerHTML: "" });
@@ -415,9 +211,7 @@ describe("Certificate — initCertPhoneCode", function () {
 
   it("should handle missing select element gracefully", function () {
     clearMockElements();
-    assert.doesNotThrow(function () {
-      initCertPhoneCode();
-    });
+    assert.doesNotThrow(function () { initCertPhoneCode(); });
   });
 
   it("should call getDefaultPhoneCode when available", function () {
@@ -425,10 +219,7 @@ describe("Certificate — initCertPhoneCode", function () {
     mockElement("cert-phonecode", { innerHTML: "", value: "" });
     var called = false;
     var orig = globalThis.getDefaultPhoneCode;
-    globalThis.getDefaultPhoneCode = function () {
-      called = true;
-      return null;
-    };
+    globalThis.getDefaultPhoneCode = function () { called = true; return null; };
     initCertPhoneCode();
     assert.ok(called);
     globalThis.getDefaultPhoneCode = orig;
@@ -438,9 +229,7 @@ describe("Certificate — initCertPhoneCode", function () {
     clearMockElements();
     var sel = mockElement("cert-phonecode", { innerHTML: "", value: "" });
     var orig = globalThis.getDefaultPhoneCode;
-    globalThis.getDefaultPhoneCode = function () {
-      return { dial: "+966" };
-    };
+    globalThis.getDefaultPhoneCode = function () { return { dial: "+966" }; };
     initCertPhoneCode();
     assert.equal(sel.value, "+966");
     globalThis.getDefaultPhoneCode = orig;
@@ -451,9 +240,7 @@ describe("Certificate — initCertPhoneCode", function () {
 // 2. collectCertData
 // =========================================================================
 describe("Certificate — collectCertData", function () {
-  before(function () {
-    clearMockElements();
-  });
+  before(function () { clearMockElements(); });
 
   it("should collect data from window globals without file", async function () {
     _resultStore = {};
@@ -486,12 +273,8 @@ describe("Certificate — collectCertData", function () {
     window.simpleBuf = testBuf;
     window.simpleFile = { name: "test.png", size: 5, type: "image/png" };
     window.simpleResults = {
-      watermark: true,
-      watermarkAlgoName: "LSB",
-      watermarkResult: "OK",
-      fingerprint: true,
-      fpResult: { hashes: { "SHA-256": "abc" } },
-      didSig: null,
+      watermark: true, watermarkAlgoName: "LSB", watermarkResult: "OK",
+      fingerprint: true, fpResult: { hashes: { "SHA-256": "abc" } }, didSig: null,
     };
     window._didKeypair = { did: "did:key:test123" };
     window._faceData = null;
@@ -523,9 +306,7 @@ describe("Certificate — collectCertData", function () {
     window.simpleResults = {};
 
     var orig = globalThis.submitCertTransparency;
-    globalThis.submitCertTransparency = async function () {
-      throw new Error("Network error");
-    };
+    globalThis.submitCertTransparency = async function () { throw new Error("Network error"); };
 
     var data = await collectCertData();
     assert.equal(data.ct.submitted, false);
@@ -539,10 +320,7 @@ describe("Certificate — collectCertData", function () {
 // 3. stampCertFile
 // =========================================================================
 describe("Certificate — stampCertFile", function () {
-  before(function () {
-    clearMockElements();
-    _resultStore = {};
-  });
+  before(function () { clearMockElements(); _resultStore = {}; });
 
   it("should stamp blob and set result when OTS works", async function () {
     _resultStore = {};
@@ -575,9 +353,7 @@ describe("Certificate — stampCertFile", function () {
     _resultStore = {};
     var blob = new Blob(["test"], { type: "application/octet-stream" });
     var origAB = Blob.prototype.arrayBuffer;
-    Blob.prototype.arrayBuffer = async function () {
-      throw new Error("crypto fail");
-    };
+    Blob.prototype.arrayBuffer = async function () { throw new Error("crypto fail"); };
     await stampCertFile(blob, "pdf");
     // Should not throw, just log error
     Blob.prototype.arrayBuffer = origAB;
@@ -588,37 +364,24 @@ describe("Certificate — stampCertFile", function () {
 // 4. downloadCertOtsProof
 // =========================================================================
 describe("Certificate — downloadCertOtsProof", function () {
-  before(function () {
-    clearMockElements();
-    _resultStore = {};
-  });
+  before(function () { clearMockElements(); _resultStore = {}; });
 
   it("should create and trigger download when proof exists", function () {
     _resultStore["certCtResult"] = {
-      otsProof: btoa("test proof bytes"),
-      format: "pdf",
+      otsProof: btoa("test proof bytes"), format: "pdf",
     };
-    assert.doesNotThrow(function () {
-      downloadCertOtsProof();
-    });
+    assert.doesNotThrow(function () { downloadCertOtsProof(); });
     delete _resultStore["certCtResult"];
   });
 
   it("should do nothing when no result", function () {
     _resultStore = {};
-    assert.doesNotThrow(function () {
-      downloadCertOtsProof();
-    });
+    assert.doesNotThrow(function () { downloadCertOtsProof(); });
   });
 
   it("should handle corrupted base64 gracefully", function () {
-    _resultStore["certCtResult"] = {
-      otsProof: "not-valid-base64!!!",
-      format: "pdf",
-    };
-    assert.doesNotThrow(function () {
-      downloadCertOtsProof();
-    });
+    _resultStore["certCtResult"] = { otsProof: "not-valid-base64!!!", format: "pdf" };
+    assert.doesNotThrow(function () { downloadCertOtsProof(); });
     delete _resultStore["certCtResult"];
   });
 });
@@ -627,24 +390,17 @@ describe("Certificate — downloadCertOtsProof", function () {
 // 5. downloadOtsProof
 // =========================================================================
 describe("Certificate — downloadOtsProof", function () {
-  before(function () {
-    clearMockElements();
-    _resultStore = {};
-  });
+  before(function () { clearMockElements(); _resultStore = {}; });
 
   it("should create and trigger download when proof exists", function () {
     _resultStore["lastCtResult"] = { otsProof: btoa("test proof bytes") };
-    assert.doesNotThrow(function () {
-      downloadOtsProof();
-    });
+    assert.doesNotThrow(function () { downloadOtsProof(); });
     delete _resultStore["lastCtResult"];
   });
 
   it("should do nothing when no result", function () {
     _resultStore = {};
-    assert.doesNotThrow(function () {
-      downloadOtsProof();
-    });
+    assert.doesNotThrow(function () { downloadOtsProof(); });
   });
 });
 
@@ -652,10 +408,7 @@ describe("Certificate — downloadOtsProof", function () {
 // 6. downloadCert (original, non-professional)
 // =========================================================================
 describe("Certificate — downloadCert", function () {
-  before(function () {
-    clearMockElements();
-    _resultStore = {};
-  });
+  before(function () { clearMockElements(); _resultStore = {}; });
 
   it("should download PDF certificate with button control", async function () {
     clearMockElements();
@@ -691,10 +444,7 @@ describe("Certificate — downloadCert", function () {
 // 7. generateProfessionalCert — Validation paths
 // =========================================================================
 describe("Certificate — generateProfessionalCert — validation paths", function () {
-  before(function () {
-    clearMockElements();
-    _resultStore = {};
-  });
+  before(function () { clearMockElements(); _resultStore = {}; });
 
   it("should show validation error when required fields missing", async function () {
     clearMockElements();
@@ -710,9 +460,7 @@ describe("Certificate — generateProfessionalCert — validation paths", functi
 
     await generateProfessionalCert();
 
-    assert.ok(
-      status.textContent.indexOf("Please fill in all required fields") !== -1,
-    );
+    assert.ok(status.textContent.indexOf("Please fill in all required fields") !== -1);
     assert.equal(spinner.style.display, "none");
     assert.equal(btn.disabled, false);
   });
@@ -722,9 +470,7 @@ describe("Certificate — generateProfessionalCert — validation paths", functi
     var status = mockElement("cert-status", { textContent: "" });
     mockElement("cert-spinner", { style: { display: "none" } });
     mockElement("cert-gen-btn", { disabled: false });
-    var emailWarn = mockElement("cert-email-warn", {
-      style: { display: "none" },
-    });
+    var emailWarn = mockElement("cert-email-warn", { style: { display: "none" } });
     mockElement("cert-file", { files: null });
     mockElement("cert-name", { value: "Alice" });
     mockElement("cert-email", { value: "invalid-email" });
@@ -742,9 +488,7 @@ describe("Certificate — generateProfessionalCert — validation paths", functi
     var status = mockElement("cert-status", { textContent: "" });
     mockElement("cert-spinner", { style: { display: "none" } });
     mockElement("cert-gen-btn", { disabled: false });
-    var websiteWarn = mockElement("cert-website-warn", {
-      style: { display: "none" },
-    });
+    var websiteWarn = mockElement("cert-website-warn", { style: { display: "none" } });
     mockElement("cert-file", { files: null });
     mockElement("cert-name", { value: "Alice" });
     mockElement("cert-email", { value: "alice@example.com" });
@@ -762,9 +506,7 @@ describe("Certificate — generateProfessionalCert — validation paths", functi
     var status = mockElement("cert-status", { textContent: "" });
     mockElement("cert-spinner", { style: { display: "none" } });
     mockElement("cert-gen-btn", { disabled: false });
-    var websiteWarn = mockElement("cert-website-warn", {
-      style: { display: "none" },
-    });
+    var websiteWarn = mockElement("cert-website-warn", { style: { display: "none" } });
     mockElement("cert-file", { files: null });
     mockElement("cert-name", { value: "Alice" });
     mockElement("cert-email", { value: "alice@example.com" });
@@ -782,10 +524,7 @@ describe("Certificate — generateProfessionalCert — validation paths", functi
 // 8. generateProfessionalCert — Success path with fingerprint text parsing
 // =========================================================================
 describe("Certificate — generateProfessionalCert — success paths", function () {
-  before(function () {
-    clearMockElements();
-    _resultStore = {};
-  });
+  before(function () { clearMockElements(); _resultStore = {}; });
 
   it("should generate certificate with all valid fields (no file uploads)", async function () {
     clearMockElements();
@@ -793,9 +532,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var status = mockElement("cert-status", { textContent: "" });
     mockElement("cert-spinner", { style: { display: "none" } });
     mockElement("cert-gen-btn", { disabled: false });
-    var dlSection = mockElement("cert-download-section", {
-      style: { display: "none" },
-    });
+    var dlSection = mockElement("cert-download-section", { style: { display: "none" } });
     mockElement("cert-email-warn", { style: { display: "none" } });
     mockElement("cert-website-warn", { style: { display: "none" } });
 
@@ -826,11 +563,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var origSubmit = globalThis.submitCertTransparency;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc123",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc123", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData);
@@ -849,9 +582,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var status = mockElement("cert-status", { textContent: "" });
     mockElement("cert-spinner", { style: { display: "none" } });
     mockElement("cert-gen-btn", { disabled: false });
-    var dlSection = mockElement("cert-download-section", {
-      style: { display: "none" },
-    });
+    var dlSection = mockElement("cert-download-section", { style: { display: "none" } });
     mockElement("cert-email-warn", { style: { display: "none" } });
     mockElement("cert-website-warn", { style: { display: "none" } });
 
@@ -889,40 +620,22 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     _fileReaderContents["fp_results.txt"] = fpTxt;
     setupFileReaderMock();
     mockElement("cert-result-fp", {
-      files: [
-        { name: "fp_results.txt", size: fpTxt.length, type: "text/plain" },
-      ],
+      files: [{ name: "fp_results.txt", size: fpTxt.length, type: "text/plain" }],
     });
 
     var origSubmit = globalThis.submitCertTransparency;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
       assert.equal(globalThis._certData.fingerprint, true);
       assert.ok(globalThis._certData.fpResult);
-      assert.equal(
-        globalThis._certData.fpResult.hashes["SHA-256"],
-        "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-      );
-      assert.equal(
-        globalThis._certData.fpResult.hashes["MD5"],
-        "098f6bcd4621d373cade4e832627b4f6",
-      );
-      assert.equal(
-        globalThis._certData.fpResult.perceptual_hashes["dHash"],
-        "0f3a5c8e1d2b4a6c",
-      );
-      assert.equal(
-        globalThis._certData.fpResult.perceptual_hashes["pHash"],
-        "a1b2c3d4e5f6a7b8",
-      );
+      assert.equal(globalThis._certData.fpResult.hashes["SHA-256"], "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890");
+      assert.equal(globalThis._certData.fpResult.hashes["MD5"], "098f6bcd4621d373cade4e832627b4f6");
+      assert.equal(globalThis._certData.fpResult.perceptual_hashes["dHash"], "0f3a5c8e1d2b4a6c");
+      assert.equal(globalThis._certData.fpResult.perceptual_hashes["pHash"], "a1b2c3d4e5f6a7b8");
     } finally {
       globalThis.submitCertTransparency = origSubmit;
     }
@@ -941,25 +654,19 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     mockElement("cert-website-warn", { style: { display: "none" } });
 
     var pngBuf = Buffer.from([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
-      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-      0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xde, 0x00, 0x00, 0x00,
-      0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00,
-      0x00, 0x04, 0x00, 0x01, 0x27, 0x34, 0x27, 0x24, 0x00, 0x00, 0x00, 0x00,
-      0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+      0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+      0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+      0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41,
+      0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00,
+      0x00, 0x04, 0x00, 0x01, 0x27, 0x34, 0x27, 0x24,
+      0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44,
+      0xae, 0x42, 0x60, 0x82,
     ]);
 
     mockElement("cert-file", {
-      files: [
-        {
-          name: "photo.png",
-          size: pngBuf.length,
-          type: "image/png",
-          arrayBuffer: async function () {
-            return pngBuf.buffer;
-          },
-        },
-      ],
+      files: [{ name: "photo.png", size: pngBuf.length, type: "image/png", arrayBuffer: async function () { return pngBuf.buffer; } }],
     });
     mockElement("cert-name", { value: "ImageTest" });
     mockElement("cert-email", { value: "img@test.com" });
@@ -984,11 +691,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var origSubmit = globalThis.submitCertTransparency;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
@@ -1027,13 +730,8 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     mockElement("cert-result-wm", { files: null });
     mockElement("cert-result-pi", { files: null });
     mockElement("cert-result-fp", { files: null });
-    _fileReaderContents["did-result.json"] = JSON.stringify({
-      did: "did:key:z6Mk...",
-      signature: "sig123",
-    });
-    mockElement("cert-result-did", {
-      files: [{ name: "did-result.json", size: 50 }],
-    });
+    _fileReaderContents["did-result.json"] = JSON.stringify({ did: "did:key:z6Mk...", signature: "sig123" });
+    mockElement("cert-result-did", { files: [{ name: "did-result.json", size: 50 }] });
     mockElement("cert-result-docw", { files: null });
     mockElement("cert-result-ts", { files: null });
     setupFileReaderMock();
@@ -1041,11 +739,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var origSubmit = globalThis.submitCertTransparency;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
@@ -1086,9 +780,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     mockElement("cert-result-fp", { files: null });
     // Invalid JSON to exercise the catch block
     _fileReaderContents["bad-did.json"] = "not valid json!!!";
-    mockElement("cert-result-did", {
-      files: [{ name: "bad-did.json", size: 20 }],
-    });
+    mockElement("cert-result-did", { files: [{ name: "bad-did.json", size: 20 }] });
     mockElement("cert-result-docw", { files: null });
     mockElement("cert-result-ts", { files: null });
     setupFileReaderMock();
@@ -1096,19 +788,12 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var origSubmit = globalThis.submitCertTransparency;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
       // Invalid JSON should produce raw text fallback
-      assert.ok(
-        globalThis._certData.didIdentity ||
-          globalThis._certData.didSig !== undefined,
-      );
+      assert.ok(globalThis._certData.didIdentity || globalThis._certData.didSig !== undefined);
     } finally {
       globalThis.submitCertTransparency = origSubmit;
       restoreFileReaderMock();
@@ -1155,17 +840,11 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var origSubmit = globalThis.submitCertTransparency;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
-      assert.ok(
-        globalThis._certData.fpFileName.indexOf("test-photo.jpg") !== -1,
-      );
+      assert.ok(globalThis._certData.fpFileName.indexOf("test-photo.jpg") !== -1);
     } finally {
       globalThis.submitCertTransparency = origSubmit;
       delete window.simpleResults;
@@ -1205,9 +884,7 @@ describe("Certificate — generateProfessionalCert — success paths", function 
 
     var origSubmit = globalThis.submitCertTransparency;
     try {
-      globalThis.submitCertTransparency = async function () {
-        throw new Error("CT server error");
-      };
+      globalThis.submitCertTransparency = async function () { throw new Error("CT server error"); };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
       assert.equal(globalThis._certData.ct.submitted, false);
@@ -1258,15 +935,9 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     var origSubmit = globalThis.submitCertTransparency;
     try {
       window.simpleResults = { fpResult: {} };
-      globalThis._didKeypair = {
-        did: "did:key:z6MkhaXjBZDURTZEb7GoRf6bY2eW7p",
-      };
+      globalThis._didKeypair = { did: "did:key:z6MkhaXjBZDURTZEb7GoRf6bY2eW7p" };
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
@@ -1274,15 +945,8 @@ describe("Certificate — generateProfessionalCert — success paths", function 
       assert.equal(globalThis._certData.file.size, 0);
       assert.equal(globalThis._certData.file.type, "");
       assert.equal(globalThis._certData.fingerprint, true, "fpGlobal present");
-      assert.equal(
-        globalThis._certData.fpFileName,
-        "",
-        "fpGlobal without file_info",
-      );
-      assert.equal(
-        globalThis._certData.didIdentity,
-        "did:key:z6MkhaXjBZDURTZEb7GoRf6bY2eW7p",
-      );
+      assert.equal(globalThis._certData.fpFileName, "", "fpGlobal without file_info");
+      assert.equal(globalThis._certData.didIdentity, "did:key:z6MkhaXjBZDURTZEb7GoRf6bY2eW7p");
     } finally {
       window.simpleResults = origSimpleResults;
       globalThis._didKeypair = origDidKeypair;
@@ -1295,24 +959,15 @@ describe("Certificate — generateProfessionalCert — success paths", function 
 // 9. downloadProfessionalCert — Error branches
 // =========================================================================
 describe("Certificate — downloadProfessionalCert — error branches", function () {
-  before(function () {
-    clearMockElements();
-  });
+  before(function () { clearMockElements(); });
 
   it("should show error when jspdf is undefined for PDF", async function () {
     clearMockElements();
     globalThis._certData = {
-      generator: "Test",
-      generatedAt: "2026-01-01T00:00:00.000Z",
-      user: { name: "", email: "" },
-      file: { name: "", size: 0, type: "" },
-      watermark: false,
-      pixelInjection: false,
-      timestamp: false,
-      fingerprint: false,
-      didSig: null,
-      faceBiometric: null,
-      ct: null,
+      generator: "Test", generatedAt: "2026-01-01T00:00:00.000Z",
+      user: { name: "", email: "" }, file: { name: "", size: 0, type: "" },
+      watermark: false, pixelInjection: false, timestamp: false, fingerprint: false,
+      didSig: null, faceBiometric: null, ct: null,
     };
     var status = mockElement("cert-status", { textContent: "" });
     var origJspdf = globalThis.jspdf;
@@ -1325,17 +980,10 @@ describe("Certificate — downloadProfessionalCert — error branches", function
   it("should show error when QRious is undefined for DOCX", async function () {
     clearMockElements();
     globalThis._certData = {
-      generator: "Test",
-      generatedAt: "2026-01-01T00:00:00.000Z",
-      user: { name: "", email: "" },
-      file: { name: "", size: 0, type: "" },
-      watermark: false,
-      pixelInjection: false,
-      timestamp: false,
-      fingerprint: false,
-      didSig: null,
-      faceBiometric: null,
-      ct: null,
+      generator: "Test", generatedAt: "2026-01-01T00:00:00.000Z",
+      user: { name: "", email: "" }, file: { name: "", size: 0, type: "" },
+      watermark: false, pixelInjection: false, timestamp: false, fingerprint: false,
+      didSig: null, faceBiometric: null, ct: null,
     };
     var status = mockElement("cert-status", { textContent: "" });
     var origQRious = globalThis.QRious;
@@ -1349,9 +997,7 @@ describe("Certificate — downloadProfessionalCert — error branches", function
     clearMockElements();
     var alerted = false;
     var origAlert = globalThis.alert;
-    globalThis.alert = function () {
-      alerted = true;
-    };
+    globalThis.alert = function () { alerted = true; };
     _certData = null;
     downloadProfessionalCert("pdf");
     assert.ok(alerted);
@@ -1363,25 +1009,17 @@ describe("Certificate — downloadProfessionalCert — error branches", function
 // 10. toggleCertMusicFields + resetProfessionalCert + downloadProfessionalCert EPUB
 // =========================================================================
 describe("Certificate — UI helpers", function () {
-  before(function () {
-    clearMockElements();
-  });
+  before(function () { clearMockElements(); });
 
   it("toggleCertMusicFields should hide fields when checkbox unchecked", function () {
-    var fields = mockElement("cert-music-fields", {
-      style: { display: "block" },
-      display: "block",
-    });
+    var fields = mockElement("cert-music-fields", { style: { display: "block" }, display: "block" });
     mockElement("cert-show-music", { checked: false });
     toggleCertMusicFields();
     assert.equal(fields.style.display, "none");
   });
 
   it("toggleCertMusicFields should show fields when checkbox checked", function () {
-    var fields = mockElement("cert-music-fields", {
-      style: { display: "none" },
-      display: "none",
-    });
+    var fields = mockElement("cert-music-fields", { style: { display: "none" }, display: "none" });
     mockElement("cert-show-music", { checked: true });
     toggleCertMusicFields();
     assert.equal(fields.style.display, "");
@@ -1390,9 +1028,7 @@ describe("Certificate — UI helpers", function () {
   it("toggleCertMusicFields should handle missing fields element gracefully", function () {
     mockElement("cert-show-music", { checked: false });
     delete _domElements["cert-music-fields"];
-    assert.doesNotThrow(function () {
-      toggleCertMusicFields();
-    });
+    assert.doesNotThrow(function () { toggleCertMusicFields(); });
   });
 
   it("resetProfessionalCert should reset all fields", function () {
@@ -1413,54 +1049,28 @@ describe("Certificate — UI helpers", function () {
   it("downloadProfessionalCert EPUB should succeed", async function () {
     clearMockElements();
     globalThis._certData = {
-      generator: "Test",
-      generatedAt: "2026-01-01T00:00:00.000Z",
+      generator: "Test", generatedAt: "2026-01-01T00:00:00.000Z",
       user: { name: "EPUB Test", email: "epub@test.com" },
-      file: {
-        name: "photo.jpg",
-        size: 1000,
-        type: "image/jpeg",
-        dataUrl: "data:image/png;base64,abc",
-      },
-      watermark: false,
-      pixelInjection: false,
-      timestamp: false,
-      fingerprint: false,
-      didSig: null,
-      faceBiometric: null,
-      docWatermark: false,
-      ct: null,
+      file: { name: "photo.jpg", size: 1000, type: "image/jpeg", dataUrl: "data:image/png;base64,abc" },
+      watermark: false, pixelInjection: false, timestamp: false, fingerprint: false,
+      didSig: null, faceBiometric: null, docWatermark: false, ct: null,
     };
     var status = mockElement("cert-status", { textContent: "" });
-    var dlSection = mockElement("cert-download-section", {
-      style: { display: "block" },
-    });
+    var dlSection = mockElement("cert-download-section", { style: { display: "block" } });
     await downloadProfessionalCert("epub");
-    assert.ok(
-      status.textContent.indexOf("EPUB") !== -1 ||
-        status.textContent.indexOf("Error") !== -1,
-    );
+    assert.ok(status.textContent.indexOf("EPUB") !== -1 || status.textContent.indexOf("Error") !== -1);
   });
 
   it("downloadProfessionalCert should handle certBlob + status path", async function () {
     clearMockElements();
     globalThis._certData = {
-      generator: "Test",
-      generatedAt: "2026-01-01T00:00:00.000Z",
+      generator: "Test", generatedAt: "2026-01-01T00:00:00.000Z",
       user: { name: "BlobTest", email: "blob@test.com" },
       file: { name: "img.png", size: 500, type: "image/png" },
-      watermark: false,
-      pixelInjection: false,
-      timestamp: false,
-      fingerprint: false,
-      didSig: null,
-      faceBiometric: null,
-      docWatermark: false,
-      ct: null,
+      watermark: false, pixelInjection: false, timestamp: false, fingerprint: false,
+      didSig: null, faceBiometric: null, docWatermark: false, ct: null,
     };
-    globalThis.downloadCertPDF = async function () {
-      return new Blob(["pdf"]);
-    };
+    globalThis.downloadCertPDF = async function () { return new Blob(["pdf"]); };
     var status = mockElement("cert-status", { textContent: "" });
     await downloadProfessionalCert("pdf");
     assert.ok(status.textContent.indexOf("PDF") !== -1);
@@ -1471,9 +1081,7 @@ describe("Certificate — UI helpers", function () {
 // 11. generatePendingOts
 // =========================================================================
 describe("Certificate — generatePendingOts", function () {
-  before(function () {
-    clearMockElements();
-  });
+  before(function () { clearMockElements(); });
 
   it("should return null when OpenTimestamps is not available", function () {
     clearOTSMock();
@@ -1492,9 +1100,7 @@ describe("Certificate — generatePendingOts", function () {
   it("should return null when OpenTimestamps methods throw", function () {
     setupOTSMock();
     var origFromHash = globalThis.OpenTimestamps.DetachedTimestampFile.fromHash;
-    globalThis.OpenTimestamps.DetachedTimestampFile.fromHash = function () {
-      throw new Error("OTS error");
-    };
+    globalThis.OpenTimestamps.DetachedTimestampFile.fromHash = function () { throw new Error("OTS error"); };
     var result = generatePendingOts("abcdef1234567890");
     assert.equal(result, null);
     globalThis.OpenTimestamps.DetachedTimestampFile.fromHash = origFromHash;
@@ -1530,9 +1136,7 @@ describe("Certificate — submitCertTransparency", function () {
     globalThis.fetch = async function (url, opts) {
       return {
         ok: true,
-        arrayBuffer: async function () {
-          return new Uint8Array([0x01, 0x02, 0x03]).buffer;
-        },
+        arrayBuffer: async function () { return new Uint8Array([0x01, 0x02, 0x03]).buffer; },
       };
     };
     var result = await submitCertTransparency(new Uint8Array([0x48, 0x65]));
@@ -1540,16 +1144,11 @@ describe("Certificate — submitCertTransparency", function () {
     assert.ok(result.otsProof);
     assert.ok(result.hash);
     var aggHost = new URL(result.aggregator).hostname;
-    assert.ok(
-      aggHost === "opentimestamps.org" ||
-        aggHost.endsWith(".opentimestamps.org"),
-    );
+    assert.ok(aggHost === "opentimestamps.org" || aggHost.endsWith(".opentimestamps.org"));
   });
 
   it("should return pending when all aggregators fail but OTS is available", async function () {
-    globalThis.fetch = async function () {
-      throw new Error("Network error");
-    };
+    globalThis.fetch = async function () { throw new Error("Network error"); };
     setupOTSMock();
     var result = await submitCertTransparency(new Uint8Array([0x48, 0x65]));
     assert.equal(result.submitted, true);
@@ -1559,9 +1158,7 @@ describe("Certificate — submitCertTransparency", function () {
   });
 
   it("should return error with file: protocol message", async function () {
-    globalThis.fetch = async function () {
-      throw new Error("Network error");
-    };
+    globalThis.fetch = async function () { throw new Error("Network error"); };
     clearOTSMock();
     globalThis.location = { protocol: "file:", href: "file:///test/" };
     var result = await submitCertTransparency(new Uint8Array([0x48, 0x65]));
@@ -1584,10 +1181,7 @@ describe("Certificate — submitCertTransparency", function () {
 
   it("should handle HTTP error status from aggregator and try all", async function () {
     var callCount = 0;
-    globalThis.fetch = async function () {
-      callCount++;
-      return { ok: false, status: 500 };
-    };
+    globalThis.fetch = async function () { callCount++; return { ok: false, status: 500 }; };
     clearOTSMock();
     var result = await submitCertTransparency(new Uint8Array([0x48, 0x65]));
     assert.equal(result.submitted, false);
@@ -1598,17 +1192,12 @@ describe("Certificate — submitCertTransparency", function () {
     globalThis.fetch = async function (url, opts) {
       return {
         ok: true,
-        arrayBuffer: async function () {
-          return new Uint8Array([]).buffer;
-        },
+        arrayBuffer: async function () { return new Uint8Array([]).buffer; },
       };
     };
     var result = await submitCertTransparency(new Uint8Array(0));
     assert.equal(result.submitted, true);
-    assert.equal(
-      result.hash,
-      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    );
+    assert.equal(result.hash, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
   });
 });
 
@@ -1616,9 +1205,7 @@ describe("Certificate — submitCertTransparency", function () {
 // 13. addTextSafe with non-Latin characters
 // =========================================================================
 describe("Certificate — addTextSafe", function () {
-  before(function () {
-    clearMockElements();
-  });
+  before(function () { clearMockElements(); });
 
   it("should handle Arabic text via canvas rendering", function () {
     var doc = new globalThis.jspdf.jsPDF();
@@ -1630,9 +1217,7 @@ describe("Certificate — addTextSafe", function () {
   it("should handle Latin text directly without canvas", function () {
     var doc = new globalThis.jspdf.jsPDF();
     addTextSafe(doc, "Hello World", 15, 50, 180, 9);
-    var textCalls = doc._calls.filter(function (c) {
-      return c[0] === "text";
-    });
+    var textCalls = doc._calls.filter(function (c) { return c[0] === "text"; });
     assert.ok(textCalls.length > 0);
   });
 });
@@ -1659,9 +1244,7 @@ describe("Certificate — downloadCert EPUB", function () {
     if (!globalThis.JSZip) {
       globalThis.JSZip = function () {
         this.file = function () {};
-        this.generateAsync = function () {
-          return Promise.resolve(new ArrayBuffer(0));
-        };
+        this.generateAsync = function () { return Promise.resolve(new ArrayBuffer(0)); };
       };
     }
   });
@@ -1679,12 +1262,8 @@ describe("Certificate — downloadCert EPUB", function () {
     globalThis.fetch = async function () {
       return {
         ok: true,
-        json: async function () {
-          return { timestamp: "test" };
-        },
-        arrayBuffer: async function () {
-          return new Uint8Array(0).buffer;
-        },
+        json: async function () { return { timestamp: "test" }; },
+        arrayBuffer: async function () { return new Uint8Array(0).buffer; },
       };
     };
 
@@ -1707,35 +1286,13 @@ describe("Certificate — downloadProfessionalCert EPUB", function () {
 
   it("should generate EPUB via downloadProfessionalCert", async function () {
     var certData = {
-      user: {
-        name: "Pro Tester",
-        email: "",
-        phone: "",
-        website: "",
-        social: {},
-        isArtist: false,
-        music: {},
-      },
-      file: {
-        name: "test.png",
-        size: 100,
-        type: "image/png",
-        dataUrl: "data:image/png;base64,",
-        width: 10,
-        height: 10,
-      },
-      watermark: false,
-      watermarkUrl: null,
-      watermarkAlgo: "",
-      watermarkResult: "",
-      pixelInjection: false,
-      piResultHtml: "",
-      timestamp: false,
-      tsResult: "",
-      fingerprint: false,
-      fpResult: null,
-      didSig: null,
-      didIdentity: "",
+      user: { name: "Pro Tester", email: "", phone: "", website: "", social: {}, isArtist: false, music: {} },
+      file: { name: "test.png", size: 100, type: "image/png", dataUrl: "data:image/png;base64,", width: 10, height: 10 },
+      watermark: false, watermarkUrl: null, watermarkAlgo: "", watermarkResult: "",
+      pixelInjection: false, piResultHtml: "",
+      timestamp: false, tsResult: "",
+      fingerprint: false, fpResult: null,
+      didSig: null, didIdentity: "",
       faceBiometric: null,
       ct: { submitted: false },
       generatedAt: new Date().toISOString(),
@@ -1842,11 +1399,7 @@ describe("Certificate — remaining branch edges", function () {
     var data;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       data = await collectCertData();
       assert.ok(data, "collectCertData should return data");
@@ -1896,9 +1449,7 @@ describe("Certificate — remaining branch edges", function () {
     var origCollect = globalThis.collectCertData;
     var alerted = false;
     var origAlert = globalThis.alert;
-    globalThis.alert = function () {
-      alerted = true;
-    };
+    globalThis.alert = function () { alerted = true; };
     globalThis.collectCertData = async function () {
       throw new Error("boom");
     };
@@ -1925,16 +1476,10 @@ describe("Certificate — remaining branch edges", function () {
     mockElement("cert-email-warn", { style: { display: "none" } });
     mockElement("cert-website-warn", { style: { display: "none" } });
     mockElement("cert-file", {
-      files: [
-        {
-          name: "",
-          size: 0,
-          type: "image/png",
-          arrayBuffer: async function () {
-            return new ArrayBuffer(4);
-          },
-        },
-      ],
+      files: [{
+        name: "", size: 0, type: "image/png",
+        arrayBuffer: async function () { return new ArrayBuffer(4); },
+      }],
     });
     mockElement("cert-name", { value: "EmptyName" });
     mockElement("cert-email", { value: "empty@test.com" });
@@ -1959,19 +1504,11 @@ describe("Certificate — remaining branch edges", function () {
     var origSubmit = globalThis.submitCertTransparency;
     try {
       globalThis.submitCertTransparency = async function () {
-        return {
-          submitted: true,
-          hash: "abc",
-          timestamp: new Date().toISOString(),
-        };
+        return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
       await generateProfessionalCert();
       assert.ok(globalThis._certData, "_certData should be defined");
-      assert.equal(
-        globalThis._certData.file.name,
-        "",
-        "empty name stays empty",
-      );
+      assert.equal(globalThis._certData.file.name, "", "empty name stays empty");
     } finally {
       globalThis.submitCertTransparency = origSubmit;
     }

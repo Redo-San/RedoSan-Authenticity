@@ -46,3 +46,5 @@ e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-a
 e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:416
 e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:419
 e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_ui_test.js:generic-api-key:528
+*:cli/tests/certificate_full_coverage_test.js:generic-api-key:*
+*:cli/tests/certificate_command_test.js:generic-api-key:*
