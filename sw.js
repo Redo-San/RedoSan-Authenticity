@@ -292,6 +292,7 @@ var HTML_WHITELIST = new Set([
   "/RedoSan-Authenticity/Style/pages/watermark/index.html",
   "/RedoSan-Authenticity/Style/pages/audio-watermark/index.html",
   "/RedoSan-Authenticity/Style/pages/fingerprint/index.html",
+  "/RedoSan-Authenticity/Style/pages/face-biometric/index.html",
   "/RedoSan-Authenticity/Style/pages/search/index.html",
   "/RedoSan-Authenticity/Style/pages/pixel-injection/index.html",
   "/RedoSan-Authenticity/Style/pages/metadata/index.html",
