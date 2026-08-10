@@ -220,10 +220,12 @@ describe("Certificate Command — buildCertData", () => {
 
     const data = await cmd.buildCertData("", { did: didPath });
 
-    // NOTE: production code has a bug: data.didSig = didData.signature (sets to string)
-    // rather than data.didSig = didData (the parsed object). The test verifies current behavior.
+    // Regression test for GH-339: data.didSig must be the parsed object,
+    // not the signature string (used as .didSig.did / .didSig.signature downstream).
     assert.ok(data.didSig);
-    // data.didSig is the signature string due to the bug, not an object with .did
+    assert.equal(data.didSig.did, "did:key:z6MkhaXgBZQbVrVZqZqZqZqZqZqZqZq");
+    assert.equal(data.didSig.signature, "sig_value_here_12345678901234567890");
+    assert.equal(data.didSig.algorithm, "Ed25519");
     assert.equal(data.didIdentity, "did:key:z6MkhaXgBZQbVrVZqZqZqZqZqZqZqZq");
   });
 

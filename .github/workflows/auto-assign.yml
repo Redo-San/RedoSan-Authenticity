@@ -20,7 +20,7 @@ jobs:
           script: |
             const author = context.payload.pull_request.user.login;
 
-            if (author === 'github-actions[bot]' || author === 'dependabot[bot]') return;
+            if (author.endsWith('[bot]')) return;
 
             await github.rest.issues.addAssignees({
               ...context.repo,
