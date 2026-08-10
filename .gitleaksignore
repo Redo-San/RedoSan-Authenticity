@@ -46,5 +46,11 @@ e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-a
 e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:416
 e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:419
 e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_ui_test.js:generic-api-key:528
-*:cli/tests/certificate_full_coverage_test.js:generic-api-key:*
-*:cli/tests/certificate_command_test.js:generic-api-key:*
+#
+# 5) did:key placeholder values in certificate test fixtures (reformatted by
+#    prettier in 47fd9d4, restored original formatting in 35b52fa). Test data
+#    only — the did:key values are fake and grant no access.
+47fd9d4313aaad19862cbe3711b5596452201d38:cli/tests/certificate_full_coverage_test.js:generic-api-key:1262
+47fd9d4313aaad19862cbe3711b5596452201d38:cli/tests/certificate_full_coverage_test.js:generic-api-key:1284
+35b52fae97f797518c12b9cdfa95619662b4efff:cli/tests/certificate_full_coverage_test.js:generic-api-key:938
+35b52fae97f797518c12b9cdfa95619662b4efff:cli/tests/certificate_full_coverage_test.js:generic-api-key:949
