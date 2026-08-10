@@ -147,10 +147,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.1.1",
     "madge": "^8.0.0",
-    "markdownlint-cli": "^0.48.0",
+    "markdownlint-cli": "^0.49.1",
     "mocha": "^10.8.2",
     "npm-check-updates": "^22.2.9",
-    "oh-my-openagent": "^4.10.0",
+    "oh-my-openagent": "^4.19.2",
     "opencode-conductor": "^1.0.6",
     "opencode-lazy-loader": "^1.0.4",
     "opencode-scheduler": "^1.3.0",
@@ -163,7 +163,7 @@
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
     "typedoc": "^0.28.19",
-    "undici-types": "^8.7.0",
+    "undici-types": "^8.9.0",
     "workbox-cli": "^7.4.1"
   },
   "c8": {
