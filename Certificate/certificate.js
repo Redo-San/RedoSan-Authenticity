@@ -1,7 +1,7 @@
 /* c8 ignore start */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -61,8 +61,8 @@ async function collectCertData() {
     ct: { submitted: false },
   };
   if (buf && file) {
-    var dataUrl = bufToDataURL(buf, file.type);
-    var dims = await loadImageDimensions(dataUrl);
+    const dataUrl = bufToDataURL(buf, file.type);
+    const dims = await loadImageDimensions(dataUrl);
     data.file.width = dims.width;
     data.file.height = dims.height;
     data.file.dataUrl = dataUrl;
@@ -70,14 +70,14 @@ async function collectCertData() {
   }
   // Submit ORIGINAL FILE to transparency log (fire-and-forget with 10s timeout)
   try {
-    var fileData = buf || new Uint8Array();
-    var ctPromise = submitCertTransparency(fileData);
-    var timeoutPromise = new Promise(function (_, rej) {
+    const fileData = buf || new Uint8Array();
+    const ctPromise = submitCertTransparency(fileData);
+    const timeoutPromise = new Promise(function (_, rej) {
       setTimeout(function () {
         rej(new Error("CT submission timed out"));
       }, 10_000);
     });
-    var ctResult = await Promise.race([ctPromise, timeoutPromise]);
+    let ctResult = await Promise.race([ctPromise, timeoutPromise]);
     ctResult.originalFileHash = data.file.hash || "";
     data.ct = ctResult;
   } catch (error) {
@@ -98,15 +98,15 @@ async function collectCertData() {
 async function stampCertFile(blob, format) {
   try {
     await ensureLib("OpenTimestamps");
-    var buf = await blob.arrayBuffer();
-    var hashBuf = await crypto.subtle.digest("SHA-256", buf);
-    var hashBytes = new Uint8Array(hashBuf);
-    var hashHex = Array.from(hashBytes)
+    const buf = await blob.arrayBuffer();
+    const hashBuf = await crypto.subtle.digest("SHA-256", buf);
+    const hashBytes = new Uint8Array(hashBuf);
+    const hashHex = Array.from(hashBytes)
       .map(function (b) {
         return b.toString(16).padStart(2, "0");
       })
       .join("");
-    var pendingB64 = generatePendingOts(hashHex);
+    const pendingB64 = generatePendingOts(hashHex);
     if (pendingB64) {
       setResult("certCtResult", {
         submitted: true,
@@ -116,7 +116,7 @@ async function stampCertFile(blob, format) {
         format: format,
         timestamp: new Date().toISOString(),
       });
-      var certOtsBtn = document.getElementById("cert-ots-dl-btn");
+      const certOtsBtn = document.getElementById("cert-ots-dl-btn");
       if (certOtsBtn) certOtsBtn.style.display = "inline-block";
     }
   } catch (error) {
@@ -136,14 +136,18 @@ function ensureLib(name) {
     if (name === "QRious" && typeof QRious !== "undefined") return resolve();
     if (name === "JSZip" && typeof JSZip !== "undefined") return resolve();
     if (name === "docx" && typeof docx !== "undefined") return resolve();
-    if (name === "OpenTimestamps" && typeof OpenTimestamps !== "undefined") return resolve();
+    if (name === "OpenTimestamps" && typeof OpenTimestamps !== "undefined")
+      return resolve();
     // Static vendor script didn't load yet — try local vendor first, then CDN fallbacks.
     /* c8 ignore next 40 */
-    var vbase = document.documentElement.dataset.standalone ? "../../../vendor/" : "vendor/";
+    var vbase = document.documentElement.dataset.standalone
+      ? "../../../vendor/"
+      : "vendor/";
     var urls;
     switch (name) {
       case "jspdf": {
         urls = [
+          vbase + "jspdf.umd.min.js",
           "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
           "https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js",
           "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
@@ -152,6 +156,7 @@ function ensureLib(name) {
       }
       case "QRious": {
         urls = [
+          vbase + "qrious.min.js",
           "https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js",
           "https://unpkg.com/qrious@4.0.2/dist/qrious.min.js",
           "https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js",
@@ -160,6 +165,7 @@ function ensureLib(name) {
       }
       case "docx": {
         urls = [
+          vbase + "docx.umd.min.js",
           "https://cdn.jsdelivr.net/npm/docx@8.5.0",
           "https://unpkg.com/docx@8.5.0/build/index.js",
           "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js",
@@ -226,7 +232,7 @@ function showCertOverlay() {
   document.body.append(o);
   _certOverlay = o;
   if (!document.getElementById("cert-spin-style")) {
-    var s = document.createElement("style");
+    const s = document.createElement("style");
     s.id = "cert-spin-style";
     s.textContent = "@keyframes certSpin{to{transform:rotate(360deg)}}";
     document.head.append(s);
@@ -249,12 +255,12 @@ function downloadCertOtsProof() {
   var ct = getResult("certCtResult");
   if (!ct || !ct.otsProof) return;
   try {
-    var bytes = Uint8Array.from(atob(ct.otsProof), function (c) {
+    const bytes = Uint8Array.from(atob(ct.otsProof), function (c) {
       return c.charCodeAt(0);
     });
-    var blob = new Blob([bytes], { type: "application/octet-stream" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
+    const blob = new Blob([bytes], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
     a.href = url;
     a.download = "RedoSan_Digital_Passport." + (ct.format || "pdf") + ".ots";
     document.body.append(a);
@@ -275,12 +281,12 @@ function downloadOtsProof() {
   var ct = getResult("lastCtResult");
   if (!ct || !ct.otsProof) return;
   try {
-    var bytes = Uint8Array.from(atob(ct.otsProof), function (c) {
+    const bytes = Uint8Array.from(atob(ct.otsProof), function (c) {
       return c.charCodeAt(0);
     });
-    var blob = new Blob([bytes], { type: "application/octet-stream" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
+    const blob = new Blob([bytes], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
     a.href = url;
     a.download = "RedoSan_Digital_Passport.ots";
     document.body.append(a);
@@ -310,20 +316,20 @@ async function downloadCert(format, btn) {
   });
   showCertOverlay();
   try {
-    var data = await collectCertData();
-    var certBlob;
+    const data = await collectCertData();
+    let certBlob;
     if (format === "pdf") {
       await ensureLib("jspdf");
       certBlob = await downloadCertPDF(data);
     } else if (format === "docx" || format === "epub") {
       await ensureLib("QRious");
-       if (format === "docx") {
-         await ensureLib("docx");
-         certBlob = await downloadCertDOCX(data);
-       } else {
-         await ensureLib("JSZip");
-         certBlob = await downloadCertEPUB(data);
-       }
+      if (format === "docx") {
+        await ensureLib("docx");
+        certBlob = await downloadCertDOCX(data);
+      } else {
+        await ensureLib("JSZip");
+        certBlob = await downloadCertEPUB(data);
+      }
     }
     // Stamp the certificate file itself
     if (certBlob) {
@@ -331,7 +337,7 @@ async function downloadCert(format, btn) {
     }
     setResult("lastCtResult", data && data.ct ? data.ct : null);
     if (data.ct && data.ct.otsProof) {
-      var otsBtn = document.getElementById("ots-dl-btn");
+      const otsBtn = document.getElementById("ots-dl-btn");
       if (otsBtn) otsBtn.style.display = "inline-block";
     }
   } catch (error) {
@@ -381,12 +387,12 @@ async function generateProfessionalCert() {
   if (btn) btn.disabled = true;
 
   try {
-    var fileInput = document.getElementById("cert-file");
-    var file =
+    const fileInput = document.getElementById("cert-file");
+    const file =
       fileInput && fileInput.files && fileInput.files[0]
         ? fileInput.files[0]
         : null;
-    var buf = null;
+    let buf = null;
     if (file) {
       buf = await file.arrayBuffer();
     }
@@ -421,34 +427,35 @@ async function generateProfessionalCert() {
     }
 
     // Watermark: uploaded file or wizard session result
-    var wmFile = getFileFrom("cert-result-wm");
-    var wmText = wmFile ? await readFileAsText(wmFile) : "";
-    var wmFileName = wmFile ? wmFile.name : "";
-    var wmGlobal = !!(window.simpleResults && window.simpleResults.watermark);
+    const wmFile = getFileFrom("cert-result-wm");
+    const wmText = wmFile ? await readFileAsText(wmFile) : "";
+    const wmFileName = wmFile ? wmFile.name : "";
+    const wmGlobal = !!(window.simpleResults && window.simpleResults.watermark);
 
     // PI: uploaded file or wizard session result
-    var piFile = getFileFrom("cert-result-pi");
-    var piText = piFile ? await readFileAsText(piFile) : "";
-    var piFileName = piFile ? piFile.name : "";
-    var piGlobal = !!(
+    const piFile = getFileFrom("cert-result-pi");
+    const piText = piFile ? await readFileAsText(piFile) : "";
+    const piFileName = piFile ? piFile.name : "";
+    const piGlobal = !!(
       window.simpleResults &&
-      (window.simpleResults.piFinalUrl || window.simpleResults["pixel-injection"])
+      (window.simpleResults.piFinalUrl ||
+        window.simpleResults["pixel-injection"])
     );
 
     // Fingerprint: uploaded file or wizard session result
-    var fpFile = getFileFrom("cert-result-fp");
-    var fpText = fpFile ? await readFileAsText(fpFile) : "";
-    var fpGlobal = window.simpleResults && window.simpleResults.fpResult;
-    var fpResultData = null;
+    const fpFile = getFileFrom("cert-result-fp");
+    const fpText = fpFile ? await readFileAsText(fpFile) : "";
+    const fpGlobal = window.simpleResults && window.simpleResults.fpResult;
+    let fpResultData = null;
     if (fpText) {
       try {
         fpResultData = JSON.parse(fpText);
       } catch {
         fpResultData = { hashes: {}, perceptual_hashes: {}, raw: fpText };
-        var fpLines = fpText.split("\n");
-        var curSection = "";
-        for (var fli = 0; fli < fpLines.length; fli++) {
-          var line = fpLines[fli].trim();
+        const fpLines = fpText.split("\n");
+        let curSection = "";
+        for (let fli = 0; fli < fpLines.length; fli++) {
+          const line = fpLines[fli].trim();
           if (line.includes("--- Hashes ---")) {
             curSection = "hashes";
             continue;
@@ -458,18 +465,18 @@ async function generateProfessionalCert() {
             continue;
           }
           if (curSection === "hashes") {
-            var hc = line.indexOf(":");
+            const hc = line.indexOf(":");
             if (hc > 0) {
-              var hk = line.substring(0, hc).trim();
-              var hv = line.substring(hc + 1).trim();
+              const hk = line.substring(0, hc).trim();
+              const hv = line.substring(hc + 1).trim();
               if (hk && hv) fpResultData.hashes[hk] = hv;
             }
           }
           if (curSection === "phash") {
-            var pc = line.indexOf(":");
+            const pc = line.indexOf(":");
             if (pc > 0) {
-              var pk = line.substring(0, pc).trim();
-              var pv = line.substring(pc + 1).trim();
+              const pk = line.substring(0, pc).trim();
+              const pv = line.substring(pc + 1).trim();
               if (pk && pv) fpResultData.perceptual_hashes[pk] = pv;
             }
           }
@@ -478,9 +485,9 @@ async function generateProfessionalCert() {
     }
 
     // DID Identity: uploaded file only
-    var didFile = getFileFrom("cert-result-did");
-    var didText = didFile ? await readFileAsText(didFile) : "";
-    var didUploadData = null;
+    const didFile = getFileFrom("cert-result-did");
+    const didText = didFile ? await readFileAsText(didFile) : "";
+    let didUploadData = null;
     if (didText) {
       try {
         didUploadData = JSON.parse(didText);
@@ -490,23 +497,23 @@ async function generateProfessionalCert() {
     }
 
     // Document Watermark: uploaded file only
-    var docwFile = getFileFrom("cert-result-docw");
-    var docwText = docwFile ? await readFileAsText(docwFile) : "";
-    var docwFileName = docwFile ? docwFile.name : "";
+    const docwFile = getFileFrom("cert-result-docw");
+    const docwText = docwFile ? await readFileAsText(docwFile) : "";
+    const docwFileName = docwFile ? docwFile.name : "";
 
     // Timestamp: uploaded file only
-    var tsFile = getFileFrom("cert-result-ts");
-    var tsName = tsFile ? tsFile.name : "";
-    var tsSize = tsFile ? tsFile.size : 0;
+    const tsFile = getFileFrom("cert-result-ts");
+    const tsName = tsFile ? tsFile.name : "";
+    const tsSize = tsFile ? tsFile.size : 0;
 
     // Validate required fields
-    var cname = getValOrEmpty("cert-name");
-    var cemail = getValOrEmpty("cert-email");
-    var cphoneCode =
+    const cname = getValOrEmpty("cert-name");
+    const cemail = getValOrEmpty("cert-email");
+    const cphoneCode =
       (document.getElementById("cert-phonecode") || {}).value || "";
-    var cphoneRaw = getValOrEmpty("cert-phone");
-    var cphone = cphoneRaw.replace(/\D/g, "").slice(0, 15);
-    var cwebsite = getValOrEmpty("cert-website");
+    const cphoneRaw = getValOrEmpty("cert-phone");
+    const cphone = cphoneRaw.replace(/\D/g, "").slice(0, 15);
+    const cwebsite = getValOrEmpty("cert-website");
 
     if (!cname || !cemail || !cphone || !cwebsite) {
       if (status)
@@ -517,7 +524,7 @@ async function generateProfessionalCert() {
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cemail)) {
-      var ew = document.getElementById("cert-email-warn");
+      const ew = document.getElementById("cert-email-warn");
       if (ew) ew.style.display = "block";
       if (status) status.textContent = "";
       if (spinner) spinner.style.display = "none";
@@ -528,7 +535,7 @@ async function generateProfessionalCert() {
       cwebsite === "https://" ||
       !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(cwebsite)
     ) {
-      var ww = document.getElementById("cert-website-warn");
+      const ww = document.getElementById("cert-website-warn");
       if (ww) ww.style.display = "block";
       if (status) status.textContent = "";
       if (spinner) spinner.style.display = "none";
@@ -604,14 +611,14 @@ async function generateProfessionalCert() {
     };
     // Submit ORIGINAL FILE to transparency log
     try {
-      var fileData = buf || new Uint8Array();
-      var ctPromise = submitCertTransparency(fileData);
-      var ctTimeout = new Promise(function (_, rej) {
+      const fileData = buf || new Uint8Array();
+      const ctPromise = submitCertTransparency(fileData);
+      const ctTimeout = new Promise(function (_, rej) {
         setTimeout(function () {
           rej(new Error("CT submission timed out"));
         }, 10_000);
       });
-      var ctResult = await Promise.race([ctPromise, ctTimeout]);
+      let ctResult = await Promise.race([ctPromise, ctTimeout]);
       ctResult.originalFileHash = _certData.file.hash || "";
       _certData.ct = ctResult;
     } catch (error) {
@@ -624,8 +631,8 @@ async function generateProfessionalCert() {
 
     // Main image dimensions + hash
     if (buf && file) {
-      var dataUrl = bufToDataURL(buf, file.type);
-      var dims = await loadImageDimensions(dataUrl);
+      const dataUrl = bufToDataURL(buf, file.type);
+      const dims = await loadImageDimensions(dataUrl);
       _certData.file.width = dims.width;
       _certData.file.height = dims.height;
       _certData.file.dataUrl = dataUrl;
@@ -634,7 +641,7 @@ async function generateProfessionalCert() {
 
     if (status) status.textContent = "Certificate generated successfully!";
     if (dlSection) dlSection.style.display = "block";
-  /* c8 ignore next 5 */
+    /* c8 ignore next 5 */
   } catch (error) {
     console.error("Certificate generation failed:", error);
     if (status) status.textContent = "Error: " + error.message;
@@ -660,6 +667,8 @@ async function downloadProfessionalCert(format) {
   try {
     switch (format) {
       case "pdf": {
+        await ensureLib("QRious");
+        await ensureLib("jspdf");
         if (typeof jspdf === "undefined")
           throw new Error(
             "PDF library (jspdf) did not load. Try disabling ad blockers or check your internet connection.",
@@ -669,6 +678,12 @@ async function downloadProfessionalCert(format) {
         break;
       }
       case "docx": {
+        await ensureLib("QRious");
+        await ensureLib("docx");
+        if (typeof docx === "undefined")
+          throw new Error(
+            "DOCX library (docx) did not load. Try disabling ad blockers or check your internet connection.",
+          );
         if (typeof QRious === "undefined")
           throw new Error(
             "QR library (QRious) did not load. Try disabling ad blockers or check your internet connection.",
@@ -678,6 +693,8 @@ async function downloadProfessionalCert(format) {
         break;
       }
       case "epub": {
+        await ensureLib("QRious");
+        await ensureLib("JSZip");
         {
           certBlob = await downloadCertEPUB(_certData);
           // No default
@@ -706,15 +723,15 @@ function initCertPhoneCode() {
     '<option value="">—— ' +
     __("simple.select_country", "Select country") +
     " ——</option>";
-  for (var i = 0; i < COUNTRY_CODES.length; i++) {
-    var c = COUNTRY_CODES[i];
+  for (let i = 0; i < COUNTRY_CODES.length; i++) {
+    const c = COUNTRY_CODES[i];
     html +=
       '<option value="' + c.dial + '">' + c.code + " " + c.dial + "</option>";
   }
   sel.innerHTML = html;
   // Auto-detect
   if (typeof getDefaultPhoneCode === "function") {
-    var detected = getDefaultPhoneCode();
+    const detected = getDefaultPhoneCode();
     if (detected) {
       sel.value = detected.dial;
     }

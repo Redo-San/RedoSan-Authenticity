@@ -52,11 +52,32 @@ var PAGE_NAMES = new Set([
   "watermark",
 ]);
 
+// Sensitive paths that must never be served over HTTP: VCS internals,
+// dotenv secrets, dependency trees and private key material.
+var BLOCKED_PATH_RE = /(^|\/)(\.git|\.hg|\.svn|\.env|node_modules)(\/|$)/i;
+var BLOCKED_SECRET_EXT_RE = /\.(pem|key|p12|pfx|asc|gpg|secret|env)$/i;
+
+/**
+ *
+ * @param resolved
+ */
+function isBlockedPath(resolved) {
+  var rel = resolved.slice(ROOT.length).replaceAll(path.sep, "/");
+  if (BLOCKED_PATH_RE.test(rel)) return true;
+  if (BLOCKED_SECRET_EXT_RE.test(rel)) return true;
+  return false;
+}
+
 http
   .createServer(function (req, res) {
     var pathname = "/" + req.url.split("?", 1)[0].replaceAll(/^\/+|\/+$/g, "");
+    var filePath;
+    var m;
+    var rewritten;
+    var stylePath;
+    var notFoundPath;
     if (pathname === "/") pathname = "/index.html";
-    var filePath = path.join(ROOT, pathname.replaceAll("/", path.sep));
+    filePath = path.join(ROOT, pathname.replaceAll("/", path.sep));
     if (!filePath.startsWith(ROOT)) {
       res.writeHead(403);
       res.end();
@@ -67,19 +88,19 @@ http
     if (!tryServe(filePath, req, res)) {
       // Rewrite `/page_name/`, `/page_name/index.html`, or bare `/page_name`
       // → Style/pages/{name}/index.html
-      var m = pathname.match(/^\/([^\/]+?)(?:\/index\.html|\/)?$/);
+      m = pathname.match(/^\/([^\/]+?)(?:\/index\.html|\/)?$/);
       if (m && PAGE_NAMES.has(m[1])) {
-        var rewritten = path.join(ROOT, "Style", "pages", m[1], "index.html");
+        rewritten = path.join(ROOT, "Style", "pages", m[1], "index.html");
         if (tryServe(rewritten, req, res)) return;
       }
       // Rewrite unmatched paths to Style/ directory
       // (handles relative asset references from MPA pages, e.g. /style.css → Style/style.css)
-      var stylePath = path.join(ROOT, "Style", pathname.replace(/^\//, ""));
+      stylePath = path.join(ROOT, "Style", pathname.replace(/^\//, ""));
       if (tryServe(stylePath, req, res)) return;
       // Last resort: serve custom 404 page with a real 404 status (never 200+
       // text/html for missing assets — that makes <script> requests fail with a
       // "script has an unsupported MIME type" console error)
-      var notFoundPath = path.join(ROOT, "404.html");
+      notFoundPath = path.join(ROOT, "404.html");
       if (fs.existsSync(notFoundPath)) {
         res.writeHead(404, {
           "Content-Type": "text/html",
@@ -92,7 +113,7 @@ http
       res.end("Not Found: " + escHtml(pathname));
     }
   })
-  .listen(8080, "0.0.0.0");
+  .listen(8080, "127.0.0.1");
 
 /**
  *
@@ -101,22 +122,35 @@ http
  * @param res
  */
 function tryServe(filePath, req, res) {
+  var resolved;
+  var stat;
+  var target;
+  var ext;
+  var isHtml;
+  var etag;
+  var headers;
+  var COMPRESSIBLE;
+  var acceptGzip;
+  var range;
+  var parts;
+  var start;
+  var end;
   try {
-    var resolved = path.resolve(filePath);
+    resolved = path.resolve(filePath);
+    if (isBlockedPath(resolved)) return false;
     if (resolved === REAL_ROOT) resolved = path.join(REAL_ROOT, "index.html");
     if (!resolved.startsWith(REAL_ROOT + path.sep)) return false;
-    var stat = fs.statSync(resolved);
-    var target = resolved;
+    stat = fs.statSync(resolved);
+    target = resolved;
     if (stat.isDirectory()) {
       target = path.join(resolved, "index.html");
       if (!target.startsWith(REAL_ROOT + path.sep)) return false;
       stat = fs.statSync(target);
     }
-    var ext = path.extname(target);
-    var isHtml = ext === ".html";
-    var etag =
-      '"' + stat.mtimeMs.toString(36) + "-" + stat.size.toString(36) + '"';
-    var headers = {
+    ext = path.extname(target);
+    isHtml = ext === ".html";
+    etag = '"' + stat.mtimeMs.toString(36) + "-" + stat.size.toString(36) + '"';
+    headers = {
       "Accept-Ranges": "bytes",
       "Cache-Control": "no-cache",
       ETag: etag,
@@ -126,7 +160,7 @@ function tryServe(filePath, req, res) {
       res.end();
       return true;
     }
-    var COMPRESSIBLE = [
+    COMPRESSIBLE = [
       ".html",
       ".js",
       ".css",
@@ -136,15 +170,15 @@ function tryServe(filePath, req, res) {
       ".md",
       ".txt",
     ];
-    var acceptGzip =
+    acceptGzip =
       COMPRESSIBLE.includes(ext) &&
       req.headers["accept-encoding"] &&
       req.headers["accept-encoding"].includes("gzip");
-    var range = req.headers.range;
+    range = req.headers.range;
     if (range) {
-      var parts = range.replace(/bytes=/, "").split("-");
-      var start = Number.parseInt(parts[0], 10);
-      var end = parts[1] ? Number.parseInt(parts[1], 10) : stat.size - 1;
+      parts = range.replace(/bytes=/, "").split("-");
+      start = Number.parseInt(parts[0], 10);
+      end = parts[1] ? Number.parseInt(parts[1], 10) : stat.size - 1;
       if (start >= stat.size) {
         res.writeHead(416);
         res.end();

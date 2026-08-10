@@ -1,7 +1,7 @@
 /* c8 ignore start */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -761,7 +761,7 @@ class PixelInjection {
         input.value = option.value;
         input.step = option.step;
         input.style.cssText = "width: 100%; margin: 5px 0;";
-        var rangeLabel = option.label
+        const rangeLabel = option.label
           ? option.label.replace(/[:\s]+$/, "")
           : "Pixel injection parameter";
         input.setAttribute("aria-label", rangeLabel);
@@ -773,7 +773,7 @@ class PixelInjection {
         input.type = "checkbox";
         input.checked = option.checked;
         input.style.cssText = "margin-right: 10px;";
-        var checkboxLabel = option.label
+        const checkboxLabel = option.label
           ? option.label.replace(/[:\s]+$/, "")
           : "Pixel injection option";
         input.setAttribute("aria-label", checkboxLabel);
@@ -832,10 +832,10 @@ class PixelInjection {
         this.showMessage("Invalid or dangerous secret file", "error");
         return;
       }
-      var secretFile = messageFileInput.files[0];
+      const secretFile = messageFileInput.files[0];
       secretFileName = secretFile.name;
-      var secretText = await new Promise(function (resolve) {
-        var r = new FileReader();
+      const secretText = await new Promise(function (resolve) {
+        const r = new FileReader();
         r.onload = function (e) {
           resolve(e.target.result);
         };
@@ -1241,7 +1241,7 @@ class PixelInjection {
         if (input.type === "checkbox") {
           options[key] = input.checked;
         } else if (input.type === "number" || input.type === "range") {
-          var val = parseFloat(input.value);
+          const val = parseFloat(input.value);
           if (!isNaN(val)) options[key] = val;
         } else {
           options[key] = input.value;
@@ -2004,7 +2004,13 @@ function piToCSV(r) {
     .map(function (row) {
       return row
         .map(function (c) {
-          return '"' + String(c).replace(/"/g, '""') + '"';
+          return (
+            '"' +
+            String(c)
+              .replace(/^[=+\-@\t\r]/, "'$&")
+              .replace(/"/g, '""') +
+            '"'
+          );
         })
         .join(",");
     })
@@ -2056,13 +2062,13 @@ async function downloadPixelInjection(format) {
 
   if (format === "pdf") {
     await ensureLib("jspdf");
-    var doc = new jspdf.jsPDF();
-    var y = 20;
+    const doc = new jspdf.jsPDF();
+    let y = 20;
     doc.setFontSize(16);
     doc.text("Pixel Injection Result", 14, y);
     y += 10;
     doc.setFontSize(10);
-    for (var k in r) {
+    for (const k in r) {
       /* c8 ignore next 4 */
       if (y > 280) {
         doc.addPage();
@@ -2078,8 +2084,8 @@ async function downloadPixelInjection(format) {
   }
   if (format === "doc") {
     await ensureLib("docx");
-    var docx = window.docx;
-    var children = [];
+    const docx = window.docx;
+    const children = [];
     children.push(
       new docx.Paragraph({
         children: [
@@ -2092,8 +2098,8 @@ async function downloadPixelInjection(format) {
         spacing: { after: 200 },
       }),
     );
-    var rows = [];
-    for (var kk in r) rows.push([kk, String(r[kk])]);
+    const rows = [];
+    for (const kk in r) rows.push([kk, String(r[kk])]);
     children.push(
       new docx.Table({
         rows: rows.map(function (row) {
@@ -2113,8 +2119,8 @@ async function downloadPixelInjection(format) {
         width: { size: 100, type: docx.WidthType.PERCENTAGE },
       }),
     );
-    var d = new docx.Document({ sections: [{ children: children }] });
-    var blob = await docx.Packer.toBlob(d);
+    const d = new docx.Document({ sections: [{ children: children }] });
+    const blob = await docx.Packer.toBlob(d);
     downloadBlobSimple(blob, name + ".docx");
     return;
   }

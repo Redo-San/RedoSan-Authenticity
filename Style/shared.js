@@ -1,7 +1,7 @@
 /* c8 ignore start */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -49,7 +49,7 @@ setStatus("Ready - JS mode", "success");
 async function getFile(id) {
   var input = document.getElementById(id);
   if (input && input.files && input.files.length) {
-    var file = input.files[0];
+    const file = input.files[0];
     if (isDangerousFile(file)) {
       alert(
         __(
@@ -71,7 +71,7 @@ async function getFile(id) {
       input.value = "";
       return null;
     }
-    var accept = input.getAttribute("accept");
+    const accept = input.getAttribute("accept");
     if (accept && !matchesAccept(file, accept)) {
       alert(
         __(
@@ -82,7 +82,7 @@ async function getFile(id) {
       input.value = "";
       return null;
     }
-    var magicOk = await matchesMagicBytes(file);
+    const magicOk = await matchesMagicBytes(file);
     if (!magicOk) {
       alert(
         __(
@@ -93,7 +93,7 @@ async function getFile(id) {
       input.value = "";
       return null;
     }
-    var dangerous = await checkDangerousContent(file);
+    const dangerous = await checkDangerousContent(file);
     if (dangerous) {
       alert(
         __(
@@ -105,7 +105,7 @@ async function getFile(id) {
       input.value = "";
       return null;
     }
-    var structOk = await checkFileStructure(file);
+    const structOk = await checkFileStructure(file);
     if (!structOk) {
       alert(
         __(
@@ -179,7 +179,7 @@ function __(key, fallback) {
 function downloadBlobSimple(blob, fileName) {
   var url = URL.createObjectURL(blob);
   if (isInAppBrowser()) {
-    var win = window.open(url, "_blank");
+    const win = window.open(url, "_blank");
     if (!win || win.closed) {
       alert(
         __(
@@ -359,65 +359,65 @@ function initTheme() {
  * @param dz
  */
 function attachDropZoneEvents(input, dz) {
-      const fileDiv = dz.querySelector(".dz-file") || { textContent: "" };
-      dz.addEventListener("click", (e) => {
-        if (
-          e.target === dz ||
-          e.target.classList.contains("dz-icon") ||
-          e.target.classList.contains("dz-text")
-        )
-          input.click();
-      });
-      /**
-       *
-       */
-      async function updateFile() {
-        if (input.files && input.files.length) {
-          if (input.files[0] && !(await validateFileInput(input))) {
-            clearInputFiles(input);
-            fileDiv.textContent = "";
-            dz.classList.remove("has-file");
-            return;
-          }
-          dz.classList.add("has-file");
-          fileDiv.textContent = "📄 " + input.files[0].name;
-        } else {
-          dz.classList.remove("has-file");
-          fileDiv.textContent = "";
-        }
+  const fileDiv = dz.querySelector(".dz-file") || { textContent: "" };
+  dz.addEventListener("click", (e) => {
+    if (
+      e.target === dz ||
+      e.target.classList.contains("dz-icon") ||
+      e.target.classList.contains("dz-text")
+    )
+      input.click();
+  });
+  /**
+   *
+   */
+  async function updateFile() {
+    if (input.files && input.files.length) {
+      if (input.files[0] && !(await validateFileInput(input))) {
+        clearInputFiles(input);
+        fileDiv.textContent = "";
+        dz.classList.remove("has-file");
+        return;
       }
-      input.addEventListener("change", updateFile);
-      ["dragenter", "dragover"].forEach((evt) =>
-        dz.addEventListener(evt, (e) => {
-          e.preventDefault();
-          dz.classList.add("drag-over");
-        }),
-      );
-      ["dragleave", "drop"].forEach((evt) =>
-        dz.addEventListener(evt, (e) => {
-          e.preventDefault();
-          dz.classList.remove("drag-over");
-        }),
-      );
-      /* c8 ignore start */
-      dz.addEventListener("drop", async (e) => {
-        e.preventDefault();
-        if (e.dataTransfer.files.length) {
-          const dt = new DataTransfer();
-          for (const f of e.dataTransfer.files) dt.items.add(f);
-          input.files = dt.files;
-          if (input.files[0] && !(await validateFileInput(input))) {
-            clearInputFiles(input);
-            dz.classList.remove("has-file");
-            fileDiv.textContent = "";
-            return;
-          }
-          updateFile();
-        }
-      });
-      /* c8 ignore stop */
-      if (input.files && input.files.length) updateFile();
+      dz.classList.add("has-file");
+      fileDiv.textContent = "📄 " + input.files[0].name;
+    } else {
+      dz.classList.remove("has-file");
+      fileDiv.textContent = "";
     }
+  }
+  input.addEventListener("change", updateFile);
+  ["dragenter", "dragover"].forEach((evt) => {
+    dz.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dz.classList.add("drag-over");
+    });
+  });
+  ["dragleave", "drop"].forEach((evt) => {
+    dz.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dz.classList.remove("drag-over");
+    });
+  });
+  /* c8 ignore start */
+  dz.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) {
+      const dt = new DataTransfer();
+      for (const f of e.dataTransfer.files) dt.items.add(f);
+      input.files = dt.files;
+      if (input.files[0] && !(await validateFileInput(input))) {
+        clearInputFiles(input);
+        dz.classList.remove("has-file");
+        fileDiv.textContent = "";
+        return;
+      }
+      updateFile();
+    }
+  });
+  /* c8 ignore stop */
+  if (input.files && input.files.length) updateFile();
+}
 
 /**
  *
@@ -483,8 +483,8 @@ function checkAutomation() {
       score += 5;
       signals.push("few_languages");
     }
-    var ua = (navigator.userAgent || "").toLowerCase();
-    var plat = (navigator.platform || "").toLowerCase();
+    const ua = (navigator.userAgent || "").toLowerCase();
+    const plat = (navigator.platform || "").toLowerCase();
     if (
       (ua.includes("windows") &&
         (plat.includes("linux") ||
@@ -497,7 +497,7 @@ function checkAutomation() {
       score += 20;
       signals.push("platform_mismatch");
     }
-    var sw = window.screen.width || 0,
+    const sw = window.screen.width || 0,
       sh = window.screen.height || 0;
     if (sw < 640 || sh < 480 || (sw === 0 && sh === 0)) {
       score += 10;
@@ -552,7 +552,7 @@ function detectWebRTCIPs() {
         }
       }, 5000);
     try {
-      var pc = new RTCPeerConnection({
+      const pc = new RTCPeerConnection({
         iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
       });
       pc.createDataChannel("");
@@ -576,8 +576,10 @@ function detectWebRTCIPs() {
         if (
           e.candidate.address &&
           typeof e.candidate.address === "string" &&
-          e.candidate.address.includes(".")
-         && !ips.includes(e.candidate.address)) ips.push(e.candidate.address);
+          e.candidate.address.includes(".") &&
+          !ips.includes(e.candidate.address)
+        )
+          ips.push(e.candidate.address);
         var m = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
         if (m && !ips.includes(m[1])) ips.push(m[1]);
       };
@@ -598,7 +600,7 @@ async function startAsyncVPNDetection() {
   if (REDOSAN_BOT_CHECK && REDOSAN_BOT_CHECK.isAutomated) return;
   var ips = await detectWebRTCIPs();
   var publicIPs = [];
-  for (var i = 0; i < ips.length; i++) {
+  for (let i = 0; i < ips.length; i++) {
     if (
       !/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254)/.test(
         ips[i],
@@ -638,8 +640,8 @@ function logSecurityStatus() {
     "%c🔐 RedoSan Security",
     "font-size:16px;font-weight:700;color:#6C5CE7",
   );
-  for (var i = 0; i < layers.length; i++) {
-    var c = layers[i].includes("✗") ? "#FF5252" : "#4CAF50";
+  for (let i = 0; i < layers.length; i++) {
+    const c = layers[i].includes("✗") ? "#FF5252" : "#4CAF50";
     console.log("%c  " + layers[i], "color:" + c + ";font-size:13px");
   }
 }
@@ -670,14 +672,24 @@ document.addEventListener("DOMContentLoaded", () => {
 // falls back to CDNs. Mirrors the pattern in Certificate/certificate.js.
 /* c8 ignore start */
 if (typeof ensureLib === "undefined") {
-  var __ensureLibGlobals = {
-    jspdf: function () { return typeof jspdf !== "undefined"; },
-    QRious: function () { return typeof QRious !== "undefined"; },
-    JSZip: function () { return typeof JSZip !== "undefined"; },
-    docx: function () { return typeof docx !== "undefined"; },
-    OpenTimestamps: function () { return typeof OpenTimestamps !== "undefined"; },
+  const __ensureLibGlobals = {
+    jspdf: function () {
+      return typeof jspdf !== "undefined";
+    },
+    QRious: function () {
+      return typeof QRious !== "undefined";
+    },
+    JSZip: function () {
+      return typeof JSZip !== "undefined";
+    },
+    docx: function () {
+      return typeof docx !== "undefined";
+    },
+    OpenTimestamps: function () {
+      return typeof OpenTimestamps !== "undefined";
+    },
   };
-  var __ensureLibUrls = {
+  const __ensureLibUrls = {
     jspdf: [
       "vendor/jspdf.umd.min.js",
       "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
@@ -719,12 +731,13 @@ if (typeof ensureLib === "undefined") {
       var urls = (__ensureLibUrls[name] || []).slice();
       if (!urls.length) return reject(new Error("Unknown library: " + name));
       if (name !== "docx" && urls[0].indexOf("vendor/") === 0) {
-        var vbase = document.documentElement.dataset.standalone
+        const vbase = document.documentElement.dataset.standalone
           ? "../../../vendor/"
           : "vendor/";
         urls[0] = vbase + urls[0].slice(7);
       }
-      var cache = (typeof window === "undefined") ? null : window.__ensureLibCache;
+      var cache =
+        typeof window === "undefined" ? null : window.__ensureLibCache;
       if (!cache) {
         window.__ensureLibCache = {};
         cache = window.__ensureLibCache;
@@ -753,7 +766,9 @@ if (typeof ensureLib === "undefined") {
           }
         };
         s.onerror = function () {
-          setTimeout(function () { load(i + 1); }, 1000);
+          setTimeout(function () {
+            load(i + 1);
+          }, 1000);
         };
         document.head.append(s);
       })(idx);
@@ -766,7 +781,9 @@ if (typeof ensureLib === "undefined") {
    */
   function ensureLibs(names) {
     return names.reduce(function (p, n) {
-      return p.then(function () { return ensureLib(n); });
+      return p.then(function () {
+        return ensureLib(n);
+      });
     }, Promise.resolve());
   }
 }
@@ -777,16 +794,14 @@ var SW_VERSION = 3;
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", function () {
     var swBase = document.documentElement.dataset.standalone ? "../../../" : "";
-    navigator.serviceWorker
-      .register(swBase + "sw.js?v=" + SW_VERSION)
-      .then(
-        function (reg) {
-          console.log("[SW] Registered scope:", reg.scope);
-        },
-        function (error) {
-          console.warn("[SW] Registration failed:", error);
-        },
-      );
+    navigator.serviceWorker.register(swBase + "sw.js?v=" + SW_VERSION).then(
+      function (reg) {
+        console.log("[SW] Registered scope:", reg.scope);
+      },
+      function (error) {
+        console.warn("[SW] Registration failed:", error);
+      },
+    );
   });
 }
 
@@ -838,9 +853,9 @@ var _homePath = "";
  */
 function goHome() {
   if (!_homePath) {
-    var parts = window.location.pathname.split("/");
-    var pagesIdx = -1;
-    for (var i = 0; i < parts.length; i++) {
+    let parts = window.location.pathname.split("/");
+    let pagesIdx = -1;
+    for (let i = 0; i < parts.length; i++) {
       if (parts[i] === "pages") {
         pagesIdx = i;
         break;
@@ -852,7 +867,7 @@ function goHome() {
       parts = parts.slice(0, pagesIdx + 1);
       parts.push("home", "index.html");
     }
-    var target = parts.join("/");
+    let target = parts.join("/");
     // Only add a leading slash for absolute-style paths that are not relative ("..")
     if (target.indexOf("/") !== 0 && parts[0] !== "..") target = "/" + target;
     _homePath = target;
@@ -868,20 +883,22 @@ function goHome() {
 window.RedoSanLoadRemovalTools = function () {
   if (window.location.hostname === "redo-san.github.io") return;
   var REMOVAL_JS = "../../../Removal_Tools/removal_tools.js";
+  var controller = new AbortController();
   var probe = function (method) {
-    return fetch(REMOVAL_JS, { method: method, cache: "no-store" }).then(
-      function (r) {
-        var ct = (r.headers.get("content-type") || "").toLowerCase();
-        if (!r.ok || !ct.includes("javascript")) return null;
-        return r;
-      },
-    );
+    return fetch(REMOVAL_JS, {
+      method: method,
+      cache: "no-store",
+      signal: controller.signal,
+    }).then(function (r) {
+      var ct = (r.headers.get("content-type") || "").toLowerCase();
+      if (!r.ok || !ct.includes("javascript")) return null;
+      return r;
+    });
   };
   var inject = function () {
     var s = document.createElement("script");
     (s.src = REMOVAL_JS + "?v=4"), (s.defer = !0), document.body.append(s);
   };
-  var controller = new AbortController();
   var timer = setTimeout(function () {
     controller.abort();
   }, 5000);
