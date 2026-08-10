@@ -1,7 +1,7 @@
 /* c8 ignore start */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -105,7 +105,7 @@ function uuidv7() {
  */
 function uuidv7Bulk(n) {
   var r = [];
-  for (var i = 0; i < n; i++) r.push(uuidv7());
+  for (let i = 0; i < n; i++) r.push(uuidv7());
   return r;
 }
 /**
@@ -114,7 +114,7 @@ function uuidv7Bulk(n) {
  */
 function uuidv4Bulk(n) {
   var r = [];
-  for (var i = 0; i < n; i++) r.push(uuidv4());
+  for (let i = 0; i < n; i++) r.push(uuidv4());
   return r;
 }
 
@@ -125,14 +125,14 @@ function ulid() {
   var ts = Date.now();
   var t = "";
   var n = ts;
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     t = CROCKFORD_B32[n % 32] + t;
     n = Math.floor(n / 32);
   }
   var r = "";
   var bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
-  for (var j = 0; j < 10; j++) {
+  for (let j = 0; j < 10; j++) {
     r += CROCKFORD_B32[bytes[j] % 32];
     if (r.length === 4) r += "-";
   }
@@ -145,7 +145,7 @@ function ulid() {
  */
 function ulidBulk(n) {
   var r = [];
-  for (var i = 0; i < n; i++) r.push(ulid());
+  for (let i = 0; i < n; i++) r.push(ulid());
   return r;
 }
 
@@ -158,7 +158,7 @@ function nanoid(len) {
   var bytes = new Uint8Array(len);
   crypto.getRandomValues(bytes);
   var r = "";
-  for (var i = 0; i < len; i++) r += NANOID_ALPHABET[bytes[i] % 64];
+  for (let i = 0; i < len; i++) r += NANOID_ALPHABET[bytes[i] % 64];
   return r;
 }
 
@@ -169,7 +169,7 @@ function nanoid(len) {
  */
 function nanoidBulk(n, len) {
   var r = [];
-  for (var i = 0; i < n; i++) r.push(nanoid(len));
+  for (let i = 0; i < n; i++) r.push(nanoid(len));
   return r;
 }
 
@@ -191,7 +191,7 @@ async function swhid() {
   var hash = await crypto.subtle.digest("SHA-1", bytes);
   var h = "";
   var v = new Uint8Array(hash);
-  for (var i = 0; i < v.length; i++) h += hex(v[i], 2);
+  for (let i = 0; i < v.length; i++) h += hex(v[i], 2);
   return "swh:1:cnt:" + h;
 }
 
@@ -227,22 +227,22 @@ async function computeSwhidFromFile(file) {
   var buf = await file.arrayBuffer();
 
   if (ext === "ots") {
-    var hex = await extractHashFromOts(buf);
+    const hex = await extractHashFromOts(buf);
     return "swh:1:cnt:" + hex;
   }
   if (ext === "json") {
-    var dec = new TextDecoder("utf-8");
-    var text = dec.decode(buf);
-    var obj;
+    const dec = new TextDecoder("utf-8");
+    const text = dec.decode(buf);
+    let obj;
     try {
       obj = JSON.parse(text);
     } catch (error) {
       throw new Error("Invalid fingerprint JSON: " + error.message);
     }
-    var sha1 = obj && obj.hashes && obj.hashes["SHA-1"];
+    const sha1 = obj && obj.hashes && obj.hashes["SHA-1"];
     if (sha1)
       return "swh:1:cnt:" + sha1.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
-    var sha256 = obj && obj.hashes && obj.hashes["SHA-256"];
+    const sha256 = obj && obj.hashes && obj.hashes["SHA-256"];
     if (sha256)
       return "swh:1:cnt:" + sha256.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
     throw new Error("No SHA-1 or SHA-256 hash found in fingerprint JSON");
@@ -262,7 +262,7 @@ function extractHashFromOts(buf) {
     0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf,
     0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
   ];
-  for (var i = 0; i < OTS_HEADER.length; i++) {
+  for (let i = 0; i < OTS_HEADER.length; i++) {
     if (data[i] !== OTS_HEADER[i])
       throw new Error("Invalid OTS file: bad magic bytes");
   }
@@ -272,7 +272,7 @@ function extractHashFromOts(buf) {
   var off = OTS_HEADER.length + 2;
   if (off + 32 > data.length) throw new Error("OTS file too short");
   var h = "";
-  for (var j = 0; j < 32; j++) h += hex(data[off + j], 2);
+  for (let j = 0; j < 32; j++) h += hex(data[off + j], 2);
   return h;
 }
 
@@ -294,7 +294,7 @@ async function computeSwhidFromText(text) {
 function hexFromDigest(buf) {
   var v = new Uint8Array(buf);
   var h = "";
-  for (var i = 0; i < v.length; i++) h += hex(v[i], 2);
+  for (let i = 0; i < v.length; i++) h += hex(v[i], 2);
   return h;
 }
 
@@ -314,7 +314,7 @@ function handleIdForgeGenerate() {
 
   setTimeout(async function () {
     try {
-      var ids;
+      let ids;
       switch (type) {
         case "uuidv4": {
           ids = count === 1 ? [uuidv4()] : uuidv4Bulk(count);
@@ -329,7 +329,7 @@ function handleIdForgeGenerate() {
           break;
         }
         case "nanoid": {
-          var nlen =
+          const nlen =
             parseInt(document.getElementById("if-nanoid-len").value, 10) || 21;
           ids = count === 1 ? [nanoid(nlen)] : nanoidBulk(count, nlen);
           break;
@@ -394,13 +394,13 @@ function idForgeDownload(format) {
   if (!r) return;
 
   if (format === "pdf") {
-    var doc = new jspdf.jsPDF();
+    const doc = new jspdf.jsPDF();
     doc.setFontSize(16);
     doc.setTextColor(108, 92, 231);
     doc.text("ID Forge — " + r.type, 14, 20);
     doc.setFontSize(10);
     doc.setTextColor(50, 50, 50);
-    var y = 30;
+    let y = 30;
     doc.text("Generated: " + r.timestamp, 14, y);
     y += 6;
     doc.text("Type: " + r.type, 14, y);
@@ -408,7 +408,7 @@ function idForgeDownload(format) {
     doc.text("Count: " + r.count, 14, y);
     y += 10;
     doc.setFontSize(8);
-    for (var p = 0; p < r.ids.length && p < 500; p++) {
+    for (let p = 0; p < r.ids.length && p < 500; p++) {
       if (y > 270) {
         doc.addPage();
         y = 20;
@@ -421,13 +421,13 @@ function idForgeDownload(format) {
   }
 
   if (format === "doc") {
-    var docHtml = '<html><body style="font-family:monospace">';
+    let docHtml = '<html><body style="font-family:monospace">';
     docHtml += "<h2>ID Forge — " + r.type + "</h2>";
     docHtml += "<p>Generated: " + r.timestamp + "</p>";
     docHtml += "<p>Count: " + r.count + "</p><hr>";
-    for (var q = 0; q < r.ids.length; q++) docHtml += "<p>" + r.ids[q] + "</p>";
+    for (let q = 0; q < r.ids.length; q++) docHtml += "<p>" + r.ids[q] + "</p>";
     docHtml += "</body></html>";
-    var docBlob = new Blob([docHtml], { type: "application/msword" });
+    const docBlob = new Blob([docHtml], { type: "application/msword" });
     downloadBlobSimple(docBlob, "id-forge-" + r.type + ".doc");
     return;
   }
@@ -441,10 +441,23 @@ function idForgeDownload(format) {
       break;
     }
     case "csv": {
+      const escCsv = function (v) {
+        return String(v)
+          .replace(/^[=+\-@\t\r]/, "'$&")
+          .replace(/"/g, '""');
+      };
       content = "Type,Count,Timestamp,ID\n";
-      for (var s = 0; s < r.ids.length; s++)
+      for (let s = 0; s < r.ids.length; s++)
         content +=
-          r.type + "," + r.count + "," + r.timestamp + "," + r.ids[s] + "\n";
+          '"' +
+          escCsv(r.type) +
+          '","' +
+          escCsv(r.count) +
+          '","' +
+          escCsv(r.timestamp) +
+          '","' +
+          escCsv(r.ids[s]) +
+          '"\n';
       ext = "csv";
       mime = "text/csv";
       break;
@@ -472,7 +485,7 @@ function idForgeDownload(format) {
         "</count>\n    <timestamp>" +
         escXml(r.timestamp) +
         "</timestamp>\n  </metadata>\n  <ids>\n";
-      for (var t = 0; t < r.ids.length; t++)
+      for (let t = 0; t < r.ids.length; t++)
         content += "    <id>" + escXml(r.ids[t]) + "</id>\n";
       content += "  </ids>\n</id-forge>";
       ext = "xml";
@@ -549,7 +562,7 @@ function idForgeShowInfo() {
  */
 function switchSwhidTab(tab) {
   var btns = document.querySelectorAll("[data-swhid-tab]");
-  for (var i = 0; i < btns.length; i++) {
+  for (let i = 0; i < btns.length; i++) {
     btns[i].style.background =
       btns[i].dataset.swhidTab === tab
         ? "var(--accent, #6c5ce7)"
@@ -558,7 +571,7 @@ function switchSwhidTab(tab) {
       btns[i].dataset.swhidTab === tab ? "#fff" : "var(--text, #333)";
   }
   var wrappers = ["if-swhid-file-wrapper", "if-swhid-text-wrapper"];
-  for (var j = 0; j < wrappers.length; j++) {
+  for (let j = 0; j < wrappers.length; j++) {
     document.getElementById(wrappers[j]).style.display = "none";
   }
   document.getElementById("if-swhid-" + tab + "-wrapper").style.display =

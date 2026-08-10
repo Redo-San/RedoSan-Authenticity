@@ -1181,14 +1181,14 @@ describe("Pixel Injection — apply2DDFT and applyInverse2DDFT (transforms)", ()
 describe("Pixel Injection — embedInCoefficient DWT LSB (transforms)", () => {
   it("should embed bit=1 into coefficient", () => {
     const core = new WatermarkCore();
-    // 100 is even; setting LSB to 1 keeps the change minimal (≤1)
+    // Step-2 LSB: 100 → 102 keeps a full ±1 margin over rounding noise
     const result = core.embedInCoefficient(100, 1);
-    assert.equal(result, 101);
+    assert.equal(result, 102);
   });
 
   it("should embed bit=0 into coefficient", () => {
     const core = new WatermarkCore();
-    // 101 is odd; clearing the LSB to 0 keeps the change minimal (≤1)
+    // Step-2 LSB: 101 → 100 keeps a full ±1 margin over rounding noise
     const result = core.embedInCoefficient(101, 0);
     assert.equal(result, 100);
   });

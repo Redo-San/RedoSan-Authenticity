@@ -19,3 +19,4 @@ test-results/
 
 Style/pages/
 Style/shared.js
+sw-precache.js

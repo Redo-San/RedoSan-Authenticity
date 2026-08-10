@@ -103,6 +103,8 @@ WatermarkCore.prototype.dwt = function (
 
   // Only coefficients up to _bandLen are written by applyDWT; anything
   // beyond is zero padding that would silently swallow bits on extraction.
+  // bandLen counts RGBA entries; bits are embedded across all channels of
+  // the 3 detail bands (alpha bits are corrected by the redundancy vote).
   const bandLen = waveletDecomposition._bandLen;
   const dwtCapacity = bandLen * 3;
   if (encodedMessage.length > dwtCapacity) {
@@ -128,7 +130,9 @@ WatermarkCore.prototype.dwt = function (
       i < coeffs.length && messageIndex < encodedMessage.length;
       i++
     ) {
-      // embedInCoefficient rounds internally, so no Math.round() here.
+      // Alpha coefficients are reconstructed from the neighbouring RGB
+      // channels, so embedding bits there does not survive round-trip;
+      // the step-2 LSB keeps a full ±1 margin for the read-back.
       coeffs[i] = this.embedInCoefficient(
         coeffs[i],
         parseInt(encodedMessage[messageIndex++], 2),
@@ -305,7 +309,7 @@ WatermarkCore.prototype.hybridDCTDWT = function (
   if (messageIndex < messageLength) {
     const decomp = this.applyDWT(data, width, height, 1, "haar");
 
-    // Count available DWT coefficients
+    // Count available DWT coefficients (3 detail bands)
     const dwtCapacity = decomp._bandLen * 3; // LH + HL + HH
     const dwtBits = messageLength - messageIndex;
     if (dwtBits <= dwtCapacity) {
@@ -481,14 +485,14 @@ WatermarkCore.prototype.applyDWT = function (
   const halfW = Math.floor(width / 2);
   const halfH = Math.floor(height / 2);
   const bandLen = halfW * halfH * 4;
-  // Float64: coefficients must not be clamped/rounded, otherwise embedding
-  // bits (and the reconstructed colors) are destroyed by saturation. Only
-  // bandLen entries are written, so allocate exactly that instead of the
-  // 4x-wasteful full image size.
-  const LL = new Float64Array(bandLen);
-  const LH = new Float64Array(bandLen);
-  const HL = new Float64Array(bandLen);
-  const HH = new Float64Array(bandLen);
+  // Uint8Clamped: coefficients from integer pixels are x.0 or x.5 exactly,
+  // so a step-2 LSB survives the inverse DWT rounding without fractional
+  // noise accumulating across pixels. Only bandLen entries are written,
+  // so allocate exactly that instead of the 4x-wasteful full image size.
+  const LL = new Uint8ClampedArray(bandLen);
+  const LH = new Uint8ClampedArray(bandLen);
+  const HL = new Uint8ClampedArray(bandLen);
+  const HH = new Uint8ClampedArray(bandLen);
   for (let y = 0; y < halfH * 2; y += 2) {
     for (let x = 0; x < halfW * 2; x += 2) {
       const idx00 = (y * width + x) * 4;
@@ -501,10 +505,10 @@ WatermarkCore.prototype.applyDWT = function (
           b = data[idx01 + c];
         const d = data[idx10 + c],
           e = data[idx11 + c];
-        LL[outIdx + c] = (a + b + d + e) / 4;
-        LH[outIdx + c] = (a + b - d - e) / 4;
-        HL[outIdx + c] = (a - b + d - e) / 4;
-        HH[outIdx + c] = (a - b - d + e) / 4;
+        LL[outIdx + c] = (a + b + d + e) / 2;
+        LH[outIdx + c] = (a + b - d - e) / 2;
+        HL[outIdx + c] = (a - b + d - e) / 2;
+        HH[outIdx + c] = (a - b - d + e) / 2;
       }
     }
   }
@@ -547,19 +551,19 @@ WatermarkCore.prototype.applyInverseDWT = function (
 
         data[outIdx00 + c] = Math.max(
           0,
-          Math.min(255, Math.round(ll + lh + hl + hh)),
+          Math.min(255, Math.round((ll + lh + hl + hh) / 2)),
         );
         data[outIdx01 + c] = Math.max(
           0,
-          Math.min(255, Math.round(ll + lh - hl - hh)),
+          Math.min(255, Math.round((ll + lh - hl - hh) / 2)),
         );
         data[outIdx10 + c] = Math.max(
           0,
-          Math.min(255, Math.round(ll - lh + hl - hh)),
+          Math.min(255, Math.round((ll - lh + hl - hh) / 2)),
         );
         data[outIdx11 + c] = Math.max(
           0,
-          Math.min(255, Math.round(ll - lh - hl + hh)),
+          Math.min(255, Math.round((ll - lh - hl + hh) / 2)),
         );
       }
     }
@@ -661,9 +665,12 @@ WatermarkCore.prototype.modifyCoefficient = function (
   return modified * weight;
 };
 
-// Embed a bit in the LSB of a wavelet coefficient (change ≤1, survives the
-// Uint8ClampedArray rounding introduced by the balanced /4 decomposition)
+// Embed a bit in the LSB of a wavelet coefficient with a step of 2. The
+// Uint8Clamped /2 decomposition keeps coefficients at x.0/x.5, so a step of
+// 1 sits exactly on the rounding decision boundary and flips; step 2 keeps
+// a full ±1 margin and round-trips cleanly through inverse/forward DWT.
 WatermarkCore.prototype.embedInCoefficient = function (coefficient, bit) {
   const rounded = Math.round(coefficient);
-  return (rounded & ~1) | bit;
+  const quantized = Math.floor(rounded / 2);
+  return ((quantized & ~1) | bit) * 2;
 };
