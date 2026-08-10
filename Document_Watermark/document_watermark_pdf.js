@@ -1,7 +1,7 @@
 /* c8 ignore start */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -25,7 +25,7 @@
 function _getWmAtPos(origFull, wmFull, segText, startPos) {
   // Verify segText is at startPos in origFull
   if (origFull.length - startPos < segText.length) return null;
-  for (var i = 0; i < segText.length; i++) {
+  for (let i = 0; i < segText.length; i++) {
     if (origFull[startPos + i] !== segText[i]) return null;
   }
   // Walk wmFull matching original chars until we reach startPos
@@ -64,23 +64,27 @@ async function _decompressRaw(bytes) {
   var readPromise = (async function () {
     while (true) {
       try {
-        var v = await reader.read();
+        const v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } catch { break; }
+      } catch {
+        break;
+      }
     }
   })();
   readPromise.catch(function () {});
   try {
     await writer.write(bytes);
     await writer.close();
-  } catch { /* suppress */ }
+  } catch {
+    /* suppress */
+  }
   await readPromise;
   var total = 0;
-  for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
+  for (let i = 0; i < chunks.length; i++) total += chunks[i].length;
   var result = new Uint8Array(total);
   var offset = 0;
-  for (var i2 = 0; i2 < chunks.length; i2++) {
+  for (let i2 = 0; i2 < chunks.length; i2++) {
     result.set(chunks[i2], offset);
     offset += chunks[i2].length;
   }
@@ -93,7 +97,7 @@ async function _decompressRaw(bytes) {
  */
 function _stringToBytes(str) {
   var buf = new Uint8Array(str.length);
-  for (var i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xff;
+  for (let i = 0; i < str.length; i++) buf[i] = str.charCodeAt(i) & 0xff;
   return buf;
 }
 
@@ -104,49 +108,53 @@ function _stringToBytes(str) {
 async function _pdfBuildCMap(src) {
   var cmap = { forward: {}, reverse: {} };
   var objRe = /(\d+)\s+\d+\s+obj([\s\S]*?)endobj/g;
-  var m;
-  while ((m = objRe.exec(src)) !== null) {
-    var objContent = m[2];
+  for (let m = objRe.exec(src); m !== null; m = objRe.exec(src)) {
+    const objContent = m[2];
     if (!objContent.includes("FlateDecode")) continue;
-    var sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
+    const sm2 = objContent.match(/stream\s*\n([\s\S]*?)endstream/);
     if (!sm2) continue;
-    var raw2 = sm2[1].replace(/[\r\n]+$/, "");
+    const raw2 = sm2[1].replace(/[\r\n]+$/, "");
     if (raw2.length > 100_000) continue;
-    var dec2;
+    let dec2;
     try {
       dec2 = await _decompressRaw(_stringToBytes(raw2));
-    } catch { continue; }
+    } catch {
+      continue;
+    }
     if (!dec2 || dec2.length === 0) continue;
-    var data = "";
-    for (var di = 0; di < dec2.length; di++) data += String.fromCharCode(dec2[di]);
+    let data = "";
+    for (let di = 0; di < dec2.length; di++)
+      data += String.fromCharCode(dec2[di]);
     if (!data.includes("begincmap")) continue;
 
-    var bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
-    var bm;
-    while ((bm = bfcharRe.exec(data)) !== null) {
-      var entries = bm[2].split("\n");
-      for (var ei = 0; ei < entries.length; ei++) {
-        var match = entries[ei].match(/<(\w+)>\s*<(\w+)>/);
+    const bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
+    for (let bm = bfcharRe.exec(data); bm !== null; bm = bfcharRe.exec(data)) {
+      const entries = bm[2].split("\n");
+      for (let ei = 0; ei < entries.length; ei++) {
+        const match = entries[ei].match(/<(\w+)>\s*<(\w+)>/);
         if (match) {
-          var cid = parseInt(match[1], 16);
-          var uni = parseInt(match[2], 16);
+          const cid = parseInt(match[1], 16);
+          const uni = parseInt(match[2], 16);
           cmap.forward[cid] = uni;
           if (!cmap.reverse[uni]) cmap.reverse[uni] = cid;
         }
       }
     }
-    var bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
-    var rm;
-    while ((rm = bfrangeRe.exec(data)) !== null) {
-      var rentries = rm[2].split("\n");
-      for (var ri = 0; ri < rentries.length; ri++) {
-        var parts = rentries[ri].match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
+    const bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
+    for (
+      let rm = bfrangeRe.exec(data);
+      rm !== null;
+      rm = bfrangeRe.exec(data)
+    ) {
+      const rentries = rm[2].split("\n");
+      for (let ri = 0; ri < rentries.length; ri++) {
+        const parts = rentries[ri].match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
         if (parts) {
-          var start = parseInt(parts[1], 16);
-          var end = parseInt(parts[2], 16);
-          var baseCode = parseInt(parts[3], 16);
-          for (var ci = start; ci <= end; ci++) {
-            var uni2 = baseCode + (ci - start);
+          const start = parseInt(parts[1], 16);
+          const end = parseInt(parts[2], 16);
+          const baseCode = parseInt(parts[3], 16);
+          for (let ci = start; ci <= end; ci++) {
+            const uni2 = baseCode + (ci - start);
             if (!cmap.forward[ci]) {
               cmap.forward[ci] = uni2;
               if (!cmap.reverse[uni2]) cmap.reverse[uni2] = ci;
@@ -170,16 +178,15 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
   // ── 1. Locate all text segments (TJ arrays + Tj operators) ──
   var segs = [];
   var reTJ = /\[([\s\S]*?)\]\s*TJ/g;
-  var m;
-  while ((m = reTJ.exec(content)) !== null) {
-    var combined = "";
-    var ci = 0,
+  for (let m = reTJ.exec(content); m !== null; m = reTJ.exec(content)) {
+    let combined = "";
+    let ci = 0,
       arr = m[1];
     while (ci < arr.length) {
       if (arr[ci] === "(") {
-        var depth = 1;
+        let depth = 1;
         ci++;
-        var cStart = ci;
+        const cStart = ci;
         while (ci < arr.length && depth > 0) {
           if (arr[ci] === "\\") {
             ci += 2;
@@ -202,7 +209,7 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
     });
   }
   var reTj = /\(((?:[^()\\]|\\.)*)\)\s*Tj/g;
-  while ((m = reTj.exec(content)) !== null) {
+  for (let m = reTj.exec(content); m !== null; m = reTj.exec(content)) {
     segs.push({
       start: m.index,
       end: m.index + m[0].length,
@@ -212,50 +219,71 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
   }
   if (segs.length === 0) {
     // Try hex Tj strings (CMap-encoded)
-    var hexTjRe = /<([0-9A-Fa-f]+)>\s*Tj/g;
-    var hexSegs = [];
-    var htm;
-    var hexCombined = "";
-    while ((htm = hexTjRe.exec(content)) !== null) {
-      var hex = htm[1];
-      var cid = parseInt(hex, 16);
-      var ch;
+    const hexTjRe = /<([0-9A-Fa-f]+)>\s*Tj/g;
+    const hexSegs = [];
+    let hexCombined = "";
+    for (
+      let htm2 = hexTjRe.exec(content);
+      htm2 !== null;
+      htm2 = hexTjRe.exec(content)
+    ) {
+      const htm = htm2;
+      const hex = htm[1];
+      const cid = parseInt(hex, 16);
+      let ch;
       if (cmap && cmap.forward[cid] !== undefined) {
-        try { ch = String.fromCodePoint(cmap.forward[cid]); }
-        catch { ch = "?"; }
+        try {
+          ch = String.fromCodePoint(cmap.forward[cid]);
+        } catch {
+          ch = "?";
+        }
       } else {
         ch = String.fromCharCode(cid);
       }
-      hexSegs.push({ start: htm.index, end: htm.index + htm[0].length, hex: hex, cid: cid, ch: ch });
+      hexSegs.push({
+        start: htm.index,
+        end: htm.index + htm[0].length,
+        hex: hex,
+        cid: cid,
+        ch: ch,
+      });
       hexCombined += ch;
     }
     if (hexSegs.length > 0 && hexCombined) {
-      var hexStreamPos = origFull.indexOf(hexCombined);
+      const hexStreamPos = origFull.indexOf(hexCombined);
       if (hexStreamPos >= 0) {
-        var hexRemaining = hexCombined.length;
-        for (var hi = hexSegs.length - 1; hi >= 0; hi--) {
-          var segEndInStream = hexRemaining;
-          var segStartInStream = segEndInStream - 1;
+        let hexRemaining = hexCombined.length;
+        for (let hi = hexSegs.length - 1; hi >= 0; hi--) {
+          const segEndInStream = hexRemaining;
+          const segStartInStream = segEndInStream - 1;
           hexRemaining = segStartInStream;
-          var wmChar = wmFull[hexStreamPos + segStartInStream];
+          const wmChar = wmFull[hexStreamPos + segStartInStream];
           if (wmChar) {
-            var wmCode = wmChar.charCodeAt(0);
-            var newCid;
-            newCid = cmap && cmap.reverse[wmCode] !== undefined ? cmap.reverse[wmCode] : hexSegs[hi].cid;
-            var newHex = newCid.toString(16).toUpperCase();
+            const wmCode = wmChar.charCodeAt(0);
+            let newCid;
+            newCid =
+              cmap && cmap.reverse[wmCode] !== undefined
+                ? cmap.reverse[wmCode]
+                : hexSegs[hi].cid;
+            let newHex = newCid.toString(16).toUpperCase();
             while (newHex.length < 4) newHex = "0" + newHex;
-            content = content.substring(0, hexSegs[hi].start) + "<" + newHex + "> Tj" + content.substring(hexSegs[hi].end);
+            content =
+              content.substring(0, hexSegs[hi].start) +
+              "<" +
+              newHex +
+              "> Tj" +
+              content.substring(hexSegs[hi].end);
           }
         }
         return content;
       }
     }
     // Fallback: hex-encode Unicode and replace (works for identity CMaps)
-    var origHex = "",
+    let origHex = "",
       replHex = "";
-    for (var j = 0; j < origFull.length; j++)
+    for (let j = 0; j < origFull.length; j++)
       origHex += origFull.charCodeAt(j).toString(16).toUpperCase();
-    for (var k = 0; k < wmFull.length; k++)
+    for (let k = 0; k < wmFull.length; k++)
       replHex += wmFull.charCodeAt(k).toString(16).toUpperCase();
     if (origHex) return content.split(origHex).join(replHex);
     return content;
@@ -266,25 +294,25 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
     return a.start - b.start;
   });
   var streamText = "";
-  for (var si = 0; si < segs.length; si++) streamText += segs[si].text;
+  for (let si = 0; si < segs.length; si++) streamText += segs[si].text;
   if (!streamText) return content;
   var streamPos = origFull.indexOf(streamText);
   if (streamPos < 0) return content;
 
   // ── 3. Walk segments backward, replace each with per-position watermarked text ──
   var remainingText = streamText.length;
-  for (var si2 = segs.length - 1; si2 >= 0; si2--) {
-    var segEndInStream = remainingText;
-    var segStartInStream = segEndInStream - segs[si2].text.length;
+  for (let si2 = segs.length - 1; si2 >= 0; si2--) {
+    const segEndInStream = remainingText;
+    const segStartInStream = segEndInStream - segs[si2].text.length;
     remainingText = segStartInStream;
-    var wmSeg = _getWmAtPos(
+    const wmSeg = _getWmAtPos(
       origFull,
       wmFull,
       segs[si2].text,
       streamPos + segStartInStream,
     );
-    var chunk = wmSeg === null ? segs[si2].text : wmSeg;
-    var esc = chunk
+    const chunk = wmSeg === null ? segs[si2].text : wmSeg;
+    const esc = chunk
       .replace(/\\/g, "\\\\")
       .replace(/\(/g, String.raw`\(`)
       .replace(/\)/g, String.raw`\)`);
@@ -311,7 +339,7 @@ async function buildWatermarkedPdfDoc(
   watermarkedText,
 ) {
   var src = "";
-  for (var i = 0; i < originalBytes.length; i++)
+  for (let i = 0; i < originalBytes.length; i++)
     src += String.fromCharCode(originalBytes[i]);
   var result = "",
     lastIdx = 0;
@@ -321,8 +349,8 @@ async function buildWatermarkedPdfDoc(
 
   // Encode watermarked text as UTF-16 BE for PDF parenthesized string
   var wmUtf16Be = "";
-  for (var ci = 0; ci < watermarkedText.length; ci++) {
-    var code = watermarkedText.charCodeAt(ci);
+  for (let ci = 0; ci < watermarkedText.length; ci++) {
+    const code = watermarkedText.charCodeAt(ci);
     wmUtf16Be += String.fromCharCode((code >> 8) & 0xff);
     wmUtf16Be += String.fromCharCode(code & 0xff);
   }
@@ -331,7 +359,10 @@ async function buildWatermarkedPdfDoc(
    * @param s
    */
   function escPdfStr(s) {
-    return s.replace(/\\/g, "\\\\").replace(/\(/g, String.raw`\(`).replace(/\)/g, String.raw`\)`);
+    return s
+      .replace(/\\/g, "\\\\")
+      .replace(/\(/g, String.raw`\(`)
+      .replace(/\)/g, String.raw`\)`);
   }
   var wmStreamSnippet =
     "\nBT\n/F0 12 Tf\n0 0 Td\n(" + escPdfStr(wmUtf16Be) + ") Tj\nET\n";
@@ -339,30 +370,29 @@ async function buildWatermarkedPdfDoc(
 
   // Process each stream
   var re = /stream([\r\n]+)([\s\S]*?)endstream/g;
-  var m;
-  while ((m = re.exec(src)) !== null) {
+  for (let m = re.exec(src); m !== null; m = re.exec(src)) {
     result += src.substring(lastIdx, m.index);
     result += "stream" + m[1];
-    var rawData = m[2];
-    var cleanData = rawData.replace(/[\r\n]+$/, "");
-    var rawBytes = new Uint8Array(cleanData.length);
-    for (var di = 0; di < cleanData.length; di++)
+    const rawData = m[2];
+    const cleanData = rawData.replace(/[\r\n]+$/, "");
+    const rawBytes = new Uint8Array(cleanData.length);
+    for (let di = 0; di < cleanData.length; di++)
       rawBytes[di] = cleanData.charCodeAt(di) & 0xff;
-    var modified = cleanData;
+    let modified = cleanData;
 
     // Try to decompress (zlib first, then raw deflate)
-    var dec = null;
-    for (var fmtIdx = 0; fmtIdx < 2 && dec === null; fmtIdx++) {
-      var fmt = fmtIdx === 0 ? "deflate" : "deflate-raw";
+    let dec = null;
+    for (let fmtIdx = 0; fmtIdx < 2 && dec === null; fmtIdx++) {
+      const fmt = fmtIdx === 0 ? "deflate" : "deflate-raw";
       try {
-        var st = new DecompressionStream(fmt);
-        var sw = st.writable.getWriter();
-        var sr = st.readable.getReader();
-        var sch = [];
-        var srp = (async function () {
+        const st = new DecompressionStream(fmt);
+        const sw = st.writable.getWriter();
+        const sr = st.readable.getReader();
+        const sch = [];
+        const srp = (async function () {
           try {
             while (true) {
-              var v = await sr.read();
+              const v = await sr.read();
               if (v.done) break;
               sch.push(v.value);
             }
@@ -374,13 +404,15 @@ async function buildWatermarkedPdfDoc(
         try {
           await sw.write(rawBytes);
           await sw.close();
-        } catch { /* suppress */ }
+        } catch {
+          /* suppress */
+        }
         await srp;
-        var sttl = 0;
-        for (var si = 0; si < sch.length; si++) sttl += sch[si].length;
+        let sttl = 0;
+        for (let si = 0; si < sch.length; si++) sttl += sch[si].length;
         dec = new Uint8Array(sttl);
-        var soff = 0;
-        for (var sj = 0; sj < sch.length; sj++) {
+        let soff = 0;
+        for (let sj = 0; sj < sch.length; sj++) {
           dec.set(sch[sj], soff);
           soff += sch[sj].length;
         }
@@ -390,17 +422,25 @@ async function buildWatermarkedPdfDoc(
     }
 
     if (dec) {
-      var decStr = "";
-      for (var d2 = 0; d2 < dec.length; d2++)
+      let decStr = "";
+      for (let d2 = 0; d2 < dec.length; d2++)
         decStr += String.fromCharCode(dec[d2]);
       // Try text replacement with CMap support
-      var newStr = _pdfReplaceInStream(decStr, originalText, watermarkedText, cmap);
-      var didReplace = newStr !== decStr;
+      const newStr = _pdfReplaceInStream(
+        decStr,
+        originalText,
+        watermarkedText,
+        cmap,
+      );
+      const didReplace = newStr !== decStr;
       // Only append if the CMap replacement didn't already modify the content
-      var pageStream =
-        !didReplace && wmUtf16Be && decStr.includes("BT") && decStr.includes("ET");
+      const pageStream =
+        !didReplace &&
+        wmUtf16Be &&
+        decStr.includes("BT") &&
+        decStr.includes("ET");
       if (pageStream) {
-        var lastEt = decStr.lastIndexOf("ET");
+        const lastEt = decStr.lastIndexOf("ET");
         decStr =
           decStr.substring(0, lastEt + 2) +
           wmStreamSnippet +
@@ -409,25 +449,25 @@ async function buildWatermarkedPdfDoc(
         wmAppended = true;
       }
       if (didReplace || pageStream) {
-        var finalStr = didReplace ? newStr : decStr;
-        var nBytes = new Uint8Array(finalStr.length);
-        for (var nb = 0; nb < finalStr.length; nb++)
+        const finalStr = didReplace ? newStr : decStr;
+        const nBytes = new Uint8Array(finalStr.length);
+        for (let nb = 0; nb < finalStr.length; nb++)
           nBytes[nb] = finalStr.charCodeAt(nb) & 0xff;
-        var comp = await _deflate(nBytes);
+        const comp = await _deflate(nBytes);
         modified = "";
-        for (var ciX = 0; ciX < comp.length; ciX++)
+        for (let ciX = 0; ciX < comp.length; ciX++)
           modified += String.fromCharCode(comp[ciX]);
       }
     }
 
-    var trail = rawData.substring(cleanData.length);
+    const trail = rawData.substring(cleanData.length);
     result += modified + trail + "endstream";
     lastIdx = m.index + m[0].length;
   }
   result += src.substring(lastIdx);
 
   var out = new Uint8Array(result.length);
-  for (var i2 = 0; i2 < result.length; i2++)
+  for (let i2 = 0; i2 < result.length; i2++)
     out[i2] = result.charCodeAt(i2) & 0xff;
   return out;
 }
@@ -451,8 +491,14 @@ function _docwBuildCertificateText(r) {
   s += DASHES + "\n";
   s += "  Algorithm:   " + (r.algo || "--") + "\n";
   s += "  Message:     " + (r.message || "--") + "\n";
-  s += "  Timestamp:   " + (r.timestamp ? new Date(r.timestamp).toLocaleString() : "--") + "\n";
-  s += "  Doc. Length: " + (r.textLength ? r.textLength + " characters" : "--") + "\n";
+  s +=
+    "  Timestamp:   " +
+    (r.timestamp ? new Date(r.timestamp).toLocaleString() : "--") +
+    "\n";
+  s +=
+    "  Doc. Length: " +
+    (r.textLength ? r.textLength + " characters" : "--") +
+    "\n";
   s += "  Document ID: " + (r.hash || "--") + "\n";
   s += DASHES + "\n";
   s += "             VERIFICATION\n";
@@ -492,9 +538,16 @@ function docwToTXT(r) {
  */
 function docwToCSV(r) {
   var rows = [["Key", "Value"]];
-  var keys = ["algo", "message", "timestamp", "textLength", "hash", "resultLength"];
-  for (var ki = 0; ki < keys.length; ki++) {
-    var k = keys[ki];
+  var keys = [
+    "algo",
+    "message",
+    "timestamp",
+    "textLength",
+    "hash",
+    "resultLength",
+  ];
+  for (let ki = 0; ki < keys.length; ki++) {
+    const k = keys[ki];
     rows.push([k, r[k] === undefined ? "" : String(r[k])]);
   }
   return (
@@ -502,7 +555,13 @@ function docwToCSV(r) {
       .map(function (row) {
         return row
           .map(function (c) {
-            return '"' + String(c).replace(/"/g, '""') + '"';
+            return (
+              '"' +
+              String(c)
+                .replace(/^[=+\-@\t\r]/, "'$&")
+                .replace(/"/g, '""') +
+              '"'
+            );
           })
           .join(",");
       })
@@ -516,9 +575,16 @@ function docwToCSV(r) {
  */
 function docwToXML(r) {
   var xml = '<?xml version="1.0"?>\n<document_watermark>\n';
-  var keys = ["algo", "message", "timestamp", "textLength", "hash", "resultLength"];
-  for (var ki = 0; ki < keys.length; ki++) {
-    var k = keys[ki];
+  var keys = [
+    "algo",
+    "message",
+    "timestamp",
+    "textLength",
+    "hash",
+    "resultLength",
+  ];
+  for (let ki = 0; ki < keys.length; ki++) {
+    const k = keys[ki];
     if (r[k] !== undefined)
       xml += "  <" + k + ">" + _docwEscXml(String(r[k])) + "</" + k + ">\n";
   }
@@ -544,13 +610,13 @@ async function downloadDocw(format) {
   if (!r) return;
 
   if (format === "pdf") {
-    var blob = await _docwBuildReportPdf(r, "embed");
+    const blob = await _docwBuildReportPdf(r, "embed");
     downloadBlobSimple(blob, "document_watermark_report.pdf");
     return;
   }
 
   if (format === "doc") {
-    var blob = await _docwBuildReportDocx(r, "embed");
+    const blob = await _docwBuildReportDocx(r, "embed");
     downloadBlobSimple(blob, "document_watermark_report.docx");
     return;
   }

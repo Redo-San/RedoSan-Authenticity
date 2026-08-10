@@ -1,6 +1,6 @@
 /* c8 ignore start */ (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -78,20 +78,20 @@ async function sha256Hex(buf) {
  */
 async function ensureVerifiedWasm() {
   if (!verifiedWasmUrl) {
-    var wasmTimeout = new Promise(function (_, reject) {
+    const wasmTimeout = new Promise(function (_, reject) {
       setTimeout(function () {
         reject(new Error("C2PA WASM download timed out"));
       }, 30_000);
     });
-    var wasmResp = await Promise.race([fetch(WASM_SRC), wasmTimeout]);
-    var wasmBuf = await wasmResp.arrayBuffer();
-    var wasmHash = await sha256Hex(wasmBuf);
+    const wasmResp = await Promise.race([fetch(WASM_SRC), wasmTimeout]);
+    const wasmBuf = await wasmResp.arrayBuffer();
+    const wasmHash = await sha256Hex(wasmBuf);
     if (wasmHash !== EXPECTED_WASM_HASH) {
       throw new Error(
         "C2PA WASM integrity check failed — possible supply-chain attack",
       );
     }
-    var wasmBlob = new Blob([wasmBuf], { type: "application/wasm" });
+    const wasmBlob = new Blob([wasmBuf], { type: "application/wasm" });
     verifiedWasmUrl = URL.createObjectURL(wasmBlob);
   }
   return verifiedWasmUrl;
@@ -102,8 +102,8 @@ async function ensureVerifiedWasm() {
  */
 async function getC2pa() {
   if (!c2paInstance) {
-    var verified = await ensureVerifiedWasm();
-    var engineTimeout = new Promise(function (_, reject) {
+    const verified = await ensureVerifiedWasm();
+    const engineTimeout = new Promise(function (_, reject) {
       setTimeout(function () {
         reject(new Error("C2PA engine timed out initializing"));
       }, 20_000);
@@ -193,13 +193,14 @@ function parsePem(pem) {
 function splitCerts(pem) {
   const certs = [];
   const regex = /-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g;
-  let match;
-  while ((match = regex.exec(pem)) !== null) {
+  let match = regex.exec(pem);
+  while (match !== null) {
     const b64 = match[0]
       .replace(/-----BEGIN [\w\s]+-----/g, "")
       .replace(/-----END [\w\s]+-----/g, "")
       .replace(/\s/g, "");
     certs.push(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
+    match = regex.exec(pem);
   }
   return certs;
 }
@@ -569,7 +570,7 @@ window.handleC2paRead = async function () {
 
   try {
     const c2pa = await getC2pa();
-    var reader, manifestStore;
+    let reader, manifestStore;
 
     try {
       reader = await withTimeout(
@@ -768,7 +769,7 @@ window.handleC2paRead = async function () {
 
     output.innerHTML = html;
 
-    var dlBtn = document.getElementById("c2pa-read-dl-btn");
+    const dlBtn = document.getElementById("c2pa-read-dl-btn");
     if (dlBtn) dlBtn.style.display = "";
 
     window._c2paReadResult = {
@@ -1019,12 +1020,12 @@ window.downloadC2pa = async function (format) {
   if (!r) return;
   var name = (r.file || "c2pa_report").replace(/\.[^.]+$/, "");
   if (format === "pdf") {
-    var blob = await c2paToPDF(r);
+    const blob = await c2paToPDF(r);
     downloadBlobSimple(blob, name + ".c2pa.pdf");
     return;
   }
   if (format === "doc") {
-    var blob = await c2paToDOCX(r);
+    const blob = await c2paToDOCX(r);
     downloadBlobSimple(blob, name + ".c2pa.docx");
     return;
   }
@@ -1134,7 +1135,7 @@ async function c2paToPDF(r) {
     doc.setFontSize(9);
     doc.setTextColor(50, 50, 50);
     actions.forEach(function (a) {
-      var items = Array.isArray(a.data)
+      const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
         ? a.data.actions
@@ -1227,7 +1228,7 @@ async function c2paToDOCX(r) {
         spacing: { before: 200, after: 100 },
       }),
     );
-    var genRows = m.claim_generator_info.map(function (info) {
+    const genRows = m.claim_generator_info.map(function (info) {
       return [(info.name || "") + " " + (info.version || ""), ""];
     });
     children.push(createDocxTable(docx, genRows));
@@ -1249,9 +1250,9 @@ async function c2paToDOCX(r) {
         spacing: { before: 200, after: 100 },
       }),
     );
-    var actRows = [];
+    const actRows = [];
     actions.forEach(function (a) {
-      var items = Array.isArray(a.data)
+      const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
         ? a.data.actions
@@ -1276,7 +1277,7 @@ async function c2paToDOCX(r) {
         spacing: { before: 200, after: 100 },
       }),
     );
-    var sigRows = [];
+    const sigRows = [];
     if (m.signature_info.issuer)
       sigRows.push(["Issuer", m.signature_info.issuer]);
     if (m.signature_info.time) sigRows.push(["Signed", m.signature_info.time]);
@@ -1310,7 +1311,7 @@ function c2paToCSV(r) {
     return a.label === "c2pa.actions";
   });
   actions.forEach(function (a) {
-    var items = Array.isArray(a.data)
+    const items = Array.isArray(a.data)
       ? a.data
       : a.data && a.data.actions
       ? a.data.actions
@@ -1323,7 +1324,13 @@ function c2paToCSV(r) {
     .map(function (row) {
       return row
         .map(function (cell) {
-          return '"' + String(cell).replace(/"/g, '""') + '"';
+          return (
+            '"' +
+            String(cell)
+              .replace(/^[=+\-@\t\r]/, "'$&")
+              .replace(/"/g, '""') +
+            '"'
+          );
         })
         .join(",");
     })
@@ -1360,7 +1367,7 @@ function c2paToTXT(r) {
   if (actions.length) {
     lines.push("--- Actions ---");
     actions.forEach(function (a) {
-      var items = Array.isArray(a.data)
+      const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
         ? a.data.actions
@@ -1437,7 +1444,7 @@ function c2paToXML(r) {
   if (actions.length) {
     xml += "  <actions>\n";
     actions.forEach(function (a) {
-      var items = Array.isArray(a.data)
+      const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
         ? a.data.actions
@@ -1542,7 +1549,7 @@ function c2paToHTML(r) {
   if (actions.length) {
     h += '<div class="section">Actions</div><table>';
     actions.forEach(function (a) {
-      var items = Array.isArray(a.data)
+      const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
         ? a.data.actions

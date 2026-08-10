@@ -193,8 +193,8 @@ function matchesMagicBytes(file) {
         resolve(expected(arr));
         return;
       }
-      for (var sig of expected) {
-        var match = true;
+      for (const sig of expected) {
+        let match = true;
         for (const [i, element] of sig.entries()) {
           if (arr[i] !== element) {
             match = false;
@@ -324,7 +324,7 @@ function checkFileStructure(file) {
             resolve(false);
             return;
           }
-          var i = arr.length - 12;
+          const i = arr.length - 12;
           if (
             arr[i] !== 0 ||
             arr[i + 1] !== 0 ||
@@ -397,7 +397,7 @@ function matchesAccept(file, acceptAttr) {
   var type = file.type.toLowerCase();
   var rules = acceptAttr.split(",");
   for (const rule of rules) {
-    var r = rule.trim();
+    const r = rule.trim();
     if (r.endsWith("/*") && type.startsWith(r.split("/", 1)[0] + "/"))
       return true;
     else if (r.includes("/") && type === r) return true;
@@ -423,7 +423,7 @@ function clearInputFiles(input) {
     input.value = "";
   } catch {}
   if (input.files && input.files.length > 0) {
-    var dt = new DataTransfer();
+    const dt = new DataTransfer();
     input.files = dt.files;
   }
 }
@@ -445,8 +445,8 @@ var DANGEROUS_MAGIC = [
  */
 function hasDangerousMagic(buf) {
   for (const element of DANGEROUS_MAGIC) {
-    var sig = element.sig;
-    var match = true;
+    const sig = element.sig;
+    let match = true;
     for (const [j, element_] of sig.entries()) {
       if (buf[j] !== element_) {
         match = false;
@@ -537,7 +537,7 @@ async function validateFileInput(input) {
   }
   // Detect dangerous file types by magic bytes when file has no extension
   if (!fileHasExtension(file)) {
-    var dangerDetected = await detectDangerousMagic(input);
+    const dangerDetected = await detectDangerousMagic(input);
     if (dangerDetected) {
       alert(
         __(

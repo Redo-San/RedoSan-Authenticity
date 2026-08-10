@@ -1,7 +1,7 @@
 /* c8 ignore start */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -60,11 +60,11 @@ function levenshtein(a, b) {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
   var m = [];
-  for (var i = 0; i <= b.length; i++) m[i] = [i];
-  for (var j = 0; j <= a.length; j++) m[0][j] = j;
-  for (var i = 1; i <= b.length; i++) {
-    for (var j = 1; j <= a.length; j++) {
-      var cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
+  for (let i = 0; i <= b.length; i++) m[i] = [i];
+  for (let j = 0; j <= a.length; j++) m[0][j] = j;
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
       m[i][j] = Math.min(
         m[i - 1][j] + 1,
         m[i][j - 1] + 1,
@@ -101,11 +101,11 @@ function matchAssistantIntent(input) {
   var bestScore = 0;
   var bestMatch = null;
 
-  for (var i = 0; i < ASSISTANT_KB.length; i++) {
-    var intent = ASSISTANT_KB[i];
-    for (var j = 0; j < intent.patterns.length; j++) {
-      var normPattern = normalizeArabic(intent.patterns[j].toLowerCase());
-      var patternTokens = normPattern.split(/\s+/);
+  for (let i = 0; i < ASSISTANT_KB.length; i++) {
+    const intent = ASSISTANT_KB[i];
+    for (let j = 0; j < intent.patterns.length; j++) {
+      const normPattern = normalizeArabic(intent.patterns[j].toLowerCase());
+      const patternTokens = normPattern.split(/\s+/);
       if (patternTokens.length === 0) continue;
 
       // Exact phrase match → 100% confidence
@@ -114,22 +114,22 @@ function matchAssistantIntent(input) {
       }
 
       // Token-level matching
-      var exactMatches = 0;
-      var fuzzyMatches = 0;
-      var union = {};
-      var inTokens = {};
+      let exactMatches = 0;
+      let fuzzyMatches = 0;
+      const union = {};
+      const inTokens = {};
 
-      for (var k = 0; k < tokens.length; k++) union[tokens[k]] = true;
-      for (var k = 0; k < patternTokens.length; k++)
+      for (let k = 0; k < tokens.length; k++) union[tokens[k]] = true;
+      for (let k = 0; k < patternTokens.length; k++)
         union[patternTokens[k]] = true;
-      for (var k = 0; k < tokens.length; k++) inTokens[tokens[k]] = true;
+      for (let k = 0; k < tokens.length; k++) inTokens[tokens[k]] = true;
 
-      for (var k = 0; k < patternTokens.length; k++) {
+      for (let k = 0; k < patternTokens.length; k++) {
         if (inTokens[patternTokens[k]]) {
           exactMatches++;
         } else {
-          for (var l = 0; l < tokens.length; l++) {
-            var maxL = Math.max(patternTokens[k].length, tokens[l].length);
+          for (let l = 0; l < tokens.length; l++) {
+            const maxL = Math.max(patternTokens[k].length, tokens[l].length);
             if (maxL === 0) continue;
             if (
               1 - levenshtein(patternTokens[k], tokens[l]) / maxL >=
@@ -142,12 +142,12 @@ function matchAssistantIntent(input) {
         }
       }
 
-      var matchedTokens = exactMatches + fuzzyMatches;
-      var unionSize = Object.keys(union).length;
-      var jaccard = unionSize > 0 ? matchedTokens / unionSize : 0;
-      var coverage =
+      const matchedTokens = exactMatches + fuzzyMatches;
+      const unionSize = Object.keys(union).length;
+      const jaccard = unionSize > 0 ? matchedTokens / unionSize : 0;
+      const coverage =
         patternTokens.length > 0 ? matchedTokens / patternTokens.length : 0;
-      var score = jaccard * 0.3 + coverage * 0.7;
+      let score = jaccard * 0.3 + coverage * 0.7;
 
       // Substring bonus
       if (normalized.includes(normPattern)) {
@@ -273,7 +273,7 @@ function getContextualSuggestions(lang) {
  */
 function loadChatHistory() {
   try {
-    var h = localStorage.getItem("redosan_chat");
+    const h = localStorage.getItem("redosan_chat");
     return h ? JSON.parse(h) : [];
   } catch {
     return [];
@@ -319,11 +319,11 @@ function toggleAssistant() {
   if (ASSISTANT_OPEN) {
     panel.classList.add("open");
     bubble.style.display = "none";
-    var msgArea = document.getElementById("assistantMessages");
+    const msgArea = document.getElementById("assistantMessages");
     if (msgArea && msgArea.children.length === 0) {
       showInitialGreeting();
     }
-    var input = document.getElementById("assistantInput");
+    const input = document.getElementById("assistantInput");
     if (input)
       setTimeout(function () {
         input.focus();
@@ -346,7 +346,7 @@ function showInitialGreeting() {
     REDOSAN_BOT_CHECK &&
     REDOSAN_BOT_CHECK.isAutomated
   ) {
-    var botLang = getAssistantLang();
+    const botLang = getAssistantLang();
     addMessage(
       botLang === "ar"
         ? "⚠️ **تم اكتشاف متصفح آلي.** تطبيق RedoSan Authenticity مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة."
@@ -406,18 +406,18 @@ function showSuggestions(suggestions, lang) {
     return;
   }
   container.style.display = "flex";
-  for (var i = 0; i < suggestions.length; i++) {
-    var chip = document.createElement("button");
+  for (let i = 0; i < suggestions.length; i++) {
+    const chip = document.createElement("button");
     chip.className = "ast-chip";
     chip.textContent = suggestions[i];
     chip.onclick = (function (s, l) {
       return function () {
         document.getElementById("assistantSuggestions").style.display = "none";
         addMessage(s, "user");
-        var matched = matchAssistantIntent(s);
+        const matched = matchAssistantIntent(s);
         setTimeout(function () {
           addMessage(getAssistantResponse(matched, l), "bot");
-          var sug = matched
+          const sug = matched
             ? getAssistantSuggestions(matched, l)
             : getContextualSuggestions(l);
           showSuggestions(
@@ -443,7 +443,7 @@ function addMessage(text, role) {
   div.className = "ast-msg ast-msg-" + role;
   var isBot = role === "bot";
   if (isBot) {
-    var avatar = document.createElement("span");
+    const avatar = document.createElement("span");
     avatar.className = "ast-avatar";
     div.append(avatar);
   }
@@ -456,14 +456,14 @@ function addMessage(text, role) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
   var segments = formatted.split(/\*\*(.*?)\*\*/g);
-  for (var s = 0; s < segments.length; s++) {
+  for (let s = 0; s < segments.length; s++) {
     if (s % 2 === 1) {
-      var strong = document.createElement("strong");
+      const strong = document.createElement("strong");
       strong.textContent = segments[s];
       content.append(strong);
     } else {
-      var lines = segments[s].split("\n");
-      for (var t = 0; t < lines.length; t++) {
+      const lines = segments[s].split("\n");
+      for (let t = 0; t < lines.length; t++) {
         if (t > 0) content.append(document.createElement("br"));
         content.append(document.createTextNode(lines[t]));
       }
@@ -485,7 +485,7 @@ function sendAssistantMessage(text) {
     REDOSAN_BOT_CHECK &&
     REDOSAN_BOT_CHECK.isAutomated
   ) {
-    var botLang = getAssistantLang();
+    const botLang = getAssistantLang();
     addMessage(
       botLang === "ar"
         ? "⚠️ **تم اكتشاف متصفح آلي.** تطبيق RedoSan Authenticity مخصص للمستخدمين البشريين فقط. يرجى تعطيل أدوات الأتمتة."
@@ -521,9 +521,9 @@ function sendAssistantMessage(text) {
   setTimeout(
     function () {
       if (typing.parentNode) typing.remove();
-      var respLang = getResponseLang(text);
-      var matched = matchAssistantIntent(text);
-      var response = getAssistantResponse(matched, respLang);
+      const respLang = getResponseLang(text);
+      const matched = matchAssistantIntent(text);
+      const response = getAssistantResponse(matched, respLang);
       addMessage(response, "bot");
       var suggestions = matched
         ? getAssistantSuggestions(matched, respLang)

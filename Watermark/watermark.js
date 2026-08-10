@@ -1,6 +1,6 @@
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -179,181 +179,6 @@ async function watermarkEmbed(type, imageFile, secretFile, password) {
         ok: true,
         data: blob,
         msg: "Type 8 (Fragile): SHA-256 integrity hash embedded",
-      };
-    }
-    case 3: {
-      const b = wm3_extract(imgData, keyVal);
-      const res =
-        b.length >= 32 ? extractData(b) : { data: null, reason: "no-data" };
-      if (!res.data)
-        return {
-          ok: false,
-          error:
-            res.reason === "bad-password"
-              ? "Wrong password"
-              : "No watermark found with this algorithm",
-        };
-      return {
-        ok: true,
-        files: { "extracted_type3.bin": res.data },
-        msg: `Type 3 extract: ${res.data.length} bytes`,
-      };
-    }
-    case 4: {
-      const ycbcr = rgbToYcbcr(imgData);
-      let b = extractFromDCT(ycbcr.Y, w, h, 32);
-      if (b.length < 32)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      const dlen = parseInt(b.substr(0, 32), 2);
-      if (dlen <= 0 || dlen > 100_000)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      // Type 4 embeds payload 3x redundantly — read all 3 copies
-      const totalBits = 32 + dlen * 8 * 3;
-      b = extractFromDCT(ycbcr.Y, w, h, totalBits);
-      if (b.length < totalBits)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      // Majority vote across 3 copies to validate type 4
-      const copy1 = b.substr(32, dlen * 8);
-      const copy2 = b.substr(32 + dlen * 8, dlen * 8);
-      const copy3 = b.substr(32 + dlen * 8 * 2, dlen * 8);
-      let agree12 = 0,
-        agree13 = 0,
-        agree23 = 0;
-      for (let i = 0; i < dlen * 8; i++) {
-        if (copy1[i] === copy2[i]) agree12++;
-        if (copy1[i] === copy3[i]) agree13++;
-        if (copy2[i] === copy3[i]) agree23++;
-      }
-      const maxAgree = Math.max(agree12, agree13, agree23);
-      // Type 4 redundancy: expect > 90% agreement between any 2 copies
-      if (maxAgree < dlen * 8 * 0.9)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      const res = extractData(b);
-      if (!res.data)
-        return {
-          ok: false,
-          error:
-            res.reason === "bad-password"
-              ? "Wrong password"
-              : "No watermark found with this algorithm",
-        };
-      return {
-        ok: true,
-        files: { "extracted_type4.bin": res.data },
-        msg: `Type 4 extract: ${res.data.length} bytes`,
-      };
-    }
-    case 5: {
-      const ycbcr = rgbToYcbcr(imgData);
-      const sig = new TextEncoder().encode("RedoSanZeroBit");
-      const b = extractFromDCT(ycbcr.Y, w, h, sig.length * 8);
-      if (b.length < sig.length * 8)
-        return { ok: false, error: "No zero-bit watermark detected" };
-      const data = from_bits(b.substr(0, sig.length * 8));
-      let matches = 0;
-      for (let i = 0; i < data.length; i++) if (data[i] === sig[i]) matches++;
-      const ratio = matches / sig.length;
-      if (ratio > 0.85)
-        return {
-          ok: true,
-          msg:
-            ratio === 1
-              ? "Type 5: PRESENCE CONFIRMED - Zero-bit watermark detected"
-              : `Type 5: Presence likely (${Math.round(ratio * 100)}% match)`,
-        };
-      return {
-        ok: false,
-        error: `Type 5: No watermark (only ${Math.round(ratio * 100)}% match)`,
-      };
-    }
-    case 6: {
-      const b = wm6_extract(imgData);
-      const res =
-        b.length >= 32 ? extractData(b) : { data: null, reason: "no-data" };
-      if (!res.data)
-        return {
-          ok: false,
-          error:
-            res.reason === "bad-password"
-              ? "Wrong password"
-              : "No watermark found with this algorithm",
-        };
-      return {
-        ok: true,
-        files: { "extracted_type6.bin": res.data },
-        msg: `Type 6 extract: ${res.data.length} bytes`,
-      };
-    }
-    case 7: {
-      const ycbcr = rgbToYcbcr(imgData);
-      let b = extractFromDCT(ycbcr.Y, w, h, 32);
-      if (b.length < 32)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      const dlen = parseInt(b.substr(0, 32), 2);
-      if (dlen <= 0 || dlen > 100_000)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      b = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-      const res = extractData(b);
-      if (!res.data)
-        return {
-          ok: false,
-          error:
-            res.reason === "bad-password"
-              ? "Wrong password"
-              : "No watermark found with this algorithm",
-        };
-      return {
-        ok: true,
-        files: { "extracted_type7.bin": res.data },
-        msg: `Type 7 extract: ${res.data.length} bytes`,
-      };
-    }
-    case 8: {
-      const hash = wm8_extract(imgData, key);
-      if (!hash)
-        return {
-          ok: false,
-          error: key && key.length ? "Wrong password" : "No hash found",
-        };
-      return {
-        ok: true,
-        files: { "extracted_hash_type8.txt": new TextEncoder().encode(hash) },
-        msg: `Type 8: Embedded hash: ${hash}`,
-      };
-    }
-    case 9: {
-      const ycbcr = rgbToYcbcr(imgData);
-      let b = extractFromDCT(ycbcr.Y, w, h, 32);
-      if (b.length < 32)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      const dlen = parseInt(b.substr(0, 32), 2);
-      if (dlen <= 0 || dlen > 100_000)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      // Type 9 embeds in both Y and Cb — verify Cb matches Y
-      const bY = extractFromDCT(ycbcr.Y, w, h, 32 + dlen * 8);
-      const bCb = extractFromDCT(ycbcr.Cb, w, h, 32 + dlen * 8);
-      if (bY.length < 32 + dlen * 8 || bCb.length < 32 + dlen * 8)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      let matches = 0;
-      for (let i = 0; i < 32 + dlen * 8; i++) {
-        if (bY[i] === bCb[i]) matches++;
-      }
-      const matchRatio = matches / (32 + dlen * 8);
-      if (matchRatio < 0.8)
-        return { ok: false, error: "No watermark found with this algorithm" };
-      const res = extractData(bY);
-      if (!res.data)
-        return {
-          ok: false,
-          error:
-            res.reason === "bad-password"
-              ? "Wrong password"
-              : "No watermark found with this algorithm",
-        };
-      return {
-        ok: true,
-        files: { "extracted_type9.bin": res.data },
-        msg: `Type 9 extract: ${res.data.length} bytes`,
       };
     }
     // No default
@@ -636,7 +461,7 @@ async function handleWatermarkEmbed() {
     return;
   }
   if (secretFile) {
-    var secretInput = document.getElementById("wm-secret");
+    const secretInput = document.getElementById("wm-secret");
     if (secretInput && !(await validateFileInput(secretInput))) {
       return;
     }
@@ -669,7 +494,7 @@ async function handleWatermarkEmbed() {
       setDownloadHandler(downloadWatermark);
       document.getElementById("dl-modal-title").textContent =
         "Download Watermark Result";
-      var ext = [2, 4, 5, 7, 9].includes(type) ? "jpg" : "png";
+      const ext = [2, 4, 5, 7, 9].includes(type) ? "jpg" : "png";
       dl.innerHTML =
         '<a href="' +
         imgUrl +
@@ -928,7 +753,7 @@ async function handleWatermarkExtract() {
     if (result.ok) {
       let textParts = [result.msg];
       dl.innerHTML = "";
-      var extractedFiles = {};
+      const extractedFiles = {};
       if (result.files) {
         for (const [name, data] of Object.entries(result.files)) {
           textParts.push(name + ": " + __("wm.extracted"));
@@ -936,7 +761,7 @@ async function handleWatermarkExtract() {
           downloadBlob(blob, name, "wm-download");
           extractedFiles[name] = data.length + " bytes";
           try {
-            var contentStr = new TextDecoder().decode(data);
+            const contentStr = new TextDecoder().decode(data);
             if (contentStr.length > 0 && contentStr.length < 5000) {
               textParts.push(
                 '<pre style="font-size:0.75rem;background:var(--bg);color:var(--text);padding:10px;border-radius:6px;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:6px 0">' +
@@ -1032,7 +857,13 @@ function wmToCSV(r) {
     .map(function (row) {
       return row
         .map(function (c) {
-          return '"' + String(c).replace(/"/g, '""') + '"';
+          return (
+            '"' +
+            String(c)
+              .replace(/^[=+\-@\t\r]/, "'$&")
+              .replace(/"/g, '""') +
+            '"'
+          );
         })
         .join(",");
     })
@@ -1084,13 +915,13 @@ async function downloadWatermark(format) {
 
   if (format === "pdf") {
     await ensureLib("jspdf");
-    var doc = new jspdf.jsPDF();
-    var y = 20;
+    const doc = new jspdf.jsPDF();
+    let y = 20;
     doc.setFontSize(16);
     doc.text("Watermark Result", 14, y);
     y += 10;
     doc.setFontSize(10);
-    for (var k in r) {
+    for (const k in r) {
       /* c8 ignore next 2 */ if (y > 280) {
         doc.addPage();
         y = 20;
@@ -1105,8 +936,8 @@ async function downloadWatermark(format) {
   }
   if (format === "doc") {
     await ensureLib("docx");
-    var docx = window.docx;
-    var children = [];
+    const docx = window.docx;
+    const children = [];
     children.push(
       new docx.Paragraph({
         children: [
@@ -1115,8 +946,8 @@ async function downloadWatermark(format) {
         spacing: { after: 200 },
       }),
     );
-    var rows = [];
-    for (var kk in r) rows.push([kk, String(r[kk])]);
+    const rows = [];
+    for (const kk in r) rows.push([kk, String(r[kk])]);
     children.push(
       new docx.Table({
         rows: rows.map(function (row) {
@@ -1136,8 +967,8 @@ async function downloadWatermark(format) {
         width: { size: 100, type: docx.WidthType.PERCENTAGE },
       }),
     );
-    var d = new docx.Document({ sections: [{ children: children }] });
-    var blob = await docx.Packer.toBlob(d);
+    const d = new docx.Document({ sections: [{ children: children }] });
+    const blob = await docx.Packer.toBlob(d);
     downloadBlobSimple(blob, name + ".docx");
     return;
   }

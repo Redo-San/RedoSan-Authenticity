@@ -124,7 +124,7 @@ async function fpToPDF(r) {
   ];
 
   for (var f of families) {
-    var hasAny = f.keys.some(function (k) {
+    const hasAny = f.keys.some(function (k) {
       return r.hashes[k];
     });
     if (!hasAny) continue;
@@ -139,8 +139,8 @@ async function fpToPDF(r) {
     y += 6;
     doc.setFontSize(9);
     doc.setTextColor(50, 50, 50);
-    for (var ki = 0; ki < f.keys.length; ki++) {
-      var v = r.hashes[f.keys[ki]];
+    for (let ki = 0; ki < f.keys.length; ki++) {
+      const v = r.hashes[f.keys[ki]];
       if (!v) continue;
       /* c8 ignore next 4 — UNREACHABLE: max y during hash print is ~225, threshold is 270 */
       if (y > 270) {
@@ -231,7 +231,7 @@ async function fpToDOCX(r) {
   ];
 
   for (var f of families) {
-    var hasAny = f.keys.some(function (k) {
+    const hasAny = f.keys.some(function (k) {
       return r.hashes[k];
     });
     if (!hasAny) continue;
@@ -248,9 +248,9 @@ async function fpToDOCX(r) {
         spacing: { before: 200, after: 100 },
       }),
     );
-    var hashRows = [];
-    for (var ki = 0; ki < f.keys.length; ki++) {
-      var v = r.hashes[f.keys[ki]];
+    const hashRows = [];
+    for (let ki = 0; ki < f.keys.length; ki++) {
+      const v = r.hashes[f.keys[ki]];
       if (v) hashRows.push([f.keys[ki], v]);
     }
     children.push(createDocxTable(docx, hashRows));
@@ -270,7 +270,7 @@ async function fpToDOCX(r) {
         spacing: { before: 200, after: 100 },
       }),
     );
-    var pRows = [];
+    const pRows = [];
     for (var pk in r.perceptual_hashes) {
       if (r.perceptual_hashes[pk]) pRows.push([pk, r.perceptual_hashes[pk]]);
     }
@@ -340,7 +340,13 @@ function fpToCSV(r) {
     .map(function (row) {
       return row
         .map(function (cell) {
-          return '"' + String(cell).replaceAll('"', '""') + '"';
+          return (
+            '"' +
+            String(cell)
+              .replace(/^[=+\-@\t\r]/g, "'$&")
+              .replaceAll('"', '""') +
+            '"'
+          );
         })
         .join(",");
     })
@@ -465,13 +471,13 @@ function fpToHTML(r) {
     { label: "Other", keys: ["RIPEMD-160", "Whirlpool"] },
   ];
   for (var f of families) {
-    var hasAny = f.keys.some(function (k) {
+    const hasAny = f.keys.some(function (k) {
       return r.hashes[k];
     });
     if (!hasAny) continue;
     h += '<div class="section">' + f.label + "</div><table>";
-    for (var ki = 0; ki < f.keys.length; ki++) {
-      var v = r.hashes[f.keys[ki]];
+    for (let ki = 0; ki < f.keys.length; ki++) {
+      const v = r.hashes[f.keys[ki]];
       if (v)
         h +=
           "<tr><td>" + f.keys[ki] + "</td><td><code>" + v + "</code></td></tr>";
@@ -581,7 +587,7 @@ async function handleFingerprint() {
     }
     html += "</table>";
 
-    var brokenWarning =
+    const brokenWarning =
       ' <span style="font-weight:400;font-size:0.7rem;opacity:0.65">(' +
       (__("fp.broken", "legacy — superseded by SHA-2 and SHA-3") || "legacy") +
       ")</span>";

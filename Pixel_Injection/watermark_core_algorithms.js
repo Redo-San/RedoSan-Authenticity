@@ -1322,13 +1322,13 @@ WatermarkCore.prototype.extractHybridDCTDWT = function (watermarkedImageData) {
     }
   }
 
-  // Extract DWT bits from LSB (LH, HL, HH like embed)
+  // Extract DWT bits from step-2 LSB (LH, HL, HH like embed)
   const decomp = this.applyDWT(data, width, height, 1, "haar");
   const bandLen = decomp._bandLen;
   let dwtBits = "";
   for (const band of [decomp.LH, decomp.HL, decomp.HH]) {
     for (let i = 0; i < bandLen && dwtBits.length < 100_000; i++) {
-      dwtBits += Math.round(band[i]) & 1;
+      dwtBits += Math.floor(Math.round(band[i]) / 2) & 1;
     }
   }
 
@@ -1369,7 +1369,7 @@ WatermarkCore.prototype.extractDWT = function (watermarkedImageData) {
 
   for (const band of [LH, HL, HH]) {
     for (let i = 0; i < bandLen && bits.length < 100_000; i++) {
-      bits += Math.round(band[i]) & 1;
+      bits += Math.floor(Math.round(band[i]) / 2) & 1;
     }
   }
 

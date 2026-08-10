@@ -201,7 +201,7 @@ function bigIntToBytes(bn, len) {
 function modSqrt(a, p) {
   // Tonelli-Shanks for p ≡ 3 (mod 4): a^((p+1)/4) mod p
   if (p % 4n === 3n) return powMod(a, (p + 1n) / 4n, p);
-  /* c8 ignore next 16 */// General Tonelli-Shanks — only hit for non-P-256 curves
+  /* c8 ignore next 16 */ // General Tonelli-Shanks — only hit for non-P-256 curves
   var q = p - 1n;
   var s = 0n;
   while (q % 2n === 0n) {
@@ -215,7 +215,7 @@ function modSqrt(a, p) {
   var r = powMod(a, (q + 1n) / 2n, p);
   var t = powMod(a, q, p);
   var m = s;
-  /* c8 ignore next 13 */while (t !== 1n) {
+  /* c8 ignore next 13 */ while (t !== 1n) {
     var i = 1n;
     var t2 = (t * t) % p;
     while (t2 !== 1n && i < m) {
@@ -238,7 +238,7 @@ function modSqrt(a, p) {
  * @param m
  */
 function powMod(a, e, m) {
-  /* c8 ignore next 1 */if (m === 1n) return 0n;
+  /* c8 ignore next 1 */ if (m === 1n) return 0n;
   var r = 1n;
   a = a % m;
   while (e > 0n) {
@@ -320,7 +320,8 @@ async function didIsAlgoSupported(algo) {
       }
       // No default
     }
-  /* c8 ignore next 2 */} catch {
+    /* c8 ignore next 2 */
+  } catch {
     return false;
   }
   return false;
@@ -592,7 +593,8 @@ function didStoreKeys(did, privJwk, algorithm) {
     });
     localStorage.setItem(DID_STORAGE_KEY, data);
     return true;
-  /* c8 ignore next 2 */} catch {
+    /* c8 ignore next 2 */
+  } catch {
     return false;
   }
 }
@@ -612,7 +614,8 @@ function didLoadKeys() {
       algorithm: data.algorithm,
       createdAt: data.createdAt || 0,
     };
-  /* c8 ignore next 2 */} catch {
+    /* c8 ignore next 2 */
+  } catch {
     return null;
   }
 }
@@ -624,7 +627,8 @@ function didClearKeys() {
   try {
     localStorage.removeItem(DID_STORAGE_KEY);
     return true;
-  /* c8 ignore next 2 */} catch {
+    /* c8 ignore next 2 */
+  } catch {
     return false;
   }
 }
@@ -635,9 +639,11 @@ function didClearKeys() {
  * @param str
  */
 function _jwkBase64urlDecode(str) {
-  str = str.replace(/-/g, '+').replace(/_/g, '/');
-  while (str.length % 4) str += '=';
-  return Uint8Array.from(atob(str), function (c) { return c.charCodeAt(0); });
+  str = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (str.length % 4) str += "=";
+  return Uint8Array.from(atob(str), function (c) {
+    return c.charCodeAt(0);
+  });
 }
 
 /**
@@ -710,7 +716,13 @@ async function didImportSignKey(stored) {
     var eBytes = _jwkBase64urlDecode(stored.privJwk.e);
     var publicKey = await crypto.subtle.importKey(
       "jwk",
-      { kty: stored.privJwk.kty, n: stored.privJwk.n, e: stored.privJwk.e, alg: stored.privJwk.alg, ext: true },
+      {
+        kty: stored.privJwk.kty,
+        n: stored.privJwk.n,
+        e: stored.privJwk.e,
+        alg: stored.privJwk.alg,
+        ext: true,
+      },
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       true,
       ["verify"],
@@ -857,6 +869,44 @@ function didCreateVerifiableCredential(kp, subjectData, signatureB64, nonce) {
 // ── Professional Mode Handlers ──
 
 /* c8 ignore start */
+/**
+ * Parse a fingerprint TXT file exported by the Fingerprint tool
+ * (see fpToTXT in Fingerprint/fingerprint_ui.js).
+ * @param {string} text
+ * @returns {{hashes: Object<string,string>}|null}
+ */
+function parseFingerprintText(text) {
+  var hashes = {};
+  var lines = String(text || "").split(/\r?\n/);
+  var capture = false;
+  var hashKeys =
+    "sha-1,sha-224,sha-256,sha-384,sha-512,sha-512/224,sha-512/256," +
+    "sha1,sha224,sha256,sha384,sha512,sha3-224,sha3-256,sha3-384," +
+    "sha3-512,sha3224,sha3256,sha3384,sha3512,md2,md4,md5,blake2b," +
+    "blake2s,blake3,ripemd-160,whirlpool,ahash,dhash,phash,whash"
+      .toLowerCase()
+      .split(",");
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (line.startsWith("---")) {
+      capture =
+        line.startsWith("--- Hashes ---") ||
+        line.startsWith("--- Perceptual Hashes ---");
+      continue;
+    }
+    if (!capture) continue;
+    if (!line || !line.includes(":")) continue;
+    var sep = line.indexOf(":");
+    var key = line.slice(0, sep).trim();
+    var value = line.slice(sep + 1).trim();
+    if (!key || !value) continue;
+    if (!/^[0-9a-fA-F]+$/.test(value)) continue;
+    if (!hashKeys.includes(key.toLowerCase())) continue;
+    hashes[key] = value;
+  }
+  return Object.keys(hashes).length > 0 ? { hashes: hashes } : null;
+}
+
 /**
  *
  */
@@ -1026,9 +1076,11 @@ async function handleDidSign() {
     if (fpText) {
       try {
         fpResult = JSON.parse(fpText);
+        if (!fpResult || !fpResult.hashes) fpResult = null;
       } catch {
         fpResult = null;
       }
+      if (!fpResult) fpResult = parseFingerprintText(fpText);
     }
   }
 
@@ -1387,7 +1439,8 @@ function escXml(s) {
  * @param createdAt
  */
 async function didToPDF(kp, didSig, createdAt) {
-  /* c8 ignore next 1 */if (typeof jspdf === "undefined") await ensureLib("jspdf");
+  /* c8 ignore next 1 */ if (typeof jspdf === "undefined")
+    await ensureLib("jspdf");
   var doc = new jspdf.jsPDF();
   var y = 20;
   doc.setFontSize(16);
@@ -1422,7 +1475,7 @@ async function didToPDF(kp, didSig, createdAt) {
   var docStr = JSON.stringify(didGenerateDocument(kp), null, 2);
   var docLines = doc.splitTextToSize(docStr, 180);
   for (const docLine of docLines) {
-    /* c8 ignore next 4 */if (y > 275) {
+    /* c8 ignore next 4 */ if (y > 275) {
       doc.addPage();
       y = 20;
     }
@@ -1431,7 +1484,7 @@ async function didToPDF(kp, didSig, createdAt) {
   }
   if (didSig) {
     y += 4;
-    /* c8 ignore next 4 */if (y > 270) {
+    /* c8 ignore next 4 */ if (y > 270) {
       doc.addPage();
       y = 20;
     }
@@ -1450,7 +1503,7 @@ async function didToPDF(kp, didSig, createdAt) {
     doc.setFontSize(7);
     doc.text("Signature: " + didSig.signature, 14, y);
     y += 8;
-    /* c8 ignore next 4 */if (y > 265) {
+    /* c8 ignore next 4 */ if (y > 265) {
       doc.addPage();
       y = 20;
     }
@@ -1467,7 +1520,7 @@ async function didToPDF(kp, didSig, createdAt) {
     );
     var vcLines = doc.splitTextToSize(vcStr, 180);
     for (const vcLine of vcLines) {
-      /* c8 ignore next 4 */if (y > 275) {
+      /* c8 ignore next 4 */ if (y > 275) {
         doc.addPage();
         y = 20;
       }
@@ -1485,7 +1538,8 @@ async function didToPDF(kp, didSig, createdAt) {
  * @param createdAt
  */
 async function didToDOCX(kp, didSig, createdAt) {
-  /* c8 ignore next 1 */if (typeof docx === "undefined") await ensureLib("docx");
+  /* c8 ignore next 1 */ if (typeof docx === "undefined")
+    await ensureLib("docx");
   var children = [];
   children.push(
     new docx.Paragraph({

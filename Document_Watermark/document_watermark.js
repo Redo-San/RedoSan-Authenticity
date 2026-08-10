@@ -1,7 +1,7 @@
 /* c8 ignore start */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -106,11 +106,11 @@ function _docwShowNoTextWarning(cap) {
  */
 function docwAlgoChanged() {
   if (_docwCoverText) {
-    var cap = docwEstimateCapacity(
+    const cap = docwEstimateCapacity(
       _docwCoverText,
       parseInt(document.getElementById("docw-algo").value),
     );
-    var el = document.getElementById("docw-capacity");
+    const el = document.getElementById("docw-capacity");
     if (cap > 0) {
       el.textContent = __(
         "docw.capacity_estimate",
@@ -133,11 +133,11 @@ function docwAlgoChanged() {
  */
 function docwExAlgoChanged() {
   if (_docwExtractText) {
-    var cap = docwEstimateCapacity(
+    const cap = docwEstimateCapacity(
       _docwExtractText,
       parseInt(document.getElementById("docw-algo-ex").value),
     );
-    var el = document.getElementById("docw-ex-capacity");
+    const el = document.getElementById("docw-ex-capacity");
     if (cap > 0) {
       el.textContent = __(
         "docw.capacity_estimate",
@@ -157,19 +157,26 @@ function docwExAlgoChanged() {
 function _formatFingerprint(parsed) {
   var lines = [];
   if (parsed.file_info) {
-    var fi = parsed.file_info;
-    var dims = fi.width && fi.height ? " " + fi.width + "x" + fi.height : "";
-    lines.push("File: " + (fi.file_name || "unknown") + dims + " (" + (fi.file_size_bytes || "?") + " bytes)");
+    const fi = parsed.file_info;
+    const dims = fi.width && fi.height ? " " + fi.width + "x" + fi.height : "";
+    lines.push(
+      "File: " +
+        (fi.file_name || "unknown") +
+        dims +
+        " (" +
+        (fi.file_size_bytes || "?") +
+        " bytes)",
+    );
   }
   if (parsed.hashes) {
-    var hashKeys = Object.keys(parsed.hashes).sort();
-    for (var i = 0; i < hashKeys.length; i++) {
+    const hashKeys = Object.keys(parsed.hashes).sort();
+    for (let i = 0; i < hashKeys.length; i++) {
       lines.push(hashKeys[i] + ": " + parsed.hashes[hashKeys[i]]);
     }
   }
   if (parsed.perceptual_hashes) {
-    var phKeys = Object.keys(parsed.perceptual_hashes).sort();
-    for (var j = 0; j < phKeys.length; j++) {
+    const phKeys = Object.keys(parsed.perceptual_hashes).sort();
+    for (let j = 0; j < phKeys.length; j++) {
       lines.push(phKeys[j] + ": " + parsed.perceptual_hashes[phKeys[j]]);
     }
   }
@@ -183,7 +190,8 @@ function _formatFingerprint(parsed) {
 function _formatFingerprintShort(parsed) {
   var count = 0;
   if (parsed.hashes) count += Object.keys(parsed.hashes).length;
-  if (parsed.perceptual_hashes) count += Object.keys(parsed.perceptual_hashes).length;
+  if (parsed.perceptual_hashes)
+    count += Object.keys(parsed.perceptual_hashes).length;
   return count + " hashes";
 }
 
@@ -194,18 +202,26 @@ function _formatFingerprintShort(parsed) {
 function loadDocwSecretFile(event) {
   var file = event.target.files[0];
   if (!file) return;
-  if (typeof validateFileInput === 'function' && !validateFileInput(event.target)) return;
+  if (
+    typeof validateFileInput === "function" &&
+    !validateFileInput(event.target)
+  )
+    return;
   var ext = file.name.split(".").pop().toLowerCase();
   if (ext === "json") {
-    var reader = new FileReader();
+    const reader = new FileReader();
     reader.onload = function (e) {
       try {
-        var parsed = JSON.parse(e.target.result);
+        const parsed = JSON.parse(e.target.result);
         _docwSecretData = parsed;
-        if (typeof parsed === "object" && parsed !== null && (parsed.hashes || parsed.perceptual_hashes || parsed.file_info)) {
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          (parsed.hashes || parsed.perceptual_hashes || parsed.file_info)
+        ) {
           // Fingerprint JSON — store full formatted content
           _docwSecretMessage = _formatFingerprint(parsed);
-          var shortDesc = _formatFingerprintShort(parsed);
+          const shortDesc = _formatFingerprintShort(parsed);
           document.getElementById("docw-secret-name").textContent = __(
             "docw.loaded_fingerprint",
             "Loaded: {name} ({desc}, {len} chars)",
@@ -264,7 +280,11 @@ function loadDocwSecretFile(event) {
 function loadDocwCoverFile(event) {
   var file = event.target.files[0];
   if (!file) return;
-  if (typeof validateFileInput === 'function' && !validateFileInput(event.target)) return;
+  if (
+    typeof validateFileInput === "function" &&
+    !validateFileInput(event.target)
+  )
+    return;
   _docwCoverFileName = file.name;
   var nameEl = document.getElementById("docw-cover-name");
   var capEl = document.getElementById("docw-capacity");
@@ -287,7 +307,7 @@ function loadDocwCoverFile(event) {
     }
   };
   reader.onload = function (e) {
-    var buf = e.target.result;
+    const buf = e.target.result;
     _docwCoverBytes = new Uint8Array(buf);
     showDocwLoading(
       __("docw.extracting_from", "Extracting text from {name}...").replace(
@@ -296,44 +316,44 @@ function loadDocwCoverFile(event) {
       ),
     );
     setTimeout(function () {
-      var ext = file.name.split(".").pop().toLowerCase();
-      var textPromise;
+      const ext = file.name.split(".").pop().toLowerCase();
+      let textPromise;
       switch (ext) {
-      case "docx": {
-        textPromise = DOCX_EXTRACTOR.readDocx(buf);
-      
-      break;
-      }
-      case "pdf": {
-        textPromise = DOCX_EXTRACTOR.readPdf(new Uint8Array(buf)).then(
-          function (text) {
-            return text || "";
-          },
-        );
-      
-      break;
-      }
-      case "doc": {
-        var arr = new Uint8Array(buf);
-        var result = "";
-        for (var i = 0; i < arr.length; i++) {
-          var c = arr[i];
-          if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
-            result += String.fromCharCode(c);
-          }
+        case "docx": {
+          textPromise = DOCX_EXTRACTOR.readDocx(buf);
+
+          break;
         }
-        result = result.replace(/\s+/g, " ").trim();
-        textPromise = Promise.resolve(
-          result || "No readable text found in DOC file.",
-        );
-      
-      break;
-      }
-      default: {
-        textPromise = Promise.resolve(
-          new TextDecoder("UTF-8").decode(new Uint8Array(buf)),
-        );
-      }
+        case "pdf": {
+          textPromise = DOCX_EXTRACTOR.readPdf(new Uint8Array(buf)).then(
+            function (text) {
+              return text || "";
+            },
+          );
+
+          break;
+        }
+        case "doc": {
+          const arr = new Uint8Array(buf);
+          let result = "";
+          for (let i = 0; i < arr.length; i++) {
+            const c = arr[i];
+            if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+              result += String.fromCharCode(c);
+            }
+          }
+          result = result.replace(/\s+/g, " ").trim();
+          textPromise = Promise.resolve(
+            result || "No readable text found in DOC file.",
+          );
+
+          break;
+        }
+        default: {
+          textPromise = Promise.resolve(
+            new TextDecoder("UTF-8").decode(new Uint8Array(buf)),
+          );
+        }
       }
       textPromise
         .then(function (text) {
@@ -346,7 +366,7 @@ function loadDocwCoverFile(event) {
             __("docw.chars", "chars") +
             ")";
           nameEl.style.color = "#2ecc71";
-          var cap = docwEstimateCapacity(
+          const cap = docwEstimateCapacity(
             text,
             parseInt(document.getElementById("docw-algo").value),
           );
@@ -404,7 +424,7 @@ function loadDocwExtractFile(event) {
     }
   };
   reader.onload = function (e) {
-    var buf = e.target.result;
+    const buf = e.target.result;
     showDocwLoading(
       __("docw.extracting_from", "Extracting text from {name}...").replace(
         "{name}",
@@ -427,7 +447,7 @@ function loadDocwExtractFile(event) {
           __("docw.chars", "chars") +
           ")";
         nameEl.style.color = "#2ecc71";
-        var cap = docwEstimateCapacity(
+        const cap = docwEstimateCapacity(
           text,
           parseInt(document.getElementById("docw-algo-ex").value),
         );
@@ -455,45 +475,45 @@ function loadDocwExtractFile(event) {
 function docwExtractTextFromBuf(file, buf, callback) {
   var ext = file.name.split(".").pop().toLowerCase();
   switch (ext) {
-  case "docx": {
-    DOCX_EXTRACTOR.readDocx(buf)
-      .then(function (text) {
-        callback(null, text, "docx");
-      })
-      .catch(function (error) {
-        callback(error.message);
-      });
-  
-  break;
-  }
-  case "pdf": {
-    DOCX_EXTRACTOR.readPdf(new Uint8Array(buf))
-      .then(function (text) {
-        callback(null, text || "", "pdf");
-      })
-      .catch(function (error) {
-        callback("PDF extraction failed: " + error.message);
-      });
-  
-  break;
-  }
-  case "doc": {
-    var arr = new Uint8Array(buf);
-    var result = "";
-    for (var i = 0; i < arr.length; i++) {
-      var c = arr[i];
-      if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
-        result += String.fromCharCode(c);
-      }
+    case "docx": {
+      DOCX_EXTRACTOR.readDocx(buf)
+        .then(function (text) {
+          callback(null, text, "docx");
+        })
+        .catch(function (error) {
+          callback(error.message);
+        });
+
+      break;
     }
-    result = result.replace(/\s+/g, " ").trim();
-    callback(null, result || "No readable text found in DOC file.", "doc");
-  
-  break;
-  }
-  default: {
-    callback(null, new TextDecoder("UTF-8").decode(new Uint8Array(buf)), ext);
-  }
+    case "pdf": {
+      DOCX_EXTRACTOR.readPdf(new Uint8Array(buf))
+        .then(function (text) {
+          callback(null, text || "", "pdf");
+        })
+        .catch(function (error) {
+          callback("PDF extraction failed: " + error.message);
+        });
+
+      break;
+    }
+    case "doc": {
+      const arr = new Uint8Array(buf);
+      let result = "";
+      for (let i = 0; i < arr.length; i++) {
+        const c = arr[i];
+        if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+          result += String.fromCharCode(c);
+        }
+      }
+      result = result.replace(/\s+/g, " ").trim();
+      callback(null, result || "No readable text found in DOC file.", "doc");
+
+      break;
+    }
+    default: {
+      callback(null, new TextDecoder("UTF-8").decode(new Uint8Array(buf)), ext);
+    }
   }
 }
 
@@ -507,31 +527,56 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
   // Build ordered list of entries from fingerprint data
   var entries = [];
   if (data.file_info) {
-    var fi = data.file_info;
-    var dims = fi.width && fi.height ? " " + fi.width + "x" + fi.height : "";
-    entries.push("File: " + (fi.file_name || "unknown") + dims + " (" + (fi.file_size_bytes || "?") + " bytes)");
+    const fi = data.file_info;
+    const dims = fi.width && fi.height ? " " + fi.width + "x" + fi.height : "";
+    entries.push(
+      "File: " +
+        (fi.file_name || "unknown") +
+        dims +
+        " (" +
+        (fi.file_size_bytes || "?") +
+        " bytes)",
+    );
   }
   if (data.hashes) {
-    var priority = ["SHA-256", "SHA-384", "SHA-512", "SHA-3_512", "SHA-3_384", "SHA-3_256", "SHA-3_224", "SHA-1", "SHA-224", "BLAKE3", "BLAKE2b", "BLAKE2s", "MD5", "RIPEMD-160", "Whirlpool", "MD2", "MD4"];
-    var added = {};
-    for (var p = 0; p < priority.length; p++) {
-      var name = priority[p];
+    const priority = [
+      "SHA-256",
+      "SHA-384",
+      "SHA-512",
+      "SHA-3_512",
+      "SHA-3_384",
+      "SHA-3_256",
+      "SHA-3_224",
+      "SHA-1",
+      "SHA-224",
+      "BLAKE3",
+      "BLAKE2b",
+      "BLAKE2s",
+      "MD5",
+      "RIPEMD-160",
+      "Whirlpool",
+      "MD2",
+      "MD4",
+    ];
+    const added = {};
+    for (let p = 0; p < priority.length; p++) {
+      const name = priority[p];
       if (data.hashes[name]) {
         entries.push(name + ": " + data.hashes[name]);
         added[name] = true;
       }
     }
     // Add any remaining hashes not in priority list
-    var remaining = Object.keys(data.hashes).sort();
-    for (var r = 0; r < remaining.length; r++) {
+    const remaining = Object.keys(data.hashes).sort();
+    for (let r = 0; r < remaining.length; r++) {
       if (!added[remaining[r]]) {
         entries.push(remaining[r] + ": " + data.hashes[remaining[r]]);
       }
     }
   }
   if (data.perceptual_hashes) {
-    var phKeys = Object.keys(data.perceptual_hashes).sort();
-    for (var q = 0; q < phKeys.length; q++) {
+    const phKeys = Object.keys(data.perceptual_hashes).sort();
+    for (let q = 0; q < phKeys.length; q++) {
       entries.push(phKeys[q] + ": " + data.perceptual_hashes[phKeys[q]]);
     }
   }
@@ -539,20 +584,22 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
   // Calculate max bits available
   DOCW_HOMOGLYPH._initReverse();
   var maxBits = 0;
-  for (var i = 0; i < coverText.length; i++) {
-    var ch = coverText[i];
+  for (let i = 0; i < coverText.length; i++) {
+    const ch = coverText[i];
     if (DOCW_HOMOGLYPH.MULTI_MAP[ch] !== undefined) maxBits += 2;
     else if (DOCW_HOMOGLYPH.MAP[ch] !== undefined) maxBits += 1;
   }
   if (maxBits <= 0) {
-    throw new Error("Cover text has no eligible characters for Unicode Homoglyphs");
+    throw new Error(
+      "Cover text has no eligible characters for Unicode Homoglyphs",
+    );
   }
 
   // Build payload incrementally — add complete entries while bits fit
   var payload = "";
-  for (var e = 0; e < entries.length; e++) {
-    var candidate = payload ? payload + "\n" + entries[e] : entries[e];
-    var bits = await _msgToBits(candidate, password || "");
+  for (let e = 0; e < entries.length; e++) {
+    const candidate = payload ? payload + "\n" + entries[e] : entries[e];
+    const bits = await _msgToBits(candidate, password || "");
     if (bits && bits.length <= maxBits) {
       payload = candidate;
     } else {
@@ -563,12 +610,12 @@ async function _buildPayloadForHomoglyph(data, password, coverText) {
   if (!payload) {
     // Even the first entry doesn't fit — try with just SHA-256 value (compact form)
     if (data.hashes && data.hashes["SHA-256"]) {
-      var shaBits = await _msgToBits(data.hashes["SHA-256"], password || "");
+      const shaBits = await _msgToBits(data.hashes["SHA-256"], password || "");
       if (shaBits && shaBits.length <= maxBits) {
         return data.hashes["SHA-256"];
       }
     }
-    var firstEntryBits = await _msgToBits(entries[0], password || "");
+    const firstEntryBits = await _msgToBits(entries[0], password || "");
     throw new Error(
       "Text too short. Need ~" +
         Math.ceil(firstEntryBits.length / 8) +
@@ -612,33 +659,33 @@ async function handleDocwEmbed() {
 
   try {
     // Build payload based on algorithm
-    var message;
-    message = algo === 2 && _docwSecretData && _docwSecretData.hashes ? (await _buildPayloadForHomoglyph(
-        _docwSecretData,
-        password,
-        _docwCoverText,
-      )) : _docwSecretMessage;
-    var result = await docwEmbed(
-      _docwCoverText,
-      message,
-      algo,
-      password,
-    );
+    let message;
+    message =
+      algo === 2 && _docwSecretData && _docwSecretData.hashes
+        ? await _buildPayloadForHomoglyph(
+            _docwSecretData,
+            password,
+            _docwCoverText,
+          )
+        : _docwSecretMessage;
+    const result = await docwEmbed(_docwCoverText, message, algo, password);
     showDocwLoading("Building download\u2026");
     // Compute SHA-256 of the original cover text for the certificate
-    var hash = "";
+    let hash = "";
     try {
       if (typeof crypto !== "undefined" && crypto.subtle) {
-        var enc = new TextEncoder().encode(_docwCoverText);
-        var hb = await crypto.subtle.digest("SHA-256", enc);
-        var harr = new Uint8Array(hb);
-        for (var hi = 0; hi < harr.length; hi++)
+        const enc = new TextEncoder().encode(_docwCoverText);
+        const hb = await crypto.subtle.digest("SHA-256", enc);
+        const harr = new Uint8Array(hb);
+        for (let hi = 0; hi < harr.length; hi++)
           hash += ("0" + harr[hi].toString(16)).slice(-2);
         hash = "SHA-256:" + hash;
       }
-    /* c8 ignore next */
-    } catch { /* fallback: hash stays empty */ }
-    var algoName = DOCW_ALGOS[String(algo)].name;
+      /* c8 ignore next */
+    } catch {
+      /* fallback: hash stays empty */
+    }
+    const algoName = DOCW_ALGOS[String(algo)].name;
     _docwResult = {
       algo: algoName,
       algoId: algo,
@@ -657,14 +704,16 @@ async function handleDocwEmbed() {
     setDownloadHandler(downloadDocw);
 
     // Direct download: actual watermarked document (rebuilt in original format)
-    var dlContainer = document.getElementById("docw-embed-download");
-    var ext = _docwCoverFileName.split(".").pop().toLowerCase();
-    var safeDocwFileName = escHtml(_docwCoverFileName);
-    var safeDocwFileNameTxt = escHtml(_docwCoverFileName.replace(/\.[^.]+$/, ".txt"));
+    const dlContainer = document.getElementById("docw-embed-download");
+    const ext = _docwCoverFileName.split(".").pop().toLowerCase();
+    const safeDocwFileName = escHtml(_docwCoverFileName);
+    const safeDocwFileNameTxt = escHtml(
+      _docwCoverFileName.replace(/\.[^.]+$/, ".txt"),
+    );
     if (ext === "docx") {
       try {
-        var rebuiltBlob = await buildWatermarkedDocx(_docwCoverBytes, result);
-        var outUrl = URL.createObjectURL(rebuiltBlob);
+        const rebuiltBlob = await buildWatermarkedDocx(_docwCoverBytes, result);
+        const outUrl = URL.createObjectURL(rebuiltBlob);
         dlContainer.innerHTML =
           '<a href="' +
           outUrl +
@@ -674,8 +723,10 @@ async function handleDocwEmbed() {
           __("docw.direct_download", "Download Watermarked Document") +
           " (DOCX)</a>";
       } catch {
-        var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-        var outUrl = URL.createObjectURL(txtBlob);
+        const txtBlob = new Blob([result], {
+          type: "text/plain;charset=utf-8",
+        });
+        const outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
           '<a href="' +
           outUrl +
@@ -688,13 +739,13 @@ async function handleDocwEmbed() {
     } else if (ext === "pdf") {
       // Modify original PDF — replace extracted text with watermarked text
       try {
-        var modifiedBytes = await buildWatermarkedPdfDoc(
+        const modifiedBytes = await buildWatermarkedPdfDoc(
           _docwCoverBytes,
           _docwCoverText,
           result,
         );
-        var pdfBlob = new Blob([modifiedBytes], { type: "application/pdf" });
-        var pdfUrl = URL.createObjectURL(pdfBlob);
+        const pdfBlob = new Blob([modifiedBytes], { type: "application/pdf" });
+        const pdfUrl = URL.createObjectURL(pdfBlob);
         dlContainer.innerHTML =
           '<a href="' +
           pdfUrl +
@@ -704,8 +755,10 @@ async function handleDocwEmbed() {
           __("docw.direct_download", "Download Watermarked Document") +
           " (PDF)</a>";
       } catch {
-        var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-        var outUrl = URL.createObjectURL(txtBlob);
+        const txtBlob = new Blob([result], {
+          type: "text/plain;charset=utf-8",
+        });
+        const outUrl = URL.createObjectURL(txtBlob);
         dlContainer.innerHTML =
           '<a href="' +
           outUrl +
@@ -718,8 +771,8 @@ async function handleDocwEmbed() {
           ")</a>";
       }
     } else {
-      var txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
-      var outUrl = URL.createObjectURL(txtBlob);
+      const txtBlob = new Blob([result], { type: "text/plain;charset=utf-8" });
+      const outUrl = URL.createObjectURL(txtBlob);
       dlContainer.innerHTML =
         '<a href="' +
         outUrl +
@@ -760,10 +813,10 @@ async function handleDocwExtract() {
   btn.disabled = true;
 
   try {
-    var result;
-    var algoName;
+    let result;
+    let algoName;
     if (algo === 0) {
-      var detected = await docwAutoDetect(_docwExtractText, password);
+      const detected = await docwAutoDetect(_docwExtractText, password);
       if (detected) {
         result = detected.message;
         algoName = detected.name + " (auto-detected)";
@@ -782,16 +835,18 @@ async function handleDocwExtract() {
       algoName = DOCW_ALGOS[String(algo)].name;
       // Fallback for PDFs with duplicate text (original + appended watermark)
       if (!result && _docwExtractText.length > 200) {
-        var halfLen = Math.ceil(_docwExtractText.length / 2);
-        var portions = [
+        const halfLen = Math.ceil(_docwExtractText.length / 2);
+        const portions = [
           _docwExtractText.substring(0, halfLen),
           _docwExtractText.substring(_docwExtractText.length - halfLen),
         ];
-        for (var pi = 0; pi < portions.length && !result; pi++) {
+        for (let pi = 0; pi < portions.length && !result; pi++) {
           try {
             result = await docwExtract(portions[pi], algo, password);
-          /* c8 ignore next */
-          } catch { /* ignore */ }
+            /* c8 ignore next */
+          } catch {
+            /* ignore */
+          }
         }
       }
     }
@@ -856,8 +911,6 @@ function docwDownloadResult(id, filename) {
   URL.revokeObjectURL(url);
 }
 
-
-
 // ── Rebuild original document with watermarked text (preserves ZWC) ──
 
 /**
@@ -892,13 +945,13 @@ async function downloadDocwExtract(format) {
   if (!r) return;
 
   if (format === "pdf") {
-    var blob = await _docwBuildReportPdf(r, "extract");
+    const blob = await _docwBuildReportPdf(r, "extract");
     downloadBlobSimple(blob, "extracted_message_report.pdf");
     return;
   }
 
   if (format === "doc") {
-    var blob = await _docwBuildReportDocx(r, "extract");
+    const blob = await _docwBuildReportDocx(r, "extract");
     downloadBlobSimple(blob, "extracted_message_report.docx");
     return;
   }
@@ -912,14 +965,19 @@ async function downloadDocwExtract(format) {
       break;
     }
     case "csv": {
+      const escCsv = function (v) {
+        return String(v || "")
+          .replace(/^[=+\-@\t\r]/, "'$&")
+          .replace(/"/g, '""');
+      };
       content =
         '"Key","Value"\n' +
         '"message","' +
-        (r.message || "").replace(/"/g, '""') +
+        escCsv(r.message) +
         '"\n"algo","' +
-        (r.algo || "").replace(/"/g, '""') +
+        escCsv(r.algo) +
         '"\n"timestamp","' +
-        (r.timestamp || "").replace(/"/g, '""') +
+        escCsv(r.timestamp) +
         '"';
       ext = "csv";
       mime = "text/csv";

@@ -1,7 +1,7 @@
 /* c8 ignore next 13 */
 (function () {
   if (
-    typeof window != "undefined" &&
+    typeof window !== "undefined" &&
     window.location &&
     window.location.protocol !== "file:" &&
     !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
@@ -32,7 +32,7 @@ async function readMetadata(file) {
     .join("");
 
   try {
-    var img = await loadImage(file);
+    const img = await loadImage(file);
     result.image = {
       width: img.w,
       height: img.h,
@@ -45,7 +45,7 @@ async function readMetadata(file) {
   }
 
   if (data[0] === 0xff && data[1] === 0xd8) {
-    var exif = parseJPEGExif(data);
+    const exif = parseJPEGExif(data);
     if (exif && Object.keys(exif).length > 0) result.exif = exif;
   }
 
@@ -64,30 +64,30 @@ function parseJPEGExif(data) {
 
   while (offset < data.length - 1) {
     if (view.getUint16(offset) === 0xff_e1) {
-      var segLen = view.getUint16(offset + 2);
+      const segLen = view.getUint16(offset + 2);
       if (offset + 4 + segLen <= data.length) {
-        var exifStart = offset + 4;
-        var exifHeader = String.fromCharCode.apply(
+        const exifStart = offset + 4;
+        const exifHeader = String.fromCharCode.apply(
           null,
           data.slice(exifStart, exifStart + 6),
         );
         if (exifHeader === "Exif\0\0") {
-          var tiffStart = exifStart + 6;
-          var endian = view.getUint16(tiffStart);
-          var littleEndian = endian === 0x49_49;
-          var get16 = function (off) {
+          const tiffStart = exifStart + 6;
+          const endian = view.getUint16(tiffStart);
+          const littleEndian = endian === 0x49_49;
+          const get16 = function (off) {
             return littleEndian
               ? view.getUint16(off, true)
               : view.getUint16(off, false);
           };
-          var get32 = function (off) {
+          const get32 = function (off) {
             return littleEndian
               ? view.getUint32(off, true)
               : view.getUint32(off, false);
           };
 
           if (get16(tiffStart + 2) !== 0x00_2a) break;
-          var ifd0Off = get32(tiffStart + 4);
+          const ifd0Off = get32(tiffStart + 4);
           if (ifd0Off > 0 && tiffStart + ifd0Off < data.length) {
             parseIFD(tiffStart, ifd0Off, exif, get16, get32, view, data);
           }
@@ -155,14 +155,14 @@ var EXIF_TAGS = {
  */
 function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
   var num = get16(tiffStart + offset);
-  for (var i = 0; i < num; i++) {
-    var entryOff = tiffStart + offset + 2 + i * 12;
-    var tag = get16(entryOff);
-    var type = get16(entryOff + 2);
-    var count = get32(entryOff + 4);
-    var valOff = entryOff + 8;
+  for (let i = 0; i < num; i++) {
+    const entryOff = tiffStart + offset + 2 + i * 12;
+    const tag = get16(entryOff);
+    const type = get16(entryOff + 2);
+    const count = get32(entryOff + 4);
+    const valOff = entryOff + 8;
 
-    var val;
+    let val;
     if (type === 2 && count <= 4) {
       val = String.fromCharCode.apply(
         null,
@@ -171,7 +171,7 @@ function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
     } else
       switch (type) {
         case 2: {
-          var strOff = get32(valOff);
+          const strOff = get32(valOff);
           if (strOff > 0 && tiffStart + strOff + count <= data.length)
             val = String.fromCharCode.apply(
               null,
@@ -191,7 +191,7 @@ function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
           break;
         }
         case 5: {
-          var numOff = get32(valOff);
+          const numOff = get32(valOff);
           if (numOff + 8 <= data.length - tiffStart) {
             val = get32(tiffStart + numOff) / get32(tiffStart + numOff + 4);
           }
@@ -207,7 +207,7 @@ function parseIFD(tiffStart, offset, exif, get16, get32, view, data) {
       }
 
     if (val !== undefined && EXIF_TAGS[tag]) {
-      var s = String(val);
+      let s = String(val);
       if (s.length > 200) s = s.substring(0, 197) + "...";
       exif[EXIF_TAGS[tag]] = s;
     }
@@ -418,8 +418,8 @@ function _csvEsc(v) {
   if (v == null) return "";
   v = String(v);
   return v.includes(",") || v.includes('"') || v.includes("\n")
-    ? '"' + v.replace(/"/g, '""') + '"'
-    : v;
+    ? '"' + v.replace(/^[=+\-@\t\r]/, "'$&").replace(/"/g, '""') + '"'
+    : v.replace(/^[=+\-@\t\r]/, "'$&");
 }
 
 /**

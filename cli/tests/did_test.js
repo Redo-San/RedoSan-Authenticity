@@ -4,8 +4,14 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
-const didSrc = fs.readFileSync(path.join(__dirname, "../../Decentralized_Identity_DID/did.js"), "utf8");
-const funcSrc = didSrc.slice(0, didSrc.lastIndexOf("document.addEventListener"));
+const didSrc = fs.readFileSync(
+  path.join(__dirname, "../../Decentralized_Identity_DID/did.js"),
+  "utf8",
+);
+const funcSrc = didSrc.slice(
+  0,
+  didSrc.lastIndexOf("document.addEventListener"),
+);
 
 const rawFns = vm.runInThisContext(
   funcSrc +
@@ -14,9 +20,14 @@ const rawFns = vm.runInThisContext(
   base58Encode, base58Decode, varintEncode, varintDecode,
   didKeyEncode, didKeyDecode, didGenerateDocument,
   didCreateVerifiableCredential, compressP256Key, decompressP256Key,
-  getCryptosuite, getSuiteContext
+  getCryptosuite, getSuiteContext, parseFingerprintText
 })`,
-  { filename: path.resolve(__dirname, "../../Decentralized_Identity_DID/did.js") }
+  {
+    filename: path.resolve(
+      __dirname,
+      "../../Decentralized_Identity_DID/did.js",
+    ),
+  },
 );
 
 describe("Base58", () => {
@@ -71,7 +82,10 @@ describe("Varint", () => {
     assert.equal(d.value, 0x1200);
   });
   it("should throw on incomplete varint", () => {
-    assert.throws(() => rawFns.varintDecode(new Uint8Array([0x80]), 0), /Incomplete varint/);
+    assert.throws(
+      () => rawFns.varintDecode(new Uint8Array([0x80]), 0),
+      /Incomplete varint/,
+    );
   });
 });
 
@@ -110,7 +124,10 @@ describe("did:key encode/decode", () => {
     assert.equal(dec.legacy, true);
   });
   it("should reject invalid format", () => {
-    assert.throws(() => rawFns.didKeyDecode("invalid"), /Unsupported DID format/);
+    assert.throws(
+      () => rawFns.didKeyDecode("invalid"),
+      /Unsupported DID format/,
+    );
   });
   it("should reject unknown multicodec", () => {
     const fake = rawFns.didKeyEncode(new Uint8Array(32), "ed25519");
@@ -140,8 +157,15 @@ describe("DID Document", () => {
   it("should generate P-256 DID Document", () => {
     const kp = { did: "did:key:zDna...", algorithm: "P-256" };
     const doc = rawFns.didGenerateDocument(kp);
-    assert.equal(doc.verificationMethod[0].type, "EcdsaSecp256r1VerificationKey2020");
-    assert.ok(doc["@context"].some((c) => c === "https://w3id.org/security/suites/secp256r1-2020/v1"));
+    assert.equal(
+      doc.verificationMethod[0].type,
+      "EcdsaSecp256r1VerificationKey2020",
+    );
+    assert.ok(
+      doc["@context"].some(
+        (c) => c === "https://w3id.org/security/suites/secp256r1-2020/v1",
+      ),
+    );
   });
   it("should generate RSA DID Document", () => {
     const kp = { did: "did:key:zRsa...", algorithm: "RSA-2048" };
@@ -153,33 +177,65 @@ describe("DID Document", () => {
 describe("Verifiable Credential", () => {
   it("should create Ed25519 VC with correct cryptosuite", () => {
     const kp = { did: "did:key:z6Mk...", algorithm: "Ed25519" };
-    const vc = rawFns.didCreateVerifiableCredential(kp, "hash_data", "sig_value");
+    const vc = rawFns.didCreateVerifiableCredential(
+      kp,
+      "hash_data",
+      "sig_value",
+    );
     assert.equal(vc.proof.cryptosuite, "eddsa-rdfc-2022");
-    assert.ok(vc["@context"].some((c) => c === "https://w3id.org/security/data-integrity/v2"));
-    assert.ok(vc["@context"].some((c) => c === "https://w3id.org/security/suites/ed25519-2020/v1"));
+    assert.ok(
+      vc["@context"].some(
+        (c) => c === "https://w3id.org/security/data-integrity/v2",
+      ),
+    );
+    assert.ok(
+      vc["@context"].some(
+        (c) => c === "https://w3id.org/security/suites/ed25519-2020/v1",
+      ),
+    );
     assert.equal(vc.credentialSubject.fingerprintHash, "hash_data");
     assert.equal(vc.proof.proofValue, "sig_value");
   });
   it("should create P-256 VC with correct cryptosuite", () => {
     const kp = { did: "did:key:zDna...", algorithm: "P-256" };
-    const vc = rawFns.didCreateVerifiableCredential(kp, "hash_data", "sig_value");
+    const vc = rawFns.didCreateVerifiableCredential(
+      kp,
+      "hash_data",
+      "sig_value",
+    );
     assert.equal(vc.proof.cryptosuite, "ecdsa-rdfc-2019");
-    assert.ok(vc["@context"].some((c) => c === "https://w3id.org/security/suites/secp256r1-2020/v1"));
+    assert.ok(
+      vc["@context"].some(
+        (c) => c === "https://w3id.org/security/suites/secp256r1-2020/v1",
+      ),
+    );
   });
   it("should create RSA VC with correct cryptosuite", () => {
     const kp = { did: "did:key:zRsa...", algorithm: "RSA-4096" };
-    const vc = rawFns.didCreateVerifiableCredential(kp, "hash_data", "sig_value");
+    const vc = rawFns.didCreateVerifiableCredential(
+      kp,
+      "hash_data",
+      "sig_value",
+    );
     assert.equal(vc.proof.cryptosuite, "rsa-signature-2022");
   });
   it("should add nonce when provided", () => {
     const kp = { did: "did:key:z6Mk...", algorithm: "Ed25519" };
-    const vc = rawFns.didCreateVerifiableCredential(kp, "hash", "sig", "my_nonce");
+    const vc = rawFns.didCreateVerifiableCredential(
+      kp,
+      "hash",
+      "sig",
+      "my_nonce",
+    );
     assert.equal(vc.proof.nonce, "my_nonce");
   });
   it("should have correct type array", () => {
     const kp = { did: "did:key:z6Mk...", algorithm: "Ed25519" };
     const vc = rawFns.didCreateVerifiableCredential(kp, "hash", "sig");
-    assert.deepEqual(vc.type, ["VerifiableCredential", "RedoSanIdentityCredential"]);
+    assert.deepEqual(vc.type, [
+      "VerifiableCredential",
+      "RedoSanIdentityCredential",
+    ]);
   });
 });
 
@@ -191,9 +247,18 @@ describe("getCryptosuite and getSuiteContext", () => {
     assert.equal(rawFns.getCryptosuite("RSA-4096"), "rsa-signature-2022");
   });
   it("should return correct suite context per algorithm", () => {
-    assert.equal(rawFns.getSuiteContext("Ed25519"), "https://w3id.org/security/suites/ed25519-2020/v1");
-    assert.equal(rawFns.getSuiteContext("P-256"), "https://w3id.org/security/suites/secp256r1-2020/v1");
-    assert.equal(rawFns.getSuiteContext("RSA-2048"), "https://w3id.org/security/suites/rsa-2020/v1");
+    assert.equal(
+      rawFns.getSuiteContext("Ed25519"),
+      "https://w3id.org/security/suites/ed25519-2020/v1",
+    );
+    assert.equal(
+      rawFns.getSuiteContext("P-256"),
+      "https://w3id.org/security/suites/secp256r1-2020/v1",
+    );
+    assert.equal(
+      rawFns.getSuiteContext("RSA-2048"),
+      "https://w3id.org/security/suites/rsa-2020/v1",
+    );
   });
 });
 
@@ -212,10 +277,16 @@ describe("P-256 Key Compression", () => {
     assert.equal(result.length, 33);
   });
   it("should throw on invalid raw key length", () => {
-    assert.throws(() => rawFns.compressP256Key(new Uint8Array(10)), /Invalid P-256/);
+    assert.throws(
+      () => rawFns.compressP256Key(new Uint8Array(10)),
+      /Invalid P-256/,
+    );
   });
   it("should throw on invalid compressed key length", () => {
-    assert.throws(() => rawFns.decompressP256Key(new Uint8Array(10)), /Invalid P-256 compressed/);
+    assert.throws(
+      () => rawFns.decompressP256Key(new Uint8Array(10)),
+      /Invalid P-256 compressed/,
+    );
   });
 });
 
@@ -228,26 +299,66 @@ try {
 } catch (e) {}
 globalThis.localStorage = {
   getItem: (k) => (store[k] !== undefined ? store[k] : null),
-  setItem: (k, v) => { store[k] = v; },
-  removeItem: (k) => { delete store[k]; },
-  clear: () => { store = {}; },
+  setItem: (k, v) => {
+    store[k] = v;
+  },
+  removeItem: (k) => {
+    delete store[k];
+  },
+  clear: () => {
+    store = {};
+  },
 };
 globalThis.jspdf = {
   jsPDF: class {
-    constructor() { this._pages = 1; this._y = 20; }
-    setFontSize(s) { this._fs = s; }
-    setTextColor(r, g, b) { this._tc = [r, g, b]; }
-    text(t, x, y, opts) { this._y = y + 5; }
-    addPage() { this._pages++; this._y = 20; }
-    splitTextToSize(t, w) { return t.split("\n"); }
-    output(format) { return new Blob(["mock pdf"], { type: "application/pdf" }); }
+    constructor() {
+      this._pages = 1;
+      this._y = 20;
+    }
+    setFontSize(s) {
+      this._fs = s;
+    }
+    setTextColor(r, g, b) {
+      this._tc = [r, g, b];
+    }
+    text(t, x, y, opts) {
+      this._y = y + 5;
+    }
+    addPage() {
+      this._pages++;
+      this._y = 20;
+    }
+    splitTextToSize(t, w) {
+      return t.split("\n");
+    }
+    output(format) {
+      return new Blob(["mock pdf"], { type: "application/pdf" });
+    }
   },
 };
 globalThis.docx = {
-  Paragraph: class { constructor(opts) { this.opts = opts; } },
-  TextRun: class { constructor(opts) { this.opts = opts; } },
-  Document: class { constructor(opts) { this.opts = opts; this.sections = opts.sections; } },
-  Packer: { toBlob: async (doc) => new Blob(["mock docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }) },
+  Paragraph: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  TextRun: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  Document: class {
+    constructor(opts) {
+      this.opts = opts;
+      this.sections = opts.sections;
+    }
+  },
+  Packer: {
+    toBlob: async (doc) =>
+      new Blob(["mock docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      }),
+  },
 };
 globalThis.URL.createObjectURL = () => "blob:test";
 globalThis.URL.revokeObjectURL = () => {};
@@ -256,7 +367,14 @@ globalThis.downloadBlobSimple = () => {};
 globalThis.closeDownloadModal = () => {};
 globalThis.showDownloadModal = () => {};
 globalThis.setDownloadHandler = () => {};
-globalThis.escHtml = (s) => { if (s == null) return ""; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+globalThis.escHtml = (s) => {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+};
 globalThis.ensureLib = async (name) => {};
 // Mock crypto.subtle for key generation
 var mockKeyPair;
@@ -269,8 +387,15 @@ globalThis.crypto.subtle.generateKey = async (algo, extractable, usages) => {
   }
   if (algo.name === "ECDSA" || algo.name === "P-256" || algo.name === "EC") {
     return {
-      publicKey: { algorithm: { name: "ECDSA", namedCurve: "P-256" }, usages: ["verify"], compressPoint: true },
-      privateKey: { algorithm: { name: "ECDSA", namedCurve: "P-256" }, usages: ["sign"] },
+      publicKey: {
+        algorithm: { name: "ECDSA", namedCurve: "P-256" },
+        usages: ["verify"],
+        compressPoint: true,
+      },
+      privateKey: {
+        algorithm: { name: "ECDSA", namedCurve: "P-256" },
+        usages: ["sign"],
+      },
     };
   }
   return mockKeyPair;
@@ -287,27 +412,70 @@ globalThis.crypto.subtle.exportKey = async (format, key) => {
   if (format === "spki") return new Uint8Array(294).buffer;
   if (format === "jwk") {
     if (key && key.algorithm && key.algorithm.name === "ECDSA") {
-      return { kty: "EC", crv: "P-256", x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", y: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", d: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8" };
+      return {
+        kty: "EC",
+        crv: "P-256",
+        x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        y: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        d: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      };
     }
     if (key && key.algorithm && key.algorithm.name === "RSASSA-PKCS1-v1_5") {
-      return { kty: "RSA", n: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", e: "AQAB", d: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", p: "AAECAwQFBgcICQoLDA0ODw", q: "AAECAwQFBgcICQoLDA0ODw", dp: "AAECAwQFBgcICQoLDA0ODw", dq: "AAECAwQFBgcICQoLDA0ODw", qi: "AAECAwQFBgcICQoLDA0ODw" };
+      return {
+        kty: "RSA",
+        n: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        e: "AQAB",
+        d: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        p: "AAECAwQFBgcICQoLDA0ODw",
+        q: "AAECAwQFBgcICQoLDA0ODw",
+        dp: "AAECAwQFBgcICQoLDA0ODw",
+        dq: "AAECAwQFBgcICQoLDA0ODw",
+        qi: "AAECAwQFBgcICQoLDA0ODw",
+      };
     }
-    return { kty: "OKP", crv: "Ed25519", x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", d: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8" };
+    return {
+      kty: "OKP",
+      crv: "Ed25519",
+      x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      d: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+    };
   }
   return new Uint8Array(32).buffer;
 };
-globalThis.crypto.subtle.sign = async (algo, key, data) => new Uint8Array(64).buffer;
+globalThis.crypto.subtle.sign = async (algo, key, data) =>
+  new Uint8Array(64).buffer;
 globalThis.crypto.subtle.verify = async (algo, key, sig, data) => true;
-globalThis.crypto.subtle.importKey = async (format, keyData, algo, extractable, usages) => {
-  return { algorithm: { name: algo.name || "Ed25519" }, usages: usages, type: "private" };
+globalThis.crypto.subtle.importKey = async (
+  format,
+  keyData,
+  algo,
+  extractable,
+  usages,
+) => {
+  return {
+    algorithm: { name: algo.name || "Ed25519" },
+    usages: usages,
+    type: "private",
+  };
 };
 globalThis.window = globalThis;
 // Mock document for UI functions
 globalThis.document = {
   addEventListener: function () {},
-  querySelector: function () { return null; },
-  getElementById: function () { return null; },
-  createElement: function (t) { return { append: function () {}, classList: { add: function () {}, remove: function () {} }, style: {}, textContent: "" }; },
+  querySelector: function () {
+    return null;
+  },
+  getElementById: function () {
+    return null;
+  },
+  createElement: function (t) {
+    return {
+      append: function () {},
+      classList: { add: function () {}, remove: function () {} },
+      style: {},
+      textContent: "",
+    };
+  },
 };
 
 describe("DID — escXml", () => {
@@ -387,6 +555,61 @@ describe("DID — store/load/clear keys", () => {
   });
 });
 
+describe("DID — parseFingerprintText", () => {
+  const sampleTxt = [
+    "=== RedoSan Authenticity - File Fingerprint ===",
+    "",
+    "File: testimg.png",
+    "Size: 558 bytes",
+    "Dimensions: 200 x 200",
+    "Format: PNG",
+    "",
+    "--- Hashes ---",
+    "SHA-1: 1b13dfc3a674fdb4e1a153b3e6e166f3986b7da0",
+    "SHA-256: f569a6ddeca84df4a0fa3a554c2b9902c12468022452a21ba51de3221467ef39",
+    "",
+    "--- Perceptual Hashes ---",
+    "ahash: 0006060000606000",
+    "",
+    "Generated by RedoSan Authenticity",
+  ].join("\n");
+
+  it("should parse a Fingerprint tool TXT export", () => {
+    const res = rawFns.parseFingerprintText(sampleTxt);
+    assert.ok(res);
+    assert.equal(
+      res.hashes["SHA-256"],
+      "f569a6ddeca84df4a0fa3a554c2b9902c12468022452a21ba51de3221467ef39",
+    );
+    assert.equal(
+      res.hashes["SHA-1"],
+      "1b13dfc3a674fdb4e1a153b3e6e166f3986b7da0",
+    );
+  });
+
+  it("should include perceptual hashes", () => {
+    const res = rawFns.parseFingerprintText(sampleTxt);
+    assert.equal(res.hashes["ahash"], "0006060000606000");
+  });
+
+  it("should return null for text without hashes", () => {
+    assert.equal(rawFns.parseFingerprintText("no hashes here"), null);
+    assert.equal(rawFns.parseFingerprintText(""), null);
+  });
+
+  it("should skip non-hex values", () => {
+    const txt =
+      "--- Hashes ---\nSHA-256: not-hex\nSHA-1: 1b13dfc3a674fdb4e1a153b3e6e166f3986b7da0";
+    const res = rawFns.parseFingerprintText(txt);
+    assert.ok(res);
+    assert.equal(res.hashes["SHA-256"], undefined);
+    assert.equal(
+      res.hashes["SHA-1"],
+      "1b13dfc3a674fdb4e1a153b3e6e166f3986b7da0",
+    );
+  });
+});
+
 describe("DID — didIsAlgoSupported", () => {
   it("should resolve for supported algorithms", async () => {
     var supported = await didIsAlgoSupported("Ed25519");
@@ -400,7 +623,11 @@ describe("DID — didIsAlgoSupported", () => {
 });
 
 describe("DID — format converters", () => {
-  var kp = { did: "did:key:z6Mk...", algorithm: "Ed25519", publicKey: new Uint8Array(32) };
+  var kp = {
+    did: "did:key:z6Mk...",
+    algorithm: "Ed25519",
+    publicKey: new Uint8Array(32),
+  };
   var didSig = "mock_sig_value";
   var createdAt = new Date().toISOString();
 
@@ -445,7 +672,9 @@ describe("DID — downloadDID", () => {
 
   beforeEach(() => {
     captured = [];
-    globalThis.downloadBlobSimple = (blob, name) => { captured.push({ blob, name }); };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      captured.push({ blob, name });
+    };
     didClearKeys();
     didStoreKeys("did:key:z6Mk...", { kty: "OKP", crv: "Ed25519" }, "Ed25519");
     // Create a mock keypair that matches stored keys (minus async imports)
@@ -520,7 +749,9 @@ describe("DID — Legacy format variants (P-256/RSA prefixes)", () => {
     var bytes = new Uint8Array([0xff].concat(Array(32).fill(9)));
     var b64 = Buffer.from(bytes).toString("base64url");
     var oldDid = "did:key:u" + b64;
-    assert.throws(function () { rawFns.didKeyDecode(oldDid); }, /Unknown old-format multicodec/);
+    assert.throws(function () {
+      rawFns.didKeyDecode(oldDid);
+    }, /Unknown old-format multicodec/);
   });
 });
 
@@ -545,8 +776,14 @@ describe("DID — didGenerateKeypair", function () {
 
   it("should generate RSA-2048 keypair", async function () {
     mockKeyPair = {
-      publicKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["verify"] },
-      privateKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["sign"] },
+      publicKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["verify"],
+      },
+      privateKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["sign"],
+      },
     };
     var kp = await didGenerateKeypair("RSA-2048");
     assert.ok(kp.did.startsWith("did:key:z"));
@@ -568,8 +805,13 @@ describe("DID — Ed25519 fallback when Ed25519 generate fails", function () {
   it("should fallback to P-256 when Ed25519 generateKey throws", async function () {
     var origGen = globalThis.crypto.subtle.generateKey;
     try {
-      globalThis.crypto.subtle.generateKey = async function (algo, ext, usages) {
-        if (algo.name === "Ed25519" || algo.name === "EdDSA") throw new Error("Not supported");
+      globalThis.crypto.subtle.generateKey = async function (
+        algo,
+        ext,
+        usages,
+      ) {
+        if (algo.name === "Ed25519" || algo.name === "EdDSA")
+          throw new Error("Not supported");
         return origGen(algo, ext, usages);
       };
       var kp = await didGenerateKeypair("Ed25519");
@@ -644,8 +886,14 @@ describe("DID — didSign / didVerify", function () {
   it("should sign and verify with P-256", async function () {
     var keypair = {
       algorithm: "P-256",
-      publicKey: { algorithm: { name: "ECDSA", namedCurve: "P-256" }, usages: ["verify"] },
-      privateKey: { algorithm: { name: "ECDSA", namedCurve: "P-256" }, usages: ["sign"] },
+      publicKey: {
+        algorithm: { name: "ECDSA", namedCurve: "P-256" },
+        usages: ["verify"],
+      },
+      privateKey: {
+        algorithm: { name: "ECDSA", namedCurve: "P-256" },
+        usages: ["sign"],
+      },
     };
     var data = "test p256";
     var sig = await didSign(keypair, data);
@@ -657,8 +905,14 @@ describe("DID — didSign / didVerify", function () {
   it("should sign and verify with RSA", async function () {
     var keypair = {
       algorithm: "RSA-2048",
-      publicKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["verify"] },
-      privateKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["sign"] },
+      publicKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["verify"],
+      },
+      privateKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["sign"],
+      },
     };
     var data = "test rsa";
     var sig = await didSign(keypair, data);
@@ -705,7 +959,11 @@ describe("DID — didImportSignKey", function () {
   it("should import P-256 sign key from stored data", async function () {
     var stored = {
       did: "did:key:zDna-test",
-      privJwk: { x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", y: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", kty: "EC" },
+      privJwk: {
+        x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        y: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        kty: "EC",
+      },
       algorithm: "P-256",
     };
     var kp = await didImportSignKey(stored);
@@ -716,7 +974,12 @@ describe("DID — didImportSignKey", function () {
   it("should import RSA sign key from stored data", async function () {
     var stored = {
       did: "did:key:zRsa-test",
-      privJwk: { kty: "RSA", n: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", e: "AQAB", alg: "RS256" },
+      privJwk: {
+        kty: "RSA",
+        n: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        e: "AQAB",
+        alg: "RS256",
+      },
       algorithm: "RSA-2048",
     };
     var kp = await didImportSignKey(stored);
@@ -731,13 +994,24 @@ describe("DID — downloadDID with non-matching keypair", function () {
 
   beforeEach(function () {
     captured2 = [];
-    globalThis.downloadBlobSimple = function (blob, name) { captured2.push({ blob: blob, name: name }); };
+    globalThis.downloadBlobSimple = function (blob, name) {
+      captured2.push({ blob: blob, name: name });
+    };
   });
 
   it("should use didImportSignKey when _didKeypair DID mismatches", async function () {
     didClearKeys();
-    didStoreKeys("did:key:z6Mk-different", { x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", kty: "OKP" }, "Ed25519");
-    globalThis._didKeypair = { did: "did:key:zOriginal", algorithm: "Ed25519", pubRaw: new Uint8Array(32), privJwk: { kty: "OKP" } };
+    didStoreKeys(
+      "did:key:z6Mk-different",
+      { x: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", kty: "OKP" },
+      "Ed25519",
+    );
+    globalThis._didKeypair = {
+      did: "did:key:zOriginal",
+      algorithm: "Ed25519",
+      pubRaw: new Uint8Array(32),
+      privJwk: { kty: "OKP" },
+    };
     globalThis._didSig = null;
 
     await downloadDID("json");
@@ -748,7 +1022,12 @@ describe("DID — downloadDID with non-matching keypair", function () {
   it("should handle didImportSignKey error gracefully in downloadDID", async function () {
     didClearKeys();
     didStoreKeys("did:key:zBad", { bad: "data", kty: "NOPE" }, "BadAlgo");
-    globalThis._didKeypair = { did: "did:key:zOther", algorithm: "Ed25519", pubRaw: new Uint8Array(32), privJwk: { kty: "OKP" } };
+    globalThis._didKeypair = {
+      did: "did:key:zOther",
+      algorithm: "Ed25519",
+      pubRaw: new Uint8Array(32),
+      privJwk: { kty: "OKP" },
+    };
     globalThis._didSig = null;
 
     await downloadDID("json");
@@ -759,7 +1038,9 @@ describe("DID — downloadDID with non-matching keypair", function () {
 
 describe("DID — _jwkBase64urlDecode", function () {
   it("should decode base64url string to bytes", function () {
-    var result = _jwkBase64urlDecode("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8");
+    var result = _jwkBase64urlDecode(
+      "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+    );
     assert.ok(result instanceof Uint8Array);
     assert.ok(result.length > 0);
   });
@@ -814,8 +1095,14 @@ describe("DID — remaining branch coverage", function () {
 
   it("didGenerateKeypair RSA-4096", async function () {
     mockKeyPair = {
-      publicKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["verify"] },
-      privateKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["sign"] },
+      publicKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["verify"],
+      },
+      privateKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["sign"],
+      },
     };
     var kp = await didGenerateKeypair("RSA-4096");
     assert.equal(kp.algorithm, "RSA-4096");
@@ -823,8 +1110,14 @@ describe("DID — remaining branch coverage", function () {
 
   it("didGenerateRSAKeypair without bits (uses default 2048)", async function () {
     mockKeyPair = {
-      publicKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["verify"] },
-      privateKey: { algorithm: { name: "RSASSA-PKCS1-v1_5" }, usages: ["sign"] },
+      publicKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["verify"],
+      },
+      privateKey: {
+        algorithm: { name: "RSASSA-PKCS1-v1_5" },
+        usages: ["sign"],
+      },
     };
     // Call directly without argument
     var kp = await didGenerateRSAKeypair();
@@ -832,22 +1125,30 @@ describe("DID — remaining branch coverage", function () {
   });
 
   it("didKeyEncode with unknown algo type throws", function () {
-    assert.throws(function () { rawFns.didKeyEncode(new Uint8Array(32), "unknown"); }, /Unknown algorithm type/);
+    assert.throws(function () {
+      rawFns.didKeyEncode(new Uint8Array(32), "unknown");
+    }, /Unknown algorithm type/);
   });
 
   it("didKeyDecode with null throws", function () {
-    assert.throws(function () { rawFns.didKeyDecode(null); }, /Invalid DID/);
+    assert.throws(function () {
+      rawFns.didKeyDecode(null);
+    }, /Invalid DID/);
   });
 
   it("didKeyDecode with empty string throws", function () {
-    assert.throws(function () { rawFns.didKeyDecode(""); }, /Invalid DID/);
+    assert.throws(function () {
+      rawFns.didKeyDecode("");
+    }, /Invalid DID/);
   });
 
   it("didLoadKeys with malformed JSON data returns null", function () {
     var store2 = {};
     var origLS = globalThis.localStorage;
     globalThis.localStorage = {
-      getItem: function (k) { return '{"bad": true}'; },
+      getItem: function (k) {
+        return '{"bad": true}';
+      },
       setItem: function () {},
       removeItem: function () {},
       clear: function () {},
@@ -860,7 +1161,9 @@ describe("DID — remaining branch coverage", function () {
   it("downloadDID without stored keys returns early", async function () {
     didClearKeys();
     var captured3 = [];
-    globalThis.downloadBlobSimple = function (blob, name) { captured3.push({ blob: blob, name: name }); };
+    globalThis.downloadBlobSimple = function (blob, name) {
+      captured3.push({ blob: blob, name: name });
+    };
     await downloadDID("json");
     assert.equal(captured3.length, 0);
   });
@@ -869,7 +1172,9 @@ describe("DID — remaining branch coverage", function () {
     var store3 = {};
     var origLS = globalThis.localStorage;
     globalThis.localStorage = {
-      getItem: function (k) { return '{"did":"x","privJwk":{},"algorithm":"Ed25519"}'; },
+      getItem: function (k) {
+        return '{"did":"x","privJwk":{},"algorithm":"Ed25519"}';
+      },
       setItem: function () {},
       removeItem: function () {},
       clear: function () {},
@@ -883,7 +1188,12 @@ describe("DID — remaining branch coverage", function () {
   it("didImportSignKey with RSA-4096 algorithm", async function () {
     var stored = {
       did: "did:key:zRsa4096",
-      privJwk: { kty: "RSA", n: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8", e: "AQAB", alg: "RS384" },
+      privJwk: {
+        kty: "RSA",
+        n: "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        e: "AQAB",
+        alg: "RS384",
+      },
       algorithm: "RSA-4096",
     };
     var kp = await didImportSignKey(stored);
@@ -901,14 +1211,23 @@ describe("DID — remaining branch coverage", function () {
     });
     var origLS = globalThis.localStorage;
     globalThis.localStorage = {
-      getItem: function (k) { return manualStore; },
+      getItem: function (k) {
+        return manualStore;
+      },
       setItem: function () {},
       removeItem: function () {},
       clear: function () {},
     };
     var captured4 = [];
-    globalThis.downloadBlobSimple = function (blob, name) { captured4.push({ blob: blob, name: name }); };
-    globalThis._didKeypair = { did: "did:key:zNoDate", algorithm: "Ed25519", pubRaw: new Uint8Array(32), privJwk: { kty: "OKP" } };
+    globalThis.downloadBlobSimple = function (blob, name) {
+      captured4.push({ blob: blob, name: name });
+    };
+    globalThis._didKeypair = {
+      did: "did:key:zNoDate",
+      algorithm: "Ed25519",
+      pubRaw: new Uint8Array(32),
+      privJwk: { kty: "OKP" },
+    };
     globalThis._didSig = null;
     await downloadDID("json");
     assert.ok(captured4.length >= 1);

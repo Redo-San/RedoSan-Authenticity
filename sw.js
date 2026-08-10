@@ -118,6 +118,7 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/vendor/jspdf.umd.min.js",
   "/RedoSan-Authenticity/vendor/qrious.min.js",
   "/RedoSan-Authenticity/vendor/jszip.min.js",
+  "/RedoSan-Authenticity/vendor/docx.umd.min.js",
   "/RedoSan-Authenticity/vendor/opentimestamps.min.js",
   "/RedoSan-Authenticity/Forensic/forensic.js",
   "/RedoSan-Authenticity/Forensic/forensic_core.js",
@@ -347,9 +348,7 @@ var MD_WHITELIST = new Set([
 
 // Whitelist of legitimate XML files served by the site.
 // Any .xml request not in this list is treated as a threat.
-var XML_WHITELIST = new Set([
-  "/RedoSan-Authenticity/sitemap.xml",
-]);
+var XML_WHITELIST = new Set(["/RedoSan-Authenticity/sitemap.xml"]);
 
 // Whitelist of known external libraries loaded from CDNs.
 // Any cross-origin request for a script/library not in this list is blocked.
@@ -360,6 +359,8 @@ var EXT_WHITELIST = [
   "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
   // docx
   "https://cdn.jsdelivr.net/npm/docx@8.5.0",
+  "https://unpkg.com/docx@8.5.0/build/index.umd.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.umd.js",
   // qrious (cdnjs + unpkg + jsdelivr)
   "https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js",
   "https://unpkg.com/qrious@4.0.2/dist/qrious.min.js",
@@ -401,6 +402,13 @@ self.addEventListener("fetch", function (event) {
   var url = new URL(event.request.url);
   var path = url.pathname;
   var lower = path.toLowerCase();
+  var normalizedPath;
+  var pageMatch;
+  var altPath;
+  var decoded;
+  var decodedLower;
+  var decoded2;
+  var hasEmbeddedUrl;
 
   // Whitelist match that also accepts paths without the /RedoSan-Authenticity
   // prefix (dev/test servers serve the repo at root).
@@ -412,7 +420,10 @@ self.addEventListener("fetch", function (event) {
   function inWhitelist(list, p) {
     if (list.has(p)) return true;
     if (p.indexOf("/RedoSan-Authenticity") !== 0) {
-      return list.has("/RedoSan-Authenticity" + p);
+      // Production layout: <root>/Style/<asset>
+      if (list.has("/RedoSan-Authenticity" + p)) return true;
+      // Dev server rewrites /style.css → Style/style.css
+      return list.has("/RedoSan-Authenticity/Style" + p);
     }
     return false;
   }
@@ -427,7 +438,8 @@ self.addEventListener("fetch", function (event) {
   // 2. For same-origin requests: check local whitelists (JS/CSS/HTML/YML)
   if (url.origin === self.location.origin) {
     // Unknown .js files not in JS_WHITELIST
-    if (lower.endsWith(".js")) isBlocked = isBlocked || !inWhitelist(JS_WHITELIST, path);
+    if (lower.endsWith(".js"))
+      isBlocked = isBlocked || !inWhitelist(JS_WHITELIST, path);
     // Unknown .mjs files not in JS_WHITELIST
     if (lower.endsWith(".mjs"))
       isBlocked = isBlocked || !inWhitelist(JS_WHITELIST, path);
@@ -450,12 +462,12 @@ self.addEventListener("fetch", function (event) {
     if (lower.endsWith(".html")) {
       // Normalize: if path has /pages/<extra>/<service>/index.html where extra isn't a page dir,
       // rewrite to /pages/<service>/index.html before checking whitelist
-      var normalizedPath = path;
-      var pageMatch = lower.match(
+      normalizedPath = path;
+      pageMatch = lower.match(
         /\/pages\/[^/]+\/([a-z][a-z0-9_-]*)\/index\.html$/,
       );
       if (pageMatch && !inWhitelist(HTML_WHITELIST, path)) {
-        var altPath =
+        altPath =
           "/RedoSan-Authenticity/Style/pages/" + pageMatch[1] + "/index.html";
         if (inWhitelist(HTML_WHITELIST, altPath)) {
           normalizedPath = altPath;
@@ -468,15 +480,14 @@ self.addEventListener("fetch", function (event) {
     }
 
     // Block embedded URLs in path (same-origin only)
-    var decoded = decodeURIComponent(path);
-    var decodedLower = decoded.toLowerCase();
-    var decoded2;
+    decoded = decodeURIComponent(path);
+    decodedLower = decoded.toLowerCase();
     try {
       decoded2 = decodeURIComponent(decodedLower);
     } catch {
       decoded2 = "";
     }
-    var hasEmbeddedUrl =
+    hasEmbeddedUrl =
       decodedLower.includes("://") ||
       decoded2.includes("://") ||
       decodedLower.includes("%3a%2f%2f") ||
@@ -518,7 +529,9 @@ self.addEventListener("fetch", function (event) {
 
   // 4. Protect logo images from direct URL access / hotlinking
   if (
-    (lower.endsWith("/logo.png") || lower.endsWith("/logo.webp") || lower.endsWith("/logo-black.png")) &&
+    (lower.endsWith("/logo.png") ||
+      lower.endsWith("/logo.webp") ||
+      lower.endsWith("/logo-black.png")) &&
     event.request.mode === "navigate"
   ) {
     event.respondWith(
@@ -530,7 +543,20 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  event.respondWith(fetch(event.request));
+  event.respondWith(
+    fetch(event.request)
+      .catch(function () {
+        // Transient network error — retry once for navigations to avoid a
+        // white screen, then surface a clean network error.
+        if (event.request.mode === "navigate") {
+          return fetch(event.request);
+        }
+        throw new TypeError("Network request failed");
+      })
+      .catch(function () {
+        return Response.error();
+      }),
+  );
 });
 
 /**
