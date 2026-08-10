@@ -116,5 +116,6 @@ id_ed25519
 *_credentials.json
 service-account*.json
 secrets.*
+.secrets.hc
 
 

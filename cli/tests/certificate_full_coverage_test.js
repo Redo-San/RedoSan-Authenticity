@@ -908,7 +908,9 @@ describe("Certificate — generateProfessionalCert — success paths", function 
     mockElement("cert-file", { files: null });
     mockElement("cert-name", { value: "Noor" });
     mockElement("cert-email", { value: "noor@test.com" });
-    // NOTE: cert-phonecode intentionally NOT mocked → getElementById returns null
+    // GH-340: cert-phonecode intentionally NOT mocked → getElementById returns null.
+    // Production code guards with (el || {}).value, so generation must still succeed
+    // and fall back to an empty phoneCode.
     mockElement("cert-phone", { value: "+966500000001" });
     mockElement("cert-website", { value: "https://noor.example.com" });
     mockElement("cert-social-tiktok", { value: "" });
@@ -1394,11 +1396,12 @@ describe("Certificate — remaining branch edges", function () {
     window._faceData = null;
 
     var origSubmit = globalThis.submitCertTransparency;
+    var data;
     try {
       globalThis.submitCertTransparency = async function () {
         return { submitted: true, hash: "abc", timestamp: new Date().toISOString() };
       };
-      var data = await collectCertData();
+      data = await collectCertData();
       assert.ok(data, "collectCertData should return data");
       assert.equal(data.file.name, "");
     } finally {
