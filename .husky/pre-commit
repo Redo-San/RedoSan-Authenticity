@@ -1,1 +1,2 @@
+pwsh -NoProfile -File scripts/secret-scan-precommit.ps1
 npx lint-staged

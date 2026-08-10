@@ -16,15 +16,18 @@
    */
   function getPagesBase() {
     var parts = globalThis.location.pathname.split("/");
-    for (var i = 0; i < parts.length; i++) {
+    var src = null;
+    var up = 0;
+    var i;
+    for (i = 0; i < parts.length; i++) {
       if (parts[i] === "pages") return parts.slice(0, i + 1).join("/");
     }
     // Rewritten URLs (e.g. the test server's /watermark/) don't contain
     // "pages". Derive the base from a relative script src like
     // "../../shared.js" (two levels up from Style/pages/{name}/).
-    var src = document.querySelector('script[src^="../"]');
+    src = document.querySelector('script[src^="../"]');
     if (src) {
-      var up = (src.getAttribute("src") || "").split("/").filter(function (s) {
+      up = (src.getAttribute("src") || "").split("/").filter(function (s) {
         return s === "..";
       }).length;
       if (up > 0) return Array(up + 1).join("../") + "Style/pages";
@@ -60,9 +63,10 @@
    * @param pageName
    */
   function cacheGet(pageName) {
+    var v;
     if (_pageCache[pageName]) return _pageCache[pageName];
     try {
-      var v = sessionStorage.getItem("mpa_" + pageName);
+      v = sessionStorage.getItem("mpa_" + pageName);
       if (v) _pageCache[pageName] = v;
       return v || null;
     } catch {
@@ -138,8 +142,9 @@
    */
   function updateActiveSidebar(pageName) {
     var links = document.querySelectorAll(".sidebar a[data-page]");
+    var lp;
     for (const link of links) {
-      var lp = link.dataset.page;
+      lp = link.dataset.page;
       link.classList.toggle("active", lp === pageName);
     }
   }
@@ -150,8 +155,9 @@
    *
    */
   function ensurePreserved() {
+    var el;
     for (const _preserveId of _preserveIds) {
-      var el = document.getElementById(_preserveId);
+      el = document.getElementById(_preserveId);
       if (el && !document.body.contains(el)) {
         document.body.append(el);
       }
@@ -167,8 +173,9 @@
     if (typeof globalThis.__musicSaveTime === "function")
       globalThis.__musicSaveTime();
     var wasPlaying = false;
+    var st = null;
     if (typeof globalThis.__musicPlayerState === "function") {
-      var st = globalThis.__musicPlayerState();
+      st = globalThis.__musicPlayerState();
       wasPlaying = st && st.playing === true;
     }
     if (!wasPlaying && a) wasPlaying = !a.paused;
@@ -183,6 +190,7 @@
   function _resumeAudio(state, tries) {
     if (!state || !state.el) return;
     (function resume(el, t) {
+      var p;
       if (el.paused) {
         if (el.readyState < 2) {
           el.addEventListener(
@@ -194,7 +202,7 @@
             { once: true },
           );
         } else {
-          var p = el.play();
+          p = el.play();
           if (p && typeof p.catch === "function") p.catch(function () {});
         }
       }
@@ -242,14 +250,16 @@
     var missing = [];
     doc.querySelectorAll("script").forEach(function (s) {
       var src = s.getAttribute("src");
+      var abs = null;
+      var scriptType;
       if (src) {
-        var abs = resolveScriptSrc(src, pageUrl);
+        abs = resolveScriptSrc(src, pageUrl);
         if (present.has(abs)) return;
         missing.push({ src: abs, type: s.type || "text/javascript" });
       } else {
         // Skip non-JavaScript inline blocks (e.g. application/ld+json) —
         // they are not meant to be executed and would throw a SyntaxError.
-        var scriptType = s.type || "text/javascript";
+        scriptType = s.type || "text/javascript";
         // Inline ES module scripts cannot be re-executed synchronously:
         // forcing them to "text/javascript" breaks `import`/`export` and
         // their native async timing cannot be preserved, so they are
@@ -362,6 +372,8 @@
    * @param pageName
    */
   function reInitPage(pageName) {
+    var et = null;
+    var ext = null;
     // Tab-based pages: reset to default tab
     if (pageName === "timestamp" && typeof switchOtsTab === "function")
       switchOtsTab("create");
@@ -370,10 +382,10 @@
       if (typeof toggleWmPassword === "function") toggleWmPassword();
       if (typeof toggleWmExtractPassword === "function")
         toggleWmExtractPassword();
-      var et = document.querySelector("#wm-type");
+      et = document.querySelector("#wm-type");
       if (et && typeof toggleWmPassword === "function")
         et.addEventListener("change", toggleWmPassword);
-      var ext = document.querySelector("#wm-type-ex");
+      ext = document.querySelector("#wm-type-ex");
       if (ext && typeof toggleWmExtractPassword === "function")
         ext.addEventListener("change", toggleWmExtractPassword);
     }
@@ -473,14 +485,16 @@
       app.append(newPage);
     }
     document.title = newTitle ? newTitle.textContent.trim() : document.title;
+    var curDesc = null;
+    var st;
     if (newDesc) {
-      var curDesc = document.querySelector('meta[name="description"]');
+      curDesc = document.querySelector('meta[name="description"]');
       if (curDesc)
         curDesc.setAttribute("content", newDesc.getAttribute("content"));
     }
     ensurePreserved();
     if (!skipPush) {
-      var st = history.state || {};
+      st = history.state || {};
       st.routerPage = pageName;
       st.url = url;
       // Use clean relative URL (preserves audio across AJAX navigations)
@@ -488,8 +502,15 @@
     }
     _currentPage = pageName;
     _inFlight = false;
+    // Keep the page loader visible and block interaction with the swapped
+    // section until the feature scripts finish loading: the tool handlers
+    // (e.g. handlePixelInjection) do not exist yet, so an early click would
+    // silently do nothing. The section is revealed in the loadPageScripts
+    // callback, after reInitPage has re-populated the page state.
     var loader = document.querySelector("#page-loader");
-    if (loader) loader.classList.add("page-loader--hidden");
+    if (loader) loader.classList.remove("page-loader--hidden");
+    newPage.setAttribute("aria-busy", "true");
+    newPage.style.pointerEvents = "none";
     updateActiveSidebar(pageName);
     if (typeof sanitizeRemovalTools === "function") sanitizeRemovalTools();
 
@@ -505,6 +526,9 @@
     })();
     loadPageScripts(doc, absUrl, function () {
       reInitPage(pageName);
+      newPage.removeAttribute("aria-busy");
+      newPage.style.pointerEvents = "";
+      if (loader) loader.classList.add("page-loader--hidden");
       if (_audioSave.wasPlaying) _resumeAudio(_audioSave, 5);
     });
   }
@@ -592,15 +616,18 @@
   globalThis.addEventListener("popstate", function (e) {
     var st = e.state;
     var pageName = st && st.routerPage;
+    var _popAudio = null;
+    var app = null;
+    var oldPage = null;
 
     // Handle back to initial state (null state or mode overlay)
     if (!pageName) {
       if (_savedSection && document.querySelector("#app")) {
-        var _popAudio = _saveAudioState();
+        _popAudio = _saveAudioState();
 
         // Restore original section without full page reload
-        var app = document.querySelector("#app");
-        var oldPage = app.querySelector("section.page");
+        app = document.querySelector("#app");
+        oldPage = app.querySelector("section.page");
         if (oldPage) {
           oldPage.parentNode.replaceChild(_savedSection, oldPage);
           _savedSection = null;

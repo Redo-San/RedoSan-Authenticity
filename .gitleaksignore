@@ -1,0 +1,48 @@
+# RedoSan Authenticity — gitleaks ignore list
+# Format: <commit>:<file>:<rule>:<start-line>
+# Every entry is a verified false positive or a historical secret already removed
+# from HEAD (files deleted in commit 3653057) that cannot be purged without a
+# full history rewrite (repo is public on GitHub).
+#
+# 1) C2PA demo key — a throwaway P-256 demo key embedded in the C2PA sample code
+#    (same pattern as official c2pa-js examples). Grants no access to any service.
+#    Present in HEAD on purpose, in C2PA/c2pa.js, cli/commands/c2pa.js and tests.
+88fdd85338499a78b5dea1ef7b6baff8ffb4ef48:C2PA/c2pa.js:private-key:7
+88fdd85338499a78b5dea1ef7b6baff8ffb4ef48:cli/commands/c2pa.js:private-key:12
+8979cab1eba94625ab94cec0554d278de0074ddc:C2PA/c2pa.js:private-key:7
+8979cab1eba94625ab94cec0554d278de0074ddc:cli/commands/c2pa.js:private-key:12
+a0095835b7561db4e7a8fd9cffd740bb19e7970e:C2PA/c2pa.js:private-key:7
+a0095835b7561db4e7a8fd9cffd740bb19e7970e:cli/commands/c2pa.js:private-key:12
+ded5b3d33f5cbba8eae2ba583d725b5e84099dde:C2PA/c2pa.js:private-key:5
+fc8702e3bbc5f33ece5b486f9cfabafab10b952e:cli/commands/c2pa.js:private-key:12
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/c2pa_full_test.js:private-key:176
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/c2pa_full_test.js:private-key:176
+d5aadf4a45c4486f1c13c6be89e166c02659ba87:coverage/lcov-report/cli/commands/c2pa.js.html:private-key:815
+#
+# 2) id_rsa_github — private SSH key file committed in an early commit, deleted
+#    from HEAD in 3653057. No local copy remains. Kept here only to silence
+#    history scans; verify the key is not still active on GitHub (see plan P2).
+490785b7c164a6ef69dc83c23f8533cfa9d716a7:id_rsa_github:private-key:1
+#
+# 3) .keys/cert_private.key — PKCS#8 key used by early certificate prototypes,
+#    deleted from HEAD in 3653057. No local copy remains.
+0b7a52886674c5d1bb0d464d7729c6b20c40f2d3:.keys/cert_private.key:private-key:1
+#
+# 4) generic-api-key hits in old certificate test files (removed from HEAD in
+#    3653057). Placeholder keys used by test assertions only.
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_export_test.js:generic-api-key:251
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_full_coverage_test.js:generic-api-key:927
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_full_coverage_test.js:generic-api-key:938
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_test.js:generic-api-key:407
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_test.js:generic-api-key:410
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_test.js:generic-api-key:416
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_test.js:generic-api-key:419
+2f6c15083fe6881eb1acb2209c6a830e7af43ad2:cli/tests/certificate_ui_test.js:generic-api-key:528
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_export_test.js:generic-api-key:251
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_full_coverage_test.js:generic-api-key:936
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_full_coverage_test.js:generic-api-key:947
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:407
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:410
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:416
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_test.js:generic-api-key:419
+e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_ui_test.js:generic-api-key:528

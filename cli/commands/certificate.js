@@ -168,7 +168,7 @@ async function buildCertData(filePath, opts) {
     try {
       const didText = fs.readFileSync(opts.did, "utf8");
       const didData = JSON.parse(didText);
-      if (didData.signature) data.didSig = didData.signature;
+      if (didData.signature) data.didSig = didData;
       if (didData.did) data.didIdentity = didData.did;
     } catch {
       // ignore parse errors
