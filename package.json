@@ -150,7 +150,7 @@
     "markdownlint-cli": "^0.49.1",
     "mocha": "^10.8.2",
     "npm-check-updates": "^22.2.9",
-    "oh-my-openagent": "^4.10.0",
+    "oh-my-openagent": "^4.19.2",
     "opencode-conductor": "^1.0.6",
     "opencode-lazy-loader": "^1.0.4",
     "opencode-scheduler": "^1.3.0",
