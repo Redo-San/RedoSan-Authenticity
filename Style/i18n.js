@@ -54,7 +54,7 @@ function sanitizeHtml(html) {
           const quote = val.charAt(0);
           if (quote === '"' || quote === "'") val = val.slice(1, -1);
           // Normalize before protocol check: browsers trim leading whitespace
-          // and decode HTML entities (e.g. "java&#x73;cript:") before executing.
+          // and decode HTML entities before executing attribute values.
           val = val
             .replace(/&#x([0-9a-f]+);/gi, function (m, h) {
               return String.fromCodePoint(parseInt(h, 16));
