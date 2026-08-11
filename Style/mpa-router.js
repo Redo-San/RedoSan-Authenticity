@@ -426,13 +426,8 @@
     });
     if (typeof initDropZones === "function") initDropZones();
 
-    // Reset result sections and file inputs
-    var results = document.querySelectorAll(
-      ".result, .result-box, .output-area, .fingerprint-result, .c2pa-result",
-    );
-    for (var r of results) {
-      if (r && r.style) r.style.display = "none";
-    }
+    // Reset file inputs only; result hiding happens in loadContent before
+    // the swap so stale results never flash on the incoming page.
     var fileInputs = document.querySelectorAll("#app input[type='file']");
     for (const fileInput of fileInputs) {
       fileInput.value = "";
@@ -480,6 +475,13 @@
     }
     if (oldPage) {
       oldPage.classList.remove("active");
+      // Hide stale result/output sections on the outgoing page before the
+      // swap, so results never carry over into the incoming page.
+      for (const stale of oldPage.querySelectorAll(
+        ".result, .result-box, .output-area, .fingerprint-result, .c2pa-result",
+      )) {
+        if (stale && stale.style) stale.style.display = "none";
+      }
       oldPage.parentNode.replaceChild(newPage, oldPage);
     } else if (app) {
       app.append(newPage);
