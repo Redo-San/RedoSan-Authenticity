@@ -24,7 +24,20 @@
 
 ---
 
-## What's New in v1.6
+## What's New in v1.7
+
+- **Face Biometric (21st tool)** — New browser tool + standalone MPA page: register and verify face biometric descriptors for visual rights protection. Detection, registration, and matching all run in-browser — nothing is uploaded.
+- **Pixel Injection reliability** — Colors are now fully restored after embedding and extraction round-trip works for all algorithms (DCT/DFT/DWT/Hybrid fixes); secret-file-only input is enforced with an embed-capacity guard; DWT round-trip fixed.
+- **Live-site stability** — Production breakdowns fixed (downloads, MPA navigation, i18n, caching); MPA router hides stale results on page swap; wizard lazy-load; MPA drop zones; email input limit.
+- **Security hardening** — nanoid pinned to patched versions, js-yaml upgraded, 10 npm audit vulnerabilities patched (tar, brace-expansion, body-parser), 30 zizmor alerts closed, `npm ci` lockfile enforcement, GitHub Action SHAs pinned to real tag commits.
+- **i18n quality** — 68 Arabic mistranslations corrected across 5 batches, i18n value-change detection + automatic sync, LibreTranslate translation backend added.
+- **Expanded About & Privacy pages** — Comprehensive content, plus a Security Vulnerability issue template.
+- **CI modernization** — Gemini CLI review workflow; obsolete OpenRouter review workflow removed; dev tooling centralized in `.tools/Developer_Toolkit`; E2E coverage guard.
+- **Certificate fix** — didSig object bug and phonecode null-safety.
+- **Scale** — 21 MPA pages, 58 unit test files + 37 E2E suites (3,500+ tests), 59 CI/CD workflows.
+
+<details>
+<summary><b>v1.6</b> — MPA Migration, Document Watermark, Full CLI Parity</summary>
 
 - **MPA (Multi-Page Architecture)** — The SPA was split into 20 standalone HTML pages, one per service, each with its own direct URL (`Style/pages/{name}/index.html`). Hash-based SPA routing still works, but tools are now accessible directly without the mode-selection overlay. Music playback persists across MPA navigation via AJAX content swapping.
 - **Document Watermark** — New tool: embed/extract hidden messages in TXT/DOCX/PDF using whitespace encoding, zero-width characters, synonym replacement, line-shift, and word-shift. Password-protected payload.
@@ -34,9 +47,9 @@
 - **C2PA provenance** — Sign JPEG/PNG with ECDSA P-256, read and verify C2PA manifests (APP11 / custom `c2pa` PNG chunk).
 - **Digital Certificate** — Generate PDF/DOCX/EPUB certificates with identity, social links, QR verification code.
 - **File Converter** — Browser-side conversion for images (PNG/JPEG/WebP/BMP/GIF), audio (11 formats), video-to-audio, documents, and subtitles.
-- **35 test files, 277+ tests** — Core unit tests, advanced algorithm tests, and comprehensive E2E Playwright tests.
 - **i18n (8 languages)** — Full Arabic, German, Spanish, French, Japanese, Korean, Chinese translations alongside English. Real-time switching, RTL support.
-- **40+ CI/CD workflows** — Lint (ESLint + Biome + Stylelint), security (Semgrep + CodeQL + TruffleHog + npm audit), accessibility (Pa11y + axe-core), performance (Lighthouse CI), DOM review, dead CSS, broken links, automated translation PRs, and more.
+
+</details>
 
 ---
 
@@ -60,6 +73,7 @@
 | **Timestamp** | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade |
 | **Digital Certificate** | Generate PDF/DOCX/EPUB certificates with QR verification, identity, social links |
 | **File Converter** | Browser-side image/audio/video-to-audio/document/subtitle conversion |
+| **Face Biometric** | Register & verify face biometric descriptors for visual rights protection (detection, registration, matching) |
 | **Forensic Analyzer** | ELA, noise inconsistency, JPEG structure, copy-move detection |
 | **ID Forge** | Generate UUID v4/v7, ULID, NanoID, SWHID; copy/download (JSON/CSV/TXT/XML/PDF/DOCX) |
 | **Removal Tools** | Strip watermarks, fingerprints, metadata, EXIF, thumbnails, GPS from images/audio |
@@ -85,8 +99,8 @@ Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.gith
 
 | Platform | Command |
 |----------|---------|
-| Windows | Double-click **`start.bat`** |
-| Linux / macOS | `chmod +x start.sh && ./start.sh` |
+| Windows | Double-click **`cli_start.bat`** |
+| Linux / macOS | `chmod +x cli_start.sh && ./cli_start.sh` |
 
 #### Command Line
 
@@ -262,15 +276,16 @@ RedoSan-Authenticity/
 ├── sw.js                      ← Service Worker (cache whitelist, threat blocking)
 ├── 404.html                   ← Offline + threat detection page
 ├── Style/
-│   ├── pages/                 ← 20 standalone MPA pages
+│   ├── pages/                 ← 21 standalone MPA pages
 │   │   ├── watermark/index.html
 │   │   ├── audio-watermark/index.html
 │   │   ├── fingerprint/index.html
 │   │   ├── c2pa/index.html
 │   │   ├── did/index.html
+│   │   ├── face-biometric/index.html
 │   │   ├── document-watermark/index.html
 │   │   ├── pixel-injection/index.html
-│   │   └── ... (20 total)
+│   │   └── ... (21 total)
 │   ├── mpa-router.js          ← AJAX navigation with audio persistence
 │   ├── music-player.js        ← Background music with first-click activation
 │   ├── i18n.js                ← Translation system (8 languages)
@@ -321,6 +336,14 @@ RedoSan-Authenticity/
 │   └── converter.js           ← Format conversion
 ├── ID_Forge/
 │   └── id_forge.js            ← UUID/ULID/NanoID/SWHID
+├── Face_Biometric/
+│   ├── face_engine.js            ← Detection + matching
+│   ├── face_registry.js          ← Registered face storage
+│   └── face_ui.js                ← UI handlers
+├── Face_Biometric/
+│   ├── face_engine.js            ← Detection + matching
+│   ├── face_registry.js          ← Registered face storage
+│   └── face_ui.js                ← UI handlers
 ├── Removal_Tools/
 │   └── ...                    ← Image + audio sanitization
 ├── Assistant/
@@ -380,17 +403,20 @@ Bypass with `--allow-dangerous` for testing trusted files.
 
 ## Testing
 
-35 test files with 277+ tests using `node:test` (zero external dependencies):
+58 unit test files + 37 E2E suites with 3,500+ tests using `node:test` (zero external test dependencies) + Playwright:
 
 ```bash
 npm test                         # All tests
-npm run test:core                # Core unit tests (87)
+npm run test:core                # Core unit tests
 npm run test:pixel               # Pixel injection
 npm run test:c2pa                # C2PA + CBOR
 npm run test:audio               # Audio watermark
 npm run test:docw                # Document watermark
+npm run test:e2e-mpa             # MPA standalone page suites (12 parallel)
 npm run test:e2e-watermark       # E2E Playwright tests
-npm run test:e2e-all             # All E2E tests (16 suites)
+npm run test:e2e-all             # All E2E tests (27 suites)
+npm run test:e2e-deep            # Deep E2E coverage with V8 capture
+npm run coverage                 # c8 coverage report
 ```
 
 CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chromium.
@@ -399,16 +425,16 @@ CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chrom
 
 ## CI/CD Workflows
 
-The project includes 40+ GitHub Actions workflows:
+The project includes 59 GitHub Actions workflows:
 
 | Category | Workflows |
 |----------|-----------|
 | **Core** | CI (unit + E2E + coverage), ESLint, Biome, Stylelint, deploy-pages |
-| **Security** | Semgrep SAST, CodeQL, TruffleHog, npm audit, ClamAV, OpenSSF Scorecard, dependency-review, supply chain audit |
-| **Quality** | Pa11y + axe-core accessibility, Lighthouse CI, DOM review, dead CSS, file size budget |
+| **Security** | Semgrep SAST, CodeQL, TruffleHog, npm audit, ClamAV, OpenSSF Scorecard, dependency-review, supply chain audit, secret scanner, permissions sheriff |
+| **Quality** | Pa11y + axe-core accessibility, Lighthouse CI, DOM review, dead CSS, file size budget, E2E coverage guard |
 | **Maintenance** | Broken link checker, translation auto-PR, stale issue manager, TODO issue creator, spell check |
-| **PR Management** | Conventional Commits lint, auto-assign, PR size label, branch name lint, file size budget |
-| **AI Review** | OpenRouter code review, Gemini analysis, monthly codebase audit |
+| **PR Management** | Conventional Commits lint, auto-assign, PR size label, branch name lint, cross-reference checker |
+| **AI Review** | Gemini CLI code review |
 
 ---
 
@@ -437,8 +463,8 @@ The web app includes a two-layer security system:
 | **UI** | Vanilla HTML/CSS/JS (no frameworks) |
 | **Icons** | Font Awesome 5 |
 | **CLI** | Node.js 20+, Commander.js |
-| **Testing** | `node:test` (277+ tests, zero dependencies) + Playwright (E2E) |
-| **CI** | GitHub Actions (40+ workflows, Node 22/24 matrix) |
+| **Testing** | `node:test` (58 files, 3,500+ tests) + Playwright (37 E2E suites) |
+| **CI** | GitHub Actions (59 workflows, Node 22/24 matrix) |
 | **PDF Export** | jsPDF + PDFKit |
 | **DOCX Export** | docx |
 | **EPUB Export** | Custom HTML-based generator |
@@ -461,9 +487,11 @@ Contributions are welcome. The project is in active development on `main`.
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feat/my-feature`
-3. Commit: `git commit -m "feat: add my feature"` (Conventional Commits)
+3. Commit: `git commit -m "feat: add my feature"` (Conventional Commits, enforced by commitlint + husky)
 4. Push: `git push origin feat/my-feature`
-5. Open a Pull Request
+5. Open a Pull Request to `main`
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines, and [SECURITY.md](https://github.com/Redo-San/RedoSan-Authenticity/blob/main/.github/SECURITY.md) for the security policy.
 
 ### Development Setup
 

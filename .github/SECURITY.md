@@ -6,8 +6,8 @@ Only the latest release receives security updates.
 
 | Version | Supported |
 |---------|-----------|
-| v1.0-beta.x | :white_check_mark: |
-| Older releases | :x: |
+| v1.7 | :white_check_mark: |
+| v1.6 and older | :x: |
 
 ## Reporting a Vulnerability
 
@@ -39,7 +39,8 @@ Include: description, steps to reproduce, affected version, impact, and suggeste
 
 This repository runs the following security and quality checks on every pull request:
 
-- **Secret Scanner**: Detects hardcoded API keys, tokens, and private keys in diffs
+- **Secret Scanner**: Detects hardcoded API keys, tokens, and private keys in diffs (CI + pre-commit hook)
+- **GitHub Secret Scanning**: Push protection + scanning enabled on the repository
 - **Permissions Sheriff**: Audits GitHub Actions workflow permissions for least-privilege
 - **npm audit Checker**: Scans dependencies for known vulnerabilities
 - **Cross-Reference Checker**: Validates file references (whitelists, navigation, i18n keys)
@@ -47,7 +48,8 @@ This repository runs the following security and quality checks on every pull req
 - **Dependency Graph**: Tracks dependency supply chain
 - **Spell Check** (codespell): Detects spelling errors in code, comments, and filenames
 - **Malware Scan** (ClamAV): Scans repository for malware signatures
-- **zizmor**: Scans GitHub Actions workflows for security issues
+- **zizmor**: Scans GitHub Actions workflows for security issues (30 alerts closed in v1.7)
+- **OpenSSF Scorecard**: Supply-chain security scoring
 - **ABOM Supply Chain Audit**: Audits dependency supply chain for tampering
 - **CSS Lint** (stylelint): Validates CSS for errors and duplicate selectors
 - **HTML Hint**: Validates HTML for best practices and accessibility
