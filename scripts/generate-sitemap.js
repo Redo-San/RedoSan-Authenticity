@@ -6,29 +6,20 @@ var ROOT = path.resolve(__dirname, "..");
 var BASE = "https://redo-san.github.io/RedoSan-Authenticity";
 var PAGES_DIR = path.join(ROOT, "Style", "pages");
 
-var STATIC_PAGES = new Set([
-  "about",
-  "contact",
-  "privacy",
-  "social",
-  "search",
-]);
+var STATIC_PAGES = new Set(["about", "contact", "privacy", "social", "search"]);
 
-var LOCAL_ONLY_PAGES = new Set([
-  "face-biometric",
-  "removal-tools",
-]);
+var LOCAL_ONLY_PAGES = new Set(["face-biometric", "removal-tools"]);
 
 /**
  *
  * @param relPath
  */
 function gitLastMod(relPath) {
-  var res = cp.spawnSync(
-    "git",
-    ["log", "-1", "--format=%cI", "--", relPath],
-    { cwd: ROOT, encoding: "utf8", timeout: 10_000 },
-  );
+  var res = cp.spawnSync("git", ["log", "-1", "--format=%cI", "--", relPath], {
+    cwd: ROOT,
+    encoding: "utf8",
+    timeout: 10_000,
+  });
   if (res.status === 0 && res.stdout && res.stdout.trim()) {
     return res.stdout.trim().slice(0, 10);
   }
@@ -46,10 +37,18 @@ function gitLastMod(relPath) {
 function entry(loc, lastmod, changefreq, priority) {
   return (
     "  <url>\n" +
-    "    <loc>" + loc + "</loc>\n" +
-    "    <lastmod>" + lastmod + "</lastmod>\n" +
-    "    <changefreq>" + changefreq + "</changefreq>\n" +
-    "    <priority>" + priority + "</priority>\n" +
+    "    <loc>" +
+    loc +
+    "</loc>\n" +
+    "    <lastmod>" +
+    lastmod +
+    "</lastmod>\n" +
+    "    <changefreq>" +
+    changefreq +
+    "</changefreq>\n" +
+    "    <priority>" +
+    priority +
+    "</priority>\n" +
     "  </url>"
   );
 }
