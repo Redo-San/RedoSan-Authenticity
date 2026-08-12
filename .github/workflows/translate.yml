@@ -27,14 +27,13 @@ jobs:
           egress-policy: block
           allowed-endpoints: >
             api.github.com:443
+            api.mymemory.translated.net:443
             api.translate.zvo.cn:443
             github.com:443
             libretranslate.com:443
             models.inference.ai.azure.com:443
-            translate.lotigara.ru:443
+            translate.googleapis.com:443
             translate.mstdn.social:443
-            translate.terraprint.co:443
-            trans.zillyhuhn.com:443
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
