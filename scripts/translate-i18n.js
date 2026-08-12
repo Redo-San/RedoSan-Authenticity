@@ -12,7 +12,8 @@
  *   ANTHROPIC_API_KEY, OPENAI_API_KEY, GROQ_API_KEY, GOOGLE_API_KEY, or GITHUB_TOKEN
  *
  * Fallback order: AI API (GitHub Models/OpenAI/Anthropic/Groq/Google) →
- *   LibreTranslate (multiple public instances) → xnx3 (last resort)
+ *   Google Translate (web endpoint, no key) → MyMemory (no key) →
+ *   LibreTranslate (public instances) → xnx3 (last resort)
  */
 
 var fs = require("node:fs");
@@ -192,11 +193,7 @@ var LIBRETRANSLATE_LANG_MAP = {
 };
 
 var LIBRETRANSLATE_INSTANCES = [
-  { url: "https://translate.terraprint.co", needsKey: false },
-  { url: "https://trans.zillyhuhn.com", needsKey: false },
-  { url: "https://translate.lotigara.ru", needsKey: false },
   { url: "https://translate.mstdn.social", needsKey: false },
-  { url: "https://api.translate.zvo.cn", needsKey: false },
 ];
 
 var LIBRETRANSLATE_OFFICIAL = {
@@ -266,6 +263,144 @@ async function translateViaLibreTranslate(texts, targetLang) {
     console.warn("  LibreTranslate " + instance.url + " failed: " + lastError.message);
   }
   throw new Error("All LibreTranslate instances failed");
+}
+
+var GOOGLE_LANG_MAP = {
+  ar: "ar",
+  fr: "fr",
+  de: "de",
+  es: "es",
+  zh: "zh-CN",
+  ja: "ja",
+  ko: "ko",
+};
+
+var GOOGLE_UA =
+  "Mozilla/5.0 (compatible; RedoSan-i18n/1.0; +https://redo-san.github.io/RedoSan-Authenticity/)";
+
+/**
+ * Translate via Google Translate web endpoint (no API key required).
+ * @param texts
+ * @param targetLang
+ */
+async function translateViaGoogle(texts, targetLang) {
+  var langCode = GOOGLE_LANG_MAP[targetLang];
+  if (!langCode) throw new Error("Unsupported language: " + targetLang);
+
+  var keys = Object.keys(texts);
+  var translated = {};
+  var failures = 0;
+  var queue = keys.slice();
+
+  /**
+   *
+   */
+  async function worker() {
+    while (queue.length > 0) {
+      var key = queue.shift();
+      var text = texts[key];
+      var url =
+        "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=" +
+        langCode +
+        "&dt=t&q=" +
+        encodeURIComponent(text);
+      try {
+        var resp = await fetch(url, {
+          headers: { "User-Agent": GOOGLE_UA },
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        var data = await resp.json();
+        var parts = Array.isArray(data[0])
+          ? data[0]
+              .map(function (seg) {
+                return seg && seg[0] ? seg[0] : "";
+              })
+              .join("")
+          : "";
+        translated[key] = parts;
+      } catch (error) {
+        failures++;
+        console.warn(
+          "  Google translate failed for key " + key + ": " + error.message,
+        );
+      }
+    }
+  }
+
+  var workers = [];
+  for (var i = 0; i < Math.min(3, keys.length); i++) workers.push(worker());
+  await Promise.all(workers);
+  if (failures === keys.length)
+    throw new Error("All Google translate requests failed");
+  return translated;
+}
+
+var MYMEMORY_LANG_MAP = {
+  ar: "ar",
+  fr: "fr",
+  de: "de",
+  es: "es",
+  zh: "zh-CN",
+  ja: "ja",
+  ko: "ko",
+};
+
+/**
+ * Translate via MyMemory API (no API key required, 5000 chars/day anonymous).
+ * @param texts
+ * @param targetLang
+ */
+async function translateViaMyMemory(texts, targetLang) {
+  var langCode = MYMEMORY_LANG_MAP[targetLang];
+  if (!langCode) throw new Error("Unsupported language: " + targetLang);
+
+  var keys = Object.keys(texts);
+  var translated = {};
+  var failures = 0;
+  var queue = keys.slice();
+
+  /**
+   *
+   */
+  async function worker() {
+    while (queue.length > 0) {
+      var key = queue.shift();
+      var text = texts[key];
+      if (Buffer.byteLength(text, "utf8") > 500) {
+        failures++;
+        continue;
+      }
+      var url =
+        "https://api.mymemory.translated.net/get?q=" +
+        encodeURIComponent(text) +
+        "&langpair=en|" +
+        langCode;
+      try {
+        var resp = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+        var data = await resp.json();
+        if (data.responseStatus !== 200)
+          throw new Error(
+            "responseStatus " + data.responseStatus + ": " + (data.responseDetails || ""),
+          );
+        translated[key] = data.responseData
+          ? data.responseData.translatedText
+          : text;
+      } catch (error) {
+        failures++;
+        console.warn(
+          "  MyMemory failed for key " + key + ": " + error.message,
+        );
+      }
+    }
+  }
+
+  var workers = [];
+  for (var i = 0; i < Math.min(2, keys.length); i++) workers.push(worker());
+  await Promise.all(workers);
+  if (failures === keys.length)
+    throw new Error("All MyMemory requests failed");
+  return translated;
 }
 
 /**
@@ -436,60 +571,46 @@ async function main() {
       console.log("Would send to AI:\n" + JSON.stringify(info.flat, null, 2));
       continue;
     }
-    try {
-      var translated = await translateViaAI(info.flat, lang);
-      var merged = deepMerge(info.target, unflatten(translated));
-      fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + "\n");
-      console.log(
-        "  ✓ " +
-          lang +
-          " updated (" +
-          Object.keys(translated).length +
-          " keys)",
-      );
-    } catch (error) {
-      console.warn(
-        "  AI translation failed (" +
-          error.message +
-          "), trying LibreTranslate fallback...",
-      );
+    var providers = [
+      { name: "AI", fn: translateViaAI },
+      { name: "Google translate", fn: translateViaGoogle },
+      { name: "MyMemory", fn: translateViaMyMemory },
+      { name: "LibreTranslate", fn: translateViaLibreTranslate },
+      { name: "xnx3", fn: translateViaXnx3 },
+    ];
+    for (var p = 0; p < providers.length; p++) {
+      var provider = providers[p];
       try {
-        translated = await translateViaLibreTranslate(info.flat, lang);
-        merged = deepMerge(info.target, unflatten(translated));
+        var translated = await provider.fn(info.flat, lang);
+        var merged = deepMerge(info.target, unflatten(translated));
         fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + "\n");
-        console.warn(
+        console.log(
           "  ✓ " +
             lang +
-            " updated via LibreTranslate (" +
+            " updated via " +
+            provider.name +
+            " (" +
             Object.keys(translated).length +
             " keys)",
         );
-      } catch (error_) {
-        console.warn(
-          "  LibreTranslate failed (" +
-            error_.message +
-            "), trying xnx3 fallback...",
-        );
-        try {
-          translated = await translateViaXnx3(info.flat, lang);
-          merged = deepMerge(info.target, unflatten(translated));
-          fs.writeFileSync(
-            info.file,
-            JSON.stringify(merged, null, 2) + "\n",
-          );
-          console.warn(
-            "  ✓ " +
-              lang +
-              " updated via xnx3 fallback (" +
-              Object.keys(translated).length +
-              " keys)",
-          );
-        } catch (error__) {
+        break;
+      } catch (error) {
+        if (p === providers.length - 1) {
           console.error(
             "  ✗ " +
               lang +
               " failed (all backends exhausted): " +
-              error__.message,
+              error.message,
+          );
+        } else {
+          console.warn(
+            "  " +
+              provider.name +
+              " failed (" +
+              error.message +
+              "), trying " +
+              providers[p + 1].name +
+              "...",
           );
         }
       }
