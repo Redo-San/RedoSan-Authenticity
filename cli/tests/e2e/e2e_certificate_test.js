@@ -33,10 +33,7 @@ async function closeCovPage(page, ctx) {
 }
 
 function navTo(page, id) {
-  return page.evaluate((pid) => {
-    const a = document.querySelector(`#sidebar a[data-page="${pid}"]`);
-    if (a) a.click();
-  }, id);
+  return page.goto(`${BASE}/Style/pages/${id}/index.html`);
 }
 
 // ── Shared helpers ──
@@ -1434,8 +1431,16 @@ describe("E2E — Certificate expanded coverage", () => {
     await gotoCertPage(page);
 
     // Check the real vendor libraries actually loaded on the page
-    // Vendor scripts are lazy-loaded via loader.js when the section activates,
-    // so wait for them instead of checking instantly (race under parallel load)
+    // MPA certificate page lazy-loads vendors via ensureLib() on export (like the SPA),
+    // so trigger the same user flow before waiting (race under parallel load)
+    await page.evaluate(async function () {
+      if (typeof ensureLib === "function") {
+        var names = ["jspdf", "QRious", "JSZip", "OpenTimestamps"];
+        for (var i = 0; i < names.length; i++) {
+          try { await ensureLib(names[i]); } catch (e) { /* fall through */ }
+        }
+      }
+    });
     await page.waitForFunction(function () {
       return (
         typeof jspdf !== "undefined" && typeof jspdf.jsPDF === "function" &&
@@ -1537,6 +1542,16 @@ describe("E2E — Certificate expanded coverage", () => {
     page.on("pageerror", function (err) { errors.push(err.message); });
     page.on("dialog", function (d) { d.accept().catch(function () {}); });
     await gotoCertPage(page);
+
+    // MPA certificate page lazy-loads vendors via ensureLib() on export
+    await page.evaluate(async function () {
+      if (typeof ensureLib === "function") {
+        var names = ["jspdf", "QRious", "JSZip", "docx", "OpenTimestamps"];
+        for (var i = 0; i < names.length; i++) {
+          try { await ensureLib(names[i]); } catch (e) { /* fall through */ }
+        }
+      }
+    });
 
     // The pages load docx from CDN; inject the local IIFE build (node_modules/docx)
     const docxIife = path.join(__dirname, "..", "..", "..", "node_modules", "docx", "dist", "index.iife.js");

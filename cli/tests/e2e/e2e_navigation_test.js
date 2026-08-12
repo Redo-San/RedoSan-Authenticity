@@ -75,10 +75,7 @@ describe("E2E — Hash Routing & Page Navigation", () => {
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="watermark"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/watermark/index.html`);
     await page.waitForTimeout(1000);
     const active = await page.evaluate(() => {
       const p = document.getElementById("page-watermark");
@@ -94,10 +91,7 @@ describe("E2E — Hash Routing & Page Navigation", () => {
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="id_forge"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
     const active = await page.evaluate(() => {
       const p = document.getElementById("page-id_forge");
@@ -107,19 +101,16 @@ describe("E2E — Hash Routing & Page Navigation", () => {
     await ctx.close();
   });
 
-  it("should update hash after navigation", async () => {
+it("should navigate to MPA id forge URL", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="id_forge"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
-    const hash = await page.evaluate(() => window.location.hash);
-    assert.equal(hash, "#/id_forge");
+    const url = page.url();
+    assert.ok(url.includes("/Style/pages/id_forge/index.html"), `URL should be MPA id_forge page: ${url}`);
     await ctx.close();
   });
 });
@@ -131,10 +122,7 @@ describe("E2E — ID Forge Functionality", () => {
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="id_forge"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
     const hasSelect = await page.evaluate(() => !!document.getElementById("if-type"));
     const hasBtn = await page.evaluate(() => !!document.getElementById("if-gen-btn"));
@@ -151,10 +139,7 @@ describe("E2E — ID Forge Functionality", () => {
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="id_forge"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
     await page.evaluate(() => {
       const sel = document.getElementById("if-type");
@@ -178,10 +163,7 @@ describe("E2E — ID Forge Functionality", () => {
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="id_forge"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
     await page.evaluate(() => {
       const sel = document.getElementById("if-type");
@@ -204,10 +186,7 @@ describe("E2E — ID Forge Functionality", () => {
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="id_forge"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
     await page.evaluate(() => {
       const sel = document.getElementById("if-type");

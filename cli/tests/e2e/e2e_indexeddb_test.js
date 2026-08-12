@@ -29,10 +29,7 @@ after(async () => {
  * Navigate via sidebar to a given page ID
  */
 function navTo(page, id) {
-  return page.evaluate((pid) => {
-    const a = document.querySelector(`#sidebar a[data-page="${pid}"]`);
-    if (a) a.click();
-  }, id);
+  return page.goto(`${BASE}/Style/pages/${id}/index.html`);
 }
 
 /**

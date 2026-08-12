@@ -32,11 +32,8 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   console.log("BEFORE NAV:", JSON.stringify(initialDiag));
 
   // Click sidebar
-  await page.evaluate(() => {
-    const a = document.querySelector('#sidebar a[data-page="pixel-injection"]');
-    if (a) a.click();
-  });
-  await page.waitForTimeout(2000);
+  await page.goto(`${BASE}/Style/pages/pixel-injection/index.html`);
+    await page.waitForTimeout(2000);
 
   // Check state after navigation
   const afterNav = await page.evaluate(() => {

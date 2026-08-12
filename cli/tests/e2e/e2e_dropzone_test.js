@@ -86,10 +86,7 @@ describe("E2E — File Drop Zones", () => {
     await page.waitForTimeout(2000);
 
     // Navigate to fingerprint page (has file input that becomes drop zone)
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     const dropZoneCount = await page.evaluate(() => {
@@ -113,10 +110,7 @@ describe("E2E — File Drop Zones", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     const hasIcon = await page.evaluate(() => {
@@ -145,10 +139,7 @@ describe("E2E — File Drop Zones", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     const dragOverAdded = await page.evaluate(() => {
@@ -171,10 +162,7 @@ describe("E2E — File Drop Zones", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     const dragOverRemoved = await page.evaluate(() => {
@@ -200,10 +188,7 @@ describe("E2E — File Drop Zones", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     // Drop a valid PNG file
@@ -232,10 +217,7 @@ describe("E2E — File Drop Zones", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     await dispatchDropEvent(page, ".file-drop-zone", [
@@ -268,10 +250,7 @@ describe("E2E — File Drop Zones", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     // Drop a dangerous .exe file
@@ -312,10 +291,7 @@ describe("E2E — File Drop Zones", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     await dispatchDropEvent(page, ".file-drop-zone", [
@@ -341,10 +317,7 @@ describe("E2E — File Drop Zones", () => {
     await page.waitForTimeout(2000);
 
     // Navigate to fingerprint first
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     // Check fingerprint page has drop zone
@@ -352,10 +325,7 @@ describe("E2E — File Drop Zones", () => {
     assert.ok(fpDz >= 1, `Fingerprint should have >=1 drop zones, got ${fpDz}`);
 
     // Navigate to watermark page to check it also has drop zones
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="watermark"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/watermark/index.html`);
     await page.waitForTimeout(1500);
 
     const wmDz = await page.evaluate(() => document.querySelectorAll(".file-drop-zone").length);
@@ -384,10 +354,7 @@ describe("E2E — File Drop Zones", () => {
 
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
-    await page.evaluate(() => {
-      const a = document.querySelector('#sidebar a[data-page="fingerprint"]');
-      if (a) a.click();
-    });
+    await page.goto(`${BASE}/Style/pages/fingerprint/index.html`);
     await page.waitForTimeout(1500);
 
     // Drop valid file

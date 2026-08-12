@@ -21,11 +21,8 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   await page.waitForTimeout(2000);
 
   // Click sidebar
-  await page.evaluate(() => {
-    const a = document.querySelector('#sidebar a[data-page="pixel-injection"]');
-    if (a) a.click();
-  });
-  await page.waitForTimeout(2000);
+  await page.goto(`${BASE}/Style/pages/pixel-injection/index.html`);
+    await page.waitForTimeout(2000);
 
   // Select DCT algorithm
   const setAlgoResult = await page.evaluate(() => {

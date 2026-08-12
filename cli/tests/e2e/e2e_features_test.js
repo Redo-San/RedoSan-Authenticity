@@ -26,10 +26,7 @@ after(async () => {
 });
 
 function navTo(page, id) {
-  return page.evaluate((pid) => {
-    const a = document.querySelector(`#sidebar a[data-page="${pid}"]`);
-    if (a) a.click();
-  }, id);
+  return page.goto(`${BASE}/Style/pages/${id}/index.html`);
 }
 
 describe("E2E — Theme Toggle", () => {
@@ -167,6 +164,12 @@ describe("E2E — Download Formats", () => {
         if (btn) btn.click();
       });
       await page.waitForTimeout(500);
+
+      // MPA fingerprint page lazy-loads export libs on first pointerdown
+      if (format === "doc") {
+        await page.evaluate(() => document.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })));
+        await page.waitForFunction(() => typeof window.docx !== "undefined", { timeout: 30000 });
+      }
 
       // Click format button directly
       const dlPromise = page.waitForEvent("download", { timeout: 60000 });
