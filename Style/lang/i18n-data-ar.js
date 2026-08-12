@@ -733,5 +733,6 @@ window.__I18N_DATA.ar = {
     "ast.context_face_biometric": "أرى أنك في صفحة **القياسات الحيوية للوجه**. هل تحتاج مساعدة؟",
     "face.cert_btn": "استخدام في الشهادة",
     "face.export_c2pa_btn": "تصدير تقرير C2PA",
-    "face.sign_btn": "التوقيع بـ DID"
+    "face.sign_btn": "التوقيع بـ DID",
+    "tool.open_full": "فتح الأداة الكاملة"
 };

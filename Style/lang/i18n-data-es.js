@@ -720,5 +720,6 @@ window.__I18N_DATA.es = {
     "pi.analyzing_msg": "Analizando la imagen en busca de marcas de agua…",
     "pi.embedding_msg": "Insertando la marca de agua en la imagen…",
     "pi.extracting_msg": "Extrayendo la marca de agua de la imagen…",
-    "pi.overlay_hint": "Los algoritmos pesados pueden tardar un momento"
+    "pi.overlay_hint": "Los algoritmos pesados pueden tardar un momento",
+    "tool.open_full": "Abrir herramienta completa"
 };

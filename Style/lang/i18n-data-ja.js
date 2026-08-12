@@ -719,5 +719,6 @@ window.__I18N_DATA.ja = {
     "pi.analyzing_msg": "画像の透かしを分析中…",
     "pi.embedding_msg": "画像に透かしを埋め込み中…",
     "pi.extracting_msg": "画像から透かしを抽出中…",
-    "pi.overlay_hint": "重いアルゴリズムには時間がかかる場合があります"
+    "pi.overlay_hint": "重いアルゴリズムには時間がかかる場合があります",
+    "tool.open_full": "フルツールを開く"
 };

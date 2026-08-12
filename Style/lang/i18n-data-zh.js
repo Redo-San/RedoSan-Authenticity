@@ -721,5 +721,6 @@ window.__I18N_DATA.zh = {
     "pi.analyzing_msg": "正在分析图像中的水印…",
     "pi.embedding_msg": "正在将水印嵌入图像…",
     "pi.extracting_msg": "正在从图像中提取水印…",
-    "pi.overlay_hint": "重算法可能需要一些时间"
+    "pi.overlay_hint": "重算法可能需要一些时间",
+    "tool.open_full": "打开完整工具"
 };

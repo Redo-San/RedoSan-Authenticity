@@ -721,5 +721,6 @@ window.__I18N_DATA.fr = {
     "pi.analyzing_msg": "Analyse de l'image à la recherche de filigranes…",
     "pi.embedding_msg": "Intégration du filigrane dans l'image…",
     "pi.extracting_msg": "Extraction du filigrane de l'image…",
-    "pi.overlay_hint": "Les algorithmes lourds peuvent prendre un moment"
+    "pi.overlay_hint": "Les algorithmes lourds peuvent prendre un moment",
+    "tool.open_full": "Ouvrir l'outil complet"
 };

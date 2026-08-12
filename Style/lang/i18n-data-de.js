@@ -721,5 +721,6 @@ window.__I18N_DATA.de = {
     "pi.analyzing_msg": "Analysiere Bild auf Wasserzeichen…",
     "pi.embedding_msg": "Bette Wasserzeichen in Bild ein…",
     "pi.extracting_msg": "Extrahiere Wasserzeichen aus Bild…",
-    "pi.overlay_hint": "Schwere Algorithmen können einen Moment dauern"
+    "pi.overlay_hint": "Schwere Algorithmen können einen Moment dauern",
+    "tool.open_full": "Vollständiges Tool öffnen"
 };

@@ -719,5 +719,6 @@ window.__I18N_DATA.ko = {
     "pi.analyzing_msg": "이미지의 워터마크를 분석하는 중…",
     "pi.embedding_msg": "이미지에 워터마크를 삽입하는 중…",
     "pi.extracting_msg": "이미지에서 워터마크를 추출하는 중…",
-    "pi.overlay_hint": "무거운 알고리즘은 시간이 걸릴 수 있습니다"
+    "pi.overlay_hint": "무거운 알고리즘은 시간이 걸릴 수 있습니다",
+    "tool.open_full": "전체 도구 열기"
 };
