@@ -29,10 +29,7 @@ after(async () => {
 });
 
 function navTo(page, id) {
-  return page.evaluate((pid) => {
-    var a = document.querySelector('#sidebar a[data-page="' + pid + '"]');
-    if (a) a.click();
-  }, id);
+  return page.goto(`${BASE}/Style/pages/${id}/index.html`);
 }
 
 describe("E2E Deep Coverage — shared.js utilities", () => {
@@ -584,7 +581,7 @@ describe("E2E Deep Coverage — ID Forge", () => {
     await page.waitForTimeout(3000);
     await navTo(page, "id_forge");
     await page.waitForTimeout(2000);
-    await page.evaluate(function () { showPage("id_forge"); });
+    await navTo(page, "id_forge");
     await page.waitForTimeout(1000);
 
     // Check DOM elements exist
@@ -628,7 +625,7 @@ describe("E2E Deep Coverage — ID Forge", () => {
     await page.waitForTimeout(3000);
     await navTo(page, "id_forge");
     await page.waitForTimeout(2000);
-    await page.evaluate(function () { showPage("id_forge"); });
+    await navTo(page, "id_forge");
     await page.waitForTimeout(1000);
 
     // Generate ULID
@@ -662,7 +659,7 @@ describe("E2E Deep Coverage — ID Forge", () => {
     await page.waitForTimeout(3000);
     await navTo(page, "id_forge");
     await page.waitForTimeout(2000);
-    await page.evaluate(function () { showPage("id_forge"); });
+    await navTo(page, "id_forge");
     await page.waitForTimeout(1000);
 
     // Switch to SWHID type, fill text area, generate
@@ -753,7 +750,7 @@ describe("E2E Deep Coverage — Document Watermark", () => {
     await page.waitForTimeout(3000);
     await navTo(page, "document-watermark");
     await page.waitForTimeout(2000);
-    await page.evaluate(function () { showPage("document-watermark"); });
+    await navTo(page, "document-watermark");
     await page.waitForTimeout(1000);
 
     // Test embed tab exists with expected elements

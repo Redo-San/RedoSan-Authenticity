@@ -82,7 +82,8 @@
     "check:fix": "npm run lint:fix && npm run biome:fix && npm run stylelint:fix",
     "check:full": "npm run lint && npm run biome && npm run stylelint && npm run markdownlint && npm run cspell && npm run madge:circular && npm run depcheck && npm run test:core",
     "dom-review": "node cli/tests/dom_check.js",
-    "id-forge": "node cli/lib/id_forge.js"
+    "id-forge": "node cli/lib/id_forge.js",
+    "sitemap": "node scripts/generate-sitemap.js"
   },
   "keywords": [
     "watermark",
