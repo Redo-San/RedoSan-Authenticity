@@ -76,6 +76,14 @@ cli/tests/face_test_img.jpg
 cli/tests/face_test_real.mjs
 cli/tests/face_test_result.png
 cli/tests/face_ui_test.js
+cli/tests/face_biohash_test.js
+cli/tests/face_fuzzy_test.js
+cli/tests/face_test_real_identifiers.mjs
+cli/tests/face_identifiers_result.png
+cli/tests/face_identifiers_no_face.png
+cli/tests/face_signed_report_dl.json
+cli/tests/face_c2pa_report_dl.json
+cli/tests/fixtures/face_identifier_test_img.jpg
 
 # Generated test artifacts
 .lighthouseci/
@@ -91,6 +99,7 @@ docs/
 # Coverage improvement plan (local working notes)
 coverage-improvement-plan.md
 lighthouse-100-plan.md
+face-biometric-improvement-plan.md
 
 # ── Secrets — NEVER commit, never share ────────────────────────────
 # Environment & credentials (highest protection: whole .env tree)

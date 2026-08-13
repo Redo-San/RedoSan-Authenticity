@@ -79,6 +79,8 @@
       "Face_Biometric/face_engine.js",
       "Face_Biometric/face_registry.js",
       "Face_Biometric/face_ui.js",
+      "Face_Biometric/face_biohash.js",
+      "Face_Biometric/face_fuzzy.js",
       "human",
     ].concat(CERT_STACK),
     certificate: CERT_STACK.slice(),
