@@ -588,6 +588,8 @@
   "face.camera_start_btn": "Start Camera",
   "face.camera_stop_btn": "Stop Camera",
   "face.capture_btn": "Capture Photo",
+  "face.input_tab_upload": "Upload Photo",
+  "face.input_tab_camera": "Capture with Camera",
   "face.run_btn": "Generate Identifiers",
   "face.liveness_label": "Liveness",
   "face.liveness_off": "Off",
