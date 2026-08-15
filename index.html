@@ -126,18 +126,13 @@
           document.head.appendChild(l);
         }
         window.__I18N_EARLY = true;
-        if (lang !== "en") {
-          document.write(
-            '<script src="' +
-              base +
-              "lang/i18n-data-" +
-              lang +
-              '.js"><\/script>',
-          );
-        } else {
-          if (window.__I18N_DATA === undefined) window.__I18N_DATA = {};
-          window.__I18N_DATA.en = window.__I18N_DATA.en || {};
-        }
+        document.write(
+          '<script src="' +
+            base +
+            "lang/i18n-data-" +
+            lang +
+            '.js"><\/script>',
+        );
         document.write('<script src="' + base + 'i18n.js"><\/script>');
       })();
     </script>

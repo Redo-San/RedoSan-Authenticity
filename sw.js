@@ -118,6 +118,8 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Face_Biometric/face_biohash.js",
   "/RedoSan-Authenticity/Face_Biometric/face_fuzzy.js",
   "/RedoSan-Authenticity/Face_Biometric/face_camera.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_crypto.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_vc.js",
   "/RedoSan-Authenticity/Face_Biometric/face_liveness.js",
   "/RedoSan-Authenticity/Face_Biometric/face_align.js",
   "/RedoSan-Authenticity/Face_Biometric/face_embed_onnx.js",
@@ -395,6 +397,11 @@ self.addEventListener("install", function () {
   self.skipWaiting();
 });
 
+// Runtime cache: successful GET responses are stored so that a transient
+// network failure (server restart, offline) falls back to the cache instead
+// of surfacing as "Failed to fetch".
+var RUNTIME_CACHE = "redosan-assets-v1";
+
 self.addEventListener("activate", function (event) {
   event.waitUntil(
     Promise.all([
@@ -402,6 +409,7 @@ self.addEventListener("activate", function (event) {
       caches.keys().then(function (keys) {
         return Promise.all(
           keys.map(function (k) {
+            if (k === RUNTIME_CACHE) return undefined;
             return caches.delete(k);
           }),
         );
@@ -557,16 +565,34 @@ self.addEventListener("fetch", function (event) {
 
   event.respondWith(
     fetch(event.request)
-      .catch(function () {
-        // Transient network error — retry once for navigations to avoid a
-        // white screen, then surface a clean network error.
-        if (event.request.mode === "navigate") {
-          return fetch(event.request);
+      .then(function (resp) {
+        // Cache successful GET responses (including the HTML shell on
+        // navigation) for later offline/retry fallback.
+        if (resp && resp.ok && event.request.method === "GET") {
+          var clone = resp.clone();
+          caches
+            .open(RUNTIME_CACHE)
+            .then(function (cache) {
+              return cache.put(event.request, clone);
+            })
+            .catch(function () {});
         }
-        throw new TypeError("Network request failed");
+        return resp;
       })
       .catch(function () {
-        return Response.error();
+        // Transient network error — retry once for navigations, then fall
+        // back to the runtime cache; otherwise surface a clean error.
+        var fallback = caches.match(event.request);
+        if (event.request.mode === "navigate") {
+          return fetch(event.request).catch(function () {
+            return fallback.then(function (hit) {
+              return hit || Response.error();
+            });
+          });
+        }
+        return fallback.then(function (hit) {
+          return hit || Response.error();
+        });
       }),
   );
 });

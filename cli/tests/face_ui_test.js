@@ -110,6 +110,12 @@ const fuzzySrc = fs.readFileSync(
 );
 vm.runInThisContext(fuzzySrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_fuzzy.js") });
 
+const cryptoSrc = fs.readFileSync(
+  path.join(__dirname, "..", "..", "Face_Biometric", "face_crypto.js"),
+  "utf8",
+);
+vm.runInThisContext(cryptoSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_crypto.js") });
+
 const uiSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_ui.js"),
   "utf8",
@@ -302,23 +308,39 @@ describe("Face UI — setFaceStep", () => {
 });
 
 describe("Face UI — faceDescriptorHash", () => {
-  it("should be deterministic for the same descriptor", () => {
-    const h1 = globalThis.faceDescriptorHash(DESCRIPTOR);
-    const h2 = globalThis.faceDescriptorHash(DESCRIPTOR);
+  it("should be deterministic for the same descriptor (sha-256)", async () => {
+    const h1 = await globalThis.faceDescriptorHash(DESCRIPTOR);
+    const h2 = await globalThis.faceDescriptorHash(DESCRIPTOR);
     assert.equal(h1, h2);
-    assert.ok(typeof h1 === "string" && h1.length > 0);
+    assert.match(h1, /^[0-9a-f]{64}$/);
   });
 
-  it("should differ for a different descriptor", () => {
+  it("should differ for a different descriptor", async () => {
     const other = Float32Array.from({ length: 128 }, function () {
       return 0;
     });
-    assert.notEqual(globalThis.faceDescriptorHash(other), globalThis.faceDescriptorHash(DESCRIPTOR));
+    assert.notEqual(
+      await globalThis.faceDescriptorHash(other),
+      await globalThis.faceDescriptorHash(DESCRIPTOR),
+    );
   });
 
-  it("should return null for missing/empty input", () => {
-    assert.equal(globalThis.faceDescriptorHash(null), null);
-    assert.equal(globalThis.faceDescriptorHash([]), null);
+  it("should return null for missing/empty input", async () => {
+    assert.equal(await globalThis.faceDescriptorHash(null), null);
+    assert.equal(await globalThis.faceDescriptorHash([]), null);
+  });
+
+  it("should fall back to the legacy rolling hash without FaceCrypto", async () => {
+    const saved = globalThis.FaceCrypto;
+    globalThis.FaceCrypto = undefined; // var/function bindings cannot be deleted
+    try {
+      const h = await globalThis.faceDescriptorHash(DESCRIPTOR);
+      assert.ok(typeof h === "string" && h.length > 0);
+      assert.match(h, /^[0-9a-f]+$/);
+      assert.ok(h.length < 64, "legacy hash is short");
+    } finally {
+      globalThis.FaceCrypto = saved;
+    }
   });
 });
 

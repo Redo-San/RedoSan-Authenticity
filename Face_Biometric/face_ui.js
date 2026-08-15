@@ -54,17 +54,24 @@ function setFaceStep(text) {
 }
 
 /**
- * Short deterministic hash of a descriptor for display/export.
+ * SHA-256 digest of a descriptor (hex). Falls back to the legacy rolling hash
+ * only when WebCrypto/FaceCrypto is unavailable.
  * @param {Float32Array|number[]} desc
- * @returns {string}
+ * @returns {Promise<string|null>}
  */
-function faceDescriptorHash(desc) {
-  var hash, dv, i;
+async function faceDescriptorHash(desc) {
+  var hash, i;
   if (!desc || typeof desc.length !== "number" || desc.length === 0) return null;
+  if (typeof FaceCrypto !== "undefined" && FaceCrypto.sha256Hex) {
+    try {
+      return await FaceCrypto.sha256Hex(desc);
+    } catch (e) {
+      /* fall through to legacy hash */
+    }
+  }
   hash = 0;
-  dv = desc;
-  for (i = 0; i < dv.length; i++) {
-    hash = ((hash << 5) - hash + Math.round(dv[i] * 1000)) | 0;
+  for (i = 0; i < desc.length; i++) {
+    hash = ((hash << 5) - hash + Math.round(desc[i] * 1000)) | 0;
   }
   return Math.abs(hash).toString(16);
 }
@@ -230,6 +237,8 @@ async function handleFaceFilePicked() {
     height: loaded.h,
   };
   prevEl = document.getElementById("face-preview");
+  prevEl.width = loaded.w;
+  prevEl.height = loaded.h;
   ctx = prevEl.getContext("2d");
   ctx.drawImage(loaded.canvas, 0, 0);
   if (prevEl.style) prevEl.style.display = "block";
@@ -339,6 +348,8 @@ async function runFacePipeline(canvas, opts) {
     setStatus("face-status", "Detecting faces...");
     result = await faceEngine.detectFaces(canvas);
     prevEl = document.getElementById("face-preview");
+    prevEl.width = canvas.width;
+    prevEl.height = canvas.height;
     ctx = prevEl.getContext("2d");
     ctx.drawImage(canvas, 0, 0);
     if (prevEl.style) prevEl.style.display = "block";
@@ -394,7 +405,7 @@ async function runFacePipeline(canvas, opts) {
     doc = typeof didGenerateDocument === "function" && kp ? didGenerateDocument(kp) : null;
     vc =
       typeof didCreateVerifiableCredential === "function" && kp && sigB64
-        ? didCreateVerifiableCredential(kp, faceDescriptorHash(desc), sigB64)
+        ? didCreateVerifiableCredential(kp, await faceDescriptorHash(desc), sigB64)
         : null;
 
     setFaceStep("4/6 " + __("face.step.biohash", "Generating Privacy ID..."));
@@ -457,7 +468,8 @@ async function runFacePipeline(canvas, opts) {
         facesDetected: result.length,
         confidence: result[0].score || result[0].confidence || 0,
         descriptorDim: desc.length,
-        descriptorHash: faceDescriptorHash(desc),
+        descriptorHash: await faceDescriptorHash(desc),
+        descriptorHashAlg: "sha-256",
         embeddingVersion: _lastEmbeddingVersion,
         attributes: result[0].attributes || null,
       },
@@ -1456,4 +1468,178 @@ function handleFaceBioHashCopy() {
     if (el && el.select) el.select();
     setStatus("face-status", "Privacy ID ready to copy.");
   }
+}
+
+// ── Phase 3: registry encryption (lock/unlock) ──
+
+/**
+ * Encrypt all registry entries with the passphrase from #face-lock-pass.
+ */
+async function handleFaceLock() {
+  var pass, n, statusEl;
+  if (!faceRegistry) return;
+  if (typeof FaceCrypto === "undefined") {
+    setStatus("face-status", __("face.lock_need_crypto", "Encryption module not loaded."));
+    return;
+  }
+  pass = document.getElementById("face-lock-pass");
+  pass = pass && pass.value ? pass.value : "";
+  if (!pass) {
+    setStatus("face-status", __("face.lock_no_pass", "Enter a passphrase to lock the registry."));
+    return;
+  }
+  try {
+    n = await faceRegistry.lock(pass);
+    setStatus("face-status", __("face.lock_done", "Registry locked — {0} face(s) encrypted.").split("{0}").join(n));
+    if (pass) pass.value = "";
+    await listRegisteredFaces();
+    statusEl = document.getElementById("face-lock-status");
+    if (statusEl) statusEl.textContent = "🔒 " + __("face.lock_status_locked", "Locked");
+  } catch (error) {
+    setStatus("face-status", "Lock error: " + error.message);
+  }
+}
+
+/**
+ * Decrypt all registry entries with the passphrase from #face-lock-pass.
+ */
+async function handleFaceUnlock() {
+  var pass, n, statusEl;
+  if (!faceRegistry) return;
+  if (typeof FaceCrypto === "undefined") {
+    setStatus("face-status", __("face.lock_need_crypto", "Encryption module not loaded."));
+    return;
+  }
+  pass = document.getElementById("face-lock-pass");
+  pass = pass && pass.value ? pass.value : "";
+  if (!pass) {
+    setStatus("face-status", __("face.lock_unlock_no_pass", "Enter the passphrase to unlock the registry."));
+    return;
+  }
+  try {
+    n = await faceRegistry.unlock(pass);
+    setStatus("face-status", __("face.lock_unlock_done", "Registry unlocked — {0} face(s) decrypted.").split("{0}").join(n));
+    if (pass) pass.value = "";
+    await listRegisteredFaces();
+    statusEl = document.getElementById("face-lock-status");
+    if (statusEl) statusEl.textContent = "🔓 " + __("face.lock_status_unlocked", "Unlocked");
+  } catch (error) {
+    setStatus("face-status", __("face.lock_bad_pass", "Unlock failed — wrong passphrase or corrupted data."));
+  }
+}
+
+// ── Phase 3: backup / restore ──
+
+/**
+ * Export the registry to a JSON backup file (encrypted when passphrase given).
+ */
+async function handleFaceBackup() {
+  var pass, backup, blob;
+  if (!faceRegistry) return;
+  if (typeof FaceCrypto === "undefined") {
+    setStatus("face-status", __("face.lock_need_crypto", "Encryption module not loaded."));
+    return;
+  }
+  pass = document.getElementById("face-lock-pass");
+  pass = pass && pass.value ? pass.value : "";
+  try {
+    backup = await faceRegistry.exportBackup(pass || null);
+    blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    downloadBlobSimple(blob, "face_registry_backup.json");
+    setStatus("face-status", pass ? __("face.backup_done_enc", "Backup exported (encrypted).") : __("face.backup_done", "Backup exported."));
+  } catch (error) {
+    setStatus("face-status", __("face.backup_err", "Backup error: {0}").split("{0}").join(error.message));
+  }
+}
+
+/**
+ * Import a backup file chosen via #face-restore-file.
+ */
+async function handleFaceRestore() {
+  var fileEl, file, text, backup, pass, mode, n;
+  if (!faceRegistry) return;
+  fileEl = document.getElementById("face-restore-file");
+  if (!fileEl || !fileEl.files || fileEl.files.length === 0) {
+    setStatus("face-status", __("face.restore_no_file", "Choose a backup file first."));
+    return;
+  }
+  file = fileEl.files[0];
+  try {
+    text = await file.text();
+    backup = JSON.parse(text);
+  } catch (e) {
+    setStatus("face-status", __("face.restore_bad_file", "Restore error: not a valid backup file."));
+    return;
+  }
+  pass = document.getElementById("face-lock-pass");
+  pass = pass && pass.value ? pass.value : "";
+  mode = confirm(__("face.restore_confirm", "Replace all current faces? OK = replace, Cancel = merge"));
+  mode = mode ? "replace" : "merge";
+  try {
+    n = await faceRegistry.importBackup(backup, pass || null, mode);
+    setStatus("face-status", __("face.restore_done", "Restored {0} face(s) ({1}).").split("{0}").join(n).split("{1}").join(mode));
+    fileEl.value = "";
+    await listRegisteredFaces();
+  } catch (error) {
+    setStatus("face-status", __("face.restore_err", "Restore error: {0}").split("{0}").join(error.message));
+  }
+}
+
+// ── Phase 3: W3C face credential ──
+
+/**
+ * Issue a W3C Verifiable Credential from the last pipeline report
+ * (SHA-256 descriptor hash only — never the raw template) signed with the
+ * session DID keypair, then show + download it.
+ */
+async function handleFaceIssueCredential() {
+  var report, kp, vc, json, pre, box, btn;
+  if (!_faceReport) {
+    setStatus("face-status", __("face.vc_need_report", "Run the pipeline first to generate identifiers."));
+    return;
+  }
+  kp = globalThis._didKeypair || _faceKeypair;
+  if (!kp || !kp.did || typeof FaceVC === "undefined") {
+    setStatus("face-status", __("face.vc_need_did", "DID keypair or FaceVC module not available."));
+    return;
+  }
+  try {
+    vc = FaceVC.build({
+      did: kp.did,
+      algorithm: kp.algorithm,
+      descriptorHash: _faceReport.photo.descriptorHash,
+      attributes: _faceReport.photo.attributes || null,
+      liveness: _faceReport.liveness || null,
+      faceCount: _faceReport.photo.facesDetected,
+      embeddingVersion: _faceReport.photo.embeddingVersion,
+    });
+    vc = await FaceVC.sign(kp, vc);
+    window._faceCredential = vc;
+    json = FaceVC.toJSON(vc);
+    pre = document.getElementById("face-vc-output");
+    if (pre) {
+      pre.textContent = json;
+      pre.style.display = "block";
+    }
+    box = document.getElementById("face-vc-box");
+    if (box) box.style.display = "block";
+    btn = document.getElementById("face-vc-download");
+    if (btn) btn.style.display = "inline-block";
+    setStatus("face-status", __("face.vc_done", "Face credential issued and signed with {0}.").split("{0}").join(kp.algorithm));
+  } catch (error) {
+    setStatus("face-status", __("face.vc_err", "Credential error: {0}").split("{0}").join(error.message));
+  }
+}
+
+/**
+ * Download the issued face credential as JSON.
+ */
+function handleFaceVCDownload() {
+  var vc;
+  vc = window._faceCredential;
+  if (!vc) return;
+  downloadBlobSimple(
+    new Blob([FaceVC.toJSON(vc)], { type: "application/json" }),
+    "face_credential.json",
+  );
 }

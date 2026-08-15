@@ -27,6 +27,13 @@ const registrySrc = fs.readFileSync(
 );
 vm.runInThisContext(registrySrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_registry.js") });
 
+// Load face_crypto.js (registry lock/unlock/backup)
+const cryptoSrc = fs.readFileSync(
+  path.join(__dirname, "..", "..", "Face_Biometric", "face_crypto.js"),
+  "utf8",
+);
+vm.runInThisContext(cryptoSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_crypto.js") });
+
 // ── In-memory store for testing ──
 
 let _nextId = 1;
@@ -47,6 +54,7 @@ function _storeEntry(entry, id) {
     updated: entry.updated instanceof Date
       ? { __d: true, v: entry.updated.toISOString() }
       : entry.updated,
+    encrypted: entry.encrypted,
   };
 }
 
@@ -66,6 +74,7 @@ function _restoreEntry(obj) {
     updated: obj.updated && obj.updated.__d
       ? new Date(obj.updated.v)
       : obj.updated,
+    encrypted: obj.encrypted,
   };
 }
 
@@ -631,5 +640,143 @@ describe("IDBStore — FaceRegistry integration", () => {
     await reg.addFace("alice", new Float32Array(128));
     const results = await reg.findByLabel("bob");
     assert.equal(results.length, 2);
+  });
+});
+
+// ── Privacy: lock / unlock / backup ──
+
+const LOCK_PASS = "lock-passphrase-test";
+
+function makeRegistry() {
+  return new FaceRegistry({ store: new InMemoryStore() });
+}
+
+describe("FaceRegistry — lock", () => {
+  it("should encrypt plaintext entries in place and report the count", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await reg.addFace("alice", makeDescriptor([1, 2, 3]), { embeddingVersion: "human-hse" });
+    await reg.addFace("bob", makeDescriptor([4, 5, 6]));
+    const n = await reg.lock(LOCK_PASS);
+    assert.equal(n, 2);
+    assert.equal(await reg.isLocked(), true);
+    const faces = await reg.getAllFaces();
+    assert.equal(faces.length, 2);
+    for (const f of faces) {
+      assert.equal(f.descriptor, undefined);
+      assert.ok(f.encrypted && f.encrypted.alg === "AES-GCM" && f.encrypted.cipher);
+      assert.ok(f.label, "label stays plaintext for the list");
+    }
+  });
+
+  it("should not double-encrypt already encrypted entries", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await reg.addFace("alice", makeDescriptor([1, 2, 3]));
+    await reg.lock(LOCK_PASS);
+    const again = await reg.lock(LOCK_PASS);
+    assert.equal(again, 0);
+  });
+
+  it("should hide locked entries from findMatch", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await reg.addFace("alice", makeDescriptor([0.5, 0.5]));
+    await reg.lock(LOCK_PASS);
+    const m = await reg.findMatch(makeDescriptor([0.5, 0.5]), 0.5, undefined);
+    assert.equal(m.match, null);
+  });
+});
+
+describe("FaceRegistry — unlock", () => {
+  it("should restore descriptors with the right passphrase", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    const desc = makeDescriptor([1, 2, 3]);
+    await reg.addFace("alice", desc, { embeddingVersion: "human-hse" });
+    await reg.lock(LOCK_PASS);
+    const n = await reg.unlock(LOCK_PASS);
+    assert.equal(n, 1);
+    assert.equal(await reg.isLocked(), false);
+    const faces = await reg.getAllFaces();
+    assert.equal(faces.length, 1);
+    assert.ok(faces[0].descriptor instanceof Float32Array);
+    assert.deepEqual(Array.from(faces[0].descriptor), Array.from(desc));
+    assert.equal(faces[0].embeddingVersion, "human-hse");
+    assert.equal(faces[0].encrypted, undefined);
+  });
+
+  it("should reject the wrong passphrase and keep entries locked", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await reg.addFace("alice", makeDescriptor([1, 2, 3]));
+    await reg.lock(LOCK_PASS);
+    await assert.rejects(reg.unlock("wrong-passphrase"));
+    assert.equal(await reg.isLocked(), true);
+    const faces = await reg.getAllFaces();
+    assert.ok(faces[0].encrypted);
+  });
+});
+
+describe("FaceRegistry — exportBackup/importBackup", () => {
+  it("should export plaintext backup and import with merge", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await reg.addFace("alice", makeDescriptor([1, 2, 3]));
+    const backup = await reg.exportBackup(null);
+    assert.equal(backup.type, "redoSan.faceRegistryBackup");
+    assert.equal(backup.entries.length, 1);
+    assert.equal(backup.entries[0].label, "alice");
+
+    const reg2 = makeRegistry();
+    await reg2.open();
+    await reg2.addFace("bob", makeDescriptor([9, 9, 9]));
+    const imported = await reg2.importBackup(backup, null, "merge");
+    assert.equal(imported, 1);
+    assert.equal((await reg2.getAllFaces()).length, 2);
+    const imported2 = await reg2.importBackup(backup, null, "replace");
+    assert.equal(imported2, 1);
+    assert.equal((await reg2.getAllFaces()).length, 1);
+  });
+
+it("should export encrypted backup and restore with the passphrase", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    const id = await reg.addFace("alice", makeDescriptor([1, 2, 3]), { embeddingVersion: "human-hse" });
+    await reg.updateFace(id, { did: "did:key:z6Mkxx" });
+    const backup = await reg.exportBackup(LOCK_PASS);
+    assert.ok(backup.entries[0].encrypted);
+    assert.equal(backup.entries[0].label, undefined, "label is inside the envelope");
+
+    const reg2 = makeRegistry();
+    await reg2.open();
+const n = await reg2.importBackup(backup, LOCK_PASS, "merge");
+    assert.equal(n, 1);
+    const faces = await reg2.getAllFaces();
+    assert.equal(faces[0].label, "alice");
+    assert.deepEqual(Array.from(faces[0].descriptor).slice(0, 3), [1, 2, 3]);
+    assert.equal(faces[0].embeddingVersion, "human-hse");
+    assert.equal(faces[0].did, "did:key:z6Mkxx");
+  });
+
+  it("should refuse plaintext export while locked and reject wrong passphrase import", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await reg.addFace("alice", makeDescriptor([1, 2, 3]));
+    await reg.lock(LOCK_PASS);
+    await assert.rejects(reg.exportBackup(null), /requires a passphrase/);
+
+    const backup = await reg.exportBackup(LOCK_PASS);
+    const reg2 = makeRegistry();
+    await reg2.open();
+    await assert.rejects(reg2.importBackup(backup, "wrong-pass", "merge"));
+    assert.equal(await reg2.getSize(), 0);
+  });
+
+  it("should reject invalid backup files", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await assert.rejects(reg.importBackup({ type: "nope" }, null, "merge"), /Invalid backup file/);
+    await assert.rejects(reg.importBackup(null, null, "merge"), /Invalid backup file/);
   });
 });

@@ -89,12 +89,13 @@
           document.head.appendChild(l);
         }
         window.__I18N_EARLY = true;
-        if (lang !== 'en') {
-          document.write('<script src="' + base + 'lang/i18n-data-' + lang + '.js"><\/script>');
-        } else {
-          if (window.__I18N_DATA === undefined) window.__I18N_DATA = {};
-          window.__I18N_DATA.en = window.__I18N_DATA.en || {};
-        }
+        document.write(
+          '<script src="' +
+            base +
+            "lang/i18n-data-" +
+            lang +
+            '.js"><\/script>',
+        );
         document.write('<script src="' + base + 'i18n.js"><\/script>');
       })();
     </script>
@@ -467,6 +468,35 @@
             </div>
           </div>
 
+          <!-- Privacy: encryption lock, backup/restore, face credential -->
+          <div style="border-top:1px solid var(--border-color, #ddd);margin-top:16px;padding-top:12px">
+            <p style="margin-bottom:8px">
+              <strong data-i18n="face.privacy_title">Privacy</strong>
+              <span id="face-lock-status" style="margin-left:6px;font-size:0.8rem;color:var(--text-muted)"></span>
+            </p>
+            <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px" data-i18n="face.privacy_hint">
+              Encrypt the registry with a passphrase (AES-256-GCM, key derived via PBKDF2). Passphrase is never stored — without it the stored data cannot be recovered.
+            </p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <div class="form-group" style="flex:0 1 280px;min-width:200px;margin-bottom:0">
+                <label for="face-lock-pass" data-i18n="face.lock_pass_label">Passphrase</label>
+                <input type="password" id="face-lock-pass" data-i18n-placeholder="face.lock_pass_placeholder" placeholder="Enter a passphrase" />
+              </div>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceLock()" data-i18n="face.lock_btn">Lock Registry</button>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceUnlock()" data-i18n="face.unlock_btn">Unlock</button>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceBackup()" data-i18n="face.backup_btn">Export Backup</button>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="document.getElementById('face-restore-file').click()" data-i18n="face.restore_btn">Import Backup</button>
+              <input type="file" id="face-restore-file" accept=".json,application/json" style="display:none" onchange="handleFaceRestore()" />
+            </div>
+            <div id="face-vc-box" style="margin-top:12px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                <button type="button" class="btn" onclick="handleFaceIssueCredential()" data-i18n="face.vc_btn">Issue Face Credential</button>
+                <button type="button" id="face-vc-download" class="btn btn-sm face-mgmt-btn" style="display:none" onclick="handleFaceVCDownload()" data-i18n="face.vc_download_btn">Download Credential</button>
+              </div>
+              <pre id="face-vc-output" style="display:none;max-height:220px;overflow:auto;font-size:0.7rem;background:rgba(108,92,231,.08);border:1px solid var(--border-color, #ddd);border-radius:8px;padding:8px;white-space:pre-wrap;word-break:break-all"></pre>
+            </div>
+          </div>
+
           <div class="spinner" id="face-spinner" style="display:none"></div>
           <div id="face-status" style="margin-top:12px;color:var(--text-muted);font-size:0.85rem"></div>
         </div>
@@ -616,6 +646,8 @@
 <script src="../../../Face_Biometric/face_fuzzy.js" defer></script>
 <script src="../../../Face_Biometric/face_camera.js" defer></script>
 <script src="../../../Face_Biometric/face_liveness.js" defer></script>
+<script src="../../../Face_Biometric/face_crypto.js" defer></script>
+<script src="../../../Face_Biometric/face_vc.js" defer></script>
 <script src="../../../Face_Biometric/face_align.js" defer></script>
 <script src="../../../Face_Biometric/face_embed_onnx.js" defer></script>
 <script src="../../../Decentralized_Identity_DID/did.js" defer></script>
