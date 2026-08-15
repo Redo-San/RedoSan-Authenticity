@@ -67,27 +67,14 @@ check_server.ps1
 repomix-output.xml
 repomix.config.json
 
-# Face Biometric (local-only, not committed)
-Face_Biometric/
-Style/pages/face-biometric/
-cli/tests/face_engine_test.js
-cli/tests/face_registry_test.js
-cli/tests/face_test_img.jpg
-cli/tests/face_test_real.mjs
-cli/tests/face_test_result.png
-cli/tests/face_ui_test.js
-cli/tests/face_biohash_test.js
-cli/tests/face_fuzzy_test.js
-cli/tests/face_liveness_test.js
-cli/tests/face_camera_test.js
-cli/tests/face_test_real_identifiers.mjs
+# Face Biometric — generated test artifacts
 cli/tests/face_identifiers_result.png
 cli/tests/face_identifiers_no_face.png
 cli/tests/face_signed_report_dl.json
 cli/tests/face_c2pa_report_dl.json
-cli/tests/face_align_test.js
-cli/tests/face_embed_onnx_test.js
-cli/tests/face_identifiers_report_dl.json
+
+# Face Biometric — personal test photos (never commit)
+cli/tests/face_test_img.jpg
 cli/tests/fixtures/face_identifier_test_img.jpg
 
 # Generated test artifacts
