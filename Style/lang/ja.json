@@ -699,7 +699,6 @@
   "md.download_json": "JSONをダウンロード",
   "cert.music_links_checkbox": "音楽プラットフォームリンクを追加",
   "ast.context_face_biometric": "**顔生体認証**ページにいるようですね。お手伝いしましょうか？",
-  "face.cert_btn": "証明書で使用",
   "face.export_c2pa_btn": "C2PAレポートをエクスポート",
   "face.sign_btn": "DIDで署名",
   "pi.analyzing_msg": "画像の透かしを分析中…",

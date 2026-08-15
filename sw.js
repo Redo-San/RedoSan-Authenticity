@@ -216,6 +216,8 @@ var CSS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Style/pages/timestamp/css/responsive.css",
   "/RedoSan-Authenticity/Style/pages/watermark/css/style.css",
   "/RedoSan-Authenticity/Style/pages/watermark/css/responsive.css",
+  "/RedoSan-Authenticity/Style/pages/face-biometric/css/style.css",
+  "/RedoSan-Authenticity/Style/pages/face-biometric/css/responsive.css",
 ]);
 
 // Whitelist of legitimate YML/YAML files (GitHub workflows, configs).

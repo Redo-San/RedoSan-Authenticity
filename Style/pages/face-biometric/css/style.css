@@ -2,3 +2,69 @@
    This file contains CSS rules unique to this page.
    Shared/base styles are in ../../Style/style.css
    Loaded AFTER shared CSS so overrides work naturally. */
+
+/* Input-mode tabs: site-template segmented buttons */
+.face-input-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.face-tab-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--card-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.2s;
+  touch-action: manipulation;
+}
+
+.face-tab-btn:hover {
+  background: var(--card);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.face-tab-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.face-tab-btn.is-active:hover {
+  background: var(--primary-dark);
+  color: #fff;
+}
+
+/* Preview: keep aspect ratio, fit the card layout */
+#face-preview {
+  display: none;
+  max-width: 100%;
+  max-height: 420px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 12px auto 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+}
+
+/* Registry management buttons: solid hover, never faded */
+.btn-sm.face-mgmt-btn {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-sm.face-mgmt-btn:hover {
+  opacity: 1;
+  background: var(--card-hover);
+  color: var(--primary);
+  border-color: var(--primary);
+}

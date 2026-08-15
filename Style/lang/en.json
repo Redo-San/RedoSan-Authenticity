@@ -573,7 +573,6 @@
   "face.threshold_label": "Match threshold",
   "face.sign_btn": "Sign with DID",
   "face.export_c2pa_btn": "Export C2PA Report",
-  "face.cert_btn": "Use in Certificate",
   "face.detect_btn": "Detect Face",
   "face.register_btn": "Register Face",
   "face.verify_btn": "Verify Identity",

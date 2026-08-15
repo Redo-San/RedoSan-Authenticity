@@ -701,7 +701,6 @@
   "cert.music_links_checkbox": "Musikplattform-Links hinzufügen",
   "test.translate": "Dies ist ein Test-Übersetzungs-Schlüssel",
   "ast.context_face_biometric": "Ich sehe, du bist auf der **Face-Biometrie**-Seite. Brauchst du Hilfe?",
-  "face.cert_btn": "In Zertifikat verwenden",
   "face.export_c2pa_btn": "C2PA-Bericht exportieren",
   "face.sign_btn": "Mit DID signieren",
   "pi.analyzing_msg": "Analysiere Bild auf Wasserzeichen…",

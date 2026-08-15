@@ -24,6 +24,8 @@
     />
     <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
     <link rel="stylesheet" href="../../music-player.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
     <title>Face Biometric Rights — RedoSan Authenticity</title>
     <meta name="description" content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded." />
     <meta
@@ -394,9 +396,9 @@
           </p>
 
           <!-- Unified automated input -->
-          <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
-            <button type="button" class="btn-sm" data-face-tab="upload" onclick="switchFaceInput('upload')" data-i18n="face.input_tab_upload">Upload Photo</button>
-            <button type="button" class="btn-sm" data-face-tab="camera" onclick="switchFaceInput('camera')" data-i18n="face.input_tab_camera">Capture with Camera</button>
+          <div class="face-input-tabs">
+            <button type="button" class="face-tab-btn is-active" data-face-tab="upload" onclick="switchFaceInput('upload')" data-i18n="face.input_tab_upload">Upload Photo</button>
+            <button type="button" class="face-tab-btn" data-face-tab="camera" onclick="switchFaceInput('camera')" data-i18n="face.input_tab_camera">Capture with Camera</button>
           </div>
           <div id="face-upload-wrapper" class="form-group">
             <label for="face-image" data-i18n="face.image_label">Photo</label>
@@ -447,13 +449,12 @@
           <!-- Pipeline steps -->
           <div id="face-steps" style="display:none;margin-bottom:10px;padding:8px 10px;background:rgba(108,92,231,.08);border-radius:8px;font-size:0.8rem"></div>
 
-          <canvas id="face-preview" style="max-width:100%;margin-top:12px;border-radius:8px;display:block"></canvas>
+          <canvas id="face-preview"></canvas>
 
           <!-- Automated report -->
           <div id="face-report" style="display:none;margin-top:16px"></div>
           <div id="face-actions" style="display:none;gap:8px;margin-top:12px;flex-wrap:wrap">
             <button type="button" class="btn" onclick="showDownloadModal()" data-i18n="face.download_btn">Download Results</button>
-            <button type="button" class="btn" onclick="handleFaceSetCertData()" data-i18n="face.cert_btn">Use in Certificate</button>
           </div>
 
           <!-- Registry manage -->
@@ -461,8 +462,8 @@
             <p style="margin-bottom:12px"><strong id="face-count" data-i18n="face.count_label">Registered faces: 0</strong></p>
             <div id="face-list" style="margin-bottom:12px"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button type="button" class="btn btn-sm" onclick="listRegisteredFaces()" data-i18n="face.refresh_btn">Refresh List</button>
-              <button type="button" class="btn btn-sm" onclick="handleFaceClear()" data-i18n="face.clear_btn">Clear All</button>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="listRegisteredFaces()" data-i18n="face.refresh_btn">Refresh List</button>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceClear()" data-i18n="face.clear_btn">Clear All</button>
             </div>
           </div>
 
@@ -637,12 +638,6 @@
     <script src="../../../vendor/qrious.min.js" defer></script>
     <script src="../../../vendor/jszip.min.js" defer></script>
     <script src="../../../vendor/opentimestamps.min.js" defer></script>
-    <script src="../../../Certificate/certificate_ots.js" defer></script>
-    <script src="../../../Certificate/certificate_utils.js" defer></script>
-    <script src="../../../Certificate/certificate_pdf.js" defer></script>
-    <script src="../../../Certificate/certificate_docx.js" defer></script>
-    <script src="../../../Certificate/certificate_epub.js" defer></script>
-    <script src="../../../Certificate/certificate.js" defer></script>
     <script>
       (function () {
         var TAP_BTN_IDS = {

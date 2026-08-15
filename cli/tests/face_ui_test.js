@@ -166,12 +166,34 @@ function makeEngine(human) {
   return e;
 }
 
+// Minimal classList mock for tab buttons
+function makeClassList() {
+  const cls = new Set();
+  return {
+    toggle(name, force) {
+      const on = force !== undefined ? !!force : !cls.has(name);
+      if (on) cls.add(name);
+      else cls.delete(name);
+      return on;
+    },
+    contains(name) {
+      return cls.has(name);
+    },
+    add(name) {
+      cls.add(name);
+    },
+    remove(name) {
+      cls.delete(name);
+    },
+  };
+}
+
 // Mock document with every element face_ui.js touches
 function makeDoc(overrides) {
   const mt = { textContent: "" };
   const tabBtns = [
-    { dataset: { faceTab: "upload" }, style: {} },
-    { dataset: { faceTab: "camera" }, style: {} },
+    { dataset: { faceTab: "upload" }, style: {}, classList: makeClassList() },
+    { dataset: { faceTab: "camera" }, style: {}, classList: makeClassList() },
   ];
   const store = {
     "face-status": { textContent: "" },
@@ -1669,9 +1691,8 @@ describe("Face UI — switchFaceInput", () => {
     assert.equal(wrapC.style.display, "block");
     assert.equal(globalThis._faceInputTab, "camera");
     const btns = globalThis.document.querySelectorAll("[data-face-tab]");
-    assert.equal(btns[0].style.background, "var(--card, #f0f0f0)");
-    assert.equal(btns[1].style.background, "var(--accent, #6c5ce7)");
-    assert.equal(btns[1].style.color, "#fff");
+    assert.equal(btns[0].classList.contains("is-active"), false);
+    assert.equal(btns[1].classList.contains("is-active"), true);
   });
 
   it("should re-enable the camera start button and file input on camera tab", () => {
@@ -1861,47 +1882,7 @@ describe("Face UI — handleFaceClear", () => {
   });
 });
 
-// ── Certificate bridge + clipboard ──
-
-describe("Face UI — handleFaceSetCertData", () => {
-  beforeEach(resetGlobals);
-
-  afterEach(() => {
-    delete globalThis._faceData;
-  });
-
-  it("should export the report to _faceData", () => {
-    const statusEl = { textContent: "" };
-    globalThis.document = makeDoc({ "face-status": statusEl });
-    globalThis._faceReport = {
-      photo: { facesDetected: 2 },
-      did: { did: "did:key:zTest1234567890", signature: "AQID" },
-      registry: { match: { label: "Alice" } },
-    };
-    globalThis.handleFaceSetCertData();
-    const d = globalThis._faceData;
-    assert.equal(d.detected, true);
-    assert.equal(d.faceCount, 2);
-    assert.equal(d.matchLabel, "Alice");
-    assert.equal(d.didSigned, true);
-    assert.equal(d.did, "did:key:zTest1234567890");
-    assert.ok(d.exportedAt);
-    assert.ok(statusEl.textContent.includes("Face data ready"));
-  });
-
-  it("should handle no report", () => {
-    const statusEl = { textContent: "" };
-    globalThis.document = makeDoc({ "face-status": statusEl });
-    globalThis._faceReport = null;
-    globalThis.handleFaceSetCertData();
-    const d = globalThis._faceData;
-    assert.equal(d.detected, false);
-    assert.equal(d.faceCount, 0);
-    assert.equal(d.matchLabel, "");
-    assert.equal(d.didSigned, false);
-    assert.equal(d.did, null);
-  });
-});
+// ── Clipboard ──
 
 describe("Face UI — handleFaceBioHashCopy", () => {
   beforeEach(resetGlobals);

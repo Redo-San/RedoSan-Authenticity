@@ -229,8 +229,10 @@ async function handleFaceFilePicked() {
     width: loaded.w,
     height: loaded.h,
   };
-  ctx = document.getElementById("face-preview").getContext("2d");
+  prevEl = document.getElementById("face-preview");
+  ctx = prevEl.getContext("2d");
   ctx.drawImage(loaded.canvas, 0, 0);
+  if (prevEl.style) prevEl.style.display = "block";
   startBtn = document.getElementById("face-cam-start");
   if (startBtn) startBtn.disabled = true;
   capBtn = document.getElementById("face-cam-capture");
@@ -265,10 +267,9 @@ function switchFaceInput(tab) {
   _faceInputTab = tab;
   btns = document.querySelectorAll("[data-face-tab]");
   for (let i = 0; i < btns.length; i++) {
-    btns[i].style.background =
-      btns[i].dataset.faceTab === tab ? "var(--accent, #6c5ce7)" : "var(--card, #f0f0f0)";
-    btns[i].style.color =
-      btns[i].dataset.faceTab === tab ? "#fff" : "var(--text, #333)";
+    if (btns[i].classList) {
+      btns[i].classList.toggle("is-active", btns[i].dataset.faceTab === tab);
+    }
   }
   wrapU = document.getElementById("face-upload-wrapper");
   wrapC = document.getElementById("face-capture-wrapper");
@@ -337,8 +338,10 @@ async function runFacePipeline(canvas, opts) {
     await faceEngine.loadModels();
     setStatus("face-status", "Detecting faces...");
     result = await faceEngine.detectFaces(canvas);
-    ctx = document.getElementById("face-preview").getContext("2d");
+    prevEl = document.getElementById("face-preview");
+    ctx = prevEl.getContext("2d");
     ctx.drawImage(canvas, 0, 0);
+    if (prevEl.style) prevEl.style.display = "block";
     if (result.length > 0) {
       box = result[0].box;
       ctx.strokeStyle = "#00ff00";
@@ -1427,24 +1430,6 @@ async function handleFaceClear() {
   } catch (error) {
     setStatus("face-status", "Clear error: " + error.message);
   }
-}
-
-/**
- * Push the latest report into the certificate flow (window._faceData).
- */
-function handleFaceSetCertData() {
-  var r, label;
-  r = _faceReport;
-  label = r && r.registry.match ? r.registry.match.label : "";
-  window._faceData = {
-    detected: !!(r && r.photo),
-    faceCount: r ? r.photo.facesDetected : 0,
-    matchLabel: label,
-    didSigned: !!(r && r.did && r.did.signature),
-    did: r && r.did ? r.did.did : null,
-    exportedAt: new Date().toISOString(),
-  };
-  setStatus("face-status", "Face data ready for certificate. Go to Digital Passport page.");
 }
 
 /**

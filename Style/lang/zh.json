@@ -701,7 +701,6 @@
   "cert.music_links_checkbox": "添加音乐平台链接",
   "test.translate": "这是一个测试翻译键",
   "ast.context_face_biometric": "我看到您在**人脸生物识别**页面。需要帮助吗？",
-  "face.cert_btn": "在证书中使用",
   "face.export_c2pa_btn": "导出 C2PA 报告",
   "face.sign_btn": "使用 DID 签名",
   "pi.analyzing_msg": "正在分析图像中的水印…",
