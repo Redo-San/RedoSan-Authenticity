@@ -115,6 +115,12 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Face_Biometric/face_engine.js",
   "/RedoSan-Authenticity/Face_Biometric/face_registry.js",
   "/RedoSan-Authenticity/Face_Biometric/face_ui.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_biohash.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_fuzzy.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_camera.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_liveness.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_align.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_embed_onnx.js",
   "/RedoSan-Authenticity/vendor/jspdf.umd.min.js",
   "/RedoSan-Authenticity/vendor/qrious.min.js",
   "/RedoSan-Authenticity/vendor/jszip.min.js",
@@ -378,6 +384,9 @@ var EXT_WHITELIST = [
   // C2PA (jsdelivr)
   "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm",
   "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm",
+  // Human face detection (jsdelivr) + its TFJS WASM backend binaries
+  "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/",
+  "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@",
 ];
 
 self.addEventListener("install", function () {
