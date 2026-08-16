@@ -20,6 +20,7 @@ var FACE_LIVENESS_CONFIG = {
     activeMaxAttempts: 3,       // failed challenges before liveness fails
     activeMinChallenges: 3,     // challenges to pass by default
     captureFrames: 8,           // passive analysis frame count
+    antiSpoofMinScore: 0.5,     // PAD live-score gate (MiniFASNetV2 softmax)
 };
 
 // MediaPipe Face Mesh landmark indices (468 points, Human 3.3.6 layout)
@@ -420,6 +421,37 @@ FaceLiveness.ChallengeEngine.prototype.summary = function () {
 };
 
 /**
+ * Optional PAD stage (ISO/IEC 30107-3): classify a frame with the MiniFASNetV2
+ * classifier when the FaceAntiSpoof module is present. Never throws — when the
+ * model cannot be loaded the caller keeps the heuristic result.
+ * @param {HTMLCanvasElement} canvas
+ * @param {{x:number, y:number, width:number, height:number}} [box]
+ * @returns {Promise<object|null>} null when the module is unavailable
+ */
+FaceLiveness.antiSpoofCheck = async function (canvas, box) {
+  var res;
+  if (typeof FaceAntiSpoof === "undefined" || !canvas || typeof canvas.getContext !== "function") return null;
+  try {
+    if (!FaceAntiSpoof.isReady() && !(await FaceAntiSpoof.load())) {
+      return { available: true, ready: false, error: FaceAntiSpoof.getError() || "load-failed" };
+    }
+    res = await FaceAntiSpoof.predict(canvas, box);
+    return {
+      model: FaceAntiSpoof.VERSION,
+      available: true,
+      ready: true,
+      live: !!res.live,
+      score: res.score,
+      label: res.label,
+      probabilities: res.probabilities ? Array.from(res.probabilities) : null,
+      backend: FaceAntiSpoof.getBackend() || null,
+    };
+  } catch (e) {
+    return { model: "minifasnet-v2", available: true, ready: false, error: e.message };
+  }
+};
+
+/**
  * Orchestrate passive (+ optional active) liveness over live frames.
  * @param {object} camera object with captureFrame()
  * @param {object} engine FaceEngine-like with detectFaces(input)
@@ -427,12 +459,13 @@ FaceLiveness.ChallengeEngine.prototype.summary = function () {
  * @param {string} [opts.mode] "passive" | "active" | "both" (default "passive")
  * @param {number} [opts.frames] passive frame count
  * @param {number} [opts.challengeCount]
+ * @param {boolean} [opts.antiSpoof] run the MiniFASNet PAD stage (default true when the module is present)
  * @param {Function} [opts.onChallenge] called when the active challenge changes:
  *     onChallenge({type: string|null, index: number, total: number, done: boolean})
- * @returns {Promise<object>} evidence {live, score, mode, blinkCount, motion, sharpness, quality, passedChallenges, failedChallenges, durationMs, timestamp}
+ * @returns {Promise<object>} evidence {live, score, mode, blinkCount, motion, sharpness, quality, passedChallenges, failedChallenges, antiSpoof, durationMs, timestamp}
  */
 FaceLiveness.prototype.verifyLiveness = async function (camera, engine, opts) {
-    var mode, frames, passive, evidence, challengeEngine, type, currentType, started, result, i, canvas, detection, total, notifyChallenge, activeDeadline;
+    var mode, frames, passive, evidence, challengeEngine, type, currentType, started, result, i, canvas, detection, total, notifyChallenge, activeDeadline, as, asFrame;
     mode = opts && opts.mode ? opts.mode : "passive";
     started = Date.now();
     if (!camera || !camera.captureFrame) {
@@ -526,6 +559,29 @@ FaceLiveness.prototype.verifyLiveness = async function (camera, engine, opts) {
             evidence.durationMs = Date.now() - started;
         } else {
             evidence.live = false;
+        }
+    }
+    // PAD stage: when the MiniFASNet module is present, a spoof verdict
+    // (print/replay) overrides the heuristic result.
+    if (!opts || opts.antiSpoof !== false) {
+        asFrame = null;
+        for (i = frames.length - 1; i >= 0; i--) {
+            if (frames[i] && frames[i].canvas) {
+                asFrame = frames[i];
+                break;
+            }
+        }
+        if (asFrame) {
+            as = await FaceLiveness.antiSpoofCheck(asFrame.canvas, asFrame.result && asFrame.result.box ? asFrame.result.box : null);
+            if (as) {
+                evidence.antiSpoof = as;
+                if (as.ready && !as.live) {
+                    evidence.live = false;
+                    if (as.score !== undefined && as.score < FACE_LIVENESS_CONFIG.antiSpoofMinScore) {
+                        evidence.reasons = (evidence.reasons || []).concat("anti_spoof");
+                    }
+                }
+            }
         }
     }
     return evidence;

@@ -83,6 +83,7 @@
       "Face_Biometric/face_fuzzy.js",
       "Face_Biometric/face_camera.js",
       "Face_Biometric/face_liveness.js",
+      "Face_Biometric/face_antispoof.js",
       "Face_Biometric/face_crypto.js",
       "Face_Biometric/face_vc.js",
       "Face_Biometric/face_align.js",
