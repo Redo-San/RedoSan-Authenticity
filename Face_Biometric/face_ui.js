@@ -1369,7 +1369,7 @@ async function handleFaceCameraCapture() {
  *
  */
 async function listRegisteredFaces() {
-  var faces, size, el, countEl, div;
+  var faces, size, el, countEl, div, noteEl, versions;
   if (!faceRegistry) {
     setStatus("face-status", "Face Registry not initialized.");
     return;
@@ -1379,6 +1379,14 @@ async function listRegisteredFaces() {
     size = await faceRegistry.getSize();
     el = document.getElementById("face-list");
     countEl = document.getElementById("face-count");
+    noteEl = document.getElementById("face-migration-note");
+    if (noteEl) {
+      versions = {};
+      faces.forEach(function (f) {
+        versions[f.embeddingVersion || "human-hse"] = true;
+      });
+      noteEl.style.display = Object.keys(versions).length > 1 ? "block" : "none";
+    }
     if (countEl) {
       if (typeof countEl.setAttribute === "function") {
         countEl.setAttribute("data-i18n-args", JSON.stringify({ "0": size }));

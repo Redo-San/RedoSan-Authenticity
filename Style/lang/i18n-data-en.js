@@ -618,6 +618,7 @@ window.__I18N_DATA.en = {
     "face.vc_need_did": "DID keypair or FaceVC module not available.",
     "face.vc_done": "Face credential issued and signed with {0}.",
     "face.vc_err": "Credential error: {0}",
+    "face.migration_note": "Mixed embedding versions detected - re-embed older faces to enable cross-matching.",
     "face.detect_btn": "Detect Face",
     "face.register_btn": "Register Face",
     "face.verify_btn": "Verify Identity",

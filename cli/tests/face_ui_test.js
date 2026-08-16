@@ -1825,6 +1825,41 @@ describe("Face UI — listRegisteredFaces", () => {
     assert.ok(children[1].innerHTML.includes("onclick="));
   });
 
+  it("should show migration banner when embedding versions are mixed", async () => {
+    const children = [];
+    const listEl = { innerHTML: "", append: function (el) { children.push(el); } };
+    const countEl = { textContent: "" };
+    const noteEl = { style: { display: "" } };
+    globalThis.document = makeDoc({ "face-list": listEl, "face-count": countEl, "face-migration-note": noteEl });
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [
+          { id: 1, label: "Old", embeddingVersion: "human-hse" },
+          { id: 2, label: "New", embeddingVersion: "arcface-mbf" },
+        ];
+      },
+      getSize: async function () { return 2; },
+    };
+    await globalThis.listRegisteredFaces();
+    assert.equal(noteEl.style.display, "block");
+  });
+
+  it("should hide migration banner for a single embedding version", async () => {
+    const children = [];
+    const listEl = { innerHTML: "", append: function (el) { children.push(el); } };
+    const countEl = { textContent: "" };
+    const noteEl = { style: { display: "" } };
+    globalThis.document = makeDoc({ "face-list": listEl, "face-count": countEl, "face-migration-note": noteEl });
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [{ id: 1, label: "Only", embeddingVersion: "arcface-mbf" }];
+      },
+      getSize: async function () { return 1; },
+    };
+    await globalThis.listRegisteredFaces();
+    assert.equal(noteEl.style.display, "none");
+  });
+
   it("should handle list errors", async () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });

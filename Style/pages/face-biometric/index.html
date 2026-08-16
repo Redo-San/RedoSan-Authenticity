@@ -51,7 +51,7 @@
     <meta name="twitter:description" content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded." />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://huggingface.co https://*.hf.co https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'"
+      content="default-src 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://huggingface.co https://*.hf.co https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'"
     />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -461,6 +461,7 @@
           <!-- Registry manage -->
           <div style="border-top:1px solid var(--border-color, #ddd);margin-top:16px;padding-top:12px">
             <p style="margin-bottom:12px"><strong id="face-count" data-i18n="face.count_label">Registered faces: 0</strong></p>
+            <p id="face-migration-note" style="display:none;margin-bottom:12px;padding:8px 10px;border:1px solid #f5c542;background:rgba(245,197,66,.12);border-radius:8px;font-size:0.8rem" data-i18n="face.migration_note">Mixed embedding versions detected - re-embed older faces to enable cross-matching.</p>
             <div id="face-list" style="margin-bottom:12px"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button type="button" class="btn btn-sm face-mgmt-btn" onclick="listRegisteredFaces()" data-i18n="face.refresh_btn">Refresh List</button>
