@@ -85,6 +85,8 @@
       "Face_Biometric/face_liveness.js",
       "Face_Biometric/face_crypto.js",
       "Face_Biometric/face_vc.js",
+      "Face_Biometric/face_align.js",
+      "Face_Biometric/face_embed_onnx.js",
       "human",
     ].concat(CERT_STACK),
     certificate: CERT_STACK.slice(),
