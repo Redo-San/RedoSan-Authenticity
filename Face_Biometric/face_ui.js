@@ -217,6 +217,7 @@ async function initFaceBiometric() {
   }
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
   if (typeof maybePromptFaceEncryption === "function") await maybePromptFaceEncryption();
+  if (typeof refreshPasskeyStatus === "function") await refreshPasskeyStatus();
 }
 
 /**
@@ -248,6 +249,87 @@ async function maybePromptFaceEncryption() {
   }
   lockWrap = document.getElementById("face-lock-wrap");
   if (lockWrap && lockWrap.classList && lockWrap.classList.add) lockWrap.classList.add("is-attention");
+}
+
+/**
+ * Refresh the passkey row: read the stored credential reference from the
+ * registry meta store and toggle the register/remove buttons. Never throws.
+ * @returns {Promise<void>}
+ */
+async function refreshPasskeyStatus() {
+  var passkey, statusEl, regBtn, remBtn;
+  if (!faceRegistry) return;
+  statusEl = document.getElementById("face-passkey-status");
+  regBtn = document.getElementById("face-passkey-register-btn");
+  remBtn = document.getElementById("face-passkey-remove-btn");
+  try {
+    passkey = await faceRegistry.getMeta("passkey");
+  } catch (e) {
+    passkey = null;
+  }
+  if (statusEl) {
+    statusEl.textContent = passkey && passkey.credentialId
+      ? __("face.passkey_registered", "Passkey registered: {0}").split("{0}").join(passkey.name || passkey.credentialId)
+      : __("face.passkey_none", "No passkey registered yet.");
+  }
+  if (regBtn) regBtn.disabled = !!(passkey && passkey.credentialId);
+  if (remBtn) remBtn.style.display = passkey && passkey.credentialId ? "" : "none";
+}
+
+/**
+ * Register a platform passkey and store its reference in the registry meta
+ * store (second factor alongside the passphrase).
+ * @returns {Promise<void>}
+ */
+async function handlePasskeyRegister() {
+  var cred, passkey, regBtn;
+  if (!faceRegistry) {
+    setStatus("face-status", "Face Registry not initialized.");
+    return;
+  }
+  if (typeof FaceWebauthn === "undefined") {
+    setStatus("face-status", "WebAuthn module not loaded.");
+    return;
+  }
+  if (!FaceWebauthn.isAvailable()) {
+    setStatus("face-status", __("face.passkey_unavailable", "WebAuthn is not available on this device or browser."));
+    return;
+  }
+  regBtn = document.getElementById("face-passkey-register-btn");
+  if (regBtn) regBtn.disabled = true;
+  try {
+    cred = await FaceWebauthn.register();
+    passkey = {
+      credentialId: cred.id,
+      name: cred.id.slice(0, 16) + "\u2026",
+      createdAt: new Date().toISOString(),
+      rawId: cred.rawId,
+    };
+    await faceRegistry.setMeta("passkey", passkey);
+    setStatus("face-status", __("face.passkey_saved", "Passkey saved — this registry is now protected by a second factor."));
+  } catch (error) {
+    setStatus("face-status", __("face.passkey_error", "Passkey error: {0}").split("{0}").join(error.message));
+  }
+  await refreshPasskeyStatus();
+}
+
+/**
+ * Remove the stored passkey reference from the registry meta store. The
+ * authenticator-side credential remains until the user deletes it in the
+ * browser's passkey manager.
+ * @returns {Promise<void>}
+ */
+async function handlePasskeyRemove() {
+  var passkey;
+  if (!faceRegistry) return;
+  try {
+    passkey = await faceRegistry.getMeta("passkey");
+    if (passkey && passkey.credentialId) await faceRegistry.removeMeta("passkey");
+    setStatus("face-status", __("face.passkey_removed", "Passkey removed from this registry."));
+  } catch (error) {
+    setStatus("face-status", "Passkey error: " + error.message);
+  }
+  await refreshPasskeyStatus();
 }
 
 /**

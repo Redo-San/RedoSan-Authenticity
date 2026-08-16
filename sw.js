@@ -124,6 +124,7 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Face_Biometric/face_antispoof.js",
   "/RedoSan-Authenticity/Face_Biometric/face_align.js",
   "/RedoSan-Authenticity/Face_Biometric/face_embed_onnx.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_webauthn.js",
   "/RedoSan-Authenticity/vendor/jspdf.umd.min.js",
   "/RedoSan-Authenticity/vendor/qrious.min.js",
   "/RedoSan-Authenticity/vendor/jszip.min.js",

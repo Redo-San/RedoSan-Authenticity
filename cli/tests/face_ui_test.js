@@ -2261,3 +2261,132 @@ describe("Face UI — face overlay", () => {
     await globalThis.faceOverlayDetectAndDraw(); // should not throw
   });
 });
+
+// ── Passkey handlers (WebAuthn second factor) ──
+
+describe("Face UI — passkey handlers", () => {
+  beforeEach(resetGlobals);
+
+  function makePasskeyDoc() {
+    const statusEl = { textContent: "" };
+    const passkeyStatus = { textContent: "" };
+    const regBtn = { disabled: false };
+    const remBtn = { style: {} };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-passkey-status": passkeyStatus,
+      "face-passkey-register-btn": regBtn,
+      "face-passkey-remove-btn": remBtn,
+    });
+    return { statusEl, passkeyStatus, regBtn, remBtn };
+  }
+
+  function makePasskeyRegistry(meta) {
+    const calls = { set: [], removed: [] };
+    const registry = {
+      setMeta: async function (key, value) {
+        calls.set.push({ key, value });
+        meta[key] = value;
+      },
+      getMeta: async function (key) {
+        return Object.prototype.hasOwnProperty.call(meta, key) ? meta[key] : null;
+      },
+      removeMeta: async function (key) {
+        calls.removed.push(key);
+        delete meta[key];
+      },
+    };
+    registry.calls = calls;
+    return registry;
+  }
+
+  it("should warn when the WebAuthn module is missing", async () => {
+    const { statusEl } = makePasskeyDoc();
+    globalThis.faceRegistry = makePasskeyRegistry({});
+    await globalThis.handlePasskeyRegister();
+    assert.ok(statusEl.textContent.includes("module not loaded"));
+  });
+
+  it("should warn when WebAuthn is unavailable", async () => {
+    const { statusEl } = makePasskeyDoc();
+    globalThis.faceRegistry = makePasskeyRegistry({});
+    globalThis.FaceWebauthn = { isAvailable: function () { return false; } };
+    await globalThis.handlePasskeyRegister();
+    assert.ok(statusEl.textContent.includes("not available"));
+  });
+
+  it("should register a passkey and store its reference", async () => {
+    const { statusEl, passkeyStatus, regBtn } = makePasskeyDoc();
+    const meta = {};
+    globalThis.faceRegistry = makePasskeyRegistry(meta);
+    globalThis.FaceWebauthn = {
+      isAvailable: function () { return true; },
+      register: async function () {
+        return { id: "ABCD1234abcd1234EFGH", rawId: "QUJD" };
+      },
+    };
+    await globalThis.handlePasskeyRegister();
+    assert.ok(statusEl.textContent.includes("Passkey saved"));
+    assert.equal(meta.passkey.credentialId, "ABCD1234abcd1234EFGH");
+    assert.ok(passkeyStatus.textContent.includes("Passkey registered:"));
+    assert.equal(regBtn.disabled, true);
+  });
+
+  it("should surface registration errors", async () => {
+    const { statusEl } = makePasskeyDoc();
+    const meta = {};
+    globalThis.faceRegistry = makePasskeyRegistry(meta);
+    globalThis.FaceWebauthn = {
+      isAvailable: function () { return true; },
+      register: async function () {
+        throw new Error("NotAllowedError: user dismissed");
+      },
+    };
+    await globalThis.handlePasskeyRegister();
+    assert.ok(statusEl.textContent.includes("Passkey error: NotAllowedError: user dismissed"));
+    assert.equal(meta.passkey, undefined);
+  });
+
+  it("should show the empty state and hide the remove button", async () => {
+    const { passkeyStatus, regBtn, remBtn } = makePasskeyDoc();
+    globalThis.faceRegistry = makePasskeyRegistry({});
+    await globalThis.refreshPasskeyStatus();
+    assert.ok(passkeyStatus.textContent.includes("No passkey registered"));
+    assert.equal(regBtn.disabled, false);
+    assert.equal(remBtn.style.display, "none");
+  });
+
+  it("should show the registered state and disable the register button", async () => {
+    const { passkeyStatus, regBtn, remBtn } = makePasskeyDoc();
+    const meta = { passkey: { credentialId: "abc123", name: "abc123…" } };
+    globalThis.faceRegistry = makePasskeyRegistry(meta);
+    await globalThis.refreshPasskeyStatus();
+    assert.ok(passkeyStatus.textContent.includes("abc123"));
+    assert.equal(regBtn.disabled, true);
+    assert.equal(remBtn.style.display, "");
+  });
+
+  it("should remove the stored passkey reference", async () => {
+    const { statusEl, passkeyStatus } = makePasskeyDoc();
+    const meta = { passkey: { credentialId: "abc123", name: "abc123…" } };
+    const registry = makePasskeyRegistry(meta);
+    globalThis.faceRegistry = registry;
+    await globalThis.handlePasskeyRemove();
+    assert.ok(statusEl.textContent.includes("Passkey removed"));
+    assert.equal(meta.passkey, undefined);
+    assert.deepEqual(registry.calls.removed, ["passkey"]);
+    assert.ok(passkeyStatus.textContent.includes("No passkey registered"));
+  });
+
+  it("should survive meta store errors", async () => {
+    const { statusEl } = makePasskeyDoc();
+    globalThis.faceRegistry = {
+      getMeta: async function () {
+        throw new Error("idb boom");
+      },
+    };
+    await globalThis.handlePasskeyRemove(); // should not throw
+    await globalThis.refreshPasskeyStatus();
+    assert.ok(statusEl.textContent.includes("Passkey error: idb boom"));
+  });
+});

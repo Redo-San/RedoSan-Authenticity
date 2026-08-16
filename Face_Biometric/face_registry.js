@@ -28,7 +28,7 @@ function _idb(request) {
  */
 IDBStore.prototype.open = async function () {
     if (this._db) return;
-    var req = indexedDB.open(this._dbName, 1);
+    var req = indexedDB.open(this._dbName, 2);
     req.onupgradeneeded = function (e) {
         var db, store;
         db = e.target.result;
@@ -36,6 +36,9 @@ IDBStore.prototype.open = async function () {
             store = db.createObjectStore('faces', { keyPath: 'id', autoIncrement: true });
             store.createIndex('label', 'label', { unique: false });
             store.createIndex('created', 'created', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('meta')) {
+            db.createObjectStore('meta', { keyPath: 'key' });
         }
     };
     this._db = await _idb(req);
@@ -120,6 +123,35 @@ IDBStore.prototype.count = async function () {
 IDBStore.prototype.clear = async function () {
     var tx = this._db.transaction('faces', 'readwrite');
     await _idb(tx.objectStore('faces').clear());
+};
+
+/**
+ * @param {string} key
+ * @param {*} value
+ * @returns {Promise<void>}
+ */
+IDBStore.prototype.putMeta = async function (key, value) {
+    var tx = this._db.transaction('meta', 'readwrite');
+    await _idb(tx.objectStore('meta').put({ key: key, value: value }));
+};
+
+/**
+ * @param {string} key
+ * @returns {Promise<*>}
+ */
+IDBStore.prototype.getMeta = async function (key) {
+    var tx = this._db.transaction('meta', 'readonly');
+    var row = await _idb(tx.objectStore('meta').get(key));
+    return row ? row.value : null;
+};
+
+/**
+ * @param {string} key
+ * @returns {Promise<void>}
+ */
+IDBStore.prototype.removeMeta = async function (key) {
+    var tx = this._db.transaction('meta', 'readwrite');
+    await _idb(tx.objectStore('meta').delete(key));
 };
 
 // ─────────────────────────────────────
@@ -255,6 +287,35 @@ FaceRegistry.prototype.getSize = async function () {
 FaceRegistry.prototype.clear = async function () {
     await this.open();
     await this._store.clear();
+};
+
+/**
+ * Store a registry-level metadata value (e.g. the WebAuthn passkey reference).
+ * @param {string} key
+ * @param {*} value
+ * @returns {Promise<void>}
+ */
+FaceRegistry.prototype.setMeta = async function (key, value) {
+    await this.open();
+    await this._store.putMeta(key, value);
+};
+
+/**
+ * @param {string} key
+ * @returns {Promise<*>}
+ */
+FaceRegistry.prototype.getMeta = async function (key) {
+    await this.open();
+    return this._store.getMeta(key);
+};
+
+/**
+ * @param {string} key
+ * @returns {Promise<void>}
+ */
+FaceRegistry.prototype.removeMeta = async function (key) {
+    await this.open();
+    await this._store.removeMeta(key);
 };
 
 // ── Privacy: encryption (AES-GCM + PBKDF2 via FaceCrypto) ──

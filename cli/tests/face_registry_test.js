@@ -80,6 +80,7 @@ function _restoreEntry(obj) {
 
 function InMemoryStore() {
   this._entries = [];
+  this._meta = {};
   this._opened = false;
 }
 
@@ -123,6 +124,18 @@ InMemoryStore.prototype.count = async function () {
 
 InMemoryStore.prototype.clear = async function () {
   this._entries = [];
+};
+
+InMemoryStore.prototype.putMeta = async function (key, value) {
+  this._meta[key] = value;
+};
+
+InMemoryStore.prototype.getMeta = async function (key) {
+  return Object.prototype.hasOwnProperty.call(this._meta, key) ? this._meta[key] : null;
+};
+
+InMemoryStore.prototype.removeMeta = async function (key) {
+  delete this._meta[key];
 };
 
 // ── Helper ──
@@ -773,10 +786,46 @@ const n = await reg2.importBackup(backup, LOCK_PASS, "merge");
     assert.equal(await reg2.getSize(), 0);
   });
 
-  it("should reject invalid backup files", async () => {
+it("should reject invalid backup files", async () => {
     const reg = makeRegistry();
     await reg.open();
     await assert.rejects(reg.importBackup({ type: "nope" }, null, "merge"), /Invalid backup file/);
     await assert.rejects(reg.importBackup(null, null, "merge"), /Invalid backup file/);
+  });
+});
+
+// ── FaceRegistry — meta store (passkey reference etc.) ──
+
+describe("FaceRegistry — setMeta/getMeta/removeMeta", () => {
+  it("should store, read and remove a meta value", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    assert.equal(await reg.getMeta("passkey"), null);
+    await reg.setMeta("passkey", { credentialId: "abc-123", name: "abc-123…", createdAt: "2026-01-01T00:00:00.000Z" });
+    const passkey = await reg.getMeta("passkey");
+    assert.equal(passkey.credentialId, "abc-123");
+    await reg.removeMeta("passkey");
+    assert.equal(await reg.getMeta("passkey"), null);
+  });
+
+  it("should overwrite an existing key", async () => {
+    const reg = makeRegistry();
+    await reg.open();
+    await reg.setMeta("passkey", { credentialId: "one" });
+    await reg.setMeta("passkey", { credentialId: "two" });
+    assert.equal((await reg.getMeta("passkey")).credentialId, "two");
+  });
+
+  it("should work with the IndexedDB store and survive reopen", async () => {
+    const dbName = "MetaTest_" + Date.now();
+    const reg = new FaceRegistry({ dbName: dbName });
+    await reg.open();
+    await reg.setMeta("passkey", { credentialId: "idb-1", name: "idb key" });
+    const reg2 = new FaceRegistry({ dbName: dbName });
+    await reg2.open();
+    const passkey = await reg2.getMeta("passkey");
+    assert.equal(passkey.credentialId, "idb-1");
+    await reg2.removeMeta("passkey");
+    assert.equal(await reg2.getMeta("passkey"), null);
   });
 });
