@@ -66,17 +66,24 @@ async function verifyWithDID(payload, proofValueB64, cryptosuite) {
 }
 
 describe("FaceVC — build", () => {
-  it("should build a credential with the W3C v1 context and types", () => {
+  it("should build a credential with the W3C v2 context and types", () => {
     const vc = FaceVC.build({ did: "did:key:z6Mkexample", descriptorHash: "ab".repeat(32), embeddingVersion: "human-hse", faceCount: 1 });
-    assert.deepEqual(vc["@context"], ["https://www.w3.org/2018/credentials/v1"]);
+    assert.deepEqual(vc["@context"], ["https://www.w3.org/ns/credentials/v2"]);
     assert.deepEqual(vc.type, ["VerifiableCredential", "RedoSanFaceBiometricCredential"]);
     assert.equal(vc.issuer, "did:key:z6Mkexample");
-    assert.ok(!isNaN(Date.parse(vc.issuanceDate)));
+    assert.ok(!isNaN(Date.parse(vc.validFrom)));
+    assert.equal(vc.issuanceDate, undefined);
     assert.equal(vc.credentialSubject.id, "did:key:z6Mkexample");
     assert.equal(vc.credentialSubject.descriptorHash, "ab".repeat(32));
     assert.equal(vc.credentialSubject.descriptorHashAlg, "sha-256");
     assert.equal(vc.credentialSubject.embeddingVersion, "human-hse");
     assert.equal(vc.credentialSubject.faceCount, 1);
+  });
+
+  it("should expose the v1 and v2 context constants", () => {
+    assert.equal(FaceVC.CONTEXT_V1, "https://www.w3.org/2018/credentials/v1");
+    assert.equal(FaceVC.CONTEXT_V2, "https://www.w3.org/ns/credentials/v2");
+    assert.equal(FaceVC.CONTEXT, FaceVC.CONTEXT_V2);
   });
 
   it("should include attributes and liveness evidence when given", () => {
@@ -111,7 +118,7 @@ describe("FaceVC — sign/verify (Ed25519)", () => {
     assert.equal(vc.proof.proofPurpose, "assertionMethod");
     assert.equal(vc.proof.verificationMethod, kp.did + "#" + kp.did.slice(8));
     assert.ok(vc.proof.proofValue.length > 0);
-    const payload = FaceVC.canonicalString({ issuer: vc.issuer, issuanceDate: vc.issuanceDate, credentialSubject: vc.credentialSubject });
+    const payload = FaceVC.canonicalString({ issuer: vc.issuer, validFrom: vc.validFrom, credentialSubject: vc.credentialSubject });
     const pubKey = await didFns.didImportVerifyKey(vc.issuer);
     const ok = await didFns.didVerify(pubKey, FaceCrypto.base64ToBytes(vc.proof.proofValue), payload, "Ed25519");
     assert.equal(ok, true);
@@ -157,6 +164,35 @@ describe("FaceVC — sign/verify (Ed25519)", () => {
     delete noProof.proof;
     assert.equal((await FaceVC.verify(noProof, verifyWithDID)).valid, false);
     assert.equal((await FaceVC.verify(null, verifyWithDID)).valid, false);
+  });
+
+  it("should verify a legacy v1 credential (v1 context + issuanceDate)", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = {
+      "@context": [FaceVC.CONTEXT_V1],
+      type: ["VerifiableCredential", "RedoSanFaceBiometricCredential"],
+      issuer: kp.did,
+      issuanceDate: new Date().toISOString(),
+      credentialSubject: { id: kp.did, descriptorHash: "deadbeef", descriptorHashAlg: "sha-256" },
+    };
+    await FaceVC.sign(kp, vc);
+    assert.equal(vc.proof.proofValue.length > 0, true);
+    const res = await FaceVC.verify(vc, async (payload, proofValueB64, suite) => {
+      const pubKey = await didFns.didImportVerifyKey(vc.issuer);
+      return didFns.didVerify(pubKey, FaceCrypto.base64ToBytes(proofValueB64), payload, "Ed25519");
+    });
+    assert.deepEqual(res, { valid: true });
+  });
+
+  it("should reject a v2 credential whose date field is missing entirely", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = FaceVC.build({ did: kp.did, descriptorHash: "1234" });
+    await FaceVC.sign(kp, vc);
+    const noDate = JSON.parse(JSON.stringify(vc));
+    delete noDate.validFrom;
+    delete noDate.issuanceDate;
+    const res = await FaceVC.verify(noDate, async () => true);
+    assert.equal(res.valid, false);
   });
 });
 

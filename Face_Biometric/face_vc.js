@@ -10,7 +10,12 @@
  */
 
 var FaceVC = {
-  CONTEXT: "https://www.w3.org/2018/credentials/v1",
+  /** W3C Verifiable Credentials 1.0 context (kept for verifying legacy VCs). */
+  CONTEXT_V1: "https://www.w3.org/2018/credentials/v1",
+  /** W3C Verifiable Credentials 2.0 context (default for new credentials). */
+  CONTEXT_V2: "https://www.w3.org/ns/credentials/v2",
+  /** Alias kept for compatibility: new credentials use the v2 context. */
+  CONTEXT: "https://www.w3.org/ns/credentials/v2",
   TYPE: ["VerifiableCredential", "RedoSanFaceBiometricCredential"],
 };
 
@@ -59,10 +64,10 @@ FaceVC.build = function (opts) {
   opts = opts || {};
   if (!opts.did) throw new TypeError("FaceVC.build: did is required");
   vc = {
-    "@context": [FaceVC.CONTEXT],
+    "@context": [FaceVC.CONTEXT_V2],
     type: FaceVC.TYPE.slice(),
     issuer: opts.did,
-    issuanceDate: new Date().toISOString(),
+    validFrom: new Date().toISOString(),
     credentialSubject: {
       id: opts.did,
     },
@@ -89,12 +94,14 @@ FaceVC.build = function (opts) {
  * @returns {Promise<object>}
  */
 FaceVC.sign = async function (kp, vc, signFn) {
-  var payload, sig, base64;
+  var payload, sig, base64, dateField;
   if (!kp || !kp.did) throw new TypeError("FaceVC.sign: keypair with did required");
   if (!vc || !vc.issuer) throw new TypeError("FaceVC.sign: unsigned VC required");
+  // VC 2.0 renamed issuanceDate → validFrom; fall back for legacy v1 documents.
+  dateField = vc.validFrom !== undefined ? "validFrom" : "issuanceDate";
   payload = FaceVC.canonicalString({
     issuer: vc.issuer,
-    issuanceDate: vc.issuanceDate,
+    [dateField]: vc[dateField],
     credentialSubject: vc.credentialSubject,
   });
   if (!signFn && typeof didSign !== "function") {
@@ -129,10 +136,13 @@ FaceVC.sign = async function (kp, vc, signFn) {
  * @returns {Promise<{valid:boolean, error?:string}>}
  */
 FaceVC.verify = async function (vc, verifyFn) {
-  var payload, sigBytes, pubKey, ok;
+  var payload, sigBytes, pubKey, ok, dateField;
   if (!vc || typeof vc !== "object") return { valid: false, error: "not an object" };
-  if (!Array.isArray(vc["@context"]) || vc["@context"].indexOf(FaceVC.CONTEXT) === -1) {
-    return { valid: false, error: "missing credentials v1 context" };
+  if (
+    !Array.isArray(vc["@context"]) ||
+    (vc["@context"].indexOf(FaceVC.CONTEXT_V2) === -1 && vc["@context"].indexOf(FaceVC.CONTEXT_V1) === -1)
+  ) {
+    return { valid: false, error: "missing credentials v1/v2 context" };
   }
   if (!Array.isArray(vc.type) || vc.type.indexOf("VerifiableCredential") === -1 || vc.type.indexOf("RedoSanFaceBiometricCredential") === -1) {
     return { valid: false, error: "missing credential types" };
@@ -142,10 +152,11 @@ FaceVC.verify = async function (vc, verifyFn) {
     return { valid: false, error: "credentialSubject.id must equal issuer" };
   }
   if (!vc.proof || !vc.proof.proofValue) return { valid: false, error: "missing proof" };
-  if (isNaN(Date.parse(vc.issuanceDate))) return { valid: false, error: "invalid issuanceDate" };
+  dateField = vc.validFrom !== undefined ? "validFrom" : "issuanceDate";
+  if (isNaN(Date.parse(vc[dateField]))) return { valid: false, error: "invalid " + dateField };
   payload = FaceVC.canonicalString({
     issuer: vc.issuer,
-    issuanceDate: vc.issuanceDate,
+    [dateField]: vc[dateField],
     credentialSubject: vc.credentialSubject,
   });
   sigBytes = FaceCrypto.base64ToBytes(vc.proof.proofValue);
