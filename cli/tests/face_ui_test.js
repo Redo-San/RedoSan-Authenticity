@@ -1147,6 +1147,64 @@ describe("Face UI — downloadFaceReport", () => {
     assert.ok(text.includes("Match: Alice (100.0%)"));
   });
 
+  it("should append the labels sheet to CSV downloads", async () => {
+    globalThis._faceReport = sampleReport();
+    globalThis.document = makeDoc();
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [
+          {
+            id: 1,
+            label: "Alice",
+            created: new Date("2026-01-02T03:04:05Z"),
+            descriptor: DESCRIPTOR,
+            embeddingVersion: "human-hse",
+          },
+        ];
+      },
+    };
+    await globalThis.downloadFaceReport("csv");
+    const text = await downloads[0].blob.text();
+    assert.ok(text.includes("[Face Labels]"));
+    assert.ok(text.includes("label,id,created,descriptorHash,embeddingVersion"));
+    assert.match(text, /Alice,1,2026-01-02T03:04:05\.000Z,[0-9a-f]{64},human-hse/);
+  });
+
+  it("should append the labels sheet to TXT downloads without hashes for locked entries", async () => {
+    globalThis._faceReport = sampleReport();
+    globalThis.document = makeDoc();
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [
+          {
+            id: 2,
+            label: "locked",
+            created: new Date("2026-03-04T05:06:07Z"),
+            encrypted: { alg: "AES-GCM" },
+            embeddingVersion: "human-hse",
+          },
+        ];
+      },
+    };
+    await globalThis.downloadFaceReport("txt");
+    const text = await downloads[0].blob.text();
+    assert.ok(text.includes("[Face Labels]"));
+    assert.ok(text.includes("locked\t2\t2026-03-04T05:06:07.000Z\t\thuman-hse"));
+  });
+
+  it("should not append a labels header when the registry is empty", async () => {
+    globalThis._faceReport = sampleReport();
+    globalThis.document = makeDoc();
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [];
+      },
+    };
+    await globalThis.downloadFaceReport("txt");
+    const text = await downloads[0].blob.text();
+    assert.ok(!text.includes("[Face Labels]"));
+  });
+
   it("should download XML with escaped values", async () => {
     globalThis._faceReport = sampleReport({ photo: Object.assign(sampleReport().photo, { fileName: "a<b&c.png" }) });
     globalThis.document = makeDoc();
@@ -2001,5 +2059,205 @@ describe("Face UI — handleFaceBioHashCopy", () => {
     });
     globalThis.handleFaceBioHashCopy();
     assert.ok(statusEl.textContent.includes("ready to copy"));
+  });
+});
+
+// ── handleFaceExportLabels ──
+
+describe("Face UI — handleFaceExportLabels", () => {
+  beforeEach(resetGlobals);
+
+  function makeRegistry(faces) {
+    return {
+      getAllFaces: async function () {
+        return faces;
+      },
+    };
+  }
+
+  it("should warn when the registry is missing", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({ "face-status": statusEl });
+    await globalThis.handleFaceExportLabels("txt");
+    assert.ok(statusEl.textContent.includes("not initialized"));
+  });
+
+  it("should warn when the registry is empty", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({ "face-status": statusEl });
+    globalThis.faceRegistry = makeRegistry([]);
+    await globalThis.handleFaceExportLabels("txt");
+    assert.ok(statusEl.textContent.includes("nothing to export"));
+    assert.equal(downloads.length, 0);
+  });
+
+  it("should export a CSV with hashes and escaped cells", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({ "face-status": statusEl });
+    globalThis.faceRegistry = makeRegistry([
+      {
+        id: 1,
+        label: "Ali, the artist",
+        created: new Date("2026-01-02T03:04:05Z"),
+        descriptor: DESCRIPTOR,
+        embeddingVersion: "human-hse",
+      },
+      {
+        id: 2,
+        label: 'Say "hi"',
+        created: null,
+        descriptor: null,
+        embeddingVersion: "arcface-v2",
+      },
+    ]);
+    await globalThis.handleFaceExportLabels("csv");
+    assert.equal(downloads.length, 1);
+    assert.equal(downloads[0].name, "face_labels.csv");
+    const text = await downloads[0].blob.text();
+    const lines = text.split("\n");
+    assert.equal(lines[0], "label,id,created,descriptorHash,embeddingVersion");
+    assert.match(lines[1], /^"Ali, the artist",1,2026-01-02T03:04:05\.000Z,[0-9a-f]{64},human-hse$/);
+    assert.match(lines[2], /^"Say ""hi""",2,,,arcface-v2$/);
+    assert.ok(statusEl.textContent.includes("Exported 2 face label(s)"));
+  });
+
+  it("should export a TXT sheet without hashes for locked entries", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({ "face-status": statusEl });
+    globalThis.faceRegistry = makeRegistry([
+      {
+        id: 7,
+        label: "locked face",
+        created: new Date("2026-05-06T07:08:09Z"),
+        encrypted: { alg: "AES-GCM" },
+        embeddingVersion: "human-hse",
+      },
+    ]);
+    await globalThis.handleFaceExportLabels("txt");
+    assert.equal(downloads.length, 1);
+    assert.equal(downloads[0].name, "face_labels.txt");
+    const text = await downloads[0].blob.text();
+    const lines = text.split("\n");
+    assert.equal(lines[0], "label\tid\tcreated\tdescriptorHash\tembeddingVersion");
+    assert.equal(lines[1], "locked face\t7\t2026-05-06T07:08:09.000Z\t\thuman-hse");
+  });
+});
+
+// ── maybePromptFaceEncryption ──
+
+describe("Face UI — maybePromptFaceEncryption", () => {
+  beforeEach(resetGlobals);
+
+  it("should stay silent when every entry is encrypted", async () => {
+    const statusEl = { textContent: "" };
+    const passEl = { value: "", focus: function () {}, classList: makeClassList() };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-lock-pass": passEl,
+    });
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [{ id: 1, label: "x", encrypted: { alg: "AES-GCM" } }];
+      },
+    };
+    await globalThis.maybePromptFaceEncryption();
+    assert.equal(statusEl.textContent, "");
+    assert.equal(passEl.classList.contains("is-attention"), false);
+  });
+
+  it("should prompt and focus the passphrase field for plaintext entries", async () => {
+    const statusEl = { textContent: "" };
+    const passEl = { value: "", focusCalls: 0, focus: function () { this.focusCalls++; }, classList: makeClassList() };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-lock-pass": passEl,
+    });
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [{ id: 1, label: "x", descriptor: DESCRIPTOR }];
+      },
+    };
+    await globalThis.maybePromptFaceEncryption();
+    assert.ok(statusEl.textContent.includes("unencrypted"));
+    assert.equal(passEl.focusCalls, 1);
+    assert.equal(passEl.classList.contains("is-attention"), true);
+  });
+
+  it("should survive registry errors", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({ "face-status": statusEl });
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        throw new Error("idb boom");
+      },
+    };
+    await globalThis.maybePromptFaceEncryption(); // should not throw
+    assert.equal(statusEl.textContent, "");
+  });
+});
+
+// ── Live detection overlay ──
+
+describe("Face UI — face overlay", () => {
+  beforeEach(resetGlobals);
+
+  it("should not throw when the camera starts with a minimal DOM", async () => {
+    const statusEl = { textContent: "" };
+    const videoEl = { style: {} };
+    globalThis.document = makeDoc({ "face-status": statusEl, "face-camera": videoEl });
+    globalThis.FaceCamera = function () {
+      return { startCamera: async function () { return true; }, stopCamera: function () {} };
+    };
+    await globalThis.handleFaceCameraStart("face-camera");
+    assert.equal(statusEl.textContent, "Camera started. Capture a photo, then press Generate Identifiers.");
+    assert.equal(videoEl.style.display, "block");
+    globalThis.stopFaceOverlay();
+  });
+
+  it("should stop and clean up the overlay", () => {
+    const parent = { style: {}, removeChild: function () { this.removed = true; } };
+    globalThis._faceOverlay = { parentNode: parent, getContext: function () {} };
+    globalThis._faceOverlayRunning = true;
+    globalThis._faceOverlayRAF = 123;
+    globalThis.stopFaceOverlay();
+    assert.equal(globalThis._faceOverlay, null);
+    assert.equal(globalThis._faceOverlayRunning, false);
+    assert.equal(parent.removed, true);
+  });
+
+  it("should draw boxes and mesh points when the engine is ready", async () => {
+    const { createCanvas } = require("canvas");
+    const overlay = createCanvas(320, 240);
+    overlay.getContext("2d");
+    const frame = createCanvas(640, 480);
+    let detected = false;
+    globalThis._faceOverlay = overlay;
+    globalThis._faceOverlayRunning = true;
+    globalThis.faceCamera = {
+      isActive: function () { return true; },
+      captureFrame: function () { return frame; },
+    };
+    globalThis.faceEngine = {
+      _loaded: true,
+      detectFaces: async function () {
+        detected = true;
+        const mesh = new Float32Array(468 * 3);
+        mesh[0] = 120;
+        mesh[1] = 90;
+        return [{ box: { x: 100, y: 80, width: 200, height: 250 }, score: 0.9, mesh: mesh }];
+      },
+    };
+    await globalThis.faceOverlayDetectAndDraw();
+    assert.equal(detected, true);
+  });
+
+  it("should draw nothing when the camera is inactive", async () => {
+    const { createCanvas } = require("canvas");
+    globalThis._faceOverlay = createCanvas(320, 240);
+    globalThis._faceOverlayRunning = true;
+    globalThis.faceCamera = {
+      isActive: function () { return false; },
+    };
+    await globalThis.faceOverlayDetectAndDraw(); // should not throw
   });
 });

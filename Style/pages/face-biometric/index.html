@@ -478,7 +478,7 @@
             <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px" data-i18n="face.privacy_hint">
               Encrypt the registry with a passphrase (AES-256-GCM, key derived via PBKDF2). Passphrase is never stored — without it the stored data cannot be recovered.
             </p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div id="face-lock-wrap" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <div class="form-group" style="flex:0 1 280px;min-width:200px;margin-bottom:0">
                 <label for="face-lock-pass" data-i18n="face.lock_pass_label">Passphrase</label>
                 <input type="password" id="face-lock-pass" data-i18n-placeholder="face.lock_pass_placeholder" placeholder="Enter a passphrase" />

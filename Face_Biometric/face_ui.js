@@ -27,6 +27,11 @@ var _facePendingSource = null;
 var _faceInputTab = "upload";
 var _faceEmbedder = "human";
 var _lastEmbeddingVersion = "human-hse";
+var _faceOverlay = null;
+var _faceOverlayRAF = 0;
+var _faceOverlayRunning = false;
+var _faceOverlayLast = 0;
+var _faceOverlayBusy = false;
 
 /**
  * @param id
@@ -210,7 +215,39 @@ async function initFaceBiometric() {
   } catch (error) {
     setStatus("face-status", "Failed to initialize: " + error.message);
   }
-  if (typeof listRegisteredFaces === "function") listRegisteredFaces();
+  if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
+  if (typeof maybePromptFaceEncryption === "function") await maybePromptFaceEncryption();
+}
+
+/**
+ * When the registry holds plaintext templates, nudge the user to lock it:
+ * status message + focus on the passphrase field. Never throws.
+ */
+async function maybePromptFaceEncryption() {
+  var faces, i, passEl, lockWrap;
+  if (!faceRegistry) return;
+  try {
+    faces = await faceRegistry.getAllFaces();
+  } catch (e) {
+    return;
+  }
+  for (i = 0; i < faces.length; i++) {
+    if (!faces[i].encrypted && faces[i].descriptor) break;
+  }
+  if (i >= faces.length) return;
+  setStatus(
+    "face-status",
+    __("face.encrypt_prompt", "Your face registry is unencrypted. Enter a passphrase below and press Lock Registry."),
+  );
+  passEl = document.getElementById("face-lock-pass");
+  if (passEl) {
+    if (typeof passEl.focus === "function") passEl.focus();
+    if (typeof passEl.classList !== "undefined" && typeof passEl.classList.add === "function") {
+      passEl.classList.add("is-attention");
+    }
+  }
+  lockWrap = document.getElementById("face-lock-wrap");
+  if (lockWrap && lockWrap.classList && lockWrap.classList.add) lockWrap.classList.add("is-attention");
 }
 
 /**
@@ -682,7 +719,7 @@ function renderFaceReport(r) {
  * @param {string} format
  */
 async function downloadFaceReport(format) {
-  var r, base, content, ext, mime;
+  var r, base, content, ext, mime, labels;
   closeDownloadModal();
   r = _faceReport;
   if (!r) return;
@@ -702,12 +739,14 @@ async function downloadFaceReport(format) {
       mime = "application/json";
       break;
     case "csv":
-      content = faceReportToCSV(r);
+      labels = await faceLabelsToSheet("csv");
+      content = faceReportToCSV(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
       ext = "csv";
       mime = "text/csv";
       break;
     case "txt":
-      content = faceReportToTXT(r);
+      labels = await faceLabelsToSheet("txt");
+      content = faceReportToTXT(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
       ext = "txt";
       mime = "text/plain";
       break;
@@ -1159,6 +1198,141 @@ function faceCreateDocxTable(docx, rows) {
 }
 
 /**
+ * Start the live detection overlay: a transparent canvas pinned over the video
+ * that draws the face box + mesh landmarks at ~5 fps while the camera runs.
+ * Decorative only — never throws, never breaks camera startup.
+ * @param {HTMLVideoElement} videoEl
+ */
+function startFaceOverlay(videoEl) {
+  var canvas;
+  stopFaceOverlay();
+  if (!videoEl || !document || !document.createElement) return;
+  try {
+    canvas = document.createElement("canvas");
+    if (!canvas || typeof canvas.getContext !== "function") return;
+    canvas.width = videoEl.clientWidth || 320;
+    canvas.height = videoEl.clientHeight || 240;
+    if (canvas.style) {
+      canvas.style.position = "absolute";
+      canvas.style.left = "0";
+      canvas.style.top = "0";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.pointerEvents = "none";
+      canvas.style.borderRadius = "8px";
+    }
+    if (videoEl.parentNode && videoEl.parentNode.style) {
+      videoEl.parentNode.style.position = "relative";
+    }
+    if (videoEl.insertAdjacentElement) {
+      videoEl.insertAdjacentElement("afterend", canvas);
+    } else if (videoEl.parentNode) {
+      videoEl.parentNode.appendChild(canvas);
+    }
+    _faceOverlay = canvas;
+    _faceOverlayRunning = true;
+    _faceOverlayLast = 0;
+    _faceOverlayBusy = false;
+    faceOverlayScheduleNext();
+  } catch (e) {
+    _faceOverlay = null;
+    _faceOverlayRunning = false;
+  }
+}
+
+/**
+ * Stop the live detection overlay and remove its canvas.
+ */
+function stopFaceOverlay() {
+  _faceOverlayRunning = false;
+  _faceOverlayBusy = false;
+  if (_faceOverlayRAF && typeof cancelAnimationFrame === "function") {
+    cancelAnimationFrame(_faceOverlayRAF);
+  } else if (_faceOverlayRAF && typeof clearTimeout === "function") {
+    clearTimeout(_faceOverlayRAF);
+  }
+  _faceOverlayRAF = 0;
+  if (_faceOverlay && _faceOverlay.parentNode && _faceOverlay.parentNode.removeChild) {
+    _faceOverlay.parentNode.removeChild(_faceOverlay);
+  }
+  _faceOverlay = null;
+}
+
+/**
+ * Schedule the next overlay tick (rAF, falling back to a timer).
+ */
+function faceOverlayScheduleNext() {
+  if (!_faceOverlayRunning) return;
+  if (typeof requestAnimationFrame === "function") {
+    _faceOverlayRAF = requestAnimationFrame(faceOverlayTick);
+  } else if (typeof setTimeout === "function") {
+    _faceOverlayRAF = setTimeout(faceOverlayTick, 200);
+  }
+}
+
+/**
+ * Draw the latest face box + mesh points onto the overlay canvas.
+ */
+async function faceOverlayDetectAndDraw() {
+  var frame, det, i, k, mesh, sx, sy, ctx, d, x, y;
+  if (!_faceOverlay || !_faceOverlay.getContext) return;
+  if (!faceCamera || !faceCamera.isActive || !faceCamera.captureFrame) return;
+  if (!faceEngine || !faceEngine._loaded) return;
+  try {
+    frame = faceCamera.captureFrame(640);
+    if (!frame || !frame.getContext) return;
+    det = await faceEngine.detectFaces(frame);
+  } catch (e) {
+    return;
+  }
+  ctx = _faceOverlay.getContext("2d");
+  if (!ctx) return;
+  ctx.clearRect(0, 0, _faceOverlay.width, _faceOverlay.height);
+  if (!det || det.length === 0) return;
+  sx = _faceOverlay.width / frame.width;
+  sy = _faceOverlay.height / frame.height;
+  for (i = 0; i < det.length; i++) {
+    d = det[i];
+    if (!d || !d.box) continue;
+    ctx.strokeStyle = "#00e676";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(d.box.x * sx, d.box.y * sy, d.box.width * sx, d.box.height * sy);
+    mesh = d.mesh;
+    if (!mesh) continue;
+    ctx.fillStyle = "rgba(0,230,118,0.85)";
+    for (k = 0; k < mesh.length; k += 3) {
+      x = mesh[k] * sx;
+      y = mesh[k + 1] * sy;
+      if (x < 0 || y < 0 || x > _faceOverlay.width || y > _faceOverlay.height) continue;
+      ctx.fillRect(x - 0.75, y - 0.75, 1.5, 1.5);
+    }
+  }
+}
+
+/**
+ * Throttled rAF loop (~5 fps) for the live detection overlay.
+ * @param {number} ts
+ */
+function faceOverlayTick(ts) {
+  var now;
+  if (!_faceOverlayRunning) return;
+  now = ts || Date.now();
+  if (!_faceOverlayBusy && now - _faceOverlayLast >= 200) {
+    _faceOverlayLast = now;
+    _faceOverlayBusy = true;
+    faceOverlayDetectAndDraw().then(
+      function () {
+        _faceOverlayBusy = false;
+      },
+      function () {
+        _faceOverlayBusy = false;
+      },
+    );
+  }
+  faceOverlayScheduleNext();
+}
+
+/**
  * Start the webcam preview.
  * @param {string} videoId
  */
@@ -1178,6 +1352,7 @@ async function handleFaceCameraStart(videoId) {
     setStatus("face-status", "Starting camera...");
     await faceCamera.startCamera(videoEl);
     videoEl.style.display = "block";
+    startFaceOverlay(videoEl);
     imgEl = document.getElementById("face-image");
     if (imgEl) imgEl.disabled = true;
     startBtn = document.getElementById("face-cam-start");
@@ -1198,6 +1373,7 @@ async function handleFaceCameraStart(videoId) {
  */
 function handleFaceCameraStop(videoId) {
   var el, imgEl, startBtn, stopBtn, capBtn;
+  stopFaceOverlay();
   if (faceCamera) faceCamera.stopCamera();
   if (videoId) {
     el = document.getElementById(videoId);
@@ -1479,6 +1655,104 @@ function handleFaceBioHashCopy() {
 }
 
 // ── Phase 3: registry encryption (lock/unlock) ──
+
+/**
+ * Build the registry labels sheet (label / id / created / descriptorHash /
+ * embeddingVersion) for "txt" or "csv". Returns "" when the registry is
+ * unavailable, empty or errors — the sheet is an optional appendix of the
+ * Download Results TXT/CSV exports.
+ * @param {string} format "txt" | "csv"
+ * @returns {Promise<string>}
+ */
+async function faceLabelsToSheet(format) {
+  var faces, rows, i, f, hash, lines, cell, j, row;
+  if (!faceRegistry) return "";
+  try {
+    faces = await faceRegistry.getAllFaces();
+  } catch (e) {
+    return "";
+  }
+  if (faces.length === 0) return "";
+  rows = [];
+  for (i = 0; i < faces.length; i++) {
+    f = faces[i];
+    hash = "";
+    if (!f.encrypted && f.descriptor && f.descriptor.length) {
+      hash = (await faceDescriptorHash(f.descriptor)) || "";
+    }
+    rows.push({
+      label: String(f.label || ""),
+      id: String(f.id),
+      created: f.created ? new Date(f.created).toISOString() : "",
+      descriptorHash: hash,
+      embeddingVersion: String(f.embeddingVersion || "human-hse"),
+    });
+  }
+  if (format === "csv") {
+    lines = ["label,id,created,descriptorHash,embeddingVersion"];
+    for (i = 0; i < rows.length; i++) {
+      row = [];
+      for (j = 0; j < 5; j++) {
+        cell = String(Object.values(rows[i])[j]);
+        if (/[",\n]/.test(cell)) cell = '"' + cell.split('"').join('""') + '"';
+        row.push(cell);
+      }
+      lines.push(row.join(","));
+    }
+    return lines.join("\n");
+  }
+  lines = ["label\tid\tcreated\tdescriptorHash\tembeddingVersion"];
+  for (i = 0; i < rows.length; i++) {
+    lines.push(
+      [
+        rows[i].label,
+        rows[i].id,
+        rows[i].created,
+        rows[i].descriptorHash,
+        rows[i].embeddingVersion,
+      ].join("\t"),
+    );
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Download the registry labels as a standalone TXT/CSV file (programmatic —
+ * the UI includes the sheet in Download Results instead of a dedicated button).
+ * @param {string} format "txt" | "csv"
+ */
+async function handleFaceExportLabels(format) {
+  var sheet, ext, name;
+  if (!faceRegistry) {
+    setStatus("face-status", "Face Registry not initialized.");
+    return;
+  }
+  format = format === "csv" ? "csv" : "txt";
+  try {
+    sheet = await faceLabelsToSheet(format);
+  } catch (error) {
+    setStatus("face-status", "Export error: " + error.message);
+    return;
+  }
+  if (!sheet) {
+    setStatus("face-status", __("face.export_empty", "No faces registered yet — nothing to export."));
+    return;
+  }
+  ext = format;
+  name = "face_labels." + ext;
+  downloadBlobSimple(
+    new Blob([sheet], { type: format === "csv" ? "text/csv;charset=utf-8" : "text/plain;charset=utf-8" }),
+    name,
+  );
+  setStatus(
+    "face-status",
+    __("face.export_done", "Exported {0} face label(s) as {1}.")
+      .split("{0}")
+      .join(String(sheet.split("\n").length - 1))
+      .split("{1}")
+      .join(name),
+  );
+}
 
 /**
  * Encrypt all registry entries with the passphrase from #face-lock-pass.
