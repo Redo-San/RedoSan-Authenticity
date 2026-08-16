@@ -72,6 +72,8 @@ cli/tests/face_identifiers_result.png
 cli/tests/face_identifiers_no_face.png
 cli/tests/face_signed_report_dl.json
 cli/tests/face_c2pa_report_dl.json
+cli/tests/face_identifiers_report_dl.json
+cli/tests/face_test_result.png
 
 # Face Biometric — personal test photos (never commit)
 cli/tests/face_test_img.jpg

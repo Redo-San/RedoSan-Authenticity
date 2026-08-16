@@ -37,7 +37,9 @@ var FaceAlign = {
         for (i = 0; i < this.MESH_INDICES.length; i++) {
             idx = this.MESH_INDICES[i];
             p = mesh[idx];
-            if (p && typeof p === 'object' && typeof p.x === 'number' && typeof p.y === 'number') {
+            if (Array.isArray(p) && typeof p[0] === 'number') {
+                out.push([p[0], p[1]]);
+            } else if (p && typeof p === 'object' && typeof p.x === 'number' && typeof p.y === 'number') {
                 out.push([p.x, p.y]);
             } else if (typeof mesh[idx * 3] === 'number') {
                 out.push([mesh[idx * 3], mesh[idx * 3 + 1]]);

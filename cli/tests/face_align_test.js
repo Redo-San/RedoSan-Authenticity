@@ -44,6 +44,15 @@ describe("FaceAlign — meshToLandmarks5", () => {
     assert.deepEqual(FaceAlign.meshToLandmarks5(flat), pts);
   });
 
+  it("supports [x,y,z] triplet arrays (Human FaceMesh output)", () => {
+    const mesh = new Array(478);
+    const pts = [[10, 20], [30, 20], [20, 30], [12, 40], [28, 40]];
+    FaceAlign.MESH_INDICES.forEach((idx, i) => {
+      mesh[idx] = [pts[i][0], pts[i][1], 0];
+    });
+    assert.deepEqual(FaceAlign.meshToLandmarks5(mesh), pts);
+  });
+
   it("returns null for meshes shorter than 468", () => {
     assert.equal(FaceAlign.meshToLandmarks5(new Array(100)), null);
     assert.equal(FaceAlign.meshToLandmarks5(null), null);

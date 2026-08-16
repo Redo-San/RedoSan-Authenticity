@@ -252,12 +252,16 @@ const modalClosed = await page.evaluate(() => !document.getElementById("dl-modal
 console.log("Modal auto-closed after download: " + modalClosed);
 if (!modalClosed) console.log("FAIL: modal should auto-close after download");
 
-// ── Use in Certificate ──
-await page.click('button[onclick="handleFaceSetCertData()"]');
-await page.waitForTimeout(400);
-const certData = await page.evaluate(() => !!window._faceData);
-console.log("Certificate data stored: " + certData);
-if (!certData) console.log("FAIL: certificate data not stored");
+// ── Issue Verifiable Credential (replaces removed cert-data button) ──
+const vcBtnCount = await page.locator('button[onclick="handleFaceIssueCredential()"]').count();
+console.log("Issue VC button found: " + (vcBtnCount > 0));
+if (vcBtnCount > 0) {
+  await page.click('button[onclick="handleFaceIssueCredential()"]');
+  await page.waitForTimeout(800);
+  const vcData = await page.evaluate(() => !!window._faceCredential);
+  console.log("Verifiable credential stored: " + vcData);
+  if (!vcData) console.log("FAIL: credential data not stored");
+}
 
 // ── Delete + Clear ──
 const delButtons = page.locator('#face-list button[onclick^="handleFaceDelete"]');
@@ -280,6 +284,53 @@ await page.click('button[onclick="listRegisteredFaces()"]');
 await page.waitForTimeout(500);
 const afterClear = await page.evaluate(() => document.querySelectorAll("#face-list .face-list-item").length);
 console.log("List rows after clear: " + afterClear);
+
+// ── ArcFace ONNX leg (real model via onnxruntime-web) ──
+console.log("---- ARC-FACE (ONNX) LEG ----");
+await page.selectOption("#face-embedder", "arcface");
+const arcChoice = await page.evaluate(() => getFaceEmbedderChoice());
+console.log("Embedder choice: " + arcChoice);
+if (arcChoice !== "arcface") console.log("FAIL: arcface embedder choice must be selected");
+
+const arcLoaded = await page.evaluate(async () => {
+  if (typeof FaceONNXEmbedder === "undefined") return "module-missing";
+  const ready = FaceONNXEmbedder.isReady();
+  if (ready) return "already-ready";
+  const ok = await FaceONNXEmbedder.load();
+  return ok ? "loaded" : "load-failed";
+});
+console.log("ArcFace ONNX load: " + arcLoaded);
+if (arcLoaded !== "loaded" && arcLoaded !== "already-ready") console.log("FAIL: ArcFace ONNX model must load");
+const arcBackend = await page.evaluate(() => FaceONNXEmbedder.getBackend());
+console.log("ArcFace ONNX backend: " + arcBackend);
+
+// Run the full pipeline with ArcFace selected on the fixture image (upload tab)
+await page.click('button[onclick="switchFaceInput(\'upload\')"]');
+await page.waitForTimeout(200);
+await page.locator("#face-image").setInputFiles(imgPath);
+await page.waitForTimeout(400);
+await page.fill("#face-label", "ArcFace Real Test");
+await waitForTrue(async () => !(await page.isDisabled("#face-run")), 10000, "run enabled (arcface)");
+await page.click("#face-run");
+const arcDone = await waitForTrue(async () => {
+  const st = await page.textContent("#face-status");
+  return st && /Done|Error|failed|fallback/i.test(st);
+}, 240000, "arcface pipeline done");
+console.log("ArcFace pipeline finished: " + arcDone);
+await page.waitForTimeout(1000);
+const arcState = await page.evaluate(async () => {
+  const faces = await window.faceRegistry.getAllFaces();
+  const last = faces[faces.length - 1];
+  return {
+    status: (document.getElementById("face-status") || {}).textContent || "",
+    version: last ? last.embeddingVersion : null,
+    len: last && last.descriptor ? last.descriptor.length : 0,
+  };
+});
+console.log("ArcFace pipeline status: " + arcState.status);
+console.log("ArcFace result: version=" + arcState.version + " len=" + arcState.len);
+if (arcState.version !== "arcface-mbf") console.log("FAIL: ArcFace pipeline must produce arcface-mbf embedding version");
+if (arcState.len !== 512) console.log("FAIL: ArcFace descriptor must be 512-d");
 
 // ── Summary ──
 console.log("---- CONSOLE ERRORS (" + consoleErrors.length + ") ----");

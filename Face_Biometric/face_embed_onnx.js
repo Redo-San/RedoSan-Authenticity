@@ -18,11 +18,12 @@ var FaceONNXEmbedder = {
     /** Embedding dimensionality produced by the model. */
     DIMS: 512,
     /** Default MobileFaceNet (ArcFace w600k) model URL. */
-    MODEL_URL: 'https://cdn.jsdelivr.net/gh/garavv/arcface-onnx@master/models/mobilefacenet.onnx',
-    /** Default onnxruntime-web UMD bundle URL. */
-    RUNTIME_URL: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js',
-    /** Default model input tensor name. */
-    INPUT_NAME: 'input',
+  MODEL_URL:
+    "https://huggingface.co/ykk648/face_lib/resolve/main/face_embedding/w600k_mbf.onnx",
+  /** Default onnxruntime-web UMD bundle URL. */
+  RUNTIME_URL: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js",
+  /** Default model input tensor name. */
+  INPUT_NAME: "input.1",
 
     _runtime: null,
     _session: null,

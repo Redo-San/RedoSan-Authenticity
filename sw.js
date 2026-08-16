@@ -391,6 +391,12 @@ var EXT_WHITELIST = [
   // Human face detection (jsdelivr) + its TFJS WASM backend binaries
   "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/",
   "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@",
+  // onnxruntime-web (ArcFace embedder) UMD bundle + WASM binaries
+  "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/",
+  // ArcFace MobileFaceNet ONNX model (w600k_mbf) hosted on HuggingFace
+  "https://huggingface.co/",
+  "https://us.aws.cdn.hf.co/",
+  "https://cdn-lfs.hf.co/",
 ];
 
 self.addEventListener("install", function () {
