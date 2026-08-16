@@ -16,6 +16,7 @@ const pages = [
   "/metadata/index.html",
   "/id_forge/index.html",
   "/did/index.html",
+  "/face-biometric/index.html",
   "/timestamp/index.html",
   "/removal-tools/index.html",
   "/search/index.html",
