@@ -586,7 +586,6 @@ window.__I18N_DATA.es = {
     "face.verify_btn": "Verify Identity",
     "face.count_label": "Registered faces: {0}",
     "face.refresh_btn": "Refresh List",
-    "face.clear_btn": "Clear All",
     "sidebar.document_watermark": "Marca de agua en documentos",
     "card.document_watermark.title": "Marca de agua en documentos",
     "card.document_watermark.desc": "Ocultar mensajes en texto: ZWC, Homoglifos, Espacios",

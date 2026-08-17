@@ -406,7 +406,7 @@
               <li data-i18n="face.consent_what">What: a numeric face descriptor (512-d embedding) derived from your photo, plus a Privacy ID (BioHash) generated from it.</li>
               <li data-i18n="face.consent_purpose">Purpose: verifying and protecting your visual rights — identity verification, anti-spoofing and forgery detection.</li>
               <li data-i18n="face.consent_where">Storage: in this browser, on this device only. There is no server or cloud — nothing is uploaded, shared or used for training.</li>
-              <li data-i18n="face.consent_retention">Retention: as a local privacy safeguard, stored face records are automatically removed from this device after 3 years without use; you can delete them at any time.</li>
+              <li data-i18n="face.consent_retention">Retention: records stay in this browser's local storage on this device until you delete them or withdraw consent; a local safety net also removes records left unused for 3 years.</li>
               <li data-i18n="face.consent_rights">Your rights: you may withdraw consent at any time — this deletes all stored biometric data from this device.</li>
             </ul>
             <label style="display:flex;gap:8px;align-items:flex-start;font-size:0.8rem;margin-bottom:10px">
@@ -490,8 +490,9 @@
             <p id="face-migration-note" style="display:none;margin-bottom:12px;padding:8px 10px;border:1px solid #f5c542;background:rgba(245,197,66,.12);border-radius:8px;font-size:0.8rem" data-i18n="face.migration_note">Mixed embedding versions detected - re-embed older faces to enable cross-matching.</p>
             <div id="face-list" style="margin-bottom:12px"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="listRegisteredFaces()" data-i18n="face.refresh_btn">Refresh List</button>
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceClear()" data-i18n="face.clear_btn">Clear All</button>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceRefreshList()" data-i18n="face.refresh_btn">Refresh List</button>
+              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceConsentWithdraw()" data-i18n="face.consent_withdraw_btn">Withdraw Consent</button>
+              <span style="font-size:0.72rem;color:var(--text-muted);align-self:center" data-i18n="face.consent_withdraw_hint">Deletes the consent record and all stored biometric data (GDPR Art. 7(3) + 17).</span>
             </div>
           </div>
 
@@ -514,10 +515,6 @@
               <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceBackup()" data-i18n="face.backup_btn">Export Backup</button>
               <button type="button" class="btn btn-sm face-mgmt-btn" onclick="document.getElementById('face-restore-file').click()" data-i18n="face.restore_btn">Import Backup</button>
               <input type="file" id="face-restore-file" accept=".json,application/json" style="display:none" onchange="handleFaceRestore()" />
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceConsentWithdraw()" data-i18n="face.consent_withdraw_btn">Withdraw Consent</button>
-              <span style="font-size:0.72rem;color:var(--text-muted)" data-i18n="face.consent_withdraw_hint">Deletes the consent record and all stored biometric data (GDPR Art. 7(3) + 17).</span>
             </div>
             <div id="face-passkey-box" style="margin-top:12px">
               <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">

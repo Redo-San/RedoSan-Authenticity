@@ -586,7 +586,6 @@ window.__I18N_DATA.fr = {
     "face.verify_btn": "Verify Identity",
     "face.count_label": "Registered faces: {0}",
     "face.refresh_btn": "Refresh List",
-    "face.clear_btn": "Clear All",
     "sidebar.document_watermark": "Filigrane de documents",
     "card.document_watermark.title": "Filigrane de documents",
     "card.document_watermark.desc": "Cacher des messages dans le texte : ZWC, Homoglyphes, Espaces",

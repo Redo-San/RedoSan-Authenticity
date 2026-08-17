@@ -220,7 +220,7 @@ function makeDoc(overrides) {
     "face-cam-capture": { disabled: true },
     "face-upload-wrapper": { style: {} },
     "face-capture-wrapper": { style: { display: "none" } },
-    "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: {}, offsetWidth: 0 },
+    "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
     "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
     "face-progress-title": { textContent: "", setAttribute: function () {} },
     "face-progress-text": { textContent: "", setAttribute: function () {} },
@@ -1970,36 +1970,64 @@ describe("Face UI — handleFaceDelete", () => {
   });
 });
 
-describe("Face UI — handleFaceClear", () => {
+describe("Face UI — handleFaceRefreshList", () => {
   beforeEach(resetGlobals);
 
-  it("should clear all faces when confirmed", async () => {
-    const statusEl = { textContent: "" };
-    globalThis.document = makeDoc({ "face-status": statusEl });
-    let cleared = false;
-    globalThis.faceRegistry = { clear: async function () { cleared = true; } };
-    globalThis.confirm = function () { return true; };
-    await globalThis.handleFaceClear();
-    assert.ok(cleared);
-    assert.ok(statusEl.textContent.includes("All faces deleted"));
+  function refreshDoc() {
+    return makeDoc({
+      "face-status": { textContent: "" },
+      "face-report": { style: { display: "block" }, innerHTML: "<b>old results</b>" },
+      "face-preview": { style: { display: "block" } },
+      "face-list": { innerHTML: "", append: function () {} },
+      "face-count": { textContent: "" },
+      "face-run": { disabled: true },
+    });
+  }
+
+  it("should clear the generated-results view and refresh the list", async () => {
+    const doc = refreshDoc();
+    globalThis.document = doc;
+    globalThis._faceReport = { biohash: { codeHex: "abc" } };
+    globalThis.window._faceReport = globalThis._faceReport;
+    globalThis._facePendingCanvas = createCanvas(10, 10);
+    globalThis.faceRegistry = {
+      getAllFaces: async function () {
+        return [{ id: 1, label: "Alice" }];
+      },
+      getSize: async function () { return 1; },
+    };
+    await globalThis.handleFaceRefreshList();
+    assert.equal(globalThis._faceReport, null, "report state cleared");
+    assert.equal(globalThis.window._faceReport, null, "window report state cleared");
+    assert.equal(globalThis._facePendingCanvas, null, "staged photo cleared");
+    assert.equal(doc.getElementById("face-report").style.display, "none");
+    assert.equal(doc.getElementById("face-report").innerHTML, "");
+    assert.equal(doc.getElementById("face-preview").style.display, "none");
+    assert.equal(doc.getElementById("face-run").disabled, true);
+    assert.ok(doc.getElementById("face-status").textContent.includes("Registered faces: 1"));
   });
 
-  it("should not clear when cancelled", async () => {
-    globalThis.document = makeDoc();
-    let cleared = false;
-    globalThis.faceRegistry = { clear: async function () { cleared = true; } };
-    globalThis.confirm = function () { return false; };
-    await globalThis.handleFaceClear();
-    assert.equal(cleared, false);
-  });
-
-  it("should handle clear errors", async () => {
+  it("should keep working when result elements are missing", async () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
-    globalThis.faceRegistry = { clear: async function () { throw new Error("clear error"); } };
-    globalThis.confirm = function () { return true; };
-    await globalThis.handleFaceClear();
-    assert.ok(statusEl.textContent.includes("Clear error"));
+    globalThis._faceReport = { biohash: { codeHex: "abc" } };
+    globalThis.faceRegistry = {
+      getAllFaces: async function () { return []; },
+      getSize: async function () { return 0; },
+    };
+    await globalThis.handleFaceRefreshList();
+    assert.equal(globalThis._faceReport, null);
+    assert.ok(statusEl.textContent.includes("Registered faces: 0"));
+  });
+
+  it("should surface registry errors from the underlying list", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({ "face-status": statusEl });
+    globalThis.faceRegistry = {
+      getAllFaces: async function () { throw new Error("list error"); },
+    };
+    await globalThis.handleFaceRefreshList();
+    assert.ok(statusEl.textContent.includes("list error"));
   });
 });
 
@@ -2723,5 +2751,56 @@ describe("Face UI — biometric consent", () => {
     assert.equal(doc.getElementById("face-image").disabled, false);
     assert.equal(doc.getElementById("face-cam-start").disabled, false);
     assert.equal(doc.getElementById("face-consent-panel").style.display, "none");
+  });
+
+  it("faceWarnConsentRequired shows the blocked message and is safe without helpers", () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeConsentDoc({ "face-status": statusEl });
+    globalThis.faceWarnConsentRequired();
+    assert.ok(statusEl.textContent.includes("consent"), "blocked message rendered");
+  });
+
+  it("faceWarnConsentRequired survives a missing panel or scrollIntoView", () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({ "face-status": statusEl }); // no panel at all
+    globalThis.faceWarnConsentRequired();
+    assert.ok(statusEl.textContent.includes("consent"));
+  });
+
+  it("switchFaceInput is blocked (with a warning) until consent is recorded", () => {
+    const doc = makeConsentDoc({
+      "face-status": { textContent: "" },
+      "face-cam-start": { disabled: true },
+      "face-image": { disabled: true },
+    });
+    globalThis.document = doc;
+    globalThis.switchFaceInput("camera");
+    assert.equal(globalThis._faceInputTab, "upload", "tab must not switch without consent");
+    assert.equal(doc.getElementById("face-cam-start").disabled, true, "camera start stays disabled");
+    assert.equal(doc.getElementById("face-image").disabled, true, "file input stays disabled");
+    assert.ok(doc.getElementById("face-status").textContent.includes("consent"), "warning shown");
+  });
+
+  it("switchFaceInput works normally once consent is recorded", () => {
+    const doc = makeConsentDoc({
+      "face-status": { textContent: "" },
+      "face-cam-start": { disabled: true },
+      "face-image": { disabled: true },
+      "face-upload-wrapper": { style: {} },
+      "face-capture-wrapper": { style: {} },
+    });
+    doc.querySelectorAll = function () {
+      return [];
+    };
+    globalThis.document = doc;
+    globalThis.faceConsentSave({
+      version: 1,
+      policyVersion: 1,
+      acceptedAt: new Date().toISOString(),
+    });
+    globalThis.switchFaceInput("camera");
+    assert.equal(globalThis._faceInputTab, "camera", "tab switches after consent");
+    assert.equal(doc.getElementById("face-cam-start").disabled, false, "camera start re-enabled");
+    assert.equal(doc.getElementById("face-image").disabled, false, "file input re-enabled");
   });
 });

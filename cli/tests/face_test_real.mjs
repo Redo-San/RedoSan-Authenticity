@@ -29,6 +29,14 @@ await page.evaluate(() => {
   if (el) { el.style.display = "none"; el.classList.remove("active"); }
 });
 
+// Accept the biometric consent notice so collection entry points unlock.
+const consentCheck = page.locator("#face-consent-check");
+if ((await consentCheck.count()) === 1) {
+  await consentCheck.check();
+  await page.click("#face-consent-accept");
+  await page.waitForTimeout(300);
+}
+
 await page.waitForTimeout(1500);
 
 // -- ArcFace (ONNX) real-browser path -----------------------------------------

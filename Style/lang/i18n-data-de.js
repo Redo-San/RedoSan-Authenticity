@@ -586,7 +586,6 @@ window.__I18N_DATA.de = {
     "face.verify_btn": "Verify Identity",
     "face.count_label": "Registered faces: {0}",
     "face.refresh_btn": "Refresh List",
-    "face.clear_btn": "Clear All",
     "sidebar.document_watermark": "Dokument-Wasserzeichen",
     "card.document_watermark.title": "Dokument-Wasserzeichen",
     "card.document_watermark.desc": "Nachrichten in Text verstecken: ZWC, Homoglyphen, Leerzeichen",

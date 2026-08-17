@@ -586,7 +586,6 @@ window.__I18N_DATA.ar = {
     "face.verify_btn": "Verify Identity",
     "face.count_label": "Registered faces: {0}",
     "face.refresh_btn": "Refresh List",
-    "face.clear_btn": "Clear All",
     "sidebar.document_watermark": "العلامة المائية للمستندات",
     "card.document_watermark.title": "العلامة المائية للمستندات",
     "card.document_watermark.desc": "إخفاء الرسائل في النص: ZWC، Homoglyphs، Whitespace",

@@ -37,6 +37,17 @@ async function openFacePage() {
       el.classList.remove("active");
     }
   });
+  // Accept the biometric consent notice so the collection entry points unlock.
+  const check = page.locator("#face-consent-check");
+  if ((await check.count()) === 1) {
+    await check.check();
+    await page.click("#face-consent-accept");
+    await page.waitForFunction(
+      () => (document.getElementById("face-consent-panel") || {}).style?.display === "none",
+      null,
+      { timeout: 15000 },
+    );
+  }
   await page.click('button[onclick="switchFaceInput(\'camera\')"]');
   await page.waitForTimeout(200);
   return { ctx, page };

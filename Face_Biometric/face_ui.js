@@ -210,7 +210,12 @@ function faceProgressHide() {
   if (!overlay || !overlay.classList) return;
   overlay.classList.remove("is-visible");
   t = setTimeout(function () {
-    if (overlay && overlay.parentNode && !overlay.classList.contains("is-visible")) {
+    if (
+      overlay &&
+      overlay.parentNode &&
+      typeof overlay.parentNode.removeChild === "function" &&
+      !overlay.classList.contains("is-visible")
+    ) {
       overlay.parentNode.removeChild(overlay);
     }
   }, 600);
@@ -520,10 +525,7 @@ async function handlePasskeyRemove() {
 async function handleFaceFilePicked() {
   var file, loaded, ctx, startBtn, capBtn, imgEl;
   if (!faceConsentGranted()) {
-    setStatus(
-      "face-status",
-      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
-    );
+    faceWarnConsentRequired();
     return;
   }
   file = document.getElementById("face-image").files[0];
@@ -584,10 +586,7 @@ function updateFaceRunState() {
   }
   if (!faceConsentGranted()) {
     btn.disabled = true;
-    setStatus(
-      "face-status",
-      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
-    );
+    faceWarnConsentRequired(false);
     return;
   }
   btn.disabled = !(_facePendingCanvas && label && label.value && label.value.trim() !== "");
@@ -639,6 +638,34 @@ function faceConsentClear() {
     }
   } catch (e) {
     // ignore
+  }
+}
+
+/**
+ * Unmissable notice when a collection entry point is blocked by missing
+ * consent: a status message plus a scroll-and-highlight of the consent panel
+ * so the user understands why the upload/camera/run action did not proceed.
+ * @param {boolean} [highlight=true] skip the scroll/highlight when false
+ */
+function faceWarnConsentRequired(highlight) {
+  var panel, status;
+  status = document.getElementById("face-status");
+  if (status) {
+    status.textContent = __(
+      "face.consent_needed_first",
+      "⚠️ Biometric consent is required first — accept the notice above to enable photo upload and camera capture.",
+    );
+  }
+  if (highlight === false) return;
+  panel = document.getElementById("face-consent-panel");
+  if (panel && typeof panel.scrollIntoView === "function") {
+    panel.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  if (panel && panel.style) {
+    panel.style.boxShadow = "0 0 0 3px rgba(245,197,66,.6)";
+    setTimeout(function () {
+      if (panel.style) panel.style.boxShadow = "";
+    }, 1800);
   }
 }
 
@@ -756,6 +783,10 @@ function initFaceConsent() {
 function switchFaceInput(tab) {
   var btns, wrapU, wrapC, prev, startBtn, imgEl;
   if (tab !== "upload" && tab !== "camera") return;
+  if (!faceConsentGranted()) {
+    faceWarnConsentRequired();
+    return;
+  }
   if (_faceInputTab === tab) return;
   _faceInputTab = tab;
   btns = document.querySelectorAll("[data-face-tab]");
@@ -789,10 +820,7 @@ function switchFaceInput(tab) {
  */
 function handleFaceRun() {
   if (!faceConsentGranted()) {
-    setStatus(
-      "face-status",
-      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
-    );
+    faceWarnConsentRequired();
     return;
   }
   if (!_facePendingCanvas) {
@@ -1797,10 +1825,7 @@ function faceOverlayTick(ts) {
 async function handleFaceCameraStart(videoId) {
   var videoEl, imgEl, startBtn, stopBtn, capBtn;
   if (!faceConsentGranted()) {
-    setStatus(
-      "face-status",
-      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
-    );
+    faceWarnConsentRequired();
     return;
   }
   if (typeof FaceCamera !== "function") {
@@ -2042,7 +2067,7 @@ async function listRegisteredFaces() {
     if (faces.length === 0) {
       el.innerHTML =
         '<p style="color:var(--text-muted)">No faces registered yet.</p>';
-      return;
+      return size;
     }
     faces.forEach(function (f) {
       div = document.createElement("div");
@@ -2058,6 +2083,7 @@ async function listRegisteredFaces() {
         ')">Delete</button>';
       el.append(div);
     });
+    return size;
   } catch (error) {
     setStatus("face-status", "List error: " + error.message);
   }
@@ -2079,17 +2105,34 @@ async function handleFaceDelete(id) {
 }
 
 /**
- *
+ * Refresh List: clear the generated-results view (report, preview, action
+ * buttons, staged photo) and re-render the registered faces from storage.
+ * This is the "soft reset" that makes Refresh List visibly do something when
+ * results are on screen — same effect as reloading the page.
  */
-async function handleFaceClear() {
-  if (!faceRegistry) return;
-  if (!confirm("Delete all registered faces?")) return;
-  try {
-    await faceRegistry.clear();
-    await listRegisteredFaces();
-    setStatus("face-status", "All faces deleted.");
-  } catch (error) {
-    setStatus("face-status", "Clear error: " + error.message);
+async function handleFaceRefreshList() {
+  var repEl, prevEl, size;
+  _faceReport = null;
+  window._faceReport = null;
+  _facePendingCanvas = null;
+  _facePendingSource = null;
+  repEl = document.getElementById("face-report");
+  if (repEl) {
+    repEl.style.display = "none";
+    repEl.innerHTML = "";
+  }
+  prevEl = document.getElementById("face-preview");
+  if (prevEl && prevEl.style) {
+    prevEl.style.display = "none";
+  }
+  renderFaceActions(false);
+  updateFaceRunState();
+  size = await listRegisteredFaces();
+  if (size !== undefined) {
+    setStatus(
+      "face-status",
+      __("face.refresh_done", "Results cleared. Registered faces: {0}").split("{0}").join(String(size)),
+    );
   }
 }
 

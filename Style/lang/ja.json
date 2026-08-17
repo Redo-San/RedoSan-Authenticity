@@ -572,7 +572,6 @@
   "face.verify_btn": "Verify Identity",
   "face.count_label": "Registered faces: {0}",
   "face.refresh_btn": "Refresh List",
-  "face.clear_btn": "Clear All",
   "sidebar.document_watermark": "ドキュメントの透かし",
   "card.document_watermark.title": "ドキュメントの透かし",
   "card.document_watermark.desc": "テキスト内のメッセージを非表示にする: ZWC、同形文字、空白",

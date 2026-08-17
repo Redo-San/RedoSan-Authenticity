@@ -572,7 +572,6 @@
   "face.verify_btn": "Verify Identity",
   "face.count_label": "Registered faces: {0}",
   "face.refresh_btn": "Refresh List",
-  "face.clear_btn": "Clear All",
   "sidebar.document_watermark": "文档水印",
   "card.document_watermark.title": "文档水印",
   "card.document_watermark.desc": "在文本中隐藏消息：ZWC、同形字、空白字符",
