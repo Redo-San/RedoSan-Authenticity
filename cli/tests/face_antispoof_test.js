@@ -299,6 +299,109 @@ describe("FaceAntiSpoof — load/predict with injected runtime", () => {
   });
 });
 
+describe("FaceAntiSpoof — model integrity verification", () => {
+  const crypto = require("crypto");
+
+  function fakeFetch(bytes, ok) {
+    let calls = 0;
+    globalThis.fetch = async function (url) {
+      calls++;
+      return {
+        ok: ok !== false,
+        status: ok !== false ? 200 : 404,
+        url,
+        arrayBuffer: async function () {
+          return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+        },
+      };
+    };
+    return () => calls;
+  }
+
+  beforeEach(() => FaceAntiSpoof.reset());
+  afterEach(() => {
+    delete globalThis.fetch;
+    FaceAntiSpoof.reset();
+  });
+
+  it("verifies the bytes and passes the verified buffer to the session", async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4, 5]);
+    const expected = crypto.createHash("sha256").update(bytes).digest("hex");
+    const countFetch = fakeFetch(bytes);
+    let seenArg = null;
+    const rt = {
+      Tensor: function () {},
+      InferenceSession: {
+        create: async function (arg) {
+          seenArg = arg;
+          return { run: async function () { return { output: { data: new Float32Array([1, 1, 1]) } }; } };
+        },
+      },
+    };
+    const ok = await FaceAntiSpoof.load({
+      runtime: rt,
+      modelUrl: "https://models.example/minifasnet.onnx",
+      modelSha256: expected,
+      verifyModel: true,
+    });
+    assert.equal(ok, true);
+    assert.equal(countFetch(), 1);
+    assert.ok(seenArg instanceof ArrayBuffer, "session must receive the verified ArrayBuffer");
+  });
+
+  it("refuses to load on SHA-256 mismatch", async () => {
+    fakeFetch(new Uint8Array([9, 9, 9]));
+    const ok = await FaceAntiSpoof.load({
+      runtime: makeFakeOrt([1, 1, 1]),
+      modelUrl: "https://models.example/minifasnet.onnx",
+      modelSha256: "ab".repeat(32),
+      verifyModel: true,
+    });
+    assert.equal(ok, false);
+    assert.equal(FaceAntiSpoof.isReady(), false);
+    assert.ok(FaceAntiSpoof.getError().includes("integrity"));
+  });
+
+  it("fails when the model download fails", async () => {
+    fakeFetch(new Uint8Array([1]), false);
+    const ok = await FaceAntiSpoof.load({
+      runtime: makeFakeOrt([1, 1, 1]),
+      modelUrl: "https://models.example/minifasnet.onnx",
+      modelSha256: "ab".repeat(32),
+      verifyModel: true,
+    });
+    assert.equal(ok, false);
+    assert.ok(FaceAntiSpoof.getError().includes("HTTP 404"));
+  });
+
+  it("skips verification when a runtime is injected (test seam)", async () => {
+    const countFetch = fakeFetch(new Uint8Array([1]));
+    const ok = await FaceAntiSpoof.load({ runtime: makeFakeOrt([1, 1, 1]) }); // default URL + pinned hash
+    assert.equal(ok, true);
+    assert.equal(countFetch(), 0);
+  });
+
+  it("skips verification when an unknown custom model URL has no hash", async () => {
+    const countFetch = fakeFetch(new Uint8Array([1]));
+    const ok = await FaceAntiSpoof.load({ runtime: makeFakeOrt([1, 1, 1]), modelUrl: "custom.onnx" });
+    assert.equal(ok, true);
+    assert.equal(countFetch(), 0);
+  });
+
+  it("throws in _verifySha256 when WebCrypto is unavailable (fail closed)", async () => {
+    const saved = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+    try {
+      Object.defineProperty(globalThis, "crypto", { value: { subtle: null }, configurable: true, writable: true });
+      await assert.rejects(
+        FaceAntiSpoof._verifySha256(new Uint8Array([1, 2, 3]).buffer, "aa"),
+        /WebCrypto/,
+      );
+    } finally {
+      Object.defineProperty(globalThis, "crypto", saved);
+    }
+  });
+});
+
 // ── Liveness integration (PAD stage) ──
 
 describe("FaceLiveness — antiSpoof integration", () => {

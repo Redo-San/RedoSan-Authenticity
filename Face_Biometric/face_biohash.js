@@ -32,6 +32,16 @@
 
     /**
      * Compact SHA-256 (FIPS 180-4) over a UTF-8 string, returns lowercase hex.
+     *
+     * Deliberately SYNCHRONOUS, unlike FaceCrypto.sha256Hex (async WebCrypto):
+     * the digest is used to seed the Xorshift128 PRNG (see seedFromSha256)
+     * and is consumed synchronously by FaceFuzzy's match pipelines
+     * (face_fuzzy.js). WebCrypto's subtle.digest() is promise-based, so it
+     * cannot feed these call paths without an async rewrite of the whole
+     * BioHash/Fuzzy stack. This implementation is equivalent to
+     * crypto.subtle.digest("SHA-256") — equivalence is covered by the unit
+     * tests in cli/tests/face_biohash_test.js ("equivalence with node
+     * crypto SHA-256").
      * @param {string} input
      * @returns {string}
      */

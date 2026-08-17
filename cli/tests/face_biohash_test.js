@@ -44,6 +44,60 @@ describe("FaceBioHash — internal SHA-256 (FIPS 180-4 vectors)", () => {
   });
 });
 
+describe("FaceBioHash — equivalence with node crypto SHA-256", () => {
+  const crypto = require("crypto");
+
+  /** Deterministic LCG so the corpus is reproducible across runs. */
+  function lcg(seed) {
+    let s = seed >>> 0;
+    return () => {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s;
+    };
+  }
+
+  it("matches node crypto for known vectors (incl. non-ASCII)", () => {
+    const vectors = ["abc", "", "hello world", "RedoSan أصالة 🎨", "😀😀", "a".repeat(1000)];
+    for (const v of vectors) {
+      const expected = crypto.createHash("sha256").update(v, "utf8").digest("hex");
+      assert.equal(FaceBioHash._sha256Hex(v), expected, `vector: ${JSON.stringify(v)}`);
+    }
+  });
+
+  it("matches node crypto for 64 random strings", () => {
+    const rnd = lcg(0xface2016);
+    const base = Array.from("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-+éΩمرحبا🎨");
+    for (let i = 0; i < 64; i++) {
+      const len = (rnd() % 200) + 1;
+      let s = "";
+      let added = 0;
+      while (added < len) {
+        const r = rnd();
+        let ch;
+        if ((r & 3) === 0) {
+          const cp = r % 0x110000;
+          if (cp >= 0xd800 && cp <= 0xdfff) continue; // skip lone surrogates
+          ch = String.fromCodePoint(cp);
+        } else {
+          ch = base[r % base.length];
+        }
+        s += ch;
+        added++;
+      }
+      const expected = crypto.createHash("sha256").update(s, "utf8").digest("hex");
+      assert.equal(FaceBioHash._sha256Hex(s), expected, `random #${i}`);
+    }
+  });
+
+  it("boundary lengths 55/56/57 and 119/120/121 (padding edges)", () => {
+    for (const len of [55, 56, 57, 63, 64, 65, 119, 120, 121]) {
+      const v = "x".repeat(len);
+      const expected = crypto.createHash("sha256").update(v, "utf8").digest("hex");
+      assert.equal(FaceBioHash._sha256Hex(v), expected, `len ${len}`);
+    }
+  });
+});
+
 describe("FaceBioHash — generate", () => {
   it("is deterministic for the same descriptor + PIN", () => {
     const a = FaceBioHash.generate(makeDescriptor(192), "1234");

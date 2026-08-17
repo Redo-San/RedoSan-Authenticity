@@ -394,6 +394,7 @@ async function initFaceBiometric() {
       passEl.value = sanitizeFaceText(passEl.value, "pass");
     });
   }
+  initFaceConsent();
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
   if (typeof maybePromptFaceEncryption === "function") await maybePromptFaceEncryption();
   if (typeof refreshPasskeyStatus === "function") await refreshPasskeyStatus();
@@ -518,6 +519,13 @@ async function handlePasskeyRemove() {
  */
 async function handleFaceFilePicked() {
   var file, loaded, ctx, startBtn, capBtn, imgEl;
+  if (!faceConsentGranted()) {
+    setStatus(
+      "face-status",
+      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
+    );
+    return;
+  }
   file = document.getElementById("face-image").files[0];
   if (!file) return;
   if (file.type && !["image/png", "image/jpeg"].some(function (t) { return t === file.type; })) {
@@ -574,7 +582,170 @@ function updateFaceRunState() {
   if (label && typeof label.value === "string") {
     label.value = sanitizeFaceText(label.value, "label");
   }
+  if (!faceConsentGranted()) {
+    btn.disabled = true;
+    setStatus(
+      "face-status",
+      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
+    );
+    return;
+  }
   btn.disabled = !(_facePendingCanvas && label && label.value && label.value.trim() !== "");
+}
+
+// ── Biometric consent + retention (GDPR Art 9(2)(a), BIPA 740 ILCS 14) ──
+
+/**
+ * Consent record: stored in localStorage so the choice survives reloads.
+ * Withdrawing consent deletes the record AND all stored biometric data.
+ */
+var FACE_CONSENT_KEY = "redoSan.faceConsent";
+var FACE_CONSENT_VERSION = 1;
+var FACE_CONSENT_POLICY_VERSION = 1;
+
+/**
+ * @returns {object|null} stored consent record (null when missing/expired)
+ */
+function faceConsentLoad() {
+  var raw, rec;
+  try {
+    if (typeof localStorage === "undefined") return null;
+    raw = localStorage.getItem(FACE_CONSENT_KEY);
+    if (!raw) return null;
+    rec = JSON.parse(raw);
+    return rec && rec.version === FACE_CONSENT_VERSION ? rec : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * @param {object} rec
+ */
+function faceConsentSave(rec) {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(FACE_CONSENT_KEY, JSON.stringify(rec));
+    }
+  } catch (e) {
+    // privacy mode / quota — consent still holds for this session
+  }
+}
+
+function faceConsentClear() {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(FACE_CONSENT_KEY);
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+/**
+ * The biometric gate. Active only when the consent panel exists in the page
+ * (the Face Biometric MPA); embedded/test contexts without the panel are
+ * not gated. The panel is shown before any collection can start.
+ * @returns {boolean}
+ */
+function faceConsentGranted() {
+  var panel = document.getElementById("face-consent-panel");
+  if (!panel) return true;
+  return !!faceConsentLoad();
+}
+
+/**
+ * Accept handler: requires an explicit, unticked opt-in (GDPR Art 9(2)(a) —
+ * pre-ticked boxes are not valid consent).
+ * @returns {Promise<void>}
+ */
+async function handleFaceConsentAccept() {
+  var check, panel, statusEl, imgEl, startBtn;
+  check = document.getElementById("face-consent-check");
+  if (!check || !check.checked) {
+    setStatus("face-status", __("face.consent_check_required", "Please tick the consent checkbox first."));
+    return;
+  }
+  faceConsentSave({
+    version: FACE_CONSENT_VERSION,
+    policyVersion: FACE_CONSENT_POLICY_VERSION,
+    acceptedAt: new Date().toISOString(),
+  });
+  panel = document.getElementById("face-consent-panel");
+  if (panel) panel.style.display = "none";
+  statusEl = document.getElementById("face-consent-status");
+  if (statusEl) statusEl.style.display = "block";
+  imgEl = document.getElementById("face-image");
+  if (imgEl) imgEl.disabled = false;
+  startBtn = document.getElementById("face-cam-start");
+  if (startBtn) startBtn.disabled = false;
+  updateFaceRunState();
+  setStatus("face-status", __("face.consent_recorded", "Consent recorded — all processing stays on this device."));
+}
+
+/**
+ * Withdraw consent (GDPR Art 7(3)): drops the record and deletes every
+ * stored biometric template (Art 17 erasure) after a confirmation.
+ * @returns {Promise<void>}
+ */
+async function handleFaceConsentWithdraw() {
+  var panel, statusEl, imgEl, startBtn, runBtn;
+  if (
+    typeof confirm === "function" &&
+    !confirm(
+      __("face.consent_withdraw_confirm", "Withdraw consent? This deletes all stored face data on this device."),
+    )
+  ) {
+    return;
+  }
+  faceConsentClear();
+  if (faceRegistry) {
+    try {
+      await faceRegistry.clear();
+    } catch (e) {
+      // registry failure must not block the withdrawal
+    }
+  }
+  panel = document.getElementById("face-consent-panel");
+  if (panel) panel.style.display = "";
+  statusEl = document.getElementById("face-consent-status");
+  if (statusEl) statusEl.style.display = "none";
+  imgEl = document.getElementById("face-image");
+  if (imgEl) imgEl.disabled = true;
+  startBtn = document.getElementById("face-cam-start");
+  if (startBtn) startBtn.disabled = true;
+  runBtn = document.getElementById("face-run");
+  if (runBtn) runBtn.disabled = true;
+  if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
+  setStatus("face-status", __("face.consent_withdrawn", "Consent withdrawn — stored biometric data deleted."));
+}
+
+/**
+ * Wire the consent panel at startup: hide it when consent is already on
+ * record, otherwise show it and block every collection entry point. Never
+ * throws.
+ */
+function initFaceConsent() {
+  var panel, check, acceptBtn, imgEl, startBtn, statusEl;
+  panel = document.getElementById("face-consent-panel");
+  if (!panel) return;
+  check = document.getElementById("face-consent-check");
+  acceptBtn = document.getElementById("face-consent-accept");
+  if (faceConsentLoad()) {
+    panel.style.display = "none";
+    statusEl = document.getElementById("face-consent-status");
+    if (statusEl) statusEl.style.display = "block";
+    return;
+  }
+  imgEl = document.getElementById("face-image");
+  if (imgEl) imgEl.disabled = true;
+  startBtn = document.getElementById("face-cam-start");
+  if (startBtn) startBtn.disabled = true;
+  if (check && typeof check.addEventListener === "function") {
+    check.addEventListener("change", function () {
+      if (acceptBtn) acceptBtn.disabled = !check.checked;
+    });
+  }
 }
 
 /**
@@ -617,6 +788,13 @@ function switchFaceInput(tab) {
  * Start the automated pipeline with the staged photo (file or camera frame).
  */
 function handleFaceRun() {
+  if (!faceConsentGranted()) {
+    setStatus(
+      "face-status",
+      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
+    );
+    return;
+  }
   if (!_facePendingCanvas) {
     setStatus("face-status", "No photo loaded. Pick a photo or capture one with the camera first.");
     return;
@@ -1618,6 +1796,13 @@ function faceOverlayTick(ts) {
  */
 async function handleFaceCameraStart(videoId) {
   var videoEl, imgEl, startBtn, stopBtn, capBtn;
+  if (!faceConsentGranted()) {
+    setStatus(
+      "face-status",
+      __("face.consent_required", "Review and accept the biometric consent notice above to continue."),
+    );
+    return;
+  }
   if (typeof FaceCamera !== "function") {
     setStatus("face-status", "Face Camera module not loaded.");
     return;

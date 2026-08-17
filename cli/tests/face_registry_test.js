@@ -192,6 +192,68 @@ describe("FaceRegistry — constructor and open", () => {
   });
 });
 
+describe("FaceRegistry — retention purge", () => {
+  it("removes entries last touched more than RETENTION_MS ago", async () => {
+    const { reg, store } = freshRegistry();
+    const old = Date.now() - FaceRegistry.RETENTION_MS - 60 * 1000;
+    await store.open();
+    const idOld = await store.add({
+      label: "ghost",
+      descriptor: makeDescriptor([1]),
+      created: new Date(old),
+      updated: new Date(old),
+    });
+    const idFresh = await store.add({
+      label: "alice",
+      descriptor: makeDescriptor([2]),
+      created: new Date(),
+      updated: new Date(),
+    });
+    const purged = await reg.purgeExpired();
+    assert.equal(purged, 1);
+    assert.equal(await store.get(idOld), null);
+    assert.notEqual(await store.get(idFresh), null);
+  });
+
+  it("purges expired entries automatically on open()", async () => {
+    const { reg, store } = freshRegistry();
+    const old = Date.now() - FaceRegistry.RETENTION_MS - 1;
+    await store.open();
+    const id = await store.add({
+      label: "ghost",
+      descriptor: makeDescriptor([3]),
+      created: new Date(old),
+      updated: new Date(old),
+    });
+    await reg.open();
+    assert.equal(await store.get(id), null);
+  });
+
+  it("keeps entries within the 3-year window (BIPA: from last interaction)", async () => {
+    const { reg, store } = freshRegistry();
+    const t = Date.now() - FaceRegistry.RETENTION_MS + 60 * 1000;
+    await store.open();
+    await store.add({
+      label: "keep",
+      descriptor: makeDescriptor([4]),
+      created: new Date(t),
+      updated: new Date(t),
+    });
+    const purged = await reg.purgeExpired();
+    assert.equal(purged, 0);
+    assert.equal(await store.count(), 1);
+  });
+
+  it("keeps entries without timestamps and never throws", async () => {
+    const { reg, store } = freshRegistry();
+    await store.open();
+    await store.add({ label: "x", descriptor: makeDescriptor([5]) });
+    const purged = await reg.purgeExpired();
+    assert.equal(purged, 0);
+    assert.equal(await store.count(), 1);
+  });
+});
+
 describe("FaceRegistry — addFace and getFace", () => {
   it("should add a face and return numeric id", async () => {
     const { reg } = freshRegistry();

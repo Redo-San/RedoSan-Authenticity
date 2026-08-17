@@ -2565,3 +2565,163 @@ describe("Face UI — file validation", () => {
     globalThis.loadImage = origLoad;
   });
 });
+
+// ── Biometric consent (GDPR Art 9(2)(a), BIPA 740 ILCS 14) ──
+
+function makeConsentDoc(overrides) {
+  const els = {
+    "face-consent-panel": { style: {} },
+    "face-consent-check": { checked: false, addEventListener: function () {} },
+    "face-consent-accept": { disabled: true },
+    "face-consent-status": { style: {}, textContent: "" },
+    "face-image": { files: [], disabled: false },
+    "face-cam-start": { disabled: false },
+    "face-run": { disabled: true },
+    "face-label": { value: "" },
+  };
+  if (overrides) Object.assign(els, overrides);
+  return makeDoc(els);
+}
+
+function makeLocalStorage() {
+  const map = new Map();
+  return {
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => map.set(k, String(v)),
+    removeItem: (k) => map.delete(k),
+    clear: () => map.clear(),
+  };
+}
+
+describe("Face UI — biometric consent", () => {
+  const savedLS = globalThis.localStorage;
+  const savedConfirm = globalThis.confirm;
+
+  beforeEach(() => {
+    globalThis.localStorage = makeLocalStorage();
+    globalThis.confirm = savedConfirm;
+  });
+
+  afterEach(() => {
+    globalThis.localStorage = savedLS;
+    resetGlobals();
+  });
+
+  it("faceConsentGranted is true when the panel is absent (test/embedded contexts)", () => {
+    globalThis.document = makeDoc(); // no face-consent-panel
+    assert.equal(globalThis.faceConsentGranted(), true);
+  });
+
+  it("faceConsentGranted is false with a visible panel and no record", () => {
+    globalThis.document = makeConsentDoc();
+    assert.equal(globalThis.faceConsentGranted(), false);
+  });
+
+  it("faceConsentGranted is true once a valid record exists", () => {
+    globalThis.document = makeConsentDoc();
+    globalThis.faceConsentSave({
+      version: 1,
+      policyVersion: 1,
+      acceptedAt: new Date().toISOString(),
+    });
+    assert.equal(globalThis.faceConsentGranted(), true);
+  });
+
+  it("accept refuses without an explicit (unticked) checkbox", async () => {
+    globalThis.document = makeConsentDoc();
+    await globalThis.handleFaceConsentAccept();
+    assert.equal(globalThis.faceConsentLoad(), null);
+  });
+
+  it("accept records consent, hides the panel and re-enables entry points", async () => {
+    const doc = makeConsentDoc();
+    globalThis.document = doc;
+    doc.getElementById("face-consent-check").checked = true;
+    await globalThis.handleFaceConsentAccept();
+    const rec = globalThis.faceConsentLoad();
+    assert.ok(rec, "consent record saved");
+    assert.equal(rec.version, 1);
+    assert.equal(rec.policyVersion, 1);
+    assert.ok(rec.acceptedAt, "acceptance timestamp recorded");
+    assert.equal(doc.getElementById("face-consent-panel").style.display, "none");
+    assert.equal(doc.getElementById("face-consent-status").style.display, "block");
+    assert.equal(doc.getElementById("face-image").disabled, false);
+    assert.equal(doc.getElementById("face-cam-start").disabled, false);
+  });
+
+  it("withdraw clears consent, erases registry data and re-blocks the UI", async () => {
+    const doc = makeConsentDoc();
+    globalThis.document = doc;
+    let cleared = 0;
+    globalThis.faceRegistry = {
+      clear: async function () {
+        cleared++;
+      },
+    };
+    globalThis.faceConsentSave({
+      version: 1,
+      policyVersion: 1,
+      acceptedAt: new Date().toISOString(),
+    });
+    await globalThis.handleFaceConsentWithdraw();
+    assert.equal(globalThis.faceConsentLoad(), null, "consent record removed");
+    assert.equal(cleared, 1, "registry erased (Art 17)");
+    assert.equal(doc.getElementById("face-consent-panel").style.display, "");
+    assert.equal(doc.getElementById("face-image").disabled, true);
+    assert.equal(doc.getElementById("face-cam-start").disabled, true);
+    assert.equal(doc.getElementById("face-run").disabled, true);
+  });
+
+  it("withdraw is a no-op when the confirmation is declined", async () => {
+    const doc = makeConsentDoc();
+    globalThis.document = doc;
+    globalThis.confirm = function () {
+      return false;
+    };
+    globalThis.faceConsentSave({
+      version: 1,
+      policyVersion: 1,
+      acceptedAt: new Date().toISOString(),
+    });
+    await globalThis.handleFaceConsentWithdraw();
+    assert.notEqual(globalThis.faceConsentLoad(), null, "record survives a declined confirmation");
+  });
+
+  it("updateFaceRunState disables the run button until consent is recorded", () => {
+    const doc = makeConsentDoc();
+    globalThis.document = doc;
+    doc.getElementById("face-label").value = "alice";
+    globalThis._facePendingCanvas = createCanvas(10, 10);
+    globalThis.updateFaceRunState();
+    assert.equal(doc.getElementById("face-run").disabled, true);
+    globalThis.faceConsentSave({
+      version: 1,
+      policyVersion: 1,
+      acceptedAt: new Date().toISOString(),
+    });
+    globalThis.updateFaceRunState();
+    assert.equal(doc.getElementById("face-run").disabled, false);
+  });
+
+  it("initFaceConsent blocks collection entry points when no record exists", () => {
+    const doc = makeConsentDoc();
+    globalThis.document = doc;
+    globalThis.initFaceConsent();
+    assert.equal(doc.getElementById("face-image").disabled, true);
+    assert.equal(doc.getElementById("face-cam-start").disabled, true);
+  });
+
+  it("initFaceConsent keeps entry points enabled when consent is on record", () => {
+    const doc = makeConsentDoc();
+    globalThis.document = doc;
+    globalThis.faceConsentSave({
+      version: 1,
+      policyVersion: 1,
+      acceptedAt: new Date().toISOString(),
+    });
+    globalThis.initFaceConsent();
+    assert.equal(doc.getElementById("face-image").disabled, false);
+    assert.equal(doc.getElementById("face-cam-start").disabled, false);
+    assert.equal(doc.getElementById("face-consent-panel").style.display, "none");
+  });
+});

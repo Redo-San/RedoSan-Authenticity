@@ -135,6 +135,80 @@ describe("FaceONNXEmbedder — load", () => {
     assert.equal(FaceONNXEmbedder.isReady(), false);
     assert.ok(FaceONNXEmbedder.getError(), "an error message is recorded");
   });
+
+  it("pins the ArcFace model SHA-256 for runtime verification", () => {
+    assert.match(FaceONNXEmbedder.MODEL_SHA256, /^[0-9a-f]{64}$/);
+  });
+
+  it("skips verification when a runtime is injected (test seam)", async () => {
+    let fetchCalls = 0;
+    globalThis.fetch = async function () {
+      fetchCalls++;
+      return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) };
+    };
+    try {
+      const ok = await FaceONNXEmbedder.load({ runtime: fakeRuntime() }); // default URL + pinned hash
+      assert.equal(ok, true);
+      assert.equal(fetchCalls, 0);
+    } finally {
+      delete globalThis.fetch;
+    }
+  });
+
+  it("verifies the bytes and passes the verified buffer to the session", async () => {
+    const crypto = require("crypto");
+    const bytes = new Uint8Array([10, 20, 30, 40]);
+    const expected = crypto.createHash("sha256").update(bytes).digest("hex");
+    globalThis.fetch = async function () {
+      return {
+        ok: true,
+        status: 200,
+        arrayBuffer: async function () {
+          return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+        },
+      };
+    };
+    let seenArg = null;
+    const rt = fakeRuntime();
+    rt.InferenceSession.create = async function (arg) {
+      seenArg = arg;
+      return {
+        run: async function () { return { output: { data: new Float32Array(512).fill(0.5) } }; },
+        outputNames: ["output"],
+      };
+    };
+    try {
+      const ok = await FaceONNXEmbedder.load({
+        runtime: rt,
+        modelUrl: "https://models.example/w600k_mbf.onnx",
+        modelSha256: expected,
+        verifyModel: true,
+      });
+      assert.equal(ok, true);
+      assert.ok(seenArg instanceof ArrayBuffer, "session must receive the verified ArrayBuffer");
+    } finally {
+      delete globalThis.fetch;
+    }
+  });
+
+  it("refuses to load on SHA-256 mismatch", async () => {
+    globalThis.fetch = async function () {
+      return { ok: true, arrayBuffer: async () => new Uint8Array([7, 7, 7]).buffer };
+    };
+    try {
+      const ok = await FaceONNXEmbedder.load({
+        runtime: fakeRuntime(),
+        modelUrl: "https://models.example/w600k_mbf.onnx",
+        modelSha256: "cd".repeat(32),
+        verifyModel: true,
+      });
+      assert.equal(ok, false);
+      assert.equal(FaceONNXEmbedder.isReady(), false);
+      assert.ok(FaceONNXEmbedder.getError().includes("integrity"));
+    } finally {
+      delete globalThis.fetch;
+    }
+  });
 });
 
 describe("FaceONNXEmbedder — embed", () => {

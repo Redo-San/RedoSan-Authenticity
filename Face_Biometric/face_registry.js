@@ -169,12 +169,66 @@ function FaceRegistry(options) {
 }
 
 /**
+ * Retention window for registry entries (biometric templates). Aligned with
+ * the BIPA retention cap (740 ILCS 14/15: destroy within 3 years of the last
+ * interaction) and GDPR Art 5(1)(e) storage limitation. Entries are purged
+ * automatically when open() runs; the UI discloses this policy and allows
+ * deletion at any time.
+ */
+FaceRegistry.RETENTION_MS = 3 * 365 * 24 * 60 * 60 * 1000;
+
+/**
  * @returns {Promise<void>}
  */
 FaceRegistry.prototype.open = async function () {
     if (this._opened) return;
     await this._store.open();
     this._opened = true;
+    this._lastPurgedCount = await this._purgeExpired();
+};
+
+/**
+ * Delete every entry whose last update (fallback: creation) is older than
+ * FaceRegistry.RETENTION_MS. Idempotent; never throws.
+ * @returns {Promise<number>} number of purged entries
+ */
+FaceRegistry.prototype._purgeExpired = async function () {
+    var all, now, cutoff, i, e, t, removed;
+    try {
+        all = await this._store.getAll();
+    } catch (e) {
+        return 0;
+    }
+    now = Date.now();
+    cutoff = now - FaceRegistry.RETENTION_MS;
+    removed = 0;
+    for (i = 0; i < all.length; i++) {
+        e = all[i];
+        if (!e || e.id === undefined) continue;
+        t = e.updated instanceof Date ? e.updated.getTime() : (e.created instanceof Date ? e.created.getTime() : now);
+        if (isNaN(t)) t = now;
+        if (t < cutoff) {
+            try {
+                await this._store.remove(e.id);
+                removed++;
+            } catch (err) {
+                // keep going — one failing entry must not block the purge
+            }
+        }
+    }
+    return removed;
+};
+
+/**
+ * Run the retention purge on demand (also runs automatically on open()).
+ * @returns {Promise<number>} number of purged entries
+ */
+FaceRegistry.prototype.purgeExpired = async function () {
+    if (!this._opened) {
+        await this.open();
+        return this._lastPurgedCount || 0;
+    }
+    return this._purgeExpired();
 };
 
 /**
