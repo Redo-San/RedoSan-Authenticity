@@ -1,9 +1,44 @@
 var http = require("node:http"),
+  https = require("node:https"),
   fs = require("node:fs"),
   path = require("node:path"),
   zlib = require("node:zlib");
 var ROOT = path.resolve(__dirname);
 var REAL_ROOT = fs.realpathSync(ROOT);
+
+// CLI flags: --https (TLS with local certs), --port N, --host H.
+var useHttps = false;
+var port = 8080;
+var host = "127.0.0.1";
+for (var ai = 0; ai < process.argv.length; ai++) {
+  var arg = process.argv[ai];
+  if (arg === "--https") useHttps = true;
+  else if (arg === "--port" && process.argv[ai + 1]) {
+    port = Number.parseInt(process.argv[++ai], 10) || 8080;
+  } else if (arg === "--host" && process.argv[ai + 1]) {
+    host = process.argv[++ai];
+  }
+}
+if (useHttps && port === 8080 && !process.argv.includes("--port")) port = 8443;
+
+var CERT_DIR = path.join(ROOT, "certs");
+var TLS_OPTIONS = null;
+if (useHttps) {
+  var certPath = path.join(CERT_DIR, "localhost.crt");
+  var keyPath = path.join(CERT_DIR, "localhost.key");
+  if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+    console.error(
+      "[dev-server] HTTPS requested but no local certificates found.\n" +
+        "  Generate them first:  pwsh -ExecutionPolicy Bypass -File scripts/generate-dev-cert.ps1\n" +
+        "  Expected files: certs/localhost.crt and certs/localhost.key",
+    );
+    process.exit(1);
+  }
+  TLS_OPTIONS = {
+    cert: fs.readFileSync(certPath),
+    key: fs.readFileSync(keyPath),
+  };
+}
 
 /**
  *
@@ -53,8 +88,8 @@ var PAGE_NAMES = new Set([
 ]);
 
 // Sensitive paths that must never be served over HTTP: VCS internals,
-// dotenv secrets, dependency trees and private key material.
-var BLOCKED_PATH_RE = /(^|\/)(\.git|\.hg|\.svn|\.env|node_modules)(\/|$)/i;
+// dotenv secrets, dependency trees, private key material and local TLS certs.
+var BLOCKED_PATH_RE = /(^|\/)(\.git|\.hg|\.svn|\.env|node_modules|certs)(\/|$)/i;
 var BLOCKED_SECRET_EXT_RE = /\.(pem|key|p12|pfx|asc|gpg|secret|env)$/i;
 
 /**
@@ -68,8 +103,8 @@ function isBlockedPath(resolved) {
   return false;
 }
 
-http
-  .createServer(function (req, res) {
+var serverFactory = useHttps ? https.createServer.bind(null, TLS_OPTIONS) : http.createServer;
+serverFactory(function (req, res) {
     var pathname = "/" + req.url.split("?", 1)[0].replaceAll(/^\/+|\/+$/g, "");
     var filePath;
     var m;
@@ -113,7 +148,12 @@ http
       res.end("Not Found: " + escHtml(pathname));
     }
   })
-  .listen(8080, "127.0.0.1");
+  .listen(port, host, function () {
+    var scheme = useHttps ? "https" : "http";
+    console.log(
+      "[dev-server] " + scheme + "://" + host + ":" + port + " serving " + ROOT,
+    );
+  });
 
 /**
  *
