@@ -59,6 +59,178 @@ function setFaceStep(text) {
 }
 
 /**
+ * Keep only ASCII characters in a text field value. "label" mode allows
+ * English letters, digits, space, dot, dash and underscore; "pass" mode
+ * allows any printable ASCII (passphrase safety: blocks non-English input
+ * but keeps symbols). Returns the sanitized string (never mutates).
+ * @param {string} value
+ * @param {"label"|"pass"} mode
+ * @returns {string}
+ */
+function sanitizeFaceText(value, mode) {
+  var out, i, c;
+  if (typeof value !== "string") return "";
+  out = "";
+  for (i = 0; i < value.length; i++) {
+    c = value.charCodeAt(i);
+    if (mode === "pass") {
+      if (c >= 0x20 && c <= 0x7e) out += value[i];
+    } else if (
+      c === 32 ||
+      (c >= 48 && c <= 57) ||
+      (c >= 65 && c <= 90) ||
+      (c >= 97 && c <= 122) ||
+      c === 45 ||
+      c === 46 ||
+      c === 95
+    ) {
+      if (c === 32 && (out.length === 0 || out.charCodeAt(out.length - 1) === 32)) continue;
+      out += value[i];
+    }
+  }
+  return out;
+}
+
+var _faceProgressOverlay = null;
+
+/**
+ * Re-resolve the overlay elements from the live DOM (cheap) so calls stay
+ * correct even after the SPA router swaps the page.
+ * @returns {object|null}
+ */
+function faceProgressRefs() {
+  var overlay;
+  if (typeof document === "undefined" || !document.getElementById) return null;
+  overlay = document.getElementById("face-progress-overlay");
+  if (!overlay) return null;
+  return {
+    overlay: overlay,
+    bar: document.getElementById("face-progress-bar"),
+    title: document.getElementById("face-progress-title"),
+    text: document.getElementById("face-progress-text"),
+    pct: document.getElementById("face-progress-pct"),
+  };
+}
+
+/**
+ * Lazily build the blur + spinner progress overlay (works in both the SPA
+ * hub and the MPA page). The overlay fades in/out via a CSS opacity
+ * transition; the spinner and the indeterminate shimmer are compositor
+ * driven, so they keep animating even while the main thread is busy with
+ * face detection.
+ * @returns {HTMLElement|null}
+ */
+function faceProgressEnsure() {
+  var refs, overlay, card, spin, track, bar, title, text, pct;
+  refs = faceProgressRefs();
+  if (refs) return refs.overlay;
+  if (typeof document === "undefined" || !document.getElementById || !document.createElement || !document.body) return null;
+  overlay = document.createElement("div");
+  overlay.id = "face-progress-overlay";
+  overlay.className = "face-progress-overlay";
+  card = document.createElement("div");
+  card.className = "face-progress-card";
+  spin = document.createElement("div");
+  spin.className = "face-progress-spinner";
+  title = document.createElement("div");
+  title.className = "face-progress-title";
+  title.id = "face-progress-title";
+  text = document.createElement("div");
+  text.className = "face-progress-text";
+  text.id = "face-progress-text";
+  track = document.createElement("div");
+  track.className = "face-progress-track";
+  bar = document.createElement("div");
+  bar.className = "face-progress-bar";
+  bar.id = "face-progress-bar";
+  pct = document.createElement("div");
+  pct.className = "face-progress-pct";
+  pct.id = "face-progress-pct";
+  pct.textContent = "0%";
+  track.appendChild(bar);
+  track.appendChild(pct);
+  card.appendChild(spin);
+  card.appendChild(title);
+  card.appendChild(text);
+  card.appendChild(track);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+  _faceProgressOverlay = overlay;
+  return overlay;
+}
+
+/**
+ * Fade the progress overlay in and start the current stage label.
+ * @param {string} title
+ * @param {string} text
+ */
+function faceProgressShow(title, text) {
+  var refs;
+  refs = faceProgressRefs();
+  if (!refs) {
+    if (!faceProgressEnsure()) return;
+    refs = faceProgressRefs();
+    if (!refs) return;
+  }
+  if (refs.title) refs.title.textContent = title;
+  if (refs.text) refs.text.textContent = text;
+  if (refs.bar) refs.bar.style.width = "0%";
+  if (refs.pct) refs.pct.textContent = "0%";
+  void refs.overlay.offsetWidth; // force reflow so the transition actually runs
+  refs.overlay.classList.add("is-visible");
+}
+
+/**
+ * Advance the determinate progress bar (0..1) and refresh the stage text.
+ * @param {number} fraction
+ * @param {string|null} text
+ */
+function faceProgressUpdate(fraction, text) {
+  var refs, pct, p;
+  refs = faceProgressRefs();
+  if (!refs || !refs.overlay.classList.contains("is-visible")) return;
+  if (refs.text && text) refs.text.textContent = text;
+  pct = Math.max(0, Math.min(100, Math.round(fraction * 100)));
+  if (refs.bar) {
+    refs.bar.style.width = pct + "%";
+    refs.bar.classList.add("is-det");
+  }
+  if (refs.pct) refs.pct.textContent = pct + "%";
+  p = refs.pct || refs.bar;
+  if (p && p.setAttribute) p.setAttribute("aria-valuenow", String(pct));
+}
+
+/**
+ * Fade the progress overlay out (CSS transition) and detach it so a later
+ * run rebuilds a fresh element.
+ */
+function faceProgressHide() {
+  var overlay, t;
+  overlay = faceProgressRefs() ? faceProgressRefs().overlay : null;
+  if (!overlay || !overlay.classList) return;
+  overlay.classList.remove("is-visible");
+  t = setTimeout(function () {
+    if (overlay && overlay.parentNode && !overlay.classList.contains("is-visible")) {
+      overlay.parentNode.removeChild(overlay);
+    }
+  }, 600);
+  if (t && t.unref) t.unref();
+  _faceProgressOverlay = null;
+}
+
+/**
+ * Update both the #face-steps box and the progress overlay for a stage.
+ * @param {string|null} text
+ * @param {number|null} fraction
+ */
+function setFaceStage(text, fraction) {
+  setFaceStep(text);
+  if (fraction !== null && typeof faceProgressUpdate === "function") {
+    faceProgressUpdate(fraction, text);
+  }
+}
+
+/**
  * SHA-256 digest of a descriptor (hex). Falls back to the legacy rolling hash
  * only when WebCrypto/FaceCrypto is unavailable.
  * @param {Float32Array|number[]} desc
@@ -204,6 +376,7 @@ async function faceExtractEmbedding(canvas, face) {
  *
  */
 async function initFaceBiometric() {
+  var passEl;
   try {
     if (typeof FaceEngine === "function") {
       faceEngine = new FaceEngine();
@@ -214,6 +387,12 @@ async function initFaceBiometric() {
     }
   } catch (error) {
     setStatus("face-status", "Failed to initialize: " + error.message);
+  }
+  passEl = document.getElementById("face-lock-pass");
+  if (passEl && typeof passEl.addEventListener === "function") {
+    passEl.addEventListener("input", function () {
+      passEl.value = sanitizeFaceText(passEl.value, "pass");
+    });
   }
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
   if (typeof maybePromptFaceEncryption === "function") await maybePromptFaceEncryption();
@@ -341,10 +520,22 @@ async function handleFaceFilePicked() {
   var file, loaded, ctx, startBtn, capBtn, imgEl;
   file = document.getElementById("face-image").files[0];
   if (!file) return;
+  if (file.type && !["image/png", "image/jpeg"].some(function (t) { return t === file.type; })) {
+    setStatus("face-status", "Unsupported file type. Please use a PNG or JPEG photo.");
+    return;
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    setStatus("face-status", "Photo too large. Maximum file size is 25 MB.");
+    return;
+  }
   try {
     loaded = await loadImage(file);
   } catch (error) {
     setStatus("face-status", "Failed to load image: " + error.message);
+    return;
+  }
+  if (loaded.w > 5000 || loaded.h > 5000) {
+    setStatus("face-status", "Photo dimensions too large. Maximum is 5000x5000 px.");
     return;
   }
   if (faceCamera && faceCamera.isActive()) handleFaceCameraStop("face-camera");
@@ -358,7 +549,7 @@ async function handleFaceFilePicked() {
   prevEl = document.getElementById("face-preview");
   prevEl.width = loaded.w;
   prevEl.height = loaded.h;
-  ctx = prevEl.getContext("2d");
+  ctx = prevEl.getContext("2d", { willReadFrequently: true });
   ctx.drawImage(loaded.canvas, 0, 0);
   if (prevEl.style) prevEl.style.display = "block";
   startBtn = document.getElementById("face-cam-start");
@@ -380,6 +571,9 @@ function updateFaceRunState() {
   btn = document.getElementById("face-run");
   if (!btn) return;
   label = document.getElementById("face-label");
+  if (label && typeof label.value === "string") {
+    label.value = sanitizeFaceText(label.value, "label");
+  }
   btn.disabled = !(_facePendingCanvas && label && label.value && label.value.trim() !== "");
 }
 
@@ -461,7 +655,8 @@ async function runFacePipeline(canvas, opts) {
     return;
   }
   try {
-    setFaceStep("1/6 " + __("face.step.detect", "Detecting face..."));
+    faceProgressShow(__("face.progress.title", "Generating Identifiers"), __("face.step.detect", "Detecting face..."));
+    setFaceStage("1/6 " + __("face.step.detect", "Detecting face..."), 0.08);
     setStatus("face-status", "Loading models...");
     await faceEngine.loadModels();
     setStatus("face-status", "Detecting faces...");
@@ -469,7 +664,7 @@ async function runFacePipeline(canvas, opts) {
     prevEl = document.getElementById("face-preview");
     prevEl.width = canvas.width;
     prevEl.height = canvas.height;
-    ctx = prevEl.getContext("2d");
+    ctx = prevEl.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(canvas, 0, 0);
     if (prevEl.style) prevEl.style.display = "block";
     if (result.length > 0) {
@@ -494,6 +689,7 @@ async function runFacePipeline(canvas, opts) {
       if (!desc) {
         setStatus("face-status", "No face descriptor available (embedder: " + emb.version + ").");
         setFaceStep(null);
+        faceProgressHide();
         return;
       }
     } else {
@@ -501,10 +697,11 @@ async function runFacePipeline(canvas, opts) {
       window._lastFaceCount = 0;
       setStatus("face-status", "No face detected in the image.");
       setFaceStep(null);
+      faceProgressHide();
       return;
     }
 
-    setFaceStep("2/6 " + __("face.step.did", "Generating DID keypair..."));
+    setFaceStage("2/6 " + __("face.step.did", "Generating DID keypair..."), 0.45);
     setStatus("face-status", "Generating DID keypair...");
     kp = null;
     if (typeof didGenerateKeypair === "function") {
@@ -513,7 +710,7 @@ async function runFacePipeline(canvas, opts) {
       _faceKeypair = kp;
     }
 
-    setFaceStep("3/6 " + __("face.step.sign", "Signing descriptor with DID..."));
+    setFaceStage("3/6 " + __("face.step.sign", "Signing descriptor with DID..."), 0.6);
     setStatus("face-status", "Signing face descriptor with DID...");
     sigBytes = null;
     sigB64 = null;
@@ -527,7 +724,7 @@ async function runFacePipeline(canvas, opts) {
         ? didCreateVerifiableCredential(kp, await faceDescriptorHash(desc), sigB64)
         : null;
 
-    setFaceStep("4/6 " + __("face.step.biohash", "Generating Privacy ID..."));
+    setFaceStage("4/6 " + __("face.step.biohash", "Generating Privacy ID..."), 0.72);
     setStatus("face-status", "Generating Privacy Identifier (BioHash)...");
     bio = null;
     pinEl = document.getElementById("face-biohash-pin");
@@ -542,7 +739,7 @@ async function runFacePipeline(canvas, opts) {
       bio.pinAuto = !!_faceAutoPin;
     }
 
-    setFaceStep("5/6 " + __("face.step.fuzzy", "Generating Fuzzy ID..."));
+    setFaceStage("5/6 " + __("face.step.fuzzy", "Generating Fuzzy ID..."), 0.84);
     setStatus("face-status", "Generating Fuzzy identifier...");
     fuzzy = null;
     if (typeof FaceFuzzy !== "undefined" && typeof FaceFuzzy.quantize === "function" && typeof FaceFuzzy.encode === "function") {
@@ -550,7 +747,7 @@ async function runFacePipeline(canvas, opts) {
       fuzzy.helperHex = faceBytesToHex(fuzzy.helper);
     }
 
-    setFaceStep("6/6 " + __("face.step.match", "Matching registry..."));
+    setFaceStage("6/6 " + __("face.step.match", "Matching registry..."), 0.94);
     setStatus("face-status", "Checking registered faces...");
     matchR = null;
     id = null;
@@ -643,6 +840,7 @@ async function runFacePipeline(canvas, opts) {
     setStatus("face-status", "Pipeline error: " + error.message);
   }
   setFaceStep(null);
+  faceProgressHide();
 }
 
 /**

@@ -247,7 +247,7 @@ function loadImage(file) {
       const c = document.createElement("canvas");
       c.width = img.width;
       c.height = img.height;
-      const ctx = c.getContext("2d");
+      const ctx = c.getContext("2d", { willReadFrequently: true });
       ctx.drawImage(img, 0, 0);
       const d = ctx.getImageData(0, 0, img.width, img.height);
       d.w = img.width;

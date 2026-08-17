@@ -160,7 +160,7 @@ FaceCamera.prototype.captureFrame = function (maxW) {
     canvas = document.createElement("canvas");
     canvas.width = Math.round(w * scale);
     canvas.height = Math.round(h * scale);
-    ctx = canvas.getContext("2d");
+    ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (this._mirror) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);

@@ -652,6 +652,7 @@
   "face.embedder_hint": "ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM). Human runs fully offline.",
   "face.auto_hint": "Pick a photo or capture one with the camera, enter a Name/Label, then press Generate Identifiers — face detection, DID signing, Privacy ID, Fuzzy ID and registry match all run together.",
   "face.download_btn": "Download Results",
+  "face.progress.title": "Generating Identifiers",
   "face.step.detect": "Detecting face...",
   "face.step.did": "Generating DID keypair...",
   "face.step.sign": "Signing face descriptor with DID...",

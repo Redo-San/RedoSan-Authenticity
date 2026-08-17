@@ -220,6 +220,11 @@ function makeDoc(overrides) {
     "face-cam-capture": { disabled: true },
     "face-upload-wrapper": { style: {} },
     "face-capture-wrapper": { style: { display: "none" } },
+    "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: {}, offsetWidth: 0 },
+    "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+    "face-progress-title": { textContent: "", setAttribute: function () {} },
+    "face-progress-text": { textContent: "", setAttribute: function () {} },
+    "face-progress-pct": { textContent: "", setAttribute: function () {} },
   };
   if (overrides) Object.assign(store, overrides);
   return {
@@ -238,6 +243,7 @@ function makeDoc(overrides) {
       if (tag === "canvas") return createCanvas(200, 200);
       return { className: "", innerHTML: "", style: {}, append: function () {}, textContent: "" };
     },
+    body: { appendChild: function () {} },
   };
 }
 
@@ -2388,5 +2394,174 @@ describe("Face UI — passkey handlers", () => {
     await globalThis.handlePasskeyRemove(); // should not throw
     await globalThis.refreshPasskeyStatus();
     assert.ok(statusEl.textContent.includes("Passkey error: idb boom"));
+  });
+});
+
+// ── English-only input sanitizer ──
+
+describe("Face UI — sanitizeFaceText", () => {
+  beforeEach(resetGlobals);
+
+  it("should keep English letters, digits and safe separators", () => {
+    assert.equal(globalThis.sanitizeFaceText("Artist Name-2_x.", "label"), "Artist Name-2_x.");
+  });
+
+  it("should strip Arabic and other non-English scripts from labels", () => {
+    assert.equal(globalThis.sanitizeFaceText("فنان عربي Artist", "label"), "Artist");
+    assert.equal(globalThis.sanitizeFaceText("Привет мир", "label"), "");
+    assert.equal(globalThis.sanitizeFaceText("中文名", "label"), "");
+    assert.equal(globalThis.sanitizeFaceText("Emoji😀Face", "label"), "EmojiFace");
+  });
+
+  it("should collapse consecutive spaces in labels", () => {
+    assert.equal(globalThis.sanitizeFaceText("A  B   C", "label"), "A B C");
+    assert.equal(globalThis.sanitizeFaceText("  lead", "label"), "lead");
+  });
+
+  it("should drop quotes and control characters from labels", () => {
+    assert.equal(globalThis.sanitizeFaceText('Jo"hn<>&;', "label"), "John");
+    assert.equal(globalThis.sanitizeFaceText("Tab\there", "label"), "Tabhere");
+  });
+
+  it("should keep printable ASCII for passphrases but block non-English input", () => {
+    assert.equal(globalThis.sanitizeFaceText("p@ssw0rd-123!", "pass"), "p@ssw0rd-123!");
+    assert.equal(globalThis.sanitizeFaceText("مفتاح-سر", "pass"), "-");
+    assert.equal(globalThis.sanitizeFaceText("密钥", "pass"), "");
+  });
+
+  it("should return an empty string for non-string input", () => {
+    assert.equal(globalThis.sanitizeFaceText(undefined, "label"), "");
+    assert.equal(globalThis.sanitizeFaceText(null, "pass"), "");
+  });
+});
+
+// ── updateFaceRunState sanitizes the label in place ──
+
+describe("Face UI — updateFaceRunState sanitizer", () => {
+  beforeEach(resetGlobals);
+
+  it("should strip non-English characters from the label field", () => {
+    const label = { value: "فنان عربي Artist" };
+    globalThis.document = makeDoc({
+      "face-run": { disabled: true },
+      "face-label": label,
+    });
+    globalThis.updateFaceRunState();
+    assert.equal(label.value, "Artist");
+  });
+});
+
+// ── Progress overlay (blur + spinner + progress bar) ──
+
+describe("Face UI — progress overlay", () => {
+  beforeEach(resetGlobals);
+
+  function makeOverlayDoc() {
+    const overlay = { classList: makeClassList(), style: {}, parentNode: {}, offsetWidth: 0 };
+    const bar = { style: {}, classList: makeClassList(), setAttribute: function () {} };
+    const title = { textContent: "", setAttribute: function () {} };
+    const text = { textContent: "", setAttribute: function () {} };
+    const pct = { textContent: "", setAttribute: function () {} };
+    globalThis.document = makeDoc({
+      "face-progress-overlay": overlay,
+      "face-progress-bar": bar,
+      "face-progress-title": title,
+      "face-progress-text": text,
+      "face-progress-pct": pct,
+    });
+    return { overlay, bar, title, text, pct };
+  }
+
+  it("should fade the overlay in with title and stage text", () => {
+    const { overlay, title, text } = makeOverlayDoc();
+    globalThis.faceProgressShow("Generating Identifiers", "Detecting face...");
+    assert.equal(overlay.classList.contains("is-visible"), true);
+    assert.equal(title.textContent, "Generating Identifiers");
+    assert.equal(text.textContent, "Detecting face...");
+  });
+
+  it("should advance the determinate bar and percentage", () => {
+    const { overlay, bar, pct, text } = makeOverlayDoc();
+    globalThis.faceProgressShow("t", "s");
+    globalThis.faceProgressUpdate(0.45, "Signing...");
+    assert.equal(bar.style.width, "45%");
+    assert.equal(bar.classList.contains("is-det"), true);
+    assert.equal(pct.textContent, "45%");
+    assert.equal(text.textContent, "Signing...");
+  });
+
+  it("should clamp the percentage to 0..100", () => {
+    const { pct, bar } = makeOverlayDoc();
+    globalThis.faceProgressShow("t", "s");
+    globalThis.faceProgressUpdate(1.5, null);
+    assert.equal(pct.textContent, "100%");
+    assert.equal(bar.style.width, "100%");
+    globalThis.faceProgressUpdate(-1, null);
+    assert.equal(pct.textContent, "0%");
+  });
+
+  it("should ignore updates while hidden", () => {
+    const { bar } = makeOverlayDoc();
+    globalThis.faceProgressUpdate(0.5, "x");
+    assert.equal(bar.style.width, undefined);
+  });
+
+  it("should fade the overlay out", () => {
+    const { overlay } = makeOverlayDoc();
+    globalThis.faceProgressShow("t", "s");
+    globalThis.faceProgressHide();
+    assert.equal(overlay.classList.contains("is-visible"), false);
+  });
+});
+
+// ── File validation in handleFaceFilePicked ──
+
+describe("Face UI — file validation", () => {
+  beforeEach(resetGlobals);
+
+  it("should reject unsupported file types", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-image": { files: [{ name: "x.gif", type: "image/gif" }] },
+    });
+    await globalThis.handleFaceFilePicked();
+    assert.ok(statusEl.textContent.includes("Unsupported file type"));
+    assert.equal(globalThis._facePendingCanvas, null);
+  });
+
+  it("should accept PNG/JPEG even when the type is missing", async () => {
+    globalThis.document = makeDoc({
+      "face-image": { files: [{ name: "x.png" }] },
+    });
+    await globalThis.handleFaceFilePicked();
+    assert.ok(globalThis._facePendingCanvas, "photo staged");
+  });
+
+  it("should reject oversized files", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-image": { files: [{ name: "big.png", type: "image/png", size: 30 * 1024 * 1024 }] },
+    });
+    await globalThis.handleFaceFilePicked();
+    assert.ok(statusEl.textContent.includes("too large"));
+    assert.equal(globalThis._facePendingCanvas, null);
+  });
+
+  it("should reject oversized dimensions", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-image": { files: [{ name: "huge.png", type: "image/png" }] },
+    });
+    const origLoad = globalThis.loadImage;
+    globalThis.loadImage = async function () {
+      return { canvas: createCanvas(10, 10), w: 6000, h: 4000 };
+    };
+    await globalThis.handleFaceFilePicked();
+    assert.ok(statusEl.textContent.includes("dimensions too large"));
+    assert.equal(globalThis._facePendingCanvas, null);
+    globalThis.loadImage = origLoad;
   });
 });
