@@ -1,5 +1,17 @@
 /* c8 ignore start */
-(function(){if(typeof window!=='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function () {
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
+    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
+      window.location.href,
+    )
+  )
+    throw new Error(
+      "RedoSan Authenticity: This script is protected by GPL license.",
+    );
+})();
 /* c8 ignore stop */
 // ── Face WebAuthn: passkey as a second factor for the face registry ──
 // Thin wrapper around the WebAuthn API (navigator.credentials) that returns
@@ -63,7 +75,10 @@ var FaceWebauthn = (function () {
       var buf;
       bytes = bytes || 32;
       buf = new Uint8Array(bytes);
-      if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+      if (
+        typeof crypto !== "undefined" &&
+        typeof crypto.getRandomValues === "function"
+      ) {
         crypto.getRandomValues(buf);
       } else {
         for (var i = 0; i < bytes; i++) buf[i] = (Math.random() * 256) | 0;
@@ -84,7 +99,10 @@ var FaceWebauthn = (function () {
       if (!clientDataJSON) return {};
       if (typeof clientDataJSON === "string") text = clientDataJSON;
       else {
-        bytes = clientDataJSON instanceof Uint8Array ? clientDataJSON : new Uint8Array(clientDataJSON);
+        bytes =
+          clientDataJSON instanceof Uint8Array
+            ? clientDataJSON
+            : new Uint8Array(clientDataJSON);
         text = String.fromCharCode.apply(null, bytes);
       }
       try {
@@ -117,7 +135,10 @@ var FaceWebauthn = (function () {
         challenge: b64urlToBytes(challenge),
         rp: {
           name: o.rpName || "RedoSan Authenticity",
-          id: o.rpId || (typeof location !== "undefined" && location.hostname) || "localhost",
+          id:
+            o.rpId ||
+            (typeof location !== "undefined" && location.hostname) ||
+            "localhost",
         },
         user: {
           id: b64urlToBytes(o.userId || FaceWebauthn.randomChallenge(16)),
@@ -158,7 +179,10 @@ var FaceWebauthn = (function () {
       publicKey = {
         challenge: b64urlToBytes(challenge),
         timeout: o.timeout || 60000,
-        rpId: o.rpId || (typeof location !== "undefined" && location.hostname) || "localhost",
+        rpId:
+          o.rpId ||
+          (typeof location !== "undefined" && location.hostname) ||
+          "localhost",
         userVerification: o.userVerification || "preferred",
       };
       if (o.allowCredentials && o.allowCredentials.length) {
@@ -192,21 +216,32 @@ var FaceWebauthn = (function () {
         response: {},
       };
       if (typeof resp.clientDataJSON !== "undefined") {
-        json.response.clientDataJSON = bytesToB64url(new Uint8Array(resp.clientDataJSON));
+        json.response.clientDataJSON = bytesToB64url(
+          new Uint8Array(resp.clientDataJSON),
+        );
       }
       if (resp.attestationObject) {
-        json.response.attestationObject = bytesToB64url(new Uint8Array(resp.attestationObject));
+        json.response.attestationObject = bytesToB64url(
+          new Uint8Array(resp.attestationObject),
+        );
       }
       if (resp.authenticatorData) {
-        json.response.authenticatorData = bytesToB64url(new Uint8Array(resp.authenticatorData));
+        json.response.authenticatorData = bytesToB64url(
+          new Uint8Array(resp.authenticatorData),
+        );
       }
       if (resp.signature) {
         json.response.signature = bytesToB64url(new Uint8Array(resp.signature));
       }
       if (resp.userHandle) {
-        json.response.userHandle = bytesToB64url(new Uint8Array(resp.userHandle));
+        json.response.userHandle = bytesToB64url(
+          new Uint8Array(resp.userHandle),
+        );
       }
-      if (cred.getClientExtensionResults && typeof cred.getClientExtensionResults === "function") {
+      if (
+        cred.getClientExtensionResults &&
+        typeof cred.getClientExtensionResults === "function"
+      ) {
         json.clientExtensionResults = cred.getClientExtensionResults();
       }
       return json;

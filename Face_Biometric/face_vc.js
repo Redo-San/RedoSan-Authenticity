@@ -1,5 +1,17 @@
 /* c8 ignore start */
-(function(){if(typeof window!=='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function () {
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
+    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
+      window.location.href,
+    )
+  )
+    throw new Error(
+      "RedoSan Authenticity: This script is protected by GPL license.",
+    );
+})();
 /* c8 ignore stop */
 // ── Face VC: W3C Verifiable Credential for face biometric identifiers ──
 
@@ -76,7 +88,8 @@ FaceVC.build = function (opts) {
     vc.credentialSubject.descriptorHash = opts.descriptorHash;
     vc.credentialSubject.descriptorHashAlg = "sha-256";
   }
-  if (opts.embeddingVersion) vc.credentialSubject.embeddingVersion = opts.embeddingVersion;
+  if (opts.embeddingVersion)
+    vc.credentialSubject.embeddingVersion = opts.embeddingVersion;
   if (opts.faceCount !== undefined && opts.faceCount !== null) {
     vc.credentialSubject.faceCount = opts.faceCount;
   }
@@ -95,8 +108,10 @@ FaceVC.build = function (opts) {
  */
 FaceVC.sign = async function (kp, vc, signFn) {
   var payload, sig, base64, dateField;
-  if (!kp || !kp.did) throw new TypeError("FaceVC.sign: keypair with did required");
-  if (!vc || !vc.issuer) throw new TypeError("FaceVC.sign: unsigned VC required");
+  if (!kp || !kp.did)
+    throw new TypeError("FaceVC.sign: keypair with did required");
+  if (!vc || !vc.issuer)
+    throw new TypeError("FaceVC.sign: unsigned VC required");
   // VC 2.0 renamed issuanceDate → validFrom; fall back for legacy v1 documents.
   dateField = vc.validFrom !== undefined ? "validFrom" : "issuanceDate";
   payload = FaceVC.canonicalString({
@@ -105,9 +120,13 @@ FaceVC.sign = async function (kp, vc, signFn) {
     credentialSubject: vc.credentialSubject,
   });
   if (!signFn && typeof didSign !== "function") {
-    throw new Error("FaceVC.sign: didSign not available (load Decentralized_Identity_DID/did.js)");
+    throw new Error(
+      "FaceVC.sign: didSign not available (load Decentralized_Identity_DID/did.js)",
+    );
   }
-  sig = signFn ? await signFn(new TextEncoder().encode(payload)) : await didSign(kp, payload);
+  sig = signFn
+    ? await signFn(new TextEncoder().encode(payload))
+    : await didSign(kp, payload);
   if (typeof FaceCrypto !== "undefined" && FaceCrypto.bytesToBase64) {
     base64 = FaceCrypto.bytesToBase64(sig);
   } else if (typeof didSigToBase64 === "function") {
@@ -137,23 +156,32 @@ FaceVC.sign = async function (kp, vc, signFn) {
  */
 FaceVC.verify = async function (vc, verifyFn) {
   var payload, sigBytes, pubKey, ok, dateField;
-  if (!vc || typeof vc !== "object") return { valid: false, error: "not an object" };
+  if (!vc || typeof vc !== "object")
+    return { valid: false, error: "not an object" };
   if (
     !Array.isArray(vc["@context"]) ||
-    (vc["@context"].indexOf(FaceVC.CONTEXT_V2) === -1 && vc["@context"].indexOf(FaceVC.CONTEXT_V1) === -1)
+    (vc["@context"].indexOf(FaceVC.CONTEXT_V2) === -1 &&
+      vc["@context"].indexOf(FaceVC.CONTEXT_V1) === -1)
   ) {
     return { valid: false, error: "missing credentials v1/v2 context" };
   }
-  if (!Array.isArray(vc.type) || vc.type.indexOf("VerifiableCredential") === -1 || vc.type.indexOf("RedoSanFaceBiometricCredential") === -1) {
+  if (
+    !Array.isArray(vc.type) ||
+    vc.type.indexOf("VerifiableCredential") === -1 ||
+    vc.type.indexOf("RedoSanFaceBiometricCredential") === -1
+  ) {
     return { valid: false, error: "missing credential types" };
   }
-  if (!vc.issuer || typeof vc.issuer !== "string") return { valid: false, error: "missing issuer" };
+  if (!vc.issuer || typeof vc.issuer !== "string")
+    return { valid: false, error: "missing issuer" };
   if (!vc.credentialSubject || vc.credentialSubject.id !== vc.issuer) {
     return { valid: false, error: "credentialSubject.id must equal issuer" };
   }
-  if (!vc.proof || !vc.proof.proofValue) return { valid: false, error: "missing proof" };
+  if (!vc.proof || !vc.proof.proofValue)
+    return { valid: false, error: "missing proof" };
   dateField = vc.validFrom !== undefined ? "validFrom" : "issuanceDate";
-  if (isNaN(Date.parse(vc[dateField]))) return { valid: false, error: "invalid " + dateField };
+  if (isNaN(Date.parse(vc[dateField])))
+    return { valid: false, error: "invalid " + dateField };
   payload = FaceVC.canonicalString({
     issuer: vc.issuer,
     [dateField]: vc[dateField],
@@ -162,18 +190,34 @@ FaceVC.verify = async function (vc, verifyFn) {
   sigBytes = FaceCrypto.base64ToBytes(vc.proof.proofValue);
   if (verifyFn) {
     ok = await verifyFn(payload, vc.proof.proofValue, vc.proof.cryptosuite);
-    return ok ? { valid: true } : { valid: false, error: "signature verification failed" };
+    return ok
+      ? { valid: true }
+      : { valid: false, error: "signature verification failed" };
   }
-  if (typeof didImportVerifyKey !== "function" || typeof didVerify !== "function") {
+  if (
+    typeof didImportVerifyKey !== "function" ||
+    typeof didVerify !== "function"
+  ) {
     return { valid: false, error: "DID verification API not available" };
   }
   try {
     pubKey = await didImportVerifyKey(vc.issuer);
-    ok = await didVerify(pubKey, sigBytes, payload, vc.proof.cryptosuite === "ecdsa-rdfc-2019" ? "P-256" : vc.proof.cryptosuite === "eddsa-rdfc-2022" ? "Ed25519" : "RSA");
+    ok = await didVerify(
+      pubKey,
+      sigBytes,
+      payload,
+      vc.proof.cryptosuite === "ecdsa-rdfc-2019"
+        ? "P-256"
+        : vc.proof.cryptosuite === "eddsa-rdfc-2022"
+        ? "Ed25519"
+        : "RSA",
+    );
   } catch (e) {
     return { valid: false, error: "verification error: " + e.message };
   }
-  return ok ? { valid: true } : { valid: false, error: "signature verification failed" };
+  return ok
+    ? { valid: true }
+    : { valid: false, error: "signature verification failed" };
 };
 
 /**

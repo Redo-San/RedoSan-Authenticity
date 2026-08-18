@@ -3553,7 +3553,6 @@ html[dir="rtl"] .ast-msg-user {
   justify-content: center;
   background: rgb(15, 15, 35, 0.35);
   backdrop-filter: blur(7px);
-  backdrop-filter: blur(7px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.45s ease;
@@ -3579,9 +3578,17 @@ html[dir="rtl"] .ast-msg-user {
   height: 58px;
   margin: 0 auto 16px;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, var(--primary, #6c5ce7), rgb(108, 92, 231, 0.15) 65%, var(--primary, #6c5ce7));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  background: conic-gradient(
+    from 0deg,
+    var(--primary, #6c5ce7),
+    rgb(108, 92, 231, 0.15) 65%,
+    var(--primary, #6c5ce7)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 7px),
+    #000 calc(100% - 6px)
+  );
   animation: face-spin 0.9s linear infinite;
 }
 

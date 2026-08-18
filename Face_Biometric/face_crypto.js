@@ -1,5 +1,17 @@
 /* c8 ignore start */
-(function(){if(typeof window!=='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function () {
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
+    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
+      window.location.href,
+    )
+  )
+    throw new Error(
+      "RedoSan Authenticity: This script is protected by GPL license.",
+    );
+})();
 /* c8 ignore stop */
 // ── Face Crypto: WebCrypto AES-GCM + PBKDF2 + SHA-256 ──
 
@@ -182,13 +194,21 @@ FaceCrypto.encryptJSON = async function (passphrase, obj, iterations) {
  */
 FaceCrypto.decryptJSON = async function (passphrase, envelope) {
   var key;
-  if (!envelope || typeof envelope !== "object" || !envelope.salt || !envelope.iv || !envelope.cipher) {
+  if (
+    !envelope ||
+    typeof envelope !== "object" ||
+    !envelope.salt ||
+    !envelope.iv ||
+    !envelope.cipher
+  ) {
     throw new TypeError("Invalid encrypted record");
   }
   key = await FaceCrypto.deriveKey(
     passphrase,
     FaceCrypto.base64ToBytes(envelope.salt),
-    envelope.kdf && envelope.kdf.iterations ? envelope.kdf.iterations : FaceCrypto.KDF_ITERATIONS,
+    envelope.kdf && envelope.kdf.iterations
+      ? envelope.kdf.iterations
+      : FaceCrypto.KDF_ITERATIONS,
   );
   return FaceCrypto.decryptWithKey(key, envelope);
 };
@@ -207,7 +227,11 @@ FaceCrypto.sha256Hex = async function (data) {
     bytes = new TextEncoder().encode(data);
   } else if (data instanceof ArrayBuffer) {
     bytes = new Uint8Array(data);
-  } else if (data && typeof data.byteLength === "number" && typeof data.buffer !== "undefined") {
+  } else if (
+    data &&
+    typeof data.byteLength === "number" &&
+    typeof data.buffer !== "undefined"
+  ) {
     bytes = new Uint8Array(data.buffer, data.byteOffset || 0, data.byteLength);
   } else if (data && typeof data.length === "number") {
     bytes = new Uint8Array(data.length);

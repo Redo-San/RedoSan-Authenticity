@@ -89,7 +89,8 @@ var PAGE_NAMES = new Set([
 
 // Sensitive paths that must never be served over HTTP: VCS internals,
 // dotenv secrets, dependency trees, private key material and local TLS certs.
-var BLOCKED_PATH_RE = /(^|\/)(\.git|\.hg|\.svn|\.env|node_modules|certs)(\/|$)/i;
+var BLOCKED_PATH_RE =
+  /(^|\/)(\.git|\.hg|\.svn|\.env|node_modules|certs)(\/|$)/i;
 var BLOCKED_SECRET_EXT_RE = /\.(pem|key|p12|pfx|asc|gpg|secret|env)$/i;
 
 /**
@@ -103,57 +104,58 @@ function isBlockedPath(resolved) {
   return false;
 }
 
-var serverFactory = useHttps ? https.createServer.bind(null, TLS_OPTIONS) : http.createServer;
+var serverFactory = useHttps
+  ? https.createServer.bind(null, TLS_OPTIONS)
+  : http.createServer;
 serverFactory(function (req, res) {
-    var pathname = "/" + req.url.split("?", 1)[0].replaceAll(/^\/+|\/+$/g, "");
-    var filePath;
-    var m;
-    var rewritten;
-    var stylePath;
-    var notFoundPath;
-    if (pathname === "/") pathname = "/index.html";
-    filePath = path.join(ROOT, pathname.replaceAll("/", path.sep));
-    if (!filePath.startsWith(ROOT)) {
-      res.writeHead(403);
-      res.end();
+  var pathname = "/" + req.url.split("?", 1)[0].replaceAll(/^\/+|\/+$/g, "");
+  var filePath;
+  var m;
+  var rewritten;
+  var stylePath;
+  var notFoundPath;
+  if (pathname === "/") pathname = "/index.html";
+  filePath = path.join(ROOT, pathname.replaceAll("/", path.sep));
+  if (!filePath.startsWith(ROOT)) {
+    res.writeHead(403);
+    res.end();
+    return;
+  }
+
+  // Try direct path first; if 404, try rewrites
+  if (!tryServe(filePath, req, res)) {
+    // Rewrite `/page_name/`, `/page_name/index.html`, or bare `/page_name`
+    // → Style/pages/{name}/index.html
+    m = pathname.match(/^\/([^\/]+?)(?:\/index\.html|\/)?$/);
+    if (m && PAGE_NAMES.has(m[1])) {
+      rewritten = path.join(ROOT, "Style", "pages", m[1], "index.html");
+      if (tryServe(rewritten, req, res)) return;
+    }
+    // Rewrite unmatched paths to Style/ directory
+    // (handles relative asset references from MPA pages, e.g. /style.css → Style/style.css)
+    stylePath = path.join(ROOT, "Style", pathname.replace(/^\//, ""));
+    if (tryServe(stylePath, req, res)) return;
+    // Last resort: serve custom 404 page with a real 404 status (never 200+
+    // text/html for missing assets — that makes <script> requests fail with a
+    // "script has an unsupported MIME type" console error)
+    notFoundPath = path.join(ROOT, "404.html");
+    if (fs.existsSync(notFoundPath)) {
+      res.writeHead(404, {
+        "Content-Type": "text/html",
+        "Cache-Control": "no-store",
+      });
+      res.end(fs.readFileSync(notFoundPath));
       return;
     }
-
-    // Try direct path first; if 404, try rewrites
-    if (!tryServe(filePath, req, res)) {
-      // Rewrite `/page_name/`, `/page_name/index.html`, or bare `/page_name`
-      // → Style/pages/{name}/index.html
-      m = pathname.match(/^\/([^\/]+?)(?:\/index\.html|\/)?$/);
-      if (m && PAGE_NAMES.has(m[1])) {
-        rewritten = path.join(ROOT, "Style", "pages", m[1], "index.html");
-        if (tryServe(rewritten, req, res)) return;
-      }
-      // Rewrite unmatched paths to Style/ directory
-      // (handles relative asset references from MPA pages, e.g. /style.css → Style/style.css)
-      stylePath = path.join(ROOT, "Style", pathname.replace(/^\//, ""));
-      if (tryServe(stylePath, req, res)) return;
-      // Last resort: serve custom 404 page with a real 404 status (never 200+
-      // text/html for missing assets — that makes <script> requests fail with a
-      // "script has an unsupported MIME type" console error)
-      notFoundPath = path.join(ROOT, "404.html");
-      if (fs.existsSync(notFoundPath)) {
-        res.writeHead(404, {
-          "Content-Type": "text/html",
-          "Cache-Control": "no-store",
-        });
-        res.end(fs.readFileSync(notFoundPath));
-        return;
-      }
-      res.writeHead(404, { "Content-Type": "text/html" });
-      res.end("Not Found: " + escHtml(pathname));
-    }
-  })
-  .listen(port, host, function () {
-    var scheme = useHttps ? "https" : "http";
-    console.log(
-      "[dev-server] " + scheme + "://" + host + ":" + port + " serving " + ROOT,
-    );
-  });
+    res.writeHead(404, { "Content-Type": "text/html" });
+    res.end("Not Found: " + escHtml(pathname));
+  }
+}).listen(port, host, function () {
+  var scheme = useHttps ? "https" : "http";
+  console.log(
+    "[dev-server] " + scheme + "://" + host + ":" + port + " serving " + ROOT,
+  );
+});
 
 /**
  *

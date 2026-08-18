@@ -1,5 +1,17 @@
 /* c8 ignore start */
-(function(){if(typeof window!=='undefined'&&window.location&&window.location.protocol!=='file:'&&!/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(window.location.href))throw new Error('RedoSan Authenticity: This script is protected by GPL license.')})();
+(function () {
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.protocol !== "file:" &&
+    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
+      window.location.href,
+    )
+  )
+    throw new Error(
+      "RedoSan Authenticity: This script is protected by GPL license.",
+    );
+})();
 /* c8 ignore stop */
 // ── Face Anti-Spoof: MiniFASNetV2 (2.7_80x80) via onnxruntime-web ──
 
@@ -37,9 +49,11 @@ var FaceAntiSpoof = {
    * The hash was computed from the upstream artifact (2026-08-17) and is
    * enforced whenever the default model URL is used.
    */
-  MODEL_SHA256: "d7b3cd9ba8a7ceb13baa8c4720902e27ca3112eff52f926c08804af6b6eecc7b",
+  MODEL_SHA256:
+    "d7b3cd9ba8a7ceb13baa8c4720902e27ca3112eff52f926c08804af6b6eecc7b",
   /** Default onnxruntime-web UMD bundle URL. */
-  RUNTIME_URL: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js",
+  RUNTIME_URL:
+    "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js",
   /** Default model input tensor name. */
   INPUT_NAME: "input",
   /** Default model output tensor name. */
@@ -98,16 +112,23 @@ var FaceAntiSpoof = {
     var ort, modelUrl, backends, i, err, session, expected, verify, buffer;
     if (this._session) return true;
     options = options || {};
-    ort = options.runtime || (typeof window !== "undefined" && window.ort ? window.ort : null);
+    ort =
+      options.runtime ||
+      (typeof window !== "undefined" && window.ort ? window.ort : null);
     modelUrl = options.modelUrl || this.MODEL_URL;
-    expected = options.modelSha256 || (modelUrl === this.MODEL_URL ? this.MODEL_SHA256 : null);
+    expected =
+      options.modelSha256 ||
+      (modelUrl === this.MODEL_URL ? this.MODEL_SHA256 : null);
     if (expected) {
-      verify = options.verifyModel === true || (options.verifyModel !== false && !options.runtime);
+      verify =
+        options.verifyModel === true ||
+        (options.verifyModel !== false && !options.runtime);
       if (verify) {
         try {
           buffer = await this._fetchModelBytes(modelUrl);
           if (!(await this._verifySha256(buffer, expected))) {
-            this._error = "Model integrity verification failed (SHA-256 mismatch). Refusing to load the model.";
+            this._error =
+              "Model integrity verification failed (SHA-256 mismatch). Refusing to load the model.";
             return false;
           }
         } catch (e) {
@@ -133,7 +154,9 @@ var FaceAntiSpoof = {
     err = null;
     for (i = 0; i < backends.length; i++) {
       try {
-        session = await ort.InferenceSession.create(buffer || modelUrl, { executionProviders: [backends[i]] });
+        session = await ort.InferenceSession.create(buffer || modelUrl, {
+          executionProviders: [backends[i]],
+        });
         this._session = session;
         this._backend = backends[i];
         return true;
@@ -156,7 +179,10 @@ var FaceAntiSpoof = {
       throw new Error("Model integrity verification requires fetch support.");
     }
     res = await fetch(url);
-    if (!res.ok) throw new Error("Model download failed: HTTP " + res.status + " for " + url);
+    if (!res.ok)
+      throw new Error(
+        "Model download failed: HTTP " + res.status + " for " + url,
+      );
     return res.arrayBuffer();
   },
 
@@ -170,13 +196,20 @@ var FaceAntiSpoof = {
    */
   _verifySha256: async function (buffer, expectedHex) {
     var digest, i, hex;
-    if (typeof crypto === "undefined" || !crypto.subtle || typeof crypto.subtle.digest !== "function") {
-      throw new Error("Model integrity verification requires WebCrypto (secure context).");
+    if (
+      typeof crypto === "undefined" ||
+      !crypto.subtle ||
+      typeof crypto.subtle.digest !== "function"
+    ) {
+      throw new Error(
+        "Model integrity verification requires WebCrypto (secure context).",
+      );
     }
     digest = new Uint8Array(await crypto.subtle.digest("SHA-256", buffer));
     hex = "";
     for (i = 0; i < digest.length; i++) {
-      hex += ((digest[i] >> 4) & 15).toString(16) + (digest[i] & 15).toString(16);
+      hex +=
+        ((digest[i] >> 4) & 15).toString(16) + (digest[i] & 15).toString(16);
     }
     return hex === expectedHex.toLowerCase();
   },
@@ -190,14 +223,19 @@ var FaceAntiSpoof = {
     return new Promise(function (resolve, reject) {
       var script;
       if (typeof document === "undefined" || !document.createElement) {
-        reject(new Error("onnxruntime-web is not available in this environment."));
+        reject(
+          new Error("onnxruntime-web is not available in this environment."),
+        );
         return;
       }
       script = document.createElement("script");
       script.src = url;
       script.onload = function () {
         if (window.ort) resolve(window.ort);
-        else reject(new Error("window.ort was not found after loading the runtime."));
+        else
+          reject(
+            new Error("window.ort was not found after loading the runtime."),
+          );
       };
       script.onerror = function () {
         reject(new Error("Failed to load onnxruntime-web from " + url));
@@ -238,7 +276,17 @@ var FaceAntiSpoof = {
     out.width = this.INPUT_SIZE;
     out.height = this.INPUT_SIZE;
     ctx = out.getContext("2d");
-    ctx.drawImage(canvas, sx, sy, size, size, 0, 0, this.INPUT_SIZE, this.INPUT_SIZE);
+    ctx.drawImage(
+      canvas,
+      sx,
+      sy,
+      size,
+      size,
+      0,
+      0,
+      this.INPUT_SIZE,
+      this.INPUT_SIZE,
+    );
     return out;
   },
 
@@ -275,7 +323,8 @@ var FaceAntiSpoof = {
    */
   softmax: function (logits) {
     var out, max, sum, i, v;
-    if (!logits || typeof logits.length !== "number" || logits.length === 0) return null;
+    if (!logits || typeof logits.length !== "number" || logits.length === 0)
+      return null;
     out = new Float32Array(logits.length);
     max = logits[0];
     for (i = 1; i < logits.length; i++) if (logits[i] > max) max = logits[i];
@@ -298,15 +347,24 @@ var FaceAntiSpoof = {
    */
   predict: async function (canvas, box) {
     var crop, input, tensor, feeds, outputs, data, probs, liveScore;
-    if (!this._session) throw new Error("FaceAntiSpoof is not loaded. Call load() first.");
+    if (!this._session)
+      throw new Error("FaceAntiSpoof is not loaded. Call load() first.");
     crop = this.cropFace(canvas, box);
     if (!crop) throw new Error("Face crop could not be produced.");
     input = this.preprocess(crop);
-    tensor = new this._runtime.Tensor("float32", input, [1, 3, this.INPUT_SIZE, this.INPUT_SIZE]);
+    tensor = new this._runtime.Tensor("float32", input, [
+      1,
+      3,
+      this.INPUT_SIZE,
+      this.INPUT_SIZE,
+    ]);
     feeds = {};
     feeds[this.INPUT_NAME] = tensor;
     outputs = await this._session.run(feeds);
-    data = outputs && outputs[this.OUTPUT_NAME] ? outputs[this.OUTPUT_NAME].data : null;
+    data =
+      outputs && outputs[this.OUTPUT_NAME]
+        ? outputs[this.OUTPUT_NAME].data
+        : null;
     if (!data || typeof data.length !== "number" || data.length === 0) {
       throw new Error("Unexpected ONNX output shape.");
     }
