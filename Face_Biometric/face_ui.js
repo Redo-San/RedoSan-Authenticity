@@ -302,12 +302,29 @@ function getFaceEmbedderChoice() {
 }
 
 /**
- * Called by the #face-embedder select onchange; stores the choice.
+ * Called by the #face-embedder select onchange; stores the choice and
+ * keeps the hint text in sync with the selected engine.
  */
 function handleFaceEmbedderChange() {
   var sel;
   sel = document.getElementById("face-embedder");
   if (sel) _faceEmbedder = sel.value;
+  updateFaceEmbedderHint();
+}
+
+/**
+ * Refresh the helper text under the embedder select to describe the
+ * selected engine (offline Human vs CDN-loaded ArcFace ONNX).
+ */
+function updateFaceEmbedderHint() {
+  var hint;
+  hint = document.getElementById("face-embedder-hint");
+  if (!hint) return;
+  hint.removeAttribute("data-i18n");
+  hint.textContent =
+    _faceEmbedder === "arcface"
+      ? __("face.embedder_hint_arcface", "ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM).")
+      : __("face.embedder_hint_human", "Human (HSE) runs fully offline — nothing is downloaded and face data never leaves this device.");
 }
 
 /**
@@ -400,6 +417,7 @@ async function initFaceBiometric() {
     });
   }
   initFaceConsent();
+  updateFaceEmbedderHint();
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
   if (typeof maybePromptFaceEncryption === "function") await maybePromptFaceEncryption();
   if (typeof refreshPasskeyStatus === "function") await refreshPasskeyStatus();

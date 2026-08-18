@@ -463,7 +463,7 @@
                 <option value="human" selected data-i18n="face.embedder_human">Human (HSE, offline)</option>
                 <option value="arcface" data-i18n="face.embedder_arcface">ArcFace (MobileFaceNet ONNX)</option>
               </select>
-              <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="face.embedder_hint">
+              <p id="face-embedder-hint" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="face.embedder_hint">
                 ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM). Human runs fully offline.
               </p>
             </div>

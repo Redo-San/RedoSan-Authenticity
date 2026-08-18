@@ -709,6 +709,7 @@ if (typeof ensureLib === "undefined") {
       "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
     ],
     docx: [
+      "vendor/docx.umd.min.js",
       "https://cdn.jsdelivr.net/npm/docx@8.5.0/dist/index.js",
       "https://unpkg.com/docx@8.5.0/build/index.js",
       "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js",
@@ -730,7 +731,7 @@ if (typeof ensureLib === "undefined") {
       if (check && check()) return resolve();
       var urls = (__ensureLibUrls[name] || []).slice();
       if (!urls.length) return reject(new Error("Unknown library: " + name));
-      if (name !== "docx" && urls[0].indexOf("vendor/") === 0) {
+      if (urls[0].indexOf("vendor/") === 0) {
         const vbase = document.documentElement.dataset.standalone
           ? "../../../vendor/"
           : "vendor/";

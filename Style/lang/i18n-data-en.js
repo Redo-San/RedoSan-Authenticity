@@ -682,6 +682,8 @@ window.__I18N_DATA.en = {
     "face.embedder_human": "Human (HSE, offline)",
     "face.embedder_arcface": "ArcFace (MobileFaceNet ONNX)",
     "face.embedder_hint": "ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM). Human runs fully offline.",
+    "face.embedder_hint_arcface": "ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM).",
+    "face.embedder_hint_human": "Human (HSE) runs fully offline — nothing is downloaded and face data never leaves this device.",
     "face.auto_hint": "Pick a photo or capture one with the camera, enter a Name/Label, then press Generate Identifiers — face detection, DID signing, Privacy ID, Fuzzy ID and registry match all run together.",
     "face.download_btn": "Download Results",
     "face.progress.title": "Generating Identifiers",
