@@ -49,7 +49,7 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'"
+      content="default-src 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://huggingface.co https://*.hf.co https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'"
     />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -126,18 +126,9 @@
           document.head.appendChild(l);
         }
         window.__I18N_EARLY = true;
-        if (lang !== "en") {
-          document.write(
-            '<script src="' +
-              base +
-              "lang/i18n-data-" +
-              lang +
-              '.js"><\/script>',
-          );
-        } else {
-          if (window.__I18N_DATA === undefined) window.__I18N_DATA = {};
-          window.__I18N_DATA.en = window.__I18N_DATA.en || {};
-        }
+        document.write(
+          '<script src="' + base + "lang/i18n-data-" + lang + '.js"><\/script>',
+        );
         document.write('<script src="' + base + 'i18n.js"><\/script>');
       })();
     </script>
