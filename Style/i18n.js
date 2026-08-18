@@ -28,6 +28,27 @@ function __(key, fallback) {
 }
 
 /**
+ * Replace {0},{1},... placeholders in a translated string.
+ * @param {string} text
+ * @param {string} [argsJson] JSON-encoded args, e.g. {"0":3}
+ * @returns {string}
+ */
+function applyArgs(text, argsJson) {
+  var args, i;
+  if (!argsJson) return text;
+  try {
+    args = JSON.parse(argsJson);
+  } catch {
+    return text;
+  }
+  if (typeof args !== "object" || args === null) return text;
+  for (i = 0; i < 10; i++) {
+    if (args[i] !== undefined) text = text.split("{" + i + "}").join(String(args[i]));
+  }
+  return text;
+}
+
+/**
  *
  * @param html
  */
@@ -298,7 +319,7 @@ function applyLang() {
     if (richHtmlKeys.has(key)) {
       el.innerHTML = sanitizeHtml(text);
     } else {
-      el.textContent = text;
+      el.textContent = applyArgs(text, el.dataset.i18nArgs);
     }
   });
 

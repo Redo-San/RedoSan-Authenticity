@@ -99,8 +99,12 @@ async function readDocxText(filePath) {
   for (let p = 0; p < paraBreaks.length; p++) {
     const para = paraBreaks[p];
     const parts = [];
-    while ((m = wtRe.exec(para)) !== null) parts.push(m[1]);
-    if (parts.length) text += parts.join("") + "\n";
+    while (true) {
+      const m = wtRe.exec(para);
+      if (m === null) break;
+      parts.push(m[1]);
+    }
+    if (parts.length) text += `${parts.join("")}\n`;
   }
   return text.replace(/\n{3,}/g, "\n\n").trim();
 }
@@ -116,8 +120,9 @@ function readPdfText(filePath) {
   // Object map
   const objMap = {};
   const objRe = /(\d+)\s+(\d+)\s+obj([\s\S]*?)endobj/g;
-  let m;
-  while ((m = objRe.exec(src)) !== null) {
+  while (true) {
+    const m = objRe.exec(src);
+    if (m === null) break;
     objMap[m[1]] = m[3];
   }
 
@@ -137,8 +142,9 @@ function readPdfText(filePath) {
     if (!data.includes("begincmap")) continue;
 
     const bfcharRe = /(\d+)\s+beginbfchar\n([\s\S]*?)endbfchar/g;
-    let bm;
-    while ((bm = bfcharRe.exec(data)) !== null) {
+    while (true) {
+      const bm = bfcharRe.exec(data);
+      if (bm === null) break;
       const entries = bm[2].split("\n");
       for (const entry of entries) {
         const match = entry.match(/<(\w+)>\s*<(\w+)>/);
@@ -146,8 +152,9 @@ function readPdfText(filePath) {
       }
     }
     const bfrangeRe = /(\d+)\s+beginbfrange\n([\s\S]*?)endbfrange/g;
-    let rm;
-    while ((rm = bfrangeRe.exec(data)) !== null) {
+    while (true) {
+      const rm = bfrangeRe.exec(data);
+      if (rm === null) break;
       const entries = rm[2].split("\n");
       for (const entry of entries) {
         const parts = entry.match(/<(\w+)>\s*<(\w+)>\s*<(\w+)>/);
@@ -166,9 +173,10 @@ function readPdfText(filePath) {
   // Find page content streams
   const pages = [];
   const pageRe = /(\d+)\s+(\d+)\s+obj[\s\S]*?\/Type\s*\/Page[\s\S]*?\/Contents\s+(\d+)\s+(\d+)\s+R/g;
-  let pm;
-  while ((pm = pageRe.exec(src)) !== null) {
-    pages.push({ obj: pm[1] + " " + pm[2], contentRef: pm[3] });
+  while (true) {
+    const pm = pageRe.exec(src);
+    if (pm === null) break;
+    pages.push({ obj: `${pm[1]} ${pm[2]}`, contentRef: pm[3] });
   }
 
   if (pages.length === 0) return "";
@@ -181,14 +189,19 @@ function readPdfText(filePath) {
     if (s.length < 2) return s;
     var asianCount = 0;
     var testLen = Math.min(100, s.length);
-    for (var ti = 0; ti + 1 < testLen; ti += 2) {
-      var b1 = s.charCodeAt(ti),
-        b2 = s.charCodeAt(ti + 1);
+    var ti;
+    var b1;
+    var b2;
+    var out2;
+    var di2;
+    for (ti = 0; ti + 1 < testLen; ti += 2) {
+      b1 = s.charCodeAt(ti);
+      b2 = s.charCodeAt(ti + 1);
       if (b1 === 0 && b2 >= 0x20 && b2 <= 0x7e) asianCount++;
     }
     if (asianCount > 5 && asianCount / Math.floor(testLen / 2) > 0.4) {
-      var out2 = "";
-      for (var di2 = 0; di2 + 1 < s.length; di2 += 2) {
+      out2 = "";
+      for (di2 = 0; di2 + 1 < s.length; di2 += 2) {
         out2 += String.fromCharCode((s.charCodeAt(di2) << 8) | s.charCodeAt(di2 + 1));
       }
       return out2;
@@ -222,26 +235,31 @@ function readPdfText(filePath) {
       data = raw;
     }
 
-    // Parenthesized strings: (text) Tj
     const tjRe = /\(([^)]*)\)\s*Tj/g;
     let t;
-    while ((t = tjRe.exec(data)) !== null) {
-      text += decodePdfString(t[1].replace(/\\(.)/g, "$1")) + " ";
+    while (true) {
+      t = tjRe.exec(data);
+      if (t === null) break;
+      text += `${decodePdfString(t[1].replace(/\\(.)/g, "$1"))} `;
     }
 
     // Parenthesized strings in TJ arrays: [(text) num (text)] TJ
     const tjArrayRe = /\[([^\]]*)\]\s*TJ/g;
-    while ((t = tjArrayRe.exec(data)) !== null) {
+    while (true) {
+      t = tjArrayRe.exec(data);
+      if (t === null) break;
       const parts = t[1].match(/\(([^)]*)\)/g);
       if (parts)
         parts.forEach((p2) => {
-          text += decodePdfString(p2.slice(1, -1).replace(/\\(.)/g, "$1")) + " ";
+          text += `${decodePdfString(p2.slice(1, -1).replace(/\\(.)/g, "$1"))} `;
         });
     }
 
     // Hex strings: <hex> Tj (CID fonts)
     const hexTjRe = /<([\dA-Fa-f]+)>\s*Tj/g;
-    while ((t = hexTjRe.exec(data)) !== null) {
+    while (true) {
+      t = hexTjRe.exec(data);
+      if (t === null) break;
       const code = parseInt(t[1], 16);
       if (cmap[code]) {
         try {
@@ -255,7 +273,9 @@ function readPdfText(filePath) {
 
     // Hex strings in TJ arrays
     const hexTjArrayRe = /\[([^\]]*)\]\s*TJ/g;
-    while ((t = hexTjArrayRe.exec(data)) !== null) {
+    while (true) {
+      t = hexTjArrayRe.exec(data);
+      if (t === null) break;
       const hexParts = t[1].match(/<([\dA-Fa-f]+)>/g);
       if (hexParts)
         hexParts.forEach((h) => {
@@ -516,7 +536,8 @@ const DOC_THREAT_PATTERNS = [
  */
 function isDangerousExt(fileName) {
   var name = path.basename(fileName).toLowerCase();
-  for (var i = 0; i < BLOCKED_EXTS.length; i++) {
+  var i;
+  for (i = 0; i < BLOCKED_EXTS.length; i++) {
     if (name.endsWith(BLOCKED_EXTS[i])) return true;
   }
   return false;
@@ -554,7 +575,8 @@ function hasDangerousContent(data) {
   const arr = data instanceof Uint8Array ? data : new Uint8Array(data);
   const dec = new TextDecoder("utf-8", { fatal: false });
   const s = dec.decode(arr.slice(0, 4096));
-  for (var i = 0; i < DANGEROUS_PATTERNS.length; i++) {
+  var i;
+  for (i = 0; i < DANGEROUS_PATTERNS.length; i++) {
     if (DANGEROUS_PATTERNS[i].test(s)) return true;
   }
   return false;
@@ -638,10 +660,14 @@ const DANGEROUS_MAGIC = [
  * @param buf
  */
 function hasDangerousMagic(buf) {
-  for (var i = 0; i < DANGEROUS_MAGIC.length; i++) {
-    var sig = DANGEROUS_MAGIC[i].sig;
-    var match = true;
-    for (var j = 0; j < sig.length; j++) {
+  var i;
+  var sig;
+  var match;
+  var j;
+  for (i = 0; i < DANGEROUS_MAGIC.length; i++) {
+    sig = DANGEROUS_MAGIC[i].sig;
+    match = true;
+    for (j = 0; j < sig.length; j++) {
       if (buf[j] !== sig[j]) {
         match = false;
         break;
@@ -670,6 +696,8 @@ function fileHasExt(fileName) {
 function validateFile(filePath, options) {
   const opts = options || {};
   const absPath = path.resolve(filePath);
+  var raw = null;
+  var magic = null;
   if (!fs.existsSync(absPath)) throw new Error(`File not found: ${absPath}`);
 
   const ext = path.extname(absPath).toLowerCase();
@@ -682,8 +710,8 @@ function validateFile(filePath, options) {
 
   // 1b. Check files without extension by magic bytes
   if (!opts.allowDangerous && !fileHasExt(fileName)) {
-    var raw = fs.readFileSync(absPath).slice(0, 64);
-    var magic = hasDangerousMagic(raw);
+    raw = fs.readFileSync(absPath).slice(0, 64);
+    magic = hasDangerousMagic(raw);
     if (magic) {
       throw new Error(
         `Blocked dangerous file type detected by magic bytes: ${magic} (${fileName}). Use --allow-dangerous to override.`,
@@ -700,8 +728,6 @@ function validateFile(filePath, options) {
       `Magic bytes mismatch for ${fileName}: declared type ${info.type} doesn't match actual file content`,
     );
   }
-
-  // 3. Dangerous content scan (images, audio, video)
   if (
     [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".svg"].includes(ext) &&
     hasDangerousContent(data)

@@ -54,3 +54,15 @@ e830c4ce109df533471feb4b3d9165b668877836:cli/tests/certificate_ui_test.js:generi
 47fd9d4313aaad19862cbe3711b5596452201d38:cli/tests/certificate_full_coverage_test.js:generic-api-key:1284
 35b52fae97f797518c12b9cdfa95619662b4efff:cli/tests/certificate_full_coverage_test.js:generic-api-key:938
 35b52fae97f797518c12b9cdfa95619662b4efff:cli/tests/certificate_full_coverage_test.js:generic-api-key:949
+#
+# 6) did:key placeholder values in face_ui_test.js (eaabc70, Face Biometric
+#    suite). Fake "did:key:zTest..." values used by DID mocks and report
+#    rendering assertions only — they grant no access to any service.
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:61
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:916
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:920
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:921
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:947
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:1050
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:1878
+eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:1887

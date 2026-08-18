@@ -115,6 +115,16 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Face_Biometric/face_engine.js",
   "/RedoSan-Authenticity/Face_Biometric/face_registry.js",
   "/RedoSan-Authenticity/Face_Biometric/face_ui.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_biohash.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_fuzzy.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_camera.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_crypto.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_vc.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_liveness.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_antispoof.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_align.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_embed_onnx.js",
+  "/RedoSan-Authenticity/Face_Biometric/face_webauthn.js",
   "/RedoSan-Authenticity/vendor/jspdf.umd.min.js",
   "/RedoSan-Authenticity/vendor/qrious.min.js",
   "/RedoSan-Authenticity/vendor/jszip.min.js",
@@ -210,6 +220,8 @@ var CSS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Style/pages/timestamp/css/responsive.css",
   "/RedoSan-Authenticity/Style/pages/watermark/css/style.css",
   "/RedoSan-Authenticity/Style/pages/watermark/css/responsive.css",
+  "/RedoSan-Authenticity/Style/pages/face-biometric/css/style.css",
+  "/RedoSan-Authenticity/Style/pages/face-biometric/css/responsive.css",
 ]);
 
 // Whitelist of legitimate YML/YAML files (GitHub workflows, configs).
@@ -378,11 +390,25 @@ var EXT_WHITELIST = [
   // C2PA (jsdelivr)
   "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm",
   "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm",
+  // Human face detection (jsdelivr) + its TFJS WASM backend binaries
+  "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/",
+  "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@",
+  // onnxruntime-web (ArcFace embedder) UMD bundle + WASM binaries
+  "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/",
+  // ArcFace MobileFaceNet ONNX model (w600k_mbf) hosted on HuggingFace
+  "https://huggingface.co/",
+  "https://us.aws.cdn.hf.co/",
+  "https://cdn-lfs.hf.co/",
 ];
 
 self.addEventListener("install", function () {
   self.skipWaiting();
 });
+
+// Runtime cache: successful GET responses are stored so that a transient
+// network failure (server restart, offline) falls back to the cache instead
+// of surfacing as "Failed to fetch".
+var RUNTIME_CACHE = "redosan-assets-v1";
 
 self.addEventListener("activate", function (event) {
   event.waitUntil(
@@ -391,6 +417,7 @@ self.addEventListener("activate", function (event) {
       caches.keys().then(function (keys) {
         return Promise.all(
           keys.map(function (k) {
+            if (k === RUNTIME_CACHE) return undefined;
             return caches.delete(k);
           }),
         );
@@ -546,16 +573,34 @@ self.addEventListener("fetch", function (event) {
 
   event.respondWith(
     fetch(event.request)
-      .catch(function () {
-        // Transient network error — retry once for navigations to avoid a
-        // white screen, then surface a clean network error.
-        if (event.request.mode === "navigate") {
-          return fetch(event.request);
+      .then(function (resp) {
+        // Cache successful GET responses (including the HTML shell on
+        // navigation) for later offline/retry fallback.
+        if (resp && resp.ok && event.request.method === "GET") {
+          var clone = resp.clone();
+          caches
+            .open(RUNTIME_CACHE)
+            .then(function (cache) {
+              return cache.put(event.request, clone);
+            })
+            .catch(function () {});
         }
-        throw new TypeError("Network request failed");
+        return resp;
       })
       .catch(function () {
-        return Response.error();
+        // Transient network error — retry once for navigations, then fall
+        // back to the runtime cache; otherwise surface a clean error.
+        var fallback = caches.match(event.request);
+        if (event.request.mode === "navigate") {
+          return fetch(event.request).catch(function () {
+            return fallback.then(function (hit) {
+              return hit || Response.error();
+            });
+          });
+        }
+        return fallback.then(function (hit) {
+          return hit || Response.error();
+        });
       }),
   );
 });
