@@ -24,6 +24,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
+      actions: write
     steps:
       - name: Harden-Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -39,11 +40,40 @@ jobs:
       - name: Generate sitemap
         run: npm run sitemap
 
+      # A FinalizeArtifact timeout makes upload-artifact retry and create a
+      # second artifact with the same name, which fails deploy-pages with
+      # "Multiple artifacts named github-pages" (actions/upload-pages-artifact#97).
+      # Deleting stale artifacts before uploading guarantees exactly one
+      # exists when we deploy, even after a failed run is re-run.
+      - name: Remove stale github-pages artifacts
+        uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
+        with:
+          name: github-pages
+          failOnError: false
+
+      # Stage the complete site: root SPA (index.html, sw.js, 404.html) plus
+      # the MPA pages under Style/pages and every feature directory they
+      # reference via relative paths (../../../Face_Biometric, ...).
+      # Removal_Tools is excluded on purpose: it is a work-in-progress service
+      # that only runs locally, so its pages stay full-page redirects on prod.
+      - name: Stage full site (SPA root + MPA pages)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp index.html 404.html sw.js favicon.ico robots.txt sitemap.xml _site/
+          cp -r Style _site/
+          cp -r Watermark Audio_Watermark Pixel_Injection Document_Watermark \
+                Fingerprint C2PA Certificate Face_Biometric \
+                Decentralized_Identity_DID Timestamp Metadata Forensic \
+                ID_Forge Converter Assistant vendor _site/
+          du -sh _site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           name: github-pages
-          path: './Style/pages'
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
