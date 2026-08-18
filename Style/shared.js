@@ -795,7 +795,7 @@ var SW_VERSION = 4;
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", function () {
     var swBase = document.documentElement.dataset.standalone ? "../../../" : "";
-    navigator.serviceWorker.register(swBase + "sw.js?v=" + SW_VERSION).then(
+    navigator.serviceWorker.register(swBase + "sw.js?v=" + SW_VERSION, { updateViaCache: "none" }).then(
       function (reg) {
         console.log("[SW] Registered scope:", reg.scope);
       },
