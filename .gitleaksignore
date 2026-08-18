@@ -66,3 +66,12 @@ eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-k
 eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:1050
 eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:1878
 eaabc708191922288cc6ff082c07cc9df2555d0a:cli/tests/face_ui_test.js:generic-api-key:1887
+# 7) Same placeholders after the squash-merge into main (d621620, line
+#    numbers shifted by prettier). Inline "gitleaks:allow" comments now
+#    guard the current lines; these cover the merged history entry.
+d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:61
+d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:964
+d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:968
+d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:969
+d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:995
+d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:1098
