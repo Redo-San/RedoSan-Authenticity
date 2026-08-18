@@ -72,6 +72,7 @@ jobs:
         run: npx playwright install chromium 2>&1 || echo "Playwright install skipped (may already be cached)"
       - name: Run E2E tests
         run: npm run test:e2e-all
+        timeout-minutes: 15
       - name: npm audit
         run: npm audit
         continue-on-error: true
