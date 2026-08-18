@@ -58,7 +58,7 @@ globalThis.loadImage = async function () {
 
 // DID mocks (mirror Decentralized_Identity_DID/did.js shapes)
 globalThis.didGenerateKeypair = async function (algo) {
-  return { did: "did:key:zTest1234567890", algorithm: algo || "Ed25519" };
+  return { did: "did:key:zTest1234567890", algorithm: algo || "Ed25519" }; // gitleaks:allow
 };
 globalThis.didSign = async function () {
   return new Uint8Array([1, 2, 3]);
@@ -961,12 +961,12 @@ describe("Face UI — renderFaceReport", () => {
         descriptorHash: "abcd1234",
       },
       did: {
-        did: "did:key:zTest1234567890",
+        did: "did:key:zTest1234567890", // gitleaks:allow
         algorithm: "Ed25519",
         signature: "AQID",
         signedAt: "2026-01-01T00:00:00.000Z",
-        document: { id: "did:key:zTest1234567890" },
-        verifiableCredential: { issuer: "did:key:zTest1234567890" },
+        document: { id: "did:key:zTest1234567890" }, // gitleaks:allow
+        verifiableCredential: { issuer: "did:key:zTest1234567890" }, // gitleaks:allow
       },
       biohash: {
         bits: 128,
@@ -992,7 +992,7 @@ describe("Face UI — renderFaceReport", () => {
     assert.ok(html.includes("alice.jpg"));
     assert.ok(html.includes("128 dims"));
     assert.ok(html.includes("DID Identity &amp; Signature") || html.includes("DID Identity & Signature"));
-    assert.ok(html.includes("did:key:zTest1234567890"));
+    assert.ok(html.includes("did:key:zTest1234567890")); // gitleaks:allow
     assert.ok(html.includes("Auto-generated PIN"));
     assert.ok(html.includes("Ab3Xy9Qz"));
     assert.ok(html.includes("Match found"));
@@ -1095,7 +1095,7 @@ describe("Face UI — downloadFaceReport", () => {
         descriptorHash: "abcd",
       },
       did: {
-        did: "did:key:zTest1234567890",
+        did: "did:key:zTest1234567890", // gitleaks:allow
         algorithm: "Ed25519",
         signature: "AQID",
         signedAt: "2026-01-01T00:00:00.000Z",
