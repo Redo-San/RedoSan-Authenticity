@@ -529,8 +529,7 @@ describe("Face UI — handleFaceRun", () => {
     globalThis._facePendingCanvas = createCanvas(200, 200);
     globalThis._facePendingSource = { source: "file", fileName: "staged.jpg", width: 200, height: 200 };
     globalThis.document = makeDoc();
-    globalThis.handleFaceRun();
-    await flush();
+    await globalThis.handleFaceRun();
     assert.ok(globalThis._faceReport, "report should be generated");
     assert.equal(globalThis._faceReport.source, "file");
     assert.equal(globalThis._faceReport.photo.fileName, "staged.jpg");
@@ -549,8 +548,7 @@ describe("Face UI — handleFaceRun", () => {
       liveness: { live: true, mode: "passive", reasons: [] },
     };
     globalThis.document = makeDoc({ "face-label": { value: "Cam" } });
-    globalThis.handleFaceRun();
-    await flush();
+    await globalThis.handleFaceRun();
     const r = globalThis._faceReport;
     assert.ok(r, "report should be generated");
     assert.equal(r.source, "camera");

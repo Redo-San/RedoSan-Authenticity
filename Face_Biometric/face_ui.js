@@ -84,7 +84,11 @@ function sanitizeFaceText(value, mode) {
       c === 46 ||
       c === 95
     ) {
-      if (c === 32 && (out.length === 0 || out.charCodeAt(out.length - 1) === 32)) continue;
+      if (
+        c === 32 &&
+        (out.length === 0 || out.charCodeAt(out.length - 1) === 32)
+      )
+        continue;
       out += value[i];
     }
   }
@@ -124,7 +128,13 @@ function faceProgressEnsure() {
   var refs, overlay, card, spin, track, bar, title, text, pct;
   refs = faceProgressRefs();
   if (refs) return refs.overlay;
-  if (typeof document === "undefined" || !document.getElementById || !document.createElement || !document.body) return null;
+  if (
+    typeof document === "undefined" ||
+    !document.getElementById ||
+    !document.createElement ||
+    !document.body
+  )
+    return null;
   overlay = document.createElement("div");
   overlay.id = "face-progress-overlay";
   overlay.className = "face-progress-overlay";
@@ -243,7 +253,8 @@ function setFaceStage(text, fraction) {
  */
 async function faceDescriptorHash(desc) {
   var hash, i;
-  if (!desc || typeof desc.length !== "number" || desc.length === 0) return null;
+  if (!desc || typeof desc.length !== "number" || desc.length === 0)
+    return null;
   if (typeof FaceCrypto !== "undefined" && FaceCrypto.sha256Hex) {
     try {
       return await FaceCrypto.sha256Hex(desc);
@@ -323,8 +334,14 @@ function updateFaceEmbedderHint() {
   hint.removeAttribute("data-i18n");
   hint.textContent =
     _faceEmbedder === "arcface"
-      ? __("face.embedder_hint_arcface", "ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM).")
-      : __("face.embedder_hint_human", "Human (HSE) runs fully offline — nothing is downloaded and face data never leaves this device.");
+      ? __(
+          "face.embedder_hint_arcface",
+          "ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM).",
+        )
+      : __(
+          "face.embedder_hint_human",
+          "Human (HSE) runs fully offline — nothing is downloaded and face data never leaves this device.",
+        );
 }
 
 /**
@@ -335,14 +352,23 @@ function updateFaceEmbedderHint() {
 function faceAttrText(v) {
   if (v == null) return "";
   if (Array.isArray(v)) {
-    if (v.length > 0 && v[0] && typeof v[0] === "object" && v[0].emotion != null && v[0].score != null) {
-      var top = v.reduce(function (a, b) { return (b.score || 0) > (a.score || 0) ? b : a; });
+    if (
+      v.length > 0 &&
+      v[0] &&
+      typeof v[0] === "object" &&
+      v[0].emotion != null &&
+      v[0].score != null
+    ) {
+      var top = v.reduce(function (a, b) {
+        return (b.score || 0) > (a.score || 0) ? b : a;
+      });
       return String(top.emotion) + " (" + Math.round(top.score * 100) + "%)";
     }
     return v
       .map(function (x) {
         if (x && typeof x === "object" && x.label != null) return x.label;
-        if (x && typeof x === "object" && x.emotion != null) return String(x.emotion);
+        if (x && typeof x === "object" && x.emotion != null)
+          return String(x.emotion);
         return String(x);
       })
       .join(", ");
@@ -364,30 +390,57 @@ async function faceExtractEmbedding(canvas, face) {
   var choice, mesh5, aligned, emb;
   choice = getFaceEmbedderChoice();
   if (choice === "arcface") {
-    if (typeof FaceAlign === "undefined" || typeof FaceONNXEmbedder === "undefined") {
-      return { descriptor: face ? face.descriptor : null, version: "human-hse", error: "arcface-unavailable" };
+    if (
+      typeof FaceAlign === "undefined" ||
+      typeof FaceONNXEmbedder === "undefined"
+    ) {
+      return {
+        descriptor: face ? face.descriptor : null,
+        version: "human-hse",
+        error: "arcface-unavailable",
+      };
     }
     if (!FaceONNXEmbedder.isReady()) {
       await FaceONNXEmbedder.load();
     }
     if (!FaceONNXEmbedder.isReady()) {
-      return { descriptor: face ? face.descriptor : null, version: "human-hse", error: "arcface-load-failed" };
+      return {
+        descriptor: face ? face.descriptor : null,
+        version: "human-hse",
+        error: "arcface-load-failed",
+      };
     }
     mesh5 = face && face.mesh ? FaceAlign.meshToLandmarks5(face.mesh) : null;
     if (!mesh5) {
-      return { descriptor: face ? face.descriptor : null, version: "human-hse", error: "arcface-align-failed" };
+      return {
+        descriptor: face ? face.descriptor : null,
+        version: "human-hse",
+        error: "arcface-align-failed",
+      };
     }
     aligned = FaceAlign.alignFace(canvas, mesh5);
     if (!aligned) {
-      return { descriptor: face ? face.descriptor : null, version: "human-hse", error: "arcface-align-failed" };
+      return {
+        descriptor: face ? face.descriptor : null,
+        version: "human-hse",
+        error: "arcface-align-failed",
+      };
     }
     try {
       emb = await FaceONNXEmbedder.embed(aligned.canvas);
     } catch (e) {
-      return { descriptor: face ? face.descriptor : null, version: "human-hse", error: "arcface-embed-error" };
+      return {
+        descriptor: face ? face.descriptor : null,
+        version: "human-hse",
+        error: "arcface-embed-error",
+      };
     }
     if (!emb) {
-      return { descriptor: face ? face.descriptor : null, version: "human-hse", error: "arcface-embed-null" };
+      return {
+        descriptor: face ? face.descriptor : null,
+        version: "human-hse",
+        error: "arcface-embed-null",
+      };
     }
     return { descriptor: emb, version: "arcface-mbf" };
   }
@@ -419,7 +472,8 @@ async function initFaceBiometric() {
   initFaceConsent();
   updateFaceEmbedderHint();
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
-  if (typeof maybePromptFaceEncryption === "function") await maybePromptFaceEncryption();
+  if (typeof maybePromptFaceEncryption === "function")
+    await maybePromptFaceEncryption();
   if (typeof refreshPasskeyStatus === "function") await refreshPasskeyStatus();
 }
 
@@ -441,17 +495,24 @@ async function maybePromptFaceEncryption() {
   if (i >= faces.length) return;
   setStatus(
     "face-status",
-    __("face.encrypt_prompt", "Your face registry is unencrypted. Enter a passphrase below and press Lock Registry."),
+    __(
+      "face.encrypt_prompt",
+      "Your face registry is unencrypted. Enter a passphrase below and press Lock Registry.",
+    ),
   );
   passEl = document.getElementById("face-lock-pass");
   if (passEl) {
     if (typeof passEl.focus === "function") passEl.focus();
-    if (typeof passEl.classList !== "undefined" && typeof passEl.classList.add === "function") {
+    if (
+      typeof passEl.classList !== "undefined" &&
+      typeof passEl.classList.add === "function"
+    ) {
       passEl.classList.add("is-attention");
     }
   }
   lockWrap = document.getElementById("face-lock-wrap");
-  if (lockWrap && lockWrap.classList && lockWrap.classList.add) lockWrap.classList.add("is-attention");
+  if (lockWrap && lockWrap.classList && lockWrap.classList.add)
+    lockWrap.classList.add("is-attention");
 }
 
 /**
@@ -471,12 +532,16 @@ async function refreshPasskeyStatus() {
     passkey = null;
   }
   if (statusEl) {
-    statusEl.textContent = passkey && passkey.credentialId
-      ? __("face.passkey_registered", "Passkey registered: {0}").split("{0}").join(passkey.name || passkey.credentialId)
-      : __("face.passkey_none", "No passkey registered yet.");
+    statusEl.textContent =
+      passkey && passkey.credentialId
+        ? __("face.passkey_registered", "Passkey registered: {0}")
+            .split("{0}")
+            .join(passkey.name || passkey.credentialId)
+        : __("face.passkey_none", "No passkey registered yet.");
   }
   if (regBtn) regBtn.disabled = !!(passkey && passkey.credentialId);
-  if (remBtn) remBtn.style.display = passkey && passkey.credentialId ? "" : "none";
+  if (remBtn)
+    remBtn.style.display = passkey && passkey.credentialId ? "" : "none";
 }
 
 /**
@@ -495,7 +560,13 @@ async function handlePasskeyRegister() {
     return;
   }
   if (!FaceWebauthn.isAvailable()) {
-    setStatus("face-status", __("face.passkey_unavailable", "WebAuthn is not available on this device or browser."));
+    setStatus(
+      "face-status",
+      __(
+        "face.passkey_unavailable",
+        "WebAuthn is not available on this device or browser.",
+      ),
+    );
     return;
   }
   regBtn = document.getElementById("face-passkey-register-btn");
@@ -509,9 +580,20 @@ async function handlePasskeyRegister() {
       rawId: cred.rawId,
     };
     await faceRegistry.setMeta("passkey", passkey);
-    setStatus("face-status", __("face.passkey_saved", "Passkey saved — this registry is now protected by a second factor."));
+    setStatus(
+      "face-status",
+      __(
+        "face.passkey_saved",
+        "Passkey saved — this registry is now protected by a second factor.",
+      ),
+    );
   } catch (error) {
-    setStatus("face-status", __("face.passkey_error", "Passkey error: {0}").split("{0}").join(error.message));
+    setStatus(
+      "face-status",
+      __("face.passkey_error", "Passkey error: {0}")
+        .split("{0}")
+        .join(error.message),
+    );
   }
   await refreshPasskeyStatus();
 }
@@ -527,8 +609,12 @@ async function handlePasskeyRemove() {
   if (!faceRegistry) return;
   try {
     passkey = await faceRegistry.getMeta("passkey");
-    if (passkey && passkey.credentialId) await faceRegistry.removeMeta("passkey");
-    setStatus("face-status", __("face.passkey_removed", "Passkey removed from this registry."));
+    if (passkey && passkey.credentialId)
+      await faceRegistry.removeMeta("passkey");
+    setStatus(
+      "face-status",
+      __("face.passkey_removed", "Passkey removed from this registry."),
+    );
   } catch (error) {
     setStatus("face-status", "Passkey error: " + error.message);
   }
@@ -548,8 +634,16 @@ async function handleFaceFilePicked() {
   }
   file = document.getElementById("face-image").files[0];
   if (!file) return;
-  if (file.type && !["image/png", "image/jpeg"].some(function (t) { return t === file.type; })) {
-    setStatus("face-status", "Unsupported file type. Please use a PNG or JPEG photo.");
+  if (
+    file.type &&
+    !["image/png", "image/jpeg"].some(function (t) {
+      return t === file.type;
+    })
+  ) {
+    setStatus(
+      "face-status",
+      "Unsupported file type. Please use a PNG or JPEG photo.",
+    );
     return;
   }
   if (file.size > 25 * 1024 * 1024) {
@@ -563,7 +657,10 @@ async function handleFaceFilePicked() {
     return;
   }
   if (loaded.w > 5000 || loaded.h > 5000) {
-    setStatus("face-status", "Photo dimensions too large. Maximum is 5000x5000 px.");
+    setStatus(
+      "face-status",
+      "Photo dimensions too large. Maximum is 5000x5000 px.",
+    );
     return;
   }
   if (faceCamera && faceCamera.isActive()) handleFaceCameraStop("face-camera");
@@ -586,7 +683,10 @@ async function handleFaceFilePicked() {
   if (capBtn) capBtn.disabled = true;
   imgEl = document.getElementById("face-image");
   if (imgEl) imgEl.disabled = false;
-  setStatus("face-status", "Photo loaded. Enter a Name/Label, then press Generate Identifiers.");
+  setStatus(
+    "face-status",
+    "Photo loaded. Enter a Name/Label, then press Generate Identifiers.",
+  );
   updateFaceRunState();
 }
 
@@ -607,7 +707,12 @@ function updateFaceRunState() {
     faceWarnConsentRequired(false);
     return;
   }
-  btn.disabled = !(_facePendingCanvas && label && label.value && label.value.trim() !== "");
+  btn.disabled = !(
+    _facePendingCanvas &&
+    label &&
+    label.value &&
+    label.value.trim() !== ""
+  );
 }
 
 // ── Biometric consent + retention (GDPR Art 9(2)(a), BIPA 740 ILCS 14) ──
@@ -708,7 +813,13 @@ async function handleFaceConsentAccept() {
   var check, panel, statusEl, imgEl, startBtn;
   check = document.getElementById("face-consent-check");
   if (!check || !check.checked) {
-    setStatus("face-status", __("face.consent_check_required", "Please tick the consent checkbox first."));
+    setStatus(
+      "face-status",
+      __(
+        "face.consent_check_required",
+        "Please tick the consent checkbox first.",
+      ),
+    );
     return;
   }
   faceConsentSave({
@@ -725,7 +836,13 @@ async function handleFaceConsentAccept() {
   startBtn = document.getElementById("face-cam-start");
   if (startBtn) startBtn.disabled = false;
   updateFaceRunState();
-  setStatus("face-status", __("face.consent_recorded", "Consent recorded — all processing stays on this device."));
+  setStatus(
+    "face-status",
+    __(
+      "face.consent_recorded",
+      "Consent recorded — all processing stays on this device.",
+    ),
+  );
 }
 
 /**
@@ -738,7 +855,10 @@ async function handleFaceConsentWithdraw() {
   if (
     typeof confirm === "function" &&
     !confirm(
-      __("face.consent_withdraw_confirm", "Withdraw consent? This deletes all stored face data on this device."),
+      __(
+        "face.consent_withdraw_confirm",
+        "Withdraw consent? This deletes all stored face data on this device.",
+      ),
     )
   ) {
     return;
@@ -762,7 +882,13 @@ async function handleFaceConsentWithdraw() {
   runBtn = document.getElementById("face-run");
   if (runBtn) runBtn.disabled = true;
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
-  setStatus("face-status", __("face.consent_withdrawn", "Consent withdrawn — stored biometric data deleted."));
+  setStatus(
+    "face-status",
+    __(
+      "face.consent_withdrawn",
+      "Consent withdrawn — stored biometric data deleted.",
+    ),
+  );
 }
 
 /**
@@ -842,10 +968,13 @@ function handleFaceRun() {
     return;
   }
   if (!_facePendingCanvas) {
-    setStatus("face-status", "No photo loaded. Pick a photo or capture one with the camera first.");
+    setStatus(
+      "face-status",
+      "No photo loaded. Pick a photo or capture one with the camera first.",
+    );
     return;
   }
-  runFacePipeline(_facePendingCanvas, _facePendingSource || {});
+  return runFacePipeline(_facePendingCanvas, _facePendingSource || {});
 }
 
 /**
@@ -879,7 +1008,10 @@ async function runFacePipeline(canvas, opts) {
     return;
   }
   try {
-    faceProgressShow(__("face.progress.title", "Generating Identifiers"), __("face.step.detect", "Detecting face..."));
+    faceProgressShow(
+      __("face.progress.title", "Generating Identifiers"),
+      __("face.step.detect", "Detecting face..."),
+    );
     setFaceStage("1/6 " + __("face.step.detect", "Detecting face..."), 0.08);
     setStatus("face-status", "Loading models...");
     await faceEngine.loadModels();
@@ -911,7 +1043,10 @@ async function runFacePipeline(canvas, opts) {
       window._lastFaceCount = result.length;
       window._lastSource = opts.source || "file";
       if (!desc) {
-        setStatus("face-status", "No face descriptor available (embedder: " + emb.version + ").");
+        setStatus(
+          "face-status",
+          "No face descriptor available (embedder: " + emb.version + ").",
+        );
         setFaceStep(null);
         faceProgressHide();
         return;
@@ -925,7 +1060,10 @@ async function runFacePipeline(canvas, opts) {
       return;
     }
 
-    setFaceStage("2/6 " + __("face.step.did", "Generating DID keypair..."), 0.45);
+    setFaceStage(
+      "2/6 " + __("face.step.did", "Generating DID keypair..."),
+      0.45,
+    );
     setStatus("face-status", "Generating DID keypair...");
     kp = null;
     if (typeof didGenerateKeypair === "function") {
@@ -934,21 +1072,36 @@ async function runFacePipeline(canvas, opts) {
       _faceKeypair = kp;
     }
 
-    setFaceStage("3/6 " + __("face.step.sign", "Signing descriptor with DID..."), 0.6);
+    setFaceStage(
+      "3/6 " + __("face.step.sign", "Signing descriptor with DID..."),
+      0.6,
+    );
     setStatus("face-status", "Signing face descriptor with DID...");
     sigBytes = null;
     sigB64 = null;
     if (kp && typeof didSign === "function") {
       sigBytes = await didSign(kp, new Uint8Array(desc.buffer));
-      sigB64 = didSigToBase64 ? didSigToBase64(sigBytes) : btoa(String.fromCharCode.apply(null, sigBytes));
+      sigB64 = didSigToBase64
+        ? didSigToBase64(sigBytes)
+        : btoa(String.fromCharCode.apply(null, sigBytes));
     }
-    doc = typeof didGenerateDocument === "function" && kp ? didGenerateDocument(kp) : null;
+    doc =
+      typeof didGenerateDocument === "function" && kp
+        ? didGenerateDocument(kp)
+        : null;
     vc =
       typeof didCreateVerifiableCredential === "function" && kp && sigB64
-        ? didCreateVerifiableCredential(kp, await faceDescriptorHash(desc), sigB64)
+        ? didCreateVerifiableCredential(
+            kp,
+            await faceDescriptorHash(desc),
+            sigB64,
+          )
         : null;
 
-    setFaceStage("4/6 " + __("face.step.biohash", "Generating Privacy ID..."), 0.72);
+    setFaceStage(
+      "4/6 " + __("face.step.biohash", "Generating Privacy ID..."),
+      0.72,
+    );
     setStatus("face-status", "Generating Privacy Identifier (BioHash)...");
     bio = null;
     pinEl = document.getElementById("face-biohash-pin");
@@ -957,16 +1110,26 @@ async function runFacePipeline(canvas, opts) {
       _faceAutoPin = faceRandomToken(8);
       pinVal = _faceAutoPin;
     }
-    if (typeof FaceBioHash !== "undefined" && typeof FaceBioHash.generate === "function") {
+    if (
+      typeof FaceBioHash !== "undefined" &&
+      typeof FaceBioHash.generate === "function"
+    ) {
       bio = FaceBioHash.generate(desc, pinVal);
       bio.codeHex = FaceBioHash.bytesToHex(bio.code);
       bio.pinAuto = !!_faceAutoPin;
     }
 
-    setFaceStage("5/6 " + __("face.step.fuzzy", "Generating Fuzzy ID..."), 0.84);
+    setFaceStage(
+      "5/6 " + __("face.step.fuzzy", "Generating Fuzzy ID..."),
+      0.84,
+    );
     setStatus("face-status", "Generating Fuzzy identifier...");
     fuzzy = null;
-    if (typeof FaceFuzzy !== "undefined" && typeof FaceFuzzy.quantize === "function" && typeof FaceFuzzy.encode === "function") {
+    if (
+      typeof FaceFuzzy !== "undefined" &&
+      typeof FaceFuzzy.quantize === "function" &&
+      typeof FaceFuzzy.encode === "function"
+    ) {
       fuzzy = FaceFuzzy.encode(FaceFuzzy.quantize(desc));
       fuzzy.helperHex = faceBytesToHex(fuzzy.helper);
     }
@@ -1002,7 +1165,9 @@ async function runFacePipeline(canvas, opts) {
       generator: "RedoSan Authenticity",
       source: opts.source || "file",
       photo: {
-        fileName: opts.fileName || (opts.source === "camera" ? "camera_capture" : "photo"),
+        fileName:
+          opts.fileName ||
+          (opts.source === "camera" ? "camera_capture" : "photo"),
         width: opts.width || canvas.width,
         height: opts.height || canvas.height,
         facesDetected: result.length,
@@ -1059,7 +1224,8 @@ async function runFacePipeline(canvas, opts) {
     setDownloadHandler(downloadFaceReport);
     renderFaceActions(true);
     setStatus("face-status", "Done. All identifiers generated.");
-    if (faceRegistry && typeof listRegisteredFaces === "function") await listRegisteredFaces();
+    if (faceRegistry && typeof listRegisteredFaces === "function")
+      await listRegisteredFaces();
   } catch (error) {
     setStatus("face-status", "Pipeline error: " + error.message);
   }
@@ -1096,13 +1262,43 @@ function renderFaceReport(r) {
   sections.push([
     __("face.report.detection", "Face Detection"),
     "<table class='meta-table'>" +
-      "<tr><td>" + __("face.report.file", "File") + "</td><td><code>" + escHtml(r.photo.fileName) + "</code></td></tr>" +
-      "<tr><td>" + __("face.report.size", "Dimensions") + "</td><td>" + r.photo.width + " x " + r.photo.height + " px</td></tr>" +
-      "<tr><td>" + __("face.report.faces", "Faces") + "</td><td>" + r.photo.facesDetected + "</td></tr>" +
-      "<tr><td>" + __("face.report.confidence", "Confidence") + "</td><td>" + (r.photo.confidence * 100).toFixed(1) + "%</td></tr>" +
-      "<tr><td>" + __("face.report.desc_dim", "Descriptor") + "</td><td>" + r.photo.descriptorDim + " dims</td></tr>" +
-      "<tr><td>" + __("face.report.embedder", "Embedder") + "</td><td>" + escHtml(r.photo.embeddingVersion || "human-hse") + "</td></tr>" +
-      "<tr><td>" + __("face.report.desc_hash", "Descriptor hash") + "</td><td><code style='font-size:0.7rem'>" + escHtml(r.photo.descriptorHash) + "</code></td></tr>" +
+      "<tr><td>" +
+      __("face.report.file", "File") +
+      "</td><td><code>" +
+      escHtml(r.photo.fileName) +
+      "</code></td></tr>" +
+      "<tr><td>" +
+      __("face.report.size", "Dimensions") +
+      "</td><td>" +
+      r.photo.width +
+      " x " +
+      r.photo.height +
+      " px</td></tr>" +
+      "<tr><td>" +
+      __("face.report.faces", "Faces") +
+      "</td><td>" +
+      r.photo.facesDetected +
+      "</td></tr>" +
+      "<tr><td>" +
+      __("face.report.confidence", "Confidence") +
+      "</td><td>" +
+      (r.photo.confidence * 100).toFixed(1) +
+      "%</td></tr>" +
+      "<tr><td>" +
+      __("face.report.desc_dim", "Descriptor") +
+      "</td><td>" +
+      r.photo.descriptorDim +
+      " dims</td></tr>" +
+      "<tr><td>" +
+      __("face.report.embedder", "Embedder") +
+      "</td><td>" +
+      escHtml(r.photo.embeddingVersion || "human-hse") +
+      "</td></tr>" +
+      "<tr><td>" +
+      __("face.report.desc_hash", "Descriptor hash") +
+      "</td><td><code style='font-size:0.7rem'>" +
+      escHtml(r.photo.descriptorHash) +
+      "</code></td></tr>" +
       "</table>",
   ]);
 
@@ -1110,11 +1306,21 @@ function renderFaceReport(r) {
     sections.push([
       __("face.report.attributes", "Face attributes"),
       "<table class='meta-table'>" +
-        "<tr><td>Emotion</td><td>" + escHtml(faceAttrText(r.photo.attributes.emotion)) + "</td></tr>" +
-        "<tr><td>Age</td><td>" + escHtml(faceAttrText(r.photo.attributes.age)) + "</td></tr>" +
-        "<tr><td>Gender</td><td>" + escHtml(faceAttrText(r.photo.attributes.gender)) + "</td></tr>" +
-        "<tr><td>Iris</td><td>" + escHtml(faceAttrText(r.photo.attributes.iris)) + "</td></tr>" +
-        "<tr><td>Gaze</td><td>" + escHtml(faceAttrText(r.photo.attributes.gaze)) + "</td></tr>" +
+        "<tr><td>Emotion</td><td>" +
+        escHtml(faceAttrText(r.photo.attributes.emotion)) +
+        "</td></tr>" +
+        "<tr><td>Age</td><td>" +
+        escHtml(faceAttrText(r.photo.attributes.age)) +
+        "</td></tr>" +
+        "<tr><td>Gender</td><td>" +
+        escHtml(faceAttrText(r.photo.attributes.gender)) +
+        "</td></tr>" +
+        "<tr><td>Iris</td><td>" +
+        escHtml(faceAttrText(r.photo.attributes.iris)) +
+        "</td></tr>" +
+        "<tr><td>Gaze</td><td>" +
+        escHtml(faceAttrText(r.photo.attributes.gaze)) +
+        "</td></tr>" +
         "</table>",
     ]);
   }
@@ -1123,13 +1329,35 @@ function renderFaceReport(r) {
     sections.push([
       __("face.report.did", "DID Identity & Signature"),
       "<table class='meta-table'>" +
-        "<tr><td>DID</td><td><code style='font-size:0.7rem;word-break:break-all'>" + escHtml(r.did.did) + "</code></td></tr>" +
-        "<tr><td>" + __("face.report.algorithm", "Algorithm") + "</td><td>" + escHtml(r.did.algorithm) + "</td></tr>" +
-        "<tr><td>" + __("face.report.signed_at", "Signed at") + "</td><td>" + escHtml(r.did.signedAt) + "</td></tr>" +
-        "<tr><td>" + __("face.report.signature", "Signature") + "</td><td><code style='font-size:0.65rem;word-break:break-all'>" + escHtml(r.did.signature) + "</code></td></tr>" +
+        "<tr><td>DID</td><td><code style='font-size:0.7rem;word-break:break-all'>" +
+        escHtml(r.did.did) +
+        "</code></td></tr>" +
+        "<tr><td>" +
+        __("face.report.algorithm", "Algorithm") +
+        "</td><td>" +
+        escHtml(r.did.algorithm) +
+        "</td></tr>" +
+        "<tr><td>" +
+        __("face.report.signed_at", "Signed at") +
+        "</td><td>" +
+        escHtml(r.did.signedAt) +
+        "</td></tr>" +
+        "<tr><td>" +
+        __("face.report.signature", "Signature") +
+        "</td><td><code style='font-size:0.65rem;word-break:break-all'>" +
+        escHtml(r.did.signature) +
+        "</code></td></tr>" +
         "</table>" +
-        "<details style='margin-top:6px'><summary style='cursor:pointer;font-size:0.75rem'>" + __("face.report.did_doc", "DID document") + "</summary><pre style='font-size:0.65rem;overflow-x:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px'>" + escHtml(JSON.stringify(r.did.document, null, 2)) + "</pre></details>" +
-        "<details style='margin-top:4px'><summary style='cursor:pointer;font-size:0.75rem'>" + __("face.report.vc", "Verifiable Credential") + "</summary><pre style='font-size:0.65rem;overflow-x:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px'>" + escHtml(JSON.stringify(r.did.verifiableCredential, null, 2)) + "</pre></details>",
+        "<details style='margin-top:6px'><summary style='cursor:pointer;font-size:0.75rem'>" +
+        __("face.report.did_doc", "DID document") +
+        "</summary><pre style='font-size:0.65rem;overflow-x:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px'>" +
+        escHtml(JSON.stringify(r.did.document, null, 2)) +
+        "</pre></details>" +
+        "<details style='margin-top:4px'><summary style='cursor:pointer;font-size:0.75rem'>" +
+        __("face.report.vc", "Verifiable Credential") +
+        "</summary><pre style='font-size:0.65rem;overflow-x:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px'>" +
+        escHtml(JSON.stringify(r.did.verifiableCredential, null, 2)) +
+        "</pre></details>",
     ]);
   }
 
@@ -1146,9 +1374,21 @@ function renderFaceReport(r) {
     sections.push([
       __("face.report.biohash", "Privacy Identifier (BioHash)"),
       "<table class='meta-table'>" +
-        "<tr><td>" + __("face.report.bits", "Bits") + "</td><td>" + r.biohash.bits + "</td></tr>" +
-        "<tr><td>" + __("face.report.privacy_id", "Privacy ID") + "</td><td><code style='font-size:0.65rem;word-break:break-all'>" + escHtml(r.biohash.codeHex) + "</code></td></tr>" +
-        "<tr><td>" + __("face.report.pin_fp", "PIN fingerprint") + "</td><td><code style='font-size:0.65rem;word-break:break-all'>" + escHtml(r.biohash.pinFingerprint) + "</code></td></tr>" +
+        "<tr><td>" +
+        __("face.report.bits", "Bits") +
+        "</td><td>" +
+        r.biohash.bits +
+        "</td></tr>" +
+        "<tr><td>" +
+        __("face.report.privacy_id", "Privacy ID") +
+        "</td><td><code style='font-size:0.65rem;word-break:break-all'>" +
+        escHtml(r.biohash.codeHex) +
+        "</code></td></tr>" +
+        "<tr><td>" +
+        __("face.report.pin_fp", "PIN fingerprint") +
+        "</td><td><code style='font-size:0.65rem;word-break:break-all'>" +
+        escHtml(r.biohash.pinFingerprint) +
+        "</code></td></tr>" +
         "</table>" +
         pinBox,
     ]);
@@ -1158,10 +1398,20 @@ function renderFaceReport(r) {
     sections.push([
       __("face.report.fuzzy", "Fuzzy Identifier"),
       "<table class='meta-table'>" +
-        "<tr><td>" + __("face.report.bits", "Bits") + "</td><td>" + r.fuzzy.bits + "</td></tr>" +
-        "<tr><td>Key</td><td><code style='font-size:0.65rem;word-break:break-all'>" + escHtml(r.fuzzy.key) + "</code></td></tr>" +
+        "<tr><td>" +
+        __("face.report.bits", "Bits") +
+        "</td><td>" +
+        r.fuzzy.bits +
+        "</td></tr>" +
+        "<tr><td>Key</td><td><code style='font-size:0.65rem;word-break:break-all'>" +
+        escHtml(r.fuzzy.key) +
+        "</code></td></tr>" +
         "</table>" +
-        "<details style='margin-top:6px'><summary style='cursor:pointer;font-size:0.75rem'>" + __("face.report.helper", "Helper data") + "</summary><code style='font-size:0.6rem;word-break:break-all'>" + escHtml(r.fuzzy.helperHex) + "</code></details>",
+        "<details style='margin-top:6px'><summary style='cursor:pointer;font-size:0.75rem'>" +
+        __("face.report.helper", "Helper data") +
+        "</summary><code style='font-size:0.6rem;word-break:break-all'>" +
+        escHtml(r.fuzzy.helperHex) +
+        "</code></details>",
     ]);
   }
 
@@ -1196,8 +1446,12 @@ function renderFaceReport(r) {
       __("face.report.liveness", "Liveness"),
       "<p style='font-size:0.8rem;margin:0'>" +
         (r.liveness.live
-          ? "<span style='color:#28a745'>&#10003; " + __("face.report.live_passed", "Passed") + "</span>"
-          : "<span style='color:#dc3545'>&#10007; " + __("face.report.live_failed", "Failed") + "</span>") +
+          ? "<span style='color:#28a745'>&#10003; " +
+            __("face.report.live_passed", "Passed") +
+            "</span>"
+          : "<span style='color:#dc3545'>&#10007; " +
+            __("face.report.live_failed", "Failed") +
+            "</span>") +
         "</p>",
     ]);
   }
@@ -1244,13 +1498,15 @@ async function downloadFaceReport(format) {
       break;
     case "csv":
       labels = await faceLabelsToSheet("csv");
-      content = faceReportToCSV(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
+      content =
+        faceReportToCSV(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
       ext = "csv";
       mime = "text/csv";
       break;
     case "txt":
       labels = await faceLabelsToSheet("txt");
-      content = faceReportToTXT(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
+      content =
+        faceReportToTXT(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
       ext = "txt";
       mime = "text/plain";
       break;
@@ -1266,7 +1522,10 @@ async function downloadFaceReport(format) {
       break;
   }
   if (content == null) return;
-  downloadBlobSimple(new Blob([content], { type: mime }), base + ".face_report." + ext);
+  downloadBlobSimple(
+    new Blob([content], { type: mime }),
+    base + ".face_report." + ext,
+  );
 }
 
 /**
@@ -1308,7 +1567,15 @@ function faceReportToCSV(r) {
     push("Fuzzy key", r.fuzzy.key);
     push("Fuzzy helper", r.fuzzy.helperHex);
   }
-  push("Registry match", r.registry.match ? r.registry.match.label + " (" + r.registry.match.similarity.toFixed(1) + "%)" : "none");
+  push(
+    "Registry match",
+    r.registry.match
+      ? r.registry.match.label +
+          " (" +
+          r.registry.match.similarity.toFixed(1) +
+          "%)"
+      : "none",
+  );
   push("Registered ID", r.registry.registeredId);
   return rows
     .map(function (row) {
@@ -1377,7 +1644,15 @@ function faceReportToTXT(r) {
   }
   lines.push("");
   lines.push("-- Registry --");
-  push("Match", r.registry.match ? r.registry.match.label + " (" + r.registry.match.similarity.toFixed(1) + "%)" : "Not found in the registry.");
+  push(
+    "Match",
+    r.registry.match
+      ? r.registry.match.label +
+          " (" +
+          r.registry.match.similarity.toFixed(1) +
+          "%)"
+      : "Not found in the registry.",
+  );
   push("Registered ID", r.registry.registeredId);
   if (r.liveness) push("Liveness", r.liveness.live ? "passed" : "failed");
   lines.push("");
@@ -1392,7 +1667,18 @@ function faceReportToTXT(r) {
 function faceReportToXML(r) {
   var push, x;
   push = function (k, v) {
-    return "    <" + k + ">" + String(v).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</" + k + ">\n";
+    return (
+      "    <" +
+      k +
+      ">" +
+      String(v)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;") +
+      "</" +
+      k +
+      ">\n"
+    );
   };
   x = '<?xml version="1.0" encoding="UTF-8"?>\n<faceBiometricReport>\n';
   x += "  <generatedAt>" + r.generatedAt + "</generatedAt>\n";
@@ -1435,7 +1721,10 @@ function faceReportToXML(r) {
   x += push(
     "match",
     r.registry.match
-      ? r.registry.match.label + " (" + r.registry.match.similarity.toFixed(1) + "%)"
+      ? r.registry.match.label +
+          " (" +
+          r.registry.match.similarity.toFixed(1) +
+          "%)"
       : "none",
   );
   x += push("registeredId", r.registry.registeredId || "");
@@ -1451,12 +1740,19 @@ function faceReportToXML(r) {
 function faceReportToHTML(r) {
   var html, row;
   row = function (k, v) {
-    return "<tr><td style='width:160px;font-weight:bold'>" + escHtml(String(k)) + "</td><td style='word-break:break-all'>" + escHtml(String(v)) + "</td></tr>";
+    return (
+      "<tr><td style='width:160px;font-weight:bold'>" +
+      escHtml(String(k)) +
+      "</td><td style='word-break:break-all'>" +
+      escHtml(String(v)) +
+      "</td></tr>"
+    );
   };
   html =
     "<!doctype html><html><head><meta charset='utf-8'><title>Face Biometric Report</title></head><body style='font-family:sans-serif'>";
   html += "<h2>RedoSan Authenticity - Face Biometric Report</h2>";
-  html += "<h3>Detection</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
+  html +=
+    "<h3>Detection</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
   html += row("Generated at", r.generatedAt);
   html += row("Source", r.source);
   html += row("File", r.photo.fileName);
@@ -1468,7 +1764,8 @@ function faceReportToHTML(r) {
   html += row("Descriptor hash", r.photo.descriptorHash);
   html += "</table>";
   if (r.did) {
-    html += "<h3>DID Identity &amp; Signature</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
+    html +=
+      "<h3>DID Identity &amp; Signature</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
     html += row("DID", r.did.did);
     html += row("Algorithm", r.did.algorithm);
     html += row("Signed at", r.did.signedAt);
@@ -1476,7 +1773,8 @@ function faceReportToHTML(r) {
     html += "</table>";
   }
   if (r.biohash) {
-    html += "<h3>Privacy Identifier (BioHash)</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
+    html +=
+      "<h3>Privacy Identifier (BioHash)</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
     html += row("Bits", r.biohash.bits);
     html += row("Privacy ID", r.biohash.codeHex);
     html += row("PIN fingerprint", r.biohash.pinFingerprint);
@@ -1484,18 +1782,30 @@ function faceReportToHTML(r) {
     html += "</table>";
   }
   if (r.fuzzy) {
-    html += "<h3>Fuzzy Identifier</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
+    html +=
+      "<h3>Fuzzy Identifier</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
     html += row("Bits", r.fuzzy.bits);
     html += row("Key", r.fuzzy.key);
     html += row("Helper", r.fuzzy.helperHex);
     html += "</table>";
   }
-  html += "<h3>Registry</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
-  html += row("Match", r.registry.match ? r.registry.match.label + " (" + r.registry.match.similarity.toFixed(1) + "%)" : "Not found in the registry.");
+  html +=
+    "<h3>Registry</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
+  html += row(
+    "Match",
+    r.registry.match
+      ? r.registry.match.label +
+          " (" +
+          r.registry.match.similarity.toFixed(1) +
+          "%)"
+      : "Not found in the registry.",
+  );
   html += row("Registered ID", r.registry.registeredId || "-");
   html += "</table>";
-  if (r.liveness) html += "<p>Liveness: " + (r.liveness.live ? "passed" : "failed") + "</p>";
-  html += "<hr><p style='color:#888;font-size:12px'>Generated by RedoSan Authenticity - 100% browser-based, nothing uploaded.</p>";
+  if (r.liveness)
+    html += "<p>Liveness: " + (r.liveness.live ? "passed" : "failed") + "</p>";
+  html +=
+    "<hr><p style='color:#888;font-size:12px'>Generated by RedoSan Authenticity - 100% browser-based, nothing uploaded.</p>";
   html += "</body></html>";
   return html;
 }
@@ -1570,7 +1880,15 @@ async function faceReportToPDF(r) {
   doc.setTextColor(108, 92, 231);
   doc.text("Registry", 14, y);
   y += 6;
-  push("Match", r.registry.match ? r.registry.match.label + " (" + r.registry.match.similarity.toFixed(1) + "%)" : "Not found in the registry.");
+  push(
+    "Match",
+    r.registry.match
+      ? r.registry.match.label +
+          " (" +
+          r.registry.match.similarity.toFixed(1) +
+          "%)"
+      : "Not found in the registry.",
+  );
   push("Registered ID", r.registry.registeredId || "-");
   if (r.liveness) push("Liveness", r.liveness.live ? "passed" : "failed");
   doc.setFontSize(8);
@@ -1616,50 +1934,107 @@ async function faceReportToDOCX(r) {
   ];
   children.push(
     new docx.Paragraph({
-      children: [new docx.TextRun({ text: "Detection", bold: true, size: 22, color: "6C5CE7" })],
+      children: [
+        new docx.TextRun({
+          text: "Detection",
+          bold: true,
+          size: 22,
+          color: "6C5CE7",
+        }),
+      ],
       spacing: { before: 200, after: 100 },
     }),
   );
   children.push(faceCreateDocxTable(docx, infoRows));
   if (r.did) {
-    didRows = [["DID", r.did.did], ["Algorithm", r.did.algorithm], ["Signed at", r.did.signedAt], ["Signature", r.did.signature]];
+    didRows = [
+      ["DID", r.did.did],
+      ["Algorithm", r.did.algorithm],
+      ["Signed at", r.did.signedAt],
+      ["Signature", r.did.signature],
+    ];
     children.push(
       new docx.Paragraph({
-        children: [new docx.TextRun({ text: "DID Identity & Signature", bold: true, size: 22, color: "6C5CE7" })],
+        children: [
+          new docx.TextRun({
+            text: "DID Identity & Signature",
+            bold: true,
+            size: 22,
+            color: "6C5CE7",
+          }),
+        ],
         spacing: { before: 200, after: 100 },
       }),
     );
     children.push(faceCreateDocxTable(docx, didRows));
   }
   if (r.biohash) {
-    bioRows = [["Bits", r.biohash.bits], ["Privacy ID", r.biohash.codeHex], ["PIN fingerprint", r.biohash.pinFingerprint]];
+    bioRows = [
+      ["Bits", r.biohash.bits],
+      ["Privacy ID", r.biohash.codeHex],
+      ["PIN fingerprint", r.biohash.pinFingerprint],
+    ];
     if (r.autoPin) bioRows.push(["Auto PIN (save it!)", r.autoPin]);
     children.push(
       new docx.Paragraph({
-        children: [new docx.TextRun({ text: "Privacy Identifier (BioHash)", bold: true, size: 22, color: "6C5CE7" })],
+        children: [
+          new docx.TextRun({
+            text: "Privacy Identifier (BioHash)",
+            bold: true,
+            size: 22,
+            color: "6C5CE7",
+          }),
+        ],
         spacing: { before: 200, after: 100 },
       }),
     );
     children.push(faceCreateDocxTable(docx, bioRows));
   }
   if (r.fuzzy) {
-    fuzzyRows = [["Bits", r.fuzzy.bits], ["Key", r.fuzzy.key], ["Helper", r.fuzzy.helperHex]];
+    fuzzyRows = [
+      ["Bits", r.fuzzy.bits],
+      ["Key", r.fuzzy.key],
+      ["Helper", r.fuzzy.helperHex],
+    ];
     children.push(
       new docx.Paragraph({
-        children: [new docx.TextRun({ text: "Fuzzy Identifier", bold: true, size: 22, color: "6C5CE7" })],
+        children: [
+          new docx.TextRun({
+            text: "Fuzzy Identifier",
+            bold: true,
+            size: 22,
+            color: "6C5CE7",
+          }),
+        ],
         spacing: { before: 200, after: 100 },
       }),
     );
     children.push(faceCreateDocxTable(docx, fuzzyRows));
   }
   regRows = [
-    ["Match", r.registry.match ? r.registry.match.label + " (" + r.registry.match.similarity.toFixed(1) + "%)" : "Not found in the registry."],
+    [
+      "Match",
+      r.registry.match
+        ? r.registry.match.label +
+          " (" +
+          r.registry.match.similarity.toFixed(1) +
+          "%)"
+        : "Not found in the registry.",
+    ],
     ["Registered ID", r.registry.registeredId || "-"],
   ];
-  if (r.liveness) regRows.push(["Liveness", r.liveness.live ? "passed" : "failed"]);
+  if (r.liveness)
+    regRows.push(["Liveness", r.liveness.live ? "passed" : "failed"]);
   children.push(
     new docx.Paragraph({
-      children: [new docx.TextRun({ text: "Registry", bold: true, size: 22, color: "6C5CE7" })],
+      children: [
+        new docx.TextRun({
+          text: "Registry",
+          bold: true,
+          size: 22,
+          color: "6C5CE7",
+        }),
+      ],
       spacing: { before: 200, after: 100 },
     }),
   );
@@ -1667,7 +2042,9 @@ async function faceReportToDOCX(r) {
   for (i = 0; i < children.length; i++) {
     if (children[i] === null) children.splice(i--, 1);
   }
-  return docx.Packer.toBlob(new docx.Document({ sections: [{ children: children }] }));
+  return docx.Packer.toBlob(
+    new docx.Document({ sections: [{ children: children }] }),
+  );
 }
 
 /**
@@ -1756,7 +2133,11 @@ function stopFaceOverlay() {
     clearTimeout(_faceOverlayRAF);
   }
   _faceOverlayRAF = 0;
-  if (_faceOverlay && _faceOverlay.parentNode && _faceOverlay.parentNode.removeChild) {
+  if (
+    _faceOverlay &&
+    _faceOverlay.parentNode &&
+    _faceOverlay.parentNode.removeChild
+  ) {
     _faceOverlay.parentNode.removeChild(_faceOverlay);
   }
   _faceOverlay = null;
@@ -1800,14 +2181,20 @@ async function faceOverlayDetectAndDraw() {
     if (!d || !d.box) continue;
     ctx.strokeStyle = "#00e676";
     ctx.lineWidth = 2;
-    ctx.strokeRect(d.box.x * sx, d.box.y * sy, d.box.width * sx, d.box.height * sy);
+    ctx.strokeRect(
+      d.box.x * sx,
+      d.box.y * sy,
+      d.box.width * sx,
+      d.box.height * sy,
+    );
     mesh = d.mesh;
     if (!mesh) continue;
     ctx.fillStyle = "rgba(0,230,118,0.85)";
     for (k = 0; k < mesh.length; k += 3) {
       x = mesh[k] * sx;
       y = mesh[k + 1] * sy;
-      if (x < 0 || y < 0 || x > _faceOverlay.width || y > _faceOverlay.height) continue;
+      if (x < 0 || y < 0 || x > _faceOverlay.width || y > _faceOverlay.height)
+        continue;
       ctx.fillRect(x - 0.75, y - 0.75, 1.5, 1.5);
     }
   }
@@ -1869,7 +2256,10 @@ async function handleFaceCameraStart(videoId) {
     if (stopBtn) stopBtn.disabled = false;
     capBtn = document.getElementById("face-cam-capture");
     if (capBtn) capBtn.disabled = false;
-    setStatus("face-status", "Camera started. Capture a photo, then press Generate Identifiers.");
+    setStatus(
+      "face-status",
+      "Camera started. Capture a photo, then press Generate Identifiers.",
+    );
   } catch (error) {
     setStatus("face-status", FaceCamera.getCameraErrorMessage(error));
   }
@@ -1969,14 +2359,21 @@ async function runFaceLivenessCheck() {
   }
   if (!faceLiveness) faceLiveness = new FaceLiveness();
   try {
-    setStatus("face-status", "Liveness check in progress — look at the camera...");
-    _faceLivenessEvidence = await faceLiveness.verifyLiveness(faceCamera, faceEngine, {
-      mode: mode === "active" ? "both" : "passive",
-      frames: 8,
-      onChallenge: function (c) {
-        renderFaceChallenge(c);
+    setStatus(
+      "face-status",
+      "Liveness check in progress — look at the camera...",
+    );
+    _faceLivenessEvidence = await faceLiveness.verifyLiveness(
+      faceCamera,
+      faceEngine,
+      {
+        mode: mode === "active" ? "both" : "passive",
+        frames: 8,
+        onChallenge: function (c) {
+          renderFaceChallenge(c);
+        },
       },
-    });
+    );
     return _faceLivenessEvidence;
   } catch (error) {
     renderFaceChallenge(null);
@@ -2042,7 +2439,10 @@ async function handleFaceCameraCapture() {
               reasons: evidence.reasons || [],
             },
     };
-    setStatus("face-status", "Photo captured. Enter a Name/Label, then press Generate Identifiers.");
+    setStatus(
+      "face-status",
+      "Photo captured. Enter a Name/Label, then press Generate Identifiers.",
+    );
     updateFaceRunState();
   } catch (error) {
     setStatus("face-status", "Capture error: " + error.message);
@@ -2069,14 +2469,21 @@ async function listRegisteredFaces() {
       faces.forEach(function (f) {
         versions[f.embeddingVersion || "human-hse"] = true;
       });
-      noteEl.style.display = Object.keys(versions).length > 1 ? "block" : "none";
+      noteEl.style.display =
+        Object.keys(versions).length > 1 ? "block" : "none";
     }
     if (countEl) {
       if (typeof countEl.setAttribute === "function") {
-        countEl.setAttribute("data-i18n-args", JSON.stringify({ "0": size }));
+        countEl.setAttribute("data-i18n-args", JSON.stringify({ 0: size }));
       }
-      if (typeof i18n !== "undefined" && i18n.data && i18n.data["face.count_label"]) {
-        countEl.textContent = i18n.data["face.count_label"].split("{0}").join(String(size));
+      if (
+        typeof i18n !== "undefined" &&
+        i18n.data &&
+        i18n.data["face.count_label"]
+      ) {
+        countEl.textContent = i18n.data["face.count_label"]
+          .split("{0}")
+          .join(String(size));
       } else {
         countEl.textContent = "Registered faces: " + size;
       }
@@ -2149,7 +2556,9 @@ async function handleFaceRefreshList() {
   if (size !== undefined) {
     setStatus(
       "face-status",
-      __("face.refresh_done", "Results cleared. Registered faces: {0}").split("{0}").join(String(size)),
+      __("face.refresh_done", "Results cleared. Registered faces: {0}")
+        .split("{0}")
+        .join(String(size)),
     );
   }
 }
@@ -2261,13 +2670,21 @@ async function handleFaceExportLabels(format) {
     return;
   }
   if (!sheet) {
-    setStatus("face-status", __("face.export_empty", "No faces registered yet — nothing to export."));
+    setStatus(
+      "face-status",
+      __("face.export_empty", "No faces registered yet — nothing to export."),
+    );
     return;
   }
   ext = format;
   name = "face_labels." + ext;
   downloadBlobSimple(
-    new Blob([sheet], { type: format === "csv" ? "text/csv;charset=utf-8" : "text/plain;charset=utf-8" }),
+    new Blob([sheet], {
+      type:
+        format === "csv"
+          ? "text/csv;charset=utf-8"
+          : "text/plain;charset=utf-8",
+    }),
     name,
   );
   setStatus(
@@ -2287,22 +2704,34 @@ async function handleFaceLock() {
   var pass, n, statusEl;
   if (!faceRegistry) return;
   if (typeof FaceCrypto === "undefined") {
-    setStatus("face-status", __("face.lock_need_crypto", "Encryption module not loaded."));
+    setStatus(
+      "face-status",
+      __("face.lock_need_crypto", "Encryption module not loaded."),
+    );
     return;
   }
   pass = document.getElementById("face-lock-pass");
   pass = pass && pass.value ? pass.value : "";
   if (!pass) {
-    setStatus("face-status", __("face.lock_no_pass", "Enter a passphrase to lock the registry."));
+    setStatus(
+      "face-status",
+      __("face.lock_no_pass", "Enter a passphrase to lock the registry."),
+    );
     return;
   }
   try {
     n = await faceRegistry.lock(pass);
-    setStatus("face-status", __("face.lock_done", "Registry locked — {0} face(s) encrypted.").split("{0}").join(n));
+    setStatus(
+      "face-status",
+      __("face.lock_done", "Registry locked — {0} face(s) encrypted.")
+        .split("{0}")
+        .join(n),
+    );
     if (pass) pass.value = "";
     await listRegisteredFaces();
     statusEl = document.getElementById("face-lock-status");
-    if (statusEl) statusEl.textContent = "🔒 " + __("face.lock_status_locked", "Locked");
+    if (statusEl)
+      statusEl.textContent = "🔒 " + __("face.lock_status_locked", "Locked");
   } catch (error) {
     setStatus("face-status", "Lock error: " + error.message);
   }
@@ -2315,24 +2744,46 @@ async function handleFaceUnlock() {
   var pass, n, statusEl;
   if (!faceRegistry) return;
   if (typeof FaceCrypto === "undefined") {
-    setStatus("face-status", __("face.lock_need_crypto", "Encryption module not loaded."));
+    setStatus(
+      "face-status",
+      __("face.lock_need_crypto", "Encryption module not loaded."),
+    );
     return;
   }
   pass = document.getElementById("face-lock-pass");
   pass = pass && pass.value ? pass.value : "";
   if (!pass) {
-    setStatus("face-status", __("face.lock_unlock_no_pass", "Enter the passphrase to unlock the registry."));
+    setStatus(
+      "face-status",
+      __(
+        "face.lock_unlock_no_pass",
+        "Enter the passphrase to unlock the registry.",
+      ),
+    );
     return;
   }
   try {
     n = await faceRegistry.unlock(pass);
-    setStatus("face-status", __("face.lock_unlock_done", "Registry unlocked — {0} face(s) decrypted.").split("{0}").join(n));
+    setStatus(
+      "face-status",
+      __("face.lock_unlock_done", "Registry unlocked — {0} face(s) decrypted.")
+        .split("{0}")
+        .join(n),
+    );
     if (pass) pass.value = "";
     await listRegisteredFaces();
     statusEl = document.getElementById("face-lock-status");
-    if (statusEl) statusEl.textContent = "🔓 " + __("face.lock_status_unlocked", "Unlocked");
+    if (statusEl)
+      statusEl.textContent =
+        "🔓 " + __("face.lock_status_unlocked", "Unlocked");
   } catch (error) {
-    setStatus("face-status", __("face.lock_bad_pass", "Unlock failed — wrong passphrase or corrupted data."));
+    setStatus(
+      "face-status",
+      __(
+        "face.lock_bad_pass",
+        "Unlock failed — wrong passphrase or corrupted data.",
+      ),
+    );
   }
 }
 
@@ -2345,18 +2796,33 @@ async function handleFaceBackup() {
   var pass, backup, blob;
   if (!faceRegistry) return;
   if (typeof FaceCrypto === "undefined") {
-    setStatus("face-status", __("face.lock_need_crypto", "Encryption module not loaded."));
+    setStatus(
+      "face-status",
+      __("face.lock_need_crypto", "Encryption module not loaded."),
+    );
     return;
   }
   pass = document.getElementById("face-lock-pass");
   pass = pass && pass.value ? pass.value : "";
   try {
     backup = await faceRegistry.exportBackup(pass || null);
-    blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    blob = new Blob([JSON.stringify(backup, null, 2)], {
+      type: "application/json",
+    });
     downloadBlobSimple(blob, "face_registry_backup.json");
-    setStatus("face-status", pass ? __("face.backup_done_enc", "Backup exported (encrypted).") : __("face.backup_done", "Backup exported."));
+    setStatus(
+      "face-status",
+      pass
+        ? __("face.backup_done_enc", "Backup exported (encrypted).")
+        : __("face.backup_done", "Backup exported."),
+    );
   } catch (error) {
-    setStatus("face-status", __("face.backup_err", "Backup error: {0}").split("{0}").join(error.message));
+    setStatus(
+      "face-status",
+      __("face.backup_err", "Backup error: {0}")
+        .split("{0}")
+        .join(error.message),
+    );
   }
 }
 
@@ -2368,7 +2834,10 @@ async function handleFaceRestore() {
   if (!faceRegistry) return;
   fileEl = document.getElementById("face-restore-file");
   if (!fileEl || !fileEl.files || fileEl.files.length === 0) {
-    setStatus("face-status", __("face.restore_no_file", "Choose a backup file first."));
+    setStatus(
+      "face-status",
+      __("face.restore_no_file", "Choose a backup file first."),
+    );
     return;
   }
   file = fileEl.files[0];
@@ -2376,20 +2845,40 @@ async function handleFaceRestore() {
     text = await file.text();
     backup = JSON.parse(text);
   } catch (e) {
-    setStatus("face-status", __("face.restore_bad_file", "Restore error: not a valid backup file."));
+    setStatus(
+      "face-status",
+      __("face.restore_bad_file", "Restore error: not a valid backup file."),
+    );
     return;
   }
   pass = document.getElementById("face-lock-pass");
   pass = pass && pass.value ? pass.value : "";
-  mode = confirm(__("face.restore_confirm", "Replace all current faces? OK = replace, Cancel = merge"));
+  mode = confirm(
+    __(
+      "face.restore_confirm",
+      "Replace all current faces? OK = replace, Cancel = merge",
+    ),
+  );
   mode = mode ? "replace" : "merge";
   try {
     n = await faceRegistry.importBackup(backup, pass || null, mode);
-    setStatus("face-status", __("face.restore_done", "Restored {0} face(s) ({1}).").split("{0}").join(n).split("{1}").join(mode));
+    setStatus(
+      "face-status",
+      __("face.restore_done", "Restored {0} face(s) ({1}).")
+        .split("{0}")
+        .join(n)
+        .split("{1}")
+        .join(mode),
+    );
     fileEl.value = "";
     await listRegisteredFaces();
   } catch (error) {
-    setStatus("face-status", __("face.restore_err", "Restore error: {0}").split("{0}").join(error.message));
+    setStatus(
+      "face-status",
+      __("face.restore_err", "Restore error: {0}")
+        .split("{0}")
+        .join(error.message),
+    );
   }
 }
 
@@ -2403,12 +2892,21 @@ async function handleFaceRestore() {
 async function handleFaceIssueCredential() {
   var report, kp, vc, json, pre, box, btn;
   if (!_faceReport) {
-    setStatus("face-status", __("face.vc_need_report", "Run the pipeline first to generate identifiers."));
+    setStatus(
+      "face-status",
+      __(
+        "face.vc_need_report",
+        "Run the pipeline first to generate identifiers.",
+      ),
+    );
     return;
   }
   kp = globalThis._didKeypair || _faceKeypair;
   if (!kp || !kp.did || typeof FaceVC === "undefined") {
-    setStatus("face-status", __("face.vc_need_did", "DID keypair or FaceVC module not available."));
+    setStatus(
+      "face-status",
+      __("face.vc_need_did", "DID keypair or FaceVC module not available."),
+    );
     return;
   }
   try {
@@ -2433,9 +2931,19 @@ async function handleFaceIssueCredential() {
     if (box) box.style.display = "block";
     btn = document.getElementById("face-vc-download");
     if (btn) btn.style.display = "inline-block";
-    setStatus("face-status", __("face.vc_done", "Face credential issued and signed with {0}.").split("{0}").join(kp.algorithm));
+    setStatus(
+      "face-status",
+      __("face.vc_done", "Face credential issued and signed with {0}.")
+        .split("{0}")
+        .join(kp.algorithm),
+    );
   } catch (error) {
-    setStatus("face-status", __("face.vc_err", "Credential error: {0}").split("{0}").join(error.message));
+    setStatus(
+      "face-status",
+      __("face.vc_err", "Credential error: {0}")
+        .split("{0}")
+        .join(error.message),
+    );
   }
 }
 
