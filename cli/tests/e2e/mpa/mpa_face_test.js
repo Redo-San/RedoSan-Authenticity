@@ -1,7 +1,7 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors, closePage } = require("../mpa_helpers");
+var { ensureServer, openPage, pageURL, checkPageLoad, checkNoErrors, closePage } = require("../mpa_helpers");
 
 var PAGE_ID = "face-biometric";
 var browser;
@@ -78,6 +78,80 @@ describe("MPA — Face Biometric", function () {
       checkNoErrors(errors, PAGE_ID);
     } finally {
       await closePage(ctx, page);
+    }
+  });
+});
+
+describe("MPA — Face Biometric via router navigation", function () {
+  it("should inject page CSS and run init when navigated via __mpaNavigate", async function () {
+    var ctx = await browser.newContext({ locale: "en-US" });
+    var page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
+    var errors = [];
+    page.on("pageerror", function (e) { errors.push(e.message); });
+    page.on("console", function (m) {
+      if (m.type() === "error") errors.push(m.text());
+    });
+    // The router loads feature scripts sequentially; aborting the heavy
+    // CDN model download keeps the test fast and deterministic while still
+    // exercising CSS injection + reInitPage + the consent flow (init
+    // degrades gracefully when the face model is unavailable).
+    await page.route("**cdn.jsdelivr.net**", function (route) {
+      return route.abort();
+    });
+    try {
+      await page.goto(pageURL("home"), { waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.evaluate(function () { localStorage.clear(); });
+      await page.evaluate(function () { __mpaNavigate("face-biometric"); });
+      await page.waitForFunction(function () {
+        return !!document.getElementById("face-image");
+      }, { timeout: 30000 });
+      await page.waitForFunction(function () {
+        return document.getElementById("face-image").disabled === true;
+      }, { timeout: 60000 });
+      var state = await page.evaluate(function () {
+        var links = Array.prototype.slice.call(
+          document.querySelectorAll('link[rel="stylesheet"]'),
+        );
+        return {
+          cssLoaded: links.some(function (l) {
+            return (l.href || "").indexOf("face-biometric/css/style.css") !== -1;
+          }),
+          panelVisible:
+            getComputedStyle(document.getElementById("face-consent-panel")).display !== "none",
+          runDisabled: document.getElementById("face-run").disabled,
+        };
+      });
+      assert.equal(state.cssLoaded, true, "page css should be injected after AJAX navigation");
+      assert.equal(state.panelVisible, true, "consent panel should be visible without consent");
+      assert.equal(state.runDisabled, true, "run button should be disabled until consent");
+      checkNoErrors(errors, "face-biometric(router)");
+
+      await page.evaluate(function () {
+        var check = document.getElementById("face-consent-check");
+        check.checked = true;
+        check.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      var acceptDisabled = await page.evaluate(function () {
+        return document.getElementById("face-consent-accept").disabled;
+      });
+      assert.equal(acceptDisabled, false, "accept button should enable after ticking the checkbox");
+      await page.evaluate(function () {
+        document.getElementById("face-consent-accept").click();
+      });
+      var after = await page.evaluate(function () {
+        return {
+          saved: !!localStorage.getItem("redoSan.faceConsent"),
+          panelHidden:
+            getComputedStyle(document.getElementById("face-consent-panel")).display === "none",
+          inputEnabled: !document.getElementById("face-image").disabled,
+        };
+      });
+      assert.equal(after.saved, true, "consent should be saved to localStorage");
+      assert.equal(after.panelHidden, true, "consent panel should hide after accept");
+      assert.equal(after.inputEnabled, true, "file input should enable after consent");
+    } finally {
+      if (ctx) await ctx.close();
     }
   });
 });

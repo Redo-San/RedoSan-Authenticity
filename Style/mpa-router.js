@@ -276,6 +276,50 @@
   }
 
   /**
+   * Collect the fetched page's own stylesheets that are not already present
+   * in the shell document. Shared shell CSS (style.css, responsive.css,
+   * music-player.css) is declared on every MPA page and must not be
+   * re-appended; only page-specific css files (e.g. css/style.css) are
+   * missing after an AJAX content swap. Dedupe by resolved URL.
+   * @param {Document} doc
+   * @param {string} pageUrl
+   * @returns {{href: string, media: string}[]}
+   */
+  function getMissingStyles(doc, pageUrl) {
+    var present = new Set();
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(function (l) {
+      var h = l.getAttribute("href");
+      if (h) present.add(resolveScriptSrc(h, location.href));
+    });
+    var missing = [];
+    doc.querySelectorAll('link[rel="stylesheet"]').forEach(function (l) {
+      var h = l.getAttribute("href");
+      if (!h) return;
+      var abs = resolveScriptSrc(h, pageUrl);
+      if (present.has(abs)) return;
+      present.add(abs);
+      missing.push({ href: abs, media: l.getAttribute("media") || "" });
+    });
+    return missing;
+  }
+
+  /**
+   * Inject the fetched page's missing stylesheets into the shell head so
+   * the swapped section renders with its page-specific styling.
+   * @param {Document} doc
+   * @param {string} pageUrl
+   */
+  function loadMissingStyles(doc, pageUrl) {
+    getMissingStyles(doc, pageUrl).forEach(function (s) {
+      var el = document.createElement("link");
+      el.rel = "stylesheet";
+      el.href = s.href;
+      if (s.media) el.media = s.media;
+      document.head.append(el);
+    });
+  }
+
+  /**
    * Load feature scripts sequentially (preserving declaration order so
    * dependencies such as hashing_perceptual.js -> hashing.js ->
    * fingerprint_ui.js are satisfied), then run page re-init once the page
@@ -399,6 +443,12 @@
     if (pageName === "audio-watermark" && typeof switchAwTab === "function")
       switchAwTab("embed");
 
+    // Face Biometric: re-run page init (consent gate, registry list,
+    // embedder hint) after an AJAX swap. initFaceBiometric only exists
+    // once face_ui.js has been loaded by loadPageScripts.
+    if (pageName === "face-biometric" && typeof initFaceBiometric === "function")
+      initFaceBiometric();
+
     // Pixel Injection: re-populate algorithm dropdowns, re-attach event listeners, reset to embed tab
     if (pageName === "pixel-injection") {
       if (typeof globalThis.pixelInjection?.reInit === "function")
@@ -495,6 +545,11 @@
         curDesc.setAttribute("content", newDesc.getAttribute("content"));
     }
     ensurePreserved();
+    // Resolve the page URL against the location BEFORE pushState: once the
+    // history entry is replaced with a relative URL, re-resolving the same
+    // relative string against the new base would double-apply path
+    // segments (e.g. "/Style/Style/pages/...") and 404 every resource.
+    var absUrl = new URL(url, location.href).href;
     if (!skipPush) {
       st = history.state || {};
       st.routerPage = pageName;
@@ -518,14 +573,7 @@
 
     // Feature scripts (id_forge.js, hashing.js, ...) are not present on the
     // shell page; load them from the fetched document, then re-init the page.
-    var absUrl = (function () {
-      try {
-        return new URL(url, location.href).href;
-      } catch (error) {
-        void error;
-        return url;
-      }
-    })();
+    loadMissingStyles(doc, absUrl);
     loadPageScripts(doc, absUrl, function () {
       reInitPage(pageName);
       newPage.removeAttribute("aria-busy");
