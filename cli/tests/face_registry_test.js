@@ -37,6 +37,10 @@ vm.runInThisContext(cryptoSrc, { filename: path.resolve(__dirname, "../..", "Fac
 // ── In-memory store for testing ──
 
 let _nextId = 1;
+let _dbSeq = 0;
+function _testDbName() {
+  return "TestDB_" + (++_dbSeq);
+}
 
 function _storeEntry(entry, id) {
   return {
@@ -570,14 +574,14 @@ describe("FaceRegistry — descriptor persistence", () => {
 
 describe("IDBStore — IndexedDB-backed storage", () => {
   it("should open database and create object store", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     assert.ok(store._db, "db should be set");
     assert.ok(store._db.objectStoreNames.contains("faces"), "faces store should exist");
   });
 
   it("should be idempotent on second open", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const db1 = store._db;
     await store.open();
@@ -585,7 +589,7 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should add entry and return id", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const id = await store.add({ label: "test", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
     assert.equal(typeof id, "number");
@@ -593,7 +597,7 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should get entry by id", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const entry = { label: "alice", descriptor: new Float32Array([0.1, 0.2]), created: new Date(), updated: new Date() };
     const id = await store.add(entry);
@@ -603,14 +607,14 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should return null for non-existent id", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const result = await store.get(9999);
     assert.equal(result, null);
   });
 
   it("should getAll entries", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     await store.add({ label: "a", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
     await store.add({ label: "b", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
@@ -619,14 +623,14 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should return empty array from getAll when empty", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const all = await store.getAll();
     assert.deepEqual(all, []);
   });
 
   it("should findByIndex", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     await store.add({ label: "alice", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
     await store.add({ label: "alice", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
@@ -637,14 +641,14 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should return empty array from findByIndex when no match", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const results = await store.findByIndex("label", "nobody");
     assert.deepEqual(results, []);
   });
 
   it("should put (update) existing entry", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const entry = { label: "old", descriptor: new Float32Array(2), created: new Date(), updated: new Date() };
     const id = await store.add(entry);
@@ -654,7 +658,7 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should remove entry by id", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     const id = await store.add({ label: "delete-me", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
     await store.remove(id);
@@ -663,7 +667,7 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should count entries", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     assert.equal(await store.count(), 0);
     await store.add({ label: "a", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
@@ -673,7 +677,7 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   });
 
   it("should clear all entries", async () => {
-    const store = new IDBStore("TestDB_" + Date.now());
+    const store = new IDBStore(_testDbName());
     await store.open();
     await store.add({ label: "a", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
     await store.add({ label: "b", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
