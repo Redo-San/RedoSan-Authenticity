@@ -32,6 +32,7 @@ jobs:
             github.com:443
             libretranslate.com:443
             models.inference.ai.azure.com:443
+            registry.npmjs.org:443
             translate.googleapis.com:443
             translate.mstdn.social:443
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -43,6 +44,8 @@ jobs:
         run: node scripts/translate-i18n.js --apply
       - name: Sync JSON → JS files
         run: node scripts/sync-i18n-json-to-js.js
+      - name: Format generated JS files
+        run: npx --yes prettier --write Style/lang/i18n-data-*.js
       - name: Commit translations
         id: commit
         run: |
@@ -63,6 +66,6 @@ jobs:
           gh pr create \
             --base main \
             --head "$BRANCH" \
-            --title "auto: translate new i18n keys" \
+            --title "chore(i18n): translate new i18n keys" \
             --body "Translation of new i18n keys detected in \`en.json\`." \
             --label "automated"

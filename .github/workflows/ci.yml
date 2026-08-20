@@ -34,6 +34,8 @@ jobs:
       - name: Install system deps (canvas)
         run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
       - name: Install npm deps
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
         run: npm ci
       - name: Run unit tests
         run: npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt
@@ -67,6 +69,8 @@ jobs:
       - name: Install system deps (canvas)
         run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
       - name: Install npm deps
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install chromium 2>&1 || echo "Playwright install skipped (may already be cached)"
