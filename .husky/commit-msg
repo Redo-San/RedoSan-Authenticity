@@ -1,1 +1,7 @@
-npx --no -- commitlint --config .tools/Developer_Toolkit/commitlint.config.mjs --edit $1
+MSG="$1"
+
+# Prevent personal emails from leaking into Co-authored-by trailers
+# (removes any Co-authored-by line whose email is not a GitHub noreply address)
+node -e "const fs=require('fs');const f=process.argv[1];const m=fs.readFileSync(f,'utf8');const out=m.split(/\r?\n/).filter(l=>!/^Co-authored-by:/i.test(l)||/@users\.noreply\.github\.com/.test(l)).join('\n');fs.writeFileSync(f,out)" "$MSG"
+
+npx --no -- commitlint --config .tools/Developer_Toolkit/commitlint.config.mjs --edit "$MSG"
