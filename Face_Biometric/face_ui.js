@@ -756,7 +756,8 @@ function updateFaceRunState() {
 // ── Biometric consent + retention (GDPR Art 9(2)(a), BIPA 740 ILCS 14) ──
 
 /**
- * Consent record: stored in localStorage so the choice survives reloads.
+ * Consent record: stored in sessionStorage so the choice is scoped to the
+ * current browsing session — every new visit requires an explicit consent.
  * Withdrawing consent deletes the record AND all stored biometric data.
  */
 var FACE_CONSENT_KEY = "redoSan.faceConsent";
@@ -769,8 +770,8 @@ var FACE_CONSENT_POLICY_VERSION = 1;
 function faceConsentLoad() {
   var raw, rec;
   try {
-    if (typeof localStorage === "undefined") return null;
-    raw = localStorage.getItem(FACE_CONSENT_KEY);
+    if (typeof sessionStorage === "undefined") return null;
+    raw = sessionStorage.getItem(FACE_CONSENT_KEY);
     if (!raw) return null;
     rec = JSON.parse(raw);
     return rec && rec.version === FACE_CONSENT_VERSION ? rec : null;
@@ -784,8 +785,8 @@ function faceConsentLoad() {
  */
 function faceConsentSave(rec) {
   try {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(FACE_CONSENT_KEY, JSON.stringify(rec));
+    if (typeof sessionStorage !== "undefined") {
+      sessionStorage.setItem(FACE_CONSENT_KEY, JSON.stringify(rec));
     }
   } catch (e) {
     // privacy mode / quota — consent still holds for this session
@@ -794,8 +795,8 @@ function faceConsentSave(rec) {
 
 function faceConsentClear() {
   try {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem(FACE_CONSENT_KEY);
+    if (typeof sessionStorage !== "undefined") {
+      sessionStorage.removeItem(FACE_CONSENT_KEY);
     }
   } catch (e) {
     // ignore

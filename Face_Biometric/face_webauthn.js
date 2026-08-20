@@ -24,6 +24,7 @@ var FaceWebauthn = (function () {
   "use strict";
 
   var FIDO2_ES256 = -7;
+  var FIDO2_RS256 = -257;
 
   function b64urlToBytes(b64url) {
     var b64, bin;
@@ -145,7 +146,10 @@ var FaceWebauthn = (function () {
           name: o.userName || "Face Registry Owner",
           displayName: o.displayName || o.userName || "Face Registry Owner",
         },
-        pubKeyCredParams: [{ type: "public-key", alg: FIDO2_ES256 }],
+        pubKeyCredParams: [
+          { type: "public-key", alg: FIDO2_ES256 },
+          { type: "public-key", alg: FIDO2_RS256 },
+        ],
         timeout: o.timeout || 60000,
         attestation: o.attestation || "none",
         authenticatorSelection: {

@@ -141,13 +141,15 @@ describe("MPA — Face Biometric via router navigation", function () {
       });
       var after = await page.evaluate(function () {
         return {
-          saved: !!localStorage.getItem("redoSan.faceConsent"),
+          saved: !!sessionStorage.getItem("redoSan.faceConsent"),
+          notPersisted: localStorage.getItem("redoSan.faceConsent") === null,
           panelHidden:
             getComputedStyle(document.getElementById("face-consent-panel")).display === "none",
           inputEnabled: !document.getElementById("face-image").disabled,
         };
       });
-      assert.equal(after.saved, true, "consent should be saved to localStorage");
+      assert.equal(after.saved, true, "consent should be saved to sessionStorage");
+      assert.equal(after.notPersisted, true, "consent must not persist in localStorage");
       assert.equal(after.panelHidden, true, "consent panel should hide after accept");
       assert.equal(after.inputEnabled, true, "file input should enable after consent");
     } finally {

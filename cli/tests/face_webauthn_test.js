@@ -25,16 +25,19 @@ let createdCredential = null;
 let getCredential = null;
 let createThrows = null;
 let getThrows = null;
+let lastCreateOptions = null;
 
 function resetWebauthnMocks() {
   createdCredential = null;
   getCredential = null;
   createThrows = null;
   getThrows = null;
+  lastCreateOptions = null;
   Object.defineProperty(globalThis, "navigator", {
     value: {
       credentials: {
         create: async function (opts) {
+          lastCreateOptions = opts;
           if (createThrows) throw createThrows;
           if (!createdCredential) return null;
           return createdCredential;
@@ -211,6 +214,20 @@ describe("FaceWebauthn — register", () => {
     assert.equal(json.id, "mock-credential-id");
     assert.equal(json.type, "public-key");
     assert.equal(json.rawId, "AQIDBA");
+  });
+
+  it("should advertise both ES256 and RS256 pubKeyCredParams", async () => {
+    createdCredential = fakeCredential();
+    await FaceWebauthn.register();
+    const params = lastCreateOptions.publicKey.pubKeyCredParams;
+    assert.ok(
+      params.some((p) => p.type === "public-key" && p.alg === -7),
+      "ES256 (-7) must be advertised",
+    );
+    assert.ok(
+      params.some((p) => p.type === "public-key" && p.alg === -257),
+      "RS256 (-257) must be advertised",
+    );
   });
 
   it("should reject when the browser cancels registration", async () => {
