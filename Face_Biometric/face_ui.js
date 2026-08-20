@@ -453,10 +453,13 @@ async function faceExtractEmbedding(canvas, face) {
 async function initFaceBiometric() {
   var passEl;
   try {
-    if (typeof FaceEngine === "function") {
+    // Re-entrancy guard: mpa-router re-runs this init on every AJAX
+    // navigation to the page; keep the already-created engine/registry so
+    // the human model is not re-downloaded and IndexedDB is not re-opened.
+    if (!faceEngine && typeof FaceEngine === "function") {
       faceEngine = new FaceEngine();
     }
-    if (typeof FaceRegistry === "function") {
+    if (!faceRegistry && typeof FaceRegistry === "function") {
       faceRegistry = new FaceRegistry();
       await faceRegistry.open();
     }
@@ -622,18 +625,49 @@ async function handlePasskeyRemove() {
 }
 
 /**
+ * Discard the staged photo (canvas preview + source) when a picked file is
+ * rejected, so a previously staged photo is never left on screen as if it
+ * were the rejected file.
+ */
+function clearFacePendingPhoto() {
+  var prevEl, startBtn, capBtn;
+  _facePendingCanvas = null;
+  _facePendingSource = null;
+  prevEl = document.getElementById("face-preview");
+  if (prevEl && prevEl.style) prevEl.style.display = "none";
+  startBtn = document.getElementById("face-cam-start");
+  if (startBtn) startBtn.disabled = false;
+  capBtn = document.getElementById("face-cam-capture");
+  if (capBtn) capBtn.disabled = true;
+  updateFaceRunState();
+}
+
+/**
  * Entry point for the photo input: stage the photo and refresh the run button.
  * The pipeline starts only via handleFaceRun() once the photo is staged and
  * the Name/Label field is filled in.
  */
 async function handleFaceFilePicked() {
-  var file, loaded, ctx, startBtn, capBtn, imgEl;
+  var file, loaded, ctx, startBtn, capBtn, imgEl, inputEl, validated;
   if (!faceConsentGranted()) {
     faceWarnConsentRequired();
     return;
   }
-  file = document.getElementById("face-image").files[0];
+  inputEl = document.getElementById("face-image");
+  file = inputEl.files[0];
   if (!file) return;
+  if (typeof validateFileInput === "function") {
+    try {
+      validated = await validateFileInput(inputEl);
+    } catch (e) {
+      validated = true;
+    }
+    if (!validated || !inputEl.files.length) {
+      clearFacePendingPhoto();
+      return;
+    }
+    file = inputEl.files[0];
+  }
   if (
     file.type &&
     !["image/png", "image/jpeg"].some(function (t) {
@@ -644,16 +678,19 @@ async function handleFaceFilePicked() {
       "face-status",
       "Unsupported file type. Please use a PNG or JPEG photo.",
     );
+    clearFacePendingPhoto();
     return;
   }
   if (file.size > 25 * 1024 * 1024) {
     setStatus("face-status", "Photo too large. Maximum file size is 25 MB.");
+    clearFacePendingPhoto();
     return;
   }
   try {
     loaded = await loadImage(file);
   } catch (error) {
     setStatus("face-status", "Failed to load image: " + error.message);
+    clearFacePendingPhoto();
     return;
   }
   if (loaded.w > 5000 || loaded.h > 5000) {
@@ -661,6 +698,7 @@ async function handleFaceFilePicked() {
       "face-status",
       "Photo dimensions too large. Maximum is 5000x5000 px.",
     );
+    clearFacePendingPhoto();
     return;
   }
   if (faceCamera && faceCamera.isActive()) handleFaceCameraStop("face-camera");
@@ -1497,14 +1535,14 @@ async function downloadFaceReport(format) {
       mime = "application/json";
       break;
     case "csv":
-      labels = await faceLabelsToSheet("csv");
+      labels = await faceLabelsToSheet("csv", { includeDescriptor: false });
       content =
         faceReportToCSV(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
       ext = "csv";
       mime = "text/csv";
       break;
     case "txt":
-      labels = await faceLabelsToSheet("txt");
+      labels = await faceLabelsToSheet("txt", { includeDescriptor: false });
       content =
         faceReportToTXT(r) + (labels ? "\n\n[Face Labels]\n" + labels : "");
       ext = "txt";
@@ -2599,8 +2637,9 @@ function handleFaceBioHashCopy() {
  * @param {string} format "txt" | "csv"
  * @returns {Promise<string>}
  */
-async function faceLabelsToSheet(format) {
-  var faces, rows, i, f, hash, lines, cell, j, row;
+async function faceLabelsToSheet(format, opts) {
+  var faces, rows, i, f, hash, lines, cell, j, row, keys;
+  opts = opts || {};
   if (!faceRegistry) return "";
   try {
     faces = await faceRegistry.getAllFaces();
@@ -2623,12 +2662,16 @@ async function faceLabelsToSheet(format) {
       embeddingVersion: String(f.embeddingVersion || "human-hse"),
     });
   }
+  keys =
+    opts.includeDescriptor === false
+      ? ["label", "id", "created"]
+      : ["label", "id", "created", "descriptorHash", "embeddingVersion"];
   if (format === "csv") {
-    lines = ["label,id,created,descriptorHash,embeddingVersion"];
+    lines = [keys.join(",")];
     for (i = 0; i < rows.length; i++) {
       row = [];
-      for (j = 0; j < 5; j++) {
-        cell = String(Object.values(rows[i])[j]);
+      for (j = 0; j < keys.length; j++) {
+        cell = String(rows[i][keys[j]]);
         if (/[",\n]/.test(cell)) cell = '"' + cell.split('"').join('""') + '"';
         row.push(cell);
       }
@@ -2636,16 +2679,14 @@ async function faceLabelsToSheet(format) {
     }
     return lines.join("\n");
   }
-  lines = ["label\tid\tcreated\tdescriptorHash\tembeddingVersion"];
+  lines = [keys.join("\t")];
   for (i = 0; i < rows.length; i++) {
     lines.push(
-      [
-        rows[i].label,
-        rows[i].id,
-        rows[i].created,
-        rows[i].descriptorHash,
-        rows[i].embeddingVersion,
-      ].join("\t"),
+      keys
+        .map(function (k) {
+          return rows[i][k];
+        })
+        .join("\t"),
     );
   }
   return lines.join("\n");

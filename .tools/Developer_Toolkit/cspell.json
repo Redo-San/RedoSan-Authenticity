@@ -1121,7 +1121,8 @@
     "webauthn",
     "antispoof",
     "mgmt",
-    "tfjs"
+    "tfjs",
+    "entrancy"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[\u0600-\u06FF]+/"],

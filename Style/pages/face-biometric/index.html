@@ -432,7 +432,7 @@
             <input type="file" id="face-image" accept="image/png,image/jpeg" onchange="handleFaceFilePicked()" />
           </div>
           <div id="face-capture-wrapper" class="form-group" style="display:none">
-            <label for="face-camera" data-i18n="face.camera_label">Live Camera</label>
+            <label data-i18n="face.camera_label">Live Camera</label>
             <video id="face-camera" autoplay playsinline muted style="display:none;max-width:100%;border-radius:8px;background:#000" aria-label="Live camera preview"></video>
             <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
               <button type="button" id="face-cam-start" class="btn btn-sm" onclick="handleFaceCameraStart('face-camera')" data-i18n="face.camera_start_btn">Start Camera</button>
