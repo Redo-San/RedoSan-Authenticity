@@ -2718,15 +2718,18 @@ function makeLocalStorage() {
 
 describe("Face UI — biometric consent", () => {
   const savedLS = globalThis.localStorage;
+  const savedSS = globalThis.sessionStorage;
   const savedConfirm = globalThis.confirm;
 
   beforeEach(() => {
     globalThis.localStorage = makeLocalStorage();
+    globalThis.sessionStorage = makeLocalStorage();
     globalThis.confirm = savedConfirm;
   });
 
   afterEach(() => {
     globalThis.localStorage = savedLS;
+    globalThis.sessionStorage = savedSS;
     resetGlobals();
   });
 
@@ -2770,6 +2773,19 @@ describe("Face UI — biometric consent", () => {
     assert.equal(doc.getElementById("face-consent-status").style.display, "block");
     assert.equal(doc.getElementById("face-image").disabled, false);
     assert.equal(doc.getElementById("face-cam-start").disabled, false);
+  });
+
+  it("consent is session-scoped: never written to localStorage", async () => {
+    const doc = makeConsentDoc();
+    globalThis.document = doc;
+    doc.getElementById("face-consent-check").checked = true;
+    await globalThis.handleFaceConsentAccept();
+    assert.ok(globalThis.faceConsentLoad(), "consent record lives in sessionStorage");
+    assert.equal(
+      globalThis.localStorage.getItem("redoSan.faceConsent"),
+      null,
+      "consent must not persist across sessions in localStorage",
+    );
   });
 
   it("withdraw clears consent, erases registry data and re-blocks the UI", async () => {
