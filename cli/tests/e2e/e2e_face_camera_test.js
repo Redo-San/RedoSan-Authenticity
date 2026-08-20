@@ -109,7 +109,6 @@ describe("E2E — Face Biometric (fake camera)", () => {
   it("should stop the camera and re-enable upload", async () => {
     const { ctx, page } = await openFacePage();
     try {
-      await page.click("#face-cam-start");
       await startCamera(page);
       await page.click("#face-cam-stop");
       await page.waitForTimeout(800);
