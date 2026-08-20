@@ -63,25 +63,60 @@ function flatten(obj, prefix) {
 }
 
 /**
- *
- * @param obj
+ * Extract ordered {placeholder} names from a string.
+ * @param {string} text
  */
-function unflatten(obj) {
-  var result = {};
-  for (var flatKey in obj) {
-    var parts = flatKey.split(".");
-    var current = result;
-    for (var i = 0; i < parts.length - 1; i++) {
-      if (!current[parts[i]]) current[parts[i]] = {};
-      current = current[parts[i]];
-    }
-    current[parts.at(-1)] = obj[flatKey];
-  }
-  return result;
+function extractPlaceholders(text) {
+  var names = [];
+  var re = /\{([a-zA-Z0-9_]+)\}/g;
+  var m;
+  while ((m = re.exec(text))) names.push(m[1]);
+  return names;
 }
 
 /**
- *
+ * Restore English placeholder names in a translated string.
+ * AI/fallback providers sometimes translate {msg} into {رسالة} or {Name},
+ * which breaks the runtime `.replace("{msg}", ...)` calls (case-sensitive).
+ * Placeholders are matched against the English source names, then replaced
+ * positionally. Handles non-ASCII placeholder names too.
+ * @param {string} enText
+ * @param {string} translatedText
+ */
+function restorePlaceholders(enText, translatedText) {
+  if (typeof enText !== "string" || typeof translatedText !== "string")
+    return translatedText;
+  var enPhs = extractPlaceholders(enText);
+  if (enPhs.length === 0) return translatedText;
+  var enSet = {};
+  var enLower = {};
+  enPhs.forEach(function (n) {
+    enSet[n] = true;
+    if (!enLower[n.toLowerCase()]) enLower[n.toLowerCase()] = n;
+  });
+  var used = {};
+  var pending = enPhs.slice();
+  return translatedText.replace(/\{([^}]+)\}/g, function (m, name) {
+    if (enSet[name]) return m;
+    var exact = enLower[name.toLowerCase()];
+    if (exact) return "{" + exact + "}";
+    for (var i = 0; i < pending.length; i++) {
+      var candidate = pending[i];
+      if (!used[candidate]) {
+        used[candidate] = true;
+        return "{" + candidate + "}";
+      }
+    }
+    return m;
+  });
+}
+
+/**
+ * Find keys present in source but absent in target. Only truly missing keys
+ * are translated. A key whose value merely differs from the English source
+ * must NOT be re-translated: a translation never equals its source text, so
+ * that comparison would re-translate every key on every run and regress
+ * existing translations (see PR #369).
  * @param source
  * @param target
  */
@@ -89,13 +124,6 @@ function findMissing(source, target) {
   var missing = {};
   for (var key in source) {
     if (!(key in target)) {
-      missing[key] = source[key];
-    } else if (
-      typeof source[key] === "string" &&
-      typeof target[key] === "string" &&
-      source[key] !== target[key]
-    ) {
-      // Value changed in source → re-translate
       missing[key] = source[key];
     } else if (
       typeof source[key] === "object" &&
@@ -108,21 +136,6 @@ function findMissing(source, target) {
     }
   }
   return missing;
-}
-
-/**
- *
- * @param base
- * @param overlay
- */
-function deepMerge(base, overlay) {
-  var result = JSON.parse(JSON.stringify(base));
-  for (var key in overlay) {
-    result[key] = typeof overlay[key] === "object" &&
-      overlay[key] !== null &&
-      !Array.isArray(overlay[key]) ? deepMerge(result[key] || {}, overlay[key]) : overlay[key];
-  }
-  return result;
 }
 
 var XNX3_LANG_MAP = {
@@ -466,7 +479,7 @@ async function translateViaAI(texts, targetLang) {
     LANG_NAMES[targetLang] +
     " (" +
     targetLang +
-    "). Return ONLY a JSON object with the same keys and translated values. Keep %s, {{var}}, and HTML tags unchanged.\n\n" +
+    "). Return ONLY a JSON object with the same keys and translated values. Keep %s, {placeholders} such as {msg} {name} {size} {hash} unchanged — never translate or reorder them — and keep HTML tags unchanged.\n\n" +
     lines;
 
   var body, responseText;
@@ -582,7 +595,17 @@ async function main() {
       var provider = providers[p];
       try {
         var translated = await provider.fn(info.flat, lang);
-        var merged = deepMerge(info.target, unflatten(translated));
+        var fixed = {};
+        for (var key in translated) {
+          fixed[key] =
+            info.flat[key] === undefined
+              ? translated[key]
+              : restorePlaceholders(info.flat[key], translated[key]);
+        }
+        // Merge flat over flat: the .json files are flat dot-notation (like
+        // en.json). unflatten() would create nested objects that shadow the
+        // existing flat keys in sync-i18n-json-to-js.js (Object.assign order).
+        var merged = Object.assign({}, info.target, fixed);
         fs.writeFileSync(info.file, JSON.stringify(merged, null, 2) + "\n");
         console.log(
           "  ✓ " +
@@ -590,7 +613,7 @@ async function main() {
             " updated via " +
             provider.name +
             " (" +
-            Object.keys(translated).length +
+            Object.keys(fixed).length +
             " keys)",
         );
         break;

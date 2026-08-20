@@ -58,7 +58,7 @@ globalThis.loadImage = async function () {
 
 // DID mocks (mirror Decentralized_Identity_DID/did.js shapes)
 globalThis.didGenerateKeypair = async function (algo) {
-  return { did: "did:key:zTest1234567890", algorithm: algo || "Ed25519" };
+  return { did: "did:key:zTest1234567890", algorithm: algo || "Ed25519" }; // gitleaks:allow
 };
 globalThis.didSign = async function () {
   return new Uint8Array([1, 2, 3]);
@@ -961,12 +961,12 @@ describe("Face UI — renderFaceReport", () => {
         descriptorHash: "abcd1234",
       },
       did: {
-        did: "did:key:zTest1234567890",
+        did: "did:key:zTest1234567890", // gitleaks:allow
         algorithm: "Ed25519",
         signature: "AQID",
         signedAt: "2026-01-01T00:00:00.000Z",
-        document: { id: "did:key:zTest1234567890" },
-        verifiableCredential: { issuer: "did:key:zTest1234567890" },
+        document: { id: "did:key:zTest1234567890" }, // gitleaks:allow
+        verifiableCredential: { issuer: "did:key:zTest1234567890" }, // gitleaks:allow
       },
       biohash: {
         bits: 128,
@@ -992,7 +992,7 @@ describe("Face UI — renderFaceReport", () => {
     assert.ok(html.includes("alice.jpg"));
     assert.ok(html.includes("128 dims"));
     assert.ok(html.includes("DID Identity &amp; Signature") || html.includes("DID Identity & Signature"));
-    assert.ok(html.includes("did:key:zTest1234567890"));
+    assert.ok(html.includes("did:key:zTest1234567890")); // gitleaks:allow
     assert.ok(html.includes("Auto-generated PIN"));
     assert.ok(html.includes("Ab3Xy9Qz"));
     assert.ok(html.includes("Match found"));
@@ -1095,7 +1095,7 @@ describe("Face UI — downloadFaceReport", () => {
         descriptorHash: "abcd",
       },
       did: {
-        did: "did:key:zTest1234567890",
+        did: "did:key:zTest1234567890", // gitleaks:allow
         algorithm: "Ed25519",
         signature: "AQID",
         signedAt: "2026-01-01T00:00:00.000Z",
@@ -1170,8 +1170,10 @@ describe("Face UI — downloadFaceReport", () => {
     await globalThis.downloadFaceReport("csv");
     const text = await downloads[0].blob.text();
     assert.ok(text.includes("[Face Labels]"));
-    assert.ok(text.includes("label,id,created,descriptorHash,embeddingVersion"));
-    assert.match(text, /Alice,1,2026-01-02T03:04:05\.000Z,[0-9a-f]{64},human-hse/);
+    assert.ok(text.includes("label,id,created"));
+    assert.ok(!text.includes("label,id,created,descriptorHash,embeddingVersion"));
+    assert.ok(!text.includes(",human-hse"));
+    assert.match(text, /Alice,1,2026-01-02T03:04:05\.000Z$/);
   });
 
   it("should append the labels sheet to TXT downloads without hashes for locked entries", async () => {
@@ -1193,7 +1195,10 @@ describe("Face UI — downloadFaceReport", () => {
     await globalThis.downloadFaceReport("txt");
     const text = await downloads[0].blob.text();
     assert.ok(text.includes("[Face Labels]"));
-    assert.ok(text.includes("locked\t2\t2026-03-04T05:06:07.000Z\t\thuman-hse"));
+    assert.ok(text.includes("label\tid\tcreated"));
+    assert.ok(!text.includes("label\tid\tcreated\tdescriptorHash\tembeddingVersion"));
+    assert.ok(!text.includes("\thuman-hse"));
+    assert.ok(text.includes("locked\t2\t2026-03-04T05:06:07.000Z"));
   });
 
   it("should not append a labels header when the registry is empty", async () => {
@@ -2173,6 +2178,33 @@ describe("Face UI — handleFaceExportLabels", () => {
     assert.equal(lines[0], "label\tid\tcreated\tdescriptorHash\tembeddingVersion");
     assert.equal(lines[1], "locked face\t7\t2026-05-06T07:08:09.000Z\t\thuman-hse");
   });
+
+  it("should omit descriptor columns from the labels sheet when requested", async () => {
+    globalThis.document = makeDoc();
+    globalThis.faceRegistry = makeRegistry([
+      {
+        id: 1,
+        label: "same face",
+        created: new Date("2026-01-02T03:04:05Z"),
+        descriptor: DESCRIPTOR,
+        embeddingVersion: "human-hse",
+      },
+    ]);
+    const csv = await globalThis.faceLabelsToSheet("csv", {
+      includeDescriptor: false,
+    });
+    const csvLines = csv.split("\n");
+    assert.equal(csvLines[0], "label,id,created");
+    assert.equal(csvLines[1], "same face,1,2026-01-02T03:04:05.000Z");
+    const txt = await globalThis.faceLabelsToSheet("txt", {
+      includeDescriptor: false,
+    });
+    const txtLines = txt.split("\n");
+    assert.equal(txtLines[0], "label\tid\tcreated");
+    assert.equal(txtLines[1], "same face\t1\t2026-01-02T03:04:05.000Z");
+    assert.ok(!txt.includes("descriptorHash"));
+    assert.ok(!txt.includes("human-hse"));
+  });
 });
 
 // ── maybePromptFaceEncryption ──
@@ -2589,6 +2621,71 @@ describe("Face UI — file validation", () => {
     assert.ok(statusEl.textContent.includes("dimensions too large"));
     assert.equal(globalThis._facePendingCanvas, null);
     globalThis.loadImage = origLoad;
+  });
+
+  it("should reject a file blocked by validateFileInput before staging", async () => {
+    const statusEl = { textContent: "" };
+    globalThis.validateFileInput = async function () {
+      return false;
+    };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-image": { files: [{ name: "photo.exe", type: "" }] },
+    });
+    await globalThis.handleFaceFilePicked();
+    assert.equal(globalThis._facePendingCanvas, null);
+    assert.equal(globalThis._facePendingSource, null);
+    delete globalThis.validateFileInput;
+  });
+
+  it("should not stage when validateFileInput clears the input", async () => {
+    const statusEl = { textContent: "" };
+    const input = { files: [{ name: "photo.exe", type: "" }] };
+    globalThis.clearInputFiles = function (el) {
+      el.files = [];
+    };
+    globalThis.validateFileInput = async function () {
+      globalThis.clearInputFiles(input);
+      return true;
+    };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-image": input,
+    });
+    await globalThis.handleFaceFilePicked();
+    assert.equal(globalThis._facePendingCanvas, null);
+    assert.equal(globalThis._facePendingSource, null);
+    delete globalThis.validateFileInput;
+    delete globalThis.clearInputFiles;
+  });
+
+  it("should clear a previously staged photo when a new file is rejected", async () => {
+    const statusEl = { textContent: "" };
+    globalThis._facePendingCanvas = { dummy: true };
+    globalThis._facePendingSource = { source: "file", fileName: "old.png" };
+    globalThis.validateFileInput = async function () {
+      return false;
+    };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-image": { files: [{ name: "photo.exe", type: "" }] },
+    });
+    await globalThis.handleFaceFilePicked();
+    assert.equal(globalThis._facePendingCanvas, null);
+    assert.equal(globalThis._facePendingSource, null);
+    delete globalThis.validateFileInput;
+  });
+
+  it("should accept valid files when validateFileInput is present", async () => {
+    globalThis.validateFileInput = async function () {
+      return true;
+    };
+    globalThis.document = makeDoc({
+      "face-image": { files: [{ name: "ok.png", type: "image/png" }] },
+    });
+    await globalThis.handleFaceFilePicked();
+    assert.ok(globalThis._facePendingCanvas, "photo staged");
+    delete globalThis.validateFileInput;
   });
 });
 

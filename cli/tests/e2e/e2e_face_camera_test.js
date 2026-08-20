@@ -4,7 +4,7 @@ const { chromium } = require("playwright");
 const { startServer, stopServer } = require("./e2e_helpers");
 const path = require("path");
 
-const PORT = 9897;
+const PORT = 9911;
 const BASE = `http://localhost:${PORT}`;
 
 let browser, server;
