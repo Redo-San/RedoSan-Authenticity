@@ -32,6 +32,14 @@ var _faceOverlayRAF = 0;
 var _faceOverlayRunning = false;
 var _faceOverlayLast = 0;
 var _faceOverlayBusy = false;
+var facePasskeySessionAuthed = false;
+var facePasskeySessionVerifiedAt = "";
+var facePasskeyRegistered = false;
+// Last decrypted credential reference (credentialId + rawId), populated on the
+// first step-up of a session so subsequent generations can skip the prompt.
+var facePasskeyCached = null;
+// Stable info label for HKDF domain separation (vault key derivation).
+var FACE_VAULT_INFO = "redo-san-face-vault-v1";
 
 /**
  * @param id
@@ -485,37 +493,8 @@ async function initFaceBiometric() {
  * status message + focus on the passphrase field. Never throws.
  */
 async function maybePromptFaceEncryption() {
-  var faces, i, passEl, lockWrap;
-  if (!faceRegistry) return;
-  try {
-    faces = await faceRegistry.getAllFaces();
-  } catch (e) {
-    return;
-  }
-  for (i = 0; i < faces.length; i++) {
-    if (!faces[i].encrypted && faces[i].descriptor) break;
-  }
-  if (i >= faces.length) return;
-  setStatus(
-    "face-status",
-    __(
-      "face.encrypt_prompt",
-      "Your face registry is unencrypted. Enter a passphrase below and press Lock Registry.",
-    ),
-  );
-  passEl = document.getElementById("face-lock-pass");
-  if (passEl) {
-    if (typeof passEl.focus === "function") passEl.focus();
-    if (
-      typeof passEl.classList !== "undefined" &&
-      typeof passEl.classList.add === "function"
-    ) {
-      passEl.classList.add("is-attention");
-    }
-  }
-  lockWrap = document.getElementById("face-lock-wrap");
-  if (lockWrap && lockWrap.classList && lockWrap.classList.add)
-    lockWrap.classList.add("is-attention");
+  // The registry-encryption (passphrase lock) UI was removed; nothing to prompt.
+  return;
 }
 
 /**
@@ -536,15 +515,19 @@ async function refreshPasskeyStatus() {
   }
   if (statusEl) {
     statusEl.textContent =
-      passkey && passkey.credentialId
+      passkey && (passkey.credentialId || passkey.prf)
         ? __("face.passkey_registered", "Passkey registered: {0}")
             .split("{0}")
-            .join(passkey.name || passkey.credentialId)
+            .join(passkey.name || "passkey")
         : __("face.passkey_none", "No passkey registered yet.");
   }
-  if (regBtn) regBtn.disabled = !!(passkey && passkey.credentialId);
+  if (regBtn)
+    regBtn.disabled = !!(passkey && (passkey.credentialId || passkey.prf));
   if (remBtn)
-    remBtn.style.display = passkey && passkey.credentialId ? "" : "none";
+    remBtn.style.display =
+      passkey && (passkey.credentialId || passkey.prf) ? "" : "none";
+  facePasskeyRegistered = !!(passkey && (passkey.credentialId || passkey.prf));
+  if (typeof updateFaceRunState === "function") updateFaceRunState();
 }
 
 /**
@@ -575,14 +558,73 @@ async function handlePasskeyRegister() {
   regBtn = document.getElementById("face-passkey-register-btn");
   if (regBtn) regBtn.disabled = true;
   try {
+    var vaultKey = null;
     cred = await FaceWebauthn.register();
     passkey = {
-      credentialId: cred.id,
+      v: 1,
       name: cred.id.slice(0, 16) + "\u2026",
       createdAt: new Date().toISOString(),
-      rawId: cred.rawId,
+      prf: false,
     };
+    // Encrypt the credential reference with a PRF-derived vault key when the
+    // authenticator supports the PRF extension. PRF is requested during a
+    // second (step-up) assertion right after registration; the derived key
+    // never leaves the authenticator's secure element and is re-derived each
+    // session. The plaintext credentialId/rawId live ONLY inside the cipher,
+    // so the stored record is opaque without a fresh authenticator assertion.
+    // If PRF is unavailable, fall back to plaintext storage with a warning
+    // (the reference is public by design — no private key is ever stored).
+    if (typeof crypto !== "undefined" && crypto.subtle) {
+      try {
+        var salt = FaceWebauthn.randomChallenge(16);
+        var prfAssertion = await FaceWebauthn.authenticate({
+          prfSalt: salt,
+          userVerification: "required",
+          allowCredentials: [{ id: cred.id, transports: ["internal"] }],
+        });
+        var prfBytes = FaceWebauthn.prfOutput(prfAssertion);
+        if (prfBytes) {
+          vaultKey = await FaceWebauthn.deriveVaultKey(
+            prfBytes,
+            FACE_VAULT_INFO,
+          );
+          var cipher = await FaceWebauthn.encryptJSON(vaultKey, {
+            credentialId: cred.id,
+            rawId: cred.rawId,
+          });
+          passkey.prf = true;
+          passkey.salt = salt;
+          passkey.cipher = cipher;
+        } else {
+          passkey.credentialId = cred.id;
+          passkey.rawId = cred.rawId;
+          console.warn(
+            "[face] WebAuthn PRF not supported — passkey stored as plaintext reference.",
+          );
+        }
+      } catch (encErr) {
+        passkey.credentialId = cred.id;
+        passkey.rawId = cred.rawId;
+        console.warn(
+          "[face] PRF encryption failed — passkey stored as plaintext reference.",
+          encErr,
+        );
+      }
+    } else {
+      passkey.credentialId = cred.id;
+      passkey.rawId = cred.rawId;
+    }
     await faceRegistry.setMeta("passkey", passkey);
+    // The PRF-derived vault key now transparently encrypts biometric
+    // templates at rest — automatic, no passphrase needed.
+    if (vaultKey) {
+      try {
+        faceRegistry.setVaultKey(vaultKey);
+        await faceRegistry.sealAllPlaintext();
+      } catch (sealErr) {
+        console.warn("[face] automatic template encryption skipped:", sealErr);
+      }
+    }
     setStatus(
       "face-status",
       __(
@@ -618,10 +660,218 @@ async function handlePasskeyRemove() {
       "face-status",
       __("face.passkey_removed", "Passkey removed from this registry."),
     );
+    facePasskeyCached = null;
+    facePasskeySessionAuthed = false;
   } catch (error) {
     setStatus("face-status", "Passkey error: " + error.message);
   }
   await refreshPasskeyStatus();
+}
+
+/**
+ * @returns {Promise<boolean>} true when a passkey is already registered.
+ */
+async function isFacePasskeyRegistered() {
+  var pk;
+  if (!faceRegistry) return false;
+  try {
+    pk = await faceRegistry.getMeta("passkey");
+    return !!(pk && (pk.credentialId || pk.prf));
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Reveal the passkey requirement box (used as a gate before generation) and
+ * scroll it into view so the user can register.
+ */
+function revealPasskeyRequire() {
+  var box, statusEl;
+  box = document.getElementById("face-passkey-require");
+  if (box && box.style) box.style.display = "block";
+  statusEl = document.getElementById("face-passkey-status");
+  if (statusEl)
+    statusEl.textContent = __(
+      "face.passkey_none",
+      "No passkey registered yet.",
+    );
+  if (box && typeof box.scrollIntoView === "function") {
+    box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+/**
+ * Gate used by every generation entry point (upload / camera / run). Blocks the
+ * action until a passkey is registered — when WebAuthn is available the user
+ * must register before any identifier can be generated. On devices without
+ * WebAuthn the requirement is skipped (generation still proceeds).
+ * @returns {Promise<boolean>} true when the action may proceed.
+ */
+async function ensureFacePasskeyForAction() {
+  var registered, waAvailable;
+  registered = await isFacePasskeyRegistered();
+  if (registered) return true;
+  waAvailable =
+    typeof FaceWebauthn !== "undefined" &&
+    typeof FaceWebauthn.isAvailable === "function" &&
+    FaceWebauthn.isAvailable();
+  if (!waAvailable) {
+    setStatus(
+      "face-status",
+      __(
+        "face.passkey_skipped",
+        "WebAuthn unavailable on this device — passkey requirement skipped.",
+      ),
+    );
+    return true;
+  }
+  revealPasskeyRequire();
+  setStatus(
+    "face-status",
+    __(
+      "face.passkey_required",
+      "A passkey is required first. Register one above to continue.",
+    ),
+  );
+  return false;
+}
+
+/**
+ * Pipeline step 7/8: step-up verification of the registered passkey.
+ * Performs a fresh WebAuthn assertion (userVerification required) the first
+ * time per browser session — the session flag resets on page reload, so the
+ * user must re-prove possession (biometric / PIN) after every refresh. Once
+ * verified this session, subsequent generations reuse the flag. The stored
+ * passkey reference is always included in the report.
+ *
+ * A failed or cancelled assertion throws, which aborts the generation (the
+ * caller's try/catch reports it). Never silently bypasses the step-up.
+ * @returns {Promise<object|null>}
+ */
+async function faceStepRegisterPasskey() {
+  var stored;
+  if (!faceRegistry) return null;
+  try {
+    stored = await faceRegistry.getMeta("passkey");
+  } catch (e) {
+    stored = null;
+  }
+  if (!stored || !(stored.credentialId || stored.prf)) return null;
+  // Already verified this session — reuse the cached decrypted reference.
+  if (facePasskeySessionAuthed && facePasskeyCached) {
+    return {
+      credentialId: facePasskeyCached.credentialId,
+      name: stored.name || "",
+      createdAt: stored.createdAt || "",
+      authenticated: true,
+      verifiedAt: facePasskeySessionVerifiedAt || "",
+      note: "verified earlier this session",
+    };
+  }
+  if (typeof FaceWebauthn === "undefined" || !FaceWebauthn.isAvailable()) {
+    // Cannot perform step-up in this context; fall back to stored reference.
+    return {
+      credentialId: stored.credentialId || "",
+      name: stored.name || "",
+      createdAt: stored.createdAt || "",
+      authenticated: false,
+      note: "step-up skipped: WebAuthn unavailable",
+    };
+  }
+  try {
+    var challenge = FaceWebauthn.randomChallenge(32);
+    var allowCreds = stored.credentialId
+      ? [
+          {
+            id: stored.credentialId,
+            transports: stored.transports || ["internal"],
+          },
+        ]
+      : undefined;
+    var assertion = await FaceWebauthn.authenticate({
+      challenge: challenge,
+      userVerification: "required",
+      allowCredentials: allowCreds,
+      prfSalt: stored.prf ? stored.salt : undefined,
+    });
+    if (!FaceWebauthn.verifyClientData(assertion, challenge, "webauthn.get")) {
+      throw new Error("Passkey assertion did not match the challenge.");
+    }
+    var credentialId = stored.credentialId || "";
+    var rawId = stored.rawId || "";
+    if (stored.prf) {
+      // Re-derive the vault key from the PRF output and decrypt the opaque
+      // credential reference. This proves possession of the authenticator and
+      // recovers the credentialId without ever storing it in plaintext.
+      var prfBytes = FaceWebauthn.prfOutput(assertion);
+      if (prfBytes) {
+        var key = await FaceWebauthn.deriveVaultKey(prfBytes, FACE_VAULT_INFO);
+        var dec = await FaceWebauthn.decryptJSON(key, stored.cipher);
+        credentialId = dec.credentialId || credentialId;
+        rawId = dec.rawId || rawId;
+      } else if (!credentialId) {
+        // PRF was expected (record is encrypted) but the authenticator did not
+        // return it and there is no plaintext fallback.
+        throw new Error("Passkey PRF unavailable and no plaintext fallback.");
+      }
+    }
+    // Automatically encrypt biometric templates at rest using the PRF vault key.
+    // The template added earlier in this pipeline (step 6/8) is sealed here.
+    if (faceRegistry && key) {
+      try {
+        faceRegistry.setVaultKey(key);
+        await faceRegistry.sealAllPlaintext();
+      } catch (sealErr) {
+        console.warn("[face] automatic template encryption skipped:", sealErr);
+      }
+    }
+    facePasskeyCached = { credentialId: credentialId, rawId: rawId };
+    facePasskeySessionAuthed = true;
+    facePasskeySessionVerifiedAt = new Date().toISOString();
+    return {
+      credentialId: credentialId,
+      name: stored.name || "",
+      createdAt: stored.createdAt || "",
+      authenticated: true,
+      verifiedAt: facePasskeySessionVerifiedAt,
+      rawId: assertion.rawId || rawId,
+    };
+  } catch (e) {
+    throw new Error("Passkey step-up failed: " + e.message);
+  }
+}
+
+/**
+ * Pipeline step 8/8 (LAST): issue a W3C Verifiable Credential from the SHA-256
+ * descriptor hash only (never the raw template) signed with the session DID
+ * keypair. Depends on all main generation results already being produced, so
+ * it is intentionally the final step. Never throws — on failure the error is
+ * recorded on the report instead of aborting the whole pipeline.
+ * @param {{kp:object|null, descriptor:object, attributes:object|null, liveness:object|null, faceCount:number, embeddingVersion:string}} input
+ * @returns {Promise<object|null>}
+ */
+async function faceStepIssueFaceCredential(input) {
+  var kp, dh, vc;
+  kp = input.kp;
+  if (!kp || !kp.did || typeof FaceVC === "undefined") return null;
+  try {
+    dh = await faceDescriptorHash(input.descriptor);
+    vc = FaceVC.build({
+      did: kp.did,
+      algorithm: kp.algorithm,
+      descriptorHash: dh,
+      attributes: input.attributes || null,
+      liveness: input.liveness || null,
+      faceCount: input.faceCount,
+      embeddingVersion: input.embeddingVersion,
+    });
+    vc = await FaceVC.sign(kp, vc);
+    window._faceCredential = vc;
+    return vc;
+  } catch (e) {
+    return { error: e.message };
+  }
 }
 
 /**
@@ -653,6 +903,7 @@ async function handleFaceFilePicked() {
     faceWarnConsentRequired();
     return;
   }
+  if (!(await ensureFacePasskeyForAction())) return;
   inputEl = document.getElementById("face-image");
   file = inputEl.files[0];
   if (!file) return;
@@ -745,12 +996,36 @@ function updateFaceRunState() {
     faceWarnConsentRequired(false);
     return;
   }
-  btn.disabled = !(
-    _facePendingCanvas &&
-    label &&
-    label.value &&
-    label.value.trim() !== ""
-  );
+  if (
+    !(
+      _facePendingCanvas &&
+      label &&
+      label.value &&
+      label.value.trim() !== "" &&
+      facePasskeyRegistered
+    )
+  ) {
+    btn.disabled = true;
+    // Surface the passkey requirement only when everything else is ready, so
+    // the user knows why the button is still disabled.
+    if (
+      _facePendingCanvas &&
+      label &&
+      label.value &&
+      label.value.trim() !== "" &&
+      !facePasskeyRegistered
+    ) {
+      setStatus(
+        "face-status",
+        __(
+          "face.passkey_required_run",
+          "Register a passkey to enable generation.",
+        ),
+      );
+    }
+    return;
+  }
+  btn.disabled = false;
 }
 
 // ── Biometric consent + retention (GDPR Art 9(2)(a), BIPA 740 ILCS 14) ──
@@ -765,7 +1040,20 @@ var FACE_CONSENT_VERSION = 1;
 var FACE_CONSENT_POLICY_VERSION = 1;
 
 /**
- * @returns {object|null} stored consent record (null when missing/expired)
+ * Load the stored consent record for this session.
+ *
+ * Consent is versioned on TWO axes (GDPR Art 7(4) + EDPB/WP29 guidance:
+ * consent degrades when the privacy notice or processing purpose changes,
+ * so a materially changed policy must invalidate prior consent and force a
+ * fresh, informed grant):
+ *   - `version`        : structure/shape of the stored record.
+ *   - `policyVersion`  : the consent NOTICE shown to the user (text, purposes,
+ *                        data flows). Bumped in AGENTS.md/governance whenever
+ *                        the notice changes.
+ * Both must match the current build or the record is treated as absent and
+ * the user is re-prompted.
+ *
+ * @returns {object|null} stored consent record (null when missing/expired/stale)
  */
 function faceConsentLoad() {
   var raw, rec;
@@ -774,7 +1062,14 @@ function faceConsentLoad() {
     raw = sessionStorage.getItem(FACE_CONSENT_KEY);
     if (!raw) return null;
     rec = JSON.parse(raw);
-    return rec && rec.version === FACE_CONSENT_VERSION ? rec : null;
+    if (
+      !rec ||
+      rec.version !== FACE_CONSENT_VERSION ||
+      rec.policyVersion !== FACE_CONSENT_POLICY_VERSION
+    ) {
+      return null;
+    }
+    return rec;
   } catch (e) {
     return null;
   }
@@ -1001,7 +1296,7 @@ function switchFaceInput(tab) {
 /**
  * Start the automated pipeline with the staged photo (file or camera frame).
  */
-function handleFaceRun() {
+async function handleFaceRun() {
   if (!faceConsentGranted()) {
     faceWarnConsentRequired();
     return;
@@ -1013,6 +1308,7 @@ function handleFaceRun() {
     );
     return;
   }
+  if (!(await ensureFacePasskeyForAction())) return;
   return runFacePipeline(_facePendingCanvas, _facePendingSource || {});
 }
 
@@ -1025,6 +1321,7 @@ function handleFaceRun() {
 async function runFacePipeline(canvas, opts) {
   var result, ctx, box, desc, label, pinEl, pinVal, kp, sigBytes, sigB64;
   var doc, vc, bio, fuzzy, matchR, id, report, repEl, emb;
+  var pkObj, credObj;
   opts = opts || {};
   _faceReport = null;
   _faceAutoPin = null;
@@ -1051,7 +1348,7 @@ async function runFacePipeline(canvas, opts) {
       __("face.progress.title", "Generating Identifiers"),
       __("face.step.detect", "Detecting face..."),
     );
-    setFaceStage("1/6 " + __("face.step.detect", "Detecting face..."), 0.08);
+    setFaceStage("1/8 " + __("face.step.detect", "Detecting face..."), 0.06);
     setStatus("face-status", "Loading models...");
     await faceEngine.loadModels();
     setStatus("face-status", "Detecting faces...");
@@ -1100,8 +1397,8 @@ async function runFacePipeline(canvas, opts) {
     }
 
     setFaceStage(
-      "2/6 " + __("face.step.did", "Generating DID keypair..."),
-      0.45,
+      "2/8 " + __("face.step.did", "Generating DID keypair..."),
+      0.2,
     );
     setStatus("face-status", "Generating DID keypair...");
     kp = null;
@@ -1112,8 +1409,8 @@ async function runFacePipeline(canvas, opts) {
     }
 
     setFaceStage(
-      "3/6 " + __("face.step.sign", "Signing descriptor with DID..."),
-      0.6,
+      "3/8 " + __("face.step.sign", "Signing descriptor with DID..."),
+      0.35,
     );
     setStatus("face-status", "Signing face descriptor with DID...");
     sigBytes = null;
@@ -1138,8 +1435,8 @@ async function runFacePipeline(canvas, opts) {
         : null;
 
     setFaceStage(
-      "4/6 " + __("face.step.biohash", "Generating Privacy ID..."),
-      0.72,
+      "4/8 " + __("face.step.biohash", "Generating Privacy ID..."),
+      0.5,
     );
     setStatus("face-status", "Generating Privacy Identifier (BioHash)...");
     bio = null;
@@ -1159,8 +1456,8 @@ async function runFacePipeline(canvas, opts) {
     }
 
     setFaceStage(
-      "5/6 " + __("face.step.fuzzy", "Generating Fuzzy ID..."),
-      0.84,
+      "5/8 " + __("face.step.fuzzy", "Generating Fuzzy ID..."),
+      0.62,
     );
     setStatus("face-status", "Generating Fuzzy identifier...");
     fuzzy = null;
@@ -1173,7 +1470,19 @@ async function runFacePipeline(canvas, opts) {
       fuzzy.helperHex = faceBytesToHex(fuzzy.helper);
     }
 
-    setFaceStage("6/6 " + __("face.step.match", "Matching registry..."), 0.94);
+    // step 6/8 — Passkey step-up verification (per session; gated at entry).
+    // Derives the PRF vault key and seals/unseals templates BEFORE matching so
+    // previously registered faces are decryptable for 1:N identification. This
+    // is what makes template encryption automatic yet non-breaking for matching.
+    setFaceStage(
+      "6/8 " + __("face.step.passkey", "Verifying passkey (step-up)..."),
+      0.74,
+    );
+    setStatus("face-status", "Verifying passkey...");
+    pkObj = await faceStepRegisterPasskey();
+
+    // step 7/8 — Match against the (now decrypted) registry.
+    setFaceStage("7/8 " + __("face.step.match", "Matching registry..."), 0.86);
     setStatus("face-status", "Checking registered faces...");
     matchR = null;
     id = null;
@@ -1196,6 +1505,20 @@ async function runFacePipeline(canvas, opts) {
         }
       }
     }
+
+    // step 8/8 — Issue Face Credential (LAST; depends on all main results)
+    setFaceStage(
+      "8/8 " + __("face.step.credential", "Issuing face credential..."),
+      0.96,
+    );
+    credObj = await faceStepIssueFaceCredential({
+      kp: kp,
+      descriptor: desc,
+      attributes: result[0].attributes || null,
+      liveness: opts.liveness || null,
+      faceCount: result.length,
+      embeddingVersion: _lastEmbeddingVersion,
+    });
 
     report = {
       type: "redoSan.faceBiometricReport",
@@ -1256,6 +1579,8 @@ async function runFacePipeline(canvas, opts) {
         registeredId: id || null,
       },
       liveness: opts.liveness || null,
+      passkey: pkObj || null,
+      credential: credObj || null,
     };
     _faceReport = report;
     window._faceReport = report;
@@ -1286,7 +1611,7 @@ function renderFaceActions(show) {
  * @param {object} r
  */
 function renderFaceReport(r) {
-  var el, html, sections, h, sim, pinBox, mt;
+  var el, html, sections, h, sim, pinBox, mt, credStr;
   el = document.getElementById("face-report");
   if (!el) return;
   mt = document.querySelector("#dl-modal-title");
@@ -1495,6 +1820,63 @@ function renderFaceReport(r) {
     ]);
   }
 
+  if (r.passkey) {
+    sections.push([
+      __("face.report.passkey", "Passkey"),
+      "<table class='meta-table'>" +
+        "<tr><td>Credential ID</td><td><code style='font-size:0.65rem;word-break:break-all'>" +
+        escHtml(r.passkey.credentialId) +
+        "</code></td></tr>" +
+        (r.passkey.name
+          ? "<tr><td>Name</td><td>" + escHtml(r.passkey.name) + "</td></tr>"
+          : "") +
+        (r.passkey.createdAt
+          ? "<tr><td>Created</td><td>" +
+            escHtml(r.passkey.createdAt) +
+            "</td></tr>"
+          : "") +
+        "<tr><td>Session verified</td><td>" +
+        (r.passkey.authenticated
+          ? "Yes" +
+            (r.passkey.verifiedAt ? " — " + escHtml(r.passkey.verifiedAt) : "")
+          : "No" +
+            (r.passkey.note ? " (" + escHtml(r.passkey.note) + ")" : "")) +
+        "</td></tr>" +
+        "</table>",
+    ]);
+  } else {
+    sections.push([
+      __("face.report.passkey", "Passkey"),
+      "<p style='font-size:0.8rem;color:var(--text-muted)'>" +
+        __("face.report.no_passkey", "Not registered.") +
+        "</p>",
+    ]);
+  }
+
+  if (r.credential) {
+    if (r.credential.error) {
+      sections.push([
+        __("face.report.credential", "Face Credential"),
+        "<p style='font-size:0.8rem;color:#dc3545'>" +
+          escHtml(r.credential.error) +
+          "</p>",
+      ]);
+    } else {
+      credStr =
+        typeof FaceVC !== "undefined" && FaceVC.toJSON
+          ? FaceVC.toJSON(r.credential)
+          : JSON.stringify(r.credential, null, 2);
+      sections.push([
+        __("face.report.credential", "Face Credential"),
+        "<details style='margin-top:6px'><summary style='cursor:pointer;font-size:0.75rem'>" +
+          __("face.report.vc", "Verifiable Credential") +
+          "</summary><pre style='font-size:0.65rem;overflow-x:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px'>" +
+          escHtml(credStr) +
+          "</pre></details>",
+      ]);
+    }
+  }
+
   for (h = 0; h < sections.length; h++) {
     html +=
       "<div style='margin-top:10px;padding:10px;border:1px solid var(--border-color,#ddd);border-radius:8px'>" +
@@ -1616,6 +1998,16 @@ function faceReportToCSV(r) {
       : "none",
   );
   push("Registered ID", r.registry.registeredId);
+  push("Passkey", r.passkey ? r.passkey.credentialId : "none");
+  push("Passkey Verified", r.passkey && r.passkey.authenticated ? "yes" : "no");
+  push(
+    "Face Credential",
+    r.credential
+      ? r.credential.error
+        ? "error: " + r.credential.error
+        : r.credential.id || "issued"
+      : "none",
+  );
   return rows
     .map(function (row) {
       return row
@@ -1695,6 +2087,29 @@ function faceReportToTXT(r) {
   push("Registered ID", r.registry.registeredId);
   if (r.liveness) push("Liveness", r.liveness.live ? "passed" : "failed");
   lines.push("");
+  lines.push("-- Passkey --");
+  if (r.passkey) {
+    push("Credential ID", r.passkey.credentialId);
+    if (r.passkey.name) push("Name", r.passkey.name);
+    if (r.passkey.createdAt) push("Created", r.passkey.createdAt);
+    push("Verified", r.passkey.authenticated ? "yes" : "no");
+  } else {
+    lines.push("Not registered.");
+  }
+  lines.push("");
+  lines.push("-- Face Credential --");
+  if (r.credential) {
+    if (r.credential.error) lines.push("Error: " + r.credential.error);
+    else
+      lines.push(
+        "Issued " +
+          (r.credential.id || "") +
+          (r.credential.type ? " (" + r.credential.type + ")" : ""),
+      );
+  } else {
+    lines.push("Not issued.");
+  }
+  lines.push("");
   lines.push("Generated by RedoSan Authenticity");
   return lines.join("\n");
 }
@@ -1768,6 +2183,28 @@ function faceReportToXML(r) {
   );
   x += push("registeredId", r.registry.registeredId || "");
   x += "  </registry>\n";
+  x += "  <passkey>\n";
+  if (r.passkey) {
+    x += push("credentialId", r.passkey.credentialId);
+    x += push("name", r.passkey.name || "");
+    x += push("createdAt", r.passkey.createdAt || "");
+    x += push("authenticated", r.passkey.authenticated ? "true" : "false");
+  } else {
+    x += push("status", "none");
+  }
+  x += "  </passkey>\n";
+  x += "  <credential>\n";
+  if (r.credential) {
+    if (r.credential.error) {
+      x += push("error", r.credential.error);
+    } else {
+      x += push("id", r.credential.id || "");
+      x += push("type", r.credential.type || "");
+    }
+  } else {
+    x += push("status", "none");
+  }
+  x += "  </credential>\n";
   x += "</faceBiometricReport>\n";
   return x;
 }
@@ -1843,6 +2280,31 @@ function faceReportToHTML(r) {
   html += "</table>";
   if (r.liveness)
     html += "<p>Liveness: " + (r.liveness.live ? "passed" : "failed") + "</p>";
+  if (r.passkey) {
+    html +=
+      "<h3>Passkey</h3><table border='1' cellpadding='6' style='border-collapse:collapse'>";
+    html += row("Credential ID", r.passkey.credentialId);
+    if (r.passkey.name) html += row("Name", r.passkey.name);
+    if (r.passkey.createdAt) html += row("Created", r.passkey.createdAt);
+    html += row("Session verified", r.passkey.authenticated ? "yes" : "no");
+    html += "</table>";
+  } else {
+    html += "<p>Passkey: not registered.</p>";
+  }
+  if (r.credential) {
+    html += "<h3>Face Credential</h3><p style='font-size:0.8rem'>";
+    if (r.credential.error) {
+      html += "Error: " + escHtml(r.credential.error);
+    } else {
+      html +=
+        "Issued " +
+        escHtml(r.credential.id || "") +
+        (r.credential.type ? " (" + escHtml(r.credential.type) + ")" : "");
+    }
+    html += "</p>";
+  } else {
+    html += "<p>Face Credential: not issued.</p>";
+  }
   html +=
     "<hr><p style='color:#888;font-size:12px'>Generated by RedoSan Authenticity - 100% browser-based, nothing uploaded.</p>";
   html += "</body></html>";
@@ -1930,6 +2392,31 @@ async function faceReportToPDF(r) {
   );
   push("Registered ID", r.registry.registeredId || "-");
   if (r.liveness) push("Liveness", r.liveness.live ? "passed" : "failed");
+  if (r.passkey) {
+    doc.setFontSize(11);
+    doc.setTextColor(108, 92, 231);
+    doc.text("Passkey", 14, y);
+    y += 6;
+    push("Credential ID", r.passkey.credentialId);
+    if (r.passkey.name) push("Name", r.passkey.name);
+    if (r.passkey.createdAt) push("Created", r.passkey.createdAt);
+    push("Verified", r.passkey.authenticated ? "yes" : "no");
+    y += 3;
+  }
+  if (r.credential) {
+    doc.setFontSize(11);
+    doc.setTextColor(108, 92, 231);
+    doc.text("Face Credential", 14, y);
+    y += 6;
+    if (r.credential.error) push("Error", r.credential.error);
+    else
+      push(
+        "Issued",
+        (r.credential.id || "") +
+          (r.credential.type ? " (" + r.credential.type + ")" : ""),
+      );
+    y += 3;
+  }
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
   doc.text("Generated by RedoSan Authenticity", 14, 285);
@@ -2064,6 +2551,24 @@ async function faceReportToDOCX(r) {
   ];
   if (r.liveness)
     regRows.push(["Liveness", r.liveness.live ? "passed" : "failed"]);
+  if (r.passkey) {
+    regRows.push(["Passkey", r.passkey.credentialId]);
+    if (r.passkey.name) regRows.push(["Passkey name", r.passkey.name]);
+    regRows.push(["Passkey verified", r.passkey.authenticated ? "yes" : "no"]);
+  } else {
+    regRows.push(["Passkey", "none"]);
+  }
+  if (r.credential) {
+    if (r.credential.error) regRows.push(["Face Credential", "error"]);
+    else
+      regRows.push([
+        "Face Credential",
+        (r.credential.id || "issued") +
+          (r.credential.type ? " (" + r.credential.type + ")" : ""),
+      ]);
+  } else {
+    regRows.push(["Face Credential", "none"]);
+  }
   children.push(
     new docx.Paragraph({
       children: [
@@ -2272,6 +2777,7 @@ async function handleFaceCameraStart(videoId) {
     faceWarnConsentRequired();
     return;
   }
+  if (!(await ensureFacePasskeyForAction())) return;
   if (typeof FaceCamera !== "function") {
     setStatus("face-status", "Face Camera module not loaded.");
     return;

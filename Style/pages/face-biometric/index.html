@@ -887,6 +887,28 @@
             then press Generate Identifiers — face detection, DID signing,
             Privacy ID, Fuzzy ID and registry match all run together.
           </p>
+
+          <!-- Passkey requirement (primary gate) -->
+          <div
+            id="face-passkey-require"
+            style="
+              display: none;
+              margin: 8px 0;
+              padding: 10px 12px;
+              border: 1px solid #6c5ce7;
+              border-radius: 8px;
+              background: rgba(108, 92, 231, 0.06);
+            "
+          >
+            <p
+              style="margin: 0 0 8px; font-size: 0.8rem; color: #6c5ce7"
+              data-i18n="face.passkey_required_hint"
+            >
+              A passkey is required before generating identifiers. Register one
+              to continue.
+            </p>
+          </div>
+
           <button
             type="button"
             id="face-run"

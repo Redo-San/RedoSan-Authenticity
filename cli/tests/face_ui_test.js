@@ -412,6 +412,10 @@ describe("Face UI — initFaceBiometric", () => {
 
 describe("Face UI — handleFaceFilePicked", () => {
   beforeEach(resetGlobals);
+  beforeEach(() => {
+    globalThis.FaceWebauthn = undefined;
+    globalThis.facePasskeyRegistered = true;
+  });
 
   it("should do nothing when no file selected", async () => {
     globalThis.document = makeDoc();
@@ -478,6 +482,10 @@ describe("Face UI — handleFaceFilePicked", () => {
 
 describe("Face UI — updateFaceRunState", () => {
   beforeEach(resetGlobals);
+  beforeEach(() => {
+    globalThis.FaceWebauthn = undefined;
+    globalThis.facePasskeyRegistered = true;
+  });
 
   it("should do nothing when the run button is missing", () => {
     globalThis.document = makeDoc();
@@ -1561,6 +1569,10 @@ function makeCamera(overrides) {
 
 describe("Face UI — handleFaceCameraCapture", () => {
   beforeEach(resetGlobals);
+  beforeEach(() => {
+    globalThis.FaceWebauthn = undefined;
+    globalThis.facePasskeyRegistered = true;
+  });
 
   afterEach(() => {
     delete globalThis._lastDescriptor;
@@ -2229,7 +2241,7 @@ describe("Face UI — maybePromptFaceEncryption", () => {
     assert.equal(passEl.classList.contains("is-attention"), false);
   });
 
-  it("should prompt and focus the passphrase field for plaintext entries", async () => {
+  it("should be a no-op now that the PRF vault handles encryption", async () => {
     const statusEl = { textContent: "" };
     const passEl = { value: "", focusCalls: 0, focus: function () { this.focusCalls++; }, classList: makeClassList() };
     globalThis.document = makeDoc({
@@ -2242,9 +2254,8 @@ describe("Face UI — maybePromptFaceEncryption", () => {
       },
     };
     await globalThis.maybePromptFaceEncryption();
-    assert.ok(statusEl.textContent.includes("unencrypted"));
-    assert.equal(passEl.focusCalls, 1);
-    assert.equal(passEl.classList.contains("is-attention"), true);
+    assert.equal(statusEl.textContent, "");
+    assert.equal(passEl.focusCalls, 0);
   });
 
   it("should survive registry errors", async () => {
@@ -2576,6 +2587,10 @@ describe("Face UI — progress overlay", () => {
 
 describe("Face UI — file validation", () => {
   beforeEach(resetGlobals);
+  beforeEach(() => {
+    globalThis.FaceWebauthn = undefined;
+    globalThis.facePasskeyRegistered = true;
+  });
 
   it("should reject unsupported file types", async () => {
     const statusEl = { textContent: "" };
@@ -2725,6 +2740,8 @@ describe("Face UI — biometric consent", () => {
     globalThis.localStorage = makeLocalStorage();
     globalThis.sessionStorage = makeLocalStorage();
     globalThis.confirm = savedConfirm;
+    globalThis.FaceWebauthn = undefined;
+    globalThis.facePasskeyRegistered = true;
   });
 
   afterEach(() => {

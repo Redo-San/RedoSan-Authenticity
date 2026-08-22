@@ -29,16 +29,27 @@
  * MODEL_SHA256 via crypto.subtle.digest("SHA-256") (W3C SRI pattern) BEFORE
  * an inference session is created. A mismatch or a missing WebCrypto API
  * fails the load — no unverified model is ever executed.
- */
-/**
- * Model provenance & licensing:
- * - Architecture: ArcFace, implemented by the InsightFace project
- *   (MobileFaceNet / "w600k" 512-d variant).
- * - License: the ONNX artifact loaded here is MIT-licensed. The original
- *   ArcFace / InsightFace training weights are non-commercial only — a
- *   separate commercial license is required for commercial use.
- * - Source: fetched from a community mirror (ykk648/face_lib) and verified
- *   against MODEL_SHA256 (W3C Subresource Integrity pattern) before use.
+ *
+ * ── Provenance & licensing (be precise; this is a third-party weight set) ──
+ *   Architecture : ArcFace (Deng et al., 2019) with a MobileFaceNet backbone;
+ *                  produces a 512-d L2-normalised embedding, compared by cosine
+ *                  similarity. Training set: WebFace600K ("w600k").
+ *   Source model : `w600k_mbf.onnx` (InsightFace). Mirrored here from
+ *                  HuggingFace `ykk648/face_lib` (upstream: deepghs/insightface
+ *                  & the InsightFace project). Integrity pinned by MODEL_SHA256.
+ *   Code license : The InsightFace *library/runtime* code is MIT (permissive,
+ *                  incl. commercial use).
+ *   Model license: The pre-trained *weights* are released by InsightFace for
+ *                  NON-COMMERCIAL RESEARCH USE ONLY; commercial deployment
+ *                  requires a separate commercial license from InsightFace.
+ *   This file    : The wrapper/loader code in this repository is GPL-2.0.
+ *                  GPL-2.0 covers OUR code, NOT the model weights — shipping
+ *                  this file does not grant any commercial right to the
+ *                  `w600k_mbf.onnx` weights.
+ *   Usage here   : On-device, offline, non-commercial / personal authenticity
+ *                  verification only. If you deploy commercially, obtain an
+ *                  InsightFace commercial license (or substitute a
+ *                  properly-licensed embedding model) before distribution.
  */
 var FaceONNXEmbedder = {
   /** Embedding version label stored in the registry/report. */

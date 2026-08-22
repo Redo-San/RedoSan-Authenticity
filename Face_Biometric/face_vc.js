@@ -68,7 +68,20 @@ FaceVC.canonicalString = function (obj) {
 
 /**
  * Build an unsigned face biometric credential.
+ *
  * @param {{did:string, algorithm?:string, descriptorHash?:string, attributes?:object|null, liveness?:object|null, faceCount?:number, embeddingVersion?:string}} opts
+ *   - `descriptorHash`: SHA-256 commitment over the enrolled face descriptor
+ *     (computed off the raw 512-d embedding). Semantics (ISO/IEC 24745
+ *     biometric template protection — irreversibility, unlinkability,
+ *     confidentiality):
+ *       * INTEGRITY / TAMPER-EVIDENCE: it is a one-way commitment that lets a
+ *         verifier confirm the VC is bound to a specific enrolled template
+ *         without exposing the template itself in the credential.
+ *       * NOT A MATCHING KEY: it is intentionally NOT used for 1:1/1:N
+ *         matching. Matching is performed against the (encrypted) descriptor
+ *         held in the local registry; the hash cannot be inverted to recover
+ *         the descriptor, so it provides no matching shortcut and no privacy
+ *         leak. `descriptorHashAlg` is pinned to "sha-256".
  * @returns {object}
  */
 FaceVC.build = function (opts) {
@@ -84,12 +97,9 @@ FaceVC.build = function (opts) {
       id: opts.did,
     },
   };
-  // descriptorHash is a SHA-256 one-way commitment over the 512-d descriptor
-  // (see descriptorHashAlg = "sha-256"). It is an integrity anchor that binds a
-  // verifiable credential to a specific enrollment WITHOUT exposing the
-  // descriptor or enabling 1:1 matching — consistent with ISO/IEC 24745
-  // (stored biometric reference data must not be reversible).
   if (opts.descriptorHash) {
+    // SHA-256 commitment over the enrolled descriptor — integrity anchor, not a
+    // matching key (see descriptorHash docs above / ISO/IEC 24745).
     vc.credentialSubject.descriptorHash = opts.descriptorHash;
     vc.credentialSubject.descriptorHashAlg = "sha-256";
   }

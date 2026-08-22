@@ -941,6 +941,8 @@ window.__I18N_DATA.ja = {
   "face.passkey_register_btn": "Register Passkey",
   "face.passkey_remove_btn": "Remove Passkey",
   "face.passkey_none": "No passkey registered yet.",
+  "face.passkey_required_hint":
+    "A passkey is required before generating identifiers. Register one to continue.",
   "face.passkey_registered": "Passkey registered: {0}",
   "face.passkey_removed": "Passkey removed from this registry.",
   "face.passkey_unavailable":

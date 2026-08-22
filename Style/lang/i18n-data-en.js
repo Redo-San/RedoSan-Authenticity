@@ -705,7 +705,7 @@ window.__I18N_DATA.en = {
   "face.export_c2pa_btn": "Export C2PA Report",
   "face.privacy_title": "Privacy",
   "face.privacy_hint":
-    "Encrypt the registry with a passphrase (AES-256-GCM, key derived via PBKDF2). Passphrase is never stored — without it the stored data cannot be recovered.",
+    "The registry is sealed automatically with the PRF vault: a WebAuthn PRF output is derived through HKDF-SHA256 into an AES-256-GCM key. Register a passkey to enable encryption — no passphrase is ever stored or required.",
   "face.lock_pass_label": "Passphrase",
   "face.lock_pass_placeholder": "Enter a passphrase",
   "face.lock_btn": "Lock Registry",
@@ -752,6 +752,8 @@ window.__I18N_DATA.en = {
   "face.passkey_register_btn": "Register Passkey",
   "face.passkey_remove_btn": "Remove Passkey",
   "face.passkey_none": "No passkey registered yet.",
+  "face.passkey_required_hint":
+    "A passkey is required before generating identifiers. Register one to continue.",
   "face.passkey_registered": "Passkey registered: {0}",
   "face.passkey_removed": "Passkey removed from this registry.",
   "face.passkey_unavailable":
