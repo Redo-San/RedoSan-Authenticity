@@ -1128,7 +1128,14 @@
     "antispoof",
     "mgmt",
     "tfjs",
-    "entrancy"
+    "entrancy",
+    "deepghs",
+    "decryptable",
+    "Creds",
+    "EDPB",
+    "CTAP",
+    "Corbado",
+    "Yubico"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[\u0600-\u06FF]+/"],
