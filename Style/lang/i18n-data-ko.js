@@ -649,6 +649,9 @@ window.__I18N_DATA.ko = {
   "card.face_biometric.desc":
     "Register &amp; verify face descriptors for visual rights",
   "face.heading": "Face Biometric Rights",
+  "face.help_title": "Face Biometric Rights 사용 방법",
+  "face.help":
+    "1) 선명하고 밝게 비친 사진을 찍거나 업로드하세요.\n2) 브라우저가 숫자 얼굴 디스크립터(512차원)와 개인정보 ID(BioHash)를 기기 내에서 생성합니다.\n3) 기록은 동의한 후에만 브라우저에 저장되며, 업로드되지 않습니다.\n4) 이를 사용하여 시각적 권리(신원 확인, 스푸핑 방지, 위조 탐지)를 검증하고 보호하세요.\n5) 언제든 동의를 철회하여 기기에 저장된 모든 데이터를 삭제할 수 있습니다.",
   "face.register_tab": "Register",
   "face.verify_tab": "Verify",
   "face.manage_tab": "Manage",

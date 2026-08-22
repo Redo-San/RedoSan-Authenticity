@@ -125,3 +125,6 @@ secrets.*
 .secrets.hc
 
 
+
+# Build / probe artifacts
+vkprobe.obj

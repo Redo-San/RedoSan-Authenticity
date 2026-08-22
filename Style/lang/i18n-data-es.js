@@ -676,6 +676,9 @@ window.__I18N_DATA.es = {
   "card.face_biometric.desc":
     "Register &amp; verify face descriptors for visual rights",
   "face.heading": "Face Biometric Rights",
+  "face.help_title": "Cómo usar Face Biometric Rights",
+  "face.help":
+    "1) Captura o sube una foto clara y bien iluminada.\n2) Tu navegador genera un descriptor facial numérico (512-d) y un ID de privacidad (BioHash) — totalmente en tu dispositivo.\n3) Los registros se guardan solo en tu navegador tras dar tu consentimiento; nada se sube.\n4) Úsalo para verificar y proteger tus derechos visuales (verificación de identidad, anti-spoofing, detección de falsificaciones).\n5) Retira el consentimiento en cualquier momento para eliminar todos los datos almacenados de tu dispositivo.",
   "face.register_tab": "Register",
   "face.verify_tab": "Verify",
   "face.manage_tab": "Manage",

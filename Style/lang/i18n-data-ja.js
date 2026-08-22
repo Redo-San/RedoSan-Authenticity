@@ -668,6 +668,9 @@ window.__I18N_DATA.ja = {
   "card.face_biometric.desc":
     "Register &amp; verify face descriptors for visual rights",
   "face.heading": "Face Biometric Rights",
+  "face.help_title": "Face Biometric Rights の使い方",
+  "face.help":
+    "1) 明るくはっきりした写真を撮影またはアップロードします。\n2) ブラウザが数値化された顔記述子（512次元）とプライバシーID（BioHash）を端末内で生成します。\n3) 記録は同意後にのみお使いのブラウザに保存され、アップロードはされません。\n4) これを使って視覚的権利の確認と保護（本人確認、なりすまし防止、改ざん検出）を行います。\n5) いつでも同意を撤回して、端末に保存されたすべてのデータを削除できます。",
   "face.register_tab": "Register",
   "face.verify_tab": "Verify",
   "face.manage_tab": "Manage",

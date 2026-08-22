@@ -30,6 +30,16 @@
  * an inference session is created. A mismatch or a missing WebCrypto API
  * fails the load — no unverified model is ever executed.
  */
+/**
+ * Model provenance & licensing:
+ * - Architecture: ArcFace, implemented by the InsightFace project
+ *   (MobileFaceNet / "w600k" 512-d variant).
+ * - License: the ONNX artifact loaded here is MIT-licensed. The original
+ *   ArcFace / InsightFace training weights are non-commercial only — a
+ *   separate commercial license is required for commercial use.
+ * - Source: fetched from a community mirror (ykk648/face_lib) and verified
+ *   against MODEL_SHA256 (W3C Subresource Integrity pattern) before use.
+ */
 var FaceONNXEmbedder = {
   /** Embedding version label stored in the registry/report. */
   VERSION: "arcface-mbf",

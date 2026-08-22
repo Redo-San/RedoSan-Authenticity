@@ -8,7 +8,9 @@ var PAGES_DIR = path.join(ROOT, "Style", "pages");
 
 var STATIC_PAGES = new Set(["about", "contact", "privacy", "social", "search"]);
 
-var LOCAL_ONLY_PAGES = new Set(["face-biometric", "removal-tools"]);
+// Pages that exist only locally / are still under development and must not be
+// indexed publicly. face-biometric is fully implemented and IS indexed.
+var LOCAL_ONLY_PAGES = new Set(["removal-tools"]);
 
 /**
  *
