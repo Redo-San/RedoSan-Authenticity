@@ -726,15 +726,18 @@ async function ensureFacePasskeyForAction() {
     );
     return true;
   }
-  revealPasskeyRequire();
-  setStatus(
-    "face-status",
-    __(
-      "face.passkey_required",
-      "A passkey is required first. Register one above to continue.",
-    ),
-  );
-  return false;
+  await handlePasskeyRegister();
+  var ok = await isFacePasskeyRegistered();
+  if (!ok) {
+    setStatus(
+      "face-status",
+      __(
+        "face.passkey_required_run",
+        "Register a passkey to enable generation.",
+      ),
+    );
+  }
+  return ok;
 }
 
 /**

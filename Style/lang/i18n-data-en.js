@@ -13,6 +13,17 @@
 })();
 window.__I18N_DATA = window.__I18N_DATA || {};
 window.__I18N_DATA.en = {
+  "face.passkey_skipped":
+    "WebAuthn unavailable on this device — passkey requirement skipped.",
+  "face.passkey_required":
+    "A passkey is required first. Register one above to continue.",
+  "face.passkey_required_run": "Register a passkey to enable generation.",
+  "face.step.passkey": "Verifying passkey (step-up)...",
+  "face.step.credential": "Issuing face credential...",
+  "face.report.passkey": "Passkey",
+  "face.report.no_passkey": "Not registered.",
+  "face.report.credential": "Face Credential",
+
   "nav.about": "About",
   "nav.privacy": "Privacy",
   "nav.contact": "Contact",
