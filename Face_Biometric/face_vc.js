@@ -84,6 +84,11 @@ FaceVC.build = function (opts) {
       id: opts.did,
     },
   };
+  // descriptorHash is a SHA-256 one-way commitment over the 512-d descriptor
+  // (see descriptorHashAlg = "sha-256"). It is an integrity anchor that binds a
+  // verifiable credential to a specific enrollment WITHOUT exposing the
+  // descriptor or enabling 1:1 matching — consistent with ISO/IEC 24745
+  // (stored biometric reference data must not be reversible).
   if (opts.descriptorHash) {
     vc.credentialSubject.descriptorHash = opts.descriptorHash;
     vc.credentialSubject.descriptorHashAlg = "sha-256";

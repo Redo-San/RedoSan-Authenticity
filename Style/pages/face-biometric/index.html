@@ -27,15 +27,24 @@
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/responsive.css" />
     <title>Face Biometric Rights — RedoSan Authenticity</title>
-    <meta name="description" content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded." />
+    <meta
+      name="description"
+      content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded."
+    />
     <meta
       name="keywords"
       content="face biometric, facial recognition, artist rights, visual rights, face descriptor, biometric registration, face verification, digital identity"
     />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="Redo_San" />
-    <meta property="og:title" content="Face Biometric Rights — RedoSan Authenticity" />
-    <meta property="og:description" content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded." />
+    <meta
+      property="og:title"
+      content="Face Biometric Rights — RedoSan Authenticity"
+    />
+    <meta
+      property="og:description"
+      content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded."
+    />
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
@@ -47,8 +56,14 @@
     />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Face Biometric Rights — RedoSan Authenticity" />
-    <meta name="twitter:description" content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded." />
+    <meta
+      name="twitter:title"
+      content="Face Biometric Rights — RedoSan Authenticity"
+    />
+    <meta
+      name="twitter:description"
+      content="Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded."
+    />
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://huggingface.co https://*.hf.co https://a.pool.opentimestamps.org https://b.pool.opentimestamps.org https://alice.btc.calendar.opentimestamps.org https://bob.btc.calendar.opentimestamps.org https://finney.calendar.eternitywall.com https://a.pool.eternitywall.com; base-uri 'self'; form-action 'none'; object-src 'none'"
@@ -56,10 +71,49 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <script>
-(function () {
-        var SUPPORTED = ['en','ar','fr','de','es','zh','ja','ko'];
-        var MAP = {'en':'en','ar':'ar','fr':'fr','de':'de','es':'es','zh':'zh','ja':'ja','ko':'ko','pt':'pt','it':'it','ru':'ru','hi':'hi','ur':'ur','bn':'bn','id':'id','ms':'ms','th':'th','vi':'vi','tl':'tl','tr':'tr','fa':'fa','he':'he','nl':'nl','sv':'sv','no':'no','da':'da','fi':'fi','pl':'pl','cs':'cs','hu':'hu','el':'el','uk':'uk','ro':'ro','bg':'bg','hr':'hr','sr':'sr','am':'am','et':'et'};
-        var lang = 'en';
+      (function () {
+        var SUPPORTED = ["en", "ar", "fr", "de", "es", "zh", "ja", "ko"];
+        var MAP = {
+          en: "en",
+          ar: "ar",
+          fr: "fr",
+          de: "de",
+          es: "es",
+          zh: "zh",
+          ja: "ja",
+          ko: "ko",
+          pt: "pt",
+          it: "it",
+          ru: "ru",
+          hi: "hi",
+          ur: "ur",
+          bn: "bn",
+          id: "id",
+          ms: "ms",
+          th: "th",
+          vi: "vi",
+          tl: "tl",
+          tr: "tr",
+          fa: "fa",
+          he: "he",
+          nl: "nl",
+          sv: "sv",
+          no: "no",
+          da: "da",
+          fi: "fi",
+          pl: "pl",
+          cs: "cs",
+          hu: "hu",
+          el: "el",
+          uk: "uk",
+          ro: "ro",
+          bg: "bg",
+          hr: "hr",
+          sr: "sr",
+          am: "am",
+          et: "et",
+        };
+        var lang = "en";
         var stored = null;
         var nav = null;
         var primary = null;
@@ -67,34 +121,36 @@
         var base = null;
         var l = null;
         try {
-          stored = localStorage.getItem('redosan_lang');
+          stored = localStorage.getItem("redosan_lang");
           if (stored && SUPPORTED.indexOf(stored) !== -1) lang = stored;
         } catch (e) {}
-        if (lang === 'en') {
-          nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        if (lang === "en") {
+          nav = (
+            navigator.language ||
+            navigator.userLanguage ||
+            ""
+          ).toLowerCase();
           primary = nav.substring(0, 2);
           if (SUPPORTED.indexOf(primary) !== -1) lang = primary;
-          else if (MAP[primary] && SUPPORTED.indexOf(MAP[primary]) !== -1) lang = MAP[primary];
-          else if (SUPPORTED.indexOf(nav.substring(0, 5)) !== -1) lang = nav.substring(0, 5);
+          else if (MAP[primary] && SUPPORTED.indexOf(MAP[primary]) !== -1)
+            lang = MAP[primary];
+          else if (SUPPORTED.indexOf(nav.substring(0, 5)) !== -1)
+            lang = nav.substring(0, 5);
         }
         root = document.documentElement;
         root.lang = lang;
-        root.dir = lang === 'ar' ? 'rtl' : 'ltr';
-        base = root.dataset.standalone ? '../../' : 'Style/';
-        if (lang === 'ar' && !document.getElementById('rtl-css')) {
-          l = document.createElement('link');
-          l.id = 'rtl-css';
-          l.rel = 'stylesheet';
-          l.href = base + 'rtl.css';
+        root.dir = lang === "ar" ? "rtl" : "ltr";
+        base = root.dataset.standalone ? "../../" : "Style/";
+        if (lang === "ar" && !document.getElementById("rtl-css")) {
+          l = document.createElement("link");
+          l.id = "rtl-css";
+          l.rel = "stylesheet";
+          l.href = base + "rtl.css";
           document.head.appendChild(l);
         }
         window.__I18N_EARLY = true;
         document.write(
-          '<script src="' +
-            base +
-            "lang/i18n-data-" +
-            lang +
-            '.js"><\/script>',
+          '<script src="' + base + "lang/i18n-data-" + lang + '.js"><\/script>',
         );
         document.write('<script src="' + base + 'i18n.js"><\/script>');
       })();
@@ -145,8 +201,11 @@
         }
       }
     </style>
-    <link rel="canonical" href="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/face-biometric/index.html" />
-        <link
+    <link
+      rel="canonical"
+      href="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/face-biometric/index.html"
+    />
+    <link
       rel="alternate"
       hreflang="en"
       href="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/face-biometric/index.html"
@@ -157,7 +216,7 @@
       href="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/face-biometric/index.html"
     />
 
-<script type="application/ld+json">
+    <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -209,7 +268,8 @@
     <!-- Navigation bar -->
     <nav id="mainNav" class="nav-header">
       <div class="nav-left">
-        <button type="button"
+        <button
+          type="button"
           class="hamburger"
           id="menuBtn"
           onclick="toggleSidebar()"
@@ -217,7 +277,12 @@
         >
           <span></span><span></span><span></span>
         </button>
-        <a href="../home/index.html" data-page="home" class="logo" aria-label="RedoSan Authenticity">
+        <a
+          href="../home/index.html"
+          data-page="home"
+          class="logo"
+          aria-label="RedoSan Authenticity"
+        >
           <div
             class="logo-img logo-white"
             role="img"
@@ -241,14 +306,16 @@
             onfocus="this.parentElement.classList.add('focused')"
             onblur="this.parentElement.classList.remove('focused')"
           />
-          <button type="button"
+          <button
+            type="button"
             class="search-btn"
             onclick="siteSearch()"
             aria-label="Search"
           ></button>
           <div class="search-results" id="searchResults"></div>
         </div>
-        <button type="button"
+        <button
+          type="button"
           class="theme-btn mode-switch-btn"
           onclick="window.location.href='../../../index.html'"
           title="Back to Home"
@@ -277,7 +344,12 @@
           >Social</a
         >
         <div class="lang-dropdown">
-          <button type="button" class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
+          <button
+            type="button"
+            class="lang-btn"
+            id="langBtn"
+            onclick="toggleLangDropdown()"
+          >
             English
           </button>
           <div class="lang-menu" id="langMenu">
@@ -342,7 +414,8 @@
       </div>
     </nav>
 
-    <button type="button"
+    <button
+      type="button"
       class="theme-btn"
       id="themeToggle"
       onclick="toggleTheme()"
@@ -364,176 +437,740 @@
     <aside class="sidebar" id="sidebar" aria-label="Sidebar menu">
       <div class="sidebar-header">
         <span class="sidebar-title" data-i18n="sidebar.title">Menu</span>
-        <button type="button" class="sidebar-close" onclick="toggleSidebar()">&times;</button>
+        <button type="button" class="sidebar-close" onclick="toggleSidebar()">
+          &times;
+        </button>
       </div>
-      <a href="../home/index.html" data-page="home" data-i18n="sidebar.home">Home</a>
-      <a href="../watermark/index.html" data-page="watermark" data-i18n="sidebar.watermark">Digital Watermark</a>
-      <a href="../audio-watermark/index.html" data-page="audio-watermark" data-i18n="sidebar.audio_watermark">Audio Watermark</a>
-      <a href="../pixel-injection/index.html" data-page="pixel-injection" data-i18n="sidebar.pixel_injection">Pixel Injection</a>
-      <a href="../face-biometric/index.html" data-page="face-biometric" data-i18n="sidebar.face_biometric">Face Biometric</a>
-      <a href="../forensic/index.html" data-page="forensic" data-i18n="sidebar.forensic">Forensic Analyzer</a>
-      <a href="../id_forge/index.html" data-page="id_forge" data-i18n="sidebar.id_forge">ID Forge</a>
-      <a href="../fingerprint/index.html" data-page="fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
-      <a href="../metadata/index.html" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
-      <a href="../timestamp/index.html" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
-      <a href="../did/index.html" data-page="did" data-i18n="sidebar.did">DID Identity</a>
-      <a href="../c2pa/index.html" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
-      <a href="../certificate/index.html" data-page="certificate" data-i18n="sidebar.certificate">Digital Passport</a>
-      <a href="../converter/index.html" data-page="converter" data-i18n="sidebar.converter">File Converter</a>
-      <a href="../removal-tools/index.html" data-page="removal-tools" data-i18n="sidebar.removal_tools">Removal Tools</a>
-      <a href="../document-watermark/index.html" data-page="document-watermark" data-i18n="sidebar.document_watermark">Document Watermark</a>
+      <a href="../home/index.html" data-page="home" data-i18n="sidebar.home"
+        >Home</a
+      >
+      <a
+        href="../watermark/index.html"
+        data-page="watermark"
+        data-i18n="sidebar.watermark"
+        >Digital Watermark</a
+      >
+      <a
+        href="../audio-watermark/index.html"
+        data-page="audio-watermark"
+        data-i18n="sidebar.audio_watermark"
+        >Audio Watermark</a
+      >
+      <a
+        href="../pixel-injection/index.html"
+        data-page="pixel-injection"
+        data-i18n="sidebar.pixel_injection"
+        >Pixel Injection</a
+      >
+      <a
+        href="../face-biometric/index.html"
+        data-page="face-biometric"
+        data-i18n="sidebar.face_biometric"
+        >Face Biometric</a
+      >
+      <a
+        href="../forensic/index.html"
+        data-page="forensic"
+        data-i18n="sidebar.forensic"
+        >Forensic Analyzer</a
+      >
+      <a
+        href="../id_forge/index.html"
+        data-page="id_forge"
+        data-i18n="sidebar.id_forge"
+        >ID Forge</a
+      >
+      <a
+        href="../fingerprint/index.html"
+        data-page="fingerprint"
+        data-i18n="sidebar.fingerprint"
+        >Fingerprint</a
+      >
+      <a
+        href="../metadata/index.html"
+        data-page="metadata"
+        data-i18n="sidebar.metadata"
+        >Metadata</a
+      >
+      <a
+        href="../timestamp/index.html"
+        data-page="timestamp"
+        data-i18n="sidebar.timestamp"
+        >Timestamp</a
+      >
+      <a href="../did/index.html" data-page="did" data-i18n="sidebar.did"
+        >DID Identity</a
+      >
+      <a href="../c2pa/index.html" data-page="c2pa" data-i18n="sidebar.c2pa"
+        >C2PA Provenance</a
+      >
+      <a
+        href="../certificate/index.html"
+        data-page="certificate"
+        data-i18n="sidebar.certificate"
+        >Digital Passport</a
+      >
+      <a
+        href="../converter/index.html"
+        data-page="converter"
+        data-i18n="sidebar.converter"
+        >File Converter</a
+      >
+      <a
+        href="../removal-tools/index.html"
+        data-page="removal-tools"
+        data-i18n="sidebar.removal_tools"
+        >Removal Tools</a
+      >
+      <a
+        href="../document-watermark/index.html"
+        data-page="document-watermark"
+        data-i18n="sidebar.document_watermark"
+        >Document Watermark</a
+      >
     </aside>
 
     <!-- App container: page-specific content -->
     <main class="container" id="app">
       <section id="page-face-biometric" class="page active">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-          <a href="../home/index.html" onclick="history.back();return false;" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
-          <h2 style="margin-bottom:0" data-i18n="face.heading">Face Biometric Rights</h2>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+          "
+        >
+          <a
+            href="../home/index.html"
+            onclick="history.back();return false;"
+            class="back-btn"
+            title="Back"
+            ><span class="back-arrow">←</span></a
+          >
+          <h2 style="margin-bottom: 0" data-i18n="face.heading">
+            Face Biometric Rights
+          </h2>
         </div>
         <div class="card-form">
-          <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:16px" data-i18n="face.privacy_note">
+          <p
+            style="
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              margin-bottom: 16px;
+            "
+            data-i18n="face.privacy_note"
+          >
             🔒 All face processing is 100% local. Data never leaves your device.
           </p>
 
           <!-- Biometric consent (GDPR Art 9(2)(a) / BIPA 740 ILCS 14) -->
-          <div id="face-consent-panel" style="border:1px solid #f5c542;background:rgba(245,197,66,.08);border-radius:8px;padding:12px 14px;margin-bottom:16px">
-            <p style="margin-bottom:8px"><strong data-i18n="face.consent_title">Biometric Consent Notice</strong></p>
-            <p style="font-size:0.75rem;margin-bottom:8px" data-i18n="face.consent_body">
-              This tool processes facial geometry — a biometric identifier — entirely in your browser. Please read the details below before continuing.
+          <div
+            id="face-consent-panel"
+            style="
+              border: 1px solid #f5c542;
+              background: rgba(245, 197, 66, 0.08);
+              border-radius: 8px;
+              padding: 12px 14px;
+              margin-bottom: 16px;
+            "
+          >
+            <p style="margin-bottom: 8px">
+              <strong data-i18n="face.consent_title"
+                >Biometric Consent Notice</strong
+              >
             </p>
-            <ul style="font-size:0.72rem;margin:0 0 10px 18px;padding:0;line-height:1.6">
-              <li data-i18n="face.consent_what">What: a numeric face descriptor (512-d embedding) derived from your photo, plus a Privacy ID (BioHash) generated from it.</li>
-              <li data-i18n="face.consent_purpose">Purpose: verifying and protecting your visual rights — identity verification, anti-spoofing and forgery detection.</li>
-              <li data-i18n="face.consent_where">Storage: in this browser, on this device only. There is no server or cloud — nothing is uploaded, shared or used for training.</li>
-              <li data-i18n="face.consent_retention">Retention: records stay in this browser's local storage on this device until you delete them or withdraw consent; a local safety net also removes records left unused for 3 years.</li>
-              <li data-i18n="face.consent_rights">Your rights: you may withdraw consent at any time — this deletes all stored biometric data from this device.</li>
+            <p
+              style="font-size: 0.75rem; margin-bottom: 8px"
+              data-i18n="face.consent_body"
+            >
+              This tool processes facial geometry — a biometric identifier —
+              entirely in your browser. Please read the details below before
+              continuing.
+            </p>
+            <ul
+              style="
+                font-size: 0.72rem;
+                margin: 0 0 10px 18px;
+                padding: 0;
+                line-height: 1.6;
+              "
+            >
+              <li data-i18n="face.consent_what">
+                What: a numeric face descriptor (512-d embedding) derived from
+                your photo, plus a Privacy ID (BioHash) generated from it.
+              </li>
+              <li data-i18n="face.consent_purpose">
+                Purpose: verifying and protecting your visual rights — identity
+                verification, anti-spoofing and forgery detection.
+              </li>
+              <li data-i18n="face.consent_where">
+                Storage: in this browser, on this device only. There is no
+                server or cloud — nothing is uploaded, shared or used for
+                training.
+              </li>
+              <li data-i18n="face.consent_retention">
+                Retention: records stay in this browser's local storage on this
+                device until you delete them or withdraw consent; a local safety
+                net also removes records left unused for 3 years.
+              </li>
+              <li data-i18n="face.consent_rights">
+                Your rights: you may withdraw consent at any time — this deletes
+                all stored biometric data from this device.
+              </li>
             </ul>
-            <label style="display:flex;gap:8px;align-items:flex-start;font-size:0.8rem;margin-bottom:10px">
+            <label
+              style="
+                display: flex;
+                gap: 8px;
+                align-items: flex-start;
+                font-size: 0.8rem;
+                margin-bottom: 10px;
+              "
+            >
               <input type="checkbox" id="face-consent-check" />
-              <span data-i18n="face.consent_check">I have read and understand the notice above and consent to on-device processing of my facial geometry for visual rights protection.</span>
+              <span data-i18n="face.consent_check"
+                >I have read and understand the notice above and consent to
+                on-device processing of my facial geometry for visual rights
+                protection.</span
+              >
             </label>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              <button type="button" id="face-consent-accept" class="btn" disabled onclick="handleFaceConsentAccept()" data-i18n="face.consent_accept_btn">I Consent</button>
-              <span style="font-size:0.72rem;color:var(--text-muted)" data-i18n="face.consent_optional">You can browse the site without consenting — biometric features stay disabled.</span>
+            <div
+              style="
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                type="button"
+                id="face-consent-accept"
+                class="btn"
+                disabled
+                onclick="handleFaceConsentAccept()"
+                data-i18n="face.consent_accept_btn"
+              >
+                I Consent
+              </button>
+              <span
+                style="font-size: 0.72rem; color: var(--text-muted)"
+                data-i18n="face.consent_optional"
+                >You can browse the site without consenting — biometric features
+                stay disabled.</span
+              >
             </div>
           </div>
-          <div id="face-consent-status" style="display:none;font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;padding:8px 10px;border:1px solid var(--border-color, #ddd);border-radius:8px" data-i18n="face.consent_given">
-            ✅ Consent recorded. You can withdraw it anytime — withdrawing deletes your stored biometric data.
+          <div
+            id="face-consent-status"
+            style="
+              display: none;
+              font-size: 0.75rem;
+              color: var(--text-muted);
+              margin-bottom: 14px;
+              padding: 8px 10px;
+              border: 1px solid var(--border-color, #ddd);
+              border-radius: 8px;
+            "
+            data-i18n="face.consent_given"
+          >
+            ✅ Consent recorded. You can withdraw it anytime — withdrawing
+            deletes your stored biometric data.
+          </div>
+
+          <!-- Help card: how to use -->
+          <div class="help-card collapsed">
+            <div
+              class="help-card-header"
+              onclick="this.parentElement.classList.toggle('collapsed')"
+            >
+              <span data-i18n="face.help_title"
+                >How to use Face Biometric Rights</span
+              >
+              <span class="help-card-toggle">&#9662;</span>
+            </div>
+            <div class="help-card-body" data-i18n="face.help">
+              1) Capture or upload a clear, well-lit photo. 2) Your browser
+              derives a numeric face descriptor (512-d) and a Privacy ID
+              (BioHash) — fully on-device. 3) Records are stored only in this
+              browser after you consent; nothing is uploaded. 4) Use it to
+              verify and protect your visual rights (identity check,
+              anti-spoofing, forgery detection). 5) Withdraw consent anytime to
+              delete all stored data from this device.
+            </div>
           </div>
 
           <!-- Unified automated input -->
           <div class="face-input-tabs">
-            <button type="button" class="face-tab-btn is-active" data-face-tab="upload" onclick="switchFaceInput('upload')" data-i18n="face.input_tab_upload">Upload Photo</button>
-            <button type="button" class="face-tab-btn" data-face-tab="camera" onclick="switchFaceInput('camera')" data-i18n="face.input_tab_camera">Capture with Camera</button>
+            <button
+              type="button"
+              class="face-tab-btn is-active"
+              data-face-tab="upload"
+              onclick="switchFaceInput('upload')"
+              data-i18n="face.input_tab_upload"
+            >
+              Upload Photo
+            </button>
+            <button
+              type="button"
+              class="face-tab-btn"
+              data-face-tab="camera"
+              onclick="switchFaceInput('camera')"
+              data-i18n="face.input_tab_camera"
+            >
+              Capture with Camera
+            </button>
           </div>
           <div id="face-upload-wrapper" class="form-group">
             <label for="face-image" data-i18n="face.image_label">Photo</label>
-            <input type="file" id="face-image" accept="image/png,image/jpeg" onchange="handleFaceFilePicked()" />
+            <input
+              type="file"
+              id="face-image"
+              accept="image/png,image/jpeg"
+              onchange="handleFaceFilePicked()"
+            />
           </div>
-          <div id="face-capture-wrapper" class="form-group" style="display:none">
-            <label for="face-liveness-mode" data-i18n="face.camera_label">Live Camera</label>
-            <video id="face-camera" autoplay playsinline muted style="display:none;max-width:100%;border-radius:8px;background:#000" aria-label="Live camera preview"></video>
-            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
-              <button type="button" id="face-cam-start" class="btn btn-sm" onclick="handleFaceCameraStart('face-camera')" data-i18n="face.camera_start_btn">Start Camera</button>
-              <button type="button" id="face-cam-stop" class="btn btn-sm" onclick="handleFaceCameraStop('face-camera')" disabled data-i18n="face.camera_stop_btn">Stop Camera</button>
-              <button type="button" id="face-cam-capture" class="btn btn-sm" onclick="handleFaceCameraCapture()" disabled data-i18n="face.capture_btn">Capture Photo</button>
+          <div
+            id="face-capture-wrapper"
+            class="form-group"
+            style="display: none"
+          >
+            <label for="face-liveness-mode" data-i18n="face.camera_label"
+              >Live Camera</label
+            >
+            <video
+              id="face-camera"
+              autoplay
+              playsinline
+              muted
+              style="
+                display: none;
+                max-width: 100%;
+                border-radius: 8px;
+                background: #000;
+              "
+              aria-label="Live camera preview"
+            ></video>
+            <div
+              style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap"
+            >
+              <button
+                type="button"
+                id="face-cam-start"
+                class="btn btn-sm"
+                onclick="handleFaceCameraStart('face-camera')"
+                data-i18n="face.camera_start_btn"
+              >
+                Start Camera
+              </button>
+              <button
+                type="button"
+                id="face-cam-stop"
+                class="btn btn-sm"
+                onclick="handleFaceCameraStop('face-camera')"
+                disabled
+                data-i18n="face.camera_stop_btn"
+              >
+                Stop Camera
+              </button>
+              <button
+                type="button"
+                id="face-cam-capture"
+                class="btn btn-sm"
+                onclick="handleFaceCameraCapture()"
+                disabled
+                data-i18n="face.capture_btn"
+              >
+                Capture Photo
+              </button>
             </div>
-            <div style="display:flex;gap:8px;margin-top:6px;align-items:center;flex-wrap:wrap">
-              <label for="face-liveness-mode" style="font-size:0.8rem" data-i18n="face.liveness_label">Liveness</label>
+            <div
+              style="
+                display: flex;
+                gap: 8px;
+                margin-top: 6px;
+                align-items: center;
+                flex-wrap: wrap;
+              "
+            >
+              <label
+                for="face-liveness-mode"
+                style="font-size: 0.8rem"
+                data-i18n="face.liveness_label"
+                >Liveness</label
+              >
               <select id="face-liveness-mode">
                 <option value="off" data-i18n="face.liveness_off">Off</option>
-                <option value="passive" selected data-i18n="face.liveness_passive">Passive (blink + motion)</option>
-                <option value="active" data-i18n="face.liveness_active">Passive + Active challenges</option>
+                <option
+                  value="passive"
+                  selected
+                  data-i18n="face.liveness_passive"
+                >
+                  Passive (blink + motion)
+                </option>
+                <option value="active" data-i18n="face.liveness_active">
+                  Passive + Active challenges
+                </option>
               </select>
             </div>
-            <p style="font-size:0.72rem;color:var(--text-muted);margin-top:6px" data-i18n="face.liveness_hint">
-              🎥 Liveness blocks photo/screen replay (ISO/IEC 30107-3 style). Registration via camera requires a passing check.
+            <p
+              style="
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                margin-top: 6px;
+              "
+              data-i18n="face.liveness_hint"
+            >
+              🎥 Liveness blocks photo/screen replay (ISO/IEC 30107-3 style).
+              Registration via camera requires a passing check.
             </p>
-            <div id="face-challenge" style="font-size:0.85rem;font-weight:bold;margin-top:6px"></div>
+            <div
+              id="face-challenge"
+              style="font-size: 0.85rem; font-weight: bold; margin-top: 6px"
+            ></div>
           </div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <div class="form-group" style="flex:1;min-width:220px;margin-bottom:0">
-              <label for="face-label" data-i18n="face.label_label">Name / Label</label>
-              <input type="text" id="face-label" data-i18n-placeholder="face.label_placeholder" placeholder="e.g. Artist Name — used to auto-register the face" oninput="updateFaceRunState()" />
+          <div style="display: flex; gap: 12px; flex-wrap: wrap">
+            <div
+              class="form-group"
+              style="flex: 1; min-width: 220px; margin-bottom: 0"
+            >
+              <label for="face-label" data-i18n="face.label_label"
+                >Name / Label</label
+              >
+              <input
+                type="text"
+                id="face-label"
+                data-i18n-placeholder="face.label_placeholder"
+                placeholder="e.g. Artist Name — used to auto-register the face"
+                oninput="updateFaceRunState()"
+              />
             </div>
-            <div class="form-group" style="flex:1;min-width:220px;margin-bottom:0">
-              <label for="face-embedder" data-i18n="face.embedder_label">Embedding Engine</label>
+            <div
+              class="form-group"
+              style="flex: 1; min-width: 220px; margin-bottom: 0"
+            >
+              <label for="face-embedder" data-i18n="face.embedder_label"
+                >Embedding Engine</label
+              >
               <select id="face-embedder" onchange="handleFaceEmbedderChange()">
-                <option value="human" selected data-i18n="face.embedder_human">Human (HSE, offline)</option>
-                <option value="arcface" data-i18n="face.embedder_arcface">ArcFace (MobileFaceNet ONNX)</option>
+                <option value="human" selected data-i18n="face.embedder_human">
+                  Human (HSE, offline)
+                </option>
+                <option value="arcface" data-i18n="face.embedder_arcface">
+                  ArcFace (MobileFaceNet ONNX)
+                </option>
               </select>
-              <p id="face-embedder-hint" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px" data-i18n="face.embedder_hint">
-                ArcFace loads a ~13 MB ONNX model from jsDelivr on first use (WebGPU/WASM). Human runs fully offline.
+              <p
+                id="face-embedder-hint"
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  margin-top: 4px;
+                "
+                data-i18n="face.embedder_hint"
+              >
+                ArcFace loads a ~13 MB ONNX model from jsDelivr on first use
+                (WebGPU/WASM). Human runs fully offline.
               </p>
             </div>
           </div>
-          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:8px;margin-bottom:8px" data-i18n="face.auto_hint">
-            ⚡ Pick a photo or capture one with the camera, enter a Name/Label, then press Generate Identifiers — face detection, DID signing, Privacy ID, Fuzzy ID and registry match all run together.
+          <p
+            style="
+              font-size: 0.72rem;
+              color: var(--text-muted);
+              margin-top: 8px;
+              margin-bottom: 8px;
+            "
+            data-i18n="face.auto_hint"
+          >
+            ⚡ Pick a photo or capture one with the camera, enter a Name/Label,
+            then press Generate Identifiers — face detection, DID signing,
+            Privacy ID, Fuzzy ID and registry match all run together.
           </p>
-          <button type="button" id="face-run" class="btn" onclick="handleFaceRun()" disabled data-i18n="face.run_btn">Generate Identifiers</button>
+          <button
+            type="button"
+            id="face-run"
+            class="btn"
+            onclick="handleFaceRun()"
+            disabled
+            data-i18n="face.run_btn"
+          >
+            Generate Identifiers
+          </button>
 
           <!-- Pipeline steps -->
-          <div id="face-steps" style="display:none;margin-bottom:10px;padding:8px 10px;background:rgba(108,92,231,.08);border-radius:8px;font-size:0.8rem"></div>
+          <div
+            id="face-steps"
+            style="
+              display: none;
+              margin-bottom: 10px;
+              padding: 8px 10px;
+              background: rgba(108, 92, 231, 0.08);
+              border-radius: 8px;
+              font-size: 0.8rem;
+            "
+          ></div>
 
           <canvas id="face-preview"></canvas>
 
           <!-- Automated report -->
-          <div id="face-report" style="display:none;margin-top:16px"></div>
-          <div id="face-actions" style="display:none;gap:8px;margin-top:12px;flex-wrap:wrap">
-            <button type="button" class="btn" onclick="showDownloadModal()" data-i18n="face.download_btn">Download Results</button>
+          <div id="face-report" style="display: none; margin-top: 16px"></div>
+          <div
+            id="face-actions"
+            style="display: none; gap: 8px; margin-top: 12px; flex-wrap: wrap"
+          >
+            <button
+              type="button"
+              class="btn"
+              onclick="showDownloadModal()"
+              data-i18n="face.download_btn"
+            >
+              Download Results
+            </button>
           </div>
 
           <!-- Registry manage -->
-          <div style="border-top:1px solid var(--border-color, #ddd);margin-top:16px;padding-top:12px">
-            <p style="margin-bottom:12px"><strong id="face-count" data-i18n="face.count_label">Registered faces: 0</strong></p>
-            <p id="face-migration-note" style="display:none;margin-bottom:12px;padding:8px 10px;border:1px solid #f5c542;background:rgba(245,197,66,.12);border-radius:8px;font-size:0.8rem" data-i18n="face.migration_note">Mixed embedding versions detected - re-embed older faces to enable cross-matching.</p>
-            <div id="face-list" style="margin-bottom:12px"></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceRefreshList()" data-i18n="face.refresh_btn">Refresh List</button>
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceConsentWithdraw()" data-i18n="face.consent_withdraw_btn">Withdraw Consent</button>
-              <span style="font-size:0.72rem;color:var(--text-muted);align-self:center" data-i18n="face.consent_withdraw_hint">Deletes the consent record and all stored biometric data (GDPR Art. 7(3) + 17).</span>
+          <div
+            style="
+              border-top: 1px solid var(--border-color, #ddd);
+              margin-top: 16px;
+              padding-top: 12px;
+            "
+          >
+            <p style="margin-bottom: 12px">
+              <strong id="face-count" data-i18n="face.count_label"
+                >Registered faces: 0</strong
+              >
+            </p>
+            <p
+              id="face-migration-note"
+              style="
+                display: none;
+                margin-bottom: 12px;
+                padding: 8px 10px;
+                border: 1px solid #f5c542;
+                background: rgba(245, 197, 66, 0.12);
+                border-radius: 8px;
+                font-size: 0.8rem;
+              "
+              data-i18n="face.migration_note"
+            >
+              Mixed embedding versions detected - re-embed older faces to enable
+              cross-matching.
+            </p>
+            <div id="face-list" style="margin-bottom: 12px"></div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button
+                type="button"
+                class="btn btn-sm face-mgmt-btn"
+                onclick="handleFaceRefreshList()"
+                data-i18n="face.refresh_btn"
+              >
+                Refresh List
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm face-mgmt-btn"
+                onclick="handleFaceConsentWithdraw()"
+                data-i18n="face.consent_withdraw_btn"
+              >
+                Withdraw Consent
+              </button>
+              <span
+                style="
+                  font-size: 0.72rem;
+                  color: var(--text-muted);
+                  align-self: center;
+                "
+                data-i18n="face.consent_withdraw_hint"
+                >Deletes the consent record and all stored biometric data (GDPR
+                Art. 7(3) + 17).</span
+              >
             </div>
           </div>
 
           <!-- Privacy: encryption lock, backup/restore, face credential -->
-          <div style="border-top:1px solid var(--border-color, #ddd);margin-top:16px;padding-top:12px">
-            <p style="margin-bottom:8px">
+          <div
+            style="
+              border-top: 1px solid var(--border-color, #ddd);
+              margin-top: 16px;
+              padding-top: 12px;
+            "
+          >
+            <p style="margin-bottom: 8px">
               <strong data-i18n="face.privacy_title">Privacy</strong>
-              <span id="face-lock-status" style="margin-left:6px;font-size:0.8rem;color:var(--text-muted)"></span>
+              <span
+                id="face-lock-status"
+                style="
+                  margin-left: 6px;
+                  font-size: 0.8rem;
+                  color: var(--text-muted);
+                "
+              ></span>
             </p>
-            <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px" data-i18n="face.privacy_hint">
-              Encrypt the registry with a passphrase (AES-256-GCM, key derived via PBKDF2). Passphrase is never stored — without it the stored data cannot be recovered.
+            <p
+              style="
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                margin-bottom: 8px;
+              "
+              data-i18n="face.privacy_hint"
+            >
+              Encrypt the registry with a passphrase (AES-256-GCM, key derived
+              via PBKDF2). Passphrase is never stored — without it the stored
+              data cannot be recovered.
             </p>
-            <div id="face-lock-wrap" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <div class="form-group" style="flex:0 1 280px;min-width:200px;margin-bottom:0">
-                <label for="face-lock-pass" data-i18n="face.lock_pass_label">Passphrase</label>
-                <input type="password" id="face-lock-pass" data-i18n-placeholder="face.lock_pass_placeholder" placeholder="Enter a passphrase" />
+            <div
+              id="face-lock-wrap"
+              style="
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <div
+                class="form-group"
+                style="flex: 0 1 280px; min-width: 200px; margin-bottom: 0"
+              >
+                <label for="face-lock-pass" data-i18n="face.lock_pass_label"
+                  >Passphrase</label
+                >
+                <input
+                  type="password"
+                  id="face-lock-pass"
+                  data-i18n-placeholder="face.lock_pass_placeholder"
+                  placeholder="Enter a passphrase"
+                />
               </div>
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceLock()" data-i18n="face.lock_btn">Lock Registry</button>
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceUnlock()" data-i18n="face.unlock_btn">Unlock</button>
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="handleFaceBackup()" data-i18n="face.backup_btn">Export Backup</button>
-              <button type="button" class="btn btn-sm face-mgmt-btn" onclick="document.getElementById('face-restore-file').click()" data-i18n="face.restore_btn">Import Backup</button>
-              <input type="file" id="face-restore-file" accept=".json,application/json" style="display:none" onchange="handleFaceRestore()" />
+              <button
+                type="button"
+                class="btn btn-sm face-mgmt-btn"
+                onclick="handleFaceLock()"
+                data-i18n="face.lock_btn"
+              >
+                Lock Registry
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm face-mgmt-btn"
+                onclick="handleFaceUnlock()"
+                data-i18n="face.unlock_btn"
+              >
+                Unlock
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm face-mgmt-btn"
+                onclick="handleFaceBackup()"
+                data-i18n="face.backup_btn"
+              >
+                Export Backup
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm face-mgmt-btn"
+                onclick="document.getElementById('face-restore-file').click()"
+                data-i18n="face.restore_btn"
+              >
+                Import Backup
+              </button>
+              <input
+                type="file"
+                id="face-restore-file"
+                accept=".json,application/json"
+                style="display: none"
+                onchange="handleFaceRestore()"
+              />
             </div>
-            <div id="face-passkey-box" style="margin-top:12px">
-              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                <span id="face-passkey-status" style="font-size:0.8rem;color:var(--text-muted)"></span>
-                <button type="button" class="btn btn-sm face-mgmt-btn" id="face-passkey-register-btn" onclick="handlePasskeyRegister()" data-i18n="face.passkey_register_btn">Register Passkey</button>
-                <button type="button" class="btn btn-sm face-mgmt-btn" id="face-passkey-remove-btn" onclick="handlePasskeyRemove()" data-i18n="face.passkey_remove_btn">Remove Passkey</button>
+            <div id="face-passkey-box" style="margin-top: 12px">
+              <div
+                style="
+                  display: flex;
+                  gap: 8px;
+                  flex-wrap: wrap;
+                  align-items: center;
+                "
+              >
+                <span
+                  id="face-passkey-status"
+                  style="font-size: 0.8rem; color: var(--text-muted)"
+                ></span>
+                <button
+                  type="button"
+                  class="btn btn-sm face-mgmt-btn"
+                  id="face-passkey-register-btn"
+                  onclick="handlePasskeyRegister()"
+                  data-i18n="face.passkey_register_btn"
+                >
+                  Register Passkey
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm face-mgmt-btn"
+                  id="face-passkey-remove-btn"
+                  onclick="handlePasskeyRemove()"
+                  data-i18n="face.passkey_remove_btn"
+                >
+                  Remove Passkey
+                </button>
               </div>
             </div>
-            <div id="face-vc-box" style="margin-top:12px">
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-                <button type="button" class="btn" onclick="handleFaceIssueCredential()" data-i18n="face.vc_btn">Issue Face Credential</button>
-                <button type="button" id="face-vc-download" class="btn btn-sm face-mgmt-btn" style="display:none" onclick="handleFaceVCDownload()" data-i18n="face.vc_download_btn">Download Credential</button>
+            <div id="face-vc-box" style="margin-top: 12px">
+              <div
+                style="
+                  display: flex;
+                  gap: 8px;
+                  flex-wrap: wrap;
+                  margin-bottom: 8px;
+                "
+              >
+                <button
+                  type="button"
+                  class="btn"
+                  onclick="handleFaceIssueCredential()"
+                  data-i18n="face.vc_btn"
+                >
+                  Issue Face Credential
+                </button>
+                <button
+                  type="button"
+                  id="face-vc-download"
+                  class="btn btn-sm face-mgmt-btn"
+                  style="display: none"
+                  onclick="handleFaceVCDownload()"
+                  data-i18n="face.vc_download_btn"
+                >
+                  Download Credential
+                </button>
               </div>
-              <pre id="face-vc-output" style="display:none;max-height:220px;overflow:auto;font-size:0.7rem;background:rgba(108,92,231,.08);border:1px solid var(--border-color, #ddd);border-radius:8px;padding:8px;white-space:pre-wrap;word-break:break-all"></pre>
+              <pre
+                id="face-vc-output"
+                style="
+                  display: none;
+                  max-height: 220px;
+                  overflow: auto;
+                  font-size: 0.7rem;
+                  background: rgba(108, 92, 231, 0.08);
+                  border: 1px solid var(--border-color, #ddd);
+                  border-radius: 8px;
+                  padding: 8px;
+                  white-space: pre-wrap;
+                  word-break: break-all;
+                "
+              ></pre>
             </div>
           </div>
 
-          <div class="spinner" id="face-spinner" style="display:none"></div>
-          <div id="face-status" style="margin-top:12px;color:var(--text-muted);font-size:0.85rem"></div>
+          <div class="spinner" id="face-spinner" style="display: none"></div>
+          <div
+            id="face-status"
+            style="
+              margin-top: 12px;
+              color: var(--text-muted);
+              font-size: 0.85rem;
+            "
+          ></div>
         </div>
       </section>
     </main>
@@ -548,10 +1185,14 @@
       onclick="if(event.target===this)closeDownloadModal()"
       onkeydown="if(event.key==='Enter'||event.key===' '){closeDownloadModal();event.preventDefault();}"
     >
-      <div
-      class="modal-box"
-    >
-        <button type="button" class="modal-close" onclick="closeDownloadModal()">&times;</button>
+      <div class="modal-box">
+        <button
+          type="button"
+          class="modal-close"
+          onclick="closeDownloadModal()"
+        >
+          &times;
+        </button>
         <h3 id="dl-modal-title">Download Report</h3>
         <p
           style="
@@ -564,22 +1205,46 @@
           Choose a format:
         </p>
         <div class="dl-grid">
-          <button type="button" class="dl-option" onclick="downloadResult('json')">
+          <button
+            type="button"
+            class="dl-option"
+            onclick="downloadResult('json')"
+          >
             <span class="dl-icon">{ }</span> JSON
           </button>
-          <button type="button" class="dl-option" onclick="downloadResult('csv')">
+          <button
+            type="button"
+            class="dl-option"
+            onclick="downloadResult('csv')"
+          >
             <span class="dl-icon">#</span> CSV
           </button>
-          <button type="button" class="dl-option" onclick="downloadResult('txt')">
+          <button
+            type="button"
+            class="dl-option"
+            onclick="downloadResult('txt')"
+          >
             <span class="dl-icon">©</span> TXT
           </button>
-          <button type="button" class="dl-option" onclick="downloadResult('xml')">
+          <button
+            type="button"
+            class="dl-option"
+            onclick="downloadResult('xml')"
+          >
             <span class="dl-icon">&lt;/&gt;</span> XML
           </button>
-          <button type="button" class="dl-option" onclick="downloadResult('pdf')">
+          <button
+            type="button"
+            class="dl-option"
+            onclick="downloadResult('pdf')"
+          >
             <span class="dl-icon">📄</span> PDF
           </button>
-          <button type="button" class="dl-option" onclick="downloadResult('doc')">
+          <button
+            type="button"
+            class="dl-option"
+            onclick="downloadResult('doc')"
+          >
             <span class="dl-icon">📑</span> DOCX
           </button>
         </div>
@@ -588,24 +1253,86 @@
 
     <footer id="mainFooter">
       <div class="footer-links">
-        <a href="../about/index.html" data-page="about" data-i18n="nav.about">About</a>
-        <a href="../privacy/index.html" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
-        <a href="../contact/index.html" data-page="contact" data-i18n="nav.contact">Contact</a>
-        <a href="../social/index.html" data-page="social" data-i18n="nav.social">Social</a>
+        <a href="../about/index.html" data-page="about" data-i18n="nav.about"
+          >About</a
+        >
+        <a
+          href="../privacy/index.html"
+          data-page="privacy"
+          data-i18n="nav.privacy"
+          >Privacy</a
+        >
+        <a
+          href="../contact/index.html"
+          data-page="contact"
+          data-i18n="nav.contact"
+          >Contact</a
+        >
+        <a href="../social/index.html" data-page="social" data-i18n="nav.social"
+          >Social</a
+        >
       </div>
       <div class="footer-social">
         <span class="footer-social-label">🌐</span>
-        <a href="https://github.com/Redo-San" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
-        <a href="https://www.youtube.com/@Redo_San" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a>
-        <a href="https://www.instagram.com/redo_san1" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
-        <a href="https://www.tiktok.com/@redo_san" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
-        <a href="https://linktr.ee/RedoSan" target="_blank" rel="noopener" aria-label="Linktree">Linktree</a>
+        <a
+          href="https://github.com/Redo-San"
+          target="_blank"
+          rel="noopener"
+          aria-label="GitHub"
+          >GitHub</a
+        >
+        <a
+          href="https://www.youtube.com/@Redo_San"
+          target="_blank"
+          rel="noopener"
+          aria-label="YouTube"
+          >YouTube</a
+        >
+        <a
+          href="https://www.instagram.com/redo_san1"
+          target="_blank"
+          rel="noopener"
+          aria-label="Instagram"
+          >Instagram</a
+        >
+        <a
+          href="https://www.tiktok.com/@redo_san"
+          target="_blank"
+          rel="noopener"
+          aria-label="TikTok"
+          >TikTok</a
+        >
+        <a
+          href="https://linktr.ee/RedoSan"
+          target="_blank"
+          rel="noopener"
+          aria-label="Linktree"
+          >Linktree</a
+        >
       </div>
       <div class="footer-social">
         <span class="footer-social-label">🎵</span>
-        <a href="https://open.spotify.com/artist/2N0Eck89FwMklsACBIqj8P" target="_blank" rel="noopener" aria-label="Spotify">Spotify</a>
-        <a href="https://music.apple.com/gb/artist/redosan/1804262206" target="_blank" rel="noopener" aria-label="Apple Music">Apple Music</a>
-        <a href="https://music.youtube.com/channel/UC92UgsGpq8JgrbE31sZkwCA" target="_blank" rel="noopener" aria-label="YouTube Music">YouTube Music</a>
+        <a
+          href="https://open.spotify.com/artist/2N0Eck89FwMklsACBIqj8P"
+          target="_blank"
+          rel="noopener"
+          aria-label="Spotify"
+          >Spotify</a
+        >
+        <a
+          href="https://music.apple.com/gb/artist/redosan/1804262206"
+          target="_blank"
+          rel="noopener"
+          aria-label="Apple Music"
+          >Apple Music</a
+        >
+        <a
+          href="https://music.youtube.com/channel/UC92UgsGpq8JgrbE31sZkwCA"
+          target="_blank"
+          rel="noopener"
+          aria-label="YouTube Music"
+          >YouTube Music</a
+        >
       </div>
       <div class="footer-copy" data-i18n="footer.copyright">
         RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves
@@ -621,29 +1348,31 @@
       </div>
     </footer>
 
-    
     <script src="../../shared_validation.js" defer></script>
     <script src="../../shared.js" defer></script>
-        <script>
+    <script>
       (function () {
-        document.querySelectorAll('.form-group input[type="file"]').forEach(function (input) {
-          if (input.parentElement.classList.contains("file-drop-zone")) return;
-          var dz = document.createElement("div");
-          dz.className = "file-drop-zone";
-          input.parentNode.insertBefore(dz, input);
-          dz.append(input);
-          var icon = document.createElement("span");
-          icon.className = "dz-icon";
-          icon.textContent = "\u{1F4C1}";
-          dz.append(icon);
-          var text = document.createElement("div");
-          text.className = "dz-text";
-          text.innerHTML = "Drop file here or <strong>browse</strong>";
-          dz.append(text);
-          var fileDiv = document.createElement("div");
-          fileDiv.className = "dz-file";
-          dz.append(fileDiv);
-        });
+        document
+          .querySelectorAll('.form-group input[type="file"]')
+          .forEach(function (input) {
+            if (input.parentElement.classList.contains("file-drop-zone"))
+              return;
+            var dz = document.createElement("div");
+            dz.className = "file-drop-zone";
+            input.parentNode.insertBefore(dz, input);
+            dz.append(input);
+            var icon = document.createElement("span");
+            icon.className = "dz-icon";
+            icon.textContent = "\u{1F4C1}";
+            dz.append(icon);
+            var text = document.createElement("div");
+            text.className = "dz-text";
+            text.innerHTML = "Drop file here or <strong>browse</strong>";
+            dz.append(text);
+            var fileDiv = document.createElement("div");
+            fileDiv.className = "dz-file";
+            dz.append(fileDiv);
+          });
       })();
     </script>
     <script src="../../search.js" defer></script>
@@ -664,7 +1393,8 @@
         } else {
           (function () {
             function init() {
-              if (window.RedoSanLoadRemovalTools) window.RedoSanLoadRemovalTools();
+              if (window.RedoSanLoadRemovalTools)
+                window.RedoSanLoadRemovalTools();
             }
             document.readyState === "loading"
               ? document.addEventListener("DOMContentLoaded", init)
@@ -673,21 +1403,24 @@
         }
       })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/dist/human.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/dist/human.js"
+      defer
+    ></script>
     <script src="../../../Face_Biometric/face_engine.js" defer></script>
     <script src="../../../Face_Biometric/face_registry.js" defer></script>
     <script src="../../../Face_Biometric/face_ui.js" defer></script>
-<script src="../../../Face_Biometric/face_biohash.js" defer></script>
-<script src="../../../Face_Biometric/face_fuzzy.js" defer></script>
-<script src="../../../Face_Biometric/face_camera.js" defer></script>
-<script src="../../../Face_Biometric/face_liveness.js" defer></script>
-<script src="../../../Face_Biometric/face_antispoof.js" defer></script>
-<script src="../../../Face_Biometric/face_crypto.js" defer></script>
-<script src="../../../Face_Biometric/face_vc.js" defer></script>
-<script src="../../../Face_Biometric/face_align.js" defer></script>
-<script src="../../../Face_Biometric/face_embed_onnx.js" defer></script>
-<script src="../../../Face_Biometric/face_webauthn.js" defer></script>
-<script src="../../../Decentralized_Identity_DID/did.js" defer></script>
+    <script src="../../../Face_Biometric/face_biohash.js" defer></script>
+    <script src="../../../Face_Biometric/face_fuzzy.js" defer></script>
+    <script src="../../../Face_Biometric/face_camera.js" defer></script>
+    <script src="../../../Face_Biometric/face_liveness.js" defer></script>
+    <script src="../../../Face_Biometric/face_antispoof.js" defer></script>
+    <script src="../../../Face_Biometric/face_crypto.js" defer></script>
+    <script src="../../../Face_Biometric/face_vc.js" defer></script>
+    <script src="../../../Face_Biometric/face_align.js" defer></script>
+    <script src="../../../Face_Biometric/face_embed_onnx.js" defer></script>
+    <script src="../../../Face_Biometric/face_webauthn.js" defer></script>
+    <script src="../../../Decentralized_Identity_DID/did.js" defer></script>
     <script>
       (function () {
         var _l = false;
@@ -724,7 +1457,10 @@
         function showC2paSpinner(fnName) {
           var placeholderFn = function () {
             var btnEl = document.getElementById(TAP_BTN_IDS[fnName]);
-            var spinner = btnEl && btnEl.closest(".card-form") && btnEl.closest(".card-form").querySelector(".spinner");
+            var spinner =
+              btnEl &&
+              btnEl.closest(".card-form") &&
+              btnEl.closest(".card-form").querySelector(".spinner");
             if (spinner) spinner.style.display = "block";
             if (window[fnName] !== placeholderFn) return window[fnName]();
             if (!pending[fnName]) {
@@ -763,12 +1499,15 @@
                   : "c2pa-verify-output",
               );
               if (out) {
-                out.innerHTML = '<div class="c2pa-error"><strong>Loading failed</strong><p>The C2PA module could not be loaded. Check your internet connection and try refreshing the page.</p></div>';
+                out.innerHTML =
+                  '<div class="c2pa-error"><strong>Loading failed</strong><p>The C2PA module could not be loaded. Check your internet connection and try refreshing the page.</p></div>';
                 out.parentElement.style.display = "block";
               }
               btn = document.getElementById(TAP_BTN_IDS[fn]);
               if (btn) btn.textContent = "Retry";
-              window[fn] = function () { location.reload(); };
+              window[fn] = function () {
+                location.reload();
+              };
               break;
             }
           }
@@ -777,25 +1516,56 @@
     </script>
 
     <!-- Bot / Automation block overlay -->
-    <div id="botBlockOverlay" class="bot-block-overlay" role="alert" aria-live="polite">
+    <div
+      id="botBlockOverlay"
+      class="bot-block-overlay"
+      role="alert"
+      aria-live="polite"
+    >
       <div class="bot-block-content">
         <div class="bot-block-icon">🛡️</div>
         <div class="bot-block-title">Access Denied</div>
         <div class="bot-block-text">Automated / headless browser detected.</div>
-        <a class="bot-block-link" href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank">Report an issue</a>
+        <a
+          class="bot-block-link"
+          href="https://github.com/Redo-San/RedoSan-Authenticity/issues"
+          target="_blank"
+          >Report an issue</a
+        >
       </div>
     </div>
 
     <!-- Lightbox overlay -->
-    <div id="lightbox" class="lightbox" style="display:none" role="button" tabindex="0" onclick="closeLightbox()" onkeydown="if(event.key==='Enter'||event.key===' '){closeLightbox();event.preventDefault();}">
+    <div
+      id="lightbox"
+      class="lightbox"
+      style="display: none"
+      role="button"
+      tabindex="0"
+      onclick="closeLightbox()"
+      onkeydown="if(event.key==='Enter'||event.key===' '){closeLightbox();event.preventDefault();}"
+    >
       <button type="button" class="lightbox-close">&times;</button>
       <img class="lightbox-img" id="lightboxImg" alt="" />
     </div>
 
     <!-- Music player -->
     <aside aria-label="Music player">
-      <audio id="bg-music" src="../../RedoSan_Music.mp3" loop preload="auto" aria-hidden="true"></audio>
-      <button type="button" id="music-btn" class="music-btn" aria-label="Toggle Music">&#x1F3B5;</button>
+      <audio
+        id="bg-music"
+        src="../../RedoSan_Music.mp3"
+        loop
+        preload="auto"
+        aria-hidden="true"
+      ></audio>
+      <button
+        type="button"
+        id="music-btn"
+        class="music-btn"
+        aria-label="Toggle Music"
+      >
+        &#x1F3B5;
+      </button>
       <span id="music-credit" class="music-credit">RedoSan</span>
     </aside>
 
@@ -804,19 +1574,37 @@
     <script src="../../music-player.js" defer></script>
 
     <!-- Floating AI Assistant -->
-    <button type="button" id="assistantBubble" class="ast-bubble" aria-label="Open assistant" onclick="toggleAssistant()"><span>💬</span></button>
+    <button
+      type="button"
+      id="assistantBubble"
+      class="ast-bubble"
+      aria-label="Open assistant"
+      onclick="toggleAssistant()"
+    >
+      <span>💬</span>
+    </button>
     <div id="assistantPanel" class="ast-panel">
       <div class="ast-header">
         <span class="ast-title">🤖 RedoSan Assistant</span>
         <div class="ast-header-actions">
-          <button type="button" class="ast-clear-btn" title="Clear chat">🗑️</button>
-          <button type="button" class="ast-close-btn" title="Close">&times;</button>
+          <button type="button" class="ast-clear-btn" title="Clear chat">
+            🗑️
+          </button>
+          <button type="button" class="ast-close-btn" title="Close">
+            &times;
+          </button>
         </div>
       </div>
       <div id="assistantMessages" class="ast-messages"></div>
       <div id="assistantSuggestions" class="ast-suggestions"></div>
       <div class="ast-input-area">
-        <textarea id="assistantInput" class="ast-input" placeholder="Type your question..." rows="1" aria-label="Assistant chat input"></textarea>
+        <textarea
+          id="assistantInput"
+          class="ast-input"
+          placeholder="Type your question..."
+          rows="1"
+          aria-label="Assistant chat input"
+        ></textarea>
         <button type="button" class="ast-send-btn">➤</button>
       </div>
     </div>
@@ -854,23 +1642,23 @@
     <script>
       (function () {
         if (!document.querySelector) return;
-        document.addEventListener("mouseenter", function (e) {
-          var t = e.target;
-          if (t.nodeType !== 1) return;
-          var a = t.tagName === "A" ? t : t.closest("a");
-          if (!a || !a.href || !a.href.startsWith(location.origin)) return;
-          if (a.href.indexOf("/pages/") === -1) return;
-          var l = document.createElement("link");
-          l.rel = "prefetch";
-          l.href = a.href;
-          l.as = "document";
-          document.head.appendChild(l);
-        }, { passive: true });
+        document.addEventListener(
+          "mouseenter",
+          function (e) {
+            var t = e.target;
+            if (t.nodeType !== 1) return;
+            var a = t.tagName === "A" ? t : t.closest("a");
+            if (!a || !a.href || !a.href.startsWith(location.origin)) return;
+            if (a.href.indexOf("/pages/") === -1) return;
+            var l = document.createElement("link");
+            l.rel = "prefetch";
+            l.href = a.href;
+            l.as = "document";
+            document.head.appendChild(l);
+          },
+          { passive: true },
+        );
       })();
     </script>
   </body>
 </html>
-
-
-
-

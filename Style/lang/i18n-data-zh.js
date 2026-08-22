@@ -615,6 +615,9 @@ window.__I18N_DATA.zh = {
   "card.face_biometric.desc":
     "Register &amp; verify face descriptors for visual rights",
   "face.heading": "Face Biometric Rights",
+  "face.help_title": "如何使用 Face Biometric Rights",
+  "face.help":
+    "1) 拍摄或上传一张清晰、光线充足的照片。\n2) 你的浏览器会在设备本地生成数字人脸描述符（512维）和隐私 ID（BioHash）。\n3) 记录仅在你同意后才保存在本浏览器中，不会上传任何内容。\n4) 用它来验证和保护你的视觉权利（身份核验、防欺骗、伪造检测）。\n5) 随时撤回同意即可删除本设备上所有已存储的数据。",
   "face.register_tab": "Register",
   "face.verify_tab": "Verify",
   "face.manage_tab": "Manage",

@@ -563,6 +563,8 @@
   "card.face_biometric.title": "Face Biometric",
   "card.face_biometric.desc": "Register &amp; verify face descriptors for visual rights",
   "face.heading": "Face Biometric Rights",
+  "face.help_title": "How to use Face Biometric Rights",
+  "face.help": "1) Capture or upload a clear, well-lit photo.\n2) Your browser derives a numeric face descriptor (512-d) and a Privacy ID (BioHash) — fully on-device.\n3) Records are stored only in this browser after you consent; nothing is uploaded.\n4) Use it to verify and protect your visual rights (identity check, anti-spoofing, forgery detection).\n5) Withdraw consent anytime to delete all stored data from this device.",
   "face.register_tab": "Register",
   "face.verify_tab": "Verify",
   "face.manage_tab": "Manage",

@@ -2,115 +2,121 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/</loc>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/about/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/audio-watermark/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/c2pa/index.html</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/certificate/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/contact/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/converter/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/did/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/document-watermark/index.html</loc>
-    <lastmod>2026-08-08</lastmod>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/face-biometric/index.html</loc>
+    <lastmod>2026-08-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/fingerprint/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/forensic/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/id_forge/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/metadata/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/pixel-injection/index.html</loc>
-    <lastmod>2026-08-08</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/privacy/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/search/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/social/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/timestamp/index.html</loc>
-    <lastmod>2026-08-08</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://redo-san.github.io/RedoSan-Authenticity/Style/pages/watermark/index.html</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
