@@ -521,8 +521,7 @@ async function refreshPasskeyStatus() {
             .join(passkey.name || "passkey")
         : __("face.passkey_none", "No passkey registered yet.");
   }
-  if (regBtn)
-    regBtn.disabled = !!(passkey && (passkey.credentialId || passkey.prf));
+  if (regBtn) regBtn.disabled = !!(passkey && (passkey.credentialId || passkey.prf));
   if (remBtn)
     remBtn.style.display =
       passkey && (passkey.credentialId || passkey.prf) ? "" : "none";
@@ -580,7 +579,9 @@ async function handlePasskeyRegister() {
         var prfAssertion = await FaceWebauthn.authenticate({
           prfSalt: salt,
           userVerification: "required",
-          allowCredentials: [{ id: cred.id, transports: ["internal"] }],
+          allowCredentials: [
+            { id: cred.id, transports: ["internal"] },
+          ],
         });
         var prfBytes = FaceWebauthn.prfOutput(prfAssertion);
         if (prfBytes) {
@@ -726,15 +727,18 @@ async function ensureFacePasskeyForAction() {
     );
     return true;
   }
-  revealPasskeyRequire();
-  setStatus(
-    "face-status",
-    __(
-      "face.passkey_required",
-      "A passkey is required first. Register one above to continue.",
-    ),
-  );
-  return false;
+  await handlePasskeyRegister();
+  var ok = await isFacePasskeyRegistered();
+  if (!ok) {
+    setStatus(
+      "face-status",
+      __(
+        "face.passkey_required_run",
+        "Register a passkey to enable generation.",
+      ),
+    );
+  }
+  return ok;
 }
 
 /**
@@ -769,7 +773,10 @@ async function faceStepRegisterPasskey() {
       note: "verified earlier this session",
     };
   }
-  if (typeof FaceWebauthn === "undefined" || !FaceWebauthn.isAvailable()) {
+  if (
+    typeof FaceWebauthn === "undefined" ||
+    !FaceWebauthn.isAvailable()
+  ) {
     // Cannot perform step-up in this context; fall back to stored reference.
     return {
       credentialId: stored.credentialId || "",
@@ -806,7 +813,10 @@ async function faceStepRegisterPasskey() {
       // recovers the credentialId without ever storing it in plaintext.
       var prfBytes = FaceWebauthn.prfOutput(assertion);
       if (prfBytes) {
-        var key = await FaceWebauthn.deriveVaultKey(prfBytes, FACE_VAULT_INFO);
+        var key = await FaceWebauthn.deriveVaultKey(
+          prfBytes,
+          FACE_VAULT_INFO,
+        );
         var dec = await FaceWebauthn.decryptJSON(key, stored.cipher);
         credentialId = dec.credentialId || credentialId;
         rawId = dec.rawId || rawId;
@@ -1837,10 +1847,8 @@ function renderFaceReport(r) {
           : "") +
         "<tr><td>Session verified</td><td>" +
         (r.passkey.authenticated
-          ? "Yes" +
-            (r.passkey.verifiedAt ? " — " + escHtml(r.passkey.verifiedAt) : "")
-          : "No" +
-            (r.passkey.note ? " (" + escHtml(r.passkey.note) + ")" : "")) +
+          ? "Yes" + (r.passkey.verifiedAt ? " — " + escHtml(r.passkey.verifiedAt) : "")
+          : "No" + (r.passkey.note ? " (" + escHtml(r.passkey.note) + ")" : "")) +
         "</td></tr>" +
         "</table>",
     ]);
@@ -1998,8 +2006,14 @@ function faceReportToCSV(r) {
       : "none",
   );
   push("Registered ID", r.registry.registeredId);
-  push("Passkey", r.passkey ? r.passkey.credentialId : "none");
-  push("Passkey Verified", r.passkey && r.passkey.authenticated ? "yes" : "no");
+  push(
+    "Passkey",
+    r.passkey ? r.passkey.credentialId : "none",
+  );
+  push(
+    "Passkey Verified",
+    r.passkey && r.passkey.authenticated ? "yes" : "no",
+  );
   push(
     "Face Credential",
     r.credential
@@ -2102,9 +2116,7 @@ function faceReportToTXT(r) {
     if (r.credential.error) lines.push("Error: " + r.credential.error);
     else
       lines.push(
-        "Issued " +
-          (r.credential.id || "") +
-          (r.credential.type ? " (" + r.credential.type + ")" : ""),
+        "Issued " + (r.credential.id || "") + (r.credential.type ? " (" + r.credential.type + ")" : ""),
       );
   } else {
     lines.push("Not issued.");
@@ -2286,13 +2298,17 @@ function faceReportToHTML(r) {
     html += row("Credential ID", r.passkey.credentialId);
     if (r.passkey.name) html += row("Name", r.passkey.name);
     if (r.passkey.createdAt) html += row("Created", r.passkey.createdAt);
-    html += row("Session verified", r.passkey.authenticated ? "yes" : "no");
+    html += row(
+      "Session verified",
+      r.passkey.authenticated ? "yes" : "no",
+    );
     html += "</table>";
   } else {
     html += "<p>Passkey: not registered.</p>";
   }
   if (r.credential) {
-    html += "<h3>Face Credential</h3><p style='font-size:0.8rem'>";
+    html +=
+      "<h3>Face Credential</h3><p style='font-size:0.8rem'>";
     if (r.credential.error) {
       html += "Error: " + escHtml(r.credential.error);
     } else {
@@ -2554,7 +2570,10 @@ async function faceReportToDOCX(r) {
   if (r.passkey) {
     regRows.push(["Passkey", r.passkey.credentialId]);
     if (r.passkey.name) regRows.push(["Passkey name", r.passkey.name]);
-    regRows.push(["Passkey verified", r.passkey.authenticated ? "yes" : "no"]);
+    regRows.push([
+      "Passkey verified",
+      r.passkey.authenticated ? "yes" : "no",
+    ]);
   } else {
     regRows.push(["Passkey", "none"]);
   }

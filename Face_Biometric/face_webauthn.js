@@ -345,8 +345,7 @@ var FaceWebauthn = (function () {
      */
     deriveVaultKey: async function (prfBytes, info) {
       var prk, key;
-      if (!prfBytes)
-        throw new Error("PRF output is required to derive a vault key");
+      if (!prfBytes) throw new Error("PRF output is required to derive a vault key");
       if (
         typeof crypto === "undefined" ||
         !crypto.subtle ||
@@ -365,7 +364,9 @@ var FaceWebauthn = (function () {
         {
           name: "HKDF",
           salt: new Uint8Array(32),
-          info: new TextEncoder().encode(info || "redo-san-face-vault-v1"),
+          info: new TextEncoder().encode(
+            info || "redo-san-face-vault-v1",
+          ),
           hash: "SHA-256",
         },
         prk,

@@ -13,6 +13,17 @@
 })();
 window.__I18N_DATA = window.__I18N_DATA || {};
 window.__I18N_DATA.de = {
+  "face.passkey_skipped":
+    "WebAuthn unavailable on this device — passkey requirement skipped.",
+  "face.passkey_required":
+    "A passkey is required first. Register one above to continue.",
+  "face.passkey_required_run": "Register a passkey to enable generation.",
+  "face.step.passkey": "Verifying passkey (step-up)...",
+  "face.step.credential": "Issuing face credential...",
+  "face.report.passkey": "Passkey",
+  "face.report.no_passkey": "Not registered.",
+  "face.report.credential": "Face Credential",
+
   "nav.about": "Über",
   "nav.privacy": "Privatsphäre",
   "nav.contact": "Kontakt",
@@ -918,7 +929,7 @@ window.__I18N_DATA.de = {
     "Consent withdrawn — stored biometric data deleted.",
   "face.privacy_title": "Privacy",
   "face.privacy_hint":
-    "Encrypt the registry with a passphrase (AES-256-GCM, key derived via PBKDF2). Passphrase is never stored — without it the stored data cannot be recovered.",
+    "The registry is sealed automatically with the PRF vault: a WebAuthn PRF output is derived through HKDF-SHA256 into an AES-256-GCM key. Register a passkey to enable encryption — no passphrase is ever stored or required.",
   "face.lock_pass_label": "Passphrase",
   "face.lock_pass_placeholder": "Enter a passphrase",
   "face.lock_btn": "Lock Registry",

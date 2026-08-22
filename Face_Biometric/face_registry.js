@@ -875,7 +875,9 @@ FaceRegistry.prototype.importBackup = async function (
         count++;
       } else {
         if (!passphrase)
-          throw new Error("Backup is encrypted — import requires a passphrase");
+          throw new Error(
+            "Backup is encrypted — import requires a passphrase",
+          );
         plain = await FaceCrypto.decryptJSON(passphrase, e.encrypted);
         await this._store.add({
           label: plain.label !== undefined ? plain.label : "Imported",
