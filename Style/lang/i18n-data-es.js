@@ -13,17 +13,6 @@
 })();
 window.__I18N_DATA = window.__I18N_DATA || {};
 window.__I18N_DATA.es = {
-  "face.passkey_skipped":
-    "WebAuthn unavailable on this device — passkey requirement skipped.",
-  "face.passkey_required":
-    "A passkey is required first. Register one above to continue.",
-  "face.passkey_required_run": "Register a passkey to enable generation.",
-  "face.step.passkey": "Verifying passkey (step-up)...",
-  "face.step.credential": "Issuing face credential...",
-  "face.report.passkey": "Passkey",
-  "face.report.no_passkey": "Not registered.",
-  "face.report.credential": "Face Credential",
-
   "nav.about": "Acerca de",
   "nav.privacy": "Privacidad",
   "nav.contact": "Contacto",
@@ -1045,4 +1034,14 @@ window.__I18N_DATA.es = {
   "face.report.liveness": "Liveness",
   "face.report.live_passed": "Passed",
   "face.report.live_failed": "Failed",
+  "face.passkey_skipped":
+    "WebAuthn unavailable on this device — passkey requirement skipped.",
+  "face.passkey_required":
+    "A passkey is required first. Register one above to continue.",
+  "face.passkey_required_run": "Register a passkey to enable generation.",
+  "face.step.passkey": "Verifying passkey (step-up)...",
+  "face.step.credential": "Issuing face credential...",
+  "face.report.passkey": "Passkey",
+  "face.report.no_passkey": "Not registered.",
+  "face.report.credential": "Face Credential",
 };
