@@ -28,6 +28,7 @@ var _faceInputTab = "upload";
 var _faceEmbedder = "human";
 var _lastEmbeddingVersion = "human-hse";
 var _faceOverlay = null;
+var FACE_VAULT_INFO = "redo-san-face-vault-v1";
 var _faceOverlayRAF = 0;
 var _faceOverlayRunning = false;
 var _faceOverlayLast = 0;
@@ -484,38 +485,11 @@ async function initFaceBiometric() {
  * When the registry holds plaintext templates, nudge the user to lock it:
  * status message + focus on the passphrase field. Never throws.
  */
+// Encryption is now handled automatically by the PRF vault (WebAuthn PRF →
+// HKDF-SHA256 → AES-GCM) once a passkey is registered. There is no separate
+// passphrase-lock UI to prompt for, so this is intentionally a no-op.
 async function maybePromptFaceEncryption() {
-  var faces, i, passEl, lockWrap;
-  if (!faceRegistry) return;
-  try {
-    faces = await faceRegistry.getAllFaces();
-  } catch (e) {
-    return;
-  }
-  for (i = 0; i < faces.length; i++) {
-    if (!faces[i].encrypted && faces[i].descriptor) break;
-  }
-  if (i >= faces.length) return;
-  setStatus(
-    "face-status",
-    __(
-      "face.encrypt_prompt",
-      "Your face registry is unencrypted. Enter a passphrase below and press Lock Registry.",
-    ),
-  );
-  passEl = document.getElementById("face-lock-pass");
-  if (passEl) {
-    if (typeof passEl.focus === "function") passEl.focus();
-    if (
-      typeof passEl.classList !== "undefined" &&
-      typeof passEl.classList.add === "function"
-    ) {
-      passEl.classList.add("is-attention");
-    }
-  }
-  lockWrap = document.getElementById("face-lock-wrap");
-  if (lockWrap && lockWrap.classList && lockWrap.classList.add)
-    lockWrap.classList.add("is-attention");
+  return;
 }
 
 /**
@@ -581,6 +555,8 @@ async function handlePasskeyRegister() {
       name: cred.id.slice(0, 16) + "\u2026",
       createdAt: new Date().toISOString(),
       rawId: cred.rawId,
+      prf: true,
+      salt: faceRandomSalt(),
     };
     await faceRegistry.setMeta("passkey", passkey);
     setStatus(
@@ -599,6 +575,82 @@ async function handlePasskeyRegister() {
     );
   }
   await refreshPasskeyStatus();
+}
+
+/**
+ * Generate a random URL-safe base64 salt used as the WebAuthn PRF eval input.
+ * @returns {string}
+ */
+function faceRandomSalt() {
+  var a = new Uint8Array(16);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(a);
+  } else {
+    for (var i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256);
+  }
+  var bin = "";
+  for (var j = 0; j < a.length; j++) bin += String.fromCharCode(a[j]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/**
+ * Derive and install the PRF vault key from the registered passkey, then seal
+ * any plaintext registry entries. Safe to call any time: when no passkey is
+ * registered, or WebAuthn/PRF is unavailable, it is a no-op and the registry
+ * keeps working in plaintext. Never throws.
+ * @returns {Promise<object|null>} the derived AES-GCM key, or null.
+ */
+async function ensureFaceVaultKey() {
+  var stored, challenge, assertion, prfBytes, key;
+  if (
+    typeof FaceWebauthn === "undefined" ||
+    !FaceWebauthn.isAvailable()
+  )
+    return null;
+  try {
+    stored = await faceRegistry.getMeta("passkey");
+  } catch (e) {
+    return null;
+  }
+  if (!stored || !stored.prf || !stored.credentialId) return null;
+  try {
+    challenge = FaceWebauthn.randomChallenge
+      ? FaceWebauthn.randomChallenge(32)
+      : null;
+    assertion = await FaceWebauthn.authenticate({
+      challenge: challenge,
+      userVerification: "required",
+      allowCredentials: [
+        {
+          id: stored.credentialId,
+          transports: stored.transports || ["internal"],
+        },
+      ],
+      prfSalt: stored.salt,
+    });
+    if (
+      challenge &&
+      typeof FaceWebauthn.verifyClientData === "function" &&
+      !FaceWebauthn.verifyClientData(assertion, challenge, "webauthn.get")
+    ) {
+      console.warn("[face] PRF vault: clientData verification failed.");
+      return null;
+    }
+    prfBytes = FaceWebauthn.prfOutput(assertion);
+    if (!prfBytes) {
+      console.warn("[face] PRF vault: authenticator did not return PRF output.");
+      return null;
+    }
+    key = await FaceWebauthn.deriveVaultKey(prfBytes, FACE_VAULT_INFO);
+    if (faceRegistry && key) {
+      faceRegistry.setVaultKey(key);
+      await faceRegistry.sealAllPlaintext();
+    }
+    return key;
+  } catch (e) {
+    console.warn("[face] PRF vault key setup skipped:", e && e.message);
+    return null;
+  }
 }
 
 /**
@@ -1039,6 +1091,13 @@ async function runFacePipeline(canvas, opts) {
     if (typeof FaceRegistry === "function") {
       faceRegistry = new FaceRegistry();
       await faceRegistry.open();
+      if (faceRegistry && typeof ensureFaceVaultKey === "function") {
+        try {
+          await ensureFaceVaultKey();
+        } catch (e) {
+          console.warn("[face] vault key setup skipped:", e && e.message);
+        }
+      }
     }
   }
   if (!faceEngine) {
@@ -2739,95 +2798,9 @@ async function handleFaceExportLabels(format) {
   );
 }
 
-/**
- * Encrypt all registry entries with the passphrase from #face-lock-pass.
- */
-async function handleFaceLock() {
-  var pass, n, statusEl;
-  if (!faceRegistry) return;
-  if (typeof FaceCrypto === "undefined") {
-    setStatus(
-      "face-status",
-      __("face.lock_need_crypto", "Encryption module not loaded."),
-    );
-    return;
-  }
-  pass = document.getElementById("face-lock-pass");
-  pass = pass && pass.value ? pass.value : "";
-  if (!pass) {
-    setStatus(
-      "face-status",
-      __("face.lock_no_pass", "Enter a passphrase to lock the registry."),
-    );
-    return;
-  }
-  try {
-    n = await faceRegistry.lock(pass);
-    setStatus(
-      "face-status",
-      __("face.lock_done", "Registry locked — {0} face(s) encrypted.")
-        .split("{0}")
-        .join(n),
-    );
-    if (pass) pass.value = "";
-    await listRegisteredFaces();
-    statusEl = document.getElementById("face-lock-status");
-    if (statusEl)
-      statusEl.textContent = "🔒 " + __("face.lock_status_locked", "Locked");
-  } catch (error) {
-    setStatus("face-status", "Lock error: " + error.message);
-  }
-}
-
-/**
- * Decrypt all registry entries with the passphrase from #face-lock-pass.
- */
-async function handleFaceUnlock() {
-  var pass, n, statusEl;
-  if (!faceRegistry) return;
-  if (typeof FaceCrypto === "undefined") {
-    setStatus(
-      "face-status",
-      __("face.lock_need_crypto", "Encryption module not loaded."),
-    );
-    return;
-  }
-  pass = document.getElementById("face-lock-pass");
-  pass = pass && pass.value ? pass.value : "";
-  if (!pass) {
-    setStatus(
-      "face-status",
-      __(
-        "face.lock_unlock_no_pass",
-        "Enter the passphrase to unlock the registry.",
-      ),
-    );
-    return;
-  }
-  try {
-    n = await faceRegistry.unlock(pass);
-    setStatus(
-      "face-status",
-      __("face.lock_unlock_done", "Registry unlocked — {0} face(s) decrypted.")
-        .split("{0}")
-        .join(n),
-    );
-    if (pass) pass.value = "";
-    await listRegisteredFaces();
-    statusEl = document.getElementById("face-lock-status");
-    if (statusEl)
-      statusEl.textContent =
-        "🔓 " + __("face.lock_status_unlocked", "Unlocked");
-  } catch (error) {
-    setStatus(
-      "face-status",
-      __(
-        "face.lock_bad_pass",
-        "Unlock failed — wrong passphrase or corrupted data.",
-      ),
-    );
-  }
-}
+// Passphrase-based lock/unlock was replaced by the PRF vault (WebAuthn PRF →
+// HKDF-SHA256 → AES-GCM). Registry entries are sealed automatically by
+// ensureFaceVaultKey() once a passkey is registered.
 
 // ── Phase 3: backup / restore ──
 
@@ -2835,28 +2808,24 @@ async function handleFaceUnlock() {
  * Export the registry to a JSON backup file (encrypted when passphrase given).
  */
 async function handleFaceBackup() {
-  var pass, backup, blob;
+  var backup, blob;
   if (!faceRegistry) return;
-  if (typeof FaceCrypto === "undefined") {
-    setStatus(
-      "face-status",
-      __("face.lock_need_crypto", "Encryption module not loaded."),
-    );
-    return;
-  }
-  pass = document.getElementById("face-lock-pass");
-  pass = pass && pass.value ? pass.value : "";
   try {
-    backup = await faceRegistry.exportBackup(pass || null);
+    if (typeof ensureFaceVaultKey === "function") {
+      try {
+        await ensureFaceVaultKey();
+      } catch (e) {
+        /* non-fatal: export falls back to plaintext */
+      }
+    }
+    backup = await faceRegistry.exportBackup(null);
     blob = new Blob([JSON.stringify(backup, null, 2)], {
       type: "application/json",
     });
     downloadBlobSimple(blob, "face_registry_backup.json");
     setStatus(
       "face-status",
-      pass
-        ? __("face.backup_done_enc", "Backup exported (encrypted).")
-        : __("face.backup_done", "Backup exported."),
+      __("face.backup_done", "Backup exported."),
     );
   } catch (error) {
     setStatus(
@@ -2872,7 +2841,7 @@ async function handleFaceBackup() {
  * Import a backup file chosen via #face-restore-file.
  */
 async function handleFaceRestore() {
-  var fileEl, file, text, backup, pass, mode, n;
+  var fileEl, file, text, backup, mode, n;
   if (!faceRegistry) return;
   fileEl = document.getElementById("face-restore-file");
   if (!fileEl || !fileEl.files || fileEl.files.length === 0) {
@@ -2893,8 +2862,6 @@ async function handleFaceRestore() {
     );
     return;
   }
-  pass = document.getElementById("face-lock-pass");
-  pass = pass && pass.value ? pass.value : "";
   mode = confirm(
     __(
       "face.restore_confirm",
@@ -2903,7 +2870,14 @@ async function handleFaceRestore() {
   );
   mode = mode ? "replace" : "merge";
   try {
-    n = await faceRegistry.importBackup(backup, pass || null, mode);
+    if (typeof ensureFaceVaultKey === "function") {
+      try {
+        await ensureFaceVaultKey();
+      } catch (e) {
+        /* non-fatal */
+      }
+    }
+    n = await faceRegistry.importBackup(backup, null, mode);
     setStatus(
       "face-status",
       __("face.restore_done", "Restored {0} face(s) ({1}).")

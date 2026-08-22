@@ -47,6 +47,23 @@ var FaceWebauthn = (function () {
     return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
 
+  // Standard base64 <-> base64url (URL-safe) string transcoding. Used only to
+  // bridge FaceCrypto's canonical base64 envelope into the base64url wire
+  // format this module exposes, so the AES-GCM core stays single-sourced in
+  // FaceCrypto (no duplicated encrypt/decrypt logic).
+  function b64ToB64url(b64) {
+    return String(b64)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+  }
+
+  function b64urlToB64(s) {
+    var b64 = String(s).replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4 !== 0) b64 += "=";
+    return b64;
+  }
+
   function b64ToB64url(b64) {
     return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
@@ -189,6 +206,11 @@ var FaceWebauthn = (function () {
           "localhost",
         userVerification: o.userVerification || "preferred",
       };
+      if (o.prfSalt) {
+        publicKey.extensions = {
+          prf: { eval: { first: b64urlToBytes(o.prfSalt) } },
+        };
+      }
       if (o.allowCredentials && o.allowCredentials.length) {
         publicKey.allowCredentials = o.allowCredentials.map(function (c) {
           return {
@@ -273,6 +295,129 @@ var FaceWebauthn = (function () {
     },
 
     b64ToB64url: b64ToB64url,
+
+    /**
+     * Extract the PRF (Pseudo-Random Function) output from a WebAuthn
+     * assertion's client extension results, or null when the authenticator
+     * does not support the PRF extension. The output is a deterministic 32-byte
+     * value bound to the credential + salt, usable as key material for
+     * deriving a symmetric vault key (AES-GCM via WebCrypto). See WebAuthn PRF
+     * extension (CTAP2 hmac-secret). Reference: Corbado / Yubico PRF guides.
+     * @param {object} credential JSON credential from credentialToJSON
+     * @returns {Uint8Array|null}
+     */
+    prfOutput: function (credential) {
+      var r =
+        credential &&
+        credential.clientExtensionResults &&
+        credential.clientExtensionResults.prf;
+      if (r && r.results && r.results.first) {
+        return b64urlToBytes(r.results.first);
+      }
+      return null;
+    },
+
+    /**
+     * Whether the last assertion returned a PRF output (i.e. the authenticator
+     * supports the PRF extension). Used to decide between encrypted and
+     * plaintext storage of the credential reference.
+     * @param {object} credential JSON credential from credentialToJSON
+     * @returns {boolean}
+     */
+    prfSupported: function (credential) {
+      return !!FaceWebauthn.prfOutput(credential);
+    },
+
+    /**
+     * Derive a 256-bit AES-GCM vault key from a PRF output via HKDF-SHA256.
+     *
+     * IKM = the PRF output, which is already a high-entropy 32-byte secret
+     * deterministic per (credential, salt). Per RFC 5869 §3.1, a salt is only
+     * needed to stretch LOW-entropy input; with a high-entropy IKM a fixed
+     * all-zero 32-byte salt is correct and standard (matches the CTAP2/WebAuthn
+     * PRF→HKDF derivation used by reference wallets). A RANDOM salt must NOT be
+     * used here: it would make the derived key non-deterministic and break
+     * recovery of the same vault from the same credential. The `info` string
+     * provides domain separation only.
+     * @param {Uint8Array} prfBytes 32-byte PRF output
+     * @param {string} [info] domain-separation label
+     * @returns {Promise<CryptoKey>}
+     */
+    deriveVaultKey: async function (prfBytes, info) {
+      var prk, key;
+      if (!prfBytes) throw new Error("PRF output is required to derive a vault key");
+      if (
+        typeof crypto === "undefined" ||
+        !crypto.subtle ||
+        typeof crypto.subtle.importKey !== "function"
+      ) {
+        throw new Error("WebCrypto is not available in this context");
+      }
+      prk = await crypto.subtle.importKey(
+        "raw",
+        prfBytes,
+        { name: "HKDF" },
+        false,
+        ["deriveKey"],
+      );
+      key = await crypto.subtle.deriveKey(
+        {
+          name: "HKDF",
+          salt: new Uint8Array(32),
+          info: new TextEncoder().encode(
+            info || "redo-san-face-vault-v1",
+          ),
+          hash: "SHA-256",
+        },
+        prk,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"],
+      );
+      return key;
+    },
+
+    /**
+     * AES-GCM encrypt a JSON-serialisable object with a vault key.
+     *
+     * Delegates the actual AES-GCM operation to FaceCrypto.encryptWithKey so
+     * the cipher core is single-sourced; only the wire encoding (base64url
+     * {iv, ct}) is handled here. Throws on missing WebCrypto/FaceCrypto.
+     * @param {CryptoKey} key AES-GCM 256 key from deriveVaultKey
+     * @param {*} obj
+     * @returns {Promise<{iv:string, ct:string}>} base64url iv + ciphertext
+     */
+    encryptJSON: async function (key, obj) {
+      var iv, env;
+      if (
+        typeof FaceCrypto === "undefined" ||
+        typeof FaceCrypto.encryptWithKey !== "function"
+      ) {
+        throw new Error("FaceCrypto (AES-GCM core) is not available");
+      }
+      iv = crypto.getRandomValues(new Uint8Array(12));
+      env = await FaceCrypto.encryptWithKey(key, iv, obj);
+      return { iv: b64ToB64url(env.iv), ct: b64ToB64url(env.cipher) };
+    },
+
+    /**
+     * AES-GCM decrypt a {iv, ct} blob back into an object with a vault key.
+     * Throws on tamper / wrong key (AES-GCM auth tag failure).
+     * @param {CryptoKey} key
+     * @param {{iv:string, ct:string}} blob
+     * @returns {Promise<*>}
+     */
+    decryptJSON: async function (key, blob) {
+      var env;
+      if (
+        typeof FaceCrypto === "undefined" ||
+        typeof FaceCrypto.decryptWithKey !== "function"
+      ) {
+        throw new Error("FaceCrypto (AES-GCM core) is not available");
+      }
+      env = { iv: b64urlToB64(blob.iv), cipher: b64urlToB64(blob.ct) };
+      return FaceCrypto.decryptWithKey(key, env);
+    },
   };
 })();
 

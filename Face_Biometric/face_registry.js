@@ -262,10 +262,10 @@ FaceRegistry.prototype.purgeExpired = async function () {
  * @returns {Promise<number>}
  */
 FaceRegistry.prototype.addFace = async function (label, descriptor, metadata) {
-  var meta;
+  var meta, sealed;
   await this.open();
   meta = metadata || {};
-  return this._store.add({
+  sealed = await this._sealFace({
     label: String(label),
     descriptor: descriptor,
     metadata: meta,
@@ -274,6 +274,7 @@ FaceRegistry.prototype.addFace = async function (label, descriptor, metadata) {
     created: new Date(),
     updated: new Date(),
   });
+  return this._store.add(sealed);
 };
 
 /**
@@ -282,7 +283,7 @@ FaceRegistry.prototype.addFace = async function (label, descriptor, metadata) {
  */
 FaceRegistry.prototype.getFace = async function (id) {
   await this.open();
-  return this._store.get(id);
+  return this._unsealEntry(await this._store.get(id));
 };
 
 /**
@@ -298,8 +299,14 @@ FaceRegistry.prototype.findByLabel = async function (label) {
  * @returns {Promise<Array>}
  */
 FaceRegistry.prototype.getAllFaces = async function () {
+  var all, i, out;
   await this.open();
-  return this._store.getAll();
+  all = await this._store.getAll();
+  out = [];
+  for (i = 0; i < all.length; i++) {
+    out.push(await this._unsealEntry(all[i]));
+  }
+  return out;
 };
 
 /**
@@ -311,13 +318,15 @@ FaceRegistry.prototype.updateFace = async function (id, data) {
   await this.open();
   var existing = await this._store.get(id);
   if (!existing) return false;
+  // Unseal first so descriptor/metadata edits persist through re-encryption.
+  var base = await this._unsealEntry(existing);
   for (var key in data) {
     if (Object.prototype.hasOwnProperty.call(data, key) && key !== "id") {
-      existing[key] = data[key];
+      base[key] = data[key];
     }
   }
-  existing.updated = new Date();
-  await this._store.put(existing);
+  base.updated = new Date();
+  await this._store.put(await this._sealFace(base));
   return true;
 };
 
@@ -352,8 +361,9 @@ FaceRegistry.prototype.findMatch = async function (
   }
   if (threshold === undefined) threshold = 0.6;
   var all = await this.getAllFaces();
+  // getAllFaces() already unseals; locked entries carry no descriptor.
   all = all.filter(function (entry) {
-    return entry && !entry.encrypted && entry.descriptor;
+    return entry && entry.descriptor;
   });
   return FaceEngine.matchInRegistry(
     descriptor,
@@ -377,6 +387,159 @@ FaceRegistry.prototype.getSize = async function () {
 FaceRegistry.prototype.clear = async function () {
   await this.open();
   await this._store.clear();
+};
+
+// ── Automatic PRF-based encryption (AES-GCM, key derived from WebAuthn PRF) ──
+// The vault key is a non-extractable AES-GCM CryptoKey derived from the
+// passkey's PRF output (HKDF-SHA256). It is set for the session after the
+// passkey step-up and used to transparently seal descriptors at rest — no
+// passphrase required (automatic). This replaces the old manual lock/unlock
+// flow. Falls back to plaintext storage when no vault key is available
+// (documented degradation, e.g. WebAuthn/PRF unavailable). Aligns with
+// ISO/IEC 24745:2022 (confidentiality) and NIST SP 800-63B (biometric
+// template protection SHALL be implemented).
+
+FaceRegistry.prototype.setVaultKey = function (key) {
+  this._vaultKey = key || null;
+};
+
+FaceRegistry.prototype.getVaultKey = function () {
+  return this._vaultKey || null;
+};
+
+FaceRegistry.prototype.hasVaultKey = function () {
+  return !!this._vaultKey;
+};
+
+/**
+ * Seal face fields into a stored entry. With a vault key, the sensitive
+ * payload (descriptor + metadata) is AES-GCM encrypted; the label stays
+ * plaintext so lists remain browsable. Without a vault key, returns the
+ * fields unchanged (plaintext fallback).
+ * @param {object} fields
+ * @returns {Promise<object>}
+ */
+FaceRegistry.prototype._sealFace = async function (fields) {
+  var payload, env;
+  if (
+    !this._vaultKey ||
+    typeof FaceWebauthn === "undefined" ||
+    typeof FaceWebauthn.encryptJSON !== "function"
+  ) {
+    return fields;
+  }
+  payload = {
+    label: fields.label,
+    descriptor: _descriptorToArray(fields.descriptor),
+    metadata: fields.metadata || null,
+    embeddingVersion: fields.embeddingVersion || null,
+    did: fields.did || "",
+  };
+  env = await FaceWebauthn.encryptJSON(this._vaultKey, payload);
+  var out = {
+    label: fields.label,
+    created: fields.created,
+    updated: fields.updated,
+    encrypted: {
+      alg: "AES-GCM",
+      version: 1,
+      kdf: { name: "PRF" },
+      iv: env.iv,
+      cipher: env.ct,
+    },
+  };
+  if (fields.id !== undefined) out.id = fields.id;
+  return out;
+};
+
+/**
+ * Unseal a stored entry for use. PRF-encrypted entries are decrypted when the
+ * session vault key is present; otherwise the entry is returned locked
+ * (label only, no descriptor). PBKDF2-locked entries (manual) are always
+ * returned locked here (decryption requires the passphrase).
+ * @param {object} entry
+ * @returns {Promise<object>}
+ */
+FaceRegistry.prototype._unsealEntry = async function (entry) {
+  var payload;
+  if (!entry || !entry.encrypted) return entry;
+  if (entry.encrypted.kdf && entry.encrypted.kdf.name === "PRF") {
+    if (!this._vaultKey) {
+      return {
+        id: entry.id,
+        label: entry.label,
+        created: entry.created,
+        updated: entry.updated,
+        encrypted: entry.encrypted,
+        locked: true,
+      };
+    }
+    try {
+      payload = await FaceWebauthn.decryptJSON(this._vaultKey, {
+        iv: entry.encrypted.iv,
+        ct: entry.encrypted.cipher,
+      });
+    } catch (e) {
+      return {
+        id: entry.id,
+        label: entry.label,
+        created: entry.created,
+        updated: entry.updated,
+        encrypted: entry.encrypted,
+        locked: true,
+      };
+    }
+    return {
+      id: entry.id,
+      label: payload.label !== undefined ? payload.label : entry.label,
+      descriptor: new Float32Array(payload.descriptor || []),
+      metadata: payload.metadata || null,
+      embeddingVersion: payload.embeddingVersion || null,
+      did: payload.did || "",
+      created: entry.created,
+      updated: entry.updated,
+    };
+  }
+  // PBKDF2 (manual lock) — locked without the passphrase.
+  return {
+    id: entry.id,
+    label: entry.label,
+    created: entry.created,
+    updated: entry.updated,
+    encrypted: entry.encrypted,
+    locked: true,
+  };
+};
+
+/**
+ * Encrypt every plaintext entry in place with the current vault key. Returns
+ * the number of entries sealed. No-op (0) when no vault key is set.
+ * @returns {Promise<number>}
+ */
+FaceRegistry.prototype.sealAllPlaintext = async function () {
+  var all, i, e, sealed, n;
+  if (!this._vaultKey) return 0;
+  await this.open();
+  all = await this._store.getAll();
+  n = 0;
+  for (i = 0; i < all.length; i++) {
+    e = all[i];
+    if (e.encrypted) continue;
+    if (e.descriptor === undefined && e.label === undefined) continue;
+    sealed = await this._sealFace({
+      id: e.id,
+      label: e.label,
+      descriptor: e.descriptor,
+      metadata: e.metadata,
+      embeddingVersion: e.embeddingVersion,
+      did: e.did,
+      created: e.created,
+      updated: e.updated,
+    });
+    await this._store.put(sealed);
+    n++;
+  }
+  return n;
 };
 
 /**
@@ -517,11 +680,17 @@ FaceRegistry.prototype.unlock = async function (passphrase) {
  * @returns {Promise<boolean>} true when any entry is encrypted
  */
 FaceRegistry.prototype.isLocked = async function () {
-  var all;
+  var all, self;
   await this.open();
   all = await this._store.getAll();
+  self = this;
   return all.some(function (e) {
-    return !!e.encrypted;
+    // PRF-encrypted entries are considered unlocked when the session vault
+    // key is available; only un-decryptable entries count as locked.
+    return (
+      !!e.encrypted &&
+      !(e.encrypted.kdf && e.encrypted.kdf.name === "PRF" && self._vaultKey)
+    );
   });
 };
 
@@ -535,7 +704,7 @@ FaceRegistry.prototype.isLocked = async function () {
  * @returns {Promise<object>}
  */
 FaceRegistry.prototype.exportBackup = async function (passphrase) {
-  var all, i, e, out, salt, key, iv, envelope;
+  var all, i, e, out, salt, key, iv, envelope, payload;
   await this.open();
   all = await this._store.getAll();
   out = {
@@ -549,13 +718,40 @@ FaceRegistry.prototype.exportBackup = async function (passphrase) {
   for (i = 0; i < all.length; i++) {
     e = all[i];
     if (key) {
+      // Need the plaintext payload; decrypt if currently encrypted.
+      if (e.encrypted) {
+        if (e.encrypted.kdf && e.encrypted.kdf.name === "PRF") {
+          if (!this._vaultKey)
+            throw new Error(
+              "Registry is locked — export requires the passkey session",
+            );
+          payload = await FaceWebauthn.decryptJSON(this._vaultKey, {
+            iv: e.encrypted.iv,
+            ct: e.encrypted.cipher,
+          });
+        } else if (e.encrypted.kdf && e.encrypted.kdf.name === "PBKDF2") {
+          if (!passphrase)
+            throw new Error("Backup is encrypted — requires a passphrase");
+          payload = await FaceCrypto.decryptJSON(passphrase, e.encrypted);
+        } else {
+          throw new Error("Unsupported encryption on entry");
+        }
+      } else {
+        payload = {
+          label: e.label,
+          descriptor: _descriptorToArray(e.descriptor),
+          metadata: e.metadata || null,
+          embeddingVersion: e.embeddingVersion || null,
+          did: e.did || "",
+        };
+      }
       iv = FaceCrypto.generateSalt(12);
       envelope = await FaceCrypto.encryptWithKey(key, iv, {
-        label: e.label,
-        descriptor: _descriptorToArray(e.encrypted ? null : e.descriptor),
-        metadata: e.metadata || null,
-        embeddingVersion: e.embeddingVersion || null,
-        did: e.did || "",
+        label: payload.label,
+        descriptor: payload.descriptor || [],
+        metadata: payload.metadata || null,
+        embeddingVersion: payload.embeddingVersion || null,
+        did: payload.did || "",
       });
       out.entries.push({
         id: e.id,
@@ -575,7 +771,36 @@ FaceRegistry.prototype.exportBackup = async function (passphrase) {
         },
       });
     } else if (e.encrypted) {
-      throw new Error("Registry is locked — export requires a passphrase");
+      // No passphrase: PRF ciphertext can stay encrypted, but a PBKDF2 entry
+      // cannot be exported without its passphrase.
+      if (e.encrypted.kdf && e.encrypted.kdf.name === "PRF") {
+        if (this._vaultKey) {
+          payload = await FaceWebauthn.decryptJSON(this._vaultKey, {
+            iv: e.encrypted.iv,
+            ct: e.encrypted.cipher,
+          });
+          out.entries.push({
+            id: e.id,
+            label: payload.label,
+            descriptor: payload.descriptor || [],
+            metadata: payload.metadata || null,
+            embeddingVersion: payload.embeddingVersion || null,
+            did: payload.did || "",
+            created: e.created,
+            updated: e.updated,
+          });
+        } else {
+          out.entries.push({
+            id: e.id,
+            label: e.label,
+            created: e.created,
+            updated: e.updated,
+            encrypted: e.encrypted,
+          });
+        }
+      } else {
+        throw new Error("Registry is locked — export requires a passphrase");
+      }
     } else {
       out.entries.push({
         id: e.id,
@@ -621,19 +846,50 @@ FaceRegistry.prototype.importBackup = async function (
   for (i = 0; i < entries.length; i++) {
     e = entries[i];
     if (e.encrypted) {
-      if (!passphrase)
-        throw new Error("Backup is encrypted — import requires a passphrase");
-      plain = await FaceCrypto.decryptJSON(passphrase, e.encrypted);
-      await this._store.add({
-        label: plain.label !== undefined ? plain.label : "Imported",
-        descriptor: new Float32Array(plain.descriptor || []),
-        metadata: plain.metadata || null,
-        embeddingVersion: plain.embeddingVersion || null,
-        did: plain.did || "",
-        created: new Date(e.created || Date.now()),
-        updated: new Date(),
-      });
-      count++;
+      if (e.encrypted.kdf && e.encrypted.kdf.name === "PRF") {
+        if (this._vaultKey) {
+          plain = await FaceWebauthn.decryptJSON(this._vaultKey, {
+            iv: e.encrypted.iv,
+            ct: e.encrypted.cipher,
+          });
+          await this._store.add(
+            await this._sealFace({
+              label: plain.label !== undefined ? plain.label : "Imported",
+              descriptor: new Float32Array(plain.descriptor || []),
+              metadata: plain.metadata || null,
+              embeddingVersion: plain.embeddingVersion || null,
+              did: plain.did || "",
+              created: new Date(e.created || Date.now()),
+              updated: new Date(),
+            }),
+          );
+        } else {
+          // No session vault key yet — keep the PRF ciphertext locked.
+          await this._store.add({
+            label: e.label !== undefined ? e.label : "Imported",
+            created: new Date(e.created || Date.now()),
+            updated: new Date(),
+            encrypted: e.encrypted,
+          });
+        }
+        count++;
+      } else {
+        if (!passphrase)
+          throw new Error(
+            "Backup is encrypted — import requires a passphrase",
+          );
+        plain = await FaceCrypto.decryptJSON(passphrase, e.encrypted);
+        await this._store.add({
+          label: plain.label !== undefined ? plain.label : "Imported",
+          descriptor: new Float32Array(plain.descriptor || []),
+          metadata: plain.metadata || null,
+          embeddingVersion: plain.embeddingVersion || null,
+          did: plain.did || "",
+          created: new Date(e.created || Date.now()),
+          updated: new Date(),
+        });
+        count++;
+      }
     } else {
       await this._store.add({
         label: e.label !== undefined ? e.label : "Imported",

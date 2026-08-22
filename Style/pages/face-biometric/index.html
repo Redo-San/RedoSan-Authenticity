@@ -679,7 +679,7 @@
           </div>
 
           <!-- Help card: how to use -->
-          <div class="help-card collapsed">
+          <div class="help-card">
             <div
               class="help-card-header"
               onclick="this.parentElement.classList.toggle('collapsed')"
@@ -999,14 +999,6 @@
           >
             <p style="margin-bottom: 8px">
               <strong data-i18n="face.privacy_title">Privacy</strong>
-              <span
-                id="face-lock-status"
-                style="
-                  margin-left: 6px;
-                  font-size: 0.8rem;
-                  color: var(--text-muted);
-                "
-              ></span>
             </p>
             <p
               style="
@@ -1016,12 +1008,12 @@
               "
               data-i18n="face.privacy_hint"
             >
-              Encrypt the registry with a passphrase (AES-256-GCM, key derived
-              via PBKDF2). Passphrase is never stored — without it the stored
-              data cannot be recovered.
+              The registry is sealed automatically with the PRF vault: a
+              WebAuthn PRF output is derived through HKDF-SHA256 into an
+              AES-256-GCM key. Register a passkey to enable encryption — no
+              passphrase is ever stored or required.
             </p>
             <div
-              id="face-lock-wrap"
               style="
                 display: flex;
                 gap: 8px;
@@ -1029,36 +1021,6 @@
                 align-items: center;
               "
             >
-              <div
-                class="form-group"
-                style="flex: 0 1 280px; min-width: 200px; margin-bottom: 0"
-              >
-                <label for="face-lock-pass" data-i18n="face.lock_pass_label"
-                  >Passphrase</label
-                >
-                <input
-                  type="password"
-                  id="face-lock-pass"
-                  data-i18n-placeholder="face.lock_pass_placeholder"
-                  placeholder="Enter a passphrase"
-                />
-              </div>
-              <button
-                type="button"
-                class="btn btn-sm face-mgmt-btn"
-                onclick="handleFaceLock()"
-                data-i18n="face.lock_btn"
-              >
-                Lock Registry
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm face-mgmt-btn"
-                onclick="handleFaceUnlock()"
-                data-i18n="face.unlock_btn"
-              >
-                Unlock
-              </button>
               <button
                 type="button"
                 class="btn btn-sm face-mgmt-btn"
