@@ -603,8 +603,10 @@ async function handlePasskeyRegister() {
           );
         }
       } catch (encErr) {
-        passkey.credentialId = cred.id;
-        passkey.rawId = cred.rawId;
+        if (cred && cred.id) {
+          passkey.credentialId = cred.id;
+          passkey.rawId = cred.rawId;
+        }
         console.warn(
           "[face] PRF encryption failed — passkey stored as plaintext reference.",
           encErr,

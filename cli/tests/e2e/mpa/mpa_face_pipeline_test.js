@@ -1,6 +1,7 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var path = require("node:path");
+var fs = require("node:fs");
 var { chromium } = require("playwright");
 var { ensureServer, pageURL } = require("../mpa_helpers");
 
@@ -102,7 +103,15 @@ async function pickPhotoAndRun(page, filePath) {
 }
 
 describe("MPA — Face pipeline end-to-end (real Human models)", function () {
-  it("runs blank-photo rejection, full generation, exports and auto-registration", async function () {
+  it("runs blank-photo rejection, full generation, exports and auto-registration", async function (t) {
+    // Biometric fixtures must never be committed. CI skips this spec;
+    // run locally (or set FACE_FIXTURE_PATH) for the full model pass.
+    var fixturePath = process.env.FACE_FIXTURE_PATH || FACE_IMG;
+    if (!fs.existsSync(fixturePath)) {
+      console.log("[pipeline] fixture missing -> skipping on CI");
+      t.skip("face fixture unavailable in this environment");
+      return;
+    }
     var opened = await openPipelinePage(browser);
     var ctx = opened.ctx;
     var page = opened.page;
@@ -150,7 +159,7 @@ describe("MPA — Face pipeline end-to-end (real Human models)", function () {
         return !!window.faceRegistry;
       }, null, { timeout: 30000 });
 
-      await pickPhotoAndRun(page, FACE_IMG);
+      await pickPhotoAndRun(page, fixturePath);
       await page.waitForFunction(function () {
         return !!window._faceReport;
       }, null, { timeout: 300000 });
