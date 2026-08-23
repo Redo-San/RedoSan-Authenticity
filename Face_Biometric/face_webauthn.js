@@ -128,23 +128,29 @@ var FaceWebauthn = (function () {
      * otherwise hang forever with no authenticator present.
      */
     _withTimeout: function (promise, ms, label) {
-      var t, done = false;
+      var t,
+        done = false;
       return Promise.race([
         promise,
         new Promise(function (_resolve, reject) {
           t = setTimeout(function () {
             if (done) return;
             done = true;
-            reject(new Error("WebAuthn " + label + " timed out after " + ms + "ms"));
+            reject(
+              new Error("WebAuthn " + label + " timed out after " + ms + "ms"),
+            );
           }, ms);
         }),
-      ]).then(function (v) {
-        clearTimeout(t);
-        return v;
-      }, function (e) {
-        clearTimeout(t);
-        throw e;
-      });
+      ]).then(
+        function (v) {
+          clearTimeout(t);
+          return v;
+        },
+        function (e) {
+          clearTimeout(t);
+          throw e;
+        },
+      );
     },
 
     /**

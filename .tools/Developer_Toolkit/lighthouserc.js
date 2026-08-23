@@ -42,7 +42,8 @@ module.exports = {
     upload: {
       target: "filesystem",
       outputDir: ".lighthouseci",
-      reportFilenamePattern: "%%HOSTNAME%%-%%PATHNAME%%-%%DATETIME%%-report.%%EXTENSION%%",
+      reportFilenamePattern:
+        "%%HOSTNAME%%-%%PATHNAME%%-%%DATETIME%%-report.%%EXTENSION%%",
     },
     server: {
       command: "node dev-server.js",
