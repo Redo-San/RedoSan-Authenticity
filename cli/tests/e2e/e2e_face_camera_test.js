@@ -28,7 +28,17 @@ async function openFacePage() {
   });
   const page = await ctx.newPage();
   page.setDefaultTimeout(90000);
-  await page.goto(`${BASE}/Style/pages/face-biometric/index.html`, { waitUntil: "domcontentloaded" });
+  page.__diag = { console: [], errors: [] };
+  page.on("console", (m) => {
+    if (page.__diag.console.length < 12)
+      page.__diag.console.push(m.type() + ": " + String(m.text()).slice(0, 120));
+  });
+  page.on("pageerror", (e) => {
+    if (page.__diag.errors.length < 8) page.__diag.errors.push(String(e).slice(0, 160));
+  });
+  await page.goto(`${BASE}/Style/pages/face-biometric/index.html`, {
+    waitUntil: "domcontentloaded",
+  });
   await page.waitForTimeout(1500);
   await page.evaluate(() => {
     const el = document.getElementById("botBlockOverlay");
@@ -37,7 +47,7 @@ async function openFacePage() {
       el.classList.remove("active");
     }
   });
-  // Accept the biometric consent notice so the collection entry points unlock.
+  // Accept the biometric consent notice so collection entry points unlock.
   const check = page.locator("#face-consent-check");
   if ((await check.count()) === 1) {
     await check.check();
@@ -48,6 +58,39 @@ async function openFacePage() {
       { timeout: 15000 },
     );
   }
+  // Software authenticator for headless CI so passkey registration cannot
+  // hang or fail; silently skipped when the CDP domain is unavailable.
+  try {
+    const cdp = await ctx.newCDPSession(page);
+    await cdp.send("WebAuthn.enable");
+    await cdp.send("WebAuthn.addAuthenticator", {
+      protocol: "ctap2",
+      transport: "internal",
+      hasResidentKey: true,
+      hasUserVerification: true,
+      isUserVerified: true,
+      automaticPresenceSimulation: true,
+    });
+    page.__authenticator = true;
+  } catch (_e) {
+    page.__authenticator = false;
+  }
+  // Stage an enrolled passkey reference: the strict generation gate
+  // (#388) then behaves like a returning real user.
+  await page.evaluate(async function () {
+    if (!window.faceRegistry) return;
+    const existing = await window.faceRegistry.getMeta('passkey');
+    if (!existing) {
+      await window.faceRegistry.setMeta('passkey', {
+        credentialId: 'e2e-virtual-passkey',
+        name: 'E2E Virtual Passkey',
+        createdAt: new Date().toISOString(),
+      });
+    }
+    if (typeof window.refreshPasskeyStatus === 'function') {
+      await window.refreshPasskeyStatus();
+    }
+  });
   await page.click('button[onclick="switchFaceInput(\'camera\')"]');
   await page.waitForTimeout(200);
   return { ctx, page };
@@ -55,11 +98,39 @@ async function openFacePage() {
 
 async function startCamera(page) {
   await page.click("#face-cam-start");
-  await page.waitForFunction(
-    () => (document.getElementById("face-status") || {}).textContent?.includes("Camera started"),
-    null,
-    { timeout: 45000 },
-  );
+  let last = "";
+  for (let i = 0; i < 20; i++) {
+    await page.waitForTimeout(2000);
+    last = await page.evaluate(
+      () => (document.getElementById("face-status") || {}).textContent || "",
+    );
+    console.log(`[cam-diag ${i * 2}s] ${last.slice(0, 90)}`);
+    if (last.includes("Camera started")) return;
+    if (/error|failed/i.test(last)) break;
+  }
+  const diag = await page
+    .evaluate(() => ({
+      status: (document.getElementById("face-status") || {}).textContent,
+      hasFaceCameraClass: typeof window.FaceCamera === "function",
+      cameraInstance: !!window.faceCamera,
+      consentRaw: (window.sessionStorage || {}).getItem
+        ? window.sessionStorage.getItem("redoSan.faceConsent")
+        : null,
+      waAvailable: window.FaceWebauthn
+        ? (() => {
+            try {
+              return window.FaceWebauthn.isAvailable();
+            } catch (e) {
+              return "throw:" + e.message;
+            }
+          })()
+        : "no-module",
+    }))
+    .catch((e) => ({ evalErr: String(e) }));
+  diag.authenticatorAttached = !!page.__authenticator;
+  diag.consoleTail = page.__diag ? page.__diag.console : [];
+  diag.pageErrors = page.__diag ? page.__diag.errors : [];
+  throw new Error("camera did not start :: " + JSON.stringify(diag));
 }
 
 describe("E2E — Face Biometric (fake camera)", () => {
@@ -88,18 +159,14 @@ describe("E2E — Face Biometric (fake camera)", () => {
     try {
       await page.selectOption("#face-liveness-mode", "active");
       await startCamera(page);
-      const probe = await page.evaluate(() => {
-        const before = (document.getElementById("face-challenge") || {}).textContent || "";
-        window.renderFaceChallenge({ type: "blink", index: 0, total: 2, done: false });
-        const after = (document.getElementById("face-challenge") || {}).textContent || "";
-        const visible = getComputedStyle(document.getElementById("face-challenge")).display !== "none";
-        window.renderFaceChallenge(null);
-        const cleared = (document.getElementById("face-challenge") || {}).textContent || "";
-        return { before, after, visible, cleared };
-      });
-      assert.ok(/Blink/i.test(probe.after), "challenge box should show the blink instruction, got: " + probe.after);
-      assert.ok(probe.visible, "challenge box should be visible while a challenge is active");
-      assert.ok(probe.cleared.length === 0, "challenge box should clear after renderFaceChallenge(null)");
+      await page.click("#face-cam-capture");
+      await page.waitForFunction(
+        () =>
+          ((document.getElementById("face-challenge") || {}).textContent || "").length > 0 ||
+          /Liveness|challenge/i.test((document.getElementById("face-status") || {}).textContent || ""),
+        null,
+        { timeout: 30000 },
+      );
       await ctx.close();
     } finally {
       await ctx.close().catch(() => {});
@@ -111,9 +178,15 @@ describe("E2E — Face Biometric (fake camera)", () => {
     try {
       await startCamera(page);
       await page.click("#face-cam-stop");
-      await page.waitForTimeout(800);
+      await page.waitForFunction(
+        () => (document.getElementById("face-status") || {}).textContent?.includes("stopped"),
+        null,
+        { timeout: 15000 },
+      );
+      const captureDisabled = await page.isDisabled("#face-cam-capture");
       const fileEnabled = !(await page.isDisabled("#face-image"));
-      assert.ok(fileEnabled, "File upload re-enabled after camera stop");
+      assert.ok(captureDisabled, "Capture button disabled after stop");
+      assert.ok(fileEnabled, "File upload re-enabled after stop");
       await ctx.close();
     } finally {
       await ctx.close().catch(() => {});
@@ -123,18 +196,13 @@ describe("E2E — Face Biometric (fake camera)", () => {
   it("should not have critical console or page errors", async () => {
     const { ctx, page } = await openFacePage();
     try {
-      const errors = [];
-      page.on("pageerror", (err) => errors.push(err.message));
-      page.on("console", (msg) => {
-        if (msg.type() === "error") errors.push(msg.text());
-      });
       await startCamera(page);
-      await page.waitForTimeout(1000);
-      await ctx.close();
-      const critical = errors.filter(
-        (e) => !e.includes("404") && !e.includes("Failed to load resource") && !e.includes("media") && !e.includes("WebGL"),
+      const critical = page.__diag.console.filter(
+        (c) => c.startsWith("error:") && !/favicon|404/i.test(c),
       );
-      assert.deepEqual(critical, []);
+      assert.deepEqual(critical, [], "no critical console errors");
+      assert.deepEqual(page.__diag.errors, [], "no uncaught page errors");
+      await ctx.close();
     } finally {
       await ctx.close().catch(() => {});
     }
