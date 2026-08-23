@@ -22,6 +22,7 @@ module.exports = {
         "http://127.0.0.1:8080/privacy/index.html",
         "http://127.0.0.1:8080/contact/index.html",
         "http://127.0.0.1:8080/social/index.html",
+        "http://127.0.0.1:8080/Style/pages/face-biometric/index.html",
       ],
       numberOfRuns: 2,
       settings: {

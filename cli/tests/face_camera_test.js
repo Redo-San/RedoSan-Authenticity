@@ -104,6 +104,11 @@ describe("FaceCamera — isSupported", () => {
     setNavigator({ isSecureContext: false, mediaDevices: { getUserMedia: function () {} } });
     assert.equal(globalThis.FaceCamera.isSupported(), false);
   });
+
+  it("is false when navigator is undefined", () => {
+    setNavigator(undefined);
+    assert.equal(globalThis.FaceCamera.isSupported(), false);
+  });
 });
 
 describe("FaceCamera — getCameraErrorMessage", () => {
@@ -131,6 +136,26 @@ describe("FaceCamera — getCameraErrorMessage", () => {
 
   it("handles null", () => {
     assert.equal(globalThis.FaceCamera.getCameraErrorMessage(null), "Camera error.");
+  });
+
+  it("maps abort errors", () => {
+    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "AbortError" }).includes("aborted"));
+  });
+
+  it("maps not-supported errors", () => {
+    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "NotSupportedError" }).includes("not supported"));
+  });
+
+  it("maps a string error", () => {
+    assert.equal(globalThis.FaceCamera.getCameraErrorMessage("SomeError"), "Camera error: SomeError");
+  });
+
+  it("maps an error with only a code", () => {
+    assert.equal(globalThis.FaceCamera.getCameraErrorMessage({ code: "E123" }), "Camera error: E123");
+  });
+
+  it("maps a nameless error with no message", () => {
+    assert.equal(globalThis.FaceCamera.getCameraErrorMessage({ foo: 1 }), "Camera error: UnknownError");
   });
 });
 
@@ -181,6 +206,14 @@ describe("FaceCamera — startCamera", () => {
     setNavigator({ isSecureContext: true, mediaDevices: null });
     await assert.rejects(camera.startCamera(makeEl("video")), /not available/i);
   });
+
+  it("passes deviceId constraints", async () => {
+    let captured;
+    installNavigator(async function (c) { captured = c; return fakeStream(); });
+    const video = makeEl("video");
+    await camera.startCamera(video, { deviceId: "dev-9" });
+    assert.equal(captured.video.deviceId.exact, "dev-9");
+  });
 });
 
 describe("FaceCamera — stopCamera & captureFrame", () => {
@@ -226,6 +259,17 @@ describe("FaceCamera — stopCamera & captureFrame", () => {
     assert.equal(capped.width, 320);
     assert.equal(capped.height, 180);
   });
+
+  it("captureFrame uses default dimensions", async () => {
+    installNavigator(async function () { return fakeStream(); });
+    const video = makeEl("video");
+    video.videoWidth = 0;
+    video.videoHeight = 0;
+    await camera.startCamera(video);
+    const canvas = camera.captureFrame();
+    assert.equal(canvas.width, 640);
+    assert.equal(canvas.height, 480);
+  });
 });
 
 describe("FaceCamera — listCameras", () => {
@@ -242,6 +286,21 @@ describe("FaceCamera — listCameras", () => {
     setNavigator({ isSecureContext: true, mediaDevices: null });
     const camera = new globalThis.FaceCamera();
     assert.deepEqual(await camera.listCameras(), []);
+  });
+
+  it("falls back to a default label", async () => {
+    setNavigator({
+      isSecureContext: true,
+      mediaDevices: {
+        getUserMedia: async function () { return fakeStream(); },
+        enumerateDevices: async function () {
+          return [{ kind: "videoinput", deviceId: "cam-x" }];
+        },
+      },
+    });
+    const camera = new globalThis.FaceCamera();
+    const list = await camera.listCameras();
+    assert.equal(list[0].label, "Camera 1");
   });
 });
 
@@ -283,5 +342,46 @@ describe("FaceCamera — scoreFrame & captureBestFrame", () => {
     };
     const best = await camera.captureBestFrame(null, 3, 0);
     assert.equal(best.score, 90);
+  });
+
+  it("scoreFrame returns 0 when no face detected", async () => {
+    const engine = { detectFaces: async function () { return []; } };
+    const r = await camera.scoreFrame({ width: 640, height: 480 }, engine);
+    assert.equal(r.score, 0);
+    assert.equal(r.result, null);
+  });
+
+  it("scoreFrame skips size bonus when box has zero width or height", async () => {
+    const engine = {
+      detectFaces: async function () {
+        return [{ box: { x: 0, y: 0, width: 320, height: 0 }, score: 0.8 }];
+      },
+    };
+    const r = await camera.scoreFrame({ width: 640, height: 480 }, engine);
+    assert.equal(r.score, 80);
+  });
+
+  it("scoreFrame treats a missing face score as 0", async () => {
+    const engine = {
+      detectFaces: async function () {
+        return [{ box: { x: 0, y: 0, width: 320, height: 240 } }];
+      },
+    };
+    const r = await camera.scoreFrame({ width: 640, height: 480 }, engine);
+    assert.equal(r.score, 50);
+  });
+
+  it("captureBestFrame defaults n to 5", async () => {
+    let calls = 0;
+    camera.captureFrame = function () {
+      return { width: 640, height: 480 };
+    };
+    camera.scoreFrame = async function () {
+      calls++;
+      return { canvas: {}, result: null, score: 0 };
+    };
+    const best = await camera.captureBestFrame(null, 0, 0);
+    assert.equal(calls, 5);
+    assert.ok(best);
   });
 });

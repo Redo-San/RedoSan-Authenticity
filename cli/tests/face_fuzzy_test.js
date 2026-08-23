@@ -116,3 +116,71 @@ describe("FaceFuzzy — error handling", () => {
     assert.throws(() => FaceFuzzy.decode(enc.helper, wrongLen, { rep: 15 }), /lengths differ/);
   });
 });
+
+describe("FaceFuzzy — edge branches", () => {
+  it("quantize computes the median for an odd-length descriptor", () => {
+    const bits = FaceFuzzy.quantize(makeDescriptor(63));
+    assert.ok(bits.length >= 7);
+  });
+
+  it("encodes an odd-length secret hex with a leading zero", () => {
+    const bits = FaceFuzzy.quantize(makeDescriptor(256, "ramp"));
+    const enc = FaceFuzzy.encode(bits, { rep: 15, secret: "1ab" });
+    assert.equal(enc.key.length, 64);
+  });
+
+  it("falls back to Math.random when WebCrypto is unavailable", () => {
+    const saved = globalThis.crypto;
+    Object.defineProperty(globalThis, "crypto", { value: undefined, configurable: true });
+    try {
+      const bits = FaceFuzzy.quantize(makeDescriptor(256, "ramp"));
+      const enc = FaceFuzzy.encode(bits, { rep: 15 });
+      assert.equal(enc.key.length, 64);
+    } finally {
+      Object.defineProperty(globalThis, "crypto", { value: saved, configurable: true });
+    }
+  });
+
+  it("encode uses default opts when none are supplied", () => {
+    const bits = FaceFuzzy.quantize(makeDescriptor(256, "ramp"));
+    const enc = FaceFuzzy.encode(bits);
+    assert.equal(enc.key.length, 64);
+  });
+
+  it("decode honours a default repetition factor when opts omitted", () => {
+    const bits = FaceFuzzy.quantize(makeDescriptor(256, "ramp"));
+    const enc = FaceFuzzy.encode(bits, { rep: 15, secret: "a1b2c3d4" });
+    const dec = FaceFuzzy.decode(enc.helper, bits);
+    assert.equal(dec.key, enc.key);
+  });
+
+  it("decode throws when there are not enough bits for the repetition factor", () => {
+    assert.throws(
+      () => FaceFuzzy.decode(new Uint8Array(8), new Uint8Array(8), { rep: 15 }),
+      /Not enough bits for repetition factor/,
+    );
+  });
+
+  it("degrades gracefully when FaceBioHash is unavailable", () => {
+    const savedBio = globalThis.FaceBioHash;
+    delete globalThis.FaceBioHash;
+    try {
+      vm.runInThisContext(
+        fuzzySrc,
+        { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_fuzzy.js") },
+      );
+      const degraded = globalThis.FaceFuzzy;
+      const bits = degraded.quantize(makeDescriptor(64, "ramp"));
+      const enc = degraded.encode(bits, { rep: 8 });
+      assert.equal(enc.key, "");
+      const dec = degraded.decode(enc.helper, bits, { rep: 8 });
+      assert.equal(dec.key, "");
+    } finally {
+      globalThis.FaceBioHash = savedBio;
+      vm.runInThisContext(
+        fuzzySrc,
+        { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_fuzzy.js") },
+      );
+    }
+  });
+});

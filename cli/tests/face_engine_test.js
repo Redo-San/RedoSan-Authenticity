@@ -275,6 +275,12 @@ describe("FaceEngine — cosineScore", () => {
     assert.equal(FaceEngine.cosineScore(null, null), 0);
   });
 
+  it("should return 0 when cosine similarity is not finite", () => {
+    const a = new Float32Array([NaN, 1]);
+    const b = new Float32Array([1, 1]);
+    assert.equal(FaceEngine.cosineScore(a, b), 0);
+  });
+
   it("should clamp values into 0-100", () => {
     const a = makeDescriptor(new Array(128).fill(0.5));
     const s = FaceEngine.cosineScore(a, a);
@@ -422,6 +428,31 @@ describe("FaceEngine — loadModels", () => {
     await engine.loadModels();
     assert.ok(engine._loaded);
     assert.equal(callCount, 2, "should have tried webgl then cpu");
+    globalThis.document.createElement = origCreate;
+  });
+
+  it("should call tf.ready on the webgl path when the human exposes tf", async () => {
+    let readyCalled = false;
+    globalThis.Human = function () {};
+    globalThis.Human.prototype.load = async function () {};
+    globalThis.Human.prototype.tf = { ready: async function () { readyCalled = true; } };
+    const engine = new FaceEngine();
+    const origCreate = globalThis.document.createElement;
+    globalThis.document.createElement = function(tag) {
+      if (tag === "canvas") {
+        const { createCanvas } = require("canvas");
+        const c = createCanvas(200, 200);
+        c.getContext = function(type) {
+          if (type === "webgl" || type === "experimental-webgl") return {};
+          return null;
+        };
+        return c;
+      }
+      return {};
+    };
+    await engine.loadModels();
+    assert.ok(engine._loaded);
+    assert.equal(readyCalled, true);
     globalThis.document.createElement = origCreate;
   });
 
@@ -664,6 +695,26 @@ describe("FaceEngine — webgl backend fallback", () => {
     const result = await engine.detectFaces("input");
     assert.equal(result.length, 1);
     assert.equal(engine._webglUnhealthy, true);
+  });
+
+  it("should keep webgl backend when cpu retry detect throws", async () => {
+    const engine = new FaceEngine();
+    engine._loaded = true;
+    engine._backend = "webgl";
+    let detectCalls = 0;
+    const m = makeTf();
+    engine._human = {
+      tf: m.tf,
+      detect: async function () {
+        detectCalls++;
+        if (detectCalls === 1) return { face: [] };
+        throw new Error("cpu detect failed");
+      }
+    };
+    const result = await engine.detectFaces("input");
+    assert.deepEqual(result, []);
+    assert.equal(engine._backend, "webgl");
+    assert.equal(detectCalls, 2);
   });
 
   it("should propagate detect errors when no retry is possible", async () => {

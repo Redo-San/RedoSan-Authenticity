@@ -73,6 +73,7 @@
     out = new Uint8Array(n);
     if (typeof crypto !== "undefined" && crypto.getRandomValues) {
       crypto.getRandomValues(out);
+    /* c8 ignore next 6 — `crypto` is always `globalThis.crypto`, so this branch is unreachable */
     } else if (
       typeof globalThis !== "undefined" &&
       globalThis.crypto &&

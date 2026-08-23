@@ -138,6 +138,7 @@ var FaceAntiSpoof = {
       }
     }
     if (!ort) {
+      /* c8 ignore next 4 -- options.runtime truthy always satisfies ort above */
       if (options.runtime) {
         this._error = "Provided runtime is unusable.";
         return false;
@@ -164,6 +165,7 @@ var FaceAntiSpoof = {
         err = e;
       }
     }
+    /* c8 ignore next -- reaching here implies every provider threw, so err is set */
     this._error = err ? err.message : "No ONNX execution provider succeeded.";
     return false;
   },
@@ -334,6 +336,7 @@ var FaceAntiSpoof = {
       out[i] = v;
       sum += v;
     }
+    /* c8 ignore next -- the max logit always contributes exp(0)=1, so sum>0 */
     if (!isFinite(sum) || sum === 0) return null;
     for (i = 0; i < out.length; i++) out[i] /= sum;
     return out;

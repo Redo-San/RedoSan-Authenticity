@@ -1,4 +1,4 @@
-const { describe, it } = require("node:test");
+const { describe, it, beforeEach } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
@@ -893,5 +893,563 @@ describe("FaceRegistry — setMeta/getMeta/removeMeta", () => {
     assert.equal(passkey.credentialId, "idb-1");
     await reg2.removeMeta("passkey");
     assert.equal(await reg2.getMeta("passkey"), null);
+  });
+});
+
+
+// ── Coverage: retention purge arms ──
+
+describe("FaceRegistry — retention purge", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const OLD = Date.now() - 4 * 365 * DAY;
+
+  it("returns 0 when getAll fails", async () => {
+    const reg = new FaceRegistry({
+      store: {
+        open: async function () {},
+        getAll: async function () { throw new Error("db gone"); },
+        remove: async function () {},
+      },
+    });
+    await reg.open();
+    assert.equal(reg._lastPurgedCount, 0);
+  });
+
+  it("honors date precedence and skips malformed entries", async () => {
+    const store = new InMemoryStore();
+    store._entries.push(
+      {},
+      { label: "no-id" },
+      { id: 1, updated: new Date(OLD) },            // updated too old → purge
+      { id: 2, created: new Date(OLD) },            // created fallback → purge
+      { id: 3 },                                     // no dates → now → keep
+      { id: 4, updated: "not-a-date", created: new Date(OLD) }, // NaN guard → created
+      { id: 5, updated: "junk", created: "junk" },   // both NaN → now → keep
+      { id: 6, updated: new Date() }                 // fresh → keep
+    );
+    const reg = new FaceRegistry({ store });
+    assert.equal(await reg.purgeExpired(), 3);
+    const ids = (await store.getAll())
+      .map(function (e) { return e.id; })
+      .filter(function (id) { return id !== undefined; })
+      .sort();
+    assert.deepEqual(ids, [3, 5, 6]);
+  });
+
+  it("keeps purging when one removal throws", async () => {
+    let calls = 0;
+    const store = new InMemoryStore();
+    store._entries.push({ id: 1, updated: new Date(OLD) }, { id: 2, updated: new Date(OLD) });
+    store.remove = async function (id) {
+      calls++;
+      if (calls === 1) throw new Error("locked row");
+      return InMemoryStore.prototype.remove.call(store, id);
+    };
+    const reg = new FaceRegistry({ store });
+    assert.equal(await reg.purgeExpired(), 1);
+  });
+
+  it("opens automatically from purgeExpired when not opened yet", async () => {
+    const store = new InMemoryStore();
+    const reg = new FaceRegistry({ store });
+    assert.equal(await reg.purgeExpired(), 0);
+    assert.equal(reg._opened, true);
+    assert.equal(await reg.purgeExpired(), 0, "second call takes the opened path");
+  });
+
+  it("surfaces storage errors from _idb (request.onerror)", async () => {
+    const store = new IDBStore("ErrDB_" + Date.now());
+    await store.open();
+    await store.add({ id: 5, label: "first" });
+    await assert.rejects(store.add({ id: 5, label: "dup" }), /ConstraintError|KeyAlready|already/i);
+  });
+});
+
+// ── Coverage: vault key + PRF sealing ──
+
+const waSrc = fs.readFileSync(
+  path.join(__dirname, "..", "..", "Face_Biometric", "face_webauthn.js"),
+  "utf8",
+);
+vm.runInThisContext(waSrc, {
+  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_webauthn.js"),
+});
+const REAL_WA = globalThis.FaceWebauthn;
+
+async function prfEnvelope(key, payload) {
+  const env = await REAL_WA.encryptJSON(key, payload);
+  return { alg: "AES-GCM", version: 1, kdf: { name: "PRF" }, iv: env.iv, cipher: env.ct };
+}
+
+async function pbkdf2Envelope(passphrase, payload) {
+  const salt = FaceCrypto.generateSalt(16);
+  const key = await FaceCrypto.deriveKey(passphrase, salt);
+  const iv = FaceCrypto.generateSalt(12);
+  const env = await FaceCrypto.encryptWithKey(key, iv, payload);
+  return {
+    alg: "AES-GCM", version: 1,
+    kdf: { name: "PBKDF2", hash: "SHA-256", iterations: FaceCrypto.KDF_ITERATIONS },
+    salt: FaceCrypto.bytesToBase64(salt), iv: env.iv, cipher: env.cipher,
+  };
+}
+
+describe("FaceRegistry — vault key accessors", () => {
+  it("set/get/has round-trip and tolerate clearing", () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    assert.equal(reg.hasVaultKey(), false);
+    assert.equal(reg.getVaultKey(), null);
+    const fakeKey = {};
+    reg.setVaultKey(fakeKey);
+    assert.equal(reg.getVaultKey(), fakeKey);
+    assert.equal(reg.hasVaultKey(), true);
+    reg.setVaultKey(null);
+    assert.equal(reg.hasVaultKey(), false);
+  });
+});
+
+describe("FaceRegistry — PRF seal/unseal", () => {
+  let reg, key;
+
+  beforeEach(async function () {
+    reg = new FaceRegistry({ store: new InMemoryStore() });
+    key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(9));
+    reg.setVaultKey(key);
+  });
+
+  it("falls back to plaintext fields when FaceWebauthn is missing", async () => {
+    globalThis.FaceWebauthn = undefined;
+    try {
+      const sealed = await reg._sealFace({ label: "A", descriptor: [1] });
+      assert.equal(sealed.encrypted, undefined);
+    } finally {
+      globalThis.FaceWebauthn = REAL_WA;
+    }
+  });
+
+  it("seals with a vault key and preserves the id", async () => {
+    const sealed = await reg._sealFace({
+      id: 42,
+      label: "Artist",
+      descriptor: new Float32Array([0.5, -0.5]),
+      metadata: { note: "x" },
+      embeddingVersion: "human-hse",
+      did: "did:key:z",
+      created: new Date(),
+      updated: new Date(),
+    });
+    assert.equal(sealed.id, 42);
+    assert.equal(sealed.label, "Artist");
+    assert.equal(sealed.descriptor, undefined);
+    assert.equal(sealed.encrypted.kdf.name, "PRF");
+  });
+
+  it("round-trips a face through addFace/getFace with the vault key", async () => {
+    const id = await reg.addFace("RoundTrip", new Float32Array([0.5, -0.25]), { tag: 1 });
+    const face = await reg.getFace(id);
+    assert.equal(face.label, "RoundTrip");
+    assert.deepEqual(Array.from(face.descriptor), [0.5, -0.25]);
+    assert.deepEqual(face.metadata, { tag: 1 });
+  });
+
+  it("returns locked entries without the vault key", async () => {
+    const id = await reg.addFace("Secret", new Float32Array([1]));
+    const raw = await reg._store.get(id);
+    const orphan = new FaceRegistry({ store: reg._store }); // no vault key
+    const locked = await orphan.getFace(id);
+    assert.equal(locked.locked, true);
+    assert.equal(locked.descriptor, undefined);
+    assert.equal(locked.encrypted, raw.encrypted);
+  });
+
+  it("returns locked entries when decryption fails", async () => {
+    const id = await reg.addFace("Secret", new Float32Array([1]));
+    const wrong = new FaceRegistry({ store: reg._store });
+    wrong.setVaultKey(await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(1)));
+    const locked = await wrong.getFace(id);
+    assert.equal(locked.locked, true);
+  });
+
+  it("fills defaults for sparse decrypted payloads", async () => {
+    const env = await prfEnvelope(key, { descriptor: [3, 4] });
+    const out = await reg._unsealEntry({
+      id: 7,
+      label: "Fallback",
+      encrypted: env,
+    });
+    assert.equal(out.label, "Fallback");
+    assert.deepEqual(Array.from(out.descriptor), [3, 4]);
+    assert.equal(out.metadata, null);
+    assert.equal(out.embeddingVersion, null);
+    assert.equal(out.did, "");
+
+    const bare = await prfEnvelope(key, {});
+    const out2 = await reg._unsealEntry({ id: 9, label: "B", encrypted: bare });
+    assert.deepEqual(Array.from(out2.descriptor), []);
+  });
+
+  it("keeps PBKDF2-locked entries locked regardless of the vault key", async () => {
+    const env = await pbkdf2Envelope("pw", { descriptor: [1] });
+    const out = await reg._unsealEntry({ id: 8, label: "L", encrypted: env });
+    assert.equal(out.locked, true);
+  });
+});
+
+describe("FaceRegistry — sealAllPlaintext", () => {
+  it("is a no-op without a vault key", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    assert.equal(await reg.sealAllPlaintext(), 0);
+  });
+
+  it("seals only plaintext entries that carry data", async () => {
+    const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(5));
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    reg.setVaultKey(key);
+    await reg.open();
+    const store = reg._store;
+    store._entries.push(
+      { id: 1, label: "Plain", descriptor: new Float32Array([1, 2]), metadata: { m: 1 }, embeddingVersion: "human-hse", did: "", created: new Date(), updated: new Date() },
+      { id: 2, updated: new Date() },
+      { id: 3, label: "Already", created: new Date(), updated: new Date(), encrypted: { kdf: { name: "PRF" }, iv: "x", cipher: "y" } }
+    );
+    assert.equal(await reg.sealAllPlaintext(), 1);
+    const sealedRow = store._entries.find(function (e) { return e.id === 1; });
+    assert.ok(sealedRow.encrypted, "plaintext row must now be sealed");
+  });
+});
+
+describe("FaceRegistry — lock/unlock (PBKDF2)", () => {
+  it("throws when FaceCrypto is unavailable", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const saved = globalThis.FaceCrypto;
+    globalThis.FaceCrypto = undefined;
+    try {
+      await assert.rejects(reg.lock("pw"), /FaceCrypto must be loaded/);
+      await assert.rejects(reg.unlock("pw"), /FaceCrypto must be loaded/);
+    } finally {
+      globalThis.FaceCrypto = saved;
+    }
+  });
+
+  it("locks plaintext rows, reports the count, then unlocks them", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    await reg._store.add({
+      label: "One",
+      descriptor: new Float32Array([1, 2]),
+      metadata: null,
+      embeddingVersion: "human-hse",
+      did: "",
+      created: new Date(),
+      updated: new Date(),
+    });
+    await reg._store.add({
+      label: "Two",
+      descriptor: new Float32Array([3]),
+      created: new Date(),
+      updated: new Date(),
+    });
+    // a pre-locked PBKDF2 row (same passphrase) must be left alone by lock()
+    const preEnv = await pbkdf2Envelope("secret", { label: "Pre", descriptor: [9] });
+    await reg._store.add({
+      label: "Pre",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: preEnv,
+    });
+
+    assert.equal(await reg.isLocked(), true);
+    assert.equal(await reg.lock("secret"), 2);
+    assert.equal(await reg.isLocked(), true);
+
+    await assert.rejects(reg.unlock("wrong"), /OperationError|decrypt/i);
+    assert.equal(await reg.unlock("secret"), 3);
+    assert.equal(await reg.isLocked(), false);
+    const faces = await reg.getAllFaces();
+    const one = faces.find(function (f) { return f.label === "One"; });
+    assert.deepEqual(Array.from(one.descriptor), [1, 2]);
+  });
+
+  it("unlocks sparse payloads using stored fallbacks", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await pbkdf2Envelope("pw", { descriptor: [7] }); // no label/metadata/did
+    const newId = await reg._store.add({
+      label: "KeepLabel",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: env,
+    });
+    const plainId = await reg._store.add({
+      label: "NeverLocked",
+      descriptor: new Float32Array([1]),
+      created: new Date(),
+      updated: new Date(),
+    });
+    assert.equal(await reg.unlock("pw"), 1, "plaintext rows are skipped");
+    const row = await reg._store.get(newId);
+    assert.equal(row.label, "KeepLabel");
+    assert.deepEqual(Array.from(row.descriptor), [7]);
+    assert.equal(row.metadata, null);
+    assert.equal(row.did, "");
+
+    // a locked payload without a descriptor falls back to an empty one
+    const noDescEnv = await pbkdf2Envelope("pw", { label: "NoDesc" });
+    const noDescId = await reg._store.add({
+      label: "Whatever",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: noDescEnv,
+    });
+    assert.equal(await reg.unlock("pw"), 1);
+    const noDescRow = await reg._store.get(noDescId);
+    assert.equal(noDescRow.label, "NoDesc");
+    assert.deepEqual(Array.from(noDescRow.descriptor), []);
+    void plainId;
+  });
+
+  it("treats PRF rows as unlocked only with the session vault key", async () => {
+    const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(3));
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await prfEnvelope(key, { descriptor: [1] });
+    await reg._store.add({
+      label: "PrfRow",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: env,
+    });
+    assert.equal(await reg.isLocked(), true, "no vault key yet");
+    reg.setVaultKey(key);
+    assert.equal(await reg.isLocked(), false, "vault key unlocks PRF rows");
+  });
+});
+
+describe("FaceRegistry — exportBackup", () => {
+  it("exports plaintext rows as-is when no passphrase is given", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    await reg._store.add({
+      label: "Plain",
+      descriptor: new Float32Array([1, 2]),
+      metadata: { a: 1 },
+      embeddingVersion: "human-hse",
+      did: "",
+      created: new Date(),
+      updated: new Date(),
+    });
+    const backup = await reg.exportBackup();
+    assert.equal(backup.type, "redoSan.faceRegistryBackup");
+    assert.equal(backup.entries.length, 1);
+    assert.equal(backup.entries[0].encrypted, undefined);
+    assert.deepEqual(backup.entries[0].descriptor, [1, 2]);
+  });
+
+  it("passes raw __f32/array descriptors through unchanged", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    // Bypass serialization so _descriptorToArray sees genuine raw shapes.
+    reg._store.getAll = async function () {
+      return [
+        { id: 1, label: "F32", descriptor: { __f32: true, data: [9, 8] }, created: new Date(), updated: new Date() },
+        { id: 2, label: "BadF32", descriptor: { __f32: true, data: "nope" }, created: new Date(), updated: new Date() },
+        { id: 3, label: "Arr", descriptor: [7, 6], created: new Date(), updated: new Date() },
+        { id: 4, label: "None", created: new Date(), updated: new Date() },
+        { id: 5, label: "Junk", descriptor: {}, created: new Date(), updated: new Date() },
+      ];
+    };
+    const backup = await reg.exportBackup();
+    assert.deepEqual(backup.entries[0].descriptor, [9, 8]);
+    assert.deepEqual(backup.entries[1].descriptor, []);
+    assert.deepEqual(backup.entries[2].descriptor, [7, 6]);
+    assert.deepEqual(backup.entries[3].descriptor, []);
+    assert.deepEqual(backup.entries[4].descriptor, []);
+  });
+
+  it("encrypts every entry when a passphrase is supplied", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    await reg.addFace("Enc", new Float32Array([5]));
+    // bare row without metadata/embedding/descriptor exercises payload defaults
+    await reg._store._entries.push({ id: 50, label: "Bare", created: new Date(), updated: new Date() });
+    const backup = await reg.exportBackup("passphrase");
+    assert.equal(backup.entries.length, 2);
+    for (const entry of backup.entries) {
+      assert.ok(entry.encrypted.cipher);
+    }
+  });
+
+  it("re-encrypts PBKDF2 rows when exporting with their passphrase", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await pbkdf2Envelope("pw", { label: "Locked", descriptor: [4] });
+    await reg._store.add({ id: 11, label: "Locked", created: new Date(), updated: new Date(), encrypted: env });
+    const backup = await reg.exportBackup("pw");
+    assert.ok(backup.entries[0].encrypted.cipher !== env.cipher, "fresh envelope per export");
+    const target = new FaceRegistry({ store: new InMemoryStore() });
+    assert.equal(await target.importBackup(backup, "pw"), 1);
+    const all = await target.getAllFaces();
+    assert.equal(all[0].label, "Locked");
+  });
+
+  it("decrypts PRF rows during a passphrase export using the vault key", async () => {
+    const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(9));
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    reg.setVaultKey(key);
+    await reg.open();
+    const env = await prfEnvelope(key, {}); // sparse payload → export defaults kick in
+    await reg._store.add({ id: 21, label: "PrfRow", created: new Date(), updated: new Date(), encrypted: env });
+    const backup = await reg.exportBackup("any-pw");
+    assert.ok(backup.entries[0].encrypted.cipher);
+  });
+
+  it("refuses a passphrase export of PRF rows without a vault key", async () => {
+    const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(9));
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await prfEnvelope(key, { descriptor: [1] });
+    await reg._store.add({ id: 22, label: "X", created: new Date(), updated: new Date(), encrypted: env });
+    await assert.rejects(reg.exportBackup("pw"), /passkey session/);
+  });
+
+  it("refuses unsupported encryption formats", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    await reg._store.add({
+      id: 23,
+      label: "Weird",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: { kdf: { name: "ROT13" } },
+    });
+    await assert.rejects(reg.exportBackup("pw"), /Unsupported encryption/);
+  });
+
+  it("refuses exporting locked PBKDF2 rows without a passphrase", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await pbkdf2Envelope("pw", { descriptor: [] });
+    await reg._store.add({ id: 24, label: "L", created: new Date(), updated: new Date(), encrypted: env });
+    await assert.rejects(reg.exportBackup(), /requires a passphrase/);
+  });
+
+  it("exports PRF rows decrypted with a vault key, or as ciphertext without one", async () => {
+    const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(9));
+    const fullEnv = await prfEnvelope(key, { label: "P", descriptor: [1], metadata: { m: 1 }, embeddingVersion: "v9", did: "did:key:z" });
+    const bareEnv = await prfEnvelope(key, {});
+
+    const unlockedReg = new FaceRegistry({ store: new InMemoryStore() });
+    unlockedReg.setVaultKey(key);
+    await unlockedReg.open();
+    await unlockedReg._store.add({ id: 31, label: "P", created: new Date(), updated: new Date(), encrypted: fullEnv });
+    await unlockedReg._store.add({ id: 33, label: "Bare", created: new Date(), updated: new Date(), encrypted: bareEnv });
+    const openBackup = await unlockedReg.exportBackup();
+    assert.equal(openBackup.entries[0].encrypted, undefined);
+    assert.deepEqual(openBackup.entries[0].descriptor, [1]);
+    assert.equal(openBackup.entries[0].embeddingVersion, "v9");
+    assert.deepEqual(openBackup.entries[0].metadata, { m: 1 });
+    assert.equal(openBackup.entries[0].did, "did:key:z");
+    assert.deepEqual(openBackup.entries[1].descriptor, []);
+    assert.equal(openBackup.entries[1].metadata, null);
+    assert.equal(openBackup.entries[1].embeddingVersion, null);
+    assert.equal(openBackup.entries[1].did, "");
+
+    const lockedReg = new FaceRegistry({ store: new InMemoryStore() });
+    await lockedReg.open();
+    await lockedReg._store.add({ id: 32, label: "P", created: new Date(), updated: new Date(), encrypted: fullEnv });
+    const cipherBackup = await lockedReg.exportBackup();
+    assert.equal(cipherBackup.entries[0].encrypted.kdf.name, "PRF");
+  });
+});
+
+describe("FaceRegistry — importBackup", () => {
+  function makeBackup(entries) {
+    return { type: "redoSan.faceRegistryBackup", version: 1, entries };
+  }
+
+  it("rejects malformed backups", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    await assert.rejects(reg.importBackup(null), /Invalid backup/);
+    await assert.rejects(reg.importBackup({ type: "nope", entries: [] }), /Invalid backup/);
+    await assert.rejects(reg.importBackup(makeBackup("not-array")), /Invalid backup/);
+  });
+
+  it("imports plaintext rows with defaults in merge mode", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const n = await reg.importBackup(makeBackup([{}, { label: "Named", descriptor: [1] }]));
+    assert.equal(n, 2);
+    const faces = await reg.getAllFaces();
+    const imported = faces.find(function (f) { return f.label === "Imported"; });
+    assert.ok(imported, "missing labels fall back to Imported");
+    assert.deepEqual(Array.from(imported.descriptor), []);
+  });
+
+  it("clears the registry first in replace mode", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    await reg.addFace("Old", new Float32Array([1]));
+    await reg.importBackup(makeBackup([{ label: "New", descriptor: [] }]), null, "replace");
+    const faces = await reg.getAllFaces();
+    assert.equal(faces.length, 1);
+    assert.equal(faces[0].label, "New");
+  });
+
+  it("reseals PRF rows when a vault key is available", async () => {
+    const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(9));
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    reg.setVaultKey(key);
+    await reg.open();
+    const env = await prfEnvelope(key, { label: "Prf", descriptor: [3], metadata: null, embeddingVersion: null, did: "" });
+    // a label-less payload exercises the "Imported" fallback on reseal
+    const bareEnv = await prfEnvelope(key, {}); // no label/descriptor → full reseal defaults
+    const n = await reg.importBackup(makeBackup([
+      { encrypted: env, created: new Date().toISOString() },
+      { encrypted: bareEnv }, // no created → Date.now() fallback
+    ]));
+    assert.equal(n, 2);
+    const faces = await reg.getAllFaces();
+    assert.equal(faces[0].label, "Prf");
+    assert.deepEqual(Array.from(faces[0].descriptor), [3]);
+    assert.equal(faces[1].label, "Imported");
+    assert.deepEqual(Array.from(faces[1].descriptor), []);
+  });
+
+  it("stores PRF ciphertext untouched without a vault key", async () => {
+    const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(9));
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await prfEnvelope(key, { label: "Hidden", descriptor: [1] });
+    const n = await reg.importBackup(makeBackup([
+      { label: "Hidden", encrypted: env },
+      { encrypted: env },
+    ]));
+    assert.equal(n, 2);
+    const rows = await reg._store.getAll();
+    assert.equal(rows.filter(function (r) { return r.encrypted && r.encrypted.kdf.name === "PRF"; }).length, 2);
+    assert.equal(rows.some(function (r) { return r.label === "Imported"; }), true);
+  });
+
+  it("requires a passphrase for PBKDF2 rows", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await pbkdf2Envelope("pw", { label: "L", descriptor: [1] });
+    await assert.rejects(reg.importBackup(makeBackup([{ encrypted: env }])), /import requires a passphrase/);
+  });
+
+  it("decrypts PBKDF2 rows with sparse payloads", async () => {
+    const reg = new FaceRegistry({ store: new InMemoryStore() });
+    await reg.open();
+    const env = await pbkdf2Envelope("pw", { descriptor: [8] });
+    const namedEnv = await pbkdf2Envelope("pw", { label: "Named", metadata: null, embeddingVersion: null, did: "" }); // no descriptor
+    const n = await reg.importBackup(makeBackup([{ encrypted: env }, { encrypted: namedEnv }]), "pw");
+    assert.equal(n, 2);
+    const faces = await reg.getAllFaces();
+    assert.equal(faces[0].label, "Imported");
+    assert.deepEqual(Array.from(faces[0].descriptor), [8]);
+    assert.equal(faces[0].metadata, null);
+    assert.equal(faces[1].label, "Named");
+    assert.deepEqual(Array.from(faces[1].descriptor), []);
   });
 });

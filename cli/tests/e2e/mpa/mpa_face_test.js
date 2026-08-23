@@ -1,5 +1,8 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
+var fs = require("node:fs");
+var os = require("node:os");
+var path = require("node:path");
 var { chromium } = require("playwright");
 var { ensureServer, openPage, pageURL, checkPageLoad, checkNoErrors, closePage } = require("../mpa_helpers");
 

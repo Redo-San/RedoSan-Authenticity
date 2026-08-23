@@ -230,6 +230,7 @@ FaceRegistry.prototype._purgeExpired = async function () {
         : e.created instanceof Date
         ? e.created.getTime()
         : now;
+    /* c8 ignore next 1 -- both fallbacks yield a finite timestamp */
     if (isNaN(t)) t = now;
     if (t < cutoff) {
       try {
@@ -730,6 +731,7 @@ FaceRegistry.prototype.exportBackup = async function (passphrase) {
             ct: e.encrypted.cipher,
           });
         } else if (e.encrypted.kdf && e.encrypted.kdf.name === "PBKDF2") {
+          /* c8 ignore next 2 -- this branch only runs when a passphrase exists */
           if (!passphrase)
             throw new Error("Backup is encrypted — requires a passphrase");
           payload = await FaceCrypto.decryptJSON(passphrase, e.encrypted);

@@ -136,4 +136,26 @@ describe("FaceAlign — alignFace", () => {
     const src = CANON.map((p) => [p[0] * 1000, p[1] * 1000]);
     assert.equal(FaceAlign.alignFace(createCanvas(200, 200), src), null);
   });
+
+  it("returns null when document.createElement throws", () => {
+    const orig = globalThis.document.createElement;
+    globalThis.document.createElement = () => {
+      throw new Error("no canvas");
+    };
+    try {
+      assert.equal(FaceAlign.alignFace(createCanvas(200, 200), CANON), null);
+    } finally {
+      globalThis.document.createElement = orig;
+    }
+  });
+
+  it("returns null when the canvas context lacks setTransform", () => {
+    const orig = globalThis.document.createElement;
+    globalThis.document.createElement = () => ({ getContext: () => null, width: 0, height: 0 });
+    try {
+      assert.equal(FaceAlign.alignFace(createCanvas(200, 200), CANON), null);
+    } finally {
+      globalThis.document.createElement = orig;
+    }
+  });
 });

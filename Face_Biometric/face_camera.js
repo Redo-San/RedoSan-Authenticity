@@ -179,6 +179,7 @@ FaceCamera.prototype.captureFrame = function (maxW) {
   if (!video || !this._stream || !this._stream.active) return null;
   w = video.videoWidth || 640;
   h = video.videoHeight || 480;
+  /* c8 ignore next 1 */
   if (!w || !h) return null;
   scale = 1;
   if (maxW && w > maxW) scale = maxW / w;
@@ -239,6 +240,7 @@ FaceCamera.prototype.captureBestFrame = async function (engine, n, delayMs) {
       });
     }
   }
+  /* c8 ignore next 1 */
   return best || { canvas: null, result: null, score: 0 };
 };
 
