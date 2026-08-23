@@ -98,6 +98,7 @@ describe("FaceVC — build", () => {
 
   it("should throw when did is missing", () => {
     assert.throws(() => FaceVC.build({}), /did is required/);
+    assert.throws(() => FaceVC.build(), /did is required/);
   });
 });
 
@@ -166,6 +167,16 @@ describe("FaceVC — sign/verify (Ed25519)", () => {
     assert.equal((await FaceVC.verify(null, verifyWithDID)).valid, false);
   });
 
+  it("should reject credentials without an issuer", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = FaceVC.build({ did: kp.did });
+    await FaceVC.sign(kp, vc);
+    const noIssuer = JSON.parse(JSON.stringify(vc));
+    delete noIssuer.issuer;
+    const res = await FaceVC.verify(noIssuer, async () => true);
+    assert.match(res.error, /missing issuer/);
+  });
+
   it("should verify a legacy v1 credential (v1 context + issuanceDate)", async () => {
     const kp = await makeKeypair("Ed25519");
     const vc = {
@@ -202,6 +213,13 @@ describe("FaceVC — sign errors", () => {
     await assert.rejects(FaceVC.sign(null, vc), /keypair with did required/);
   });
 
+  it("should throw without a VC", async () => {
+    await assert.rejects(
+      FaceVC.sign({ did: "did:key:z6Mkexample", algorithm: "Ed25519" }, null),
+      /unsigned VC required/,
+    );
+  });
+
   it("should throw when didSign is unavailable", async () => {
     const saved = globalThis.didSign;
     globalThis.didSign = undefined; // var/function bindings cannot be deleted
@@ -232,5 +250,133 @@ describe("FaceVC — toJSON", () => {
     const parsed = JSON.parse(FaceVC.toJSON(vc));
     assert.equal(parsed.issuer, kp.did);
     assert.ok(parsed.proof && parsed.proof.proofValue);
+  });
+});
+
+describe("FaceVC — cryptosuite mapping", () => {
+  it("maps P-256 and RSA algorithms", () => {
+    assert.equal(FaceVC.cryptosuiteFor("P-256"), "ecdsa-rdfc-2019");
+    assert.equal(FaceVC.cryptosuiteFor("RSA"), "rsa-signature-2022");
+    assert.equal(FaceVC.cryptosuiteFor(undefined), "rsa-signature-2022");
+  });
+});
+
+describe("FaceVC — canonicalString arrays", () => {
+  it("canonicalizes arrays recursively", () => {
+    assert.equal(FaceVC.canonicalString([3, 1]), "[3,1]");
+    assert.equal(
+      FaceVC.canonicalString({ list: [{ b: 2, a: 1 }, 5] }),
+      '{"list":[{"a":1,"b":2},5]}',
+    );
+  });
+});
+
+describe("FaceVC — sign overrides and base64 fallbacks", () => {
+  it("uses a provided signFn and defaults the cryptosuite to Ed25519", async () => {
+    const kp = { did: "did:key:z6Mkexample" };
+    const vc = FaceVC.build({ did: kp.did });
+    await FaceVC.sign(kp, vc, async () => new Uint8Array([1, 2, 3]));
+    assert.equal(
+      vc.proof.proofValue,
+      FaceCrypto.bytesToBase64(new Uint8Array([1, 2, 3])),
+    );
+    assert.equal(vc.proof.cryptosuite, "eddsa-rdfc-2022");
+  });
+
+  it("falls back to didSigToBase64 when FaceCrypto is unavailable", async () => {
+    const savedFC = globalThis.FaceCrypto;
+    globalThis.FaceCrypto = undefined;
+    try {
+      const kp = await makeKeypair("Ed25519");
+      const vc = FaceVC.build({ did: kp.did });
+      await FaceVC.sign(kp, vc);
+      assert.ok(vc.proof.proofValue.length > 0);
+    } finally {
+      globalThis.FaceCrypto = savedFC;
+    }
+  });
+
+  it("falls back to btoa when neither FaceCrypto nor didSigToBase64 exist", async () => {
+    const savedFC = globalThis.FaceCrypto;
+    const savedS2B = globalThis.didSigToBase64;
+    globalThis.FaceCrypto = undefined;
+    globalThis.didSigToBase64 = undefined;
+    try {
+      const kp = await makeKeypair("Ed25519");
+      const vc = FaceVC.build({ did: kp.did });
+      await FaceVC.sign(kp, vc);
+      assert.ok(vc.proof.proofValue.length > 0);
+    } finally {
+      globalThis.FaceCrypto = savedFC;
+      globalThis.didSigToBase64 = savedS2B;
+    }
+  });
+});
+
+describe("FaceVC — verify via DID API (no verifyFn)", () => {
+  it("verifies Ed25519 end-to-end", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = FaceVC.build({ did: kp.did, descriptorHash: "7777" });
+    await FaceVC.sign(kp, vc);
+    assert.deepEqual(await FaceVC.verify(vc), { valid: true });
+  });
+
+  it("verifies P-256 end-to-end", async () => {
+    const kp = await makeKeypair("P-256");
+    const vc = FaceVC.build({ did: kp.did });
+    await FaceVC.sign(kp, vc);
+    assert.deepEqual(await FaceVC.verify(vc), { valid: true });
+  });
+
+  it("maps the RSA cryptosuite arm in verify", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = FaceVC.build({ did: kp.did });
+    await FaceVC.sign(kp, vc);
+    vc.proof.cryptosuite = "rsa-signature-2022";
+    const res = await FaceVC.verify(vc);
+    assert.equal(typeof res.valid, "boolean");
+  });
+
+  it("returns invalid when the signature does not verify", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = FaceVC.build({ did: kp.did });
+    await FaceVC.sign(kp, vc);
+    vc.credentialSubject.descriptorHash = "tampered";
+    const res = await FaceVC.verify(vc);
+    assert.equal(res.valid, false);
+  });
+
+  it("reports verification errors from the DID API", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = FaceVC.build({ did: kp.did });
+    await FaceVC.sign(kp, vc);
+    const saved = globalThis.didImportVerifyKey;
+    globalThis.didImportVerifyKey = async () => {
+      throw new Error("boom");
+    };
+    try {
+      const res = await FaceVC.verify(vc);
+      assert.equal(res.valid, false);
+      assert.match(res.error, /verification error: boom/);
+    } finally {
+      globalThis.didImportVerifyKey = saved;
+    }
+  });
+
+  it("reports a missing DID verification API", async () => {
+    const kp = await makeKeypair("Ed25519");
+    const vc = FaceVC.build({ did: kp.did });
+    await FaceVC.sign(kp, vc);
+    const sK = globalThis.didImportVerifyKey;
+    const sV = globalThis.didVerify;
+    globalThis.didImportVerifyKey = undefined;
+    globalThis.didVerify = undefined;
+    try {
+      const res = await FaceVC.verify(vc);
+      assert.match(res.error, /DID verification API not available/);
+    } finally {
+      globalThis.didImportVerifyKey = sK;
+      globalThis.didVerify = sV;
+    }
   });
 });

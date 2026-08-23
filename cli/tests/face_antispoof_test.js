@@ -546,3 +546,209 @@ describe("FaceLiveness — antiSpoofCheck", () => {
     assert.equal(res.error, "inference exploded");
   });
 });
+
+// ── Coverage: load caching, runtime discovery, loader internals, edges ──
+
+describe("FaceAntiSpoof — load caching and runtime discovery", () => {
+  beforeEach(() => FaceAntiSpoof.reset());
+  afterEach(() => {
+    delete globalThis.ort;
+    FaceAntiSpoof.reset();
+  });
+
+  it("returns true immediately when a session is already loaded", async () => {
+    const rt = makeFakeOrt([1, 1, 1]);
+    assert.equal(await FaceAntiSpoof.load({ runtime: rt, modelUrl: "mock.onnx" }), true);
+    assert.equal(await FaceAntiSpoof.load(), true);
+  });
+
+  it("discovers the runtime through window.ort", async () => {
+    globalThis.ort = makeFakeOrt([1, 1, 1]);
+    const ok = await FaceAntiSpoof.load({ modelUrl: "mock.onnx" });
+    assert.equal(ok, true);
+    assert.equal(FaceAntiSpoof.getBackend(), "webgpu");
+  });
+
+  it("fails closed when no runtime source is available at all", async () => {
+    const savedDoc = globalThis.document;
+    delete globalThis.document;
+    try {
+      const ok = await FaceAntiSpoof.load({ modelUrl: "mock.onnx", verifyModel: false });
+      assert.equal(ok, false);
+      assert.match(FaceAntiSpoof.getError(), /onnxruntime-web is not available/);
+    } finally {
+      globalThis.document = savedDoc;
+    }
+  });
+
+  it("survives a zero-argument call without network or DOM", async () => {
+    const savedDoc = globalThis.document;
+    const savedFetch = globalThis.fetch;
+    delete globalThis.document;
+    globalThis.fetch = undefined;
+    try {
+      assert.equal(await FaceAntiSpoof.load(), false);
+      assert.match(FaceAntiSpoof.getError(), /requires fetch support/);
+    } finally {
+      globalThis.document = savedDoc;
+      if (savedFetch === undefined) delete globalThis.fetch;
+      else globalThis.fetch = savedFetch;
+    }
+  });
+
+  it("loads the runtime script on demand and creates a session", async () => {
+    const savedDoc = globalThis.document;
+    const savedOrt = globalThis.ort;
+    delete globalThis.ort;
+    globalThis.document = {
+      createElement: function () {
+        return {};
+      },
+      head: {
+        appendChild: function (s) {
+          globalThis.ort = makeFakeOrt([1, 1, 1]);
+          s.onload();
+        },
+      },
+    };
+    try {
+      const ok = await FaceAntiSpoof.load({ modelUrl: "mock.onnx", verifyModel: false });
+      assert.equal(ok, true);
+      assert.ok(FaceAntiSpoof.isReady());
+    } finally {
+      globalThis.document = savedDoc;
+      if (savedOrt === undefined) delete globalThis.ort;
+      else globalThis.ort = savedOrt;
+      FaceAntiSpoof.reset();
+    }
+  });
+
+  it("crops nothing when the canvas has zero extent", () => {
+    const tiny = { width: 0, height: 0, getContext: function () { return {}; } };
+    assert.equal(FaceAntiSpoof.cropFace(tiny, null), null);
+  });
+
+  it("returns null when canvas creation throws", () => {
+    const saved = globalThis.document.createElement;
+    globalThis.document.createElement = function () {
+      throw new Error("no canvas for you");
+    };
+    try {
+      const c = solidCanvas(100, 60, [1, 2, 3]);
+      assert.equal(FaceAntiSpoof.cropFace(c, null), null);
+    } finally {
+      globalThis.document.createElement = saved;
+    }
+  });
+});
+
+describe("FaceAntiSpoof — _loadRuntime internals", () => {
+  const realDoc = globalThis.document;
+
+  function scriptDoc(fire) {
+    return {
+      createElement: function () {
+        return {};
+      },
+      head: {
+        appendChild: function (s) {
+          fire(s);
+        },
+      },
+    };
+  }
+
+  afterEach(() => {
+    globalThis.document = realDoc;
+    delete globalThis.ort;
+  });
+
+  it("rejects without a DOM", async () => {
+    delete globalThis.document;
+    await assert.rejects(FaceAntiSpoof._loadRuntime("u.js"), /not available in this environment/);
+  });
+
+  it("resolves with window.ort on script load", async () => {
+    const ortStub = { marker: 42 };
+    globalThis.ort = ortStub;
+    globalThis.document = scriptDoc((s) => s.onload());
+    assert.equal(await FaceAntiSpoof._loadRuntime("u.js"), ortStub);
+  });
+
+  it("rejects when window.ort is missing after the script loads", async () => {
+    delete globalThis.ort;
+    globalThis.document = scriptDoc((s) => s.onload());
+    await assert.rejects(FaceAntiSpoof._loadRuntime("u.js"), /window\.ort was not found/);
+  });
+
+  it("rejects on script error", async () => {
+    globalThis.document = scriptDoc((s) => s.onerror());
+    await assert.rejects(FaceAntiSpoof._loadRuntime("u.js"), /Failed to load onnxruntime-web/);
+  });
+});
+
+describe("FaceAntiSpoof — _fetchModelBytes guards", () => {
+  afterEach(() => {
+    delete globalThis.fetch;
+  });
+
+  it("throws when fetch is unavailable", async () => {
+    globalThis.fetch = undefined;
+    await assert.rejects(FaceAntiSpoof._fetchModelBytes("m.onnx"), /requires fetch/);
+  });
+
+  it("propagates HTTP failures", async () => {
+    globalThis.fetch = async function () {
+      return { ok: false, status: 500 };
+    };
+    await assert.rejects(FaceAntiSpoof._fetchModelBytes("m.onnx"), /HTTP 500/);
+  });
+});
+
+describe("FaceAntiSpoof — softmax and predict failure modes", () => {
+  beforeEach(() => FaceAntiSpoof.reset());
+
+  it("softmax returns null for non-finite sums", () => {
+    assert.equal(FaceAntiSpoof.softmax([NaN]), null);
+  });
+
+  it("predict rejects when no crop can be produced", async () => {
+    await FaceAntiSpoof.load({ runtime: makeFakeOrt([1, 1, 1]), modelUrl: "mock.onnx" });
+    await assert.rejects(
+      FaceAntiSpoof.predict({}, null),
+      /could not be produced/,
+    );
+  });
+
+  it("predict rejects on an unexpected output shape", async () => {
+    const ort = {
+      Tensor: function () {},
+      InferenceSession: {
+        create: async function () {
+          return { run: async function () { return {}; } };
+        },
+      },
+    };
+    await FaceAntiSpoof.load({ runtime: ort, modelUrl: "mock.onnx" });
+    await assert.rejects(
+      FaceAntiSpoof.predict(solidCanvas(40, 40, [9, 9, 9]), null),
+      /output shape/,
+    );
+  });
+
+  it("predict rejects when probabilities cannot be normalized", async () => {
+    const ort = {
+      Tensor: function () {},
+      InferenceSession: {
+        create: async function () {
+          return { run: async function () { return { output: { data: [NaN] } }; } };
+        },
+      },
+    };
+    await FaceAntiSpoof.load({ runtime: ort, modelUrl: "mock.onnx" });
+    await assert.rejects(
+      FaceAntiSpoof.predict(solidCanvas(40, 40, [9, 9, 9]), null),
+      /normalized/,
+    );
+  });
+});

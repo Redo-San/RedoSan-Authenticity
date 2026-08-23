@@ -131,3 +131,88 @@ describe("FaceCrypto — sha256Hex", () => {
     await assert.rejects(FaceCrypto.sha256Hex(12345), /Unsupported data type/);
   });
 });
+
+describe("FaceCrypto — fallback paths", () => {
+  const realCrypto = globalThis.crypto;
+  const setCrypto = (v) =>
+    Object.defineProperty(globalThis, "crypto", { value: v, configurable: true });
+
+  it("bytesToBase64 falls back to Buffer when btoa is unavailable", () => {
+    const orig = globalThis.btoa;
+    const bytes = new Uint8Array([0, 1, 2, 250, 255]);
+    const expected = FaceCrypto.bytesToBase64(bytes);
+    globalThis.btoa = undefined;
+    try {
+      assert.equal(FaceCrypto.bytesToBase64(bytes), expected);
+    } finally {
+      globalThis.btoa = orig;
+    }
+  });
+
+  it("base64ToBytes falls back to Buffer when atob is unavailable", () => {
+    const orig = globalThis.atob;
+    const bytes = new Uint8Array([0, 1, 2, 250, 255]);
+    const b64 = FaceCrypto.bytesToBase64(bytes);
+    globalThis.atob = undefined;
+    try {
+      assert.deepEqual(Array.from(FaceCrypto.base64ToBytes(b64)), Array.from(bytes));
+    } finally {
+      globalThis.atob = orig;
+    }
+  });
+
+  it("generateSalt defaults to 16 bytes", () => {
+    assert.equal(FaceCrypto.generateSalt().length, 16);
+  });
+
+  it("deriveKey defaults to KDF_ITERATIONS when iterations omitted", async () => {
+    const salt = FaceCrypto.generateSalt(16);
+    const key = await FaceCrypto.deriveKey(PASS, salt);
+    const iv = FaceCrypto.generateSalt(12);
+    const enc = await FaceCrypto.encryptWithKey(key, iv, { v: 1 });
+    assert.ok(enc.cipher);
+  });
+
+  it("generateSalt uses Math.random fallback without WebCrypto", () => {
+    setCrypto(undefined);
+    try {
+      const s = FaceCrypto.generateSalt(8);
+      assert.equal(s.length, 8);
+    } finally {
+      setCrypto(realCrypto);
+    }
+  });
+
+  it("deriveKey and sha256Hex throw without WebCrypto", async () => {
+    setCrypto(undefined);
+    try {
+      await assert.rejects(
+        FaceCrypto.deriveKey("p", new Uint8Array(16)),
+        /WebCrypto/,
+      );
+      await assert.rejects(FaceCrypto.sha256Hex("abc"), /WebCrypto/);
+    } finally {
+      setCrypto(realCrypto);
+    }
+  });
+
+  it("sha256Hex accepts ArrayBuffer and plain arrays", async () => {
+    const ab = new TextEncoder().encode("abc").buffer;
+    assert.equal(
+      await FaceCrypto.sha256Hex(ab),
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    );
+    const h = await FaceCrypto.sha256Hex([104, 105]);
+    assert.match(h, /^[0-9a-f]{64}$/);
+  });
+
+  it("defaults KDF iterations and tolerates envelopes without kdf metadata", async () => {
+    const obj = { v: "default-iters" };
+    const env = await FaceCrypto.encryptJSON(PASS, obj);
+    assert.equal(env.kdf.iterations, FaceCrypto.KDF_ITERATIONS);
+    assert.deepEqual(await FaceCrypto.decryptJSON(PASS, env), obj);
+    const noKdf = JSON.parse(JSON.stringify(env));
+    delete noKdf.kdf;
+    assert.deepEqual(await FaceCrypto.decryptJSON(PASS, noKdf), obj);
+  });
+});

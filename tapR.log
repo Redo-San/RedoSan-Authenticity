@@ -1,0 +1,1035 @@
+ظû╢ Face UI ظ¤ setStatus
+  ظ£¤ should set textContent when element exists (2.3432ms)
+  ظ£¤ should do nothing when element does not exist (0.5673ms)
+ظ£¤ Face UI ظ¤ setStatus (5.4856ms)
+ظû╢ Face UI ظ¤ setFaceStep
+  ظ£¤ should show text in the steps box (0.7385ms)
+  ظ£¤ should hide the box when text is null (0.5174ms)
+  ظ£¤ should do nothing when element missing (0.5162ms)
+ظ£¤ Face UI ظ¤ setFaceStep (2.2899ms)
+ظû╢ Face UI ظ¤ faceDescriptorHash
+  ظ£¤ should be deterministic for the same descriptor (sha-256) (29.8794ms)
+  ظ£¤ should differ for a different descriptor (1.2243ms)
+  ظ£¤ should return null for missing/empty input (0.3538ms)
+  ظ£¤ should fall back to the legacy rolling hash without FaceCrypto (0.4523ms)
+ظ£¤ Face UI ظ¤ faceDescriptorHash (32.4384ms)
+ظû╢ Face UI ظ¤ faceRandomToken
+  ظ£¤ should return the requested length of alphanumeric chars (0.6557ms)
+  ظ£¤ should produce different tokens (0.1787ms)
+ظ£¤ Face UI ظ¤ faceRandomToken (0.9686ms)
+ظû╢ Face UI ظ¤ faceBytesToHex
+  ظ£¤ should convert bytes to lowercase hex (0.2153ms)
+  ظ£¤ should return empty string for null (0.1301ms)
+ظ£¤ Face UI ظ¤ faceBytesToHex (0.468ms)
+ظû╢ Face UI ظ¤ initFaceBiometric
+  ظ£¤ should create FaceEngine and FaceRegistry instances (12.6479ms)
+  ظ£¤ should handle initialization error (0.6547ms)
+ظ£¤ Face UI ظ¤ initFaceBiometric (13.56ms)
+ظû╢ Face UI ظ¤ handleFaceFilePicked
+  ظ£¤ should do nothing when no file selected (0.8528ms)
+  ظ£û should report a load error (6.9924ms)
+  ظ£û should stage the photo without running the pipeline (6.7298ms)
+  ظ£û should keep the run button disabled until the label is filled (1.6071ms)
+ظ£û Face UI ظ¤ handleFaceFilePicked (16.8064ms)
+ظû╢ Face UI ظ¤ updateFaceRunState
+  ظ£¤ should do nothing when the run button is missing (0.4401ms)
+  ظ£¤ should keep the button disabled without a staged photo (0.335ms)
+  ظ£¤ should keep the button disabled until the label is filled (0.6702ms)
+  ظ£¤ should enable the button when a photo is staged and the label is filled (0.4165ms)
+ظ£¤ Face UI ظ¤ updateFaceRunState (2.1273ms)
+ظû╢ Face UI ظ¤ handleFaceRun
+  ظ£¤ should warn when no photo is staged (0.3675ms)
+  ظ£û should run the pipeline with the staged file photo (0.7678ms)
+  ظ£û should run the pipeline with the staged camera photo and liveness evidence (0.8982ms)
+ظ£û Face UI ظ¤ handleFaceRun (2.3087ms)
+ظû╢ Face UI ظ¤ runFacePipeline
+  ظ£¤ should generate DID + signature + BioHash + Fuzzy + report (3623.0975ms)
+  ظ£¤ should stop early when no face is detected (1.1414ms)
+  ظ£¤ should report when the engine cannot be initialized (0.7669ms)
+  ظ£¤ should initialize engine + registry from globals when missing (7.77ms)
+  ظ£¤ should auto-register when a label is provided (10.0448ms)
+  ظ£¤ should report a registry match with similarity (9.0435ms)
+  ظ£¤ should continue without DID when the DID module is absent (3.8035ms)
+  ظ£¤ should continue without BioHash/Fuzzy when modules are absent (2.4119ms)
+  ظ£¤ should surface pipeline errors in the status (0.7938ms)
+ظ£¤ Face UI ظ¤ runFacePipeline (3660.0727ms)
+ظû╢ Face UI ظ¤ embedder choice
+  ظ£¤ should default to human when no select and no stored choice (0.4374ms)
+  ظ£¤ should read the select element when present (0.3649ms)
+  ظ£¤ should fall back to the stored choice when the select is absent (0.3466ms)
+  ظ£¤ should store the choice on change (0.2928ms)
+ظ£¤ Face UI ظ¤ embedder choice (1.6241ms)
+ظû╢ Face UI ظ¤ faceExtractEmbedding
+  ظ£¤ should return the human descriptor by default (0.5586ms)
+  ظ£¤ should return an arcface descriptor when chosen (0.8532ms)
+  ظ£¤ should fall back to human when the arcface modules are missing (0.6655ms)
+  ظ£¤ should fall back to human when the model fails to load (0.8472ms)
+  ظ£¤ should fall back to human when alignment fails (0.9812ms)
+  ظ£¤ should fall back to human when embedding throws (0.7454ms)
+ظ£¤ Face UI ظ¤ faceExtractEmbedding (5.143ms)
+ظû╢ Face UI ظ¤ runFacePipeline arcface
+  ظ£¤ should embed with arcface, report 512 dims and store the version (14.7824ms)
+  ظ£¤ should match a same-version registry entry when filtered (6.975ms)
+ظ£¤ Face UI ظ¤ runFacePipeline arcface (22.6954ms)
+ظû╢ Face UI ظ¤ renderFaceReport
+  ظ£¤ should render all sections for a complete report (0.6996ms)
+  ظ£¤ should set the download modal title (0.3743ms)
+  ظ£¤ should render no-match and skip missing sections (0.3548ms)
+  ظ£¤ should render failed liveness (0.4195ms)
+  ظ£¤ should do nothing when the element is missing (0.3562ms)
+ظ£¤ Face UI ظ¤ renderFaceReport (2.4814ms)
+ظû╢ Face UI ظ¤ faceAttrText
+  ظ£¤ should format emotion array with top score (0.2754ms)
+  ظ£¤ should format label arrays (0.2271ms)
+  ظ£¤ should format emotion entries without score (0.169ms)
+  ظ£¤ should format objects and scalars (0.1758ms)
+ظ£¤ Face UI ظ¤ faceAttrText (1.0171ms)
+ظû╢ Face UI ظ¤ downloadFaceReport
+  ظ£¤ should close the modal and do nothing without a report (0.5927ms)
+  ظ£¤ should download JSON with the report content (3.4108ms)
+  ظ£¤ should download CSV with formula-injection protection (2.2193ms)
+  ظ£¤ should download TXT with sections (1.3476ms)
+  ظ£¤ should append the labels sheet to CSV downloads (11.2242ms)
+  ظ£¤ should append the labels sheet to TXT downloads without hashes for locked entries (1.2096ms)
+  ظ£¤ should not append a labels header when the registry is empty (0.5545ms)
+  ظ£¤ should download XML with escaped values (1.5491ms)
+  ظ£¤ should download an HTML table document (1.6025ms)
+  ظ£¤ should download PDF via jsPDF (1.6952ms)
+  ظ£¤ should download DOCX via the docx library (2.3664ms)
+  ظ£¤ should ignore unknown formats (0.5354ms)
+  ظ£¤ should reject when the PDF library fails to load (1.575ms)
+  ظ£¤ faceReportToPDF should return a Blob (0.8302ms)
+  ظ£¤ faceReportToDOCX should return a Blob and drop null children (0.949ms)
+ظ£¤ Face UI ظ¤ downloadFaceReport (32.7972ms)
+ظû╢ Face UI ظ¤ handleFaceCameraStart/Stop
+  ظ£û should warn when the camera module is missing (2.1798ms)
+  ظ£û should warn when the video element is missing (1.2751ms)
+  ظ£û should start the camera and show the video (0.9719ms)
+  ظ£û should surface camera errors (1.1387ms)
+  ظ£¤ should stop the camera and hide the video (0.8139ms)
+ظ£û Face UI ظ¤ handleFaceCameraStart/Stop (6.8772ms)
+ظû╢ Face UI ظ¤ runFaceLivenessCheck
+  ظ£¤ should skip when mode is off (0.9491ms)
+  ظ£¤ should warn when the camera is not active (0.4958ms)
+  ظ£¤ should warn when the liveness module is missing (0.7973ms)
+  ظ£¤ should store and return evidence on success (0.8952ms)
+  ظ£¤ should request both modes for active mode (0.8806ms)
+  ظ£¤ should handle liveness errors (0.8168ms)
+ظ£¤ Face UI ظ¤ runFaceLivenessCheck (5.3176ms)
+ظû╢ Face UI ظ¤ renderFaceChallenge / faceChallengeText
+  ظ£¤ should show the localized challenge with progress (0.8308ms)
+  ظ£¤ should hide the box for done/null challenges (0.5636ms)
+  ظ£¤ should do nothing when element missing (0.515ms)
+  ظ£¤ faceChallengeText maps known types and passes unknown through (0.3863ms)
+ظ£¤ Face UI ظ¤ renderFaceChallenge / faceChallengeText (2.6508ms)
+ظû╢ Face UI ظ¤ handleFaceCameraCapture
+  ظ£¤ should warn when the camera is not running (1.3241ms)
+  ظ£¤ should abort when liveness fails (1.1981ms)
+  ظ£¤ should warn when no frame can be captured (0.8996ms)
+  ظ£¤ should stage the frame with liveness evidence without running the pipeline (32.9897ms)
+  ظ£¤ should initialize engine from globals when missing (2.4101ms)
+ظ£¤ Face UI ظ¤ handleFaceCameraCapture (39.4193ms)
+ظû╢ Face UI ظ¤ camera/file mutual exclusion
+  ظ£û should disable the file input and manage buttons when the camera starts (1.1201ms)
+  ظ£¤ should re-enable the file input and disable capture when the camera stops (0.7676ms)
+  ظ£û should stop the camera and disable its buttons when a file is picked (3.9161ms)
+ظ£û Face UI ظ¤ camera/file mutual exclusion (6.4508ms)
+ظû╢ Face UI ظ¤ switchFaceInput
+  ظ£¤ should show the upload wrapper by default (0.7007ms)
+  ظ£¤ should switch to the camera tab and highlight its button (0.8988ms)
+  ظ£¤ should re-enable the camera start button and file input on camera tab (0.4945ms)
+  ظ£¤ should discard the staged photo when switching to the camera tab (0.7651ms)
+  ظ£¤ should stop the camera and discard the frame when switching to upload (4.4537ms)
+  ظ£¤ should ignore unknown tabs and repeated tabs (0.6784ms)
+ظ£¤ Face UI ظ¤ switchFaceInput (8.4523ms)
+ظû╢ Face UI ظ¤ listRegisteredFaces
+  ظ£¤ should warn if registry not initialized (0.5575ms)
+  ظ£¤ should show empty message when no faces (0.6582ms)
+  ظ£¤ should render faces with delete buttons (0.7162ms)
+  ظ£¤ should show migration banner when embedding versions are mixed (1.2169ms)
+  ظ£¤ should hide migration banner for a single embedding version (1.0762ms)
+  ظ£¤ should handle list errors (0.8251ms)
+ظ£¤ Face UI ظ¤ listRegisteredFaces (5.5361ms)
+ظû╢ Face UI ظ¤ handleFaceDelete
+  ظ£¤ should delete and refresh the list (1.0567ms)
+  ظ£¤ should handle delete errors (0.7286ms)
+ظ£¤ Face UI ظ¤ handleFaceDelete (2.0735ms)
+ظû╢ Face UI ظ¤ handleFaceRefreshList
+  ظ£¤ should clear the generated-results view and refresh the list (1.0641ms)
+  ظ£¤ should keep working when result elements are missing (0.6033ms)
+  ظ£¤ should surface registry errors from the underlying list (0.5839ms)
+ظ£¤ Face UI ظ¤ handleFaceRefreshList (2.5112ms)
+ظû╢ Face UI ظ¤ handleFaceBioHashCopy
+  ظ£¤ should warn when no Privacy ID exists (0.8794ms)
+  ظ£¤ should copy the code via clipboard (9.6046ms)
+  ظ£¤ should report clipboard failures (1.4532ms)
+  ظ£¤ should fall back when clipboard is unavailable (0.9071ms)
+ظ£¤ Face UI ظ¤ handleFaceBioHashCopy (13.2418ms)
+ظû╢ Face UI ظ¤ handleFaceExportLabels
+  ظ£¤ should warn when the registry is missing (0.5282ms)
+  ظ£¤ should warn when the registry is empty (0.3568ms)
+  ظ£¤ should export a CSV with hashes and escaped cells (2.5669ms)
+  ظ£¤ should export a TXT sheet without hashes for locked entries (0.8917ms)
+[face] PRF encryption failed ظ¤ passkey stored as plaintext reference. TypeError: FaceWebauthn.randomChallenge is not a function
+    at handlePasskeyRegister (F:\RedoSan Authenticity\Face_Biometric\face_ui.js:579:33)
+    at async TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2409:5)
+    at async Test.run (node:internal/test_runner/test:1313:7)
+    at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7)
+[face] PRF encryption failed ظ¤ passkey stored as plaintext reference. TypeError: FaceWebauthn.randomChallenge is not a function
+    at handlePasskeyRegister (F:\RedoSan Authenticity\Face_Biometric\face_ui.js:579:33)
+    at async ensureFacePasskeyForAction (F:\RedoSan Authenticity\Face_Biometric\face_ui.js:723:7)
+    at async TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2993:20)
+    at async Test.run (node:internal/test_runner/test:1313:7)
+    at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7)
+[face] PRF encryption failed ظ¤ passkey stored as plaintext reference. TypeError: FaceWebauthn.randomChallenge is not a function
+    at handlePasskeyRegister (F:\RedoSan Authenticity\Face_Biometric\face_ui.js:579:33)
+    at async ensureFacePasskeyForAction (F:\RedoSan Authenticity\Face_Biometric\face_ui.js:737:3)
+    at async TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2993:20)
+    at async Test.run (node:internal/test_runner/test:1313:7)
+    at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ظ£¤ should omit descriptor columns from the labels sheet when requested (1.8569ms)
+ظ£¤ Face UI ظ¤ handleFaceExportLabels (6.6856ms)
+ظû╢ Face UI ظ¤ maybePromptFaceEncryption
+  ظ£¤ should stay silent when every entry is encrypted (0.6955ms)
+  ظ£¤ should be a no-op now that the PRF vault handles encryption (0.516ms)
+  ظ£¤ should survive registry errors (0.461ms)
+ظ£¤ Face UI ظ¤ maybePromptFaceEncryption (1.9161ms)
+ظû╢ Face UI ظ¤ face overlay
+  ظ£û should not throw when the camera starts with a minimal DOM (0.9276ms)
+  ظ£¤ should stop and clean up the overlay (0.4346ms)
+  ظ£¤ should draw boxes and mesh points when the engine is ready (3.6239ms)
+  ظ£¤ should draw nothing when the camera is inactive (0.5836ms)
+ظ£û Face UI ظ¤ face overlay (5.8799ms)
+ظû╢ Face UI ظ¤ passkey handlers
+  ظ£¤ should warn when the WebAuthn module is missing (0.7054ms)
+  ظ£¤ should warn when WebAuthn is unavailable (0.6434ms)
+  ظ£¤ should register a passkey and store its reference (2.1641ms)
+  ظ£¤ should surface registration errors (0.7622ms)
+  ظ£¤ should show the empty state and hide the remove button (0.488ms)
+  ظ£¤ should show the registered state and disable the register button (0.5526ms)
+  ظ£¤ should remove the stored passkey reference (0.7763ms)
+  ظ£¤ should survive meta store errors (0.7954ms)
+ظ£¤ Face UI ظ¤ passkey handlers (7.436ms)
+ظû╢ Face UI ظ¤ sanitizeFaceText
+  ظ£¤ should keep English letters, digits and safe separators (0.2603ms)
+  ظ£¤ should strip Arabic and other non-English scripts from labels (0.185ms)
+  ظ£¤ should collapse consecutive spaces in labels (0.1509ms)
+  ظ£¤ should drop quotes and control characters from labels (0.1542ms)
+  ظ£¤ should keep printable ASCII for passphrases but block non-English input (0.1719ms)
+  ظ£¤ should return an empty string for non-string input (0.1725ms)
+ظ£¤ Face UI ظ¤ sanitizeFaceText (1.3319ms)
+ظû╢ Face UI ظ¤ updateFaceRunState sanitizer
+  ظ£¤ should strip non-English characters from the label field (0.4618ms)
+ظ£¤ Face UI ظ¤ updateFaceRunState sanitizer (0.5452ms)
+ظû╢ Face UI ظ¤ progress overlay
+  ظ£¤ should fade the overlay in with title and stage text (0.5497ms)
+  ظ£¤ should advance the determinate bar and percentage (0.4244ms)
+  ظ£¤ should clamp the percentage to 0..100 (0.3442ms)
+  ظ£¤ should ignore updates while hidden (0.3988ms)
+  ظ£¤ should fade the overlay out (0.4413ms)
+ظ£¤ Face UI ظ¤ progress overlay (2.4108ms)
+ظû╢ Face UI ظ¤ file validation
+  ظ£û should reject unsupported file types (1.24ms)
+  ظ£û should accept PNG/JPEG even when the type is missing (0.8727ms)
+  ظ£û should reject oversized files (1.5787ms)
+  ظ£û should reject oversized dimensions (1.5638ms)
+  ظ£¤ should reject a file blocked by validateFileInput before staging (1.0542ms)
+  ظ£¤ should not stage when validateFileInput clears the input (0.9521ms)
+  ظ£û should clear a previously staged photo when a new file is rejected (2.0348ms)
+  ظ£û should accept valid files when validateFileInput is present (0.8677ms)
+ظ£û Face UI ظ¤ file validation (10.9669ms)
+ظû╢ Face UI ظ¤ biometric consent
+  ظ£¤ faceConsentGranted is true when the panel is absent (test/embedded contexts) (2.1921ms)
+  ظ£¤ faceConsentGranted is false with a visible panel and no record (1.0776ms)
+  ظ£¤ faceConsentGranted is true once a valid record exists (0.8768ms)
+  ظ£¤ accept refuses without an explicit (unticked) checkbox (0.8668ms)
+  ظ£¤ accept records consent, hides the panel and re-enables entry points (0.925ms)
+  ظ£¤ consent is session-scoped: never written to localStorage (0.7008ms)
+  ظ£¤ withdraw clears consent, erases registry data and re-blocks the UI (2.215ms)
+  ظ£¤ withdraw is a no-op when the confirmation is declined (1.7244ms)
+  ظ£¤ updateFaceRunState disables the run button until consent is recorded (1.0816ms)
+  ظ£¤ initFaceConsent blocks collection entry points when no record exists (1.0815ms)
+  ظ£¤ initFaceConsent keeps entry points enabled when consent is on record (0.7067ms)
+  ظ£¤ faceWarnConsentRequired shows the blocked message and is safe without helpers (0.8796ms)
+  ظ£¤ faceWarnConsentRequired survives a missing panel or scrollIntoView (0.714ms)
+  ظ£¤ switchFaceInput is blocked (with a warning) until consent is recorded (0.5887ms)
+  ظ£¤ switchFaceInput works normally once consent is recorded (0.7183ms)
+ظ£¤ Face UI ظ¤ biometric consent (17.8063ms)
+ظû╢ Face UI ظ¤ ensureFacePasskeyForAction (automatic, best-effort)
+  ظ£û returns true (and never throws) when there is no registry or WebAuthn (1.035ms)
+  ظ£¤ auto-registers a passkey when WebAuthn is available and none exists (2.2125ms)
+  ظ£û never blocks the action when registration fails (1.2049ms)
+  ظ£û skips registration (and returns true) when WebAuthn is unavailable (0.843ms)
+  ظ£¤ short-circuits when a passkey is already registered (0.6903ms)
+ظ£û Face UI ظ¤ ensureFacePasskeyForAction (automatic, best-effort) (6.4071ms)
+ظû╢ Face UI ظ¤ handleFaceLock
+  ظ£¤ returns silently without a registry (1.023ms)
+  ظ£¤ reports a missing crypto module (0.6623ms)
+  ظ£¤ demands a passphrase when none is entered (0.4238ms)
+  ظ£¤ locks, reports the count, clears the input and refreshes (0.756ms)
+  ظ£¤ surfaces lock errors (0.6661ms)
+ظ£¤ Face UI ظ¤ handleFaceLock (3.8983ms)
+ظû╢ Face UI ظ¤ handleFaceUnlock
+  ظ£¤ reports a missing crypto module (0.6071ms)
+  ظ£¤ demands a passphrase and unlocks on success (0.9928ms)
+  ظ£¤ reports unlock failures gracefully (0.7596ms)
+ظ£¤ Face UI ظ¤ handleFaceUnlock (2.6527ms)
+ظû╢ Face UI ظ¤ handleFaceBackup
+  ظ£¤ guards missing registry and crypto (0.7999ms)
+  ظ£¤ exports encrypted and plain backups via the download helper (0.9774ms)
+  ظ£¤ surfaces backup errors (1.2414ms)
+ظ£¤ Face UI ظ¤ handleFaceBackup (3.289ms)
+ظû╢ Face UI ظ¤ handleFaceRestore
+  ظ£¤ guards missing registry and missing file (1.6251ms)
+  ظ£¤ rejects invalid JSON files (0.9546ms)
+  ظ£¤ imports in replace or merge mode per the confirm dialog (1.6243ms)
+  ظ£¤ surfaces import errors (0.9151ms)
+ظ£¤ Face UI ظ¤ handleFaceRestore (5.4825ms)
+ظû╢ Face UI ظ¤ handleFaceIssueCredential / VCDownload
+  ظ£¤ demands a report first (1.1314ms)
+  ظ£¤ demands a DID keypair or the FaceVC module (0.5253ms)
+  ظ£¤ issues, renders and stores a signed credential (1.4584ms)
+  ظ£¤ surfaces credential errors (0.6625ms)
+  ظ£¤ skips the download when no credential exists (0.3112ms)
+ظ£¤ Face UI ظ¤ handleFaceIssueCredential / VCDownload (11.6687ms)
+ظû╢ Face UI ظ¤ revealPasskeyRequire
+  ظ£¤ reveals, labels and scrolls the requirement box (0.5497ms)
+  ظ£¤ tolerates missing elements (0.3483ms)
+ظ£¤ Face UI ظ¤ revealPasskeyRequire (1.0287ms)
+ظû╢ Face UI ظ¤ runFaceLivenessCheck challenge wiring
+  ظ£¤ routes challenge callbacks into the renderer and stores evidence (0.5208ms)
+  ظ£¤ renders failures through the same path (0.4288ms)
+ظ£¤ Face UI ظ¤ runFaceLivenessCheck challenge wiring (1.059ms)
+ظû╢ Face UI ظ¤ faceOverlayTick scheduling
+  ظ£¤ ignores ticks while stopped (0.4873ms)
+  ظ£¤ throttles detection and keeps scheduling via rAF (63.8947ms)
+[face] WebAuthn PRF not supported ظ¤ passkey stored as plaintext reference.
+[face] automatic template encryption skipped: Error: seal boom
+    at Object.setVaultKey (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4160:40)
+    at handlePasskeyRegister (F:\RedoSan Authenticity\Face_Biometric\face_ui.js:622:22)
+    at async TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4163:5)
+    at async Test.run (node:internal/test_runner/test:1313:7)
+    at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ظ£¤ releases busy even when detection rejects (1.8644ms)
+ظ£¤ Face UI ظ¤ faceOverlayTick scheduling (66.6677ms)
+ظû╢ Face UI ظ¤ progress overlay construction fallbacks
+  ظ£¤ builds the overlay from scratch when refs are absent (1.3992ms)
+ظ£¤ Face UI ظ¤ progress overlay construction fallbacks (1.6037ms)
+ظû╢ Face UI ظ¤ faceReportToPDF with an injected jsPDF
+  ظ£¤ walks every section and returns a PDF blob (1.3057ms)
+  ظ£¤ renders fallback text when optional sections are absent (0.977ms)
+ظ£¤ Face UI ظ¤ faceReportToPDF with an injected jsPDF (2.4921ms)
+ظû╢ Face UI ظ¤ faceReportToDOCX with an injected docx
+  ظ£¤ builds tables for every section and packs a blob (2.2385ms)
+  ظ£¤ handles the credential-error arm and empty match (1.2276ms)
+ظ£¤ Face UI ظ¤ faceReportToDOCX with an injected docx (3.7081ms)
+ظû╢ Face UI ظ¤ downloadFaceReport formats via the real switch
+  ظ£¤ exports json/csv/txt/xml/html through the shared switch (2.2564ms)
+  ظ£¤ exports pdf and doc when the libraries resolve (0.9576ms)
+  ظ£¤ returns silently without a report or for unknown formats (0.4486ms)
+ظ£¤ Face UI ظ¤ downloadFaceReport formats via the real switch (3.916ms)
+ظû╢ Face UI ظ¤ renderFaceReport full vs sparse reports
+  ظ£¤ renders every section when the report is complete (0.7981ms)
+  ظ£¤ renders graceful fallbacks for a minimal report (0.4658ms)
+ظ£¤ Face UI ظ¤ renderFaceReport full vs sparse reports (1.406ms)
+ظû╢ Face UI ظ¤ early helpers rare arms
+  ظ£¤ faceDescriptorHash falls back to the legacy hash when sha256 throws (1.031ms)
+  ظ£¤ faceRandomToken uses Math.random when crypto is unavailable (0.3528ms)
+  ظ£¤ updateFaceEmbedderHint renders both engine texts (0.5394ms)
+  ظ£¤ faceAttrText maps an emotion-only array entry (0.2583ms)
+  ظ£¤ arcface embed failure falls back with arcface-embed-error (0.781ms)
+  ظ£¤ arcface null embedding falls back with arcface-embed-null (0.6648ms)
+  ظ£¤ initFaceBiometric wires the passphrase sanitizer (0.5801ms)
+ظ£¤ Face UI ظ¤ early helpers rare arms (4.5765ms)
+ظû╢ Face UI ظ¤ handlePasskeyRegister internal arms
+  ظ£¤ demands an initialized registry first (0.702ms)
+  ظ£¤ stores a plaintext reference when the PRF output is absent (1.2345ms)
+  ظ£¤ falls back to plaintext when subtle is unavailable (1.1573ms)
+  ظ£¤ seals the registry automatically when PRF succeeds (1.9549ms)
+  ظ£¤ warn-and-continue when automatic sealing throws (1.3021ms)
+  ظ£¤ handlePasskeyRemove clears the reference and tolerates absence (1.417ms)
+  ظ£¤ isFacePasskeyRegistered survives meta-store failures (0.7819ms)
+ظ£¤ Face UI ظ¤ handlePasskeyRegister internal arms (9.1443ms)
+ظû╢ Face UI ظ¤ faceStepRegisterPasskey (pipeline step 7/8)
+  ظ£¤ returns null without a registry (0.529ms)
+  ظ£¤ returns null when the meta store fails (0.4172ms)
+  ظ£¤ returns null when no usable passkey reference is stored (0.3797ms)
+  ظ£¤ reuses the cached session verification (0.3346ms)
+  ظ£¤ falls back unauthenticated when WebAuthn is unavailable (0.414ms)
+  ظ£¤ performs a full PRF step-up and seals templates (0.6964ms)
+  ظ£¤ rejects when the assertion client data does not match (0.4199ms)
+  ظ£¤ rejects when PRF output vanishes with no plaintext fallback (0.4514ms)
+  ظ£¤ wraps authenticator failures as step-up errors (0.4502ms)
+  ظ£û ensureFacePasskeyForAction survives a throwing availability probe (0.6466ms)
+ظ£û Face UI ظ¤ faceStepRegisterPasskey (pipeline step 7/8) (5.1544ms)
+ظû╢ Face UI ظ¤ clearFacePendingPhoto / updateFaceRunState arms
+  ظ£¤ clears staged state and restores button defaults (0.4275ms)
+  ظ£¤ enables the run button only with consent+photo+label+passkey (0.3304ms)
+  ظ£¤ ignores the run-state refresh without a button (0.2605ms)
+ظ£¤ Face UI ظ¤ clearFacePendingPhoto / updateFaceRunState arms (1.1482ms)
+ظû╢ Face UI ظ¤ handleFaceFilePicked guard ladder
+  ظ£¤ warns when consent has not been granted (0.5831ms)
+  ظ£û continues when validateFileInput throws, and stages the photo (0.4981ms)
+  ظ£¤ clears staging when the validator rejects the file (0.3645ms)
+  ظ£û reports unsupported types before decoding (0.9314ms)
+  ظ£û rejects oversized photos by byte size (0.5288ms)
+  ظ£û reports image decode failures (0.6318ms)
+  ظ£û rejects photos above 5000px (1.5341ms)
+  ظ£û stops an active camera when a photo replaces the live feed (0.9695ms)
+ظ£û Face UI ظ¤ handleFaceFilePicked guard ladder (6.5108ms)
+ظû╢ Face UI ظ¤ consent storage edge arms
+  ظ£¤ treats malformed or stale consent records as absent (0.8015ms)
+  ظ£¤ survives quota failures on save and clear (0.5984ms)
+  ظ£¤ warns without scrolling when highlight=false (0.6034ms)
+  ظ£¤ withdraw clears the registry even when the store fails (0.9591ms)
+  ظ£¤ initFaceConsent wires the checkbox to the accept button (0.7324ms)
+ظ£¤ Face UI ظ¤ consent storage edge arms (4.1057ms)
+ظû╢ Face UI ظ¤ handleFaceRun entry guards
+  ظ£¤ blocks without consent (0.6525ms)
+  ظ£¤ asks for a photo when nothing is staged (0.4654ms)
+ظ£¤ Face UI ظ¤ handleFaceRun entry guards (1.2859ms)
+ظû╢ Face UI ظ¤ pipeline descriptor and registration failure arms
+  ظ£¤ reports a face without a usable descriptor (1.6464ms)
+  ظ£¤ continues the pipeline when DID generation is unavailable (46.6492ms)
+[face] automatic template encryption skipped: Error: seal boom
+    at Object.setVaultKey (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4884:15)
+    at faceStepRegisterPasskey (F:\RedoSan Authenticity\Face_Biometric\face_ui.js:835:22)
+    at async TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4904:15)
+    at async Test.run (node:internal/test_runner/test:1313:7)
+    at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ظ£¤ records registeredId null when addFace rejects (7.5498ms)
+ظ£¤ Face UI ظ¤ pipeline descriptor and registration failure arms (56.2775ms)
+ظû╢ Face UI ظ¤ renderFaceReport credential-error arm
+  ظ£¤ renders the credential error inline (0.5962ms)
+ظ£¤ Face UI ظ¤ renderFaceReport credential-error arm (0.6922ms)
+ظû╢ Face UI ظ¤ sparse builders cover the unavailable-module arms
+  ظ£¤ TXT builder prints unavailable markers (0.3393ms)
+  ظ£¤ XML builder handles null credential/passkey blocks (0.1964ms)
+  ظ£¤ CSV builder tolerates null confidence/embedding fields (0.4277ms)
+ظ£¤ Face UI ظ¤ sparse builders cover the unavailable-module arms (1.1925ms)
+ظû╢ Face UI ظ¤ label sheets failure and emptiness arms
+  ظ£¤ returns an empty sheet when the registry read fails (0.5795ms)
+  ظ£¤ returns an empty sheet with zero faces (0.2545ms)
+  ظ£¤ export reports an empty registry gracefully (0.5009ms)
+ظ£¤ Face UI ظ¤ label sheets failure and emptiness arms (1.5672ms)
+ظû╢ Face UI ظ¤ download modal guards
+  ظ£¤ show/close tolerate a missing modal element (0.4241ms)
+ظ£¤ Face UI ظ¤ download modal guards (0.526ms)
+ظû╢ Face UI ظ¤ final arms: helpers, step-up seal, VC step, overlay
+  ظ£¤ faceAttrText joins plain non-object array items (0.5386ms)
+  ظ£¤ arcface align failure returns arcface-align-failed (0.7457ms)
+  ظ£¤ step-up warns and continues when sealing throws after PRF success (1.3782ms)
+  ظ£¤ faceStepIssueFaceCredential guards and succeeds end-to-end (7.9086ms)
+  ظ£¤ pipeline records registeredId when auto-registration runs (4.2795ms)
+  ظ£¤ XML + HTML builders render the credential error and absence arms (0.9772ms)
+  ظ£¤ startFaceOverlay stages a canvas over the video and stops cleanly (1.5418ms)
+  ظ£¤ renderFaceChallenge falls back when i18n helpers are absent (0.6234ms)
+  ظ£¤ listRegisteredFaces covers i18n present/absent branches (1.1791ms)
+  ظ£¤ export labels normalises formats, reports empty and error arms (1.1708ms)
+ظ£¤ Face UI ظ¤ final arms: helpers, step-up seal, VC step, overlay (21.0975ms)
+ظû╢ Face UI ظ¤ camera ladder arms
+  ظ£¤ blocks camera start without consent (0.8256ms)
+  ظ£¤ stops the camera and hides a custom video element (0.7338ms)
+  ظ£¤ surfaces the real bootstrap failure during automatic capture (5.8521ms)
+  ظ£¤ surfaces capture errors from the frame grabber (0.9007ms)
+ظ£¤ Face UI ظ¤ camera ladder arms (8.6501ms)
+ظû╢ Face UI ظ¤ batch5: registration, overlay tails, capture success
+  ظ£¤ records registeredId=null when addFace rejects (with label) (7.2772ms)
+  ظ£¤ overlay early-returns on context-less frames and stops via default id (1.6365ms)
+  ظ£¤ startFaceOverlay tolerates a parentless video element (0.7926ms)
+  ظ£¤ successful camera capture stages the photo automatically (0.737ms)
+  ظ£¤ step-up cached arm fills blank name/createdAt and decrypt fallbacks (1.15ms)
+  ظ£û ensureFacePasskeyForAction announces the skip when WebAuthn is absent (0.8863ms)
+ظ£û Face UI ظ¤ batch5: registration, overlay tails, capture success (12.967ms)
+ظû╢ Face UI ظ¤ builder trio over rich/sparse/mid reports
+  ظ£¤ PDF renders the middle variant (no auto-pin, failed liveness) (1.1728ms)
+  ظ£¤ DOCX table helper handles empty input and normal rows (0.464ms)
+  ظ£¤ TXT/CSV/XML/HTML cover the mid variant end-to-end (0.7099ms)
+  ظ£¤ downloadFaceReport honours sanitized filenames from staged source (0.7372ms)
+  ظ£¤ getFaceEmbedderChoice falls back without any DOM node (0.5311ms)
+  ظ£¤ faceBytesToHex handles null input (0.3342ms)
+  ظ£¤ renderFaceReport exits silently without a target element (0.6853ms)
+ظ£¤ Face UI ظ¤ builder trio over rich/sparse/mid reports (5.1375ms)
+ظû╢ Face UI ظ¤ DOCX push guard arms
+  ظ£¤ skips empty-string values while keeping populated ones (1.3315ms)
+ظ£¤ Face UI ظ¤ DOCX push guard arms (1.4568ms)
+ظû╢ Face UI ظ¤ b6 helpers
+  ظ£¤ setStatus ignores a missing element (0.4193ms)
+  ظ£¤ faceProgressRefs handles a document without getElementById (0.2347ms)
+  ظ£¤ faceProgressEnsure returns the cached overlay when refs exist (0.4445ms)
+  ظ£¤ progress show/update/hide degrade with partial refs (0.8579ms)
+  ظ£¤ getFaceEmbedderChoice treats an empty select as unset (0.6344ms)
+  ظ£¤ faceAttrText comparator favours the higher emotion on both orders (0.4313ms)
+ظ£¤ Face UI ظ¤ b6 helpers (3.4125ms)
+ظû╢ Face UI ظ¤ b6 arcface null-face variants
+  ظ£¤ unavailable modules with a null face (0.8645ms)
+  ظ£¤ load failure with a null face (0.7284ms)
+  ظ£¤ mesh-missing arm with a null-face descriptor (0.6582ms)
+  ظ£¤ align failure keeps the null descriptor (0.6329ms)
+  ظ£¤ embed error and null arms with null faces (0.9203ms)
+  ظ£¤ human path with a null face yields null descriptor (0.5775ms)
+ظ£¤ Face UI ظ¤ b6 arcface null-face variants (4.7891ms)
+ظû╢ Face UI ظ¤ b6 passkey string fallbacks
+  ظ£¤ refreshPasskeyStatus shows the default name for anonymous passkeys (1.033ms)
+  ظ£¤ handlePasskeyRemove exits quietly without a registry (0.401ms)
+  ظ£¤ isFacePasskeyRegistered accepts PRF-only records (0.4319ms)
+  ظ£¤ step-up cached arm fills blank metadata (0.4204ms)
+  ظ£¤ unavailable step-up fills a blank credentialId (0.4121ms)
+  ظ£¤ successful step-up falls back to stored rawId when absent (0.6126ms)
+ظ£¤ Face UI ظ¤ b6 passkey string fallbacks (3.6005ms)
+ظû╢ Face UI ظ¤ b6 builder optional-field matrix
+  ظ£¤ TXT covers credential defaults and registry miss (0.7061ms)
+  ظ£¤ CSV covers credential defaults and registry miss (0.4669ms)
+  ظ£¤ XML covers credential id/type fallbacks (0.3547ms)
+  ظ£¤ HTML covers credential defaults and passkey No arm (0.8073ms)
+  ظ£¤ PDF covers credential defaults, failed liveness and unverified passkey (1.6038ms)
+  ظ£¤ DOCX covers failed liveness, unverified passkey and credential defaults (1.3903ms)
+  ظ£¤ renderFaceReport JSON-stringifies credentials without FaceVC.toJSON (0.9573ms)
+  ظ£¤ faceCreateDocxTable drops null tables from the children list (0.8706ms)
+ظ£¤ Face UI ظ¤ b6 builder optional-field matrix (7.8201ms)
+ظû╢ Face UI ظ¤ b6 progress partial refs
+  ظ£¤ show bails when the overlay slot is empty (0.5877ms)
+  ظ£¤ update falls back from pct to bar (0.5953ms)
+  ظ£¤ hide survives refs with a class-less overlay (0.4132ms)
+ظ£¤ Face UI ظ¤ b6 progress partial refs (1.8438ms)
+ظû╢ Face UI ظ¤ b6 pipeline option/attribute arms
+  ظ£¤ confidence-only faces render the numeric fallback (50.8135ms)
+  ظ£¤ attributes ride along when detection supplies them (3.488ms)
+  ظ£¤ defaults kick in for source/file name/pin element (3.0902ms)
+  ظ£¤ btoa signs when FaceCrypto is unavailable mid-pipeline (3.1122ms)
+  ظ£¤ match metadata falls back when embeddingVersion is absent (3.4752ms)
+ظ£¤ Face UI ظ¤ b6 pipeline option/attribute arms (64.5269ms)
+ظû╢ Face UI ظ¤ b6 run passthrough and misc single guards
+  ظ£¤ handleFaceRun forwards the staged canvas and source (0.6559ms)
+  ظ£¤ updateFaceRunState exits without a button (0.3814ms)
+  ظ£¤ faceConsentLoad handles missing sessionStorage entirely (0.2841ms)
+  ظ£¤ clearFacePendingPhoto tolerates a style-less preview (0.3856ms)
+  ظ£¤ listRegisteredFaces buckets unknown embedding versions (0.7534ms)
+  ظ£¤ labels sheet escapes blank descriptors and labels (3.9962ms)
+  ظ£¤ issue credential exits without a registry (0.5925ms)
+  ظ£¤ lock reads an empty passphrase through the same ternary (0.4191ms)
+  ظ£¤ restore merge mode passes null passphrase explicitly (0.6941ms)
+  ظ£¤ issue prefers the session DID keypair over the pipeline one (2.5568ms)
+ظ£¤ Face UI ظ¤ b6 run passthrough and misc single guards (11.3763ms)
+ظû╢ Face UI ظ¤ b6 capture liveness evidence variants
+  ظ£¤ failed liveness surfaces failedChallenges when reasons are absent (1.5564ms)
+  ظ£¤ empty reasons array also falls back to failedChallenges (1.0404ms)
+  ظ£¤ missing mode element defaults to passive evidence (1.3879ms)
+  ظ£¤ staged evidence stores an empty reasons list when absent (1.3266ms)
+ظ£¤ Face UI ظ¤ b6 capture liveness evidence variants (5.7092ms)
+ظû╢ Face UI ظ¤ b6 camera start id + tick clock + draw guards
+  ظ£¤ camera start accepts an explicit video element id (1.2374ms)
+  ظ£¤ start aborts quietly when the passkey gate refuses (0.4167ms)
+  ظ£¤ tick honours an explicit timestamp and Date.now fallback (0.3336ms)
+  ظ£¤ draw guards: empty detection, box-less and mesh-less faces (1.4852ms)
+  ظ£¤ draw bails when the overlay context is unavailable (0.4164ms)
+  ظ£¤ tick ignores calls while the overlay is stopped (0.3361ms)
+ظ£¤ Face UI ظ¤ b6 camera start id + tick clock + draw guards (4.5317ms)
+ظ╣ tests 347
+ظ╣ suites 75
+ظ╣ pass 318
+ظ╣ fail 29
+ظ╣ cancelled 0
+ظ╣ skipped 0
+ظ╣ todo 0
+ظ╣ duration_ms 6790.9833
+
+ظ£û failing tests:
+
+test at cli\tests\face_ui_test.js:432:3
+ظ£û should report a load error (6.9924ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(statusEl.textContent.includes("Failed to load image: boom"))
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:443:12)
+      at runNextTicks (node:internal/process/task_queues:65:5)
+      at process.processImmediate (node:internal/timers:472:9)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:447:3
+ظ£û should stage the photo without running the pipeline (6.7298ms)
+  AssertionError [ERR_ASSERTION]: pending canvas staged
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:463:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:472:3
+ظ£û should keep the run button disabled until the label is filled (1.6071ms)
+  AssertionError [ERR_ASSERTION]: photo staged
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:482:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:541:3
+ظ£û should run the pipeline with the staged file photo (0.7678ms)
+  AssertionError [ERR_ASSERTION]: report should be generated
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:547:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:554:3
+ظ£û should run the pipeline with the staged camera photo and liveness evidence (0.8982ms)
+  AssertionError [ERR_ASSERTION]: report should be generated
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:567:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:1364:3
+ظ£û should warn when the camera module is missing (2.1798ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Register a passkey to enable generation.'
+  - 'Face Camera module not loaded.'
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:1370:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1771:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Register a passkey to enable generation.',
+    expected: 'Face Camera module not loaded.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:1374:3
+ظ£û should warn when the video element is missing (1.2751ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Register a passkey to enable generation.'
+  - 'Camera element not found.'
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:1382:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Register a passkey to enable generation.',
+    expected: 'Camera element not found.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:1386:3
+ظ£û should start the camera and show the video (0.9719ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Register a passkey to enable generation.'
+  - 'Camera started. Capture a photo, then press Generate Identifiers.'
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:1394:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Register a passkey to enable generation.',
+    expected: 'Camera started. Capture a photo, then press Generate Identifiers.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:1399:3
+ظ£û should surface camera errors (1.1387ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Register a passkey to enable generation.'
+  - 'cam boom'
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:1414:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Register a passkey to enable generation.',
+    expected: 'cam boom',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:1698:3
+ظ£û should disable the file input and manage buttons when the camera starts (1.1201ms)
+  AssertionError [ERR_ASSERTION]: file upload disabled while camera is active
+  
+  false !== true
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:1721:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1771:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:1746:3
+ظ£û should stop the camera and disable its buttons when a file is picked (3.9161ms)
+  AssertionError [ERR_ASSERTION]: camera stopped when a photo is picked
+  
+  true !== false
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:1761:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2285:3
+ظ£û should not throw when the camera starts with a minimal DOM (0.9276ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Register a passkey to enable generation.'
+  - 'Camera started. Capture a photo, then press Generate Identifiers.'
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2293:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1771:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Register a passkey to enable generation.',
+    expected: 'Camera started. Capture a photo, then press Generate Identifiers.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2601:3
+ظ£û should reject unsupported file types (1.24ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(statusEl.textContent.includes("Unsupported file type"))
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2608:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1771:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2612:3
+ظ£û should accept PNG/JPEG even when the type is missing (0.8727ms)
+  AssertionError [ERR_ASSERTION]: photo staged
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2617:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2620:3
+ظ£û should reject oversized files (1.5787ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(statusEl.textContent.includes("too large"))
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2627:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2631:3
+ظ£û should reject oversized dimensions (1.5638ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(statusEl.textContent.includes("dimensions too large"))
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2642:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2683:3
+ظ£û should clear a previously staged photo when a new file is rejected (2.0348ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   dummy: true
+  + }
+  - null
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2695:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { dummy: true },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2700:3
+ظ£û should accept valid files when validateFileInput is present (0.8677ms)
+  AssertionError [ERR_ASSERTION]: photo staged
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2708:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:2972:3
+ظ£û returns true (and never throws) when there is no registry or WebAuthn (1.035ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:2975:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1771:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:3000:3
+ظ£û never blocks the action when registration fails (1.2049ms)
+  AssertionError [ERR_ASSERTION]: failure must not block the action
+  
+  false !== true
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:3014:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:3018:3
+ظ£û skips registration (and returns true) when WebAuthn is unavailable (0.843ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:3030:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:4351:3
+ظ£û ensureFacePasskeyForAction survives a throwing availability probe (0.6466ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4357:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:4451:3
+ظ£û continues when validateFileInput throws, and stages the photo (0.4981ms)
+  AssertionError [ERR_ASSERTION]: photo staged
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4459:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:4475:3
+ظ£û reports unsupported types before decoding (0.9314ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4479:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:4486:3
+ظ£û rejects oversized photos by byte size (0.5288ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4490:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:4497:3
+ظ£û reports image decode failures (0.6318ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4502:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:4509:3
+ظ£û rejects photos above 5000px (1.5341ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4516:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:4523:3
+ظ£û stops an active camera when a photo replaces the live feed (0.9695ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:4533:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at cli\tests\face_ui_test.js:5371:3
+ظ£û ensureFacePasskeyForAction announces the skip when WebAuthn is absent (0.8863ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (F:\RedoSan Authenticity\cli\tests\face_ui_test.js:5375:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

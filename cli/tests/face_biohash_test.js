@@ -205,6 +205,24 @@ describe("FaceBioHash — match", () => {
     const result = FaceBioHash.match(query.code, [], 0.7);
     assert.equal(result.match, null);
   });
+
+  it("uses the default threshold when none is supplied", () => {
+    const d = makeDescriptor(192);
+    const query = FaceBioHash.generate(d, "1234");
+    const other = FaceBioHash.generate(makeDescriptor(192, 1), "1234");
+    const registry = [
+      { code: other.code, label: "other" },
+      { code: query.code, label: "me" },
+    ];
+    const result = FaceBioHash.match(query.code, registry);
+    assert.equal(result.match.label, "me");
+  });
+});
+
+describe("FaceBioHash — similarity edge cases", () => {
+  it("returns 0 similarity for zero-length codes", () => {
+    assert.equal(FaceBioHash.similarity(new Uint8Array(0), new Uint8Array(0)), 0);
+  });
 });
 
 describe("FaceBioHash — pin fingerprint", () => {
