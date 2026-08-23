@@ -2997,22 +2997,24 @@ describe("Face UI — ensureFacePasskeyForAction (automatic, best-effort)", () =
     assert.ok(statusEl.textContent.length >= 0);
   });
 
-  it("never blocks the action when registration fails", async () => {
+  it("returns false (strict gate) when registration fails", async () => {
     makeAutoDoc();
     globalThis.faceRegistry = makeAutoRegistry({});
     let registered = false;
     globalThis.FaceWebauthn = {
-      isAvailable: function () {
-        return true;
-      },
+      isAvailable: function () { return true; },
       register: async function () {
         registered = true;
         throw new Error("NotAllowedError: no authenticator");
       },
     };
     const result = await globalThis.ensureFacePasskeyForAction();
-    assert.equal(result, true, "failure must not block the action");
-    assert.ok(registered);
+    assert.equal(result, false, "strict gate refuses without a stored passkey");
+    assert.ok(registered, "registration attempted");
+    assert.match(
+      globalThis.document.getElementById("face-status").textContent,
+      /Register a passkey/,
+    );
   });
 
   it("skips registration (and returns true) when WebAuthn is unavailable", async () => {

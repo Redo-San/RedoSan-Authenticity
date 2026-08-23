@@ -709,31 +709,39 @@ function revealPasskeyRequire() {
  * @returns {Promise<boolean>} true when the action may proceed.
  */
 async function ensureFacePasskeyForAction() {
-  if (await isFacePasskeyRegistered()) return true;
-  // Passkey registration is automatic and best-effort: when WebAuthn is
-  // available we try to register one, but a failure (e.g. no authenticator in
-  // a headless environment) must never block the action. The operation still
-  // proceeds without a passkey.
+  var registered, waAvailable;
+  registered = await isFacePasskeyRegistered();
+  if (registered) return true;
   try {
-    var waAvailable =
+    waAvailable =
       typeof FaceWebauthn !== "undefined" &&
       typeof FaceWebauthn.isAvailable === "function" &&
       FaceWebauthn.isAvailable();
-    if (waAvailable) {
-      await handlePasskeyRegister();
-    } else {
-      setStatus(
-        "face-status",
-        __(
-          "face.passkey_skipped",
-          "WebAuthn unavailable on this device — passkey requirement skipped.",
-        ),
-      );
-    }
-  } catch (e) {
-    void e;
+  } catch (_probeErr) {
+    waAvailable = false;
   }
-  return true;
+  if (!waAvailable) {
+    setStatus(
+      "face-status",
+      __(
+        "face.passkey_skipped",
+        "WebAuthn unavailable on this device — passkey requirement skipped.",
+      ),
+    );
+    return true;
+  }
+  await handlePasskeyRegister();
+  var ok = await isFacePasskeyRegistered();
+  if (!ok) {
+    setStatus(
+      "face-status",
+      __(
+        "face.passkey_required_run",
+        "Register a passkey to enable generation.",
+      ),
+    );
+  }
+  return ok;
 }
 
 /**
