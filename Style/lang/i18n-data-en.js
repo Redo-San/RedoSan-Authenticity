@@ -13,17 +13,6 @@
 })();
 window.__I18N_DATA = window.__I18N_DATA || {};
 window.__I18N_DATA.en = {
-  "face.passkey_skipped":
-    "WebAuthn unavailable on this device — passkey requirement skipped.",
-  "face.passkey_required":
-    "A passkey is required first. Register one above to continue.",
-  "face.passkey_required_run": "Register a passkey to enable generation.",
-  "face.step.passkey": "Verifying passkey (step-up)...",
-  "face.step.credential": "Issuing face credential...",
-  "face.report.passkey": "Passkey",
-  "face.report.no_passkey": "Not registered.",
-  "face.report.credential": "Face Credential",
-
   "nav.about": "About",
   "nav.privacy": "Privacy",
   "nav.contact": "Contact",
@@ -1016,4 +1005,14 @@ window.__I18N_DATA.en = {
   "docw.extract_help":
     "Read a hidden message from a watermarked document.\n\nUpload the watermarked document (TXT, DOCX, or PDF). Select the technique that was used during embedding. If a password was set, enter it.\n\nClick Extract to retrieve the hidden message. The extracted text appears in the results area.\n\n⚠️ Important: Download the extracted data before leaving. Save it in TXT, CSV, XML, HTML, or as a DOCX or PDF report.",
   "tool.open_full": "Open full tool",
+  "face.passkey_skipped":
+    "WebAuthn unavailable on this device — passkey requirement skipped.",
+  "face.passkey_required":
+    "A passkey is required first. Register one above to continue.",
+  "face.passkey_required_run": "Register a passkey to enable generation.",
+  "face.step.passkey": "Verifying passkey (step-up)...",
+  "face.step.credential": "Issuing face credential...",
+  "face.report.passkey": "Passkey",
+  "face.report.no_passkey": "Not registered.",
+  "face.report.credential": "Face Credential",
 };
