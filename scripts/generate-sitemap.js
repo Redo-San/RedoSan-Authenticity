@@ -3,7 +3,13 @@ var path = require("node:path");
 var cp = require("node:child_process");
 
 var ROOT = path.resolve(__dirname, "..");
-var BASE = "https://redo-san.github.io/RedoSan-Authenticity";
+// Canonical site origin used for every <loc>. Overridable so a future
+// custom-domain migration is one CI variable:
+//   SITE_BASE_URL=https://yourdomain.com npm run sitemap
+// (GitHub Pages then 301s the old /RedoSan-Authenticity/ URLs.)
+var BASE =
+  process.env.SITE_BASE_URL ||
+  "https://redo-san.github.io/RedoSan-Authenticity";
 var PAGES_DIR = path.join(ROOT, "Style", "pages");
 
 var STATIC_PAGES = new Set(["about", "contact", "privacy", "social", "search"]);
