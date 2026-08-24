@@ -107,7 +107,7 @@ echo.
 call :ensure_server
 echo.
 for /f "delims=" %%a in ('powershell -NoProfile -Command "[int64]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())"') do set "T0=%%a"
-call %BIN%lhci autorun --config %~dp0.tools\Developer_Toolkit\lighthouserc.js
+call %BIN%lhci autorun --config .tools\Developer_Toolkit\lighthouserc.js
 set "EC=%ERRORLEVEL%"
 for /f "delims=" %%a in ('powershell -NoProfile -Command "[math]::Round((([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())-%T0%)/1000.0,1)"') do set "ELAPSED=%%a"
 call :stop_server_if_needed
