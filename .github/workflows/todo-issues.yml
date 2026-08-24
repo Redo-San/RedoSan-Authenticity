@@ -16,7 +16,7 @@ jobs:
   todos:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -24,7 +24,7 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const PATTERN = /(?:TODO|FIXME|HACK|NOTE)\s*:\s*(.+)/g;
+            const PATTERN = /(?:TODO|FIXME|HACK)\s*:\s*(.+)/g;
             const EXCLUDE_DIRS = ['node_modules', '.git', '.github'];
             const EXCLUDE_FILES = ['package-lock.json', '*.min.js'];
 
@@ -62,7 +62,7 @@ jobs:
             const todos = walk('.');
 
             if (todos.length === 0) {
-              console.log('No TODO/FIXME/HACK/NOTE comments found.');
+              console.log('No TODO/FIXME/HACK comments found.');
               return;
             }
 
