@@ -99,7 +99,7 @@
   "license": "GPL-2.0",
   "dependencies": {
     "@commitlint/cli": "^20.5.3",
-    "@commitlint/config-conventional": "^21.0.1",
+    "@commitlint/config-conventional": "^21.2.0",
     "acorn": "^8.18.0",
     "canvas": "^3.2.3",
     "commander": "^14.0.3",
