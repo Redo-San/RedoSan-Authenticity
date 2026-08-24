@@ -275,7 +275,7 @@
       if (!_userPaused && _playing) {
         setTimeout(function () {
           var a = document.querySelector("#bg-music");
-          if (a && a.paused && _playing && !_userPaused) {
+          if (!_userPaused && _playing && a && a.paused) {
             a.play().catch(function () {});
           }
         }, 50);

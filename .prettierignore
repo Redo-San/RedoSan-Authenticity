@@ -1,0 +1,3 @@
+# npm regenerates the lockfile with its own formatting on every install;
+# formatting it here only creates churn. Integrity is npm's job.
+package-lock.json

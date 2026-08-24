@@ -47,17 +47,8 @@ var FaceWebauthn = (function () {
     return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
 
-  // Standard base64 <-> base64url (URL-safe) string transcoding. Used only to
-  // bridge FaceCrypto's canonical base64 envelope into the base64url wire
-  // format this module exposes, so the AES-GCM core stays single-sourced in
-  // FaceCrypto (no duplicated encrypt/decrypt logic).
-  function b64ToB64url(b64) {
-    return String(b64)
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
-  }
-
+  // Standard base64 <-> base64url (URL-safe) string transcoding, bridging
+  // FaceCrypto's canonical base64 envelope into the base64url wire format.
   function b64urlToB64(s) {
     var b64 = String(s).replace(/-/g, "+").replace(/_/g, "/");
     while (b64.length % 4 !== 0) b64 += "=";
@@ -73,6 +64,7 @@ var FaceWebauthn = (function () {
      * Whether the browser exposes WebAuthn (secure context + credentials API).
      * @returns {boolean}
      */
+    WEB_AUTHN_TIMEOUT_MS: 10000,
     isAvailable: function () {
       return (
         typeof navigator !== "undefined" &&
@@ -131,6 +123,37 @@ var FaceWebauthn = (function () {
     },
 
     /**
+     * Race a WebAuthn promise against a hard JS timeout. The publicKey
+     * "timeout" hint is ignored by headless/automation browsers, which would
+     * otherwise hang forever with no authenticator present.
+     */
+    _withTimeout: function (promise, ms, label) {
+      var t,
+        done = false;
+      return Promise.race([
+        promise,
+        new Promise(function (_resolve, reject) {
+          t = setTimeout(function () {
+            if (done) return;
+            done = true;
+            reject(
+              new Error("WebAuthn " + label + " timed out after " + ms + "ms"),
+            );
+          }, ms);
+        }),
+      ]).then(
+        function (v) {
+          clearTimeout(t);
+          return v;
+        },
+        function (e) {
+          clearTimeout(t);
+          throw e;
+        },
+      );
+    },
+
+    /**
      * Register a new platform passkey. Returns a JSON credential with the raw
      * binary fields base64url-encoded (WebAuthn "credential to JSON" shape).
      * @param {object} [options]
@@ -176,7 +199,11 @@ var FaceWebauthn = (function () {
         },
         excludeCredentials: o.excludeCredentials || [],
       };
-      cred = await navigator.credentials.create({ publicKey: publicKey });
+      cred = await FaceWebauthn._withTimeout(
+        navigator.credentials.create({ publicKey: publicKey }),
+        o.timeoutMs || FaceWebauthn.WEB_AUTHN_TIMEOUT_MS,
+        "registration",
+      );
       if (!cred) throw new Error("Passkey registration was cancelled");
       return FaceWebauthn.credentialToJSON(cred);
     },
@@ -220,7 +247,11 @@ var FaceWebauthn = (function () {
           };
         });
       }
-      assertion = await navigator.credentials.get({ publicKey: publicKey });
+      assertion = await FaceWebauthn._withTimeout(
+        navigator.credentials.get({ publicKey: publicKey }),
+        o.timeoutMs || FaceWebauthn.WEB_AUTHN_TIMEOUT_MS,
+        "authentication",
+      );
       if (!assertion) throw new Error("Passkey authentication was cancelled");
       return FaceWebauthn.credentialToJSON(assertion);
     },

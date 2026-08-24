@@ -183,6 +183,7 @@
    */
   function Xorshift128(seed) {
     this.s = [seed[0], seed[1], seed[2], seed[3]];
+    /* c8 ignore start — all-zero seed is unreachable via generate() (seed is SHA-256 derived) */
     if (
       this.s[0] === 0 &&
       this.s[1] === 0 &&
@@ -191,6 +192,7 @@
     ) {
       this.s[0] = 0x9e3779b9;
     }
+    /* c8 ignore stop */
   }
 
   Xorshift128.prototype.next = function () {

@@ -183,7 +183,7 @@ async function buildCertData(filePath, opts) {
   }
 
   // Also read the <filePath> argument — if it's a fingerprint JSON, use it
-  if (!data.fpResult && filePath && fs.existsSync(filePath)) {
+  if (filePath && !data.fpResult && fs.existsSync(filePath)) {
     try {
       const fpText = fs.readFileSync(filePath, "utf8");
       const parsed = JSON.parse(fpText);

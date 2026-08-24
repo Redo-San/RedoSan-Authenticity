@@ -241,7 +241,7 @@ async function translateViaLibreTranslate(texts, targetLang) {
     for (var attempt = 0; attempt < 2; attempt++) {
       try {
         var body = { q: values, source: "en", target: langCode };
-        if (instance.needsKey && apiKey) body.api_key = apiKey;
+        if (apiKey && instance.needsKey) body.api_key = apiKey;
 
         var resp = await fetch(instance.url + "/translate", {
           method: "POST",

@@ -338,7 +338,7 @@ function loadDocwCoverFile(event) {
           let result = "";
           for (let i = 0; i < arr.length; i++) {
             const c = arr[i];
-            if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+            if (c === 0x0a || c === 0x0d || (c >= 0x20 && c <= 0x7e)) {
               result += String.fromCharCode(c);
             }
           }
@@ -502,7 +502,7 @@ function docwExtractTextFromBuf(file, buf, callback) {
       let result = "";
       for (let i = 0; i < arr.length; i++) {
         const c = arr[i];
-        if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+        if (c === 0x0a || c === 0x0d || (c >= 0x20 && c <= 0x7e)) {
           result += String.fromCharCode(c);
         }
       }
@@ -840,7 +840,7 @@ async function handleDocwExtract() {
           _docwExtractText.substring(0, halfLen),
           _docwExtractText.substring(_docwExtractText.length - halfLen),
         ];
-        for (let pi = 0; pi < portions.length && !result; pi++) {
+        for (let pi = 0; !result && pi < portions.length; pi++) {
           try {
             result = await docwExtract(portions[pi], algo, password);
             /* c8 ignore next */

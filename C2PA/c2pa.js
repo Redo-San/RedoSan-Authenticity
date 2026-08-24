@@ -533,7 +533,7 @@ function getValidationHtml(manifestStore) {
   }
 
   // Legacy validation_status format
-  if (status.length && !am) {
+  if (!am && status.length) {
     html +=
       '<ul class="c2pa-validation-list">' +
       status
@@ -862,7 +862,7 @@ window.handleC2paWrite = async function () {
 
   const checkedTypes = getCheckedFormTypes();
   const dnt = document.getElementById("c2pa-write-dnt").checked;
-  if (checkedTypes.length === 0 && !dnt) {
+  if (!dnt && checkedTypes.length === 0) {
     alert(
       __("c2pa.select_content_type", "Please select at least one content type"),
     );

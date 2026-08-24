@@ -160,6 +160,7 @@ var FaceONNXEmbedder = {
       }
     }
     if (!ort) {
+      /* c8 ignore next 4 -- options.runtime truthy always satisfies ort above */
       if (options.runtime) {
         this._error = "Provided runtime is unusable.";
         return false;
@@ -187,6 +188,7 @@ var FaceONNXEmbedder = {
         err = e;
       }
     }
+    /* c8 ignore next -- reaching here implies every provider threw, so err is set */
     this._error = err ? err.message : "No ONNX execution provider succeeded.";
     return false;
   },

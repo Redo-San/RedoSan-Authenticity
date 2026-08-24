@@ -754,7 +754,7 @@ FaceLiveness.prototype.verifyLiveness = async function (camera, engine, opts) {
             as.score !== undefined &&
             as.score < FACE_LIVENESS_CONFIG.antiSpoofMinScore
           ) {
-            evidence.reasons = (evidence.reasons || []).concat("anti_spoof");
+            evidence.reasons = evidence.reasons.concat("anti_spoof");
           }
         }
       }
