@@ -306,6 +306,13 @@
   /**
    * Inject the fetched page's missing stylesheets into the shell head so
    * the swapped section renders with its page-specific styling.
+   *
+   * Pages may defer non-critical sheets via `<link rel="stylesheet"
+   * media="print" onload="this.media='all'">`. That inline onload handler
+   * does not survive programmatic injection, so a copied media="print"
+   * would keep the sheet print-only forever (unstyled controls after an
+   * AJAX swap). Inject such links for all media; genuinely media-scoped
+   * sheets keep their condition.
    * @param {Document} doc
    * @param {string} pageUrl
    */
@@ -314,7 +321,7 @@
       var el = document.createElement("link");
       el.rel = "stylesheet";
       el.href = s.href;
-      if (s.media) el.media = s.media;
+      if (s.media && s.media !== "print") el.media = s.media;
       document.head.append(el);
     });
   }
@@ -446,7 +453,10 @@
     // Face Biometric: re-run page init (consent gate, registry list,
     // embedder hint) after an AJAX swap. initFaceBiometric only exists
     // once face_ui.js has been loaded by loadPageScripts.
-    if (pageName === "face-biometric" && typeof initFaceBiometric === "function")
+    if (
+      pageName === "face-biometric" &&
+      typeof initFaceBiometric === "function"
+    )
       initFaceBiometric();
 
     // Pixel Injection: re-populate algorithm dropdowns, re-attach event listeners, reset to embed tab
