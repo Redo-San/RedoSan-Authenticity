@@ -311,7 +311,9 @@ var DOCX_EXTRACTOR = (function () {
 
       var decompressed;
 
-      decompressed = contentObj.includes("FlateDecode") ? (await inflateRaw(stringToBytes(rawStream))) : stringToBytes(rawStream);
+      decompressed = contentObj.includes("FlateDecode")
+        ? await inflateRaw(stringToBytes(rawStream))
+        : stringToBytes(rawStream);
 
       // Skip if decompression produced nothing
       if (!decompressed || decompressed.length === 0) continue;
@@ -397,64 +399,64 @@ async function docwExtractText(file, callback) {
   };
 
   switch (ext) {
-  case "docx": {
-    reader.onload = function (e) {
-      DOCX_EXTRACTOR.readDocx(e.target.result)
-        .then(function (text) {
-          callback(null, text, "docx");
-        })
-        .catch(function (error) {
-          callback(error.message);
-        });
-    };
-    reader.readAsArrayBuffer(file);
-  
-  break;
-  }
-  case "pdf": {
-    reader.onload = function (e) {
-      DOCX_EXTRACTOR.readPdf(new Uint8Array(e.target.result))
-        .then(function (text) {
-          if (text) {
-            callback(null, text, "pdf");
-          } else {
-            callback(
-              "Could not extract text from PDF. The PDF may be image-based or encrypted.",
-            );
+    case "docx": {
+      reader.onload = function (e) {
+        DOCX_EXTRACTOR.readDocx(e.target.result)
+          .then(function (text) {
+            callback(null, text, "docx");
+          })
+          .catch(function (error) {
+            callback(error.message);
+          });
+      };
+      reader.readAsArrayBuffer(file);
+
+      break;
+    }
+    case "pdf": {
+      reader.onload = function (e) {
+        DOCX_EXTRACTOR.readPdf(new Uint8Array(e.target.result))
+          .then(function (text) {
+            if (text) {
+              callback(null, text, "pdf");
+            } else {
+              callback(
+                "Could not extract text from PDF. The PDF may be image-based or encrypted.",
+              );
+            }
+          })
+          .catch(function (error) {
+            callback("PDF extraction failed: " + error.message);
+          });
+      };
+      reader.readAsArrayBuffer(file);
+
+      break;
+    }
+    case "doc": {
+      // DOC (binary OLE) - best-effort: read as binary, extract printable ASCII
+      reader.onload = function (e) {
+        var arr = new Uint8Array(e.target.result);
+        var result = "";
+        for (var i = 0; i < arr.length; i++) {
+          var c = arr[i];
+          if (c === 0x0a || c === 0x0d || (c >= 0x20 && c <= 0x7e)) {
+            result += String.fromCharCode(c);
           }
-        })
-        .catch(function (error) {
-          callback("PDF extraction failed: " + error.message);
-        });
-    };
-    reader.readAsArrayBuffer(file);
-  
-  break;
-  }
-  case "doc": {
-    // DOC (binary OLE) - best-effort: read as binary, extract printable ASCII
-    reader.onload = function (e) {
-      var arr = new Uint8Array(e.target.result);
-      var result = "";
-      for (var i = 0; i < arr.length; i++) {
-        var c = arr[i];
-        if (c === 0x0a || c === 0x0d || (c >= 0x20 && c <= 0x7e)) {
-          result += String.fromCharCode(c);
         }
-      }
-      result = result.replace(/\s+/g, " ").trim();
-      callback(null, result || "No readable text found in DOC file.", "doc");
-    };
-    reader.readAsArrayBuffer(file);
-  
-  break;
-  }
-  default: {
-    // TXT, JSON, CSV and others - read as text
-    reader.onload = function (e) {
-      callback(null, e.target.result, ext);
-    };
-    reader.readAsText(file, "UTF-8");
-  }
+        result = result.replace(/\s+/g, " ").trim();
+        callback(null, result || "No readable text found in DOC file.", "doc");
+      };
+      reader.readAsArrayBuffer(file);
+
+      break;
+    }
+    default: {
+      // TXT, JSON, CSV and others - read as text
+      reader.onload = function (e) {
+        callback(null, e.target.result, ext);
+      };
+      reader.readAsText(file, "UTF-8");
+    }
   }
 }

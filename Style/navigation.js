@@ -565,9 +565,11 @@ window.addEventListener("pageshow", function (ev) {
     // SPA: restore page section from history state
     var st = history.state;
     if (st && st.page) {
-      document.querySelectorAll(".page").forEach(/* c8 ignore next */ function (p) {
-        p.classList.remove("active");
-      });
+      document.querySelectorAll(".page").forEach(
+        /* c8 ignore next */ function (p) {
+          p.classList.remove("active");
+        },
+      );
       var pg2 = document.getElementById("page-" + st.page);
       if (pg2) pg2.classList.add("active");
       var nav = document.querySelector(

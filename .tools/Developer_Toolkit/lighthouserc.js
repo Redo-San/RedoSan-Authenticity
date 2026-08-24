@@ -1,9 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      url: [
-        "http://127.0.0.1:8080/Style/pages/face-biometric/index.html",
-      ],
+      url: ["http://127.0.0.1:8080/Style/pages/face-biometric/index.html"],
       numberOfRuns: 1,
       headful: true,
       settings: {

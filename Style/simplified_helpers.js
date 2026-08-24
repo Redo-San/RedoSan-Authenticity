@@ -238,10 +238,13 @@ async function simpleFileSelected(input) {
   };
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
-  simpleSteps = type === "image" ? [
-      { id: "upload", label: __("simple.step_upload", "Upload") },
-      { id: "ai-question", label: __("simple.step_type", "Type") },
-    ] : buildSteps(type, false);
+  simpleSteps =
+    type === "image"
+      ? [
+          { id: "upload", label: __("simple.step_upload", "Upload") },
+          { id: "ai-question", label: __("simple.step_type", "Type") },
+        ]
+      : buildSteps(type, false);
   // Reset step position
   simpleStep = 0;
   renderStep();
@@ -353,8 +356,7 @@ function dataUrlToBlob(dataUrl) {
 function setupFpDownload() {
   setDownloadHandler(downloadFingerprint);
   document.getElementById("dl-modal-title").textContent = __("dl.title");
-  if (simpleResults.fpResult)
-    setResult('fpResult', simpleResults.fpResult);
+  if (simpleResults.fpResult) setResult("fpResult", simpleResults.fpResult);
 }
 
 /**
