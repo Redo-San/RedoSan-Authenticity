@@ -1,55 +1,102 @@
 # Security Policy
 
-## Supported versions
+> Canonical location: this root `SECURITY.md` supersedes the former
+> `.github/SECURITY.md`. Machine-readable disclosure:
+> <https://redo-san.github.io/.well-known/security.txt> (RFC 9116).
 
-RedoSan Authenticity is a fully client-side application: no accounts, no
-telemetry, no server-side processing. Only the latest `main` deployment at
-<https://redo-san.github.io/RedoSan-Authenticity/> receives security fixes.
+## Supported Versions
+
+Only the latest `main` deployment and the newest tagged release receive
+security updates.
 
 | Version | Supported |
 |---------|-----------|
-| latest `main` | ✅ |
-| older tags / forks | ❌ |
+| latest `main` / newest release (v1.7+) | ✅ |
+| older releases | ❌ |
 
-## Reporting a vulnerability
+## Reporting a Vulnerability
 
-Please do **not** open a public issue for anything you believe is
-exploitable.
+**Do not open a public GitHub issue for security vulnerabilities.**
 
-1. Preferred: use GitHub's private vulnerability reporting at
+### How to Report
+
+1. **GitHub Private Vulnerability Reporting** (preferred): repository →
+   **Security** tab → *Report a vulnerability*, or directly:
    <https://github.com/Redo-San/RedoSan-Authenticity/security/advisories/new>
-2. Or email the maintainer alias:
-   `12227211+Redo-San@users.noreply.github.com`
+2. **Email**: <mailto:12227211+Redo-San@users.noreply.github.com>
 
-The machine-readable disclosure file lives at
-<https://redo-san.github.io/.well-known/security.txt> (RFC 9116).
+Include: description, steps to reproduce (URL/steps or sample file for the
+affected tool), browser & OS versions, affected version, impact assessment,
+and suggested fix if any.
 
-## What to include
+### Response Timeline
 
-- A minimal reproduction (URL/steps, or a sample file for the affected tool).
-- Browser and OS versions.
-- Impact assessment from your perspective.
+- **Acknowledgement**: within 48 hours
+- **Initial assessment**: within 5 business days
+- **Fix or mitigation**: 7–30 days depending on severity (90-day ceiling for
+  high/critical)
 
 ## Scope
 
-In scope: XSS/HTML-injection through user-supplied files or tool outputs,
-prototype-pollution paths, service-worker cache poisoning, dependency
-vulnerabilities in vendored libraries (`vendor/`), and any path where
-"local-only processing" can be violated.
+**In scope**
 
-Out of scope: missing headers on GitHub Pages infrastructure itself
-(GitHub controls those), self-XSS requiring a user to attack themselves,
-and brute-force against the local biometric templates stored in the
-user's own IndexedDB (documented threat model treats the device as
-trusted).
+- XSS / HTML injection through user-supplied files or tool outputs
+- Prototype-pollution paths
+- Service-worker cache poisoning
+- Vulnerabilities in vendored libraries under `vendor/`
+- Any path where the *local-only processing* guarantee can be violated
 
-## Response targets
+**Out of scope**
 
-- Acknowledgement: within 7 days.
-- Triage & severity: within 14 days.
-- Fix or mitigation: within 90 days for high/critical findings.
+- Response headers on GitHub Pages infrastructure (controlled by GitHub)
+- Self-XSS requiring a user to attack themselves
+- Brute-force against biometric templates stored in the user's own
+  IndexedDB — the documented threat model treats the device as trusted
 
-## Safe harbor
+## Safe Harbor
 
 Good-faith research following this policy is welcomed and will not be met
 with legal action.
+
+## Security Practices
+
+### For Users
+
+- Verify the URL: `https://redo-san.github.io/RedoSan-Authenticity/`
+- All processing is **client-side** — no files leave your device
+- The web app includes a **two-layer security blocker**: Service Worker
+  (`sw.js`) + 404 page that block dangerous file extensions and unknown
+  scripts via 5 whitelists (JS, CSS, HTML, YAML, external CDN)
+- Review the source code if you have concerns
+
+### Automated Checks (CI)
+
+This repository runs the following security and quality checks on every
+pull request:
+
+- **Secret Scanner**: Detects hardcoded API keys, tokens, and private keys in diffs (CI + pre-commit hook)
+- **GitHub Secret Scanning**: Push protection + scanning enabled on the repository
+- **Permissions Sheriff**: Audits GitHub Actions workflow permissions for least-privilege
+- **npm audit Checker**: Scans dependencies for known vulnerabilities
+- **Cross-Reference Checker**: Validates file references (whitelists, navigation, i18n keys)
+- **CodeQL**: Semantic code analysis for security vulnerabilities (JavaScript/TypeScript + Actions)
+- **Dependency Graph**: Tracks dependency supply chain
+- **Spell Check** (cspell): Detects spelling errors in code, comments, and filenames
+- **Malware Scan** (ClamAV): Scans repository for malware signatures
+- **zizmor**: Scans GitHub Actions workflows for security issues (30 alerts closed in v1.7)
+- **OpenSSF Scorecard**: Supply-chain security scoring
+- **ABOM Supply Chain Audit**: Audits dependency supply chain for tampering
+- **CSS Lint** (stylelint): Validates CSS for errors and duplicate selectors
+- **HTML Hint**: Validates HTML for best practices and accessibility
+- **JS Syntax Check**: Validates JavaScript syntax
+- **Prettier Check**: Ensures consistent code formatting
+- **Console.log Detector**: Flags debugging output that should not be committed
+- **PR Size Label**: Labels PRs based on line count change
+- **File Size Budget**: Rejects PRs exceeding individual file size limits
+
+### For Developers
+
+- Never commit secrets, tokens, or certificates to the repository
+- Use repository secrets and variables for sensitive values
+- Validate all user-supplied files before processing
+- Keep dependencies up to date (`npm audit fix`)
