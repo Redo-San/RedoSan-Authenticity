@@ -657,7 +657,7 @@ WatermarkCore.prototype.modifyCoefficient = function (
   bit,
   weight,
 ) {
-  if (isNaN(coefficient) || isNaN(weight) || weight === 0) {
+  if (weight === 0 || isNaN(coefficient) || isNaN(weight)) {
     return coefficient; // Return original if invalid
   }
   const quantized = Math.round(coefficient / weight);

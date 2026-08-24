@@ -293,7 +293,7 @@ async function menuFingerprint() {
     "all",
   );
   const args = ["fingerprint", file];
-  if (algo.trim() && algo !== "all") args.push("--algo", algo.trim());
+  if (algo !== "all" && algo.trim()) args.push("--algo", algo.trim());
   await run(args);
 
   // Ask to save
@@ -311,7 +311,7 @@ async function menuFingerprint() {
       outPath = path.join(outPath, path.basename(def));
     }
     const saveArgs = ["fingerprint", file, "-o", outPath];
-    if (algo.trim() && algo !== "all") saveArgs.push("--algo", algo.trim());
+    if (algo !== "all" && algo.trim()) saveArgs.push("--algo", algo.trim());
     if (fmt.trim() === "1") saveArgs.push("--json");
     try {
       await run(saveArgs);

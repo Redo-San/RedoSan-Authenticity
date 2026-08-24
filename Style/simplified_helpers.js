@@ -238,10 +238,13 @@ async function simpleFileSelected(input) {
   };
   reader.readAsArrayBuffer(file);
   // Rebuild steps based on type
-  simpleSteps = type === "image" ? [
-      { id: "upload", label: __("simple.step_upload", "Upload") },
-      { id: "ai-question", label: __("simple.step_type", "Type") },
-    ] : buildSteps(type, false);
+  simpleSteps =
+    type === "image"
+      ? [
+          { id: "upload", label: __("simple.step_upload", "Upload") },
+          { id: "ai-question", label: __("simple.step_type", "Type") },
+        ]
+      : buildSteps(type, false);
   // Reset step position
   simpleStep = 0;
   renderStep();
@@ -279,7 +282,7 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
     var trimmed = trimFingerprintPayload(fpResult, fpMaxBytes);
     var combined = JSON.stringify(trimmed) + didStr;
     // If combined exceeds maxBytes even after trimming, drop DID
-    if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
+    if (didStr && new TextEncoder().encode(combined).length > maxBytes) {
       combined = JSON.stringify(trimmed);
     }
     return combined;
@@ -295,7 +298,7 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
   if (available < 50) available = 50;
   fpText = fpText.substring(0, available);
   var combined = fpText + didStr;
-  if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
+  if (didStr && new TextEncoder().encode(combined).length > maxBytes) {
     combined = fpText;
   }
   return combined;
@@ -353,8 +356,7 @@ function dataUrlToBlob(dataUrl) {
 function setupFpDownload() {
   setDownloadHandler(downloadFingerprint);
   document.getElementById("dl-modal-title").textContent = __("dl.title");
-  if (simpleResults.fpResult)
-    setResult('fpResult', simpleResults.fpResult);
+  if (simpleResults.fpResult) setResult("fpResult", simpleResults.fpResult);
 }
 
 /**

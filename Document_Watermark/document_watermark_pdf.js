@@ -249,7 +249,7 @@ function _pdfReplaceInStream(content, origFull, wmFull, cmap) {
       });
       hexCombined += ch;
     }
-    if (hexSegs.length > 0 && hexCombined) {
+    if (hexCombined && hexSegs.length > 0) {
       const hexStreamPos = origFull.indexOf(hexCombined);
       if (hexStreamPos >= 0) {
         let hexRemaining = hexCombined.length;
@@ -382,7 +382,7 @@ async function buildWatermarkedPdfDoc(
 
     // Try to decompress (zlib first, then raw deflate)
     let dec = null;
-    for (let fmtIdx = 0; fmtIdx < 2 && dec === null; fmtIdx++) {
+    for (let fmtIdx = 0; dec === null && fmtIdx < 2; fmtIdx++) {
       const fmt = fmtIdx === 0 ? "deflate" : "deflate-raw";
       try {
         const st = new DecompressionStream(fmt);

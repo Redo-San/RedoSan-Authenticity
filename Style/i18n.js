@@ -404,19 +404,19 @@ document.addEventListener("click", function (e) {
   // Close simplified language menu
   var sMenu = document.getElementById("simpleLangMenu");
   var sDropdown = document.querySelector("#simplifiedMode .lang-dropdown");
-  if (sDropdown && !sDropdown.contains(e.target) && sMenu) {
+  if (sMenu && sDropdown && !sDropdown.contains(e.target)) {
     sMenu.classList.remove("show");
   }
   // Close mode select language menu
   var mMenus = document.getElementById("modeLangMenu");
   var mDropdown = document.querySelector("#modeSelect .lang-dropdown");
-  if (mDropdown && !mDropdown.contains(e.target) && mMenus) {
+  if (mMenus && mDropdown && !mDropdown.contains(e.target)) {
     mMenus.classList.remove("show");
   }
   // Close professional mode (nav) language menu
   var pMenu = document.getElementById("langMenu");
   var pDropdown = document.querySelector("nav .lang-dropdown");
-  if (pDropdown && !pDropdown.contains(e.target) && pMenu) {
+  if (pMenu && pDropdown && !pDropdown.contains(e.target)) {
     pMenu.classList.remove("show");
   }
 });

@@ -610,7 +610,7 @@ async function startAsyncVPNDetection() {
   }
   // Diagnostic only — WebRTC-based VPN detection is unreliable client-side
   // (false positives from CGNAT, multi-homed networks, IPv4/IPv6 dual-stack)
-  if (ips.length === 0 && typeof RTCPeerConnection === "undefined") {
+  if (typeof RTCPeerConnection === "undefined" && ips.length === 0) {
     REDOSAN_BOT_CHECK = {
       score: 10,
       signals: ["webrtc_unavailable"],
@@ -743,7 +743,7 @@ if (typeof ensureLib === "undefined") {
         window.__ensureLibCache = {};
         cache = window.__ensureLibCache;
       }
-      if (cache[name] && check && check()) return resolve();
+      if (check && cache[name] && check()) return resolve();
       var idx = 0;
       (function load(i) {
         if (i >= urls.length) {
@@ -795,14 +795,14 @@ var SW_VERSION = 4;
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   window.addEventListener("load", function () {
     var swBase = document.documentElement.dataset.standalone ? "../../../" : "";
-    navigator.serviceWorker.register(swBase + "sw.js?v=" + SW_VERSION, { updateViaCache: "none" }).then(
-      function (reg) {
+    navigator.serviceWorker
+      .register(swBase + "sw.js?v=" + SW_VERSION, { updateViaCache: "none" })
+      .then(function (reg) {
         console.log("[SW] Registered scope:", reg.scope);
-      },
-      function (error) {
+      })
+      .catch(function (error) {
         console.warn("[SW] Registration failed:", error);
-      },
-    );
+      });
   });
 }
 

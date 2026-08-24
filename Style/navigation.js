@@ -175,7 +175,7 @@ function showPage(name) {
   // Standalone: if target page doesn't exist here, navigate to its standalone URL
   // This check runs before removing .active from the current page so that bfcache
   // captures the visible state, preventing a blank page on back-button navigation
-  if (!page && document.documentElement.dataset.standalone && name) {
+  if (name && !page && document.documentElement.dataset.standalone) {
     var safeName = encodeURIComponent(name);
     var parts = window.location.pathname.split("/");
     var pagesIdx = -1;
@@ -565,9 +565,11 @@ window.addEventListener("pageshow", function (ev) {
     // SPA: restore page section from history state
     var st = history.state;
     if (st && st.page) {
-      document.querySelectorAll(".page").forEach(/* c8 ignore next */ function (p) {
-        p.classList.remove("active");
-      });
+      document.querySelectorAll(".page").forEach(
+        /* c8 ignore next */ function (p) {
+          p.classList.remove("active");
+        },
+      );
       var pg2 = document.getElementById("page-" + st.page);
       if (pg2) pg2.classList.add("active");
       var nav = document.querySelector(
