@@ -62,7 +62,7 @@ var DOCX_EXTRACTOR = (function () {
     while (i < xml.length) {
       if (xml.substr(i, 6) === "<w:p ") inPara = true;
       if (xml.substr(i, 5) === "<w:p>") inPara = true;
-      if (xml.substr(i, 6) === "</w:p>" && inPara) {
+      if (inPara && xml.substr(i, 6) === "</w:p>") {
         text += "\n";
         inPara = false;
       }
@@ -438,7 +438,7 @@ async function docwExtractText(file, callback) {
       var result = "";
       for (var i = 0; i < arr.length; i++) {
         var c = arr[i];
-        if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+        if (c === 0x0a || c === 0x0d || (c >= 0x20 && c <= 0x7e)) {
           result += String.fromCharCode(c);
         }
       }

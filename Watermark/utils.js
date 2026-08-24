@@ -179,7 +179,7 @@ if (typeof ensureLib === "undefined") {
         }
       }
       const loaded = typeof window !== "undefined" && window.__ensureLibCache;
-      if (loaded && loaded[name] && check && check()) return resolve();
+      if (loaded && check && loaded[name] && check()) return resolve();
       if (!loaded) window.__ensureLibCache = {};
       const load = (i) => {
         if (i >= urls.length) {

@@ -44,6 +44,15 @@ export default [
       "unicorn/prefer-string-slice": "off",
       // ── Project-wide style overrides (intentional patterns) ──
       "unicorn/prefer-module": "off",
+      // AGENTS.md documents the module convention: every browser module is a
+      // vanilla-JS IIFE (license guard + window attachment). Rewriting IIFEs
+      // as bare block statements would leak `var` declarations into the
+      // global scope across 40+ runtime modules.
+      "unicorn/prefer-block-statement-over-iife": "off",
+      // Element.getHTML() (Sanitizer API) is not uniformly shipped across
+      // target browsers and may alter exported document fidelity in the
+      // Certificate/DOCX export paths. Revisit when baseline rises.
+      "unicorn/prefer-dom-node-html-methods": "off",
       "unicorn/no-process-exit": "off",
       "unicorn/no-for-loop": "off",
       "unicorn/prefer-query-selector": "off",
@@ -237,6 +246,7 @@ export default [
       "node_modules/",
       "vendor/",
       "**/*.min.js",
+      ".env/",
       ".opencode/",
       ".agents/",
       "agent/",

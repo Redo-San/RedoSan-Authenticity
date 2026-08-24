@@ -279,7 +279,7 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
     var trimmed = trimFingerprintPayload(fpResult, fpMaxBytes);
     var combined = JSON.stringify(trimmed) + didStr;
     // If combined exceeds maxBytes even after trimming, drop DID
-    if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
+    if (didStr && new TextEncoder().encode(combined).length > maxBytes) {
       combined = JSON.stringify(trimmed);
     }
     return combined;
@@ -295,7 +295,7 @@ function buildCombinedPayload(fpResult, didSig, maxBytes) {
   if (available < 50) available = 50;
   fpText = fpText.substring(0, available);
   var combined = fpText + didStr;
-  if (new TextEncoder().encode(combined).length > maxBytes && didStr) {
+  if (didStr && new TextEncoder().encode(combined).length > maxBytes) {
     combined = fpText;
   }
   return combined;

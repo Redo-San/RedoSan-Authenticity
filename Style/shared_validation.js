@@ -400,7 +400,7 @@ function matchesAccept(file, acceptAttr) {
     const r = rule.trim();
     if (r.endsWith("/*") && type.startsWith(r.split("/", 1)[0] + "/"))
       return true;
-    else if (r.includes("/") && type === r) return true;
+    else if (type === r && r.includes("/")) return true;
     else if (r.startsWith(".") && name.endsWith(r)) return true;
   }
   return false;

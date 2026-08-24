@@ -62,7 +62,7 @@ async function readDocumentText(filePath) {
     let result = "";
     for (let i = 0; i < buf.length; i++) {
       const c = buf[i];
-      if ((c >= 0x20 && c <= 0x7e) || c === 0x0a || c === 0x0d) {
+      if (c === 0x0a || c === 0x0d || (c >= 0x20 && c <= 0x7e)) {
         result += String.fromCharCode(c);
       } else if (c === 0x00) {
         result += " ";

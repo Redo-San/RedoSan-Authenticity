@@ -413,7 +413,7 @@ function renderProgress() {
  */
 function simpleNext() {
   var step = simpleSteps[simpleStep];
-  if (step.id === "upload" && !simpleFile) return;
+  if (!simpleFile && step.id === "upload") return;
   if (step.id === "upload") {
     saveSimpleUserInfo();
     if (
@@ -479,13 +479,13 @@ function simpleNext() {
   }
   // Auto-run steps must complete before advancing
   if (
+    !simpleStepDone &&
     (step.id === "timestamp" ||
       step.id === "fingerprint" ||
       step.id === "watermark" ||
       step.id === "pixel-injection" ||
       step.id === "c2pa" ||
-      step.id === "did-sign") &&
-    !simpleStepDone
+      step.id === "did-sign")
   )
     return;
   if (step.id === "done") {
