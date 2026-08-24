@@ -20,6 +20,7 @@ cli/test_output/
 test/tmp/
 Tests/AudioWatermark/tmp/
 coverage/
+*.log
 
 # OS
 .DS_Store
