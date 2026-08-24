@@ -36,17 +36,26 @@ jobs:
 
             for (const file of changed) {
               const content = fs.readFileSync(file, 'utf8');
-              const permMatch = content.match(/permissions:\s*\n([\s\S]*?)(?=\n\w|$)/);
-              if (!permMatch) {
+              const lines = content.split('\n');
+
+              if (!/^permissions:/m.test(content)) {
                 warnings.push({ file, msg: 'No `permissions:` block found — defaults to write-all (unsafe)' });
                 continue;
               }
-              const perms = permMatch[1].toLowerCase();
-              for (const rp of riskyPerms) {
-                if (perms.includes(rp)) {
-                  const lines = content.split('\n');
-                  const lineIdx = lines.findIndex(l => l.toLowerCase().includes(rp));
-                  warnings.push({ file, msg: 'Contains `' + rp + '` at line ~' + (lineIdx + 1) });
+
+              // Flag a risky grant ONLY when it lives directly under a
+              // workflow-level `permissions:` block (column 0). The same
+              // grant inside a job-level block is already least-privilege.
+              for (let i = 0; i < lines.length; i++) {
+                const m = lines[i].match(/^\s*([\w-]+):\s*write\b/);
+                if (!m || !riskyPerms.includes(m[1] + ': write')) continue;
+                let scope = 'unknown';
+                for (let j = i - 1; j >= 0; j--) {
+                  const p = lines[j].match(/^( *)permissions:/);
+                  if (p) { scope = p[1].length === 0 ? 'workflow' : 'job'; break; }
+                }
+                if (scope === 'workflow') {
+                  warnings.push({ file, msg: '`' + m[1] + ': write` granted at WORKFLOW level (line ~' + (i + 1) + ') — move it into the job(s) that need it' });
                 }
               }
             }
