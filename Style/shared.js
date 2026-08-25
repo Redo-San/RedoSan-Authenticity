@@ -791,19 +791,30 @@ if (typeof ensureLib === "undefined") {
 /* c8 ignore stop */
 
 var SW_VERSION = 4;
-/* c8 ignore next 16 */
+/* c8 ignore next 32 */
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-  window.addEventListener("load", function () {
-    var swBase = document.documentElement.dataset.standalone ? "../../../" : "";
-    navigator.serviceWorker
-      .register(swBase + "sw.js?v=" + SW_VERSION, { updateViaCache: "none" })
-      .then(function (reg) {
-        console.log("[SW] Registered scope:", reg.scope);
-      })
-      .catch(function (error) {
-        console.warn("[SW] Registration failed:", error);
-      });
-  });
+  // In-app browsers (Facebook/Instagram/TikTok/Threads webviews) isolate and
+  // sometimes wipe storage, and their SW support is unreliable — registering
+  // there risks serving stale or broken caches to those visitors.
+  var INAPP_UA =
+    /(FBAN|FBAV|FB_IAB|Instagram|Threads|Barcelona|BytedanceWebview|musical_ly|trill|Snapchat|LinkedInApp|Pinterest)/i;
+  if (INAPP_UA.test(navigator.userAgent || "")) {
+    console.info(
+      "[SW] Registration skipped: in-app browser detected (isolated/unreliable storage).",
+    );
+  } else {
+    window.addEventListener("load", function () {
+      var swBase = document.documentElement.dataset.standalone ? "../../../" : "";
+      navigator.serviceWorker
+        .register(swBase + "sw.js?v=" + SW_VERSION, { updateViaCache: "none" })
+        .then(function (reg) {
+          console.log("[SW] Registered scope:", reg.scope);
+        })
+        .catch(function (error) {
+          console.warn("[SW] Registration failed:", error);
+        });
+    });
+  }
 }
 
 // ── Secure result storage (not on window) ──
