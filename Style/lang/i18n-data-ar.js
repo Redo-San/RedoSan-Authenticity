@@ -649,7 +649,7 @@ window.__I18N_DATA.ar = {
   "face.verify_tab": "تحقق",
   "face.manage_tab": "إدارة",
   "face.privacy_note":
-    "🔒 All face processing is 100% local. Data never leaves your device.",
+    "🔒 كل معالجة الوجه تتم محليًا بنسبة 100%. لا شيء يترك جهازك.",
   "face.image_label": "الصورة",
   "face.image_verify_label": "صورة للتحقق",
   "face.label_label": "الاسم / التسمية",
@@ -1014,4 +1014,6 @@ window.__I18N_DATA.ar = {
   "face.report.no_passkey": "Not registered.",
   "face.report.credential": "Face Credential",
   "face.delete_btn": "حذف",
+  "face.no_faces": "لا توجد وجوه مسجلة بعد.",
+  "face.deleted_from_registry": "تم حذف الوجه من السجل.",
 };
