@@ -273,6 +273,7 @@ function resetGlobals() {
   globalThis._faceLivenessEvidence = null;
   globalThis._facePendingCanvas = null;
   globalThis._facePendingSource = null;
+  globalThis._faceWaUnavailable = false;
   globalThis._faceInputTab = "upload";
   globalThis.document = null;
   downloads.length = 0;
@@ -4406,6 +4407,24 @@ describe("Face UI — clearFacePendingPhoto / updateFaceRunState arms", () => {
         .getElementById("face-status")
         .textContent.includes("Register a passkey"),
     );
+  });
+
+  it("enables the run button when the client cannot use passkeys at all", () => {
+    const runBtn = { disabled: true };
+    const labelEl = { value: "Alice" };
+    globalThis.document = makeDoc({
+      "face-run": runBtn,
+      "face-label": labelEl,
+      "face-status": { textContent: "" },
+    });
+    globalThis.faceConsentGranted = function () { return true; };
+    globalThis._facePendingCanvas = {};
+    globalThis.facePasskeyRegistered = false;
+    globalThis._faceWaUnavailable = true; // capability probe said: no passkeys here
+    globalThis.updateFaceRunState();
+    assert.equal(runBtn.disabled, false);
+
+    globalThis._faceWaUnavailable = false;
   });
 
   it("ignores the run-state refresh without a button", () => {
