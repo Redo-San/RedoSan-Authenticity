@@ -225,10 +225,16 @@
   cursor: pointer;
 }
 
-/* ── Help card readability (desktop EN copy renders small) ── */
+/* ── Help card readability & flow (desktop EN copy renders small, and the
+      shared pre-line rule forces ragged breaks with a wide right gutter) ── */
 .help-card-body {
   font-size: 0.95rem;
   line-height: 1.75;
+  white-space: normal;
+}
+
+.help-card-body li {
+  margin-block-end: 4px;
 }
 
 .help-card-header {
