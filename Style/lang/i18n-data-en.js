@@ -1016,16 +1016,18 @@ window.__I18N_DATA.en = {
   "face.report.no_passkey": "Not registered.",
   "face.report.credential": "Face Credential",
   "face.delete_btn": "Delete",
+  "face.no_faces": "No registered faces yet.",
+  "face.deleted_from_registry": "Face deleted from registry.",
   "face.status.faceRegistryNotInitialized": "Face Registry not initialized.",
   "face.status.webauthnModuleNotLoaded": "WebAuthn module not loaded.",
-  "face.status.photoTooLargeMaximumFileSizeIs25MB":
+  "face.status.photoTooLargeMaximumFile":
     "Photo too large. Maximum file size is 25 MB.",
   "face.status.faceEngineNotInitialized": "Face Engine not initialized.",
   "face.status.loadingModels": "Loading models...",
   "face.status.detectingFaces": "Detecting faces...",
-  "face.status.noFaceDetectedInTheImage": "No face detected in the image.",
-  "face.status.generatingDIDKeypair": "Generating DID keypair...",
-  "face.status.signingFaceDescriptorWithDID":
+  "face.status.noFaceDetectedInThe": "No face detected in the image.",
+  "face.status.generatingDidKeypair": "Generating DID keypair...",
+  "face.status.signingFaceDescriptorWithDid":
     "Signing face descriptor with DID...",
   "face.status.generatingPrivacyIdentifierBiohash":
     "Generating Privacy Identifier (BioHash)...",
@@ -1037,15 +1039,16 @@ window.__I18N_DATA.en = {
   "face.status.cameraElementNotFound": "Camera element not found.",
   "face.status.startingCamera": "Starting camera...",
   "face.status.cameraStopped": "Camera stopped.",
-  "face.status.cameraNotRunningStartTheCameraFirst":
+  "face.status.cameraNotRunningStartThe":
     "Camera not running. Start the camera first.",
   "face.status.faceLivenessModuleNotLoaded": "Face Liveness module not loaded.",
   "face.status.capturingFrame": "Capturing frame...",
   "face.status.couldNotCaptureAFrame": "Could not capture a frame.",
-  "face.status.generateAPrivacyIdFirstRunThePipeline":
+  "face.status.generateAPrivacyIdFirst":
     "Generate a Privacy ID first (run the pipeline).",
   "face.status.privacyIdCopiedToClipboard": "Privacy ID copied to clipboard.",
-  "face.status.copyFailedSelectTheIDTextManually":
+  "face.status.copyFailedSelectTheId":
     "Copy failed. Select the ID text manually.",
   "face.status.privacyIdReadyToCopy": "Privacy ID ready to copy.",
+  "face.status.livenessCheckFailed": "Liveness check failed:",
 };

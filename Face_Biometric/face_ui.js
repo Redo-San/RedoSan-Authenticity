@@ -3147,7 +3147,7 @@ async function handleFaceCameraCapture() {
       setStatus(
         "face-status",
         __(
-          "face.status.livenessCheckFailedReasonsjoin",
+          "face.status.livenessCheckFailed",
           "Liveness check failed: " + reasons.join(", "),
         ),
       );

@@ -1018,14 +1018,14 @@ window.__I18N_DATA.ar = {
   "face.deleted_from_registry": "تم حذف الوجه من السجل.",
   "face.status.faceRegistryNotInitialized": "سجل الوجوه غير مهيأ.",
   "face.status.webauthnModuleNotLoaded": "وحدة WebAuthn غير محمّلة.",
-  "face.status.photoTooLargeMaximumFileSizeIs25MB":
+  "face.status.photoTooLargeMaximumFile":
     "الصورة كبيرة جدًا. الحد الأقصى لحجم الملف 25 ميغابايت.",
   "face.status.faceEngineNotInitialized": "محرك الوجه غير مهيأ.",
   "face.status.loadingModels": "جارٍ تحميل النماذج...",
   "face.status.detectingFaces": "جارٍ اكتشاف الوجوه...",
-  "face.status.noFaceDetectedInTheImage": "لم يُكتشف وجه في الصورة.",
-  "face.status.generatingDIDKeypair": "جارٍ توليد زوج مفاتيح DID...",
-  "face.status.signingFaceDescriptorWithDID": "جارٍ توقيع وصف الوجه بـ DID...",
+  "face.status.noFaceDetectedInThe": "لم يُكتشف وجه في الصورة.",
+  "face.status.generatingDidKeypair": "جارٍ توليد زوج مفاتيح DID...",
+  "face.status.signingFaceDescriptorWithDid": "جارٍ توقيع وصف الوجه بـ DID...",
   "face.status.generatingPrivacyIdentifierBiohash":
     "جارٍ توليد معرّف الخصوصية (BioHash)...",
   "face.status.generatingFuzzyIdentifier": "جارٍ توليد المعرف الضبابي...",
@@ -1036,15 +1036,14 @@ window.__I18N_DATA.ar = {
   "face.status.cameraElementNotFound": "عنصر الكاميرا غير موجود.",
   "face.status.startingCamera": "جارٍ تشغيل الكاميرا...",
   "face.status.cameraStopped": "توقفت الكاميرا.",
-  "face.status.cameraNotRunningStartTheCameraFirst":
-    "الكاميرا لا تعمل. شغّلها أولًا.",
+  "face.status.cameraNotRunningStartThe": "الكاميرا لا تعمل. شغّلها أولًا.",
   "face.status.faceLivenessModuleNotLoaded": "وحدة الحيوية غير محمّلة.",
   "face.status.capturingFrame": "جارٍ التقاط الإطار...",
   "face.status.couldNotCaptureAFrame": "تعذر التقاط إطار.",
-  "face.status.generateAPrivacyIdFirstRunThePipeline":
+  "face.status.generateAPrivacyIdFirst":
     "ولّد معرّف الخصوصية أولًا (شغّل المسار).",
   "face.status.privacyIdCopiedToClipboard": "نُسخ معرّف الخصوصية إلى الحافظة.",
-  "face.status.copyFailedSelectTheIDTextManually":
-    "فشل النسخ. حدد نص المعرّف يدويًا.",
+  "face.status.copyFailedSelectTheId": "فشل النسخ. حدد نص المعرّف يدويًا.",
   "face.status.privacyIdReadyToCopy": "معرّف الخصوصية جاهز للنسخ.",
+  "face.status.livenessCheckFailed": "فشل فحص الحيوية:",
 };
