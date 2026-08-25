@@ -99,6 +99,7 @@ coverage-improvement-plan.md
 lighthouse-100-plan.md
 face-biometric-improvement-plan.md
 eslint-warning-cleanup-plan.md
+IDEA.md
 
 # ── Secrets — NEVER commit, never share ────────────────────────────
 # Environment & credentials (highest protection: whole .env tree)

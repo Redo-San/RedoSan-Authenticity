@@ -588,11 +588,20 @@ async function refreshPasskeyStatus() {
 async function handlePasskeyRegister() {
   var cred, passkey, regBtn;
   if (!faceRegistry) {
-    setStatus("face-status", "Face Registry not initialized.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.faceRegistryNotInitialized",
+        "Face Registry not initialized.",
+      ),
+    );
     return;
   }
   if (typeof FaceWebauthn === "undefined") {
-    setStatus("face-status", "WebAuthn module not loaded.");
+    setStatus(
+      "face-status",
+      __("face.status.webauthnModuleNotLoaded", "WebAuthn module not loaded."),
+    );
     return;
   }
   if (!FaceWebauthn.isAvailable()) {
@@ -1015,7 +1024,13 @@ async function handleFaceFilePicked() {
     return;
   }
   if (file.size > 25 * 1024 * 1024) {
-    setStatus("face-status", "Photo too large. Maximum file size is 25 MB.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.photoTooLargeMaximumFile",
+        "Photo too large. Maximum file size is 25 MB.",
+      ),
+    );
     clearFacePendingPhoto();
     return;
   }
@@ -1373,7 +1388,7 @@ function switchFaceInput(tab) {
   }
   prev = document.getElementById("face-preview");
   if (prev && prev.style) prev.style.display = "none";
-  setStatus("face-status", "");
+  setStatus("face-status", __("face.status.", ""));
   updateFaceRunState();
 }
 
@@ -1423,7 +1438,13 @@ async function runFacePipeline(canvas, opts) {
     }
   }
   if (!faceEngine) {
-    setStatus("face-status", "Face Engine not initialized.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.faceEngineNotInitialized",
+        "Face Engine not initialized.",
+      ),
+    );
     setFaceStep(null);
     return;
   }
@@ -1433,9 +1454,15 @@ async function runFacePipeline(canvas, opts) {
       __("face.step.detect", "Detecting face..."),
     );
     setFaceStage("1/8 " + __("face.step.detect", "Detecting face..."), 0.06);
-    setStatus("face-status", "Loading models...");
+    setStatus(
+      "face-status",
+      __("face.status.loadingModels", "Loading models..."),
+    );
     await faceEngine.loadModels();
-    setStatus("face-status", "Detecting faces...");
+    setStatus(
+      "face-status",
+      __("face.status.detectingFaces", "Detecting faces..."),
+    );
     result = await faceEngine.detectFaces(canvas);
     prevEl = document.getElementById("face-preview");
     prevEl.width = canvas.width;
@@ -1474,7 +1501,10 @@ async function runFacePipeline(canvas, opts) {
     } else {
       window._lastDescriptor = null;
       window._lastFaceCount = 0;
-      setStatus("face-status", "No face detected in the image.");
+      setStatus(
+        "face-status",
+        __("face.status.noFaceDetectedInThe", "No face detected in the image."),
+      );
       setFaceStep(null);
       faceProgressHide();
       return;
@@ -1484,7 +1514,10 @@ async function runFacePipeline(canvas, opts) {
       "2/8 " + __("face.step.did", "Generating DID keypair..."),
       0.2,
     );
-    setStatus("face-status", "Generating DID keypair...");
+    setStatus(
+      "face-status",
+      __("face.status.generatingDidKeypair", "Generating DID keypair..."),
+    );
     kp = null;
     if (typeof didGenerateKeypair === "function") {
       kp = await didGenerateKeypair("Ed25519");
@@ -1496,7 +1529,13 @@ async function runFacePipeline(canvas, opts) {
       "3/8 " + __("face.step.sign", "Signing descriptor with DID..."),
       0.35,
     );
-    setStatus("face-status", "Signing face descriptor with DID...");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.signingFaceDescriptorWithDid",
+        "Signing face descriptor with DID...",
+      ),
+    );
     sigBytes = null;
     sigB64 = null;
     if (kp && typeof didSign === "function") {
@@ -1522,7 +1561,13 @@ async function runFacePipeline(canvas, opts) {
       "4/8 " + __("face.step.biohash", "Generating Privacy ID..."),
       0.5,
     );
-    setStatus("face-status", "Generating Privacy Identifier (BioHash)...");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.generatingPrivacyIdentifierBiohash",
+        "Generating Privacy Identifier (BioHash)...",
+      ),
+    );
     bio = null;
     pinEl = document.getElementById("face-biohash-pin");
     pinVal = pinEl && pinEl.value ? pinEl.value.trim() : "";
@@ -1543,7 +1588,13 @@ async function runFacePipeline(canvas, opts) {
       "5/8 " + __("face.step.fuzzy", "Generating Fuzzy ID..."),
       0.62,
     );
-    setStatus("face-status", "Generating Fuzzy identifier...");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.generatingFuzzyIdentifier",
+        "Generating Fuzzy identifier...",
+      ),
+    );
     fuzzy = null;
     if (
       typeof FaceFuzzy !== "undefined" &&
@@ -1562,12 +1613,18 @@ async function runFacePipeline(canvas, opts) {
       "6/8 " + __("face.step.passkey", "Verifying passkey (step-up)..."),
       0.74,
     );
-    setStatus("face-status", "Verifying passkey...");
+    setStatus(
+      "face-status",
+      __("face.status.verifyingPasskey", "Verifying passkey..."),
+    );
     pkObj = await faceStepRegisterPasskey();
 
     // step 7/8 — Match against the (now decrypted) registry.
     setFaceStage("7/8 " + __("face.step.match", "Matching registry..."), 0.86);
-    setStatus("face-status", "Checking registered faces...");
+    setStatus(
+      "face-status",
+      __("face.status.checkingRegisteredFaces", "Checking registered faces..."),
+    );
     matchR = null;
     id = null;
     if (faceRegistry) {
@@ -1671,7 +1728,13 @@ async function runFacePipeline(canvas, opts) {
     renderFaceReport(report);
     setDownloadHandler(downloadFaceReport);
     renderFaceActions(true);
-    setStatus("face-status", "Done. All identifiers generated.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.doneAllIdentifiersGenerated",
+        "Done. All identifiers generated.",
+      ),
+    );
     if (faceRegistry && typeof listRegisteredFaces === "function")
       await listRegisteredFaces();
   } catch (error) {
@@ -2862,17 +2925,29 @@ async function handleFaceCameraStart(videoId) {
   }
   if (!(await ensureFacePasskeyForAction())) return;
   if (typeof FaceCamera !== "function") {
-    setStatus("face-status", "Face Camera module not loaded.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.faceCameraModuleNotLoaded",
+        "Face Camera module not loaded.",
+      ),
+    );
     return;
   }
   videoEl = document.getElementById(videoId || "face-camera");
   if (!videoEl) {
-    setStatus("face-status", "Camera element not found.");
+    setStatus(
+      "face-status",
+      __("face.status.cameraElementNotFound", "Camera element not found."),
+    );
     return;
   }
   if (!faceCamera) faceCamera = new FaceCamera();
   try {
-    setStatus("face-status", "Starting camera...");
+    setStatus(
+      "face-status",
+      __("face.status.startingCamera", "Starting camera..."),
+    );
     await faceCamera.startCamera(videoEl);
     videoEl.style.display = "block";
     startFaceOverlay(videoEl);
@@ -2916,7 +2991,7 @@ function handleFaceCameraStop(videoId) {
   if (stopBtn) stopBtn.disabled = true;
   capBtn = document.getElementById("face-cam-capture");
   if (capBtn) capBtn.disabled = true;
-  setStatus("face-status", "Camera stopped.");
+  setStatus("face-status", __("face.status.cameraStopped", "Camera stopped."));
 }
 
 /**
@@ -2978,11 +3053,23 @@ async function runFaceLivenessCheck() {
     return null;
   }
   if (!faceCamera || !faceCamera.isActive()) {
-    setStatus("face-status", "Camera not running. Start the camera first.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.cameraNotRunningStartThe",
+        "Camera not running. Start the camera first.",
+      ),
+    );
     return null;
   }
   if (typeof FaceLiveness !== "function") {
-    setStatus("face-status", "Face Liveness module not loaded.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.faceLivenessModuleNotLoaded",
+        "Face Liveness module not loaded.",
+      ),
+    );
     return null;
   }
   if (!faceLiveness) faceLiveness = new FaceLiveness();
@@ -3017,7 +3104,13 @@ async function runFaceLivenessCheck() {
 async function handleFaceCameraCapture() {
   var frameCanvas, evidence, modeEl, mode, reasons;
   if (!faceCamera || !faceCamera.isActive()) {
-    setStatus("face-status", "Camera not running. Start the camera first.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.cameraNotRunningStartThe",
+        "Camera not running. Start the camera first.",
+      ),
+    );
     return;
   }
   if (!faceEngine) {
@@ -3031,24 +3124,45 @@ async function handleFaceCameraCapture() {
   }
   /* c8 ignore start -- vm var bindings cannot be deleted in unit tests */
   if (!faceEngine) {
-    setStatus("face-status", "Face Engine not initialized.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.faceEngineNotInitialized",
+        "Face Engine not initialized.",
+      ),
+    );
     return;
   }
   /* c8 ignore stop */
   try {
-    setStatus("face-status", "Loading models...");
+    setStatus(
+      "face-status",
+      __("face.status.loadingModels", "Loading models..."),
+    );
     await faceEngine.loadModels();
     evidence = await runFaceLivenessCheck();
     if (evidence !== null && !evidence.live) {
       reasons = evidence.reasons || [];
       if (reasons.length === 0) reasons = evidence.failedChallenges || [];
-      setStatus("face-status", "Liveness check failed: " + reasons.join(", "));
+      setStatus(
+        "face-status",
+        __(
+          "face.status.livenessCheckFailed",
+          "Liveness check failed: " + reasons.join(", "),
+        ),
+      );
       return;
     }
-    setStatus("face-status", "Capturing frame...");
+    setStatus(
+      "face-status",
+      __("face.status.capturingFrame", "Capturing frame..."),
+    );
     frameCanvas = faceCamera.captureFrame(640);
     if (!frameCanvas) {
-      setStatus("face-status", "Could not capture a frame.");
+      setStatus(
+        "face-status",
+        __("face.status.couldNotCaptureAFrame", "Could not capture a frame."),
+      );
       return;
     }
     _faceLivenessEvidence = evidence;
@@ -3085,7 +3199,13 @@ async function handleFaceCameraCapture() {
 async function listRegisteredFaces() {
   var faces, size, el, countEl, div, noteEl, versions;
   if (!faceRegistry) {
-    setStatus("face-status", "Face Registry not initialized.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.faceRegistryNotInitialized",
+        "Face Registry not initialized.",
+      ),
+    );
     return;
   }
   try {
@@ -3156,10 +3276,10 @@ async function handleFaceDelete(id) {
   if (!faceRegistry) return;
   try {
     await faceRegistry.deleteFace(id);
-      setStatus(
-        "face-status",
-        __("face.deleted_from_registry", "Face deleted from registry."),
-      );
+    setStatus(
+      "face-status",
+      __("face.deleted_from_registry", "Face deleted from registry."),
+    );
     await listRegisteredFaces();
   } catch (error) {
     setStatus("face-status", "Delete error: " + error.message);
@@ -3206,23 +3326,44 @@ async function handleFaceRefreshList() {
 function handleFaceBioHashCopy() {
   var code, el;
   if (!_faceReport || !_faceReport.biohash) {
-    setStatus("face-status", "Generate a Privacy ID first (run the pipeline).");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.generateAPrivacyIdFirst",
+        "Generate a Privacy ID first (run the pipeline).",
+      ),
+    );
     return;
   }
   code = _faceReport.biohash.codeHex;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(code).then(
       function () {
-        setStatus("face-status", "Privacy ID copied to clipboard.");
+        setStatus(
+          "face-status",
+          __(
+            "face.status.privacyIdCopiedToClipboard",
+            "Privacy ID copied to clipboard.",
+          ),
+        );
       },
       function () {
-        setStatus("face-status", "Copy failed. Select the ID text manually.");
+        setStatus(
+          "face-status",
+          __(
+            "face.status.copyFailedSelectTheId",
+            "Copy failed. Select the ID text manually.",
+          ),
+        );
       },
     );
   } else {
     el = document.getElementById("face-report");
     if (el && el.select) el.select();
-    setStatus("face-status", "Privacy ID ready to copy.");
+    setStatus(
+      "face-status",
+      __("face.status.privacyIdReadyToCopy", "Privacy ID ready to copy."),
+    );
   }
 }
 
@@ -3299,7 +3440,13 @@ async function faceLabelsToSheet(format, opts) {
 async function handleFaceExportLabels(format) {
   var sheet, ext, name;
   if (!faceRegistry) {
-    setStatus("face-status", "Face Registry not initialized.");
+    setStatus(
+      "face-status",
+      __(
+        "face.status.faceRegistryNotInitialized",
+        "Face Registry not initialized.",
+      ),
+    );
     return;
   }
   format = format === "csv" ? "csv" : "txt";
