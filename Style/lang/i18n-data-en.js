@@ -1015,4 +1015,5 @@ window.__I18N_DATA.en = {
   "face.report.passkey": "Passkey",
   "face.report.no_passkey": "Not registered.",
   "face.report.credential": "Face Credential",
+  "face.delete_btn": "Delete",
 };

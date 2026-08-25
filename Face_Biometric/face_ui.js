@@ -3133,9 +3133,11 @@ async function listRegisteredFaces() {
         "</strong> (ID: " +
         f.id +
         ")</span>" +
-        '<button class="btn btn-sm" onclick="handleFaceDelete(' +
+        '<button class="btn btn-sm face-mgmt-btn" onclick="handleFaceDelete(' +
         f.id +
-        ')">Delete</button>';
+        ')">' +
+        __("face.delete_btn", "Delete") +
+        "</button>";
       el.append(div);
     });
     return size;

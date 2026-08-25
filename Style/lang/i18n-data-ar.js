@@ -868,7 +868,7 @@ window.__I18N_DATA.ar = {
   "face.consent_given":
     "✅ Consent recorded. You can withdraw it anytime — withdrawing deletes your stored biometric data.",
   "face.consent_needed_first":
-    "⚠️ Biometric consent is required first — accept the notice above to enable photo upload and camera capture.",
+    "⚠️ يلزم الموافقة البيومترية أولًا — اقبل الإشعار أعلاه لتفعيل رفع الصورة والكاميرا.",
   "face.consent_check_required": "يرجى تحديد مربع الموافقة أولًا.",
   "face.consent_recorded":
     "تم تسجيل الموافقة — كل المعالجة تبقى على هذا الجهاز.",
@@ -1013,4 +1013,5 @@ window.__I18N_DATA.ar = {
   "face.report.passkey": "Passkey",
   "face.report.no_passkey": "Not registered.",
   "face.report.credential": "Face Credential",
+  "face.delete_btn": "حذف",
 };
