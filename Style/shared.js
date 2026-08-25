@@ -804,7 +804,9 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
     );
   } else {
     window.addEventListener("load", function () {
-      var swBase = document.documentElement.dataset.standalone ? "../../../" : "";
+      var swBase = document.documentElement.dataset.standalone
+        ? "../../../"
+        : "";
       navigator.serviceWorker
         .register(swBase + "sw.js?v=" + SW_VERSION, { updateViaCache: "none" })
         .then(function (reg) {
