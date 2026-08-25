@@ -244,7 +244,7 @@
 .help-card-body {
   font-size: 0.95rem;
   line-height: 1.75;
-  white-space: normal;
+  white-space: pre-wrap;
 }
 
 .help-card-body li {
