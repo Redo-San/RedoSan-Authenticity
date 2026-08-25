@@ -225,6 +225,20 @@
   cursor: pointer;
 }
 
+/* ── Consent list: RTL-safe, items stacked one below another ── */
+.consent-list {
+  font-size: 0.78rem;
+  margin: 0 0 10px;
+  padding-inline-start: 18px;
+  padding-inline-end: 4px;
+  line-height: 1.7;
+  list-style-type: disc;
+}
+
+.consent-list li {
+  margin-block-end: 6px;
+}
+
 /* ── Help card readability & flow (desktop EN copy renders small, and the
       shared pre-line rule forces ragged breaks with a wide right gutter) ── */
 .help-card-body {
