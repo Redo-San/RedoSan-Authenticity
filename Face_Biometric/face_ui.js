@@ -3121,7 +3121,9 @@ async function listRegisteredFaces() {
     el.innerHTML = "";
     if (faces.length === 0) {
       el.innerHTML =
-        '<p style="color:var(--text-muted)">No faces registered yet.</p>';
+        '<p style="color:var(--text-muted)">' +
+        __("face.no_faces", "No faces registered yet.") +
+        "</p>";
       return size;
     }
     faces.forEach(function (f) {
@@ -3154,7 +3156,10 @@ async function handleFaceDelete(id) {
   if (!faceRegistry) return;
   try {
     await faceRegistry.deleteFace(id);
-    setStatus("face-status", "Face deleted from registry.");
+      setStatus(
+        "face-status",
+        __("face.deleted_from_registry", "Face deleted from registry."),
+      );
     await listRegisteredFaces();
   } catch (error) {
     setStatus("face-status", "Delete error: " + error.message);
