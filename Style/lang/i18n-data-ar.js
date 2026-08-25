@@ -1016,4 +1016,35 @@ window.__I18N_DATA.ar = {
   "face.delete_btn": "حذف",
   "face.no_faces": "لا توجد وجوه مسجلة بعد.",
   "face.deleted_from_registry": "تم حذف الوجه من السجل.",
+  "face.status.faceRegistryNotInitialized": "سجل الوجوه غير مهيأ.",
+  "face.status.webauthnModuleNotLoaded": "وحدة WebAuthn غير محمّلة.",
+  "face.status.photoTooLargeMaximumFileSizeIs25MB":
+    "الصورة كبيرة جدًا. الحد الأقصى لحجم الملف 25 ميغابايت.",
+  "face.status.faceEngineNotInitialized": "محرك الوجه غير مهيأ.",
+  "face.status.loadingModels": "جارٍ تحميل النماذج...",
+  "face.status.detectingFaces": "جارٍ اكتشاف الوجوه...",
+  "face.status.noFaceDetectedInTheImage": "لم يُكتشف وجه في الصورة.",
+  "face.status.generatingDIDKeypair": "جارٍ توليد زوج مفاتيح DID...",
+  "face.status.signingFaceDescriptorWithDID": "جارٍ توقيع وصف الوجه بـ DID...",
+  "face.status.generatingPrivacyIdentifierBiohash":
+    "جارٍ توليد معرّف الخصوصية (BioHash)...",
+  "face.status.generatingFuzzyIdentifier": "جارٍ توليد المعرف الضبابي...",
+  "face.status.verifyingPasskey": "جارٍ التحقق من passkey...",
+  "face.status.checkingRegisteredFaces": "جارٍ فحص الوجوه المسجلة...",
+  "face.status.doneAllIdentifiersGenerated": "تم توليد جميع المعرفات.",
+  "face.status.faceCameraModuleNotLoaded": "وحدة الكاميرا غير محمّلة.",
+  "face.status.cameraElementNotFound": "عنصر الكاميرا غير موجود.",
+  "face.status.startingCamera": "جارٍ تشغيل الكاميرا...",
+  "face.status.cameraStopped": "توقفت الكاميرا.",
+  "face.status.cameraNotRunningStartTheCameraFirst":
+    "الكاميرا لا تعمل. شغّلها أولًا.",
+  "face.status.faceLivenessModuleNotLoaded": "وحدة الحيوية غير محمّلة.",
+  "face.status.capturingFrame": "جارٍ التقاط الإطار...",
+  "face.status.couldNotCaptureAFrame": "تعذر التقاط إطار.",
+  "face.status.generateAPrivacyIdFirstRunThePipeline":
+    "ولّد معرّف الخصوصية أولًا (شغّل المسار).",
+  "face.status.privacyIdCopiedToClipboard": "نُسخ معرّف الخصوصية إلى الحافظة.",
+  "face.status.copyFailedSelectTheIDTextManually":
+    "فشل النسخ. حدد نص المعرّف يدويًا.",
+  "face.status.privacyIdReadyToCopy": "معرّف الخصوصية جاهز للنسخ.",
 };
