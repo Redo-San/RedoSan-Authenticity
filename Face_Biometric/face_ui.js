@@ -760,10 +760,21 @@ function revealPasskeyRequire() {
  * WebAuthn the requirement is skipped (generation still proceeds).
  * @returns {Promise<boolean>} true when the action may proceed.
  */
-async function ensureFacePasskeyForAction() {
+async function ensureFacePasskeyForAction(force) {
   var registered, waAvailable;
   registered = await isFacePasskeyRegistered();
   if (registered) return true;
+  // Session-level dismissal: once the user cancels a ceremony, entry-point
+  // gates stop re-prompting on every photo/camera action. The GENERATION
+  // step always passes force=true so the security requirement stands.
+  var dismissed = false;
+  try {
+    dismissed = sessionStorage.getItem(FACE_PK_SKIP_KEY) === "1";
+  } catch (_e) {}
+  if (dismissed && !force) {
+    revealPasskeyRequire();
+    return false;
+  }
   try {
     waAvailable =
       typeof FaceWebauthn !== "undefined" &&
@@ -790,6 +801,9 @@ async function ensureFacePasskeyForAction() {
   await handlePasskeyRegister();
   var ok = await isFacePasskeyRegistered();
   if (!ok) {
+    try {
+      sessionStorage.setItem(FACE_PK_SKIP_KEY, "1");
+    } catch (_e) {}
     setStatus(
       "face-status",
       __(
@@ -797,6 +811,10 @@ async function ensureFacePasskeyForAction() {
         "Register a passkey to enable generation.",
       ),
     );
+  } else {
+    try {
+      sessionStorage.removeItem(FACE_PK_SKIP_KEY);
+    } catch (_e) {}
   }
   return ok;
 }
@@ -1100,6 +1118,7 @@ function updateFaceRunState() {
  * current browsing session — every new visit requires an explicit consent.
  * Withdrawing consent deletes the record AND all stored biometric data.
  */
+var FACE_PK_SKIP_KEY = "redoSan.facePkSkipSession";
 var FACE_CONSENT_KEY = "redoSan.faceConsent";
 var FACE_CONSENT_VERSION = 1;
 var FACE_CONSENT_POLICY_VERSION = 1;
@@ -1373,7 +1392,7 @@ async function handleFaceRun() {
     );
     return;
   }
-  if (!(await ensureFacePasskeyForAction())) return;
+  if (!(await ensureFacePasskeyForAction(true))) return;
   return runFacePipeline(_facePendingCanvas, _facePendingSource || {});
 }
 

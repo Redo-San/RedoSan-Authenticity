@@ -328,6 +328,13 @@ function resetGlobals() {
   globalThis._facePendingCanvas = null;
   globalThis._facePendingSource = null;
   globalThis._faceWaUnavailable = false;
+  if (
+    typeof globalThis.sessionStorage === "object" &&
+    globalThis.sessionStorage &&
+    typeof globalThis.sessionStorage.removeItem === "function"
+  ) {
+    globalThis.sessionStorage.removeItem("redoSan.facePkSkipSession");
+  }
   globalThis._faceInputTab = "upload";
   globalThis.document = null;
   downloads.length = 0;
