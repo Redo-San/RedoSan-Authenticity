@@ -204,3 +204,14 @@
     animation: none;
   }
 }
+
+/* ── Consent checkbox: comfortable touch target on mobile ── */
+#face-consent-panel input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  flex: none;
+  margin-top: 2px;
+  accent-color: #6c5ce7;
+  cursor: pointer;
+}
