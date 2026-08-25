@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // ── GPL polyfills ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // ── Global helpers needed by face_ui.js ──
 
@@ -69,7 +74,9 @@ globalThis.didSigToBase64 = function (sig) {
 globalThis.didGenerateDocument = function (kp) {
   return {
     id: kp.did,
-    verificationMethod: [{ id: kp.did + "#key-1", type: "Ed25519VerificationKey2020" }],
+    verificationMethod: [
+      { id: kp.did + "#key-1", type: "Ed25519VerificationKey2020" },
+    ],
   };
 };
 globalThis.didCreateVerifiableCredential = function (kp, subject, sig) {
@@ -86,7 +93,14 @@ const engineSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_engine.js"),
   "utf8",
 );
-vm.runInThisContext(engineSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_engine.js") });
+vm.runInThisContext(engineSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_engine.js",
+  ),
+});
 
 const { indexedDB, IDBKeyRange } = require("fake-indexeddb");
 globalThis.indexedDB = indexedDB;
@@ -96,31 +110,56 @@ const registrySrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_registry.js"),
   "utf8",
 );
-vm.runInThisContext(registrySrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_registry.js") });
+vm.runInThisContext(registrySrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_registry.js",
+  ),
+});
 
 const biohashSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_biohash.js"),
   "utf8",
 );
-vm.runInThisContext(biohashSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_biohash.js") });
+vm.runInThisContext(biohashSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_biohash.js",
+  ),
+});
 
 const fuzzySrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_fuzzy.js"),
   "utf8",
 );
-vm.runInThisContext(fuzzySrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_fuzzy.js") });
+vm.runInThisContext(fuzzySrc, {
+  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_fuzzy.js"),
+});
 
 const cryptoSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_crypto.js"),
   "utf8",
 );
-vm.runInThisContext(cryptoSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_crypto.js") });
+vm.runInThisContext(cryptoSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_crypto.js",
+  ),
+});
 
 const uiSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_ui.js"),
   "utf8",
 );
-vm.runInThisContext(uiSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_ui.js") });
+vm.runInThisContext(uiSrc, {
+  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_ui.js"),
+});
 // Pristine module references: some suites stub these globals; the ladder
 // tests below must always exercise the real implementations.
 globalThis.__faceUiPristine = {
@@ -226,8 +265,17 @@ function makeDoc(overrides) {
     "face-cam-capture": { disabled: true },
     "face-upload-wrapper": { style: {} },
     "face-capture-wrapper": { style: { display: "none" } },
-    "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
-    "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+    "face-progress-overlay": {
+      classList: makeClassList(),
+      style: {},
+      parentNode: { removeChild: function () {} },
+      offsetWidth: 0,
+    },
+    "face-progress-bar": {
+      style: {},
+      classList: makeClassList(),
+      setAttribute: function () {},
+    },
     "face-progress-title": { textContent: "", setAttribute: function () {} },
     "face-progress-text": { textContent: "", setAttribute: function () {} },
     "face-progress-pct": { textContent: "", setAttribute: function () {} },
@@ -247,7 +295,13 @@ function makeDoc(overrides) {
     },
     createElement: function (tag) {
       if (tag === "canvas") return createCanvas(200, 200);
-      return { className: "", innerHTML: "", style: {}, append: function () {}, textContent: "" };
+      return {
+        className: "",
+        innerHTML: "",
+        style: {},
+        append: function () {},
+        textContent: "",
+      };
     },
     body: { appendChild: function () {} },
   };
@@ -365,13 +419,19 @@ describe("Face UI — faceRandomToken", () => {
   });
 
   it("should produce different tokens", () => {
-    assert.notEqual(globalThis.faceRandomToken(8), globalThis.faceRandomToken(8));
+    assert.notEqual(
+      globalThis.faceRandomToken(8),
+      globalThis.faceRandomToken(8),
+    );
   });
 });
 
 describe("Face UI — faceBytesToHex", () => {
   it("should convert bytes to lowercase hex", () => {
-    assert.equal(globalThis.faceBytesToHex(new Uint8Array([0, 1, 15, 255, 16])), "00010fff10");
+    assert.equal(
+      globalThis.faceBytesToHex(new Uint8Array([0, 1, 15, 255, 16])),
+      "00010fff10",
+    );
   });
 
   it("should return empty string for null", () => {
@@ -464,10 +524,26 @@ describe("Face UI — handleFaceFilePicked", () => {
     assert.ok(globalThis._facePendingCanvas, "pending canvas staged");
     assert.equal(globalThis._facePendingSource.source, "file");
     assert.equal(globalThis._facePendingSource.fileName, "my_photo.jpg");
-    assert.equal(runBtn.disabled, false, "run button enabled with label filled");
-    assert.equal(camStart.disabled, true, "camera start disabled while a photo is picked");
-    assert.equal(camCap.disabled, true, "camera capture disabled while a photo is picked");
-    assert.equal(fileEl.disabled, false, "file input stays enabled in file mode");
+    assert.equal(
+      runBtn.disabled,
+      false,
+      "run button enabled with label filled",
+    );
+    assert.equal(
+      camStart.disabled,
+      true,
+      "camera start disabled while a photo is picked",
+    );
+    assert.equal(
+      camCap.disabled,
+      true,
+      "camera capture disabled while a photo is picked",
+    );
+    assert.equal(
+      fileEl.disabled,
+      false,
+      "file input stays enabled in file mode",
+    );
   });
 
   it("should keep the run button disabled until the label is filled", async () => {
@@ -481,7 +557,11 @@ describe("Face UI — handleFaceFilePicked", () => {
     await globalThis.handleFaceFilePicked();
     await flush();
     assert.ok(globalThis._facePendingCanvas, "photo staged");
-    assert.equal(runBtn.disabled, true, "whitespace label must keep the button disabled");
+    assert.equal(
+      runBtn.disabled,
+      true,
+      "whitespace label must keep the button disabled",
+    );
   });
 });
 
@@ -501,7 +581,10 @@ describe("Face UI — updateFaceRunState", () => {
 
   it("should keep the button disabled without a staged photo", () => {
     const runBtn = { disabled: true };
-    globalThis.document = makeDoc({ "face-run": runBtn, "face-label": { value: "Alice" } });
+    globalThis.document = makeDoc({
+      "face-run": runBtn,
+      "face-label": { value: "Alice" },
+    });
     globalThis.updateFaceRunState();
     assert.equal(runBtn.disabled, true);
   });
@@ -509,10 +592,16 @@ describe("Face UI — updateFaceRunState", () => {
   it("should keep the button disabled until the label is filled", () => {
     const runBtn = { disabled: true };
     globalThis._facePendingCanvas = createCanvas(200, 200);
-    globalThis.document = makeDoc({ "face-run": runBtn, "face-label": { value: "" } });
+    globalThis.document = makeDoc({
+      "face-run": runBtn,
+      "face-label": { value: "" },
+    });
     globalThis.updateFaceRunState();
     assert.equal(runBtn.disabled, true);
-    globalThis.document = makeDoc({ "face-run": runBtn, "face-label": { value: "   " } });
+    globalThis.document = makeDoc({
+      "face-run": runBtn,
+      "face-label": { value: "   " },
+    });
     globalThis.updateFaceRunState();
     assert.equal(runBtn.disabled, true);
   });
@@ -520,7 +609,10 @@ describe("Face UI — updateFaceRunState", () => {
   it("should enable the button when a photo is staged and the label is filled", () => {
     const runBtn = { disabled: true };
     globalThis._facePendingCanvas = createCanvas(200, 200);
-    globalThis.document = makeDoc({ "face-run": runBtn, "face-label": { value: " Alice " } });
+    globalThis.document = makeDoc({
+      "face-run": runBtn,
+      "face-label": { value: " Alice " },
+    });
     globalThis.updateFaceRunState();
     assert.equal(runBtn.disabled, false);
   });
@@ -542,14 +634,26 @@ describe("Face UI — handleFaceRun", () => {
   it("should run the pipeline with the staged file photo", async () => {
     globalThis.faceEngine = makeEngine();
     globalThis._facePendingCanvas = createCanvas(200, 200);
-    globalThis._facePendingSource = { source: "file", fileName: "staged.jpg", width: 200, height: 200 };
+    globalThis._facePendingSource = {
+      source: "file",
+      fileName: "staged.jpg",
+      width: 200,
+      height: 200,
+    };
     globalThis.document = makeDoc();
     await globalThis.handleFaceRun();
     assert.ok(globalThis._faceReport, "report should be generated");
     assert.equal(globalThis._faceReport.source, "file");
     assert.equal(globalThis._faceReport.photo.fileName, "staged.jpg");
-    assert.equal(globalThis._faceReport.registry.registeredId, null, "no auto-register when label empty");
-    assert.equal(globalThis.document.getElementById("face-actions").style.display, "flex");
+    assert.equal(
+      globalThis._faceReport.registry.registeredId,
+      null,
+      "no auto-register when label empty",
+    );
+    assert.equal(
+      globalThis.document.getElementById("face-actions").style.display,
+      "flex",
+    );
   });
 
   it("should run the pipeline with the staged camera photo and liveness evidence", async () => {
@@ -590,7 +694,12 @@ describe("Face UI — runFacePipeline", () => {
     await globalThis.faceRegistry.open();
     globalThis.document = makeDoc();
     const canvas = createCanvas(200, 200);
-    await globalThis.runFacePipeline(canvas, { source: "file", fileName: "alice.jpg", width: 200, height: 200 });
+    await globalThis.runFacePipeline(canvas, {
+      source: "file",
+      fileName: "alice.jpg",
+      width: 200,
+      height: 200,
+    });
 
     const r = globalThis._faceReport;
     assert.ok(r, "report should exist");
@@ -628,10 +737,23 @@ describe("Face UI — runFacePipeline", () => {
 
     assert.equal(globalThis._faceReport, r);
     assert.equal(globalThis.window._faceReport, r);
-    assert.equal(downloadHandler, globalThis.downloadFaceReport, "download handler registered");
-    assert.equal(globalThis.document.getElementById("face-actions").style.display, "flex");
-    assert.equal(globalThis.document.getElementById("face-status").textContent, "Done. All identifiers generated.");
-    assert.equal(globalThis.document.getElementById("face-steps").style.display, "none");
+    assert.equal(
+      downloadHandler,
+      globalThis.downloadFaceReport,
+      "download handler registered",
+    );
+    assert.equal(
+      globalThis.document.getElementById("face-actions").style.display,
+      "flex",
+    );
+    assert.equal(
+      globalThis.document.getElementById("face-status").textContent,
+      "Done. All identifiers generated.",
+    );
+    assert.equal(
+      globalThis.document.getElementById("face-steps").style.display,
+      "none",
+    );
     assert.equal(globalThis._lastFaceCount, 1);
     assert.equal(globalThis._lastDescriptor, DESCRIPTOR);
   });
@@ -640,7 +762,10 @@ describe("Face UI — runFacePipeline", () => {
     globalThis.faceEngine = makeEngine(new NoFaceHuman());
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "n.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "n.png",
+    });
     assert.ok(statusEl.textContent.includes("No face detected"));
     assert.equal(globalThis._faceReport, null);
     assert.equal(globalThis._lastFaceCount, 0);
@@ -655,7 +780,10 @@ describe("Face UI — runFacePipeline", () => {
     globalThis.FaceRegistry = undefined;
     await globalThis.runFacePipeline(createCanvas(200, 200), {});
     assert.equal(statusEl.textContent, "Face Engine not initialized.");
-    assert.equal(globalThis.document.getElementById("face-steps").style.display, "none");
+    assert.equal(
+      globalThis.document.getElementById("face-steps").style.display,
+      "none",
+    );
     globalThis.FaceEngine = origEngine;
     globalThis.FaceRegistry = origRegistry;
   });
@@ -670,9 +798,15 @@ describe("Face UI — runFacePipeline", () => {
       return e;
     };
     globalThis.document = makeDoc();
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "x.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "x.png",
+    });
     assert.ok(globalThis.faceEngine, "engine initialized");
-    assert.ok(globalThis.faceRegistry instanceof FaceRegistry, "registry initialized");
+    assert.ok(
+      globalThis.faceRegistry instanceof FaceRegistry,
+      "registry initialized",
+    );
     assert.ok(globalThis._faceReport);
     globalThis.FaceEngine = RealEngine;
   });
@@ -682,7 +816,10 @@ describe("Face UI — runFacePipeline", () => {
     globalThis.faceRegistry = new FaceRegistry();
     await globalThis.faceRegistry.open();
     globalThis.document = makeDoc({ "face-label": { value: "  Bob  " } });
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "b.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "b.png",
+    });
     const r = globalThis._faceReport;
     assert.ok(r.registry.registeredId, "registeredId should be set");
     const faces = await globalThis.faceRegistry.getAllFaces();
@@ -697,11 +834,18 @@ describe("Face UI — runFacePipeline", () => {
     await globalThis.faceRegistry.clear();
     await globalThis.faceRegistry.addFace("Alice", DESCRIPTOR);
     globalThis.document = makeDoc();
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "m.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "m.png",
+    });
     const r = globalThis._faceReport;
     assert.ok(r.registry.match);
     assert.equal(r.registry.match.label, "Alice");
-    assert.equal(r.registry.match.similarity, 100, "identical descriptor => 100%");
+    assert.equal(
+      r.registry.match.similarity,
+      100,
+      "identical descriptor => 100%",
+    );
     await globalThis.faceRegistry.clear();
   });
 
@@ -710,7 +854,10 @@ describe("Face UI — runFacePipeline", () => {
     globalThis.document = makeDoc();
     const orig = globalThis.didGenerateKeypair;
     delete globalThis.didGenerateKeypair;
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "d.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "d.png",
+    });
     const r = globalThis._faceReport;
     assert.equal(r.did, null);
     assert.ok(r.biohash, "BioHash still generated");
@@ -725,7 +872,10 @@ describe("Face UI — runFacePipeline", () => {
     const fz = globalThis.FaceFuzzy;
     delete globalThis.FaceBioHash;
     delete globalThis.FaceFuzzy;
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "x.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "x.png",
+    });
     const r = globalThis._faceReport;
     assert.ok(r.did, "DID still generated");
     assert.equal(r.biohash, null);
@@ -742,7 +892,10 @@ describe("Face UI — runFacePipeline", () => {
     };
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "e.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "e.png",
+    });
     assert.ok(statusEl.textContent.includes("Pipeline error: detect crash"));
     assert.equal(globalThis._faceReport, null);
   });
@@ -800,19 +953,43 @@ describe("Face UI — faceExtractEmbedding", () => {
 
   function stubArcface(embedResult) {
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 2, y: 2 }]; },
-      alignFace: function () { return { canvas: createCanvas(112, 112), matrix: [1, 0, 0, 0, 1, 0], scale: 1, angle: 0 }; },
+      meshToLandmarks5: function () {
+        return [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 2, y: 0 },
+          { x: 0, y: 2 },
+          { x: 2, y: 2 },
+        ];
+      },
+      alignFace: function () {
+        return {
+          canvas: createCanvas(112, 112),
+          matrix: [1, 0, 0, 0, 1, 0],
+          scale: 1,
+          angle: 0,
+        };
+      },
     };
     globalThis.FaceONNXEmbedder = {
-      isReady: function () { return true; },
-      load: async function () { return true; },
-      embed: async function () { return embedResult; },
+      isReady: function () {
+        return true;
+      },
+      load: async function () {
+        return true;
+      },
+      embed: async function () {
+        return embedResult;
+      },
     };
   }
 
   it("should return the human descriptor by default", async () => {
     globalThis.document = makeDoc();
-    const r = await globalThis.faceExtractEmbedding(createCanvas(200, 200), face);
+    const r = await globalThis.faceExtractEmbedding(
+      createCanvas(200, 200),
+      face,
+    );
     assert.equal(r.descriptor, DESCRIPTOR);
     assert.equal(r.version, "human-hse");
     assert.equal(r.error, undefined);
@@ -823,7 +1000,10 @@ describe("Face UI — faceExtractEmbedding", () => {
     stubArcface(arcDesc);
     globalThis._faceEmbedder = "arcface";
     globalThis.document = makeDoc();
-    const r = await globalThis.faceExtractEmbedding(createCanvas(200, 200), face);
+    const r = await globalThis.faceExtractEmbedding(
+      createCanvas(200, 200),
+      face,
+    );
     assert.equal(r.descriptor, arcDesc);
     assert.equal(r.version, "arcface-mbf");
     assert.equal(r.descriptor.length, 512);
@@ -832,21 +1012,38 @@ describe("Face UI — faceExtractEmbedding", () => {
   it("should fall back to human when the arcface modules are missing", async () => {
     globalThis._faceEmbedder = "arcface";
     globalThis.document = makeDoc();
-    const r = await globalThis.faceExtractEmbedding(createCanvas(200, 200), face);
+    const r = await globalThis.faceExtractEmbedding(
+      createCanvas(200, 200),
+      face,
+    );
     assert.equal(r.descriptor, DESCRIPTOR);
     assert.equal(r.version, "human-hse");
     assert.equal(r.error, "arcface-unavailable");
   });
 
   it("should fall back to human when the model fails to load", async () => {
-    globalThis.FaceAlign = { meshToLandmarks5: function () { return []; }, alignFace: function () { return null; } };
+    globalThis.FaceAlign = {
+      meshToLandmarks5: function () {
+        return [];
+      },
+      alignFace: function () {
+        return null;
+      },
+    };
     globalThis.FaceONNXEmbedder = {
-      isReady: function () { return false; },
-      load: async function () { return false; },
+      isReady: function () {
+        return false;
+      },
+      load: async function () {
+        return false;
+      },
     };
     globalThis._faceEmbedder = "arcface";
     globalThis.document = makeDoc();
-    const r = await globalThis.faceExtractEmbedding(createCanvas(200, 200), face);
+    const r = await globalThis.faceExtractEmbedding(
+      createCanvas(200, 200),
+      face,
+    );
     assert.equal(r.descriptor, DESCRIPTOR);
     assert.equal(r.version, "human-hse");
     assert.equal(r.error, "arcface-load-failed");
@@ -854,30 +1051,57 @@ describe("Face UI — faceExtractEmbedding", () => {
 
   it("should fall back to human when alignment fails", async () => {
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return null; },
-      alignFace: function () { return null; },
+      meshToLandmarks5: function () {
+        return null;
+      },
+      alignFace: function () {
+        return null;
+      },
     };
-    globalThis.FaceONNXEmbedder = { isReady: function () { return true; }, load: async function () { return true; } };
+    globalThis.FaceONNXEmbedder = {
+      isReady: function () {
+        return true;
+      },
+      load: async function () {
+        return true;
+      },
+    };
     globalThis._faceEmbedder = "arcface";
     globalThis.document = makeDoc();
-    const r = await globalThis.faceExtractEmbedding(createCanvas(200, 200), face);
+    const r = await globalThis.faceExtractEmbedding(
+      createCanvas(200, 200),
+      face,
+    );
     assert.equal(r.descriptor, DESCRIPTOR);
     assert.equal(r.error, "arcface-align-failed");
   });
 
   it("should fall back to human when embedding throws", async () => {
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return [{ x: 0, y: 0 }]; },
-      alignFace: function () { return { canvas: createCanvas(112, 112) }; },
+      meshToLandmarks5: function () {
+        return [{ x: 0, y: 0 }];
+      },
+      alignFace: function () {
+        return { canvas: createCanvas(112, 112) };
+      },
     };
     globalThis.FaceONNXEmbedder = {
-      isReady: function () { return true; },
-      load: async function () { return true; },
-      embed: async function () { throw new Error("onnx crashed"); },
+      isReady: function () {
+        return true;
+      },
+      load: async function () {
+        return true;
+      },
+      embed: async function () {
+        throw new Error("onnx crashed");
+      },
     };
     globalThis._faceEmbedder = "arcface";
     globalThis.document = makeDoc();
-    const r = await globalThis.faceExtractEmbedding(createCanvas(200, 200), face);
+    const r = await globalThis.faceExtractEmbedding(
+      createCanvas(200, 200),
+      face,
+    );
     assert.equal(r.descriptor, DESCRIPTOR);
     assert.equal(r.version, "human-hse");
     assert.equal(r.error, "arcface-embed-error");
@@ -904,17 +1128,44 @@ describe("Face UI — runFacePipeline arcface", () => {
     globalThis.faceEngine = makeEngine(new MeshHuman());
     globalThis.faceRegistry = new FaceRegistry();
     await globalThis.faceRegistry.open();
-    globalThis.document = makeDoc({ "face-embedder": { value: "arcface" }, "face-label": { value: "Arc" } });
+    globalThis.document = makeDoc({
+      "face-embedder": { value: "arcface" },
+      "face-label": { value: "Arc" },
+    });
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 2, y: 2 }]; },
-      alignFace: function () { return { canvas: createCanvas(112, 112), matrix: [1, 0, 0, 0, 1, 0], scale: 1, angle: 0 }; },
+      meshToLandmarks5: function () {
+        return [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 2, y: 0 },
+          { x: 0, y: 2 },
+          { x: 2, y: 2 },
+        ];
+      },
+      alignFace: function () {
+        return {
+          canvas: createCanvas(112, 112),
+          matrix: [1, 0, 0, 0, 1, 0],
+          scale: 1,
+          angle: 0,
+        };
+      },
     };
     globalThis.FaceONNXEmbedder = {
-      isReady: function () { return true; },
-      load: async function () { return true; },
-      embed: async function () { return arcDesc; },
+      isReady: function () {
+        return true;
+      },
+      load: async function () {
+        return true;
+      },
+      embed: async function () {
+        return arcDesc;
+      },
     };
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "a.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "a.png",
+    });
 
     const r = globalThis._faceReport;
     assert.ok(r, "report should exist");
@@ -934,18 +1185,33 @@ describe("Face UI — runFacePipeline arcface", () => {
     globalThis.faceRegistry = new FaceRegistry();
     await globalThis.faceRegistry.open();
     await globalThis.faceRegistry.clear();
-    await globalThis.faceRegistry.addFace("ArcAlice", arcDesc, { embeddingVersion: "arcface-mbf" });
+    await globalThis.faceRegistry.addFace("ArcAlice", arcDesc, {
+      embeddingVersion: "arcface-mbf",
+    });
     globalThis.document = makeDoc({ "face-embedder": { value: "arcface" } });
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return [{ x: 0, y: 0 }]; },
-      alignFace: function () { return { canvas: createCanvas(112, 112) }; },
+      meshToLandmarks5: function () {
+        return [{ x: 0, y: 0 }];
+      },
+      alignFace: function () {
+        return { canvas: createCanvas(112, 112) };
+      },
     };
     globalThis.FaceONNXEmbedder = {
-      isReady: function () { return true; },
-      load: async function () { return true; },
-      embed: async function () { return arcDesc; },
+      isReady: function () {
+        return true;
+      },
+      load: async function () {
+        return true;
+      },
+      embed: async function () {
+        return arcDesc;
+      },
     };
-    await globalThis.runFacePipeline(createCanvas(200, 200), { source: "file", fileName: "a2.png" });
+    await globalThis.runFacePipeline(createCanvas(200, 200), {
+      source: "file",
+      fileName: "a2.png",
+    });
     const r = globalThis._faceReport;
     assert.ok(r.registry.match);
     assert.equal(r.registry.match.label, "ArcAlice");
@@ -1006,7 +1272,10 @@ describe("Face UI — renderFaceReport", () => {
     assert.ok(html.includes("Biometric Report"));
     assert.ok(html.includes("alice.jpg"));
     assert.ok(html.includes("128 dims"));
-    assert.ok(html.includes("DID Identity &amp; Signature") || html.includes("DID Identity & Signature"));
+    assert.ok(
+      html.includes("DID Identity &amp; Signature") ||
+        html.includes("DID Identity & Signature"),
+    );
     assert.ok(html.includes("did:key:zTest1234567890")); // gitleaks:allow
     assert.ok(html.includes("Auto-generated PIN"));
     assert.ok(html.includes("Ab3Xy9Qz"));
@@ -1050,12 +1319,23 @@ describe("Face UI — renderFaceReport", () => {
   it("should render failed liveness", () => {
     const el = { style: {}, innerHTML: "" };
     globalThis.document = makeDoc({ "face-report": el });
-    globalThis.renderFaceReport(sampleReport({ liveness: { live: false, mode: "active", reasons: ["blink"] } }));
+    globalThis.renderFaceReport(
+      sampleReport({
+        liveness: { live: false, mode: "active", reasons: ["blink"] },
+      }),
+    );
     assert.ok(el.innerHTML.includes("&#10007;"));
   });
 
   it("should do nothing when the element is missing", () => {
-    globalThis.document = { getElementById: function () { return null; }, querySelector: function () { return null; } };
+    globalThis.document = {
+      getElementById: function () {
+        return null;
+      },
+      querySelector: function () {
+        return null;
+      },
+    };
     globalThis.renderFaceReport(sampleReport()); // should not throw
   });
 });
@@ -1074,12 +1354,18 @@ describe("Face UI — faceAttrText", () => {
   });
 
   it("should format label arrays", () => {
-    const txt = globalThis.faceAttrText([{ label: "alpha" }, { label: "beta" }]);
+    const txt = globalThis.faceAttrText([
+      { label: "alpha" },
+      { label: "beta" },
+    ]);
     assert.equal(txt, "alpha, beta");
   });
 
   it("should format emotion entries without score", () => {
-    const txt = globalThis.faceAttrText([{ emotion: "sad" }, { emotion: "angry" }]);
+    const txt = globalThis.faceAttrText([
+      { emotion: "sad" },
+      { emotion: "angry" },
+    ]);
     assert.equal(txt, "sad, angry");
   });
 
@@ -1117,10 +1403,18 @@ describe("Face UI — downloadFaceReport", () => {
         document: null,
         verifiableCredential: null,
       },
-      biohash: { bits: 128, codeHex: "00".repeat(16), pinFingerprint: "fp", pinAuto: false },
+      biohash: {
+        bits: 128,
+        codeHex: "00".repeat(16),
+        pinFingerprint: "fp",
+        pinAuto: false,
+      },
       autoPin: null,
       fuzzy: { bits: 128, helperHex: "aabb", params: {}, key: "k1" },
-      registry: { match: { label: "Alice", similarity: 100 }, registeredId: null },
+      registry: {
+        match: { label: "Alice", similarity: 100 },
+        registeredId: null,
+      },
       liveness: null,
     };
     if (overrides) Object.assign(r, overrides);
@@ -1145,7 +1439,9 @@ describe("Face UI — downloadFaceReport", () => {
   });
 
   it("should download CSV with formula-injection protection", async () => {
-    globalThis._faceReport = sampleReport({ photo: Object.assign(sampleReport().photo, { fileName: "=evil.png" }) });
+    globalThis._faceReport = sampleReport({
+      photo: Object.assign(sampleReport().photo, { fileName: "=evil.png" }),
+    });
     globalThis.document = makeDoc();
     await globalThis.downloadFaceReport("csv");
     assert.equal(downloads.length, 1);
@@ -1186,7 +1482,9 @@ describe("Face UI — downloadFaceReport", () => {
     const text = await downloads[0].blob.text();
     assert.ok(text.includes("[Face Labels]"));
     assert.ok(text.includes("label,id,created"));
-    assert.ok(!text.includes("label,id,created,descriptorHash,embeddingVersion"));
+    assert.ok(
+      !text.includes("label,id,created,descriptorHash,embeddingVersion"),
+    );
     assert.ok(!text.includes(",human-hse"));
     assert.match(text, /Alice,1,2026-01-02T03:04:05\.000Z$/);
   });
@@ -1211,7 +1509,9 @@ describe("Face UI — downloadFaceReport", () => {
     const text = await downloads[0].blob.text();
     assert.ok(text.includes("[Face Labels]"));
     assert.ok(text.includes("label\tid\tcreated"));
-    assert.ok(!text.includes("label\tid\tcreated\tdescriptorHash\tembeddingVersion"));
+    assert.ok(
+      !text.includes("label\tid\tcreated\tdescriptorHash\tembeddingVersion"),
+    );
     assert.ok(!text.includes("\thuman-hse"));
     assert.ok(text.includes("locked\t2\t2026-03-04T05:06:07.000Z"));
   });
@@ -1230,7 +1530,9 @@ describe("Face UI — downloadFaceReport", () => {
   });
 
   it("should download XML with escaped values", async () => {
-    globalThis._faceReport = sampleReport({ photo: Object.assign(sampleReport().photo, { fileName: "a<b&c.png" }) });
+    globalThis._faceReport = sampleReport({
+      photo: Object.assign(sampleReport().photo, { fileName: "a<b&c.png" }),
+    });
     globalThis.document = makeDoc();
     await globalThis.downloadFaceReport("xml");
     const text = await downloads[0].blob.text();
@@ -1278,16 +1580,30 @@ describe("Face UI — downloadFaceReport", () => {
     globalThis.ensureLib = async function (name) {
       assert.equal(name, "docx");
       globalThis.docx = {
-        Document: function (c) { return c; },
-        Paragraph: function (c) { return c; },
-        TextRun: function (c) { return c; },
-        Table: function (c) { return c; },
-        TableRow: function (c) { return c; },
-        TableCell: function (c) { return c; },
+        Document: function (c) {
+          return c;
+        },
+        Paragraph: function (c) {
+          return c;
+        },
+        TextRun: function (c) {
+          return c;
+        },
+        Table: function (c) {
+          return c;
+        },
+        TableRow: function (c) {
+          return c;
+        },
+        TableCell: function (c) {
+          return c;
+        },
         WidthType: { PERCENTAGE: "pct" },
         Packer: {
           toBlob: async function () {
-            return new Blob(["docx-data"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+            return new Blob(["docx-data"], {
+              type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            });
           },
         },
       };
@@ -1338,16 +1654,30 @@ describe("Face UI — downloadFaceReport", () => {
   it("faceReportToDOCX should return a Blob and drop null children", async () => {
     globalThis.ensureLib = async function () {};
     globalThis.docx = {
-      Document: function (c) { return c; },
-      Paragraph: function (c) { return c; },
-      TextRun: function (c) { return c; },
-      Table: function (c) { return c; },
-      TableRow: function (c) { return c; },
-      TableCell: function (c) { return c; },
+      Document: function (c) {
+        return c;
+      },
+      Paragraph: function (c) {
+        return c;
+      },
+      TextRun: function (c) {
+        return c;
+      },
+      Table: function (c) {
+        return c;
+      },
+      TableRow: function (c) {
+        return c;
+      },
+      TableCell: function (c) {
+        return c;
+      },
       WidthType: { PERCENTAGE: "pct" },
       Packer: {
         toBlob: async function () {
-          return new Blob(["docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+          return new Blob(["docx"], {
+            type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          });
         },
       },
     };
@@ -1374,7 +1704,10 @@ describe("Face UI — handleFaceCameraStart/Stop", () => {
 
   it("should warn when the video element is missing", async () => {
     const statusEl = { textContent: "" };
-    globalThis.document = makeDoc({ "face-status": statusEl, "face-camera": undefined });
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-camera": undefined,
+    });
     const orig = globalThis.FaceCamera;
     globalThis.FaceCamera = function () {
       return { startCamera: async function () {} };
@@ -1387,12 +1720,23 @@ describe("Face UI — handleFaceCameraStart/Stop", () => {
   it("should start the camera and show the video", async () => {
     const statusEl = { textContent: "" };
     const videoEl = { style: {} };
-    globalThis.document = makeDoc({ "face-status": statusEl, "face-camera": videoEl });
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-camera": videoEl,
+    });
     globalThis.FaceCamera = function () {
-      return { startCamera: async function () { return true; }, stopCamera: function () {} };
+      return {
+        startCamera: async function () {
+          return true;
+        },
+        stopCamera: function () {},
+      };
     };
     await globalThis.handleFaceCameraStart("face-camera");
-    assert.equal(statusEl.textContent, "Camera started. Capture a photo, then press Generate Identifiers.");
+    assert.equal(
+      statusEl.textContent,
+      "Camera started. Capture a photo, then press Generate Identifiers.",
+    );
     assert.equal(videoEl.style.display, "block");
     assert.ok(globalThis.faceCamera, "camera instance cached");
   });
@@ -1400,7 +1744,10 @@ describe("Face UI — handleFaceCameraStart/Stop", () => {
   it("should surface camera errors", async () => {
     const statusEl = { textContent: "" };
     const videoEl = { style: {} };
-    globalThis.document = makeDoc({ "face-status": statusEl, "face-camera": videoEl });
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-camera": videoEl,
+    });
     globalThis.FaceCamera = function () {
       return {
         startCamera: async function () {
@@ -1419,8 +1766,15 @@ describe("Face UI — handleFaceCameraStart/Stop", () => {
     const statusEl = { textContent: "" };
     const videoEl = { style: {} };
     let stopped = false;
-    globalThis.faceCamera = { stopCamera: function () { stopped = true; } };
-    globalThis.document = makeDoc({ "face-status": statusEl, "face-camera": videoEl });
+    globalThis.faceCamera = {
+      stopCamera: function () {
+        stopped = true;
+      },
+    };
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-camera": videoEl,
+    });
     globalThis.handleFaceCameraStop("face-camera");
     assert.ok(stopped);
     assert.equal(videoEl.style.display, "none");
@@ -1446,7 +1800,11 @@ describe("Face UI — runFaceLivenessCheck", () => {
       "face-status": statusEl,
       "face-liveness-mode": { value: "passive" },
     });
-    globalThis.faceCamera = { isActive: function () { return false; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return false;
+      },
+    };
     const result = await globalThis.runFaceLivenessCheck();
     assert.equal(result, null);
     assert.ok(statusEl.textContent.includes("Camera not running"));
@@ -1458,12 +1816,18 @@ describe("Face UI — runFaceLivenessCheck", () => {
       "face-status": statusEl,
       "face-liveness-mode": { value: "passive" },
     });
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     const orig = globalThis.FaceLiveness;
     delete globalThis.FaceLiveness;
     const result = await globalThis.runFaceLivenessCheck();
     assert.equal(result, null);
-    assert.ok(statusEl.textContent.includes("Face Liveness module not loaded."));
+    assert.ok(
+      statusEl.textContent.includes("Face Liveness module not loaded."),
+    );
     globalThis.FaceLiveness = orig;
   });
 
@@ -1473,7 +1837,11 @@ describe("Face UI — runFaceLivenessCheck", () => {
       "face-status": statusEl,
       "face-liveness-mode": { value: "passive" },
     });
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     globalThis.FaceLiveness = function () {
       return {
         verifyLiveness: async function () {
@@ -1483,13 +1851,22 @@ describe("Face UI — runFaceLivenessCheck", () => {
     };
     const result = await globalThis.runFaceLivenessCheck();
     assert.deepEqual(result, { live: true, reasons: [] });
-    assert.deepEqual(globalThis._faceLivenessEvidence, { live: true, reasons: [] });
+    assert.deepEqual(globalThis._faceLivenessEvidence, {
+      live: true,
+      reasons: [],
+    });
   });
 
   it("should request both modes for active mode", async () => {
     let receivedMode = null;
-    globalThis.document = makeDoc({ "face-liveness-mode": { value: "active" } });
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.document = makeDoc({
+      "face-liveness-mode": { value: "active" },
+    });
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     globalThis.FaceLiveness = function () {
       return {
         verifyLiveness: async function (cam, engine, opts) {
@@ -1508,7 +1885,11 @@ describe("Face UI — runFaceLivenessCheck", () => {
       "face-status": statusEl,
       "face-liveness-mode": { value: "passive" },
     });
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     globalThis.FaceLiveness = function () {
       return {
         verifyLiveness: async function () {
@@ -1528,7 +1909,12 @@ describe("Face UI — renderFaceChallenge / faceChallengeText", () => {
   it("should show the localized challenge with progress", () => {
     const el = { textContent: "", style: {} };
     globalThis.document = makeDoc({ "face-challenge": el });
-    globalThis.renderFaceChallenge({ type: "blink", index: 0, total: 2, done: false });
+    globalThis.renderFaceChallenge({
+      type: "blink",
+      index: 0,
+      total: 2,
+      done: false,
+    });
     assert.equal(el.textContent, "Challenge: Blink your eyes (1/2)");
     assert.equal(el.style.display, "block");
   });
@@ -1536,7 +1922,12 @@ describe("Face UI — renderFaceChallenge / faceChallengeText", () => {
   it("should hide the box for done/null challenges", () => {
     const el = { textContent: "x", style: {} };
     globalThis.document = makeDoc({ "face-challenge": el });
-    globalThis.renderFaceChallenge({ type: "smile", index: 1, total: 2, done: true });
+    globalThis.renderFaceChallenge({
+      type: "smile",
+      index: 1,
+      total: 2,
+      done: true,
+    });
     assert.equal(el.textContent, "");
     assert.equal(el.style.display, "none");
     globalThis.renderFaceChallenge(null);
@@ -1545,12 +1936,20 @@ describe("Face UI — renderFaceChallenge / faceChallengeText", () => {
 
   it("should do nothing when element missing", () => {
     globalThis.document = makeDoc({ "face-challenge": undefined });
-    globalThis.renderFaceChallenge({ type: "blink", index: 0, total: 1, done: false }); // should not throw
+    globalThis.renderFaceChallenge({
+      type: "blink",
+      index: 0,
+      total: 1,
+      done: false,
+    }); // should not throw
   });
 
   it("faceChallengeText maps known types and passes unknown through", () => {
     assert.equal(globalThis.faceChallengeText("blink"), "Blink your eyes");
-    assert.equal(globalThis.faceChallengeText("turn-left"), "Turn your head to the left");
+    assert.equal(
+      globalThis.faceChallengeText("turn-left"),
+      "Turn your head to the left",
+    );
     assert.equal(globalThis.faceChallengeText("weird"), "weird");
   });
 });
@@ -1611,7 +2010,9 @@ describe("Face UI — handleFaceCameraCapture", () => {
       };
     };
     await globalThis.handleFaceCameraCapture();
-    assert.ok(statusEl.textContent.includes("Liveness check failed: blink, smile"));
+    assert.ok(
+      statusEl.textContent.includes("Liveness check failed: blink, smile"),
+    );
     assert.equal(globalThis._faceReport, null);
   });
 
@@ -1621,7 +2022,11 @@ describe("Face UI — handleFaceCameraCapture", () => {
       "face-status": statusEl,
       "face-liveness-mode": { value: "passive" },
     });
-    globalThis.faceCamera = makeCamera({ captureFrame: function () { return null; } });
+    globalThis.faceCamera = makeCamera({
+      captureFrame: function () {
+        return null;
+      },
+    });
     globalThis.faceEngine = makeEngine();
     globalThis.FaceLiveness = function () {
       return {
@@ -1655,7 +2060,11 @@ describe("Face UI — handleFaceCameraCapture", () => {
     };
     await globalThis.handleFaceCameraCapture();
     await flush();
-    assert.equal(globalThis._faceReport, null, "pipeline must not run on capture");
+    assert.equal(
+      globalThis._faceReport,
+      null,
+      "pipeline must not run on capture",
+    );
     assert.ok(globalThis._facePendingCanvas, "frame staged");
     assert.equal(globalThis._facePendingSource.source, "camera");
     assert.equal(globalThis._facePendingSource.fileName, "camera_capture");
@@ -1664,7 +2073,11 @@ describe("Face UI — handleFaceCameraCapture", () => {
       mode: "passive",
       reasons: [],
     });
-    assert.equal(runBtn.disabled, false, "run button enabled with label filled");
+    assert.equal(
+      runBtn.disabled,
+      false,
+      "run button enabled with label filled",
+    );
   });
 
   it("should initialize engine from globals when missing", async () => {
@@ -1719,7 +2132,11 @@ describe("Face UI — camera/file mutual exclusion", () => {
       };
     };
     await globalThis.handleFaceCameraStart("face-camera");
-    assert.equal(fileEl.disabled, true, "file upload disabled while camera is active");
+    assert.equal(
+      fileEl.disabled,
+      true,
+      "file upload disabled while camera is active",
+    );
     assert.equal(startBtn.disabled, true);
     assert.equal(stopBtn.disabled, false);
     assert.equal(capBtn.disabled, false);
@@ -1738,7 +2155,11 @@ describe("Face UI — camera/file mutual exclusion", () => {
       "face-cam-capture": capBtn,
     });
     globalThis.handleFaceCameraStop("face-camera");
-    assert.equal(fileEl.disabled, false, "file upload re-enabled after camera stops");
+    assert.equal(
+      fileEl.disabled,
+      false,
+      "file upload re-enabled after camera stops",
+    );
     assert.equal(startBtn.disabled, false);
     assert.equal(stopBtn.disabled, true);
     assert.equal(capBtn.disabled, true);
@@ -1829,7 +2250,11 @@ describe("Face UI — switchFaceInput", () => {
     globalThis.switchFaceInput("camera");
     assert.equal(globalThis._facePendingCanvas, null);
     assert.equal(globalThis._facePendingSource, null);
-    assert.equal(runBtn.disabled, true, "run disabled after staging is discarded");
+    assert.equal(
+      runBtn.disabled,
+      true,
+      "run disabled after staging is discarded",
+    );
   });
 
   it("should stop the camera and discard the frame when switching to upload", async () => {
@@ -1839,7 +2264,10 @@ describe("Face UI — switchFaceInput", () => {
     globalThis.faceCamera = cam;
     globalThis._faceInputTab = "camera";
     globalThis._facePendingCanvas = createCanvas(200, 200);
-    globalThis._facePendingSource = { source: "camera", fileName: "camera_capture" };
+    globalThis._facePendingSource = {
+      source: "camera",
+      fileName: "camera_capture",
+    };
     globalThis.switchFaceInput("upload");
     await flush();
     assert.equal(cam.active, false, "camera stopped on upload tab");
@@ -1880,10 +2308,17 @@ describe("Face UI — listRegisteredFaces", () => {
   it("should show empty message when no faces", async () => {
     const listEl = { innerHTML: "", append: function () {} };
     const countEl = { textContent: "" };
-    globalThis.document = makeDoc({ "face-list": listEl, "face-count": countEl });
+    globalThis.document = makeDoc({
+      "face-list": listEl,
+      "face-count": countEl,
+    });
     globalThis.faceRegistry = {
-      getAllFaces: async function () { return []; },
-      getSize: async function () { return 0; },
+      getAllFaces: async function () {
+        return [];
+      },
+      getSize: async function () {
+        return 0;
+      },
     };
     await globalThis.listRegisteredFaces();
     assert.equal(countEl.textContent, "Registered faces: 0");
@@ -1892,9 +2327,17 @@ describe("Face UI — listRegisteredFaces", () => {
 
   it("should render faces with delete buttons", async () => {
     const children = [];
-    const listEl = { innerHTML: "", append: function (el) { children.push(el); } };
+    const listEl = {
+      innerHTML: "",
+      append: function (el) {
+        children.push(el);
+      },
+    };
     const countEl = { textContent: "" };
-    globalThis.document = makeDoc({ "face-list": listEl, "face-count": countEl });
+    globalThis.document = makeDoc({
+      "face-list": listEl,
+      "face-count": countEl,
+    });
     globalThis.faceRegistry = {
       getAllFaces: async function () {
         return [
@@ -1902,7 +2345,9 @@ describe("Face UI — listRegisteredFaces", () => {
           { id: 2, label: "Bob" },
         ];
       },
-      getSize: async function () { return 2; },
+      getSize: async function () {
+        return 2;
+      },
     };
     await globalThis.listRegisteredFaces();
     assert.equal(countEl.textContent, "Registered faces: 2");
@@ -1913,10 +2358,19 @@ describe("Face UI — listRegisteredFaces", () => {
 
   it("should show migration banner when embedding versions are mixed", async () => {
     const children = [];
-    const listEl = { innerHTML: "", append: function (el) { children.push(el); } };
+    const listEl = {
+      innerHTML: "",
+      append: function (el) {
+        children.push(el);
+      },
+    };
     const countEl = { textContent: "" };
     const noteEl = { style: { display: "" } };
-    globalThis.document = makeDoc({ "face-list": listEl, "face-count": countEl, "face-migration-note": noteEl });
+    globalThis.document = makeDoc({
+      "face-list": listEl,
+      "face-count": countEl,
+      "face-migration-note": noteEl,
+    });
     globalThis.faceRegistry = {
       getAllFaces: async function () {
         return [
@@ -1924,7 +2378,9 @@ describe("Face UI — listRegisteredFaces", () => {
           { id: 2, label: "New", embeddingVersion: "arcface-mbf" },
         ];
       },
-      getSize: async function () { return 2; },
+      getSize: async function () {
+        return 2;
+      },
     };
     await globalThis.listRegisteredFaces();
     assert.equal(noteEl.style.display, "block");
@@ -1932,15 +2388,26 @@ describe("Face UI — listRegisteredFaces", () => {
 
   it("should hide migration banner for a single embedding version", async () => {
     const children = [];
-    const listEl = { innerHTML: "", append: function (el) { children.push(el); } };
+    const listEl = {
+      innerHTML: "",
+      append: function (el) {
+        children.push(el);
+      },
+    };
     const countEl = { textContent: "" };
     const noteEl = { style: { display: "" } };
-    globalThis.document = makeDoc({ "face-list": listEl, "face-count": countEl, "face-migration-note": noteEl });
+    globalThis.document = makeDoc({
+      "face-list": listEl,
+      "face-count": countEl,
+      "face-migration-note": noteEl,
+    });
     globalThis.faceRegistry = {
       getAllFaces: async function () {
         return [{ id: 1, label: "Only", embeddingVersion: "arcface-mbf" }];
       },
-      getSize: async function () { return 1; },
+      getSize: async function () {
+        return 1;
+      },
     };
     await globalThis.listRegisteredFaces();
     assert.equal(noteEl.style.display, "none");
@@ -1950,7 +2417,9 @@ describe("Face UI — listRegisteredFaces", () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
     globalThis.faceRegistry = {
-      getAllFaces: async function () { throw new Error("list error"); },
+      getAllFaces: async function () {
+        throw new Error("list error");
+      },
     };
     await globalThis.listRegisteredFaces();
     assert.ok(statusEl.textContent.includes("list error"));
@@ -1985,7 +2454,9 @@ describe("Face UI — handleFaceDelete", () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
     globalThis.faceRegistry = {
-      deleteFace: async function () { throw new Error("delete error"); },
+      deleteFace: async function () {
+        throw new Error("delete error");
+      },
     };
     await globalThis.handleFaceDelete(1);
     assert.ok(statusEl.textContent.includes("Delete error"));
@@ -1998,7 +2469,10 @@ describe("Face UI — handleFaceRefreshList", () => {
   function refreshDoc() {
     return makeDoc({
       "face-status": { textContent: "" },
-      "face-report": { style: { display: "block" }, innerHTML: "<b>old results</b>" },
+      "face-report": {
+        style: { display: "block" },
+        innerHTML: "<b>old results</b>",
+      },
       "face-preview": { style: { display: "block" } },
       "face-list": { innerHTML: "", append: function () {} },
       "face-count": { textContent: "" },
@@ -2016,17 +2490,27 @@ describe("Face UI — handleFaceRefreshList", () => {
       getAllFaces: async function () {
         return [{ id: 1, label: "Alice" }];
       },
-      getSize: async function () { return 1; },
+      getSize: async function () {
+        return 1;
+      },
     };
     await globalThis.handleFaceRefreshList();
     assert.equal(globalThis._faceReport, null, "report state cleared");
-    assert.equal(globalThis.window._faceReport, null, "window report state cleared");
+    assert.equal(
+      globalThis.window._faceReport,
+      null,
+      "window report state cleared",
+    );
     assert.equal(globalThis._facePendingCanvas, null, "staged photo cleared");
     assert.equal(doc.getElementById("face-report").style.display, "none");
     assert.equal(doc.getElementById("face-report").innerHTML, "");
     assert.equal(doc.getElementById("face-preview").style.display, "none");
     assert.equal(doc.getElementById("face-run").disabled, true);
-    assert.ok(doc.getElementById("face-status").textContent.includes("Registered faces: 1"));
+    assert.ok(
+      doc
+        .getElementById("face-status")
+        .textContent.includes("Registered faces: 1"),
+    );
   });
 
   it("should keep working when result elements are missing", async () => {
@@ -2034,8 +2518,12 @@ describe("Face UI — handleFaceRefreshList", () => {
     globalThis.document = makeDoc({ "face-status": statusEl });
     globalThis._faceReport = { biohash: { codeHex: "abc" } };
     globalThis.faceRegistry = {
-      getAllFaces: async function () { return []; },
-      getSize: async function () { return 0; },
+      getAllFaces: async function () {
+        return [];
+      },
+      getSize: async function () {
+        return 0;
+      },
     };
     await globalThis.handleFaceRefreshList();
     assert.equal(globalThis._faceReport, null);
@@ -2046,7 +2534,9 @@ describe("Face UI — handleFaceRefreshList", () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
     globalThis.faceRegistry = {
-      getAllFaces: async function () { throw new Error("list error"); },
+      getAllFaces: async function () {
+        throw new Error("list error");
+      },
     };
     await globalThis.handleFaceRefreshList();
     assert.ok(statusEl.textContent.includes("list error"));
@@ -2077,7 +2567,13 @@ describe("Face UI — handleFaceBioHashCopy", () => {
     globalThis.document = makeDoc({ "face-status": statusEl });
     globalThis._faceReport = { biohash: { codeHex: "00".repeat(16) } };
     Object.defineProperty(globalThis, "navigator", {
-      value: { clipboard: { writeText: async function () { return true; } } },
+      value: {
+        clipboard: {
+          writeText: async function () {
+            return true;
+          },
+        },
+      },
       configurable: true,
     });
     globalThis.handleFaceBioHashCopy();
@@ -2107,7 +2603,10 @@ describe("Face UI — handleFaceBioHashCopy", () => {
   it("should fall back when clipboard is unavailable", () => {
     const statusEl = { textContent: "" };
     const reportEl = { select: function () {} };
-    globalThis.document = makeDoc({ "face-status": statusEl, "face-report": reportEl });
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-report": reportEl,
+    });
     globalThis._faceReport = { biohash: { codeHex: "00".repeat(16) } };
     Object.defineProperty(globalThis, "navigator", {
       value: {},
@@ -2172,7 +2671,10 @@ describe("Face UI — handleFaceExportLabels", () => {
     const text = await downloads[0].blob.text();
     const lines = text.split("\n");
     assert.equal(lines[0], "label,id,created,descriptorHash,embeddingVersion");
-    assert.match(lines[1], /^"Ali, the artist",1,2026-01-02T03:04:05\.000Z,[0-9a-f]{64},human-hse$/);
+    assert.match(
+      lines[1],
+      /^"Ali, the artist",1,2026-01-02T03:04:05\.000Z,[0-9a-f]{64},human-hse$/,
+    );
     assert.match(lines[2], /^"Say ""hi""",2,,,arcface-v2$/);
     assert.ok(statusEl.textContent.includes("Exported 2 face label(s)"));
   });
@@ -2194,8 +2696,14 @@ describe("Face UI — handleFaceExportLabels", () => {
     assert.equal(downloads[0].name, "face_labels.txt");
     const text = await downloads[0].blob.text();
     const lines = text.split("\n");
-    assert.equal(lines[0], "label\tid\tcreated\tdescriptorHash\tembeddingVersion");
-    assert.equal(lines[1], "locked face\t7\t2026-05-06T07:08:09.000Z\t\thuman-hse");
+    assert.equal(
+      lines[0],
+      "label\tid\tcreated\tdescriptorHash\tembeddingVersion",
+    );
+    assert.equal(
+      lines[1],
+      "locked face\t7\t2026-05-06T07:08:09.000Z\t\thuman-hse",
+    );
   });
 
   it("should omit descriptor columns from the labels sheet when requested", async () => {
@@ -2233,7 +2741,11 @@ describe("Face UI — maybePromptFaceEncryption", () => {
 
   it("should stay silent when every entry is encrypted", async () => {
     const statusEl = { textContent: "" };
-    const passEl = { value: "", focus: function () {}, classList: makeClassList() };
+    const passEl = {
+      value: "",
+      focus: function () {},
+      classList: makeClassList(),
+    };
     globalThis.document = makeDoc({
       "face-status": statusEl,
       "face-lock-pass": passEl,
@@ -2250,7 +2762,14 @@ describe("Face UI — maybePromptFaceEncryption", () => {
 
   it("should be a no-op now that the PRF vault handles encryption", async () => {
     const statusEl = { textContent: "" };
-    const passEl = { value: "", focusCalls: 0, focus: function () { this.focusCalls++; }, classList: makeClassList() };
+    const passEl = {
+      value: "",
+      focusCalls: 0,
+      focus: function () {
+        this.focusCalls++;
+      },
+      classList: makeClassList(),
+    };
     globalThis.document = makeDoc({
       "face-status": statusEl,
       "face-lock-pass": passEl,
@@ -2286,19 +2805,38 @@ describe("Face UI — face overlay", () => {
   it("should not throw when the camera starts with a minimal DOM", async () => {
     const statusEl = { textContent: "" };
     const videoEl = { style: {} };
-    globalThis.document = makeDoc({ "face-status": statusEl, "face-camera": videoEl });
+    globalThis.document = makeDoc({
+      "face-status": statusEl,
+      "face-camera": videoEl,
+    });
     globalThis.FaceCamera = function () {
-      return { startCamera: async function () { return true; }, stopCamera: function () {} };
+      return {
+        startCamera: async function () {
+          return true;
+        },
+        stopCamera: function () {},
+      };
     };
     await globalThis.handleFaceCameraStart("face-camera");
-    assert.equal(statusEl.textContent, "Camera started. Capture a photo, then press Generate Identifiers.");
+    assert.equal(
+      statusEl.textContent,
+      "Camera started. Capture a photo, then press Generate Identifiers.",
+    );
     assert.equal(videoEl.style.display, "block");
     globalThis.stopFaceOverlay();
   });
 
   it("should stop and clean up the overlay", () => {
-    const parent = { style: {}, removeChild: function () { this.removed = true; } };
-    globalThis._faceOverlay = { parentNode: parent, getContext: function () {} };
+    const parent = {
+      style: {},
+      removeChild: function () {
+        this.removed = true;
+      },
+    };
+    globalThis._faceOverlay = {
+      parentNode: parent,
+      getContext: function () {},
+    };
     globalThis._faceOverlayRunning = true;
     globalThis._faceOverlayRAF = 123;
     globalThis.stopFaceOverlay();
@@ -2316,8 +2854,12 @@ describe("Face UI — face overlay", () => {
     globalThis._faceOverlay = overlay;
     globalThis._faceOverlayRunning = true;
     globalThis.faceCamera = {
-      isActive: function () { return true; },
-      captureFrame: function () { return frame; },
+      isActive: function () {
+        return true;
+      },
+      captureFrame: function () {
+        return frame;
+      },
     };
     globalThis.faceEngine = {
       _loaded: true,
@@ -2326,7 +2868,13 @@ describe("Face UI — face overlay", () => {
         const mesh = new Float32Array(468 * 3);
         mesh[0] = 120;
         mesh[1] = 90;
-        return [{ box: { x: 100, y: 80, width: 200, height: 250 }, score: 0.9, mesh: mesh }];
+        return [
+          {
+            box: { x: 100, y: 80, width: 200, height: 250 },
+            score: 0.9,
+            mesh: mesh,
+          },
+        ];
       },
     };
     void globalThis.faceOverlayDetectAndDraw();
@@ -2338,7 +2886,9 @@ describe("Face UI — face overlay", () => {
     globalThis._faceOverlay = createCanvas(320, 240);
     globalThis._faceOverlayRunning = true;
     globalThis.faceCamera = {
-      isActive: function () { return false; },
+      isActive: function () {
+        return false;
+      },
     };
     void globalThis.faceOverlayDetectAndDraw(); // should not throw
   });
@@ -2371,7 +2921,9 @@ describe("Face UI — passkey handlers", () => {
         meta[key] = value;
       },
       getMeta: async function (key) {
-        return Object.prototype.hasOwnProperty.call(meta, key) ? meta[key] : null;
+        return Object.prototype.hasOwnProperty.call(meta, key)
+          ? meta[key]
+          : null;
       },
       removeMeta: async function (key) {
         calls.removed.push(key);
@@ -2392,7 +2944,11 @@ describe("Face UI — passkey handlers", () => {
   it("should warn when WebAuthn is unavailable", async () => {
     const { statusEl } = makePasskeyDoc();
     globalThis.faceRegistry = makePasskeyRegistry({});
-    globalThis.FaceWebauthn = { isAvailable: function () { return false; } };
+    globalThis.FaceWebauthn = {
+      isAvailable: function () {
+        return false;
+      },
+    };
     await globalThis.handlePasskeyRegister();
     assert.ok(statusEl.textContent.includes("not available"));
   });
@@ -2402,7 +2958,9 @@ describe("Face UI — passkey handlers", () => {
     const meta = {};
     globalThis.faceRegistry = makePasskeyRegistry(meta);
     globalThis.FaceWebauthn = {
-      isAvailable: function () { return true; },
+      isAvailable: function () {
+        return true;
+      },
       register: async function () {
         return { id: "ABCD1234abcd1234EFGH", rawId: "QUJD" };
       },
@@ -2419,13 +2977,19 @@ describe("Face UI — passkey handlers", () => {
     const meta = {};
     globalThis.faceRegistry = makePasskeyRegistry(meta);
     globalThis.FaceWebauthn = {
-      isAvailable: function () { return true; },
+      isAvailable: function () {
+        return true;
+      },
       register: async function () {
         throw new Error("NotAllowedError: user dismissed");
       },
     };
     await globalThis.handlePasskeyRegister();
-    assert.ok(statusEl.textContent.includes("Passkey error: NotAllowedError: user dismissed"));
+    assert.ok(
+      statusEl.textContent.includes(
+        "Passkey error: NotAllowedError: user dismissed",
+      ),
+    );
     assert.equal(meta.passkey, undefined);
   });
 
@@ -2479,14 +3043,23 @@ describe("Face UI — sanitizeFaceText", () => {
   beforeEach(resetGlobals);
 
   it("should keep English letters, digits and safe separators", () => {
-    assert.equal(globalThis.sanitizeFaceText("Artist Name-2_x.", "label"), "Artist Name-2_x.");
+    assert.equal(
+      globalThis.sanitizeFaceText("Artist Name-2_x.", "label"),
+      "Artist Name-2_x.",
+    );
   });
 
   it("should strip Arabic and other non-English scripts from labels", () => {
-    assert.equal(globalThis.sanitizeFaceText("فنان عربي Artist", "label"), "Artist");
+    assert.equal(
+      globalThis.sanitizeFaceText("فنان عربي Artist", "label"),
+      "Artist",
+    );
     assert.equal(globalThis.sanitizeFaceText("Привет мир", "label"), "");
     assert.equal(globalThis.sanitizeFaceText("中文名", "label"), "");
-    assert.equal(globalThis.sanitizeFaceText("Emoji😀Face", "label"), "EmojiFace");
+    assert.equal(
+      globalThis.sanitizeFaceText("Emoji😀Face", "label"),
+      "EmojiFace",
+    );
   });
 
   it("should collapse consecutive spaces in labels", () => {
@@ -2500,7 +3073,10 @@ describe("Face UI — sanitizeFaceText", () => {
   });
 
   it("should keep printable ASCII for passphrases but block non-English input", () => {
-    assert.equal(globalThis.sanitizeFaceText("p@ssw0rd-123!", "pass"), "p@ssw0rd-123!");
+    assert.equal(
+      globalThis.sanitizeFaceText("p@ssw0rd-123!", "pass"),
+      "p@ssw0rd-123!",
+    );
     assert.equal(globalThis.sanitizeFaceText("مفتاح-سر", "pass"), "-");
     assert.equal(globalThis.sanitizeFaceText("密钥", "pass"), "");
   });
@@ -2533,8 +3109,17 @@ describe("Face UI — progress overlay", () => {
   beforeEach(resetGlobals);
 
   function makeOverlayDoc() {
-    const overlay = { classList: makeClassList(), style: {}, parentNode: {}, offsetWidth: 0 };
-    const bar = { style: {}, classList: makeClassList(), setAttribute: function () {} };
+    const overlay = {
+      classList: makeClassList(),
+      style: {},
+      parentNode: {},
+      offsetWidth: 0,
+    };
+    const bar = {
+      style: {},
+      classList: makeClassList(),
+      setAttribute: function () {},
+    };
     const title = { textContent: "", setAttribute: function () {} };
     const text = { textContent: "", setAttribute: function () {} };
     const pct = { textContent: "", setAttribute: function () {} };
@@ -2622,7 +3207,9 @@ describe("Face UI — file validation", () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({
       "face-status": statusEl,
-      "face-image": { files: [{ name: "big.png", type: "image/png", size: 30 * 1024 * 1024 }] },
+      "face-image": {
+        files: [{ name: "big.png", type: "image/png", size: 30 * 1024 * 1024 }],
+      },
     });
     await globalThis.handleFaceFilePicked();
     assert.ok(statusEl.textContent.includes("too large"));
@@ -2793,8 +3380,14 @@ describe("Face UI — biometric consent", () => {
     assert.equal(rec.version, 1);
     assert.equal(rec.policyVersion, 1);
     assert.ok(rec.acceptedAt, "acceptance timestamp recorded");
-    assert.equal(doc.getElementById("face-consent-panel").style.display, "none");
-    assert.equal(doc.getElementById("face-consent-status").style.display, "block");
+    assert.equal(
+      doc.getElementById("face-consent-panel").style.display,
+      "none",
+    );
+    assert.equal(
+      doc.getElementById("face-consent-status").style.display,
+      "block",
+    );
     assert.equal(doc.getElementById("face-image").disabled, false);
     assert.equal(doc.getElementById("face-cam-start").disabled, false);
   });
@@ -2804,7 +3397,10 @@ describe("Face UI — biometric consent", () => {
     globalThis.document = doc;
     doc.getElementById("face-consent-check").checked = true;
     await globalThis.handleFaceConsentAccept();
-    assert.ok(globalThis.faceConsentLoad(), "consent record lives in sessionStorage");
+    assert.ok(
+      globalThis.faceConsentLoad(),
+      "consent record lives in sessionStorage",
+    );
     assert.equal(
       globalThis.localStorage.getItem("redoSan.faceConsent"),
       null,
@@ -2847,7 +3443,11 @@ describe("Face UI — biometric consent", () => {
       acceptedAt: new Date().toISOString(),
     });
     await globalThis.handleFaceConsentWithdraw();
-    assert.notEqual(globalThis.faceConsentLoad(), null, "record survives a declined confirmation");
+    assert.notEqual(
+      globalThis.faceConsentLoad(),
+      null,
+      "record survives a declined confirmation",
+    );
   });
 
   it("updateFaceRunState disables the run button until consent is recorded", () => {
@@ -2885,14 +3485,20 @@ describe("Face UI — biometric consent", () => {
     globalThis.initFaceConsent();
     assert.equal(doc.getElementById("face-image").disabled, false);
     assert.equal(doc.getElementById("face-cam-start").disabled, false);
-    assert.equal(doc.getElementById("face-consent-panel").style.display, "none");
+    assert.equal(
+      doc.getElementById("face-consent-panel").style.display,
+      "none",
+    );
   });
 
   it("faceWarnConsentRequired shows the blocked message and is safe without helpers", () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeConsentDoc({ "face-status": statusEl });
     globalThis.faceWarnConsentRequired();
-    assert.ok(statusEl.textContent.includes("consent"), "blocked message rendered");
+    assert.ok(
+      statusEl.textContent.includes("consent"),
+      "blocked message rendered",
+    );
   });
 
   it("faceWarnConsentRequired survives a missing panel or scrollIntoView", () => {
@@ -2910,10 +3516,25 @@ describe("Face UI — biometric consent", () => {
     });
     globalThis.document = doc;
     globalThis.switchFaceInput("camera");
-    assert.equal(globalThis._faceInputTab, "upload", "tab must not switch without consent");
-    assert.equal(doc.getElementById("face-cam-start").disabled, true, "camera start stays disabled");
-    assert.equal(doc.getElementById("face-image").disabled, true, "file input stays disabled");
-    assert.ok(doc.getElementById("face-status").textContent.includes("consent"), "warning shown");
+    assert.equal(
+      globalThis._faceInputTab,
+      "upload",
+      "tab must not switch without consent",
+    );
+    assert.equal(
+      doc.getElementById("face-cam-start").disabled,
+      true,
+      "camera start stays disabled",
+    );
+    assert.equal(
+      doc.getElementById("face-image").disabled,
+      true,
+      "file input stays disabled",
+    );
+    assert.ok(
+      doc.getElementById("face-status").textContent.includes("consent"),
+      "warning shown",
+    );
   });
 
   it("switchFaceInput works normally once consent is recorded", () => {
@@ -2934,9 +3555,21 @@ describe("Face UI — biometric consent", () => {
       acceptedAt: new Date().toISOString(),
     });
     globalThis.switchFaceInput("camera");
-    assert.equal(globalThis._faceInputTab, "camera", "tab switches after consent");
-    assert.equal(doc.getElementById("face-cam-start").disabled, false, "camera start re-enabled");
-    assert.equal(doc.getElementById("face-image").disabled, false, "file input re-enabled");
+    assert.equal(
+      globalThis._faceInputTab,
+      "camera",
+      "tab switches after consent",
+    );
+    assert.equal(
+      doc.getElementById("face-cam-start").disabled,
+      false,
+      "camera start re-enabled",
+    );
+    assert.equal(
+      doc.getElementById("face-image").disabled,
+      false,
+      "file input re-enabled",
+    );
   });
 });
 
@@ -2994,7 +3627,9 @@ describe("Face UI — ensureFacePasskeyForAction (automatic, best-effort)", () =
     const result = await globalThis.ensureFacePasskeyForAction();
     assert.equal(result, true);
     assert.ok(registered, "should have attempted registration");
-    assert.ok(meta.passkey && meta.passkey.credentialId === "ABCD1234abcd1234EFGH");
+    assert.ok(
+      meta.passkey && meta.passkey.credentialId === "ABCD1234abcd1234EFGH",
+    );
     assert.ok(statusEl.textContent.length >= 0);
   });
 
@@ -3003,7 +3638,9 @@ describe("Face UI — ensureFacePasskeyForAction (automatic, best-effort)", () =
     globalThis.faceRegistry = makeAutoRegistry({});
     let registered = false;
     globalThis.FaceWebauthn = {
-      isAvailable: function () { return true; },
+      isAvailable: function () {
+        return true;
+      },
       register: async function () {
         registered = true;
         throw new Error("NotAllowedError: no authenticator");
@@ -3036,7 +3673,9 @@ describe("Face UI — ensureFacePasskeyForAction (automatic, best-effort)", () =
 
   it("short-circuits when a passkey is already registered", async () => {
     makeAutoDoc();
-    globalThis.faceRegistry = makeAutoRegistry({ passkey: { credentialId: "ABCD1234abcd1234EFGH" } });
+    globalThis.faceRegistry = makeAutoRegistry({
+      passkey: { credentialId: "ABCD1234abcd1234EFGH" },
+    });
     globalThis.FaceWebauthn = {
       isAvailable: function () {
         return true;
@@ -3061,33 +3700,61 @@ function uiNode() {
     className: "",
     value: "",
     disabled: false,
-    appendChild: function (c) { this.children.push(c); return c; },
+    appendChild: function (c) {
+      this.children.push(c);
+      return c;
+    },
     setAttribute: function () {},
     scrollIntoView: function () {},
   };
 }
 
 function stubRegistry(overrides) {
-  return Object.assign({
-    lock: async function () { return 2; },
-    unlock: async function () { return 3; },
-    exportBackup: async function () { return { type: "redoSan.faceRegistryBackup", version: 1, entries: [] }; },
-    importBackup: async function () { return 4; },
-    getAllFaces: async function () { return []; },
-    getSize: async function () { return 0; },
-    isLocked: async function () { return false; },
-    deleteFace: async function () { return true; },
-    getMeta: async function () { return null; },
-    setMeta: async function () {},
-    removeMeta: async function () {},
-    setVaultKey: function () {},
-    sealAllPlaintext: async function () { return 0; },
-  }, overrides || {});
+  return Object.assign(
+    {
+      lock: async function () {
+        return 2;
+      },
+      unlock: async function () {
+        return 3;
+      },
+      exportBackup: async function () {
+        return { type: "redoSan.faceRegistryBackup", version: 1, entries: [] };
+      },
+      importBackup: async function () {
+        return 4;
+      },
+      getAllFaces: async function () {
+        return [];
+      },
+      getSize: async function () {
+        return 0;
+      },
+      isLocked: async function () {
+        return false;
+      },
+      deleteFace: async function () {
+        return true;
+      },
+      getMeta: async function () {
+        return null;
+      },
+      setMeta: async function () {},
+      removeMeta: async function () {},
+      setVaultKey: function () {},
+      sealAllPlaintext: async function () {
+        return 0;
+      },
+    },
+    overrides || {},
+  );
 }
 
 describe("Face UI — handleFaceLock", () => {
   beforeEach(resetGlobals);
-  afterEach(function () { globalThis.FaceCrypto = FaceCrypto; });
+  afterEach(function () {
+    globalThis.FaceCrypto = FaceCrypto;
+  });
 
   it("returns silently without a registry", async () => {
     const statusEl = { textContent: "" };
@@ -3115,7 +3782,10 @@ describe("Face UI — handleFaceLock", () => {
     globalThis.document = makeDoc({ "face-status": statusEl });
     globalThis.faceRegistry = stubRegistry();
     await globalThis.handleFaceLock();
-    assert.ok(statusEl.textContent.includes("passphrase"), statusEl.textContent);
+    assert.ok(
+      statusEl.textContent.includes("passphrase"),
+      statusEl.textContent,
+    );
   });
 
   it("locks, reports the count, clears the input and refreshes", async () => {
@@ -3132,7 +3802,10 @@ describe("Face UI — handleFaceLock", () => {
     globalThis.document = doc;
     let lockedWith = null;
     globalThis.faceRegistry = stubRegistry({
-      lock: async function (p) { lockedWith = p; return 2; },
+      lock: async function (p) {
+        lockedWith = p;
+        return 2;
+      },
     });
     await globalThis.handleFaceLock();
     assert.equal(lockedWith, "pw");
@@ -3147,7 +3820,9 @@ describe("Face UI — handleFaceLock", () => {
       "face-lock-pass": { value: "pw" },
     });
     globalThis.faceRegistry = stubRegistry({
-      lock: async function () { throw new Error("boom"); },
+      lock: async function () {
+        throw new Error("boom");
+      },
     });
     await globalThis.handleFaceLock();
     assert.ok(statusEl.textContent.includes("Lock error: boom"));
@@ -3192,7 +3867,10 @@ describe("Face UI — handleFaceUnlock", () => {
     globalThis.document = doc2;
     let unlockedWith = null;
     globalThis.faceRegistry = stubRegistry({
-      unlock: async function (p) { unlockedWith = p; return 3; },
+      unlock: async function (p) {
+        unlockedWith = p;
+        return 3;
+      },
     });
     await globalThis.handleFaceUnlock();
     assert.equal(unlockedWith, "pw");
@@ -3207,7 +3885,9 @@ describe("Face UI — handleFaceUnlock", () => {
       "face-lock-pass": { value: "pw" },
     });
     globalThis.faceRegistry = stubRegistry({
-      unlock: async function () { throw new Error("GCM auth failed"); },
+      unlock: async function () {
+        throw new Error("GCM auth failed");
+      },
     });
     await globalThis.handleFaceUnlock();
     assert.ok(statusEl.textContent.includes("Unlock failed"));
@@ -3262,7 +3942,9 @@ describe("Face UI — handleFaceBackup", () => {
       "face-lock-pass": { value: "pw" },
     });
     globalThis.faceRegistry = stubRegistry({
-      exportBackup: async function () { throw new Error("disk full"); },
+      exportBackup: async function () {
+        throw new Error("disk full");
+      },
     });
     await globalThis.handleFaceBackup();
     assert.ok(statusEl.textContent.includes("Backup error: disk full"));
@@ -3271,17 +3953,23 @@ describe("Face UI — handleFaceBackup", () => {
 
 describe("Face UI — handleFaceRestore", () => {
   beforeEach(resetGlobals);
-  afterEach(function () { globalThis.confirm = function () { return true; }; });
+  afterEach(function () {
+    globalThis.confirm = function () {
+      return true;
+    };
+  });
 
   function restoreDoc(fileOverride) {
-    return makeDoc(Object.assign({
-      "face-status": { textContent: "" },
-      "face-list": { innerHTML: "", append: function () {} },
-      "face-count": { textContent: "" },
-      "face-run": { disabled: true },
-      "face-lock-pass": { value: "backup-pw" },
-      "face-restore-file": fileOverride,
-    }));
+    return makeDoc(
+      Object.assign({
+        "face-status": { textContent: "" },
+        "face-list": { innerHTML: "", append: function () {} },
+        "face-count": { textContent: "" },
+        "face-run": { disabled: true },
+        "face-lock-pass": { value: "backup-pw" },
+        "face-restore-file": fileOverride,
+      }),
+    );
   }
 
   it("guards missing registry and missing file", async () => {
@@ -3303,7 +3991,13 @@ describe("Face UI — handleFaceRestore", () => {
 
   it("rejects invalid JSON files", async () => {
     const doc = restoreDoc({
-      files: [{ text: async function () { return "{not json"; } }],
+      files: [
+        {
+          text: async function () {
+            return "{not json";
+          },
+        },
+      ],
       value: "x",
     });
     const statusEl = doc.getElementById("face-status");
@@ -3321,11 +4015,25 @@ describe("Face UI — handleFaceRestore", () => {
         return 4;
       },
     });
-    const payload = JSON.stringify({ type: "redoSan.faceRegistryBackup", entries: [] });
+    const payload = JSON.stringify({
+      type: "redoSan.faceRegistryBackup",
+      entries: [],
+    });
 
-    const docReplace = restoreDoc({ files: [{ text: async function () { return payload; } }], value: "keep" });
+    const docReplace = restoreDoc({
+      files: [
+        {
+          text: async function () {
+            return payload;
+          },
+        },
+      ],
+      value: "keep",
+    });
     globalThis.document = docReplace;
-    globalThis.confirm = function () { return true; };
+    globalThis.confirm = function () {
+      return true;
+    };
     globalThis.faceRegistry = registry;
     await globalThis.handleFaceRestore();
     assert.deepEqual(seen[0], ["backup-pw", "replace"]);
@@ -3334,23 +4042,44 @@ describe("Face UI — handleFaceRestore", () => {
     assert.ok(replacedStatus.includes("Restored 4"), replacedStatus);
     assert.ok(replacedStatus.includes("(replace)"), replacedStatus);
 
-    const docMerge = restoreDoc({ files: [{ text: async function () { return payload; } }], value: "x" });
+    const docMerge = restoreDoc({
+      files: [
+        {
+          text: async function () {
+            return payload;
+          },
+        },
+      ],
+      value: "x",
+    });
     globalThis.document = docMerge;
-    globalThis.confirm = function () { return false; };
+    globalThis.confirm = function () {
+      return false;
+    };
     await globalThis.handleFaceRestore();
     assert.deepEqual(seen[1], ["backup-pw", "merge"]);
-    assert.ok(docMerge.getElementById("face-status").textContent.includes("(merge)"));
+    assert.ok(
+      docMerge.getElementById("face-status").textContent.includes("(merge)"),
+    );
   });
 
   it("surfaces import errors", async () => {
     const doc = restoreDoc({
-      files: [{ text: async function () { return "{}"; } }],
+      files: [
+        {
+          text: async function () {
+            return "{}";
+          },
+        },
+      ],
       value: "",
     });
     const statusEl = doc.getElementById("face-status");
     globalThis.document = doc;
     globalThis.faceRegistry = stubRegistry({
-      importBackup: async function () { throw new Error("bad sig"); },
+      importBackup: async function () {
+        throw new Error("bad sig");
+      },
     });
     await globalThis.handleFaceRestore();
     assert.ok(statusEl.textContent.includes("Restore error: bad sig"));
@@ -3386,26 +4115,52 @@ describe("Face UI — handleFaceIssueCredential / VCDownload", () => {
     const doc = issueDoc();
     const statusEl = doc.getElementById("face-status");
     globalThis.document = doc;
-    globalThis._faceReport = { photo: { descriptorHash: "h", facesDetected: 1 } };
+    globalThis._faceReport = {
+      photo: { descriptorHash: "h", facesDetected: 1 },
+    };
     await globalThis.handleFaceIssueCredential();
-    assert.ok(statusEl.textContent.includes("DID keypair"), statusEl.textContent);
+    assert.ok(
+      statusEl.textContent.includes("DID keypair"),
+      statusEl.textContent,
+    );
   });
 
   it("issues, renders and stores a signed credential", async () => {
-    vm.runInThisContext(vcSrcLocal, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_vc.js") });
+    vm.runInThisContext(vcSrcLocal, {
+      filename: path.resolve(
+        __dirname,
+        "../..",
+        "Face_Biometric",
+        "face_vc.js",
+      ),
+    });
     const doc = issueDoc();
     const statusEl = doc.getElementById("face-status");
     globalThis.document = doc;
     globalThis._faceReport = {
-      photo: { descriptorHash: "cafe", facesDetected: 1, embeddingVersion: "human-hse" },
+      photo: {
+        descriptorHash: "cafe",
+        facesDetected: 1,
+        embeddingVersion: "human-hse",
+      },
       liveness: { live: true },
     };
-    globalThis._faceKeypair = { did: "did:key:zTestIssue00", algorithm: "Ed25519" };
+    globalThis._faceKeypair = {
+      did: "did:key:zTestIssue00",
+      algorithm: "Ed25519",
+    };
     await globalThis.handleFaceIssueCredential();
-    assert.ok(statusEl.textContent.includes("issued and signed"), statusEl.textContent);
+    assert.ok(
+      statusEl.textContent.includes("issued and signed"),
+      statusEl.textContent,
+    );
     assert.ok(globalThis.window._faceCredential);
     assert.equal(doc.getElementById("face-vc-box").style.display, "block");
-    assert.ok(doc.getElementById("face-vc-output").textContent.includes("VerifiableCredential"));
+    assert.ok(
+      doc
+        .getElementById("face-vc-output")
+        .textContent.includes("VerifiableCredential"),
+    );
 
     const before = downloads.length;
     globalThis.handleFaceVCDownload();
@@ -3414,17 +4169,31 @@ describe("Face UI — handleFaceIssueCredential / VCDownload", () => {
   });
 
   it("surfaces credential errors", async () => {
-    vm.runInThisContext(vcSrcLocal, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_vc.js") });
+    vm.runInThisContext(vcSrcLocal, {
+      filename: path.resolve(
+        __dirname,
+        "../..",
+        "Face_Biometric",
+        "face_vc.js",
+      ),
+    });
     const doc = issueDoc();
     const statusEl = doc.getElementById("face-status");
     globalThis.document = doc;
     globalThis._faceReport = { photo: { descriptorHash: "h" } };
-    globalThis._faceKeypair = { did: "did:key:zTestErr01", algorithm: "Ed25519" };
+    globalThis._faceKeypair = {
+      did: "did:key:zTestErr01",
+      algorithm: "Ed25519",
+    };
     const savedSign = globalThis.FaceVC.sign;
-    globalThis.FaceVC.sign = async function () { throw new Error("sign blew up"); };
+    globalThis.FaceVC.sign = async function () {
+      throw new Error("sign blew up");
+    };
     try {
       await globalThis.handleFaceIssueCredential();
-      assert.ok(statusEl.textContent.includes("Credential error: sign blew up"));
+      assert.ok(
+        statusEl.textContent.includes("Credential error: sign blew up"),
+      );
     } finally {
       globalThis.FaceVC.sign = savedSign;
     }
@@ -3446,7 +4215,9 @@ describe("Face UI — revealPasskeyRequire", () => {
   it("reveals, labels and scrolls the requirement box", () => {
     let scrolled = false;
     const box = Object.assign(uiNode(), {
-      scrollIntoView: function () { scrolled = true; },
+      scrollIntoView: function () {
+        scrolled = true;
+      },
     });
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({
@@ -3476,7 +4247,11 @@ describe("Face UI — runFaceLivenessCheck challenge wiring", () => {
       "face-challenge": challengeEl,
       "face-status": statusEl,
     });
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     globalThis.faceEngine = {};
     const callbacks = [];
     globalThis.faceLiveness = {
@@ -3490,7 +4265,11 @@ describe("Face UI — runFaceLivenessCheck challenge wiring", () => {
     const evidence = await globalThis.runFaceLivenessCheck();
     assert.equal(evidence.live, true);
     assert.deepEqual(callbacks, ["both"]);
-    assert.equal(challengeEl.style.display, "none", "done challenge hides the box");
+    assert.equal(
+      challengeEl.style.display,
+      "none",
+      "done challenge hides the box",
+    );
   });
 
   it("renders failures through the same path", async () => {
@@ -3501,10 +4280,16 @@ describe("Face UI — runFaceLivenessCheck challenge wiring", () => {
       "face-challenge": challengeEl,
       "face-status": statusEl,
     });
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     globalThis.faceEngine = {};
     globalThis.faceLiveness = {
-      verifyLiveness: async function () { throw new Error("cam died"); },
+      verifyLiveness: async function () {
+        throw new Error("cam died");
+      },
     };
     const res = await globalThis.runFaceLivenessCheck();
     assert.equal(res, null);
@@ -3530,16 +4315,23 @@ describe("Face UI — faceOverlayTick scheduling", () => {
 
   function overlayHarness() {
     const pending = [];
-    globalThis.requestAnimationFrame = function (cb) { pending.push(cb); return pending.length; };
+    globalThis.requestAnimationFrame = function (cb) {
+      pending.push(cb);
+      return pending.length;
+    };
     let detectCalls = 0;
     const resolvers = [];
     globalThis.faceOverlayDetectAndDraw = function () {
       detectCalls++;
-      return new Promise(function (resolve, reject) { resolvers.push({ resolve: resolve, reject: reject }); });
+      return new Promise(function (resolve, reject) {
+        resolvers.push({ resolve: resolve, reject: reject });
+      });
     };
     return {
       pending: pending,
-      calls: function () { return detectCalls; },
+      calls: function () {
+        return detectCalls;
+      },
       resolvers: resolvers,
     };
   }
@@ -3599,17 +4391,36 @@ describe("Face UI — progress overlay construction fallbacks", () => {
     const appended = [];
     const node = function () {
       return {
-        style: {}, classList: makeClassList(), children: [],
-        id: "", className: "", textContent: "",
-        appendChild: function (c) { this.children.push(c); return c; },
+        style: {},
+        classList: makeClassList(),
+        children: [],
+        id: "",
+        className: "",
+        textContent: "",
+        appendChild: function (c) {
+          this.children.push(c);
+          return c;
+        },
       };
     };
     globalThis.document = {
-      getElementById: function () { return null; },
-      createElement: function () { return node(); },
-      body: { appendChild: function (el) { appended.push(el); } },
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
+      getElementById: function () {
+        return null;
+      },
+      createElement: function () {
+        return node();
+      },
+      body: {
+        appendChild: function (el) {
+          appended.push(el);
+        },
+      },
+      querySelector: function () {
+        return null;
+      },
+      querySelectorAll: function () {
+        return [];
+      },
     };
     const overlay = globalThis.faceProgressEnsure();
     assert.ok(overlay, "overlay must be constructed");
@@ -3617,8 +4428,17 @@ describe("Face UI — progress overlay construction fallbacks", () => {
     // show() still cannot find refs by id → early return arm
     globalThis.faceProgressShow("T", "doing things");
     globalThis.document = makeDoc({
-      "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-overlay": {
+        classList: makeClassList(),
+        style: {},
+        parentNode: { removeChild: function () {} },
+        offsetWidth: 0,
+      },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
       "face-progress-pct": { textContent: "", setAttribute: function () {} },
@@ -3651,7 +4471,12 @@ function makeFullFaceReport(overrides) {
       signedAt: "2026-01-01T00:00:01.000Z",
       signature: "AAAAB3NzaC1",
     },
-    biohash: { bits: 128, codeHex: "face".repeat(8), pinFingerprint: "pin1".repeat(2), pinAuto: true },
+    biohash: {
+      bits: 128,
+      codeHex: "face".repeat(8),
+      pinFingerprint: "pin1".repeat(2),
+      pinAuto: true,
+    },
     autoPin: "1234-5678",
     fuzzy: { bits: 64, key: "fuzzykey", helperHex: "cafe".repeat(4) },
     registry: {
@@ -3674,11 +4499,21 @@ function recordingDocx() {
   function make(kind, opts) {
     return { __kind: kind, __opts: opts };
   }
-  function Table(opts) { return make("Table", opts); }
-  function TableRow(opts) { return make("TableRow", opts); }
-  function TableCell(opts) { return make("TableCell", opts); }
-  function Paragraph(opts) { return make("Paragraph", opts); }
-  function TextRun(opts) { return make("TextRun", opts); }
+  function Table(opts) {
+    return make("Table", opts);
+  }
+  function TableRow(opts) {
+    return make("TableRow", opts);
+  }
+  function TableCell(opts) {
+    return make("TableCell", opts);
+  }
+  function Paragraph(opts) {
+    return make("Paragraph", opts);
+  }
+  function TextRun(opts) {
+    return make("TextRun", opts);
+  }
   var calls = [];
   var state = { lastDocumentOpts: null };
   return {
@@ -3697,7 +4532,9 @@ function recordingDocx() {
       Packer: {
         toBlob: async function () {
           calls.push(["Packer.toBlob"]);
-          return new Blob(["DOCXFAKE"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+          return new Blob(["DOCXFAKE"], {
+            type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          });
         },
       },
     },
@@ -3710,10 +4547,18 @@ function recordingJsPdf() {
   var ops = [];
   function JsPDF() {
     this.__ops = ops;
-    this.addPage = function () { ops.push("addPage"); };
-    this.setFontSize = function (n) { ops.push(["size", n]); };
-    this.setTextColor = function (r, g, b) { ops.push(["color", r, g, b]); };
-    this.text = function (t, x, y) { ops.push(["text", t]); };
+    this.addPage = function () {
+      ops.push("addPage");
+    };
+    this.setFontSize = function (n) {
+      ops.push(["size", n]);
+    };
+    this.setTextColor = function (r, g, b) {
+      ops.push(["color", r, g, b]);
+    };
+    this.text = function (t, x, y) {
+      ops.push(["text", t]);
+    };
     this.output = function (kind) {
       ops.push(["output", kind]);
       return new Blob(["PDFFAKE"], { type: "application/pdf" });
@@ -3724,7 +4569,9 @@ function recordingJsPdf() {
 
 describe("Face UI — faceReportToPDF with an injected jsPDF", () => {
   beforeEach(resetGlobals);
-  afterEach(function () { delete globalThis.jspdf; });
+  afterEach(function () {
+    delete globalThis.jspdf;
+  });
 
   it("walks every section and returns a PDF blob", async () => {
     const savedEnsure = globalThis.ensureLib;
@@ -3735,15 +4582,53 @@ describe("Face UI — faceReportToPDF with an injected jsPDF", () => {
       const blob = await globalThis.faceReportToPDF(makeFullFaceReport());
       assert.ok(blob instanceof Blob);
       assert.equal(blob.type, "application/pdf");
-      const texts = pdf.ops.filter(function (o) { return o[0] === "text"; }).map(function (o) { return o[1]; });
-      assert.ok(texts.some(function (t) { return t.indexOf("DID Identity") !== -1; }));
-      assert.ok(texts.some(function (t) { return t.indexOf("BioHash") !== -1; }));
-      assert.ok(texts.some(function (t) { return t.indexOf("Auto PIN") !== -1; }));
-      assert.ok(texts.some(function (t) { return t.indexOf("Fuzzy Identifier") !== -1; }));
-      assert.ok(texts.some(function (t) { return t.indexOf("Alice (91.4%)") !== -1; }));
-      assert.ok(texts.some(function (t) { return t.indexOf("Liveness: passed") !== -1; }));
-      assert.ok(texts.some(function (t) { return t.indexOf("Verified: yes") !== -1; }));
-      assert.ok(texts.some(function (t) { return t.indexOf("urn:uuid:full") !== -1; }));
+      const texts = pdf.ops
+        .filter(function (o) {
+          return o[0] === "text";
+        })
+        .map(function (o) {
+          return o[1];
+        });
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("DID Identity") !== -1;
+        }),
+      );
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("BioHash") !== -1;
+        }),
+      );
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("Auto PIN") !== -1;
+        }),
+      );
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("Fuzzy Identifier") !== -1;
+        }),
+      );
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("Alice (91.4%)") !== -1;
+        }),
+      );
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("Liveness: passed") !== -1;
+        }),
+      );
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("Verified: yes") !== -1;
+        }),
+      );
+      assert.ok(
+        texts.some(function (t) {
+          return t.indexOf("urn:uuid:full") !== -1;
+        }),
+      );
     } finally {
       globalThis.ensureLib = savedEnsure;
     }
@@ -3754,22 +4639,42 @@ describe("Face UI — faceReportToPDF with an injected jsPDF", () => {
     const pdf = recordingJsPdf();
     globalThis.jspdf = pdf.lib;
     const r = makeFullFaceReport({
-      did: null, biohash: null, fuzzy: null, liveness: null,
-      passkey: null, credential: null,
+      did: null,
+      biohash: null,
+      fuzzy: null,
+      liveness: null,
+      passkey: null,
+      credential: null,
       autoPin: null,
       registry: { match: null, registeredId: null },
     });
     const blob = await globalThis.faceReportToPDF(r);
     assert.ok(blob instanceof Blob);
-    const texts = pdf.ops.filter(function (o) { return o[0] === "text"; }).map(function (o) { return o[1]; });
-    assert.ok(texts.some(function (t) { return t.indexOf("Not found in the registry.") !== -1; }));
-    assert.ok(!texts.some(function (t) { return t.indexOf("Fuzzy Identifier") !== -1; }));
+    const texts = pdf.ops
+      .filter(function (o) {
+        return o[0] === "text";
+      })
+      .map(function (o) {
+        return o[1];
+      });
+    assert.ok(
+      texts.some(function (t) {
+        return t.indexOf("Not found in the registry.") !== -1;
+      }),
+    );
+    assert.ok(
+      !texts.some(function (t) {
+        return t.indexOf("Fuzzy Identifier") !== -1;
+      }),
+    );
   });
 });
 
 describe("Face UI — faceReportToDOCX with an injected docx", () => {
   beforeEach(resetGlobals);
-  afterEach(function () { delete globalThis.docx; });
+  afterEach(function () {
+    delete globalThis.docx;
+  });
 
   it("builds tables for every section and packs a blob", async () => {
     globalThis.ensureLib = async function () {};
@@ -3777,11 +4682,18 @@ describe("Face UI — faceReportToDOCX with an injected docx", () => {
     globalThis.docx = fake.lib;
     const blob = await globalThis.faceReportToDOCX(makeFullFaceReport());
     assert.ok(blob instanceof Blob);
-    const packed = fake.calls.find(function (c) { return c[0] === "Packer.toBlob"; });
+    const packed = fake.calls.find(function (c) {
+      return c[0] === "Packer.toBlob";
+    });
     assert.ok(packed, "document must be packed");
     const children = fake.state.lastDocumentOpts.sections[0].children;
-    const tables = children.filter(function (c) { return c.__kind === "Table"; });
-    assert.ok(tables.length >= 5, "detection+did+biohash+fuzzy+registry tables");
+    const tables = children.filter(function (c) {
+      return c.__kind === "Table";
+    });
+    assert.ok(
+      tables.length >= 5,
+      "detection+did+biohash+fuzzy+registry tables",
+    );
     const runs = JSON.stringify(children);
     assert.ok(runs.includes("Auto PIN"), "auto pin row present");
     assert.ok(runs.includes("Alice"), "match label present");
@@ -3792,11 +4704,17 @@ describe("Face UI — faceReportToDOCX with an injected docx", () => {
     const fake = recordingDocx();
     globalThis.docx = fake.lib;
     await globalThis.faceReportToDOCX(
-      makeFullFaceReport({ credential: { error: "no keypair" }, registry: { match: null } }),
+      makeFullFaceReport({
+        credential: { error: "no keypair" },
+        registry: { match: null },
+      }),
     );
     const runs = JSON.stringify(fake.calls);
     assert.ok(runs.includes("Face Credential"), "credential row present");
-    assert.ok(runs.includes('"error"'), "error arm renders the literal error cell");
+    assert.ok(
+      runs.includes('"error"'),
+      "error arm renders the literal error cell",
+    );
   });
 });
 
@@ -3822,7 +4740,9 @@ describe("Face UI — downloadFaceReport formats via the real switch", () => {
     globalThis._faceReport = makeFullFaceReport();
     globalThis.faceRegistry = stubRegistry({
       getAllFaces: async function () {
-        return [{ id: 1, label: "Alice", created: new Date(), updated: new Date() }];
+        return [
+          { id: 1, label: "Alice", created: new Date(), updated: new Date() },
+        ];
       },
     });
     globalThis.ensureLib = async function () {};
@@ -3832,7 +4752,11 @@ describe("Face UI — downloadFaceReport formats via the real switch", () => {
     }
     assert.equal(downloads.length, 5, "five exports captured");
     // The staged file name contains a slash that must be sanitised away.
-    assert.ok(downloads.every(function (d) { return !/[\\/:*?"<>|]/.test(d.name.split(".face_report")[0]); }));
+    assert.ok(
+      downloads.every(function (d) {
+        return !/[\\/:*?"<>|]/.test(d.name.split(".face_report")[0]);
+      }),
+    );
     const byExt = {};
     downloads.forEach(function (d) {
       const ext = d.name.split(".").pop();
@@ -3883,8 +4807,12 @@ describe("Face UI — renderFaceReport full vs sparse reports", () => {
       "face-preview": createCanvas(10, 10),
       "face-report": {
         style: {},
-        get innerHTML() { return html; },
-        set innerHTML(v) { html = v; },
+        get innerHTML() {
+          return html;
+        },
+        set innerHTML(v) {
+          html = v;
+        },
       },
     });
     globalThis._faceReport = makeFullFaceReport();
@@ -3902,13 +4830,22 @@ describe("Face UI — renderFaceReport full vs sparse reports", () => {
       "face-actions": { style: {} },
       "face-report": {
         style: {},
-        get innerHTML() { return html; },
-        set innerHTML(v) { html = v; },
+        get innerHTML() {
+          return html;
+        },
+        set innerHTML(v) {
+          html = v;
+        },
       },
     });
     globalThis._faceReport = makeFullFaceReport({
-      did: null, biohash: null, fuzzy: null, liveness: null,
-      passkey: null, credential: null, autoPin: null,
+      did: null,
+      biohash: null,
+      fuzzy: null,
+      liveness: null,
+      passkey: null,
+      credential: null,
+      autoPin: null,
       registry: { match: null, registeredId: null },
     });
     globalThis.renderFaceReport(globalThis._faceReport);
@@ -3940,10 +4877,15 @@ describe("Face UI — early helpers rare arms", () => {
       },
     };
     try {
-      const h = await globalThis.faceDescriptorHash(new Float32Array([0.5, -0.25]));
+      const h = await globalThis.faceDescriptorHash(
+        new Float32Array([0.5, -0.25]),
+      );
       assert.ok(/^[0-9a-f]+$/.test(h), "legacy hex hash: " + h);
       assert.equal(await globalThis.faceDescriptorHash(null), null);
-      assert.equal(await globalThis.faceDescriptorHash(new Float32Array(0)), null);
+      assert.equal(
+        await globalThis.faceDescriptorHash(new Float32Array(0)),
+        null,
+      );
     } finally {
       globalThis.FaceCrypto = saved;
     }
@@ -3963,7 +4905,9 @@ describe("Face UI — early helpers rare arms", () => {
   it("updateFaceEmbedderHint renders both engine texts", () => {
     let removed = false;
     const hint = {
-      removeAttribute: function () { removed = true; },
+      removeAttribute: function () {
+        removed = true;
+      },
       textContent: "",
     };
     globalThis.document = makeDoc({
@@ -3975,7 +4919,10 @@ describe("Face UI — early helpers rare arms", () => {
     assert.ok(hint.textContent.includes("ArcFace"), hint.textContent);
 
     globalThis.document = makeDoc({
-      "face-embedder-hint": { removeAttribute: function () {}, textContent: "" },
+      "face-embedder-hint": {
+        removeAttribute: function () {},
+        textContent: "",
+      },
       "face-embedder": { value: "human" },
     });
     const hint2 = globalThis.document.getElementById("face-embedder-hint");
@@ -3986,7 +4933,10 @@ describe("Face UI — early helpers rare arms", () => {
   it("faceAttrText maps an emotion-only array entry", () => {
     assert.equal(globalThis.faceAttrText([{ emotion: "happy" }]), "happy");
     assert.equal(
-      globalThis.faceAttrText([{ emotion: "calm", score: 0.5 }, { emotion: "joy", score: 0.9 }]),
+      globalThis.faceAttrText([
+        { emotion: "calm", score: 0.5 },
+        { emotion: "joy", score: 0.9 },
+      ]),
       "joy (90%)",
     );
   });
@@ -4001,7 +4951,9 @@ describe("Face UI — early helpers rare arms", () => {
       },
     };
     globalThis.FaceONNXEmbedder = {
-      isReady: function () { return true; },
+      isReady: function () {
+        return true;
+      },
       load: async function () {},
       embed: embedImpl,
     };
@@ -4012,21 +4964,23 @@ describe("Face UI — early helpers rare arms", () => {
     arcfaceStubs(async function () {
       throw new Error("ort exploded");
     });
-    const r = await globalThis.faceExtractEmbedding(
-      createCanvas(10, 10),
-      { descriptor: DESCRIPTOR, mesh: new Float32Array(468) },
-    );
+    const r = await globalThis.faceExtractEmbedding(createCanvas(10, 10), {
+      descriptor: DESCRIPTOR,
+      mesh: new Float32Array(468),
+    });
     assert.equal(r.error, "arcface-embed-error");
     assert.deepEqual(Array.from(r.descriptor), Array.from(DESCRIPTOR));
   });
 
   it("arcface null embedding falls back with arcface-embed-null", async () => {
     globalThis.document = makeDoc({ "face-embedder": { value: "arcface" } });
-    arcfaceStubs(async function () { return null; });
-    const r = await globalThis.faceExtractEmbedding(
-      createCanvas(10, 10),
-      { descriptor: DESCRIPTOR, mesh: new Float32Array(468) },
-    );
+    arcfaceStubs(async function () {
+      return null;
+    });
+    const r = await globalThis.faceExtractEmbedding(createCanvas(10, 10), {
+      descriptor: DESCRIPTOR,
+      mesh: new Float32Array(468),
+    });
     assert.equal(r.error, "arcface-embed-null");
   });
 
@@ -4034,7 +4988,9 @@ describe("Face UI — early helpers rare arms", () => {
     let fired = null;
     const passEl = {
       value: "p\u0660@ss w\u200bord",
-      addEventListener: function (_t, cb) { fired = cb; },
+      addEventListener: function (_t, cb) {
+        fired = cb;
+      },
     };
     globalThis.document = makeDoc({
       "face-lock-pass": passEl,
@@ -4047,7 +5003,10 @@ describe("Face UI — early helpers rare arms", () => {
     await globalThis.initFaceBiometric();
     assert.ok(typeof fired === "function", "input listener registered");
     fired();
-    assert.equal(passEl.value, globalThis.sanitizeFaceText("p\u0660@ss w\u200bord", "pass"));
+    assert.equal(
+      passEl.value,
+      globalThis.sanitizeFaceText("p\u0660@ss w\u200bord", "pass"),
+    );
   });
 });
 
@@ -4067,14 +5026,27 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
   function waStub(extra) {
     return Object.assign(
       {
-        isAvailable: function () { return true; },
-        register: async function () {
-          return { id: "cred-1234567890abcdef", rawId: new Uint8Array([1, 2, 3, 4]) };
+        isAvailable: function () {
+          return true;
         },
-        randomChallenge: function (n) { return new Uint8Array(n); },
-        authenticate: async function () { return { __assertion: true }; },
-        prfOutput: function () { return new Uint8Array(32); },
-        deriveVaultKey: async function () { return { __vaultKey: true }; },
+        register: async function () {
+          return {
+            id: "cred-1234567890abcdef",
+            rawId: new Uint8Array([1, 2, 3, 4]),
+          };
+        },
+        randomChallenge: function (n) {
+          return new Uint8Array(n);
+        },
+        authenticate: async function () {
+          return { __assertion: true };
+        },
+        prfOutput: function () {
+          return new Uint8Array(32);
+        },
+        deriveVaultKey: async function () {
+          return { __vaultKey: true };
+        },
         encryptJSON: async function (_k, obj) {
           return { iv: "iv-e2e", ct: JSON.stringify(obj) };
         },
@@ -4095,9 +5067,15 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
   function storeRegistry(extra) {
     const store = {};
     const base = {
-      getMeta: async function (k) { return store[k] || null; },
-      setMeta: async function (k, v) { store[k] = v; },
-      removeMeta: async function (k) { delete store[k]; },
+      getMeta: async function (k) {
+        return store[k] || null;
+      },
+      setMeta: async function (k, v) {
+        store[k] = v;
+      },
+      removeMeta: async function (k) {
+        delete store[k];
+      },
       __store: store,
     };
     return stubRegistry(Object.assign(base, extra || {}));
@@ -4107,19 +5085,28 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
     const statusEl = { textContent: "" };
     globalThis.document = passkeyDoc();
     await globalThis.handlePasskeyRegister();
-    assert.ok(statusEl.textContent.includes("Registry not initialized") || statusEl.textContent === "");
+    assert.ok(
+      statusEl.textContent.includes("Registry not initialized") ||
+        statusEl.textContent === "",
+    );
   });
 
   it("stores a plaintext reference when the PRF output is absent", async () => {
     const doc = passkeyDoc();
     globalThis.document = doc;
     globalThis.faceRegistry = storeRegistry();
-    globalThis.FaceWebauthn = waStub({ prfOutput: function () { return null; } });
+    globalThis.FaceWebauthn = waStub({
+      prfOutput: function () {
+        return null;
+      },
+    });
     await globalThis.handlePasskeyRegister();
     const pk = await globalThis.faceRegistry.getMeta("passkey");
     assert.equal(pk.prf, false);
     assert.equal(pk.credentialId, "cred-1234567890abcdef");
-    assert.ok(doc.getElementById("face-status").textContent.includes("Passkey saved"));
+    assert.ok(
+      doc.getElementById("face-status").textContent.includes("Passkey saved"),
+    );
   });
 
   it("falls back to plaintext when subtle is unavailable", async () => {
@@ -4143,7 +5130,9 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
     globalThis.document = doc;
     let sealed = 0;
     globalThis.faceRegistry = storeRegistry({
-      setVaultKey: function (k) { sealed = k && k.__vaultKey ? 1 : 0; },
+      setVaultKey: function (k) {
+        sealed = k && k.__vaultKey ? 1 : 0;
+      },
       sealAllPlaintext: async function () {
         if (sealed !== 1) throw new Error("no key set");
         sealed++;
@@ -4160,7 +5149,9 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
     const doc = passkeyDoc();
     globalThis.document = doc;
     globalThis.faceRegistry = storeRegistry({
-      setVaultKey: function () { throw new Error("seal boom"); },
+      setVaultKey: function () {
+        throw new Error("seal boom");
+      },
     });
     globalThis.FaceWebauthn = waStub();
     await globalThis.handlePasskeyRegister();
@@ -4173,13 +5164,21 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
     globalThis.document = doc;
     const store = {};
     globalThis.faceRegistry = stubRegistry({
-      getMeta: async function (k) { return store[k] || null; },
-      setMeta: async function (k, v) { store[k] = v; },
-      removeMeta: async function (k) { delete store[k]; },
+      getMeta: async function (k) {
+        return store[k] || null;
+      },
+      setMeta: async function (k, v) {
+        store[k] = v;
+      },
+      removeMeta: async function (k) {
+        delete store[k];
+      },
     });
     await globalThis.faceRegistry.setMeta("passkey", { credentialId: "c-1" });
     await globalThis.handlePasskeyRemove();
-    assert.ok(doc.getElementById("face-status").textContent.includes("Passkey removed"));
+    assert.ok(
+      doc.getElementById("face-status").textContent.includes("Passkey removed"),
+    );
 
     // Removing again with nothing stored must stay graceful.
     await globalThis.handlePasskeyRemove();
@@ -4188,7 +5187,9 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
   it("isFacePasskeyRegistered survives meta-store failures", async () => {
     globalThis.document = passkeyDoc();
     globalThis.faceRegistry = {
-      getMeta: async function () { throw new Error("db closed"); },
+      getMeta: async function () {
+        throw new Error("db closed");
+      },
     };
     assert.equal(await globalThis.isFacePasskeyRegistered(), false);
     assert.equal(await globalThis.isFacePasskeyRegistered.call(null), false);
@@ -4199,14 +5200,14 @@ describe("Face UI — handlePasskeyRegister internal arms", () => {
 
 describe("Face UI — faceStepRegisterPasskey (pipeline step 7/8)", () => {
   beforeEach(resetGlobals);
-function stepDoc() {
-  return makeDoc({
-    "face-status": { textContent: "" },
-    "face-passkey-register-btn": { disabled: false },
-    "face-passkey-remove-btn": { style: {} },
-    "face-passkey-status": { textContent: "" },
-  });
-}
+  function stepDoc() {
+    return makeDoc({
+      "face-status": { textContent: "" },
+      "face-passkey-register-btn": { disabled: false },
+      "face-passkey-remove-btn": { style: {} },
+      "face-passkey-status": { textContent: "" },
+    });
+  }
   afterEach(function () {
     delete globalThis.FaceWebauthn;
     globalThis.facePasskeySessionAuthed = false;
@@ -4217,8 +5218,12 @@ function stepDoc() {
   function stepRegistry(extra) {
     const store = {};
     const base = {
-      getMeta: async function (k) { return store[k] || null; },
-      setMeta: async function (k, v) { store[k] = v; },
+      getMeta: async function (k) {
+        return store[k] || null;
+      },
+      setMeta: async function (k, v) {
+        store[k] = v;
+      },
       __store: store,
     };
     return stubRegistry(Object.assign(base, extra || {}));
@@ -4227,14 +5232,24 @@ function stepDoc() {
   function waFull(extra) {
     return Object.assign(
       {
-        isAvailable: function () { return true; },
-        randomChallenge: function (n) { return new Uint8Array(n); },
+        isAvailable: function () {
+          return true;
+        },
+        randomChallenge: function (n) {
+          return new Uint8Array(n);
+        },
         authenticate: async function () {
           return { rawId: "raw-e2e" };
         },
-        verifyClientData: function () { return true; },
-        prfOutput: function () { return new Uint8Array(32); },
-        deriveVaultKey: async function () { return { __k: 1 }; },
+        verifyClientData: function () {
+          return true;
+        },
+        prfOutput: function () {
+          return new Uint8Array(32);
+        },
+        deriveVaultKey: async function () {
+          return { __k: 1 };
+        },
         decryptJSON: async function (_k, _c) {
           return { credentialId: "dec-1", rawId: "raw-dec" };
         },
@@ -4250,7 +5265,9 @@ function stepDoc() {
   it("returns null when the meta store fails", async () => {
     globalThis.document = stepDoc();
     globalThis.faceRegistry = stubRegistry({
-      getMeta: async function () { throw new Error("closed"); },
+      getMeta: async function () {
+        throw new Error("closed");
+      },
     });
     assert.equal(await globalThis.faceStepRegisterPasskey(), null);
   });
@@ -4283,7 +5300,11 @@ function stepDoc() {
     globalThis.document = stepDoc();
     globalThis.faceRegistry = stepRegistry();
     await globalThis.faceRegistry.setMeta("passkey", { credentialId: "c2" });
-    globalThis.FaceWebauthn = { isAvailable: function () { return false; } };
+    globalThis.FaceWebauthn = {
+      isAvailable: function () {
+        return false;
+      },
+    };
     const r = await globalThis.faceStepRegisterPasskey();
     assert.equal(r.authenticated, false);
     assert.match(r.note, /step-up skipped/);
@@ -4293,7 +5314,9 @@ function stepDoc() {
     globalThis.document = stepDoc();
     let sealed = 0;
     globalThis.faceRegistry = stepRegistry({
-      setVaultKey: function (k) { sealed = k && k.__k ? 1 : 0; },
+      setVaultKey: function (k) {
+        sealed = k && k.__k ? 1 : 0;
+      },
       sealAllPlaintext: async function () {
         if (sealed !== 1) throw new Error("no key");
         sealed++;
@@ -4320,7 +5343,11 @@ function stepDoc() {
     globalThis.document = stepDoc();
     globalThis.faceRegistry = stepRegistry();
     await globalThis.faceRegistry.setMeta("passkey", { credentialId: "c3" });
-    globalThis.FaceWebauthn = waFull({ verifyClientData: function () { return false; } });
+    globalThis.FaceWebauthn = waFull({
+      verifyClientData: function () {
+        return false;
+      },
+    });
     await assert.rejects(
       globalThis.faceStepRegisterPasskey(),
       /step-up failed/,
@@ -4330,8 +5357,16 @@ function stepDoc() {
   it("rejects when PRF output vanishes with no plaintext fallback", async () => {
     globalThis.document = stepDoc();
     globalThis.faceRegistry = stepRegistry();
-    await globalThis.faceRegistry.setMeta("passkey", { prf: true, salt: "s", cipher: {} });
-    globalThis.FaceWebauthn = waFull({ prfOutput: function () { return null; } });
+    await globalThis.faceRegistry.setMeta("passkey", {
+      prf: true,
+      salt: "s",
+      cipher: {},
+    });
+    globalThis.FaceWebauthn = waFull({
+      prfOutput: function () {
+        return null;
+      },
+    });
     await assert.rejects(
       globalThis.faceStepRegisterPasskey(),
       /PRF unavailable/,
@@ -4343,7 +5378,9 @@ function stepDoc() {
     globalThis.faceRegistry = stepRegistry();
     await globalThis.faceRegistry.setMeta("passkey", { credentialId: "c4" });
     globalThis.FaceWebauthn = waFull({
-      authenticate: async function () { throw new Error("user cancelled"); },
+      authenticate: async function () {
+        throw new Error("user cancelled");
+      },
     });
     await assert.rejects(
       globalThis.faceStepRegisterPasskey(),
@@ -4355,7 +5392,9 @@ function stepDoc() {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
     globalThis.FaceWebauthn = {
-      isAvailable: function () { throw new Error("probe boom"); },
+      isAvailable: function () {
+        throw new Error("probe boom");
+      },
     };
     assert.equal(await globalThis.ensureFacePasskeyForAction(), true);
   });
@@ -4378,9 +5417,18 @@ describe("Face UI — clearFacePendingPhoto / updateFaceRunState arms", () => {
     globalThis.clearFacePendingPhoto();
     assert.equal(globalThis._facePendingCanvas, null);
     assert.equal(globalThis._facePendingSource, null);
-    assert.equal(globalThis.document.getElementById("face-preview").style.display, "none");
-    assert.equal(globalThis.document.getElementById("face-cam-start").disabled, false);
-    assert.equal(globalThis.document.getElementById("face-cam-capture").disabled, true);
+    assert.equal(
+      globalThis.document.getElementById("face-preview").style.display,
+      "none",
+    );
+    assert.equal(
+      globalThis.document.getElementById("face-cam-start").disabled,
+      false,
+    );
+    assert.equal(
+      globalThis.document.getElementById("face-cam-capture").disabled,
+      true,
+    );
   });
 
   it("enables the run button only with consent+photo+label+passkey", () => {
@@ -4391,11 +5439,16 @@ describe("Face UI — clearFacePendingPhoto / updateFaceRunState arms", () => {
       "face-label": labelEl,
       "face-status": { textContent: "" },
     });
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis._facePendingCanvas = {};
     globalThis.facePasskeyRegistered = true;
     globalThis.updateFaceRunState();
-    assert.equal(labelEl.value, globalThis.sanitizeFaceText("Alice <b>", "label"));
+    assert.equal(
+      labelEl.value,
+      globalThis.sanitizeFaceText("Alice <b>", "label"),
+    );
     assert.equal(runBtn.disabled, false);
 
     // Passkey missing while everything else is ready → explanatory status.
@@ -4417,7 +5470,9 @@ describe("Face UI — clearFacePendingPhoto / updateFaceRunState arms", () => {
       "face-label": labelEl,
       "face-status": { textContent: "" },
     });
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis._facePendingCanvas = {};
     globalThis.facePasskeyRegistered = false;
     globalThis._faceWaUnavailable = true; // capability probe said: no passkeys here
@@ -4439,7 +5494,14 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   function fileDoc(fileObj) {
     return makeDoc({
       "face-image": { files: fileObj ? [fileObj] : [], disabled: false },
-      "face-preview": { style: {}, width: 0, height: 0, getContext: function () { return { drawImage: function () {} }; } },
+      "face-preview": {
+        style: {},
+        width: 0,
+        height: 0,
+        getContext: function () {
+          return { drawImage: function () {} };
+        },
+      },
       "face-cam-start": { disabled: false },
       "face-cam-capture": { disabled: true },
       "face-run": { disabled: true },
@@ -4449,7 +5511,10 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   }
 
   function pngFile(overrides) {
-    return Object.assign({ name: "shot.png", type: "image/png", size: 1024 }, overrides || {});
+    return Object.assign(
+      { name: "shot.png", type: "image/png", size: 1024 },
+      overrides || {},
+    );
   }
 
   afterEach(function () {
@@ -4461,7 +5526,9 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   });
 
   it("warns when consent has not been granted", async () => {
-    globalThis.faceConsentGranted = function () { return false; };
+    globalThis.faceConsentGranted = function () {
+      return false;
+    };
     globalThis.document = fileDoc(pngFile());
     await globalThis.handleFaceFilePicked();
     const s = globalThis.document.getElementById("face-status").textContent;
@@ -4470,8 +5537,12 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   });
 
   it("continues when validateFileInput throws, and stages the photo", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
-    globalThis.validateFileInput = async function () { throw new Error("validator gone"); };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
+    globalThis.validateFileInput = async function () {
+      throw new Error("validator gone");
+    };
     globalThis.loadImage = async function () {
       return { canvas: createCanvas(8, 8), w: 8, h: 8 };
     };
@@ -4486,16 +5557,24 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   });
 
   it("clears staging when the validator rejects the file", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
-    globalThis.validateFileInput = async function () { return false; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
+    globalThis.validateFileInput = async function () {
+      return false;
+    };
     globalThis.document = fileDoc(pngFile());
     await globalThis.handleFaceFilePicked();
     assert.equal(globalThis._facePendingCanvas, null);
   });
 
   it("reports unsupported types before decoding", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
-    globalThis.document = fileDoc(pngFile({ type: "image/webp", name: "x.webp" }));
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
+    globalThis.document = fileDoc(
+      pngFile({ type: "image/webp", name: "x.webp" }),
+    );
     await globalThis.handleFaceFilePicked();
     assert.ok(
       globalThis.document
@@ -4505,7 +5584,9 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   });
 
   it("rejects oversized photos by byte size", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.document = fileDoc(pngFile({ size: 26 * 1024 * 1024 }));
     await globalThis.handleFaceFilePicked();
     assert.ok(
@@ -4516,8 +5597,12 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   });
 
   it("reports image decode failures", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
-    globalThis.loadImage = async function () { throw new Error("corrupt jpeg"); };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
+    globalThis.loadImage = async function () {
+      throw new Error("corrupt jpeg");
+    };
     globalThis.document = fileDoc(pngFile());
     await globalThis.handleFaceFilePicked();
     assert.ok(
@@ -4528,7 +5613,9 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   });
 
   it("rejects photos above 5000px", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.loadImage = async function () {
       return { canvas: createCanvas(10, 10), w: 5001, h: 10 };
     };
@@ -4542,19 +5629,26 @@ describe("Face UI — handleFaceFilePicked guard ladder", () => {
   });
 
   it("stops an active camera when a photo replaces the live feed", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.loadImage = async function () {
       return { canvas: createCanvas(6, 6), w: 6, h: 6 };
     };
     let stopped = false;
-    globalThis.faceCamera = { isActive: function () { return true; } };
-    globalThis.handleFaceCameraStop = function () { stopped = true; };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
+    globalThis.handleFaceCameraStop = function () {
+      stopped = true;
+    };
     globalThis.document = fileDoc(pngFile());
     await globalThis.handleFaceFilePicked();
     assert.equal(stopped, true);
   });
 });
-
 
 // ── Coverage batch 3: consent internals, run guards, sparse builders, labels ──
 
@@ -4583,9 +5677,15 @@ describe("Face UI — consent storage edge arms", () => {
 
   it("survives quota failures on save and clear", () => {
     const boom = {
-      getItem: function () { return null; },
-      setItem: function () { throw new Error("quota"); },
-      removeItem: function () { throw new Error("quota"); },
+      getItem: function () {
+        return null;
+      },
+      setItem: function () {
+        throw new Error("quota");
+      },
+      removeItem: function () {
+        throw new Error("quota");
+      },
     };
     const saved = globalThis.sessionStorage;
     globalThis.sessionStorage = boom;
@@ -4603,7 +5703,9 @@ describe("Face UI — consent storage edge arms", () => {
       "face-status": { textContent: "" },
       "face-consent-panel": {
         style: {},
-        scrollIntoView: function () { scrolled++; },
+        scrollIntoView: function () {
+          scrolled++;
+        },
       },
     });
     globalThis.faceWarnConsentRequired(false);
@@ -4624,7 +5726,10 @@ describe("Face UI — consent storage edge arms", () => {
       "face-consent-check": null,
     });
     globalThis.faceRegistry = stubRegistry({
-      clear: async function () { cleared++; throw new Error("idb locked"); },
+      clear: async function () {
+        cleared++;
+        throw new Error("idb locked");
+      },
     });
     await globalThis.handleFaceConsentWithdraw();
     assert.equal(cleared, 1, "clear attempted");
@@ -4639,7 +5744,9 @@ describe("Face UI — consent storage edge arms", () => {
     let registered = null;
     const checkEl = {
       checked: false,
-      addEventListener: function (_t, cb) { registered = cb; },
+      addEventListener: function (_t, cb) {
+        registered = cb;
+      },
     };
     const acceptBtn = { disabled: true };
     globalThis.document = makeDoc({
@@ -4665,19 +5772,25 @@ describe("Face UI — handleFaceRun entry guards", () => {
   beforeEach(resetGlobals);
 
   it("blocks without consent", async () => {
-    globalThis.faceConsentGranted = function () { return false; };
+    globalThis.faceConsentGranted = function () {
+      return false;
+    };
     globalThis.document = makeDoc({
       "face-status": { textContent: "" },
       "face-consent-panel": { style: {}, scrollIntoView: function () {} },
     });
     await globalThis.handleFaceRun();
     assert.ok(
-      globalThis.document.getElementById("face-status").textContent.includes("consent"),
+      globalThis.document
+        .getElementById("face-status")
+        .textContent.includes("consent"),
     );
   });
 
   it("asks for a photo when nothing is staged", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.document = makeDoc({ "face-status": { textContent: "" } });
     await globalThis.handleFaceRun();
     assert.ok(
@@ -4702,8 +5815,17 @@ describe("Face UI — pipeline descriptor and registration failure arms", () => 
       "face-preview": createCanvas(32, 32),
       "face-report": { style: {}, innerHTML: "", select: function () {} },
       "face-actions": { style: {} },
-      "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-overlay": {
+        classList: makeClassList(),
+        style: {},
+        parentNode: { removeChild: function () {} },
+        offsetWidth: 0,
+      },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
       "face-progress-pct": { textContent: "", setAttribute: function () {} },
@@ -4718,7 +5840,9 @@ describe("Face UI — pipeline descriptor and registration failure arms", () => 
     const human = new MockHuman();
     human.detect = async function () {
       return {
-        face: [{ box: { x: 1, y: 1, width: 8, height: 8 }, score: 0.9, mesh: [] }],
+        face: [
+          { box: { x: 1, y: 1, width: 8, height: 8 }, score: 0.9, mesh: [] },
+        ],
       };
     };
     const e = new FaceEngine({ human: human });
@@ -4740,9 +5864,15 @@ describe("Face UI — pipeline descriptor and registration failure arms", () => 
     globalThis.faceEngine = e;
     globalThis.document = pipeDoc();
     globalThis.faceRegistry = stubRegistry();
-    await globalThis.runFacePipeline(createCanvas(64, 64), { source: "file", fileName: "k.png" });
+    await globalThis.runFacePipeline(createCanvas(64, 64), {
+      source: "file",
+      fileName: "k.png",
+    });
     assert.ok(globalThis._faceReport, "report produced");
-    assert.equal(globalThis._faceReport.did, undefined || null || !!0 ? null : globalThis._faceReport.did || null);
+    assert.equal(
+      globalThis._faceReport.did,
+      undefined || null || !!0 ? null : globalThis._faceReport.did || null,
+    );
   });
 
   it("records registeredId null when addFace rejects", async () => {
@@ -4751,10 +5881,17 @@ describe("Face UI — pipeline descriptor and registration failure arms", () => 
     globalThis.faceEngine = e;
     globalThis.document = pipeDoc();
     globalThis.faceRegistry = stubRegistry({
-      findMatch: async function () { return null; },
-      addFace: async function () { throw new Error("db full"); },
+      findMatch: async function () {
+        return null;
+      },
+      addFace: async function () {
+        throw new Error("db full");
+      },
     });
-    await globalThis.runFacePipeline(createCanvas(64, 64), { source: "file", fileName: "f.png" });
+    await globalThis.runFacePipeline(createCanvas(64, 64), {
+      source: "file",
+      fileName: "f.png",
+    });
     assert.ok(globalThis._faceReport, "report still produced");
     assert.equal(globalThis._faceReport.registry.registeredId, null);
   });
@@ -4767,8 +5904,12 @@ describe("Face UI — renderFaceReport credential-error arm", () => {
       "face-actions": { style: {} },
       "face-report": {
         style: {},
-        get innerHTML() { return html; },
-        set innerHTML(v) { html = v; },
+        get innerHTML() {
+          return html;
+        },
+        set innerHTML(v) {
+          html = v;
+        },
       },
       "dl-modal-title": { textContent: "" },
     });
@@ -4792,7 +5933,10 @@ describe("Face UI — sparse builders cover the unavailable-module arms", () => 
       credential: null,
       autoPin: null,
       registry: { match: null, registeredId: null },
-      photo: Object.assign(makeFullFaceReport().photo, { embeddingVersion: null, confidence: null }),
+      photo: Object.assign(makeFullFaceReport().photo, {
+        embeddingVersion: null,
+        confidence: null,
+      }),
     });
   }
 
@@ -4820,7 +5964,9 @@ describe("Face UI — label sheets failure and emptiness arms", () => {
 
   it("returns an empty sheet when the registry read fails", async () => {
     globalThis.faceRegistry = stubRegistry({
-      getAllFaces: async function () { throw new Error("boom"); },
+      getAllFaces: async function () {
+        throw new Error("boom");
+      },
     });
     assert.equal(await globalThis.faceLabelsToSheet("csv"), "");
   });
@@ -4852,7 +5998,6 @@ describe("Face UI — download modal guards", () => {
   });
 });
 
-
 // ── Coverage batch 4: final surgical arms ──
 
 describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () => {
@@ -4864,7 +6009,9 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
     delete globalThis.cancelAnimationFrame;
     // resetGlobals wipes the DID signing mock some arms rely on.
     if (typeof globalThis.didSign !== "function") {
-      globalThis.didSign = async function () { return new Uint8Array([9, 9]); };
+      globalThis.didSign = async function () {
+        return new Uint8Array([9, 9]);
+      };
     }
     globalThis.facePasskeySessionAuthed = false;
     globalThis.facePasskeyCached = null;
@@ -4877,14 +6024,22 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
   it("arcface align failure returns arcface-align-failed", async () => {
     globalThis.document = makeDoc({ "face-embedder": { value: "arcface" } });
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; },
-      alignFace: function () { return null; },
+      meshToLandmarks5: function () {
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      },
+      alignFace: function () {
+        return null;
+      },
     };
-    globalThis.FaceONNXEmbedder = { isReady: function () { return true; } };
-    const r = await globalThis.faceExtractEmbedding(
-      createCanvas(10, 10),
-      { descriptor: DESCRIPTOR, mesh: new Float32Array(468) },
-    );
+    globalThis.FaceONNXEmbedder = {
+      isReady: function () {
+        return true;
+      },
+    };
+    const r = await globalThis.faceExtractEmbedding(createCanvas(10, 10), {
+      descriptor: DESCRIPTOR,
+      mesh: new Float32Array(468),
+    });
     assert.equal(r.error, "arcface-align-failed");
   });
 
@@ -4898,8 +6053,12 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
       "face-passkey-status": { textContent: "" },
     });
     globalThis.faceRegistry = stubRegistry({
-      getMeta: async function (k) { return store[k] || null; },
-      setMeta: async function (k, v) { store[k] = v; },
+      getMeta: async function (k) {
+        return store[k] || null;
+      },
+      setMeta: async function (k, v) {
+        store[k] = v;
+      },
       setVaultKey: function () {
         sealedAttempted = true;
         throw new Error("seal boom");
@@ -4914,13 +6073,27 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
       createdAt: "C",
     });
     globalThis.FaceWebauthn = {
-      isAvailable: function () { return true; },
-      randomChallenge: function (n) { return new Uint8Array(n); },
-      authenticate: async function () { return { rawId: "r9" }; },
-      verifyClientData: function () { return true; },
-      prfOutput: function () { return new Uint8Array(32); },
-      deriveVaultKey: async function () { return { __k: 1 }; },
-      decryptJSON: async function () { return { credentialId: "d9", rawId: "rw" }; },
+      isAvailable: function () {
+        return true;
+      },
+      randomChallenge: function (n) {
+        return new Uint8Array(n);
+      },
+      authenticate: async function () {
+        return { rawId: "r9" };
+      },
+      verifyClientData: function () {
+        return true;
+      },
+      prfOutput: function () {
+        return new Uint8Array(32);
+      },
+      deriveVaultKey: async function () {
+        return { __k: 1 };
+      },
+      decryptJSON: async function () {
+        return { credentialId: "d9", rawId: "rw" };
+      },
     };
     const r = await globalThis.faceStepRegisterPasskey();
     assert.equal(r.authenticated, true);
@@ -4951,7 +6124,12 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
       "utf8",
     );
     vm.runInThisContext(src, {
-      filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_vc.js"),
+      filename: path.resolve(
+        __dirname,
+        "../..",
+        "Face_Biometric",
+        "face_vc.js",
+      ),
     });
     const ok = await globalThis.faceStepIssueFaceCredential({
       kp: { did: "did:key:zStepUp", algorithm: "Ed25519" },
@@ -4964,7 +6142,9 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
     assert.ok(window._faceCredential);
 
     const savedSign = globalThis.FaceVC.sign;
-    globalThis.FaceVC.sign = async function () { throw new Error("nope"); };
+    globalThis.FaceVC.sign = async function () {
+      throw new Error("nope");
+    };
     const bad = await globalThis.faceStepIssueFaceCredential({
       kp: { did: "did:key:zStepUp", algorithm: "Ed25519" },
       descriptor: new Float32Array([1]),
@@ -4983,8 +6163,17 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
       "face-preview": createCanvas(32, 32),
       "face-report": { style: {}, innerHTML: "", select: function () {} },
       "face-actions": { style: {} },
-      "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-overlay": {
+        classList: makeClassList(),
+        style: {},
+        parentNode: { removeChild: function () {} },
+        offsetWidth: 0,
+      },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
       "face-progress-pct": { textContent: "", setAttribute: function () {} },
@@ -4996,9 +6185,16 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
     });
     let added = 0;
     globalThis.faceRegistry = stubRegistry({
-      findMatch: async function () { return null; },
-      addFace: async function () { added++; return 7; },
-      getSize: async function () { return added; },
+      findMatch: async function () {
+        return null;
+      },
+      addFace: async function () {
+        added++;
+        return 7;
+      },
+      getSize: async function () {
+        return added;
+      },
     });
     await globalThis.runFacePipeline(createCanvas(64, 64), {
       source: "file",
@@ -5030,21 +6226,32 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
     const videoEl = Object.assign(uiNode(), {
       clientWidth: 320,
       clientHeight: 240,
-      insertAdjacentElement: function (_pos, el) { this.__inserted = el; },
+      insertAdjacentElement: function (_pos, el) {
+        this.__inserted = el;
+      },
     });
     videoEl.parentNode = { style: {} };
     globalThis.document = makeDoc({ "face-camera": videoEl });
     const e = new FaceEngine({ human: new MockHuman() });
     e._loaded = true;
     globalThis.faceEngine = e;
-    globalThis.faceCamera = { isActive: function () { return true; }, captureFrame: function () { return createCanvas(32, 32); } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+      captureFrame: function () {
+        return createCanvas(32, 32);
+      },
+    };
     globalThis.startFaceOverlay(videoEl);
     assert.equal(globalThis._faceOverlayRunning, true);
     assert.ok(globalThis._faceOverlay, "overlay canvas created");
     assert.ok(videoEl.__inserted, "canvas inserted after the video");
 
     let cancelled = 0;
-    globalThis.cancelAnimationFrame = function () { cancelled++; };
+    globalThis.cancelAnimationFrame = function () {
+      cancelled++;
+    };
     globalThis._faceOverlayRAF = 1;
     globalThis.stopFaceOverlay();
     assert.equal(globalThis._faceOverlayRunning, false);
@@ -5052,21 +6259,29 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
     globalThis._faceOverlayRAF = 0;
   });
 
-  ;
-
   it("renderFaceChallenge falls back when i18n helpers are absent", () => {
     const el = uiNode();
     globalThis.document = makeDoc({ "face-challenge": el });
     const saved__ = globalThis.__;
     try {
       delete globalThis.__;
-      globalThis.renderFaceChallenge({ type: "mystery-move", index: 0, total: 1, done: false });
+      globalThis.renderFaceChallenge({
+        type: "mystery-move",
+        index: 0,
+        total: 1,
+        done: false,
+      });
       assert.equal(el.textContent, "Challenge: mystery-move");
     } finally {
       globalThis.__ = saved__;
     }
     // unknown type echoes the raw type even with __ present
-    globalThis.renderFaceChallenge({ type: "mystery-move", index: 1, total: 3, done: false });
+    globalThis.renderFaceChallenge({
+      type: "mystery-move",
+      index: 1,
+      total: 3,
+      done: false,
+    });
     assert.ok(el.textContent.includes("mystery-move"));
     assert.ok(el.textContent.includes("(2/3)"));
   });
@@ -5075,7 +6290,10 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
     const calls = [];
     function countEl(withSetAttr, useI18n) {
       const el = { style: {}, textContent: "", setAttribute: undefined };
-      if (withSetAttr) el.setAttribute = function (k, v) { calls.push([k, v]); };
+      if (withSetAttr)
+        el.setAttribute = function (k, v) {
+          calls.push([k, v]);
+        };
       return el;
     }
     // branch A: setAttribute + i18n data present
@@ -5086,7 +6304,11 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
       "face-migration-note": { style: {} },
       "face-status": { textContent: "" },
     });
-    globalThis.faceRegistry = stubRegistry({ getSize: async function () { return 3; } });
+    globalThis.faceRegistry = stubRegistry({
+      getSize: async function () {
+        return 3;
+      },
+    });
     await globalThis.listRegisteredFaces();
     // branch B: no setAttribute, no i18n data
     delete globalThis.i18n;
@@ -5108,7 +6330,9 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
 
     // throwing sheet → Export error arm for both normalised formats
     const originalSheet = globalThis.faceLabelsToSheet;
-    globalThis.faceLabelsToSheet = async function () { throw new Error("sheet boom"); };
+    globalThis.faceLabelsToSheet = async function () {
+      throw new Error("sheet boom");
+    };
     await globalThis.handleFaceExportLabels("csv");
     await globalThis.handleFaceExportLabels("txt");
     assert.match(
@@ -5129,7 +6353,6 @@ describe("Face UI — final arms: helpers, step-up seal, VC step, overlay", () =
   });
 });
 
-
 // ── Coverage: camera start/stop/capture ladder (clean single copy) ──
 
 describe("Face UI — camera ladder arms", () => {
@@ -5141,14 +6364,18 @@ describe("Face UI — camera ladder arms", () => {
   });
 
   it("blocks camera start without consent", async () => {
-    globalThis.faceConsentGranted = function () { return false; };
+    globalThis.faceConsentGranted = function () {
+      return false;
+    };
     globalThis.document = makeDoc({
       "face-status": { textContent: "" },
       "face-consent-panel": { style: {}, scrollIntoView: function () {} },
     });
     await globalThis.handleFaceCameraStart("face-camera");
     assert.ok(
-      globalThis.document.getElementById("face-status").textContent.includes("consent"),
+      globalThis.document
+        .getElementById("face-status")
+        .textContent.includes("consent"),
     );
   });
 
@@ -5163,7 +6390,9 @@ describe("Face UI — camera ladder arms", () => {
       "face-cam-stop": { disabled: true },
     });
     globalThis.faceCamera = {
-      isActive: function () { return false; },
+      isActive: function () {
+        return false;
+      },
       stopCamera: function () {},
     };
     await globalThis.__faceUiPristine.handleFaceCameraStop("cam-custom");
@@ -5179,10 +6408,16 @@ describe("Face UI — camera ladder arms", () => {
   });
 
   it("surfaces the real bootstrap failure during automatic capture", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     delete globalThis.FaceEngine;
     delete globalThis.FaceRegistry;
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     globalThis.document = makeDoc({
       "face-status": { textContent: "" },
       "face-liveness-mode": { value: "off" },
@@ -5198,10 +6433,16 @@ describe("Face UI — camera ladder arms", () => {
     const e = new FaceEngine({ human: new MockHuman() });
     e._loaded = true;
     globalThis.faceEngine = e;
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.faceCamera = {
-      isActive: function () { return true; },
-      captureFrame: function () { throw new Error("shutter jam"); },
+      isActive: function () {
+        return true;
+      },
+      captureFrame: function () {
+        throw new Error("shutter jam");
+      },
     };
     globalThis.document = makeDoc({
       "face-status": { textContent: "" },
@@ -5235,8 +6476,17 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
       "face-preview": createCanvas(32, 32),
       "face-report": { style: {}, innerHTML: "", select: function () {} },
       "face-actions": { style: {} },
-      "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-overlay": {
+        classList: makeClassList(),
+        style: {},
+        parentNode: { removeChild: function () {} },
+        offsetWidth: 0,
+      },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
       "face-progress-pct": { textContent: "", setAttribute: function () {} },
@@ -5255,8 +6505,13 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
     globalThis.document = pipeDocFull();
     let attempted = 0;
     globalThis.faceRegistry = stubRegistry({
-      findMatch: async function () { return null; },
-      addFace: async function () { attempted++; throw new Error("db full"); },
+      findMatch: async function () {
+        return null;
+      },
+      addFace: async function () {
+        attempted++;
+        throw new Error("db full");
+      },
     });
     await globalThis.runFacePipeline(createCanvas(64, 64), {
       source: "file",
@@ -5271,7 +6526,9 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
     const videoEl = Object.assign(uiNode(), {
       clientWidth: 320,
       clientHeight: 240,
-      insertAdjacentElement: function (_p, el) { this.__inserted = el; },
+      insertAdjacentElement: function (_p, el) {
+        this.__inserted = el;
+      },
     });
     videoEl.parentNode = { style: {} };
     globalThis.document = makeDoc({ "face-camera": videoEl });
@@ -5279,13 +6536,31 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
     e._loaded = true;
     globalThis.faceEngine = e;
     globalThis.faceCamera = {
-      isActive: function () { return true; },
-      captureFrame: function () { return {}; }, // no getContext → bail
+      isActive: function () {
+        return true;
+      },
+      captureFrame: function () {
+        return {};
+      }, // no getContext → bail
     };
     const realCreate = globalThis.document.createElement;
     globalThis.document.createElement = function (tag) {
       if (tag === "canvas") {
-        return { style: {}, width: 0, height: 0, getContext: function () { return { clearRect: function () {}, strokeRect: function () {}, beginPath: function () {}, arc: function () {}, fill: function () {}, fillText: function () {} }; } };
+        return {
+          style: {},
+          width: 0,
+          height: 0,
+          getContext: function () {
+            return {
+              clearRect: function () {},
+              strokeRect: function () {},
+              beginPath: function () {},
+              arc: function () {},
+              fill: function () {},
+              fillText: function () {},
+            };
+          },
+        };
       }
       return realCreate.call(this, tag);
     };
@@ -5293,7 +6568,9 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
     assert.ok(videoEl.__inserted, "canvas inserted after the video");
     const realCapture = globalThis.faceCamera.captureFrame;
     globalThis._faceOverlayRunning = true;
-    globalThis.faceCamera.captureFrame = function () { throw new Error("frame boom"); };
+    globalThis.faceCamera.captureFrame = function () {
+      throw new Error("frame boom");
+    };
     void globalThis.faceOverlayDetectAndDraw(); // catch arm
     globalThis._faceOverlayRunning = false; // kill loop
     globalThis.faceCamera.captureFrame = realCapture;
@@ -5307,14 +6584,17 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
     globalThis.startFaceOverlay(bare);
 
     // throwing createElement hits the defensive catch
-    globalThis.document.createElement = function () { throw new Error("no canvas svc"); };
+    globalThis.document.createElement = function () {
+      throw new Error("no canvas svc");
+    };
     globalThis.startFaceOverlay(bare);
     globalThis.document.createElement = realCreate;
 
-
     // default video-id arm of stop
     let cancelled = 0;
-    globalThis.cancelAnimationFrame = function () { cancelled++; };
+    globalThis.cancelAnimationFrame = function () {
+      cancelled++;
+    };
     globalThis._faceOverlayRAF = 1;
     globalThis.stopFaceOverlay();
     assert.equal(cancelled, 1);
@@ -5322,10 +6602,17 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
   });
 
   it("startFaceOverlay tolerates a parentless video element", () => {
-    const videoEl = Object.assign(uiNode(), { clientWidth: 100, clientHeight: 80 });
+    const videoEl = Object.assign(uiNode(), {
+      clientWidth: 100,
+      clientHeight: 80,
+    });
     delete videoEl.parentNode;
     globalThis.document = makeDoc({});
-    globalThis.faceCamera = { isActive: function () { return true; } };
+    globalThis.faceCamera = {
+      isActive: function () {
+        return true;
+      },
+    };
     const e = new FaceEngine({ human: new MockHuman() });
     e._loaded = true;
     globalThis.faceEngine = e;
@@ -5337,17 +6624,30 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
     const e = new FaceEngine({ human: new MockHuman() });
     e._loaded = true;
     globalThis.faceEngine = e;
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.faceCamera = {
-      isActive: function () { return true; },
-      captureFrame: function () { return createCanvas(20, 20); },
+      isActive: function () {
+        return true;
+      },
+      captureFrame: function () {
+        return createCanvas(20, 20);
+      },
     };
     globalThis.document = makeDoc({
       "face-status": { textContent: "" },
       "face-liveness-mode": { value: "off" },
       "face-label": { value: "" },
       "face-run": { disabled: true },
-      "face-preview": { style: {}, width: 0, height: 0, getContext: function () { return { drawImage: function () {} }; } },
+      "face-preview": {
+        style: {},
+        width: 0,
+        height: 0,
+        getContext: function () {
+          return { drawImage: function () {} };
+        },
+      },
     });
     await globalThis.handleFaceCameraCapture();
     assert.ok(
@@ -5363,8 +6663,12 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
     const store = {};
     globalThis.document = makeDoc({ "face-status": { textContent: "" } });
     globalThis.faceRegistry = stubRegistry({
-      getMeta: async function (k) { return store[k] || null; },
-      setMeta: async function (k, v) { store[k] = v; },
+      getMeta: async function (k) {
+        return store[k] || null;
+      },
+      setMeta: async function (k, v) {
+        store[k] = v;
+      },
       setVaultKey: function () {},
       sealAllPlaintext: async function () {},
     });
@@ -5374,13 +6678,27 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
       cipher: {},
     }); // no name/createdAt/credentialId/transports
     globalThis.FaceWebauthn = {
-      isAvailable: function () { return true; },
-      randomChallenge: function (n) { return new Uint8Array(n); },
-      authenticate: async function () { return { rawId: "rw" }; },
-      verifyClientData: function () { return true; },
-      prfOutput: function () { return new Uint8Array(16); },
-      deriveVaultKey: async function () { return { k: 2 }; },
-      decryptJSON: async function () { return {}; }, // no ids either
+      isAvailable: function () {
+        return true;
+      },
+      randomChallenge: function (n) {
+        return new Uint8Array(n);
+      },
+      authenticate: async function () {
+        return { rawId: "rw" };
+      },
+      verifyClientData: function () {
+        return true;
+      },
+      prfOutput: function () {
+        return new Uint8Array(16);
+      },
+      deriveVaultKey: async function () {
+        return { k: 2 };
+      },
+      decryptJSON: async function () {
+        return {};
+      }, // no ids either
     };
     const r = await globalThis.faceStepRegisterPasskey();
     assert.equal(r.authenticated, true);
@@ -5392,9 +6710,16 @@ describe("Face UI — batch5: registration, overlay tails, capture success", () 
   it("ensureFacePasskeyForAction announces the skip when WebAuthn is absent", async () => {
     const statusEl = { textContent: "" };
     globalThis.document = makeDoc({ "face-status": statusEl });
-    globalThis.FaceWebauthn = { isAvailable: function () { return false; } };
+    globalThis.FaceWebauthn = {
+      isAvailable: function () {
+        return false;
+      },
+    };
     assert.equal(await globalThis.ensureFacePasskeyForAction(), true);
-    assert.ok(statusEl.textContent.includes("unavailable"), statusEl.textContent);
+    assert.ok(
+      statusEl.textContent.includes("unavailable"),
+      statusEl.textContent,
+    );
   });
 });
 
@@ -5407,10 +6732,18 @@ describe("Face UI — builder trio over rich/sparse/mid reports", () => {
 
   function midReport() {
     return makeFullFaceReport({
-      did: { did: "did:key:zMid", algorithm: "Ed25519", signedAt: "S", signature: "G" },
+      did: {
+        did: "did:key:zMid",
+        algorithm: "Ed25519",
+        signedAt: "S",
+        signature: "G",
+      },
       biohash: { bits: 128, codeHex: "aa", pinFingerprint: "ff" }, // pinAuto falsy
       fuzzy: null,
-      registry: { match: { label: "Bob", similarity: 55.55 }, registeredId: null },
+      registry: {
+        match: { label: "Bob", similarity: 55.55 },
+        registeredId: null,
+      },
       liveness: { live: false, score: 0.2, reasons: ["no_blink"] },
       passkey: { credentialId: "c9" },
       credential: { error: "mid-err" },
@@ -5424,9 +6757,23 @@ describe("Face UI — builder trio over rich/sparse/mid reports", () => {
     globalThis.jspdf = pdf.lib;
     const blob = await globalThis.faceReportToPDF(midReport());
     assert.ok(blob instanceof Blob);
-    const texts = pdf.ops.filter(function (o) { return o[0] === "text"; }).map(function (o) { return o[1]; });
-    assert.ok(texts.some(function (t) { return t.indexOf("Liveness: failed") !== -1; }));
-    assert.ok(!texts.some(function (t) { return t.indexOf("Auto PIN") !== -1; }));
+    const texts = pdf.ops
+      .filter(function (o) {
+        return o[0] === "text";
+      })
+      .map(function (o) {
+        return o[1];
+      });
+    assert.ok(
+      texts.some(function (t) {
+        return t.indexOf("Liveness: failed") !== -1;
+      }),
+    );
+    assert.ok(
+      !texts.some(function (t) {
+        return t.indexOf("Auto PIN") !== -1;
+      }),
+    );
   });
 
   it("DOCX table helper handles empty input and normal rows", async () => {
@@ -5475,23 +6822,27 @@ describe("Face UI — builder trio over rich/sparse/mid reports", () => {
   });
 });
 
-
 describe("Face UI — DOCX push guard arms", () => {
   beforeEach(resetGlobals);
-  afterEach(function () { delete globalThis.docx; });
+  afterEach(function () {
+    delete globalThis.docx;
+  });
 
   it("skips empty-string values while keeping populated ones", async () => {
     globalThis.ensureLib = async function () {};
     const fake = recordingDocx();
     globalThis.docx = fake.lib;
     const r = makeFullFaceReport();
-    r.did.signature = "";            // empty string → skipped
+    r.did.signature = ""; // empty string → skipped
     r.biohash.pinFingerprint = null; // null → skipped
-    r.passkey.createdAt = "";        // empty string → skipped
+    r.passkey.createdAt = ""; // empty string → skipped
     await globalThis.faceReportToDOCX(r);
     const runs = JSON.stringify(fake.state.lastDocumentOpts);
     assert.ok(runs.includes("did:key:zFullReport"), "populated value kept");
-    assert.ok(!/"Signature",\s*""/.test(runs), "empty signature dropped by guard");
+    assert.ok(
+      !/"Signature",\s*""/.test(runs),
+      "empty signature dropped by guard",
+    );
   });
 });
 
@@ -5511,12 +6862,20 @@ describe("Face UI — b6 helpers", () => {
   });
 
   it("faceProgressEnsure returns the cached overlay when refs exist", () => {
-    const overlay = { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} } };
+    const overlay = {
+      classList: makeClassList(),
+      style: {},
+      parentNode: { removeChild: function () {} },
+    };
     globalThis.document = makeDoc({
       "face-progress-overlay": overlay,
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
       "face-progress-pct": { textContent: "", setAttribute: function () {} },
     });
     assert.equal(globalThis.faceProgressEnsure(), overlay);
@@ -5525,17 +6884,41 @@ describe("Face UI — b6 helpers", () => {
   it("progress show/update/hide degrade with partial refs", () => {
     // refs null even after ensure -> show bails
     globalThis.document = {
-      getElementById: function () { return null; },
-      createElement: function () { return { style: {}, classList: makeClassList(), appendChild: function (c) { return c; }, textContent: "" }; },
+      getElementById: function () {
+        return null;
+      },
+      createElement: function () {
+        return {
+          style: {},
+          classList: makeClassList(),
+          appendChild: function (c) {
+            return c;
+          },
+          textContent: "",
+        };
+      },
       body: { appendChild: function () {} },
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
+      querySelector: function () {
+        return null;
+      },
+      querySelectorAll: function () {
+        return [];
+      },
     };
     globalThis.faceProgressShow("T", "d");
     // pct missing -> bar fallback arm
     globalThis.document = makeDoc({
-      "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-overlay": {
+        classList: makeClassList(),
+        style: {},
+        parentNode: { removeChild: function () {} },
+        offsetWidth: 0,
+      },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
     });
@@ -5553,8 +6936,14 @@ describe("Face UI — b6 helpers", () => {
   });
 
   it("faceAttrText comparator favours the higher emotion on both orders", () => {
-    const lowHigh = [{ emotion: "calm", score: 0.2 }, { emotion: "joy", score: 0.8 }];
-    const highLow = [{ emotion: "joy", score: 0.8 }, { emotion: "calm", score: 0.2 }];
+    const lowHigh = [
+      { emotion: "calm", score: 0.2 },
+      { emotion: "joy", score: 0.8 },
+    ];
+    const highLow = [
+      { emotion: "joy", score: 0.8 },
+      { emotion: "calm", score: 0.2 },
+    ];
     assert.equal(globalThis.faceAttrText(lowHigh), "joy (80%)");
     assert.equal(globalThis.faceAttrText(highLow), "joy (80%)");
   });
@@ -5569,11 +6958,17 @@ describe("Face UI — b6 arcface null-face variants", () => {
 
   function stubs(embedImpl, ready) {
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; },
-      alignFace: function () { return { canvas: createCanvas(8, 8) }; },
+      meshToLandmarks5: function () {
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      },
+      alignFace: function () {
+        return { canvas: createCanvas(8, 8) };
+      },
     };
     globalThis.FaceONNXEmbedder = {
-      isReady: function () { return !!ready; },
+      isReady: function () {
+        return !!ready;
+      },
       load: async function () {},
       embed: embedImpl,
     };
@@ -5597,7 +6992,9 @@ describe("Face UI — b6 arcface null-face variants", () => {
   it("mesh-missing arm with a null-face descriptor", async () => {
     globalThis.document = makeDoc({ "face-embedder": { value: "arcface" } });
     stubs(null, true);
-    const r = await globalThis.faceExtractEmbedding(createCanvas(4, 4), { descriptor: null });
+    const r = await globalThis.faceExtractEmbedding(createCanvas(4, 4), {
+      descriptor: null,
+    });
     assert.equal(r.error, "arcface-align-failed");
     assert.equal(r.descriptor, null);
   });
@@ -5605,10 +7002,18 @@ describe("Face UI — b6 arcface null-face variants", () => {
   it("align failure keeps the null descriptor", async () => {
     globalThis.document = makeDoc({ "face-embedder": { value: "arcface" } });
     globalThis.FaceAlign = {
-      meshToLandmarks5: function () { return [1, 2]; },
-      alignFace: function () { return null; },
+      meshToLandmarks5: function () {
+        return [1, 2];
+      },
+      alignFace: function () {
+        return null;
+      },
     };
-    globalThis.FaceONNXEmbedder = { isReady: function () { return true; } };
+    globalThis.FaceONNXEmbedder = {
+      isReady: function () {
+        return true;
+      },
+    };
     const r = await globalThis.faceExtractEmbedding(createCanvas(4, 4), null);
     assert.equal(r.error, "arcface-align-failed");
     assert.equal(r.descriptor, null);
@@ -5616,11 +7021,21 @@ describe("Face UI — b6 arcface null-face variants", () => {
 
   it("embed error and null arms with null faces", async () => {
     globalThis.document = makeDoc({ "face-embedder": { value: "arcface" } });
-    stubs(async function () { throw new Error("e"); }, true);
-    const r1 = await globalThis.faceExtractEmbedding(createCanvas(4, 4), { mesh: new Float32Array(468), descriptor: null });
+    stubs(async function () {
+      throw new Error("e");
+    }, true);
+    const r1 = await globalThis.faceExtractEmbedding(createCanvas(4, 4), {
+      mesh: new Float32Array(468),
+      descriptor: null,
+    });
     assert.equal(r1.error, "arcface-embed-error");
-    stubs(async function () { return null; }, true);
-    const r2 = await globalThis.faceExtractEmbedding(createCanvas(4, 4), { mesh: new Float32Array(468), descriptor: null });
+    stubs(async function () {
+      return null;
+    }, true);
+    const r2 = await globalThis.faceExtractEmbedding(createCanvas(4, 4), {
+      mesh: new Float32Array(468),
+      descriptor: null,
+    });
     assert.equal(r2.error, "arcface-embed-null");
   });
 
@@ -5639,7 +7054,9 @@ describe("Face UI — b6 passkey string fallbacks", () => {
     globalThis.facePasskeyCached = null;
     globalThis.facePasskeySessionVerifiedAt = "";
   });
-  afterEach(function () { delete globalThis.FaceWebauthn; });
+  afterEach(function () {
+    delete globalThis.FaceWebauthn;
+  });
 
   function pkDoc() {
     return makeDoc({
@@ -5652,12 +7069,23 @@ describe("Face UI — b6 passkey string fallbacks", () => {
 
   function storeReg(extra) {
     const store = {};
-    return stubRegistry(Object.assign({
-      getMeta: async function (k) { return store[k] || null; },
-      setMeta: async function (k, v) { store[k] = v; },
-      removeMeta: async function (k) { delete store[k]; },
-      __store: store,
-    }, extra || {}));
+    return stubRegistry(
+      Object.assign(
+        {
+          getMeta: async function (k) {
+            return store[k] || null;
+          },
+          setMeta: async function (k, v) {
+            store[k] = v;
+          },
+          removeMeta: async function (k) {
+            delete store[k];
+          },
+          __store: store,
+        },
+        extra || {},
+      ),
+    );
   }
 
   it("refreshPasskeyStatus shows the default name for anonymous passkeys", async () => {
@@ -5702,7 +7130,11 @@ describe("Face UI — b6 passkey string fallbacks", () => {
     const reg = storeReg();
     globalThis.faceRegistry = reg;
     await reg.setMeta("passkey", { prf: true });
-    globalThis.FaceWebauthn = { isAvailable: function () { return false; } };
+    globalThis.FaceWebauthn = {
+      isAvailable: function () {
+        return false;
+      },
+    };
     const r = await globalThis.faceStepRegisterPasskey();
     assert.equal(r.credentialId, "");
     assert.equal(r.authenticated, false);
@@ -5712,12 +7144,23 @@ describe("Face UI — b6 passkey string fallbacks", () => {
     globalThis.document = pkDoc();
     const reg = storeReg();
     globalThis.faceRegistry = reg;
-    await reg.setMeta("passkey", { credentialId: "cid-9", rawId: "stored-raw" });
+    await reg.setMeta("passkey", {
+      credentialId: "cid-9",
+      rawId: "stored-raw",
+    });
     globalThis.FaceWebauthn = {
-      isAvailable: function () { return true; },
-      randomChallenge: function (n) { return new Uint8Array(n); },
-      authenticate: async function () { return {}; }, // no rawId
-      verifyClientData: function () { return true; },
+      isAvailable: function () {
+        return true;
+      },
+      randomChallenge: function (n) {
+        return new Uint8Array(n);
+      },
+      authenticate: async function () {
+        return {};
+      }, // no rawId
+      verifyClientData: function () {
+        return true;
+      },
     };
     const r = await globalThis.faceStepRegisterPasskey();
     assert.equal(r.authenticated, true);
@@ -5735,8 +7178,8 @@ describe("Face UI — b6 builder optional-field matrix", () => {
 
   function credVariants() {
     return [
-      { id: "", type: "TypeX" },              // id falsy -> defaults kick in
-      { error: "boom-txt" },                   // error arm
+      { id: "", type: "TypeX" }, // id falsy -> defaults kick in
+      { error: "boom-txt" }, // error arm
     ];
   }
 
@@ -5798,25 +7241,46 @@ describe("Face UI — b6 builder optional-field matrix", () => {
       credential: { id: "", type: "TypeZ" },
       registry: { match: null, registeredId: null },
       liveness: { live: false, score: 0.1 },
-      passkey: { credentialId: "c", authenticated: false, name: "N", createdAt: "C" },
+      passkey: {
+        credentialId: "c",
+        authenticated: false,
+        name: "N",
+        createdAt: "C",
+      },
     });
     const blob = await globalThis.faceReportToPDF(r);
     assert.ok(blob instanceof Blob);
-    const texts = pdf.ops.filter(function (o) { return o[0] === "text"; }).map(function (o) { return o[1]; });
-    assert.ok(texts.some(function (t) { return t.indexOf("Liveness: failed") !== -1; }));
-    assert.ok(texts.some(function (t) { return t.indexOf("Verified: no") !== -1; }));
+    const texts = pdf.ops
+      .filter(function (o) {
+        return o[0] === "text";
+      })
+      .map(function (o) {
+        return o[1];
+      });
+    assert.ok(
+      texts.some(function (t) {
+        return t.indexOf("Liveness: failed") !== -1;
+      }),
+    );
+    assert.ok(
+      texts.some(function (t) {
+        return t.indexOf("Verified: no") !== -1;
+      }),
+    );
   });
 
   it("DOCX covers failed liveness, unverified passkey and credential defaults", async () => {
     globalThis.ensureLib = async function () {};
     const fake = recordingDocx();
     globalThis.docx = fake.lib;
-    await globalThis.faceReportToDOCX(makeFullFaceReport({
-      credential: { id: "", type: "TypeY" },
-      registry: { match: null, registeredId: null },
-      liveness: { live: false, score: 0.1 },
-      passkey: { credentialId: "c", authenticated: false, name: "N" },
-    }));
+    await globalThis.faceReportToDOCX(
+      makeFullFaceReport({
+        credential: { id: "", type: "TypeY" },
+        registry: { match: null, registeredId: null },
+        liveness: { live: false, score: 0.1 },
+        passkey: { credentialId: "c", authenticated: false, name: "N" },
+      }),
+    );
     const runs = JSON.stringify(fake.state.lastDocumentOpts);
     assert.ok(runs.includes('"failed"'), "liveness failed cell");
     assert.ok(runs.includes('"no"'), "passkey unverified cell");
@@ -5830,8 +7294,12 @@ describe("Face UI — b6 builder optional-field matrix", () => {
     globalThis.document = makeDoc({
       "face-report": {
         style: {},
-        get innerHTML() { return html; },
-        set innerHTML(v) { html = v; },
+        get innerHTML() {
+          return html;
+        },
+        set innerHTML(v) {
+          html = v;
+        },
       },
       "dl-modal-title": { textContent: "" },
     });
@@ -5846,10 +7314,13 @@ describe("Face UI — b6 builder optional-field matrix", () => {
     globalThis.docx = fake.lib;
     // A passkey-less report still packs fine; internal null filtering runs.
     await globalThis.faceReportToDOCX(makeFullFaceReport({ passkey: null }));
-    assert.ok(fake.calls.some(function (c) { return c[0] === "Packer.toBlob"; }));
+    assert.ok(
+      fake.calls.some(function (c) {
+        return c[0] === "Packer.toBlob";
+      }),
+    );
   });
 });
-
 
 // ── Coverage batch 6b: pipeline/camera/labels/misc branch sweep ──
 
@@ -5858,13 +7329,25 @@ describe("Face UI — b6 progress partial refs", () => {
 
   function partialDoc(withPct) {
     const doc = {
-      "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
+      "face-progress-overlay": {
+        classList: makeClassList(),
+        style: {},
+        parentNode: { removeChild: function () {} },
+        offsetWidth: 0,
+      },
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
     };
     if (withPct) {
-      doc["face-progress-pct"] = { textContent: "", setAttribute: function () {} };
+      doc["face-progress-pct"] = {
+        textContent: "",
+        setAttribute: function () {},
+      };
     }
     return makeDoc(doc);
   }
@@ -5900,8 +7383,17 @@ describe("Face UI — b6 pipeline option/attribute arms", () => {
       "face-list": { innerHTML: "", append: function () {} },
       "face-run": { disabled: false },
       "dl-modal-title": { textContent: "" },
-      "face-progress-overlay": { classList: makeClassList(), style: {}, parentNode: { removeChild: function () {} }, offsetWidth: 0 },
-      "face-progress-bar": { style: {}, classList: makeClassList(), setAttribute: function () {} },
+      "face-progress-overlay": {
+        classList: makeClassList(),
+        style: {},
+        parentNode: { removeChild: function () {} },
+        offsetWidth: 0,
+      },
+      "face-progress-bar": {
+        style: {},
+        classList: makeClassList(),
+        setAttribute: function () {},
+      },
       "face-progress-title": { textContent: "", setAttribute: function () {} },
       "face-progress-text": { textContent: "", setAttribute: function () {} },
     };
@@ -5926,7 +7418,9 @@ describe("Face UI — b6 pipeline option/attribute arms", () => {
     };
     const face = Object.assign(base, faceOverrides || {});
     const human = new MockHuman();
-    human.detect = async function () { return { face: [face] }; };
+    human.detect = async function () {
+      return { face: [face] };
+    };
     const e = new FaceEngine({ human: human });
     e._loaded = true;
     return e;
@@ -5941,14 +7435,19 @@ describe("Face UI — b6 pipeline option/attribute arms", () => {
   it("confidence-only faces render the numeric fallback", async () => {
     globalThis.faceEngine = engineWith({ score: undefined, confidence: 0.66 });
     globalThis.document = miniPipeDoc();
-    await globalThis.runFacePipeline(createCanvas(32, 32), { source: "file", fileName: "c.png" });
+    await globalThis.runFacePipeline(createCanvas(32, 32), {
+      source: "file",
+      fileName: "c.png",
+    });
     assert.ok(globalThis._faceReport.photo.confidence >= 0);
   });
 
   it("attributes ride along when detection supplies them", async () => {
     globalThis.faceEngine = engineWith({ attributes: { age: 30 } });
     globalThis.document = miniPipeDoc();
-    await globalThis.runFacePipeline(createCanvas(32, 32), { fileName: "a.png" });
+    await globalThis.runFacePipeline(createCanvas(32, 32), {
+      fileName: "a.png",
+    });
     assert.ok(globalThis._faceReport, "report produced");
   });
 
@@ -5966,11 +7465,15 @@ describe("Face UI — b6 pipeline option/attribute arms", () => {
     globalThis.didGenerateKeypair = async function () {
       return { did: "did:key:b6", algorithm: "Ed25519" };
     };
-    globalThis.didSign = async function () { return new Uint8Array([1, 2, 3]); };
+    globalThis.didSign = async function () {
+      return new Uint8Array([1, 2, 3]);
+    };
     try {
       globalThis.faceEngine = engineWith({});
       globalThis.document = miniPipeDoc();
-      await globalThis.runFacePipeline(createCanvas(32, 32), { fileName: "b.png" });
+      await globalThis.runFacePipeline(createCanvas(32, 32), {
+        fileName: "b.png",
+      });
       assert.ok(globalThis._faceReport.did.signature.length > 0);
     } finally {
       globalThis.FaceCrypto = savedCrypto;
@@ -5981,9 +7484,13 @@ describe("Face UI — b6 pipeline option/attribute arms", () => {
     globalThis.faceEngine = engineWith({});
     globalThis.document = miniPipeDoc();
     globalThis.faceRegistry = stubRegistry({
-      findMatch: async function () { return { match: { label: "B", similarity: 50 } }; },
+      findMatch: async function () {
+        return { match: { label: "B", similarity: 50 } };
+      },
     });
-    await globalThis.runFacePipeline(createCanvas(32, 32), { fileName: "m.png" });
+    await globalThis.runFacePipeline(createCanvas(32, 32), {
+      fileName: "m.png",
+    });
     assert.equal(globalThis._faceReport.registry.match.label, "B");
   });
 });
@@ -5992,14 +7499,20 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
   beforeEach(resetGlobals);
 
   it("handleFaceRun forwards the staged canvas and source", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
-    globalThis.ensureFacePasskeyForAction = async function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
+    globalThis.ensureFacePasskeyForAction = async function () {
+      return true;
+    };
     const canvas = {};
     const src = { source: "camera" };
     globalThis._facePendingCanvas = canvas;
     globalThis._facePendingSource = src;
     let got = null;
-    globalThis.runFacePipeline = async function (c, o) { got = [c, o]; };
+    globalThis.runFacePipeline = async function (c, o) {
+      got = [c, o];
+    };
     await globalThis.handleFaceRun();
     assert.deepEqual(got, [canvas, src]);
   });
@@ -6039,13 +7552,15 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
     });
     globalThis.faceRegistry = stubRegistry({
       getAllFaces: async function () {
-        return [{ id: 1, label: "NoVer", created: new Date(), updated: new Date() }];
+        return [
+          { id: 1, label: "NoVer", created: new Date(), updated: new Date() },
+        ];
       },
     });
     await globalThis.listRegisteredFaces();
     assert.ok(
-      globalThis.document.getElementById("face-migration-note").style.display !== "none" ||
-        true,
+      globalThis.document.getElementById("face-migration-note").style
+        .display !== "none" || true,
     );
   });
 
@@ -6056,7 +7571,13 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
       getAllFaces: async function () {
         return [
           { id: 9, label: "", created: new Date(), updated: new Date() }, // no descriptor
-          { id: 10, label: "Has", descriptor: new Float32Array([1]), created: new Date(), updated: new Date() },
+          {
+            id: 10,
+            label: "Has",
+            descriptor: new Float32Array([1]),
+            created: new Date(),
+            updated: new Date(),
+          },
         ];
       },
     });
@@ -6079,7 +7600,9 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
     });
     await globalThis.handleFaceLock();
     assert.ok(
-      globalThis.document.getElementById("face-status").textContent.includes("passphrase"),
+      globalThis.document
+        .getElementById("face-status")
+        .textContent.includes("passphrase"),
     );
   });
 
@@ -6091,18 +7614,28 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
       "face-run": { disabled: true },
       "face-lock-pass": { value: "" },
       "face-restore-file": {
-        files: [{
-          text: async function () {
-            return JSON.stringify({ type: "redoSan.faceRegistryBackup", entries: [] });
+        files: [
+          {
+            text: async function () {
+              return JSON.stringify({
+                type: "redoSan.faceRegistryBackup",
+                entries: [],
+              });
+            },
           },
-        }],
+        ],
         value: "",
       },
     });
-    globalThis.confirm = function () { return false; };
+    globalThis.confirm = function () {
+      return false;
+    };
     let seenPass = "unset";
     globalThis.faceRegistry = stubRegistry({
-      importBackup: async function (_b, pass) { seenPass = pass; return 0; },
+      importBackup: async function (_b, pass) {
+        seenPass = pass;
+        return 0;
+      },
     });
     await globalThis.handleFaceRestore();
     assert.equal(seenPass, null);
@@ -6110,8 +7643,18 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
 
   it("issue prefers the session DID keypair over the pipeline one", async () => {
     vm.runInThisContext(
-      fs.readFileSync(path.join(__dirname, "..", "..", "Face_Biometric", "face_vc.js"), "utf8"),
-      { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_vc.js") },
+      fs.readFileSync(
+        path.join(__dirname, "..", "..", "Face_Biometric", "face_vc.js"),
+        "utf8",
+      ),
+      {
+        filename: path.resolve(
+          __dirname,
+          "../..",
+          "Face_Biometric",
+          "face_vc.js",
+        ),
+      },
     );
     globalThis.document = makeDoc({
       "face-status": { textContent: "" },
@@ -6123,10 +7666,16 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
     delete globalThis._faceKeypair;
     globalThis._faceReport = { photo: { descriptorHash: "ee".repeat(32) } };
     globalThis._didKeypair = { did: "did:key:sessionKP", algorithm: "Ed25519" };
-    globalThis._faceKeypair = { did: "did:key:pipelineKP", algorithm: "Ed25519" };
+    globalThis._faceKeypair = {
+      did: "did:key:pipelineKP",
+      algorithm: "Ed25519",
+    };
     let builtDid = null;
     const savedBuild = globalThis.FaceVC.build;
-    globalThis.FaceVC.build = function (opts) { builtDid = opts.did; return savedBuild.call(globalThis.FaceVC, opts); };
+    globalThis.FaceVC.build = function (opts) {
+      builtDid = opts.did;
+      return savedBuild.call(globalThis.FaceVC, opts);
+    };
     await globalThis.handleFaceIssueCredential();
     globalThis.FaceVC.build = savedBuild;
     assert.equal(builtDid, "did:key:sessionKP"); // precedence arm
@@ -6136,7 +7685,10 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
     globalThis._faceKeypair = { did: "did:key:soloKP", algorithm: "Ed25519" };
     let builtDid2 = null;
     const sb2 = globalThis.FaceVC.build;
-    globalThis.FaceVC.build = function (opts) { builtDid2 = opts.did; return sb2.call(globalThis.FaceVC, opts); };
+    globalThis.FaceVC.build = function (opts) {
+      builtDid2 = opts.did;
+      return sb2.call(globalThis.FaceVC, opts);
+    };
     await globalThis.handleFaceIssueCredential();
     globalThis.FaceVC.build = sb2;
     assert.equal(builtDid2, "did:key:soloKP");
@@ -6145,7 +7697,9 @@ describe("Face UI — b6 run passthrough and misc single guards", () => {
 
 describe("Face UI — b6 capture liveness evidence variants", () => {
   beforeEach(resetGlobals);
-  afterEach(function () { delete globalThis.faceLiveness; });
+  afterEach(function () {
+    delete globalThis.faceLiveness;
+  });
 
   const RealFaceLivenessClass = function () {};
   function capDoc(withMode) {
@@ -6153,7 +7707,14 @@ describe("Face UI — b6 capture liveness evidence variants", () => {
       "face-status": { textContent: "" },
       "face-label": { value: "" },
       "face-run": { disabled: true },
-      "face-preview": { style: {}, width: 0, height: 0, getContext: function () { return { drawImage: function () {} }; } },
+      "face-preview": {
+        style: {},
+        width: 0,
+        height: 0,
+        getContext: function () {
+          return { drawImage: function () {} };
+        },
+      },
     };
     if (withMode) d["face-liveness-mode"] = { value: "passive" };
     return makeDoc(d);
@@ -6167,8 +7728,12 @@ describe("Face UI — b6 capture liveness evidence variants", () => {
 
   function activeCamera() {
     return {
-      isActive: function () { return true; },
-      captureFrame: function () { return createCanvas(16, 16); },
+      isActive: function () {
+        return true;
+      },
+      captureFrame: function () {
+        return createCanvas(16, 16);
+      },
     };
   }
 
@@ -6179,7 +7744,9 @@ describe("Face UI — b6 capture liveness evidence variants", () => {
   }
 
   it("failed liveness surfaces failedChallenges when reasons are absent", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.faceCamera = activeCamera();
     globalThis.faceEngine = liveEngine();
     globalThis.faceLiveness = {
@@ -6197,7 +7764,9 @@ describe("Face UI — b6 capture liveness evidence variants", () => {
   });
 
   it("empty reasons array also falls back to failedChallenges", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.faceCamera = activeCamera();
     globalThis.faceEngine = liveEngine();
     globalThis.faceLiveness = {
@@ -6208,12 +7777,16 @@ describe("Face UI — b6 capture liveness evidence variants", () => {
     globalThis.document = capDoc(true);
     await globalThis.handleFaceCameraCapture();
     assert.ok(
-      globalThis.document.getElementById("face-status").textContent.includes("fc2"),
+      globalThis.document
+        .getElementById("face-status")
+        .textContent.includes("fc2"),
     );
   });
 
   it("missing mode element defaults to passive evidence", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.faceCamera = activeCamera();
     globalThis.faceEngine = liveEngine();
     globalThis.faceLiveness = {
@@ -6228,15 +7801,23 @@ describe("Face UI — b6 capture liveness evidence variants", () => {
         .getElementById("face-status")
         .textContent.includes("Photo captured"),
     );
-    assert.ok(globalThis._faceLivenessEvidence === null || (globalThis._faceLivenessEvidence && typeof globalThis._faceLivenessEvidence.modeSeen === "string"));
+    assert.ok(
+      globalThis._faceLivenessEvidence === null ||
+        (globalThis._faceLivenessEvidence &&
+          typeof globalThis._faceLivenessEvidence.modeSeen === "string"),
+    );
   });
 
   it("staged evidence stores an empty reasons list when absent", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
     globalThis.faceCamera = activeCamera();
     globalThis.faceEngine = liveEngine();
     globalThis.faceLiveness = {
-      verifyLiveness: async function () { return { live: true }; },
+      verifyLiveness: async function () {
+        return { live: true };
+      },
     };
     globalThis.document = capDoc(true);
     await globalThis.handleFaceCameraCapture();
@@ -6252,16 +7833,33 @@ describe("Face UI — b6 camera start id + tick clock + draw guards", () => {
   });
 
   it("camera start accepts an explicit video element id", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
-    globalThis.ensureFacePasskeyForAction = async function () { return true; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
+    globalThis.ensureFacePasskeyForAction = async function () {
+      return true;
+    };
     globalThis.FaceCamera = function () {};
-    globalThis.faceCamera = { startCamera: async function () { return true; } };
-    globalThis.FaceCamera.prototype.start = async function (_v, _cb) { return true; };
-    globalThis.FaceCamera.getCameraErrorMessage = function (e) { return String(e); };
+    globalThis.faceCamera = {
+      startCamera: async function () {
+        return true;
+      },
+    };
+    globalThis.FaceCamera.prototype.start = async function (_v, _cb) {
+      return true;
+    };
+    globalThis.FaceCamera.getCameraErrorMessage = function (e) {
+      return String(e);
+    };
     const t = this;
     t && void t;
     globalThis.document = makeDoc({
-      "cam-custom": { style: {}, getAttribute: function () { return null; } },
+      "cam-custom": {
+        style: {},
+        getAttribute: function () {
+          return null;
+        },
+      },
       "face-image": { disabled: false },
       "face-cam-start": { disabled: false },
       "face-cam-stop": { disabled: true },
@@ -6278,11 +7876,18 @@ describe("Face UI — b6 camera start id + tick clock + draw guards", () => {
   });
 
   it("start aborts quietly when the passkey gate refuses", async () => {
-    globalThis.faceConsentGranted = function () { return true; };
-    globalThis.ensureFacePasskeyForAction = async function () { return false; };
+    globalThis.faceConsentGranted = function () {
+      return true;
+    };
+    globalThis.ensureFacePasskeyForAction = async function () {
+      return false;
+    };
     globalThis.document = makeDoc({ "face-status": { textContent: "" } });
     await globalThis.handleFaceCameraStart("face-camera");
-    assert.equal(globalThis.document.getElementById("face-status").textContent, "");
+    assert.equal(
+      globalThis.document.getElementById("face-status").textContent,
+      "",
+    );
   });
 
   it("tick honours an explicit timestamp and Date.now fallback", () => {
@@ -6293,16 +7898,25 @@ describe("Face UI — b6 camera start id + tick clock + draw guards", () => {
   });
 
   function drawHarness(detFactory, overlayCtx) {
-    const videoEl = Object.assign(uiNode(), { clientWidth: 320, clientHeight: 240 });
-    videoEl.insertAdjacentElement = function (_p, el) { this.__inserted = el; };
+    const videoEl = Object.assign(uiNode(), {
+      clientWidth: 320,
+      clientHeight: 240,
+    });
+    videoEl.insertAdjacentElement = function (_p, el) {
+      this.__inserted = el;
+    };
     videoEl.parentNode = { style: {} };
     globalThis.document = makeDoc({ "face-camera": videoEl });
     const realCreate = globalThis.document.createElement;
     globalThis.document.createElement = function (tag) {
       if (tag === "canvas") {
         return {
-          style: {}, width: 320, height: 240,
-          getContext: function () { return overlayCtx; },
+          style: {},
+          width: 320,
+          height: 240,
+          getContext: function () {
+            return overlayCtx;
+          },
         };
       }
       return realCreate.call(this, tag);
@@ -6312,22 +7926,37 @@ describe("Face UI — b6 camera start id + tick clock + draw guards", () => {
     e.detectFaces = detFactory;
     globalThis.faceEngine = e;
     globalThis.faceCamera = {
-      isActive: function () { return true; },
-      captureFrame: function () { return createCanvas(64, 48); },
+      isActive: function () {
+        return true;
+      },
+      captureFrame: function () {
+        return createCanvas(64, 48);
+      },
     };
     globalThis.startFaceOverlay(videoEl);
   }
 
   it("draw guards: empty detection, box-less and mesh-less faces", async () => {
     // empty detection -> early return after clear
-    drawHarness(async function () { return []; }, { clearRect: function () {} });
+    drawHarness(
+      async function () {
+        return [];
+      },
+      { clearRect: function () {} },
+    );
     await globalThis.faceOverlayDetectAndDraw();
     globalThis.stopFaceOverlay();
 
     // face without box -> continue arm
     drawHarness(
-      async function () { return [{ score: 0.5 }]; },
-      { clearRect: function () {}, strokeRect: function () {}, fillRect: function () {} },
+      async function () {
+        return [{ score: 0.5 }];
+      },
+      {
+        clearRect: function () {},
+        strokeRect: function () {},
+        fillRect: function () {},
+      },
     );
     await globalThis.faceOverlayDetectAndDraw();
     globalThis.stopFaceOverlay();
@@ -6337,7 +7966,11 @@ describe("Face UI — b6 camera start id + tick clock + draw guards", () => {
       async function () {
         return [{ box: { x: 1, y: 1, width: 10, height: 10 }, score: 0.9 }];
       },
-      { clearRect: function () {}, strokeRect: function () {}, fillRect: function () {} },
+      {
+        clearRect: function () {},
+        strokeRect: function () {},
+        fillRect: function () {},
+      },
     );
     await globalThis.faceOverlayDetectAndDraw();
     globalThis.stopFaceOverlay();
@@ -6346,16 +7979,31 @@ describe("Face UI — b6 camera start id + tick clock + draw guards", () => {
     const mesh = new Array(90).fill(-50); // all negative -> every point skipped
     drawHarness(
       async function () {
-        return [{ box: { x: 1, y: 1, width: 10, height: 10 }, score: 0.9, mesh: mesh }];
+        return [
+          {
+            box: { x: 1, y: 1, width: 10, height: 10 },
+            score: 0.9,
+            mesh: mesh,
+          },
+        ];
       },
-      { clearRect: function () {}, strokeRect: function () {}, beginPath: function () {}, arc: function () {}, fill: function () {}, fillRect: function () {} },
+      {
+        clearRect: function () {},
+        strokeRect: function () {},
+        beginPath: function () {},
+        arc: function () {},
+        fill: function () {},
+        fillRect: function () {},
+      },
     );
     await globalThis.faceOverlayDetectAndDraw();
     globalThis.stopFaceOverlay();
   });
 
   it("draw bails when the overlay context is unavailable", async () => {
-    drawHarness(async function () { return []; }, null); // getContext -> null
+    drawHarness(async function () {
+      return [];
+    }, null); // getContext -> null
     await globalThis.faceOverlayDetectAndDraw();
     globalThis.stopFaceOverlay();
   });
@@ -6366,4 +8014,3 @@ describe("Face UI — b6 camera start id + tick clock + draw guards", () => {
     globalThis.faceOverlayTick(Date.now());
   });
 });
-
