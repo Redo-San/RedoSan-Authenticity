@@ -1,0 +1,14 @@
+{
+  "entryPoints": [
+    "../../Style/shared.js",
+    "../../Style/shared_validation.js",
+    "../../Style/navigation.js"
+  ],
+  "out": "../../docs/api",
+  "name": "RedoSan Authenticity API",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "readme": "none"
+}
