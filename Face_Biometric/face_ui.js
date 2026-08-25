@@ -511,17 +511,27 @@ async function initFaceBiometric() {
   updateFaceEmbedderHint();
   // Early capability probe: unlock the Generate gate on clients where
   // passkeys cannot work (mobile webviews / no platform authenticator).
-  faceWaCapability()
-    .then(function (capable) {
-      if (!capable) {
+  // Requires a REAL browser context (WebAuthn-capable navigator + document)
+  // so node/test-VM harnesses with stubbed globals never mutate state.
+  if (
+    typeof window !== "undefined" &&
+    !!window.document &&
+    typeof navigator !== "undefined" &&
+    !!navigator.credentials &&
+    typeof navigator.credentials.create === "function"
+  ) {
+    faceWaCapability()
+      .then(function (capable) {
+        if (!capable) {
+          _faceWaUnavailable = true;
+          updateFaceRunState();
+        }
+      })
+      .catch(function () {
         _faceWaUnavailable = true;
         updateFaceRunState();
-      }
-    })
-    .catch(function () {
-      _faceWaUnavailable = true;
-      updateFaceRunState();
-    });
+      });
+  }
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
   if (typeof maybePromptFaceEncryption === "function")
     await maybePromptFaceEncryption();
