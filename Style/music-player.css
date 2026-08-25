@@ -62,7 +62,7 @@
   opacity: 1;
 }
 
-@media (width <= 480px) {
+@media (max-width: 480px) {
   .music-btn {
     width: 44px;
     height: 44px;
