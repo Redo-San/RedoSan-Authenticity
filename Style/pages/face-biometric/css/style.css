@@ -224,3 +224,13 @@
   accent-color: #6c5ce7;
   cursor: pointer;
 }
+
+/* ── Help card readability (desktop EN copy renders small) ── */
+.help-card-body {
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.help-card-header {
+  font-size: 1rem;
+}
