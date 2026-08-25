@@ -35,6 +35,33 @@ var _faceOverlayBusy = false;
 var facePasskeySessionAuthed = false;
 var facePasskeySessionVerifiedAt = "";
 var facePasskeyRegistered = false;
+/**
+ * True when WebAuthn passkeys cannot work on this client (no platform
+ * authenticator, or an in-app webview that blocks the ceremony). Set once
+ * by the async capability probe / skip branches; relaxes the Generate gate
+ * so capable-of-nothing clients are not permanently locked out.
+ */
+var _faceWaUnavailable = false;
+var _faceWaCapableP = null;
+/** Resolve (once) whether this client fully supports passkeys. */
+function faceWaCapability() {
+  if (_faceWaCapableP === null) {
+    try {
+      _faceWaCapableP =
+        typeof FaceWebauthn !== "undefined" &&
+        typeof FaceWebauthn.isFullyCapable === "function"
+          ? FaceWebauthn.isFullyCapable()
+          : Promise.resolve(
+              typeof FaceWebauthn !== "undefined" &&
+                typeof FaceWebauthn.isAvailable === "function" &&
+                FaceWebauthn.isAvailable(),
+            );
+    } catch (_probeErr) {
+      _faceWaCapableP = Promise.resolve(false);
+    }
+  }
+  return _faceWaCapableP;
+}
 // Last decrypted credential reference (credentialId + rawId), populated on the
 // first step-up of a session so subsequent generations can skip the prompt.
 var facePasskeyCached = null;
@@ -482,6 +509,29 @@ async function initFaceBiometric() {
   }
   initFaceConsent();
   updateFaceEmbedderHint();
+  // Early capability probe: unlock the Generate gate on clients where
+  // passkeys cannot work (mobile webviews / no platform authenticator).
+  // Requires a REAL browser context (WebAuthn-capable navigator + document)
+  // so node/test-VM harnesses with stubbed globals never mutate state.
+  if (
+    typeof window !== "undefined" &&
+    !!window.document &&
+    typeof navigator !== "undefined" &&
+    !!navigator.credentials &&
+    typeof navigator.credentials.create === "function"
+  ) {
+    faceWaCapability()
+      .then(function (capable) {
+        if (!capable) {
+          _faceWaUnavailable = true;
+          updateFaceRunState();
+        }
+      })
+      .catch(function () {
+        _faceWaUnavailable = true;
+        updateFaceRunState();
+      });
+  }
   if (typeof listRegisteredFaces === "function") await listRegisteredFaces();
   if (typeof maybePromptFaceEncryption === "function")
     await maybePromptFaceEncryption();
@@ -719,10 +769,15 @@ async function ensureFacePasskeyForAction() {
       typeof FaceWebauthn !== "undefined" &&
       typeof FaceWebauthn.isAvailable === "function" &&
       FaceWebauthn.isAvailable();
+    if (waAvailable && typeof FaceWebauthn.isFullyCapable === "function") {
+      waAvailable = await FaceWebauthn.isFullyCapable();
+    }
   } catch (_probeErr) {
     waAvailable = false;
   }
   if (!waAvailable) {
+    _faceWaUnavailable = true;
+    updateFaceRunState();
     setStatus(
       "face-status",
       __(
@@ -1005,13 +1060,14 @@ function updateFaceRunState() {
     faceWarnConsentRequired(false);
     return;
   }
+  var waSatisfied = facePasskeyRegistered || _faceWaUnavailable;
   if (
     !(
       _facePendingCanvas &&
       label &&
       label.value &&
       label.value.trim() !== "" &&
-      facePasskeyRegistered
+      waSatisfied
     )
   ) {
     btn.disabled = true;
@@ -1022,7 +1078,7 @@ function updateFaceRunState() {
       label &&
       label.value &&
       label.value.trim() !== "" &&
-      !facePasskeyRegistered
+      !waSatisfied
     ) {
       setStatus(
         "face-status",

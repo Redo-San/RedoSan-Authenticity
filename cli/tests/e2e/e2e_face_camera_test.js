@@ -13,13 +13,27 @@ before(async () => {
   server = await startServer(PORT);
   browser = await chromium.launch({
     headless: true,
-    args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
+    args: [
+      "--use-fake-device-for-media-stream",
+      "--use-fake-ui-for-media-stream",
+    ],
   });
 });
 after(async () => {
   if (browser) await browser.close();
   stopServer();
 });
+
+async function withTimeout(promise, ms, label) {
+  let timer;
+  const guard = new Promise((_res, rej) => {
+    timer = setTimeout(
+      () => rej(new Error(label + " timed out after " + ms + "ms")),
+      ms,
+    );
+  });
+  return Promise.race([promise, guard]).finally(() => clearTimeout(timer));
+}
 
 async function openFacePage() {
   const ctx = await browser.newContext({
@@ -31,13 +45,17 @@ async function openFacePage() {
   page.__diag = { console: [], errors: [] };
   page.on("console", (m) => {
     if (page.__diag.console.length < 12)
-      page.__diag.console.push(m.type() + ": " + String(m.text()).slice(0, 120));
+      page.__diag.console.push(
+        m.type() + ": " + String(m.text()).slice(0, 120),
+      );
   });
   page.on("pageerror", (e) => {
-    if (page.__diag.errors.length < 8) page.__diag.errors.push(String(e).slice(0, 160));
+    if (page.__diag.errors.length < 8)
+      page.__diag.errors.push(String(e).slice(0, 160));
   });
   await page.goto(`${BASE}/Style/pages/face-biometric/index.html`, {
     waitUntil: "domcontentloaded",
+    timeout: 30000,
   });
   await page.waitForTimeout(1500);
   await page.evaluate(() => {
@@ -53,7 +71,9 @@ async function openFacePage() {
     await check.check();
     await page.click("#face-consent-accept");
     await page.waitForFunction(
-      () => (document.getElementById("face-consent-panel") || {}).style?.display === "none",
+      () =>
+        (document.getElementById("face-consent-panel") || {}).style?.display ===
+        "none",
       null,
       { timeout: 15000 },
     );
@@ -61,37 +81,58 @@ async function openFacePage() {
   // Software authenticator for headless CI so passkey registration cannot
   // hang or fail; silently skipped when the CDP domain is unavailable.
   try {
-    const cdp = await ctx.newCDPSession(page);
-    await cdp.send("WebAuthn.enable");
-    await cdp.send("WebAuthn.addAuthenticator", {
-      protocol: "ctap2",
-      transport: "internal",
-      hasResidentKey: true,
-      hasUserVerification: true,
-      isUserVerified: true,
-      automaticPresenceSimulation: true,
-    });
+    const cdp = await withTimeout(
+      ctx.newCDPSession(page),
+      8000,
+      "newCDPSession",
+    );
+    await withTimeout(cdp.send("WebAuthn.enable"), 8000, "WebAuthn.enable");
+    await withTimeout(
+      cdp.send("WebAuthn.addAuthenticator", {
+        protocol: "ctap2",
+        transport: "internal",
+        hasResidentKey: true,
+        hasUserVerification: true,
+        isUserVerified: true,
+        automaticPresenceSimulation: true,
+      }),
+      8000,
+      "WebAuthn.addAuthenticator",
+    );
     page.__authenticator = true;
   } catch (_e) {
     page.__authenticator = false;
   }
   // Stage an enrolled passkey reference: the strict generation gate
-  // (#388) then behaves like a returning real user.
-  await page.evaluate(async function () {
-    if (!window.faceRegistry) return;
-    const existing = await window.faceRegistry.getMeta('passkey');
-    if (!existing) {
-      await window.faceRegistry.setMeta('passkey', {
-        credentialId: 'e2e-virtual-passkey',
-        name: 'E2E Virtual Passkey',
-        createdAt: new Date().toISOString(),
-      });
-    }
-    if (typeof window.refreshPasskeyStatus === 'function') {
-      await window.refreshPasskeyStatus();
-    }
-  });
-  await page.click('button[onclick="switchFaceInput(\'camera\')"]');
+  // (#388) then behaves like a returning real user. Non-fatal: the
+  // capability-aware gate skips passkeys when this cannot be staged.
+  try {
+    await withTimeout(
+      page.evaluate(async function () {
+        if (!window.faceRegistry) return "no-registry";
+        const existing = await window.faceRegistry.getMeta("passkey");
+        if (!existing) {
+          await window.faceRegistry.setMeta("passkey", {
+            credentialId: "e2e-virtual-passkey",
+            name: "E2E Virtual Passkey",
+            createdAt: new Date().toISOString(),
+          });
+        }
+        if (typeof window.refreshPasskeyStatus === "function") {
+          await window.refreshPasskeyStatus();
+        }
+        return "staged";
+      }),
+      12000,
+      "stage-passkey-meta",
+    );
+  } catch (stageErr) {
+    console.log(
+      "[openFacePage] passkey staging skipped:",
+      String(stageErr.message).slice(0, 120),
+    );
+  }
+  await page.click("button[onclick=\"switchFaceInput('camera')\"]");
   await page.waitForTimeout(200);
   return { ctx, page };
 }
@@ -142,7 +183,10 @@ describe("E2E — Face Biometric (fake camera)", () => {
       await page.selectOption("#face-liveness-mode", "active");
       await startCamera(page);
       const status = await page.textContent("#face-status");
-      assert.ok(status.includes("Camera started"), "Camera should start with fake media stream");
+      assert.ok(
+        status.includes("Camera started"),
+        "Camera should start with fake media stream",
+      );
 
       const captureEnabled = !(await page.isDisabled("#face-cam-capture"));
       const fileDisabled = await page.isDisabled("#face-image");
@@ -162,8 +206,11 @@ describe("E2E — Face Biometric (fake camera)", () => {
       await page.click("#face-cam-capture");
       await page.waitForFunction(
         () =>
-          ((document.getElementById("face-challenge") || {}).textContent || "").length > 0 ||
-          /Liveness|challenge/i.test((document.getElementById("face-status") || {}).textContent || ""),
+          ((document.getElementById("face-challenge") || {}).textContent || "")
+            .length > 0 ||
+          /Liveness|challenge/i.test(
+            (document.getElementById("face-status") || {}).textContent || "",
+          ),
         null,
         { timeout: 30000 },
       );
@@ -179,7 +226,10 @@ describe("E2E — Face Biometric (fake camera)", () => {
       await startCamera(page);
       await page.click("#face-cam-stop");
       await page.waitForFunction(
-        () => (document.getElementById("face-status") || {}).textContent?.includes("stopped"),
+        () =>
+          (document.getElementById("face-status") || {}).textContent?.includes(
+            "stopped",
+          ),
         null,
         { timeout: 15000 },
       );

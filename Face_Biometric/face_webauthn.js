@@ -77,6 +77,54 @@ var FaceWebauthn = (function () {
     },
 
     /**
+     * Full capability probe per WebAuthn best practice: API presence alone
+     * is not enough — embedded webviews (Facebook/Instagram/TikTok) and
+     * devices without a platform authenticator expose the API but fail the
+     * ceremony. Combines isAvailable() + UVPA + in-app-webview detection.
+     * @returns {Promise<boolean>} resolves false when passkeys cannot work.
+     */
+    isFullyCapable: function () {
+      var self = this;
+      if (!self.isAvailable()) return Promise.resolve(false);
+      var ua = (navigator && navigator.userAgent) || "";
+      if (
+        /(FBAN|FBAV|FB_IAB|Instagram|Threads|Barcelona|BytedanceWebview|musical_ly|trill|Snapchat|LinkedInApp|Pinterest)/i.test(
+          ua,
+        )
+      ) {
+        return Promise.resolve(false);
+      }
+      try {
+        if (
+          typeof PublicKeyCredential === "undefined" ||
+          typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !==
+            "function"
+        ) {
+          return Promise.resolve(false);
+        }
+        if (!self._uvpaPromise) {
+          self._uvpaPromise = new Promise(function (resolve) {
+            var timer = setTimeout(function () {
+              resolve(false);
+            }, 3000);
+            PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+              .then(function (ok) {
+                clearTimeout(timer);
+                resolve(!!ok);
+              })
+              .catch(function () {
+                clearTimeout(timer);
+                resolve(false);
+              });
+          });
+        }
+        return self._uvpaPromise;
+      } catch (_probeErr) {
+        return Promise.resolve(false);
+      }
+    },
+
+    /**
      * Cryptographically random challenge, base64url-encoded.
      * @param {number} [bytes] length in bytes (default 32)
      * @returns {string}

@@ -1137,12 +1137,11 @@
     "Corbado",
     "Yubico",
     "logit",
-    "Bytedance"
+    "Bytedance",
+    "UVPA"
   ],
   "flagWords": [],
-  "ignoreRegExpList": [
-    "/[؀-ۿ]+/"
-  ],
+  "ignoreRegExpList": ["/[؀-ۿ]+/"],
   "useGitignore": true,
   "maxFileSize": 1048576,
   "ignorePaths": [
