@@ -898,8 +898,7 @@ window.__I18N_DATA.ar = {
   "face.restore_btn": "استيراد نسخة احتياطية",
   "face.backup_done": "تم تصدير النسخة الاحتياطية.",
   "face.backup_done_enc": "تم تصدير النسخة الاحتياطية (مشفرة).",
-  "face.backup_locked_need_pass":
-    "السجل مقفل — التصدير يتطلب عبارة سر.",
+  "face.backup_locked_need_pass": "السجل مقفل — التصدير يتطلب عبارة سر.",
   "face.backup_err": "خطأ في النسخ الاحتياطي: {0}",
   "face.restore_no_file": "اختر ملف نسخة احتياطية أولًا.",
   "face.restore_bad_file": "خطأ استعادة: ليس ملف نسخة احتياطية صالحًا.",
@@ -918,8 +917,7 @@ window.__I18N_DATA.ar = {
   "face.refresh_done": "مُسحت النتائج. الوجوه المسجلة: {0}",
   "face.export_done": "صُدّرت {0} تسمية وجه كـ {1}.",
   "face.export_empty": "لا توجد وجوه مسجلة بعد — لا شيء للتصدير.",
-  "face.encrypt_prompt":
-    "سجل وجوهك غير مشفر. أدخل عبارة سر أدناه لقفله.",
+  "face.encrypt_prompt": "سجل وجوهك غير مشفر. أدخل عبارة سر أدناه لقفله.",
   "face.passkey_register_btn": "تسجيل Passkey",
   "face.passkey_remove_btn": "إزالة Passkey",
   "face.passkey_none": "لم يُسجل أي passkey بعد.",
@@ -927,11 +925,9 @@ window.__I18N_DATA.ar = {
     "يلزم passkey قبل توليد المعرفات. سجّله من اللوحة أعلاه.",
   "face.passkey_registered": "Passkey مسجل: {0}",
   "face.passkey_removed": "أُزيل passkey من هذا السجل.",
-  "face.passkey_unavailable":
-    "WebAuthn غير متاح على هذا الجهاز أو المتصفح.",
+  "face.passkey_unavailable": "WebAuthn غير متاح على هذا الجهاز أو المتصفح.",
   "face.passkey_error": "خطأ passkey: {0}",
-  "face.passkey_saved":
-    "حُفظ passkey — هذا السجل محمي الآن بعامل ثانٍ.",
+  "face.passkey_saved": "حُفظ passkey — هذا السجل محمي الآن بعامل ثانٍ.",
   "face.biohash_generate_btn": "توليد معرّف الخصوصية",
   "face.biohash_copy_btn": "نسخ",
   "face.biohash_hint":
