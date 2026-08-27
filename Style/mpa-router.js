@@ -459,6 +459,15 @@
     )
       initFaceBiometric();
 
+    // Iris Biometric: re-run page init (consent gate, gallery list,
+    // camera setup) after an AJAX swap. initIrisBiometric only exists
+    // once iris_ui.js has been loaded by loadPageScripts.
+    if (
+      pageName === "iris-biometric" &&
+      typeof initIrisBiometric === "function"
+    )
+      initIrisBiometric();
+
     // Pixel Injection: re-populate algorithm dropdowns, re-attach event listeners, reset to embed tab
     if (pageName === "pixel-injection") {
       if (typeof globalThis.pixelInjection?.reInit === "function")

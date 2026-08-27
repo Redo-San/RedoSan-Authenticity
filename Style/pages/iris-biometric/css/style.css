@@ -1,0 +1,320 @@
+/* ── RedoSan Authenticity — Page-specific CSS ──
+   This file contains CSS rules unique to this page.
+   Shared/base styles are in ../../Style/style.css
+   Loaded AFTER shared CSS so overrides work naturally. */
+
+.iris-video {
+  display: none;
+  max-width: 100%;
+  border-radius: 8px;
+  background: #000;
+  border: 2px solid var(--border-color, #ddd);
+}
+
+.iris-video.active {
+  display: block;
+}
+
+.iris-capture-overlay {
+  position: relative;
+  display: inline-block;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.iris-capture-overlay canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.iris-result-box {
+  display: none;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  background: var(--card-bg, rgb(255,255,255,.04));
+}
+
+.iris-result-box.visible {
+  display: block;
+}
+
+.iris-result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.iris-result-item {
+  padding: 10px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  background: var(--card-bg, rgb(255,255,255,.04));
+}
+
+.iris-result-item h4 {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.iris-result-item p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.iris-gallery-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.iris-gallery-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: var(--card-bg, rgb(255,255,255,.04));
+  font-size: 0.85rem;
+}
+
+.iris-gallery-list li .iris-gallery-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.iris-gallery-list li .iris-gallery-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.iris-status {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: var(--card-bg, rgb(255,255,255,.04));
+  min-height: 1.5em;
+}
+
+.iris-status.error {
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+}
+
+.iris-status.success {
+  border: 1px solid #2ecc71;
+  color: #2ecc71;
+}
+
+.iris-status.info {
+  border: 1px solid #3498db;
+  color: #3498db;
+}
+
+.iris-gallery-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 8px;
+}
+
+.iris-gallery-table th,
+.iris-gallery-table td {
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, #ddd);
+  text-align: left;
+}
+
+.iris-gallery-table th {
+  background: var(--card-bg, rgb(255,255,255,.06));
+  font-weight: 600;
+}
+
+.iris-empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-muted);
+}
+
+.iris-empty-state .iris-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+  .iris-result-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Progress overlay: blur the page while identifiers are generated */
+.iris-progress-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(15, 15, 35, 0.35);
+  backdrop-filter: blur(7px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.iris-progress-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.iris-progress-card {
+  width: min(92vw, 380px);
+  padding: 28px 24px 22px;
+  border-radius: 14px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #ddd);
+  box-shadow: 0 18px 60px rgb(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.iris-progress-spinner {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--primary, #6c5ce7),
+    rgb(108, 92, 231, 0.15) 65%,
+    var(--primary, #6c5ce7)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 7px),
+    #000 calc(100% - 6px)
+  );
+  animation: iris-spin 0.9s linear infinite;
+}
+
+@keyframes iris-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.iris-progress-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color, #222);
+  margin-bottom: 4px;
+}
+
+.iris-progress-text {
+  font-size: 0.82rem;
+  color: var(--text-muted, #666);
+  margin-bottom: 16px;
+  min-height: 1.2em;
+}
+
+.iris-progress-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border-color, #e5e5e5);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iris-progress-bar {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe, #6c5ce7);
+  background-size: 200% 100%;
+  width: 0%;
+  transition: width 0.35s ease;
+  animation: iris-shimmer 1.4s linear infinite;
+}
+
+.iris-progress-bar.is-det {
+  animation: none;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+}
+
+@keyframes iris-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.iris-progress-pct {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-muted, #666);
+  background: var(--card-bg, #fff);
+  border-radius: 4px;
+  padding: 0 3px;
+  line-height: 1.2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iris-progress-spinner,
+  .iris-progress-bar {
+    animation: none;
+  }
+}
+
+/* ── Input tabs (Capture with Camera / Upload Photo) ── */
+.face-input-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.face-tab-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--card-hover, #f0f0f3);
+  color: var(--text-muted, #666);
+  border: 1px solid var(--border, #ddd);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.2s;
+  touch-action: manipulation;
+}
+
+.face-tab-btn:hover {
+  background: var(--card, #fff);
+  color: var(--primary, #6c5ce7);
+  border-color: var(--primary, #6c5ce7);
+}
+
+.face-tab-btn.is-active {
+  background: var(--primary, #6c5ce7);
+  color: #fff;
+  border-color: var(--primary, #6c5ce7);
+}
+
+.face-tab-btn.is-active:hover {
+  background: var(--primary-dark, #5849c4);
+  color: #fff;
+}

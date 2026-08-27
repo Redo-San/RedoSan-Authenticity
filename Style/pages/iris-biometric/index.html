@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="en" data-standalone="iris-biometric">
+  <head>
+    <meta
+      name="google-site-verification"
+      content="vBNEdYqB2JK2r1n-dq8e0lJHPtiyT3CKNVZjjgXhkr4"
+    />
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+
+    <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="css/style.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="css/style.css" /></noscript>
+    <link rel="stylesheet" href="../../responsive.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
+    <link rel="stylesheet" href="../../music-player.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="../../music-player.css" /></noscript>
+    <title>Iris Biometric — RedoSan Authenticity</title>
+    <meta name="description" content="Iris-based biometric authentication using Daugman's algorithm. 100% browser-based, nothing uploaded. Enroll, verify, and identify iris templates locally." />
+    <meta
+      name="keywords"
+      content="iris biometric, iris recognition, Daugman algorithm, IrisCode, biometric authentication, iris enrollment, iris verification, iris identification, digital identity, eye scan"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Redo_San" />
+    <meta property="og:title" content="Iris Biometric — RedoSan Authenticity" />
+    <meta property="og:description" content="Iris-based biometric authentication using Daugman's algorithm. 100% browser-based, nothing uploaded." />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/iris-biometric/index.html"
+    />
+    <meta
+      property="og:image"
+      content="https://redo-san.github.io/RedoSan-Authenticity/Style/logo.webp"
+    />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Iris Biometric — RedoSan Authenticity" />
+    <meta name="twitter:description" content="Iris-based biometric authentication using Daugman's algorithm. 100% browser-based, nothing uploaded." />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://huggingface.co https://*.hf.co; base-uri 'self'; form-action 'none'; object-src 'none'"
+    />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <script>
+(function () {
+        var SUPPORTED = ['en','ar','fr','de','es','zh','ja','ko'];
+        var MAP = {'en':'en','ar':'ar','fr':'fr','de':'de','es':'es','zh':'zh','ja':'ja','ko':'ko','pt':'pt','it':'it','ru':'ru','hi':'hi','ur':'ur','bn':'bn','id':'id','ms':'ms','th':'th','vi':'vi','tl':'tl','tr':'tr','fa':'fa','he':'he','nl':'nl','sv':'sv','no':'no','da':'da','fi':'fi','pl':'pl','cs':'cs','hu':'hu','el':'el','uk':'uk','ro':'ro','bg':'bg','hr':'hr','sr':'sr','am':'am','et':'et'};
+        var lang = 'en';
+        var stored = null;
+        var nav = null;
+        var primary = null;
+        var root = null;
+        var base = null;
+        var l = null;
+        try {
+          stored = localStorage.getItem('redosan_lang');
+          if (stored && SUPPORTED.indexOf(stored) !== -1) lang = stored;
+        } catch (e) {}
+        if (lang === 'en') {
+          nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+          primary = nav.substring(0, 2);
+          if (SUPPORTED.indexOf(primary) !== -1) lang = primary;
+          else if (MAP[primary] && SUPPORTED.indexOf(MAP[primary]) !== -1) lang = MAP[primary];
+          else if (SUPPORTED.indexOf(nav.substring(0, 5)) !== -1) lang = nav.substring(0, 5);
+        }
+        root = document.documentElement;
+        root.lang = lang;
+        root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        base = root.dataset.standalone ? '../../' : 'Style/';
+        if (lang === 'ar' && !document.getElementById('rtl-css')) {
+          l = document.createElement('link');
+          l.id = 'rtl-css';
+          l.rel = 'stylesheet';
+          l.href = base + 'rtl.css';
+          document.head.appendChild(l);
+        }
+        window.__I18N_EARLY = true;
+        if (lang !== 'en') {
+          document.write('<script src="' + base + 'lang/i18n-data-' + lang + '.js"><\/script>');
+          document.write('<script src="' + base + 'i18n.js"><\/script>');
+        } else {
+          if (window.__I18N_DATA === undefined) window.__I18N_DATA = {};
+          if (!window.__I18N_DATA.en || Object.keys(window.__I18N_DATA.en).length === 0) {
+            window.__I18N_DATA.en = { _loaded: true };
+          }
+          var s2 = document.createElement('script');
+          s2.src = base + 'i18n.js';
+          s2.defer = true;
+          document.head.appendChild(s2);
+        }
+      })();
+    </script>
+    <script>
+      if (top !== self) {
+        top.location = self.location;
+      }
+    </script>
+    <style>
+      #page-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #f5f7fa;
+        pointer-events: auto;
+        opacity: 1;
+        transition: opacity 0.35s ease;
+      }
+      #page-loader.page-loader--hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #page-loader .loader-spinner {
+        width: 44px;
+        height: 44px;
+        border: 4px solid #e0e0e0;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        animation: page-loader-spin 0.8s linear infinite;
+      }
+      @keyframes page-loader-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      footer, .ast-panel, .music-btn, .music-credit, #assistantBubble {
+        content-visibility: auto;
+        contain-intrinsic-size: 0 80px;
+      }
+      .page { display: none; }
+      .page.active { display: block; }
+      body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right)
+          env(safe-area-inset-bottom) env(safe-area-inset-left);
+        max-width: 100vw;
+      }
+      .container { padding: 32px 16px; }
+      @media (max-width: 767px) {
+        .nav-links a[data-page] { display: none; }
+      }
+      @media (prefers-color-scheme: dark) {
+        #page-loader {
+          background: #1a1a2e;
+        }
+        #page-loader .loader-spinner {
+          border-color: #2d2d4a;
+          border-top-color: #60a5fa;
+        }
+      }
+    </style>
+    <link rel="canonical" href="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/iris-biometric/index.html" />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/iris-biometric/index.html"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://redo-san.github.io/RedoSan-Authenticity/Style/pages/iris-biometric/index.html"
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "RedoSan Authenticity",
+        "description": "Free, open-source iris biometric authentication. 100% browser-based Daugman pipeline — nothing leaves your device.",
+        "url": "https://redo-san.github.io/RedoSan-Authenticity/Style/pages/iris-biometric/index.html",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Web Browser",
+        "browserRequirements": "Requires JavaScript",
+        "author": {
+          "@type": "Person",
+          "name": "Redo_San",
+          "url": "https://github.com/Redo-San",
+          "sameAs": [
+            "https://github.com/Redo-San",
+            "https://www.youtube.com/@Redo_San",
+            "https://www.instagram.com/redo_san1",
+            "https://www.tiktok.com/@redo_san",
+            "https://linktr.ee/RedoSan"
+          ]
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "featureList": [
+          "Iris segmentation (IDO-based pupil/iris detection)",
+          "Rubber-sheet normalization (Daugman polar transform)",
+          "IrisCode feature extraction (Gabor wavelets, 2048-bit)",
+          "Hamming distance matching",
+          "Liveness detection (pupil dilation, specular reflection, temporal consistency)",
+          "ISO 29794-6 quality assessment",
+          "1:1 verification and 1:N identification",
+          "Local template storage (IndexedDB)",
+          "100% browser-based, nothing uploaded"
+        ],
+        "screenshot": "https://redo-san.github.io/RedoSan-Authenticity/Style/logo.webp",
+        "license": "https://www.gnu.org/licenses/gpl-3.0.html"
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Page loading spinner -->
+    <div id="page-loader" aria-hidden="true">
+      <div class="loader-spinner"></div>
+    </div>
+    <!-- Navigation bar -->
+    <nav id="mainNav" class="nav-header">
+      <div class="nav-left">
+        <button type="button"
+          class="hamburger"
+          id="menuBtn"
+          onclick="toggleSidebar()"
+          aria-label="Menu"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <a href="../home/index.html" data-page="home" class="logo" aria-label="RedoSan Authenticity">
+          <div
+            class="logo-img logo-white"
+            role="img"
+            aria-label="RedoSan"
+          ></div>
+          <div
+            class="logo-img logo-black"
+            role="img"
+            aria-label="RedoSan"
+          ></div>
+        </a>
+        <div class="nav-search" id="navSearch">
+          <input
+            type="text"
+            id="searchInput"
+            name="searchInput"
+            data-i18n-placeholder="search.placeholder"
+            placeholder="Search..."
+            aria-label="Search"
+            onkeydown="if(event.key==='Enter')siteSearch()"
+            onfocus="this.parentElement.classList.add('focused')"
+            onblur="this.parentElement.classList.remove('focused')"
+          />
+          <button type="button"
+            class="search-btn"
+            onclick="siteSearch()"
+            aria-label="Search"
+          ></button>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+        <button type="button"
+          class="theme-btn mode-switch-btn"
+          onclick="window.location.href='../../../index.html'"
+          title="Back to Home"
+          aria-label="Back to Home"
+        >
+          🏠
+        </button>
+      </div>
+      <div class="nav-links">
+        <a href="../about/index.html" data-page="about" data-i18n="nav.about">About</a>
+        <a href="../privacy/index.html" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
+        <a href="../contact/index.html" data-page="contact" data-i18n="nav.contact">Contact</a>
+        <a href="../social/index.html" data-page="social" data-i18n="nav.social">Social</a>
+        <div class="lang-dropdown">
+          <button type="button" class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">English</button>
+          <div class="lang-menu" id="langMenu">
+            <a href="../../../index.html?lang=en" onclick="switchLang('en'); return false;" class="lang-option" data-lang="en">English</a>
+            <a href="../../../index.html?lang=en" onclick="switchLang('ar'); return false;" class="lang-option" data-lang="ar">العربية</a>
+            <a href="../../../index.html?lang=en" onclick="switchLang('fr'); return false;" class="lang-option" data-lang="fr">Français</a>
+            <a href="../../../index.html?lang=en" onclick="switchLang('de'); return false;" class="lang-option" data-lang="de">Deutsch</a>
+            <a href="../../../index.html?lang=en" onclick="switchLang('es'); return false;" class="lang-option" data-lang="es">Español</a>
+            <a href="../../../index.html?lang=en" onclick="switchLang('zh'); return false;" class="lang-option" data-lang="zh">中文</a>
+            <a href="../../../index.html?lang=en" onclick="switchLang('ja'); return false;" class="lang-option" data-lang="ja">日本語</a>
+            <a href="../../../index.html?lang=en" onclick="switchLang('ko'); return false;" class="lang-option" data-lang="ko">한국어</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <button type="button"
+      class="theme-btn"
+      id="themeToggle"
+      onclick="toggleTheme()"
+      title="Toggle theme"
+      aria-label="Toggle theme"
+    >
+      🌙
+    </button>
+
+    <div
+      class="sidebar-overlay"
+      id="sidebarOverlay"
+      role="button"
+      tabindex="0"
+      aria-label="Close menu"
+      onclick="toggleSidebar()"
+      onkeydown="if(event.key==='Enter'||event.key===' '){toggleSidebar();event.preventDefault();}"
+    ></div>
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar menu">
+      <div class="sidebar-header">
+        <span class="sidebar-title" data-i18n="sidebar.title">Menu</span>
+        <button type="button" class="sidebar-close" onclick="toggleSidebar()">&times;</button>
+      </div>
+      <a href="../home/index.html" data-page="home" data-i18n="sidebar.home">Home</a>
+      <a href="../watermark/index.html" data-page="watermark" data-i18n="sidebar.watermark">Digital Watermark</a>
+      <a href="../audio-watermark/index.html" data-page="audio-watermark" data-i18n="sidebar.audio_watermark">Audio Watermark</a>
+      <a href="../pixel-injection/index.html" data-page="pixel-injection" data-i18n="sidebar.pixel_injection">Pixel Injection</a>
+      <a href="../face-biometric/index.html" data-page="face-biometric" data-i18n="sidebar.face_biometric">Face Biometric</a>
+      <a href="../iris-biometric/index.html" data-page="iris-biometric" data-i18n="sidebar.iris_biometric" class="active">Iris Biometric</a>
+      <a href="../forensic/index.html" data-page="forensic" data-i18n="sidebar.forensic">Forensic Analyzer</a>
+      <a href="../id_forge/index.html" data-page="id_forge" data-i18n="sidebar.id_forge">ID Forge</a>
+      <a href="../fingerprint/index.html" data-page="fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>
+      <a href="../metadata/index.html" data-page="metadata" data-i18n="sidebar.metadata">Metadata</a>
+      <a href="../timestamp/index.html" data-page="timestamp" data-i18n="sidebar.timestamp">Timestamp</a>
+      <a href="../did/index.html" data-page="did" data-i18n="sidebar.did">DID Identity</a>
+      <a href="../c2pa/index.html" data-page="c2pa" data-i18n="sidebar.c2pa">C2PA Provenance</a>
+      <a href="../certificate/index.html" data-page="certificate" data-i18n="sidebar.certificate">Digital Passport</a>
+      <a href="../converter/index.html" data-page="converter" data-i18n="sidebar.converter">File Converter</a>
+      <a href="../removal-tools/index.html" data-page="removal-tools" data-i18n="sidebar.removal_tools">Removal Tools</a>
+      <a href="../document-watermark/index.html" data-page="document-watermark" data-i18n="sidebar.document_watermark">Document Watermark</a>
+    </aside>
+
+    <!-- App container: page-specific content -->
+    <main class="container" id="app">
+      <section id="page-iris-biometric" class="page active">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <a href="../home/index.html" data-page="home" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
+          <h2 style="margin-bottom:0" data-i18n="iris.heading">Iris Biometric</h2>
+        </div>
+        <div class="card-form">
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:16px" data-i18n="iris.privacy_note">
+            🔒 All iris processing is 100% local. Data never leaves your device.
+          </p>
+
+          <div class="help-card">
+            <div
+              class="help-card-header"
+              onclick="this.parentNode.classList.toggle('collapsed')"
+            >
+              <span>💡 <span data-i18n="iris.help_title">How to use Iris Biometric</span></span>
+              <span class="help-card-toggle">▾</span>
+            </div>
+            <div class="help-card-body" data-i18n="iris.help">
+              Register and verify iris biometrics for identity protection — 100% in your browser, nothing is uploaded. 1) Read the Consent Notice and tick the box to enable capture. 2) On the Register tab, use your camera or upload a close-up eye photo; the tool segments your iris, normalizes it (Daugman rubber-sheet), and generates a 2048-bit IrisCode. 3) Enter a name and press Enroll to store the template locally (IndexedDB). 4) On the Verify tab, compare a new capture against stored templates. 5) On the Manage tab you can refresh or clear all stored templates. ⚠️ All processing is on-device. Withdraw consent at any time to delete every stored iris record (GDPR Art. 7(3) + 17).
+            </div>
+          </div>
+
+          <!-- Biometric consent (GDPR Art 9(2)(a)) -->
+          <div id="iris-consent-panel" style="border:1px solid #f5c542;background:rgba(245,197,66,.08);border-radius:8px;padding:12px 14px;margin-bottom:16px">
+            <p style="margin-bottom:8px"><strong data-i18n="iris.consent_title">Iris Biometric Consent Notice</strong></p>
+            <p style="font-size:0.75rem;margin-bottom:8px" data-i18n="iris.consent_body">
+              This tool processes iris patterns — a biometric identifier — entirely in your browser. Please read the details below before continuing.
+            </p>
+            <ul class="consent-list">
+              <li data-i18n="iris.consent_what">What: a numeric iris code (2048-bit IrisCode) derived from your eye photo, generated using Gabor wavelet analysis.</li>
+              <li data-i18n="iris.consent_purpose">Purpose: verifying and protecting your identity — authentication, anti-spoofing and liveness detection.</li>
+              <li data-i18n="iris.consent_where">Storage: in this browser, on this device only. There is no server or cloud — nothing is uploaded, shared or used for training.</li>
+              <li data-i18n="iris.consent_retention">Retention: records stay in this browser's local storage on this device until you delete them or withdraw consent.</li>
+              <li data-i18n="iris.consent_rights">Your rights: you may withdraw consent at any time — this deletes all stored biometric data from this device.</li>
+            </ul>
+            <label style="display:flex;gap:8px;align-items:flex-start;font-size:0.8rem;margin-bottom:10px">
+              <input type="checkbox" id="iris-consent-check" />
+              <span data-i18n="iris.consent_check">I have read and understand the notice above and consent to on-device processing of my iris biometric data.</span>
+            </label>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button type="button" id="iris-consent-accept" class="btn" disabled onclick="handleIrisConsentAccept()" data-i18n="iris.consent_accept_btn">I Consent</button>
+              <span style="font-size:0.72rem;color:var(--text-muted)" data-i18n="iris.consent_optional">You can browse the site without consenting — biometric features stay disabled.</span>
+            </div>
+          </div>
+          <div id="iris-consent-status" style="display:none;font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;padding:8px 10px;border:1px solid var(--border-color, #ddd);border-radius:8px" data-i18n="iris.consent_given">
+            ✅ Consent recorded. You can withdraw it anytime — withdrawing deletes your stored biometric data.
+          </div>
+
+          <!-- Camera / Upload tabs -->
+          <div class="face-input-tabs">
+            <button type="button" class="face-tab-btn is-active" data-face-tab="camera" onclick="switchIrisInput('camera')" data-i18n="iris.input_tab_camera">Capture with Camera</button>
+            <button type="button" class="face-tab-btn" data-face-tab="upload" onclick="switchIrisInput('upload')" data-i18n="iris.input_tab_upload">Upload Photo</button>
+            <button type="button" class="face-tab-btn" data-face-tab="dual" onclick="switchIrisInput('dual')" data-i18n="iris.input_tab_dual">Both Eyes</button>
+          </div>
+
+          <!-- Camera input -->
+          <div id="iris-camera-wrapper" class="form-group">
+            <label data-i18n="iris.camera_label">Live Camera</label>
+            <video id="iris-video" class="iris-video" autoplay playsinline muted aria-label="Live iris camera preview"></video>
+            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+              <button type="button" id="iris-start-btn" class="btn btn-sm" onclick="handleIrisCameraStart()" data-i18n="iris.camera_start_btn">Start Camera</button>
+              <button type="button" id="iris-stop-btn" class="btn btn-sm" style="display:none" onclick="handleIrisCameraStop()" data-i18n="iris.camera_stop_btn">Stop Camera</button>
+            </div>
+            <p style="font-size:0.72rem;color:var(--text-muted);margin-top:6px" data-i18n="iris.camera_hint">
+              📸 Position your eye close to the camera. Good lighting is essential for accurate iris capture.
+            </p>
+          </div>
+
+          <!-- Upload input -->
+          <div id="iris-upload-wrapper" class="form-group" style="display:none">
+            <label for="iris-image" data-i18n="iris.image_label">Eye Photo</label>
+            <input type="file" id="iris-image" accept="image/png,image/bmp" onchange="handleIrisFilePicked()" />
+          </div>
+
+          <!-- Capture & enrollment controls -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+            <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0">
+              <label for="iris-label" data-i18n="iris.label_label">Name / Label</label>
+              <input type="text" id="iris-label" placeholder="e.g. My Iris" data-i18n-placeholder="iris.label_placeholder" />
+            </div>
+            <div class="form-group" style="min-width:160px;margin-bottom:0">
+              <label for="iris-eye-side" data-i18n="iris.eye_side_label">Eye Side</label>
+              <select id="iris-eye-side" style="width:100%;padding:8px;border:1px solid var(--border-color,#ddd);border-radius:8px;background:var(--bg,#fff);color:var(--text,#222)">
+                <option value="unknown" data-i18n="iris.eye_side_unknown">Unknown</option>
+                <option value="left" data-i18n="iris.eye_side_left">Left</option>
+                <option value="right" data-i18n="iris.eye_side_right">Right</option>
+              </select>
+            </div>
+            <div class="form-group" style="min-width:160px;margin-bottom:0">
+              <label for="iris-dob" data-i18n="iris.dob_label">Date of Birth</label>
+              <input type="date" id="iris-dob" style="width:100%;padding:8px;border:1px solid var(--border-color,#ddd);border-radius:8px;background:var(--bg,#fff);color:var(--text,#222)" />
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button type="button" id="iris-capture-btn" class="btn" onclick="handleIrisCapture()" style="display:none" data-i18n="iris.capture_btn">Capture Iris</button>
+            <button type="button" id="iris-dual-btn" class="btn" onclick="handleIrisDualCapture()" style="display:none" data-i18n="iris.dual_btn">Capture Both Eyes</button>
+            <button type="button" id="iris-run" class="btn" onclick="handleIrisRun()" disabled data-i18n="iris.run_btn">Generate Identifiers</button>
+          </div>
+
+          <!-- Pipeline steps -->
+          <div id="iris-steps" style="display:none;margin-top:10px;padding:8px 10px;background:rgba(108,92,231,.08);border-radius:8px;font-size:0.8rem"></div>
+
+          <!-- Result box -->
+          <div id="iris-result-box" class="iris-result-box">
+            <h3 style="margin:0 0 12px;font-size:0.95rem" data-i18n="iris.result_title">Capture Result</h3>
+            <div class="iris-result-grid">
+              <div class="iris-result-item">
+                <h4 data-i18n="iris.result_liveness">Liveness</h4>
+                <p id="iris-liveness-text">—</p>
+              </div>
+              <div class="iris-result-item">
+                <h4 data-i18n="iris.result_quality">Quality Score</h4>
+                <p id="iris-quality-text">—</p>
+              </div>
+              <div class="iris-result-item">
+                <h4 data-i18n="iris.result_pupil">Pupil Radius</h4>
+                <p id="iris-pupil-text">—</p>
+              </div>
+              <div class="iris-result-item">
+                <h4 data-i18n="iris.result_iris">Iris Radius</h4>
+                <p id="iris-iris-text">—</p>
+              </div>
+              <div class="iris-result-item">
+                <h4 data-i18n="iris.result_code">IrisCode</h4>
+                <p id="iris-code-text">—</p>
+              </div>
+              <div class="iris-result-item">
+                <h4 data-i18n="iris.result_hd">Hamming Distance</h4>
+                <p id="iris-hd-text">—</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div id="iris-status" class="iris-status"></div>
+
+          <!-- Automated report -->
+          <div id="iris-report" style="display:none;margin-top:16px"></div>
+          <div id="iris-actions" style="display:none;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button type="button" class="btn" onclick="showDownloadModal()" data-i18n="iris.download_btn">Download Results</button>
+          </div>
+
+          <!-- Gallery section -->
+          <div style="border-top:1px solid var(--border-color, #ddd);margin-top:20px;padding-top:12px">
+            <h3 style="margin:0 0 10px;font-size:0.95rem" data-i18n="iris.gallery_title">Enrolled Templates</h3>
+            <p id="iris-count" style="margin-bottom:10px;font-size:0.85rem;color:var(--text-muted)" data-i18n="iris.count_label">Total: 0</p>
+            <p style="font-size:0.72rem;color:var(--text-muted);margin:0 0 12px" data-i18n="iris.enc_hint">
+              🔒 Iris codes are sealed automatically with AES-GCM (PBKDF2, 310k iterations) using a device vault key — nothing is stored in plaintext and no passphrase is required.
+            </p>
+            <ul id="iris-gallery-list" class="iris-gallery-list">
+              <li class="iris-empty-state">
+                <div class="iris-empty-icon">👁️</div>
+                <div data-i18n="iris.no_templates">No templates enrolled yet.</div>
+              </li>
+            </ul>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" class="btn btn-sm" onclick="handleIrisRefreshList()" data-i18n="iris.refresh_btn">Refresh List</button>
+              <button type="button" class="btn btn-sm" onclick="handleIrisClearAll()" data-i18n="iris.clear_all_btn">Clear All</button>
+            </div>
+          </div>
+
+          <div class="spinner" id="iris-spinner" style="display:none"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Download Format Modal -->
+    <div
+      class="modal-overlay"
+      id="dl-modal"
+      role="button"
+      tabindex="0"
+      aria-label="Close download dialog"
+      onclick="if(event.target===this)closeDownloadModal()"
+      onkeydown="if(event.key==='Enter'||event.key===' '){closeDownloadModal();event.preventDefault();}"
+    >
+      <div class="modal-box">
+        <button type="button" class="modal-close" onclick="closeDownloadModal()">&times;</button>
+        <h3 id="dl-modal-title">Download Report</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px" id="dl-modal-subtitle">
+          Choose a format:
+        </p>
+        <div class="dl-grid">
+          <button type="button" class="dl-option" onclick="downloadResult('json')">
+            <span class="dl-icon">{ }</span> JSON
+          </button>
+          <button type="button" class="dl-option" onclick="downloadResult('csv')">
+            <span class="dl-icon">#</span> CSV
+          </button>
+          <button type="button" class="dl-option" onclick="downloadResult('txt')">
+            <span class="dl-icon">©</span> TXT
+          </button>
+          <button type="button" class="dl-option" onclick="downloadResult('xml')">
+            <span class="dl-icon">&lt;/&gt;</span> XML
+          </button>
+          <button type="button" class="dl-option" onclick="downloadResult('pdf')">
+            <span class="dl-icon">📄</span> PDF
+          </button>
+          <button type="button" class="dl-option" onclick="downloadResult('doc')">
+            <span class="dl-icon">📑</span> DOCX
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer id="mainFooter">
+      <div class="footer-links">
+        <a href="../about/index.html" data-page="about" data-i18n="nav.about">About</a>
+        <a href="../privacy/index.html" data-page="privacy" data-i18n="nav.privacy">Privacy</a>
+        <a href="../contact/index.html" data-page="contact" data-i18n="nav.contact">Contact</a>
+        <a href="../social/index.html" data-page="social" data-i18n="nav.social">Social</a>
+      </div>
+      <div class="footer-social">
+        <span class="footer-social-label">🌐</span>
+        <a href="https://github.com/Redo-San" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
+        <a href="https://www.youtube.com/@Redo_San" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a>
+        <a href="https://www.instagram.com/redo_san1" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+        <a href="https://www.tiktok.com/@redo_san" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+        <a href="https://linktr.ee/RedoSan" target="_blank" rel="noopener" aria-label="Linktree">Linktree</a>
+      </div>
+      <div class="footer-social">
+        <span class="footer-social-label">🎵</span>
+        <a href="https://open.spotify.com/artist/2N0Eck89FwMklsACBIqj8P" target="_blank" rel="noopener" aria-label="Spotify">Spotify</a>
+        <a href="https://music.apple.com/gb/artist/redosan/1804262206" target="_blank" rel="noopener" aria-label="Apple Music">Apple Music</a>
+        <a href="https://music.youtube.com/channel/UC92UgsGpq8JgrbE31sZkwCA" target="_blank" rel="noopener" aria-label="YouTube Music">YouTube Music</a>
+      </div>
+      <div class="footer-copy" data-i18n="footer.copyright">
+        RedoSan Authenticity &mdash; 100% browser-based &bull; Nothing leaves your device
+      </div>
+      <div style="margin-top: 12px; font-size: 0.75rem">
+        <a href="../../../index.html?spa" style="color: var(--text-muted); text-decoration: none" data-i18n="footer.classic_mode">Classic Version</a>
+      </div>
+    </footer>
+
+    <script src="../../shared_validation.js" defer></script>
+    <script src="../../shared.js" defer></script>
+    <script>
+      (function () {
+        document.querySelectorAll('.form-group input[type="file"]').forEach(function (input) {
+          if (input.parentElement.classList.contains("file-drop-zone")) return;
+          var dz = document.createElement("div");
+          dz.className = "file-drop-zone";
+          input.parentNode.insertBefore(dz, input);
+          dz.append(input);
+          var icon = document.createElement("span");
+          icon.className = "dz-icon";
+          icon.textContent = "\u{1F4C1}";
+          dz.append(icon);
+          var text = document.createElement("div");
+          text.className = "dz-text";
+          text.innerHTML = "Drop file here or <strong>browse</strong>";
+          dz.append(text);
+          var fileDiv = document.createElement("div");
+          fileDiv.className = "dz-file";
+          dz.append(fileDiv);
+        });
+      })();
+    </script>
+    <script src="../../search.js" defer></script>
+    <script src="../../navigation.js" defer></script>
+    <!-- Iris module scripts: loaded sequentially after first paint -->
+    <script>
+      (function () {
+        var LIST = [
+          '../../../Iris_Biometric/iris_engine.js',
+          '../../../Iris_Biometric/iris_matcher.js',
+          '../../../Iris_Biometric/iris_quality.js',
+          '../../../Iris_Biometric/iris_quality_full.js',
+          '../../../Iris_Biometric/iris_template_protection.js',
+          '../../../Face_Biometric/face_crypto.js',
+          '../../../Iris_Biometric/iris_liveness.js',
+          '../../../Iris_Biometric/iris_camera.js',
+          '../../../Iris_Biometric/iris_storage.js',
+          '../../../Iris_Biometric/iris_ui.js'
+        ];
+        function seq(i) {
+          if (i >= LIST.length) {
+            window.__irisScriptsReady = true;
+            var idle = window.requestIdleCallback || function (f) { setTimeout(f, 50); };
+            idle(function () {
+              if (typeof irisInit === 'function') irisInit();
+              if (typeof irisListTemplates === 'function') irisListTemplates();
+            });
+            return;
+          }
+          var s = document.createElement('script');
+          s.src = LIST[i];
+          s.async = false;
+          s.onload = function () { seq(i + 1); };
+          s.onerror = function () { seq(i + 1); };
+          document.head.appendChild(s);
+        }
+        function loadNav() {
+          ['../../mpa-router.js', '../../music-player.js'].forEach(function (src) {
+            var s = document.createElement('script');
+            s.src = src;
+            s.async = false;
+            document.head.appendChild(s);
+          });
+        }
+        function kick() {
+          var idle = window.requestIdleCallback || function (f) { setTimeout(f, 200); };
+          idle(function () { seq(0); }, { timeout: 2000 });
+          idle(loadNav, { timeout: 2500 });
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', kick);
+        } else {
+          kick();
+        }
+      })();
+    </script>
+    <script>
+      (function () {
+        var _loaded = {};
+        function lazyLoadVendor(src) {
+          if (_loaded[src]) return;
+          _loaded[src] = true;
+          var s = document.createElement('script');
+          s.src = src;
+          s.defer = true;
+          document.body.appendChild(s);
+        }
+        window.loadVendorLib = function(lib) {
+          var map = {
+            'jspdf': '../../../vendor/jspdf.umd.min.js',
+            'jszip': '../../../vendor/jszip.min.js',
+            'docx': '../../../vendor/docx.umd.min.js',
+            'qrious': '../../../vendor/qrious.min.js',
+            'opentimestamps': '../../../vendor/opentimestamps.min.js'
+          };
+          if (map[lib]) lazyLoadVendor(map[lib]);
+        };
+      })();
+    </script>
+
+    <!-- Page-level UI handlers -->
+    <script>
+      /* ── Consent ── */
+      (function () {
+        var chk = document.getElementById('iris-consent-check');
+        var btn = document.getElementById('iris-consent-accept');
+        if (chk && btn) {
+          chk.addEventListener('change', function () { btn.disabled = !chk.checked; });
+        }
+      })();
+      function handleIrisConsentAccept() {
+        var panel = document.getElementById('iris-consent-panel');
+        var status = document.getElementById('iris-consent-status');
+        if (panel) panel.style.display = 'none';
+        if (status) status.style.display = 'block';
+        try { localStorage.setItem('iris_consent', '1'); } catch (e) {}
+      }
+      (function () {
+        try {
+          if (localStorage.getItem('iris_consent') === '1') {
+            var panel = document.getElementById('iris-consent-panel');
+            var status = document.getElementById('iris-consent-status');
+            if (panel) panel.style.display = 'none';
+            if (status) status.style.display = 'block';
+          }
+        } catch (e) {}
+      })();
+
+      /* ── Input tabs ── */
+      function switchIrisInput(tab) {
+        var camW = document.getElementById('iris-camera-wrapper');
+        var upW = document.getElementById('iris-upload-wrapper');
+        var camBtn = document.querySelector('[data-face-tab="camera"]');
+        var upBtn = document.querySelector('[data-face-tab="upload"]');
+        var dualBtn = document.querySelector('[data-face-tab="dual"]');
+        var captureBtn = document.getElementById('iris-capture-btn');
+        var dualCaptureBtn = document.getElementById('iris-dual-btn');
+
+        if (tab === 'camera') {
+          if (camW) camW.style.display = '';
+          if (upW) upW.style.display = 'none';
+          if (camBtn) camBtn.classList.add('is-active');
+          if (upBtn) upBtn.classList.remove('is-active');
+          if (dualBtn) dualBtn.classList.remove('is-active');
+          if (captureBtn) captureBtn.style.display = 'inline-block';
+          if (dualCaptureBtn) dualCaptureBtn.style.display = 'none';
+        } else if (tab === 'dual') {
+          if (camW) camW.style.display = '';
+          if (upW) upW.style.display = 'none';
+          if (camBtn) camBtn.classList.remove('is-active');
+          if (upBtn) upBtn.classList.remove('is-active');
+          if (dualBtn) dualBtn.classList.add('is-active');
+          if (captureBtn) captureBtn.style.display = 'none';
+          if (dualCaptureBtn) dualCaptureBtn.style.display = 'inline-block';
+        } else {
+          if (camW) camW.style.display = 'none';
+          if (upW) upW.style.display = '';
+          if (camBtn) camBtn.classList.remove('is-active');
+          if (upBtn) upBtn.classList.add('is-active');
+          if (dualBtn) dualBtn.classList.remove('is-active');
+          if (captureBtn) captureBtn.style.display = 'none';
+          if (dualCaptureBtn) dualCaptureBtn.style.display = 'none';
+        }
+      }
+
+      /* ── Camera ── */
+      function handleIrisCameraStart() {
+        var videoEl = document.getElementById('iris-video');
+        var startBtn = document.getElementById('iris-start-btn');
+        var stopBtn = document.getElementById('iris-stop-btn');
+        var captureBtn = document.getElementById('iris-capture-btn');
+
+        if (!IrisCamera.isSupported()) {
+          irisSetStatus('iris-status', 'Camera not supported in this browser.');
+          return;
+        }
+        irisSetStatus('iris-status', 'Starting camera...');
+        irisCamera.startCamera(videoEl).then(function () {
+          videoEl.classList.add('active');
+          if (startBtn) startBtn.style.display = 'none';
+          if (stopBtn) stopBtn.style.display = 'inline-block';
+          if (captureBtn) captureBtn.style.display = 'inline-block';
+          irisSetStatus('iris-status', 'Camera active. Position your eye in the center.');
+        }).catch(function (err) {
+          irisSetStatus('iris-status', IrisCamera.getCameraErrorMessage(err));
+        });
+      }
+      function handleIrisCameraStop() {
+        irisStopCamera();
+        var videoEl = document.getElementById('iris-video');
+        var startBtn = document.getElementById('iris-start-btn');
+        if (videoEl) videoEl.classList.remove('active');
+        if (startBtn) startBtn.style.display = 'inline-block';
+      }
+
+      /* ── Upload ── */
+      function handleIrisFilePicked() {
+        var input = document.getElementById('iris-image');
+        if (!input || !input.files || !input.files[0]) return;
+        var file = input.files[0];
+        // Lossless capture enforcement (OSAC 2024-N-0004 §4.3.5): reject JPEG
+        var v = irisValidateImageFile(file);
+        if (!v.ok) {
+          irisSetStatus('iris-status',
+            'Only PNG or BMP images are allowed — lossless capture is required. ' +
+            'JPEG is rejected to preserve iris texture. (reason: ' + v.reason + ')');
+          input.value = '';
+          return;
+        }
+        var img = new Image();
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          img.onload = function () {
+            // Cap very large photos to keep the pipeline fast
+            var maxDim = 1280;
+            var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+            var canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            var ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            _setIrisPending('upload', ctx.getImageData(0, 0, canvas.width, canvas.height), file.name);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+      function _setIrisPending(kind, imageData, fileName) {
+        window._irisPendingSource = {
+          kind: kind,
+          imageData: imageData,
+          width: imageData.width,
+          height: imageData.height,
+          fileName: fileName || (kind === 'camera' ? 'camera-capture' : 'upload')
+        };
+        var runBtn = document.getElementById('iris-run');
+        if (runBtn) runBtn.disabled = false;
+        irisSetStatus('iris-status',
+          kind === 'camera'
+            ? 'Frame captured. Press "Generate Identifiers".'
+            : 'Photo loaded. Press "Generate Identifiers".');
+      }
+
+      /* ── Capture: grab one frame as the pipeline source ── */
+      function handleIrisCapture() {
+        var videoEl = document.getElementById('iris-video');
+        if (!irisCamera || !irisCamera.isActive()) {
+          irisSetStatus('iris-status', 'Start the camera first.');
+          return;
+        }
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = videoEl.videoWidth || 640;
+          canvas.height = videoEl.videoHeight || 480;
+          var ctx = canvas.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+          _setIrisPending('camera', ctx.getImageData(0, 0, canvas.width, canvas.height), 'camera-capture');
+        } catch (err) {
+          irisSetStatus('iris-status', 'Capture error: ' + err.message);
+        }
+      }
+
+      /* ── Dual-eye capture: grab Left then Right sequentially (< 500ms) ── */
+      async function handleIrisDualCapture() {
+        var videoEl = document.getElementById('iris-video');
+        if (!irisCamera || !irisCamera.isActive()) {
+          irisSetStatus('iris-status', 'Start the camera first.');
+          return;
+        }
+        try {
+          var sides = ['left', 'right'];
+          for (var i = 0; i < 2; i++) {
+            var canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth || 640;
+            canvas.height = videoEl.videoHeight || 480;
+            var ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+            var src = {
+              kind: 'camera',
+              imageData: ctx.getImageData(0, 0, canvas.width, canvas.height),
+              width: canvas.width,
+              height: canvas.height,
+              fileName: 'camera-' + (sides[i] === 'left' ? 'L' : 'R')
+            };
+            var sel = document.getElementById('iris-eye-side');
+            if (sel) sel.value = sides[i];
+            await window.runIrisPipeline(src);
+            if (i === 0) await new Promise(function (r) { setTimeout(r, 200); });
+          }
+          irisSetStatus('iris-status', 'Dual-eye capture complete (Left + Right enrolled).');
+        } catch (e) {
+          irisSetStatus('iris-status', 'Dual capture error: ' + (e && e.message ? e.message : e));
+        }
+      }
+
+      /* ── Enroll (legacy path kept for SPA parity) ── */
+      function handleIrisEnroll() {
+        irisEnroll().then(function () {
+          handleIrisRefreshList();
+        });
+      }
+
+      /* ── Identify ── */
+      function handleIrisIdentify() {
+        irisIdentify();
+      }
+
+      /* ── Enroll ── */
+      function handleIrisEnroll() {
+        irisEnroll().then(function () {
+          handleIrisRefreshList();
+        });
+      }
+
+      /* ── Identify ── */
+      function handleIrisIdentify() {
+        irisIdentify();
+      }
+
+      /* ── Gallery ── */
+      function handleIrisRefreshList() {
+        irisListTemplates().then(function () {
+          _renderIrisGallery();
+        });
+      }
+      function _renderIrisGallery() {
+        irisStorage.list().then(function (list) {
+          var ul = document.getElementById('iris-gallery-list');
+          var countEl = document.getElementById('iris-count');
+          if (countEl) countEl.textContent = 'Total: ' + list.length;
+          if (!ul) return;
+          if (!list || list.length === 0) {
+            ul.innerHTML = '<li class="iris-empty-state"><div class="iris-empty-icon">👁️</div><div>No templates enrolled yet.</div></li>';
+            return;
+          }
+           var html = '';
+           for (var i = 0; i < list.length; i++) {
+             var t = list[i];
+              var eye = t.eyeSide === 'left' ? '◧ L' : t.eyeSide === 'right' ? '◨ R' : '?';
+              var minorBadge = t.minor ? '<span class="iris-gallery-minor" title="Minor (<18)">⚠</span>' : '';
+              html += '<li data-id="' + t.id + '">' +
+                '<span class="iris-gallery-name">' + (t.label || t.id) + '</span>' +
+                '<span class="iris-gallery-eye" title="Eye side">' + eye + '</span>' + minorBadge +
+               '<span class="iris-gallery-date">' + new Date(t.enrolledAt).toLocaleDateString() + '</span>' +
+               '<button class="btn btn-sm" onclick="handleIrisVerifyById(\'' + t.id + '\')">Verify</button>' +
+               '<button class="btn btn-sm" onclick="handleIrisDeleteById(\'' + t.id + '\')">Delete</button>' +
+               '</li>';
+           }
+          ul.innerHTML = html;
+        });
+      }
+      function handleIrisVerifyById(id) {
+        irisVerify(id);
+      }
+      function handleIrisDeleteById(id) {
+        if (!confirm('Delete this iris template?')) return;
+        irisStorage.delete(id).then(function () {
+          handleIrisRefreshList();
+        });
+      }
+      function handleIrisExportAll() {
+        irisStorage.exportAllRecords().then(function (records) {
+          if (!records || records.length === 0) { alert('No templates to export.'); return; }
+          var json = JSON.stringify({
+            format: 'redosan-iris-backup-v1',
+            encrypted: !!records.find(function (rec) { return rec.enc; }),
+            exportedAt: Date.now(),
+            templates: records
+          }, null, 2);
+          var blob = new Blob([json], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'iris-templates-' + Date.now() + '.json';
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      }
+      function handleIrisImport() {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = function (e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            try {
+              var data = JSON.parse(ev.target.result);
+              var records = Array.isArray(data) ? data : (data && data.templates);
+              if (!Array.isArray(records) || records.length === 0) { alert('Invalid format.'); return; }
+              irisStorage.importRecords(records).then(function (count) {
+                alert('Imported ' + count + ' template(s).');
+                handleIrisRefreshList();
+              }).catch(function (err) {
+                alert('Import error: ' + err.message);
+              });
+            } catch (err) {
+              alert('Import error: ' + err.message);
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      }
+      function handleIrisClearAll() {
+        if (!confirm('Delete ALL iris templates? This cannot be undone.')) return;
+        irisStorage.clear().then(function () {
+          handleIrisRefreshList();
+          irisSetStatus('iris-status', 'All templates cleared.');
+        });
+      }
+
+      /* ── Status display ── */
+      function irisSetStatus(id, msg) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.textContent = msg;
+          el.className = 'iris-status';
+          if (msg.indexOf('Error') !== -1 || msg.indexOf('error') !== -1 || msg.indexOf('denied') !== -1) {
+            el.classList.add('error');
+          } else if (msg.indexOf('success') !== -1 || msg.indexOf('Success') !== -1 || msg.indexOf('✓') !== -1 || msg.indexOf('✅') !== -1) {
+            el.classList.add('success');
+          } else {
+            el.classList.add('info');
+          }
+        }
+      }
+
+      /* ── Display result ── */
+      function _irisDisplayResult(result) {
+        var box = document.getElementById('iris-result-box');
+        if (box) box.classList.add('visible');
+
+        var lt = document.getElementById('iris-liveness-text');
+        if (lt) {
+          lt.textContent = result.liveness.isLive ? '✓ LIVE (' + (result.liveness.score * 100).toFixed(1) + '%)' : '✗ SPOOF (' + (result.liveness.score * 100).toFixed(1) + '%)';
+          lt.style.color = result.liveness.isLive ? '#2ecc71' : '#e74c3c';
+        }
+        var qt = document.getElementById('iris-quality-text');
+        if (qt) qt.textContent = result.quality.toFixed(1) + '%';
+        var pt = document.getElementById('iris-pupil-text');
+        if (pt) pt.textContent = result.segmentation.pupil.radius.toFixed(1) + ' px';
+        var it = document.getElementById('iris-iris-text');
+        if (it) it.textContent = result.segmentation.iris.radius.toFixed(1) + ' px';
+        var ct = document.getElementById('iris-code-text');
+        if (ct) ct.textContent = result.irisCode.length + ' bits';
+        var ht = document.getElementById('iris-hd-text');
+        if (ht) ht.textContent = '—';
+      }
+
+      /* ── Expose helpers for iris_ui.js ── */
+      window.irisSetStatus = irisSetStatus;
+    </script>
+
+    <!-- Bot / Automation block overlay -->
+    <div id="botBlockOverlay" class="bot-block-overlay" role="alert" aria-live="polite">
+      <div class="bot-block-content">
+        <div class="bot-block-icon">🛡️</div>
+        <div class="bot-block-title">Access Denied</div>
+        <div class="bot-block-text">Automated / headless browser detected.</div>
+        <a class="bot-block-link" href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank">Report an issue</a>
+      </div>
+    </div>
+
+    <!-- Lightbox overlay -->
+    <div id="lightbox" class="lightbox" style="display:none" role="button" tabindex="0" onclick="closeLightbox()" onkeydown="if(event.key==='Enter'||event.key===' '){closeLightbox();event.preventDefault();}">
+      <button type="button" class="lightbox-close">&times;</button>
+      <img class="lightbox-img" id="lightboxImg" alt="" />
+    </div>
+
+    <!-- Music player -->
+    <aside aria-label="Music player">
+      <audio id="bg-music" src="../../RedoSan_Music.mp3" loop preload="none" aria-hidden="true"></audio>
+      <button type="button" id="music-btn" class="music-btn" aria-label="Toggle Music">&#x1F3B5;</button>
+      <span id="music-credit" class="music-credit">RedoSan</span>
+    </aside>
+
+    <!-- Floating AI Assistant -->
+    <button type="button" id="assistantBubble" class="ast-bubble" aria-label="Open assistant" onclick="lazyLoadAssistant(event)"><span>💬</span></button>
+    <div id="assistantPanel" class="ast-panel">
+      <div class="ast-header">
+        <span class="ast-title">🤖 RedoSan Assistant</span>
+        <div class="ast-header-actions">
+          <button type="button" class="ast-clear-btn" title="Clear chat">🗑️</button>
+          <button type="button" class="ast-close-btn" title="Close">&times;</button>
+        </div>
+      </div>
+      <div id="assistantMessages" class="ast-messages"></div>
+      <div id="assistantSuggestions" class="ast-suggestions"></div>
+      <div class="ast-input-area">
+        <textarea id="assistantInput" class="ast-input" placeholder="Type your question..." rows="1" aria-label="Assistant chat input"></textarea>
+        <button type="button" class="ast-send-btn">➤</button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.documentElement.style.overflow = "";
+        document.documentElement.dataset.standalone = "iris-biometric";
+        var modeSelect = document.getElementById("modeSelect");
+        if (modeSelect) modeSelect.style.display = "none";
+        var simplified = document.getElementById("simplifiedMode");
+        if (simplified) simplified.style.display = "none";
+        if (typeof showPage === "function") {
+          showPage("iris-biometric");
+        }
+      });
+    </script>
+    <!-- Early page activation -->
+    <script>
+      (function () {
+        var _id = document.documentElement.dataset.standalone;
+        var _pg = null;
+        if (_id) {
+          _pg = document.getElementById("page-" + _id);
+          if (_pg) _pg.classList.add("active");
+        }
+        var _lo = document.getElementById("page-loader");
+        if (_lo) _lo.classList.add("page-loader--hidden");
+      })();
+    </script>
+    <!-- Inline prefetch -->
+    <script>
+      (function () {
+        if (!document.querySelector) return;
+        document.addEventListener("mouseenter", function (e) {
+          var t = e.target;
+          if (t.nodeType !== 1) return;
+          var a = t.tagName === "A" ? t : t.closest("a");
+          if (!a || !a.href || !a.href.startsWith(location.origin)) return;
+          if (a.href.indexOf("/pages/") === -1) return;
+          var l = document.createElement("link");
+          l.rel = "prefetch";
+          l.href = a.href;
+          l.as = "document";
+          document.head.appendChild(l);
+        }, { passive: true });
+      })();
+    </script>
+    <!-- Lazy-load assistant -->
+    <script>
+      (function(){var _a=false;window.lazyLoadAssistant=function(e){if(e&&e.preventDefault)e.preventDefault();if(_a){if(typeof toggleAssistant==='function')toggleAssistant();return}_a=true;var d=document,s1=d.createElement('script');s1.src='../../../Assistant/assistant_data.js';s1.onload=function(){var s2=d.createElement('script');s2.src='../../../Assistant/assistant.js';s2.onload=function(){if(typeof initAssistant==='function')initAssistant();if(typeof toggleAssistant==='function')toggleAssistant()};d.body.appendChild(s2)};d.body.appendChild(s1)};})();
+    </script>
+  </body>
+</html>

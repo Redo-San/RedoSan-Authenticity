@@ -99,6 +99,11 @@ coverage-improvement-plan.md
 lighthouse-100-plan.md
 face-biometric-improvement-plan.md
 eslint-warning-cleanup-plan.md
+iris-biometric-authentication-research.md
+ISO_COMPLIANCE_REPORT.md
+IRIS_STANDARDS_COMPLIANCE.md
+GITHUB_IRIS_COMPARISON.md
+SECURITY.md
 IDEA.md
 
 # ── Secrets — NEVER commit, never share ────────────────────────────

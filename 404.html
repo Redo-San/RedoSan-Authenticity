@@ -144,6 +144,11 @@
           data-i18n="sidebar.timestamp"
           >Timestamp</a
         >
+        <a
+          href="/RedoSan-Authenticity/Style/pages/iris-biometric/index.html"
+          data-i18n="sidebar.iris_biometric"
+          >Iris Biometric</a
+        >
         <div class="lang-dropdown">
           <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
             English
@@ -238,6 +243,11 @@
             href="/RedoSan-Authenticity/Style/pages/timestamp/index.html"
             data-i18n="sidebar.timestamp"
             >Timestamp</a
+          >
+          <a
+            href="/RedoSan-Authenticity/Style/pages/iris-biometric/index.html"
+            data-i18n="sidebar.iris_biometric"
+            >Iris Biometric</a
           >
         </div>
       </div>
@@ -405,6 +415,19 @@
         "/RedoSan-Authenticity/Face_Biometric/face_ui.js",
         "/RedoSan-Authenticity/Face_Biometric/face_vc.js",
         "/RedoSan-Authenticity/Face_Biometric/face_webauthn.js",
+        "/RedoSan-Authenticity/Face_Biometric/face_standards.js",
+        "/RedoSan-Authenticity/Face_Biometric/face_performance.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_engine.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_matcher.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_quality.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_liveness.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_camera.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_storage.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_ui.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_standards.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_quality_full.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_template_protection.js",
+        "/RedoSan-Authenticity/Iris_Biometric/iris_performance.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-ar.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-de.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-en.js",
@@ -472,6 +495,8 @@
         "/RedoSan-Authenticity/Style/pages/timestamp/css/responsive.css",
         "/RedoSan-Authenticity/Style/pages/watermark/css/style.css",
         "/RedoSan-Authenticity/Style/pages/watermark/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/iris-biometric/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/iris-biometric/css/responsive.css",
       ];
 
       var YML_WHITELIST = [
@@ -550,6 +575,7 @@
         "/RedoSan-Authenticity/Style/pages/audio-watermark/index.html",
         "/RedoSan-Authenticity/Style/pages/fingerprint/index.html",
         "/RedoSan-Authenticity/Style/pages/face-biometric/index.html",
+        "/RedoSan-Authenticity/Style/pages/iris-biometric/index.html",
         "/RedoSan-Authenticity/Style/pages/search/index.html",
         "/RedoSan-Authenticity/Style/pages/pixel-injection/index.html",
         "/RedoSan-Authenticity/Style/pages/face-biometric/index.html",
@@ -711,6 +737,7 @@
           '<a href="/RedoSan-Authenticity/#fingerprint" data-i18n="sidebar.fingerprint">Fingerprint</a>' +
           '<a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>' +
           '<a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>' +
+          '<a href="/RedoSan-Authenticity/Style/pages/iris-biometric/index.html" data-i18n="sidebar.iris_biometric">Iris Biometric</a>' +
           '<a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" data-i18n="404.report_issue">Report Issue</a>' +
           "</div>" +
           "</div>";
