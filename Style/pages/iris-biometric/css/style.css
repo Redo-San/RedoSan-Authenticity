@@ -79,6 +79,7 @@
 .iris-gallery-list li {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--border-color, #ddd);

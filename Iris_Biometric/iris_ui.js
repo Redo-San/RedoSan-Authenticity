@@ -252,6 +252,9 @@ async function irisInit() {
         .split("{0}")
         .join(String(_irisGallery.length)),
     );
+
+    // Render the enrolled-templates gallery on load (not just after a manual Refresh)
+    if (typeof handleIrisRefreshList === "function") handleIrisRefreshList();
   } catch (error) {
     irisSetStatus(
       "iris-status",
