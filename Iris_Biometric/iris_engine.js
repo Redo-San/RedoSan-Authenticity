@@ -279,6 +279,139 @@ IrisEngine.prototype.segment = function (input) {
   };
 };
 
+ 
+/**
+ * Validate that the segmented region plausibly contains a human iris.
+ *
+ * The Daugman IDO segmentation always returns *something* (it finds the
+ * darkest circular region in any image), so without this gate a photo with
+ * no eye would be enrolled as a "template". These heuristic checks reject
+ * non-eye captures so the pipeline records a Failure-To-Acquire (FTA)
+ * instead of storing garbage.
+ * @param {Float64Array|Uint8Array} gray - row-major grayscale luminance (0-255)
+ * @param {number} width
+ * @param {number} height
+ * @param {{cx:number,cy:number,radius:number}} pupil
+ * @param {{cx:number,cy:number,radius:number}} iris
+ * @returns {{ok:boolean, reason:string}}
+ */
+IrisEngine.validateEyePresence = function (gray, width, height, pupil, iris) {
+  if (!pupil || !iris || !pupil.radius || !iris.radius) {
+    return { ok: false, reason: "no-segmentation" };
+  }
+  var minDim = Math.min(width, height);
+  var pupR = pupil.radius / minDim;
+  var irisR = iris.radius / minDim;
+  if (pupR < 0.03 || pupR > 0.22) return { ok: false, reason: "pupil-size" };
+  if (irisR < 0.06 || irisR > 0.46) return { ok: false, reason: "iris-size" };
+  var ratio = iris.radius / pupil.radius;
+  if (ratio < 1.1 || ratio > 5.5) return { ok: false, reason: "iris-pupil-ratio" };
+  if (
+    pupil.cx < width * 0.18 || pupil.cx > width * 0.82 ||
+    pupil.cy < height * 0.18 || pupil.cy > height * 0.82
+  ) {
+    return { ok: false, reason: "off-center" };
+  }
+  var pupilMean = IrisEngine._meanDisk(gray, width, height, pupil.cx, pupil.cy, pupil.radius * 0.85);
+  var irisMean = IrisEngine._meanAnnulus(gray, width, height, iris.cx, iris.cy, pupil.radius * 1.1, iris.radius * 0.95);
+  var pupilOk = isFinite(pupilMean);
+  var irisOk = isFinite(irisMean);
+  if (!pupilOk || !irisOk) return { ok: false, reason: "no-signal" };
+  if (pupilMean > irisMean - 12) return { ok: false, reason: "no-dark-pupil" };
+  var irisVar = IrisEngine._varAnnulus(gray, width, height, iris.cx, iris.cy, pupil.radius * 1.1, iris.radius * 0.95);
+  if (!isFinite(irisVar) || irisVar < 25) return { ok: false, reason: "low-iris-texture" };
+  return { ok: true, reason: "" };
+};
+
+/**
+ * Mean luminance inside a filled disk.
+ * @param {Float64Array|Uint8Array} gray - row-major grayscale luminance (0-255)
+ * @param {number} w - image width
+ * @param {number} h - image height
+ * @param {number} cx - disk center x
+ * @param {number} cy - disk center y
+ * @param {number} r - disk radius
+ * @returns {number} mean luminance, or NaN if empty
+ */
+IrisEngine._meanDisk = function (gray, w, h, cx, cy, r) {
+  var sum = 0, n = 0, x, y, dx, dy, rr = r * r;
+  var x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r));
+  var y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r));
+  for (y = y0; y <= y1; y++) {
+    for (x = x0; x <= x1; x++) {
+      dx = x - cx;
+      dy = y - cy;
+      if (dx * dx + dy * dy <= rr) {
+        sum += gray[y * w + x];
+        n++;
+      }
+    }
+  }
+  return n ? sum / n : NaN;
+};
+
+/**
+ * Mean luminance in an annulus [r0, r1].
+ * @param {Float64Array|Uint8Array} gray - row-major grayscale luminance (0-255)
+ * @param {number} w - image width
+ * @param {number} h - image height
+ * @param {number} cx - annulus center x
+ * @param {number} cy - annulus center y
+ * @param {number} r0 - inner radius
+ * @param {number} r1 - outer radius
+ * @returns {number} mean luminance, or NaN if empty
+ */
+IrisEngine._meanAnnulus = function (gray, w, h, cx, cy, r0, r1) {
+  var sum = 0, n = 0, x, y, d;
+  var x0 = Math.max(0, Math.floor(cx - r1)), x1 = Math.min(w - 1, Math.ceil(cx + r1));
+  var y0 = Math.max(0, Math.floor(cy - r1)), y1 = Math.min(h - 1, Math.ceil(cy + r1));
+  for (y = y0; y <= y1; y++) {
+    for (x = x0; x <= x1; x++) {
+      dx = x - cx;
+      dy = y - cy;
+      d = Math.hypot(dx, dy);
+      if (d >= r0 && d <= r1) {
+        sum += gray[y * w + x];
+        n++;
+      }
+    }
+  }
+  return n ? sum / n : NaN;
+};
+
+/**
+ * Variance of luminance in an annulus [r0, r1].
+ * @param {Float64Array|Uint8Array} gray - row-major grayscale luminance (0-255)
+ * @param {number} w - image width
+ * @param {number} h - image height
+ * @param {number} cx - annulus center x
+ * @param {number} cy - annulus center y
+ * @param {number} r0 - inner radius
+ * @param {number} r1 - outer radius
+ * @returns {number} luminance variance, or NaN if empty
+ */
+IrisEngine._varAnnulus = function (gray, w, h, cx, cy, r0, r1) {
+  var mean = IrisEngine._meanAnnulus(gray, w, h, cx, cy, r0, r1);
+  if (!isFinite(mean)) return NaN;
+  var sum = 0, n = 0, x, y, d, v;
+  var x0 = Math.max(0, Math.floor(cx - r1)), x1 = Math.min(w - 1, Math.ceil(cx + r1));
+  var y0 = Math.max(0, Math.floor(cy - r1)), y1 = Math.min(h - 1, Math.ceil(cy + r1));
+  for (y = y0; y <= y1; y++) {
+    for (x = x0; x <= x1; x++) {
+      dx = x - cx;
+      dy = y - cy;
+      d = Math.hypot(dx, dy);
+      if (d >= r0 && d <= r1) {
+        v = gray[y * w + x] - mean;
+        sum += v * v;
+        n++;
+      }
+    }
+  }
+  return n ? sum / n : NaN;
+};
+ 
+
 // ═══════════════════════════════════════════════════════════════════════════
 // NORMALIZATION: Rubber-sheet model (Daugman)
 // ═══════════════════════════════════════════════════════════════════════════

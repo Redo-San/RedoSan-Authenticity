@@ -882,6 +882,26 @@ async function runIrisPipeline(src) {
     }
     gray = _irisToGray(src.imageData);
 
+    // ── Eye-presence gate: reject photos that contain no usable iris ──
+    // (Failure To Acquire). detectIris always returns a radius, so without
+    // this the pipeline would enrol a "template" from any picture.
+    var eyeCheck = IrisEngine.validateEyePresence(
+      gray,
+      src.width,
+      src.height,
+      extractResult.segmentation.pupil,
+      extractResult.segmentation.iris,
+    );
+    if (!eyeCheck.ok) {
+      if (typeof _irisRecordFTA === "function") _irisRecordFTA("no-eye:" + eyeCheck.reason);
+      irisSetStatus(
+        "iris-status",
+        __("iris.no_iris", "No iris detected in the image. Please retake the photo.") +
+          " (" + eyeCheck.reason + ")",
+      );
+      throw new Error("No eye present in image: " + eyeCheck.reason);
+    }
+
     // Build an IMAGE-SPACE ring validity mask (pupil<r<iris) so ISO 29794-6
     // area/occlusion metrics and the Worldcoin gates operate on real pixels
     // (the normalized IrisCode mask is a different resolution and would yield
