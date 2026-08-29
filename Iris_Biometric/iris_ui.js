@@ -939,9 +939,16 @@ async function runIrisPipeline(src) {
       iris: ir,
     });
     gates = qualityFull.gates || { passed: false, failures: [], metrics: {} };
-    // eslint-disable-next-line unicorn/prefer-simple-condition-first
-    if (gates && !gates.passed && typeof _irisRecordFTER === "function") {
-      _irisRecordFTER((gates.failures || []).join("; ") || "gates-failed");
+    if (gates && !gates.passed) {
+      // ACQUISITION GATES are hard gates: a capture that fails any gate (incl.
+      // the Section-0 iris-texture-contrast floor for visible-light/dark-iris
+      // captures) must NOT be silently enrolled as a noisy IrisCode.
+      if (typeof _irisRecordFTER === "function") {
+        _irisRecordFTER((gates.failures || []).join("; ") || "gates-failed");
+      }
+      throw new Error(
+        "Capture rejected by acquisition quality gate: " + (gates.failures || []).join("; ")
+      );
     }
     await _irisRaf();
 

@@ -139,6 +139,146 @@ IrisPerformance.calculateAccuracy = function (trueAccepts, trueRejects, totalTri
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PAD PERFORMANCE (ISO/IEC 30107-3) — APCER / BPCER / DET
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// IMPORTANT: matching-accuracy metrics (FAR/FRR/EER in the section above) answer
+// "does IrisCode A equal IrisCode B?". APCER/BPCER below answer a DIFFERENT
+// question — "does the liveness/PAD system tell a real eye from a fake one?".
+// The two are not interchangeable. A PAD system is reported in its own
+// vocabulary (APCER/BPCER), per ISO/IEC 30107-3. Convention used here:
+//   labels[i] === 1  → attack presentation (fake)
+//   labels[i] === 0  → bona fide presentation (live)
+//   scores[i]        → liveness score, HIGHER == more live
+//   accepted as live → score >= threshold
+
+/**
+ * Attack Presentation Classification Error Rate (APCER): fraction of attacks
+ * incorrectly accepted as live.
+ * @param {Array<number>} labels - 0 (bona) / 1 (attack)
+ * @param {Array<number>} scores - liveness scores (higher = more live)
+ * @param {number} threshold
+ * @returns {number} APCER (0-1)
+ */
+IrisPerformance.calculateAPCER = function (labels, scores, threshold) {
+  var attacks = 0, accepted = 0;
+  if (!labels || !scores) return 0;
+  for (var i = 0; i < labels.length; i++) {
+    if (labels[i] === 1) {
+      attacks++;
+      if (scores[i] >= threshold) accepted++;
+    }
+  }
+  return attacks > 0 ? accepted / attacks : 0;
+};
+
+/**
+ * Bona Fide Presentation Classification Error Rate (BPCER): fraction of live
+ * presentations incorrectly rejected as attacks.
+ * @param {Array<number>} labels - 0 (bona) / 1 (attack)
+ * @param {Array<number>} scores - liveness scores (higher = more live)
+ * @param {number} threshold
+ * @returns {number} BPCER (0-1)
+ */
+IrisPerformance.calculateBPCER = function (labels, scores, threshold) {
+  var bona = 0, rejected = 0;
+  if (!labels || !scores) return 0;
+  for (var i = 0; i < labels.length; i++) {
+    if (labels[i] === 0) {
+      bona++;
+      if (scores[i] < threshold) rejected++;
+    }
+  }
+  return bona > 0 ? rejected / bona : 0;
+};
+
+/**
+ * Generate a PAD DET curve (sweep thresholds, reporting APCER/BPCER at each).
+ * @param {Array<number>} labels
+ * @param {Array<number>} scores
+ * @param {number} [numPoints]
+ * @returns {Array<{ threshold:number, apcer:number, bpcer:number }>}
+ */
+IrisPerformance.generatePADDET = function (labels, scores, numPoints) {
+  var thresholds, det, minS, maxS, i, j, t;
+  if (!labels || !scores || labels.length === 0) return [];
+
+  minS = Infinity;
+  maxS = -Infinity;
+  for (i = 0; i < scores.length; i++) {
+    if (scores[i] < minS) minS = scores[i];
+    if (scores[i] > maxS) maxS = scores[i];
+  }
+  if (!isFinite(minS) || !isFinite(maxS)) return [];
+
+  numPoints = numPoints || 100;
+  thresholds = [];
+  for (i = 0; i < numPoints; i++) {
+    thresholds.push(minS + (maxS - minS) * (i / (numPoints - 1)));
+  }
+
+  det = [];
+  for (j = 0; j < thresholds.length; j++) {
+    t = thresholds[j];
+    det.push({
+      threshold: t,
+      apcer: IrisPerformance.calculateAPCER(labels, scores, t),
+      bpcer: IrisPerformance.calculateBPCER(labels, scores, t),
+    });
+  }
+  return det;
+};
+
+/**
+ * Report PAD effectiveness at standard operating points (LivDet convention):
+ * APCER achieved when BPCER is held at 10% and 20%.
+ * @param {Array<number>} labels
+ * @param {Array<number>} scores
+ * @returns {{ apcerAtBpcer10:number, apcerAtBpcer20:number, bpcer:number, iapar:number, det:Array }}
+ */
+IrisPerformance.reportPADMetrics = function (labels, scores) {
+  var det = IrisPerformance.generatePADDET(labels, scores, 100);
+  if (det.length === 0) {
+    return { apcerAtBpcer10: 0, apcerAtBpcer20: 0, bpcer: 0, iapar: 0, det: [] };
+  }
+
+  // Operating point that holds BPCER at <= target: pick the HIGHEST threshold
+  // that still meets the target (this minimises APCER — the standard choice).
+  /**
+   *
+   * @param target
+   */
+  function atBpcer(target) {
+    var best = null, bestThr = -Infinity;
+    for (var k = 0; k < det.length; k++) {
+      if (det[k].bpcer <= target + 1e-9 && det[k].threshold > bestThr) {
+        bestThr = det[k].threshold;
+        best = det[k];
+      }
+    }
+    if (!best) {
+      // No operating point achieves the target — report best (min-BPCER) point.
+      best = det[0];
+      for (var m = 1; m < det.length; m++) {
+        if (det[m].bpcer < best.bpcer) best = det[m];
+      }
+    }
+    return best;
+  }
+
+  var op10 = atBpcer(0.1);
+  var op20 = atBpcer(0.2);
+  var iapar = (op10.apcer + op20.bpcer) / 2; // inter-agency combined rate (FIDO)
+  return {
+    apcerAtBpcer10: op10.apcer,
+    apcerAtBpcer20: op20.apcer,
+    bpcer: op10.bpcer,
+    iapar: iapar,
+    det: det,
+  };
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // ROC AND DET CURVES
 // ═══════════════════════════════════════════════════════════════════════════
 
