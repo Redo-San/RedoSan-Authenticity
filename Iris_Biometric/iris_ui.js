@@ -399,6 +399,7 @@ async function irisStartCapture() {
       imageWidth: (frames[2] || frames[0]).width,
       imageHeight: (frames[2] || frames[0]).height,
       pupil: bestResult.segmentation.pupil,
+      iris: bestResult.segmentation.iris,
       temporalFrames: _irisTemporalFrames,
     });
 
@@ -954,6 +955,7 @@ async function runIrisPipeline(src) {
         imageWidth: src.width,
         imageHeight: src.height,
         pupil: extractResult.segmentation.pupil,
+        iris: extractResult.segmentation.iris,
       });
     } else {
       livenessResult = {
@@ -990,10 +992,6 @@ async function runIrisPipeline(src) {
     );
     // Phase 3A: NIR camera capability advisory (ISO/IEC 29794-6 §6 prefers NIR)
     var nir = await IrisQualityFull.detectNirCapability();
-    // Phase 3C: age tracking / minor re-enrollment (OSAC guidance)
-    var dobInput = document.getElementById("iris-dob");
-    var dob = dobInput && dobInput.value ? dobInput.value : null;
-    var ageInfo = dob ? irisComputeAge(dob) : null;
     // Encryption is fully automatic: a single stable, device-bound vault
     // passphrase is generated once and persisted in localStorage, then used to
     // derive the AES-GCM key for EVERY stored template (so previously saved
@@ -1011,9 +1009,6 @@ async function runIrisPipeline(src) {
       id: templateId,
       label: label,
       eyeSide: eyeSide,
-      dob: dob || null,
-      minor: ageInfo ? ageInfo.minor : false,
-      reEnrollBefore: ageInfo ? ageInfo.reEnrollBefore : null,
       leftCode: extractResult.irisCode.code,
       leftMask: extractResult.irisCode.mask,
       quality: {
@@ -1067,9 +1062,6 @@ async function runIrisPipeline(src) {
       },
       illumination: illumination,
       nir: nir,
-      age: ageInfo ? ageInfo.age : null,
-      minor: ageInfo ? ageInfo.minor : false,
-      reEnrollBefore: ageInfo ? ageInfo.reEnrollBefore : null,
       performance: _irisGetStats(),
       template: {
         id: templateId,
@@ -1142,26 +1134,6 @@ function _irisGetPrivacySeed() {
   } catch {
     return 123_456_789;
   }
-}
-
-/**
- * Compute age from a date-of-birth string and apply OSAC child-protection
- * guidance: a subject younger than 18 is flagged as a minor and must
- * re-enroll / re-consent by the computed reEnrollBefore date.
- * @param {string} dob
- * @returns {{age:number, minor:boolean, reEnrollBefore:string}|null}
- */
-function irisComputeAge(dob) {
-  if (!dob) return null;
-  var d = new Date(dob);
-  if (isNaN(d.getTime())) return null;
-  var now = new Date();
-  var age = now.getFullYear() - d.getFullYear();
-  var m = now.getMonth() - d.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
-  var minor = age < 18;
-  var rb = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-  return { age: age, minor: minor, reEnrollBefore: rb.toISOString().slice(0, 10) };
 }
 
 /**
@@ -1388,11 +1360,7 @@ function _irisRenderReport(r) {
       "<tr><td>ID</td><td><code style='font-size:0.65rem'>" + _irisEscHtml(r.template.id) + "</code></td></tr>" +
       "<tr><td>" + __("iris.report.label", "Label") + "</td><td>" + _irisEscHtml(r.template.label) + "</td></tr>" +
       "<tr><td>" + __("iris.report.eye_side", "Eye Side") + "</td><td>" + _irisEscHtml(r.template.eyeSide || "unknown") + "</td></tr>" +
-      (r.minor
-        ? "<tr><td>" + __("iris.report.minor", "Minor (<18)") + "</td><td><span style='color:#e0a800'>&#9888; " + __("iris.report.re_enroll", "Re-enroll by") + " " + _irisEscHtml(r.reEnrollBefore || "—") + "</span></td></tr>"
-        : (r.age !== null && r.age !== undefined
-            ? "<tr><td>" + __("iris.report.age", "Age") + "</td><td>" + r.age + "</td></tr>"
-            : "")) +
+      "" +
       "<tr><td>AES-GCM</td><td><span style='color:#28a745'>&#128274; " + __("iris.report.encrypted", "encrypted at rest") + "</span></td></tr>" +
       (r.template.encryption
         ? "<tr><td colspan='2' style='background:rgba(40,167,69,.12)'><strong>&#128274; " +
@@ -1581,9 +1549,6 @@ function _irisReportToCSV(r) {
     ["Template label", r.template.label],
     ["Eye side", r.template.eyeSide || "unknown"],
     ["NIR available", r.nir ? (r.nir.nirAvailable ? "yes" : "no") : "unknown"],
-    ["Age", r.age == null ? "" : r.age],
-    ["Minor (<18)", r.minor ? "yes" : "no"],
-    ["Re-enroll before", r.reEnrollBefore || ""],
     ["Illumination", r.illumination ? r.illumination.modality : "unknown"],
     ["FTA", r.performance ? r.performance.fta : 0],
     ["FTER", r.performance ? r.performance.fter : 0],
@@ -1644,8 +1609,6 @@ function _irisReportToTXT(r) {
     "  Label     : " + r.template.label,
     "  Eye side  : " + (r.template.eyeSide || "unknown"),
     "  NIR       : " + (r.nir ? (r.nir.nirAvailable ? "available" : "not available (visible fallback)") : "unknown"),
-    "  Age       : " + (r.age == null ? "n/a" : r.age),
-    "  Minor     : " + (r.minor ? "yes (re-enroll by " + (r.reEnrollBefore || "—") + ")" : "no"),
     "  Encrypted : AES-GCM (at rest)",
     "  Encryption: " + r.template.encryption,
     "",
@@ -1687,7 +1650,7 @@ function _irisReportToXML(r) {
       ? "    <match label=\"" + x(r.registry.best.label) + "\" hd=\"" + r.registry.best.hd.toFixed(4) + "\" />"
       : "    <match />",
     "  </registry>",
-    "  <template id=\"" + x(r.template.id) + "\" label=\"" + x(r.template.label) + "\" eyeSide=\"" + x(r.template.eyeSide || "unknown") + "\" encrypted=\"AES-GCM\" nirAvailable=\"" + (r.nir ? r.nir.nirAvailable : "unknown") + "\" age=\"" + (r.age == null ? "" : r.age) + "\" minor=\"" + (r.minor ? "true" : "false") + "\" reEnrollBefore=\"" + (r.reEnrollBefore || "") + "\" />",
+    "  <template id=\"" + x(r.template.id) + "\" label=\"" + x(r.template.label) + "\" eyeSide=\"" + x(r.template.eyeSide || "unknown") + "\" encrypted=\"AES-GCM\" nirAvailable=\"" + (r.nir ? r.nir.nirAvailable : "unknown") + "\" />",
     "  <illumination modality=\"" + x(r.illumination ? r.illumination.modality : "unknown") + "\" colorCapture=\"" + (r.illumination ? r.illumination.colorCapture : false) + "\" />",
     "  <performance fta=\"" + (r.performance ? r.performance.fta : 0) + "\" fter=\"" + (r.performance ? r.performance.fter : 0) + "\" />",
     "</irisReport>",

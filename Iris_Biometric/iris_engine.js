@@ -36,7 +36,13 @@ var IRIS_ENGINE_CONFIG = {
   codeHeight: 20, // rows of IrisCode
 
   // Matching
-  hammingThreshold: 0.26, // HD below this = match (Daugman: FMR < 10^-11)
+  // HD below this = match. 0.26 is a literature-consistent operating point.
+  // NOTE: the often-quoted "FMR < 10^-11" figure for this threshold is NOT
+  // independently verified against a primary source; the citable NIST IREX IX
+  // result for NIR one-to-one matching is FNMR < 1% at FMR 10^-5. Visible-light
+  // / webcam capture (this tool) is measurably less accurate than NIR scanners,
+  // and less accurate still for darker irides (see iris_camera.js).
+  hammingThreshold: 0.26,
 };
 
 /**

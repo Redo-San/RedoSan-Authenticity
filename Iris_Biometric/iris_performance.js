@@ -49,7 +49,10 @@ IrisPerformance.THRESHOLDS = {
   // Acceptable error rates
   MAX_FAR: 0.001, // 0.1% false accept rate
   MAX_FRR: 0.01, // 1% false reject rate
-  MAX_EER: 0.005, // 0.5% equal error rate
+  // 0.5% EER bar — this is an NIR-class (near-infrared scanner) target.
+  // The best published visible-spectrum result under controlled conditions is
+  // EER 0.76-1.29% (worse for darker irides); webcam capture will be higher.
+  MAX_EER: 0.005,
 
   // Minimum accuracy
   MIN_ACCURACY: 0.99, // 99% accuracy

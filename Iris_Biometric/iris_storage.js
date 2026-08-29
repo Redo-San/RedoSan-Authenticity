@@ -117,9 +117,6 @@ IrisStorage.prototype.save = async function (template) {
     updatedAt: Date.now(),
     did: template.did || null,
     eyeSide: template.eyeSide === "left" || template.eyeSide === "right" ? template.eyeSide : "unknown",
-    dob: template.dob || null,
-    minor: !!template.minor,
-    reEnrollBefore: template.reEnrollBefore || null,
   };
 
   if (this._vaultKey) {
@@ -133,9 +130,6 @@ IrisStorage.prototype.save = async function (template) {
       rightMask: template.rightMask ? Array.from(template.rightMask) : null,
       quality: template.quality || null,
       eyeSide: record.eyeSide,
-      dob: template.dob || null,
-      minor: !!template.minor,
-      reEnrollBefore: template.reEnrollBefore || null,
       formatVersion: 1,
     };
     iv = FaceCrypto.generateSalt(12);
@@ -148,9 +142,6 @@ IrisStorage.prototype.save = async function (template) {
     record.rightCode = template.rightCode ? Array.from(template.rightCode) : null;
     record.rightMask = template.rightMask ? Array.from(template.rightMask) : null;
     record.quality = template.quality || null;
-    record.dob = template.dob || null;
-    record.minor = !!template.minor;
-    record.reEnrollBefore = template.reEnrollBefore || null;
   }
 
   return new Promise(function (resolve, reject) {
@@ -196,18 +187,12 @@ IrisStorage.prototype._rehydrate = async function (record) {
     record.rightMask = payload.rightMask ? new Uint8Array(payload.rightMask) : null;
     record.quality = payload.quality || null;
     record.eyeSide = payload.eyeSide || record.eyeSide || "unknown";
-    record.dob = payload.dob || null;
-    record.minor = !!payload.minor;
-    record.reEnrollBefore = payload.reEnrollBefore || null;
   } else {
     // Convert arrays back to Uint8Arrays
     record.leftCode = new Uint8Array(record.leftCode);
     record.leftMask = new Uint8Array(record.leftMask);
     if (record.rightCode) record.rightCode = new Uint8Array(record.rightCode);
     if (record.rightMask) record.rightMask = new Uint8Array(record.rightMask);
-    record.dob = record.dob || null;
-    record.minor = !!record.minor;
-    record.reEnrollBefore = record.reEnrollBefore || null;
   }
 
   if (record.eyeSide !== "left" && record.eyeSide !== "right") {
@@ -270,9 +255,6 @@ IrisStorage.prototype.list = async function () {
           label: cursor.value.label || "",
           enrolledAt: cursor.value.enrolledAt,
           eyeSide: cursor.value.eyeSide || "unknown",
-          dob: cursor.value.dob || null,
-          minor: !!cursor.value.minor,
-          reEnrollBefore: cursor.value.reEnrollBefore || null,
         });
         cursor.continue();
       } else {

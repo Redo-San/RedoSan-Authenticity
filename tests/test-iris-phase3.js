@@ -69,25 +69,6 @@ test('detectNirCapability: no IR label → visible fallback', async () => {
   Object.defineProperty(global, 'navigator', { value: { userAgent: 'node' }, configurable: true });
 });
 
-/* ── Phase 3C: age tracking / minor re-enrollment ── */
-test('irisComputeAge: minor under 18', () => {
-  const r = global.irisComputeAge('2015-01-01');
-  assert.ok(r);
-  assert.strictEqual(r.minor, true);
-  assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(r.reEnrollBefore));
-});
-
-test('irisComputeAge: adult', () => {
-  const r = global.irisComputeAge('1990-01-01');
-  assert.strictEqual(r.minor, false);
-  assert.ok(r.age >= 35);
-});
-
-test('irisComputeAge: invalid → null', () => {
-  assert.strictEqual(global.irisComputeAge(''), null);
-  assert.strictEqual(global.irisComputeAge('not-a-date'), null);
-});
-
 /* ── Phase 3D: specular reflection in vendor slot 18 (index 17) ── */
 /**
  *

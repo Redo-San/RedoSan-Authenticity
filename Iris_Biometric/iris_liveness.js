@@ -577,6 +577,85 @@ IrisLiveness.depthEstimationTest = function (grayImage, width, height, iris) {
 // FIDO PAI SPECIES CLASSIFICATION
 // ═══════════════════════════════════════════════════════════════════════════
 
+// CHECK 8: Periodic-pattern / textured contact-lens detection
+/**
+ * Detect regular/periodic texture (printed contact lenses, printed irises)
+ * via a 2D DFT over the iris disk. Genuine iris texture is near-stochastic
+ * (fractal crypts); a printed/patterned lens shows a dominant periodic peak
+ * in the frequency spectrum. This is the ISO/IEC 30107-3 aligned counter to
+ * the most published iris presentation-attack vector (textured lenses).
+ * @param {Float64Array|Uint8Array} grayImage - row-major grayscale (0-255)
+ * @param {number} imageWidth
+ * @param {number} imageHeight
+ * @param {{cx:number,cy:number,radius:number}} iris - detected iris
+ * @returns {{score:number, attack:boolean, detail:string, peakRatio:number}}
+ */
+IrisLiveness.periodicPatternTest = function (grayImage, imageWidth, imageHeight, iris) {
+  if (!grayImage || !iris || !iris.radius || iris.radius < 4) {
+    return { score: 1, attack: false, detail: "skipped (no iris)", peakRatio: 0 };
+  }
+  var N = 40;
+  var cx = iris.cx, cy = iris.cy, R = iris.radius;
+  var x0 = Math.max(0, Math.floor(cx - R));
+  var x1 = Math.min(imageWidth - 1, Math.ceil(cx + R));
+  var y0 = Math.max(0, Math.floor(cy - R));
+  var y1 = Math.min(imageHeight - 1, Math.ceil(cy + R));
+  var span = Math.max(1, x1 - x0);
+  var i, j, sx, sy, v, sum = 0;
+  var grid = new Float64Array(N * N);
+  for (j = 0; j < N; j++) {
+    sy = y0 + (j / (N - 1)) * span;
+    for (i = 0; i < N; i++) {
+      sx = x0 + (i / (N - 1)) * span;
+      v = grayImage[Math.round(sy) * imageWidth + Math.round(sx)] || 0;
+      grid[j * N + i] = v;
+      sum += v;
+    }
+  }
+  var mean = sum / (N * N);
+  for (i = 0; i < N * N; i++) grid[i] -= mean;
+
+  var mag = new Float64Array(N * N);
+  var tw = (2 * Math.PI) / N;
+  var u, vv, x, y, re, im, ang, g, mx = 0, total = 0, count = 0;
+  for (vv = 0; vv < N; vv++) {
+    for (u = 0; u < N; u++) {
+      re = 0;
+      im = 0;
+      for (y = 0; y < N; y++) {
+        for (x = 0; x < N; x++) {
+          ang = tw * (u * x + vv * y);
+          g = grid[y * N + x];
+          re += g * Math.cos(ang);
+          im -= g * Math.sin(ang);
+        }
+      }
+      var m = Math.hypot(re, im);
+      mag[vv * N + u] = m;
+      if (u === 0 && vv === 0) continue;
+      if (Math.abs(u) <= 1 && Math.abs(vv) <= 1) continue;
+      total += m;
+      count++;
+      if (m > mx) mx = m;
+    }
+  }
+  // Spectral peak-to-rest-mean ratio: a single dominant periodic peak makes
+  // this large; stochastic iris texture keeps it near 1.
+  var restMean = count > 1 ? (total - mx) / (count - 1) : 0;
+  var peakRatio = restMean > 0 ? mx / restMean : 0;
+  // Strong dominant peak => periodic (attack). Conservative threshold to
+  // avoid false rejects on genuine irides, which have some structure.
+  var attack = peakRatio > 3.5;
+  return {
+    score: attack ? 0.05 : 0.95,
+    attack: attack,
+    detail: "periodic-pattern peakRatio=" + peakRatio.toFixed(3) + (attack ? " (attack)" : " (bona fide)"),
+    peakRatio: peakRatio,
+  };
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+
 /**
  * Classify Presentation Attack Instrument (PAI) species per FIDO Biometrics v4.0.
  * @param {object} checkResults - Results from individual checks
@@ -913,6 +992,20 @@ IrisLiveness.prototype.assess = function (params) {
     totalScore += check.score * weight;
     weightSum += weight;
     checks.push({ name: "depthEstimation", score: check.score, weight: weight, details: check.details });
+  }
+
+  // Check 8: Periodic-pattern / textured contact-lens detection (ISO/IEC 30107-3)
+  if (params.grayImage && params.iris) {
+    check = IrisLiveness.periodicPatternTest(
+      params.grayImage,
+      params.imageWidth,
+      params.imageHeight,
+      params.iris,
+    );
+    weight = 0.15;
+    totalScore += check.score * weight;
+    weightSum += weight;
+    checks.push({ name: "periodicPattern", score: check.score, weight: weight, details: check.details });
   }
 
   // Normalize score

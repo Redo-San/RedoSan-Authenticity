@@ -377,6 +377,10 @@
               <li data-i18n="iris.consent_retention">Retention: records stay in this browser's local storage on this device until you delete them or withdraw consent.</li>
               <li data-i18n="iris.consent_rights">Your rights: you may withdraw consent at any time — this deletes all stored biometric data from this device.</li>
             </ul>
+            <p style="font-size:0.72rem;margin:0 0 10px;padding:8px 10px;border-left:3px solid #f5c542;background:rgba(245,197,66,.06)">
+              <strong data-i18n="iris.accuracy_note_title">Accuracy note:</strong>
+              <span data-i18n="iris.accuracy_note">Capture uses your webcam under ordinary visible light. Professional iris scanners use near-infrared (NIR) illumination; under visible light — especially for darker irides — iris texture contrast is lower and accuracy is measurably reduced. Enrol in good, even lighting and retry if a capture is rejected.</span>
+            </p>
             <label style="display:flex;gap:8px;align-items:flex-start;font-size:0.8rem;margin-bottom:10px">
               <input type="checkbox" id="iris-consent-check" />
               <span data-i18n="iris.consent_check">I have read and understand the notice above and consent to on-device processing of my iris biometric data.</span>
@@ -432,10 +436,6 @@
                 <option value="left" data-i18n="iris.eye_side_left">Left</option>
                 <option value="right" data-i18n="iris.eye_side_right">Right</option>
               </select>
-            </div>
-            <div class="form-group" style="min-width:160px;margin-bottom:0">
-              <label for="iris-dob" data-i18n="iris.dob_label">Date of Birth</label>
-              <input type="date" id="iris-dob" style="width:100%;padding:8px;border:1px solid var(--border-color,#ddd);border-radius:8px;background:var(--bg,#fff);color:var(--text,#222)" />
             </div>
           </div>
 
@@ -920,10 +920,9 @@
            for (var i = 0; i < list.length; i++) {
              var t = list[i];
               var eye = t.eyeSide === 'left' ? '◧ L' : t.eyeSide === 'right' ? '◨ R' : '?';
-              var minorBadge = t.minor ? '<span class="iris-gallery-minor" title="Minor (<18)">⚠</span>' : '';
               html += '<li data-id="' + t.id + '">' +
                 '<span class="iris-gallery-name">' + (t.label || t.id) + '</span>' +
-                '<span class="iris-gallery-eye" title="Eye side">' + eye + '</span>' + minorBadge +
+                '<span class="iris-gallery-eye" title="Eye side">' + eye + '</span>' +
                '<span class="iris-gallery-date">' + new Date(t.enrolledAt).toLocaleDateString() + '</span>' +
                '<button class="btn btn-sm" onclick="handleIrisVerifyById(\'' + t.id + '\')">Verify</button>' +
                '<button class="btn btn-sm" onclick="handleIrisDeleteById(\'' + t.id + '\')">Delete</button>' +
