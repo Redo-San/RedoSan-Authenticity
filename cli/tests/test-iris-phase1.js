@@ -51,17 +51,17 @@ global.localStorage = {
 };
 
 // ── Load Iris modules under test ──
-const irisDir = path.join(__dirname, "..", "Iris_Biometric");
+const irisDir = path.join(__dirname, "..", "..", "Iris_Biometric");
 for (const file of ["iris_quality_full.js", "iris_matcher.js", "iris_ui.js"]) {
   const src = fs.readFileSync(path.join(irisDir, file), "utf8");
-  vm.runInThisContext(src, { filename: file });
+  vm.runInThisContext(src, { filename: path.join(irisDir, file) });
 }
 
 // iris_engine.js sets the authoritative window.IRIS_ENGINE_CONFIG.
 // Load it so the matcher uses the real production threshold.
 try {
   const eng = fs.readFileSync(path.join(irisDir, "iris_engine.js"), "utf8");
-  vm.runInThisContext(eng, { filename: "iris_engine.js" });
+  vm.runInThisContext(eng, { filename: path.join(irisDir, "iris_engine.js") });
 } catch {
   // engine may need heavier deps; matcher falls back to literal default
 }

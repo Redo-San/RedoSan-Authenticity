@@ -1,5 +1,5 @@
 // Phase 2 tests: margin gate, illumination detection, dual-eye persistence, FTA/FTER stats.
-// Run with: node --test tests/test-iris-phase2.js
+// Run with: node --test cli/tests/test-iris-phase2.js
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
@@ -22,11 +22,11 @@ globalThis.__irisStatsMem = {};
  */
 function loadRel(rel) {
   const src = fs.readFileSync(path.join(__dirname, rel), "utf8");
-  vm.runInThisContext(src, { filename: rel });
+  vm.runInThisContext(src, { filename: path.join(__dirname, rel) });
 }
-loadRel("../Iris_Biometric/iris_quality_full.js");
-loadRel("../Iris_Biometric/iris_storage.js");
-loadRel("../Iris_Biometric/iris_ui.js");
+loadRel("../../Iris_Biometric/iris_quality_full.js");
+loadRel("../../Iris_Biometric/iris_storage.js");
+loadRel("../../Iris_Biometric/iris_ui.js");
 
 const IrisQualityFull = globalThis.IrisQualityFull;
 const IrisStorage = globalThis.IrisStorage;

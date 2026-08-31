@@ -32,7 +32,7 @@ global.__ = (k, d) => (d === undefined ? k : d);
 const files = ['Iris_Biometric/iris_quality_full.js', 'Iris_Biometric/iris_ui.js'];
 for (const f of files) {
   const src = fs.readFileSync(path.join(process.cwd(), f), 'utf8');
-  vm.runInThisContext(src, { filename: f });
+  vm.runInThisContext(src, { filename: path.join(process.cwd(), f) });
 }
 
 const Q = global.IrisQualityFull;

@@ -1,5 +1,5 @@
 // ── Tests: APCER/BPCER PAD performance metrics (ISO/IEC 30107-3) ──
-// Run: node --test tests/test-iris-performance-pad.js
+// Run: node --test cli/tests/test-iris-performance-pad.js
 const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
@@ -9,8 +9,8 @@ const assert = require("node:assert");
 global.window = { location: { protocol: "file:", href: "file:///test" }, navigator: { userAgent: "node" } };
 global.document = {};
 vm.runInThisContext(
-  fs.readFileSync(path.join(__dirname, "..", "Iris_Biometric", "iris_performance.js"), "utf8"),
-  { filename: "iris_performance.js" }
+  fs.readFileSync(path.join(__dirname, "..", "..", "Iris_Biometric", "iris_performance.js"), "utf8"),
+  { filename: path.join(__dirname, "..", "..", "Iris_Biometric", "iris_performance.js") }
 );
 const P = global.window.IrisPerformance;
 

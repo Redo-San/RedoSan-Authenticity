@@ -48,7 +48,7 @@ global.crypto = {
 };
 
 // ── Load all Iris Standards modules ──
-const irisDir = path.join(__dirname, "..", "Iris_Biometric");
+const irisDir = path.join(__dirname, "..", "..", "Iris_Biometric");
 const irisFiles = [
   "iris_standards.js",
   "iris_quality_full.js",
@@ -62,7 +62,7 @@ for (const file of irisFiles) {
 }
 
 // ── Load all Face Standards modules ──
-const faceDir = path.join(__dirname, "..", "Face_Biometric");
+const faceDir = path.join(__dirname, "..", "..", "Face_Biometric");
 const faceFiles = [
   "face_standards.js",
   "face_performance.js",

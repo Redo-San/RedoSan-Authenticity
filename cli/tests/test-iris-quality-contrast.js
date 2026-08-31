@@ -1,5 +1,5 @@
 // ── Tests: within-iris texture-contrast acquisition gate (Section-0 mitigation) ──
-// Run: node --test tests/test-iris-quality-contrast.js
+// Run: node --test cli/tests/test-iris-quality-contrast.js
 const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
@@ -13,8 +13,8 @@ const docShim = {
 global.window = docShim;
 global.document = {};
 vm.runInThisContext(
-  fs.readFileSync(path.join(__dirname, "..", "Iris_Biometric", "iris_quality_full.js"), "utf8"),
-  { filename: "iris_quality_full.js" },
+  fs.readFileSync(path.join(__dirname, "..", "..", "Iris_Biometric", "iris_quality_full.js"), "utf8"),
+  { filename: path.join(__dirname, "..", "..", "Iris_Biometric", "iris_quality_full.js") },
 );
 const Q = global.window.IrisQualityFull;
 

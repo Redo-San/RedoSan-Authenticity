@@ -1,5 +1,5 @@
 // ── Tests: textured contact-lens / periodic-pattern PAD (Gap 1) ──
-// Run: node --test tests/test-iris-contact-lens.js
+// Run: node --test cli/tests/test-iris-contact-lens.js
 const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
@@ -7,10 +7,10 @@ const test = require("node:test");
 const assert = require("node:assert");
 
 const src = fs.readFileSync(
-  path.join(__dirname, "..", "Iris_Biometric", "iris_liveness.js"),
+  path.join(__dirname, "..", "..", "Iris_Biometric", "iris_liveness.js"),
   "utf8",
 );
-vm.runInThisContext(src, { filename: "iris_liveness.js" });
+vm.runInThisContext(src, { filename: path.join(__dirname, "..", "..", "Iris_Biometric", "iris_liveness.js") });
 const IrisLiveness = global.IrisLiveness || global.window.IrisLiveness;
 
 const W = 100, H = 100;
