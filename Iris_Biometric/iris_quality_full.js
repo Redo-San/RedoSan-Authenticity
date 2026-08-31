@@ -186,6 +186,24 @@ IrisQualityFull.METRICS = {
     range: [0, 45],
     threshold: 15,
   },
+  // 19. Pupil boundary circularity (ISO/IEC 29794-6 §6.2.4)
+  PUPIL_BOUNDARY_CIRCULARITY: {
+    id: 19,
+    name: "Pupil Boundary Circularity",
+    description: "2*sqrt(pi)*area/perimeter; 1.0 = perfect circle",
+    unit: "ratio",
+    range: [0, 1],
+    threshold: 0.7,
+  },
+  // 20. Focus score (motion blur ratio)
+  FOCUS_SCORE: {
+    id: 20,
+    name: "Focus Score",
+    description: "min(hVar,vVar)/max(hVar,vVar); 1 = sharp, 0 = motion blur",
+    unit: "ratio",
+    range: [0, 1],
+    threshold: 0.3,
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -218,6 +236,9 @@ IrisQualityFull.ACQUISITION_GATES = {
   // ISO/IEC 29794-6 §6 metric 9 (margin/position): the iris must be sufficiently
   // inset from the image frame so the full annulus (and pupil) is captured.
   marginAdequacyMin: 40,
+  // Daugman minimum absolute iris radius (px); images below this cannot
+  // encode a reliable IrisCode regardless of relative size.
+  irisRadiusMinAbsolute: 70,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -484,6 +505,11 @@ IrisQualityFull.evaluateAcquisitionGates = function (params) {
   );
   if (margin < g.marginAdequacyMin) {
     failures.push("marginAdequacy(" + Math.round(margin) + "<" + g.marginAdequacyMin + ")");
+  }
+
+  // Daugman minimum absolute iris radius
+  if (params.iris.radius < g.irisRadiusMinAbsolute) {
+    failures.push("irisRadiusAbsolute(" + Math.round(params.iris.radius) + "<" + g.irisRadiusMinAbsolute + ")");
   }
 
   metrics = {
@@ -836,6 +862,67 @@ IrisQualityFull.motionBlur = function (imageData, width, height) {
 
   // Invert and scale: high gradient = sharp, low gradient = blurry
   return Math.max(0, Math.min(50, 50 - meanGradient));
+};
+
+/**
+ * Compute pupil boundary circularity per ISO/IEC 29794-6 §6.2.4.
+ * C = 2 * sqrt(pi) * pupilArea / pupilPerimeter (1.0 = perfect circle).
+ * @param {Uint8Array} mask - Iris mask (1=iris, 0=non-iris)
+ * @param {number} normW - mask width
+ * @param {number} normH - mask height
+ * @returns {number} 0-1
+ */
+IrisQualityFull.pupilBoundaryCircularity = function (mask, normW, normH) {
+  if (!mask || normW === 0 || normH === 0 || mask.length === 0) return 1;
+  var cx = normW / 2, cy = normH / 2;
+  var pupilRadius = normW * 0.2;
+  var area = 0, perimeter = 0;
+  for (var y = 0; y < normH; y++) {
+    for (var x = 0; x < normW; x++) {
+      var idx = y * normW + x;
+      var dist = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+      if (dist <= pupilRadius && mask[idx] === 0) {
+        area++;
+        var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        for (var d = 0; d < 4; d++) {
+          var nx = x + dirs[d][0], ny = y + dirs[d][1];
+          if (nx < 0 || nx >= normW || ny < 0 || ny >= normH || mask[ny * normW + nx] === 1) {
+            perimeter++;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return (area > 0 && perimeter > 0) ? (2 * Math.sqrt(Math.PI) * area / perimeter) : 1;
+};
+
+/**
+ * Compute motion blur focus score per ISO/IEC 29794-6.
+ * Compares horizontal vs vertical gradient variance; motion blur
+ * reduces gradient energy in the blur direction.
+ * Score = min(varX, varY) / max(varX, varY): 1 = sharp, 0 = motion blur.
+ * @param {Float64Array|Uint8Array} normalizedIris - normalized iris image
+ * @param {number} normW
+ * @param {number} normH
+ * @returns {number} 0-1
+ */
+IrisQualityFull.motionBlurFocus = function (normalizedIris, normW, normH) {
+  if (!normalizedIris || normW === 0 || normH === 0) return 1;
+  var count = 0, hSum = 0, vSum = 0;
+  for (var y = 1; y < normH - 1; y++) {
+    for (var x = 1; x < normW - 1; x++) {
+      var idx = y * normW + x;
+      var h = normalizedIris[idx + 1] - normalizedIris[idx - 1];
+      var v = normalizedIris[idx + normW] - normalizedIris[idx - normW];
+      hSum += h * h;
+      vSum += v * v;
+      count++;
+    }
+  }
+  if (count === 0) return 1;
+  var hVar = hSum / count, vVar = vSum / count;
+  return Math.min(hVar, vVar) / Math.max(hVar, vVar, 1);
 };
 
 /**

@@ -359,3 +359,56 @@
 .iris-camera-actions .btn:hover {
   background: var(--primary-dark, #5849c4);
 }
+
+/* ── Buttons (generic .btn) ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--primary, #6c5ce7);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: 0.2s ease;
+  touch-action: manipulation;
+  user-select: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--primary-dark, #5a4bd1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgb(108 92 231 / 0.35);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary, #6c5ce7);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: var(--primary, #6c5ce7);
+}
+
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}

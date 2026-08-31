@@ -310,6 +310,7 @@ IrisEngine.validateEyePresence = function (gray, width, height, pupil, iris) {
   var irisR = iris.radius / minDim;
   if (pupR < 0.03 || pupR > 0.22) return { ok: false, reason: "pupil-size" };
   if (irisR < 0.06 || irisR > 0.46) return { ok: false, reason: "iris-size" };
+  if (iris.radius < 70) return { ok: false, reason: "iris-size-absolute" };
   var ratio = iris.radius / pupil.radius;
   if (ratio < 1.1 || ratio > 5.5) return { ok: false, reason: "iris-pupil-ratio" };
   if (
