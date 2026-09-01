@@ -44,6 +44,7 @@ scripts/fix_standalone_pages.js
 # Local agent memory (not committed)
 AGENTS.md
 STATUS.md
+CLAUDE.md
 
 # AI agent skills (linked from addyosmani/agent-skills)
 skills/
@@ -135,3 +136,6 @@ secrets.*
 
 # Build / probe artifacts
 vkprobe.obj
+
+# Temp test output files
+*.txt

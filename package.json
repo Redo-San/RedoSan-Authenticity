@@ -186,6 +186,7 @@
       "Decentralized_Identity_DID/",
       "Document_Watermark/",
       "Face_Biometric/",
+      "Iris_Biometric/",
       "ID_Forge/",
       "Converter/",
       "Timestamp/",
