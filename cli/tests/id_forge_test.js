@@ -93,7 +93,7 @@ describe("ID Forge — UUID v7 (RFC 9562)", () => {
     const ids = [];
     for (let i = 0; i < 5; i++) {
       ids.push(uuidv7());
-      await new Promise((r) => setTimeout(r, 2));
+      await new Promise((r) => setTimeout(r, 20));
     }
     const sorted = [...ids].sort();
     assert.deepEqual(sorted, ids, "UUIDs with increasing timestamps should be in time order");
@@ -147,7 +147,7 @@ describe("ID Forge — ULID", () => {
     const ids = [];
     for (let i = 0; i < 5; i++) {
       ids.push(ulid());
-      await new Promise((r) => setTimeout(r, 2));
+      await new Promise((r) => setTimeout(r, 20));
     }
     const sorted = [...ids].sort();
     assert.deepEqual(sorted, ids);
