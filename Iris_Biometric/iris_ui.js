@@ -719,7 +719,7 @@ async function irisListTemplates() {
       '<li data-id="' +
       template.id +
       '">' +
-      (template.label || template.id) +
+      _irisEscHtml(template.label || template.id) +
       " (" +
       new Date(template.enrolledAt).toLocaleDateString() +
       ")" +
@@ -840,7 +840,7 @@ function _irisDisplayIdentifyResults(results) {
     html +=
       "<tr>" +
       "<td>" +
-      (results[i].label || results[i].id) +
+      _irisEscHtml(results[i].label || results[i].id) +
       "</td>" +
       "<td>" +
       results[i].hd.toFixed(4) +

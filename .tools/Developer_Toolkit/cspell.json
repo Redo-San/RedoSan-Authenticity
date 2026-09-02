@@ -1169,7 +1169,8 @@
     "FTER",
     "FTER",
     "fter",
-    "Fter"
+    "Fter",
+    "abcdefghjkmnpqrstuvwxyz"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[؀-ۿ]+/"],
