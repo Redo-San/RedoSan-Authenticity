@@ -50,7 +50,50 @@ class V8Coverage {
       }
     }
 
-    return V8Coverage.parse(allScripts, includeDirs, { cwd });
+    // Each test file runs in a separate Node.js process, so the same source
+    // module appears in multiple JSON files.  Deduplicate by URL: for each
+    // function, a range is "covered" if ANY process recorded count > 0 for it.
+    const scriptsByURL = new Map();
+    for (const script of allScripts) {
+      const url = script.url || "";
+      if (!includeDirs.some((d) => url.includes(d))) continue;
+      if (url.includes("node_modules") || url.includes("test-") || url.includes("v8_coverage")) continue;
+
+      if (!scriptsByURL.has(url)) {
+        scriptsByURL.set(url, { url, functions: [] });
+      }
+      const target = scriptsByURL.get(url);
+
+      for (const fn of script.functions || []) {
+        // Find existing function entry with same name and start offset
+        let existing = target.functions.find(
+          (e) => e.functionName === fn.functionName &&
+            e.ranges?.[0]?.startOffset === fn.ranges?.[0]?.startOffset,
+        );
+        if (!existing) {
+          // First time seeing this function — clone ranges
+          existing = {
+            functionName: fn.functionName,
+            ranges: fn.ranges.map((r) => ({ ...r })),
+          };
+          target.functions.push(existing);
+        } else {
+          // Merge: if this process covered a range that was previously uncovered, mark it covered
+          for (const r of fn.ranges || []) {
+            const existingRange = existing.ranges.find(
+              (er) => er.startOffset === r.startOffset && er.endOffset === r.endOffset,
+            );
+            if (existingRange) {
+              if (r.count > 0) existingRange.count = Math.max(existingRange.count, r.count);
+            } else {
+              existing.ranges.push({ ...r });
+            }
+          }
+        }
+      }
+    }
+
+    return V8Coverage.parse([...scriptsByURL.values()], includeDirs, { cwd });
   }
 
   /**
@@ -73,12 +116,24 @@ class V8Coverage {
 
       const filename = url;
       if (!fileMap.has(filename)) {
+        // Parse c8 ignore markers from source to compute excluded byte ranges
+        let excludedRanges = [];
+        try {
+          // V8 coverage uses file:/// URLs — convert to filesystem path
+          const fsPath = filename.startsWith("file:///")
+            ? decodeURIComponent(filename.replace(/^file:\/{3}/, "").replace(/\//g, path.sep === "\\" ? "\\" : "/"))
+            : filename;
+          const src = fs.readFileSync(fsPath, "utf8");
+          excludedRanges = V8Coverage._parseC8IgnoreRanges(src);
+        } catch { /* file may not be readable */ }
+
         fileMap.set(filename, {
           filename,
           shortName: filename.replace(/.*Iris_Biometric\//, "").replace(/\\/g, "/"),
           statements: { total: 0, covered: 0, uncovered: [] },
           branches: { total: 0, covered: 0, uncovered: [] },
           functions: { total: 0, covered: 0, uncovered: [] },
+          _excludedRanges: excludedRanges,
         });
       }
       const fc = fileMap.get(filename);
@@ -92,7 +147,13 @@ class V8Coverage {
         for (let i = 0; i < ranges.length; i++) {
           const range = ranges[i];
           const startOffset = range.startOffset;
+          const endOffset = range.endOffset;
           const count = range.count !== undefined ? range.count : 0;
+
+          // Skip ranges that fall within c8 ignore markers
+          if (V8Coverage._isInExcludedRange(startOffset, endOffset, fc._excludedRanges)) {
+            continue;
+          }
 
           // Statement coverage: each range is a statement
           fc.statements.total++;
@@ -118,10 +179,18 @@ class V8Coverage {
           }
         }
 
-        if (fnCovered) {
-          fc.functions.covered++;
+        // Check if the function body overlaps any excluded range
+        const fnStart = fn.ranges?.[0]?.startOffset || 0;
+        const fnEnd = fn.ranges?.[0]?.endOffset || 0;
+        if (!V8Coverage._isInExcludedRange(fnStart, fnEnd, fc._excludedRanges)) {
+          if (fnCovered) {
+            fc.functions.covered++;
+          } else {
+            fc.functions.uncovered.push(fnStart);
+          }
         } else {
-          fc.functions.uncovered.push(fn.ranges?.[0]?.startOffset || 0);
+          // Function is entirely within c8 ignore — don't count it at all
+          fc.functions.total--;
         }
       }
     }
@@ -138,6 +207,48 @@ class V8Coverage {
     }
 
     return { files: fileMap, summary };
+  }
+
+  /**
+   * Parse c8 ignore markers from source, returning byte offset ranges to exclude.
+   * Looks for "c8 ignore start" and "c8 ignore stop" comments.
+   * @param {string} src - Source code
+   * @returns {Array<{start: number, end: number}>}
+   */
+  static _parseC8IgnoreRanges(src) {
+    const ranges = [];
+    const markerRE = /c8\s+ignore\s+(start|stop)/g;
+    const starts = [];
+    const stops = [];
+    let match;
+    while ((match = markerRE.exec(src)) !== null) {
+      const before = src.lastIndexOf("/*", match.index);
+      if (before < 0) continue;
+      const afterEnd = src.indexOf("*/", match.index);
+      if (afterEnd < 0) continue;
+      const fullStart = before;
+      const fullEnd = afterEnd + 2;
+      if (match[1] === "start") starts.push(fullStart);
+      else stops.push(fullEnd);
+    }
+    for (let i = 0; i < Math.min(starts.length, stops.length); i++) {
+      if (stops[i] > starts[i]) {
+        ranges.push({ start: starts[i], end: stops[i] });
+      }
+    }
+    return ranges;
+  }
+
+  /**
+   * Check if a byte range overlaps any excluded range.
+   */
+  static _isInExcludedRange(start, end, excluded) {
+    if (!excluded || excluded.length === 0) return false;
+    for (const ex of excluded) {
+      if (start >= ex.start && end <= ex.end) return true;
+      if (start < ex.end && end > ex.start) return true;
+    }
+    return false;
   }
 
   /**

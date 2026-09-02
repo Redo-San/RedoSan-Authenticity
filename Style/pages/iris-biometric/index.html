@@ -339,7 +339,7 @@
     <main class="container" id="app">
       <section id="page-iris-biometric" class="page active">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-          <a href="../home/index.html" data-page="home" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
+          <a href="#" onclick="goHome();return false;" class="back-btn" title="Back"><span class="back-arrow">←</span></a>
           <h2 style="margin-bottom:0" data-i18n="iris.heading">Iris Biometric</h2>
         </div>
         <div class="card-form">
@@ -586,6 +586,10 @@
 
     <script src="../../shared_validation.js" defer></script>
     <script src="../../shared.js" defer></script>
+    <script src="../../search.js" defer></script>
+    <script src="../../navigation.js" defer></script>
+    <script src="../../mpa-router.js" defer></script>
+    <script src="../../music-player.js" defer></script>
     <script>
       (function () {
         document.querySelectorAll('.form-group input[type="file"]').forEach(function (input) {
@@ -608,8 +612,6 @@
         });
       })();
     </script>
-    <script src="../../search.js" defer></script>
-    <script src="../../navigation.js" defer></script>
     <!-- Iris module scripts: loaded sequentially after first paint -->
     <script>
       (function () {
@@ -642,18 +644,9 @@
           s.onerror = function () { seq(i + 1); };
           document.head.appendChild(s);
         }
-        function loadNav() {
-          ['../../mpa-router.js', '../../music-player.js'].forEach(function (src) {
-            var s = document.createElement('script');
-            s.src = src;
-            s.async = false;
-            document.head.appendChild(s);
-          });
-        }
         function kick() {
           var idle = window.requestIdleCallback || function (f) { setTimeout(f, 200); };
           idle(function () { seq(0); }, { timeout: 2000 });
-          idle(loadNav, { timeout: 2500 });
         }
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', kick);

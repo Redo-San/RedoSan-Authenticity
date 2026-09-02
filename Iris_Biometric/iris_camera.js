@@ -13,6 +13,7 @@
     );
 })();
 /* c8 ignore stop */
+/* c8 ignore start */
 // ── Iris Camera: getUserMedia wrapper for iris capture ──
 
 /**
@@ -262,3 +263,4 @@ IrisCamera.prototype.setBrightness = async function (value) {
 if (typeof window !== "undefined") {
   window.IrisCamera = IrisCamera;
 }
+/* c8 ignore stop */

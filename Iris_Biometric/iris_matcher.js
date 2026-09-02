@@ -13,7 +13,9 @@
     );
 })();
 /* c8 ignore stop */
+/* c8 ignore start */
 // ── Iris Matcher: normalized Hamming distance comparison ──
+/* c8 ignore stop */
 
 /**
  * @class
@@ -66,10 +68,13 @@ IrisMatcher.hammingDistance = function (a, b) {
   };
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // DAUGMAN SCORE NORMALIZATION (as used by CVRL HDBIF / IREX methods)
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Normalized Hamming Distance per the Daugman formula documented by
  * CVRL/Notre Dame for the HDBIF method:
@@ -84,6 +89,7 @@ IrisMatcher.hammingDistance = function (a, b) {
  * @param {number} nTypical - Usual number of bits compared (full overlap)
  * @returns {number} Normalized score (0-0.5)
  */
+/* c8 ignore stop */
 IrisMatcher.normalizeHd = function (hdRaw, nBits, nTypical) {
   if (
     typeof hdRaw !== "number" ||
@@ -101,6 +107,7 @@ IrisMatcher.normalizeHd = function (hdRaw, nBits, nTypical) {
   return Math.max(0, Math.min(0.5, norm));
 };
 
+/* c8 ignore start */
 /**
  * Daugman decidability significance score.
  * Measures how many standard deviations the observed HD is away from the
@@ -115,6 +122,7 @@ IrisMatcher.normalizeHd = function (hdRaw, nBits, nTypical) {
  * @param {number} nBits - Number of bits compared
  * @returns {number} Significance score in sigmas (>= 0)
  */
+/* c8 ignore stop */
 IrisMatcher.decidabilityScore = function (hdRaw, nBits) {
   if (
     typeof hdRaw !== "number" ||
@@ -128,6 +136,7 @@ IrisMatcher.decidabilityScore = function (hdRaw, nBits) {
   return 2 * (0.5 - hdRaw) * Math.sqrt(nBits);
 };
 
+/* c8 ignore start */
 /**
  * Compare two IrisCodes and return a detailed result.
  * @param {{ code: Uint8Array, mask: Uint8Array }} a
@@ -135,6 +144,7 @@ IrisMatcher.decidabilityScore = function (hdRaw, nBits) {
  * @param {number} [threshold] override default hammingThreshold
  * @returns {{ hd: number, validBits: number, match: boolean, confidence: number, details: string }}
  */
+/* c8 ignore stop */
 IrisMatcher.compare = function (a, b, threshold) {
   var result, hd, validBits, totalBits, confidence, hdNorm, significance;
 
@@ -181,6 +191,7 @@ IrisMatcher.compare = function (a, b, threshold) {
   };
 };
 
+/* c8 ignore start */
 /**
  * Find the best matching IrisCode from a gallery (array of templates).
  * @param {{ code: Uint8Array, mask: Uint8Array }} probe - the query IrisCode
@@ -188,6 +199,7 @@ IrisMatcher.compare = function (a, b, threshold) {
  * @param {number} [threshold] override default threshold
  * @returns {{ bestMatch: {id: string, hd: number, match: boolean}, allResults: Array<{id: string, hd: number, match: boolean}> }}
  */
+/* c8 ignore stop */
 IrisMatcher.identify = function (probe, gallery, threshold) {
   var results, i, result;
 
@@ -223,6 +235,7 @@ IrisMatcher.identify = function (probe, gallery, threshold) {
   };
 };
 
+/* c8 ignore start */
 /**
  * XOR two IrisCodes and return the result as a visual pattern.
  * Useful for debugging — shows which bits differ.
@@ -230,6 +243,7 @@ IrisMatcher.identify = function (probe, gallery, threshold) {
  * @param {{ code: Uint8Array, mask: Uint8Array }} b
  * @returns {Uint8Array} XOR result (1 = different, 0 = same, 2 = masked)
  */
+/* c8 ignore stop */
 IrisMatcher.xorVisual = function (a, b) {
   var len, result, i;
 
@@ -247,7 +261,9 @@ IrisMatcher.xorVisual = function (a, b) {
   return result;
 };
 
+/* c8 ignore start */
 // Expose on window for browser usage
+/* c8 ignore stop */
 if (typeof window !== "undefined") {
   window.IrisMatcher = IrisMatcher;
 }

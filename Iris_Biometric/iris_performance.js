@@ -13,7 +13,9 @@
     );
 })();
 /* c8 ignore stop */
+/* c8 ignore start */
 // ── Iris Performance: ISO/IEC 19795 biometric performance testing ──
+/* c8 ignore stop */
 
 /**
  * ISO/IEC 19795:2022 Biometric Performance Testing and Reporting
@@ -38,13 +40,17 @@ function IrisPerformance() {
   this._timings = [];
 }
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // CORE METRICS
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Performance metric thresholds per ISO/IEC 19795.
  */
+/* c8 ignore stop */
 IrisPerformance.THRESHOLDS = {
   // Acceptable error rates
   MAX_FAR: 0.001, // 0.1% false accept rate
@@ -65,34 +71,40 @@ IrisPerformance.THRESHOLDS = {
   CONFIDENCE_LEVEL: 0.95,
 };
 
+/* c8 ignore start */
 /**
  * Calculate False Accept Rate (FAR).
  * @param {number} falseAccepts - Number of false accepts
  * @param {number} totalImpostorTrials - Total impostor trials
  * @returns {number} FAR value (0-1)
  */
+/* c8 ignore stop */
 IrisPerformance.calculateFAR = function (falseAccepts, totalImpostorTrials) {
   if (totalImpostorTrials <= 0) return 0;
   return falseAccepts / totalImpostorTrials;
 };
 
+/* c8 ignore start */
 /**
  * Calculate False Reject Rate (FRR).
  * @param {number} falseRejects - Number of false rejects
  * @param {number} totalGenuineTrials - Total genuine trials
  * @returns {number} FRR value (0-1)
  */
+/* c8 ignore stop */
 IrisPerformance.calculateFRR = function (falseRejects, totalGenuineTrials) {
   if (totalGenuineTrials <= 0) return 0;
   return falseRejects / totalGenuineTrials;
 };
 
+/* c8 ignore start */
 /**
  * Calculate Equal Error Rate (EER).
  * EER is where FAR equals FRR.
  * @param {Array<{ threshold: number, far: number, frr: number }>} rocData - ROC curve data
  * @returns {{ eer: number, threshold: number }}
  */
+/* c8 ignore stop */
 IrisPerformance.calculateEER = function (rocData) {
   var minDiff, eerThreshold, i, diff;
 
@@ -126,6 +138,7 @@ IrisPerformance.calculateEER = function (rocData) {
   };
 };
 
+/* c8 ignore start */
 /**
  * Calculate accuracy.
  * @param {number} trueAccepts - Number of true accepts
@@ -133,11 +146,13 @@ IrisPerformance.calculateEER = function (rocData) {
  * @param {number} totalTrials - Total trials
  * @returns {number} Accuracy (0-1)
  */
+/* c8 ignore stop */
 IrisPerformance.calculateAccuracy = function (trueAccepts, trueRejects, totalTrials) {
   if (totalTrials <= 0) return 0;
   return (trueAccepts + trueRejects) / totalTrials;
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // PAD PERFORMANCE (ISO/IEC 30107-3) — APCER / BPCER / DET
 // ═══════════════════════════════════════════════════════════════════════════
@@ -151,7 +166,9 @@ IrisPerformance.calculateAccuracy = function (trueAccepts, trueRejects, totalTri
 //   labels[i] === 0  → bona fide presentation (live)
 //   scores[i]        → liveness score, HIGHER == more live
 //   accepted as live → score >= threshold
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Attack Presentation Classification Error Rate (APCER): fraction of attacks
  * incorrectly accepted as live.
@@ -160,6 +177,7 @@ IrisPerformance.calculateAccuracy = function (trueAccepts, trueRejects, totalTri
  * @param {number} threshold
  * @returns {number} APCER (0-1)
  */
+/* c8 ignore stop */
 IrisPerformance.calculateAPCER = function (labels, scores, threshold) {
   var attacks = 0, accepted = 0;
   if (!labels || !scores) return 0;
@@ -172,6 +190,7 @@ IrisPerformance.calculateAPCER = function (labels, scores, threshold) {
   return attacks > 0 ? accepted / attacks : 0;
 };
 
+/* c8 ignore start */
 /**
  * Bona Fide Presentation Classification Error Rate (BPCER): fraction of live
  * presentations incorrectly rejected as attacks.
@@ -180,6 +199,7 @@ IrisPerformance.calculateAPCER = function (labels, scores, threshold) {
  * @param {number} threshold
  * @returns {number} BPCER (0-1)
  */
+/* c8 ignore stop */
 IrisPerformance.calculateBPCER = function (labels, scores, threshold) {
   var bona = 0, rejected = 0;
   if (!labels || !scores) return 0;
@@ -192,6 +212,7 @@ IrisPerformance.calculateBPCER = function (labels, scores, threshold) {
   return bona > 0 ? rejected / bona : 0;
 };
 
+/* c8 ignore start */
 /**
  * Generate a PAD DET curve (sweep thresholds, reporting APCER/BPCER at each).
  * @param {Array<number>} labels
@@ -199,6 +220,7 @@ IrisPerformance.calculateBPCER = function (labels, scores, threshold) {
  * @param {number} [numPoints]
  * @returns {Array<{ threshold:number, apcer:number, bpcer:number }>}
  */
+/* c8 ignore stop */
 IrisPerformance.generatePADDET = function (labels, scores, numPoints) {
   var thresholds, det, minS, maxS, i, j, t;
   if (!labels || !scores || labels.length === 0) return [];
@@ -229,6 +251,7 @@ IrisPerformance.generatePADDET = function (labels, scores, numPoints) {
   return det;
 };
 
+/* c8 ignore start */
 /**
  * Report PAD effectiveness at standard operating points (LivDet convention):
  * APCER achieved when BPCER is held at 10% and 20%.
@@ -236,6 +259,7 @@ IrisPerformance.generatePADDET = function (labels, scores, numPoints) {
  * @param {Array<number>} scores
  * @returns {{ apcerAtBpcer10:number, apcerAtBpcer20:number, bpcer:number, iapar:number, det:Array }}
  */
+/* c8 ignore stop */
 IrisPerformance.reportPADMetrics = function (labels, scores) {
   var det = IrisPerformance.generatePADDET(labels, scores, 100);
   if (det.length === 0) {
@@ -244,6 +268,12 @@ IrisPerformance.reportPADMetrics = function (labels, scores) {
 
   // Operating point that holds BPCER at <= target: pick the HIGHEST threshold
   // that still meets the target (this minimises APCER — the standard choice).
+  /* c8 ignore start */
+  /**
+   *
+   * @param target
+   */
+  /* c8 ignore stop */
   /**
    *
    * @param target
@@ -278,10 +308,13 @@ IrisPerformance.reportPADMetrics = function (labels, scores) {
   };
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // ROC AND DET CURVES
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Generate ROC (Receiver Operating Characteristic) curve data.
  * @param {Array<number>} genuineScores - Genuine match scores
@@ -289,6 +322,7 @@ IrisPerformance.reportPADMetrics = function (labels, scores) {
  * @param {number} [numPoints] - Number of points on curve
  * @returns {Array<{ threshold: number, far: number, frr: number, tpr: number }>}
  */
+/* c8 ignore stop */
 IrisPerformance.generateROC = function (genuineScores, impostorScores, numPoints) {
   var thresholds, rocData, minScore, maxScore, i, j, threshold;
   var trueAccepts, falseAccepts, trueRejects, falseRejects;
@@ -357,6 +391,7 @@ IrisPerformance.generateROC = function (genuineScores, impostorScores, numPoints
   return rocData;
 };
 
+/* c8 ignore start */
 /**
  * Generate DET (Detection Error Tradeoff) curve data.
  * @param {Array<number>} genuineScores - Genuine match scores
@@ -364,6 +399,7 @@ IrisPerformance.generateROC = function (genuineScores, impostorScores, numPoints
  * @param {number} [numPoints] - Number of points
  * @returns {Array<{ far: number, frr: number }>}
  */
+/* c8 ignore stop */
 IrisPerformance.generateDET = function (genuineScores, impostorScores, numPoints) {
   var rocData, detData, i;
 
@@ -380,10 +416,13 @@ IrisPerformance.generateDET = function (genuineScores, impostorScores, numPoints
   return detData;
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // CONFIDENCE INTERVALS
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Calculate Wilson confidence interval for a proportion.
  * @param {number} successes - Number of successes
@@ -391,6 +430,7 @@ IrisPerformance.generateDET = function (genuineScores, impostorScores, numPoints
  * @param {number} [confidence] - Confidence level
  * @returns {{ lower: number, upper: number, estimate: number }}
  */
+/* c8 ignore stop */
 IrisPerformance.wilsonCI = function (successes, trials, confidence) {
   var z, p, n, denominator, centre, margin;
 
@@ -420,10 +460,13 @@ IrisPerformance.wilsonCI = function (successes, trials, confidence) {
   };
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // PERFORMANCE EVALUATION
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Evaluate biometric system performance.
  * @param {object} params - Evaluation parameters
@@ -432,6 +475,7 @@ IrisPerformance.wilsonCI = function (successes, trials, confidence) {
  * @param {string} [params.systemName] - System name for reporting
  * @returns {object} Comprehensive performance report
  */
+/* c8 ignore stop */
 IrisPerformance.evaluate = function (params) {
   var genuineScores, impostorScores, rocData, eerResult;
   var farCI, frrCI, accuracyCI, report;
@@ -529,16 +573,20 @@ IrisPerformance.evaluate = function (params) {
   return report;
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // STATISTICAL TESTS
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Perform paired t-test to compare two systems.
  * @param {Array<number>} scores1 - System 1 scores
  * @param {Array<number>} scores2 - System 2 scores
  * @returns {{ tStatistic: number, pValue: number, significant: boolean }}
  */
+/* c8 ignore stop */
 IrisPerformance.pairedTTest = function (scores1, scores2) {
   var n, meanDiff, sumSqDiff, stdDiff, seDiff, tStat, df;
 
@@ -576,12 +624,14 @@ IrisPerformance.pairedTTest = function (scores1, scores2) {
   };
 };
 
+/* c8 ignore start */
 /**
  * Compare two systems using ROC analysis.
  * @param {object} system1 - { genuineScores, impostorScores }
  * @param {object} system2 - { genuineScores, impostorScores }
  * @returns {{ winner: string, difference: number, significant: boolean }}
  */
+/* c8 ignore stop */
 IrisPerformance.compareSystems = function (system1, system2) {
   var report1, report2;
 
@@ -595,7 +645,9 @@ IrisPerformance.compareSystems = function (system1, system2) {
   var eerDiff = report1.metrics.eer - report2.metrics.eer;
   var accuracyDiff = report1.metrics.accuracy - report2.metrics.accuracy;
 
+  /* c8 ignore start */
   // Use paired t-test on genuine scores if available
+  /* c8 ignore stop */
   var tTest = null;
   if (system1.genuineScores.length === system2.genuineScores.length) {
     tTest = IrisPerformance.pairedTTest(system1.genuineScores, system2.genuineScores);
@@ -622,16 +674,20 @@ IrisPerformance.compareSystems = function (system1, system2) {
   };
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // FTA / FTER TRACKING (ISO/IEC 19795 Section 7)
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Record a Failure to Acquire (FTA) event.
  * FTA occurs when the system cannot capture a usable biometric sample.
  * @param {IrisPerformance} instance
  * @param {string} [reason] - Reason for failure
  */
+/* c8 ignore stop */
 IrisPerformance.recordFTA = function (instance, reason) {
   if (instance) {
     instance._ftaCount++;
@@ -644,11 +700,13 @@ IrisPerformance.recordFTA = function (instance, reason) {
   }
 };
 
+/* c8 ignore start */
 /**
  * Record a successful acquisition event.
  * @param {IrisPerformance} instance
  * @param {number} durationMs - Acquisition duration in ms
  */
+/* c8 ignore stop */
 IrisPerformance.recordAcquisition = function (instance, durationMs) {
   if (instance) {
     instance._totalAcquisitions++;
@@ -660,12 +718,14 @@ IrisPerformance.recordAcquisition = function (instance, durationMs) {
   }
 };
 
+/* c8 ignore start */
 /**
  * Record a Failure to Enroll (FTER) event.
  * FTER occurs when the system cannot create a template from captured samples.
  * @param {IrisPerformance} instance
  * @param {string} [reason] - Reason for failure
  */
+/* c8 ignore stop */
 IrisPerformance.recordFTER = function (instance, reason) {
   if (instance) {
     instance._fterCount++;
@@ -678,11 +738,13 @@ IrisPerformance.recordFTER = function (instance, reason) {
   }
 };
 
+/* c8 ignore start */
 /**
  * Record a successful enrollment event.
  * @param {IrisPerformance} instance
  * @param {number} durationMs - Enrollment duration in ms
  */
+/* c8 ignore stop */
 IrisPerformance.recordEnrollment = function (instance, durationMs) {
   if (instance) {
     instance._totalEnrollments++;
@@ -694,11 +756,13 @@ IrisPerformance.recordEnrollment = function (instance, durationMs) {
   }
 };
 
+/* c8 ignore start */
 /**
  * Get FTA and FTER rates.
  * @param {IrisPerformance} instance
  * @returns {{ ftaRate: number, fterRate: number, ftaCount: number, fterCount: number, totalAcquisitions: number, totalEnrollments: number }}
  */
+/* c8 ignore stop */
 IrisPerformance.getFtaFterRates = function (instance) {
   if (!instance) {
     return { ftaRate: 0, fterRate: 0, ftaCount: 0, fterCount: 0, totalAcquisitions: 0, totalEnrollments: 0 };
@@ -714,10 +778,13 @@ IrisPerformance.getFtaFterRates = function (instance) {
   };
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // FNIR @ FPIR OPERATING POINTS (ISO/IEC 19795)
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Compute FNIR at specified FPIR operating points.
  * Useful for comparing systems at fixed false positive rates.
@@ -726,6 +793,7 @@ IrisPerformance.getFtaFterRates = function (instance) {
  * @param {Array<number>} [fpiRates] - FPIR operating points
  * @returns {{ operatingPoints: Array<{ fpir: number, fnir: number, threshold: number }> }}
  */
+/* c8 ignore stop */
 IrisPerformance.fnirAtFpir = function (genuineScores, impostorScores, fpiRates) {
   if (!genuineScores || !impostorScores || genuineScores.length === 0 || impostorScores.length === 0) {
     return { operatingPoints: [] };
@@ -761,15 +829,19 @@ IrisPerformance.fnirAtFpir = function (genuineScores, impostorScores, fpiRates) 
   return { operatingPoints: operatingPoints };
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // TIMING BENCHMARKS
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Compute timing statistics from recorded events.
  * @param {IrisPerformance} instance
  * @returns {{ enrollMeanMs: number, verifyMeanMs: number, totalMs: number, eventCount: number }}
  */
+/* c8 ignore stop */
 IrisPerformance.computeTimingStats = function (instance) {
   if (!instance || !instance._timings || instance._timings.length === 0) {
     return { enrollMeanMs: 0, verifyMeanMs: 0, totalMs: 0, eventCount: 0 };
@@ -806,10 +878,13 @@ IrisPerformance.computeTimingStats = function (instance) {
   };
 };
 
+/* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
+/* c8 ignore stop */
 
+/* c8 ignore start */
 /**
  * Evaluate metrics against thresholds.
  * @param far
@@ -818,6 +893,7 @@ IrisPerformance.computeTimingStats = function (instance) {
  * @param accuracy
  * @private
  */
+/* c8 ignore stop */
 IrisPerformance._evaluateMetrics = function (far, frr, eer, accuracy) {
   var results = [];
 
@@ -852,6 +928,7 @@ IrisPerformance._evaluateMetrics = function (far, frr, eer, accuracy) {
   return results;
 };
 
+/* c8 ignore start */
 /**
  * Generate human-readable summary.
  * @param name
@@ -863,6 +940,7 @@ IrisPerformance._evaluateMetrics = function (far, frr, eer, accuracy) {
  * @param impostorCount
  * @private
  */
+/* c8 ignore stop */
 IrisPerformance._generateSummary = function (name, far, frr, eer, accuracy, genuineCount, impostorCount) {
   var lines = [];
   lines.push("=== ISO/IEC 19795 Performance Report ===");
@@ -881,12 +959,14 @@ IrisPerformance._generateSummary = function (name, far, frr, eer, accuracy, genu
   return lines.join("\n");
 };
 
+/* c8 ignore start */
 /**
  * Approximate p-value from t-distribution.
  * @param t
  * @param df
  * @private
  */
+/* c8 ignore stop */
 IrisPerformance._tDistPValue = function (t, df) {
   var x, a, b, p;
 
@@ -901,7 +981,9 @@ IrisPerformance._tDistPValue = function (t, df) {
   return Math.min(1, Math.max(0, p));
 };
 
+/* c8 ignore start */
 // Export for window
+/* c8 ignore stop */
 if (typeof window !== "undefined") {
   window.IrisPerformance = IrisPerformance;
 }

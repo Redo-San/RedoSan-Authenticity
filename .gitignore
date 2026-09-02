@@ -137,5 +137,4 @@ secrets.*
 # Build / probe artifacts
 vkprobe.obj
 
-# Temp test output files
-*.txt
+
