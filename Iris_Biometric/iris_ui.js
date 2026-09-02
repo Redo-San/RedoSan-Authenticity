@@ -1462,14 +1462,10 @@ async function _irisMatchGallery(irisCode) {
  */
 function _irisEscHtml(s) {
   return String(s == null ? "" : s)
-    .split("&")
-    .join("&amp;")
-    .split("<")
-    .join("&lt;")
-    .split(">")
-    .join("&gt;")
-    .split('"')
-    .join("&quot;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /**
