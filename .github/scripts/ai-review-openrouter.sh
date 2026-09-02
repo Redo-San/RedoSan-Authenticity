@@ -9,15 +9,17 @@ fi
 
 echo "Fetching PR diff..."
 # actions/checkout sets HEAD at the merge commit (main←PR).
-# Use the two parents: HEAD~1 = main, HEAD~2 = PR tip.
+# HEAD~1 is the first parent (main). Use git diff HEAD~1 to get all PR changes.
+# Also explicitly fetch origin/main as a safety fallback.
+git fetch origin +refs/heads/main:refs/remotes/origin/main --depth=1 2>/dev/null || true
 DIFF_STATUS=0
-if ! git diff HEAD~1..HEAD~2 -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
+if ! git diff HEAD~1 -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
   DIFF_STATUS=${PIPESTATUS[0]:-0}
 fi
 DIFF=$(cat /tmp/pr_diff.txt)
 if [ -z "$DIFF" ]; then
   if [ "$DIFF_STATUS" != "0" ] && [ "$DIFF_STATUS" != "141" ]; then
-    echo "Failed to fetch PR diff (gh exited $DIFF_STATUS)."
+    echo "Failed to fetch PR diff (git exited $DIFF_STATUS)."
     printf '%s' "_Failed to fetch PR diff._" > /tmp/review.md
     gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file /tmp/review.md
     exit 1
