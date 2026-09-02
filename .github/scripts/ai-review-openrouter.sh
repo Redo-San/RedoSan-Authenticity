@@ -8,12 +8,9 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
 fi
 
 echo "Fetching PR diff..."
-# `head -c` closes the pipe early for large diffs; with `pipefail` that makes
-# gh exit 141 (SIGPIPE) and the review wrongly report "Failed to fetch PR diff".
-# The if-condition suppresses set -e so PIPESTATUS can be inspected; 141 is
-# expected, other non-zero exit codes are real failures.
+git fetch origin main --depth=1 2>/dev/null || true
 DIFF_STATUS=0
-if ! gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
+if ! git diff "origin/main...HEAD" -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
   DIFF_STATUS=${PIPESTATUS[0]:-0}
 fi
 DIFF=$(cat /tmp/pr_diff.txt)
