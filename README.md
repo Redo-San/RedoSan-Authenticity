@@ -29,7 +29,7 @@
 - **Face Biometric hardening** — WebAuthn PRF vault (passphrase replaced), session-scoped consent, anti-spoof + liveness, ArcFace ONNX, auto-register passkey; 100% test coverage (Face_Biometric + E2E pipeline/UI specs)
 - **i18n keyless fallback** — Google Web Translate + MyMemory fallback for missing keys (no API key required); translation bot regression fix; all 125 `face.*` keys translated to Arabic
 - **SEO** — canonical URLs, followable MPA links, sitemap + robots for all pages
-- **Security** — CodeQL XSS fix (`iris_ui.js`), SECURITY.md disclosure policy, Dependabot fast-uri/qs patches (0 npm vulns remaining), supply chain bumps
+- **Security** — CodeQL XSS fix (`iris_ui.js`), SECURITY.md disclosure policy, Dependabot fast-uri/qs patches (0 npm vulnerabilities remaining), supply chain bumps
 - **Responsive** — classic media-query syntax for legacy browsers; skip SW in in-app webviews
 - **CI** — conventional PR title enforcement, prettier before commit, all Actions SHAs bumped
 
