@@ -24,7 +24,17 @@
 
 ---
 
-## What's New in v1.7
+## What's New in v1.7.1
+
+- **Face Biometric hardening** — WebAuthn PRF vault (passphrase replaced), session-scoped consent, anti-spoof + liveness, ArcFace ONNX, auto-register passkey; 100% test coverage (Face_Biometric + E2E pipeline/UI specs)
+- **i18n keyless fallback** — Google Web Translate + MyMemory fallback for missing keys (no API key required); translation bot regression fix; all 125 `face.*` keys translated to Arabic
+- **SEO** — canonical URLs, followable MPA links, sitemap + robots for all pages
+- **Security** — CodeQL XSS fix (`iris_ui.js`), SECURITY.md disclosure policy, Dependabot fast-uri/qs patches (0 npm vulns remaining), supply chain bumps
+- **Responsive** — classic media-query syntax for legacy browsers; skip SW in in-app webviews
+- **CI** — conventional PR title enforcement, prettier before commit, all Actions SHAs bumped
+
+<details>
+<summary><b>v1.7</b> — Face Biometric, Pixel Injection Reliability, Security Hardening</summary>
 
 - **Face Biometric (21st tool)** — New browser tool + standalone MPA page: register and verify face biometric descriptors for visual rights protection. Detection, registration, and matching all run in-browser — nothing is uploaded.
 - **Pixel Injection reliability** — Colors are now fully restored after embedding and extraction round-trip works for all algorithms (DCT/DFT/DWT/Hybrid fixes); secret-file-only input is enforced with an embed-capacity guard; DWT round-trip fixed.
@@ -34,7 +44,9 @@
 - **Expanded About & Privacy pages** — Comprehensive content, plus a Security Vulnerability issue template.
 - **CI modernization** — Gemini CLI review workflow; obsolete OpenRouter review workflow removed; dev tooling centralized in `.tools/Developer_Toolkit`; E2E coverage guard.
 - **Certificate fix** — didSig object bug and phonecode null-safety.
-- **Scale** — 21 MPA pages, 58 unit test files + 37 E2E suites (3,500+ tests), 59 CI/CD workflows.
+- **Scale** — 22 MPA pages, 68 unit test files + 58 E2E suites (3,500+ tests), 59 CI/CD workflows.
+
+</details>
 
 <details>
 <summary><b>v1.6</b> — MPA Migration, Document Watermark, Full CLI Parity</summary>
@@ -73,7 +85,7 @@
 | **Timestamp** | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade |
 | **Digital Certificate** | Generate PDF/DOCX/EPUB certificates with QR verification, identity, social links |
 | **File Converter** | Browser-side image/audio/video-to-audio/document/subtitle conversion |
-| **Face Biometric** | Register & verify face biometric descriptors for visual rights protection (detection, registration, matching) |
+| **Face Biometric** | WebAuthn PRF vault, session-scoped consent, anti-spoof + liveness, ArcFace ONNX; register & verify face descriptors for visual rights protection |
 | **Forensic Analyzer** | ELA, noise inconsistency, JPEG structure, copy-move detection |
 | **ID Forge** | Generate UUID v4/v7, ULID, NanoID, SWHID; copy/download (JSON/CSV/TXT/XML/PDF/DOCX) |
 | **Removal Tools** | Strip watermarks, fingerprints, metadata, EXIF, thumbnails, GPS from images/audio |
@@ -285,7 +297,7 @@ RedoSan-Authenticity/
 │   │   ├── face-biometric/index.html
 │   │   ├── document-watermark/index.html
 │   │   ├── pixel-injection/index.html
-│   │   └── ... (21 total)
+│   │   └── ... (22 total)
 │   ├── mpa-router.js          ← AJAX navigation with audio persistence
 │   ├── music-player.js        ← Background music with first-click activation
 │   ├── i18n.js                ← Translation system (8 languages)
@@ -340,10 +352,6 @@ RedoSan-Authenticity/
 │   ├── face_engine.js            ← Detection + matching
 │   ├── face_registry.js          ← Registered face storage
 │   └── face_ui.js                ← UI handlers
-├── Face_Biometric/
-│   ├── face_engine.js            ← Detection + matching
-│   ├── face_registry.js          ← Registered face storage
-│   └── face_ui.js                ← UI handlers
 ├── Removal_Tools/
 │   └── ...                    ← Image + audio sanitization
 ├── Assistant/
@@ -354,7 +362,7 @@ RedoSan-Authenticity/
 │   ├── utils.js               ← CLI polyfills + file helpers
 │   ├── commands/              ← 12 command implementations
 │   ├── lib/id_forge.js        ← CLI ID generation
-│   └── tests/                 ← 35 test files (277+ tests)
+│   └── tests/                 ← 68 test files (3,500+ tests)
 └── .github/workflows/         ← 40+ CI/CD workflows
 ```
 
@@ -403,7 +411,7 @@ Bypass with `--allow-dangerous` for testing trusted files.
 
 ## Testing
 
-58 unit test files + 37 E2E suites with 3,500+ tests using `node:test` (zero external test dependencies) + Playwright:
+68 unit test files + 58 E2E suites with 3,500+ tests using `node:test` (zero external test dependencies) + Playwright:
 
 ```bash
 npm test                         # All tests
@@ -463,7 +471,7 @@ The web app includes a two-layer security system:
 | **UI** | Vanilla HTML/CSS/JS (no frameworks) |
 | **Icons** | Font Awesome 5 |
 | **CLI** | Node.js 20+, Commander.js |
-| **Testing** | `node:test` (58 files, 3,500+ tests) + Playwright (37 E2E suites) |
+| **Testing** | `node:test` (68 files, 3,500+ tests) + Playwright (58 E2E suites) |
 | **CI** | GitHub Actions (59 workflows, Node 22/24 matrix) |
 | **PDF Export** | jsPDF + PDFKit |
 | **DOCX Export** | docx |
