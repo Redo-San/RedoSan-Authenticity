@@ -45,7 +45,11 @@ function IrisTemplateProtection() {
  * @returns {Float64Array} Projection matrix
  */
 /* c8 ignore stop */
-IrisTemplateProtection.generateProjectionMatrix = function (inputDim, outputDim, seed) {
+IrisTemplateProtection.generateProjectionMatrix = function (
+  inputDim,
+  outputDim,
+  seed,
+) {
   var matrix, i, j, rng;
 
   if (inputDim <= 0 || outputDim <= 0) {
@@ -53,14 +57,17 @@ IrisTemplateProtection.generateProjectionMatrix = function (inputDim, outputDim,
   }
 
   matrix = new Float64Array(outputDim * inputDim);
-  rng = IrisTemplateProtection._createRNG(seed || IrisTemplateProtection._generateSeed());
+  rng = IrisTemplateProtection._createRNG(
+    seed || IrisTemplateProtection._generateSeed(),
+  );
 
   // Initialize with Gaussian random values
   for (i = 0; i < matrix.length; i++) {
     // Box-Muller transform for Gaussian
     var u1 = rng();
     var u2 = rng();
-    matrix[i] = Math.sqrt(-2 * Math.log(u1 || 0.0001)) * Math.cos(2 * Math.PI * u2);
+    matrix[i] =
+      Math.sqrt(-2 * Math.log(u1 || 0.0001)) * Math.cos(2 * Math.PI * u2);
   }
 
   // Orthogonalize using Gram-Schmidt
@@ -76,7 +83,11 @@ IrisTemplateProtection.generateProjectionMatrix = function (inputDim, outputDim,
  * @returns {{ hashed: Uint8Array, score: number }}
  */
 /* c8 ignore stop */
-IrisTemplateProtection.biohash = function (irisCode, projectionMatrix, outputDim) {
+IrisTemplateProtection.biohash = function (
+  irisCode,
+  projectionMatrix,
+  outputDim,
+) {
   var inputDim, projected, i, j, sum, threshold, hashed;
 
   if (!irisCode || !projectionMatrix) {
@@ -185,12 +196,14 @@ IrisTemplateProtection.createTransformation = function (key, salt) {
       byteVal ^= params.keyStream[i % params.keyStream.length];
 
       // 2. Rotation
-      temp = (byteVal << params.rotations[i % params.rotations.length]) |
-             (byteVal >>> (8 - params.rotations[i % params.rotations.length]));
+      temp =
+        (byteVal << params.rotations[i % params.rotations.length]) |
+        (byteVal >>> (8 - params.rotations[i % params.rotations.length]));
       byteVal = temp & 0xff;
 
       // 3. Modular addition
-      byteVal = (byteVal + params.additions[i % params.additions.length]) & 0xff;
+      byteVal =
+        (byteVal + params.additions[i % params.additions.length]) & 0xff;
 
       result[i] = byteVal;
     }
@@ -272,7 +285,12 @@ IrisTemplateProtection.commit = function (irisCode, key) {
  * @returns {Promise<boolean>} True if commitment matches
  */
 /* c8 ignore stop */
-IrisTemplateProtection.verifyCommitment = function (irisCode, key, nonce, expectedCommitment) {
+IrisTemplateProtection.verifyCommitment = function (
+  irisCode,
+  key,
+  nonce,
+  expectedCommitment,
+) {
   var combined;
 
   if (!irisCode || !key || !nonce || !expectedCommitment) {
@@ -314,7 +332,11 @@ IrisTemplateProtection.verifyCommitment = function (irisCode, key, nonce, expect
  * @returns {{ template: Uint8Array, keyHash: string }}
  */
 /* c8 ignore stop */
-IrisTemplateProtection.createCancelable = function (irisCode, userKey, iteration) {
+IrisTemplateProtection.createCancelable = function (
+  irisCode,
+  userKey,
+  iteration,
+) {
   var combined, keyHash, transformFn;
 
   if (!irisCode || !userKey) {
@@ -481,13 +503,27 @@ IrisTemplateProtection._deriveParams = function (key, salt) {
  * @returns {{ unlinkable: boolean, distance: number, confidence: number, details: string }}
  */
 /* c8 ignore stop */
-IrisTemplateProtection.verifyUnlinkability = function (template1, template2, template3) {
+IrisTemplateProtection.verifyUnlinkability = function (
+  template1,
+  template2,
+  template3,
+) {
   if (!template1 || !template2) {
-    return { unlinkable: false, distance: 0, confidence: 0, details: "Missing templates" };
+    return {
+      unlinkable: false,
+      distance: 0,
+      confidence: 0,
+      details: "Missing templates",
+    };
   }
 
   if (template1.length !== template2.length) {
-    return { unlinkable: false, distance: 0, confidence: 0, details: "Template length mismatch" };
+    return {
+      unlinkable: false,
+      distance: 0,
+      confidence: 0,
+      details: "Template length mismatch",
+    };
   }
 
   var len = template1.length;
@@ -532,8 +568,12 @@ IrisTemplateProtection.verifyUnlinkability = function (template1, template2, tem
     crossDistances: crossDistances,
     confidence: Math.round(unlinkabilityScore * 100),
     details: unlinkable
-      ? "Templates are unlinkable (distance: " + (distance * 100).toFixed(1) + "%, expected ~50%)"
-      : "Templates may be LINKED (distance: " + (distance * 100).toFixed(1) + "%, expected ~50%)",
+      ? "Templates are unlinkable (distance: " +
+        (distance * 100).toFixed(1) +
+        "%, expected ~50%)"
+      : "Templates may be LINKED (distance: " +
+        (distance * 100).toFixed(1) +
+        "%, expected ~50%)",
   };
 };
 
@@ -547,9 +587,16 @@ IrisTemplateProtection.verifyUnlinkability = function (template1, template2, tem
  * @returns {{ averageDistance: number, unlinkable: boolean, details: string }}
  */
 /* c8 ignore stop */
-IrisTemplateProtection.testUnlinkability = function (originalIrisCode, numKeys) {
+IrisTemplateProtection.testUnlinkability = function (
+  originalIrisCode,
+  numKeys,
+) {
   if (!originalIrisCode || numKeys < 2) {
-    return { averageDistance: 0, unlinkable: false, details: "Insufficient input" };
+    return {
+      averageDistance: 0,
+      unlinkable: false,
+      details: "Insufficient input",
+    };
   }
 
   var templates = [];
@@ -595,8 +642,12 @@ IrisTemplateProtection.testUnlinkability = function (originalIrisCode, numKeys) 
     pairCount: pairCount,
     unlinkabilityScore: unlinkabilityScore,
     details: unlinkable
-      ? "Average pairwise distance: " + (averageDistance * 100).toFixed(1) + "% (unlinkable)"
-      : "Average pairwise distance: " + (averageDistance * 100).toFixed(1) + "% (potentially LINKED)",
+      ? "Average pairwise distance: " +
+        (averageDistance * 100).toFixed(1) +
+        "% (unlinkable)"
+      : "Average pairwise distance: " +
+        (averageDistance * 100).toFixed(1) +
+        "% (potentially LINKED)",
   };
 };
 

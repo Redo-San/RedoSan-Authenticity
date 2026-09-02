@@ -231,7 +231,10 @@ function _iris__() {
 async function irisInit() {
   var __ = _iris__();
 
-  irisSetStatus("iris-status", __("iris.init", "Initializing iris biometric system..."));
+  irisSetStatus(
+    "iris-status",
+    __("iris.init", "Initializing iris biometric system..."),
+  );
 
   try {
     // Initialize components
@@ -280,24 +283,33 @@ async function irisStartCamera() {
   var captureBtn = document.getElementById("iris-capture-btn");
 
   if (!IrisCamera.isSupported()) {
-    irisSetStatus("iris-status", __("iris.no_camera", "Camera not supported in this browser."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.no_camera", "Camera not supported in this browser."),
+    );
     return;
   }
 
   try {
-    irisSetStatus("iris-status", __("iris.starting_camera", "Starting camera..."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.starting_camera", "Starting camera..."),
+    );
     await irisCamera.startCamera(videoEl);
 
     if (startBtn) startBtn.style.display = "none";
     if (stopBtn) stopBtn.style.display = "inline-block";
     if (captureBtn) captureBtn.style.display = "inline-block";
 
-    irisSetStatus("iris-status", __("iris.camera_active", "Camera active. Position your eye in the center."));
-  } catch (error) {
     irisSetStatus(
       "iris-status",
-      IrisCamera.getCameraErrorMessage(error),
+      __(
+        "iris.camera_active",
+        "Camera active. Position your eye in the center.",
+      ),
     );
+  } catch (error) {
+    irisSetStatus("iris-status", IrisCamera.getCameraErrorMessage(error));
   }
 }
 
@@ -334,7 +346,10 @@ async function irisStartCapture() {
   var statusEl = document.getElementById("iris-status");
 
   if (!irisCamera || !irisCamera.isActive()) {
-    irisSetStatus("iris-status", __("iris.start_camera_first", "Start the camera first."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.start_camera_first", "Start the camera first."),
+    );
     return;
   }
 
@@ -346,14 +361,20 @@ async function irisStartCapture() {
 
   if (captureBtn) captureBtn.disabled = true;
 
-  irisSetStatus("iris-status", __("iris.capturing", "Hold still... capturing iris images..."));
+  irisSetStatus(
+    "iris-status",
+    __("iris.capturing", "Hold still... capturing iris images..."),
+  );
 
   try {
     // Capture frames for liveness analysis
     var frames = await irisCamera.captureMultipleFrames(5, 400);
 
     _irisCaptureState = "processing";
-    irisSetStatus("iris-status", __("iris.processing", "Processing iris images..."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.processing", "Processing iris images..."),
+    );
 
     // Process each frame
     var bestResult = null;
@@ -398,7 +419,9 @@ async function irisStartCapture() {
     // Liveness assessment
     var livenessResult = irisLiveness.assess({
       dilationFrames: _irisDilationFrames,
-      grayImage: IrisEngine._toGray2D(IrisEngine._toGrayscale(frames[2] || frames[0])),
+      grayImage: IrisEngine._toGray2D(
+        IrisEngine._toGrayscale(frames[2] || frames[0]),
+      ),
       imageWidth: (frames[2] || frames[0]).width,
       imageHeight: (frames[2] || frames[0]).height,
       pupil: bestResult.segmentation.pupil,
@@ -443,19 +466,27 @@ async function irisEnroll() {
   var __ = _iris__();
 
   if (!_irisCurrentResult) {
-    irisSetStatus("iris-status", __("iris.capture_first", "Capture an iris image first."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.capture_first", "Capture an iris image first."),
+    );
     return;
   }
 
   if (!_irisCurrentResult.liveness.isLive) {
     irisSetStatus(
       "iris-status",
-      __("iris.liveness_failed", "Liveness check failed. Cannot enroll spoofed image."),
+      __(
+        "iris.liveness_failed",
+        "Liveness check failed. Cannot enroll spoofed image.",
+      ),
     );
     return;
   }
 
-  var label = prompt(__("iris.enter_label", "Enter a label for this iris template:"));
+  var label = prompt(
+    __("iris.enter_label", "Enter a label for this iris template:"),
+  );
   if (!label) return;
 
   var id = "iris_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8);
@@ -476,7 +507,10 @@ async function irisEnroll() {
 
     irisSetStatus(
       "iris-status",
-      __("iris.enrolled", "Iris enrolled successfully as '{0}'. Total templates: {1}")
+      __(
+        "iris.enrolled",
+        "Iris enrolled successfully as '{0}'. Total templates: {1}",
+      )
         .split("{0}")
         .join(label)
         .split("{1}")
@@ -505,14 +539,20 @@ async function irisVerify(templateId) {
   var template, result;
 
   if (!_irisCurrentResult) {
-    irisSetStatus("iris-status", __("iris.capture_first", "Capture an iris image first."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.capture_first", "Capture an iris image first."),
+    );
     return;
   }
 
   if (!_irisCurrentResult.liveness.isLive) {
     irisSetStatus(
       "iris-status",
-      __("iris.liveness_failed_verify", "Liveness check failed. Cannot verify."),
+      __(
+        "iris.liveness_failed_verify",
+        "Liveness check failed. Cannot verify.",
+      ),
     );
     return;
   }
@@ -520,14 +560,17 @@ async function irisVerify(templateId) {
   try {
     template = await irisStorage.load(templateId);
     if (!template) {
-      irisSetStatus("iris-status", __("iris.template_not_found", "Template not found."));
+      irisSetStatus(
+        "iris-status",
+        __("iris.template_not_found", "Template not found."),
+      );
       return;
     }
 
-    result = IrisMatcher.compare(
-      _irisCurrentResult.irisCode,
-      { code: template.leftCode, mask: template.leftMask },
-    );
+    result = IrisMatcher.compare(_irisCurrentResult.irisCode, {
+      code: template.leftCode,
+      mask: template.leftMask,
+    });
 
     var msg;
     if (result.match) {
@@ -567,20 +610,29 @@ async function irisIdentify() {
   var galleryData, i, template, identifyResult;
 
   if (!_irisCurrentResult) {
-    irisSetStatus("iris-status", __("iris.capture_first", "Capture an iris image first."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.capture_first", "Capture an iris image first."),
+    );
     return;
   }
 
   if (!_irisCurrentResult.liveness.isLive) {
     irisSetStatus(
       "iris-status",
-      __("iris.liveness_failed_identify", "Liveness check failed. Cannot identify."),
+      __(
+        "iris.liveness_failed_identify",
+        "Liveness check failed. Cannot identify.",
+      ),
     );
     return;
   }
 
   if (_irisGallery.length === 0) {
-    irisSetStatus("iris-status", __("iris.no_templates", "No templates enrolled. Enroll first."));
+    irisSetStatus(
+      "iris-status",
+      __("iris.no_templates", "No templates enrolled. Enroll first."),
+    );
     return;
   }
 
@@ -599,7 +651,10 @@ async function irisIdentify() {
       }
     }
 
-    identifyResult = IrisMatcher.identify(_irisCurrentResult.irisCode, galleryData);
+    identifyResult = IrisMatcher.identify(
+      _irisCurrentResult.irisCode,
+      galleryData,
+    );
 
     var msg;
     if (identifyResult.bestMatch) {
@@ -609,7 +664,10 @@ async function irisIdentify() {
         .split("{1}")
         .join(identifyResult.bestMatch.hd.toFixed(4));
     } else {
-      msg = __("iris.not_identified", "✗ No match found in gallery (best HD: {0})")
+      msg = __(
+        "iris.not_identified",
+        "✗ No match found in gallery (best HD: {0})",
+      )
         .split("{0}")
         .join(
           identifyResult.allResults.length > 0
@@ -649,7 +707,8 @@ async function irisListTemplates() {
   if (!listEl) return;
 
   if (_irisGallery.length === 0) {
-    listEl.innerHTML = "<li>" + (__("iris.no_templates", "No templates enrolled.")) + "</li>";
+    listEl.innerHTML =
+      "<li>" + __("iris.no_templates", "No templates enrolled.") + "</li>";
     return;
   }
 
@@ -722,23 +781,35 @@ function _irisDisplayResult(result) {
 
   if (details) {
     var html =
-      "<strong>" + (__("iris.liveness", "Liveness")) + ":</strong> " +
+      "<strong>" +
+      __("iris.liveness", "Liveness") +
+      ":</strong> " +
       (result.liveness.isLive
-        ? '<span style="color:#2ecc71">' + (__("iris.live", "LIVE")) + "</span>"
-        : '<span style="color:#e74c3c">' + (__("iris.spoof", "SPOOF")) + "</span>") +
+        ? '<span style="color:#2ecc71">' + __("iris.live", "LIVE") + "</span>"
+        : '<span style="color:#e74c3c">' +
+          __("iris.spoof", "SPOOF") +
+          "</span>") +
       " (" +
       (result.liveness.score * 100).toFixed(1) +
       "%)<br>" +
-      "<strong>" + (__("iris.quality", "Quality")) + ":</strong> " +
+      "<strong>" +
+      __("iris.quality", "Quality") +
+      ":</strong> " +
       result.quality.toFixed(1) +
       "%<br>" +
-      "<strong>" + (__("iris.pupil", "Pupil")) + ":</strong> r=" +
+      "<strong>" +
+      __("iris.pupil", "Pupil") +
+      ":</strong> r=" +
       result.segmentation.pupil.radius.toFixed(1) +
       "px<br>" +
-      "<strong>" + (__("iris.iris", "Iris")) + ":</strong> r=" +
+      "<strong>" +
+      __("iris.iris", "Iris") +
+      ":</strong> r=" +
       result.segmentation.iris.radius.toFixed(1) +
       "px<br>" +
-      "<strong>" + (__("iris.code", "IrisCode")) + ":</strong> " +
+      "<strong>" +
+      __("iris.code", "IrisCode") +
+      ":</strong> " +
       result.irisCode.length +
       " bits";
 
@@ -759,13 +830,24 @@ function _irisDisplayIdentifyResults(results) {
   if (box) box.style.display = "block";
   if (!details || !results) return;
 
-  html = "<table><thead><tr><th>" + (__("iris.label", "Label")) + "</th><th>HD</th><th>" + (__("iris.match", "Match")) + "</th></tr></thead><tbody>";
+  html =
+    "<table><thead><tr><th>" +
+    __("iris.label", "Label") +
+    "</th><th>HD</th><th>" +
+    __("iris.match", "Match") +
+    "</th></tr></thead><tbody>";
   for (i = 0; i < Math.min(results.length, 10); i++) {
     html +=
       "<tr>" +
-      "<td>" + (results[i].label || results[i].id) + "</td>" +
-      "<td>" + results[i].hd.toFixed(4) + "</td>" +
-      "<td>" + (results[i].match ? "✓" : "✗") + "</td>" +
+      "<td>" +
+      (results[i].label || results[i].id) +
+      "</td>" +
+      "<td>" +
+      results[i].hd.toFixed(4) +
+      "</td>" +
+      "<td>" +
+      (results[i].match ? "✓" : "✗") +
+      "</td>" +
       "</tr>";
   }
   html += "</tbody></table>";
@@ -823,11 +905,16 @@ async function handleIrisRun() {
     if (localStorage.getItem("iris_consent") !== "1") {
       irisSetStatus(
         "iris-status",
-        __("iris.consent_required_run", "Consent required before generating iris identifiers."),
+        __(
+          "iris.consent_required_run",
+          "Consent required before generating iris identifiers.",
+        ),
       );
       return;
     }
-  } catch { /* localStorage unavailable */ }
+  } catch {
+    /* localStorage unavailable */
+  }
   if (!_irisPendingSource) {
     irisSetStatus(
       "iris-status",
@@ -863,14 +950,21 @@ async function runIrisPipeline(src) {
       __("iris.progress.title", "Generating Identifiers"),
       __("iris.step.models", "Loading iris engine..."),
     );
-    setIrisStage("1/7 " + __("iris.step.models", "Loading iris engine..."), 0.04);
+    setIrisStage(
+      "1/7 " + __("iris.step.models", "Loading iris engine..."),
+      0.04,
+    );
     if (!irisEngine) irisEngine = new IrisEngine();
     await irisEngine.loadModels();
     if (!irisStorage) irisStorage = new IrisStorage();
     await _irisRaf();
 
     // ── Stage 2/7: segmentation + rubber-sheet + IrisCode ──
-    setIrisStage("2/7 " + __("iris.step.segment", "Segmenting iris & generating IrisCode..."), 0.18);
+    setIrisStage(
+      "2/7 " +
+        __("iris.step.segment", "Segmenting iris & generating IrisCode..."),
+      0.18,
+    );
     extractResult = irisEngine.extract(src.imageData);
     if (
       !extractResult ||
@@ -880,8 +974,15 @@ async function runIrisPipeline(src) {
       !extractResult.irisCode ||
       !extractResult.irisCode.code
     ) {
-      if (typeof _irisRecordFTA === "function") _irisRecordFTA("segmentation-failed");
-      irisSetStatus("iris-status", __("iris.no_iris", "No iris detected in the image. Please retake the photo."));
+      if (typeof _irisRecordFTA === "function")
+        _irisRecordFTA("segmentation-failed");
+      irisSetStatus(
+        "iris-status",
+        __(
+          "iris.no_iris",
+          "No iris detected in the image. Please retake the photo.",
+        ),
+      );
       throw new Error("No iris detected in image");
     }
     gray = _irisToGray(src.imageData);
@@ -897,11 +998,17 @@ async function runIrisPipeline(src) {
       extractResult.segmentation.iris,
     );
     if (!eyeCheck.ok) {
-      if (typeof _irisRecordFTA === "function") _irisRecordFTA("no-eye:" + eyeCheck.reason);
+      if (typeof _irisRecordFTA === "function")
+        _irisRecordFTA("no-eye:" + eyeCheck.reason);
       irisSetStatus(
         "iris-status",
-        __("iris.no_iris", "No iris detected in the image. Please retake the photo.") +
-          " (" + eyeCheck.reason + ")",
+        __(
+          "iris.no_iris",
+          "No iris detected in the image. Please retake the photo.",
+        ) +
+          " (" +
+          eyeCheck.reason +
+          ")",
       );
       throw new Error("No eye present in image: " + eyeCheck.reason);
     }
@@ -931,7 +1038,10 @@ async function runIrisPipeline(src) {
     await _irisRaf();
 
     // ── Stage 3/7: ISO quality + Worldcoin acquisition gates ──
-    setIrisStage("3/7 " + __("iris.step.quality", "Assessing ISO 29794-6 quality..."), 0.42);
+    setIrisStage(
+      "3/7 " + __("iris.step.quality", "Assessing ISO 29794-6 quality..."),
+      0.42,
+    );
     qualityFull = IrisQualityFull.computeCompositeQuality({
       imageData: gray,
       width: src.width,
@@ -950,13 +1060,17 @@ async function runIrisPipeline(src) {
         _irisRecordFTER((gates.failures || []).join("; ") || "gates-failed");
       }
       throw new Error(
-        "Capture rejected by acquisition quality gate: " + (gates.failures || []).join("; ")
+        "Capture rejected by acquisition quality gate: " +
+          (gates.failures || []).join("; "),
       );
     }
     await _irisRaf();
 
     // ── Stage 4/7: liveness (camera burst only — uploads skip) ──
-    setIrisStage("4/7 " + __("iris.step.liveness", "Running liveness detection..."), 0.55);
+    setIrisStage(
+      "4/7 " + __("iris.step.liveness", "Running liveness detection..."),
+      0.55,
+    );
     if (src.kind === "camera" && _irisDilationFrames.length >= 2) {
       livenessResult = irisLiveness.assess({
         dilationFrames: _irisDilationFrames,
@@ -977,28 +1091,48 @@ async function runIrisPipeline(src) {
     }
 
     // ── Stage 5/7: Privacy Identifier (stable BioHash projection) ──
-    setIrisStage("5/7 " + __("iris.step.privacy", "Generating Privacy Identifier (BioHash)..."), 0.68);
+    setIrisStage(
+      "5/7 " +
+        __("iris.step.privacy", "Generating Privacy Identifier (BioHash)..."),
+      0.68,
+    );
     codeLen = extractResult.irisCode.code.length;
     seed = _irisGetPrivacySeed();
-    matrix = IrisTemplateProtection.generateProjectionMatrix(codeLen, 256, seed);
-    bh = IrisTemplateProtection.biohash(extractResult.irisCode.code, matrix, 256);
+    matrix = IrisTemplateProtection.generateProjectionMatrix(
+      codeLen,
+      256,
+      seed,
+    );
+    bh = IrisTemplateProtection.biohash(
+      extractResult.irisCode.code,
+      matrix,
+      256,
+    );
     privacyHex = _irisBitsToHex(bh.hashed);
     await _irisRaf();
 
     // ── Stage 6/7: auto template ID + encrypted save ──
-    setIrisStage("6/7 " + __("iris.step.encrypt", "Encrypting & storing template..."), 0.82);
+    setIrisStage(
+      "6/7 " + __("iris.step.encrypt", "Encrypting & storing template..."),
+      0.82,
+    );
     templateId = _irisGenerateId();
     labelInput = document.getElementById("iris-label");
-    label = labelInput && labelInput.value.trim()
-      ? labelInput.value.trim()
-      : "Iris-" + templateId.slice(0, 8);
+    label =
+      labelInput && labelInput.value.trim()
+        ? labelInput.value.trim()
+        : "Iris-" + templateId.slice(0, 8);
     var eyeSideSel = document.getElementById("iris-eye-side");
-    var eyeSide = eyeSideSel && eyeSideSel.value === "left" ? "left"
-      : eyeSideSel && eyeSideSel.value === "right" ? "right"
-      : "unknown";
+    var eyeSide =
+      eyeSideSel && eyeSideSel.value === "left"
+        ? "left"
+        : eyeSideSel && eyeSideSel.value === "right"
+        ? "right"
+        : "unknown";
     var illumination = IrisQualityFull.detectIllumination(
       src.imageData && src.imageData.data ? src.imageData.data : null,
-      src.width, src.height
+      src.width,
+      src.height,
     );
     // Phase 3A: NIR camera capability advisory (ISO/IEC 29794-6 §6 prefers NIR)
     var nir = await IrisQualityFull.detectNirCapability();
@@ -1037,21 +1171,28 @@ async function runIrisPipeline(src) {
       generatedAt: new Date().toISOString(),
       source: {
         kind: src.kind,
-        fileName: src.fileName || (src.kind === "camera" ? "camera-capture" : "upload"),
+        fileName:
+          src.fileName || (src.kind === "camera" ? "camera-capture" : "upload"),
         width: src.width,
         height: src.height,
       },
       segmentation: {
-        pupilRadius: Math.round(extractResult.segmentation.pupil.radius * 10) / 10,
-        irisRadius: Math.round(extractResult.segmentation.iris.radius * 10) / 10,
+        pupilRadius:
+          Math.round(extractResult.segmentation.pupil.radius * 10) / 10,
+        irisRadius:
+          Math.round(extractResult.segmentation.iris.radius * 10) / 10,
         center:
-          (extractResult.segmentation.iris.cx || extractResult.segmentation.iris.x) +
+          (extractResult.segmentation.iris.cx ||
+            extractResult.segmentation.iris.x) +
           "," +
-          (extractResult.segmentation.iris.cy || extractResult.segmentation.iris.y),
+          (extractResult.segmentation.iris.cy ||
+            extractResult.segmentation.iris.y),
       },
       irisCode: {
         bits: extractResult.irisCode.length,
-        validBits: extractResult.irisCode.mask.reduce(function (a, b) { return a + b; }, 0),
+        validBits: extractResult.irisCode.mask.reduce(function (a, b) {
+          return a + b;
+        }, 0),
         sha256: await FaceCrypto.sha256Hex(extractResult.irisCode.code),
       },
       quality: {
@@ -1097,9 +1238,14 @@ async function runIrisPipeline(src) {
 
     irisSetStatus(
       "iris-status",
-      __("iris.pipeline_done", "Identifiers generated. Template '{0}' saved encrypted ({1} total).")
-        .split("{0}").join(label)
-        .split("{1}").join(String(_irisGallery.length)),
+      __(
+        "iris.pipeline_done",
+        "Identifiers generated. Template '{0}' saved encrypted ({1} total).",
+      )
+        .split("{0}")
+        .join(label)
+        .split("{1}")
+        .join(String(_irisGallery.length)),
     );
     if (typeof handleIrisRefreshList === "function") handleIrisRefreshList();
   } catch (error) {
@@ -1112,7 +1258,9 @@ async function runIrisPipeline(src) {
     }
     irisSetStatus(
       "iris-status",
-      __("iris.pipeline_error", "Generation error: {0}").split("{0}").join(error && error.message ? error.message : String(error)),
+      __("iris.pipeline_error", "Generation error: {0}")
+        .split("{0}")
+        .join(error && error.message ? error.message : String(error)),
     );
   } finally {
     irisProgressHide();
@@ -1165,8 +1313,12 @@ function irisValidateImageFile(file) {
   if (t === "image/jpeg" || t === "image/jpg") {
     return { ok: false, reason: "jpeg-not-allowed" };
   }
-  if (t === "image/png" || t === "image/bmp" ||
-      t === "image/x-bmp" || t === "image/x-ms-bmp") {
+  if (
+    t === "image/png" ||
+    t === "image/bmp" ||
+    t === "image/x-bmp" ||
+    t === "image/x-ms-bmp"
+  ) {
     return { ok: true, reason: "" };
   }
 
@@ -1182,7 +1334,10 @@ function irisValidateImageFile(file) {
  * @param imageData
  */
 function _irisToGray(imageData) {
-  var d = imageData.data, out = new Uint8Array(imageData.width * imageData.height), i, g;
+  var d = imageData.data,
+    out = new Uint8Array(imageData.width * imageData.height),
+    i,
+    g;
   for (i = 0, g = 0; i < d.length; i += 4, g++) {
     out[g] = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000;
   }
@@ -1199,7 +1354,12 @@ function _irisToGray(imageData) {
  * @param pupil
  */
 function _irisBuildRingMask(width, height, iris, pupil) {
-  var mask = new Uint8Array(width * height), x, y, idx, dx, dy;
+  var mask = new Uint8Array(width * height),
+    x,
+    y,
+    idx,
+    dx,
+    dy;
   var dIris, dPup, ri, rp;
   if (!iris || !iris.radius) return mask;
   ri = iris.radius;
@@ -1222,7 +1382,9 @@ function _irisBuildRingMask(width, height, iris, pupil) {
  * @param bits
  */
 function _irisBitsToHex(bits) {
-  var hex = "", i, b;
+  var hex = "",
+    i,
+    b;
   for (i = 0; i < bits.length; i += 4) {
     b =
       ((bits[i] || 0) << 3) |
@@ -1236,7 +1398,8 @@ function _irisBitsToHex(bits) {
 
 /** Auto template ID — UUID v4 when available. */
 function _irisGenerateId() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && crypto.randomUUID)
+    return crypto.randomUUID();
   return "iris_" + Date.now() + "_" + _irisRandomToken(8);
 }
 
@@ -1245,9 +1408,13 @@ function _irisGenerateId() {
  * @param n
  */
 function _irisRandomToken(n) {
-  var chars = "abcdefghjkmnpqrstuvwxyz23456789", out = "", i, arr;
+  var chars = "abcdefghjkmnpqrstuvwxyz23456789",
+    out = "",
+    i,
+    arr;
   arr = new Uint32Array(n);
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) crypto.getRandomValues(arr);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues)
+    crypto.getRandomValues(arr);
   else for (i = 0; i < n; i++) arr[i] = (Math.random() * 0xff_ff_ff_ff) | 0;
   for (i = 0; i < n; i++) out += chars[arr[i] % chars.length];
   return out;
@@ -1264,7 +1431,13 @@ async function _irisMatchGallery(irisCode) {
   for (i = 0; i < _irisGallery.length; i++) {
     t = await irisStorage.load(_irisGallery[i].id);
     if (t && t.leftCode && !t.decryptError) {
-      data.push({ id: t.id, label: t.label, code: t.leftCode, mask: t.leftMask, eyeSide: t.eyeSide });
+      data.push({
+        id: t.id,
+        label: t.label,
+        code: t.leftCode,
+        mask: t.leftMask,
+        eyeSide: t.eyeSide,
+      });
     }
   }
   res = IrisMatcher.identify(irisCode, data);
@@ -1289,10 +1462,14 @@ async function _irisMatchGallery(irisCode) {
  */
 function _irisEscHtml(s) {
   return String(s == null ? "" : s)
-    .split("&").join("&amp;")
-    .split("<").join("&lt;")
-    .split(">").join("&gt;")
-    .split('"').join("&quot;");
+    .split("&")
+    .join("&amp;")
+    .split("<")
+    .join("&lt;")
+    .split(">")
+    .join("&gt;")
+    .split('"')
+    .join("&quot;");
 }
 
 /**
@@ -1310,71 +1487,138 @@ function _irisRenderReport(r) {
   sections.push([
     __("iris.report.source", "Source"),
     "<table class='meta-table'>" +
-      "<tr><td>" + __("iris.report.file", "File") + "</td><td>" + _irisEscHtml(r.source.fileName) + "</td></tr>" +
-      "<tr><td>" + __("iris.report.dims", "Dimensions") + "</td><td>" + r.source.width + " × " + r.source.height + "</td></tr>" +
+      "<tr><td>" +
+      __("iris.report.file", "File") +
+      "</td><td>" +
+      _irisEscHtml(r.source.fileName) +
+      "</td></tr>" +
+      "<tr><td>" +
+      __("iris.report.dims", "Dimensions") +
+      "</td><td>" +
+      r.source.width +
+      " × " +
+      r.source.height +
+      "</td></tr>" +
       "</table>",
   ]);
   sections.push([
     __("iris.report.seg", "Segmentation"),
     "<table class='meta-table'>" +
-      "<tr><td>" + __("iris.result_pupil", "Pupil Radius") + "</td><td>" + r.segmentation.pupilRadius + " px</td></tr>" +
-      "<tr><td>" + __("iris.result_iris", "Iris Radius") + "</td><td>" + r.segmentation.irisRadius + " px</td></tr>" +
+      "<tr><td>" +
+      __("iris.result_pupil", "Pupil Radius") +
+      "</td><td>" +
+      r.segmentation.pupilRadius +
+      " px</td></tr>" +
+      "<tr><td>" +
+      __("iris.result_iris", "Iris Radius") +
+      "</td><td>" +
+      r.segmentation.irisRadius +
+      " px</td></tr>" +
       "</table>",
   ]);
   sections.push([
     __("iris.report.code", "IrisCode"),
     "<table class='meta-table'>" +
-      "<tr><td>Bits</td><td>" + r.irisCode.bits + " (" + r.irisCode.validBits + " " + __("iris.report.valid", "valid") + ")</td></tr>" +
-      "<tr><td>SHA-256</td><td><code style='font-size:0.65rem;word-break:break-all'>" + _irisEscHtml(r.irisCode.sha256) + "</code></td></tr>" +
+      "<tr><td>Bits</td><td>" +
+      r.irisCode.bits +
+      " (" +
+      r.irisCode.validBits +
+      " " +
+      __("iris.report.valid", "valid") +
+      ")</td></tr>" +
+      "<tr><td>SHA-256</td><td><code style='font-size:0.65rem;word-break:break-all'>" +
+      _irisEscHtml(r.irisCode.sha256) +
+      "</code></td></tr>" +
       "</table>",
   ]);
   sections.push([
     __("iris.report.quality", "Quality (ISO 29794-6)"),
-    "<p style='font-size:0.85rem;margin:0 0 6px'><strong>" + r.quality.score + "/100 (" + _irisEscHtml(r.quality.level) + ")</strong></p>" +
+    "<p style='font-size:0.85rem;margin:0 0 6px'><strong>" +
+      r.quality.score +
+      "/100 (" +
+      _irisEscHtml(r.quality.level) +
+      ")</strong></p>" +
       "<p style='font-size:0.75rem;margin:0'>" +
-      __("iris.report.gates", "Acquisition gates") + ": " +
+      __("iris.report.gates", "Acquisition gates") +
+      ": " +
       (r.gates.passed
-        ? "<span style='color:#28a745'>&#10003; " + __("iris.report.passed", "passed") + "</span>"
-        : "<span style='color:#dc3545'>&#10007; " + _irisEscHtml(r.gates.failures.join("; ")) + "</span>") +
+        ? "<span style='color:#28a745'>&#10003; " +
+          __("iris.report.passed", "passed") +
+          "</span>"
+        : "<span style='color:#dc3545'>&#10007; " +
+          _irisEscHtml(r.gates.failures.join("; ")) +
+          "</span>") +
       "</p>",
   ]);
   sections.push([
     __("iris.report.privacy", "Privacy Identifier (BioHash)"),
     "<table class='meta-table'>" +
-      "<tr><td>Bits</td><td>" + r.privacy.bits + "</td></tr>" +
-      "<tr><td>ID</td><td><code style='font-size:0.65rem;word-break:break-all'>" + _irisEscHtml(r.privacy.codeHex) + "</code></td></tr>" +
+      "<tr><td>Bits</td><td>" +
+      r.privacy.bits +
+      "</td></tr>" +
+      "<tr><td>ID</td><td><code style='font-size:0.65rem;word-break:break-all'>" +
+      _irisEscHtml(r.privacy.codeHex) +
+      "</code></td></tr>" +
       "</table>",
   ]);
   sections.push([
     __("iris.result_liveness", "Liveness"),
     "<p style='font-size:0.85rem;margin:0'>" +
       (r.liveness.live
-        ? "<span style='color:#28a745'>&#10003; " + __("iris.live", "LIVE") + "</span>"
-        : "<span style='color:#dc3545'>&#10007; " + __("iris.spoof", "SPOOF") + "</span>") +
-      " (" + (r.liveness.score * 100).toFixed(1) + "%)" +
-      (r.liveness.detail ? "<br><small style='color:var(--text-muted)'>" + _irisEscHtml(r.liveness.detail) + "</small>" : "") +
+        ? "<span style='color:#28a745'>&#10003; " +
+          __("iris.live", "LIVE") +
+          "</span>"
+        : "<span style='color:#dc3545'>&#10007; " +
+          __("iris.spoof", "SPOOF") +
+          "</span>") +
+      " (" +
+      (r.liveness.score * 100).toFixed(1) +
+      "%)" +
+      (r.liveness.detail
+        ? "<br><small style='color:var(--text-muted)'>" +
+          _irisEscHtml(r.liveness.detail) +
+          "</small>"
+        : "") +
       "</p>",
   ]);
   sections.push([
     __("iris.report.registry", "Registry"),
     r.registry.best
       ? "<p style='margin:0;font-size:0.8rem;background:rgba(40,167,69,.1);padding:6px 8px;border-radius:6px'><strong>" +
-        __("iris.report.match_found", "Match found") + ":</strong> " + _irisEscHtml(r.registry.best.label) +
-        " (HD " + r.registry.best.hd.toFixed(4) + ")</p>"
+        __("iris.report.match_found", "Match found") +
+        ":</strong> " +
+        _irisEscHtml(r.registry.best.label) +
+        " (HD " +
+        r.registry.best.hd.toFixed(4) +
+        ")</p>"
       : "<p style='margin:0;font-size:0.8rem;color:var(--text-muted)'>" +
-        __("iris.report.no_match", "Not found in the registry.") + "</p>",
+        __("iris.report.no_match", "Not found in the registry.") +
+        "</p>",
   ]);
   sections.push([
     __("iris.report.template", "Template"),
     "<table class='meta-table'>" +
-      "<tr><td>ID</td><td><code style='font-size:0.65rem'>" + _irisEscHtml(r.template.id) + "</code></td></tr>" +
-      "<tr><td>" + __("iris.report.label", "Label") + "</td><td>" + _irisEscHtml(r.template.label) + "</td></tr>" +
-      "<tr><td>" + __("iris.report.eye_side", "Eye Side") + "</td><td>" + _irisEscHtml(r.template.eyeSide || "unknown") + "</td></tr>" +
+      "<tr><td>ID</td><td><code style='font-size:0.65rem'>" +
+      _irisEscHtml(r.template.id) +
+      "</code></td></tr>" +
+      "<tr><td>" +
+      __("iris.report.label", "Label") +
+      "</td><td>" +
+      _irisEscHtml(r.template.label) +
+      "</td></tr>" +
+      "<tr><td>" +
+      __("iris.report.eye_side", "Eye Side") +
+      "</td><td>" +
+      _irisEscHtml(r.template.eyeSide || "unknown") +
+      "</td></tr>" +
       "" +
-      "<tr><td>AES-GCM</td><td><span style='color:#28a745'>&#128274; " + __("iris.report.encrypted", "encrypted at rest") + "</span></td></tr>" +
+      "<tr><td>AES-GCM</td><td><span style='color:#28a745'>&#128274; " +
+      __("iris.report.encrypted", "encrypted at rest") +
+      "</span></td></tr>" +
       (r.template.encryption
         ? "<tr><td colspan='2' style='background:rgba(40,167,69,.12)'><strong>&#128274; " +
-          _irisEscHtml(r.template.encryption) + "</strong></td></tr>"
+          _irisEscHtml(r.template.encryption) +
+          "</strong></td></tr>"
         : "") +
       "</table>",
   ]);
@@ -1382,7 +1626,10 @@ function _irisRenderReport(r) {
   // Illumination advisory (ISO/IEC 29794-6 §6: NIR preferred)
   if (r.illumination) {
     var illumNote = r.illumination.colorCapture
-      ? __("iris.report.illum_color", "Color/visible capture detected — NIR illumination is recommended for robust iris recognition (ISO/IEC 29794-6).")
+      ? __(
+          "iris.report.illum_color",
+          "Color/visible capture detected — NIR illumination is recommended for robust iris recognition (ISO/IEC 29794-6).",
+        )
       : __("iris.report.illum_mono", "Monochrome/NIR-like capture detected.");
     sections.push([
       __("iris.report.illumination", "Illumination"),
@@ -1390,24 +1637,35 @@ function _irisRenderReport(r) {
         (r.illumination.modality === "color"
           ? "<span style='color:#e0a800'>&#9888; "
           : "<span style='color:#28a745'>&#10003; ") +
-        _irisEscHtml(r.illumination.modality) + " (" +
-        r.illumination.meanChannelDiff + " ch&Delta;)</span><br>" +
-        "<small style='color:var(--text-muted)'>" + _irisEscHtml(illumNote) + "</small></p>",
+        _irisEscHtml(r.illumination.modality) +
+        " (" +
+        r.illumination.meanChannelDiff +
+        " ch&Delta;)</span><br>" +
+        "<small style='color:var(--text-muted)'>" +
+        _irisEscHtml(illumNote) +
+        "</small></p>",
     ]);
   }
 
   // NIR camera capability advisory (Phase 3A — ISO/IEC 29794-6 §6)
   if (r.nir) {
     var nirNote = r.nir.nirAvailable
-      ? __("iris.report.nir_ok", "NIR-capable camera detected — optimal for iris recognition.")
-      : __("iris.report.nir_visible", "No NIR camera detected — visible/color capture used. NIR illumination is recommended for robust iris recognition (ISO/IEC 29794-6 §6).");
+      ? __(
+          "iris.report.nir_ok",
+          "NIR-capable camera detected — optimal for iris recognition.",
+        )
+      : __(
+          "iris.report.nir_visible",
+          "No NIR camera detected — visible/color capture used. NIR illumination is recommended for robust iris recognition (ISO/IEC 29794-6 §6).",
+        );
     sections.push([
       __("iris.report.nir", "NIR Capability"),
       "<p style='font-size:0.8rem;margin:0'>" +
         (r.nir.nirAvailable
           ? "<span style='color:#28a745'>&#10003; "
           : "<span style='color:#e0a800'>&#9888; ") +
-        _irisEscHtml(nirNote) + "</span></p>",
+        _irisEscHtml(nirNote) +
+        "</span></p>",
     ]);
   }
 
@@ -1416,15 +1674,25 @@ function _irisRenderReport(r) {
     sections.push([
       __("iris.report.performance", "Operational Stats"),
       "<table class='meta-table'>" +
-        "<tr><td>FTA</td><td>" + (r.performance.fta || 0) + "</td></tr>" +
-        "<tr><td>FTER</td><td>" + (r.performance.fter || 0) + "</td></tr>" +
+        "<tr><td>FTA</td><td>" +
+        (r.performance.fta || 0) +
+        "</td></tr>" +
+        "<tr><td>FTER</td><td>" +
+        (r.performance.fter || 0) +
+        "</td></tr>" +
         (r.performance.lastFta
           ? "<tr><td colspan='2' style='font-size:0.7rem;color:var(--text-muted)'>" +
-            __("iris.report.last_fta", "Last FTA") + ": " + _irisEscHtml(r.performance.lastFta.reason) + "</td></tr>"
+            __("iris.report.last_fta", "Last FTA") +
+            ": " +
+            _irisEscHtml(r.performance.lastFta.reason) +
+            "</td></tr>"
           : "") +
         (r.performance.lastFter
           ? "<tr><td colspan='2' style='font-size:0.7rem;color:var(--text-muted)'>" +
-            __("iris.report.last_fter", "Last FTER") + ": " + _irisEscHtml(r.performance.lastFter.reason) + "</td></tr>"
+            __("iris.report.last_fter", "Last FTER") +
+            ": " +
+            _irisEscHtml(r.performance.lastFter.reason) +
+            "</td></tr>"
           : "") +
         "</table>",
     ]);
@@ -1434,7 +1702,9 @@ function _irisRenderReport(r) {
   for (h = 0; h < sections.length; h++) {
     html +=
       "<div style='margin-top:10px;padding:10px;border:1px solid var(--border-color,#ddd);border-radius:8px'>" +
-      "<strong style='font-size:0.8rem'>" + sections[h][0] + "</strong>" +
+      "<strong style='font-size:0.8rem'>" +
+      _irisEscHtml(sections[h][0]) +
+      "</strong>" +
       sections[h][1] +
       "</div>";
   }
@@ -1460,7 +1730,9 @@ async function _irisEnsureLib(lib) {
   start = Date.now();
   while (!window[map[lib]]) {
     if (Date.now() - start > 8000) throw new Error(lib + " failed to load");
-    await new Promise(function (res) { setTimeout(res, 60); });
+    await new Promise(function (res) {
+      setTimeout(res, 60);
+    });
   }
 }
 
@@ -1515,7 +1787,10 @@ async function downloadIrisReport(format) {
       }
     }
     if (content == null) return;
-    downloadBlobSimple(new Blob([content], { type: mime }), "iris_report." + _irisFileStamp() + "." + ext);
+    downloadBlobSimple(
+      new Blob([content], { type: mime }),
+      "iris_report." + _irisFileStamp() + "." + ext,
+    );
   } catch (error) {
     irisSetStatus("iris-status", "Download error: " + error.message);
   }
@@ -1554,7 +1829,12 @@ function _irisReportToCSV(r) {
     ["Privacy ID", r.privacy.codeHex],
     ["Liveness", r.liveness.live ? "LIVE" : "SPOOF"],
     ["Liveness score", (r.liveness.score * 100).toFixed(1) + "%"],
-    ["Registry match", r.registry.best ? r.registry.best.label + " HD=" + r.registry.best.hd.toFixed(4) : "none"],
+    [
+      "Registry match",
+      r.registry.best
+        ? r.registry.best.label + " HD=" + r.registry.best.hd.toFixed(4)
+        : "none",
+    ],
     ["Template ID", r.template.id],
     ["Template label", r.template.label],
     ["Eye side", r.template.eyeSide || "unknown"],
@@ -1569,7 +1849,9 @@ function _irisReportToCSV(r) {
       return row
         .map(function (cell) {
           cell = String(cell == null ? "" : cell);
-          return /[",\n]/.test(cell) ? '"' + cell.split('"').join('""') + '"' : cell;
+          return /[",\n]/.test(cell)
+            ? '"' + cell.split('"').join('""') + '"'
+            : cell;
         })
         .join(",");
     })
@@ -1587,7 +1869,15 @@ function _irisReportToTXT(r) {
     "RedoSan Authenticity - Iris Biometric Report",
     line,
     "Generated : " + r.generatedAt,
-    "Source    : " + r.source.fileName + " (" + r.source.kind + ", " + r.source.width + "x" + r.source.height + ")",
+    "Source    : " +
+      r.source.fileName +
+      " (" +
+      r.source.kind +
+      ", " +
+      r.source.width +
+      "x" +
+      r.source.height +
+      ")",
     "",
     "[Segmentation]",
     "  Pupil radius : " + r.segmentation.pupilRadius + " px",
@@ -1600,31 +1890,49 @@ function _irisReportToTXT(r) {
     "",
     "[Quality - ISO 29794-6]",
     "  Score  : " + r.quality.score + "/100 (" + r.quality.level + ")",
-    "  Gates  : " + (r.gates.passed ? "PASSED" : "FAILED - " + (r.gates.failures || []).join("; ")),
+    "  Gates  : " +
+      (r.gates.passed
+        ? "PASSED"
+        : "FAILED - " + (r.gates.failures || []).join("; ")),
     "",
     "[Privacy Identifier (BioHash)]",
     "  Bits : " + r.privacy.bits,
     "  ID   : " + r.privacy.codeHex,
     "",
     "[Liveness]",
-    "  Result : " + (r.liveness.live ? "LIVE" : "SPOOF") + " (" + (r.liveness.score * 100).toFixed(1) + "%)",
+    "  Result : " +
+      (r.liveness.live ? "LIVE" : "SPOOF") +
+      " (" +
+      (r.liveness.score * 100).toFixed(1) +
+      "%)",
     r.liveness.detail ? "  Detail : " + r.liveness.detail : "",
     "",
     "[Registry]",
-    "  Match : " + (r.registry.best ? r.registry.best.label + " (HD " + r.registry.best.hd.toFixed(4) + ")" : "not found"),
+    "  Match : " +
+      (r.registry.best
+        ? r.registry.best.label + " (HD " + r.registry.best.hd.toFixed(4) + ")"
+        : "not found"),
     "  Templates stored : " + r.registry.totalTemplates,
     "",
     "[Template]",
     "  ID        : " + r.template.id,
     "  Label     : " + r.template.label,
     "  Eye side  : " + (r.template.eyeSide || "unknown"),
-    "  NIR       : " + (r.nir ? (r.nir.nirAvailable ? "available" : "not available (visible fallback)") : "unknown"),
+    "  NIR       : " +
+      (r.nir
+        ? r.nir.nirAvailable
+          ? "available"
+          : "not available (visible fallback)"
+        : "unknown"),
     "  Encrypted : AES-GCM (at rest)",
     "  Encryption: " + r.template.encryption,
     "",
     "[Illumination]",
-    "  Modality  : " + (r.illumination ? r.illumination.modality : "unknown") +
-      (r.illumination && r.illumination.colorCapture ? " (visible/color — NIR recommended)" : ""),
+    "  Modality  : " +
+      (r.illumination ? r.illumination.modality : "unknown") +
+      (r.illumination && r.illumination.colorCapture
+        ? " (visible/color — NIR recommended)"
+        : ""),
     "",
     "[Operational Stats]",
     "  FTA  : " + (r.performance ? r.performance.fta : 0),
@@ -1632,7 +1940,9 @@ function _irisReportToTXT(r) {
     "",
     "Generated by RedoSan Authenticity - 100% browser-based",
   ]
-    .filter(function (l) { return l !== ""; })
+    .filter(function (l) {
+      return l !== "";
+    })
     .join("\n");
 }
 
@@ -1647,22 +1957,78 @@ function _irisReportToXML(r) {
     "<irisReport>",
     "  <type>" + x(r.type) + "</type>",
     "  <generatedAt>" + x(r.generatedAt) + "</generatedAt>",
-    "  <source kind=\"" + x(r.source.kind) + "\" width=\"" + r.source.width + "\" height=\"" + r.source.height + "\">" + x(r.source.fileName) + "</source>",
-    "  <segmentation pupilRadius=\"" + r.segmentation.pupilRadius + "\" irisRadius=\"" + r.segmentation.irisRadius + "\" center=\"" + x(r.segmentation.center) + "\" />",
-    "  <irisCode bits=\"" + r.irisCode.bits + "\" validBits=\"" + r.irisCode.validBits + "\">" + x(r.irisCode.sha256) + "</irisCode>",
-    "  <quality score=\"" + r.quality.score + "\" level=\"" + x(r.quality.level) + "\">",
-    "    <gates passed=\"" + r.gates.passed + "\">" + x((r.gates.failures || []).join("; ")) + "</gates>",
+    '  <source kind="' +
+      x(r.source.kind) +
+      '" width="' +
+      r.source.width +
+      '" height="' +
+      r.source.height +
+      '">' +
+      x(r.source.fileName) +
+      "</source>",
+    '  <segmentation pupilRadius="' +
+      r.segmentation.pupilRadius +
+      '" irisRadius="' +
+      r.segmentation.irisRadius +
+      '" center="' +
+      x(r.segmentation.center) +
+      '" />',
+    '  <irisCode bits="' +
+      r.irisCode.bits +
+      '" validBits="' +
+      r.irisCode.validBits +
+      '">' +
+      x(r.irisCode.sha256) +
+      "</irisCode>",
+    '  <quality score="' +
+      r.quality.score +
+      '" level="' +
+      x(r.quality.level) +
+      '">',
+    '    <gates passed="' +
+      r.gates.passed +
+      '">' +
+      x((r.gates.failures || []).join("; ")) +
+      "</gates>",
     "  </quality>",
-    "  <privacyIdentifier bits=\"" + r.privacy.bits + "\">" + x(r.privacy.codeHex) + "</privacyIdentifier>",
-    "  <liveness live=\"" + r.liveness.live + "\" score=\"" + (r.liveness.score * 100).toFixed(1) + "\" />",
-    "  <registry totalTemplates=\"" + r.registry.totalTemplates + "\">",
+    '  <privacyIdentifier bits="' +
+      r.privacy.bits +
+      '">' +
+      x(r.privacy.codeHex) +
+      "</privacyIdentifier>",
+    '  <liveness live="' +
+      r.liveness.live +
+      '" score="' +
+      (r.liveness.score * 100).toFixed(1) +
+      '" />',
+    '  <registry totalTemplates="' + r.registry.totalTemplates + '">',
     r.registry.best
-      ? "    <match label=\"" + x(r.registry.best.label) + "\" hd=\"" + r.registry.best.hd.toFixed(4) + "\" />"
+      ? '    <match label="' +
+        x(r.registry.best.label) +
+        '" hd="' +
+        r.registry.best.hd.toFixed(4) +
+        '" />'
       : "    <match />",
     "  </registry>",
-    "  <template id=\"" + x(r.template.id) + "\" label=\"" + x(r.template.label) + "\" eyeSide=\"" + x(r.template.eyeSide || "unknown") + "\" encrypted=\"AES-GCM\" nirAvailable=\"" + (r.nir ? r.nir.nirAvailable : "unknown") + "\" />",
-    "  <illumination modality=\"" + x(r.illumination ? r.illumination.modality : "unknown") + "\" colorCapture=\"" + (r.illumination ? r.illumination.colorCapture : false) + "\" />",
-    "  <performance fta=\"" + (r.performance ? r.performance.fta : 0) + "\" fter=\"" + (r.performance ? r.performance.fter : 0) + "\" />",
+    '  <template id="' +
+      x(r.template.id) +
+      '" label="' +
+      x(r.template.label) +
+      '" eyeSide="' +
+      x(r.template.eyeSide || "unknown") +
+      '" encrypted="AES-GCM" nirAvailable="' +
+      (r.nir ? r.nir.nirAvailable : "unknown") +
+      '" />',
+    '  <illumination modality="' +
+      x(r.illumination ? r.illumination.modality : "unknown") +
+      '" colorCapture="' +
+      (r.illumination ? r.illumination.colorCapture : false) +
+      '" />',
+    '  <performance fta="' +
+      (r.performance ? r.performance.fta : 0) +
+      '" fter="' +
+      (r.performance ? r.performance.fter : 0) +
+      '" />',
     "</irisReport>",
   ].join("\n");
 }
@@ -1711,7 +2077,12 @@ async function _irisReportToPDF(r) {
   doc.text("Quality (ISO 29794-6)", 14, y);
   y += 6;
   push("Score", r.quality.score + "/100 (" + r.quality.level + ")");
-  push("Gates", r.gates.passed ? "PASSED" : "FAILED - " + (r.gates.failures || []).join("; "));
+  push(
+    "Gates",
+    r.gates.passed
+      ? "PASSED"
+      : "FAILED - " + (r.gates.failures || []).join("; "),
+  );
   y += 3;
   doc.setFontSize(11);
   doc.setTextColor(108, 92, 231);
@@ -1724,8 +2095,19 @@ async function _irisReportToPDF(r) {
   doc.setTextColor(108, 92, 231);
   doc.text("Liveness & Registry", 14, y);
   y += 6;
-  push("Liveness", (r.liveness.live ? "LIVE" : "SPOOF") + " (" + (r.liveness.score * 100).toFixed(1) + "%)");
-  push("Match", r.registry.best ? r.registry.best.label + " (HD " + r.registry.best.hd.toFixed(4) + ")" : "not found");
+  push(
+    "Liveness",
+    (r.liveness.live ? "LIVE" : "SPOOF") +
+      " (" +
+      (r.liveness.score * 100).toFixed(1) +
+      "%)",
+  );
+  push(
+    "Match",
+    r.registry.best
+      ? r.registry.best.label + " (HD " + r.registry.best.hd.toFixed(4) + ")"
+      : "not found",
+  );
   push("Templates", r.registry.totalTemplates);
   y += 3;
   doc.setFontSize(11);
@@ -1737,7 +2119,12 @@ async function _irisReportToPDF(r) {
   push("Eye side", r.template.eyeSide || "unknown");
   push("Encryption", r.template.encryption);
   push("Illumination", r.illumination ? r.illumination.modality : "unknown");
-  push("FTA/FTER", (r.performance ? r.performance.fta : 0) + " / " + (r.performance ? r.performance.fter : 0));
+  push(
+    "FTA/FTER",
+    (r.performance ? r.performance.fta : 0) +
+      " / " +
+      (r.performance ? r.performance.fter : 0),
+  );
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
   doc.text("Generated by RedoSan Authenticity", 14, 285);
@@ -1754,31 +2141,139 @@ async function _irisReportToDOCX(r) {
   P = window.docx.Paragraph;
   T = window.docx.TextRun;
   kids = [
-    new P({ text: "RedoSan Authenticity - Iris Biometric Report", bold: true, heading: "Heading1" }),
+    new P({
+      text: "RedoSan Authenticity - Iris Biometric Report",
+      bold: true,
+      heading: "Heading1",
+    }),
     new P({ text: "Generated: " + r.generatedAt }),
     new P({ text: "" }),
     new P({ text: "Source", bold: true, heading: "Heading2" }),
-    new P({ children: [new T({ text: "File: " + r.source.fileName + " (" + r.source.kind + ", " + r.source.width + "x" + r.source.height + ")" })] }),
+    new P({
+      children: [
+        new T({
+          text:
+            "File: " +
+            r.source.fileName +
+            " (" +
+            r.source.kind +
+            ", " +
+            r.source.width +
+            "x" +
+            r.source.height +
+            ")",
+        }),
+      ],
+    }),
     new P({ text: "IrisCode", bold: true, heading: "Heading2" }),
-    new P({ children: [new T({ text: "Bits: " + r.irisCode.bits + " (" + r.irisCode.validBits + " valid) - SHA-256: " + r.irisCode.sha256 })] }),
+    new P({
+      children: [
+        new T({
+          text:
+            "Bits: " +
+            r.irisCode.bits +
+            " (" +
+            r.irisCode.validBits +
+            " valid) - SHA-256: " +
+            r.irisCode.sha256,
+        }),
+      ],
+    }),
     new P({ text: "Quality (ISO 29794-6)", bold: true, heading: "Heading2" }),
-    new P({ children: [new T({ text: "Score: " + r.quality.score + "/100 (" + r.quality.level + ") - Gates: " + (r.gates.passed ? "PASSED" : "FAILED - " + (r.gates.failures || []).join("; ")) })] }),
-    new P({ text: "Privacy Identifier (BioHash)", bold: true, heading: "Heading2" }),
-    new P({ children: [new T({ text: r.privacy.bits + " bits: " + r.privacy.codeHex })] }),
+    new P({
+      children: [
+        new T({
+          text:
+            "Score: " +
+            r.quality.score +
+            "/100 (" +
+            r.quality.level +
+            ") - Gates: " +
+            (r.gates.passed
+              ? "PASSED"
+              : "FAILED - " + (r.gates.failures || []).join("; ")),
+        }),
+      ],
+    }),
+    new P({
+      text: "Privacy Identifier (BioHash)",
+      bold: true,
+      heading: "Heading2",
+    }),
+    new P({
+      children: [
+        new T({ text: r.privacy.bits + " bits: " + r.privacy.codeHex }),
+      ],
+    }),
     new P({ text: "Liveness", bold: true, heading: "Heading2" }),
-    new P({ children: [new T({ text: (r.liveness.live ? "LIVE" : "SPOOF") + " (" + (r.liveness.score * 100).toFixed(1) + "%)" })] }),
+    new P({
+      children: [
+        new T({
+          text:
+            (r.liveness.live ? "LIVE" : "SPOOF") +
+            " (" +
+            (r.liveness.score * 100).toFixed(1) +
+            "%)",
+        }),
+      ],
+    }),
     new P({ text: "Registry", bold: true, heading: "Heading2" }),
-    new P({ children: [new T({ text: r.registry.best ? "Match: " + r.registry.best.label + " (HD " + r.registry.best.hd.toFixed(4) + ")" : "Not found in the registry." })] }),
+    new P({
+      children: [
+        new T({
+          text: r.registry.best
+            ? "Match: " +
+              r.registry.best.label +
+              " (HD " +
+              r.registry.best.hd.toFixed(4) +
+              ")"
+            : "Not found in the registry.",
+        }),
+      ],
+    }),
     new P({ text: "Template", bold: true, heading: "Heading2" }),
-    new P({ children: [new T({ text: "ID: " + r.template.id + " - Label: " + r.template.label + " - Eye: " + (r.template.eyeSide || "unknown") + " - Encrypted: AES-GCM" })] }),
-    new P({ children: [new T({ text: "Illumination: " + (r.illumination ? r.illumination.modality : "unknown") + " - FTA/FTER: " + (r.performance ? r.performance.fta : 0) + "/" + (r.performance ? r.performance.fter : 0) })] }),
+    new P({
+      children: [
+        new T({
+          text:
+            "ID: " +
+            r.template.id +
+            " - Label: " +
+            r.template.label +
+            " - Eye: " +
+            (r.template.eyeSide || "unknown") +
+            " - Encrypted: AES-GCM",
+        }),
+      ],
+    }),
+    new P({
+      children: [
+        new T({
+          text:
+            "Illumination: " +
+            (r.illumination ? r.illumination.modality : "unknown") +
+            " - FTA/FTER: " +
+            (r.performance ? r.performance.fta : 0) +
+            "/" +
+            (r.performance ? r.performance.fter : 0),
+        }),
+      ],
+    }),
   ];
   if (r.template.encryption) {
-    kids.push(new P({ children: [new T({ text: r.template.encryption, bold: true })] }));
+    kids.push(
+      new P({ children: [new T({ text: r.template.encryption, bold: true })] }),
+    );
   }
-  kids.push(new P({ text: "" }), new P({ text: "Generated by RedoSan Authenticity - 100% browser-based", italics: true }));
+  kids.push(
+    new P({ text: "" }),
+    new P({
+      text: "Generated by RedoSan Authenticity - 100% browser-based",
+      italics: true,
+    }),
+  );
   return await window.docx.Packer.toBlob(
-    new window.docx.Document({ sections: [{ children: kids }] })
+    new window.docx.Document({ sections: [{ children: kids }] }),
   );
 }
 
@@ -1793,14 +2288,17 @@ var IRIS_STATS_KEY = "redosan_iris_stats";
 /** Resolve a persistent KV store (localStorage with in-memory fallback). */
 function _irisStatsStore() {
   try {
-    if (typeof localStorage !== "undefined" && localStorage) return localStorage;
+    if (typeof localStorage !== "undefined" && localStorage)
+      return localStorage;
   } catch {
     /* fall through to memory */
   }
   if (globalThis.__irisStatsMem === undefined) globalThis.__irisStatsMem = {};
   return {
     getItem: function (k) {
-      return globalThis.__irisStatsMem[k] == null ? null : globalThis.__irisStatsMem[k];
+      return globalThis.__irisStatsMem[k] == null
+        ? null
+        : globalThis.__irisStatsMem[k];
     },
     setItem: function (k, v) {
       globalThis.__irisStatsMem[k] = String(v);
@@ -1829,7 +2327,8 @@ function _irisGetStats() {
  * @param reason
  */
 function _irisRecordFTA(reason) {
-  var st = _irisStatsStore(), s = _irisGetStats();
+  var st = _irisStatsStore(),
+    s = _irisGetStats();
   s.fta = (s.fta || 0) + 1;
   s.lastFta = { reason: reason || "unknown", at: Date.now() };
   st.setItem(IRIS_STATS_KEY, JSON.stringify(s));
@@ -1840,7 +2339,8 @@ function _irisRecordFTA(reason) {
  * @param reason
  */
 function _irisRecordFTER(reason) {
-  var st = _irisStatsStore(), s = _irisGetStats();
+  var st = _irisStatsStore(),
+    s = _irisGetStats();
   s.fter = (s.fter || 0) + 1;
   s.lastFter = { reason: reason || "unknown", at: Date.now() };
   st.setItem(IRIS_STATS_KEY, JSON.stringify(s));

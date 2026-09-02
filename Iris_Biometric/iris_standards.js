@@ -127,7 +127,8 @@ IrisStandards.captureDeviceInfo = function () {
     // Screen/capture dimensions
     screenWidth: screen.width || 0,
     screenHeight: screen.height || 0,
-    devicePixelRatio: (typeof window !== "undefined" && window.devicePixelRatio) || 1,
+    devicePixelRatio:
+      (typeof window !== "undefined" && window.devicePixelRatio) || 1,
     // Hardware concurrency (CPU cores)
     hardwareConcurrency: nav.hardwareConcurrency || 0,
     // Camera capabilities (if available)
@@ -262,7 +263,8 @@ IrisStandards.createRecord = function (params) {
     qualityScore: Math.max(0, Math.min(100, quality)),
     qualityLevel: IrisStandards._getQualityLevel(quality),
     // Compression
-    compressionType: params.compressionType || IrisStandards.COMPRESSION.UNCOMPRESSED,
+    compressionType:
+      params.compressionType || IrisStandards.COMPRESSION.UNCOMPRESSED,
     // Device info (ISO/IEC 19794-6 Section 5.3)
     deviceInfo: deviceInfo,
     // Validity period (ISO/IEC 19794-6 Section 5.2)
@@ -289,10 +291,15 @@ IrisStandards.createRecord = function (params) {
  */
 /* c8 ignore stop */
 IrisStandards.validateRecord = function (record) {
-  var errors = [], warnings = [];
+  var errors = [],
+    warnings = [];
 
   if (!record) {
-    return { valid: false, errors: ["Record is null or undefined"], warnings: [] };
+    return {
+      valid: false,
+      errors: ["Record is null or undefined"],
+      warnings: [],
+    };
   }
 
   // Check required fields
@@ -305,9 +312,14 @@ IrisStandards.validateRecord = function (record) {
   }
 
   // Check dimensions for Kind 2
-  if (record.imageKind === 2 && (record.width !== 640 || record.height !== 480)) {
-      warnings.push("Kind 2 should be 640x480, got " + record.width + "x" + record.height);
-    }
+  if (
+    record.imageKind === 2 &&
+    (record.width !== 640 || record.height !== 480)
+  ) {
+    warnings.push(
+      "Kind 2 should be 640x480, got " + record.width + "x" + record.height,
+    );
+  }
 
   // Check pixel depth
   if (record.pixelDepth !== 8) {
@@ -316,16 +328,32 @@ IrisStandards.validateRecord = function (record) {
 
   // Check quality
   if (record.qualityScore < 51) {
-    warnings.push("Quality score " + record.qualityScore + " is below recommended minimum (51)");
+    warnings.push(
+      "Quality score " +
+        record.qualityScore +
+        " is below recommended minimum (51)",
+    );
   }
 
   // Check iris diameter (Kind 7)
-  if (record.imageKind === 7 && record.irisRadius * 2 < IrisStandards.DIMENSIONS.MIN_IRIS_DIAMETER) {
-      warnings.push("Iris diameter " + (record.irisRadius * 2) + "px is below minimum " + IrisStandards.DIMENSIONS.MIN_IRIS_DIAMETER + "px");
-    }
+  if (
+    record.imageKind === 7 &&
+    record.irisRadius * 2 < IrisStandards.DIMENSIONS.MIN_IRIS_DIAMETER
+  ) {
+    warnings.push(
+      "Iris diameter " +
+        record.irisRadius * 2 +
+        "px is below minimum " +
+        IrisStandards.DIMENSIONS.MIN_IRIS_DIAMETER +
+        "px",
+    );
+  }
 
   // Check eye side
-  if (!record.eyeSide || !["left", "right", "unknown"].includes(record.eyeSide)) {
+  if (
+    !record.eyeSide ||
+    !["left", "right", "unknown"].includes(record.eyeSide)
+  ) {
     errors.push("Invalid eyeSide: must be 'left', 'right', or 'unknown'");
   }
 
@@ -381,7 +409,10 @@ IrisStandards.createTemplate = function (code, mask, metadata) {
   return {
     version: "1.0",
     format: "ISO/IEC 19794-6 IrisCode",
-    recordVersion: IrisStandards.CBEFF.RECORD_VERSION_MAJOR + "." + IrisStandards.CBEFF.RECORD_VERSION_MINOR,
+    recordVersion:
+      IrisStandards.CBEFF.RECORD_VERSION_MAJOR +
+      "." +
+      IrisStandards.CBEFF.RECORD_VERSION_MINOR,
     codeLength: code.length,
     maskLength: mask.length,
     code: code,
@@ -420,11 +451,19 @@ IrisStandards.validateTemplate = function (template) {
     errors.push("Invalid or missing mask (must be Uint8Array)");
   }
 
-  if (template.code && template.mask && template.code.length !== template.mask.length) {
+  if (
+    template.code &&
+    template.mask &&
+    template.code.length !== template.mask.length
+  ) {
     errors.push("Code and mask must have the same length");
   }
 
-  if (template.codeLength && template.code && template.codeLength !== template.code.length) {
+  if (
+    template.codeLength &&
+    template.code &&
+    template.codeLength !== template.code.length
+  ) {
     errors.push("codeLength mismatch with actual code length");
   }
 
@@ -479,12 +518,15 @@ IrisStandards.serialize = function (record) {
   header[7] = (record.height >> 8) & 0xff;
   header[8] = record.height & 0xff;
   header[9] = record.pixelDepth;
-  header[10] = record.eyeSide === "left" ? 0 : record.eyeSide === "right" ? 1 : 2;
+  header[10] =
+    record.eyeSide === "left" ? 0 : record.eyeSide === "right" ? 1 : 2;
   header[11] = record.compressionType;
   header[12] = record.qualityScore;
 
   // Validity period: creation timestamp as 4 bytes (seconds since epoch, truncated)
-  var creationTs = Math.floor(new Date(record.creationDate || record.timestamp).getTime() / 1000);
+  var creationTs = Math.floor(
+    new Date(record.creationDate || record.timestamp).getTime() / 1000,
+  );
   header[13] = (creationTs >>> 24) & 0xff;
   header[14] = (creationTs >>> 16) & 0xff;
   header[15] = (creationTs >>> 8) & 0xff;
@@ -510,7 +552,7 @@ IrisStandards.serialize = function (record) {
 
   // Device type + CBEFF bir type
   header[27] = record.deviceInfo ? record.deviceInfo.deviceType & 0xff : 0;
-  header[28] = record.cbeff ? (record.cbeff.birType || 0) : 0;
+  header[28] = record.cbeff ? record.cbeff.birType || 0 : 0;
 
   // Record version (major.minor)
   header[29] = record.recordVersion ? record.recordVersion.major & 0xff : 1;
@@ -521,10 +563,17 @@ IrisStandards.serialize = function (record) {
   header[32] = 0;
 
   // Combine header and image data
-  data = new Uint8Array(header.length + (record.imageData ? record.imageData.length : 0));
+  data = new Uint8Array(
+    header.length + (record.imageData ? record.imageData.length : 0),
+  );
   data.set(header);
   if (record.imageData) {
-    data.set(record.imageData instanceof Uint8Array ? record.imageData : new Uint8Array(record.imageData), header.length);
+    data.set(
+      record.imageData instanceof Uint8Array
+        ? record.imageData
+        : new Uint8Array(record.imageData),
+      header.length,
+    );
   }
 
   return data;
@@ -545,11 +594,16 @@ IrisStandards.deserialize = function (data) {
 
   var eyeSide;
   switch (data[10]) {
-    case 0: { eyeSide = "left"; break;
+    case 0: {
+      eyeSide = "left";
+      break;
     }
-    case 1: { eyeSide = "right"; break;
+    case 1: {
+      eyeSide = "right";
+      break;
     }
-    default: { eyeSide = "unknown";
+    default: {
+      eyeSide = "unknown";
     }
   }
 
@@ -558,13 +612,19 @@ IrisStandards.deserialize = function (data) {
 
   // Extended header fields (41 bytes)
   if (headerSize >= 33) {
-    var creationTs = (data[13] << 24) | (data[14] << 16) | (data[15] << 8) | data[16];
-    var validFromTs = (data[17] << 24) | (data[18] << 16) | (data[19] << 8) | data[20];
-    var validToTs = (data[21] << 24) | (data[22] << 16) | (data[23] << 8) | data[24];
+    var creationTs =
+      (data[13] << 24) | (data[14] << 16) | (data[15] << 8) | data[16];
+    var validFromTs =
+      (data[17] << 24) | (data[18] << 16) | (data[19] << 8) | data[20];
+    var validToTs =
+      (data[21] << 24) | (data[22] << 16) | (data[23] << 8) | data[24];
 
-    extFields.creationDate = creationTs > 0 ? new Date(creationTs * 1000).toISOString() : null;
-    extFields.validFrom = validFromTs > 0 ? new Date(validFromTs * 1000).toISOString() : null;
-    extFields.validTo = validToTs > 0 ? new Date(validToTs * 1000).toISOString() : null;
+    extFields.creationDate =
+      creationTs > 0 ? new Date(creationTs * 1000).toISOString() : null;
+    extFields.validFrom =
+      validFromTs > 0 ? new Date(validFromTs * 1000).toISOString() : null;
+    extFields.validTo =
+      validToTs > 0 ? new Date(validToTs * 1000).toISOString() : null;
     extFields.encryptionAlgorithm = data[25];
     extFields.encryptionOptions = data[26];
     extFields.deviceType = data[27];
@@ -581,8 +641,8 @@ IrisStandards.deserialize = function (data) {
       type: data[2],
       version: data[3],
       /* c8 ignore start -- V8 range artifact */
-    birType: extFields.birType || IrisStandards.CBEFF.BIR_HEADER_TYPE_BDB,
-    /* c8 ignore stop */
+      birType: extFields.birType || IrisStandards.CBEFF.BIR_HEADER_TYPE_BDB,
+      /* c8 ignore stop */
     },
     recordVersion: extFields.recordVersion || { major: 1, minor: 0 },
     /* c8 ignore start -- V8 range artifact */
@@ -602,10 +662,11 @@ IrisStandards.deserialize = function (data) {
     validTo: extFields.validTo || null,
     encryptionAlgorithm: extFields.encryptionAlgorithm || 0,
     encryptionOptions: extFields.encryptionOptions || 0,
-    deviceInfo: extFields.deviceType ? { deviceType: extFields.deviceType } : null,
-    imageData: data.length > imageDataOffset
-      ? data.slice(imageDataOffset)
+    deviceInfo: extFields.deviceType
+      ? { deviceType: extFields.deviceType }
       : null,
+    imageData:
+      data.length > imageDataOffset ? data.slice(imageDataOffset) : null,
   };
 };
 
@@ -637,7 +698,8 @@ IrisStandards._extractImageData = function (input) {
   } else if (input instanceof HTMLImageElement) {
     canvas.width = input.naturalWidth || input.width;
     canvas.height = input.naturalHeight || input.height;
-  /* c8 ignore start */ } else if (input instanceof HTMLCanvasElement) {
+    /* c8 ignore start */
+  } else if (input instanceof HTMLCanvasElement) {
     canvas = input;
   } /* c8 ignore stop */ else {
     throw new TypeError("Unsupported image input type");
@@ -679,7 +741,8 @@ IrisStandards._getQualityLevel = function (score) {
  */
 /* c8 ignore stop */
 IrisStandards._computeChecksum = function (data) {
-  var hash = 0, i;
+  var hash = 0,
+    i;
   for (i = 0; i < data.length; i++) {
     hash = ((hash << 5) - hash + data[i]) | 0;
   }
@@ -732,11 +795,16 @@ IrisStandards.createBIR = function (record) {
     // Biometric data format type (iris image = 0x09)
     bdbFormatType: 0x09,
     // Quality blocks
-    qualityBlocks: record.qualityScore === undefined ? [] : [{
-      qualityAlgorithmVendor: IrisStandards.CBEFF.QUALITY_VENDOR,
-      qualityAlgorithmId: IrisStandards.CBEFF.QUALITY_ALGO_ID,
-      qualityScore: record.qualityScore,
-    }],
+    qualityBlocks:
+      record.qualityScore === undefined
+        ? []
+        : [
+            {
+              qualityAlgorithmVendor: IrisStandards.CBEFF.QUALITY_VENDOR,
+              qualityAlgorithmId: IrisStandards.CBEFF.QUALITY_ALGO_ID,
+              qualityScore: record.qualityScore,
+            },
+          ],
     // Security options (0 = none)
     securityOptions: {
       integrity: false,
@@ -748,7 +816,9 @@ IrisStandards.createBIR = function (record) {
     // Timestamps
     creationDate: record.creationDate || new Date().toISOString(),
     validFrom: record.validFrom || new Date().toISOString(),
-    validTo: record.validTo || new Date(Date.now() + 365.25 * 24 * 60 * 60 * 1000).toISOString(),
+    validTo:
+      record.validTo ||
+      new Date(Date.now() + 365.25 * 24 * 60 * 60 * 1000).toISOString(),
   };
 
   // BDB

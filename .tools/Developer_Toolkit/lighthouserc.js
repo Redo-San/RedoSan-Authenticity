@@ -7,7 +7,12 @@ module.exports = {
       settings: {
         chromeFlags: "--no-sandbox --disable-dev-shm-usage",
         preset: "desktop",
-        onlyCategories: ["performance", "accessibility", "best-practices", "seo"],
+        onlyCategories: [
+          "performance",
+          "accessibility",
+          "best-practices",
+          "seo",
+        ],
       },
       lighthouseVersion: "local",
     },

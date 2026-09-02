@@ -155,7 +155,8 @@ FaceStandards.createRecord = function (params) {
     qualityScore: Math.max(0, Math.min(100, quality)),
     qualityLevel: FaceStandards._getQualityLevel(quality),
     // Compression
-    compressionType: params.compressionType || FaceStandards.COMPRESSION.UNCOMPRESSED,
+    compressionType:
+      params.compressionType || FaceStandards.COMPRESSION.UNCOMPRESSED,
     // Facial features
     features: params.features || {},
     // Timestamp
@@ -174,10 +175,15 @@ FaceStandards.createRecord = function (params) {
  * @returns {{ valid: boolean, errors: string[], warnings: string[] }}
  */
 FaceStandards.validateRecord = function (record) {
-  var errors = [], warnings = [];
+  var errors = [],
+    warnings = [];
 
   if (!record) {
-    return { valid: false, errors: ["Record is null or undefined"], warnings: [] };
+    return {
+      valid: false,
+      errors: ["Record is null or undefined"],
+      warnings: [],
+    };
   }
 
   // Check required fields
@@ -186,14 +192,34 @@ FaceStandards.validateRecord = function (record) {
   }
 
   // Check minimum dimensions
-  if (record.width < FaceStandards.DIMENSIONS.MIN_WIDTH || record.height < FaceStandards.DIMENSIONS.MIN_HEIGHT) {
-    errors.push("Image dimensions below minimum: " + record.width + "x" + record.height +
-      " (min: " + FaceStandards.DIMENSIONS.MIN_WIDTH + "x" + FaceStandards.DIMENSIONS.MIN_HEIGHT + ")");
+  if (
+    record.width < FaceStandards.DIMENSIONS.MIN_WIDTH ||
+    record.height < FaceStandards.DIMENSIONS.MIN_HEIGHT
+  ) {
+    errors.push(
+      "Image dimensions below minimum: " +
+        record.width +
+        "x" +
+        record.height +
+        " (min: " +
+        FaceStandards.DIMENSIONS.MIN_WIDTH +
+        "x" +
+        FaceStandards.DIMENSIONS.MIN_HEIGHT +
+        ")",
+    );
   }
 
   // Check recommended dimensions
-  if (record.width < FaceStandards.DIMENSIONS.RECOMMENDED_WIDTH || record.height < FaceStandards.DIMENSIONS.RECOMMENDED_HEIGHT) {
-    warnings.push("Image below recommended dimensions: " + record.width + "x" + record.height);
+  if (
+    record.width < FaceStandards.DIMENSIONS.RECOMMENDED_WIDTH ||
+    record.height < FaceStandards.DIMENSIONS.RECOMMENDED_HEIGHT
+  ) {
+    warnings.push(
+      "Image below recommended dimensions: " +
+        record.width +
+        "x" +
+        record.height,
+    );
   }
 
   // Check pixel depth
@@ -203,7 +229,11 @@ FaceStandards.validateRecord = function (record) {
 
   // Check quality
   if (record.qualityScore < 51) {
-    warnings.push("Quality score " + record.qualityScore + " is below recommended minimum (51)");
+    warnings.push(
+      "Quality score " +
+        record.qualityScore +
+        " is below recommended minimum (51)",
+    );
   }
 
   // Check pose
@@ -258,11 +288,23 @@ FaceStandards.validateTemplate = function (template) {
     return { valid: false, errors: ["Template is null or undefined"] };
   }
 
-  if (!template.embedding || !(template.embedding instanceof Float32Array || template.embedding instanceof Float64Array)) {
-    errors.push("Invalid or missing embedding (must be Float32Array or Float64Array)");
+  if (
+    !template.embedding ||
+    !(
+      template.embedding instanceof Float32Array ||
+      template.embedding instanceof Float64Array
+    )
+  ) {
+    errors.push(
+      "Invalid or missing embedding (must be Float32Array or Float64Array)",
+    );
   }
 
-  if (template.embeddingLength && template.embedding && template.embeddingLength !== template.embedding.length) {
+  if (
+    template.embeddingLength &&
+    template.embedding &&
+    template.embeddingLength !== template.embedding.length
+  ) {
     errors.push("embeddingLength mismatch with actual embedding length");
   }
 
@@ -316,10 +358,17 @@ FaceStandards.serialize = function (record) {
   header[13] = Math.min(255, Math.max(0, record.estimatedAge));
 
   // Combine header and image data
-  data = new Uint8Array(header.length + (record.imageData ? record.imageData.length : 0));
+  data = new Uint8Array(
+    header.length + (record.imageData ? record.imageData.length : 0),
+  );
   data.set(header);
   if (record.imageData) {
-    data.set(record.imageData instanceof Uint8Array ? record.imageData : new Uint8Array(record.imageData), header.length);
+    data.set(
+      record.imageData instanceof Uint8Array
+        ? record.imageData
+        : new Uint8Array(record.imageData),
+      header.length,
+    );
   }
 
   return data;
@@ -338,9 +387,14 @@ FaceStandards.deserialize = function (data) {
 
   var gender;
   switch (data[9]) {
-    case 0: gender = "male"; break;
-    case 1: gender = "female"; break;
-    default: gender = "unknown";
+    case 0:
+      gender = "male";
+      break;
+    case 1:
+      gender = "female";
+      break;
+    default:
+      gender = "unknown";
   }
 
   return {
@@ -359,9 +413,10 @@ FaceStandards.deserialize = function (data) {
     qualityScore: data[12],
     estimatedAge: data[13],
     qualityLevel: FaceStandards._getQualityLevel(data[12]),
-    imageData: data.length > FaceStandards.CBEFF.BDB_HEADER_SIZE
-      ? data.slice(FaceStandards.CBEFF.BDB_HEADER_SIZE)
-      : null,
+    imageData:
+      data.length > FaceStandards.CBEFF.BDB_HEADER_SIZE
+        ? data.slice(FaceStandards.CBEFF.BDB_HEADER_SIZE)
+        : null,
   };
 };
 
@@ -422,9 +477,11 @@ FaceStandards._getQualityLevel = function (score) {
  * @private
  */
 FaceStandards._computeChecksum = function (data) {
-  var hash = 0, i;
+  var hash = 0,
+    i;
   for (i = 0; i < data.length; i++) {
-    hash = ((hash << 5) - hash + (typeof data[i] === "number" ? data[i] : 0)) | 0;
+    hash =
+      ((hash << 5) - hash + (typeof data[i] === "number" ? data[i] : 0)) | 0;
   }
   return hash.toString(16);
 };

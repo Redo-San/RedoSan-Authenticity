@@ -73,19 +73,33 @@ IrisQuality.usableArea = function (mask) {
 /* c8 ignore stop */
 IrisQuality.pupilBoundaryCircularity = function (mask, normW, normH) {
   if (!mask || normW === 0 || normH === 0 || mask.length === 0) return 1;
-  var cx = normW / 2, cy = normH / 2;
+  var cx = normW / 2,
+    cy = normH / 2;
   var pupilRadius = normW * 0.2; // approximate pupil radius in mask pixels
-  var area = 0, perimeter = 0;
+  var area = 0,
+    perimeter = 0;
   for (var y = 0; y < normH; y++) {
     for (var x = 0; x < normW; x++) {
       var idx = y * normW + x;
       var dist = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
       if (dist <= pupilRadius && mask[idx] === 0) {
         area++;
-        var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        var dirs = [
+          [-1, 0],
+          [1, 0],
+          [0, -1],
+          [0, 1],
+        ];
         for (var d = 0; d < 4; d++) {
-          var nx = x + dirs[d][0], ny = y + dirs[d][1];
-          if (nx < 0 || nx >= normW || ny < 0 || ny >= normH || mask[ny * normW + nx] === 1) {
+          var nx = x + dirs[d][0],
+            ny = y + dirs[d][1];
+          if (
+            nx < 0 ||
+            nx >= normW ||
+            ny < 0 ||
+            ny >= normH ||
+            mask[ny * normW + nx] === 1
+          ) {
             perimeter++;
             break;
           }
@@ -93,7 +107,9 @@ IrisQuality.pupilBoundaryCircularity = function (mask, normW, normH) {
       }
     }
   }
-  return (area > 0 && perimeter > 0) ? (2 * Math.sqrt(Math.PI) * area / perimeter) : 1;
+  return area > 0 && perimeter > 0
+    ? (2 * Math.sqrt(Math.PI) * area) / perimeter
+    : 1;
 };
 
 /* c8 ignore start */
@@ -225,7 +241,9 @@ IrisQuality.sharpness = function (normalizedIris, normW, normH) {
 /* c8 ignore stop */
 IrisQuality.motionBlur = function (normalizedIris, normW, normH) {
   if (!normalizedIris || normW === 0 || normH === 0) return 1;
-  var count = 0, hSum = 0, vSum = 0;
+  var count = 0,
+    hSum = 0,
+    vSum = 0;
   for (var y = 1; y < normH - 1; y++) {
     for (var x = 1; x < normW - 1; x++) {
       var idx = y * normW + x;
@@ -239,7 +257,8 @@ IrisQuality.motionBlur = function (normalizedIris, normW, normH) {
     }
   }
   if (count === 0) return 1;
-  var hVar = hSum / count, vVar = vSum / count;
+  var hVar = hSum / count,
+    vVar = vSum / count;
   return Math.min(hVar, vVar) / Math.max(hVar, vVar, 1);
 };
 
@@ -254,7 +273,8 @@ IrisQuality.motionBlur = function (normalizedIris, normW, normH) {
 /* c8 ignore stop */
 IrisQuality.grayscaleUtilisation = function (normalizedIris) {
   if (!normalizedIris || normalizedIris.length === 0) return 0;
-  var minVal = 255, maxVal = 0;
+  var minVal = 255,
+    maxVal = 0;
   for (var i = 0; i < normalizedIris.length; i++) {
     var v = normalizedIris[i];
     if (v < minVal) minVal = v;
@@ -298,7 +318,7 @@ IrisQuality.marginAdequacy = function (iris, imageWidth, imageHeight) {
   top = Math.max(0, cy - r);
   bottom = Math.min(imageHeight, cy + r);
 
-  visible = ((right - left) * (bottom - top)) / ((2 * r) * (2 * r));
+  visible = ((right - left) * (bottom - top)) / (2 * r * (2 * r));
   return Math.min(100, visible * 100);
 };
 
@@ -345,7 +365,9 @@ IrisQuality.assess = function (params) {
   if (metrics.sharpness >= IRIS_QUALITY_THRESHOLDS.sharpnessMin) {
     passedTests++;
   } else {
-    issues.push("Image too blurry (sharpness: " + metrics.sharpness.toFixed(1) + ")");
+    issues.push(
+      "Image too blurry (sharpness: " + metrics.sharpness.toFixed(1) + ")",
+    );
   }
 
   // 3. Iris-pupil contrast
@@ -355,10 +377,14 @@ IrisQuality.assess = function (params) {
     params.normH,
   );
   totalTests++;
-  if (metrics.irisPupilContrast >= IRIS_QUALITY_THRESHOLDS.irisPupilContrastMin) {
+  if (
+    metrics.irisPupilContrast >= IRIS_QUALITY_THRESHOLDS.irisPupilContrastMin
+  ) {
     passedTests++;
   } else {
-    issues.push("Low iris-pupil contrast: " + metrics.irisPupilContrast.toFixed(1));
+    issues.push(
+      "Low iris-pupil contrast: " + metrics.irisPupilContrast.toFixed(1),
+    );
   }
 
   // 4. Pupil-iris ratio
@@ -375,7 +401,9 @@ IrisQuality.assess = function (params) {
   ) {
     passedTests++;
   } else {
-    issues.push("Abnormal pupil-iris ratio: " + metrics.pupilIrisRatio.toFixed(1) + "%");
+    issues.push(
+      "Abnormal pupil-iris ratio: " + metrics.pupilIrisRatio.toFixed(1) + "%",
+    );
   }
 
   // 5. Margin adequacy
@@ -388,7 +416,9 @@ IrisQuality.assess = function (params) {
   if (metrics.marginAdequacy >= IRIS_QUALITY_THRESHOLDS.marginAdequacyMin) {
     passedTests++;
   } else {
-    issues.push("Iris not fully visible: " + metrics.marginAdequacy.toFixed(1) + "%");
+    issues.push(
+      "Iris not fully visible: " + metrics.marginAdequacy.toFixed(1) + "%",
+    );
   }
 
   // 6. Grayscale utilization
@@ -396,10 +426,17 @@ IrisQuality.assess = function (params) {
     params.normalizedIris,
   );
   totalTests++;
-  if (metrics.grayscaleUtilisation >= IRIS_QUALITY_THRESHOLDS.grayscaleUtilisationMin) {
+  if (
+    metrics.grayscaleUtilisation >=
+    IRIS_QUALITY_THRESHOLDS.grayscaleUtilisationMin
+  ) {
     passedTests++;
   } else {
-    issues.push("Low contrast range (grayscale: " + metrics.grayscaleUtilisation.toFixed(1) + ")");
+    issues.push(
+      "Low contrast range (grayscale: " +
+        metrics.grayscaleUtilisation.toFixed(1) +
+        ")",
+    );
   }
 
   // 7. Pupil boundary circularity (ISO 29794-6 §6.2.4)
@@ -409,12 +446,18 @@ IrisQuality.assess = function (params) {
     params.normH,
   );
   totalTests++;
-  if (metrics.pupilBoundaryCircularity >= IRIS_QUALITY_THRESHOLDS.pupilBoundaryCircularityMin) {
+  if (
+    metrics.pupilBoundaryCircularity >=
+    IRIS_QUALITY_THRESHOLDS.pupilBoundaryCircularityMin
+  ) {
     /* c8 ignore start -- V8 range artifact */
     passedTests++;
     /* c8 ignore stop */
   } else {
-    issues.push("Irregular pupil boundary: " + metrics.pupilBoundaryCircularity.toFixed(3));
+    issues.push(
+      "Irregular pupil boundary: " +
+        metrics.pupilBoundaryCircularity.toFixed(3),
+    );
   }
 
   // 8. Motion blur (focus assessment)

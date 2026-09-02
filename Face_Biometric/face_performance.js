@@ -147,7 +147,11 @@ FacePerformance.calculateEER = function (rocData) {
 FacePerformance.analyzeBias = function (params) {
   var groups, groupNames, groupAccuracies, i, j, maxGap, mean, variance;
 
-  if (!params || !params.demographicGroups || params.demographicGroups.length < 2) {
+  if (
+    !params ||
+    !params.demographicGroups ||
+    params.demographicGroups.length < 2
+  ) {
     return { biasDetected: false, groups: {}, maxGap: 0 };
   }
 
@@ -230,7 +234,10 @@ FacePerformance.analyzePose = function (params) {
     var pose = params.poseData[i];
     if (!pose.genuineScores || !pose.impostorScores) continue;
 
-    var rocData = FacePerformance._generateROC(pose.genuineScores, pose.impostorScores);
+    var rocData = FacePerformance._generateROC(
+      pose.genuineScores,
+      pose.impostorScores,
+    );
     var eer = FacePerformance.calculateEER(rocData);
 
     results[pose.pose] = {
@@ -288,13 +295,23 @@ FacePerformance.evaluate = function (params) {
 
   // Check minimum sample sizes
   if (genuineScores.length < FacePerformance.THRESHOLDS.MIN_GENUINE_TRIALS) {
-    console.warn("FacePerformance: Below minimum genuine trial count (" +
-      genuineScores.length + " < " + FacePerformance.THRESHOLDS.MIN_GENUINE_TRIALS + ")");
+    console.warn(
+      "FacePerformance: Below minimum genuine trial count (" +
+        genuineScores.length +
+        " < " +
+        FacePerformance.THRESHOLDS.MIN_GENUINE_TRIALS +
+        ")",
+    );
   }
 
   if (impostorScores.length < FacePerformance.THRESHOLDS.MIN_IMPOSTOR_TRIALS) {
-    console.warn("FacePerformance: Below minimum impostor trial count (" +
-      impostorScores.length + " < " + FacePerformance.THRESHOLDS.MIN_IMPOSTOR_TRIALS + ")");
+    console.warn(
+      "FacePerformance: Below minimum impostor trial count (" +
+        impostorScores.length +
+        " < " +
+        FacePerformance.THRESHOLDS.MIN_IMPOSTOR_TRIALS +
+        ")",
+    );
   }
 
   // Generate ROC curve
@@ -305,7 +322,8 @@ FacePerformance.evaluate = function (params) {
 
   // Calculate error rates at optimal threshold
   var threshold = eerResult.threshold;
-  var falseRejects = 0, falseAccepts = 0;
+  var falseRejects = 0,
+    falseAccepts = 0;
   var i;
 
   for (i = 0; i < genuineScores.length; i++) {
@@ -321,7 +339,7 @@ FacePerformance.evaluate = function (params) {
   var accuracy = FacePerformance._calculateAccuracy(
     genuineScores.length - falseRejects,
     impostorScores.length - falseAccepts,
-    genuineScores.length + impostorScores.length
+    genuineScores.length + impostorScores.length,
   );
 
   // Confidence intervals
@@ -329,7 +347,7 @@ FacePerformance.evaluate = function (params) {
   frrCI = FacePerformance._wilsonCI(falseRejects, genuineScores.length);
   accuracyCI = FacePerformance._wilsonCI(
     genuineScores.length - falseRejects + impostorScores.length - falseAccepts,
-    genuineScores.length + impostorScores.length
+    genuineScores.length + impostorScores.length,
   );
 
   // Generate DET curve
@@ -338,7 +356,9 @@ FacePerformance.evaluate = function (params) {
   // Demographic bias analysis
   var biasAnalysis = null;
   if (params.demographicGroups && params.demographicGroups.length >= 2) {
-    biasAnalysis = FacePerformance.analyzeBias({ demographicGroups: params.demographicGroups });
+    biasAnalysis = FacePerformance.analyzeBias({
+      demographicGroups: params.demographicGroups,
+    });
   }
 
   // Pose analysis
@@ -377,10 +397,22 @@ FacePerformance.evaluate = function (params) {
     },
     biasAnalysis: biasAnalysis,
     poseAnalysis: poseAnalysis,
-    evaluation: FacePerformance._evaluateMetrics(far, frr, eerResult.eer, accuracy, params.detectionRate),
+    evaluation: FacePerformance._evaluateMetrics(
+      far,
+      frr,
+      eerResult.eer,
+      accuracy,
+      params.detectionRate,
+    ),
     summary: FacePerformance._generateSummary(
-      params.systemName, far, frr, eerResult.eer, accuracy,
-      genuineScores.length, impostorScores.length, params.detectionRate
+      params.systemName,
+      far,
+      frr,
+      eerResult.eer,
+      accuracy,
+      genuineScores.length,
+      impostorScores.length,
+      params.detectionRate,
     ),
   };
 
@@ -395,7 +427,11 @@ FacePerformance.evaluate = function (params) {
  * Generate ROC curve data.
  * @private
  */
-FacePerformance._generateROC = function (genuineScores, impostorScores, numPoints) {
+FacePerformance._generateROC = function (
+  genuineScores,
+  impostorScores,
+  numPoints,
+) {
   var thresholds, rocData, minScore, maxScore, i, j, threshold;
   var trueAccepts, falseAccepts, trueRejects, falseRejects;
 
@@ -406,11 +442,11 @@ FacePerformance._generateROC = function (genuineScores, impostorScores, numPoint
 
   minScore = Math.min(
     Math.min.apply(null, genuineScores),
-    Math.min.apply(null, impostorScores)
+    Math.min.apply(null, impostorScores),
   );
   maxScore = Math.max(
     Math.max.apply(null, genuineScores),
-    Math.max.apply(null, impostorScores)
+    Math.max.apply(null, impostorScores),
   );
 
   thresholds = [];
@@ -448,8 +484,16 @@ FacePerformance._generateROC = function (genuineScores, impostorScores, numPoint
  * Generate DET curve data.
  * @private
  */
-FacePerformance._generateDET = function (genuineScores, impostorScores, numPoints) {
-  var rocData = FacePerformance._generateROC(genuineScores, impostorScores, numPoints);
+FacePerformance._generateDET = function (
+  genuineScores,
+  impostorScores,
+  numPoints,
+) {
+  var rocData = FacePerformance._generateROC(
+    genuineScores,
+    impostorScores,
+    numPoints,
+  );
   var detData = [];
   for (var i = 0; i < rocData.length; i++) {
     detData.push({ far: rocData[i].far, frr: rocData[i].frr });
@@ -461,7 +505,11 @@ FacePerformance._generateDET = function (genuineScores, impostorScores, numPoint
  * Calculate accuracy.
  * @private
  */
-FacePerformance._calculateAccuracy = function (trueAccepts, trueRejects, totalTrials) {
+FacePerformance._calculateAccuracy = function (
+  trueAccepts,
+  trueRejects,
+  totalTrials,
+) {
   if (totalTrials <= 0) return 0;
   return (trueAccepts + trueRejects) / totalTrials;
 };
@@ -478,7 +526,7 @@ FacePerformance._wilsonCI = function (successes, trials, confidence) {
   confidence = confidence || 0.95;
   if (confidence >= 0.99) z = 2.576;
   else if (confidence >= 0.95) z = 1.96;
-  else if (confidence >= 0.90) z = 1.645;
+  else if (confidence >= 0.9) z = 1.645;
   else z = 1.96;
 
   p = successes / trials;
@@ -486,7 +534,8 @@ FacePerformance._wilsonCI = function (successes, trials, confidence) {
 
   denominator = 1 + (z * z) / n;
   centre = (p + (z * z) / (2 * n)) / denominator;
-  margin = (z / denominator) * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n));
+  margin =
+    (z / denominator) * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n));
 
   return {
     lower: Math.max(0, centre - margin),
@@ -499,7 +548,13 @@ FacePerformance._wilsonCI = function (successes, trials, confidence) {
  * Evaluate metrics against thresholds.
  * @private
  */
-FacePerformance._evaluateMetrics = function (far, frr, eer, accuracy, detectionRate) {
+FacePerformance._evaluateMetrics = function (
+  far,
+  frr,
+  eer,
+  accuracy,
+  detectionRate,
+) {
   var results = [];
 
   results.push({
@@ -546,11 +601,22 @@ FacePerformance._evaluateMetrics = function (far, frr, eer, accuracy, detectionR
  * Generate human-readable summary.
  * @private
  */
-FacePerformance._generateSummary = function (name, far, frr, eer, accuracy, genuineCount, impostorCount, detectionRate) {
+FacePerformance._generateSummary = function (
+  name,
+  far,
+  frr,
+  eer,
+  accuracy,
+  genuineCount,
+  impostorCount,
+  detectionRate,
+) {
   var lines = [];
   lines.push("=== ISO/IEC 19795 Face Recognition Performance Report ===");
   lines.push("System: " + (name || "Face Recognition System"));
-  lines.push("Sample Size: " + genuineCount + " genuine, " + impostorCount + " impostor");
+  lines.push(
+    "Sample Size: " + genuineCount + " genuine, " + impostorCount + " impostor",
+  );
   lines.push("");
   lines.push("Error Rates:");
   lines.push("  FAR: " + (far * 100).toFixed(4) + "%");
@@ -562,7 +628,10 @@ FacePerformance._generateSummary = function (name, far, frr, eer, accuracy, genu
     lines.push("Detection Rate: " + (detectionRate * 100).toFixed(2) + "%");
   }
   lines.push("");
-  lines.push("Evaluation: " + (far <= 0.001 && frr <= 0.01 && eer <= 0.005 ? "PASSED" : "FAILED"));
+  lines.push(
+    "Evaluation: " +
+      (far <= 0.001 && frr <= 0.01 && eer <= 0.005 ? "PASSED" : "FAILED"),
+  );
 
   return lines.join("\n");
 };

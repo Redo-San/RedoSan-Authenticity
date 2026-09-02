@@ -86,7 +86,11 @@ IrisLiveness.prototype.getConfig = function () {
  */
 IrisLiveness.pupilDilationTest = function (frames) {
   if (!frames || frames.length < 2) {
-    return { score: 0.5, dilationRatio: 1, details: "Insufficient frames for dilation test" };
+    return {
+      score: 0.5,
+      dilationRatio: 1,
+      details: "Insufficient frames for dilation test",
+    };
   }
 
   var radii, minR, maxR, ratio, i;
@@ -99,7 +103,11 @@ IrisLiveness.pupilDilationTest = function (frames) {
   }
 
   if (radii.length < 2) {
-    return { score: 0.5, dilationRatio: 1, details: "Could not detect pupil in enough frames" };
+    return {
+      score: 0.5,
+      dilationRatio: 1,
+      details: "Could not detect pupil in enough frames",
+    };
   }
 
   minR = Math.min.apply(null, radii);
@@ -140,7 +148,12 @@ IrisLiveness.pupilDilationTest = function (frames) {
  * @param {{ cx: number, cy: number, radius: number }} pupil
  * @returns {{ score: number, highlightCount: number, details: string }}
  */
-IrisLiveness.specularReflectionTest = function (grayImage, width, height, pupil) {
+IrisLiveness.specularReflectionTest = function (
+  grayImage,
+  width,
+  height,
+  pupil,
+) {
   if (!grayImage || !pupil) {
     return { score: 0.5, highlightCount: 0, details: "No image or pupil data" };
   }
@@ -172,10 +185,16 @@ IrisLiveness.specularReflectionTest = function (grayImage, width, height, pupil)
             if (dx === 0 && dy === 0) continue;
             var nx = x + dx;
             var ny = y + dy;
-            if (nx >= 0 && nx < width && ny >= 0 && ny < height && grayImage[ny * width + nx] > val) {
-                isMax = false;
-                break;
-              }
+            if (
+              nx >= 0 &&
+              nx < width &&
+              ny >= 0 &&
+              ny < height &&
+              grayImage[ny * width + nx] > val
+            ) {
+              isMax = false;
+              break;
+            }
           }
           if (!isMax) break;
         }
@@ -241,7 +260,11 @@ IrisLiveness.specularReflectionTest = function (grayImage, width, height, pupil)
  */
 IrisLiveness.temporalConsistencyTest = function (frames) {
   if (!frames || frames.length < 3) {
-    return { score: 0.5, variance: 0, details: "Insufficient frames for temporal test" };
+    return {
+      score: 0.5,
+      variance: 0,
+      details: "Insufficient frames for temporal test",
+    };
   }
 
   var cxValues, cyValues, i, meanCx, meanCy, varCx, varCy;
@@ -256,7 +279,11 @@ IrisLiveness.temporalConsistencyTest = function (frames) {
   }
 
   if (cxValues.length < 3) {
-    return { score: 0.5, variance: 0, details: "Could not track iris position" };
+    return {
+      score: 0.5,
+      variance: 0,
+      details: "Could not track iris position",
+    };
   }
 
   // Compute mean
@@ -376,21 +403,30 @@ IrisLiveness.moireDetectionTest = function (grayImage, width, height) {
  */
 /* c8 ignore start -- V8 range artifact */
 IrisLiveness.textureAnalysisTest = function (grayImage, width, height, iris) {
-/* c8 ignore stop */
+  /* c8 ignore stop */
   if (!grayImage || !iris) {
     return { score: 0.5, textureEnergy: 0, details: "No image or iris data" };
   }
 
   // Compute local binary pattern (LBP) energy in the iris region
-  var sumEnergy = 0, count = 0;
+  var sumEnergy = 0,
+    count = 0;
   var x, y, cx, cy, r, idx, val, neighbors, lbp, energy;
 
   cx = iris.cx;
   cy = iris.cy;
   r = iris.radius;
 
-  for (y = Math.max(1, Math.floor(cy - r)); y < Math.min(height - 1, Math.ceil(cy + r)); y++) {
-    for (x = Math.max(1, Math.floor(cx - r)); x < Math.min(width - 1, Math.ceil(cx + r)); x++) {
+  for (
+    y = Math.max(1, Math.floor(cy - r));
+    y < Math.min(height - 1, Math.ceil(cy + r));
+    y++
+  ) {
+    for (
+      x = Math.max(1, Math.floor(cx - r));
+      x < Math.min(width - 1, Math.ceil(cx + r));
+      x++
+    ) {
       var dist = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
       if (dist > r * 0.9 || dist < r * 0.35) continue;
 
@@ -400,18 +436,22 @@ IrisLiveness.textureAnalysisTest = function (grayImage, width, height, iris) {
       // Compute 8-neighbor LBP
       lbp = 0;
       neighbors = [
-        grayImage[idx - width - 1], grayImage[idx - width], grayImage[idx - width + 1],
+        grayImage[idx - width - 1],
+        grayImage[idx - width],
+        grayImage[idx - width + 1],
         grayImage[idx + 1],
-        grayImage[idx + width + 1], grayImage[idx + width], grayImage[idx + width - 1],
+        grayImage[idx + width + 1],
+        grayImage[idx + width],
+        grayImage[idx + width - 1],
         grayImage[idx - 1],
       ];
 
       for (var n = 0; n < 8; n++) {
-        if (neighbors[n] >= val) lbp |= (1 << n);
+        if (neighbors[n] >= val) lbp |= 1 << n;
       }
 
       // Count non-uniform patterns (indicator of texture complexity)
-      energy += (lbp !== 0 && lbp !== 255) ? 1 : 0;
+      energy += lbp !== 0 && lbp !== 255 ? 1 : 0;
       count++;
     }
   }
@@ -453,16 +493,32 @@ IrisLiveness.textureAnalysisTest = function (grayImage, width, height, iris) {
  * @returns {{ score: number, screenIndicator: number, details: string }}
  */
 /* c8 ignore stop */
-IrisLiveness.colorChannelAnalysisTest = function (rgbImage, width, height, iris) {
+IrisLiveness.colorChannelAnalysisTest = function (
+  rgbImage,
+  width,
+  height,
+  iris,
+) {
   if (!rgbImage || !iris) {
     return { score: 0.5, screenIndicator: 0, details: "No image or iris data" };
   }
 
-  var rSum = 0, gSum = 0, bSum = 0, count = 0;
+  var rSum = 0,
+    gSum = 0,
+    bSum = 0,
+    count = 0;
   var x, y, idx;
 
-  for (y = Math.max(0, Math.floor(iris.cy - iris.radius)); y < Math.min(height, Math.ceil(iris.cy + iris.radius)); y++) {
-    for (x = Math.max(0, Math.floor(iris.cx - iris.radius)); x < Math.min(width, Math.ceil(iris.cx + iris.radius)); x++) {
+  for (
+    y = Math.max(0, Math.floor(iris.cy - iris.radius));
+    y < Math.min(height, Math.ceil(iris.cy + iris.radius));
+    y++
+  ) {
+    for (
+      x = Math.max(0, Math.floor(iris.cx - iris.radius));
+      x < Math.min(width, Math.ceil(iris.cx + iris.radius));
+      x++
+    ) {
       idx = (y * width + x) * 4;
       if (idx + 2 < rgbImage.length) {
         rSum += rgbImage[idx];
@@ -473,7 +529,12 @@ IrisLiveness.colorChannelAnalysisTest = function (rgbImage, width, height, iris)
     }
   }
 
-  if (count === 0) return { score: 0.5, screenIndicator: 0, details: "No pixels in iris region" };
+  if (count === 0)
+    return {
+      score: 0.5,
+      screenIndicator: 0,
+      details: "No pixels in iris region",
+    };
 
   var rMean = rSum / count;
   var gMean = gSum / count;
@@ -482,7 +543,8 @@ IrisLiveness.colorChannelAnalysisTest = function (rgbImage, width, height, iris)
   // Screens show: high blue channel, uniform RGB ratios
   // Real eyes: lower blue, more variation between channels
   var blueRatio = bMean / (rMean + gMean + bMean + 1);
-  var channelSpread = Math.max(rMean, gMean, bMean) - Math.min(rMean, gMean, bMean);
+  var channelSpread =
+    Math.max(rMean, gMean, bMean) - Math.min(rMean, gMean, bMean);
 
   var screenIndicator = 0;
   if (blueRatio > 0.38) screenIndicator += 0.3; // High blue = screen
@@ -537,12 +599,26 @@ IrisLiveness.depthEstimationTest = function (grayImage, width, height, iris) {
 
     // Compute local focus (Laplacian variance) in a small patch
     var patchSize = Math.max(3, Math.floor(iris.radius * 0.3));
-    var lapSum = 0, lapCount = 0;
+    var lapSum = 0,
+      lapCount = 0;
 
-    for (var y = Math.max(1, sampleY - patchSize); y < Math.min(height - 1, sampleY + patchSize); y++) {
-      for (var x = Math.max(1, sampleX - patchSize); x < Math.min(width - 1, sampleX + patchSize); x++) {
+    for (
+      var y = Math.max(1, sampleY - patchSize);
+      y < Math.min(height - 1, sampleY + patchSize);
+      y++
+    ) {
+      for (
+        var x = Math.max(1, sampleX - patchSize);
+        x < Math.min(width - 1, sampleX + patchSize);
+        x++
+      ) {
         var idx = y * width + x;
-        var lap = -4 * grayImage[idx] + grayImage[idx - 1] + grayImage[idx + 1] + grayImage[idx - width] + grayImage[idx + width];
+        var lap =
+          -4 * grayImage[idx] +
+          grayImage[idx - 1] +
+          grayImage[idx + 1] +
+          grayImage[idx - width] +
+          grayImage[idx + width];
         lapSum += Math.abs(lap);
         lapCount++;
       }
@@ -598,18 +674,35 @@ IrisLiveness.depthEstimationTest = function (grayImage, width, height, iris) {
  * @returns {{score:number, attack:boolean, detail:string, peakRatio:number}}
  */
 /* c8 ignore stop */
-IrisLiveness.periodicPatternTest = function (grayImage, imageWidth, imageHeight, iris) {
+IrisLiveness.periodicPatternTest = function (
+  grayImage,
+  imageWidth,
+  imageHeight,
+  iris,
+) {
   if (!grayImage || !iris || !iris.radius || iris.radius < 4) {
-    return { score: 1, attack: false, detail: "skipped (no iris)", peakRatio: 0 };
+    return {
+      score: 1,
+      attack: false,
+      detail: "skipped (no iris)",
+      peakRatio: 0,
+    };
   }
   var N = 40;
-  var cx = iris.cx, cy = iris.cy, R = iris.radius;
+  var cx = iris.cx,
+    cy = iris.cy,
+    R = iris.radius;
   var x0 = Math.max(0, Math.floor(cx - R));
   var x1 = Math.min(imageWidth - 1, Math.ceil(cx + R));
   var y0 = Math.max(0, Math.floor(cy - R));
   var y1 = Math.min(imageHeight - 1, Math.ceil(cy + R));
   var span = Math.max(1, x1 - x0);
-  var i, j, sx, sy, v, sum = 0;
+  var i,
+    j,
+    sx,
+    sy,
+    v,
+    sum = 0;
   var grid = new Float64Array(N * N);
   for (j = 0; j < N; j++) {
     sy = y0 + (j / (N - 1)) * span;
@@ -625,7 +718,17 @@ IrisLiveness.periodicPatternTest = function (grayImage, imageWidth, imageHeight,
 
   var mag = new Float64Array(N * N);
   var tw = (2 * Math.PI) / N;
-  var u, vv, x, y, re, im, ang, g, mx = 0, total = 0, count = 0;
+  var u,
+    vv,
+    x,
+    y,
+    re,
+    im,
+    ang,
+    g,
+    mx = 0,
+    total = 0,
+    count = 0;
   for (vv = 0; vv < N; vv++) {
     for (u = 0; u < N; u++) {
       re = 0;
@@ -657,7 +760,10 @@ IrisLiveness.periodicPatternTest = function (grayImage, imageWidth, imageHeight,
   return {
     score: attack ? 0.05 : 0.95,
     attack: attack,
-    detail: "periodic-pattern peakRatio=" + peakRatio.toFixed(3) + (attack ? " (attack)" : " (bona fide)"),
+    detail:
+      "periodic-pattern peakRatio=" +
+      peakRatio.toFixed(3) +
+      (attack ? " (attack)" : " (bona fide)"),
     peakRatio: peakRatio,
   };
 };
@@ -674,7 +780,12 @@ IrisLiveness.periodicPatternTest = function (grayImage, imageWidth, imageHeight,
 IrisLiveness.classifyPAISpecies = function (checkResults) {
   if (!checkResults || !checkResults.checks) {
     /* c8 ignore start -- V8 range artifact */
-    return { species: 0, level: 0, confidence: 0, details: "No check results available" };
+    return {
+      species: 0,
+      level: 0,
+      confidence: 0,
+      details: "No check results available",
+    };
     /* c8 ignore stop */
   }
 
@@ -753,17 +864,26 @@ IrisLiveness.classifyPAISpecies = function (checkResults) {
 
   // Determine PAI Level
   var level = Level.A; // Default to Level A
-  if (classifiedSpecies === Species.VIDEO_REPLAY || classifiedSpecies === Species.PRINTED_EYE) {
+  if (
+    classifiedSpecies === Species.VIDEO_REPLAY ||
+    classifiedSpecies === Species.PRINTED_EYE
+  ) {
     level = Level.B;
   } else if (classifiedSpecies === Species.PROSTHETIC_3D) {
     level = Level.C;
   }
 
   // Confidence based on score separation
-  var sortedScores = Object.values(speciesScores).sort(function (a, b) { return b - a; });
-  var confidence = sortedScores.length >= 2
-    ? Math.min(1, (sortedScores[0] - sortedScores[1]) / (sortedScores[0] + 0.001))
-    : 0;
+  var sortedScores = Object.values(speciesScores).sort(function (a, b) {
+    return b - a;
+  });
+  var confidence =
+    sortedScores.length >= 2
+      ? Math.min(
+          1,
+          (sortedScores[0] - sortedScores[1]) / (sortedScores[0] + 0.001),
+        )
+      : 0;
 
   var speciesNames = {};
   speciesNames[Species.PRINTED_PHOTO] = "Printed Photo";
@@ -778,8 +898,14 @@ IrisLiveness.classifyPAISpecies = function (checkResults) {
     level: level,
     confidence: Math.round(confidence * 100) / 100,
     scores: speciesScores,
-    details: "PAI species: " + (speciesNames[classifiedSpecies] || "Unknown") +
-      " (Level " + ["A", "B", "C"][level - 1] + ", confidence: " + Math.round(confidence * 100) + "%)",
+    details:
+      "PAI species: " +
+      (speciesNames[classifiedSpecies] || "Unknown") +
+      " (Level " +
+      ["A", "B", "C"][level - 1] +
+      ", confidence: " +
+      Math.round(confidence * 100) +
+      "%)",
   };
 };
 
@@ -824,8 +950,10 @@ IrisLiveness.computeIAPAR = function (agencyData) {
     return { meanAPCER: 0, meanBPCER: 0, maxAPCER: 0, maxBPCER: 0, iapar: 0 };
   }
 
-  var sumAPCER = 0, sumBPCER = 0;
-  var maxAPCER = 0, maxBPCER = 0;
+  var sumAPCER = 0,
+    sumBPCER = 0;
+  var maxAPCER = 0,
+    maxBPCER = 0;
 
   for (var i = 0; i < agencyData.length; i++) {
     sumAPCER += agencyData[i].apcer;
@@ -865,21 +993,33 @@ IrisLiveness.computeIAPAR = function (agencyData) {
  * @param {number[]} [targets] - BPCER targets
  * @returns {{ points: Array<{bpcerTarget: number, threshold: number, apcer: number}>, details: string }}
  */
-IrisLiveness.computeBpcerApcerPoints = function (bonaFideScores, attackScores, targets) {
+IrisLiveness.computeBpcerApcerPoints = function (
+  bonaFideScores,
+  attackScores,
+  targets,
+) {
   var i, sorted, idx, threshold, attacksPassed, apcer;
   var points = [];
 
   targets = targets || [0.1, 0.2];
 
-  if (!bonaFideScores || !attackScores || bonaFideScores.length === 0 || attackScores.length === 0) {
+  if (
+    !bonaFideScores ||
+    !attackScores ||
+    bonaFideScores.length === 0 ||
+    attackScores.length === 0
+  ) {
     return {
       points: [],
-      details: "Insufficient scores — need both bona fide and attack score arrays",
+      details:
+        "Insufficient scores — need both bona fide and attack score arrays",
     };
   }
 
   // Sort bona fide ascending: quantile gives the BPCER target threshold
-  sorted = bonaFideScores.slice().sort(function (a, b) { return a - b; });
+  sorted = bonaFideScores.slice().sort(function (a, b) {
+    return a - b;
+  });
 
   for (i = 0; i < targets.length; i++) {
     // Threshold such that `target` fraction of genuine fall below it
@@ -902,7 +1042,13 @@ IrisLiveness.computeBpcerApcerPoints = function (bonaFideScores, attackScores, t
 
   var summary = points
     .map(function (p) {
-      return "APCER@" + (p.bpcerTarget * 100).toFixed(0) + "%BPCER = " + (p.apcer * 100).toFixed(2) + "%";
+      return (
+        "APCER@" +
+        (p.bpcerTarget * 100).toFixed(0) +
+        "%BPCER = " +
+        (p.apcer * 100).toFixed(2) +
+        "%"
+      );
     })
     .join(", ");
 
@@ -937,7 +1083,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.3;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "pupilDilation", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "pupilDilation",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Check 2: Specular reflection
@@ -951,7 +1102,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.25;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "specularReflection", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "specularReflection",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Check 3: Temporal consistency
@@ -960,7 +1116,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.25;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "temporalConsistency", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "temporalConsistency",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Check 4: Moiré detection
@@ -973,7 +1134,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.15;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "moireDetection", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "moireDetection",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Check 5: Texture analysis (FIDO PAI Level A)
@@ -987,7 +1153,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.12;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "textureAnalysis", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "textureAnalysis",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Check 6: Color channel analysis (FIDO PAI Level A)
@@ -1001,7 +1172,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.1;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "colorChannelAnalysis", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "colorChannelAnalysis",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Check 7: Depth estimation (FIDO PAI Level B)
@@ -1015,7 +1191,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.08;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "depthEstimation", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "depthEstimation",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Check 8: Periodic-pattern / textured contact-lens detection (ISO/IEC 30107-3)
@@ -1029,7 +1210,12 @@ IrisLiveness.prototype.assess = function (params) {
     weight = 0.15;
     totalScore += check.score * weight;
     weightSum += weight;
-    checks.push({ name: "periodicPattern", score: check.score, weight: weight, details: check.details });
+    checks.push({
+      name: "periodicPattern",
+      score: check.score,
+      weight: weight,
+      details: check.details,
+    });
   }
 
   // Normalize score
@@ -1053,7 +1239,8 @@ IrisLiveness.prototype.assess = function (params) {
   } else if (failedChecks.length > 0) {
     details = "Liveness check FAILED — suspicious: " + failedChecks.join(", ");
   } else {
-    details = "Liveness check INCONCLUSIVE (score: " + finalScore.toFixed(3) + ")";
+    details =
+      "Liveness check INCONCLUSIVE (score: " + finalScore.toFixed(3) + ")";
   }
 
   return {

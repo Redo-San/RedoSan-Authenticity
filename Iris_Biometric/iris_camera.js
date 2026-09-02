@@ -169,7 +169,10 @@ IrisCamera.prototype.listCameras = async function () {
     for (i = 0; i < devices.length; i++) {
       d = devices[i];
       if (d.kind === "videoinput") {
-        list.push({ deviceId: d.deviceId, label: d.label || "Camera " + (list.length + 1) });
+        list.push({
+          deviceId: d.deviceId,
+          label: d.label || "Camera " + (list.length + 1),
+        });
       }
     }
     return list;
@@ -218,7 +221,10 @@ IrisCamera.prototype.captureCanvas = function (video) {
  * @param {number} intervalMs - ms between captures
  * @returns {Promise<Array<ImageData>>}
  */
-IrisCamera.prototype.captureMultipleFrames = async function (count, intervalMs) {
+IrisCamera.prototype.captureMultipleFrames = async function (
+  count,
+  intervalMs,
+) {
   var frames, i;
   count = count || 5;
   intervalMs = intervalMs || 300;

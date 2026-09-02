@@ -257,9 +257,10 @@ IrisQualityFull.ACQUISITION_GATES = {
  */
 /* c8 ignore start -- function definition V8 range artifact */
 IrisQualityFull.focusQuality = function (imageData, width, height, roi) {
-/* c8 ignore stop */
+  /* c8 ignore stop */
   var startX, startY, endX, endY, x, y, idx, laplacian, sum, count, variance;
-  var lapSum = 0, lapSqSum = 0;
+  var lapSum = 0,
+    lapSqSum = 0;
 
   if (!imageData || width <= 0 || height <= 0) return 0;
 
@@ -304,8 +305,13 @@ IrisQualityFull.focusQuality = function (imageData, width, height, roi) {
  * @returns {number} Raw Laplacian variance
  */
 /* c8 ignore start -- function definition V8 range artifact */
-IrisQualityFull.rawLaplacianVariance = function (imageData, width, height, roi) {
-/* c8 ignore stop */
+IrisQualityFull.rawLaplacianVariance = function (
+  imageData,
+  width,
+  height,
+  roi,
+) {
+  /* c8 ignore stop */
   var x, y, idx, lap, lapSum, lapSqSum, count;
   var startX, startY, endX, endY;
 
@@ -468,58 +474,127 @@ IrisQualityFull.evaluateAcquisitionGates = function (params) {
   }
 
   lapVar = IrisQualityFull.rawLaplacianVariance(
-    params.imageData, params.width, params.height, params.roi
+    params.imageData,
+    params.width,
+    params.height,
+    params.roi,
   );
   pir = params.iris.radius > 0 ? params.pupil.radius / params.iris.radius : 0;
   via = params.mask
-    ? IrisQualityFull.visibleIrisArea(params.mask, params.width, params.height, params.iris)
+    ? IrisQualityFull.visibleIrisArea(
+        params.mask,
+        params.width,
+        params.height,
+        params.iris,
+      )
     : { viaPx: 0, passedGate: false };
   ang = params.mask
-    ? IrisQualityFull.angularOcclusion(params.mask, params.width, params.height, params.iris)
+    ? IrisQualityFull.angularOcclusion(
+        params.mask,
+        params.width,
+        params.height,
+        params.iris,
+      )
     : { maxOcclusion90: 1, maxOcclusion30: 1 };
 
   var spec = IrisQualityFull.specularReflection(
-    params.imageData, params.width, params.height, params.pupil, params.iris
+    params.imageData,
+    params.width,
+    params.height,
+    params.pupil,
+    params.iris,
   );
 
   if (lapVar < g.sharpnessLaplacianVarMin) {
-    failures.push("sharpness(lapVar=" + Math.round(lapVar) + "<" + g.sharpnessLaplacianVarMin + ")");
+    failures.push(
+      "sharpness(lapVar=" +
+        Math.round(lapVar) +
+        "<" +
+        g.sharpnessLaplacianVarMin +
+        ")",
+    );
   }
   if (pir < g.pupilIrisRatioMin || pir > g.pupilIrisRatioMax) {
-    failures.push("pupilIrisRatio(" + pir.toFixed(3) + " outside " + g.pupilIrisRatioMin + "-" + g.pupilIrisRatioMax + ")");
+    failures.push(
+      "pupilIrisRatio(" +
+        pir.toFixed(3) +
+        " outside " +
+        g.pupilIrisRatioMin +
+        "-" +
+        g.pupilIrisRatioMax +
+        ")",
+    );
   }
   if (!via.passedGate) {
     failures.push("visibleIrisArea(" + via.viaPx + "<" + g.minMaskSizePx + ")");
   }
   if (ang.maxOcclusion90 > g.occlusion90DegMax) {
-    failures.push("occlusion90(" + (ang.maxOcclusion90 * 100).toFixed(1) + "%>" + (g.occlusion90DegMax * 100) + "%)");
+    failures.push(
+      "occlusion90(" +
+        (ang.maxOcclusion90 * 100).toFixed(1) +
+        "%>" +
+        g.occlusion90DegMax * 100 +
+        "%)",
+    );
   }
   if (ang.maxOcclusion30 > g.occlusion30DegMax) {
-    failures.push("occlusion30(" + (ang.maxOcclusion30 * 100).toFixed(1) + "%>" + (g.occlusion30DegMax * 100) + "%)");
+    failures.push(
+      "occlusion30(" +
+        (ang.maxOcclusion30 * 100).toFixed(1) +
+        "%>" +
+        g.occlusion30DegMax * 100 +
+        "%)",
+    );
   }
   if (spec.ratio > g.specularReflectionRatioMax) {
-    failures.push("specularReflection(" + (spec.ratio * 100).toFixed(1) + "%>" + (g.specularReflectionRatioMax * 100) + "%)");
+    failures.push(
+      "specularReflection(" +
+        (spec.ratio * 100).toFixed(1) +
+        "%>" +
+        g.specularReflectionRatioMax * 100 +
+        "%)",
+    );
   }
 
   // Section-0 mitigation: reject captures too low-texture to encode (dark-iris /
   // poor-lighting failure mode under visible light). Conservative floor.
   var tex = IrisQualityFull.irisTextureContrast(
-    params.imageData, params.width, params.height, params.iris
+    params.imageData,
+    params.width,
+    params.height,
+    params.iris,
   );
   if (tex < g.irisTextureContrastMin) {
-    failures.push("irisTextureContrast(std=" + tex.toFixed(1) + "<" + g.irisTextureContrastMin + ")");
+    failures.push(
+      "irisTextureContrast(std=" +
+        tex.toFixed(1) +
+        "<" +
+        g.irisTextureContrastMin +
+        ")",
+    );
   }
 
   var margin = IrisQualityFull.marginAdequacy(
-    params.iris, params.iris.radius, params.width, params.height
+    params.iris,
+    params.iris.radius,
+    params.width,
+    params.height,
   );
   if (margin < g.marginAdequacyMin) {
-    failures.push("marginAdequacy(" + Math.round(margin) + "<" + g.marginAdequacyMin + ")");
+    failures.push(
+      "marginAdequacy(" + Math.round(margin) + "<" + g.marginAdequacyMin + ")",
+    );
   }
 
   // Daugman minimum absolute iris radius
   if (params.iris.radius < g.irisRadiusMinAbsolute) {
-    failures.push("irisRadiusAbsolute(" + Math.round(params.iris.radius) + "<" + g.irisRadiusMinAbsolute + ")");
+    failures.push(
+      "irisRadiusAbsolute(" +
+        Math.round(params.iris.radius) +
+        "<" +
+        g.irisRadiusMinAbsolute +
+        ")",
+    );
   }
 
   metrics = {
@@ -569,8 +644,17 @@ IrisQualityFull.usableArea = function (mask) {
  * @param {object} iris - Iris center and radius {x, y, radius}
  * @returns {number} 0-100 contrast score
  */
-IrisQualityFull.irisPupilContrast = function (imageData, width, height, pupil, iris) {
-  var pupilSum = 0, pupilCount = 0, irisSum = 0, irisCount = 0;
+IrisQualityFull.irisPupilContrast = function (
+  imageData,
+  width,
+  height,
+  pupil,
+  iris,
+) {
+  var pupilSum = 0,
+    pupilCount = 0,
+    irisSum = 0,
+    irisCount = 0;
   var x, y, distPupil, distIris, idx;
 
   if (!imageData || !pupil || !iris) return 0;
@@ -581,13 +665,11 @@ IrisQualityFull.irisPupilContrast = function (imageData, width, height, pupil, i
 
       // Distance from pupil center
       distPupil = Math.sqrt(
-        Math.pow(x - pupil.x, 2) + Math.pow(y - pupil.y, 2)
+        Math.pow(x - pupil.x, 2) + Math.pow(y - pupil.y, 2),
       );
 
       // Distance from iris center
-      distIris = Math.sqrt(
-        Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2)
-      );
+      distIris = Math.sqrt(Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2));
 
       // Pupil region: within 80% of pupil radius
       if (distPupil <= pupil.radius * 0.8) {
@@ -596,7 +678,11 @@ IrisQualityFull.irisPupilContrast = function (imageData, width, height, pupil, i
       }
 
       // Iris region: between 30% and 90% of iris radius, outside pupil
-      if (distIris >= iris.radius * 0.3 && distIris <= iris.radius * 0.9 && distPupil > pupil.radius) {
+      if (
+        distIris >= iris.radius * 0.3 &&
+        distIris <= iris.radius * 0.9 &&
+        distPupil > pupil.radius
+      ) {
         irisSum += imageData[idx];
         irisCount++;
       }
@@ -609,7 +695,7 @@ IrisQualityFull.irisPupilContrast = function (imageData, width, height, pupil, i
   var irisMean = irisSum / irisCount;
 
   // Contrast as percentage difference
-  return Math.min(100, Math.abs(irisMean - pupilMean) / 255 * 100 * 2);
+  return Math.min(100, (Math.abs(irisMean - pupilMean) / 255) * 100 * 2);
 };
 
 /**
@@ -621,7 +707,10 @@ IrisQualityFull.irisPupilContrast = function (imageData, width, height, pupil, i
  * @returns {number} 0-100 contrast score
  */
 IrisQualityFull.irisScleraContrast = function (imageData, width, height, iris) {
-  var irisSum = 0, irisCount = 0, scleraSum = 0, scleraCount = 0;
+  var irisSum = 0,
+    irisCount = 0,
+    scleraSum = 0,
+    scleraCount = 0;
   var x, y, dist, idx;
 
   if (!imageData || !iris) return 0;
@@ -629,9 +718,7 @@ IrisQualityFull.irisScleraContrast = function (imageData, width, height, iris) {
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
       idx = y * width + x;
-      dist = Math.sqrt(
-        Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2)
-      );
+      dist = Math.sqrt(Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2));
 
       // Iris region: 40%-90% of radius
       if (dist >= iris.radius * 0.4 && dist <= iris.radius * 0.9) {
@@ -652,7 +739,7 @@ IrisQualityFull.irisScleraContrast = function (imageData, width, height, iris) {
   var irisMean = irisSum / irisCount;
   var scleraMean = scleraSum / scleraCount;
 
-  return Math.min(100, Math.abs(irisMean - scleraMean) / 255 * 100 * 2);
+  return Math.min(100, (Math.abs(irisMean - scleraMean) / 255) * 100 * 2);
 };
 
 /**
@@ -672,15 +759,24 @@ IrisQualityFull.irisScleraContrast = function (imageData, width, height, iris) {
  * @param {object} iris - { x, y, radius }
  * @returns {number} standard deviation of annulus pixels (0-~128)
  */
-IrisQualityFull.irisTextureContrast = function (imageData, width, height, iris) {
-  var x, y, dist, idx, sum = 0, count = 0, v;
+IrisQualityFull.irisTextureContrast = function (
+  imageData,
+  width,
+  height,
+  iris,
+) {
+  var x,
+    y,
+    dist,
+    idx,
+    sum = 0,
+    count = 0,
+    v;
   if (!imageData || !iris) return 0;
 
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
-      dist = Math.sqrt(
-        Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2)
-      );
+      dist = Math.sqrt(Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2));
       // Iris texture annulus: 40%-90% of radius
       if (dist >= iris.radius * 0.4 && dist <= iris.radius * 0.9) {
         sum += imageData[y * width + x];
@@ -694,9 +790,7 @@ IrisQualityFull.irisTextureContrast = function (imageData, width, height, iris) 
   var varSum = 0;
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
-      dist = Math.sqrt(
-        Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2)
-      );
+      dist = Math.sqrt(Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2));
       if (dist >= iris.radius * 0.4 && dist <= iris.radius * 0.9) {
         v = imageData[y * width + x] - mean;
         varSum += v * v;
@@ -762,10 +856,22 @@ IrisQualityFull.gazeAngle = function (pupil, iris, irisRadius) {
  */
 IrisQualityFull.detectIllumination = function (imageData, width, height) {
   if (!imageData || width <= 0 || height <= 0) {
-    return { modality: "unknown", colorCapture: false, meanChannelDiff: 0, confidence: 0 };
+    return {
+      modality: "unknown",
+      colorCapture: false,
+      meanChannelDiff: 0,
+      confidence: 0,
+    };
   }
 
-  var n = width * height, rg = 0, gb = 0, rb = 0, i, p, d = imageData, count = 0;
+  var n = width * height,
+    rg = 0,
+    gb = 0,
+    rb = 0,
+    i,
+    p,
+    d = imageData,
+    count = 0;
   for (i = 0; i < n; i++) {
     p = i * 4;
     rg += Math.abs(d[p] - d[p + 1]);
@@ -787,7 +893,12 @@ IrisQualityFull.detectIllumination = function (imageData, width, height) {
   };
 };
 
-IrisQualityFull.marginAdequacy = function (iris, irisRadius, imageWidth, imageHeight) {
+IrisQualityFull.marginAdequacy = function (
+  iris,
+  irisRadius,
+  imageWidth,
+  imageHeight,
+) {
   if (!iris || !irisRadius) return 0;
 
   var margin = {
@@ -798,7 +909,12 @@ IrisQualityFull.marginAdequacy = function (iris, irisRadius, imageWidth, imageHe
   };
 
   // All margins should be positive and adequate
-  var minMargin = Math.min(margin.left, margin.right, margin.top, margin.bottom);
+  var minMargin = Math.min(
+    margin.left,
+    margin.right,
+    margin.top,
+    margin.bottom,
+  );
   var requiredMargin = irisRadius * 0.2;
 
   if (minMargin >= requiredMargin) return 100;
@@ -822,7 +938,9 @@ IrisQualityFull.grayscaleUtilization = function (imageData, roi, width) {
   histogram = new Uint32Array(256);
   startX = roi ? roi.x : 0;
   startY = roi ? roi.y : 0;
-  endX = roi ? Math.min(roi.x + roi.width, width || imageData.length) : (width || imageData.length);
+  endX = roi
+    ? Math.min(roi.x + roi.width, width || imageData.length)
+    : width || imageData.length;
   endY = roi ? roi.y + roi.height : 1;
 
   for (i = 0; i < imageData.length; i++) {
@@ -847,7 +965,12 @@ IrisQualityFull.grayscaleUtilization = function (imageData, roi, width) {
  */
 /* c8 ignore stop */
 IrisQualityFull.motionBlur = function (imageData, width, height) {
-  var i, idx, sumX = 0, sumY = 0, countX = 0, countY = 0;
+  var i,
+    idx,
+    sumX = 0,
+    sumY = 0,
+    countX = 0,
+    countY = 0;
   var horizontalGradient, verticalGradient;
 
   if (!imageData || width <= 1 || height <= 1) return 0;
@@ -870,7 +993,8 @@ IrisQualityFull.motionBlur = function (imageData, width, height) {
   }
 
   // Low gradient variance indicates blur
-  var meanGradient = ((countX > 0 ? sumX / countX : 0) + (countY > 0 ? sumY / countY : 0)) / 2;
+  var meanGradient =
+    ((countX > 0 ? sumX / countX : 0) + (countY > 0 ? sumY / countY : 0)) / 2;
 
   // Invert and scale: high gradient = sharp, low gradient = blurry
   return Math.max(0, Math.min(50, 50 - meanGradient));
@@ -886,19 +1010,33 @@ IrisQualityFull.motionBlur = function (imageData, width, height) {
  */
 IrisQualityFull.pupilBoundaryCircularity = function (mask, normW, normH) {
   if (!mask || normW === 0 || normH === 0 || mask.length === 0) return 1;
-  var cx = normW / 2, cy = normH / 2;
+  var cx = normW / 2,
+    cy = normH / 2;
   var pupilRadius = normW * 0.2;
-  var area = 0, perimeter = 0;
+  var area = 0,
+    perimeter = 0;
   for (var y = 0; y < normH; y++) {
     for (var x = 0; x < normW; x++) {
       var idx = y * normW + x;
       var dist = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
       if (dist <= pupilRadius && mask[idx] === 0) {
         area++;
-        var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        var dirs = [
+          [-1, 0],
+          [1, 0],
+          [0, -1],
+          [0, 1],
+        ];
         for (var d = 0; d < 4; d++) {
-          var nx = x + dirs[d][0], ny = y + dirs[d][1];
-          if (nx < 0 || nx >= normW || ny < 0 || ny >= normH || mask[ny * normW + nx] === 1) {
+          var nx = x + dirs[d][0],
+            ny = y + dirs[d][1];
+          if (
+            nx < 0 ||
+            nx >= normW ||
+            ny < 0 ||
+            ny >= normH ||
+            mask[ny * normW + nx] === 1
+          ) {
             perimeter++;
             break;
           }
@@ -906,7 +1044,9 @@ IrisQualityFull.pupilBoundaryCircularity = function (mask, normW, normH) {
       }
     }
   }
-  return (area > 0 && perimeter > 0) ? (2 * Math.sqrt(Math.PI) * area / perimeter) : 1;
+  return area > 0 && perimeter > 0
+    ? (2 * Math.sqrt(Math.PI) * area) / perimeter
+    : 1;
 };
 
 /* c8 ignore start */
@@ -923,7 +1063,9 @@ IrisQualityFull.pupilBoundaryCircularity = function (mask, normW, normH) {
 /* c8 ignore stop */
 IrisQualityFull.motionBlurFocus = function (normalizedIris, normW, normH) {
   if (!normalizedIris || normW === 0 || normH === 0) return 1;
-  var count = 0, hSum = 0, vSum = 0;
+  var count = 0,
+    hSum = 0,
+    vSum = 0;
   for (var y = 1; y < normH - 1; y++) {
     for (var x = 1; x < normW - 1; x++) {
       var idx = y * normW + x;
@@ -935,7 +1077,8 @@ IrisQualityFull.motionBlurFocus = function (normalizedIris, normW, normH) {
     }
   }
   if (count === 0) return 1;
-  var hVar = hSum / count, vVar = vSum / count;
+  var hVar = hSum / count,
+    vVar = vSum / count;
   return Math.min(hVar, vVar) / Math.max(hVar, vVar, 1);
 };
 
@@ -959,7 +1102,14 @@ IrisQualityFull.motionBlurFocus = function (normalizedIris, normW, normH) {
  * @returns {{ ratio: number, saturatedPx: number, irisPx: number }}
  */
 /* c8 ignore stop */
-IrisQualityFull.specularReflection = function (imageData, width, height, pupil, iris, satThreshold) {
+IrisQualityFull.specularReflection = function (
+  imageData,
+  width,
+  height,
+  pupil,
+  iris,
+  satThreshold,
+) {
   var sat = typeof satThreshold === "number" ? satThreshold : 248;
   var x, y, dx, dy, dist, idx, irisPx, satPx;
   irisPx = 0;
@@ -977,7 +1127,10 @@ IrisQualityFull.specularReflection = function (imageData, width, height, pupil, 
       dx = x - iris.x;
       dist = Math.hypot(dx, dy);
       // Only the textured iris annulus (exclude pupil and outer boundary)
-      if (dist >= Math.max(pr * 1.05, iris.radius * 0.3) && dist <= iris.radius * 0.95) {
+      if (
+        dist >= Math.max(pr * 1.05, iris.radius * 0.3) &&
+        dist <= iris.radius * 0.95
+      ) {
         irisPx++;
         idx = y * width + x;
         if (imageData[idx] >= sat) satPx++;
@@ -1029,7 +1182,13 @@ IrisQualityFull.concentricity = function (pupil, iris, irisRadius) {
  * @param {number} irisRadius - Iris radius
  * @returns {number} 0-1 ratio (1 = fully open circular)
  */
-IrisQualityFull.eyelidCircularity = function (mask, maskWidth, maskHeight, iris, irisRadius) {
+IrisQualityFull.eyelidCircularity = function (
+  mask,
+  maskWidth,
+  maskHeight,
+  iris,
+  irisRadius,
+) {
   if (!mask || !iris || !irisRadius) return 0.5;
 
   var validCount = 0;
@@ -1082,7 +1241,13 @@ IrisQualityFull.azimuthGaze = function (pupil, iris, irisRadius) {
  * @param {number} irisRadius - Iris radius
  * @returns {number} 0-100 depth of field score
  */
-IrisQualityFull.depthOfField = function (imageData, width, height, iris, irisRadius) {
+IrisQualityFull.depthOfField = function (
+  imageData,
+  width,
+  height,
+  iris,
+  irisRadius,
+) {
   if (!imageData || !iris || !irisRadius) return 50;
 
   // Sample Laplacian at 3 different rings
@@ -1096,18 +1261,40 @@ IrisQualityFull.depthOfField = function (imageData, width, height, iris, irisRad
 
   for (var r = 0; r < rings.length; r++) {
     var ring = rings[r];
-    var lapSum = 0, lapSqSum = 0, count = 0;
+    var lapSum = 0,
+      lapSqSum = 0,
+      count = 0;
 
-    for (var y = Math.max(0, Math.floor(iris.y - irisRadius * ring.outer)); y < Math.min(height, Math.ceil(iris.y + irisRadius * ring.outer)); y++) {
-      for (var x = Math.max(0, Math.floor(iris.x - irisRadius * ring.outer)); x < Math.min(width, Math.ceil(iris.x + irisRadius * ring.outer)); x++) {
+    for (
+      var y = Math.max(0, Math.floor(iris.y - irisRadius * ring.outer));
+      y < Math.min(height, Math.ceil(iris.y + irisRadius * ring.outer));
+      y++
+    ) {
+      for (
+        var x = Math.max(0, Math.floor(iris.x - irisRadius * ring.outer));
+        x < Math.min(width, Math.ceil(iris.x + irisRadius * ring.outer));
+        x++
+      ) {
         var dist = Math.sqrt(Math.pow(x - iris.x, 2) + Math.pow(y - iris.y, 2));
-        if (dist >= irisRadius * ring.inner && dist <= irisRadius * ring.outer && x > 0 && x < width - 1 && y > 0 && y < height - 1) {
-            var idx = y * width + x;
-            var lap = -4 * imageData[idx] + imageData[idx - 1] + imageData[idx + 1] + imageData[idx - width] + imageData[idx + width];
-            lapSum += Math.abs(lap);
-            lapSqSum += lap * lap;
-            count++;
-          }
+        if (
+          dist >= irisRadius * ring.inner &&
+          dist <= irisRadius * ring.outer &&
+          x > 0 &&
+          x < width - 1 &&
+          y > 0 &&
+          y < height - 1
+        ) {
+          var idx = y * width + x;
+          var lap =
+            -4 * imageData[idx] +
+            imageData[idx - 1] +
+            imageData[idx + 1] +
+            imageData[idx - width] +
+            imageData[idx + width];
+          lapSum += Math.abs(lap);
+          lapSqSum += lap * lap;
+          count++;
+        }
       }
     }
 
@@ -1150,29 +1337,56 @@ IrisQualityFull.depthOfField = function (imageData, width, height, iris, irisRad
 /* c8 ignore stop */
 IrisQualityFull.detectNirCapability = async function () {
   try {
-    var md = (typeof navigator !== "undefined" && navigator.mediaDevices) || null;
+    var md =
+      (typeof navigator !== "undefined" && navigator.mediaDevices) || null;
     if (!md || typeof md.enumerateDevices !== "function") {
-      return { nirAvailable: false, reason: "mediaDevices-unavailable", hasEnvironmentCamera: false, fallback: "visible" };
+      return {
+        nirAvailable: false,
+        reason: "mediaDevices-unavailable",
+        hasEnvironmentCamera: false,
+        fallback: "visible",
+      };
     }
     var devices = await md.enumerateDevices();
-    var cams = devices.filter(function (d) { return d.kind === "videoinput"; });
+    var cams = devices.filter(function (d) {
+      return d.kind === "videoinput";
+    });
     var nirLabel = cams.some(function (c) {
       var l = (c.label || "").toLowerCase();
-      return /(\s|^)(ir|nir|infrared|depth|tof|near[\s-]?infrared)(\s|$)/i.test(l);
+      return /(\s|^)(ir|nir|infrared|depth|tof|near[\s-]?infrared)(\s|$)/i.test(
+        l,
+      );
     });
     var hasEnv = cams.some(function (c) {
-      return c.getCapabilities && c.getCapabilities().facingMode === "environment";
+      return (
+        c.getCapabilities && c.getCapabilities().facingMode === "environment"
+      );
     });
     if (nirLabel) {
       /* c8 ignore start -- browser-only detectNirCapability */
-      return { nirAvailable: true, reason: "ir-device-label", hasEnvironmentCamera: hasEnv, fallback: "none" };
+      return {
+        nirAvailable: true,
+        reason: "ir-device-label",
+        hasEnvironmentCamera: hasEnv,
+        fallback: "none",
+      };
       /* c8 ignore stop */
     }
     /* c8 ignore start -- browser-only detectNirCapability */
-    return { nirAvailable: false, reason: "nir-not-detectable", hasEnvironmentCamera: hasEnv, fallback: "visible" };
+    return {
+      nirAvailable: false,
+      reason: "nir-not-detectable",
+      hasEnvironmentCamera: hasEnv,
+      fallback: "visible",
+    };
     /* c8 ignore stop */
   } catch (error) {
-    return { nirAvailable: false, reason: "error:" + (error && error.message ? error.message : "unknown"), hasEnvironmentCamera: false, fallback: "visible" };
+    return {
+      nirAvailable: false,
+      reason: "error:" + (error && error.message ? error.message : "unknown"),
+      hasEnvironmentCamera: false,
+      fallback: "visible",
+    };
   }
 };
 
@@ -1197,35 +1411,64 @@ IrisQualityFull.generateQualityVector = function (params) {
 
   // Slots 1-14: defined metrics
   metrics.focus = IrisQualityFull.focusQuality(
-    params.imageData, params.width, params.height,
-    params.iris ? { x: params.iris.x - params.iris.radius, y: params.iris.y - params.iris.radius,
-      width: params.iris.radius * 2, height: params.iris.radius * 2 } : null
+    params.imageData,
+    params.width,
+    params.height,
+    params.iris
+      ? {
+          x: params.iris.x - params.iris.radius,
+          y: params.iris.y - params.iris.radius,
+          width: params.iris.radius * 2,
+          height: params.iris.radius * 2,
+        }
+      : null,
   );
   vector[0] = metrics.focus;
 
   vector[1] = params.iris ? params.iris.radius * 2 : 0; // diameter
 
-  metrics.usableArea = params.mask ? IrisQualityFull.usableArea(params.mask) : 0;
+  metrics.usableArea = params.mask
+    ? IrisQualityFull.usableArea(params.mask)
+    : 0;
   vector[2] = metrics.usableArea;
 
-  vector[3] = params.pupil && params.iris
-    ? IrisQualityFull.irisPupilContrast(params.imageData, params.width, params.height, params.pupil, params.iris)
-    : 0;
+  vector[3] =
+    params.pupil && params.iris
+      ? IrisQualityFull.irisPupilContrast(
+          params.imageData,
+          params.width,
+          params.height,
+          params.pupil,
+          params.iris,
+        )
+      : 0;
 
   vector[4] = params.iris
-    ? IrisQualityFull.irisScleraContrast(params.imageData, params.width, params.height, params.iris)
+    ? IrisQualityFull.irisScleraContrast(
+        params.imageData,
+        params.width,
+        params.height,
+        params.iris,
+      )
     : 0;
 
-  vector[5] = params.pupil && params.iris
-    ? IrisQualityFull.pupilIrisRatio(params.pupil.radius, params.iris.radius)
-    : 0;
+  vector[5] =
+    params.pupil && params.iris
+      ? IrisQualityFull.pupilIrisRatio(params.pupil.radius, params.iris.radius)
+      : 0;
 
-  vector[6] = params.pupil && params.iris
-    ? IrisQualityFull.gazeAngle(params.pupil, params.iris, params.iris.radius)
-    : 0;
+  vector[6] =
+    params.pupil && params.iris
+      ? IrisQualityFull.gazeAngle(params.pupil, params.iris, params.iris.radius)
+      : 0;
 
   vector[7] = params.iris
-    ? IrisQualityFull.marginAdequacy(params.iris, params.iris.radius, params.width, params.height)
+    ? IrisQualityFull.marginAdequacy(
+        params.iris,
+        params.iris.radius,
+        params.width,
+        params.height,
+      )
     : 0;
 
   vector[8] = IrisQualityFull.grayscaleUtilization(params.imageData);
@@ -1234,41 +1477,88 @@ IrisQualityFull.generateQualityVector = function (params) {
 
   vector[10] = 0; // eyelash occlusion — needs mask analysis
 
-  vector[11] = params.pupil && params.iris
-    ? IrisQualityFull.specularReflection(params.imageData, params.width, params.height, params.pupil, params.iris).ratio * 100
-    : 0; // specular reflection — ISO/IEC 29794-6 §6 metric 12 / OSAC 2024-N-0004 §3.5
+  vector[11] =
+    params.pupil && params.iris
+      ? IrisQualityFull.specularReflection(
+          params.imageData,
+          params.width,
+          params.height,
+          params.pupil,
+          params.iris,
+        ).ratio * 100
+      : 0; // specular reflection — ISO/IEC 29794-6 §6 metric 12 / OSAC 2024-N-0004 §3.5
 
-  vector[12] = IrisQualityFull.motionBlur(params.imageData, params.width, params.height);
+  vector[12] = IrisQualityFull.motionBlur(
+    params.imageData,
+    params.width,
+    params.height,
+  );
 
   vector[13] = params.iris
-    ? IrisQualityFull.depthOfField(params.imageData, params.width, params.height, params.iris, params.iris.radius)
+    ? IrisQualityFull.depthOfField(
+        params.imageData,
+        params.width,
+        params.height,
+        params.iris,
+        params.iris.radius,
+      )
     : 50;
 
   // Slots 14-16: new metrics
-  vector[14] = params.pupil && params.iris
-    ? IrisQualityFull.concentricity(params.pupil, params.iris, params.iris.radius)
-    : 0.5;
+  vector[14] =
+    params.pupil && params.iris
+      ? IrisQualityFull.concentricity(
+          params.pupil,
+          params.iris,
+          params.iris.radius,
+        )
+      : 0.5;
 
-  vector[15] = params.mask && params.iris
-    ? IrisQualityFull.eyelidCircularity(params.mask, params.width, params.height, params.iris, params.iris.radius)
-    : 0.5;
+  vector[15] =
+    params.mask && params.iris
+      ? IrisQualityFull.eyelidCircularity(
+          params.mask,
+          params.width,
+          params.height,
+          params.iris,
+          params.iris.radius,
+        )
+      : 0.5;
 
-  vector[16] = params.pupil && params.iris
-    ? IrisQualityFull.azimuthGaze(params.pupil, params.iris, params.iris.radius)
-    : 0;
+  vector[16] =
+    params.pupil && params.iris
+      ? IrisQualityFull.azimuthGaze(
+          params.pupil,
+          params.iris,
+          params.iris.radius,
+        )
+      : 0;
 
   // Slot 18 (1-based, index 17): vendor-defined specular reflection
   // (ISO/IEC 29794-6 §6 metric 12 / OSAC 2024-N-0004 §3.5). Mirrors the
   // defined-metric slot 12 (index 11) so the same signal is also exposed in
   // the vendor-reserved region of the 64-slot quality vector.
-  vector[17] = params.pupil && params.iris
-    ? IrisQualityFull.specularReflection(params.imageData, params.width, params.height, params.pupil, params.iris).ratio * 100
-    : 0;
+  vector[17] =
+    params.pupil && params.iris
+      ? IrisQualityFull.specularReflection(
+          params.imageData,
+          params.width,
+          params.height,
+          params.pupil,
+          params.iris,
+        ).ratio * 100
+      : 0;
 
   // Slot 19 (1-based, index 18): Visible Iris Area (Worldcoin/WVU-validated)
-  vector[18] = params.mask && params.iris
-    ? IrisQualityFull.visibleIrisArea(params.mask, params.width, params.height, params.iris).viaRatio * 100
-    : 0;
+  vector[18] =
+    params.mask && params.iris
+      ? IrisQualityFull.visibleIrisArea(
+          params.mask,
+          params.width,
+          params.height,
+          params.iris,
+        ).viaRatio * 100
+      : 0;
 
   // Slots 20-47: vendor-specific / reserved (zeros)
   // Slots 48-62: reserved for future ISO extensions
@@ -1311,7 +1601,12 @@ IrisQualityFull.mutualQualityComparison = function (params1, params2) {
     image1Score: q1.score,
     image2Score: q2.score,
     bothPassed: q1.passed && q2.passed,
-    details: "Mutual quality: " + Math.round(mutualScore) + "/100, consistency: " + Math.round(consistency) + "%",
+    details:
+      "Mutual quality: " +
+      Math.round(mutualScore) +
+      "/100, consistency: " +
+      Math.round(consistency) +
+      "%",
   };
 };
 
@@ -1333,7 +1628,10 @@ IrisQualityFull.mutualQualityComparison = function (params1, params2) {
  */
 /* c8 ignore stop */
 IrisQualityFull.computeCompositeQuality = function (params) {
-  var metrics = {}, weights = {}, totalWeight = 0, weightedSum = 0;
+  var metrics = {},
+    weights = {},
+    totalWeight = 0,
+    weightedSum = 0;
 
   if (!params || !params.imageData) {
     return { score: 0, level: "Low", metrics: {}, passed: false };
@@ -1341,64 +1639,135 @@ IrisQualityFull.computeCompositeQuality = function (params) {
 
   // Compute individual metrics
   metrics.focus = IrisQualityFull.focusQuality(
-    params.imageData, params.width, params.height,
-    params.iris ? { x: params.iris.x - params.iris.radius, y: params.iris.y - params.iris.radius,
-      width: params.iris.radius * 2, height: params.iris.radius * 2 } : null
+    params.imageData,
+    params.width,
+    params.height,
+    params.iris
+      ? {
+          x: params.iris.x - params.iris.radius,
+          y: params.iris.y - params.iris.radius,
+          width: params.iris.radius * 2,
+          height: params.iris.radius * 2,
+        }
+      : null,
   );
 
-  metrics.usableArea = params.mask ? IrisQualityFull.usableArea(params.mask) : 50;
-
-  metrics.irisPupilContrast = params.pupil && params.iris
-    ? IrisQualityFull.irisPupilContrast(params.imageData, params.width, params.height, params.pupil, params.iris)
+  metrics.usableArea = params.mask
+    ? IrisQualityFull.usableArea(params.mask)
     : 50;
+
+  metrics.irisPupilContrast =
+    params.pupil && params.iris
+      ? IrisQualityFull.irisPupilContrast(
+          params.imageData,
+          params.width,
+          params.height,
+          params.pupil,
+          params.iris,
+        )
+      : 50;
 
   metrics.irisScleraContrast = params.iris
-    ? IrisQualityFull.irisScleraContrast(params.imageData, params.width, params.height, params.iris)
+    ? IrisQualityFull.irisScleraContrast(
+        params.imageData,
+        params.width,
+        params.height,
+        params.iris,
+      )
     : 50;
 
-  metrics.pupilIrisRatio = params.pupil && params.iris
-    ? IrisQualityFull.pupilIrisRatio(params.pupil.radius, params.iris.radius)
-    : 0.5;
+  metrics.pupilIrisRatio =
+    params.pupil && params.iris
+      ? IrisQualityFull.pupilIrisRatio(params.pupil.radius, params.iris.radius)
+      : 0.5;
 
-  metrics.gazeAngle = params.pupil && params.iris
-    ? IrisQualityFull.gazeAngle(params.pupil, params.iris, params.iris.radius)
-    : 0;
+  metrics.gazeAngle =
+    params.pupil && params.iris
+      ? IrisQualityFull.gazeAngle(params.pupil, params.iris, params.iris.radius)
+      : 0;
 
   metrics.marginAdequacy = params.iris
-    ? IrisQualityFull.marginAdequacy(params.iris, params.iris.radius, params.width, params.height)
+    ? IrisQualityFull.marginAdequacy(
+        params.iris,
+        params.iris.radius,
+        params.width,
+        params.height,
+      )
     : 50;
 
-  metrics.grayscaleUtilization = IrisQualityFull.grayscaleUtilization(params.imageData);
+  metrics.grayscaleUtilization = IrisQualityFull.grayscaleUtilization(
+    params.imageData,
+  );
 
-  metrics.motionBlur = IrisQualityFull.motionBlur(params.imageData, params.width, params.height);
+  metrics.motionBlur = IrisQualityFull.motionBlur(
+    params.imageData,
+    params.width,
+    params.height,
+  );
 
   metrics.depthOfField = params.iris
-    ? IrisQualityFull.depthOfField(params.imageData, params.width, params.height, params.iris, params.iris.radius)
+    ? IrisQualityFull.depthOfField(
+        params.imageData,
+        params.width,
+        params.height,
+        params.iris,
+        params.iris.radius,
+      )
     : 50;
 
-  metrics.concentricity = params.pupil && params.iris
-    ? IrisQualityFull.concentricity(params.pupil, params.iris, params.iris.radius)
-    : 0.5;
+  metrics.concentricity =
+    params.pupil && params.iris
+      ? IrisQualityFull.concentricity(
+          params.pupil,
+          params.iris,
+          params.iris.radius,
+        )
+      : 0.5;
 
-  metrics.eyelidCircularity = params.mask && params.iris
-    ? IrisQualityFull.eyelidCircularity(params.mask, params.width, params.height, params.iris, params.iris.radius)
-    : 0.5;
+  metrics.eyelidCircularity =
+    params.mask && params.iris
+      ? IrisQualityFull.eyelidCircularity(
+          params.mask,
+          params.width,
+          params.height,
+          params.iris,
+          params.iris.radius,
+        )
+      : 0.5;
 
-  metrics.azimuthGaze = params.pupil && params.iris
-    ? IrisQualityFull.azimuthGaze(params.pupil, params.iris, params.iris.radius)
-    : 0;
+  metrics.azimuthGaze =
+    params.pupil && params.iris
+      ? IrisQualityFull.azimuthGaze(
+          params.pupil,
+          params.iris,
+          params.iris.radius,
+        )
+      : 0;
 
-  metrics.visibleIrisArea = params.mask && params.iris
-    ? Math.round(IrisQualityFull.visibleIrisArea(params.mask, params.width, params.height, params.iris).viaRatio * 1000) / 10
-    : 0;
+  metrics.visibleIrisArea =
+    params.mask && params.iris
+      ? Math.round(
+          IrisQualityFull.visibleIrisArea(
+            params.mask,
+            params.width,
+            params.height,
+            params.iris,
+          ).viaRatio * 1000,
+        ) / 10
+      : 0;
 
-  metrics.specularReflection = params.pupil && params.iris
-    ? Math.round(
-        IrisQualityFull.specularReflection(
-          params.imageData, params.width, params.height, params.pupil, params.iris
-        ).ratio * 1000
-      ) / 10
-    : 0;
+  metrics.specularReflection =
+    params.pupil && params.iris
+      ? Math.round(
+          IrisQualityFull.specularReflection(
+            params.imageData,
+            params.width,
+            params.height,
+            params.pupil,
+            params.iris,
+          ).ratio * 1000,
+        ) / 10
+      : 0;
 
   // Weights per ISO/IEC 29794-6 (approximate, extended)
   weights = {
@@ -1419,43 +1788,49 @@ IrisQualityFull.computeCompositeQuality = function (params) {
 
   // Compute weighted score
   for (var key in weights) {
-    if (Object.prototype.hasOwnProperty.call(weights, key) && metrics[key] !== undefined) {
+    if (
+      Object.prototype.hasOwnProperty.call(weights, key) &&
+      metrics[key] !== undefined
+    ) {
       var value = metrics[key];
 
       // Normalize different metrics to 0-100
       switch (key) {
-      case "pupilIrisRatio": {
-        // Optimal ratio is 0.3-0.5, penalize extremes
-        value = value >= 0.15 && value <= 0.65 ? 100 : Math.max(0, 100 - Math.abs(value - 0.4) * 200);
-      
-      break;
-      }
-      case "gazeAngle": 
-      case "azimuthGaze": {
-        // Lower is better
-        value = Math.max(0, 100 - value * 10);
-      
-      break;
-      }
-      case "motionBlur": {
-        // Lower is better
-        value = Math.max(0, 100 - value * 2);
-      
-      break;
-      }
-      case "concentricity": 
-      case "eyelidCircularity": {
-        // 0-1 ratio, multiply by 100
-        value = value * 100;
-      
-      break;
-      }
-      case "depthOfField": {
-        // Already 0-100
-      
-      break;
-      }
-      // No default
+        case "pupilIrisRatio": {
+          // Optimal ratio is 0.3-0.5, penalize extremes
+          value =
+            value >= 0.15 && value <= 0.65
+              ? 100
+              : Math.max(0, 100 - Math.abs(value - 0.4) * 200);
+
+          break;
+        }
+        case "gazeAngle":
+        case "azimuthGaze": {
+          // Lower is better
+          value = Math.max(0, 100 - value * 10);
+
+          break;
+        }
+        case "motionBlur": {
+          // Lower is better
+          value = Math.max(0, 100 - value * 2);
+
+          break;
+        }
+        case "concentricity":
+        case "eyelidCircularity": {
+          // 0-1 ratio, multiply by 100
+          value = value * 100;
+
+          break;
+        }
+        case "depthOfField": {
+          // Already 0-100
+
+          break;
+        }
+        // No default
       }
 
       weightedSum += value * weights[key];
@@ -1463,7 +1838,8 @@ IrisQualityFull.computeCompositeQuality = function (params) {
     }
   }
 
-  var compositeScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+  var compositeScore =
+    totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
   var level = IrisQualityFull._getQualityLevel(compositeScore);
   var passed = compositeScore >= 51;
 
@@ -1481,7 +1857,12 @@ IrisQualityFull.computeCompositeQuality = function (params) {
     passed: passed,
     qualityVector: qualityVector,
     gates: gates,
-    details: IrisQualityFull._generateReport(compositeScore, level, metrics, passed),
+    details: IrisQualityFull._generateReport(
+      compositeScore,
+      level,
+      metrics,
+      passed,
+    ),
   };
 };
 
@@ -1525,7 +1906,14 @@ IrisQualityFull._generateReport = function (score, level, metrics, passed) {
 
   for (var key in metrics) {
     if (Object.prototype.hasOwnProperty.call(metrics, key)) {
-      lines.push("  " + key + ": " + (typeof metrics[key] === "number" ? metrics[key].toFixed(2) : metrics[key]));
+      lines.push(
+        "  " +
+          key +
+          ": " +
+          (typeof metrics[key] === "number"
+            ? metrics[key].toFixed(2)
+            : metrics[key]),
+      );
     }
   }
 

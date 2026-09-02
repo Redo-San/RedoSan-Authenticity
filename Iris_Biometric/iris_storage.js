@@ -78,7 +78,11 @@ IrisStorage.prototype._openDB = function () {
     };
 
     request.onerror = function (event) {
-      reject(new Error("IndexedDB open failed: " + (event.target.error || "Unknown")));
+      reject(
+        new Error(
+          "IndexedDB open failed: " + (event.target.error || "Unknown"),
+        ),
+      );
     };
   });
 };
@@ -116,7 +120,10 @@ IrisStorage.prototype.save = async function (template) {
     enrolledAt: template.enrolledAt || Date.now(),
     updatedAt: Date.now(),
     did: template.did || null,
-    eyeSide: template.eyeSide === "left" || template.eyeSide === "right" ? template.eyeSide : "unknown",
+    eyeSide:
+      template.eyeSide === "left" || template.eyeSide === "right"
+        ? template.eyeSide
+        : "unknown",
   };
 
   if (this._vaultKey) {
@@ -139,8 +146,12 @@ IrisStorage.prototype.save = async function (template) {
     // Legacy plaintext path (unlocked vault)
     record.leftCode = Array.from(template.leftCode);
     record.leftMask = Array.from(template.leftMask);
-    record.rightCode = template.rightCode ? Array.from(template.rightCode) : null;
-    record.rightMask = template.rightMask ? Array.from(template.rightMask) : null;
+    record.rightCode = template.rightCode
+      ? Array.from(template.rightCode)
+      : null;
+    record.rightMask = template.rightMask
+      ? Array.from(template.rightMask)
+      : null;
     record.quality = template.quality || null;
   }
 
@@ -185,8 +196,12 @@ IrisStorage.prototype._rehydrate = async function (record) {
     }
     record.leftCode = new Uint8Array(payload.leftCode);
     record.leftMask = new Uint8Array(payload.leftMask);
-    record.rightCode = payload.rightCode ? new Uint8Array(payload.rightCode) : null;
-    record.rightMask = payload.rightMask ? new Uint8Array(payload.rightMask) : null;
+    record.rightCode = payload.rightCode
+      ? new Uint8Array(payload.rightCode)
+      : null;
+    record.rightMask = payload.rightMask
+      ? new Uint8Array(payload.rightMask)
+      : null;
     record.quality = payload.quality || null;
     record.eyeSide = payload.eyeSide || record.eyeSide || "unknown";
   } else {
@@ -293,7 +308,11 @@ IrisStorage.prototype.delete = async function (id) {
     /* c8 ignore start -- IDB onerror handler, unreachable in Node.js */
     /* c8 ignore start -- IDB onerror handler, unreachable in Node.js */
     req.onerror = function (event) {
-      reject(new Error("IndexedDB open failed: " + (event.target.error || "Unknown")));
+      reject(
+        new Error(
+          "IndexedDB open failed: " + (event.target.error || "Unknown"),
+        ),
+      );
     };
     /* c8 ignore stop */
     /* c8 ignore stop */
@@ -452,8 +471,10 @@ IrisStorage.prototype.importTemplate = async function (jsonString) {
   // Ensure Uint8Arrays
   template.leftCode = new Uint8Array(template.leftCode);
   template.leftMask = new Uint8Array(template.leftMask);
-  if (template.rightCode) template.rightCode = new Uint8Array(template.rightCode);
-  if (template.rightMask) template.rightMask = new Uint8Array(template.rightMask);
+  if (template.rightCode)
+    template.rightCode = new Uint8Array(template.rightCode);
+  if (template.rightMask)
+    template.rightMask = new Uint8Array(template.rightMask);
 
   await this.save(template);
   return template.id;

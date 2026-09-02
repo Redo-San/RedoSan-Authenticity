@@ -164,12 +164,15 @@ IrisMatcher.compare = function (a, b, threshold) {
   confidence = validBits > 0 ? Math.max(0, 1 - hd / threshold) : 0;
 
   // Daugman-normalized score + statistical significance
-  hdNorm = validBits > 0 ? IrisMatcher.normalizeHd(hd, validBits, totalBits) : 0;
-  significance = validBits > 0 ? IrisMatcher.decidabilityScore(hd, validBits) : 0;
+  hdNorm =
+    validBits > 0 ? IrisMatcher.normalizeHd(hd, validBits, totalBits) : 0;
+  significance =
+    validBits > 0 ? IrisMatcher.decidabilityScore(hd, validBits) : 0;
 
   var details = "";
   if (validBits < totalBits * 0.3) {
-    details = "Low overlap: only " + validBits + " of " + totalBits + " bits valid";
+    details =
+      "Low overlap: only " + validBits + " of " + totalBits + " bits valid";
   } else if (hd < 0.1) {
     details = "Excellent match quality";
   } else if (hd < 0.2) {

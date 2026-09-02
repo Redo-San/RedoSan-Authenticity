@@ -147,7 +147,11 @@ IrisPerformance.calculateEER = function (rocData) {
  * @returns {number} Accuracy (0-1)
  */
 /* c8 ignore stop */
-IrisPerformance.calculateAccuracy = function (trueAccepts, trueRejects, totalTrials) {
+IrisPerformance.calculateAccuracy = function (
+  trueAccepts,
+  trueRejects,
+  totalTrials,
+) {
   if (totalTrials <= 0) return 0;
   return (trueAccepts + trueRejects) / totalTrials;
 };
@@ -179,7 +183,8 @@ IrisPerformance.calculateAccuracy = function (trueAccepts, trueRejects, totalTri
  */
 /* c8 ignore stop */
 IrisPerformance.calculateAPCER = function (labels, scores, threshold) {
-  var attacks = 0, accepted = 0;
+  var attacks = 0,
+    accepted = 0;
   if (!labels || !scores) return 0;
   for (var i = 0; i < labels.length; i++) {
     if (labels[i] === 1) {
@@ -201,7 +206,8 @@ IrisPerformance.calculateAPCER = function (labels, scores, threshold) {
  */
 /* c8 ignore stop */
 IrisPerformance.calculateBPCER = function (labels, scores, threshold) {
-  var bona = 0, rejected = 0;
+  var bona = 0,
+    rejected = 0;
   if (!labels || !scores) return 0;
   for (var i = 0; i < labels.length; i++) {
     if (labels[i] === 0) {
@@ -263,7 +269,13 @@ IrisPerformance.generatePADDET = function (labels, scores, numPoints) {
 IrisPerformance.reportPADMetrics = function (labels, scores) {
   var det = IrisPerformance.generatePADDET(labels, scores, 100);
   if (det.length === 0) {
-    return { apcerAtBpcer10: 0, apcerAtBpcer20: 0, bpcer: 0, iapar: 0, det: [] };
+    return {
+      apcerAtBpcer10: 0,
+      apcerAtBpcer20: 0,
+      bpcer: 0,
+      iapar: 0,
+      det: [],
+    };
   }
 
   // Operating point that holds BPCER at <= target: pick the HIGHEST threshold
@@ -279,7 +291,8 @@ IrisPerformance.reportPADMetrics = function (labels, scores) {
    * @param target
    */
   function atBpcer(target) {
-    var best = null, bestThr = -Infinity;
+    var best = null,
+      bestThr = -Infinity;
     for (var k = 0; k < det.length; k++) {
       if (det[k].bpcer <= target + 1e-9 && det[k].threshold > bestThr) {
         bestThr = det[k].threshold;
@@ -323,7 +336,11 @@ IrisPerformance.reportPADMetrics = function (labels, scores) {
  * @returns {Array<{ threshold: number, far: number, frr: number, tpr: number }>}
  */
 /* c8 ignore stop */
-IrisPerformance.generateROC = function (genuineScores, impostorScores, numPoints) {
+IrisPerformance.generateROC = function (
+  genuineScores,
+  impostorScores,
+  numPoints,
+) {
   var thresholds, rocData, minScore, maxScore, i, j, threshold;
   var trueAccepts, falseAccepts, trueRejects, falseRejects;
 
@@ -335,11 +352,11 @@ IrisPerformance.generateROC = function (genuineScores, impostorScores, numPoints
   // Find score range
   minScore = Math.min(
     Math.min.apply(null, genuineScores),
-    Math.min.apply(null, impostorScores)
+    Math.min.apply(null, impostorScores),
   );
   maxScore = Math.max(
     Math.max.apply(null, genuineScores),
-    Math.max.apply(null, impostorScores)
+    Math.max.apply(null, impostorScores),
   );
 
   // Generate thresholds
@@ -400,10 +417,18 @@ IrisPerformance.generateROC = function (genuineScores, impostorScores, numPoints
  * @returns {Array<{ far: number, frr: number }>}
  */
 /* c8 ignore stop */
-IrisPerformance.generateDET = function (genuineScores, impostorScores, numPoints) {
+IrisPerformance.generateDET = function (
+  genuineScores,
+  impostorScores,
+  numPoints,
+) {
   var rocData, detData, i;
 
-  rocData = IrisPerformance.generateROC(genuineScores, impostorScores, numPoints);
+  rocData = IrisPerformance.generateROC(
+    genuineScores,
+    impostorScores,
+    numPoints,
+  );
 
   detData = [];
   for (i = 0; i < rocData.length; i++) {
@@ -451,7 +476,8 @@ IrisPerformance.wilsonCI = function (successes, trials, confidence) {
 
   denominator = 1 + (z * z) / n;
   centre = (p + (z * z) / (2 * n)) / denominator;
-  margin = (z / denominator) * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n));
+  margin =
+    (z / denominator) * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n));
 
   return {
     lower: Math.max(0, centre - margin),
@@ -489,13 +515,23 @@ IrisPerformance.evaluate = function (params) {
 
   // Check minimum sample sizes
   if (genuineScores.length < IrisPerformance.THRESHOLDS.MIN_GENUINE_TRIALS) {
-    console.warn("IrisPerformance: Below minimum genuine trial count (" +
-      genuineScores.length + " < " + IrisPerformance.THRESHOLDS.MIN_GENUINE_TRIALS + ")");
+    console.warn(
+      "IrisPerformance: Below minimum genuine trial count (" +
+        genuineScores.length +
+        " < " +
+        IrisPerformance.THRESHOLDS.MIN_GENUINE_TRIALS +
+        ")",
+    );
   }
 
   if (impostorScores.length < IrisPerformance.THRESHOLDS.MIN_IMPOSTOR_TRIALS) {
-    console.warn("IrisPerformance: Below minimum impostor trial count (" +
-      impostorScores.length + " < " + IrisPerformance.THRESHOLDS.MIN_IMPOSTOR_TRIALS + ")");
+    console.warn(
+      "IrisPerformance: Below minimum impostor trial count (" +
+        impostorScores.length +
+        " < " +
+        IrisPerformance.THRESHOLDS.MIN_IMPOSTOR_TRIALS +
+        ")",
+    );
   }
 
   // Generate ROC curve
@@ -506,7 +542,8 @@ IrisPerformance.evaluate = function (params) {
 
   // Calculate error rates at optimal threshold
   var threshold = eerResult.threshold;
-  var falseRejects = 0, falseAccepts = 0;
+  var falseRejects = 0,
+    falseAccepts = 0;
   var i;
 
   for (i = 0; i < genuineScores.length; i++) {
@@ -522,7 +559,7 @@ IrisPerformance.evaluate = function (params) {
   var accuracy = IrisPerformance.calculateAccuracy(
     genuineScores.length - falseRejects,
     impostorScores.length - falseAccepts,
-    genuineScores.length + impostorScores.length
+    genuineScores.length + impostorScores.length,
   );
 
   // Confidence intervals
@@ -530,7 +567,7 @@ IrisPerformance.evaluate = function (params) {
   frrCI = IrisPerformance.wilsonCI(falseRejects, genuineScores.length);
   accuracyCI = IrisPerformance.wilsonCI(
     genuineScores.length - falseRejects + impostorScores.length - falseAccepts,
-    genuineScores.length + impostorScores.length
+    genuineScores.length + impostorScores.length,
   );
 
   // Generate DET curve
@@ -563,10 +600,20 @@ IrisPerformance.evaluate = function (params) {
       roc: rocData,
       det: detData,
     },
-    evaluation: IrisPerformance._evaluateMetrics(far, frr, eerResult.eer, accuracy),
+    evaluation: IrisPerformance._evaluateMetrics(
+      far,
+      frr,
+      eerResult.eer,
+      accuracy,
+    ),
     summary: IrisPerformance._generateSummary(
-      params.systemName, far, frr, eerResult.eer, accuracy,
-      genuineScores.length, impostorScores.length
+      params.systemName,
+      far,
+      frr,
+      eerResult.eer,
+      accuracy,
+      genuineScores.length,
+      impostorScores.length,
     ),
   };
 
@@ -590,7 +637,12 @@ IrisPerformance.evaluate = function (params) {
 IrisPerformance.pairedTTest = function (scores1, scores2) {
   var n, meanDiff, sumSqDiff, stdDiff, seDiff, tStat, df;
 
-  if (!scores1 || !scores2 || scores1.length !== scores2.length || scores1.length < 2) {
+  if (
+    !scores1 ||
+    !scores2 ||
+    scores1.length !== scores2.length ||
+    scores1.length < 2
+  ) {
     return { tStatistic: 0, pValue: 1, significant: false };
   }
 
@@ -639,8 +691,14 @@ IrisPerformance.compareSystems = function (system1, system2) {
     return { winner: "tie", difference: 0, significant: false };
   }
 
-  report1 = IrisPerformance.evaluate({ genuineScores: system1.genuineScores, impostorScores: system1.impostorScores });
-  report2 = IrisPerformance.evaluate({ genuineScores: system2.genuineScores, impostorScores: system2.impostorScores });
+  report1 = IrisPerformance.evaluate({
+    genuineScores: system1.genuineScores,
+    impostorScores: system1.impostorScores,
+  });
+  report2 = IrisPerformance.evaluate({
+    genuineScores: system2.genuineScores,
+    impostorScores: system2.impostorScores,
+  });
 
   var eerDiff = report1.metrics.eer - report2.metrics.eer;
   var accuracyDiff = report1.metrics.accuracy - report2.metrics.accuracy;
@@ -650,7 +708,10 @@ IrisPerformance.compareSystems = function (system1, system2) {
   /* c8 ignore stop */
   var tTest = null;
   if (system1.genuineScores.length === system2.genuineScores.length) {
-    tTest = IrisPerformance.pairedTTest(system1.genuineScores, system2.genuineScores);
+    tTest = IrisPerformance.pairedTTest(
+      system1.genuineScores,
+      system2.genuineScores,
+    );
   }
 
   var significant = tTest ? tTest.significant : Math.abs(accuracyDiff) > 0.01;
@@ -765,12 +826,25 @@ IrisPerformance.recordEnrollment = function (instance, durationMs) {
 /* c8 ignore stop */
 IrisPerformance.getFtaFterRates = function (instance) {
   if (!instance) {
-    return { ftaRate: 0, fterRate: 0, ftaCount: 0, fterCount: 0, totalAcquisitions: 0, totalEnrollments: 0 };
+    return {
+      ftaRate: 0,
+      fterRate: 0,
+      ftaCount: 0,
+      fterCount: 0,
+      totalAcquisitions: 0,
+      totalEnrollments: 0,
+    };
   }
 
   return {
-    ftaRate: instance._totalAcquisitions > 0 ? instance._ftaCount / instance._totalAcquisitions : 0,
-    fterRate: instance._totalEnrollments > 0 ? instance._fterCount / instance._totalEnrollments : 0,
+    ftaRate:
+      instance._totalAcquisitions > 0
+        ? instance._ftaCount / instance._totalAcquisitions
+        : 0,
+    fterRate:
+      instance._totalEnrollments > 0
+        ? instance._fterCount / instance._totalEnrollments
+        : 0,
     ftaCount: instance._ftaCount,
     fterCount: instance._fterCount,
     totalAcquisitions: instance._totalAcquisitions,
@@ -794,8 +868,17 @@ IrisPerformance.getFtaFterRates = function (instance) {
  * @returns {{ operatingPoints: Array<{ fpir: number, fnir: number, threshold: number }> }}
  */
 /* c8 ignore stop */
-IrisPerformance.fnirAtFpir = function (genuineScores, impostorScores, fpiRates) {
-  if (!genuineScores || !impostorScores || genuineScores.length === 0 || impostorScores.length === 0) {
+IrisPerformance.fnirAtFpir = function (
+  genuineScores,
+  impostorScores,
+  fpiRates,
+) {
+  if (
+    !genuineScores ||
+    !impostorScores ||
+    genuineScores.length === 0 ||
+    impostorScores.length === 0
+  ) {
     return { operatingPoints: [] };
   }
 
@@ -803,7 +886,9 @@ IrisPerformance.fnirAtFpir = function (genuineScores, impostorScores, fpiRates) 
   var operatingPoints = [];
 
   // Sort impostor scores descending to find thresholds for each FPIR
-  var sortedImpostor = impostorScores.slice().sort(function (a, b) { return b - a; });
+  var sortedImpostor = impostorScores.slice().sort(function (a, b) {
+    return b - a;
+  });
 
   for (var r = 0; r < fpiRates.length; r++) {
     var targetFPIR = fpiRates[r];
@@ -817,7 +902,8 @@ IrisPerformance.fnirAtFpir = function (genuineScores, impostorScores, fpiRates) 
       if (genuineScores[g] < threshold) falseRejects++;
     }
 
-    var fnir = genuineScores.length > 0 ? falseRejects / genuineScores.length : 0;
+    var fnir =
+      genuineScores.length > 0 ? falseRejects / genuineScores.length : 0;
 
     operatingPoints.push({
       fpir: targetFPIR,
@@ -941,11 +1027,21 @@ IrisPerformance._evaluateMetrics = function (far, frr, eer, accuracy) {
  * @private
  */
 /* c8 ignore stop */
-IrisPerformance._generateSummary = function (name, far, frr, eer, accuracy, genuineCount, impostorCount) {
+IrisPerformance._generateSummary = function (
+  name,
+  far,
+  frr,
+  eer,
+  accuracy,
+  genuineCount,
+  impostorCount,
+) {
   var lines = [];
   lines.push("=== ISO/IEC 19795 Performance Report ===");
   lines.push("System: " + (name || "Iris Recognition System"));
-  lines.push("Sample Size: " + genuineCount + " genuine, " + impostorCount + " impostor");
+  lines.push(
+    "Sample Size: " + genuineCount + " genuine, " + impostorCount + " impostor",
+  );
   lines.push("");
   lines.push("Error Rates:");
   lines.push("  FAR: " + (far * 100).toFixed(4) + "%");
@@ -954,7 +1050,10 @@ IrisPerformance._generateSummary = function (name, far, frr, eer, accuracy, genu
   lines.push("");
   lines.push("Accuracy: " + (accuracy * 100).toFixed(2) + "%");
   lines.push("");
-  lines.push("Evaluation: " + (far <= 0.001 && frr <= 0.01 && eer <= 0.005 ? "PASSED" : "FAILED"));
+  lines.push(
+    "Evaluation: " +
+      (far <= 0.001 && frr <= 0.01 && eer <= 0.005 ? "PASSED" : "FAILED"),
+  );
 
   return lines.join("\n");
 };

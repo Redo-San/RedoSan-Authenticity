@@ -129,7 +129,9 @@ IrisEngine._toGrayscale = function (input) {
  */
 /* c8 ignore stop */
 IrisEngine._luminance = function (data, offset) {
-  return 0.299 * data[offset] + 0.587 * data[offset + 1] + 0.114 * data[offset + 2];
+  return (
+    0.299 * data[offset] + 0.587 * data[offset + 1] + 0.114 * data[offset + 2]
+  );
 };
 
 /* c8 ignore start */
@@ -160,7 +162,19 @@ IrisEngine._toGray2D = function (gray) {
  */
 /* c8 ignore stop */
 IrisEngine.detectPupil = function (gray, width, height) {
-  var bestScore, bestCx, bestCy, bestR, cx, cy, r, theta, x, y, sum, prevSum, grad;
+  var bestScore,
+    bestCx,
+    bestCy,
+    bestR,
+    cx,
+    cy,
+    r,
+    theta,
+    x,
+    y,
+    sum,
+    prevSum,
+    grad;
   var minR, maxR, stepR, stepXY, minC, maxC, i, angleCount;
 
   bestScore = -1;
@@ -248,10 +262,10 @@ IrisEngine.detectIris = function (gray, width, height, pupil) {
 
   cx = pupil.cx;
   cy = pupil.cy;
-  minR = Math.floor(pupil.radius * IRIS_ENGINE_CONFIG.irisSearchRange.minRadiusRatio);
-  maxR = Math.floor(
-    Math.min(width, height) * 0.45,
+  minR = Math.floor(
+    pupil.radius * IRIS_ENGINE_CONFIG.irisSearchRange.minRadiusRatio,
   );
+  maxR = Math.floor(Math.min(width, height) * 0.45);
   stepR = 1;
   angleCount = 90;
   bestScore = -1;
@@ -301,7 +315,6 @@ IrisEngine.prototype.segment = function (input) {
   };
 };
 
- 
 /* c8 ignore start */
 /**
  * Validate that the segmented region plausibly contains a human iris.
@@ -330,23 +343,50 @@ IrisEngine.validateEyePresence = function (gray, width, height, pupil, iris) {
   if (irisR < 0.06 || irisR > 0.46) return { ok: false, reason: "iris-size" };
   if (iris.radius < 70) return { ok: false, reason: "iris-size-absolute" };
   var ratio = iris.radius / pupil.radius;
-  if (ratio < 1.1 || ratio > 5.5) return { ok: false, reason: "iris-pupil-ratio" };
+  if (ratio < 1.1 || ratio > 5.5)
+    return { ok: false, reason: "iris-pupil-ratio" };
   if (
-    pupil.cx < width * 0.18 || pupil.cx > width * 0.82 ||
-    pupil.cy < height * 0.18 || pupil.cy > height * 0.82
+    pupil.cx < width * 0.18 ||
+    pupil.cx > width * 0.82 ||
+    pupil.cy < height * 0.18 ||
+    pupil.cy > height * 0.82
   ) {
     return { ok: false, reason: "off-center" };
   }
   /* c8 ignore start -- V8 range artifact */
-  var pupilMean = IrisEngine._meanDisk(gray, width, height, pupil.cx, pupil.cy, pupil.radius * 0.85);
+  var pupilMean = IrisEngine._meanDisk(
+    gray,
+    width,
+    height,
+    pupil.cx,
+    pupil.cy,
+    pupil.radius * 0.85,
+  );
   /* c8 ignore stop */
-  var irisMean = IrisEngine._meanAnnulus(gray, width, height, iris.cx, iris.cy, pupil.radius * 1.1, iris.radius * 0.95);
+  var irisMean = IrisEngine._meanAnnulus(
+    gray,
+    width,
+    height,
+    iris.cx,
+    iris.cy,
+    pupil.radius * 1.1,
+    iris.radius * 0.95,
+  );
   var pupilOk = isFinite(pupilMean);
   var irisOk = isFinite(irisMean);
   if (!pupilOk || !irisOk) return { ok: false, reason: "no-signal" };
   if (pupilMean > irisMean - 12) return { ok: false, reason: "no-dark-pupil" };
-  var irisVar = IrisEngine._varAnnulus(gray, width, height, iris.cx, iris.cy, pupil.radius * 1.1, iris.radius * 0.95);
-  if (!isFinite(irisVar) || irisVar < 25) return { ok: false, reason: "low-iris-texture" };
+  var irisVar = IrisEngine._varAnnulus(
+    gray,
+    width,
+    height,
+    iris.cx,
+    iris.cy,
+    pupil.radius * 1.1,
+    iris.radius * 0.95,
+  );
+  if (!isFinite(irisVar) || irisVar < 25)
+    return { ok: false, reason: "low-iris-texture" };
   return { ok: true, reason: "" };
 };
 
@@ -363,9 +403,17 @@ IrisEngine.validateEyePresence = function (gray, width, height, pupil, iris) {
  */
 /* c8 ignore stop */
 IrisEngine._meanDisk = function (gray, w, h, cx, cy, r) {
-  var sum = 0, n = 0, x, y, dx, dy, rr = r * r;
-  var x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r));
-  var y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r));
+  var sum = 0,
+    n = 0,
+    x,
+    y,
+    dx,
+    dy,
+    rr = r * r;
+  var x0 = Math.max(0, Math.floor(cx - r)),
+    x1 = Math.min(w - 1, Math.ceil(cx + r));
+  var y0 = Math.max(0, Math.floor(cy - r)),
+    y1 = Math.min(h - 1, Math.ceil(cy + r));
   for (y = y0; y <= y1; y++) {
     for (x = x0; x <= x1; x++) {
       dx = x - cx;
@@ -393,9 +441,15 @@ IrisEngine._meanDisk = function (gray, w, h, cx, cy, r) {
  */
 /* c8 ignore stop */
 IrisEngine._meanAnnulus = function (gray, w, h, cx, cy, r0, r1) {
-  var sum = 0, n = 0, x, y, d;
-  var x0 = Math.max(0, Math.floor(cx - r1)), x1 = Math.min(w - 1, Math.ceil(cx + r1));
-  var y0 = Math.max(0, Math.floor(cy - r1)), y1 = Math.min(h - 1, Math.ceil(cy + r1));
+  var sum = 0,
+    n = 0,
+    x,
+    y,
+    d;
+  var x0 = Math.max(0, Math.floor(cx - r1)),
+    x1 = Math.min(w - 1, Math.ceil(cx + r1));
+  var y0 = Math.max(0, Math.floor(cy - r1)),
+    y1 = Math.min(h - 1, Math.ceil(cy + r1));
   for (y = y0; y <= y1; y++) {
     for (x = x0; x <= x1; x++) {
       dx = x - cx;
@@ -426,10 +480,17 @@ IrisEngine._meanAnnulus = function (gray, w, h, cx, cy, r0, r1) {
 IrisEngine._varAnnulus = function (gray, w, h, cx, cy, r0, r1) {
   var mean = IrisEngine._meanAnnulus(gray, w, h, cx, cy, r0, r1);
   if (!isFinite(mean)) return NaN;
-  var sum = 0, n = 0, x, y, d, v;
-  var x0 = Math.max(0, Math.floor(cx - r1)), x1 = Math.min(w - 1, Math.ceil(cx + r1));
+  var sum = 0,
+    n = 0,
+    x,
+    y,
+    d,
+    v;
+  var x0 = Math.max(0, Math.floor(cx - r1)),
+    x1 = Math.min(w - 1, Math.ceil(cx + r1));
   /* c8 ignore start -- V8 range artifact */
-  var y0 = Math.max(0, Math.floor(cy - r1)), y1 = Math.min(h - 1, Math.ceil(cy + r1));
+  var y0 = Math.max(0, Math.floor(cy - r1)),
+    y1 = Math.min(h - 1, Math.ceil(cy + r1));
   /* c8 ignore stop */
   for (y = y0; y <= y1; y++) {
     for (x = x0; x <= x1; x++) {
@@ -445,7 +506,6 @@ IrisEngine._varAnnulus = function (gray, w, h, cx, cy, r0, r1) {
   }
   return n ? sum / n : NaN;
 };
- 
 
 /* c8 ignore start */
 // ═══════════════════════════════════════════════════════════════════════════
@@ -603,9 +663,7 @@ IrisEngine.generateIrisCode = function (
   wavelength = IRIS_ENGINE_CONFIG.gaborWavelengths[0] || 4;
 
   for (row = 0; row < numRows; row++) {
-    gridY = Math.floor(
-      ((row + 0.5) / numRows) * (normH - 1),
-    );
+    gridY = Math.floor(((row + 0.5) / numRows) * (normH - 1));
 
     for (bitIdx = 0; bitIdx < bitsPerRow; bitIdx++) {
       gridX = Math.floor(((bitIdx + 0.5) / bitsPerRow) * (normW - 1));
@@ -663,7 +721,11 @@ IrisEngine.prototype.extract = function (input) {
   );
 
   // 3. Generate IrisCode
-  irisCode = IrisEngine.generateIrisCode(norm, IRIS_ENGINE_CONFIG.normWidth, IRIS_ENGINE_CONFIG.normHeight);
+  irisCode = IrisEngine.generateIrisCode(
+    norm,
+    IRIS_ENGINE_CONFIG.normWidth,
+    IRIS_ENGINE_CONFIG.normHeight,
+  );
 
   return {
     irisCode: irisCode,
