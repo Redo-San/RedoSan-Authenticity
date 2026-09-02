@@ -8,9 +8,10 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
 fi
 
 echo "Fetching PR diff..."
-git fetch origin main --depth=1 2>/dev/null || true
+# actions/checkout sets HEAD at the merge commit (main←PR).
+# Use the two parents: HEAD~1 = main, HEAD~2 = PR tip.
 DIFF_STATUS=0
-if ! git diff "origin/main...HEAD" -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
+if ! git diff HEAD~1..HEAD~2 -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
   DIFF_STATUS=${PIPESTATUS[0]:-0}
 fi
 DIFF=$(cat /tmp/pr_diff.txt)
