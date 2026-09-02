@@ -199,7 +199,11 @@ function downloadBlobSimple(blob, fileName) {
   a.href = url;
   a.download = fileName.replace(/[/\\]/g, "_");
   a.click();
-  URL.revokeObjectURL(url);
+  // Revoke after the browser has had time to start the download — revoking
+  // synchronously cancels large blobs (e.g. DOCX) before they finish reading.
+  setTimeout(function () {
+    URL.revokeObjectURL(url);
+  }, 4000);
 }
 
 /**
@@ -787,6 +791,11 @@ if (typeof ensureLib === "undefined") {
       });
     }, Promise.resolve());
   }
+
+  // Expose for tool pages (SPA + MPA) that lazily load vendor libs.
+  window.loadVendorLib = ensureLib;
+  window.ensureLib = ensureLib;
+  window.ensureLibs = ensureLibs;
 }
 /* c8 ignore stop */
 

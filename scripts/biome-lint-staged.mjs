@@ -63,6 +63,11 @@ const res = spawnSync(cmd, {
 });
 process.exit(res.status === null ? 1 : res.status);
 
+/**
+ *
+ * @param p
+ * @param pattern
+ */
 function globMatches(p, pattern) {
 	const rel = p.split("/");
 	const pat = pattern.split("/");

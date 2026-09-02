@@ -33,8 +33,8 @@ let _covSeq = 0;
 const PAGE_NAMES = new Set([
   "about", "audio-watermark", "c2pa", "certificate", "contact",
   "converter", "did", "document-watermark", "face-biometric",
-  "fingerprint", "forensic", "home", "id_forge", "metadata",
-  "pixel-injection", "privacy", "removal-tools", "search",
+  "fingerprint", "forensic", "home", "id_forge", "iris-biometric",
+  "metadata", "pixel-injection", "privacy", "removal-tools", "search",
   "social", "timestamp", "watermark",
 ]);
 
@@ -67,6 +67,7 @@ setRE("removal-tools", "Watermark Removal Tools ");
 setRE("id_forge", "ID Forge ");
 setRE("document-watermark", "Document Watermark ");
 setRE("face-biometric", "Face Biometric Rights ");
+setRE("iris-biometric", "Iris Biometric ");
 
 let server = null;
 let started = false;
