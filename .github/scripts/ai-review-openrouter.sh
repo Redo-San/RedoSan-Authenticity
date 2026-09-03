@@ -8,13 +8,23 @@ if [ -z "$OPENROUTER_API_KEY" ]; then
 fi
 
 echo "Fetching PR diff..."
-# actions/checkout sets HEAD at the merge commit (main←PR).
-# HEAD~1 is the first parent (main). Use git diff HEAD~1 to get all PR changes.
-# Also explicitly fetch origin/main as a safety fallback.
+# Fetch main branch for merge-base comparison
 git fetch origin +refs/heads/main:refs/remotes/origin/main --depth=1 2>/dev/null || true
-DIFF_STATUS=0
-if ! git diff HEAD~1 -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
-  DIFF_STATUS=${PIPESTATUS[0]:-0}
+
+# Use merge-base to reliably find the common ancestor (works with fetch-depth >= 2)
+MERGE_BASE=$(git merge-base origin/main HEAD 2>/dev/null || echo "")
+if [ -n "$MERGE_BASE" ]; then
+  echo "Using merge-base: $MERGE_BASE"
+  DIFF_STATUS=0
+  if ! git diff "$MERGE_BASE" HEAD -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
+    DIFF_STATUS=${PIPESTATUS[0]:-0}
+  fi
+else
+  echo "merge-base not found, trying HEAD~1 as fallback..."
+  DIFF_STATUS=0
+  if ! git diff HEAD~1 -- . 2>/dev/null | head -c 200000 > /tmp/pr_diff.txt; then
+    DIFF_STATUS=${PIPESTATUS[0]:-0}
+  fi
 fi
 DIFF=$(cat /tmp/pr_diff.txt)
 if [ -z "$DIFF" ]; then
