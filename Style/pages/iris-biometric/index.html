@@ -635,19 +635,15 @@
               >
               <span class="help-card-toggle">▾</span>
             </div>
-            <div class="help-card-body" data-i18n="iris.help">
-              Register and verify iris biometrics for identity protection — 100%
-              in your browser, nothing is uploaded. 1) Read the Consent Notice
-              and tick the box to enable capture. 2) Use your camera or upload a
-              close-up eye photo; the tool segments your iris, normalizes it
-              (Daugman rubber-sheet), and generates a 2048-bit IrisCode. 3)
-              Enter a name and press Generate Identifiers to store the template
-              locally (IndexedDB). 4) Compare a new capture against stored
-              templates on the Verify tab to confirm a match. 5) On the Enrolled
-              Templates list you can refresh or clear all stored templates. ⚠️
-              All processing is on-device. Withdraw consent at any time to
-              delete every stored iris record (GDPR Art. 7(3) + 17).
-            </div>
+            <ul class="help-card-body">
+              <li data-i18n="iris.help.1">Register and verify iris biometrics for identity protection — 100% in your browser, nothing is uploaded.</li>
+              <li data-i18n="iris.help.2">Read the Consent Notice and tick the box to enable capture.</li>
+              <li data-i18n="iris.help.3">Use your camera or upload a close-up eye photo; the tool segments your iris, normalizes it (Daugman rubber-sheet), and generates a 2048-bit IrisCode.</li>
+              <li data-i18n="iris.help.4">Enter a name and press Generate Identifiers to store the template locally (IndexedDB).</li>
+              <li data-i18n="iris.help.5">Compare a new capture against stored templates on the Verify tab to confirm a match.</li>
+              <li data-i18n="iris.help.6">On the Enrolled Templates list you can refresh or clear all stored templates.</li>
+              <li data-i18n="iris.help.7">⚠️ All processing is on-device. Withdraw consent at any time to delete every stored iris record (GDPR Art. 7(3) + 17).</li>
+            </ul>
           </div>
 
           <!-- Biometric consent (GDPR Art 9(2)(a)) -->
@@ -1118,7 +1114,7 @@
         >
           &times;
         </button>
-        <h3 id="dl-modal-title">Download Report</h3>
+        <h3 id="dl-modal-title" data-i18n="iris.download.title">Download Report</h3>
         <p
           style="
             color: var(--text-muted);
@@ -1126,6 +1122,7 @@
             margin-bottom: 16px;
           "
           id="dl-modal-subtitle"
+          data-i18n="iris.download.choose_format"
         >
           Choose a format:
         </p>
@@ -1465,10 +1462,10 @@
         var captureBtn = document.getElementById("iris-capture-btn");
 
         if (!IrisCamera.isSupported()) {
-          irisSetStatus("iris-status", "Camera not supported in this browser.");
+          irisSetStatus("iris-status", __("iris.status.cameraNotSupported", "Camera not supported in this browser."));
           return;
         }
-        irisSetStatus("iris-status", "Starting camera...");
+        irisSetStatus("iris-status", __("iris.status.startingCamera", "Starting camera..."));
         irisCamera
           .startCamera(videoEl)
           .then(function () {
@@ -1478,7 +1475,7 @@
             if (captureBtn) captureBtn.style.display = "inline-block";
             irisSetStatus(
               "iris-status",
-              "Camera active. Position your eye in the center.",
+              __("iris.status.cameraActive", "Camera active. Position your eye in the center."),
             );
           })
           .catch(function (err) {
@@ -1503,10 +1500,7 @@
         if (!v.ok) {
           irisSetStatus(
             "iris-status",
-            "Only PNG or BMP images are allowed — lossless capture is required. " +
-              "JPEG is rejected to preserve iris texture. (reason: " +
-              v.reason +
-              ")",
+            __("iris.status.imageFormatError", "Only PNG or BMP images are allowed — lossless capture is required. JPEG is rejected to preserve iris texture. (reason: {0})", JSON.stringify({0: v.reason})),
           );
           input.value = "";
           return;
@@ -1547,8 +1541,8 @@
         irisSetStatus(
           "iris-status",
           kind === "camera"
-            ? 'Frame captured. Press "Generate Identifiers".'
-            : 'Photo loaded. Press "Generate Identifiers".',
+            ? __("iris.status.frameCaptured", 'Frame captured. Press "Generate Identifiers".')
+            : __("iris.status.photoLoaded", 'Photo loaded. Press "Generate Identifiers".'),
         );
       }
 
@@ -1556,7 +1550,7 @@
       function handleIrisCapture() {
         var videoEl = document.getElementById("iris-video");
         if (!irisCamera || !irisCamera.isActive()) {
-          irisSetStatus("iris-status", "Start the camera first.");
+          irisSetStatus("iris-status", __("iris.status.startCameraFirst", "Start the camera first."));
           return;
         }
         try {
@@ -1571,7 +1565,7 @@
             "camera-capture",
           );
         } catch (err) {
-          irisSetStatus("iris-status", "Capture error: " + err.message);
+          irisSetStatus("iris-status", __("iris.status.captureError", "Capture error: {0}", JSON.stringify({0: err.message})));
         }
       }
 
@@ -1579,7 +1573,7 @@
       async function handleIrisDualCapture() {
         var videoEl = document.getElementById("iris-video");
         if (!irisCamera || !irisCamera.isActive()) {
-          irisSetStatus("iris-status", "Start the camera first.");
+          irisSetStatus("iris-status", __("iris.status.startCameraFirst", "Start the camera first."));
           return;
         }
         try {
@@ -1607,12 +1601,12 @@
           }
           irisSetStatus(
             "iris-status",
-            "Dual-eye capture complete (Left + Right enrolled).",
+            __("iris.status.dualCaptureComplete", "Dual-eye capture complete (Left + Right enrolled)."),
           );
         } catch (e) {
           irisSetStatus(
             "iris-status",
-            "Dual capture error: " + (e && e.message ? e.message : e),
+            __("iris.status.dualCaptureError", "Dual capture error: {0}", JSON.stringify({0: (e && e.message ? e.message : e)})),
           );
         }
       }
@@ -1674,7 +1668,7 @@
               '<span class="iris-gallery-name">' +
               (t.label || t.id) +
               "</span>" +
-              '<span class="iris-gallery-eye" title="Eye side">' +
+              '<span class="iris-gallery-eye" title="' + __("iris.gallery.eye_side", "Eye side") + '">' +
               eye +
               "</span>" +
               '<span class="iris-gallery-date">' +
@@ -1682,10 +1676,10 @@
               "</span>" +
               '<button class="btn btn-sm" onclick="handleIrisVerifyById(\'' +
               t.id +
-              "')\">Verify</button>" +
+              "')\">" + __("iris.gallery.verify", "Verify") + "</button>" +
               '<button class="btn btn-sm" onclick="handleIrisDeleteById(\'' +
               t.id +
-              "')\">Delete</button>" +
+              "')\">" + __("iris.gallery.delete", "Delete") + "</button>" +
               "</li>";
           }
           ul.innerHTML = html;
@@ -1695,7 +1689,7 @@
         irisVerify(id);
       }
       function handleIrisDeleteById(id) {
-        if (!confirm("Delete this iris template?")) return;
+        if (!confirm(__("iris.alert.deleteTemplate", "Delete this iris template?"))) return;
         irisStorage.delete(id).then(function () {
           handleIrisRefreshList();
         });
@@ -1703,7 +1697,7 @@
       function handleIrisExportAll() {
         irisStorage.exportAllRecords().then(function (records) {
           if (!records || records.length === 0) {
-            alert("No templates to export.");
+            alert(__("iris.alert.noTemplatesExport", "No templates to export."));
             return;
           }
           var json = JSON.stringify(
@@ -1740,20 +1734,20 @@
               var data = JSON.parse(ev.target.result);
               var records = Array.isArray(data) ? data : data && data.templates;
               if (!Array.isArray(records) || records.length === 0) {
-                alert("Invalid format.");
+                alert(__("iris.alert.invalidFormat", "Invalid format."));
                 return;
               }
               irisStorage
                 .importRecords(records)
                 .then(function (count) {
-                  alert("Imported " + count + " template(s).");
+                  alert(__("iris.alert.importedCount", "Imported {0} template(s).", JSON.stringify({0: count})));
                   handleIrisRefreshList();
                 })
                 .catch(function (err) {
-                  alert("Import error: " + err.message);
+                  alert(__("iris.status.importError", "Import error: {0}", JSON.stringify({0: err.message})));
                 });
             } catch (err) {
-              alert("Import error: " + err.message);
+              alert(__("iris.status.importError", "Import error: {0}", JSON.stringify({0: err.message})));
             }
           };
           reader.readAsText(file);
@@ -1761,11 +1755,11 @@
         input.click();
       }
       function handleIrisClearAll() {
-        if (!confirm("Delete ALL iris templates? This cannot be undone."))
+        if (!confirm(__("iris.status.confirmClearAll", "Delete ALL iris templates? This cannot be undone.")))
           return;
         irisStorage.clear().then(function () {
           handleIrisRefreshList();
-          irisSetStatus("iris-status", "All templates cleared.");
+          irisSetStatus("iris-status", __("iris.status.allTemplatesCleared", "All templates cleared."));
         });
       }
 
@@ -1801,7 +1795,7 @@
           el.value = cleaned;
           irisSetStatus(
             "iris-status",
-            "Only English (Latin) letters, numbers and basic punctuation are allowed.",
+            __("iris.status.invalidChars", "Only English (Latin) letters, numbers and basic punctuation are allowed."),
           );
         }
       }
@@ -1814,9 +1808,10 @@
 
         var lt = document.getElementById("iris-liveness-text");
         if (lt) {
+          var score = (result.liveness.score * 100).toFixed(1);
           lt.textContent = result.liveness.isLive
-            ? "✓ LIVE (" + (result.liveness.score * 100).toFixed(1) + "%)"
-            : "✗ SPOOF (" + (result.liveness.score * 100).toFixed(1) + "%)";
+            ? __("iris.result.live", "✓ LIVE ({0}%)", JSON.stringify({0: score}))
+            : __("iris.result.spoof", "✗ SPOOF ({0}%)", JSON.stringify({0: score}));
           lt.style.color = result.liveness.isLive ? "#2ecc71" : "#e74c3c";
         }
         var qt = document.getElementById("iris-quality-text");

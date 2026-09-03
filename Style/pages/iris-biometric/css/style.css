@@ -329,6 +329,58 @@
   margin-bottom: 4px;
 }
 
+/* Help card body list items (for iris.help.1 through iris.help.7) */
+.help-card.help-card .help-card-body,
+.help-card-body {
+  list-style: none;
+  counter-reset: help-step;
+  padding: 12px 14px;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  white-space: normal;
+}
+
+.help-card-body li {
+  position: relative;
+  padding-left: 1.8em;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.help-card-body li:first-child {
+  padding-left: 0;
+}
+
+.help-card-body li:first-child::before {
+  content: none;
+  counter-increment: none;
+}
+
+.help-card-body li:nth-child(n+2):not(:last-child)::before {
+  counter-increment: help-step;
+  content: counter(help-step) ".";
+  position: absolute;
+  left: 0;
+  color: var(--text, #222);
+  font-weight: 600;
+  font-size: 0.85em;
+}
+
+.help-card-body li:last-child {
+  padding-left: 0;
+}
+
+.help-card-body li:last-child::before {
+  content: none;
+  counter-increment: none;
+}
+
+.help-card.collapsed .help-card-body {
+  display: none;
+}
+
 #iris-consent-check {
   width: 20px;
   height: 20px;
