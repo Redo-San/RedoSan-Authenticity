@@ -35,7 +35,7 @@
   padding: 14px;
   border: 1px solid var(--border-color, #ddd);
   border-radius: 8px;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
 }
 
 .iris-result-box.visible {
@@ -53,7 +53,7 @@
   padding: 10px;
   border: 1px solid var(--border-color, #ddd);
   border-radius: 8px;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
 }
 
 .iris-result-item h4 {
@@ -85,7 +85,7 @@
   border: 1px solid var(--border-color, #ddd);
   border-radius: 8px;
   margin-bottom: 8px;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
   font-size: 0.85rem;
 }
 
@@ -104,7 +104,7 @@
   padding: 10px;
   border-radius: 8px;
   font-size: 0.85rem;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
   min-height: 1.5em;
 }
 
@@ -138,7 +138,7 @@
 }
 
 .iris-gallery-table th {
-  background: var(--card-bg, rgb(255,255,255,.06));
+  background: var(--card-bg, rgb(255, 255, 255, 0.06));
   font-weight: 600;
 }
 
@@ -358,7 +358,7 @@
   counter-increment: none;
 }
 
-.help-card-body li:nth-child(n+2):not(:last-child)::before {
+.help-card-body li:nth-child(n + 2):not(:last-child)::before {
   counter-increment: help-step;
   content: counter(help-step) ".";
   position: absolute;

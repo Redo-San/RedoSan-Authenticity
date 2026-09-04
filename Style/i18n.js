@@ -19,12 +19,14 @@ var SUPPORTED = new Set(["en", "ar", "fr", "de", "es", "zh", "ja", "ko"]);
  *
  * @param key
  * @param fallback
+ * @param args optional placeholder args object like {0: value}
  */
-function __(key, fallback) {
-  if (i18n && i18n.data && i18n.data[key]) return i18n.data[key];
+function __(key, fallback, args) {
+  if (i18n && i18n.data && i18n.data[key])
+    return applyArgs(i18n.data[key], JSON.stringify(args || {}));
   var en = window.__I18N_DATA && window.__I18N_DATA.en;
-  if (en && en[key]) return en[key];
-  return fallback || key;
+  if (en && en[key]) return applyArgs(en[key], JSON.stringify(args || {}));
+  return applyArgs(fallback || key, JSON.stringify(args || {}));
 }
 
 /**
@@ -43,7 +45,8 @@ function applyArgs(text, argsJson) {
   }
   if (typeof args !== "object" || args === null) return text;
   for (i = 0; i < 10; i++) {
-    if (args[i] !== undefined) text = text.split("{" + i + "}").join(String(args[i]));
+    if (args[i] !== undefined)
+      text = text.split("{" + i + "}").join(String(args[i]));
   }
   return text;
 }
