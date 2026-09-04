@@ -16,10 +16,18 @@ globalThis.location = {
 // ── Mock localStorage ──
 var mockStorage = {};
 globalThis.localStorage = {
-  getItem: function (k) { return mockStorage[k] !== undefined ? mockStorage[k] : null; },
-  setItem: function (k, v) { mockStorage[k] = String(v); },
-  removeItem: function (k) { delete mockStorage[k]; },
-  clear: function () { mockStorage = {}; },
+  getItem: function (k) {
+    return mockStorage[k] !== undefined ? mockStorage[k] : null;
+  },
+  setItem: function (k, v) {
+    mockStorage[k] = String(v);
+  },
+  removeItem: function (k) {
+    delete mockStorage[k];
+  },
+  clear: function () {
+    mockStorage = {};
+  },
 };
 
 // ── Mock navigator ──
@@ -28,11 +36,29 @@ globalThis.navigator = { language: "en-US" };
 // ── Minimal document stub needed before loading assistant.js (ready() is called at module level) ──
 globalThis.document = {
   readyState: "complete",
-  getElementById: function () { return null; },
-  querySelector: function () { return null; },
-  querySelectorAll: function () { return []; },
-  createElement: function () { return { className: "", innerHTML: "", style: {}, append: function () {}, textContent: "" }; },
-  documentElement: { getAttribute: function () { return "en"; } },
+  getElementById: function () {
+    return null;
+  },
+  querySelector: function () {
+    return null;
+  },
+  querySelectorAll: function () {
+    return [];
+  },
+  createElement: function () {
+    return {
+      className: "",
+      innerHTML: "",
+      style: {},
+      append: function () {},
+      textContent: "",
+    };
+  },
+  documentElement: {
+    getAttribute: function () {
+      return "en";
+    },
+  },
   addEventListener: function () {},
 };
 
@@ -91,10 +117,16 @@ function createMockDocument(elements) {
       },
       addEventListener: function () {},
       setAttribute: function () {},
-      getAttribute: function () { return null; },
-      contains: function () { return false; },
+      getAttribute: function () {
+        return null;
+      },
+      contains: function () {
+        return false;
+      },
       focus: function () {},
-      cloneNode: function () { return makeEl(tag); },
+      cloneNode: function () {
+        return makeEl(tag);
+      },
     };
     return el;
   }
@@ -109,10 +141,18 @@ function createMockDocument(elements) {
       if (idName && store[idName] !== undefined) return store[idName];
       return null;
     },
-    querySelectorAll: function () { return []; },
-    createElement: function (tag) { return makeEl(tag); },
+    querySelectorAll: function () {
+      return [];
+    },
+    createElement: function (tag) {
+      return makeEl(tag);
+    },
     createTextNode: function (text) {
-      return { nodeType: 3, textContent: String(text), nodeValue: String(text) };
+      return {
+        nodeType: 3,
+        textContent: String(text),
+        nodeValue: String(text),
+      };
     },
     documentElement: {
       getAttribute: function (attr) {
@@ -211,7 +251,11 @@ describe("Assistant — assistantTokenize", function () {
   it("should normalize Arabic before tokenizing", function () {
     var result = assistantTokenize("أهلاً وسهلاً");
     // Both alefs get normalized
-    assert.ok(result.every(function (t) { return !t.includes("أ") && !t.includes("إ"); }));
+    assert.ok(
+      result.every(function (t) {
+        return !t.includes("أ") && !t.includes("إ");
+      }),
+    );
   });
 
   it("should convert to lowercase", function () {
@@ -278,7 +322,7 @@ describe("Assistant — getAssistantLang", function () {
   });
 
   it("should handle i18n existing but missing lang", function () {
-    globalThis.i18n = { };
+    globalThis.i18n = {};
     var doc = createMockDocument({});
     globalThis.document = doc;
     assert.equal(getAssistantLang(), "en");
@@ -295,9 +339,19 @@ describe("Assistant — getCurrentContext", function () {
   });
 
   it("should return id without 'page-' prefix", function () {
-    var active = { id: "page-watermark", classList: { contains: function () { return false; } } };
+    var active = {
+      id: "page-watermark",
+      classList: {
+        contains: function () {
+          return false;
+        },
+      },
+    };
     var doc = createMockDocument({});
-    Object.defineProperty(active, "className", { value: "page active", writable: true });
+    Object.defineProperty(active, "className", {
+      value: "page active",
+      writable: true,
+    });
     doc.querySelector = function (sel) {
       if (sel === ".page.active") return active;
       return null;
@@ -307,9 +361,19 @@ describe("Assistant — getCurrentContext", function () {
   });
 
   it("should handle context with hyphens", function () {
-    var active = { id: "page-pixel-injection", classList: { contains: function () { return false; } } };
+    var active = {
+      id: "page-pixel-injection",
+      classList: {
+        contains: function () {
+          return false;
+        },
+      },
+    };
     var doc = createMockDocument({});
-    Object.defineProperty(active, "className", { value: "page active", writable: true });
+    Object.defineProperty(active, "className", {
+      value: "page active",
+      writable: true,
+    });
     doc.querySelector = function (sel) {
       if (sel === ".page.active") return active;
       return null;
@@ -319,9 +383,18 @@ describe("Assistant — getCurrentContext", function () {
   });
 
   it("should return empty string if active has no id", function () {
-    var active = { classList: { contains: function () { return false; } } };
+    var active = {
+      classList: {
+        contains: function () {
+          return false;
+        },
+      },
+    };
     var doc = createMockDocument({});
-    Object.defineProperty(active, "className", { value: "page active", writable: true });
+    Object.defineProperty(active, "className", {
+      value: "page active",
+      writable: true,
+    });
     doc.querySelector = function (sel) {
       if (sel === ".page.active") return active;
       return null;
@@ -570,7 +643,11 @@ describe("Assistant — getContextualSuggestions", function () {
     globalThis.document = doc;
     var sug = getContextualSuggestions("en");
     assert.ok(sug.length > 0);
-    assert.ok(sug.some(function (s) { return s.toLowerCase().includes("embed"); }));
+    assert.ok(
+      sug.some(function (s) {
+        return s.toLowerCase().includes("embed");
+      }),
+    );
   });
 
   it("should return pixel-injection suggestions", function () {
@@ -583,7 +660,11 @@ describe("Assistant — getContextualSuggestions", function () {
     globalThis.document = doc;
     var sug = getContextualSuggestions("en");
     assert.ok(sug.length > 0);
-    assert.ok(sug.some(function (s) { return s.toLowerCase().includes("inject"); }));
+    assert.ok(
+      sug.some(function (s) {
+        return s.toLowerCase().includes("inject");
+      }),
+    );
   });
 
   it("should return default suggestions for unknown page", function () {
@@ -609,7 +690,11 @@ describe("Assistant — getContextualSuggestions", function () {
     globalThis.document = doc;
     var sug = getContextualSuggestions("ar");
     assert.ok(sug.length > 0);
-    assert.ok(sug.some(function (s) { return /كيفية/.test(s); }));
+    assert.ok(
+      sug.some(function (s) {
+        return /كيفية/.test(s);
+      }),
+    );
   });
 
   it("should return Arabic watermark suggestions on watermark page", function () {
@@ -622,7 +707,11 @@ describe("Assistant — getContextualSuggestions", function () {
     globalThis.document = doc;
     var sug = getContextualSuggestions("ar");
     assert.ok(sug.length > 0);
-    assert.ok(sug.some(function (s) { return /تضمين/.test(s); }));
+    assert.ok(
+      sug.some(function (s) {
+        return /تضمين/.test(s);
+      }),
+    );
   });
 
   it("should use default lang if not provided", function () {
@@ -689,7 +778,10 @@ describe("Assistant — Chat History persistence", function () {
   });
 
   it("clearChatHistory should remove the key", function () {
-    localStorage.setItem("redosan_chat", JSON.stringify([{ role: "user", text: "test" }]));
+    localStorage.setItem(
+      "redosan_chat",
+      JSON.stringify([{ role: "user", text: "test" }]),
+    );
     clearChatHistory();
     assert.equal(localStorage.getItem("redosan_chat"), null);
   });
@@ -709,7 +801,9 @@ describe("Assistant — addMessage", function () {
   it("should add a bot message with avatar", function () {
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -731,7 +825,9 @@ describe("Assistant — addMessage", function () {
   it("should add a user message without avatar", function () {
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -746,7 +842,9 @@ describe("Assistant — addMessage", function () {
   it("should render bold markdown text", function () {
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -756,7 +854,8 @@ describe("Assistant — addMessage", function () {
     var msgDiv = msgArea.children[0];
     var contentDiv = null;
     for (var i = 0; i < msgDiv.children.length; i++) {
-      if (msgDiv.children[i].className === "ast-content") contentDiv = msgDiv.children[i];
+      if (msgDiv.children[i].className === "ast-content")
+        contentDiv = msgDiv.children[i];
     }
     assert.ok(contentDiv !== null);
     // The **Raido** should create a <strong> element
@@ -770,7 +869,9 @@ describe("Assistant — addMessage", function () {
   it("should escape HTML in text", function () {
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -780,7 +881,8 @@ describe("Assistant — addMessage", function () {
     var msgDiv = msgArea.children[0];
     var contentDiv = null;
     for (var i = 0; i < msgDiv.children.length; i++) {
-      if (msgDiv.children[i].className === "ast-content") contentDiv = msgDiv.children[i];
+      if (msgDiv.children[i].className === "ast-content")
+        contentDiv = msgDiv.children[i];
     }
     var html = contentDiv.innerHTML || "";
     assert.ok(!html.includes("<script>"));
@@ -796,7 +898,9 @@ describe("Assistant — addMessage", function () {
   it("should handle newlines in text", function () {
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -806,7 +910,8 @@ describe("Assistant — addMessage", function () {
     var msgDiv = msgArea.children[0];
     var contentDiv = null;
     for (var i = 0; i < msgDiv.children.length; i++) {
-      if (msgDiv.children[i].className === "ast-content") contentDiv = msgDiv.children[i];
+      if (msgDiv.children[i].className === "ast-content")
+        contentDiv = msgDiv.children[i];
     }
     // Should have <br> elements for newlines
     var brCount = 0;
@@ -825,7 +930,9 @@ describe("Assistant — showSuggestions", function () {
       children: [],
       style: { display: "" },
       innerHTML: "",
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
     };
     var doc = createMockDocument({ assistantSuggestions: container });
     globalThis.document = doc;
@@ -883,7 +990,9 @@ describe("Assistant — showSuggestions", function () {
       children: [],
       style: { display: "flex" },
       innerHTML: "",
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
     };
     var doc = createMockDocument({
       assistantMessages: msgArea,
@@ -906,8 +1015,16 @@ describe("Assistant — showSuggestions", function () {
     var hasUser = false;
     var hasBot = false;
     for (var i = 0; i < msgArea.children.length; i++) {
-      if (msgArea.children[i].className && msgArea.children[i].className.includes("ast-msg-user")) hasUser = true;
-      if (msgArea.children[i].className && msgArea.children[i].className.includes("ast-msg-bot")) hasBot = true;
+      if (
+        msgArea.children[i].className &&
+        msgArea.children[i].className.includes("ast-msg-user")
+      )
+        hasUser = true;
+      if (
+        msgArea.children[i].className &&
+        msgArea.children[i].className.includes("ast-msg-bot")
+      )
+        hasBot = true;
     }
     assert.ok(hasUser, "Should have user message from chip click");
     assert.ok(hasBot, "Should have bot response from chip click");
@@ -921,7 +1038,9 @@ describe("Assistant — showInitialGreeting", function () {
   it("should show bot message with greeting", function () {
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -929,7 +1048,9 @@ describe("Assistant — showInitialGreeting", function () {
       children: [],
       style: { display: "" },
       innerHTML: "",
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
     };
     var doc = createMockDocument({
       assistantMessages: msgArea,
@@ -948,7 +1069,9 @@ describe("Assistant — showInitialGreeting", function () {
   it("should show contextual greeting on watermark page", function () {
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -956,7 +1079,9 @@ describe("Assistant — showInitialGreeting", function () {
       children: [],
       style: { display: "" },
       innerHTML: "",
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
     };
     var doc = createMockDocument({
       assistantMessages: msgArea,
@@ -975,7 +1100,9 @@ describe("Assistant — showInitialGreeting", function () {
     globalThis.REDOSAN_BOT_CHECK = { isAutomated: true };
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -989,10 +1116,14 @@ describe("Assistant — showInitialGreeting", function () {
     (function collectText(node) {
       if (node.textContent) allText += node.textContent;
       if (node.children) {
-        for (var i = 0; i < node.children.length; i++) collectText(node.children[i]);
+        for (var i = 0; i < node.children.length; i++)
+          collectText(node.children[i]);
       }
     })(contentDiv);
-    assert.ok(allText.includes("Automated browser detected") || allText.includes("تم اكتشاف متصفح آلي"));
+    assert.ok(
+      allText.includes("Automated browser detected") ||
+        allText.includes("تم اكتشاف متصفح آلي"),
+    );
     delete globalThis.REDOSAN_BOT_CHECK;
   });
 
@@ -1026,7 +1157,9 @@ describe("Assistant — sendAssistantMessage", function () {
     globalThis.REDOSAN_BOT_CHECK = { isAutomated: true };
     var msgArea = {
       children: [],
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
       scrollTop: 0,
       scrollHeight: 100,
     };
@@ -1051,9 +1184,16 @@ describe("Assistant — sendAssistantMessage", function () {
       children: [],
       style: { display: "" },
       innerHTML: "",
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
     };
-    var input = { value: "", trim: function () { return ""; } };
+    var input = {
+      value: "",
+      trim: function () {
+        return "";
+      },
+    };
     var doc = createMockDocument({
       assistantMessages: msgArea,
       assistantSuggestions: container,
@@ -1066,8 +1206,16 @@ describe("Assistant — sendAssistantMessage", function () {
     var hasUser = false;
     var hasBot = false;
     for (var i = 0; i < msgArea.children.length; i++) {
-      if (msgArea.children[i].className && msgArea.children[i].className.includes("ast-msg-user")) hasUser = true;
-      if (msgArea.children[i].className && msgArea.children[i].className.includes("ast-msg-bot")) hasBot = true;
+      if (
+        msgArea.children[i].className &&
+        msgArea.children[i].className.includes("ast-msg-user")
+      )
+        hasUser = true;
+      if (
+        msgArea.children[i].className &&
+        msgArea.children[i].className.includes("ast-msg-bot")
+      )
+        hasBot = true;
     }
     assert.ok(hasUser, "Should have user message");
     assert.ok(hasBot, "Should have bot response");
@@ -1091,7 +1239,12 @@ describe("Assistant — sendAssistantMessage", function () {
       innerHTML: "",
       append: function () {},
     };
-    var inputEl = { value: "  hello  ", trim: function () { return "hello"; } };
+    var inputEl = {
+      value: "  hello  ",
+      trim: function () {
+        return "hello";
+      },
+    };
     var doc = createMockDocument({
       assistantMessages: msgArea,
       assistantSuggestions: container,
@@ -1101,7 +1254,11 @@ describe("Assistant — sendAssistantMessage", function () {
     sendAssistantMessage();
     var hasUser = false;
     for (var i = 0; i < msgArea.children.length; i++) {
-      if (msgArea.children[i].className && msgArea.children[i].className.includes("ast-msg-user")) hasUser = true;
+      if (
+        msgArea.children[i].className &&
+        msgArea.children[i].className.includes("ast-msg-user")
+      )
+        hasUser = true;
     }
     assert.ok(hasUser, "Should have user message from input");
     // Input value should be cleared
@@ -1139,7 +1296,12 @@ describe("Assistant — sendAssistantMessage", function () {
       innerHTML: "",
       append: function () {},
     };
-    var input = { value: "", trim: function () { return ""; } };
+    var input = {
+      value: "",
+      trim: function () {
+        return "";
+      },
+    };
     var doc = createMockDocument({
       assistantMessages: msgArea,
       assistantSuggestions: container,
@@ -1159,7 +1321,10 @@ describe("Assistant — sendAssistantMessage", function () {
     var intent = matchAssistantIntent("مرحبا");
     assert.ok(intent !== null, "Should match Arabic greeting");
     var response = getAssistantResponse(intent, "ar");
-    assert.ok(/[\u0600-\u06FF]/.test(response), "Response should contain Arabic text");
+    assert.ok(
+      /[\u0600-\u06FF]/.test(response),
+      "Response should contain Arabic text",
+    );
     assert.ok(response.length > 10, "Response should be substantial");
 
     // Also test the full sendAssistantMessage flow
@@ -1176,9 +1341,16 @@ describe("Assistant — sendAssistantMessage", function () {
       children: [],
       style: { display: "" },
       innerHTML: "",
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
     };
-    var input = { value: "", trim: function () { return ""; } };
+    var input = {
+      value: "",
+      trim: function () {
+        return "";
+      },
+    };
     var doc = createMockDocument({
       assistantMessages: msgArea,
       assistantSuggestions: container,
@@ -1188,7 +1360,10 @@ describe("Assistant — sendAssistantMessage", function () {
     sendAssistantMessage("مرحبا");
     var hasBot = false;
     for (var i = 0; i < msgArea.children.length; i++) {
-      if (msgArea.children[i].className && msgArea.children[i].className.includes("ast-msg-bot")) {
+      if (
+        msgArea.children[i].className &&
+        msgArea.children[i].className.includes("ast-msg-bot")
+      ) {
         hasBot = true;
       }
     }
@@ -1202,7 +1377,9 @@ describe("Assistant — handleAssistantKeydown", function () {
   it("should call sendAssistantMessage on Enter", function () {
     var called = false;
     var origSend = globalThis.sendAssistantMessage;
-    globalThis.sendAssistantMessage = function () { called = true; };
+    globalThis.sendAssistantMessage = function () {
+      called = true;
+    };
     var e = { key: "Enter", shiftKey: false, preventDefault: mock.fn() };
     handleAssistantKeydown(e);
     assert.ok(called);
@@ -1213,7 +1390,9 @@ describe("Assistant — handleAssistantKeydown", function () {
   it("should NOT call sendAssistantMessage on Shift+Enter", function () {
     var called = false;
     var origSend = globalThis.sendAssistantMessage;
-    globalThis.sendAssistantMessage = function () { called = true; };
+    globalThis.sendAssistantMessage = function () {
+      called = true;
+    };
     var e = { key: "Enter", shiftKey: true, preventDefault: mock.fn() };
     handleAssistantKeydown(e);
     assert.ok(!called);
@@ -1223,7 +1402,9 @@ describe("Assistant — handleAssistantKeydown", function () {
   it("should ignore non-Enter keys", function () {
     var called = false;
     var origSend = globalThis.sendAssistantMessage;
-    globalThis.sendAssistantMessage = function () { called = true; };
+    globalThis.sendAssistantMessage = function () {
+      called = true;
+    };
     var e = { key: "Escape", shiftKey: false, preventDefault: mock.fn() };
     handleAssistantKeydown(e);
     assert.ok(!called);
@@ -1240,11 +1421,23 @@ describe("Assistant — data integrity", function () {
     for (var i = 0; i < ASSISTANT_KB.length; i++) {
       var intent = ASSISTANT_KB[i];
       assert.ok(intent.id, "Intent " + i + " missing id");
-      assert.ok(Array.isArray(intent.patterns), "Intent " + intent.id + " missing patterns");
-      assert.ok(intent.patterns.length > 0, "Intent " + intent.id + " has empty patterns");
+      assert.ok(
+        Array.isArray(intent.patterns),
+        "Intent " + intent.id + " missing patterns",
+      );
+      assert.ok(
+        intent.patterns.length > 0,
+        "Intent " + intent.id + " has empty patterns",
+      );
       assert.ok(intent.response, "Intent " + intent.id + " missing response");
-      assert.ok(intent.response.en, "Intent " + intent.id + " missing en response");
-      assert.ok(intent.response.ar, "Intent " + intent.id + " missing ar response");
+      assert.ok(
+        intent.response.en,
+        "Intent " + intent.id + " missing en response",
+      );
+      assert.ok(
+        intent.response.ar,
+        "Intent " + intent.id + " missing ar response",
+      );
     }
   });
 
@@ -1305,7 +1498,9 @@ describe("Assistant — toggleAssistant", function () {
       children: [],
       style: { display: "" },
       innerHTML: "",
-      append: function (el) { this.children.push(el); },
+      append: function (el) {
+        this.children.push(el);
+      },
     };
     var inputEl = { value: "", focus: mock.fn() };
     var doc = createMockDocument({

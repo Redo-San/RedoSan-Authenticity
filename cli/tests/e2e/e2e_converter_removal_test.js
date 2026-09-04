@@ -32,7 +32,15 @@ describe("E2E — Converter Tools", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "converter");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     const heading = await page.evaluate(() => {
       const h = document.querySelector("#page-converter h2");
       return h ? h.textContent : "";
@@ -49,8 +57,12 @@ describe("E2E — Converter Tools", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "converter");
     await page.waitForTimeout(1000);
-    const hasFile = await page.evaluate(() => !!document.getElementById("conv-file"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("conv-btn"));
+    const hasFile = await page.evaluate(
+      () => !!document.getElementById("conv-file"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("conv-btn"),
+    );
     assert.ok(hasFile, "Converter file input exists");
     assert.ok(hasBtn, "Converter button exists");
     await ctx.close();
@@ -69,29 +81,53 @@ describe("E2E — Converter Tools", () => {
     const fileInput = await page.$("#conv-file");
     assert.ok(fileInput, "Converter file input found");
     const png = Buffer.from([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00,
-      0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xde, 0x00, 0x00, 0x00, 0x0c, 0x49,
-      0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x96, 0x75, 0x3b, 0x00, 0x00,
-      0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+      0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xde, 0x00, 0x00, 0x00,
+      0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00,
+      0x00, 0x02, 0x00, 0x01, 0x96, 0x75, 0x3b, 0x00, 0x00, 0x00, 0x00, 0x49,
+      0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
     ]);
-    await fileInput.setInputFiles({ name: "test.png", mimeType: "image/png", buffer: png });
+    await fileInput.setInputFiles({
+      name: "test.png",
+      mimeType: "image/png",
+      buffer: png,
+    });
     await page.waitForTimeout(500);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     const typeText = await page.evaluate(() => {
       const el = document.getElementById("conv-file-type");
       return el ? el.textContent : "";
     });
-    assert.ok(typeText.includes("Image"), `Detected type should contain "Image", got: ${typeText}`);
+    assert.ok(
+      typeText.includes("Image"),
+      `Detected type should contain "Image", got: ${typeText}`,
+    );
     const nameText = await page.evaluate(() => {
       const el = document.getElementById("conv-file-name");
       return el ? el.textContent : "";
     });
-    assert.ok(nameText.includes("test.png"), `File name should be shown, got: ${nameText}`);
+    assert.ok(
+      nameText.includes("test.png"),
+      `File name should be shown, got: ${nameText}`,
+    );
     const optsVisible = await page.evaluate(() => {
       const el = document.getElementById("conv-options");
       return el ? el.style.display : "";
     });
-    assert.equal(optsVisible, "block", "Format options should be visible after file selection");
+    assert.equal(
+      optsVisible,
+      "block",
+      "Format options should be visible after file selection",
+    );
     await ctx.close();
   });
 
@@ -102,7 +138,10 @@ describe("E2E — Converter Tools", () => {
     await page.goto(BASE, { waitUntil: "load" });
     await page.waitForTimeout(3000);
     const swSupported = await page.evaluate(() => "serviceWorker" in navigator);
-    assert.ok(swSupported, "Service Worker API should be available in the browser");
+    assert.ok(
+      swSupported,
+      "Service Worker API should be available in the browser",
+    );
     const registrations = await page.evaluate(async () => {
       if (!("serviceWorker" in navigator)) return [];
       const regs = await navigator.serviceWorker.getRegistrations();
@@ -123,14 +162,26 @@ describe("E2E — Converter Tools", () => {
     await page.waitForTimeout(500);
 
     const png = Buffer.from([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00,
-      0x02, 0x00, 0x00, 0x00, 0x02, 0x08, 0x02, 0x00, 0x00, 0x00, 0xfd, 0xd4, 0x9a, 0x73, 0x00, 0x00, 0x00, 0x0c, 0x49,
-      0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x96, 0x75, 0x3b, 0x00, 0x00,
-      0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02,
+      0x08, 0x02, 0x00, 0x00, 0x00, 0xfd, 0xd4, 0x9a, 0x73, 0x00, 0x00, 0x00,
+      0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00,
+      0x00, 0x02, 0x00, 0x01, 0x96, 0x75, 0x3b, 0x00, 0x00, 0x00, 0x00, 0x49,
+      0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
     ]);
-    await page.setInputFiles("#conv-file", [{ name: "test.png", mimeType: "image/png", buffer: png }]);
+    await page.setInputFiles("#conv-file", [
+      { name: "test.png", mimeType: "image/png", buffer: png },
+    ]);
     await page.waitForTimeout(500);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
 
     // Click JPEG format button in the options grid
     await page.evaluate(() => {
@@ -172,7 +223,12 @@ describe("E2E — Converter Tools", () => {
       "Filename should have jpg extension. Got: " + dlText,
     );
 
-    const fatal = errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
+    const fatal = errors.filter(
+      (e) =>
+        !e.includes("404") &&
+        !e.includes("Failed to load") &&
+        !e.includes("valid digest"),
+    );
     assert.equal(fatal.length, 0, "No fatal errors: " + fatal.join(", "));
     await ctx.close();
   });

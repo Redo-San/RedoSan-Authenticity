@@ -22,13 +22,31 @@ async function runConverter(filePath, opts) {
 
   const ext = path.extname(absPath).toLowerCase();
   const base = path.basename(absPath, ext);
-  const outPath = opts.output ? path.resolve(opts.output) : path.resolve(path.dirname(absPath), base + "." + format);
+  const outPath = opts.output
+    ? path.resolve(opts.output)
+    : path.resolve(path.dirname(absPath), base + "." + format);
 
-  const imageFormats = new Set(["png", "jpg", "jpeg", "webp", "gif", "bmp", "tiff", "avif"]);
+  const imageFormats = new Set([
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+    "gif",
+    "bmp",
+    "tiff",
+    "avif",
+  ]);
 
   try {
     if (imageFormats.has(ext.replace(".", "")) || imageFormats.has(format)) {
-      const sharpPath = path.join(__dirname, "..", "..", "node_modules", ".bin", "sharp");
+      const sharpPath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "node_modules",
+        ".bin",
+        "sharp",
+      );
       let cmd;
       if (fs.existsSync(sharpPath)) {
         cmd = `"${sharpPath}" -i "${absPath}" -o "${outPath}"`;
@@ -53,14 +71,22 @@ async function runConverter(filePath, opts) {
         console.log(`Converted: ${outPath}`);
       }
     } else {
-      const ffmpegPath = path.join(__dirname, "..", "..", "Converter", "ffmpeg.min.js");
+      const ffmpegPath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "Converter",
+        "ffmpeg.min.js",
+      );
       if (fs.existsSync(ffmpegPath)) {
         console.log("Using built-in ffmpeg WASM. This may take a moment...");
         fs.copyFileSync(absPath, outPath);
         console.log(`Output: ${outPath}`);
       } else {
         try {
-          const result = execSync(`ffmpeg -i "${absPath}" "${outPath}" 2>&1`, { stdio: "pipe" });
+          const result = execSync(`ffmpeg -i "${absPath}" "${outPath}" 2>&1`, {
+            stdio: "pipe",
+          });
           console.log(`Converted via ffmpeg: ${outPath}`);
         } catch {
           fs.copyFileSync(absPath, outPath);

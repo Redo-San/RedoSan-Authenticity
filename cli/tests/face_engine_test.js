@@ -6,14 +6,26 @@ const vm = require("vm");
 
 // Polyfills for GPL check
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // Load face_engine module
 const src = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_engine.js"),
   "utf8",
 );
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_engine.js") });
+vm.runInThisContext(src, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_engine.js",
+  ),
+});
 
 /** @returns {Float32Array} */
 function makeDescriptor(values) {
@@ -67,7 +79,11 @@ describe("FaceEngine — compareDescriptors (Euclidean distance)", () => {
     const b = makeDescriptor(new Array(128).fill(1));
     const dist = FaceEngine.compareDescriptors(a, b);
     assert.ok(dist > 0, "Distance must be positive");
-    assert.equal(dist, Math.sqrt(128), "Distance should be sqrt(sum of squares)");
+    assert.equal(
+      dist,
+      Math.sqrt(128),
+      "Distance should be sqrt(sum of squares)",
+    );
   });
 
   it("should return Infinity for null input", () => {
@@ -135,13 +151,20 @@ describe("FaceEngine — cosineSimilarity", () => {
     const b = makeDescriptor(new Array(128).fill(0.7));
     const sim = FaceEngine.cosineSimilarity(a, b);
     assert.ok(sim >= -1, "Cosine similarity must be >= -1");
-    assert.ok(sim <= 1 + 1e-9, "Cosine similarity must be <= 1 (with FP slack)");
+    assert.ok(
+      sim <= 1 + 1e-9,
+      "Cosine similarity must be <= 1 (with FP slack)",
+    );
     assert.ok(Math.abs(sim - 1) < 0.001);
   });
 
   it("should be symmetric", () => {
-    const a = makeDescriptor(Array.from({ length: 128 }, (_, i) => Math.sin(i)));
-    const b = makeDescriptor(Array.from({ length: 128 }, (_, i) => Math.cos(i)));
+    const a = makeDescriptor(
+      Array.from({ length: 128 }, (_, i) => Math.sin(i)),
+    );
+    const b = makeDescriptor(
+      Array.from({ length: 128 }, (_, i) => Math.cos(i)),
+    );
     assert.equal(
       FaceEngine.cosineSimilarity(a, b),
       FaceEngine.cosineSimilarity(b, a),
@@ -157,7 +180,9 @@ describe("FaceEngine — matchInRegistry", () => {
   const FAR = makeDescriptor(
     Array.from({ length: 128 }, (_, i) => (i % 2 === 0 ? -0.5 : 0.5)),
   );
-  const NOT_IN_REGISTRY = makeDescriptor(Array.from({ length: 128 }, (_, i) => i / 128));
+  const NOT_IN_REGISTRY = makeDescriptor(
+    Array.from({ length: 128 }, (_, i) => i / 128),
+  );
   const registry = [
     { descriptor: IDENTITY, label: "identity" },
     { descriptor: CLOSE, label: "close" },
@@ -201,7 +226,9 @@ describe("FaceEngine — matchInRegistry", () => {
     // FAR is far enough that distance > 0.6 with 128 dims
     const result = FaceEngine.matchInRegistry(FAR, registry);
     // The default threshold is 0.6, FAR should be beyond it
-    assert.ok(result.distance > 0.6 || result.match === null || result.match !== null);
+    assert.ok(
+      result.distance > 0.6 || result.match === null || result.match !== null,
+    );
     // Verify the method works without threshold arg
     assert.equal(typeof result, "object");
     assert.ok("match" in result);
@@ -210,27 +237,61 @@ describe("FaceEngine — matchInRegistry", () => {
 
   it("should skip entries with a different embeddingVersion", () => {
     const mixed = [
-      { descriptor: IDENTITY, label: "hse-same", embeddingVersion: "human-hse" },
-      { descriptor: IDENTITY, label: "arcface-same", embeddingVersion: "arcface-mbf" },
+      {
+        descriptor: IDENTITY,
+        label: "hse-same",
+        embeddingVersion: "human-hse",
+      },
+      {
+        descriptor: IDENTITY,
+        label: "arcface-same",
+        embeddingVersion: "arcface-mbf",
+      },
     ];
-    const result = FaceEngine.matchInRegistry(IDENTITY, mixed, 0.6, "human-hse");
+    const result = FaceEngine.matchInRegistry(
+      IDENTITY,
+      mixed,
+      0.6,
+      "human-hse",
+    );
     assert.notEqual(result.match, null);
     assert.equal(result.match.label, "hse-same");
   });
 
   it("should only compare same-version entries even when a closer cross-version entry exists", () => {
     const mixed = [
-      { descriptor: IDENTITY, label: "hse-same", embeddingVersion: "human-hse" },
-      { descriptor: IDENTITY, label: "arcface-closer", embeddingVersion: "arcface-mbf" },
+      {
+        descriptor: IDENTITY,
+        label: "hse-same",
+        embeddingVersion: "human-hse",
+      },
+      {
+        descriptor: IDENTITY,
+        label: "arcface-closer",
+        embeddingVersion: "arcface-mbf",
+      },
     ];
-    const result = FaceEngine.matchInRegistry(IDENTITY, mixed, 0.6, "human-hse");
+    const result = FaceEngine.matchInRegistry(
+      IDENTITY,
+      mixed,
+      0.6,
+      "human-hse",
+    );
     assert.equal(result.match.label, "hse-same");
   });
 
   it("should compare everything when no embeddingVersion filter is given", () => {
     const mixed = [
-      { descriptor: IDENTITY, label: "hse-same", embeddingVersion: "human-hse" },
-      { descriptor: IDENTITY, label: "arcface-same", embeddingVersion: "arcface-mbf" },
+      {
+        descriptor: IDENTITY,
+        label: "hse-same",
+        embeddingVersion: "human-hse",
+      },
+      {
+        descriptor: IDENTITY,
+        label: "arcface-same",
+        embeddingVersion: "arcface-mbf",
+      },
     ];
     const result = FaceEngine.matchInRegistry(IDENTITY, mixed, 0.6);
     assert.ok(result.match, "a match should exist when filtering is off");
@@ -238,13 +299,29 @@ describe("FaceEngine — matchInRegistry", () => {
 
   it("should compare legacy entries without embeddingVersion even when filter is given", () => {
     const legacy = [{ descriptor: IDENTITY, label: "legacy" }];
-    const result = FaceEngine.matchInRegistry(IDENTITY, legacy, 0.6, "human-hse");
+    const result = FaceEngine.matchInRegistry(
+      IDENTITY,
+      legacy,
+      0.6,
+      "human-hse",
+    );
     assert.equal(result.match.label, "legacy");
   });
 
   it("should return null when every entry has a different embeddingVersion", () => {
-    const onlyArc = [{ descriptor: IDENTITY, label: "arcface-only", embeddingVersion: "arcface-mbf" }];
-    const result = FaceEngine.matchInRegistry(IDENTITY, onlyArc, 0.6, "human-hse");
+    const onlyArc = [
+      {
+        descriptor: IDENTITY,
+        label: "arcface-only",
+        embeddingVersion: "arcface-mbf",
+      },
+    ];
+    const result = FaceEngine.matchInRegistry(
+      IDENTITY,
+      onlyArc,
+      0.6,
+      "human-hse",
+    );
     assert.equal(result.match, null);
     assert.equal(result.distance, Infinity);
   });
@@ -263,8 +340,12 @@ describe("FaceEngine — cosineScore", () => {
   });
 
   it("should return 0 for orthogonal descriptors", () => {
-    const a = makeDescriptor(Array.from({ length: 128 }, (_, i) => (i % 2 === 0 ? 1 : 0)));
-    const b = makeDescriptor(Array.from({ length: 128 }, (_, i) => (i % 2 === 0 ? 0 : 1)));
+    const a = makeDescriptor(
+      Array.from({ length: 128 }, (_, i) => (i % 2 === 0 ? 1 : 0)),
+    );
+    const b = makeDescriptor(
+      Array.from({ length: 128 }, (_, i) => (i % 2 === 0 ? 0 : 1)),
+    );
     assert.equal(FaceEngine.cosineScore(a, b), 0);
   });
 
@@ -294,13 +375,16 @@ describe("FaceEngine — constructor options", () => {
   it("should use defaults when no options provided", () => {
     const engine = new FaceEngine();
     assert.equal(engine._human, null);
-    assert.equal(engine._modelBasePath, "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/");
+    assert.equal(
+      engine._modelBasePath,
+      "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/",
+    );
     assert.equal(engine._tinyDetector, false);
     assert.equal(engine._loaded, false);
   });
 
   it("should accept custom human instance", () => {
-    const human = { constructor: function() {} };
+    const human = { constructor: function () {} };
     const engine = new FaceEngine({ human: human });
     assert.equal(engine._human, human);
   });
@@ -318,7 +402,10 @@ describe("FaceEngine — constructor options", () => {
   it("should handle partial options", () => {
     const engine = new FaceEngine({ tinyDetector: true });
     assert.equal(engine._human, null);
-    assert.equal(engine._modelBasePath, "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/");
+    assert.equal(
+      engine._modelBasePath,
+      "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/",
+    );
     assert.equal(engine._tinyDetector, true);
   });
 });
@@ -331,10 +418,10 @@ describe("FaceEngine — loadModels", () => {
     const { createCanvas } = require("canvas");
     if (!globalThis.document) {
       globalThis.document = {
-        createElement: function(tag) {
+        createElement: function (tag) {
           if (tag === "canvas") return createCanvas(200, 200);
           return {};
-        }
+        },
       };
     }
   });
@@ -354,27 +441,28 @@ describe("FaceEngine — loadModels", () => {
 
   it("should throw if Human is not available", async () => {
     const engine = new FaceEngine();
-    await assert.rejects(
-      function () { return engine.loadModels(); },
-      /@vladmandic\/human is not loaded/,
-    );
+    await assert.rejects(function () {
+      return engine.loadModels();
+    }, /@vladmandic\/human is not loaded/);
   });
 
   it("should load with mocked Human (webgl path)", async () => {
     // Mock Human constructor on window
-    const mockLoad = async function () { /* success */ };
+    const mockLoad = async function () {
+      /* success */
+    };
     globalThis.Human = function () {};
     globalThis.Human.prototype.load = mockLoad;
 
     const engine = new FaceEngine();
     // Make getContext('webgl') succeed so backend = 'webgl'
     const origCreate = globalThis.document.createElement;
-    globalThis.document.createElement = function(tag) {
+    globalThis.document.createElement = function (tag) {
       if (tag === "canvas") {
         const { createCanvas } = require("canvas");
         const c = createCanvas(200, 200);
         // Override getContext to claim webgl support
-        c.getContext = function(type) {
+        c.getContext = function (type) {
           if (type === "webgl" || type === "experimental-webgl") return {};
           return null;
         };
@@ -389,7 +477,9 @@ describe("FaceEngine — loadModels", () => {
   });
 
   it("should fallback to cpu when webgl unavailable", async () => {
-    const mockLoad = async function () { /* success */ };
+    const mockLoad = async function () {
+      /* success */
+    };
     globalThis.Human = function () {};
     globalThis.Human.prototype.load = mockLoad;
 
@@ -412,11 +502,11 @@ describe("FaceEngine — loadModels", () => {
     const engine = new FaceEngine();
     // Override getContext to claim webgl support so backend = 'webgl'
     const origCreate = globalThis.document.createElement;
-    globalThis.document.createElement = function(tag) {
+    globalThis.document.createElement = function (tag) {
       if (tag === "canvas") {
         const { createCanvas } = require("canvas");
         const c = createCanvas(200, 200);
-        c.getContext = function(type) {
+        c.getContext = function (type) {
           if (type === "webgl" || type === "experimental-webgl") return {};
           return null;
         };
@@ -435,14 +525,18 @@ describe("FaceEngine — loadModels", () => {
     let readyCalled = false;
     globalThis.Human = function () {};
     globalThis.Human.prototype.load = async function () {};
-    globalThis.Human.prototype.tf = { ready: async function () { readyCalled = true; } };
+    globalThis.Human.prototype.tf = {
+      ready: async function () {
+        readyCalled = true;
+      },
+    };
     const engine = new FaceEngine();
     const origCreate = globalThis.document.createElement;
-    globalThis.document.createElement = function(tag) {
+    globalThis.document.createElement = function (tag) {
       if (tag === "canvas") {
         const { createCanvas } = require("canvas");
         const c = createCanvas(200, 200);
-        c.getContext = function(type) {
+        c.getContext = function (type) {
           if (type === "webgl" || type === "experimental-webgl") return {};
           return null;
         };
@@ -475,10 +569,9 @@ describe("FaceEngine — loadModels", () => {
       throw new Error("mock load failure");
     };
 
-    await assert.rejects(
-      function () { return engine.loadModels(); },
-      /mock load failure/,
-    );
+    await assert.rejects(function () {
+      return engine.loadModels();
+    }, /mock load failure/);
   });
 });
 
@@ -487,10 +580,9 @@ describe("FaceEngine — loadModels", () => {
 describe("FaceEngine — detectFaces", () => {
   it("should throw if models not loaded", async () => {
     const engine = new FaceEngine();
-    await assert.rejects(
-      function () { return engine.detectFaces("input"); },
-      /Models not loaded/,
-    );
+    await assert.rejects(function () {
+      return engine.detectFaces("input");
+    }, /Models not loaded/);
   });
 
   it("should return empty array when no faces detected", async () => {
@@ -499,7 +591,7 @@ describe("FaceEngine — detectFaces", () => {
     engine._human = {
       detect: async function () {
         return { face: [] };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.deepEqual(result, []);
@@ -511,7 +603,7 @@ describe("FaceEngine — detectFaces", () => {
     engine._human = {
       detect: async function () {
         return null;
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.deepEqual(result, []);
@@ -523,7 +615,7 @@ describe("FaceEngine — detectFaces", () => {
     engine._human = {
       detect: async function () {
         return { body: [] };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.deepEqual(result, []);
@@ -542,10 +634,10 @@ describe("FaceEngine — detectFaces", () => {
               score: 0.95,
               landmarks: { leftEye: [1, 2] },
               embedding: desc,
-            }
-          ]
+            },
+          ],
         };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.equal(result.length, 1);
@@ -568,10 +660,10 @@ describe("FaceEngine — detectFaces", () => {
               score: 0.9,
               landmarks: null,
               descriptor: desc,
-            }
-          ]
+            },
+          ],
         };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.equal(result.length, 1);
@@ -589,10 +681,10 @@ describe("FaceEngine — detectFaces", () => {
               box: { x: 0, y: 0, width: 10, height: 10 },
               score: 0.9,
               landmarks: null,
-            }
-          ]
+            },
+          ],
         };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.equal(result.length, 1);
@@ -606,11 +698,21 @@ describe("FaceEngine — detectFaces", () => {
       detect: async function () {
         return {
           face: [
-            { box: { x: 0, y: 0, width: 10, height: 10 }, score: 0.9, landmarks: null, embedding: new Float32Array(2) },
-            { box: { x: 100, y: 100, width: 20, height: 20 }, score: 0.8, landmarks: null, embedding: new Float32Array(2) },
-          ]
+            {
+              box: { x: 0, y: 0, width: 10, height: 10 },
+              score: 0.9,
+              landmarks: null,
+              embedding: new Float32Array(2),
+            },
+            {
+              box: { x: 100, y: 100, width: 20, height: 20 },
+              score: 0.8,
+              landmarks: null,
+              embedding: new Float32Array(2),
+            },
+          ],
         };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.equal(result.length, 2);
@@ -625,9 +727,11 @@ describe("FaceEngine — webgl backend fallback", () => {
     return {
       calls: calls,
       tf: {
-        setBackend: async function (name) { calls.push(name); },
+        setBackend: async function (name) {
+          calls.push(name);
+        },
         ready: async function () {},
-      }
+      },
     };
   }
 
@@ -643,15 +747,26 @@ describe("FaceEngine — webgl backend fallback", () => {
         detectCalls++;
         if (detectCalls === 1) return { face: [] };
         return {
-          face: [{ box: { x: 0, y: 0, width: 10, height: 10 }, score: 0.9, landmarks: null, embedding: new Float32Array(2) }]
+          face: [
+            {
+              box: { x: 0, y: 0, width: 10, height: 10 },
+              score: 0.9,
+              landmarks: null,
+              embedding: new Float32Array(2),
+            },
+          ],
         };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.equal(result.length, 1);
     assert.equal(detectCalls, 2, "should detect twice (webgl then cpu)");
     assert.equal(engine._webglUnhealthy, true);
-    assert.equal(engine._backend, "cpu", "should stay on cpu once webgl proven unhealthy");
+    assert.equal(
+      engine._backend,
+      "cpu",
+      "should stay on cpu once webgl proven unhealthy",
+    );
     assert.deepEqual(m.calls, ["cpu"]);
   });
 
@@ -666,13 +781,17 @@ describe("FaceEngine — webgl backend fallback", () => {
       detect: async function () {
         detectCalls++;
         return { face: [] };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.deepEqual(result, []);
     assert.equal(detectCalls, 2);
     assert.equal(engine._webglUnhealthy, undefined);
-    assert.equal(engine._backend, "webgl", "should restore webgl when no evidence");
+    assert.equal(
+      engine._backend,
+      "webgl",
+      "should restore webgl when no evidence",
+    );
     assert.deepEqual(m.calls, ["cpu", "webgl"]);
   });
 
@@ -688,9 +807,16 @@ describe("FaceEngine — webgl backend fallback", () => {
         detectCalls++;
         if (detectCalls === 1) throw new Error("backend not initialized");
         return {
-          face: [{ box: { x: 0, y: 0, width: 10, height: 10 }, score: 0.9, landmarks: null, embedding: new Float32Array(2) }]
+          face: [
+            {
+              box: { x: 0, y: 0, width: 10, height: 10 },
+              score: 0.9,
+              landmarks: null,
+              embedding: new Float32Array(2),
+            },
+          ],
         };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.equal(result.length, 1);
@@ -709,7 +835,7 @@ describe("FaceEngine — webgl backend fallback", () => {
         detectCalls++;
         if (detectCalls === 1) return { face: [] };
         throw new Error("cpu detect failed");
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.deepEqual(result, []);
@@ -724,12 +850,11 @@ describe("FaceEngine — webgl backend fallback", () => {
     engine._human = {
       detect: async function () {
         throw new Error("backend failure");
-      }
+      },
     };
-    await assert.rejects(
-      function () { return engine.detectFaces("input"); },
-      /backend failure/,
-    );
+    await assert.rejects(function () {
+      return engine.detectFaces("input");
+    }, /backend failure/);
   });
 
   it("should skip retry when webgl already proven unhealthy", async () => {
@@ -742,7 +867,7 @@ describe("FaceEngine — webgl backend fallback", () => {
       detect: async function () {
         detectCalls++;
         return { face: [] };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.deepEqual(result, []);
@@ -758,7 +883,7 @@ describe("FaceEngine — webgl backend fallback", () => {
       detect: async function () {
         detectCalls++;
         return { face: [] };
-      }
+      },
     };
     const result = await engine.detectFaces("input");
     assert.deepEqual(result, []);
@@ -768,28 +893,34 @@ describe("FaceEngine — webgl backend fallback", () => {
   it("should prefer cpu in loadModels when webgl proven unhealthy", async () => {
     let callCount = 0;
     globalThis.Human = function () {};
-    globalThis.Human.prototype.load = async function () { callCount++; };
+    globalThis.Human.prototype.load = async function () {
+      callCount++;
+    };
 
     const engine = new FaceEngine();
     engine._webglUnhealthy = true;
     const { createCanvas } = require("canvas");
     globalThis.document = {
-      createElement: function(tag) {
+      createElement: function (tag) {
         if (tag === "canvas") {
           const c = createCanvas(200, 200);
-          c.getContext = function(type) {
+          c.getContext = function (type) {
             if (type === "webgl" || type === "experimental-webgl") return {};
             return null;
           };
           return c;
         }
         return {};
-      }
+      },
     };
 
     await engine.loadModels();
     assert.ok(engine._loaded);
-    assert.equal(callCount, 1, "should only load with cpu when webgl unhealthy");
+    assert.equal(
+      callCount,
+      1,
+      "should only load with cpu when webgl unhealthy",
+    );
     assert.equal(engine._backend, "cpu");
     delete globalThis.document;
     delete globalThis.Human;
@@ -811,12 +942,14 @@ describe("FaceEngine — extractDescriptor", () => {
               score: 0.95,
               landmarks: null,
               embedding: new Float32Array([0.1, 0.2]),
-            }
-          ]
+            },
+          ],
         };
-      }
+      },
     };
-    const desc = await engine.extractDescriptor("input", { box: { x: 10, y: 20 } });
+    const desc = await engine.extractDescriptor("input", {
+      box: { x: 10, y: 20 },
+    });
     assert.notEqual(desc, null);
     assert.ok(Math.abs(desc[0] - 0.1) < 0.001, "descriptor[0] should be ~0.1");
   });
@@ -833,12 +966,14 @@ describe("FaceEngine — extractDescriptor", () => {
               score: 0.95,
               landmarks: null,
               embedding: new Float32Array([0.1, 0.2]),
-            }
-          ]
+            },
+          ],
         };
-      }
+      },
     };
-    const desc = await engine.extractDescriptor("input", { box: { x: 10, y: 20 } });
+    const desc = await engine.extractDescriptor("input", {
+      box: { x: 10, y: 20 },
+    });
     assert.equal(desc, null);
   });
 
@@ -848,9 +983,11 @@ describe("FaceEngine — extractDescriptor", () => {
     engine._human = {
       detect: async function () {
         return { face: [] };
-      }
+      },
     };
-    const desc = await engine.extractDescriptor("input", { box: { x: 0, y: 0 } });
+    const desc = await engine.extractDescriptor("input", {
+      box: { x: 0, y: 0 },
+    });
     assert.equal(desc, null);
   });
 });
@@ -861,10 +998,10 @@ describe("FaceEngine — branch coverage", () => {
   beforeEach(() => {
     const { createCanvas } = require("canvas");
     globalThis.document = {
-      createElement: function(tag) {
+      createElement: function (tag) {
         if (tag === "canvas") return createCanvas(200, 200);
         return {};
-      }
+      },
     };
     globalThis.Human = function () {};
     globalThis.Human.prototype.load = async function () {};
@@ -877,7 +1014,9 @@ describe("FaceEngine — branch coverage", () => {
 
   it("should use pre-initialized human instance (branch 33)", async () => {
     const mockHuman = {
-      constructor: function () { this.load = async function() {}; },
+      constructor: function () {
+        this.load = async function () {};
+      },
       load: async function () {},
     };
     const engine = new FaceEngine({ human: mockHuman });
@@ -888,7 +1027,7 @@ describe("FaceEngine — branch coverage", () => {
 
   it("should fallback to cpu when canvas creation fails (branch 45)", async () => {
     const origCreate = globalThis.document.createElement;
-    globalThis.document.createElement = function(tag) {
+    globalThis.document.createElement = function (tag) {
       if (tag === "canvas") throw new Error("canvas creation failed");
       return {};
     };
@@ -910,18 +1049,26 @@ describe("FaceEngine — branch coverage", () => {
     engine._human = {
       detect: async function () {
         return {
-          face: [{
-            box: { x: 0, y: 0, width: 50, height: 60 },
-            score: 0.95,
-            embedding: new Float32Array([0.5, 0.6]),
-            descriptor: new Float32Array([0.7, 0.8]),
-          }]
+          face: [
+            {
+              box: { x: 0, y: 0, width: 50, height: 60 },
+              score: 0.95,
+              embedding: new Float32Array([0.5, 0.6]),
+              descriptor: new Float32Array([0.7, 0.8]),
+            },
+          ],
         };
-      }
+      },
     };
-    const desc = await engine.extractDescriptor("input", { box: { x: 0, y: 0 } });
+    const desc = await engine.extractDescriptor("input", {
+      box: { x: 0, y: 0 },
+    });
     assert.notEqual(desc, null);
-    assert.strictEqual(desc[0], 0.5, "embedding should take priority over descriptor");
+    assert.strictEqual(
+      desc[0],
+      0.5,
+      "embedding should take priority over descriptor",
+    );
   });
 
   it("should handle zero-magnitude cosine similarity (branch 162)", async () => {

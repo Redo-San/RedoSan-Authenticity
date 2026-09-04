@@ -7,14 +7,23 @@ const { createCanvas } = require("canvas");
 
 // Polyfills for GPL check
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
-globalThis.document = { createElement: (t) => (t === "canvas" ? createCanvas(1, 1) : null) };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
+globalThis.document = {
+  createElement: (t) => (t === "canvas" ? createCanvas(1, 1) : null),
+};
 
 const alignSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_align.js"),
   "utf8",
 );
-vm.runInThisContext(alignSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_align.js") });
+vm.runInThisContext(alignSrc, {
+  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_align.js"),
+});
 
 /** Build a 468-point FaceMesh with the canonical 5 landmarks at known coords. */
 function makeMesh(pts) {
@@ -29,14 +38,32 @@ const CANON = FaceAlign.DST_POINTS;
 
 describe("FaceAlign — meshToLandmarks5", () => {
   it("extracts the 5 canonical points from an object-based mesh", () => {
-    const mesh = makeMesh([[10, 20], [30, 20], [20, 30], [12, 40], [28, 40]]);
+    const mesh = makeMesh([
+      [10, 20],
+      [30, 20],
+      [20, 30],
+      [12, 40],
+      [28, 40],
+    ]);
     const out = FaceAlign.meshToLandmarks5(mesh);
-    assert.deepEqual(out, [[10, 20], [30, 20], [20, 30], [12, 40], [28, 40]]);
+    assert.deepEqual(out, [
+      [10, 20],
+      [30, 20],
+      [20, 30],
+      [12, 40],
+      [28, 40],
+    ]);
   });
 
   it("supports flat [x,y,z] meshes", () => {
     const flat = new Float32Array(468 * 3);
-    const pts = [[10, 20], [30, 20], [20, 30], [12, 40], [28, 40]];
+    const pts = [
+      [10, 20],
+      [30, 20],
+      [20, 30],
+      [12, 40],
+      [28, 40],
+    ];
     FaceAlign.MESH_INDICES.forEach((idx, i) => {
       flat[idx * 3] = pts[i][0];
       flat[idx * 3 + 1] = pts[i][1];
@@ -46,7 +73,13 @@ describe("FaceAlign — meshToLandmarks5", () => {
 
   it("supports [x,y,z] triplet arrays (Human FaceMesh output)", () => {
     const mesh = new Array(478);
-    const pts = [[10, 20], [30, 20], [20, 30], [12, 40], [28, 40]];
+    const pts = [
+      [10, 20],
+      [30, 20],
+      [20, 30],
+      [12, 40],
+      [28, 40],
+    ];
     FaceAlign.MESH_INDICES.forEach((idx, i) => {
       mesh[idx] = [pts[i][0], pts[i][1], 0];
     });
@@ -91,7 +124,16 @@ describe("FaceAlign — estimateSimilarity", () => {
   it("returns null for degenerate inputs", () => {
     assert.equal(FaceAlign.estimateSimilarity(null), null);
     assert.equal(FaceAlign.estimateSimilarity([[0, 0]]), null);
-    assert.equal(FaceAlign.estimateSimilarity([[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]), null);
+    assert.equal(
+      FaceAlign.estimateSimilarity([
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+      ]),
+      null,
+    );
   });
 
   it("returns null when the scale is out of the sane range", () => {
@@ -151,7 +193,11 @@ describe("FaceAlign — alignFace", () => {
 
   it("returns null when the canvas context lacks setTransform", () => {
     const orig = globalThis.document.createElement;
-    globalThis.document.createElement = () => ({ getContext: () => null, width: 0, height: 0 });
+    globalThis.document.createElement = () => ({
+      getContext: () => null,
+      width: 0,
+      height: 0,
+    });
     try {
       assert.equal(FaceAlign.alignFace(createCanvas(200, 200), CANON), null);
     } finally {

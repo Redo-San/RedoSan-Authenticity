@@ -60,85 +60,174 @@ describe("cli/utils — isDangerousExt", () => {
 describe("cli/utils — checkMagicBytes", () => {
   it("returns true for known file types", () => {
     // PNG
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), "image/png"));
+    assert.ok(
+      utils.checkMagicBytes(
+        new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        "image/png",
+      ),
+    );
     // JPEG
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]), "image/jpeg"));
+    assert.ok(
+      utils.checkMagicBytes(
+        new Uint8Array([0xff, 0xd8, 0xff, 0xe0]),
+        "image/jpeg",
+      ),
+    );
     // GIF89a
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]), "image/gif"));
+    assert.ok(
+      utils.checkMagicBytes(
+        new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+        "image/gif",
+      ),
+    );
     // BMP
     assert.ok(utils.checkMagicBytes(new Uint8Array([0x42, 0x4d]), "image/bmp"));
     // PDF
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0x25, 0x50, 0x44, 0x46]), "application/pdf"));
+    assert.ok(
+      utils.checkMagicBytes(
+        new Uint8Array([0x25, 0x50, 0x44, 0x46]),
+        "application/pdf",
+      ),
+    );
   });
 
   it("returns false for mismatched magic bytes", () => {
-    assert.ok(!utils.checkMagicBytes(new Uint8Array([0x00, 0x00, 0x00]), "image/png"));
-    assert.ok(!utils.checkMagicBytes(new Uint8Array([0x89, 0x50, 0x00]), "image/jpeg"));
+    assert.ok(
+      !utils.checkMagicBytes(new Uint8Array([0x00, 0x00, 0x00]), "image/png"),
+    );
+    assert.ok(
+      !utils.checkMagicBytes(new Uint8Array([0x89, 0x50, 0x00]), "image/jpeg"),
+    );
   });
 
   it("returns true for unknown mime types", () => {
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0x00, 0x01]), "application/octet-stream"));
+    assert.ok(
+      utils.checkMagicBytes(
+        new Uint8Array([0x00, 0x01]),
+        "application/octet-stream",
+      ),
+    );
   });
 
   it("uses function-type checkers for webp, svg, wav, mp4, avi", () => {
     // WebP
     const webp = new Uint8Array(20);
-    webp[0] = 0x52; webp[1] = 0x49; webp[2] = 0x46; webp[3] = 0x46;
-    webp[8] = 0x57; webp[9] = 0x45; webp[10] = 0x42; webp[11] = 0x50;
+    webp[0] = 0x52;
+    webp[1] = 0x49;
+    webp[2] = 0x46;
+    webp[3] = 0x46;
+    webp[8] = 0x57;
+    webp[9] = 0x45;
+    webp[10] = 0x42;
+    webp[11] = 0x50;
     assert.ok(utils.checkMagicBytes(webp, "image/webp"));
 
     // SVG
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0x3c, 0x73, 0x76, 0x67]), "image/svg+xml"));
+    assert.ok(
+      utils.checkMagicBytes(
+        new Uint8Array([0x3c, 0x73, 0x76, 0x67]),
+        "image/svg+xml",
+      ),
+    );
 
     // WAV
     const wav = new Uint8Array(12);
-    wav[0] = 0x52; wav[1] = 0x49; wav[2] = 0x46; wav[3] = 0x46;
-    wav[8] = 0x57; wav[9] = 0x41; wav[10] = 0x56; wav[11] = 0x45;
+    wav[0] = 0x52;
+    wav[1] = 0x49;
+    wav[2] = 0x46;
+    wav[3] = 0x46;
+    wav[8] = 0x57;
+    wav[9] = 0x41;
+    wav[10] = 0x56;
+    wav[11] = 0x45;
     assert.ok(utils.checkMagicBytes(wav, "audio/wav"));
 
     // MP4
     const mp4 = new Uint8Array(12);
-    mp4[4] = 0x66; mp4[5] = 0x74; mp4[6] = 0x79; mp4[7] = 0x70;
+    mp4[4] = 0x66;
+    mp4[5] = 0x74;
+    mp4[6] = 0x79;
+    mp4[7] = 0x70;
     assert.ok(utils.checkMagicBytes(mp4, "video/mp4"));
 
     // AVI
     const avi = new Uint8Array(12);
-    avi[0] = 0x52; avi[1] = 0x49; avi[2] = 0x46; avi[3] = 0x46;
-    avi[8] = 0x41; avi[9] = 0x56; avi[10] = 0x49; avi[11] = 0x20;
+    avi[0] = 0x52;
+    avi[1] = 0x49;
+    avi[2] = 0x46;
+    avi[3] = 0x46;
+    avi[8] = 0x41;
+    avi[9] = 0x56;
+    avi[10] = 0x49;
+    avi[11] = 0x20;
     assert.ok(utils.checkMagicBytes(avi, "video/avi"));
   });
 
   it("handles MP3 magic bytes (ID3, 0xFFFB, 0xFFF3, 0xFFF2)", () => {
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0x49, 0x44, 0x33]), "audio/mpeg"));
-    assert.ok(utils.checkMagicBytes(new Uint8Array([0xff, 0xfb]), "audio/mpeg"));
+    assert.ok(
+      utils.checkMagicBytes(new Uint8Array([0x49, 0x44, 0x33]), "audio/mpeg"),
+    );
+    assert.ok(
+      utils.checkMagicBytes(new Uint8Array([0xff, 0xfb]), "audio/mpeg"),
+    );
     // Non-mp3 should fail
-    assert.ok(!utils.checkMagicBytes(new Uint8Array([0x00, 0x00]), "audio/mpeg"));
+    assert.ok(
+      !utils.checkMagicBytes(new Uint8Array([0x00, 0x00]), "audio/mpeg"),
+    );
   });
 });
 
 // ── hasDangerousContent ──
 describe("cli/utils — hasDangerousContent", () => {
   it("detects script tags", () => {
-    assert.ok(utils.hasDangerousContent(new Uint8Array(Buffer.from('<script>alert(1)</script>', "utf-8"))));
+    assert.ok(
+      utils.hasDangerousContent(
+        new Uint8Array(Buffer.from("<script>alert(1)</script>", "utf-8")),
+      ),
+    );
   });
 
   it("detects on* event handlers", () => {
     // Pattern is /(?:^|\s)on\w+\s*=\s*["']/i — needs space before "on" and quotes around value
-    assert.ok(utils.hasDangerousContent(new Uint8Array(Buffer.from(' onerror="alert(1)"', "utf-8"))));
-    assert.ok(utils.hasDangerousContent(new Uint8Array(Buffer.from('<img src=x onerror="alert(1)">', "utf-8"))));
+    assert.ok(
+      utils.hasDangerousContent(
+        new Uint8Array(Buffer.from(' onerror="alert(1)"', "utf-8")),
+      ),
+    );
+    assert.ok(
+      utils.hasDangerousContent(
+        new Uint8Array(Buffer.from('<img src=x onerror="alert(1)">', "utf-8")),
+      ),
+    );
   });
 
   it("detects javascript: URLs", () => {
-    assert.ok(utils.hasDangerousContent(new Uint8Array(Buffer.from('javascript:alert(1)', "utf-8"))));
+    assert.ok(
+      utils.hasDangerousContent(
+        new Uint8Array(Buffer.from("javascript:alert(1)", "utf-8")),
+      ),
+    );
   });
 
   it("detects foreignObject", () => {
-    assert.ok(utils.hasDangerousContent(new Uint8Array(Buffer.from('<foreignObject></foreignObject>', "utf-8"))));
+    assert.ok(
+      utils.hasDangerousContent(
+        new Uint8Array(Buffer.from("<foreignObject></foreignObject>", "utf-8")),
+      ),
+    );
   });
 
   it("returns false for safe content", () => {
-    assert.ok(!utils.hasDangerousContent(new Uint8Array(Buffer.from("hello world", "utf-8"))));
-    assert.ok(!utils.hasDangerousContent(new Uint8Array(Buffer.from("<html><body>safe</body></html>", "utf-8"))));
+    assert.ok(
+      !utils.hasDangerousContent(
+        new Uint8Array(Buffer.from("hello world", "utf-8")),
+      ),
+    );
+    assert.ok(
+      !utils.hasDangerousContent(
+        new Uint8Array(Buffer.from("<html><body>safe</body></html>", "utf-8")),
+      ),
+    );
   });
 
   it("handles empty data", () => {
@@ -149,31 +238,41 @@ describe("cli/utils — hasDangerousContent", () => {
 // ── checkDocumentThreats ──
 describe("cli/utils — checkDocumentThreats", () => {
   it("returns safe for clean PDF-like data", () => {
-    const result = utils.checkDocumentThreats(new Uint8Array(Buffer.from("/Type /Page", "utf-8")));
+    const result = utils.checkDocumentThreats(
+      new Uint8Array(Buffer.from("/Type /Page", "utf-8")),
+    );
     assert.ok(result.safe);
   });
 
   it("detects embedded JavaScript", () => {
     // Pattern is /\/JavaScript[\s<]/i — needs "/JavaScript" followed by whitespace or "<"
-    const result = utils.checkDocumentThreats(new Uint8Array(Buffer.from("/JavaScript ", "utf-8")));
+    const result = utils.checkDocumentThreats(
+      new Uint8Array(Buffer.from("/JavaScript ", "utf-8")),
+    );
     assert.ok(!result.safe);
     assert.ok(result.reason.includes("JavaScript"));
   });
 
   it("detects /JS reference", () => {
-    const result = utils.checkDocumentThreats(new Uint8Array(Buffer.from("/JS 12 0 R", "utf-8")));
+    const result = utils.checkDocumentThreats(
+      new Uint8Array(Buffer.from("/JS 12 0 R", "utf-8")),
+    );
     assert.ok(!result.safe);
   });
 
   it("detects OpenAction", () => {
     // Pattern is /\/OpenAction[\s<]/i — needs whitespace or "<" after
-    const result = utils.checkDocumentThreats(new Uint8Array(Buffer.from("/OpenAction ", "utf-8")));
+    const result = utils.checkDocumentThreats(
+      new Uint8Array(Buffer.from("/OpenAction ", "utf-8")),
+    );
     assert.ok(!result.safe);
   });
 
   it("detects Launch action", () => {
     // Pattern is /\/Launch[\s<]/i — needs whitespace or "<" after
-    const result = utils.checkDocumentThreats(new Uint8Array(Buffer.from("/Launch ", "utf-8")));
+    const result = utils.checkDocumentThreats(
+      new Uint8Array(Buffer.from("/Launch ", "utf-8")),
+    );
     assert.ok(!result.safe);
   });
 
@@ -190,15 +289,52 @@ describe("cli/utils — checkFileStructure", () => {
   it("passes for valid PNG with IEND chunk", () => {
     // Minimal valid PNG: header + IHDR + IEND
     const png = new Uint8Array([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, // PNG header
-      0x00, 0x00, 0x00, 0x0d, // IHDR length
-      0x49, 0x48, 0x44, 0x52, // IHDR type
-      0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, // IHDR data
-      0x00, 0x00, 0x00, 0x00, // CRC
+      0x89,
+      0x50,
+      0x4e,
+      0x47,
+      0x0d,
+      0x0a,
+      0x1a,
+      0x0a, // PNG header
+      0x00,
+      0x00,
+      0x00,
+      0x0d, // IHDR length
+      0x49,
+      0x48,
+      0x44,
+      0x52, // IHDR type
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x08,
+      0x02,
+      0x00,
+      0x00,
+      0x00, // IHDR data
+      0x00,
+      0x00,
+      0x00,
+      0x00, // CRC
       // IEND chunk
-      0x00, 0x00, 0x00, 0x00,
-      0x49, 0x45, 0x4e, 0x44,
-      0xae, 0x42, 0x60, 0x82,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x49,
+      0x45,
+      0x4e,
+      0x44,
+      0xae,
+      0x42,
+      0x60,
+      0x82,
     ]);
     const result = utils.checkFileStructure(png, ".png");
     assert.ok(result.safe);
@@ -207,8 +343,22 @@ describe("cli/utils — checkFileStructure", () => {
   it("fails PNG missing IEND", () => {
     // Must be >= 12 bytes to pass the size check, but have wrong last 12 bytes
     const png = new Uint8Array([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, // header
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // IHDR-like but no IEND at end
+      0x89,
+      0x50,
+      0x4e,
+      0x47,
+      0x0d,
+      0x0a,
+      0x1a,
+      0x0a, // header
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x00, // IHDR-like but no IEND at end
     ]);
     const result = utils.checkFileStructure(png, ".png");
     assert.ok(!result.safe);
@@ -227,7 +377,10 @@ describe("cli/utils — checkFileStructure", () => {
   });
 
   it("fails JPEG without EOI marker", () => {
-    const result = utils.checkFileStructure(new Uint8Array([0xff, 0xd8, 0xff]), ".jpeg");
+    const result = utils.checkFileStructure(
+      new Uint8Array([0xff, 0xd8, 0xff]),
+      ".jpeg",
+    );
     assert.ok(!result.safe);
   });
 
@@ -243,12 +396,18 @@ describe("cli/utils — checkFileStructure", () => {
   });
 
   it("fails GIF without trailer", () => {
-    const result = utils.checkFileStructure(new Uint8Array([0x47, 0x49]), ".gif");
+    const result = utils.checkFileStructure(
+      new Uint8Array([0x47, 0x49]),
+      ".gif",
+    );
     assert.ok(!result.safe);
   });
 
   it("passes for unknown extensions", () => {
-    const result = utils.checkFileStructure(new Uint8Array([0x00, 0x01, 0x02]), ".bin");
+    const result = utils.checkFileStructure(
+      new Uint8Array([0x00, 0x01, 0x02]),
+      ".bin",
+    );
     assert.ok(result.safe);
   });
 });
@@ -260,7 +419,10 @@ describe("cli/utils — checkFileStructure", () => {
 describe("cli/utils — hashNode", () => {
   it("computes SHA-256 correctly", async () => {
     const result = await utils.hashNode("sha256", Buffer.from("hello"));
-    assert.equal(result, "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
+    assert.equal(
+      result,
+      "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+    );
   });
 
   it("computes SHA-1 correctly", async () => {
@@ -296,14 +458,18 @@ describe("cli/utils — stripC2PA", () => {
 
   it("keeps non-c2pa chunks and strips c2pa chunks", () => {
     // Build a PNG with: header + IHDR + c2pa chunk + IEND
-    const header = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const header = Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    ]);
     // IHDR chunk
-    const ihdrLen = Buffer.alloc(4); ihdrLen.writeUInt32BE(13, 0);
+    const ihdrLen = Buffer.alloc(4);
+    ihdrLen.writeUInt32BE(13, 0);
     const ihdrType = Buffer.from("IHDR");
     const ihdrData = Buffer.alloc(13);
     const ihdrCrc = Buffer.alloc(4);
     // c2pa chunk
-    const c2paLen = Buffer.alloc(4); c2paLen.writeUInt32BE(4, 0);
+    const c2paLen = Buffer.alloc(4);
+    c2paLen.writeUInt32BE(4, 0);
     const c2paType = Buffer.from("c2pa");
     const c2paData = Buffer.from([0x01, 0x02, 0x03, 0x04]);
     const c2paCrc = Buffer.alloc(4);
@@ -312,7 +478,20 @@ describe("cli/utils — stripC2PA", () => {
     const iendType = Buffer.from("IEND");
     const iendCrc = Buffer.alloc(4);
 
-    const buf = Buffer.concat([header, ihdrLen, ihdrType, ihdrData, ihdrCrc, c2paLen, c2paType, c2paData, c2paCrc, iendLen, iendType, iendCrc]);
+    const buf = Buffer.concat([
+      header,
+      ihdrLen,
+      ihdrType,
+      ihdrData,
+      ihdrCrc,
+      c2paLen,
+      c2paType,
+      c2paData,
+      c2paCrc,
+      iendLen,
+      iendType,
+      iendCrc,
+    ]);
     const result = utils.stripC2PA(buf);
     // Should have header + IHDR(4+4+13+4) + IEND(4+4+4) = 8+25+12 = 45 bytes
     assert.equal(result.length, 8 + 25 + 12);
@@ -347,11 +526,17 @@ describe("cli/utils — file I/O", () => {
   });
 
   it("readFileText throws for non-existent file", () => {
-    assert.throws(() => utils.readFileText("/nonexistent/file.txt"), /File not found/);
+    assert.throws(
+      () => utils.readFileText("/nonexistent/file.txt"),
+      /File not found/,
+    );
   });
 
   it("readFileBytes throws for non-existent file", () => {
-    assert.throws(() => utils.readFileBytes("/nonexistent/file.txt"), /File not found/);
+    assert.throws(
+      () => utils.readFileBytes("/nonexistent/file.txt"),
+      /File not found/,
+    );
   });
 
   it("readFileArrayBuffer returns ArrayBuffer", () => {
@@ -426,7 +611,10 @@ describe("cli/utils — file I/O", () => {
     const pdfStr = "%PDF-1.4\n" + obj1 + obj2 + obj3 + obj4;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
-    assert.ok(text.includes("Hello PDF"), "text includes Hello PDF, got: " + text);
+    assert.ok(
+      text.includes("Hello PDF"),
+      "text includes Hello PDF, got: " + text,
+    );
   });
 
   it("readDocumentText extracts text from PDF with TJ arrays", async () => {
@@ -434,8 +622,14 @@ describe("cli/utils — file I/O", () => {
     const pdfFile = path.join(tmpDir, "test_tjarray.pdf");
     const streamBody = "BT\n[(A) 10 (B)] TJ\n(C) Tj\nET\n";
     const obj4 =
-      "4 0 obj<</Length " + Buffer.byteLength(streamBody, "latin1") + ">>stream\n" + streamBody + "endstream\nendobj\n";
-    const pdfStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" + obj4;
+      "4 0 obj<</Length " +
+      Buffer.byteLength(streamBody, "latin1") +
+      ">>stream\n" +
+      streamBody +
+      "endstream\nendobj\n";
+    const pdfStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
+      obj4;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
     assert.ok(text.includes("A"), "TJ array text includes A, got: " + text);
@@ -451,12 +645,20 @@ describe("cli/utils — file I/O", () => {
     const compressed = zlib.deflateSync(rawContent);
     const compressedLatin1 = compressed.toString("latin1");
     const obj4 =
-      "4 0 obj<</Length " + compressed.length + " /Filter /FlateDecode>>stream\n" +
-      compressedLatin1 + "\nendstream\nendobj\n";
-    const pdfStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" + obj4;
+      "4 0 obj<</Length " +
+      compressed.length +
+      " /Filter /FlateDecode>>stream\n" +
+      compressedLatin1 +
+      "\nendstream\nendobj\n";
+    const pdfStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
+      obj4;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
-    assert.ok(text.includes("Flate Hello"), "FlateDecode text includes 'Flate Hello', got: " + text);
+    assert.ok(
+      text.includes("Flate Hello"),
+      "FlateDecode text includes 'Flate Hello', got: " + text,
+    );
   });
 
   it("readDocumentText handles hex Tj with CMap and bfrange", async () => {
@@ -494,24 +696,34 @@ describe("cli/utils — file I/O", () => {
 
     // Object 4: Content stream
     const obj4 =
-      "4 0 obj<</Length " + Buffer.byteLength(contentBody, "latin1") + ">>stream\n" +
-      contentBody + "\nendstream\nendobj\n";
+      "4 0 obj<</Length " +
+      Buffer.byteLength(contentBody, "latin1") +
+      ">>stream\n" +
+      contentBody +
+      "\nendstream\nendobj\n";
 
     // Object 5: CMap with FlateDecode
     const obj5 =
-      "5 0 obj<</Length " + cmapCompressed.length + " /Filter /FlateDecode>>stream\n" +
-      cmapCompressed.toString("latin1") + "\nendstream\nendobj\n";
+      "5 0 obj<</Length " +
+      cmapCompressed.length +
+      " /Filter /FlateDecode>>stream\n" +
+      cmapCompressed.toString("latin1") +
+      "\nendstream\nendobj\n";
 
-    const pdfStr = "%PDF-1.4\n" +
+    const pdfStr =
+      "%PDF-1.4\n" +
       "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
       "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
       "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
-      obj4 + obj5;
+      obj4 +
+      obj5;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
     // Without CMap, hex would produce '?'; with CMap identity bfrange, H and e map to themselves
-    assert.ok(text.includes("H") || text.includes("?"),
-      "hex Tj result includes H or ?, got: " + text);
+    assert.ok(
+      text.includes("H") || text.includes("?"),
+      "hex Tj result includes H or ?, got: " + text,
+    );
   });
 
   it("readDocumentText handles Asian UTF-16BE encoding in PDF", async () => {
@@ -521,16 +733,29 @@ describe("cli/utils — file I/O", () => {
     // This triggers the UTF-16BE detection (b1===0 && b2 in [0x20,0x7e] repeated > 5 with ratio > 0.4)
     const contentBuf = Buffer.concat([
       Buffer.from("stream\nBT ("),
-      Buffer.from([0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f, 0x00, 0x57, 0x00, 0x6f, 0x00, 0x72, 0x00, 0x6c, 0x00, 0x64]),
+      Buffer.from([
+        0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f, 0x00, 0x57,
+        0x00, 0x6f, 0x00, 0x72, 0x00, 0x6c, 0x00, 0x64,
+      ]),
       Buffer.from(") Tj ET\nendstream\nendobj\n"),
     ]);
-    const headerStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n4 0 obj<</Length " + (contentBuf.length - Buffer.byteLength("stream\n", "latin1") - Buffer.byteLength("\nendstream\nendobj\n", "latin1")) + ">>";
-    const fullBuf = Buffer.concat([Buffer.from(headerStr, "latin1"), contentBuf]);
+    const headerStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n4 0 obj<</Length " +
+      (contentBuf.length -
+        Buffer.byteLength("stream\n", "latin1") -
+        Buffer.byteLength("\nendstream\nendobj\n", "latin1")) +
+      ">>";
+    const fullBuf = Buffer.concat([
+      Buffer.from(headerStr, "latin1"),
+      contentBuf,
+    ]);
     fs.writeFileSync(pdfFile, fullBuf);
     const text = await utils.readDocumentText(pdfFile);
     // The decodePdfString should convert the UTF-16BE pairs to "HelloWorld"
-    assert.ok(text.includes("Hello") || text.length > 0,
-      "Asian encoding text extracts, got: " + text);
+    assert.ok(
+      text.includes("Hello") || text.length > 0,
+      "Asian encoding text extracts, got: " + text,
+    );
   });
 
   it("readDocumentText handles unknown extensions via catch-all", async () => {
@@ -563,13 +788,28 @@ describe("cli/utils — file I/O", () => {
       "1 beginbfchar\n<0048> <0048>\nendbfchar\n" +
       "endcmap\n";
     const cmapCompressed = zlib.deflateSync(cmapText);
-    const obj4 = "4 0 obj<</Length " + Buffer.byteLength(contentBody, "latin1") + ">>stream\n" + contentBody + "\nendstream\nendobj\n";
-    const obj5 = "5 0 obj<</Length " + cmapCompressed.length + " /Filter /FlateDecode>>stream\n" + cmapCompressed.toString("latin1") + "\nendstream\nendobj\n";
-    const pdfStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" + obj4 + obj5;
+    const obj4 =
+      "4 0 obj<</Length " +
+      Buffer.byteLength(contentBody, "latin1") +
+      ">>stream\n" +
+      contentBody +
+      "\nendstream\nendobj\n";
+    const obj5 =
+      "5 0 obj<</Length " +
+      cmapCompressed.length +
+      " /Filter /FlateDecode>>stream\n" +
+      cmapCompressed.toString("latin1") +
+      "\nendstream\nendobj\n";
+    const pdfStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
+      obj4 +
+      obj5;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
-    assert.ok(text.includes("H") || text.includes("?"),
-      "bfchar CMap result includes H or ?, got: " + text);
+    assert.ok(
+      text.includes("H") || text.includes("?"),
+      "bfchar CMap result includes H or ?, got: " + text,
+    );
   });
 
   it("readDocumentText handles PDF with raw deflate content (no zlib header)", async () => {
@@ -580,13 +820,20 @@ describe("cli/utils — file I/O", () => {
     const rawContent = "BT (Raw Deflate Hello) Tj ET\n";
     const compressed = zlib.deflateRawSync(rawContent);
     const obj4 =
-      "4 0 obj<</Length " + compressed.length + " /Filter /FlateDecode>>stream\n" +
-      compressed.toString("latin1") + "\nendstream\nendobj\n";
-    const pdfStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" + obj4;
+      "4 0 obj<</Length " +
+      compressed.length +
+      " /Filter /FlateDecode>>stream\n" +
+      compressed.toString("latin1") +
+      "\nendstream\nendobj\n";
+    const pdfStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
+      obj4;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
-    assert.ok(text.includes("Raw Deflate Hello"),
-      "raw deflate text extract, got: " + text);
+    assert.ok(
+      text.includes("Raw Deflate Hello"),
+      "raw deflate text extract, got: " + text,
+    );
   });
 
   it("readDocumentText handles PDF with invalid FlateDecode content (both decompressors fail)", async () => {
@@ -596,7 +843,9 @@ describe("cli/utils — file I/O", () => {
     const obj4 =
       "4 0 obj<</Length 8 /Filter /FlateDecode>>stream\n" +
       "\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\nendstream\nendobj\n";
-    const pdfStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" + obj4;
+    const pdfStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
+      obj4;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     // Should not throw, should return empty string since content stream fails to decompress
     const text = await utils.readDocumentText(pdfFile);
@@ -608,8 +857,15 @@ describe("cli/utils — file I/O", () => {
     const pdfFile = path.join(tmpDir, "test_nocmap.pdf");
     // Content with hex reference that has NO CMap entry - should produce "?"
     const contentBody = "BT\n<00FF> Tj\nET\n";
-    const obj4 = "4 0 obj<</Length " + Buffer.byteLength(contentBody, "latin1") + ">>stream\n" + contentBody + "\nendstream\nendobj\n";
-    const pdfStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" + obj4;
+    const obj4 =
+      "4 0 obj<</Length " +
+      Buffer.byteLength(contentBody, "latin1") +
+      ">>stream\n" +
+      contentBody +
+      "\nendstream\nendobj\n";
+    const pdfStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
+      obj4;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
     assert.ok(text.includes("?"), "no CMap entry produces ?, got: " + text);
@@ -620,12 +876,24 @@ describe("cli/utils — file I/O", () => {
     const pdfFile = path.join(tmpDir, "test_badcmap.pdf");
     // Object 5 has FlateDecode but garbage data - inflate fails and CMap continues
     const contentBody = "BT (Hello) Tj ET\n";
-    const obj4 = "4 0 obj<</Length " + Buffer.byteLength(contentBody, "latin1") + ">>stream\n" + contentBody + "\nendstream\nendobj\n";
-    const obj5 = "5 0 obj<</Length 8 /Filter /FlateDecode>>stream\n\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\nendstream\nendobj\n";
-    const pdfStr = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" + obj4 + obj5;
+    const obj4 =
+      "4 0 obj<</Length " +
+      Buffer.byteLength(contentBody, "latin1") +
+      ">>stream\n" +
+      contentBody +
+      "\nendstream\nendobj\n";
+    const obj5 =
+      "5 0 obj<</Length 8 /Filter /FlateDecode>>stream\n\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\nendstream\nendobj\n";
+    const pdfStr =
+      "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj\n" +
+      obj4 +
+      obj5;
     fs.writeFileSync(pdfFile, pdfStr, "latin1");
     const text = await utils.readDocumentText(pdfFile);
-    assert.ok(text.includes("Hello"), "bad CMap doesn't prevent text extraction, got: " + text);
+    assert.ok(
+      text.includes("Hello"),
+      "bad CMap doesn't prevent text extraction, got: " + text,
+    );
   });
 
   it("readDocumentText throws for non-existent file", async () => {
@@ -640,7 +908,9 @@ describe("cli/utils — outputResult", () => {
   let logLines = [];
 
   before(() => {
-    console.log = (...args) => { logLines.push(args.join(" ")); };
+    console.log = (...args) => {
+      logLines.push(args.join(" "));
+    };
   });
 
   after(() => {
@@ -651,7 +921,7 @@ describe("cli/utils — outputResult", () => {
   it("prints to console", () => {
     logLines = [];
     utils.outputResult("test output", { json: false });
-    assert.ok(logLines.some(l => l.includes("test output")));
+    assert.ok(logLines.some((l) => l.includes("test output")));
   });
 
   it("saves to file when output option is given", () => {
@@ -686,17 +956,18 @@ describe("cli/utils — validateFile", () => {
   before(() => {
     // Minimal valid PNG
     const png = Buffer.from([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-      0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-      0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-      0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
-      0xde, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e,
-      0x44, 0xae, 0x42, 0x60, 0x82,
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+      0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xde, 0x00, 0x00, 0x00,
+      0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
     ]);
     fs.writeFileSync(pngFile, png);
 
     // Minimal JPEG with EOI
-    const jpg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9]);
+    const jpg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+    ]);
     fs.writeFileSync(jpgFile, jpg);
 
     // EXE (dangerous extension)
@@ -716,7 +987,10 @@ describe("cli/utils — validateFile", () => {
   });
 
   it("throws for non-existent file", () => {
-    assert.throws(() => utils.validateFile("/nonexistent/file"), /File not found/);
+    assert.throws(
+      () => utils.validateFile("/nonexistent/file"),
+      /File not found/,
+    );
   });
 
   it("throws for dangerous extension", () => {
@@ -735,17 +1009,27 @@ describe("cli/utils — validateFile", () => {
   it("throws for magic bytes mismatch", () => {
     const mismatchFile = path.join(tmpDir, "bad.png");
     // Write a JPEG but name it .png
-    fs.writeFileSync(mismatchFile, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0xff, 0xd9]));
-    assert.throws(() => utils.validateFile(mismatchFile), /Magic bytes mismatch/);
+    fs.writeFileSync(
+      mismatchFile,
+      Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0xff, 0xd9]),
+    );
+    assert.throws(
+      () => utils.validateFile(mismatchFile),
+      /Magic bytes mismatch/,
+    );
   });
 
   it("throws for dangerous content in images", () => {
     // .svg is in BLOCKED_EXTS, so use .png with dangerous content
     const badFile = path.join(tmpDir, "evil.png");
     // A valid PNG header followed by dangerous script content
-    const pngHeader = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-    const scriptContent = Buffer.from('<script>alert(1)</script>');
-    const iend = Buffer.from([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82]);
+    const pngHeader = Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    ]);
+    const scriptContent = Buffer.from("<script>alert(1)</script>");
+    const iend = Buffer.from([
+      0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+    ]);
     // Append after PNG header (PNG allows trailing data)
     const evil = Buffer.concat([pngHeader, iend, scriptContent]);
     fs.writeFileSync(badFile, evil);
@@ -755,15 +1039,25 @@ describe("cli/utils — validateFile", () => {
   it("throws for structure failure in PNG (no IEND)", () => {
     const badPngFile = path.join(tmpDir, "badstruct.png");
     // PNG header + short partial IHDR — enough bytes to pass length check, no IEND at end
-    const buf = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x00]);
+    const buf = Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x00,
+    ]);
     fs.writeFileSync(badPngFile, buf);
-    assert.throws(() => utils.validateFile(badPngFile), /Structure check failed.*IEND/);
+    assert.throws(
+      () => utils.validateFile(badPngFile),
+      /Structure check failed.*IEND/,
+    );
   });
 
   it("throws for shebang no-extension file", () => {
     const shebangFile = path.join(tmpDir, "shebang_noext");
     // #!/bin/bash — not in DANGEROUS_MAGIC array so hits shebang check in hasDangerousMagic
-    fs.writeFileSync(shebangFile, Buffer.from([0x23, 0x21, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x62, 0x61, 0x73, 0x68]));
+    fs.writeFileSync(
+      shebangFile,
+      Buffer.from([
+        0x23, 0x21, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x62, 0x61, 0x73, 0x68,
+      ]),
+    );
     assert.throws(() => utils.validateFile(shebangFile), /Blocked dangerous/);
   });
 

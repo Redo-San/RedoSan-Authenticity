@@ -7,7 +7,8 @@ const { createCanvas, ImageData } = require("canvas");
 
 // Polyfills
 globalThis.document = {
-  createElement: (tag) => (tag === "canvas" ? createCanvas(1, 1) : { getContext: () => null }),
+  createElement: (tag) =>
+    tag === "canvas" ? createCanvas(1, 1) : { getContext: () => null },
   addEventListener: () => {},
   getElementById: () => null,
   querySelector: () => null,
@@ -15,13 +16,19 @@ globalThis.document = {
 };
 globalThis.window = globalThis;
 globalThis.ImageData = ImageData;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 const crypto = require("crypto");
 if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
-      digest: async (algo, data) => crypto.createHash("sha256").update(Buffer.from(data)).digest(),
+      digest: async (algo, data) =>
+        crypto.createHash("sha256").update(Buffer.from(data)).digest(),
       importKey: async (f, kd) => ({ type: "secret", keyData: kd }),
       deriveBits: async (algo, key, len) =>
         crypto.pbkdf2Sync(
@@ -36,7 +43,8 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
       verify: async () => true,
     },
     getRandomValues: (arr) => {
-      for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+      for (let i = 0; i < arr.length; i++)
+        arr[i] = Math.floor(Math.random() * 256);
       return arr;
     },
   };
@@ -45,16 +53,27 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
 // sha256Hex for wm8 tests
 globalThis.sha256Hex = async (data) => {
   const h = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(h)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(h))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 };
 
 // Load watermark modules
 const MODULES = [
   ["../../Watermark/utils.js", "utils.js"],
   ["../../Watermark/watermark_core.js", "watermark_core.js"],
-  ["../../Pixel_Injection/watermark_core_advanced.js", "watermark_core_advanced.js"],
-  ["../../Pixel_Injection/watermark_core_transforms.js", "watermark_core_transforms.js"],
-  ["../../Pixel_Injection/watermark_core_algorithms.js", "watermark_core_algorithms.js"],
+  [
+    "../../Pixel_Injection/watermark_core_advanced.js",
+    "watermark_core_advanced.js",
+  ],
+  [
+    "../../Pixel_Injection/watermark_core_transforms.js",
+    "watermark_core_transforms.js",
+  ],
+  [
+    "../../Pixel_Injection/watermark_core_algorithms.js",
+    "watermark_core_algorithms.js",
+  ],
 ];
 for (const [rel, name] of MODULES) {
   const src = fs.readFileSync(path.join(__dirname, rel), "utf8");
@@ -102,7 +121,10 @@ function ycbcrToData(Y, Cb, Cr, w, h) {
       cb = Cb[i] - 128,
       cr = Cr[i] - 128;
     data[i * 4] = Math.max(0, Math.min(255, Math.round(y + 1.402 * cr)));
-    data[i * 4 + 1] = Math.max(0, Math.min(255, Math.round(y - 0.3441 * cb - 0.7141 * cr)));
+    data[i * 4 + 1] = Math.max(
+      0,
+      Math.min(255, Math.round(y - 0.3441 * cb - 0.7141 * cr)),
+    );
     data[i * 4 + 2] = Math.max(0, Math.min(255, Math.round(y + 1.772 * cb)));
     data[i * 4 + 3] = 255;
   }
@@ -186,7 +208,8 @@ describe("Watermark Core", () => {
 
   it("wm3_extract should handle maxBits limit with invalid length header", () => {
     const c = createTestImage(8, 8);
-    const invalidPayload = "00000000000000000000000000000000" + "10101010".repeat(8);
+    const invalidPayload =
+      "00000000000000000000000000000000" + "10101010".repeat(8);
     globalThis.wm3_embed(c.imgData, invalidPayload, 12345);
     const result = globalThis.wm3_extract(c.imgData, 12345);
     assert.ok(result.length > 0);
@@ -229,10 +252,14 @@ describe("DCT Embed/Extract", () => {
 // ── Color space functions from watermark_core.js ──
 describe("Color space functions", () => {
   it("rgbToYcbcr should convert correctly", () => {
-    const w = 4, h = 4;
+    const w = 4,
+      h = 4;
     const data = new Uint8ClampedArray(w * h * 4);
     for (let i = 0; i < w * h; i++) {
-      data[i * 4] = 100; data[i * 4 + 1] = 150; data[i * 4 + 2] = 200; data[i * 4 + 3] = 255;
+      data[i * 4] = 100;
+      data[i * 4 + 1] = 150;
+      data[i * 4 + 2] = 200;
+      data[i * 4 + 3] = 255;
     }
     const result = globalThis.rgbToYcbcr({ data, w, h });
     assert.ok(result.Y instanceof Float64Array);
@@ -247,7 +274,13 @@ describe("Color space functions", () => {
   it("ycbcrToImageData should convert back", () => {
     const c = createTestImage(4, 4);
     const ycbcr = globalThis.rgbToYcbcr(c.imgData);
-    const result = globalThis.ycbcrToImageData(ycbcr.Y, ycbcr.Cb, ycbcr.Cr, 4, 4);
+    const result = globalThis.ycbcrToImageData(
+      ycbcr.Y,
+      ycbcr.Cb,
+      ycbcr.Cr,
+      4,
+      4,
+    );
     assert.ok(result.canvas, "canvas should exist");
     assert.ok(result.ctx, "ctx should exist");
     assert.ok(result.imgData, "imgData should exist");
@@ -264,7 +297,12 @@ describe("Block helpers", () => {
   it("blockIter should return correct block coordinates", () => {
     const blocks = globalThis.blockIter(16, 16, 8);
     assert.equal(blocks.length, 4);
-    assert.deepEqual(blocks, [[0, 0], [8, 0], [0, 8], [8, 8]]);
+    assert.deepEqual(blocks, [
+      [0, 0],
+      [8, 0],
+      [0, 8],
+      [8, 8],
+    ]);
   });
 
   it("blockIter should handle non-multiple dimensions", () => {
@@ -285,14 +323,17 @@ describe("Block helpers", () => {
   it("setBlock8 should write 8x8 block", () => {
     const arr = new Float64Array(64);
     const block = Array.from({ length: 8 }, (_, y) =>
-      Array.from({ length: 8 }, (_, x) => y * 8 + x + 100));
+      Array.from({ length: 8 }, (_, x) => y * 8 + x + 100),
+    );
     globalThis.setBlock8(arr, 8, 0, 0, block);
     assert.equal(arr[0], 100);
     assert.equal(arr[63], 163);
   });
 
   it("dct8x8 and idct8x8 roundtrip on constant block", () => {
-    const block = Array.from({ length: 8 }, () => Array.from({ length: 8 }, () => 128));
+    const block = Array.from({ length: 8 }, () =>
+      Array.from({ length: 8 }, () => 128),
+    );
     const dct = globalThis.dct8x8(block);
     const back = globalThis.idct8x8(dct);
     for (let y = 0; y < 8; y++)
@@ -312,7 +353,7 @@ describe("Block helpers", () => {
 describe("wm6 Multi-bit algorithm", () => {
   it("should embed and extract correctly", () => {
     const c = createTestImage(32, 32);
-    const data = new Uint8Array([0xAA, 0xBB, 0xDE, 0xAD]);
+    const data = new Uint8Array([0xaa, 0xbb, 0xde, 0xad]);
     const lenBytes = [0, 0, 0, data.length];
     const payload = new Uint8Array(4 + data.length);
     payload.set(lenBytes);
@@ -375,8 +416,15 @@ describe("wm8 Fragile algorithm", () => {
   it("should return null with wrong key", async () => {
     const c = createTestImage(32, 32);
     const secret = new TextEncoder().encode("test-secret");
-    await globalThis.wm8_embed(c.imgData, secret, new TextEncoder().encode("correct-key"));
-    const result = globalThis.wm8_extract(c.imgData, new TextEncoder().encode("wrong-key"));
+    await globalThis.wm8_embed(
+      c.imgData,
+      secret,
+      new TextEncoder().encode("correct-key"),
+    );
+    const result = globalThis.wm8_extract(
+      c.imgData,
+      new TextEncoder().encode("wrong-key"),
+    );
     assert.equal(result, null);
   });
 
@@ -426,7 +474,7 @@ describe("extractData utility", () => {
   });
 
   it("should return ok with magic bytes (no key)", () => {
-    const payload = new Uint8Array([0xAA, 0xBB, 0xDE, 0xAD]);
+    const payload = new Uint8Array([0xaa, 0xbb, 0xde, 0xad]);
     const lenBytes = [0, 0, 0, payload.length];
     const full = new Uint8Array(4 + payload.length);
     full.set(lenBytes);
@@ -434,7 +482,7 @@ describe("extractData utility", () => {
     const b = globalThis.bits(full);
     const r = globalThis.extractData(b, null);
     assert.equal(r.reason, "ok");
-    assert.deepEqual(Array.from(r.data), [0xDE, 0xAD]);
+    assert.deepEqual(Array.from(r.data), [0xde, 0xad]);
   });
 
   it("should return bad-password when no magic bytes", () => {
@@ -448,14 +496,14 @@ describe("extractData utility", () => {
   });
 
   it("should return ok with magic bytes and identity key", () => {
-    const payload = new Uint8Array([0xAA, 0xBB, 0xDE, 0xAD]);
+    const payload = new Uint8Array([0xaa, 0xbb, 0xde, 0xad]);
     const full = new Uint8Array(8);
     full.set([0, 0, 0, payload.length]);
     full.set(payload, 4);
     const b = globalThis.bits(full);
     const r = globalThis.extractData(b, new Uint8Array([0])); // XOR with 0 = identity
     assert.equal(r.reason, "ok");
-    assert.deepEqual(Array.from(r.data), [0xDE, 0xAD]);
+    assert.deepEqual(Array.from(r.data), [0xde, 0xad]);
   });
 });
 
@@ -498,7 +546,10 @@ describe("PRNG utilities", () => {
     const order = globalThis.wm3_order(8, 8, 42);
     assert.equal(order.length, 64);
     const sorted = [...order].sort((a, b) => a - b);
-    assert.deepEqual(sorted, Array.from({ length: 64 }, (_, i) => i));
+    assert.deepEqual(
+      sorted,
+      Array.from({ length: 64 }, (_, i) => i),
+    );
   });
 });
 

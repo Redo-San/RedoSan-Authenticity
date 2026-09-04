@@ -5,9 +5,19 @@ const crypto = require("crypto");
 const fs = require("fs");
 const vm = require("vm");
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
-var idForgeSrc = fs.readFileSync(path.resolve(__dirname, "../../ID_Forge/id_forge.js"), "utf8");
-vm.runInThisContext(idForgeSrc, { filename: path.resolve(__dirname, "../../ID_Forge/id_forge.js") });
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
+var idForgeSrc = fs.readFileSync(
+  path.resolve(__dirname, "../../ID_Forge/id_forge.js"),
+  "utf8",
+);
+vm.runInThisContext(idForgeSrc, {
+  filename: path.resolve(__dirname, "../../ID_Forge/id_forge.js"),
+});
 const {
   uuidv4,
   uuidv7,
@@ -22,16 +32,23 @@ const {
   formatResults,
 } = require("../lib/id_forge");
 
-const UUID4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const UUID7_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const UUID4_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const UUID7_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const ULID_RE = /^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$/;
 const SWHID_RE = /^swh:1:cnt:[0-9a-f]{40}$/;
-const NANOID_RE = /^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\-_]{21}$/;
+const NANOID_RE =
+  /^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\-_]{21}$/;
 
 describe("ID Forge — UUID v4 (RFC 9562)", () => {
   it("should generate valid format", () => {
     const id = uuidv4();
-    assert.match(id, UUID4_RE, "UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx");
+    assert.match(
+      id,
+      UUID4_RE,
+      "UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx",
+    );
   });
 
   it("should have version bits set to 0100 (4)", () => {
@@ -44,7 +61,11 @@ describe("ID Forge — UUID v4 (RFC 9562)", () => {
   it("should have variant bits set to 10xx (8|9|a|b)", () => {
     for (let i = 0; i < 100; i++) {
       const id = uuidv4();
-      assert.match(id[19], /^[89ab]$/, `Variant nibble at position 19 must be 8/9/a/b`);
+      assert.match(
+        id[19],
+        /^[89ab]$/,
+        `Variant nibble at position 19 must be 8/9/a/b`,
+      );
     }
   });
 
@@ -64,7 +85,11 @@ describe("ID Forge — UUID v4 (RFC 9562)", () => {
 describe("ID Forge — UUID v7 (RFC 9562)", () => {
   it("should generate valid format", () => {
     const id = uuidv7();
-    assert.match(id, UUID7_RE, "UUID v7 format: xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx");
+    assert.match(
+      id,
+      UUID7_RE,
+      "UUID v7 format: xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx",
+    );
   });
 
   it("should have version bits set to 0111 (7)", () => {
@@ -96,7 +121,11 @@ describe("ID Forge — UUID v7 (RFC 9562)", () => {
       await new Promise((r) => setTimeout(r, 20));
     }
     const sorted = [...ids].sort();
-    assert.deepEqual(sorted, ids, "UUIDs with increasing timestamps should be in time order");
+    assert.deepEqual(
+      sorted,
+      ids,
+      "UUIDs with increasing timestamps should be in time order",
+    );
   });
 
   it("should be 36 characters", () => {
@@ -139,8 +168,14 @@ describe("ID Forge — ULID", () => {
     }
     const tsNum = Number(ts);
     const after = Math.floor(Date.now());
-    assert.ok(tsNum >= before - 1000, `ULID timestamp ${tsNum} >= ${before - 1000}`);
-    assert.ok(tsNum <= after + 1000, `ULID timestamp ${tsNum} <= ${after + 1000}`);
+    assert.ok(
+      tsNum >= before - 1000,
+      `ULID timestamp ${tsNum} >= ${before - 1000}`,
+    );
+    assert.ok(
+      tsNum <= after + 1000,
+      `ULID timestamp ${tsNum} <= ${after + 1000}`,
+    );
   });
 
   it("should be sortable by time", async () => {
@@ -212,7 +247,8 @@ describe("ID Forge — NanoID", () => {
   });
 
   it("should only use URL-safe chars", () => {
-    const safe = /^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\-_]+$/;
+    const safe =
+      /^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\-_]+$/;
     for (let i = 0; i < 100; i++) {
       assert.match(nanoid(), safe);
     }
@@ -250,7 +286,10 @@ describe("ID Forge — sanitizeText", () => {
 
 describe("ID Forge — escXml", () => {
   it("should escape XML special chars", () => {
-    assert.equal(escXml('<tag attr="value">&'), "&lt;tag attr=&quot;value&quot;&gt;&amp;");
+    assert.equal(
+      escXml('<tag attr="value">&'),
+      "&lt;tag attr=&quot;value&quot;&gt;&amp;",
+    );
   });
   it("should pass through safe text", () => {
     assert.equal(escXml("hello"), "hello");
@@ -275,12 +314,17 @@ describe("ID Forge — hexFromDigest", () => {
 });
 
 describe("ID Forge — extractHashFromOts", () => {
-  const OTS_HEADER = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+  const OTS_HEADER = [
+    0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+    0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf,
+    0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
+  ];
 
   it("should extract SHA-256 from valid OTS buffer", () => {
     const hashBytes = new Uint8Array(32);
     for (let i = 0; i < 32; i++) hashBytes[i] = 0xab;
-    const buf = new Uint8Array([...OTS_HEADER, 0x01, 0x08, ...hashBytes]).buffer;
+    const buf = new Uint8Array([...OTS_HEADER, 0x01, 0x08, ...hashBytes])
+      .buffer;
     assert.equal(extractHashFromOts(buf), "ab".repeat(32));
   });
   it("should throw on bad magic bytes", () => {
@@ -296,7 +340,8 @@ describe("ID Forge — extractHashFromOts", () => {
     assert.throws(() => extractHashFromOts(buf), /Unsupported OTS hash/);
   });
   it("should throw on too short buffer", () => {
-    const buf = new Uint8Array([...OTS_HEADER, 0x01, 0x08, 0x00, 0x01, 0x02]).buffer;
+    const buf = new Uint8Array([...OTS_HEADER, 0x01, 0x08, 0x00, 0x01, 0x02])
+      .buffer;
     assert.throws(() => extractHashFromOts(buf), /OTS file too short/);
   });
 });

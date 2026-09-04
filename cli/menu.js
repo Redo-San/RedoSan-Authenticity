@@ -63,7 +63,11 @@ function resolvePath(raw, defaultName) {
       : cleaned;
   const resolved = path.resolve(converted);
   // If it's an existing directory, append default filename
-  if (defaultName && fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+  if (
+    defaultName &&
+    fs.existsSync(resolved) &&
+    fs.statSync(resolved).isDirectory()
+  ) {
     return path.join(resolved, defaultName);
   }
   return resolved;
@@ -79,7 +83,9 @@ function run(args) {
       stdio: "inherit",
       cwd: path.dirname(CLI),
     });
-    cp.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`Exit code ${code}`))));
+    cp.on("close", (code) =>
+      code === 0 ? resolve() : reject(new Error(`Exit code ${code}`)),
+    );
   });
 }
 
@@ -112,7 +118,9 @@ async function selectFile(prompt) {
         const maxShow = 40;
         const show = items.slice(0, maxShow);
         for (let i = 0; i < show.length; i++) {
-          console.log(`  ${c("green", String(i + 1).padStart(2, " "))}  ${show[i]}`);
+          console.log(
+            `  ${c("green", String(i + 1).padStart(2, " "))}  ${show[i]}`,
+          );
         }
         if (items.length > maxShow) {
           console.log(c("dim", `  ... and ${items.length - maxShow} more`));
@@ -148,7 +156,11 @@ async function mainMenu() {
     console.log("  " + c("green", "2") + "  Watermark (embed)");
     console.log("  " + c("green", "3") + "  Watermark (extract)");
     console.log("  " + c("green", "4") + "  Audio Watermark (embed)");
-    console.log("  " + c("green", "5") + "  Audio Watermark (extract)  — save as TXT / JSON");
+    console.log(
+      "  " +
+        c("green", "5") +
+        "  Audio Watermark (extract)  — save as TXT / JSON",
+    );
     console.log("  " + c("green", "6") + "  View metadata (EXIF / dimensions)");
     console.log("  " + c("green", "7") + "  Timestamp (create .ots proof)");
     console.log("  " + c("green", "8") + "  Timestamp (verify .ots proof)");
@@ -305,9 +317,15 @@ async function menuFingerprint() {
   const fmt = await ask(c("cyan", "> "));
   if (fmt.trim() === "1" || fmt.trim() === "2") {
     const def = file + (fmt.trim() === "1" ? ".json" : ".fingerprint.txt");
-    const out = await ask(c("cyan", `Output path (Enter = ${path.basename(def)}): `));
+    const out = await ask(
+      c("cyan", `Output path (Enter = ${path.basename(def)}): `),
+    );
     let outPath = out.trim() || def;
-    if (outPath && fs.existsSync(outPath) && fs.statSync(outPath).isDirectory()) {
+    if (
+      outPath &&
+      fs.existsSync(outPath) &&
+      fs.statSync(outPath).isDirectory()
+    ) {
       outPath = path.join(outPath, path.basename(def));
     }
     const saveArgs = ["fingerprint", file, "-o", outPath];
@@ -338,15 +356,36 @@ async function menuWmEmbed() {
     await ask("Press Enter...");
     return;
   }
-  const outputRaw = await ask(c("cyan", "Output image path (Enter = output.png): "));
+  const outputRaw = await ask(
+    c("cyan", "Output image path (Enter = output.png): "),
+  );
   const out = resolvePath(outputRaw, "output.png");
   const algo = await pickAlgorithm(
     "Algorithm:",
-    ["lsb", "dct", "random_lsb", "neural_lsb", "zero_bit", "multi_bit", "forensic", "fragile", "imatag"],
+    [
+      "lsb",
+      "dct",
+      "random_lsb",
+      "neural_lsb",
+      "zero_bit",
+      "multi_bit",
+      "forensic",
+      "fragile",
+      "imatag",
+    ],
     "lsb",
   );
   const pass = await ask(c("yellow", "Password > "));
-  const args = ["watermark", "embed", "-i", image, "-o", out, "-a", algo.trim() || "lsb"];
+  const args = [
+    "watermark",
+    "embed",
+    "-i",
+    image,
+    "-o",
+    out,
+    "-a",
+    algo.trim() || "lsb",
+  ];
   if (secretPath) args.push("-s", secretPath);
   if (pass.trim()) args.push("-p", pass.trim());
   await run(args);
@@ -362,13 +401,32 @@ async function menuWmExtract() {
   const image = await selectFile("Watermarked image path > ");
   const algo = await pickAlgorithm(
     "Algorithm:",
-    ["lsb", "dct", "random_lsb", "neural_lsb", "zero_bit", "multi_bit", "forensic", "fragile", "imatag"],
+    [
+      "lsb",
+      "dct",
+      "random_lsb",
+      "neural_lsb",
+      "zero_bit",
+      "multi_bit",
+      "forensic",
+      "fragile",
+      "imatag",
+    ],
     "lsb",
   );
   const pass = await ask(c("yellow", "Password > "));
-  const outputRaw = await ask(c("cyan", "Output file path (Enter = print to screen): "));
+  const outputRaw = await ask(
+    c("cyan", "Output file path (Enter = print to screen): "),
+  );
   const out = resolvePath(outputRaw);
-  const args = ["watermark", "extract", "-i", image, "-a", algo.trim() || "lsb"];
+  const args = [
+    "watermark",
+    "extract",
+    "-i",
+    image,
+    "-a",
+    algo.trim() || "lsb",
+  ];
   if (pass.trim()) args.push("-p", pass.trim());
   if (out) args.push("-o", out);
   await run(args);
@@ -393,7 +451,9 @@ async function menuTsCreate() {
   console.clear();
   console.log(c("bright", "── Timestamp Create ──"));
   const file = await selectFile("File path > ");
-  const outputRaw = await ask(c("cyan", "Output .ots path (Enter = file.ots): "));
+  const outputRaw = await ask(
+    c("cyan", "Output .ots path (Enter = file.ots): "),
+  );
   const out = resolvePath(outputRaw, path.basename(file) + ".ots");
   const args = ["timestamp", "create", file];
   if (out) args.push("-o", out);
@@ -408,7 +468,9 @@ async function menuTsVerify() {
   console.clear();
   console.log(c("bright", "── Timestamp Verify ──"));
   const file = await selectFile("Original file path > ");
-  const proofRaw = await ask(c("cyan", ".ots proof file path (Enter = file.ots): "));
+  const proofRaw = await ask(
+    c("cyan", ".ots proof file path (Enter = file.ots): "),
+  );
   const proof = resolvePath(proofRaw, path.basename(file) + ".ots");
   const args = ["timestamp", "verify", file];
   if (proof) args.push("-o", proof);
@@ -425,7 +487,9 @@ async function menuC2paSign() {
   const file = await selectFile("File path > ");
   const claim = await ask(c("cyan", "Claim text (Enter = none): "));
   const author = await ask(c("cyan", "Author (Enter = none): "));
-  const outputRaw = await ask(c("cyan", "Output image path (Enter = overwrite original): "));
+  const outputRaw = await ask(
+    c("cyan", "Output image path (Enter = overwrite original): "),
+  );
   const out = resolvePath(outputRaw);
   const args = ["c2pa", "sign", file];
   if (claim.trim()) args.push("--claim", claim.trim());
@@ -457,7 +521,9 @@ async function pickAlgorithm(title, algos, defaultAlgo) {
   for (let i = 0; i < algos.length; i++) {
     console.log(`  ${c("green", String(i + 1).padStart(2, " "))}  ${algos[i]}`);
   }
-  const raw = await ask(c("cyan", `Choice (1-${algos.length}, Enter = ${defaultAlgo}): `));
+  const raw = await ask(
+    c("cyan", `Choice (1-${algos.length}, Enter = ${defaultAlgo}): `),
+  );
   const n = parseInt(raw.trim(), 10);
   if (n >= 1 && n <= algos.length) return algos[n - 1];
   return defaultAlgo;
@@ -477,11 +543,22 @@ async function menuPiEmbed() {
     await ask("Press Enter...");
     return;
   }
-  const outputRaw = await ask(c("cyan", "Output image path (Enter = output.png): "));
+  const outputRaw = await ask(
+    c("cyan", "Output image path (Enter = output.png): "),
+  );
   const out = resolvePath(outputRaw, "output.png");
   const algo = await pickAlgorithm(
     "Algorithm:",
-    ["enhanced_lsb", "adaptive_lsb", "dct", "dwt", "dft", "hybrid_dct_dwt", "vine", "pixel_seal"],
+    [
+      "enhanced_lsb",
+      "adaptive_lsb",
+      "dct",
+      "dwt",
+      "dft",
+      "hybrid_dct_dwt",
+      "vine",
+      "pixel_seal",
+    ],
     "enhanced_lsb",
   );
   const pass = await ask(c("yellow", "Password > "));
@@ -500,15 +577,28 @@ async function menuPiExtract() {
   console.log(c("bright", "── Pixel Injection Extract ──"));
   const image = await selectFile("Image path > ");
   console.log(c("dim", "Algorithm (Enter = auto-detect all):"));
-  console.log("  enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal");
+  console.log(
+    "  enhanced_lsb, adaptive_lsb, dct, dwt, dft, hybrid_dct_dwt, vine, pixel_seal",
+  );
   const algo = await ask(c("cyan", "> "));
   const pass = await ask(c("yellow", "Password > "));
-  const outputRaw = await ask(c("cyan", "Output path (Enter = print to screen): "));
+  const outputRaw = await ask(
+    c("cyan", "Output path (Enter = print to screen): "),
+  );
   const out = resolvePath(outputRaw);
 
   const algos = algo.trim()
     ? [algo.trim()]
-    : ["enhanced_lsb", "adaptive_lsb", "dct", "dwt", "dft", "hybrid_dct_dwt", "vine", "pixel_seal"];
+    : [
+        "enhanced_lsb",
+        "adaptive_lsb",
+        "dct",
+        "dwt",
+        "dft",
+        "hybrid_dct_dwt",
+        "vine",
+        "pixel_seal",
+      ];
   let found = false;
   for (const a of algos) {
     const args = ["pixel-injection", "extract", "-i", image, "-a", a];
@@ -539,12 +629,31 @@ async function runAwmEmbed() {
   const pass = await ask(c("yellow", "Password > "));
   const algo = await pickAlgorithm(
     "Algorithm:",
-    ["lsb", "phase_coding", "echo_hiding", "dsss", "qim", "dwt", "patchwork", "dct"],
+    [
+      "lsb",
+      "phase_coding",
+      "echo_hiding",
+      "dsss",
+      "qim",
+      "dwt",
+      "patchwork",
+      "dct",
+    ],
     "lsb",
   );
   const outputRaw = await ask(c("cyan", "Output path (Enter = output.wav): "));
   const out = resolvePath(outputRaw, "output.wav");
-  const args = ["audio-watermark", "embed", audio, "-s", secretFile, "-o", out, "-a", algo];
+  const args = [
+    "audio-watermark",
+    "embed",
+    audio,
+    "-s",
+    secretFile,
+    "-o",
+    out,
+    "-a",
+    algo,
+  ];
   if (pass.trim()) args.push("-p", pass.trim());
   await run(args);
   await ask("Press Enter...");
@@ -560,7 +669,16 @@ async function runAwmExtract() {
   const pass = await ask(c("yellow", "Password > "));
   const algo = await pickAlgorithm(
     "Algorithm:",
-    ["lsb", "phase_coding", "echo_hiding", "dsss", "qim", "dwt", "patchwork", "dct"],
+    [
+      "lsb",
+      "phase_coding",
+      "echo_hiding",
+      "dsss",
+      "qim",
+      "dwt",
+      "patchwork",
+      "dct",
+    ],
     "lsb",
   );
 
@@ -617,7 +735,11 @@ async function menuDid() {
   console.log(c("dim", "2) Sign a file with existing DID"));
   const sub = await ask(c("cyan", "> "));
   if (sub.trim() === "1") {
-    const algo = await pickAlgorithm("Algorithm:", ["Ed25519", "P-256", "RSA-2048", "RSA-4096"], "Ed25519");
+    const algo = await pickAlgorithm(
+      "Algorithm:",
+      ["Ed25519", "P-256", "RSA-2048", "RSA-4096"],
+      "Ed25519",
+    );
     const args = ["did", "generate", "--algo", algo];
     await run(args);
     const signNow = await ask(c("yellow", "Sign a file now? (y/N): "));
@@ -640,7 +762,12 @@ async function menuDid() {
 async function menuCertificate() {
   console.clear();
   console.log(c("bright", "── Digital Passport ──"));
-  console.log(c("dim", "Professional Mode — All fields are optional except Image, Name, Email, Phone, Website\n"));
+  console.log(
+    c(
+      "dim",
+      "Professional Mode — All fields are optional except Image, Name, Email, Phone, Website\n",
+    ),
+  );
 
   // Required: Image file
   const imageFile = await selectFile("Image file to certify > ");
@@ -660,7 +787,9 @@ async function menuCertificate() {
   const phone = await ask(c("cyan", "Phone number (required) > "));
   if (phone.trim()) args.push("--phone", phone.replace(/\D/g, "").slice(0, 15));
 
-  const website = await ask(c("cyan", "Website URL (required, e.g. https://example.com) > "));
+  const website = await ask(
+    c("cyan", "Website URL (required, e.g. https://example.com) > "),
+  );
   if (website.trim()) args.push("--website", website.trim());
 
   // Social links (optional)
@@ -675,7 +804,9 @@ async function menuCertificate() {
   if (youtube.trim()) args.push("--social-youtube", youtube.trim());
 
   // Music links (optional)
-  console.log(c("dim", "\nMusic platform links (optional, press Enter to skip each):"));
+  console.log(
+    c("dim", "\nMusic platform links (optional, press Enter to skip each):"),
+  );
   const spotify = await ask(c("cyan", "  Spotify URL > "));
   if (spotify.trim()) args.push("--music-spotify", spotify.trim());
   const appleMusic = await ask(c("cyan", "  Apple Music URL > "));
@@ -714,11 +845,15 @@ async function menuCertificate() {
   if (tsFile) args.push("--timestamp", tsFile);
 
   // Format and output
-  const format = await ask(c("cyan", "\nFormat (pdf/docx/epub, Enter = pdf): "));
+  const format = await ask(
+    c("cyan", "\nFormat (pdf/docx/epub, Enter = pdf): "),
+  );
   args.push("--format", format.trim() || "pdf");
 
   const defaultName = "passport." + (format.trim() || "pdf");
-  const outputRaw = await ask(c("cyan", "Output path (Enter = " + defaultName + "): "));
+  const outputRaw = await ask(
+    c("cyan", "Output path (Enter = " + defaultName + "): "),
+  );
   const out = resolvePath(outputRaw, defaultName);
   args.push("-o", out);
 
@@ -742,12 +877,18 @@ async function menuDocwEmbed() {
     const msg = await ask(c("cyan", "Secret message > "));
     if (msg.trim()) args.push("-m", msg.trim());
   }
-  const algo = await pickAlgorithm("Algorithm:", ["ZWC (Zero-Width)", "Homoglyph", "Whitespace"], "ZWC (Zero-Width)");
+  const algo = await pickAlgorithm(
+    "Algorithm:",
+    ["ZWC (Zero-Width)", "Homoglyph", "Whitespace"],
+    "ZWC (Zero-Width)",
+  );
   var algoMap = { 1: "1", 2: "2", 3: "3" };
   args.push("-a", algoMap[algo] || "1");
   const pass = await ask(c("yellow", "Password (optional) > "));
   if (pass.trim()) args.push("-p", pass.trim());
-  const outputRaw = await ask(c("cyan", "Output path (Enter = input.watermarked.txt): "));
+  const outputRaw = await ask(
+    c("cyan", "Output path (Enter = input.watermarked.txt): "),
+  );
   if (outputRaw.trim()) args.push("-o", outputRaw.trim());
   await run(args);
   await ask("Press Enter...");
@@ -761,11 +902,18 @@ async function menuDocwExtract() {
   console.log(c("bright", "── Document Watermark Extract ──"));
   const input = await selectFile("Watermarked text file > ");
   var args = ["document-watermark", "extract", "-i", input, "-a", "0"];
-  const useAlgo = await ask(c("cyan", "Specify algorithm? (1=ZWC, 2=Homoglyph, 3=Whitespace, Enter=Auto): "));
+  const useAlgo = await ask(
+    c(
+      "cyan",
+      "Specify algorithm? (1=ZWC, 2=Homoglyph, 3=Whitespace, Enter=Auto): ",
+    ),
+  );
   if (useAlgo.trim()) args[args.length - 1] = useAlgo.trim();
   const pass = await ask(c("yellow", "Password (optional) > "));
   if (pass.trim()) args.push("-p", pass.trim());
-  const outputRaw = await ask(c("cyan", "Output path (Enter = print to screen): "));
+  const outputRaw = await ask(
+    c("cyan", "Output path (Enter = print to screen): "),
+  );
   if (outputRaw.trim()) args.push("-o", outputRaw.trim());
   await run(args);
   await ask("Press Enter...");
@@ -778,7 +926,9 @@ async function menuConverter() {
   console.clear();
   console.log(c("bright", "── File Converter ──"));
   const input = await selectFile("Input file > ");
-  const fmt = await ask(c("cyan", "Target format (e.g. png, jpg, webp, mp3): "));
+  const fmt = await ask(
+    c("cyan", "Target format (e.g. png, jpg, webp, mp3): "),
+  );
   const outputRaw = await ask(c("cyan", "Output path (Enter = auto): "));
   const out = resolvePath(outputRaw);
   const args = ["converter", input, "-f", fmt];

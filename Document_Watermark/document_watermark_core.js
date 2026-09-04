@@ -101,14 +101,18 @@ async function _deflate(bytes) {
         var v = await reader.read();
         if (v.done) break;
         chunks.push(v.value);
-      } /* c8 ignore next */ catch { break; }
+      } /* c8 ignore next */ catch {
+        break;
+      }
     }
   })();
   readPromise.catch(function () {});
   try {
     await writer.write(bytes);
     await writer.close();
-  } /* c8 ignore next */ catch { /* suppress */ }
+  } /* c8 ignore next */ catch {
+    /* suppress */
+  }
   await readPromise;
   var total = 0;
   for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -242,7 +246,7 @@ async function _bitsToMsg(bits, password) {
       /* c8 ignore start */
       return "";
     }
-      /* c8 ignore stop */
+    /* c8 ignore stop */
   }
   var result = "";
   for (var k = 0; k < bytes.length; k++) {
@@ -298,7 +302,8 @@ var DOCW_ZWC = {
       if (bitIdx < bits.length) {
         for (var z = 0; z < perChar && bitIdx < bits.length; z++) {
           var chunk = bits.substr(bitIdx, this.BITS_PER_ZWC);
-          /* c8 ignore next */ while (chunk.length < this.BITS_PER_ZWC) chunk += "0";
+          /* c8 ignore next */ while (chunk.length < this.BITS_PER_ZWC)
+            chunk += "0";
           result += this.CHARS[parseInt(chunk, 2)];
           bitIdx += this.BITS_PER_ZWC;
         }
@@ -562,7 +567,8 @@ var DOCW_WHITESPACE = {
       i += this.BITS_PER_SPACE
     ) {
       var quad = bits.substr(i, this.BITS_PER_SPACE);
-      /* c8 ignore next */ while (quad.length < this.BITS_PER_SPACE) quad += "0";
+      /* c8 ignore next */ while (quad.length < this.BITS_PER_SPACE)
+        quad += "0";
       encoded.push(this.SPACES[parseInt(quad, 2)]);
     }
     var rem = bits.length % this.BITS_PER_SPACE;
@@ -648,9 +654,13 @@ async function docwExtract(text, algoId, password) {
 function _isGarbageResult(msg) {
   if (!msg || msg.length < 2) return true;
   if (msg.length < 4) return false;
-  var unique = 0, seen = {};
+  var unique = 0,
+    seen = {};
   for (var i = 0; i < msg.length && i < 50; i++) {
-    if (!seen[msg[i]]) { seen[msg[i]] = true; unique++; }
+    if (!seen[msg[i]]) {
+      seen[msg[i]] = true;
+      unique++;
+    }
   }
   return unique < 2;
 }
@@ -669,14 +679,20 @@ async function docwAutoDetect(text, password) {
       if (result) {
         if (!_isGarbageResult(result))
           return { algo: id, name: DOCW_ALGOS[id].name, message: result };
-        candidates.push({ algo: id, name: DOCW_ALGOS[id].name, message: result });
+        candidates.push({
+          algo: id,
+          name: DOCW_ALGOS[id].name,
+          message: result,
+        });
       }
     } catch (error) {
       if (error.message === "WRONG_PASSWORD") pwError = true;
     }
   }
   if (candidates.length > 0) {
-    candidates.sort(function (a, b) { return b.message.length - a.message.length; });
+    candidates.sort(function (a, b) {
+      return b.message.length - a.message.length;
+    });
     return candidates[0];
   }
   if (pwError) throw new Error("WRONG_PASSWORD");

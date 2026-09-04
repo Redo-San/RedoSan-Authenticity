@@ -16,7 +16,6 @@ after(async function () {
 });
 
 describe("Iris Storage — _rehydrate paths", function () {
-
   it("should rehydrate null record returns null", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
@@ -49,10 +48,15 @@ describe("Iris Storage — _rehydrate paths", function () {
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
         var record = {
-          id: "legacy-both", label: "Both", enrolledAt: Date.now(),
-          leftCode: [1, 2, 3], leftMask: [4, 5, 6],
-          rightCode: [7, 8], rightMask: [9, 10],
-          eyeSide: "right", quality: { score: 85 },
+          id: "legacy-both",
+          label: "Both",
+          enrolledAt: Date.now(),
+          leftCode: [1, 2, 3],
+          leftMask: [4, 5, 6],
+          rightCode: [7, 8],
+          rightMask: [9, 10],
+          eyeSide: "right",
+          quality: { score: 85 },
         };
         var r = await storage._rehydrate(record);
         return {
@@ -81,8 +85,11 @@ describe("Iris Storage — _rehydrate paths", function () {
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
         var record = {
-          id: "legacy-left", label: "Left", enrolledAt: Date.now(),
-          leftCode: [10, 20], leftMask: [30, 40],
+          id: "legacy-left",
+          label: "Left",
+          enrolledAt: Date.now(),
+          leftCode: [10, 20],
+          leftMask: [30, 40],
           eyeSide: "left",
         };
         var r = await storage._rehydrate(record);
@@ -105,7 +112,12 @@ describe("Iris Storage — _rehydrate paths", function () {
     try {
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
-        var record = { id: "no-right", leftCode: [1], leftMask: [2], eyeSide: "left" };
+        var record = {
+          id: "no-right",
+          leftCode: [1],
+          leftMask: [2],
+          eyeSide: "left",
+        };
         var r = await storage._rehydrate(record);
         return { hasRight: !!r.rightCode, eyeSide: r.eyeSide };
       });
@@ -121,7 +133,12 @@ describe("Iris Storage — _rehydrate paths", function () {
     try {
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
-        var record = { id: "bad-eye", leftCode: [1], leftMask: [2], eyeSide: "invalid" };
+        var record = {
+          id: "bad-eye",
+          leftCode: [1],
+          leftMask: [2],
+          eyeSide: "invalid",
+        };
         var r = await storage._rehydrate(record);
         return r.eyeSide;
       });
@@ -151,7 +168,12 @@ describe("Iris Storage — _rehydrate paths", function () {
     try {
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
-        var record = { id: "empty-eye", leftCode: [1], leftMask: [2], eyeSide: "" };
+        var record = {
+          id: "empty-eye",
+          leftCode: [1],
+          leftMask: [2],
+          eyeSide: "",
+        };
         var r = await storage._rehydrate(record);
         return r.eyeSide;
       });
@@ -167,11 +189,16 @@ describe("Iris Storage — _rehydrate paths", function () {
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
         var record = {
-          id: "with-quality", leftCode: [1], leftMask: [2],
+          id: "with-quality",
+          leftCode: [1],
+          leftMask: [2],
           quality: { irisContrast: 0.8, pupilContrast: 0.6 },
         };
         var r = await storage._rehydrate(record);
-        return { hasQuality: !!r.quality, irisContrast: r.quality.irisContrast };
+        return {
+          hasQuality: !!r.quality,
+          irisContrast: r.quality.irisContrast,
+        };
       });
       assert.ok(result.hasQuality);
       assert.strictEqual(result.irisContrast, 0.8);

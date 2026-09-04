@@ -16,14 +16,16 @@ after(async function () {
 });
 
 describe("Iris Storage — IDB error handlers", function () {
-
   it("should trigger _openDB reject by mocking IDB.open to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var errorCaught = await page.evaluate(async function () {
         var origOpen = indexedDB.open.bind(indexedDB);
         indexedDB.open = function () {
-          var failReq = { result: undefined, error: new Error("Mocked DB open failure") };
+          var failReq = {
+            result: undefined,
+            error: new Error("Mocked DB open failure"),
+          };
           setTimeout(function () {
             if (failReq.onerror) failReq.onerror({ target: failReq });
           }, 10);
@@ -49,7 +51,9 @@ describe("Iris Storage — IDB error handlers", function () {
   it("should trigger save req.onerror by mocking store.put to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -79,8 +83,10 @@ describe("Iris Storage — IDB error handlers", function () {
 
         try {
           await storage.save({
-            id: "mock-save", label: "x",
-            leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]),
+            id: "mock-save",
+            label: "x",
+            leftCode: new Uint8Array([1]),
+            leftMask: new Uint8Array([2]),
           });
           return false;
         } catch (e) {
@@ -96,7 +102,9 @@ describe("Iris Storage — IDB error handlers", function () {
   it("should trigger load req.onerror by mocking store.get to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -140,7 +148,9 @@ describe("Iris Storage — IDB error handlers", function () {
   it("should trigger list req.onerror by mocking cursor.openCursor to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -184,7 +194,9 @@ describe("Iris Storage — IDB error handlers", function () {
   it("should trigger delete req.onerror by mocking store.delete to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -228,7 +240,9 @@ describe("Iris Storage — IDB error handlers", function () {
   it("should trigger count req.onerror by mocking store.count to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -272,7 +286,9 @@ describe("Iris Storage — IDB error handlers", function () {
   it("should trigger clear req.onerror by mocking store.clear to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -316,7 +332,9 @@ describe("Iris Storage — IDB error handlers", function () {
   it("should trigger exportAllRecords req.onerror by mocking cursor to fail", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -351,7 +369,10 @@ describe("Iris Storage — IDB error handlers", function () {
           return e.message.includes("Export failed");
         }
       });
-      assert.ok(errorCaught, "exportAllRecords should catch mocked cursor error");
+      assert.ok(
+        errorCaught,
+        "exportAllRecords should catch mocked cursor error",
+      );
     } finally {
       await closePage(ctx, page);
     }

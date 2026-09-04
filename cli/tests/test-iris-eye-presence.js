@@ -10,7 +10,15 @@ const src = fs.readFileSync(
   path.join(__dirname, "..", "..", "Iris_Biometric", "iris_engine.js"),
   "utf8",
 );
-vm.runInThisContext(src, { filename: path.join(__dirname, "..", "..", "Iris_Biometric", "iris_engine.js") });
+vm.runInThisContext(src, {
+  filename: path.join(
+    __dirname,
+    "..",
+    "..",
+    "Iris_Biometric",
+    "iris_engine.js",
+  ),
+});
 const IrisEngine = global.IrisEngine || global.window.IrisEngine;
 
 /**
@@ -51,7 +59,10 @@ function buildUniform(w, h, v) {
  */
 function buildEye(w, h, cx, cy, pupilR, irisR) {
   let s = 42;
-  const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 4294967296; };
+  const rand = () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 4294967296;
+  };
   const g = new Float64Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -82,7 +93,8 @@ function segment(gray, w, h) {
 }
 
 test("noise image has no usable iris (rejected)", () => {
-  const w = 160, h = 160;
+  const w = 160,
+    h = 160;
   const gray = buildNoise(w, h);
   const { pupil, iris } = segment(gray, w, h);
   const res = IrisEngine.validateEyePresence(gray, w, h, pupil, iris);
@@ -91,7 +103,8 @@ test("noise image has no usable iris (rejected)", () => {
 });
 
 test("uniform gray image has no usable iris (rejected)", () => {
-  const w = 160, h = 160;
+  const w = 160,
+    h = 160;
   const gray = buildUniform(w, h, 128);
   const { pupil, iris } = segment(gray, w, h);
   const res = IrisEngine.validateEyePresence(gray, w, h, pupil, iris);
@@ -99,18 +112,27 @@ test("uniform gray image has no usable iris (rejected)", () => {
 });
 
 test("synthetic eye is detected and accepted (captures the eye)", () => {
-  const w = 640, h = 480;
-  const cx = 320, cy = 240, pupilR = 70, irisR = 160;
+  const w = 640,
+    h = 480;
+  const cx = 320,
+    cy = 240,
+    pupilR = 70,
+    irisR = 160;
   const gray = buildEye(w, h, cx, cy, pupilR, irisR);
   const { pupil, iris } = segment(gray, w, h);
   // The IDO heuristic segments the pupil near the true center.
   assert.ok(pupil.radius > 5, "pupil radius plausible: " + pupil.radius);
   const res = IrisEngine.validateEyePresence(gray, w, h, pupil, iris);
-  assert.strictEqual(res.ok, true, "real eye must pass (reason=" + res.reason + ")");
+  assert.strictEqual(
+    res.ok,
+    true,
+    "real eye must pass (reason=" + res.reason + ")",
+  );
 });
 
 test("off-center / wrong-size circle is rejected", () => {
-  const w = 160, h = 160;
+  const w = 160,
+    h = 160;
   // Eye placed at the very edge -> off-center gate should fire.
   const gray = buildEye(w, h, 8, 8, 10, 28);
   const { pupil, iris } = segment(gray, w, h);

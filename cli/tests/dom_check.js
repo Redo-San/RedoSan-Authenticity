@@ -23,7 +23,10 @@ function startServer() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
       const decodedUrl = decodeURIComponent(req.url);
-      let filePath = path.join(ROOT, decodedUrl === "/" ? "/index.html" : decodedUrl);
+      let filePath = path.join(
+        ROOT,
+        decodedUrl === "/" ? "/index.html" : decodedUrl,
+      );
       filePath = path.normalize(filePath);
       if (!filePath.startsWith(ROOT)) {
         res.writeHead(403);
@@ -44,7 +47,8 @@ function startServer() {
         ".woff2": "font/woff2",
         ".woff": "font/woff",
       };
-      const contentType = mime[path.extname(filePath)] || "application/octet-stream";
+      const contentType =
+        mime[path.extname(filePath)] || "application/octet-stream";
       fs.readFile(filePath, (err, data) => {
         if (err) {
           res.writeHead(404);
@@ -73,7 +77,13 @@ async function checkLinks(page, baseUrl, seenAnchors) {
   const anchorWarned = new Set();
   for (const link of links) {
     const href = link.href;
-    if (!href || href === "#" || href.startsWith("?") || href.startsWith("mailto:") || href.startsWith("tel:"))
+    if (
+      !href ||
+      href === "#" ||
+      href.startsWith("?") ||
+      href.startsWith("mailto:") ||
+      href.startsWith("tel:")
+    )
       continue;
     if (href.startsWith("http")) continue;
     if (href.startsWith("#")) {
@@ -81,9 +91,17 @@ async function checkLinks(page, baseUrl, seenAnchors) {
       if (!id) continue;
       if (seenAnchors && !seenAnchors.has(id)) continue;
       if (anchorWarned.has(id)) continue;
-      const exists = await page.evaluate((id) => !!document.getElementById(id), id);
+      const exists = await page.evaluate(
+        (id) => !!document.getElementById(id),
+        id,
+      );
       if (!exists) {
-        report("Broken Link", "warning", `Anchor #${id} not found on page`, baseUrl);
+        report(
+          "Broken Link",
+          "warning",
+          `Anchor #${id} not found on page`,
+          baseUrl,
+        );
         anchorWarned.add(id);
       }
     } else {
@@ -92,10 +110,20 @@ async function checkLinks(page, baseUrl, seenAnchors) {
       try {
         const resp = await page.request.get(url.toString());
         if (resp.status() >= 400) {
-          report("Broken Link", "error", `HTTP ${resp.status()} for "${link.text}" (${href})`, baseUrl);
+          report(
+            "Broken Link",
+            "error",
+            `HTTP ${resp.status()} for "${link.text}" (${href})`,
+            baseUrl,
+          );
         }
       } catch {
-        report("Broken Link", "error", `Failed to fetch "${link.text}" (${href})`, baseUrl);
+        report(
+          "Broken Link",
+          "error",
+          `Failed to fetch "${link.text}" (${href})`,
+          baseUrl,
+        );
       }
     }
   }
@@ -124,7 +152,8 @@ async function checkAxe(page, url) {
       }
     }
     for (const [, g] of Object.entries(grouped)) {
-      const sev = g.impact === "critical" || g.impact === "serious" ? "error" : "warning";
+      const sev =
+        g.impact === "critical" || g.impact === "serious" ? "error" : "warning";
       let msg = `${g.help} (${g.count} element${g.count > 1 ? "s" : ""})`;
       if (g.examples.length > 0) msg += ` — e.g. ${g.examples.join(", ")}`;
       report("Accessibility", sev, msg, url);
@@ -139,7 +168,9 @@ async function checkAxe(page, url) {
 async function checkPage(browser, pageName) {
   const url = `http://localhost:${PORT}/${pageName}`;
   console.log(`\n📄 Checking ${pageName}...`);
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  });
   const page = await context.newPage();
   const consoleErrors = [];
 
@@ -152,7 +183,11 @@ async function checkPage(browser, pageName) {
 
   await page.route("**/*", async (route) => {
     const reqUrl = route.request().url();
-    if (!reqUrl.startsWith("http://localhost") && !reqUrl.startsWith("data:") && !reqUrl.startsWith("blob:")) {
+    if (
+      !reqUrl.startsWith("http://localhost") &&
+      !reqUrl.startsWith("data:") &&
+      !reqUrl.startsWith("blob:")
+    ) {
       await route.abort().catch(() => {});
       return;
     }
@@ -174,14 +209,21 @@ async function checkPage(browser, pageName) {
       !e.includes("net::ERR_FAILED") &&
       !e.includes("Failed to load resource") &&
       !e.includes("Language file not found") &&
-      !e.includes("A bad HTTP response code (404) was received when fetching the script"),
+      !e.includes(
+        "A bad HTTP response code (404) was received when fetching the script",
+      ),
   );
   if (filteredErrors.length > 0) {
     for (const err of filteredErrors.slice(0, 5)) {
       report("Console Error", "error", err.slice(0, 200), pageName);
     }
     if (filteredErrors.length > 5) {
-      report("Console Error", "warning", `... and ${filteredErrors.length - 5} more`, pageName);
+      report(
+        "Console Error",
+        "warning",
+        `... and ${filteredErrors.length - 5} more`,
+        pageName,
+      );
     }
   } else {
     console.log("  ✅ No console errors");
@@ -197,7 +239,9 @@ async function checkPage(browser, pageName) {
     }
   }
 
-  const knownAnchorIds = await page.evaluate(() => Array.from(document.querySelectorAll("[id]")).map((el) => el.id));
+  const knownAnchorIds = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("[id]")).map((el) => el.id),
+  );
   const seenAnchors = new Set(knownAnchorIds);
 
   const violCount = await checkAxe(page, pageName);
@@ -271,7 +315,11 @@ async function main() {
 
   if (issues.length > 0) {
     console.log(
-      `\n📊 Summary: ${issues.filter((i) => i.severity === "error").length} errors, ${issues.filter((i) => i.severity === "warning").length} warnings`,
+      `\n📊 Summary: ${
+        issues.filter((i) => i.severity === "error").length
+      } errors, ${
+        issues.filter((i) => i.severity === "warning").length
+      } warnings`,
     );
   } else {
     console.log("\n✅ All clean!");

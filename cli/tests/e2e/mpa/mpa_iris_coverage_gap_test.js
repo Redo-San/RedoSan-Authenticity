@@ -24,7 +24,6 @@ async function loadFile(page, relPath) {
 }
 
 describe("Iris coverage — iris_quality.js gaps", function () {
-
   it("IrisQuality constructor", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
@@ -54,7 +53,11 @@ describe("Iris coverage — iris_quality.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        return window.IrisQuality.pupilBoundaryCircularity(new Uint8Array(0), 100, 100);
+        return window.IrisQuality.pupilBoundaryCircularity(
+          new Uint8Array(0),
+          100,
+          100,
+        );
       });
       assert.strictEqual(r, 1);
     } finally {
@@ -66,7 +69,11 @@ describe("Iris coverage — iris_quality.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        return window.IrisQuality.pupilBoundaryCircularity(new Uint8Array(10), 0, 100);
+        return window.IrisQuality.pupilBoundaryCircularity(
+          new Uint8Array(10),
+          0,
+          100,
+        );
       });
       assert.strictEqual(r, 1);
     } finally {
@@ -78,7 +85,11 @@ describe("Iris coverage — iris_quality.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        return window.IrisQuality.pupilBoundaryCircularity(new Uint8Array(10), 100, 0);
+        return window.IrisQuality.pupilBoundaryCircularity(
+          new Uint8Array(10),
+          100,
+          0,
+        );
       });
       assert.strictEqual(r, 1);
     } finally {
@@ -90,7 +101,8 @@ describe("Iris coverage — iris_quality.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        var w = 20, h = 20;
+        var w = 20,
+          h = 20;
         var mask = new Uint8Array(w * h);
         mask.fill(1);
         return window.IrisQuality.pupilBoundaryCircularity(mask, w, h);
@@ -209,15 +221,21 @@ describe("Iris coverage — iris_quality.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        var w = 64, h = 64;
+        var w = 64,
+          h = 64;
         var mask = new Uint8Array(w * h);
         mask.fill(1);
         var iris = new Float64Array(w * h);
         iris.fill(128);
         return window.IrisQuality.assess({
-          mask: mask, normalizedIris: iris, normW: w, normH: h,
-          pupil: { radius: 1 }, iris: { cx: 0, cy: 0, radius: 60 },
-          imageWidth: 640, imageHeight: 480,
+          mask: mask,
+          normalizedIris: iris,
+          normW: w,
+          normH: h,
+          pupil: { radius: 1 },
+          iris: { cx: 0, cy: 0, radius: 60 },
+          imageWidth: 640,
+          imageHeight: 480,
         });
       });
       assert.ok(r.issues.length > 0);
@@ -231,17 +249,22 @@ describe("Iris coverage — iris_quality.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        var w = 64, h = 64;
+        var w = 64,
+          h = 64;
         var mask = new Uint8Array(w * h);
         for (var y = 0; y < h; y++)
-          for (var x = 0; x < w; x++)
-            mask[y * w + x] = (x < 16) ? 0 : 1;
+          for (var x = 0; x < w; x++) mask[y * w + x] = x < 16 ? 0 : 1;
         var iris = new Float64Array(w * h);
         for (var i = 0; i < iris.length; i++) iris[i] = 50 + (i % 200);
         return window.IrisQuality.assess({
-          mask: mask, normalizedIris: iris, normW: w, normH: h,
-          pupil: { radius: 10 }, iris: { cx: 32, cy: 32, radius: 28 },
-          imageWidth: 640, imageHeight: 480,
+          mask: mask,
+          normalizedIris: iris,
+          normW: w,
+          normH: h,
+          pupil: { radius: 10 },
+          iris: { cx: 32, cy: 32, radius: 28 },
+          imageWidth: 640,
+          imageHeight: 480,
         });
       });
       assert.ok(typeof r.passed === "boolean");
@@ -255,17 +278,22 @@ describe("Iris coverage — iris_quality.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        var w = 64, h = 64;
+        var w = 64,
+          h = 64;
         var mask = new Uint8Array(w * h);
         mask.fill(0);
         var iris = new Float64Array(w * h);
         for (var y = 0; y < h; y++)
-          for (var x = 0; x < w; x++)
-            iris[y * w + x] = (y < h / 3) ? 80 : 180;
+          for (var x = 0; x < w; x++) iris[y * w + x] = y < h / 3 ? 80 : 180;
         return window.IrisQuality.assess({
-          mask: mask, normalizedIris: iris, normW: w, normH: h,
-          pupil: { radius: 10 }, iris: { cx: 32, cy: 32, radius: 28 },
-          imageWidth: 640, imageHeight: 480,
+          mask: mask,
+          normalizedIris: iris,
+          normW: w,
+          normH: h,
+          pupil: { radius: 10 },
+          iris: { cx: 32, cy: 32, radius: 28 },
+          imageWidth: 640,
+          imageHeight: 480,
         });
       });
       assert.ok(typeof r.passed === "boolean");
@@ -277,7 +305,6 @@ describe("Iris coverage — iris_quality.js gaps", function () {
 });
 
 describe("Iris coverage — iris_quality_full.js gaps", function () {
-
   it("IrisQualityFull constructor", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
@@ -324,8 +351,11 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
       var r = await page.evaluate(function () {
         var mask = new Uint8Array(64 * 64);
         mask.fill(0);
-        return window.IrisQualityFull.visibleIrisArea(mask, 64, 64,
-          { x: 32, y: 32, radius: 20 });
+        return window.IrisQualityFull.visibleIrisArea(mask, 64, 64, {
+          x: 32,
+          y: 32,
+          radius: 20,
+        });
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.viaRatio === "number");
@@ -340,8 +370,11 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
       var r = await page.evaluate(function () {
         var mask = new Uint8Array(64 * 64);
         mask.fill(0);
-        return window.IrisQualityFull.angularOcclusion(mask, 64, 64,
-          { x: 32, y: 32, radius: 20 });
+        return window.IrisQualityFull.angularOcclusion(mask, 64, 64, {
+          x: 32,
+          y: 32,
+          radius: 20,
+        });
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.maxOcclusion90 === "number");
@@ -354,13 +387,16 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        var w = 64, h = 64;
+        var w = 64,
+          h = 64;
         var mask = new Uint8Array(w * h);
         for (var y = 0; y < h; y++)
-          for (var x = 0; x < w; x++)
-            mask[y * w + x] = (y < h / 2) ? 1 : 0;
-        return window.IrisQualityFull.angularOcclusion(mask, w, h,
-          { x: 32, y: 32, radius: 20 });
+          for (var x = 0; x < w; x++) mask[y * w + x] = y < h / 2 ? 1 : 0;
+        return window.IrisQualityFull.angularOcclusion(mask, w, h, {
+          x: 32,
+          y: 32,
+          radius: 20,
+        });
       });
       assert.ok(typeof r === "object");
     } finally {
@@ -387,7 +423,10 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
     try {
       var r = await page.evaluate(function () {
         return window.IrisQualityFull.marginAdequacy(
-          { x: 32, y: 32 }, 20, 64, 64
+          { x: 32, y: 32 },
+          20,
+          64,
+          64,
         );
       });
       assert.ok(typeof r === "number");
@@ -401,7 +440,10 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
     try {
       var r = await page.evaluate(function () {
         return window.IrisQualityFull.marginAdequacy(
-          { x: 5, y: 5 }, 20, 64, 64
+          { x: 5, y: 5 },
+          20,
+          64,
+          64,
         );
       });
       assert.ok(typeof r === "number");
@@ -472,9 +514,13 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
       var r = await page.evaluate(function () {
         var data = new Uint8Array(64 * 64);
         data.fill(128);
-        return window.IrisQualityFull.specularReflection(data, 64, 64,
+        return window.IrisQualityFull.specularReflection(
+          data,
+          64,
+          64,
           { x: 32, y: 32, radius: 10 },
-          { x: 32, y: 32, radius: 20 });
+          { x: 32, y: 32, radius: 20 },
+        );
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.ratio === "number");
@@ -487,15 +533,19 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
-        var w = 64, h = 64;
+        var w = 64,
+          h = 64;
         var data = new Uint8Array(w * h);
         data.fill(50);
         for (var y = 28; y < 36; y++)
-          for (var x = 28; x < 36; x++)
-            data[y * w + x] = 255;
-        return window.IrisQualityFull.specularReflection(data, w, h,
+          for (var x = 28; x < 36; x++) data[y * w + x] = 255;
+        return window.IrisQualityFull.specularReflection(
+          data,
+          w,
+          h,
           { x: 32, y: 32, radius: 10 },
-          { x: 32, y: 32, radius: 20 });
+          { x: 32, y: 32, radius: 20 },
+        );
       });
       assert.ok(typeof r === "object");
     } finally {
@@ -509,8 +559,13 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
       var r = await page.evaluate(function () {
         var mask = new Uint8Array(64 * 64);
         mask.fill(0);
-        return window.IrisQualityFull.eyelidCircularity(mask, 64, 64,
-          { x: 32, y: 32 }, 20);
+        return window.IrisQualityFull.eyelidCircularity(
+          mask,
+          64,
+          64,
+          { x: 32, y: 32 },
+          20,
+        );
       });
       assert.ok(typeof r === "number");
     } finally {
@@ -524,8 +579,13 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
       var r = await page.evaluate(function () {
         var data = new Uint8Array(64 * 64);
         data.fill(128);
-        return window.IrisQualityFull.depthOfField(data, 64, 64,
-          { x: 32, y: 32 }, 20);
+        return window.IrisQualityFull.depthOfField(
+          data,
+          64,
+          64,
+          { x: 32, y: 32 },
+          20,
+        );
       });
       assert.ok(typeof r === "number");
     } finally {
@@ -567,7 +627,9 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
         var data = new Uint8Array(64 * 64);
         for (var i = 0; i < data.length; i++) data[i] = 80 + (i % 100);
         return window.IrisQualityFull.computeCompositeQuality({
-          imageData: data, width: 64, height: 64,
+          imageData: data,
+          width: 64,
+          height: 64,
           pupil: { x: 32, y: 32, radius: 8 },
           iris: { x: 32, y: 32, radius: 20 },
         });
@@ -601,7 +663,9 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
         var data = new Uint8Array(64 * 64);
         for (var i = 0; i < data.length; i++) data[i] = 80 + (i % 100);
         return window.IrisQualityFull.generateQualityVector({
-          imageData: data, width: 64, height: 64,
+          imageData: data,
+          width: 64,
+          height: 64,
           pupil: { x: 32, y: 32, radius: 8 },
           iris: { x: 32, y: 32, radius: 20 },
         });
@@ -615,14 +679,14 @@ describe("Iris coverage — iris_quality_full.js gaps", function () {
 });
 
 describe("Iris coverage — iris_liveness.js gaps", function () {
-
   it("IrisLiveness constructor and assess", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var r = await page.evaluate(function () {
         var inst = new window.IrisLiveness();
         var result = inst.assess({
-          imageWidth: 320, imageHeight: 240,
+          imageWidth: 320,
+          imageHeight: 240,
           pupil: { cx: 160, cy: 120, radius: 30 },
           iris: { cx: 160, cy: 120, radius: 80 },
           dilationFrames: [
@@ -638,7 +702,11 @@ describe("Iris coverage — iris_liveness.js gaps", function () {
           rgbImage: new Uint8Array(100).fill(100),
           grayImage: new Uint8Array(100).fill(80),
         });
-        return { score: result.score, isLive: result.isLive, checks: result.checks.length };
+        return {
+          score: result.score,
+          isLive: result.isLive,
+          checks: result.checks.length,
+        };
       });
       assert.ok(typeof r.score === "number");
       assert.ok(typeof r.isLive === "boolean");
@@ -760,10 +828,12 @@ describe("Iris coverage — iris_liveness.js gaps", function () {
         var data = new Float64Array(64 * 64);
         data.fill(80);
         for (var y = 28; y < 36; y++)
-          for (var x = 28; x < 36; x++)
-            data[y * 64 + x] = 255;
-        return window.IrisLiveness.specularReflectionTest(data, 64, 64,
-          { cx: 32, cy: 32, radius: 10 });
+          for (var x = 28; x < 36; x++) data[y * 64 + x] = 255;
+        return window.IrisLiveness.specularReflectionTest(data, 64, 64, {
+          cx: 32,
+          cy: 32,
+          radius: 10,
+        });
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.score === "number");
@@ -812,8 +882,11 @@ describe("Iris coverage — iris_liveness.js gaps", function () {
       var r = await page.evaluate(function () {
         var data = new Float64Array(64 * 64);
         for (var i = 0; i < data.length; i++) data[i] = 80 + Math.sin(i) * 30;
-        return window.IrisLiveness.textureAnalysisTest(data, 64, 64,
-          { cx: 32, cy: 32, radius: 20 });
+        return window.IrisLiveness.textureAnalysisTest(data, 64, 64, {
+          cx: 32,
+          cy: 32,
+          radius: 20,
+        });
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.score === "number");
@@ -828,10 +901,15 @@ describe("Iris coverage — iris_liveness.js gaps", function () {
       var r = await page.evaluate(function () {
         var data = new Uint8Array(64 * 64 * 3);
         for (var i = 0; i < data.length; i += 3) {
-          data[i] = 100; data[i + 1] = 120; data[i + 2] = 80;
+          data[i] = 100;
+          data[i + 1] = 120;
+          data[i + 2] = 80;
         }
-        return window.IrisLiveness.colorChannelAnalysisTest(data, 64, 64,
-          { cx: 32, cy: 32, radius: 20 });
+        return window.IrisLiveness.colorChannelAnalysisTest(data, 64, 64, {
+          cx: 32,
+          cy: 32,
+          radius: 20,
+        });
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.score === "number");
@@ -846,8 +924,11 @@ describe("Iris coverage — iris_liveness.js gaps", function () {
       var r = await page.evaluate(function () {
         var data = new Float64Array(64 * 64);
         data.fill(80);
-        return window.IrisLiveness.depthEstimationTest(data, 64, 64,
-          { cx: 32, cy: 32, radius: 20 });
+        return window.IrisLiveness.depthEstimationTest(data, 64, 64, {
+          cx: 32,
+          cy: 32,
+          radius: 20,
+        });
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.score === "number");
@@ -864,8 +945,11 @@ describe("Iris coverage — iris_liveness.js gaps", function () {
         for (var y = 0; y < 64; y++)
           for (var x = 0; x < 64; x++)
             data[y * 64 + x] = 128 + 50 * Math.sin(x * 0.5);
-        return window.IrisLiveness.periodicPatternTest(data, 64, 64,
-          { cx: 32, cy: 32, radius: 20 });
+        return window.IrisLiveness.periodicPatternTest(data, 64, 64, {
+          cx: 32,
+          cy: 32,
+          radius: 20,
+        });
       });
       assert.ok(typeof r === "object");
       assert.ok(typeof r.score === "number");
@@ -911,7 +995,6 @@ describe("Iris coverage — iris_liveness.js gaps", function () {
 });
 
 describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", function () {
-
   it("calculateEER with ROC data", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
@@ -969,7 +1052,7 @@ describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", fun
       var r = await page.evaluate(function () {
         return window.IrisPerformance.generatePADDET(
           [0, 0, 0, 1, 1, 1],
-          [0.8, 0.7, 0.6, 0.3, 0.2, 0.1]
+          [0.8, 0.7, 0.6, 0.3, 0.2, 0.1],
         );
       });
       assert.ok(Array.isArray(r));
@@ -985,7 +1068,9 @@ describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", fun
       await loadFile(page, "Iris_Biometric/iris_performance.js");
       var r = await page.evaluate(function () {
         return window.IrisPerformance.generateROC(
-          [0.8, 0.7, 0.6], [0.3, 0.2, 0.1], 10
+          [0.8, 0.7, 0.6],
+          [0.3, 0.2, 0.1],
+          10,
         );
       });
       assert.ok(Array.isArray(r));
@@ -1076,7 +1161,7 @@ describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", fun
       var r = await page.evaluate(function () {
         return window.IrisPerformance.compareSystems(
           { genuineScores: [0.8, 0.7], impostorScores: [0.3, 0.2] },
-          { genuineScores: [0.5, 0.4], impostorScores: [0.6, 0.5] }
+          { genuineScores: [0.5, 0.4], impostorScores: [0.6, 0.5] },
         );
       });
       assert.ok(typeof r === "object");
@@ -1115,7 +1200,8 @@ describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", fun
       await loadFile(page, "Iris_Biometric/iris_performance.js");
       var r = await page.evaluate(function () {
         return window.IrisPerformance.fnirAtFpir(
-          [0.8, 0.7, 0.6], [0.3, 0.2, 0.1]
+          [0.8, 0.7, 0.6],
+          [0.3, 0.2, 0.1],
         );
       });
       assert.ok(typeof r === "object");
@@ -1150,7 +1236,8 @@ describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", fun
       await loadFile(page, "Iris_Biometric/iris_performance.js");
       var r = await page.evaluate(function () {
         return window.IrisPerformance.generateDET(
-          [0.8, 0.7, 0.6], [0.3, 0.2, 0.1]
+          [0.8, 0.7, 0.6],
+          [0.3, 0.2, 0.1],
         );
       });
       assert.ok(Array.isArray(r));
@@ -1165,7 +1252,8 @@ describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", fun
       await loadFile(page, "Iris_Biometric/iris_performance.js");
       var r = await page.evaluate(function () {
         return window.IrisPerformance.reportPADMetrics(
-          [0, 0, 1, 1], [0.8, 0.7, 0.3, 0.2]
+          [0, 0, 1, 1],
+          [0.8, 0.7, 0.3, 0.2],
         );
       });
       assert.ok(typeof r === "object");
@@ -1176,7 +1264,6 @@ describe("Iris coverage — iris_performance.js (loaded via CSP-safe path)", fun
 });
 
 describe("Iris coverage — iris_template_protection.js gaps", function () {
-
   it("generateProjectionMatrix", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
@@ -1195,7 +1282,10 @@ describe("Iris coverage — iris_template_protection.js gaps", function () {
       var r = await page.evaluate(function () {
         var code = new Uint8Array(128);
         for (var i = 0; i < 128; i++) code[i] = Math.random() > 0.5 ? 1 : 0;
-        var mat = window.IrisTemplateProtection.generateProjectionMatrix(128, 64);
+        var mat = window.IrisTemplateProtection.generateProjectionMatrix(
+          128,
+          64,
+        );
         return window.IrisTemplateProtection.biohash(code, mat, 64);
       });
       assert.ok(typeof r === "object");
@@ -1249,7 +1339,10 @@ describe("Iris coverage — iris_template_protection.js gaps", function () {
         var code = new Uint8Array(256);
         for (var i = 0; i < 256; i++) code[i] = Math.random() > 0.5 ? 1 : 0;
         var transformed = window.IrisTemplateProtection.transform(code, fn);
-        return { isUint8Array: transformed instanceof Uint8Array, length: transformed.length };
+        return {
+          isUint8Array: transformed instanceof Uint8Array,
+          length: transformed.length,
+        };
       });
       assert.ok(r.isUint8Array);
       assert.strictEqual(r.length, 256);
@@ -1268,9 +1361,15 @@ describe("Iris coverage — iris_template_protection.js gaps", function () {
         key.fill(42);
         var commitment = await window.IrisTemplateProtection.commit(code, key);
         var valid = await window.IrisTemplateProtection.verifyCommitment(
-          code, key, commitment.nonce, commitment.commitment
+          code,
+          key,
+          commitment.nonce,
+          commitment.commitment,
         );
-        return { hasCommitment: typeof commitment.commitment === "string", valid: valid };
+        return {
+          hasCommitment: typeof commitment.commitment === "string",
+          valid: valid,
+        };
       });
       assert.ok(r.hasCommitment);
       assert.ok(r.valid);
@@ -1291,7 +1390,10 @@ describe("Iris coverage — iris_template_protection.js gaps", function () {
         var wrongKey = new Uint8Array(32);
         wrongKey.fill(99);
         return await window.IrisTemplateProtection.verifyCommitment(
-          code, wrongKey, commitment.nonce, commitment.commitment
+          code,
+          wrongKey,
+          commitment.nonce,
+          commitment.commitment,
         );
       });
       assert.strictEqual(r, false);
@@ -1308,7 +1410,10 @@ describe("Iris coverage — iris_template_protection.js gaps", function () {
         for (var i = 0; i < 256; i++) code[i] = Math.random() > 0.5 ? 1 : 0;
         var userKey = new Uint8Array(32);
         userKey.fill(42);
-        var result = await window.IrisTemplateProtection.createCancelable(code, userKey);
+        var result = await window.IrisTemplateProtection.createCancelable(
+          code,
+          userKey,
+        );
         return {
           hasTemplate: result.template instanceof Uint8Array,
           hasKeyHash: typeof result.keyHash === "string",
@@ -1343,7 +1448,8 @@ describe("Iris coverage — iris_template_protection.js gaps", function () {
       var r = await page.evaluate(function () {
         var t1 = new Uint8Array(256);
         var t2 = new Uint8Array(256);
-        t1.fill(1); t2.fill(0);
+        t1.fill(1);
+        t2.fill(0);
         return window.IrisTemplateProtection.verifyUnlinkability(t1, t2);
       });
       assert.ok(typeof r === "object");

@@ -45,12 +45,18 @@ async function runDid(action, file, opts) {
         break;
       }
       default: {
-        console.error("Unsupported algorithm. Use Ed25519, P-256, RSA-2048, or RSA-4096.");
+        console.error(
+          "Unsupported algorithm. Use Ed25519, P-256, RSA-2048, or RSA-4096.",
+        );
         process.exit(1);
       }
     }
 
-    const did = `did:key:${algo === "ED25519" ? "z" : "z"}${Buffer.from(keyPair.publicKey).toString("base64url").substring(0, 32)}`;
+    const did = `did:key:${algo === "ED25519" ? "z" : "z"}${Buffer.from(
+      keyPair.publicKey,
+    )
+      .toString("base64url")
+      .substring(0, 32)}`;
     const output = {
       did,
       algorithm: algo,
@@ -58,7 +64,9 @@ async function runDid(action, file, opts) {
       privateKey: keyPair.privateKey,
       created: new Date().toISOString(),
     };
-    const outPath = opts.output ? path.resolve(opts.output) : path.resolve("did-identity.json");
+    const outPath = opts.output
+      ? path.resolve(opts.output)
+      : path.resolve("did-identity.json");
     fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
     console.log(`DID generated: ${did}`);
     console.log(`Saved to: ${outPath}`);
@@ -80,7 +88,11 @@ async function runDid(action, file, opts) {
     let didIdentity = null;
     const didPaths = [
       "./did-identity.json",
-      path.join(process.env.HOME || process.env.USERPROFILE || ".", ".redosan", "did-identity.json"),
+      path.join(
+        process.env.HOME || process.env.USERPROFILE || ".",
+        ".redosan",
+        "did-identity.json",
+      ),
     ];
     for (const p of didPaths) {
       try {
@@ -89,14 +101,18 @@ async function runDid(action, file, opts) {
       } catch {}
     }
     if (!didIdentity) {
-      console.error('No DID identity found. Generate one first with "redosan did generate".');
+      console.error(
+        'No DID identity found. Generate one first with "redosan did generate".',
+      );
       process.exit(1);
     }
 
     const algo = (didIdentity.algorithm || "").toUpperCase();
     let signature;
     if (algo === "ED25519") {
-      signature = crypto.sign(null, data, didIdentity.privateKey).toString("base64");
+      signature = crypto
+        .sign(null, data, didIdentity.privateKey)
+        .toString("base64");
     } else if (algo === "P-256" || algo.startsWith("RSA")) {
       const sign = crypto.createSign("SHA256");
       sign.update(hash);
@@ -114,7 +130,9 @@ async function runDid(action, file, opts) {
       signature,
       signed: new Date().toISOString(),
     };
-    const outPath = opts.output ? path.resolve(opts.output) : path.resolve(absPath + ".sig.json");
+    const outPath = opts.output
+      ? path.resolve(opts.output)
+      : path.resolve(absPath + ".sig.json");
     fs.writeFileSync(outPath, JSON.stringify(sigOutput, null, 2));
     console.log(`File signed with ${didIdentity.did}`);
     console.log(`Signature saved to: ${outPath}`);

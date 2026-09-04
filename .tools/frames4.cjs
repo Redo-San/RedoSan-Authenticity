@@ -2,7 +2,9 @@ const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
   for (let run = 1; run <= 6; run++) {
-    const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+    const ctx = await browser.newContext({
+      viewport: { width: 1350, height: 940 },
+    });
     const pg = await ctx.newPage();
     await pg.addInitScript(() => {
       window.__frames = [];
@@ -11,7 +13,10 @@ const { chromium } = require("playwright");
         new PerformanceObserver((l) => {
           for (const e of l.getEntries())
             if (!e.hadRecentInput)
-              window.__clsRaw.push({ v: Math.round(e.value * 1000) / 1000, t: Math.round(e.startTime) });
+              window.__clsRaw.push({
+                v: Math.round(e.value * 1000) / 1000,
+                t: Math.round(e.startTime),
+              });
         }).observe({ type: "layout-shift", buffered: true });
       } catch (e) {}
       let last = null;
@@ -50,14 +55,22 @@ const { chromium } = require("playwright");
       };
       requestAnimationFrame(tick);
     });
-    await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+    await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+      waitUntil: "load",
+    });
     await pg.waitForTimeout(1500);
-    const r = await pg.evaluate(() => ({ frames: window.__frames, cls: window.__clsRaw }));
+    const r = await pg.evaluate(() => ({
+      frames: window.__frames,
+      cls: window.__clsRaw,
+    }));
     const total = r.cls.reduce((a, b) => a + b.v, 0);
     console.log("=== RUN " + run + " cls=" + total.toFixed(4));
     for (const f of r.frames) {
       console.log("  @" + f.t + " otsH=" + f.otsH);
-      for (const k of f.kids) console.log("    " + k.c + " t" + k.t + " h" + k.h + ' "' + k.txt + '"');
+      for (const k of f.kids)
+        console.log(
+          "    " + k.c + " t" + k.t + " h" + k.h + ' "' + k.txt + '"',
+        );
     }
     await ctx.close();
   }

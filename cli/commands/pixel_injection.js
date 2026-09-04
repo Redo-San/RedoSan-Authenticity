@@ -5,7 +5,12 @@ const { createCanvas, loadImage, ImageData } = require("canvas");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
-const { readFileBytes, getFileInfo, validateFile, stripC2PA } = require("../utils");
+const {
+  readFileBytes,
+  getFileInfo,
+  validateFile,
+  stripC2PA,
+} = require("../utils");
 
 // Patch browser APIs
 const mockDocument = {
@@ -23,20 +28,42 @@ if (globalThis.window === undefined) globalThis.window = globalThis;
 
 const vm = require("node:vm");
 const advancedSrc = fs.readFileSync(
-  path.join(__dirname, "..", "..", "Pixel_Injection", "watermark_core_advanced.js"),
+  path.join(
+    __dirname,
+    "..",
+    "..",
+    "Pixel_Injection",
+    "watermark_core_advanced.js",
+  ),
   "utf8",
 );
 vm.runInThisContext(advancedSrc, { filename: "watermark_core_advanced.js" });
 const transformsSrc = fs.readFileSync(
-  path.join(__dirname, "..", "..", "Pixel_Injection", "watermark_core_transforms.js"),
+  path.join(
+    __dirname,
+    "..",
+    "..",
+    "Pixel_Injection",
+    "watermark_core_transforms.js",
+  ),
   "utf8",
 );
-vm.runInThisContext(transformsSrc, { filename: "watermark_core_transforms.js" });
+vm.runInThisContext(transformsSrc, {
+  filename: "watermark_core_transforms.js",
+});
 const algorithmsSrc = fs.readFileSync(
-  path.join(__dirname, "..", "..", "Pixel_Injection", "watermark_core_algorithms.js"),
+  path.join(
+    __dirname,
+    "..",
+    "..",
+    "Pixel_Injection",
+    "watermark_core_algorithms.js",
+  ),
   "utf8",
 );
-vm.runInThisContext(algorithmsSrc, { filename: "watermark_core_algorithms.js" });
+vm.runInThisContext(algorithmsSrc, {
+  filename: "watermark_core_algorithms.js",
+});
 
 let core = null;
 try {
@@ -61,12 +88,14 @@ async function runPixelInjection(mode, opts) {
     process.exit(1);
   }
   const absPath = path.resolve(imageFile);
-  const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
+  const allowDangerous =
+    opts.allowDangerous || process.argv.includes("--allow-dangerous");
   try {
     validateFile(absPath, { allowDangerous });
   } catch (error) {
     console.error(`Validation failed: ${error.message}`);
-    if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+    if (error.message.includes("Blocked dangerous file type"))
+      console.error("Use --allow-dangerous to bypass");
     process.exit(1);
   }
   if (opts.secret) {
@@ -104,12 +133,16 @@ async function runPixelInjection(mode, opts) {
       process.exit(1);
     }
     const message = secretFile
-      ? new TextDecoder("utf-8", { fatal: false }).decode(readFileBytes(secretFile))
+      ? new TextDecoder("utf-8", { fatal: false }).decode(
+          readFileBytes(secretFile),
+        )
       : "RedoSanPixelInjection";
     const result = core.algorithms[algoName](imageData, message, password, {});
     ctx.putImageData(result, 0, 0);
     fs.writeFileSync(path.resolve(outputFile), canvas.toBuffer("image/png"));
-    console.log(`Pixel injection (${algoName}): message embedded (${message.length} chars)`);
+    console.log(
+      `Pixel injection (${algoName}): message embedded (${message.length} chars)`,
+    );
     console.log(`Output: ${path.resolve(outputFile)}`);
   } else if (mode === "extract") {
     const outputFile = opts.output;

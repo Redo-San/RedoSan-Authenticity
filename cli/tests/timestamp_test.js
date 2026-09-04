@@ -5,7 +5,12 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 // Node 20 has Web Crypto API built in — no stub needed
 globalThis.__ = (k, d) => d || k;
 globalThis.setTimeout = setTimeout;
@@ -17,8 +22,13 @@ globalThis.AbortController = class {
   abort() {}
 };
 
-const src = fs.readFileSync(path.join(__dirname, "../../Timestamp/timestamp.js"), "utf8");
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Timestamp/timestamp.js") });
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Timestamp/timestamp.js"),
+  "utf8",
+);
+vm.runInThisContext(src, {
+  filename: path.resolve(__dirname, "../../Timestamp/timestamp.js"),
+});
 
 describe("Timestamp — otsBuildDetached", () => {
   it("should build a valid OTS byte array", () => {
@@ -30,8 +40,9 @@ describe("Timestamp — otsBuildDetached", () => {
     assert.equal(result.length, 31 + 1 + 1 + 32);
     // Check OTS header magic
     const expectedHeader = [
-      0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72,
-      0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
+      0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+      0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf,
+      0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
     ];
     for (let i = 0; i < expectedHeader.length; i++) {
       assert.equal(result[i], expectedHeader[i]);

@@ -18,29 +18,73 @@ globalThis.setInterval = function () {
 
 function makeEl(id, extra) {
   if (!_els[id]) {
-    _els[id] = Object.assign({
-      style: { display: "" },
-      value: "", textContent: "", innerHTML: "", className: "", dataset: {},
-      placeholder: "", title: "", rel: "", href: "", id: id, src: "", download: "",
-      paused: true, currentTime: 0, readyState: 0, loop: false, preload: "",
-      classList: {
-        add: function () {}, remove: function () {},
-        contains: function () { return false; }, toggle: function () {},
+    _els[id] = Object.assign(
+      {
+        style: { display: "" },
+        value: "",
+        textContent: "",
+        innerHTML: "",
+        className: "",
+        dataset: {},
+        placeholder: "",
+        title: "",
+        rel: "",
+        href: "",
+        id: id,
+        src: "",
+        download: "",
+        paused: true,
+        currentTime: 0,
+        readyState: 0,
+        loop: false,
+        preload: "",
+        classList: {
+          add: function () {},
+          remove: function () {},
+          contains: function () {
+            return false;
+          },
+          toggle: function () {},
+        },
+        append: function () {},
+        appendChild: function () {},
+        remove: function () {},
+        addEventListener: function () {},
+        removeEventListener: function () {},
+        dispatchEvent: function () {},
+        getAttribute: function (a) {
+          return this[a] || null;
+        },
+        setAttribute: function (a, v) {
+          this[a] = v;
+        },
+        removeAttribute: function (a) {
+          this[a] = undefined;
+        },
+        click: function () {},
+        focus: function () {},
+        load: function () {},
+        play: function () {
+          return Promise.resolve();
+        },
+        pause: function () {},
+        querySelector: function () {
+          return null;
+        },
+        querySelectorAll: function () {
+          return [];
+        },
+        parentElement: {},
+        parentNode: {
+          insertBefore: function () {},
+          removeChild: function () {},
+          querySelector: function () {
+            return null;
+          },
+        },
       },
-      append: function () {}, appendChild: function () {}, remove: function () {},
-      addEventListener: function () {}, removeEventListener: function () {}, dispatchEvent: function () {},
-      getAttribute: function (a) { return this[a] || null; },
-      setAttribute: function (a, v) { this[a] = v; },
-      removeAttribute: function (a) { this[a] = undefined; },
-      click: function () {}, focus: function () {},
-      load: function () {},
-      play: function () { return Promise.resolve(); },
-      pause: function () {},
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
-      parentElement: {},
-      parentNode: { insertBefore: function () {}, removeChild: function () {}, querySelector: function () { return null; } },
-    }, extra || {});
+      extra || {},
+    );
   }
   return _els[id];
 }
@@ -50,15 +94,23 @@ function setupDOM() {
   _sessionStorage = {};
 
   var audioEl = makeEl("bg-music", {
-    paused: true, currentTime: 0, readyState: 0, src: "",
+    paused: true,
+    currentTime: 0,
+    readyState: 0,
+    src: "",
     play: function () {
       audioEl.paused = false;
       return Promise.resolve();
     },
-    pause: function () { audioEl.paused = true; },
+    pause: function () {
+      audioEl.paused = true;
+    },
     load: function () {},
     addEventListener: function (evt, cb) {
-      if (evt === "canplay") { audioEl.readyState = 4; setTimeout(cb, 0); }
+      if (evt === "canplay") {
+        audioEl.readyState = 4;
+        setTimeout(cb, 0);
+      }
     },
   });
   _els["bg-music"] = audioEl;
@@ -66,7 +118,9 @@ function setupDOM() {
   globalThis.document = {
     readyState: "loading",
     documentElement: { dataset: {}, style: {}, lang: "en" },
-    getElementById: function (id) { return _els[id] || null; },
+    getElementById: function (id) {
+      return _els[id] || null;
+    },
     querySelector: function (sel) {
       if (sel === "#bg-music") return audioEl;
       if (sel === "#music-btn") return _els["music-btn"] || null;
@@ -76,39 +130,79 @@ function setupDOM() {
       if (sel === "#modeSelect") return null;
       return null;
     },
-    querySelectorAll: function () { return []; },
+    querySelectorAll: function () {
+      return [];
+    },
     createElement: function (tag) {
-      if (tag === "link") return makeEl("preload-link", { rel: "", href: "", as: "" });
+      if (tag === "link")
+        return makeEl("preload-link", { rel: "", href: "", as: "" });
       if (tag === "div") return makeEl("div-wrapper", { innerHTML: "" });
       if (tag === "button") return makeEl("created-btn", { tagName: "button" });
       if (tag === "audio") return makeEl("created-audio", { tagName: "audio" });
       return makeEl("created-" + tag, { tagName: tag });
     },
-    createTextNode: function () { return {}; },
-    head: { append: function () {}, querySelector: function () { return null; } },
+    createTextNode: function () {
+      return {};
+    },
+    head: {
+      append: function () {},
+      querySelector: function () {
+        return null;
+      },
+    },
     body: {
-      classList: { add: function () {}, remove: function () {}, contains: function () { return false; }, toggle: function () {} },
+      classList: {
+        add: function () {},
+        remove: function () {},
+        contains: function () {
+          return false;
+        },
+        toggle: function () {},
+      },
       append: function (child) {
         if (child && child.id) _els[child.id] = child;
       },
-      querySelector: function () { return null; },
+      querySelector: function () {
+        return null;
+      },
     },
     addEventListener: function () {},
   };
 
   globalThis.sessionStorage = {
-    getItem: function (k) { return _sessionStorage[k] !== undefined ? _sessionStorage[k] : null; },
-    setItem: function (k, v) { _sessionStorage[k] = String(v); },
-    removeItem: function (k) { delete _sessionStorage[k]; },
-    clear: function () { _sessionStorage = {}; },
+    getItem: function (k) {
+      return _sessionStorage[k] !== undefined ? _sessionStorage[k] : null;
+    },
+    setItem: function (k, v) {
+      _sessionStorage[k] = String(v);
+    },
+    removeItem: function (k) {
+      delete _sessionStorage[k];
+    },
+    clear: function () {
+      _sessionStorage = {};
+    },
   };
 
   globalThis.addEventListener = function () {};
   globalThis.removeEventListener = function () {};
   globalThis.window = globalThis;
-  globalThis.location = { protocol: "http:", hostname: "localhost", href: "http://localhost:8080/", pathname: "/", replace: function () {} };
-  globalThis.history = { pushState: function () {}, replaceState: function () {} };
-  globalThis.console = { error: function () {}, warn: function () {}, log: function () {} };
+  globalThis.location = {
+    protocol: "http:",
+    hostname: "localhost",
+    href: "http://localhost:8080/",
+    pathname: "/",
+    replace: function () {},
+  };
+  globalThis.history = {
+    pushState: function () {},
+    replaceState: function () {},
+  };
+  globalThis.console = {
+    error: function () {},
+    warn: function () {},
+    log: function () {},
+  };
   globalThis.setTimeout = setTimeout;
   globalThis.clearTimeout = clearTimeout;
   globalThis.setInterval = setInterval;
@@ -118,14 +212,21 @@ function setupDOM() {
     this.disconnect = function () {};
   };
   globalThis.JSON = JSON;
-  globalThis.encodeURIComponent = function (s) { return s; };
+  globalThis.encodeURIComponent = function (s) {
+    return s;
+  };
 
   return audioEl;
 }
 
 function loadMusic() {
-  var src = fs.readFileSync(path.resolve(__dirname, "../../Style/music-player.js"), "utf8");
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Style/music-player.js") });
+  var src = fs.readFileSync(
+    path.resolve(__dirname, "../../Style/music-player.js"),
+    "utf8",
+  );
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../Style/music-player.js"),
+  });
 }
 
 describe("music-player.js — public API", () => {
@@ -170,7 +271,9 @@ describe("music-player.js — init with modeSelect visible", () => {
     var audioEl = setupDOM();
     _els["modeSelect"] = makeEl("modeSelect", {
       style: { display: "" },
-      getAttribute: function (a) { return null; },
+      getAttribute: function (a) {
+        return null;
+      },
     });
     loadMusic();
   });
@@ -188,7 +291,9 @@ describe("music-player.js — saveState via __musicSaveTime", () => {
     _els["music-credit"] = makeEl("music-credit");
     _els["modeSelect"] = makeEl("modeSelect", {
       style: { display: "none" },
-      getAttribute: function (a) { return "none" in this.style ? "none" : null; },
+      getAttribute: function (a) {
+        return "none" in this.style ? "none" : null;
+      },
     });
     loadMusic();
   });
@@ -214,7 +319,9 @@ describe("music-player.js — saveState", () => {
     _els["music-credit"] = makeEl("music-credit");
     _els["modeSelect"] = makeEl("modeSelect", {
       style: { display: "none" },
-      getAttribute: function (a) { return "none" in this.style ? "none" : null; },
+      getAttribute: function (a) {
+        return "none" in this.style ? "none" : null;
+      },
     });
     audioEl.currentTime = 42;
     loadMusic();
@@ -237,14 +344,19 @@ describe("music-player.js — restoreState", () => {
   it("should restore playing state from saved session", () => {
     var audioEl = setupDOM();
     audioEl.currentTime = 30;
-    _sessionStorage["musicState"] = JSON.stringify({ isPlaying: true, currentTime: 30 });
+    _sessionStorage["musicState"] = JSON.stringify({
+      isPlaying: true,
+      currentTime: 30,
+    });
     _sessionStorage["musicInteracted"] = "true";
     _els["bg-music"] = audioEl;
     _els["music-btn"] = makeEl("music-btn");
     _els["music-credit"] = makeEl("music-credit");
     _els["modeSelect"] = makeEl("modeSelect", {
       style: { display: "none" },
-      getAttribute: function (a) { return "none" in this.style ? "none" : null; },
+      getAttribute: function (a) {
+        return "none" in this.style ? "none" : null;
+      },
     });
     loadMusic();
     // Manually call __musicInit to trigger restoreState
@@ -264,7 +376,9 @@ describe("music-player.js — audioSrc with pages path", () => {
     _els["music-credit"] = makeEl("music-credit");
     _els["modeSelect"] = makeEl("modeSelect", {
       style: { display: "none" },
-      getAttribute: function (a) { return "none" in this.style ? "none" : null; },
+      getAttribute: function (a) {
+        return "none" in this.style ? "none" : null;
+      },
     });
     loadMusic();
   });
@@ -285,7 +399,9 @@ describe("music-player.js — full init flow", () => {
     _els["music-credit"] = makeEl("music-credit");
     _els["modeSelect"] = makeEl("modeSelect", {
       style: { display: "none" },
-      getAttribute: function (a) { return "none" in this.style ? "none" : null; },
+      getAttribute: function (a) {
+        return "none" in this.style ? "none" : null;
+      },
     });
     loadMusic();
   });
@@ -305,7 +421,9 @@ describe("music-player.js — toggle", () => {
     _els["music-credit"] = makeEl("music-credit");
     _els["modeSelect"] = makeEl("modeSelect", {
       style: { display: "none" },
-      getAttribute: function (a) { return "none" in this.style ? "none" : null; },
+      getAttribute: function (a) {
+        return "none" in this.style ? "none" : null;
+      },
     });
     loadMusic();
     // Init to register click handler on music-btn

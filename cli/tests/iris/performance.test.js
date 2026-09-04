@@ -210,7 +210,11 @@ test("IrisPerformance.reportPADMetrics: with empty arrays", () => {
 });
 
 test("IrisPerformance.generateROC: various thresholds", () => {
-  const r = IrisPerformance.generateROC([0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8], 20);
+  const r = IrisPerformance.generateROC(
+    [0.1, 0.2, 0.3, 0.4],
+    [0.5, 0.6, 0.7, 0.8],
+    20,
+  );
   assert(typeof r === "object");
   assert(r.length > 0);
 });
@@ -238,7 +242,7 @@ test("IrisPerformance.wilsonCI: edge cases", () => {
 test("IrisPerformance.evaluate: comprehensive", () => {
   const r = IrisPerformance.evaluate({
     genuineScores: [0.1, 0.15, 0.2, 0.25],
-    impostorScores: [0.5, 0.6, 0.7, 0.8]
+    impostorScores: [0.5, 0.6, 0.7, 0.8],
   });
   assert(typeof r === "object");
   assert(typeof r.systemName === "string");
@@ -249,7 +253,7 @@ test("IrisPerformance.evaluate: comprehensive", () => {
 test("IrisPerformance.evaluate: minimal", () => {
   const r = IrisPerformance.evaluate({
     genuineScores: [0.1],
-    impostorScores: [0.5]
+    impostorScores: [0.5],
   });
   assert(typeof r === "object");
   assert(typeof r.systemName === "string");
@@ -268,8 +272,14 @@ test("IrisPerformance.pairedTTest: identical distributions", () => {
 });
 
 test("IrisPerformance.compareSystems: system1 wins", () => {
-  const s1 = { genuineScores: [0.1, 0.1, 0.1], impostorScores: [0.8, 0.8, 0.8] };
-  const s2 = { genuineScores: [0.3, 0.3, 0.3], impostorScores: [0.6, 0.6, 0.6] };
+  const s1 = {
+    genuineScores: [0.1, 0.1, 0.1],
+    impostorScores: [0.8, 0.8, 0.8],
+  };
+  const s2 = {
+    genuineScores: [0.3, 0.3, 0.3],
+    impostorScores: [0.6, 0.6, 0.6],
+  };
   const r = IrisPerformance.compareSystems(s1, s2);
   assert(typeof r.winner === "string");
   assert(typeof r.eerDifference === "number");
@@ -302,7 +312,13 @@ test("IrisPerformance.fnirAtFpir: empty", () => {
 });
 
 test("IrisPerformance.recordFTA: increments count", () => {
-  const inst = { _ftaCount: 0, _totalAcquisitions: 0, _timings: [], _fterCount: 0, _totalEnrollments: 0 };
+  const inst = {
+    _ftaCount: 0,
+    _totalAcquisitions: 0,
+    _timings: [],
+    _fterCount: 0,
+    _totalEnrollments: 0,
+  };
   IrisPerformance.recordFTA(inst, "test reason");
   assert(inst._ftaCount === 1);
   assert(inst._totalAcquisitions === 1);
@@ -310,7 +326,13 @@ test("IrisPerformance.recordFTA: increments count", () => {
 });
 
 test("IrisPerformance.recordFTER: increments count", () => {
-  const inst = { _fterCount: 0, _totalEnrollments: 0, _timings: [], _ftaCount: 0, _totalAcquisitions: 0 };
+  const inst = {
+    _fterCount: 0,
+    _totalEnrollments: 0,
+    _timings: [],
+    _ftaCount: 0,
+    _totalAcquisitions: 0,
+  };
   IrisPerformance.recordFTER(inst, "test reason");
   assert(inst._fterCount === 1);
   assert(inst._totalEnrollments === 1);
@@ -318,27 +340,45 @@ test("IrisPerformance.recordFTER: increments count", () => {
 });
 
 test("IrisPerformance.recordAcquisition: records timing", () => {
-  const inst = { _totalAcquisitions: 0, _timings: [], _ftaCount: 0, _fterCount: 0, _totalEnrollments: 0 };
+  const inst = {
+    _totalAcquisitions: 0,
+    _timings: [],
+    _ftaCount: 0,
+    _fterCount: 0,
+    _totalEnrollments: 0,
+  };
   IrisPerformance.recordAcquisition(inst, 100);
   assert(inst._totalAcquisitions === 1);
   assert(inst._timings.length === 1);
 });
 
 test("IrisPerformance.recordEnrollment: records timing", () => {
-  const inst = { _totalEnrollments: 0, _timings: [], _ftaCount: 0, _fterCount: 0, _totalAcquisitions: 0 };
+  const inst = {
+    _totalEnrollments: 0,
+    _timings: [],
+    _ftaCount: 0,
+    _fterCount: 0,
+    _totalAcquisitions: 0,
+  };
   IrisPerformance.recordEnrollment(inst, 200);
   assert(inst._totalEnrollments === 1);
   assert(inst._timings.length === 1);
 });
 
 test("IrisPerformance.getFtaFterRates: returns rates", () => {
-  const inst = { _ftaCount: 2, _fterCount: 1, _totalAcquisitions: 10, _totalEnrollments: 5, _timings: [] };
+  const inst = {
+    _ftaCount: 2,
+    _fterCount: 1,
+    _totalAcquisitions: 10,
+    _totalEnrollments: 5,
+    _timings: [],
+  };
   const r = IrisPerformance.getFtaFterRates(inst);
   assert(typeof r === "object");
 });
 
 test("IrisPerformance.computeTimingStats: returns stats", () => {
-  const inst = { _timings: [{durationMs: 100}, {durationMs: 200}] };
+  const inst = { _timings: [{ durationMs: 100 }, { durationMs: 200 }] };
   const r = IrisPerformance.computeTimingStats(inst);
   assert(typeof r === "object");
 });
@@ -350,7 +390,7 @@ test("IP.wilsonCI: 99% confidence (L404)", () => {
 });
 
 test("IP.wilsonCI: 90% confidence", () => {
-  const result = IP.wilsonCI(50, 100, 0.90);
+  const result = IP.wilsonCI(50, 100, 0.9);
   assert.ok(result.lower >= 0 && result.lower <= 1);
 });
 
@@ -378,8 +418,14 @@ test("IP.pairedTTest: different arrays (L553-L558)", () => {
 });
 
 test("IP.compareSystems: produces report (L590-L612)", () => {
-  const sysA = { genuineScores: [0.8, 0.7, 0.9], impostorScores: [0.2, 0.3, 0.1] };
-  const sysB = { genuineScores: [0.6, 0.5, 0.7], impostorScores: [0.4, 0.5, 0.3] };
+  const sysA = {
+    genuineScores: [0.8, 0.7, 0.9],
+    impostorScores: [0.2, 0.3, 0.1],
+  };
+  const sysB = {
+    genuineScores: [0.6, 0.5, 0.7],
+    impostorScores: [0.4, 0.5, 0.3],
+  };
   const result = IP.compareSystems(sysA, sysB);
   assert.ok(result.winner);
   assert.equal(typeof result.eerDifference, "number");
@@ -528,8 +574,26 @@ test("IP.pairedTTest: invalid inputs (L546-L548)", () => {
 });
 
 test("IP.compareSystems: system2 wins (L611-L613)", () => {
-  const s1 = { genuineScores: [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0.01], impostorScores: [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.92, 0.95, 0.99] };
-  const s2 = { genuineScores: [0.98, 0.95, 0.92, 0.9, 0.88, 0.85, 0.82, 0.8, 0.78, 0.75, 0.72, 0.7, 0.68, 0.65, 0.62, 0.6, 0.58, 0.55, 0.52, 0.5], impostorScores: [0.01, 0.02, 0.05, 0.08, 0.1, 0.12, 0.15, 0.18, 0.2, 0.22, 0.25, 0.28, 0.3, 0.32, 0.35, 0.38, 0.4, 0.42, 0.45, 0.48] };
+  const s1 = {
+    genuineScores: [
+      0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3,
+      0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0.01,
+    ],
+    impostorScores: [
+      0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7,
+      0.75, 0.8, 0.85, 0.9, 0.92, 0.95, 0.99,
+    ],
+  };
+  const s2 = {
+    genuineScores: [
+      0.98, 0.95, 0.92, 0.9, 0.88, 0.85, 0.82, 0.8, 0.78, 0.75, 0.72, 0.7, 0.68,
+      0.65, 0.62, 0.6, 0.58, 0.55, 0.52, 0.5,
+    ],
+    impostorScores: [
+      0.01, 0.02, 0.05, 0.08, 0.1, 0.12, 0.15, 0.18, 0.2, 0.22, 0.25, 0.28, 0.3,
+      0.32, 0.35, 0.38, 0.4, 0.42, 0.45, 0.48,
+    ],
+  };
   const r = IP.compareSystems(s1, s2);
   assert.ok(r);
   assert.equal(typeof r.winner, "string");
@@ -568,8 +632,26 @@ test("IP.computeTimingStats: empty instance (L775-L777)", () => {
 });
 
 test("IP.compareSystems: same-length genuineScores triggers paired t-test (L598-L604)", () => {
-  const s1 = { genuineScores: [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0.01], impostorScores: [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.92, 0.95, 0.99] };
-  const s2 = { genuineScores: [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0.01], impostorScores: [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.92, 0.95, 0.99] };
+  const s1 = {
+    genuineScores: [
+      0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3,
+      0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0.01,
+    ],
+    impostorScores: [
+      0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7,
+      0.75, 0.8, 0.85, 0.9, 0.92, 0.95, 0.99,
+    ],
+  };
+  const s2 = {
+    genuineScores: [
+      0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3,
+      0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0.01,
+    ],
+    impostorScores: [
+      0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7,
+      0.75, 0.8, 0.85, 0.9, 0.92, 0.95, 0.99,
+    ],
+  };
   const r = IP.compareSystems(s1, s2);
   assert.ok(r);
   assert.equal(typeof r.winner, "string");
@@ -604,7 +686,10 @@ test("IP.reportPADMetrics: empty arrays → returns defaults (L265)", () => {
 
 // ── IP.generateROC: with spread scores (L344) ──
 test("IP.generateROC: spread genuine/impostor scores (L344)", () => {
-  const r = IP.generateROC([0.1, 0.3, 0.5, 0.7, 0.9], [0.9, 0.7, 0.5, 0.3, 0.1]);
+  const r = IP.generateROC(
+    [0.1, 0.3, 0.5, 0.7, 0.9],
+    [0.9, 0.7, 0.5, 0.3, 0.1],
+  );
   assert.ok(Array.isArray(r));
   assert.ok(r.length > 0);
   assert.ok(r[0].far !== undefined);
@@ -612,8 +697,14 @@ test("IP.generateROC: spread genuine/impostor scores (L344)", () => {
 
 // ── IP.compareSystems: full comparison with paired t-test (L639, L649, L668) ──
 test("IP.compareSystems: two systems with same-length genuine scores (L639, L649, L668)", () => {
-  const s1 = { genuineScores: [0.9, 0.85, 0.8, 0.75, 0.7], impostorScores: [0.3, 0.35, 0.4, 0.45, 0.5] };
-  const s2 = { genuineScores: [0.8, 0.75, 0.7, 0.65, 0.6], impostorScores: [0.4, 0.45, 0.5, 0.55, 0.6] };
+  const s1 = {
+    genuineScores: [0.9, 0.85, 0.8, 0.75, 0.7],
+    impostorScores: [0.3, 0.35, 0.4, 0.45, 0.5],
+  };
+  const s2 = {
+    genuineScores: [0.8, 0.75, 0.7, 0.65, 0.6],
+    impostorScores: [0.4, 0.45, 0.5, 0.55, 0.6],
+  };
   const r = IP.compareSystems(s1, s2);
   assert.ok(r);
   assert.equal(typeof r.winner, "string");
@@ -625,7 +716,10 @@ test("IP.compareSystems: two systems with same-length genuine scores (L639, L649
 
 // ── IP.compareSystems: with null system2 (L635) ──
 test("IP.compareSystems: null system2 → tie (L635)", () => {
-  const r = IP.compareSystems({ genuineScores: [0.9], impostorScores: [0.1] }, null);
+  const r = IP.compareSystems(
+    { genuineScores: [0.9], impostorScores: [0.1] },
+    null,
+  );
   assert.equal(r.winner, "tie");
 });
 

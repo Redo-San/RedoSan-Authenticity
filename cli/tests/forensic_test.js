@@ -11,7 +11,9 @@ function makeTestImage(filePath, w, h) {
   const ctx = canvas.getContext("2d");
   for (let y = 0; y < (h || 96); y++) {
     for (let x = 0; x < (w || 96); x++) {
-      ctx.fillStyle = `rgb(${(x / (w || 96)) * 255},${(y / (h || 96)) * 255},${128 + Math.sin((x + y) * 0.12) * 48})`;
+      ctx.fillStyle = `rgb(${(x / (w || 96)) * 255},${(y / (h || 96)) * 255},${
+        128 + Math.sin((x + y) * 0.12) * 48
+      })`;
       ctx.fillRect(x, y, 1, 1);
     }
   }
@@ -128,7 +130,10 @@ describe("Forensic Core - detectCopyMove", () => {
       }
     const r = core.detectCopyMove(src);
     assert.ok(Array.isArray(r.matches));
-    assert.ok(r.match_count > 0, "Should detect at least one block-aligned copy-move pair");
+    assert.ok(
+      r.match_count > 0,
+      "Should detect at least one block-aligned copy-move pair",
+    );
     assert.ok(typeof r.suspicion === "number");
   });
 
@@ -143,7 +148,11 @@ describe("Forensic Core - detectCopyMove", () => {
 describe("Forensic Core - metadataSignals", () => {
   it("should analyze JPEG metadata and return signals", async () => {
     const jpeg = await jpegBytes();
-    const r = core.metadataSignals(jpeg, { width: 100, height: 100 }, "test.jpg");
+    const r = core.metadataSignals(
+      jpeg,
+      { width: 100, height: 100 },
+      "test.jpg",
+    );
     assert.ok(Array.isArray(r.signals));
     assert.ok(typeof r.suspicion === "number");
   });
@@ -154,8 +163,14 @@ describe("Forensic Core - metadataSignals", () => {
   });
 
   it("should flag JPEG extension with non-JPEG bytes", () => {
-    const r = core.metadataSignals(new Uint8Array([137, 80, 78, 71]), { width: 64, height: 64 }, "photo.jpg");
-    assert.ok(r.signals.some((s) => s.includes("extension") && s.includes("JPEG")));
+    const r = core.metadataSignals(
+      new Uint8Array([137, 80, 78, 71]),
+      { width: 64, height: 64 },
+      "photo.jpg",
+    );
+    assert.ok(
+      r.signals.some((s) => s.includes("extension") && s.includes("JPEG")),
+    );
   });
 });
 
@@ -163,12 +178,29 @@ describe("Forensic Core — JPEG edge cases", () => {
   it("should handle padding non-FF bytes before marker (lines 98-100)", () => {
     // bytes[2]=0xEE is not 0xFF, so the loop at line 98-100 increments off and continues
     const buf = new Uint8Array([
-      0xFF, 0xD8, // SOI
-      0xEE,       // Non-FF padding byte (line 98: bytes[off] !== 0xff → off++; continue)
-      0xFF, 0xE0, // APP0
-      0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00,
-      0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
-      0xFF, 0xD9, // EOI
+      0xff,
+      0xd8, // SOI
+      0xee, // Non-FF padding byte (line 98: bytes[off] !== 0xff → off++; continue)
+      0xff,
+      0xe0, // APP0
+      0x00,
+      0x10,
+      0x4a,
+      0x46,
+      0x49,
+      0x46,
+      0x00,
+      0x01,
+      0x01,
+      0x00,
+      0x00,
+      0x01,
+      0x00,
+      0x01,
+      0x00,
+      0x00,
+      0xff,
+      0xd9, // EOI
     ]);
     const r = core.parseJpegMarkers(buf);
     assert.equal(r.is_jpeg, true);
@@ -177,30 +209,42 @@ describe("Forensic Core — JPEG edge cases", () => {
 
   it("should warn on invalid segment length (lines 108-112)", () => {
     const buf = new Uint8Array([
-      0xFF, 0xD8, // SOI
-      0xFF, 0xE0, // APP0
-      0x00, 0x00, // length = 0 (< 2, invalid)
-      0xFF, 0xD9, // EOI
+      0xff,
+      0xd8, // SOI
+      0xff,
+      0xe0, // APP0
+      0x00,
+      0x00, // length = 0 (< 2, invalid)
+      0xff,
+      0xd9, // EOI
     ]);
     const r = core.parseJpegMarkers(buf);
     assert.equal(r.is_jpeg, true);
     assert.ok(
-      r.warnings.some(function (w) { return w.indexOf("Invalid") !== -1 || w.indexOf("segment") !== -1; }),
+      r.warnings.some(function (w) {
+        return w.indexOf("Invalid") !== -1 || w.indexOf("segment") !== -1;
+      }),
       "Expected invalid segment warning, got: " + JSON.stringify(r.warnings),
     );
   });
 
   it("should handle segment length that exceeds buffer (lines 108-112)", () => {
     const buf = new Uint8Array([
-      0xFF, 0xD8, // SOI
-      0xFF, 0xE0, // APP0
-      0x00, 0x64, // length = 100 (exceeds buffer)
-      0xFF, 0xD9, // EOI
+      0xff,
+      0xd8, // SOI
+      0xff,
+      0xe0, // APP0
+      0x00,
+      0x64, // length = 100 (exceeds buffer)
+      0xff,
+      0xd9, // EOI
     ]);
     const r = core.parseJpegMarkers(buf);
     assert.equal(r.is_jpeg, true);
     assert.ok(
-      r.warnings.some(function (w) { return w.indexOf("Invalid") !== -1; }),
+      r.warnings.some(function (w) {
+        return w.indexOf("Invalid") !== -1;
+      }),
       "Expected invalid segment warning",
     );
   });
@@ -208,7 +252,8 @@ describe("Forensic Core — JPEG edge cases", () => {
 
 describe("Forensic Core — analyzeNoise: high-residual tiles (lines 202-209)", () => {
   it("should detect suspicious tiles in high-contrast region", () => {
-    var w = 64, h = 64;
+    var w = 64,
+      h = 64;
     var data = new Uint8ClampedArray(w * h * 4);
     for (var y = 0; y < h; y++) {
       for (var x = 0; x < w; x++) {
@@ -219,7 +264,7 @@ describe("Forensic Core — analyzeNoise: high-residual tiles (lines 202-209)", 
           val = Math.min(255, Math.floor((x / 32) * 80 + (y / 64) * 40));
         } else {
           // High-frequency checkerboard right half
-          val = ((x + y) % 2 === 0) ? 240 : 16;
+          val = (x + y) % 2 === 0 ? 240 : 16;
         }
         data[idx] = val;
         data[idx + 1] = val;
@@ -323,7 +368,9 @@ describe("Forensic Analyzer - full pipeline", () => {
       assert.ok(Array.isArray(json.signals));
       assert.ok(json.ela && typeof json.ela.mean_difference === "number");
       assert.ok(json.noise && typeof json.noise.mean_residual === "number");
-      assert.ok(json.copy_move && typeof json.copy_move.match_count === "number");
+      assert.ok(
+        json.copy_move && typeof json.copy_move.match_count === "number",
+      );
       assert.ok(json.metadata && json.metadata.jpeg !== undefined);
     } finally {
       if (fs.existsSync(out)) fs.unlinkSync(out);
@@ -380,7 +427,7 @@ describe("Forensic CLI - error paths", () => {
     try {
       await assert.rejects(
         () => analyzeForensicFile(out),
-        /exceed maximum allowed/
+        /exceed maximum allowed/,
       );
     } finally {
       if (fs.existsSync(out)) fs.unlinkSync(out);
@@ -395,12 +442,19 @@ describe("Forensic CLI - error paths", () => {
     const origError = console.error;
     const origExit = process.exit;
     console.log = () => {};
-    console.error = (...args) => { output += args.join(" "); };
+    console.error = (...args) => {
+      output += args.join(" ");
+    };
     let exitCode = null;
-    process.exit = (code) => { exitCode = code; };
+    process.exit = (code) => {
+      exitCode = code;
+    };
     try {
       await runForensic(out, {});
-      assert.ok(output.includes("Blocked dangerous file type"), `Expected blocked error in: "${output}"`);
+      assert.ok(
+        output.includes("Blocked dangerous file type"),
+        `Expected blocked error in: "${output}"`,
+      );
       assert.equal(exitCode, 1);
     } finally {
       console.log = origLog;
@@ -415,12 +469,19 @@ describe("Forensic CLI - error paths", () => {
     let output = "";
     const origError = console.error;
     const origExit = process.exit;
-    console.error = (...args) => { output += args.join(" "); };
+    console.error = (...args) => {
+      output += args.join(" ");
+    };
     let exitCode = null;
-    process.exit = (code) => { exitCode = code; };
+    process.exit = (code) => {
+      exitCode = code;
+    };
     try {
       await runForensic(out, {});
-      assert.ok(output.includes("File not found"), `Expected 'File not found' error in: "${output}"`);
+      assert.ok(
+        output.includes("File not found"),
+        `Expected 'File not found' error in: "${output}"`,
+      );
       assert.equal(exitCode, 1);
     } finally {
       console.error = origError;

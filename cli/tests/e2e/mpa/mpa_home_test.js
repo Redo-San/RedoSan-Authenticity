@@ -1,7 +1,13 @@
 const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
-const { ensureServer, openPage, checkPageLoad, checkNoErrors , closePage } = require("../mpa_helpers");
+const {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 
 const PAGE_ID = "home";
 let browser;
@@ -31,7 +37,9 @@ describe("MPA — Home", function () {
     try {
       var hero = await page.$("h1, .hero-title, .banner-title");
       assert.ok(hero, "Hero heading should exist");
-      var text = await page.evaluate(function (el) { return el.textContent; }, hero);
+      var text = await page.evaluate(function (el) {
+        return el.textContent;
+      }, hero);
       assert.ok(text.length > 0, "Hero should have text");
     } finally {
       await closePage(ctx, page);
@@ -42,7 +50,10 @@ describe("MPA — Home", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       var links = await page.$$("#page-home a[href], #page-home .card a");
-      assert.ok(links.length >= 5, "Home should have at least 5 tool links, got " + links.length);
+      assert.ok(
+        links.length >= 5,
+        "Home should have at least 5 tool links, got " + links.length,
+      );
     } finally {
       await closePage(ctx, page);
     }

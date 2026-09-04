@@ -2,7 +2,9 @@ const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
   for (let run = 1; run <= 5; run++) {
-    const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+    const ctx = await browser.newContext({
+      viewport: { width: 1350, height: 940 },
+    });
     const pg = await ctx.newPage();
     const errs = [];
     pg.on("pageerror", (e) => errs.push(String(e).slice(0, 150)));
@@ -24,7 +26,9 @@ const { chromium } = require("playwright");
       };
       setTimeout(tick, 160);
     });
-    await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+    await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+      waitUntil: "load",
+    });
     await pg.waitForTimeout(1800);
     const r = await pg.evaluate(() => window.__probe);
     const changes = [];
@@ -36,9 +40,20 @@ const { chromium } = require("playwright");
         last = sig;
       }
     }
-    console.log("=== RUN " + run + " errs=" + (errs.length ? errs.join(" ; ") : "none"));
+    console.log(
+      "=== RUN " + run + " errs=" + (errs.length ? errs.join(" ; ") : "none"),
+    );
     for (const p of changes)
-      console.log("   @" + p.t + " initDZ=" + p.initDZ + " setStatus=" + p.setStatus + " dz=" + p.dz);
+      console.log(
+        "   @" +
+          p.t +
+          " initDZ=" +
+          p.initDZ +
+          " setStatus=" +
+          p.setStatus +
+          " dz=" +
+          p.dz,
+      );
     await ctx.close();
   }
   await browser.close();

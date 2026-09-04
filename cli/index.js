@@ -14,7 +14,10 @@ program
     "Digital authenticity tools — fingerprint, watermark, audio-watermark, metadata, timestamp, did, certificate, converter, document-watermark",
   )
   .version("1.0.0")
-  .option("--allow-dangerous", "Skip file validation (allow blocked extensions, bypass magic bytes check)")
+  .option(
+    "--allow-dangerous",
+    "Skip file validation (allow blocked extensions, bypass magic bytes check)",
+  )
   .addHelpText(
     "after",
     `
@@ -110,7 +113,10 @@ program
   .description("Create or verify OpenTimestamps (.ots) proofs")
   .argument("<action>", "Action: create or verify")
   .argument("<file>", "Path to the file")
-  .option("-o, --output <file>", "Output .ots file (create) or .ots proof file (verify)")
+  .option(
+    "-o, --output <file>",
+    "Output .ots file (create) or .ots proof file (verify)",
+  )
   .option("-f, --file2 <file>", "Original file (verify mode)")
   .action(async (action, filePath, opts) => {
     const { runTimestamp } = require("./commands/timestamp");
@@ -135,11 +141,16 @@ program
 // ── Pixel Injection command ──
 program
   .command("pixel-injection")
-  .description("Advanced spatial/frequency/DL watermark algorithms (23 algorithms)")
+  .description(
+    "Advanced spatial/frequency/DL watermark algorithms (23 algorithms)",
+  )
   .argument("<action>", "Action: embed, extract")
   .requiredOption("-i, --image <file>", "Input image")
   .option("-s, --secret <file>", "Secret file to embed")
-  .option("-o, --output <file>", "Output file path (omit to print to screen for extract)")
+  .option(
+    "-o, --output <file>",
+    "Output file path (omit to print to screen for extract)",
+  )
   .option("-p, --password <pass>", "Password")
   .option(
     "-a, --algo <type>",
@@ -192,7 +203,9 @@ program
 // ── Forensic Analyzer command ──
 program
   .command("forensic")
-  .description("Analyze image tamper signals (ELA, noise inconsistency, JPEG structure, copy-move)")
+  .description(
+    "Analyze image tamper signals (ELA, noise inconsistency, JPEG structure, copy-move)",
+  )
   .argument("<file>", "Image file to analyze")
   .option("-j, --json", "Output as JSON")
   .option("-o, --output <file>", "Save results to a file")
@@ -217,7 +230,9 @@ program
 // ── Certificate command ──
 program
   .command("certificate")
-  .description("Generate a Digital Passport certificate from an image and identity data")
+  .description(
+    "Generate a Digital Passport certificate from an image and identity data",
+  )
   .argument("<file>", "Image file to certify (or fingerprint JSON)")
   .option("-o, --output <file>", "Output file path")
   .option("--format <type>", "Output format: pdf, docx, epub (default: pdf)")
@@ -254,7 +269,10 @@ program
   .option("-m, --message <text>", "Secret message text (embed mode)")
   .option("-o, --output <file>", "Output file path")
   .option("-p, --password <pass>", "Password")
-  .option("-a, --algo <type>", "Algorithm: 1=ZWC, 2=Homoglyph, 3=Whitespace, 0=Auto (default: 1)")
+  .option(
+    "-a, --algo <type>",
+    "Algorithm: 1=ZWC, 2=Homoglyph, 3=Whitespace, 0=Auto (default: 1)",
+  )
   .action(async (action, opts) => {
     const { runDocumentWatermark } = require("./commands/document_watermark");
     await runDocumentWatermark(action, opts);
@@ -275,7 +293,9 @@ program
 // ── Upgrade command (standalone) ──
 program
   .command("upgrade")
-  .description("Upgrade an incomplete .ots timestamp proof via calendar aggregator")
+  .description(
+    "Upgrade an incomplete .ots timestamp proof via calendar aggregator",
+  )
   .argument("<file>", "Path to .ots proof file")
   .option("-o, --output <file>", "Output file path")
   .action(async (filePath, opts) => {
@@ -289,8 +309,9 @@ program
       const resp = await upgradeOts(hashBytes);
       // Build complete .ots: header + version + tag + hash + aggregator response
       const OTS_HEADER = [
-        0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50,
-        0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
+        0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+        0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf,
+        0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
       ];
       const full = new Uint8Array(OTS_HEADER.length + 1 + 1 + 32 + resp.length);
       full.set(new Uint8Array(OTS_HEADER), 0);
@@ -300,7 +321,9 @@ program
       full.set(resp, OTS_HEADER.length + 2 + 32);
       const outPath = opts.output ? path.resolve(opts.output) : filePath;
       fs.writeFileSync(outPath, Buffer.from(full));
-      console.log(`Upgraded .ots proof saved to: ${outPath} (${full.length} bytes)`);
+      console.log(
+        `Upgraded .ots proof saved to: ${outPath} (${full.length} bytes)`,
+      );
     } catch (error) {
       console.error(`Upgrade failed: ${error.message}`);
       process.exit(1);
@@ -310,7 +333,9 @@ program
 // ── Tools command (check external dependencies) ──
 program
   .command("tools")
-  .description("Check availability of external tools (exiftool, sox, ImageMagick, etc.)")
+  .description(
+    "Check availability of external tools (exiftool, sox, ImageMagick, etc.)",
+  )
   .action(() => {
     const tools = require("./tools");
     console.log(tools.printToolSummary());

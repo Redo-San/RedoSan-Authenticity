@@ -2,14 +2,18 @@ const crypto = require("crypto");
 const fs = require("fs");
 
 const CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-const NANOID_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const NANOID_ALPHABET =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 function uuidv4() {
   const b = crypto.randomBytes(16);
   b[6] = (b[6] & 0x0f) | 0x40;
   b[8] = (b[8] & 0x3f) | 0x80;
   const h = b.toString("hex");
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${((parseInt(h[16], 16) & 3) | 8).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${(
+    (parseInt(h[16], 16) & 3) |
+    8
+  ).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }
 
 function uuidv7() {
@@ -24,7 +28,10 @@ function uuidv7() {
   b[6] = (b[6] & 0x0f) | 0x70;
   b[8] = (b[8] & 0x3f) | 0x80;
   const h = b.toString("hex");
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-7${h.slice(13, 16)}-${((parseInt(h[16], 16) & 3) | 8).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-7${h.slice(13, 16)}-${(
+    (parseInt(h[16], 16) & 3) |
+    8
+  ).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }
 
 function uuidv4Bulk(count) {
@@ -122,7 +129,12 @@ module.exports = {
 if (require.main === module) {
   const type = process.argv[2];
   const arg = process.argv[3];
-  const format = process.argv[4] === "--json" ? "json" : process.argv[4] === "--csv" ? "csv" : "text";
+  const format =
+    process.argv[4] === "--json"
+      ? "json"
+      : process.argv[4] === "--csv"
+      ? "csv"
+      : "text";
   const count = parseInt(arg, 10) > 0 ? parseInt(arg, 10) : 1;
 
   try {
@@ -149,7 +161,12 @@ if (require.main === module) {
         ids = [swhid(arg)];
         break;
       case "all":
-        ids = { uuidv4: uuidv4(), uuidv7: uuidv7(), ulid: ulid(), nanoid: nanoid() };
+        ids = {
+          uuidv4: uuidv4(),
+          uuidv7: uuidv7(),
+          ulid: ulid(),
+          nanoid: nanoid(),
+        };
         if (arg && !arg.startsWith("--")) {
           try {
             ids.swhid = swhid(arg);
@@ -161,7 +178,9 @@ if (require.main === module) {
         process.exit(0);
       // falls through
       default:
-        console.error("Usage: node id_forge.js <uuidv4|uuidv7|ulid|swhid|nanoid|all> [count|file] [--json|--csv]");
+        console.error(
+          "Usage: node id_forge.js <uuidv4|uuidv7|ulid|swhid|nanoid|all> [count|file] [--json|--csv]",
+        );
         process.exit(1);
     }
     process.stdout.write(formatResults(ids, format, type) + "\n");

@@ -8,12 +8,24 @@ var dlCalls = [];
 const elStore = {};
 function mockEl(id, overrides) {
   const el = {
-    id, value: "", style: { display: "", background: "", color: "", borderColor: "" },
-    innerHTML: "", textContent: "", disabled: false, href: "", download: "",
-    className: "", files: null, onclick: null,
+    id,
+    value: "",
+    style: { display: "", background: "", color: "", borderColor: "" },
+    innerHTML: "",
+    textContent: "",
+    disabled: false,
+    href: "",
+    download: "",
+    className: "",
+    files: null,
+    onclick: null,
     _listeners: {},
-    addEventListener: (ev, fn) => { el._listeners[ev] = el._listeners[ev] || []; el._listeners[ev].push(fn); },
-    click: () => {}, focus: () => {},
+    addEventListener: (ev, fn) => {
+      el._listeners[ev] = el._listeners[ev] || [];
+      el._listeners[ev].push(fn);
+    },
+    click: () => {},
+    focus: () => {},
     querySelector: () => null,
     querySelectorAll: () => [],
     dataset: {},
@@ -25,16 +37,35 @@ function mockEl(id, overrides) {
 
 globalThis.document = {
   getElementById: (id) => elStore[id] || null,
-  createElement: (tag) => tag === "a" ? { href: "", download: "", click: () => {} } : { style: {} },
+  createElement: (tag) =>
+    tag === "a" ? { href: "", download: "", click: () => {} } : { style: {} },
   querySelectorAll: (sel) => [],
   addEventListener: () => {},
 };
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
-globalThis.URL = { createObjectURL: () => "blob:mock", revokeObjectURL: () => {} };
-globalThis.Blob = function BlobMock(parts, opts) { this.parts = parts; this.type = (opts && opts.type) || ""; };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
+globalThis.URL = {
+  createObjectURL: () => "blob:mock",
+  revokeObjectURL: () => {},
+};
+globalThis.Blob = function BlobMock(parts, opts) {
+  this.parts = parts;
+  this.type = (opts && opts.type) || "";
+};
 globalThis.i18n = { data: {} };
-globalThis.escHtml = (s) => s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+globalThis.escHtml = (s) =>
+  s == null
+    ? ""
+    : String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 globalThis.showDownloadModal = () => {};
 globalThis.closeDownloadModal = () => {};
 globalThis.setDownloadHandler = () => {};
@@ -43,16 +74,24 @@ globalThis.setTimeout = setTimeout;
 if (typeof navigator === "object" && navigator) {
   Object.defineProperty(navigator, "clipboard", {
     value: { writeText: async () => {} },
-    writable: true, configurable: true,
+    writable: true,
+    configurable: true,
   });
 } else {
   globalThis.navigator = { clipboard: { writeText: async () => {} } };
 }
 
-const src = fs.readFileSync(path.resolve(__dirname, "../../ID_Forge/id_forge.js"), "utf8");
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../ID_Forge/id_forge.js") });
+const src = fs.readFileSync(
+  path.resolve(__dirname, "../../ID_Forge/id_forge.js"),
+  "utf8",
+);
+vm.runInThisContext(src, {
+  filename: path.resolve(__dirname, "../../ID_Forge/id_forge.js"),
+});
 
-globalThis.downloadBlobSimple = (blob, name) => { dlCalls.push({ blob, name }); };
+globalThis.downloadBlobSimple = (blob, name) => {
+  dlCalls.push({ blob, name });
+};
 
 describe("ID Forge UI — validateSwhidText", () => {
   beforeEach(() => {
@@ -135,8 +174,14 @@ describe("ID Forge UI — idForgeShowInfo", () => {
     globalThis.document.querySelectorAll = (sel) => {
       if (sel === "[data-swhid-tab]") {
         return [
-          { dataset: { swhidTab: "file" }, style: { background: "", color: "" } },
-          { dataset: { swhidTab: "text" }, style: { background: "", color: "" } },
+          {
+            dataset: { swhidTab: "file" },
+            style: { background: "", color: "" },
+          },
+          {
+            dataset: { swhidTab: "text" },
+            style: { background: "", color: "" },
+          },
         ];
       }
       return [];
@@ -164,8 +209,14 @@ describe("ID Forge UI — switchSwhidTab", () => {
     globalThis.document.querySelectorAll = (sel) => {
       if (sel === "[data-swhid-tab]") {
         return [
-          { dataset: { swhidTab: "file" }, style: { background: "", color: "" } },
-          { dataset: { swhidTab: "text" }, style: { background: "", color: "" } },
+          {
+            dataset: { swhidTab: "file" },
+            style: { background: "", color: "" },
+          },
+          {
+            dataset: { swhidTab: "text" },
+            style: { background: "", color: "" },
+          },
         ];
       }
       return [];
@@ -179,8 +230,14 @@ describe("ID Forge UI — switchSwhidTab", () => {
     globalThis.document.querySelectorAll = (sel) => {
       if (sel === "[data-swhid-tab]") {
         return [
-          { dataset: { swhidTab: "file" }, style: { background: "", color: "" } },
-          { dataset: { swhidTab: "text" }, style: { background: "", color: "" } },
+          {
+            dataset: { swhidTab: "file" },
+            style: { background: "", color: "" },
+          },
+          {
+            dataset: { swhidTab: "text" },
+            style: { background: "", color: "" },
+          },
         ];
       }
       return [];
@@ -198,9 +255,16 @@ describe("ID Forge UI — idForgeShowDownload", () => {
   });
 
   it("should show download modal when result exists", () => {
-    globalThis._ifResult = { ids: ["abc"], type: "uuidv4", count: 1, timestamp: "2025-01-01" };
+    globalThis._ifResult = {
+      ids: ["abc"],
+      type: "uuidv4",
+      count: 1,
+      timestamp: "2025-01-01",
+    };
     var modalShown = false;
-    globalThis.showDownloadModal = function () { modalShown = true; };
+    globalThis.showDownloadModal = function () {
+      modalShown = true;
+    };
     mockEl("dl-modal-title", { textContent: "" });
     idForgeShowDownload();
     assert.ok(modalShown);
@@ -293,7 +357,9 @@ describe("ID Forge UI — handleIdForgeGenerate", () => {
           try {
             assert.ok(elStore["if-output"].value.startsWith("swh:1:cnt:"));
             resolve();
-          } catch (e) { reject(e); }
+          } catch (e) {
+            reject(e);
+          }
         } else if (Date.now() > deadline) {
           reject(new Error("swhid generation timed out"));
         } else {
@@ -324,7 +390,9 @@ describe("ID Forge UI — idForgeCopy", () => {
   it("should copy to clipboard", () => {
     mockEl("if-output", { value: "test-id-123" });
     var copied = "";
-    navigator.clipboard.writeText = async function (t) { copied = t; };
+    navigator.clipboard.writeText = async function (t) {
+      copied = t;
+    };
     var el = { textContent: "Copy", style: { background: "", color: "" } };
     idForgeCopy(el);
     assert.equal(copied, "test-id-123");
@@ -336,19 +404,27 @@ describe("ID Forge UI — idForgeDownload", () => {
   beforeEach(() => {
     dlCalls = [];
     globalThis._ifResult = {
-      ids: ["abc-123", "def-456"], type: "uuidv4", count: 2,
+      ids: ["abc-123", "def-456"],
+      type: "uuidv4",
+      count: 2,
       timestamp: "2025-01-01T00:00:00.000Z",
     };
     globalThis.jspdf = {
       jsPDF: function () {
-        this.fontSize = 10; this.textColor = [0, 0, 0]; this.pages = 0;
+        this.fontSize = 10;
+        this.textColor = [0, 0, 0];
+        this.pages = 0;
       },
     };
     globalThis.jspdf.jsPDF.prototype.setFontSize = function () {};
     globalThis.jspdf.jsPDF.prototype.setTextColor = function () {};
     globalThis.jspdf.jsPDF.prototype.text = function () {};
-    globalThis.jspdf.jsPDF.prototype.addPage = function () { this.pages++; };
-    globalThis.jspdf.jsPDF.prototype.save = function () { dlCalls.push({ name: "id-forge-uuidv4.pdf" }); };
+    globalThis.jspdf.jsPDF.prototype.addPage = function () {
+      this.pages++;
+    };
+    globalThis.jspdf.jsPDF.prototype.save = function () {
+      dlCalls.push({ name: "id-forge-uuidv4.pdf" });
+    };
   });
 
   it("should do nothing when no result", () => {
@@ -359,32 +435,56 @@ describe("ID Forge UI — idForgeDownload", () => {
 
   it("should download JSON", () => {
     idForgeDownload("json");
-    assert.ok(dlCalls.some(function (d) { return d.name.endsWith(".json"); }));
+    assert.ok(
+      dlCalls.some(function (d) {
+        return d.name.endsWith(".json");
+      }),
+    );
   });
 
   it("should download CSV", () => {
     idForgeDownload("csv");
-    assert.ok(dlCalls.some(function (d) { return d.name.endsWith(".csv"); }));
+    assert.ok(
+      dlCalls.some(function (d) {
+        return d.name.endsWith(".csv");
+      }),
+    );
   });
 
   it("should download TXT", () => {
     idForgeDownload("txt");
-    assert.ok(dlCalls.some(function (d) { return d.name.endsWith(".txt"); }));
+    assert.ok(
+      dlCalls.some(function (d) {
+        return d.name.endsWith(".txt");
+      }),
+    );
   });
 
   it("should download XML", () => {
     idForgeDownload("xml");
-    assert.ok(dlCalls.some(function (d) { return d.name.endsWith(".xml"); }));
+    assert.ok(
+      dlCalls.some(function (d) {
+        return d.name.endsWith(".xml");
+      }),
+    );
   });
 
   it("should download PDF", () => {
     idForgeDownload("pdf");
-    assert.ok(dlCalls.some(function (d) { return d.name.endsWith(".pdf"); }));
+    assert.ok(
+      dlCalls.some(function (d) {
+        return d.name.endsWith(".pdf");
+      }),
+    );
   });
 
   it("should download DOC", () => {
     idForgeDownload("doc");
-    assert.ok(dlCalls.some(function (d) { return d.name.endsWith(".doc"); }));
+    assert.ok(
+      dlCalls.some(function (d) {
+        return d.name.endsWith(".doc");
+      }),
+    );
   });
 
   it("should do nothing for unknown format", () => {
@@ -396,14 +496,21 @@ describe("ID Forge UI — idForgeDownload", () => {
 
 describe("ID Forge — computeSwhidFromFile", () => {
   it("should compute SWHID from .txt file", async () => {
-    var file = { name: "test.txt", arrayBuffer: async () => new TextEncoder().encode("hello").buffer };
+    var file = {
+      name: "test.txt",
+      arrayBuffer: async () => new TextEncoder().encode("hello").buffer,
+    };
     var result = await computeSwhidFromFile(file);
     assert.ok(result.startsWith("swh:1:cnt:"));
     assert.equal(result.length, 50);
   });
 
   it("should extract hash from .ots file", async () => {
-    var OTS_HEADER = [0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94];
+    var OTS_HEADER = [
+      0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+      0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf,
+      0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
+    ];
     var hashBytes = new Uint8Array(32);
     for (var i = 0; i < 32; i++) hashBytes[i] = 0xab;
     var buf = new Uint8Array([...OTS_HEADER, 0x01, 0x08, ...hashBytes]).buffer;
@@ -413,28 +520,56 @@ describe("ID Forge — computeSwhidFromFile", () => {
   });
 
   it("should extract SHA-1 from fingerprint .json file", async () => {
-    var json = JSON.stringify({ hashes: { "SHA-1": "da39a3ee5e6b4b0d3255bfef95601890afd80709" } });
-    var file = { name: "fingerprint.json", arrayBuffer: async () => new TextEncoder().encode(json).buffer };
+    var json = JSON.stringify({
+      hashes: { "SHA-1": "da39a3ee5e6b4b0d3255bfef95601890afd80709" },
+    });
+    var file = {
+      name: "fingerprint.json",
+      arrayBuffer: async () => new TextEncoder().encode(json).buffer,
+    };
     var result = await computeSwhidFromFile(file);
     assert.equal(result, "swh:1:cnt:da39a3ee5e6b4b0d3255bfef95601890afd80709");
   });
 
   it("should extract SHA-256 from fingerprint .json file", async () => {
-    var json = JSON.stringify({ hashes: { "SHA-256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" } });
-    var file = { name: "fp.json", arrayBuffer: async () => new TextEncoder().encode(json).buffer };
+    var json = JSON.stringify({
+      hashes: {
+        "SHA-256":
+          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      },
+    });
+    var file = {
+      name: "fp.json",
+      arrayBuffer: async () => new TextEncoder().encode(json).buffer,
+    };
     var result = await computeSwhidFromFile(file);
-    assert.equal(result, "swh:1:cnt:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    assert.equal(
+      result,
+      "swh:1:cnt:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
   });
 
   it("should throw on invalid fingerprint JSON", async () => {
-    var file = { name: "fp.json", arrayBuffer: async () => new TextEncoder().encode("not-json").buffer };
-    await assert.rejects(function () { return computeSwhidFromFile(file); });
+    var file = {
+      name: "fp.json",
+      arrayBuffer: async () => new TextEncoder().encode("not-json").buffer,
+    };
+    await assert.rejects(function () {
+      return computeSwhidFromFile(file);
+    });
   });
 
   it("should throw on JSON without SHA hashes", async () => {
-    var json = JSON.stringify({ hashes: { "MD5": "d41d8cd98f00b204e9800998ecf8427e" } });
-    var file = { name: "fp.json", arrayBuffer: async () => new TextEncoder().encode(json).buffer };
-    await assert.rejects(function () { return computeSwhidFromFile(file); });
+    var json = JSON.stringify({
+      hashes: { MD5: "d41d8cd98f00b204e9800998ecf8427e" },
+    });
+    var file = {
+      name: "fp.json",
+      arrayBuffer: async () => new TextEncoder().encode(json).buffer,
+    };
+    await assert.rejects(function () {
+      return computeSwhidFromFile(file);
+    });
   });
 });
 
@@ -451,7 +586,14 @@ describe("ID Forge — handleIdForgeGenerate with swhid file", () => {
   });
 
   it("should generate swhid from file", () => {
-    mockEl("if-swhid-file", { files: [{ name: "test.txt", arrayBuffer: async () => new TextEncoder().encode("hello").buffer }] });
+    mockEl("if-swhid-file", {
+      files: [
+        {
+          name: "test.txt",
+          arrayBuffer: async () => new TextEncoder().encode("hello").buffer,
+        },
+      ],
+    });
     handleIdForgeGenerate();
     return new Promise(function (resolve) {
       setTimeout(function () {
@@ -465,11 +607,15 @@ describe("ID Forge — handleIdForgeGenerate with swhid file", () => {
 describe("ID Forge — clipboard fallback", () => {
   it("should fallback to execCommand when clipboard fails", async () => {
     mockEl("if-output", { value: "test-id-123", select: function () {} });
-    navigator.clipboard.writeText = async function () { throw new Error("denied"); };
+    navigator.clipboard.writeText = async function () {
+      throw new Error("denied");
+    };
     globalThis.document.execCommand = function () {};
     var el = { textContent: "Copy", style: { background: "", color: "" } };
     idForgeCopy(el);
-    await new Promise(function (r) { setTimeout(r, 50); });
+    await new Promise(function (r) {
+      setTimeout(r, 50);
+    });
   });
 });
 
@@ -478,18 +624,29 @@ describe("ID Forge — PDF page break with many IDs", () => {
     dlCalls = [];
     var manyIds = [];
     for (var i = 0; i < 100; i++) manyIds.push("id-" + i);
-    globalThis._ifResult = { ids: manyIds, type: "uuidv4", count: 100, timestamp: "2025-01-01T00:00:00.000Z" };
+    globalThis._ifResult = {
+      ids: manyIds,
+      type: "uuidv4",
+      count: 100,
+      timestamp: "2025-01-01T00:00:00.000Z",
+    };
     globalThis.jspdf = {
       jsPDF: function () {
-        this.fontSize = 10; this.textColor = [0, 0, 0]; this.pages = 0;
+        this.fontSize = 10;
+        this.textColor = [0, 0, 0];
+        this.pages = 0;
       },
     };
     globalThis.jspdf.jsPDF.prototype.setFontSize = function () {};
     globalThis.jspdf.jsPDF.prototype.setTextColor = function () {};
     globalThis.jspdf.jsPDF.prototype.text = function () {};
     var addPageCalled = false;
-    globalThis.jspdf.jsPDF.prototype.addPage = function () { addPageCalled = true; };
-    globalThis.jspdf.jsPDF.prototype.save = function () { dlCalls.push({ name: "test.pdf" }); };
+    globalThis.jspdf.jsPDF.prototype.addPage = function () {
+      addPageCalled = true;
+    };
+    globalThis.jspdf.jsPDF.prototype.save = function () {
+      dlCalls.push({ name: "test.pdf" });
+    };
     idForgeDownload("pdf");
     assert.ok(addPageCalled);
   });
@@ -558,7 +715,16 @@ describe("ID Forge — handleIdForgeGenerate error catch", () => {
   });
 
   it("should catch error when file arrayBuffer rejects", () => {
-    mockEl("if-swhid-file", { files: [{ name: "bad.ots", arrayBuffer: async function () { throw new Error("corrupt"); } }] });
+    mockEl("if-swhid-file", {
+      files: [
+        {
+          name: "bad.ots",
+          arrayBuffer: async function () {
+            throw new Error("corrupt");
+          },
+        },
+      ],
+    });
     handleIdForgeGenerate();
     return new Promise(function (resolve) {
       setTimeout(function () {

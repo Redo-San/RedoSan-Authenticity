@@ -1,7 +1,9 @@
 const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1350, height: 940 },
+  });
   const pg = await ctx.newPage();
   await pg.addInitScript(() => {
     window.__frames = [];
@@ -32,7 +34,12 @@ const { chromium } = require("playwright");
           });
           const sig = JSON.stringify(kids);
           if (sig !== last) {
-            window.__frames.push({ t, secH: Math.round(sr.height), secT: Math.round(sr.top), kids });
+            window.__frames.push({
+              t,
+              secH: Math.round(sr.height),
+              secT: Math.round(sr.top),
+              kids,
+            });
             last = sig;
           }
         }
@@ -41,7 +48,9 @@ const { chromium } = require("playwright");
     };
     requestAnimationFrame(tick);
   });
-  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+    waitUntil: "load",
+  });
   await pg.waitForTimeout(1600);
   const r = await pg.evaluate(() => window.__frames);
   for (const f of r) {

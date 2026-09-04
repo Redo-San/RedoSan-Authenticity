@@ -2,7 +2,13 @@
 
 const path = require("node:path");
 const { createCanvas, loadImage } = require("canvas");
-const { readFileBytes, getFileInfo, fmtSize, outputResult, validateFile } = require("../utils");
+const {
+  readFileBytes,
+  getFileInfo,
+  fmtSize,
+  outputResult,
+  validateFile,
+} = require("../utils");
 const core = require("../../Forensic/forensic_core");
 
 /**
@@ -60,7 +66,10 @@ async function analyzeForensicFile(absPath) {
   const info = getFileInfo(absPath);
   const bytes = readFileBytes(absPath);
   const loaded = await loadCanvasImage(absPath);
-  if (loaded.imageData.width > FORENSIC_MAX_DIMENSION || loaded.imageData.height > FORENSIC_MAX_DIMENSION) {
+  if (
+    loaded.imageData.width > FORENSIC_MAX_DIMENSION ||
+    loaded.imageData.height > FORENSIC_MAX_DIMENSION
+  ) {
     throw new Error(
       "Image dimensions (" +
         loaded.imageData.width +
@@ -125,13 +134,15 @@ async function analyzeForensicFile(absPath) {
  */
 async function runForensic(filePath, opts) {
   const absPath = path.resolve(filePath);
-  const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
+  const allowDangerous =
+    opts.allowDangerous || process.argv.includes("--allow-dangerous");
   try {
     try {
       validateFile(absPath, { allowDangerous });
     } catch (error) {
       console.error(`Validation failed: ${error.message}`);
-      if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+      if (error.message.includes("Blocked dangerous file type"))
+        console.error("Use --allow-dangerous to bypass");
       process.exit(1);
     }
     const result = await analyzeForensicFile(absPath);
@@ -140,7 +151,9 @@ async function runForensic(filePath, opts) {
       return;
     }
     let text = `Forensic Analyzer: ${result.file.name}\n`;
-    text += `Risk: ${result.risk_level.toUpperCase()} (${result.risk_score}/100)\n`;
+    text += `Risk: ${result.risk_level.toUpperCase()} (${
+      result.risk_score
+    }/100)\n`;
     text += `Dimensions: ${result.image.width} x ${result.image.height}\n`;
     text += `ELA mean difference: ${result.ela.mean_difference}\n`;
     text += `Noise residual: ${result.noise.mean_residual} ± ${result.noise.stddev_residual}\n`;

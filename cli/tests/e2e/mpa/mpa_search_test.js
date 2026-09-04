@@ -1,7 +1,13 @@
 const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
-const { ensureServer, openPage, checkPageLoad, checkNoErrors , closePage } = require("../mpa_helpers");
+const {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 
 const PAGE_ID = "search";
 let browser;
@@ -42,7 +48,9 @@ describe("MPA — Search", function () {
       await page.fill("#searchInput", "watermark");
       await page.waitForTimeout(300);
       // Submit search
-      await page.evaluate(function () { siteSearch(); });
+      await page.evaluate(function () {
+        siteSearch();
+      });
       await page.waitForTimeout(2000);
       var hasOutput = await page.evaluate(function () {
         var el = document.getElementById("search-output");
@@ -59,13 +67,18 @@ describe("MPA — Search", function () {
     try {
       await page.fill("#searchInput", "xyznonexistentquery");
       await page.waitForTimeout(300);
-      await page.evaluate(function () { siteSearch(); });
+      await page.evaluate(function () {
+        siteSearch();
+      });
       await page.waitForTimeout(2000);
       var noResultsMsg = await page.evaluate(function () {
         var el = document.getElementById("search-output");
         return el && el.innerHTML && el.innerHTML.indexOf("No results") !== -1;
       });
-      assert.ok(noResultsMsg, "Should show no-results message for nonsense query");
+      assert.ok(
+        noResultsMsg,
+        "Should show no-results message for nonsense query",
+      );
     } finally {
       await closePage(ctx, page);
     }

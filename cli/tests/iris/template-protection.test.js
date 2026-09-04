@@ -15,10 +15,15 @@ global.document = {
   createElement: (t) => {
     if (t === "canvas") {
       return {
-        width: 0, height: 0,
+        width: 0,
+        height: 0,
         getContext: () => ({
           drawImage: () => {},
-          getImageData: () => ({ data: new Uint8ClampedArray(640 * 480 * 4), width: 640, height: 480 }),
+          getImageData: () => ({
+            data: new Uint8ClampedArray(640 * 480 * 4),
+            width: 640,
+            height: 480,
+          }),
           putImageData: () => {},
         }),
         toBlob: (cb) => cb(new Blob()),
@@ -31,9 +36,15 @@ global.document = {
       addEventListener() {},
       appendChild() {},
       setAttribute() {},
-      getAttribute() { return null; },
-      querySelector() { return null; },
-      querySelectorAll() { return []; },
+      getAttribute() {
+        return null;
+      },
+      querySelector() {
+        return null;
+      },
+      querySelectorAll() {
+        return [];
+      },
       width: 0,
       height: 0,
       value: "",
@@ -51,11 +62,21 @@ global.HTMLCanvasElement = function () {};
 global.HTMLVideoElement = function () {};
 global.HTMLImageElement = function () {};
 global.ImageData = class ImageData {
-  constructor(d, w, h) { this.data = d; this.width = w; this.height = h; }
+  constructor(d, w, h) {
+    this.data = d;
+    this.width = w;
+    this.height = h;
+  }
 };
 global.Blob = class Blob {};
 global.FileReader = class FileReader {};
-global.crypto = { subtle: { digest: async () => new ArrayBuffer(32) }, getRandomValues: (a) => { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); return a; } };
+global.crypto = {
+  subtle: { digest: async () => new ArrayBuffer(32) },
+  getRandomValues: (a) => {
+    for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256);
+    return a;
+  },
+};
 global.fetch = async () => ({ ok: true, json: async () => ({}) });
 global.__ = (k, d) => (d === undefined ? k : d);
 global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
@@ -63,10 +84,14 @@ global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
 // IndexedDB polyfill for storage tests
 const _idbData = {};
 let _idbShouldFail = false;
-function fireAsync(fn) { setTimeout(fn, 0); }
+function fireAsync(fn) {
+  setTimeout(fn, 0);
+}
 function fakeReq(result) {
   const r = { onsuccess: null, onerror: null, result };
-  fireAsync(() => { if (r.onsuccess) r.onsuccess({ target: r }); });
+  fireAsync(() => {
+    if (r.onsuccess) r.onsuccess({ target: r });
+  });
   return r;
 }
 function fakeStore(name, txObj) {
@@ -80,10 +105,20 @@ function fakeStore(name, txObj) {
       if (txObj) txObj._puts++;
       return fakeReq(undefined);
     },
-    get(id) { return fakeReq((_idbData[name] || {})[id] || undefined); },
-    delete(id) { if (_idbData[name]) delete _idbData[name][id]; return fakeReq(undefined); },
-    clear() { _idbData[name] = {}; return fakeReq(undefined); },
-    count() { return fakeReq(Object.keys(_idbData[name] || {}).length); },
+    get(id) {
+      return fakeReq((_idbData[name] || {})[id] || undefined);
+    },
+    delete(id) {
+      if (_idbData[name]) delete _idbData[name][id];
+      return fakeReq(undefined);
+    },
+    clear() {
+      _idbData[name] = {};
+      return fakeReq(undefined);
+    },
+    count() {
+      return fakeReq(Object.keys(_idbData[name] || {}).length);
+    },
     openCursor() {
       const entries = Object.values(_idbData[name] || {});
       let idx = 0;
@@ -102,21 +137,33 @@ function fakeStore(name, txObj) {
       fireAsync(deliver);
       return r;
     },
-    getAll() { return fakeReq(Object.values(_idbData[name] || {})); },
+    getAll() {
+      return fakeReq(Object.values(_idbData[name] || {}));
+    },
   };
 }
 function _makeDbResult() {
   return {
-    objectStoreNames: { contains() { return false; } },
-    createObjectStore(storeName) { return fakeStore(storeName); },
+    objectStoreNames: {
+      contains() {
+        return false;
+      },
+    },
+    createObjectStore(storeName) {
+      return fakeStore(storeName);
+    },
     transaction(storeName, mode) {
       const tx = {
-        objectStore() { return fakeStore(storeName, tx); },
+        objectStore() {
+          return fakeStore(storeName, tx);
+        },
         oncomplete: null,
         onerror: null,
         _puts: 0,
       };
-      fireAsync(() => { if (tx.oncomplete) tx.oncomplete(); });
+      fireAsync(() => {
+        if (tx.oncomplete) tx.oncomplete();
+      });
       return tx;
     },
   };
@@ -124,20 +171,34 @@ function _makeDbResult() {
 global.indexedDB = {
   open() {
     const dbResult = _makeDbResult();
-    const req = { onsuccess: null, onerror: null, onupgradeneeded: null, result: null };
+    const req = {
+      onsuccess: null,
+      onerror: null,
+      onupgradeneeded: null,
+      result: null,
+    };
     if (_idbShouldFail) {
       fireAsync(() => {
-        if (req.onerror) req.onerror({ target: { error: new Error("Mocked DB open failure") } });
+        if (req.onerror)
+          req.onerror({
+            target: { error: new Error("Mocked DB open failure") },
+          });
       });
     } else {
       fireAsync(() => {
-        if (req.onupgradeneeded) req.onupgradeneeded({ target: { result: dbResult } });
+        if (req.onupgradeneeded)
+          req.onupgradeneeded({ target: { result: dbResult } });
       });
-      fireAsync(() => { req.result = dbResult; if (req.onsuccess) req.onsuccess({ target: req }); });
+      fireAsync(() => {
+        req.result = dbResult;
+        if (req.onsuccess) req.onsuccess({ target: req });
+      });
     }
     return req;
   },
-  deleteDatabase() { return fakeReq(undefined); },
+  deleteDatabase() {
+    return fakeReq(undefined);
+  },
 };
 
 // ── Load iris_template_protection module ──
@@ -147,8 +208,13 @@ const vm = require("node:vm");
 
 const irisDir = path.join(__dirname, "..", "..", "..", "Iris_Biometric");
 try {
-  const src = fs.readFileSync(path.join(irisDir, "iris_template_protection.js"), "utf8");
-  vm.runInThisContext(src, { filename: path.join(irisDir, "iris_template_protection.js") });
+  const src = fs.readFileSync(
+    path.join(irisDir, "iris_template_protection.js"),
+    "utf8",
+  );
+  vm.runInThisContext(src, {
+    filename: path.join(irisDir, "iris_template_protection.js"),
+  });
 } catch (e) {
   // Module may need extra globals; continue
 }
@@ -352,9 +418,10 @@ test("IrisTemplateProtection._createRNG: returns deterministic values", () => {
 // ═══════════════════════════════════════════════════════════════
 
 test("ITP.biohash: with matching projection (L73-L109)", () => {
-  const inputDim = 10, outputDim = 8;
+  const inputDim = 10,
+    outputDim = 8;
   const code = new Uint8Array(inputDim);
-  for (let i = 0; i < inputDim; i++) code[i] = (i * 37 + 42) & 0xFF;
+  for (let i = 0; i < inputDim; i++) code[i] = (i * 37 + 42) & 0xff;
   const proj = new Float64Array(outputDim * inputDim);
   for (let i = 0; i < proj.length; i++) proj[i] = (i * 0.1) % 1;
   const h = ITP.biohash(code, proj, outputDim);
@@ -387,40 +454,45 @@ test("ITP.generateProjectionMatrix: returns Float64Array (L38-L65)", () => {
 test("ITP.createTransformation: returns function (L142-L165)", () => {
   const key = new Uint8Array(32);
   for (let i = 0; i < 32; i++) key[i] = i;
-  const salt = new Uint8Array(16).fill(0xAA);
+  const salt = new Uint8Array(16).fill(0xaa);
   const fn = ITP.createTransformation(key, salt);
   assert.equal(typeof fn, "function");
-  const transformed = fn(new Uint8Array(64).fill(0xFF));
+  const transformed = fn(new Uint8Array(64).fill(0xff));
   assert.ok(transformed instanceof Uint8Array);
 });
 
 test("ITP.transform: with transformFn (L168-L190)", () => {
-  const code = new Uint8Array(64).fill(0xFF);
+  const code = new Uint8Array(64).fill(0xff);
   const result = ITP.transform(code, (c) => {
     const r = new Uint8Array(c.length);
-    for (let i = 0; i < c.length; i++) r[i] = c[i] ^ 0xAA;
+    for (let i = 0; i < c.length; i++) r[i] = c[i] ^ 0xaa;
     return r;
   });
   assert.ok(result);
   assert.equal(result.length, 64);
-  assert.equal(result[0], 0xFF ^ 0xAA);
+  assert.equal(result[0], 0xff ^ 0xaa);
 });
 
 test("ITP.createCancelable: different iterations → different templates (L291-L332)", async () => {
-  const code = new Uint8Array(64).fill(0xFF);
-  const key = new Uint8Array(32).fill(0xCC);
+  const code = new Uint8Array(64).fill(0xff);
+  const key = new Uint8Array(32).fill(0xcc);
   const r1 = await ITP.createCancelable(code, key, 1);
   const r2 = await ITP.createCancelable(code, key, 2);
   assert.notDeepEqual(r1.template, r2.template);
 });
 
 test("ITP.verifyCommitment: valid commitment (L334-L378)", async () => {
-  const code = new Uint8Array(64).fill(0xFF);
-  const key = new Uint8Array(32).fill(0xDD);
+  const code = new Uint8Array(64).fill(0xff);
+  const key = new Uint8Array(32).fill(0xdd);
   const result = await ITP.commit(code, key);
   assert.ok(result.commitment);
   assert.ok(result.nonce);
-  const verified = await ITP.verifyCommitment(code, key, result.nonce, result.commitment);
+  const verified = await ITP.verifyCommitment(
+    code,
+    key,
+    result.nonce,
+    result.commitment,
+  );
   assert.equal(verified, true);
 });
 
@@ -441,8 +513,9 @@ test("ITP.testUnlinkability: too few keys → error (L511-L513)", () => {
 // ── iris_template_protection.js uncovered ranges ──
 
 test("ITP.biohash: with real projection matrix (L73-L109)", () => {
-  const inputDim = 10, outputDim = 5;
-  const irisCode = new Uint8Array(inputDim).fill(0xFF);
+  const inputDim = 10,
+    outputDim = 5;
+  const irisCode = new Uint8Array(inputDim).fill(0xff);
   const projMatrix = new Float64Array(outputDim * inputDim);
   for (let i = 0; i < projMatrix.length; i++) projMatrix[i] = Math.random();
   const result = ITP.biohash(irisCode, projMatrix, outputDim);
@@ -451,8 +524,8 @@ test("ITP.biohash: with real projection matrix (L73-L109)", () => {
 });
 
 test("ITP.createCancelable: async with valid data (L291-L332)", async () => {
-  const template = new Uint8Array(128).fill(0xFF);
-  const key = new Uint8Array(32).fill(0xBB);
+  const template = new Uint8Array(128).fill(0xff);
+  const key = new Uint8Array(32).fill(0xbb);
   const result = await ITP.createCancelable(template, key, 1);
   assert.ok(result.template instanceof Uint8Array);
   assert.equal(typeof result.keyHash, "string");
@@ -460,7 +533,7 @@ test("ITP.createCancelable: async with valid data (L291-L332)", async () => {
 
 test("ITP.testUnlinkability: Uint8Array irisCode (L510-L561)", () => {
   const irisCode = new Uint8Array(128);
-  for (let i = 0; i < 128; i++) irisCode[i] = (i * 7 + 13) & 0xFF;
+  for (let i = 0; i < 128; i++) irisCode[i] = (i * 7 + 13) & 0xff;
   const result = ITP.testUnlinkability(irisCode, 5);
   assert.equal(typeof result.averageDistance, "number");
   assert.equal(typeof result.unlinkable, "boolean");
@@ -472,10 +545,20 @@ test("ITP.testUnlinkability: Uint8Array irisCode (L510-L561)", () => {
 // ═══════════════════════════════════════════════════════════════
 
 // ── iris_template_protection.js ──
-test("ITP constructor (L28-L32)", () => { const p = new ITP(); assert.ok(p); assert.equal(p._key, null); });
+test("ITP constructor (L28-L32)", () => {
+  const p = new ITP();
+  assert.ok(p);
+  assert.equal(p._key, null);
+});
 test("ITP.generateProjectionMatrix: invalid dims (L48-L50)", () => {
-  assert.throws(() => ITP.generateProjectionMatrix(0, 10), /Invalid dimensions/);
-  assert.throws(() => ITP.generateProjectionMatrix(-1, 10), /Invalid dimensions/);
+  assert.throws(
+    () => ITP.generateProjectionMatrix(0, 10),
+    /Invalid dimensions/,
+  );
+  assert.throws(
+    () => ITP.generateProjectionMatrix(-1, 10),
+    /Invalid dimensions/,
+  );
 });
 test("ITP.biohash: missing args (L77-L79)", () => {
   assert.throws(() => ITP.biohash(null, null), /required/);
@@ -490,16 +573,28 @@ test("ITP.verifyBiohash: null inputs (L121-L123)", () => {
   assert.equal(r.match, false);
 });
 test("ITP.createTransformation: missing key/salt (L153-L155)", () => {
-  assert.throws(() => ITP.createTransformation(null, "salt"), /key and salt are required/);
-  assert.throws(() => ITP.createTransformation("key", ""), /key and salt are required/);
+  assert.throws(
+    () => ITP.createTransformation(null, "salt"),
+    /key and salt are required/,
+  );
+  assert.throws(
+    () => ITP.createTransformation("key", ""),
+    /key and salt are required/,
+  );
 });
 test("ITP.transform: null input (L163-L165)", () => {
-  const t = ITP.createTransformation(new Uint8Array(32).fill(1), new Uint8Array(16).fill(2));
+  const t = ITP.createTransformation(
+    new Uint8Array(32).fill(1),
+    new Uint8Array(16).fill(2),
+  );
   const r = t(null);
   assert.equal(r, null);
 });
 test("ITP.transform: empty array (L163-L165)", () => {
-  const t = ITP.createTransformation(new Uint8Array(32).fill(1), new Uint8Array(16).fill(2));
+  const t = ITP.createTransformation(
+    new Uint8Array(32).fill(1),
+    new Uint8Array(16).fill(2),
+  );
   const r = t(new Uint8Array(0));
   assert.equal(r, null);
 });
@@ -536,8 +631,10 @@ test("ITP.verifyCommitment: hash loop (L265-L280)", async () => {
 
 // ── iris_template_protection.js: verifyCommitment correct (L295) ──
 test("ITP.verifyCommitment: correct returns true (L295)", async () => {
-  const code = new Uint8Array(64); for (let i = 0; i < 64; i++) code[i] = i;
-  const key = new Uint8Array(32); for (let i = 0; i < 32; i++) key[i] = i;
+  const code = new Uint8Array(64);
+  for (let i = 0; i < 64; i++) code[i] = i;
+  const key = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) key[i] = i;
   const { commitment, nonce } = await ITP.commit(code, key);
   const r = await ITP.verifyCommitment(code, key, nonce, commitment);
   assert.equal(r, true);
@@ -545,7 +642,8 @@ test("ITP.verifyCommitment: correct returns true (L295)", async () => {
 
 // ── iris_template_protection.js: testUnlinkability with result (L533) ──
 test("ITP.testUnlinkability: returns unlinkable result (L533)", () => {
-  const c = new Uint8Array(64); for (let i = 0; i < 64; i++) c[i] = i * 3;
+  const c = new Uint8Array(64);
+  for (let i = 0; i < 64; i++) c[i] = i * 3;
   const m = new Uint8Array(64).fill(1);
   const keys = [];
   for (let k = 0; k < 5; k++) {
@@ -560,8 +658,10 @@ test("ITP.testUnlinkability: returns unlinkable result (L533)", () => {
 
 // ── ITP.verifyCommitment: correct commitment → returns true (L295) ──
 test("ITP.verifyCommitment: correct commitment returns true (L295)", async () => {
-  const code = new Uint8Array(64); for (let i = 0; i < 64; i++) code[i] = i;
-  const key = new Uint8Array(32); for (let i = 0; i < 32; i++) key[i] = i + 10;
+  const code = new Uint8Array(64);
+  for (let i = 0; i < 64; i++) code[i] = i;
+  const key = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) key[i] = i + 10;
   const { commitment, nonce } = await ITP.commit(code, key);
   const r = await ITP.verifyCommitment(code, key, nonce, commitment);
   assert.equal(r, true);
@@ -569,8 +669,10 @@ test("ITP.verifyCommitment: correct commitment returns true (L295)", async () =>
 
 // ── ITP.verifyCommitment: wrong commitment → returns false ──
 test("ITP.verifyCommitment: wrong commitment returns false", async () => {
-  const code = new Uint8Array(64); for (let i = 0; i < 64; i++) code[i] = i;
-  const key = new Uint8Array(32); for (let i = 0; i < 32; i++) key[i] = i + 10;
+  const code = new Uint8Array(64);
+  for (let i = 0; i < 64; i++) code[i] = i;
+  const key = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) key[i] = i + 10;
   const { nonce } = await ITP.commit(code, key);
   const r = await ITP.verifyCommitment(code, key, nonce, "wrongcommitment");
   assert.equal(r, false);

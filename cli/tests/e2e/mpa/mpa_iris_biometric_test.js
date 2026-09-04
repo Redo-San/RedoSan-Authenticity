@@ -1,13 +1,21 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors, closePage } = require("../mpa_helpers");
+var {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 var path = require("path");
 var fs = require("fs");
 
 var PAGE_ID = "iris-biometric";
 var browser;
-var PNG_BUF = fs.readFileSync(path.resolve(__dirname, "../../fixtures/testimg.png"));
+var PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "../../fixtures/testimg.png"),
+);
 
 before(async function () {
   await ensureServer();
@@ -32,17 +40,39 @@ describe("MPA — Iris Biometric", function () {
   it("should have key UI elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      var hasConsent = await page.evaluate(function () { return !!document.getElementById("iris-consent-panel"); });
-      var hasConsentCheck = await page.evaluate(function () { return !!document.getElementById("iris-consent-check"); });
-      var hasConsentAccept = await page.evaluate(function () { return !!document.getElementById("iris-consent-accept"); });
-      var hasFile = await page.evaluate(function () { return !!document.getElementById("iris-image"); });
-      var hasBtn = await page.evaluate(function () { return !!document.getElementById("iris-run"); });
-      var hasLabel = await page.evaluate(function () { return !!document.getElementById("iris-label"); });
-      var hasEyeSide = await page.evaluate(function () { return !!document.getElementById("iris-eye-side"); });
-      var hasResultBox = await page.evaluate(function () { return !!document.getElementById("iris-result-box"); });
-      var hasGallery = await page.evaluate(function () { return !!document.getElementById("iris-gallery-list"); });
-      var hasSteps = await page.evaluate(function () { return !!document.getElementById("iris-steps"); });
-      var hasStatus = await page.evaluate(function () { return !!document.getElementById("iris-status"); });
+      var hasConsent = await page.evaluate(function () {
+        return !!document.getElementById("iris-consent-panel");
+      });
+      var hasConsentCheck = await page.evaluate(function () {
+        return !!document.getElementById("iris-consent-check");
+      });
+      var hasConsentAccept = await page.evaluate(function () {
+        return !!document.getElementById("iris-consent-accept");
+      });
+      var hasFile = await page.evaluate(function () {
+        return !!document.getElementById("iris-image");
+      });
+      var hasBtn = await page.evaluate(function () {
+        return !!document.getElementById("iris-run");
+      });
+      var hasLabel = await page.evaluate(function () {
+        return !!document.getElementById("iris-label");
+      });
+      var hasEyeSide = await page.evaluate(function () {
+        return !!document.getElementById("iris-eye-side");
+      });
+      var hasResultBox = await page.evaluate(function () {
+        return !!document.getElementById("iris-result-box");
+      });
+      var hasGallery = await page.evaluate(function () {
+        return !!document.getElementById("iris-gallery-list");
+      });
+      var hasSteps = await page.evaluate(function () {
+        return !!document.getElementById("iris-steps");
+      });
+      var hasStatus = await page.evaluate(function () {
+        return !!document.getElementById("iris-status");
+      });
       assert.ok(hasConsent, "Consent panel should exist");
       assert.ok(hasConsentCheck, "Consent checkbox should exist");
       assert.ok(hasConsentAccept, "Consent accept button should exist");
@@ -86,7 +116,11 @@ describe("MPA — Iris Biometric", function () {
       var stored = await page.evaluate(function () {
         return localStorage.getItem("iris_consent");
       });
-      assert.strictEqual(stored, "1", "Consent should be stored in localStorage");
+      assert.strictEqual(
+        stored,
+        "1",
+        "Consent should be stored in localStorage",
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -166,7 +200,7 @@ describe("MPA — Iris Biometric", function () {
       await page.waitForLoadState("networkidle");
 
       await page.setInputFiles("#iris-image", [
-        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }
+        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
       ]);
       await page.waitForTimeout(500);
 
@@ -183,10 +217,13 @@ describe("MPA — Iris Biometric", function () {
         document.getElementById("iris-run").click();
       });
 
-      await page.waitForFunction(function () {
-        var result = document.getElementById("iris-result-box");
-        return result && result.offsetParent !== null;
-      }, { timeout: 30000 });
+      await page.waitForFunction(
+        function () {
+          var result = document.getElementById("iris-result-box");
+          return result && result.offsetParent !== null;
+        },
+        { timeout: 30000 },
+      );
       await page.waitForTimeout(2000);
 
       var resultText = await page.evaluate(function () {
@@ -215,7 +252,7 @@ describe("MPA — Iris Biometric", function () {
       await page.waitForLoadState("networkidle");
 
       await page.setInputFiles("#iris-image", [
-        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }
+        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
       ]);
       await page.waitForTimeout(500);
       await page.fill("#iris-label", "Gallery Test");
@@ -225,17 +262,23 @@ describe("MPA — Iris Biometric", function () {
         document.getElementById("iris-run").click();
       });
 
-      await page.waitForFunction(function () {
-        var result = document.getElementById("iris-result-box");
-        return result && result.offsetParent !== null;
-      }, { timeout: 30000 });
+      await page.waitForFunction(
+        function () {
+          var result = document.getElementById("iris-result-box");
+          return result && result.offsetParent !== null;
+        },
+        { timeout: 30000 },
+      );
       await page.waitForTimeout(2000);
 
       var galleryItems = await page.evaluate(function () {
         var list = document.getElementById("iris-gallery-list");
         return list ? list.children.length : 0;
       });
-      assert.ok(galleryItems > 0, "Gallery should have at least 1 item after enrollment");
+      assert.ok(
+        galleryItems > 0,
+        "Gallery should have at least 1 item after enrollment",
+      );
     } finally {
       await closePage(ctx, page);
     }

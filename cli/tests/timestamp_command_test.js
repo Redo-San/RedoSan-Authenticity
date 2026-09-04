@@ -17,9 +17,10 @@ function loadCmd(mocks) {
     require: (mod) => {
       if (mod === "../utils" || mod === "./utils") {
         return {
-          readFileBytes:
-            mocks.readFileBytes || ((p) => Buffer.from("default")),
-          getFileInfo: mocks.getFileInfo || (() => ({ name: "f", size: 1, type: "bin", ext: ".bin" })),
+          readFileBytes: mocks.readFileBytes || ((p) => Buffer.from("default")),
+          getFileInfo:
+            mocks.getFileInfo ||
+            (() => ({ name: "f", size: 1, type: "bin", ext: ".bin" })),
           fmtSize: mocks.fmtSize || ((s) => String(s) + " B"),
         };
       }
@@ -103,7 +104,12 @@ describe("Timestamp Command — runTimestamp", () => {
         if (mod === "../utils" || mod === "./utils") {
           return {
             readFileBytes: (p) => testData,
-            getFileInfo: (p) => ({ name: "test.bin", size: testData.length, type: "bin", ext: ".bin" }),
+            getFileInfo: (p) => ({
+              name: "test.bin",
+              size: testData.length,
+              type: "bin",
+              ext: ".bin",
+            }),
             fmtSize: (s) => String(s) + " B",
           };
         }
@@ -111,7 +117,9 @@ describe("Timestamp Command — runTimestamp", () => {
         if (mod === "node:fs" || mod === "fs") {
           return Object.assign({}, fs, {
             existsSync: () => false,
-            writeFileSync: (p, buf) => { writtenData = buf; },
+            writeFileSync: (p, buf) => {
+              writtenData = buf;
+            },
             readFileSync: fs.readFileSync,
           });
         }
@@ -157,11 +165,17 @@ describe("Timestamp Command — runTimestamp", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: () => Buffer.from("data"),
-          getFileInfo: () => ({ name: "f", size: 1, type: "bin", ext: ".bin" }),
-          fmtSize: (s) => String(s) + " B",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: () => Buffer.from("data"),
+            getFileInfo: () => ({
+              name: "f",
+              size: 1,
+              type: "bin",
+              ext: ".bin",
+            }),
+            fmtSize: (s) => String(s) + " B",
+          };
         return require(mod);
       },
       __dirname: path.resolve(__dirname, "..", "commands"),
@@ -194,11 +208,14 @@ describe("Timestamp Command — runTimestamp", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: () => { throw new Error("File not found"); },
-          getFileInfo: () => ({ name: "f", size: 0 }),
-          fmtSize: (s) => String(s) + " B",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: () => {
+              throw new Error("File not found");
+            },
+            getFileInfo: () => ({ name: "f", size: 0 }),
+            fmtSize: (s) => String(s) + " B",
+          };
         return require(mod);
       },
       __dirname: path.resolve(__dirname, "..", "commands"),
@@ -206,7 +223,10 @@ describe("Timestamp Command — runTimestamp", () => {
       exports: {},
       console: mockConsole,
       process: Object.assign({}, process, {
-        exit: (code) => { exitCode = code; throw new Error(`EXIT:${code}`); },
+        exit: (code) => {
+          exitCode = code;
+          throw new Error(`EXIT:${code}`);
+        },
       }),
       Buffer: Buffer,
     });
@@ -250,11 +270,17 @@ describe("Timestamp Command — runTimestamp", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: (p) => p.endsWith(".ots") ? otsBuf : testData,
-          getFileInfo: (p) => ({ name: "test.bin", size: testData.length, type: "bin", ext: ".bin" }),
-          fmtSize: (s) => String(s) + " B",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: (p) => (p.endsWith(".ots") ? otsBuf : testData),
+            getFileInfo: (p) => ({
+              name: "test.bin",
+              size: testData.length,
+              type: "bin",
+              ext: ".bin",
+            }),
+            fmtSize: (s) => String(s) + " B",
+          };
         if (mod === "node:fs" || mod === "fs") {
           return Object.assign({}, fs, {
             existsSync: (p) => p.endsWith(".ots") || p.endsWith("test.bin"),
@@ -283,8 +309,10 @@ describe("Timestamp Command — runTimestamp", () => {
     await runTimestamp("verify", "test.bin", {});
 
     const allOutput = logs.join(" ");
-    assert.ok(allOutput.includes("Verified") || allOutput.includes("matches"),
-      "Should indicate verification success, got: " + allOutput);
+    assert.ok(
+      allOutput.includes("Verified") || allOutput.includes("matches"),
+      "Should indicate verification success, got: " + allOutput,
+    );
   });
 
   it("should fail verification on hash mismatch and exit 1", async () => {
@@ -312,11 +340,17 @@ describe("Timestamp Command — runTimestamp", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: (p) => p.endsWith(".ots") ? otsBuf : testData,
-          getFileInfo: (p) => ({ name: "test.bin", size: testData.length, type: "bin", ext: ".bin" }),
-          fmtSize: (s) => String(s) + " B",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: (p) => (p.endsWith(".ots") ? otsBuf : testData),
+            getFileInfo: (p) => ({
+              name: "test.bin",
+              size: testData.length,
+              type: "bin",
+              ext: ".bin",
+            }),
+            fmtSize: (s) => String(s) + " B",
+          };
         if (mod === "node:fs" || mod === "fs") {
           return Object.assign({}, fs, {
             existsSync: (p) => p.endsWith(".ots") || p.endsWith("test.bin"),
@@ -330,7 +364,9 @@ describe("Timestamp Command — runTimestamp", () => {
       exports: {},
       console: { log: () => {}, error: () => {} },
       process: Object.assign({}, process, {
-        exit: (code) => { exitCode = code; },
+        exit: (code) => {
+          exitCode = code;
+        },
       }),
       Buffer: Buffer,
     });
@@ -352,11 +388,12 @@ describe("Timestamp Command — runTimestamp", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: () => Buffer.from("data"),
-          getFileInfo: () => ({ name: "f", size: 1 }),
-          fmtSize: (s) => String(s) + " B",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: () => Buffer.from("data"),
+            getFileInfo: () => ({ name: "f", size: 1 }),
+            fmtSize: (s) => String(s) + " B",
+          };
         if (mod === "node:fs" || mod === "fs") {
           return Object.assign({}, fs, {
             existsSync: () => false,
@@ -369,7 +406,9 @@ describe("Timestamp Command — runTimestamp", () => {
       exports: {},
       console: { log: () => {}, error: () => {} },
       process: Object.assign({}, process, {
-        exit: (code) => { exitCode = code; },
+        exit: (code) => {
+          exitCode = code;
+        },
       }),
       Buffer: Buffer,
     });
@@ -403,11 +442,12 @@ describe("Timestamp Command — upgradeOts (https)", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: () => Buffer.from(""),
-          getFileInfo: () => ({}),
-          fmtSize: () => "",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: () => Buffer.from(""),
+            getFileInfo: () => ({}),
+            fmtSize: () => "",
+          };
         if (mod === "https" || mod === "node:https") return mockHttps;
         return require(mod);
       },
@@ -423,9 +463,7 @@ describe("Timestamp Command — upgradeOts (https)", () => {
     });
     const { upgradeOts } = sandbox.module.exports;
 
-    await assert.rejects(
-      () => upgradeOts(new Uint8Array([1, 2, 3])),
-    );
+    await assert.rejects(() => upgradeOts(new Uint8Array([1, 2, 3])));
   });
 
   it("should succeed when https responds with data", async () => {
@@ -454,11 +492,12 @@ describe("Timestamp Command — upgradeOts (https)", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: () => Buffer.from(""),
-          getFileInfo: () => ({}),
-          fmtSize: () => "",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: () => Buffer.from(""),
+            getFileInfo: () => ({}),
+            fmtSize: () => "",
+          };
         if (mod === "https" || mod === "node:https") return mockHttps;
         return require(mod);
       },
@@ -511,11 +550,12 @@ describe("Timestamp Command — upgradeOts (https)", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: () => Buffer.from(""),
-          getFileInfo: () => ({}),
-          fmtSize: () => "",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: () => Buffer.from(""),
+            getFileInfo: () => ({}),
+            fmtSize: () => "",
+          };
         if (mod === "https" || mod === "node:https") return mockHttps;
         return require(mod);
       },
@@ -536,7 +576,10 @@ describe("Timestamp Command — upgradeOts (https)", () => {
       await upgradeOts(new Uint8Array([1, 2, 3]));
       assert.fail("Expected upgradeOts to reject on HTTP error status");
     } catch (e) {
-      assert.ok(e.message.includes("500"), "Should mention HTTP 500, got: " + e.message);
+      assert.ok(
+        e.message.includes("500"),
+        "Should mention HTTP 500, got: " + e.message,
+      );
     }
   });
 
@@ -566,11 +609,12 @@ describe("Timestamp Command — upgradeOts (https)", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: () => Buffer.from(""),
-          getFileInfo: () => ({}),
-          fmtSize: () => "",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: () => Buffer.from(""),
+            getFileInfo: () => ({}),
+            fmtSize: () => "",
+          };
         if (mod === "https" || mod === "node:https") return mockHttps;
         return require(mod);
       },
@@ -623,16 +667,24 @@ describe("Timestamp Command — upgradeOts (https)", () => {
     );
     const sandbox = Object.assign({}, globalThis, {
       require: (mod) => {
-        if (mod === "../utils" || mod === "./utils") return {
-          readFileBytes: (p) => testData,
-          getFileInfo: (p) => ({ name: "success.bin", size: testData.length, type: "bin", ext: ".bin" }),
-          fmtSize: (s) => String(s) + " B",
-        };
+        if (mod === "../utils" || mod === "./utils")
+          return {
+            readFileBytes: (p) => testData,
+            getFileInfo: (p) => ({
+              name: "success.bin",
+              size: testData.length,
+              type: "bin",
+              ext: ".bin",
+            }),
+            fmtSize: (s) => String(s) + " B",
+          };
         if (mod === "https" || mod === "node:https") return mockHttps;
         if (mod === "node:fs" || mod === "fs") {
           return Object.assign({}, fs, {
             existsSync: () => false,
-            writeFileSync: (p, buf) => { writtenData = buf; },
+            writeFileSync: (p, buf) => {
+              writtenData = buf;
+            },
             readFileSync: fs.readFileSync,
           });
         }
@@ -660,6 +712,9 @@ describe("Timestamp Command — upgradeOts (https)", () => {
 
     assert.ok(writtenData, "Should have written OTS data");
     const allOutput = logs.join(" ");
-    assert.ok(allOutput.includes("Complete"), "Should indicate complete OTS, got: " + allOutput);
+    assert.ok(
+      allOutput.includes("Complete"),
+      "Should indicate complete OTS, got: " + allOutput,
+    );
   });
 });

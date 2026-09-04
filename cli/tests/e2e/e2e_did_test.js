@@ -33,7 +33,15 @@ describe("E2E — DID Identity", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "did");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -45,8 +53,12 @@ describe("E2E — DID Identity", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "did");
     await page.waitForTimeout(1000);
-    const hasAlgo = await page.evaluate(() => !!document.getElementById("did-algo-select"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("did-gen-btn"));
+    const hasAlgo = await page.evaluate(
+      () => !!document.getElementById("did-algo-select"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("did-gen-btn"),
+    );
     assert.ok(hasAlgo, "Algorithm selector exists");
     assert.ok(hasBtn, "Generate button exists");
     await ctx.close();
@@ -62,9 +74,16 @@ describe("E2E — DID Identity", () => {
     await page.waitForTimeout(1000);
 
     // Upload a fingerprint file first (generate button is disabled without it)
-    const fpJson = JSON.stringify({ file_info: { file_name: "test.png" }, hashes: { "SHA-256": "abc123" } });
+    const fpJson = JSON.stringify({
+      file_info: { file_name: "test.png" },
+      hashes: { "SHA-256": "abc123" },
+    });
     await page.setInputFiles("#did-fp-file", [
-      { name: "fp.json", mimeType: "application/json", buffer: Buffer.from(fpJson) },
+      {
+        name: "fp.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(fpJson),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -90,7 +109,10 @@ describe("E2E — DID Identity", () => {
       const el = document.getElementById("did-did-value");
       return el ? el.textContent : "";
     });
-    assert.ok(didValue.length > 0, "DID value should be non-empty. Result: " + resultHtml.substring(0, 200));
+    assert.ok(
+      didValue.length > 0,
+      "DID value should be non-empty. Result: " + resultHtml.substring(0, 200),
+    );
     assert.ok(didValue.startsWith("did:"), 'DID should start with "did:"');
 
     await ctx.close();
@@ -110,7 +132,9 @@ describe("E2E — DID Identity", () => {
       {
         name: "fp.json",
         mimeType: "application/json",
-        buffer: Buffer.from('{"file_info":{"file_name":"t.png"},"hashes":{"SHA-256":"abc"}}'),
+        buffer: Buffer.from(
+          '{"file_info":{"file_name":"t.png"},"hashes":{"SHA-256":"abc"}}',
+        ),
       },
     ]);
     await page.waitForTimeout(500);
@@ -133,7 +157,10 @@ describe("E2E — DID Identity", () => {
       const el = document.getElementById("did-did-value");
       return el ? el.textContent : "";
     });
-    assert.ok(didValue.length > 0, "DID value should be non-empty. Result: " + resultHtml.substring(0, 200));
+    assert.ok(
+      didValue.length > 0,
+      "DID value should be non-empty. Result: " + resultHtml.substring(0, 200),
+    );
     assert.ok(didValue.startsWith("did:"), 'DID should start with "did:"');
 
     await ctx.close();
@@ -152,7 +179,9 @@ describe("E2E — DID Identity", () => {
       {
         name: "fp.json",
         mimeType: "application/json",
-        buffer: Buffer.from('{"file_info":{"file_name":"t.png"},"hashes":{"SHA-256":"abc"}}'),
+        buffer: Buffer.from(
+          '{"file_info":{"file_name":"t.png"},"hashes":{"SHA-256":"abc"}}',
+        ),
       },
     ]);
     await page.waitForTimeout(500);
@@ -170,13 +199,20 @@ describe("E2E — DID Identity", () => {
       return el ? el.textContent : "";
     });
     assert.ok(didVal.length > 0, "DID value should be non-empty");
-    assert.ok(didVal.startsWith("did:key:"), "Ed25519 DID should start with did:key:. Got: " + didVal);
+    assert.ok(
+      didVal.startsWith("did:key:"),
+      "Ed25519 DID should start with did:key:. Got: " + didVal,
+    );
 
     const keyDisplay = await page.evaluate(() => {
       const el = document.getElementById("did-key-display");
       return el ? el.style.display : "";
     });
-    assert.equal(keyDisplay, "block", "Key display should be visible after generation");
+    assert.equal(
+      keyDisplay,
+      "block",
+      "Key display should be visible after generation",
+    );
 
     const resultHtml = await page.evaluate(() => {
       const el = document.getElementById("did-result");
@@ -202,7 +238,9 @@ describe("E2E — DID Identity", () => {
       {
         name: "fp.json",
         mimeType: "application/json",
-        buffer: Buffer.from('{"file_info":{"file_name":"t.png"},"hashes":{"SHA-256":"abc"}}'),
+        buffer: Buffer.from(
+          '{"file_info":{"file_name":"t.png"},"hashes":{"SHA-256":"abc"}}',
+        ),
       },
     ]);
     await page.waitForTimeout(500);
@@ -224,7 +262,10 @@ describe("E2E — DID Identity", () => {
       const el = document.getElementById("did-clear-btn");
       return el ? el.style.display !== "none" : false;
     });
-    assert.ok(clearBtnVisible, "Clear button should be visible after DID generation");
+    assert.ok(
+      clearBtnVisible,
+      "Clear button should be visible after DID generation",
+    );
 
     await ctx.close();
   });

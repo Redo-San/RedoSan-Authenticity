@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // Polyfills
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.document = {
   createElement: () => null,
   addEventListener: () => {},
@@ -23,11 +28,18 @@ globalThis.Worker = function () {
   this.terminate = function () {};
 };
 globalThis.Blob = class Blob {};
-globalThis.URL.createObjectURL = function () { return "blob:stub"; };
+globalThis.URL.createObjectURL = function () {
+  return "blob:stub";
+};
 
 // Load hashing.js
-const src = fs.readFileSync(path.join(__dirname, "../../Fingerprint/hashing.js"), "utf8");
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Fingerprint/hashing.js") });
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Fingerprint/hashing.js"),
+  "utf8",
+);
+vm.runInThisContext(src, {
+  filename: path.resolve(__dirname, "../../Fingerprint/hashing.js"),
+});
 
 describe("Hashing — SHA-3 family", () => {
   it("sha3_224 should hash empty input", async () => {
@@ -232,7 +244,10 @@ describe("Hashing — computeRemainingHashes", () => {
 
 describe("Hashing — trimFingerprintPayload", () => {
   it("should trim payload within max bytes", () => {
-    var fp = { file_info: {}, hashes: { "SHA-256": "a".repeat(64), "SHA-512": "b".repeat(128) } };
+    var fp = {
+      file_info: {},
+      hashes: { "SHA-256": "a".repeat(64), "SHA-512": "b".repeat(128) },
+    };
     var trimmed = trimFingerprintPayload(fp, 500);
     assert.ok(typeof trimmed === "object");
     assert.ok(trimmed.hashes["SHA-256"]);
@@ -248,7 +263,11 @@ describe("Hashing — trimFingerprintPayload", () => {
   it("should truncate when exceeding max bytes", () => {
     var fp = {
       file_info: {},
-      hashes: { "SHA-256": "a".repeat(64), "SHA-512": "b".repeat(128), "BLAKE3": "c".repeat(64) },
+      hashes: {
+        "SHA-256": "a".repeat(64),
+        "SHA-512": "b".repeat(128),
+        BLAKE3: "c".repeat(64),
+      },
       perceptual_hashes: { ahash: "d".repeat(16) },
     };
     var trimmed = trimFingerprintPayload(fp, 100);

@@ -7,13 +7,25 @@ const { createCanvas } = require("canvas");
 
 // Polyfills for GPL check
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 const onnxSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_embed_onnx.js"),
   "utf8",
 );
-vm.runInThisContext(onnxSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_embed_onnx.js") });
+vm.runInThisContext(onnxSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_embed_onnx.js",
+  ),
+});
 
 function makeCanvas112(rgb) {
   const canvas = createCanvas(112, 112);
@@ -68,7 +80,10 @@ describe("FaceONNXEmbedder — preprocess", () => {
   });
 
   it("throws when the canvas is missing", () => {
-    assert.throws(() => FaceONNXEmbedder.preprocess(null), /canvas is required/);
+    assert.throws(
+      () => FaceONNXEmbedder.preprocess(null),
+      /canvas is required/,
+    );
     assert.throws(() => FaceONNXEmbedder.preprocess({}), /canvas is required/);
   });
 });
@@ -113,7 +128,10 @@ describe("FaceONNXEmbedder — load", () => {
 
   it("falls back to the next execution provider", async () => {
     const rt = fakeRuntime();
-    const ok = await FaceONNXEmbedder.load({ runtime: rt, modelUrl: "fail-once" });
+    const ok = await FaceONNXEmbedder.load({
+      runtime: rt,
+      modelUrl: "fail-once",
+    });
     assert.equal(ok, true);
     assert.equal(FaceONNXEmbedder.getBackend(), "wasm");
   });
@@ -164,7 +182,10 @@ describe("FaceONNXEmbedder — load", () => {
         ok: true,
         status: 200,
         arrayBuffer: async function () {
-          return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+          return bytes.buffer.slice(
+            bytes.byteOffset,
+            bytes.byteOffset + bytes.byteLength,
+          );
         },
       };
     };
@@ -173,7 +194,9 @@ describe("FaceONNXEmbedder — load", () => {
     rt.InferenceSession.create = async function (arg) {
       seenArg = arg;
       return {
-        run: async function () { return { output: { data: new Float32Array(512).fill(0.5) } }; },
+        run: async function () {
+          return { output: { data: new Float32Array(512).fill(0.5) } };
+        },
         outputNames: ["output"],
       };
     };
@@ -185,7 +208,10 @@ describe("FaceONNXEmbedder — load", () => {
         verifyModel: true,
       });
       assert.equal(ok, true);
-      assert.ok(seenArg instanceof ArrayBuffer, "session must receive the verified ArrayBuffer");
+      assert.ok(
+        seenArg instanceof ArrayBuffer,
+        "session must receive the verified ArrayBuffer",
+      );
     } finally {
       delete globalThis.fetch;
     }
@@ -193,7 +219,10 @@ describe("FaceONNXEmbedder — load", () => {
 
   it("refuses to load on SHA-256 mismatch", async () => {
     globalThis.fetch = async function () {
-      return { ok: true, arrayBuffer: async () => new Uint8Array([7, 7, 7]).buffer };
+      return {
+        ok: true,
+        arrayBuffer: async () => new Uint8Array([7, 7, 7]).buffer,
+      };
     };
     try {
       const ok = await FaceONNXEmbedder.load({
@@ -281,7 +310,9 @@ describe("FaceONNXEmbedder — embed", () => {
   it("rejects when the embedding cannot be normalized", async () => {
     const rt = fakeRuntime();
     await FaceONNXEmbedder.load({ runtime: rt });
-    rt.sessions[0].run = async () => ({ output: { data: new Float32Array(512) } });
+    rt.sessions[0].run = async () => ({
+      output: { data: new Float32Array(512) },
+    });
     await assert.rejects(
       () => FaceONNXEmbedder.embed(makeCanvas112([1, 2, 3])),
       /normalized/,
@@ -328,15 +359,24 @@ describe("FaceONNXEmbedder — runtime discovery", () => {
 
   it("uses window.ort when present", async () => {
     globalThis.ort = fakeRuntime();
-    const ok = await FaceONNXEmbedder.load({ modelUrl: "mock.onnx", verifyModel: false });
+    const ok = await FaceONNXEmbedder.load({
+      modelUrl: "mock.onnx",
+      verifyModel: false,
+    });
     assert.equal(ok, true);
   });
 
   it("returns false when neither an option nor window provides a runtime", async () => {
     delete globalThis.document;
-    const ok = await FaceONNXEmbedder.load({ modelUrl: "mock.onnx", verifyModel: false });
+    const ok = await FaceONNXEmbedder.load({
+      modelUrl: "mock.onnx",
+      verifyModel: false,
+    });
     assert.equal(ok, false);
-    assert.match(FaceONNXEmbedder.getError(), /onnxruntime-web is not available/);
+    assert.match(
+      FaceONNXEmbedder.getError(),
+      /onnxruntime-web is not available/,
+    );
   });
 
   it("supports a zero-argument defensive call", async () => {
@@ -366,7 +406,10 @@ describe("FaceONNXEmbedder — runtime discovery", () => {
         },
       },
     };
-    const ok = await FaceONNXEmbedder.load({ modelUrl: "mock.onnx", verifyModel: false });
+    const ok = await FaceONNXEmbedder.load({
+      modelUrl: "mock.onnx",
+      verifyModel: false,
+    });
     assert.equal(ok, true);
     assert.ok(FaceONNXEmbedder.isReady());
   });
@@ -400,7 +443,10 @@ describe("FaceONNXEmbedder — loader internals", () => {
 
   it("_loadRuntime rejects without a DOM", async () => {
     delete globalThis.document;
-    await assert.rejects(FaceONNXEmbedder._loadRuntime("u.js"), /not available in this environment/);
+    await assert.rejects(
+      FaceONNXEmbedder._loadRuntime("u.js"),
+      /not available in this environment/,
+    );
   });
 
   it("_loadRuntime resolves with window.ort on script load", async () => {
@@ -412,25 +458,41 @@ describe("FaceONNXEmbedder — loader internals", () => {
 
   it("_loadRuntime rejects when window.ort is missing after the script loads", async () => {
     globalThis.document = scriptDoc((s) => s.onload());
-    await assert.rejects(FaceONNXEmbedder._loadRuntime("u.js"), /window\.ort was not found/);
+    await assert.rejects(
+      FaceONNXEmbedder._loadRuntime("u.js"),
+      /window\.ort was not found/,
+    );
   });
 
   it("_loadRuntime rejects on script error", async () => {
     globalThis.document = scriptDoc((s) => s.onerror());
-    await assert.rejects(FaceONNXEmbedder._loadRuntime("u.js"), /Failed to load onnxruntime-web/);
+    await assert.rejects(
+      FaceONNXEmbedder._loadRuntime("u.js"),
+      /Failed to load onnxruntime-web/,
+    );
   });
 
   it("_fetchModelBytes throws without fetch and on HTTP errors", async () => {
     globalThis.fetch = undefined;
-    await assert.rejects(FaceONNXEmbedder._fetchModelBytes("m.onnx"), /requires fetch/);
+    await assert.rejects(
+      FaceONNXEmbedder._fetchModelBytes("m.onnx"),
+      /requires fetch/,
+    );
     globalThis.fetch = async () => ({ ok: false, status: 503 });
-    await assert.rejects(FaceONNXEmbedder._fetchModelBytes("m.onnx"), /HTTP 503/);
+    await assert.rejects(
+      FaceONNXEmbedder._fetchModelBytes("m.onnx"),
+      /HTTP 503/,
+    );
   });
 
   it("_verifySha256 fails closed without WebCrypto", async () => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "crypto");
     try {
-      Object.defineProperty(globalThis, "crypto", { value: { subtle: null }, configurable: true, writable: true });
+      Object.defineProperty(globalThis, "crypto", {
+        value: { subtle: null },
+        configurable: true,
+        writable: true,
+      });
       await assert.rejects(
         FaceONNXEmbedder._verifySha256(new Uint8Array([1]).buffer, "aa"),
         /WebCrypto/,

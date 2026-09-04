@@ -7,7 +7,9 @@ const fs = require("fs");
 
 const PORT = 9898;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg.png"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg.png"),
+);
 
 let browser, server;
 
@@ -35,7 +37,15 @@ describe("E2E — Metadata Reader", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "metadata");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -47,8 +57,12 @@ describe("E2E — Metadata Reader", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "metadata");
     await page.waitForTimeout(1000);
-    const hasFile = await page.evaluate(() => !!document.getElementById("md-file"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("md-btn"));
+    const hasFile = await page.evaluate(
+      () => !!document.getElementById("md-file"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("md-btn"),
+    );
     assert.ok(hasFile, "File input exists");
     assert.ok(hasBtn, "Read Metadata button exists");
     await ctx.close();
@@ -65,12 +79,20 @@ describe("E2E — Metadata Reader", () => {
     await navTo(page, "metadata");
     await page.waitForTimeout(1500);
 
-    await page.setInputFiles("#md-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#md-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
 
-    await page.waitForFunction(() => !document.getElementById("md-btn").disabled, { timeout: 15000 });
+    await page.waitForFunction(
+      () => !document.getElementById("md-btn").disabled,
+      { timeout: 15000 },
+    );
     await page.evaluate(() => document.getElementById("md-btn").click());
-    await page.waitForSelector("#md-result", { state: "visible", timeout: 90000 });
+    await page.waitForSelector("#md-result", {
+      state: "visible",
+      timeout: 90000,
+    });
     assert.equal(errors.length, 0, "Page errors: " + errors.join(", "));
     await page.waitForTimeout(1000);
 
@@ -79,13 +101,19 @@ describe("E2E — Metadata Reader", () => {
       return el ? el.innerHTML : "";
     });
     assert.ok(outputHtml.includes("testimg.png"), "Should show filename");
-    assert.ok(outputHtml.includes("SHA-256"), "Should show hash: " + outputHtml.substring(0, 200));
+    assert.ok(
+      outputHtml.includes("SHA-256"),
+      "Should show hash: " + outputHtml.substring(0, 200),
+    );
 
     const dlHtml = await page.evaluate(() => {
       const dl = document.getElementById("md-download");
       return dl ? dl.innerHTML : "md-download NOT FOUND";
     });
-    assert.ok(dlHtml.includes('class="btn"') || dlHtml.includes('class="btn '), "Download JSON button should appear, got innerHTML: " + dlHtml);
+    assert.ok(
+      dlHtml.includes('class="btn"') || dlHtml.includes('class="btn '),
+      "Download JSON button should appear, got innerHTML: " + dlHtml,
+    );
     await ctx.close();
   });
 });

@@ -5,10 +5,23 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
-const src = fs.readFileSync(path.join(__dirname, "../../Document_Watermark/document_watermark_core.js"), "utf8");
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Document_Watermark/document_watermark_core.js") });
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Document_Watermark/document_watermark_core.js"),
+  "utf8",
+);
+vm.runInThisContext(src, {
+  filename: path.resolve(
+    __dirname,
+    "../../Document_Watermark/document_watermark_core.js",
+  ),
+});
 
 const PWD = "secret";
 const MSG = "hello-docwm";
@@ -72,12 +85,16 @@ describe("Document Watermark — Algorithm 1: Zero-Width Characters (ZWC)", () =
   });
 
   it("should throw for empty cover text", async () => {
-    await assert.rejects(() => DOCW_ZWC.embed("", MSG, PWD), /Cover text is required/);
+    await assert.rejects(
+      () => DOCW_ZWC.embed("", MSG, PWD),
+      /Cover text is required/,
+    );
   });
 
   it("should throw for cover text too short", async () => {
     await assert.rejects(
-      () => DOCW_ZWC.embed("A", "this-message-is-way-too-long-for-one-char", PWD),
+      () =>
+        DOCW_ZWC.embed("A", "this-message-is-way-too-long-for-one-char", PWD),
       /Cover text too short/,
     );
   });
@@ -124,7 +141,8 @@ describe("Document Watermark — Algorithm 2: Homoglyph Substitution", () => {
 describe("Document Watermark — Algorithm 3: Whitespace Replacement", () => {
   it("should embed and extract a short message", async () => {
     // Need ~36 spaces for a short message (4 bits per space)
-    const cover = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5";
+    const cover =
+      "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5";
     const wm = await DOCW_WHITESPACE.embed(cover, "hi", PWD);
     assert.ok(typeof wm === "string");
     const extracted = await DOCW_WHITESPACE.extract(wm, PWD);
@@ -132,7 +150,10 @@ describe("Document Watermark — Algorithm 3: Whitespace Replacement", () => {
   });
 
   it("should throw for text without enough spaces", async () => {
-    await assert.rejects(() => DOCW_WHITESPACE.embed("short", MSG, PWD), /Not enough spaces/);
+    await assert.rejects(
+      () => DOCW_WHITESPACE.embed("short", MSG, PWD),
+      /Not enough spaces/,
+    );
   });
 
   it("extract returns empty for text with no special spaces", async () => {
@@ -157,14 +178,18 @@ describe("Document Watermark — Dispatcher (docwEmbed / docwExtract)", () => {
   });
 
   it("should embed and extract with Whitespace (algo 3)", async () => {
-    const cover = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5";
+    const cover =
+      "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5";
     const wm = await docwEmbed(cover, "hi", 3, PWD);
     const result = await docwExtract(wm, 3, PWD);
     assert.equal(result, "hi");
   });
 
   it("should throw for unknown algorithm", async () => {
-    await assert.rejects(() => docwEmbed("text", "msg", 99, PWD), /Unknown algorithm/);
+    await assert.rejects(
+      () => docwEmbed("text", "msg", 99, PWD),
+      /Unknown algorithm/,
+    );
   });
 });
 
@@ -192,7 +217,10 @@ describe("Document Watermark — Auto Detect", () => {
   });
 
   it("should not throw on non-watermarked text", async () => {
-    const result = await docwAutoDetect("plain text without any watermark anywhere", null);
+    const result = await docwAutoDetect(
+      "plain text without any watermark anywhere",
+      null,
+    );
     assert.equal(result, null);
   });
 });

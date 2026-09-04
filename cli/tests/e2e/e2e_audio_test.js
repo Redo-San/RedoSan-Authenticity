@@ -7,8 +7,12 @@ const fs = require("fs");
 
 const PORT = 9894;
 const BASE = `http://localhost:${PORT}`;
-const WAV_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "silence.wav"));
-const LONG_WAV_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "silence_5s.wav"));
+const WAV_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "silence.wav"),
+);
+const LONG_WAV_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "silence_5s.wav"),
+);
 
 let browser, server;
 
@@ -36,7 +40,15 @@ describe("E2E — Audio Watermark", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -48,10 +60,18 @@ describe("E2E — Audio Watermark", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "audio-watermark");
     await page.waitForTimeout(1000);
-    const hasAudio = await page.evaluate(() => !!document.getElementById("awm-audio"));
-    const hasText = await page.evaluate(() => !!document.getElementById("awm-text"));
-    const hasType = await page.evaluate(() => !!document.getElementById("awm-type"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("awm-btn"));
+    const hasAudio = await page.evaluate(
+      () => !!document.getElementById("awm-audio"),
+    );
+    const hasText = await page.evaluate(
+      () => !!document.getElementById("awm-text"),
+    );
+    const hasType = await page.evaluate(
+      () => !!document.getElementById("awm-type"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("awm-btn"),
+    );
     assert.ok(hasAudio, "Audio file input exists");
     assert.ok(hasText, "Message textarea exists");
     assert.ok(hasType, "Algorithm selector exists");
@@ -77,12 +97,18 @@ describe("E2E — Audio Watermark", () => {
     await page.waitForTimeout(300);
 
     // Upload audio file
-    await page.setInputFiles("#awm-audio", [{ name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF }]);
+    await page.setInputFiles("#awm-audio", [
+      { name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     // Upload secret file (QIM uses file input, not text)
     await page.setInputFiles("#awm-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("E2E TEST") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("E2E TEST"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -93,7 +119,10 @@ describe("E2E — Audio Watermark", () => {
     await page.evaluate(() => document.getElementById("awm-btn").click());
 
     // Wait for result
-    await page.waitForSelector("#awm-result", { state: "visible", timeout: 60000 });
+    await page.waitForSelector("#awm-result", {
+      state: "visible",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1000);
 
     const outputHtml = await page.evaluate(() => {
@@ -126,9 +155,15 @@ describe("E2E — Audio Watermark", () => {
     await page.evaluate(() => switchAwmTab("extract"));
     await page.waitForTimeout(300);
 
-    const hasAudioEx = await page.evaluate(() => !!document.getElementById("awm-audio-ex"));
-    const hasTypeEx = await page.evaluate(() => !!document.getElementById("awm-type-ex"));
-    const hasBtnEx = await page.evaluate(() => !!document.getElementById("awm-btn-ex"));
+    const hasAudioEx = await page.evaluate(
+      () => !!document.getElementById("awm-audio-ex"),
+    );
+    const hasTypeEx = await page.evaluate(
+      () => !!document.getElementById("awm-type-ex"),
+    );
+    const hasBtnEx = await page.evaluate(
+      () => !!document.getElementById("awm-btn-ex"),
+    );
     assert.ok(hasAudioEx, "Extract audio input exists");
     assert.ok(hasTypeEx, "Extract algorithm selector exists");
     assert.ok(hasBtnEx, "Extract button exists");
@@ -151,17 +186,26 @@ describe("E2E — Audio Watermark", () => {
     });
     await page.waitForTimeout(300);
 
-    await page.setInputFiles("#awm-audio", [{ name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF }]);
+    await page.setInputFiles("#awm-audio", [
+      { name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     await page.setInputFiles("#awm-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("LSB ROUNDTRIP") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("LSB ROUNDTRIP"),
+      },
     ]);
     await page.waitForTimeout(500);
     await page.fill("#awm-password", "lsb-pw");
 
     await page.evaluate(() => document.getElementById("awm-btn").click());
-    await page.waitForSelector("#awm-result", { state: "visible", timeout: 60000 });
+    await page.waitForSelector("#awm-result", {
+      state: "visible",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1000);
 
     const embedHtml = await page.evaluate(() => {
@@ -174,7 +218,8 @@ describe("E2E — Audio Watermark", () => {
     );
 
     const wmInfo = await page.evaluate(async () => {
-      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const getFn =
+        typeof getResult === "function" ? getResult : window.getResult;
       const r = getFn ? getFn("awmResult") : null;
       if (!r || !r.blob) return null;
       const resp = await fetch(URL.createObjectURL(r.blob));
@@ -198,11 +243,16 @@ describe("E2E — Audio Watermark", () => {
     await page.waitForTimeout(300);
     await page.fill("#awm-password-ex", "lsb-pw");
 
-    await page.setInputFiles("#awm-audio-ex", [{ name: "watermarked.wav", mimeType: "audio/wav", buffer: wmBuf }]);
+    await page.setInputFiles("#awm-audio-ex", [
+      { name: "watermarked.wav", mimeType: "audio/wav", buffer: wmBuf },
+    ]);
     await page.waitForTimeout(500);
 
     await page.evaluate(() => document.getElementById("awm-btn-ex").click());
-    await page.waitForSelector("#awm-result", { state: "visible", timeout: 60000 });
+    await page.waitForSelector("#awm-result", {
+      state: "visible",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
 
     const extractHtml = await page.evaluate(() => {
@@ -211,7 +261,8 @@ describe("E2E — Audio Watermark", () => {
     });
     assert.ok(
       extractHtml.includes("LSB ROUNDTRIP"),
-      "LSB extract should recover secret. Got: " + extractHtml.substring(0, 300),
+      "LSB extract should recover secret. Got: " +
+        extractHtml.substring(0, 300),
     );
     await ctx.close();
   });
@@ -233,19 +284,31 @@ describe("E2E — Audio Watermark", () => {
     await page.waitForTimeout(300);
 
     // DWT needs more samples due to 1024 samples/bit in haar wavelet
-    await page.setInputFiles("#awm-audio", [{ name: "silence_5s.wav", mimeType: "audio/wav", buffer: LONG_WAV_BUF }]);
+    await page.setInputFiles("#awm-audio", [
+      { name: "silence_5s.wav", mimeType: "audio/wav", buffer: LONG_WAV_BUF },
+    ]);
     await page.waitForTimeout(500);
 
-    await page.setInputFiles("#awm-file", [{ name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("DWT") }]);
+    await page.setInputFiles("#awm-file", [
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("DWT"),
+      },
+    ]);
     await page.waitForTimeout(500);
     await page.fill("#awm-password", "dwt-pw");
 
     await page.evaluate(() => document.getElementById("awm-btn").click());
-    await page.waitForSelector("#awm-result", { state: "visible", timeout: 60000 });
+    await page.waitForSelector("#awm-result", {
+      state: "visible",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1000);
 
     const wmInfo = await page.evaluate(async () => {
-      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const getFn =
+        typeof getResult === "function" ? getResult : window.getResult;
       const r = getFn ? getFn("awmResult") : null;
       if (!r || !r.blob) return null;
       const resp = await fetch(URL.createObjectURL(r.blob));
@@ -269,18 +332,27 @@ describe("E2E — Audio Watermark", () => {
     await page.waitForTimeout(300);
     await page.fill("#awm-password-ex", "dwt-pw");
 
-    await page.setInputFiles("#awm-audio-ex", [{ name: "watermarked.wav", mimeType: "audio/wav", buffer: wmBuf }]);
+    await page.setInputFiles("#awm-audio-ex", [
+      { name: "watermarked.wav", mimeType: "audio/wav", buffer: wmBuf },
+    ]);
     await page.waitForTimeout(500);
 
     await page.evaluate(() => document.getElementById("awm-btn-ex").click());
-    await page.waitForSelector("#awm-result", { state: "visible", timeout: 60000 });
+    await page.waitForSelector("#awm-result", {
+      state: "visible",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
 
     const extractHtml = await page.evaluate(() => {
       const el = document.getElementById("awm-output");
       return el ? el.innerHTML : "";
     });
-    assert.ok(extractHtml.includes("DWT"), "DWT extract should recover secret. Got: " + extractHtml.substring(0, 300));
+    assert.ok(
+      extractHtml.includes("DWT"),
+      "DWT extract should recover secret. Got: " +
+        extractHtml.substring(0, 300),
+    );
     await ctx.close();
   });
 
@@ -302,12 +374,18 @@ describe("E2E — Audio Watermark", () => {
     await page.waitForTimeout(300);
 
     // Upload audio file
-    await page.setInputFiles("#awm-audio", [{ name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF }]);
+    await page.setInputFiles("#awm-audio", [
+      { name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     // Upload secret file
     await page.setInputFiles("#awm-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("AUDIO E2E ROUNDTRIP") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("AUDIO E2E ROUNDTRIP"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -316,7 +394,10 @@ describe("E2E — Audio Watermark", () => {
 
     // Click embed
     await page.evaluate(() => document.getElementById("awm-btn").click());
-    await page.waitForSelector("#awm-result", { state: "visible", timeout: 60000 });
+    await page.waitForSelector("#awm-result", {
+      state: "visible",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1000);
 
     // Verify embed success
@@ -331,7 +412,8 @@ describe("E2E — Audio Watermark", () => {
 
     // Fetch watermarked audio blob
     const wmInfo = await page.evaluate(async () => {
-      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const getFn =
+        typeof getResult === "function" ? getResult : window.getResult;
       const r = getFn ? getFn("awmResult") : null;
       if (!r || !r.blob) return null;
       const resp = await fetch(URL.createObjectURL(r.blob));
@@ -360,12 +442,17 @@ describe("E2E — Audio Watermark", () => {
     await page.fill("#awm-password-ex", "roundtrip-pw");
 
     // Upload watermarked audio
-    await page.setInputFiles("#awm-audio-ex", [{ name: "watermarked.wav", mimeType: "audio/wav", buffer: wmBuf }]);
+    await page.setInputFiles("#awm-audio-ex", [
+      { name: "watermarked.wav", mimeType: "audio/wav", buffer: wmBuf },
+    ]);
     await page.waitForTimeout(500);
 
     // Click extract
     await page.evaluate(() => document.getElementById("awm-btn-ex").click());
-    await page.waitForSelector("#awm-result", { state: "visible", timeout: 60000 });
+    await page.waitForSelector("#awm-result", {
+      state: "visible",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
 
     const extractHtml = await page.evaluate(() => {

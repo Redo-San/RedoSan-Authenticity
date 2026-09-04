@@ -33,14 +33,16 @@ var SHA3_ROTC = [
   61, 20, 44,
 ];
 var SHA3_RC = [
-  0x00_00_00_01, 0x00_00_00_00, 0x00_00_80_82, 0x00_00_00_00, 0x80_00_80_00, 0x80_00_00_00,
-  0x00_00_80_80, 0x80_00_00_00, 0x00_00_80_09, 0x80_00_00_00, 0x00_00_00_8a, 0x80_00_00_00,
-  0x00_00_00_88, 0x80_00_00_00, 0x00_80_80_09, 0x80_00_00_00, 0x00_00_00_0e, 0x80_00_00_00,
-  0x00_00_00_8b, 0x80_00_00_00, 0x00_80_00_0b, 0x80_00_00_00, 0x00_00_80_8b, 0x80_00_00_00,
-  0x80_00_00_0b, 0x80_00_00_00, 0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_80, 0x80_00_00_00,
-  0x80_00_00_0f, 0x80_00_00_00, 0x80_00_80_08, 0x80_00_00_00, 0x00_00_00_93, 0x80_00_00_00,
-  0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_96, 0x80_00_00_00, 0x00_80_80_03, 0x80_00_00_00,
-  0x00_80_80_83, 0x80_00_00_00, 0x00_00_02_80, 0x80_00_00_00, 0x80_00_00_a5, 0x80_00_00_00,
+  0x00_00_00_01, 0x00_00_00_00, 0x00_00_80_82, 0x00_00_00_00, 0x80_00_80_00,
+  0x80_00_00_00, 0x00_00_80_80, 0x80_00_00_00, 0x00_00_80_09, 0x80_00_00_00,
+  0x00_00_00_8a, 0x80_00_00_00, 0x00_00_00_88, 0x80_00_00_00, 0x00_80_80_09,
+  0x80_00_00_00, 0x00_00_00_0e, 0x80_00_00_00, 0x00_00_00_8b, 0x80_00_00_00,
+  0x00_80_00_0b, 0x80_00_00_00, 0x00_00_80_8b, 0x80_00_00_00, 0x80_00_00_0b,
+  0x80_00_00_00, 0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_80, 0x80_00_00_00,
+  0x80_00_00_0f, 0x80_00_00_00, 0x80_00_80_08, 0x80_00_00_00, 0x00_00_00_93,
+  0x80_00_00_00, 0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_96, 0x80_00_00_00,
+  0x00_80_80_03, 0x80_00_00_00, 0x00_80_80_83, 0x80_00_00_00, 0x00_00_02_80,
+  0x80_00_00_00, 0x80_00_00_a5, 0x80_00_00_00,
 ];
 /**
  *
@@ -361,8 +363,8 @@ async function blake2b(data) {
 }
 // ── BLAKE2s (32-bit version) ──
 var B2S_IV = [
-  0x6a_09_e6_67, 0xbb_67_ae_85, 0x3c_6e_f3_72, 0xa5_4f_f5_3a, 0x51_0e_52_7f, 0x9b_05_68_8c,
-  0x1f_83_d9_ab, 0x5b_e0_cd_19,
+  0x6a_09_e6_67, 0xbb_67_ae_85, 0x3c_6e_f3_72, 0xa5_4f_f5_3a, 0x51_0e_52_7f,
+  0x9b_05_68_8c, 0x1f_83_d9_ab, 0x5b_e0_cd_19,
 ];
 var B2S_SIGMA = [
   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
@@ -700,21 +702,23 @@ async function md5(data) {
  */
 async function sha224(data) {
   var K = new Uint32Array([
-    0x42_8a_2f_98, 0x71_37_44_91, 0xb5_c0_fb_cf, 0xe9_b5_db_a5, 0x39_56_c2_5b, 0x59_f1_11_f1,
-    0x92_3f_82_a4, 0xab_1c_5e_d5, 0xd8_07_aa_98, 0x12_83_5b_01, 0x24_31_85_be, 0x55_0c_7d_c3,
-    0x72_be_5d_74, 0x80_de_b1_fe, 0x9b_dc_06_a7, 0xc1_9b_f1_74, 0xe4_9b_69_c1, 0xef_be_47_86,
-    0x0f_c1_9d_c6, 0x24_0c_a1_cc, 0x2d_e9_2c_6f, 0x4a_74_84_aa, 0x5c_b0_a9_dc, 0x76_f9_88_da,
-    0x98_3e_51_52, 0xa8_31_c6_6d, 0xb0_03_27_c8, 0xbf_59_7f_c7, 0xc6_e0_0b_f3, 0xd5_a7_91_47,
-    0x06_ca_63_51, 0x14_29_29_67, 0x27_b7_0a_85, 0x2e_1b_21_38, 0x4d_2c_6d_fc, 0x53_38_0d_13,
-    0x65_0a_73_54, 0x76_6a_0a_bb, 0x81_c2_c9_2e, 0x92_72_2c_85, 0xa2_bf_e8_a1, 0xa8_1a_66_4b,
-    0xc2_4b_8b_70, 0xc7_6c_51_a3, 0xd1_92_e8_19, 0xd6_99_06_24, 0xf4_0e_35_85, 0x10_6a_a0_70,
-    0x19_a4_c1_16, 0x1e_37_6c_08, 0x27_48_77_4c, 0x34_b0_bc_b5, 0x39_1c_0c_b3, 0x4e_d8_aa_4a,
-    0x5b_9c_ca_4f, 0x68_2e_6f_f3, 0x74_8f_82_ee, 0x78_a5_63_6f, 0x84_c8_78_14, 0x8c_c7_02_08,
+    0x42_8a_2f_98, 0x71_37_44_91, 0xb5_c0_fb_cf, 0xe9_b5_db_a5, 0x39_56_c2_5b,
+    0x59_f1_11_f1, 0x92_3f_82_a4, 0xab_1c_5e_d5, 0xd8_07_aa_98, 0x12_83_5b_01,
+    0x24_31_85_be, 0x55_0c_7d_c3, 0x72_be_5d_74, 0x80_de_b1_fe, 0x9b_dc_06_a7,
+    0xc1_9b_f1_74, 0xe4_9b_69_c1, 0xef_be_47_86, 0x0f_c1_9d_c6, 0x24_0c_a1_cc,
+    0x2d_e9_2c_6f, 0x4a_74_84_aa, 0x5c_b0_a9_dc, 0x76_f9_88_da, 0x98_3e_51_52,
+    0xa8_31_c6_6d, 0xb0_03_27_c8, 0xbf_59_7f_c7, 0xc6_e0_0b_f3, 0xd5_a7_91_47,
+    0x06_ca_63_51, 0x14_29_29_67, 0x27_b7_0a_85, 0x2e_1b_21_38, 0x4d_2c_6d_fc,
+    0x53_38_0d_13, 0x65_0a_73_54, 0x76_6a_0a_bb, 0x81_c2_c9_2e, 0x92_72_2c_85,
+    0xa2_bf_e8_a1, 0xa8_1a_66_4b, 0xc2_4b_8b_70, 0xc7_6c_51_a3, 0xd1_92_e8_19,
+    0xd6_99_06_24, 0xf4_0e_35_85, 0x10_6a_a0_70, 0x19_a4_c1_16, 0x1e_37_6c_08,
+    0x27_48_77_4c, 0x34_b0_bc_b5, 0x39_1c_0c_b3, 0x4e_d8_aa_4a, 0x5b_9c_ca_4f,
+    0x68_2e_6f_f3, 0x74_8f_82_ee, 0x78_a5_63_6f, 0x84_c8_78_14, 0x8c_c7_02_08,
     0x90_be_ff_fa, 0xa4_50_6c_eb, 0xbe_f9_a3_f7, 0xc6_71_78_f2,
   ]);
   var H = new Uint32Array([
-    0xc1_05_9e_d8, 0x36_7c_d5_07, 0x30_70_dd_17, 0xf7_0e_59_39, 0xff_c0_0b_31, 0x68_58_15_11,
-    0x64_f9_8f_a7, 0xbe_fa_4f_a4,
+    0xc1_05_9e_d8, 0x36_7c_d5_07, 0x30_70_dd_17, 0xf7_0e_59_39, 0xff_c0_0b_31,
+    0x68_58_15_11, 0x64_f9_8f_a7, 0xbe_fa_4f_a4,
   ]);
   var len = data.length,
     bits = len * 8;
@@ -802,7 +806,7 @@ async function sha224(data) {
  */
 function add64(x, y) {
   var lo = (x[1] + y[1]) >>> 0;
-  var carry = (lo < x[1] || lo < y[1]) ? 1 : 0;
+  var carry = lo < x[1] || lo < y[1] ? 1 : 0;
   var hi = (x[0] + y[0] + carry) >>> 0;
   return [hi, lo];
 }
@@ -811,25 +815,32 @@ function add64(x, y) {
  * @param x
  * @param y
  */
-function xor64(x, y) { return [(x[0] ^ y[0]) >>> 0, (x[1] ^ y[1]) >>> 0]; }
+function xor64(x, y) {
+  return [(x[0] ^ y[0]) >>> 0, (x[1] ^ y[1]) >>> 0];
+}
 /**
  *
  * @param x
  * @param y
  */
-function and64(x, y) { return [(x[0] & y[0]) >>> 0, (x[1] & y[1]) >>> 0]; }
+function and64(x, y) {
+  return [(x[0] & y[0]) >>> 0, (x[1] & y[1]) >>> 0];
+}
 /**
  *
  * @param x
  */
-function not64(x) { return [~x[0] >>> 0, ~x[1] >>> 0]; }
+function not64(x) {
+  return [~x[0] >>> 0, ~x[1] >>> 0];
+}
 /**
  *
  * @param x
  * @param n
  */
 function rotr64(x, n) {
-  var hi = x[0], lo = x[1];
+  var hi = x[0],
+    lo = x[1];
   var nh, nl;
   if (n < 32) {
     nh = (hi >>> n) | (lo << (32 - n));
@@ -846,35 +857,96 @@ function rotr64(x, n) {
  * @param n
  */
 function shr64(x, n) {
-  var hi = x[0], lo = x[1];
+  var hi = x[0],
+    lo = x[1];
   if (n < 32) {
-    return [hi >>> n >>> 0, ((lo >>> n) | (hi << (32 - n))) >>> 0];
+    return [(hi >>> n) >>> 0, ((lo >>> n) | (hi << (32 - n))) >>> 0];
   }
   /* c8 ignore next 2 */
   return [0, (hi >>> (n - 32)) >>> 0];
 }
 
 var SHA512_K = [
-  [0x428a2f98, 0xd728ae22], [0x71374491, 0x23ef65cd], [0xb5c0fbcf, 0xec4d3b2f], [0xe9b5dba5, 0x8189dbbc],
-  [0x3956c25b, 0xf348b538], [0x59f111f1, 0xb605d019], [0x923f82a4, 0xaf194f9b], [0xab1c5ed5, 0xda6d8118],
-  [0xd807aa98, 0xa3030242], [0x12835b01, 0x45706fbe], [0x243185be, 0x4ee4b28c], [0x550c7dc3, 0xd5ffb4e2],
-  [0x72be5d74, 0xf27b896f], [0x80deb1fe, 0x3b1696b1], [0x9bdc06a7, 0x25c71235], [0xc19bf174, 0xcf692694],
-  [0xe49b69c1, 0x9ef14ad2], [0xefbe4786, 0x384f25e3], [0x0fc19dc6, 0x8b8cd5b5], [0x240ca1cc, 0x77ac9c65],
-  [0x2de92c6f, 0x592b0275], [0x4a7484aa, 0x6ea6e483], [0x5cb0a9dc, 0xbd41fbd4], [0x76f988da, 0x831153b5],
-  [0x983e5152, 0xee66dfab], [0xa831c66d, 0x2db43210], [0xb00327c8, 0x98fb213f], [0xbf597fc7, 0xbeef0ee4],
-  [0xc6e00bf3, 0x3da88fc2], [0xd5a79147, 0x930aa725], [0x06ca6351, 0xe003826f], [0x14292967, 0x0a0e6e70],
-  [0x27b70a85, 0x46d22ffc], [0x2e1b2138, 0x5c26c926], [0x4d2c6dfc, 0x5ac42aed], [0x53380d13, 0x9d95b3df],
-  [0x650a7354, 0x8baf63de], [0x766a0abb, 0x3c77b2a8], [0x81c2c92e, 0x47edaee6], [0x92722c85, 0x1482353b],
-  [0xa2bfe8a1, 0x4cf10364], [0xa81a664b, 0xbc423001], [0xc24b8b70, 0xd0f89791], [0xc76c51a3, 0x0654be30],
-  [0xd192e819, 0xd6ef5218], [0xd6990624, 0x5565a910], [0xf40e3585, 0x5771202a], [0x106aa070, 0x32bbd1b8],
-  [0x19a4c116, 0xb8d2d0c8], [0x1e376c08, 0x5141ab53], [0x2748774c, 0xdf8eeb99], [0x34b0bcb5, 0xe19b48a8],
-  [0x391c0cb3, 0xc5c95a63], [0x4ed8aa4a, 0xe3418acb], [0x5b9cca4f, 0x7763e373], [0x682e6ff3, 0xd6b2b8a3],
-  [0x748f82ee, 0x5defb2fc], [0x78a5636f, 0x43172f60], [0x84c87814, 0xa1f0ab72], [0x8cc70208, 0x1a6439ec],
-  [0x90befffa, 0x23631e28], [0xa4506ceb, 0xde82bde9], [0xbef9a3f7, 0xb2c67915], [0xc67178f2, 0xe372532b],
-  [0xca273ece, 0xea26619c], [0xd186b8c7, 0x21c0c207], [0xeada7dd6, 0xcde0eb1e], [0xf57d4f7f, 0xee6ed178],
-  [0x06f067aa, 0x72176fba], [0x0a637dc5, 0xa2c898a6], [0x113f9804, 0xbef90dae], [0x1b710b35, 0x131c471b],
-  [0x28db77f5, 0x23047d84], [0x32caab7b, 0x40c72493], [0x3c9ebe0a, 0x15c9bebc], [0x431d67c4, 0x9c100d4c],
-  [0x4cc5d4be, 0xcb3e42b6], [0x597f299c, 0xfc657e2a], [0x5fcb6fab, 0x3ad6faec], [0x6c44198c, 0x4a475817],
+  [0x428a2f98, 0xd728ae22],
+  [0x71374491, 0x23ef65cd],
+  [0xb5c0fbcf, 0xec4d3b2f],
+  [0xe9b5dba5, 0x8189dbbc],
+  [0x3956c25b, 0xf348b538],
+  [0x59f111f1, 0xb605d019],
+  [0x923f82a4, 0xaf194f9b],
+  [0xab1c5ed5, 0xda6d8118],
+  [0xd807aa98, 0xa3030242],
+  [0x12835b01, 0x45706fbe],
+  [0x243185be, 0x4ee4b28c],
+  [0x550c7dc3, 0xd5ffb4e2],
+  [0x72be5d74, 0xf27b896f],
+  [0x80deb1fe, 0x3b1696b1],
+  [0x9bdc06a7, 0x25c71235],
+  [0xc19bf174, 0xcf692694],
+  [0xe49b69c1, 0x9ef14ad2],
+  [0xefbe4786, 0x384f25e3],
+  [0x0fc19dc6, 0x8b8cd5b5],
+  [0x240ca1cc, 0x77ac9c65],
+  [0x2de92c6f, 0x592b0275],
+  [0x4a7484aa, 0x6ea6e483],
+  [0x5cb0a9dc, 0xbd41fbd4],
+  [0x76f988da, 0x831153b5],
+  [0x983e5152, 0xee66dfab],
+  [0xa831c66d, 0x2db43210],
+  [0xb00327c8, 0x98fb213f],
+  [0xbf597fc7, 0xbeef0ee4],
+  [0xc6e00bf3, 0x3da88fc2],
+  [0xd5a79147, 0x930aa725],
+  [0x06ca6351, 0xe003826f],
+  [0x14292967, 0x0a0e6e70],
+  [0x27b70a85, 0x46d22ffc],
+  [0x2e1b2138, 0x5c26c926],
+  [0x4d2c6dfc, 0x5ac42aed],
+  [0x53380d13, 0x9d95b3df],
+  [0x650a7354, 0x8baf63de],
+  [0x766a0abb, 0x3c77b2a8],
+  [0x81c2c92e, 0x47edaee6],
+  [0x92722c85, 0x1482353b],
+  [0xa2bfe8a1, 0x4cf10364],
+  [0xa81a664b, 0xbc423001],
+  [0xc24b8b70, 0xd0f89791],
+  [0xc76c51a3, 0x0654be30],
+  [0xd192e819, 0xd6ef5218],
+  [0xd6990624, 0x5565a910],
+  [0xf40e3585, 0x5771202a],
+  [0x106aa070, 0x32bbd1b8],
+  [0x19a4c116, 0xb8d2d0c8],
+  [0x1e376c08, 0x5141ab53],
+  [0x2748774c, 0xdf8eeb99],
+  [0x34b0bcb5, 0xe19b48a8],
+  [0x391c0cb3, 0xc5c95a63],
+  [0x4ed8aa4a, 0xe3418acb],
+  [0x5b9cca4f, 0x7763e373],
+  [0x682e6ff3, 0xd6b2b8a3],
+  [0x748f82ee, 0x5defb2fc],
+  [0x78a5636f, 0x43172f60],
+  [0x84c87814, 0xa1f0ab72],
+  [0x8cc70208, 0x1a6439ec],
+  [0x90befffa, 0x23631e28],
+  [0xa4506ceb, 0xde82bde9],
+  [0xbef9a3f7, 0xb2c67915],
+  [0xc67178f2, 0xe372532b],
+  [0xca273ece, 0xea26619c],
+  [0xd186b8c7, 0x21c0c207],
+  [0xeada7dd6, 0xcde0eb1e],
+  [0xf57d4f7f, 0xee6ed178],
+  [0x06f067aa, 0x72176fba],
+  [0x0a637dc5, 0xa2c898a6],
+  [0x113f9804, 0xbef90dae],
+  [0x1b710b35, 0x131c471b],
+  [0x28db77f5, 0x23047d84],
+  [0x32caab7b, 0x40c72493],
+  [0x3c9ebe0a, 0x15c9bebc],
+  [0x431d67c4, 0x9c100d4c],
+  [0x4cc5d4be, 0xcb3e42b6],
+  [0x597f299c, 0xfc657e2a],
+  [0x5fcb6fab, 0x3ad6faec],
+  [0x6c44198c, 0x4a475817],
 ];
 
 /**
@@ -887,18 +959,31 @@ function sha512Core(H, block) {
   for (var t = 0; t < 16; t++) {
     var i = t * 8;
     W[t] = [
-      (block[i] << 24) | (block[i + 1] << 16) | (block[i + 2] << 8) | block[i + 3],
-      (block[i + 4] << 24) | (block[i + 5] << 16) | (block[i + 6] << 8) | block[i + 7],
+      (block[i] << 24) |
+        (block[i + 1] << 16) |
+        (block[i + 2] << 8) |
+        block[i + 3],
+      (block[i + 4] << 24) |
+        (block[i + 5] << 16) |
+        (block[i + 6] << 8) |
+        block[i + 7],
     ];
   }
   for (var t = 16; t < 80; t++) {
-    var ws2 = W[t - 2], ws15 = W[t - 15];
+    var ws2 = W[t - 2],
+      ws15 = W[t - 15];
     var s0 = xor64(xor64(rotr64(ws15, 1), rotr64(ws15, 8)), shr64(ws15, 7));
     var s1 = xor64(xor64(rotr64(ws2, 19), rotr64(ws2, 61)), shr64(ws2, 6));
     W[t] = add64(add64(add64(W[t - 16], s0), W[t - 7]), s1);
   }
-  var a = H[0], b = H[1], c = H[2], d = H[3];
-  var e = H[4], f = H[5], g = H[6], h = H[7];
+  var a = H[0],
+    b = H[1],
+    c = H[2],
+    d = H[3];
+  var e = H[4],
+    f = H[5],
+    g = H[6],
+    h = H[7];
   for (var t = 0; t < 80; t++) {
     var S1 = xor64(xor64(rotr64(e, 14), rotr64(e, 18)), rotr64(e, 41));
     var ch = xor64(and64(e, f), and64(not64(e), g));
@@ -906,9 +991,13 @@ function sha512Core(H, block) {
     var S0 = xor64(xor64(rotr64(a, 28), rotr64(a, 34)), rotr64(a, 39));
     var maj = xor64(xor64(and64(a, b), and64(a, c)), and64(b, c));
     var t2 = add64(S0, maj);
-    h = g; g = f; f = e;
+    h = g;
+    g = f;
+    f = e;
     e = add64(d, t1);
-    d = c; c = b; b = a;
+    d = c;
+    c = b;
+    b = a;
     a = add64(t1, t2);
   }
   H[0] = add64(H[0], a);
@@ -927,10 +1016,17 @@ function sha512Core(H, block) {
  */
 async function sha512_224(data) {
   var H = [
-    [0x8c3d37c8, 0x19544da2], [0x73e19966, 0x89dcd4d6], [0x1dfab7ae, 0x32ff9c82], [0x679dd514, 0x582f9fcf],
-    [0x0f6d2b69, 0x7bd44da8], [0x77e36f73, 0x04c48942], [0x3f9d85a8, 0x6a1d36c8], [0x1112e6ad, 0x91d692a1],
+    [0x8c3d37c8, 0x19544da2],
+    [0x73e19966, 0x89dcd4d6],
+    [0x1dfab7ae, 0x32ff9c82],
+    [0x679dd514, 0x582f9fcf],
+    [0x0f6d2b69, 0x7bd44da8],
+    [0x77e36f73, 0x04c48942],
+    [0x3f9d85a8, 0x6a1d36c8],
+    [0x1112e6ad, 0x91d692a1],
   ];
-  var len = data.length, bits = len * 8;
+  var len = data.length,
+    bits = len * 8;
   var padLen = (112 - ((len + 1) % 128) + 128) % 128;
   var ml = len + 1 + padLen + 16;
   var m = new Uint8Array(ml);
@@ -948,9 +1044,16 @@ async function sha512_224(data) {
   }
   var out = new Uint8Array(28);
   for (var i = 0; i < 28; i++) {
-    out[i] = ((i & 4) === 0 ? H[(i / 8) | 0][0] : H[(i / 8) | 0][1]) >>> ((3 - (i & 3)) * 8) & 0xff;
+    out[i] =
+      (((i & 4) === 0 ? H[(i / 8) | 0][0] : H[(i / 8) | 0][1]) >>>
+        ((3 - (i & 3)) * 8)) &
+      0xff;
   }
-  return Array.from(out).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+  return Array.from(out)
+    .map(function (b) {
+      return b.toString(16).padStart(2, "0");
+    })
+    .join("");
 }
 
 /**
@@ -959,10 +1062,17 @@ async function sha512_224(data) {
  */
 async function sha512_256(data) {
   var H = [
-    [0x22312194, 0xfc2bf72c], [0x9f555fa3, 0xc84c64c2], [0x2393b86b, 0x6f53b151], [0x96387719, 0x5940eabd],
-    [0x96283ee2, 0xa88effe3], [0xbe5e1e25, 0x53863992], [0x2b0199fc, 0x2c85b8aa], [0x0eb72ddc, 0x81c52ca2],
+    [0x22312194, 0xfc2bf72c],
+    [0x9f555fa3, 0xc84c64c2],
+    [0x2393b86b, 0x6f53b151],
+    [0x96387719, 0x5940eabd],
+    [0x96283ee2, 0xa88effe3],
+    [0xbe5e1e25, 0x53863992],
+    [0x2b0199fc, 0x2c85b8aa],
+    [0x0eb72ddc, 0x81c52ca2],
   ];
-  var len = data.length, bits = len * 8;
+  var len = data.length,
+    bits = len * 8;
   var padLen = (112 - ((len + 1) % 128) + 128) % 128;
   var ml = len + 1 + padLen + 16;
   var m = new Uint8Array(ml);
@@ -980,9 +1090,16 @@ async function sha512_256(data) {
   }
   var out = new Uint8Array(32);
   for (var i = 0; i < 32; i++) {
-    out[i] = ((i & 4) === 0 ? H[(i / 8) | 0][0] : H[(i / 8) | 0][1]) >>> ((3 - (i & 3)) * 8) & 0xff;
+    out[i] =
+      (((i & 4) === 0 ? H[(i / 8) | 0][0] : H[(i / 8) | 0][1]) >>>
+        ((3 - (i & 3)) * 8)) &
+      0xff;
   }
-  return Array.from(out).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+  return Array.from(out)
+    .map(function (b) {
+      return b.toString(16).padStart(2, "0");
+    })
+    .join("");
 }
 
 // ── MD2 ──
@@ -1320,8 +1437,8 @@ async function ripemd160(data) {
 
 // ── BLAKE3 (pure JS implementation) ──
 var B3_IV = [
-  0x6a_09_e6_67, 0xbb_67_ae_85, 0x3c_6e_f3_72, 0xa5_4f_f5_3a, 0x51_0e_52_7f, 0x9b_05_68_8c,
-  0x1f_83_d9_ab, 0x5b_e0_cd_19,
+  0x6a_09_e6_67, 0xbb_67_ae_85, 0x3c_6e_f3_72, 0xa5_4f_f5_3a, 0x51_0e_52_7f,
+  0x9b_05_68_8c, 0x1f_83_d9_ab, 0x5b_e0_cd_19,
 ];
 var B3_SIGMA = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 14, 10, 4, 8, 9, 15, 13,
@@ -1634,8 +1751,7 @@ var WP_RC = [];
  */
 function wp_shiftColumnsInplace(s, t) {
   for (var c = 0; c < 8; c++)
-    for (var r = 0; r < 8; r++)
-      t[((r + c) & 7) * 8 + c] = s[r * 8 + c];
+    for (var r = 0; r < 8; r++) t[((r + c) & 7) * 8 + c] = s[r * 8 + c];
   for (var i = 0; i < 64; i++) s[i] = t[i];
 }
 /**
@@ -1803,10 +1919,15 @@ async function fingerprintFile(file, onProgress) {
 
   // Step 3: Background worker (off main thread) + main thread fallback
   if (typeof Worker !== "undefined" && typeof window !== "undefined") {
-    await startBackgroundWorker(result.hashes, buf, onProgress, function (extraHashes) {
-      var fp = getResult("fpResult");
-      if (fp) Object.assign(fp.hashes, extraHashes);
-    });
+    await startBackgroundWorker(
+      result.hashes,
+      buf,
+      onProgress,
+      function (extraHashes) {
+        var fp = getResult("fpResult");
+        if (fp) Object.assign(fp.hashes, extraHashes);
+      },
+    );
   }
   // If worker didn't populate hashes (e.g. failed silently), fall back to main thread
   if (!result.hashes["SHA-3_224"]) {

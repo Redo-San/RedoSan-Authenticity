@@ -21,7 +21,10 @@ test("IrisStandards.captureDeviceInfo: returns device info", () => {
 });
 
 test("IrisStandards.validateDeviceInfo: valid info", () => {
-  const result = IS.validateDeviceInfo({ userAgent: "test", screenWidth: 1920 });
+  const result = IS.validateDeviceInfo({
+    userAgent: "test",
+    screenWidth: 1920,
+  });
   assert.ok(result);
   assert.equal(typeof result.valid, "boolean");
 });
@@ -34,7 +37,13 @@ test("IrisStandards.createRecord: basic record", () => {
 });
 
 test("IrisStandards.validateRecord: valid record", () => {
-  const record = { imageKind: 2, width: 640, height: 480, compression: 0, pixelDepth: 8 };
+  const record = {
+    imageKind: 2,
+    width: 640,
+    height: 480,
+    compression: 0,
+    pixelDepth: 8,
+  };
   const result = IS.validateRecord(record);
   assert.ok(result);
   assert.equal(typeof result.valid, "boolean");
@@ -49,7 +58,12 @@ test("IrisStandards.createTemplate: creates template", () => {
 });
 
 test("IrisStandards.validateTemplate: valid template", () => {
-  const tpl = { code: new Uint8Array(10), mask: new Uint8Array(10), codeLength: 10, maskLength: 10 };
+  const tpl = {
+    code: new Uint8Array(10),
+    mask: new Uint8Array(10),
+    codeLength: 10,
+    maskLength: 10,
+  };
   const result = IS.validateTemplate(tpl);
   assert.ok(result);
   assert.equal(typeof result.valid, "boolean");
@@ -57,7 +71,11 @@ test("IrisStandards.validateTemplate: valid template", () => {
 
 test("IrisStandards.serialize/deserialize: round-trip", () => {
   const imgData = new ImageData(new Uint8ClampedArray(10 * 10 * 4), 10, 10);
-  const record = IS.createRecord({ image: imgData, imageKind: 2, eyeSide: "unknown" });
+  const record = IS.createRecord({
+    image: imgData,
+    imageKind: 2,
+    eyeSide: "unknown",
+  });
   const data = IS.serialize(record);
   assert.ok(data instanceof Uint8Array);
   const restored = IS.deserialize(data);
@@ -66,7 +84,11 @@ test("IrisStandards.serialize/deserialize: round-trip", () => {
 
 test("IrisStandards.createBIR: creates BIR", () => {
   const imgData = new ImageData(new Uint8ClampedArray(10 * 10 * 4), 10, 10);
-  const record = IS.createRecord({ image: imgData, imageKind: 2, eyeSide: "left" });
+  const record = IS.createRecord({
+    image: imgData,
+    imageKind: 2,
+    eyeSide: "left",
+  });
   const bir = IS.createBIR(record);
   assert.ok(bir);
   assert.ok(bir.sbh);
@@ -75,7 +97,10 @@ test("IrisStandards.createBIR: creates BIR", () => {
 
 test("IrisStandards._classifyDeviceType: returns number", () => {
   assert.equal(typeof IS._classifyDeviceType("Mozilla/5.0 (iPhone)"), "number");
-  assert.equal(typeof IS._classifyDeviceType("Mozilla/5.0 (Windows NT 10.0)"), "number");
+  assert.equal(
+    typeof IS._classifyDeviceType("Mozilla/5.0 (Windows NT 10.0)"),
+    "number",
+  );
 });
 
 test("IrisStandards._getQualityLevel: returns level object", () => {
@@ -128,26 +153,42 @@ test("IrisStandards.createBIR: throws for null record", () => {
 // IrisStandards — push from 56% to 80%+
 // ═══════════════════════════════════════════════════════════════
 function mockRecord(overrides) {
-  return Object.assign({
-    cbeff: { headerSize: 29, owner: 0, type: 9, version: 16, birType: 0, biometricType: 8,
-             qualityAlgorithmVendor: 0, qualityAlgorithmId: 0 },
-    recordVersion: { major: 1, minor: 0 },
-    imageKind: 2,
-    width: 640, height: 480,
-    pixelDepth: 8, pixelAspectRatio: 1,
-    eyeSide: "unknown",
-    irisCenterX: 320, irisCenterY: 240, irisRadius: 80,
-    qualityScore: 50,
-    qualityLevel: { label: "Medium", code: 2, min: 26, max: 50 },
-    compressionType: 0,
-    deviceInfo: { userAgent: "test", platform: "test" },
-    creationDate: new Date().toISOString(),
-    validFrom: new Date().toISOString(),
-    validTo: new Date(Date.now() + 86400000).toISOString(),
-    encryptionAlgorithm: 0, encryptionOptions: 0,
-    timestamp: new Date().toISOString(),
-    imageData: new Uint8Array(100),
-  }, overrides || {});
+  return Object.assign(
+    {
+      cbeff: {
+        headerSize: 29,
+        owner: 0,
+        type: 9,
+        version: 16,
+        birType: 0,
+        biometricType: 8,
+        qualityAlgorithmVendor: 0,
+        qualityAlgorithmId: 0,
+      },
+      recordVersion: { major: 1, minor: 0 },
+      imageKind: 2,
+      width: 640,
+      height: 480,
+      pixelDepth: 8,
+      pixelAspectRatio: 1,
+      eyeSide: "unknown",
+      irisCenterX: 320,
+      irisCenterY: 240,
+      irisRadius: 80,
+      qualityScore: 50,
+      qualityLevel: { label: "Medium", code: 2, min: 26, max: 50 },
+      compressionType: 0,
+      deviceInfo: { userAgent: "test", platform: "test" },
+      creationDate: new Date().toISOString(),
+      validFrom: new Date().toISOString(),
+      validTo: new Date(Date.now() + 86400000).toISOString(),
+      encryptionAlgorithm: 0,
+      encryptionOptions: 0,
+      timestamp: new Date().toISOString(),
+      imageData: new Uint8Array(100),
+    },
+    overrides || {},
+  );
 }
 
 test("IrisStandards.validateRecord: valid record", () => {
@@ -158,11 +199,13 @@ test("IrisStandards.validateRecord: valid record", () => {
 
 test("IrisStandards.validateRecord: kind2 wrong dims → warning", () => {
   const r = IS.validateRecord(mockRecord({ width: 320, height: 240 }));
-  assert(r.warnings.some(w => w.includes("640x480")));
+  assert(r.warnings.some((w) => w.includes("640x480")));
 });
 
 test("IrisStandards.validateRecord: kind7 → valid", () => {
-  const r = IS.validateRecord(mockRecord({ imageKind: 7, width: 200, height: 200 }));
+  const r = IS.validateRecord(
+    mockRecord({ imageKind: 7, width: 200, height: 200 }),
+  );
   assert.strictEqual(r.valid, true);
 });
 
@@ -173,7 +216,10 @@ test("IrisStandards.validateRecord: bad pixelDepth → warning", () => {
 
 test("IrisStandards.validateRecord: bad eyeSide → error", () => {
   const r = IS.validateRecord(mockRecord({ eyeSide: "bad" }));
-  assert(r.errors.some(e => e.includes("eyeSide")) || r.warnings.some(w => w.includes("eyeSide")));
+  assert(
+    r.errors.some((e) => e.includes("eyeSide")) ||
+      r.warnings.some((w) => w.includes("eyeSide")),
+  );
 });
 
 test("IrisStandards.validateRecord: missing cbeff → still valid (no check)", () => {
@@ -246,13 +292,13 @@ test("IrisStandards.validateTemplate: null → invalid", () => {
 test("IrisStandards.validateTemplate: missing code", () => {
   const r = IS.validateTemplate({ mask: new Uint8Array(10) });
   assert.strictEqual(r.valid, false);
-  assert(r.errors.some(e => e.includes("code")));
+  assert(r.errors.some((e) => e.includes("code")));
 });
 
 test("IrisStandards.validateTemplate: missing mask", () => {
   const r = IS.validateTemplate({ code: new Uint8Array(10) });
   assert.strictEqual(r.valid, false);
-  assert(r.errors.some(e => e.includes("mask")));
+  assert(r.errors.some((e) => e.includes("mask")));
 });
 
 test("IrisStandards.validateTemplate: code/mask length mismatch", () => {
@@ -261,7 +307,7 @@ test("IrisStandards.validateTemplate: code/mask length mismatch", () => {
     mask: new Uint8Array(20),
   });
   assert.strictEqual(r.valid, false);
-  assert(r.errors.some(e => e.includes("same length")));
+  assert(r.errors.some((e) => e.includes("same length")));
 });
 
 test("IrisStandards.validateTemplate: codeLength mismatch", () => {
@@ -271,7 +317,7 @@ test("IrisStandards.validateTemplate: codeLength mismatch", () => {
     codeLength: 20,
   });
   assert.strictEqual(r.valid, false);
-  assert(r.errors.some(e => e.includes("codeLength")));
+  assert(r.errors.some((e) => e.includes("codeLength")));
 });
 
 test("IrisStandards.validateTemplate: bad checksum", () => {
@@ -281,7 +327,7 @@ test("IrisStandards.validateTemplate: bad checksum", () => {
     checksum: "deadbeef",
   });
   assert.strictEqual(r.valid, false);
-  assert(r.errors.some(e => e.includes("Checksum")));
+  assert(r.errors.some((e) => e.includes("Checksum")));
 });
 
 test("IrisStandards.validateTemplate: valid template", () => {
@@ -316,7 +362,9 @@ test("IrisStandards.serialize: qualityScore = 100", () => {
 });
 
 test("IrisStandards.serialize: kind 7 record", () => {
-  const data = IS.serialize(mockRecord({ imageKind: 7, width: 200, height: 200 }));
+  const data = IS.serialize(
+    mockRecord({ imageKind: 7, width: 200, height: 200 }),
+  );
   assert(data instanceof Uint8Array);
 });
 
@@ -359,14 +407,18 @@ test("IrisStandards.deserialize: no imageData → null", () => {
 });
 
 test("IrisStandards.deserialize: with imageData", () => {
-  const data = IS.serialize(mockRecord({ imageData: new Uint8Array([1,2,3,4]) }));
+  const data = IS.serialize(
+    mockRecord({ imageData: new Uint8Array([1, 2, 3, 4]) }),
+  );
   const deser = IS.deserialize(data);
   assert.ok(deser.imageData);
   assert.strictEqual(deser.imageData.length, 4);
 });
 
 test("IrisStandards.deserialize: encryption fields", () => {
-  const data = IS.serialize(mockRecord({ encryptionAlgorithm: 1, encryptionOptions: 2 }));
+  const data = IS.serialize(
+    mockRecord({ encryptionAlgorithm: 1, encryptionOptions: 2 }),
+  );
   const deser = IS.deserialize(data);
   assert.strictEqual(deser.encryptionAlgorithm, 1);
   assert.strictEqual(deser.encryptionOptions, 2);
@@ -375,7 +427,9 @@ test("IrisStandards.deserialize: encryption fields", () => {
 test("IrisStandards.deserialize: creationDate / validFrom / validTo", () => {
   const past = new Date(Date.now() - 86400000).toISOString();
   const future = new Date(Date.now() + 86400000).toISOString();
-  const data = IS.serialize(mockRecord({ creationDate: past, validFrom: past, validTo: future }));
+  const data = IS.serialize(
+    mockRecord({ creationDate: past, validFrom: past, validTo: future }),
+  );
   const deser = IS.deserialize(data);
   assert.ok(deser.creationDate);
   assert.ok(deser.validFrom);
@@ -414,15 +468,24 @@ test("IrisStandards._classifyDeviceType: null → 0", () => {
 });
 
 test("IrisStandards._classifyDeviceType: mobile → 1", () => {
-  assert.strictEqual(IS._classifyDeviceType("Mozilla/5.0 (Linux; Android 10)"), 1);
+  assert.strictEqual(
+    IS._classifyDeviceType("Mozilla/5.0 (Linux; Android 10)"),
+    1,
+  );
 });
 
 test("IrisStandards._classifyDeviceType: tablet → 2", () => {
-  assert.strictEqual(IS._classifyDeviceType("Mozilla/5.0 (iPad; CPU OS 14)"), 2);
+  assert.strictEqual(
+    IS._classifyDeviceType("Mozilla/5.0 (iPad; CPU OS 14)"),
+    2,
+  );
 });
 
 test("IrisStandards._classifyDeviceType: desktop → 3", () => {
-  assert.strictEqual(IS._classifyDeviceType("Mozilla/5.0 (Windows NT 10.0)"), 3);
+  assert.strictEqual(
+    IS._classifyDeviceType("Mozilla/5.0 (Windows NT 10.0)"),
+    3,
+  );
 });
 
 test("IrisStandards._computeChecksum: empty data", () => {
@@ -501,7 +564,9 @@ test("IrisStandards.validateRecord: missing compressionType", () => {
 
 test("IrisStandards.deserialize: legacy 29-byte header", () => {
   const data = new Uint8Array(29);
-  data[0] = 29; data[4] = 2; data[10] = 2;
+  data[0] = 29;
+  data[4] = 2;
+  data[10] = 2;
   const deser = IS.deserialize(data);
   assert.strictEqual(deser.cbeff.headerSize, 29);
   assert.strictEqual(deser.eyeSide, "unknown");
@@ -510,7 +575,9 @@ test("IrisStandards.deserialize: legacy 29-byte header", () => {
 
 test("IrisStandards.deserialize: zero timestamps → null dates", () => {
   const data = new Uint8Array(41);
-  data[0] = 41; data[4] = 2; data[10] = 0;
+  data[0] = 41;
+  data[4] = 2;
+  data[10] = 0;
   const deser = IS.deserialize(data);
   assert.equal(deser.creationDate, null);
   assert.equal(deser.validFrom, null);
@@ -519,14 +586,20 @@ test("IrisStandards.deserialize: zero timestamps → null dates", () => {
 
 test("IrisStandards.deserialize: no deviceInfo field", () => {
   const data = new Uint8Array(41);
-  data[0] = 41; data[4] = 2; data[10] = 0; data[27] = 0;
+  data[0] = 41;
+  data[4] = 2;
+  data[10] = 0;
+  data[27] = 0;
   const deser = IS.deserialize(data);
   assert.equal(deser.deviceInfo, null);
 });
 
 test("IrisStandards.deserialize: with deviceInfo", () => {
   const data = new Uint8Array(41);
-  data[0] = 41; data[4] = 2; data[10] = 0; data[27] = 5;
+  data[0] = 41;
+  data[4] = 2;
+  data[10] = 0;
+  data[27] = 5;
   const deser = IS.deserialize(data);
   assert.ok(deser.deviceInfo);
   assert.strictEqual(deser.deviceInfo.deviceType, 5);
@@ -534,7 +607,9 @@ test("IrisStandards.deserialize: with deviceInfo", () => {
 
 test("IrisStandards.deserialize: with image data appended", () => {
   const data = new Uint8Array(41 + 10);
-  data[0] = 41; data[4] = 2; data[10] = 0;
+  data[0] = 41;
+  data[4] = 2;
+  data[10] = 0;
   for (let i = 41; i < 51; i++) data[i] = i - 41 + 10;
   const deser = IS.deserialize(data);
   assert.ok(deser.imageData);
@@ -543,7 +618,9 @@ test("IrisStandards.deserialize: with image data appended", () => {
 
 test("IrisStandards.deserialize: header size > 33 but < 41", () => {
   const data = new Uint8Array(35);
-  data[0] = 35; data[4] = 7; data[10] = 1;
+  data[0] = 35;
+  data[4] = 7;
+  data[10] = 1;
   const deser = IS.deserialize(data);
   assert.ok(deser);
 });
@@ -593,10 +670,24 @@ test("IrisStandards.createBIR: totalSize calculation", () => {
 
 test("IS._classifyDeviceType: various agents (L141-L147)", () => {
   assert.equal(IS._classifyDeviceType(null), 0);
-  assert.equal(IS._classifyDeviceType("Mozilla/5.0 (Linux; Android 13; Pixel 7)"), 1);
-  assert.equal(IS._classifyDeviceType("Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X)"), 2);
-  assert.equal(IS._classifyDeviceType("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"), 3);
-  assert.equal(IS._classifyDeviceType("Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)"), 3);
+  assert.equal(
+    IS._classifyDeviceType("Mozilla/5.0 (Linux; Android 13; Pixel 7)"),
+    1,
+  );
+  assert.equal(
+    IS._classifyDeviceType("Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X)"),
+    2,
+  );
+  assert.equal(
+    IS._classifyDeviceType("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"),
+    3,
+  );
+  assert.equal(
+    IS._classifyDeviceType(
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)",
+    ),
+    3,
+  );
 });
 
 test("IS._getQualityLevel: all tiers (L621)", () => {
@@ -614,9 +705,21 @@ test("IS._computeSHA256: returns hex string (L647)", async () => {
 
 test("IS.validateRecord: low quality + small iris (L296-L329)", () => {
   const result = IS.validateRecord({
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 50, height: 50, pixelDepth: 6,
-    qualityScore: 30, eyeSide: "unknown", irisRadius: 30,
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 50,
+    height: 50,
+    pixelDepth: 6,
+    qualityScore: 30,
+    eyeSide: "unknown",
+    irisRadius: 30,
   });
   assert.ok(result.warnings.length > 0);
   assert.ok(result.valid);
@@ -629,18 +732,41 @@ test("IS.validateRecord: bad imageKind (L281)", () => {
 
 test("IS.validateRecord: no deviceInfo (L326-L329)", () => {
   const result = IS.validateRecord({
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 100, height: 100, pixelDepth: 8,
-    qualityScore: 70, eyeSide: "left", irisRadius: 50,
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 100,
+    height: 100,
+    pixelDepth: 8,
+    qualityScore: 70,
+    eyeSide: "left",
+    irisRadius: 50,
   });
-  assert.ok(result.warnings.some(w => w.includes("deviceInfo")));
+  assert.ok(result.warnings.some((w) => w.includes("deviceInfo")));
 });
 
 test("IS.serialize: header fields (L448)", () => {
   const record = {
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 10, height: 10, pixelDepth: 8,
-    qualityScore: 70, eyeSide: "left",
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 10,
+    height: 10,
+    pixelDepth: 8,
+    qualityScore: 70,
+    eyeSide: "left",
     imageData: new Uint8Array(100).fill(0x80),
   };
   const data = IS.serialize(record);
@@ -650,9 +776,20 @@ test("IS.serialize: header fields (L448)", () => {
 
 test("IS.deserialize: extended header with timestamps (L547-L566)", () => {
   const record = {
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 10, height: 10, pixelDepth: 8,
-    qualityScore: 70, eyeSide: "right",
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 10,
+    height: 10,
+    pixelDepth: 8,
+    qualityScore: 70,
+    eyeSide: "right",
     imageData: new Uint8Array(100).fill(0x80),
     creationDate: new Date().toISOString(),
     encryptionAlgorithm: 1,
@@ -666,9 +803,20 @@ test("IS.deserialize: extended header with timestamps (L547-L566)", () => {
 
 test("IS.createBIR: returns SBH + BDB (L668-L710)", () => {
   const record = {
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 10, height: 10, pixelDepth: 8,
-    qualityScore: 70, eyeSide: "left",
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 10,
+    height: 10,
+    pixelDepth: 8,
+    qualityScore: 70,
+    eyeSide: "left",
     imageData: new Uint8Array(100).fill(0x80),
   };
   const bir = IS.createBIR(record);
@@ -681,41 +829,93 @@ test("IS.createBIR: returns SBH + BDB (L668-L710)", () => {
 
 test("IS.validateRecord: valid Kind 2 640x480 (L290-L291)", () => {
   const result = IS.validateRecord({
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 640, height: 480, pixelDepth: 8,
-    qualityScore: 80, eyeSide: "left", irisRadius: 60,
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 640,
+    height: 480,
+    pixelDepth: 8,
+    qualityScore: 80,
+    eyeSide: "left",
+    irisRadius: 60,
   });
   assert.equal(result.valid, true);
-  assert.ok(!result.warnings.some(w => w.includes("640x480")));
+  assert.ok(!result.warnings.some((w) => w.includes("640x480")));
 });
 
 test("IS.validateRecord: Kind 7 below min iris diameter (L305-L307)", () => {
   const result = IS.validateRecord({
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 7, width: 200, height: 200, pixelDepth: 8,
-    qualityScore: 80, eyeSide: "left", irisRadius: 40,
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 7,
+    width: 200,
+    height: 200,
+    pixelDepth: 8,
+    qualityScore: 80,
+    eyeSide: "left",
+    irisRadius: 40,
   });
-  assert.ok(result.warnings.some(w => w.includes("below minimum")));
+  assert.ok(result.warnings.some((w) => w.includes("below minimum")));
 });
 
 test("IS.validateRecord: invalid validity period (L318-L322)", () => {
   const result = IS.validateRecord({
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 640, height: 480, pixelDepth: 8,
-    qualityScore: 80, eyeSide: "left", irisRadius: 60,
-    validFrom: "2025-12-31", validTo: "2025-01-01",
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 640,
+    height: 480,
+    pixelDepth: 8,
+    qualityScore: 80,
+    eyeSide: "left",
+    irisRadius: 60,
+    validFrom: "2025-12-31",
+    validTo: "2025-01-01",
   });
-  assert.ok(result.errors.some(e => e.includes("validTo must be after validFrom")));
+  assert.ok(
+    result.errors.some((e) => e.includes("validTo must be after validFrom")),
+  );
 });
 
 test("IS.validateRecord: bad validity dates (L318-L319)", () => {
   const result = IS.validateRecord({
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 640, height: 480, pixelDepth: 8,
-    qualityScore: 80, eyeSide: "left", irisRadius: 60,
-    validFrom: "not-a-date", validTo: "also-not",
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 640,
+    height: 480,
+    pixelDepth: 8,
+    qualityScore: 80,
+    eyeSide: "left",
+    irisRadius: 60,
+    validFrom: "not-a-date",
+    validTo: "also-not",
   });
-  assert.ok(result.errors.some(e => e.includes("Invalid validity period")));
+  assert.ok(result.errors.some((e) => e.includes("Invalid validity period")));
 });
 
 test("IS.createRecord: with ImageData and optional params (L235-L249)", () => {
@@ -723,7 +923,9 @@ test("IS.createRecord: with ImageData and optional params (L235-L249)", () => {
   const record = IS.createRecord({
     image: imgData,
     eyeSide: "right",
-    irisCenterX: 32, irisCenterY: 32, irisRadius: 28,
+    irisCenterX: 32,
+    irisCenterY: 32,
+    irisRadius: 28,
     qualityScore: 90,
     compressionType: 1,
     imageKind: 7,
@@ -737,23 +939,38 @@ test("IS.createRecord: with ImageData and optional params (L235-L249)", () => {
 
 test("IS.validateRecord: imageKind 7 not 2 or 7 → error (L281)", () => {
   const result = IS.validateRecord({
-    imageKind: 99, width: 100, height: 100,
+    imageKind: 99,
+    width: 100,
+    height: 100,
   });
-  assert.ok(result.errors.some(e => e.includes("imageKind")));
+  assert.ok(result.errors.some((e) => e.includes("imageKind")));
 });
 
 test("IS.validateRecord: missing width/height → error (L285-L287)", () => {
   const result = IS.validateRecord({
-    imageKind: 2, width: 0, height: 0,
+    imageKind: 2,
+    width: 0,
+    height: 0,
   });
-  assert.ok(result.errors.some(e => e.includes("width or height")));
+  assert.ok(result.errors.some((e) => e.includes("width or height")));
 });
 
 test("IS.deserialize: legacy 29-byte header (L547-L560)", () => {
   const record = {
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 8, height: 8, pixelDepth: 8,
-    qualityScore: 70, eyeSide: "unknown",
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 8,
+    height: 8,
+    pixelDepth: 8,
+    qualityScore: 70,
+    eyeSide: "unknown",
     imageData: new Uint8Array(64).fill(0x80),
   };
   const data = IS.serialize(record);
@@ -765,9 +982,20 @@ test("IS.deserialize: legacy 29-byte header (L547-L560)", () => {
 
 test("IS.deserialize: eyeSide encoding (L595)", () => {
   const record = {
-    cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-    imageKind: 2, width: 8, height: 8, pixelDepth: 8,
-    qualityScore: 70, eyeSide: "right",
+    cbeff: {
+      headerSize: 33,
+      owner: 1,
+      type: 1,
+      version: 1,
+      birType: 1,
+      recordVersion: { major: 1, minor: 0 },
+    },
+    imageKind: 2,
+    width: 8,
+    height: 8,
+    pixelDepth: 8,
+    qualityScore: 70,
+    eyeSide: "right",
     imageData: new Uint8Array(64).fill(0x80),
   };
   const data = IS.serialize(record);
@@ -776,7 +1004,10 @@ test("IS.deserialize: eyeSide encoding (L595)", () => {
 });
 
 // ── iris_standards.js ──
-test("IS constructor (L26-L27)", () => { const s = new IS(); assert.ok(s); });
+test("IS constructor (L26-L27)", () => {
+  const s = new IS();
+  assert.ok(s);
+});
 test("IS.validateDeviceInfo: null (L157-L159)", () => {
   const r = IS.validateDeviceInfo(null);
   assert.equal(r.valid, false);
@@ -799,18 +1030,31 @@ test("IS.validateRecord: CBEFF birType warning (L333-L335)", () => {
   const rec = IS.createRecord({ image: imgData, eyeSide: "left" });
   rec.cbeff = { owner: "00" };
   const r = IS.validateRecord(rec);
-  assert.ok(r.warnings.some(w => w.includes("BIR type")));
+  assert.ok(r.warnings.some((w) => w.includes("BIR type")));
 });
 test("IS.createTemplate: missing args throws (L356-L358)", () => {
-  assert.throws(() => IS.createTemplate(null, null), /code and mask are required/);
+  assert.throws(
+    () => IS.createTemplate(null, null),
+    /code and mask are required/,
+  );
 });
 
 // ── iris_standards.js: serialize with full record (L474) ──
 test("IS.serialize: full record with width (L474)", () => {
   const record = {
-    cbeff: { patronHeaderVersion: 0x10, birProfile: 0x01, feature: 0x01, compliance: 0x00, cbeffVersion: 0x01 },
-    imageKind: 0x02, pixelDepth: 8, width: 64, height: 64,
-    eyeSide: "left", enrolledAt: Date.now(),
+    cbeff: {
+      patronHeaderVersion: 0x10,
+      birProfile: 0x01,
+      feature: 0x01,
+      compliance: 0x00,
+      cbeffVersion: 0x01,
+    },
+    imageKind: 0x02,
+    pixelDepth: 8,
+    width: 64,
+    height: 64,
+    eyeSide: "left",
+    enrolledAt: Date.now(),
     imageData: new Uint8Array(64 * 64).fill(128),
   };
   const r = IS.serialize(record);
@@ -831,9 +1075,20 @@ test("IS._extractImageData: valid ImageData input (L579-L590)", () => {
 // ── iris_standards.js: createBIR with low quality (L659) ──
 test("IS.createBIR: low quality → QUALITY_LEVEL.LOW (L659)", () => {
   const record = {
-    cbeff: { patronHeaderVersion: 0x10, birProfile: 0x01, feature: 0x01, compliance: 0x00, cbeffVersion: 0x01 },
-    imageKind: 0x02, pixelDepth: 8, width: 4, height: 4,
-    eyeSide: "left", enrolledAt: Date.now(), qualityScore: 10,
+    cbeff: {
+      patronHeaderVersion: 0x10,
+      birProfile: 0x01,
+      feature: 0x01,
+      compliance: 0x00,
+      cbeffVersion: 0x01,
+    },
+    imageKind: 0x02,
+    pixelDepth: 8,
+    width: 4,
+    height: 4,
+    eyeSide: "left",
+    enrolledAt: Date.now(),
+    qualityScore: 10,
     imageData: new Uint8Array(16).fill(128),
   };
   const r = IS.createBIR(record);
@@ -851,9 +1106,19 @@ test("IS.captureDeviceInfo: returns device info object (L118)", () => {
 // ── IS.serialize: header width field at offset 5-6 (L474) ──
 test("IS.serialize: width field at header offset 5-6 (L474)", () => {
   const record = {
-    cbeff: { patronHeaderVersion: 0x10, birProfile: 0x01, feature: 0x01, compliance: 0x00, cbeffVersion: 0x01 },
-    imageKind: 0x02, pixelDepth: 8, width: 256, height: 192,
-    eyeSide: "right", enrolledAt: Date.now(),
+    cbeff: {
+      patronHeaderVersion: 0x10,
+      birProfile: 0x01,
+      feature: 0x01,
+      compliance: 0x00,
+      cbeffVersion: 0x01,
+    },
+    imageKind: 0x02,
+    pixelDepth: 8,
+    width: 256,
+    height: 192,
+    eyeSide: "right",
+    enrolledAt: Date.now(),
     imageData: new Uint8Array(256 * 192).fill(100),
   };
   const r = IS.serialize(record);
@@ -864,9 +1129,20 @@ test("IS.serialize: width field at header offset 5-6 (L474)", () => {
 // ── IS._extractImageData: via deserialize round-trip (L579, L582, L590) ──
 test("IS._extractImageData: via deserialize round-trip (L579, L582, L590)", () => {
   const record = {
-    cbeff: { patronHeaderVersion: 0x10, birProfile: 0x01, feature: 0x01, compliance: 0x00, cbeffVersion: 0x01 },
-    imageKind: 0x02, pixelDepth: 8, width: 8, height: 8,
-    eyeSide: "left", enrolledAt: Date.now(), qualityScore: 75,
+    cbeff: {
+      patronHeaderVersion: 0x10,
+      birProfile: 0x01,
+      feature: 0x01,
+      compliance: 0x00,
+      cbeffVersion: 0x01,
+    },
+    imageKind: 0x02,
+    pixelDepth: 8,
+    width: 8,
+    height: 8,
+    eyeSide: "left",
+    enrolledAt: Date.now(),
+    qualityScore: 75,
     imageData: new Uint8Array(64).fill(128),
   };
   const buf = IS.serialize(record);

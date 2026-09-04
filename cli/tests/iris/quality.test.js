@@ -158,7 +158,10 @@ test("IrisQuality.marginAdequacy: null iris → 0", () => {
 });
 
 test("IrisQuality.marginAdequacy: centered iris → 100", () => {
-  assert.equal(IQ.marginAdequacy({ cx: 320, cy: 240, radius: 100 }, 640, 480), 100);
+  assert.equal(
+    IQ.marginAdequacy({ cx: 320, cy: 240, radius: 100 }, 640, 480),
+    100,
+  );
 });
 
 test("IrisQuality.marginAdequacy: clipped iris → < 100", () => {
@@ -166,7 +169,8 @@ test("IrisQuality.marginAdequacy: clipped iris → < 100", () => {
 });
 
 test("IrisQuality.assess: full assessment passes with good data", () => {
-  const normW = 64, normH = 32;
+  const normW = 64,
+    normH = 32;
   const normalizedIris = new Float64Array(normW * normH);
   for (let i = 0; i < normalizedIris.length; i++) {
     const row = Math.floor(i / normW);
@@ -176,10 +180,14 @@ test("IrisQuality.assess: full assessment passes with good data", () => {
   }
   const mask = new Uint8Array(normW * normH).fill(1);
   const result = IQ.assess({
-    normalizedIris, normW, normH, mask,
+    normalizedIris,
+    normW,
+    normH,
+    mask,
     pupil: { cx: 32, cy: 16, radius: 6 },
     iris: { cx: 32, cy: 16, radius: 20 },
-    imageWidth: 640, imageHeight: 480,
+    imageWidth: 640,
+    imageHeight: 480,
   });
   assert.ok(result);
   assert.equal(typeof result.score, "number");
@@ -189,9 +197,16 @@ test("IrisQuality.assess: full assessment passes with good data", () => {
 });
 
 test("IrisQuality.assess: fails with bad data", () => {
-  const result = IQ.assess({ mask: new Uint8Array(0), normW: 0, normH: 0,
-    normalizedIris: null, pupil: { cx: 0, cy: 0, radius: 0 },
-    iris: { cx: 0, cy: 0, radius: 0 }, imageWidth: 0, imageHeight: 0 });
+  const result = IQ.assess({
+    mask: new Uint8Array(0),
+    normW: 0,
+    normH: 0,
+    normalizedIris: null,
+    pupil: { cx: 0, cy: 0, radius: 0 },
+    iris: { cx: 0, cy: 0, radius: 0 },
+    imageWidth: 0,
+    imageHeight: 0,
+  });
   assert.ok(result);
   assert.equal(typeof result.score, "number");
   assert.ok(result.issues.length > 0);
@@ -204,9 +219,11 @@ test("IrisQuality.assess: fails with bad data", () => {
 // ── iris_quality.js uncovered ranges ──
 
 test("IQ.pupilBoundaryCircularity: mask with mixed values hits perimeter break (L80)", () => {
-  const w = 64, h = 32;
+  const w = 64,
+    h = 32;
   const mask = new Uint8Array(w * h).fill(0);
-  for (let y = 10; y < 22; y++) for (let x = 20; x < 44; x++) mask[y * w + x] = 1;
+  for (let y = 10; y < 22; y++)
+    for (let x = 20; x < 44; x++) mask[y * w + x] = 1;
   mask[15 * w + 30] = 0;
   const val = IQ.pupilBoundaryCircularity(mask, w, h);
   assert.equal(typeof val, "number");
@@ -218,7 +235,8 @@ test("IQ.pupilBoundaryCircularity: all-zero mask returns 1 (L88 branch)", () => 
 });
 
 test("IQ.irisPupilContrast: all-zero counts path (L121-122)", () => {
-  const w = 64, h = 32;
+  const w = 64,
+    h = 32;
   const data = new Float64Array(w * h).fill(128);
   const mask = new Uint8Array(w * h).fill(0);
   const val = IQ.irisPupilContrast(data, w, h);
@@ -226,7 +244,8 @@ test("IQ.irisPupilContrast: all-zero counts path (L121-122)", () => {
 });
 
 test("IQ.irisScleraContrast: all-zero counts path (L156-157)", () => {
-  const w = 64, h = 32;
+  const w = 64,
+    h = 32;
   const data = new Float64Array(w * h).fill(128);
   const mask = new Uint8Array(w * h).fill(0);
   const val = IQ.irisScleraContrast(data, w, h);
@@ -246,16 +265,23 @@ test("IQ.motionBlur: zero-variance returns 1 (L223)", () => {
 });
 
 test("IQ.assess: all params hit all branches (L346-L404)", () => {
-  const w = 64, h = 128;
+  const w = 64,
+    h = 128;
   const norm = new Float64Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) norm[y * w + x] = 128 + Math.sin(x * 0.2) * 50;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) norm[y * w + x] = 128 + Math.sin(x * 0.2) * 50;
   const mask = new Uint8Array(w * h).fill(2);
-  for (let y = 40; y < 90; y++) for (let x = 15; x < 50; x++) mask[y * w + x] = 0;
+  for (let y = 40; y < 90; y++)
+    for (let x = 15; x < 50; x++) mask[y * w + x] = 0;
   const result = IQ.assess({
-    normalizedIris: norm, normW: w, normH: h, mask,
+    normalizedIris: norm,
+    normW: w,
+    normH: h,
+    mask,
     pupil: { cx: 32, cy: 60, radius: 12 },
     iris: { cx: 32, cy: 60, radius: 50 },
-    imageWidth: 200, imageHeight: 200,
+    imageWidth: 200,
+    imageHeight: 200,
     marginAdequacy: { left: 10, right: 10, top: 10, bottom: 10 },
   });
   assert.equal(typeof result.score, "number");
@@ -263,14 +289,19 @@ test("IQ.assess: all params hit all branches (L346-L404)", () => {
 });
 
 test("IQ.assess: poor pupilIrisRatio triggers issue (L346-350)", () => {
-  const w = 64, h = 128;
+  const w = 64,
+    h = 128;
   const norm = new Float64Array(w * h).fill(128);
   const mask = new Uint8Array(w * h).fill(0);
   const result = IQ.assess({
-    normalizedIris: norm, normW: w, normH: h, mask,
+    normalizedIris: norm,
+    normW: w,
+    normH: h,
+    mask,
     pupil: { cx: 32, cy: 60, radius: 5 },
     iris: { cx: 32, cy: 60, radius: 6 },
-    imageWidth: 200, imageHeight: 200,
+    imageWidth: 200,
+    imageHeight: 200,
     marginAdequacy: { left: 10, right: 10, top: 10, bottom: 10 },
   });
   assert.ok(result.issues.length > 0 || result.score < 100);
@@ -281,44 +312,61 @@ test("IQ.assess: poor pupilIrisRatio triggers issue (L346-350)", () => {
 // ═══════════════════════════════════════════════════════════════
 
 test("IQ.assess: low quality mask with occlusion (L346-L404)", () => {
-  const w = 64, h = 128;
+  const w = 64,
+    h = 128;
   const norm = new Float64Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) norm[y * w + x] = 128 + Math.sin(x * 0.2) * 50;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) norm[y * w + x] = 128 + Math.sin(x * 0.2) * 50;
   const mask = new Uint8Array(w * h).fill(1);
-  for (let y = 0; y < h / 2; y++) for (let x = 0; x < w; x++) mask[y * w + x] = 0;
+  for (let y = 0; y < h / 2; y++)
+    for (let x = 0; x < w; x++) mask[y * w + x] = 0;
   const result = IQ.assess({
-    normalizedIris: norm, normW: w, normH: h, mask,
+    normalizedIris: norm,
+    normW: w,
+    normH: h,
+    mask,
     pupil: { cx: 32, cy: 60, radius: 12 },
     iris: { cx: 32, cy: 60, radius: 50 },
-    imageWidth: 200, imageHeight: 200,
+    imageWidth: 200,
+    imageHeight: 200,
     marginAdequacy: { left: 2, right: 2, top: 2, bottom: 2 },
   });
   assert.equal(typeof result.score, "number");
 });
 
 test("IQ.assess: no pupilIrisRatio check — zero radii", () => {
-  const w = 64, h = 128;
+  const w = 64,
+    h = 128;
   const norm = new Float64Array(w * h).fill(128);
   const mask = new Uint8Array(w * h).fill(0);
   const result = IQ.assess({
-    normalizedIris: norm, normW: w, normH: h, mask,
+    normalizedIris: norm,
+    normW: w,
+    normH: h,
+    mask,
     pupil: { cx: 32, cy: 60, radius: 0 },
     iris: { cx: 32, cy: 60, radius: 0 },
-    imageWidth: 200, imageHeight: 200,
+    imageWidth: 200,
+    imageHeight: 200,
     marginAdequacy: { left: 10, right: 10, top: 10, bottom: 10 },
   });
   assert.equal(typeof result.score, "number");
 });
 
 test("IQ.assess: poor margin triggers issue (L346-L365)", () => {
-  const w = 64, h = 128;
+  const w = 64,
+    h = 128;
   const norm = new Float64Array(w * h).fill(128);
   const mask = new Uint8Array(w * h).fill(1);
   const result = IQ.assess({
-    normalizedIris: norm, normW: w, normH: h, mask,
+    normalizedIris: norm,
+    normW: w,
+    normH: h,
+    mask,
     pupil: { cx: 32, cy: 60, radius: 12 },
     iris: { cx: 32, cy: 60, radius: 50 },
-    imageWidth: 200, imageHeight: 200,
+    imageWidth: 200,
+    imageHeight: 200,
     marginAdequacy: { left: 1, right: 1, top: 1, bottom: 1 },
   });
   assert.ok(result.issues.length > 0 || result.score < 100);
@@ -329,7 +377,10 @@ test("IQ.assess: poor margin triggers issue (L346-L365)", () => {
 // ═══════════════════════════════════════════════════════════════
 
 // ── iris_quality.js ──
-test("IQ constructor (L40)", () => { const q = new IQ(); assert.ok(q); });
+test("IQ constructor (L40)", () => {
+  const q = new IQ();
+  assert.ok(q);
+});
 test("IQ.irisPupilContrast: iCount=0 branch (L122-L123)", () => {
   // normH=2 → 0.4*2=0.8, rows 0,1 are < 0.8 so iCount=0 for row >= 0.4H
   const data = new Float64Array(4).fill(128);
@@ -342,14 +393,16 @@ test("IQ.irisScleraContrast: scCount=0 branch (L157-L158)", () => {
   assert.equal(typeof r, "number");
 });
 test("IQ.sharpness: count>0 path (L194)", () => {
-  const w = 4, h = 4;
+  const w = 4,
+    h = 4;
   const data = new Float64Array(w * h);
   for (let i = 0; i < data.length; i++) data[i] = Math.sin(i) * 128 + 128;
   const r = IQ.sharpness(data, w, h);
   assert.equal(typeof r, "number");
 });
 test("IQ.motionBlur: count>0 path (L224)", () => {
-  const w = 4, h = 4;
+  const w = 4,
+    h = 4;
   const data = new Float64Array(w * h);
   for (let i = 0; i < data.length; i++) data[i] = Math.cos(i) * 128 + 128;
   const r = IQ.motionBlur(data, w, h);
@@ -358,28 +411,34 @@ test("IQ.motionBlur: count>0 path (L224)", () => {
 test("IQ.assess: abnormal pupil-iris ratio (L348-L350)", () => {
   const r = IQ.assess({
     normalizedIris: new Float64Array(512 * 64).fill(128),
-    normW: 512, normH: 64,
+    normW: 512,
+    normH: 64,
     mask: new Uint8Array(512 * 64).fill(1),
     pupil: { radius: 5, cx: 256, cy: 32 },
     iris: { radius: 100, cx: 256, cy: 32 },
-    imageWidth: 640, imageHeight: 480,
+    imageWidth: 640,
+    imageHeight: 480,
   });
   assert.ok(r);
   assert.ok(typeof r.score === "number");
 });
 test("IQ.assess: irregular pupil boundary circularity (L387-L389)", () => {
   // mask with a non-circular pupil region (rectangular) → low circularity
-  const w = 512, h = 64;
+  const w = 512,
+    h = 64;
   const mask = new Uint8Array(w * h).fill(1);
   // carve a square hole (non-circular pupil region)
-  for (let y = 28; y < 36; y++) for (let x = 250; x < 262; x++) mask[y * w + x] = 0;
+  for (let y = 28; y < 36; y++)
+    for (let x = 250; x < 262; x++) mask[y * w + x] = 0;
   const r = IQ.assess({
     normalizedIris: new Float64Array(w * h).fill(128),
-    normW: w, normH: h,
+    normW: w,
+    normH: h,
     mask: mask,
     pupil: { radius: 6, cx: 256, cy: 32 },
     iris: { radius: 100, cx: 256, cy: 32 },
-    imageWidth: 640, imageHeight: 480,
+    imageWidth: 640,
+    imageHeight: 480,
   });
   assert.ok(r);
 });
@@ -427,13 +486,19 @@ test("IQ.sharpness: 3x3 image → count=0 returns 0 (L207)", () => {
 
 // ── iris_quality.js: assess with passing pupilIrisRatio (L370, L409, L428) ──
 test("IQ.assess: all gates pass → high score (L370, L409, L428)", () => {
-  const w = 100, h = 100;
+  const w = 100,
+    h = 100;
   const mask = new Uint8Array(w * h).fill(1);
   const normalizedIris = new Float64Array(w * h);
-  for (let i = 0; i < normalizedIris.length; i++) normalizedIris[i] = 128 + Math.sin(i * 0.05) * 30;
+  for (let i = 0; i < normalizedIris.length; i++)
+    normalizedIris[i] = 128 + Math.sin(i * 0.05) * 30;
   const r = IQ.assess({
-    mask, normalizedIris, normW: w, normH: h,
-    pupil: { radius: 15 }, iris: { radius: 50 },
+    mask,
+    normalizedIris,
+    normW: w,
+    normH: h,
+    pupil: { radius: 15 },
+    iris: { radius: 50 },
   });
   assert.equal(typeof r.score, "number");
   assert.equal(typeof r.passed, "boolean");
@@ -442,7 +507,8 @@ test("IQ.assess: all gates pass → high score (L370, L409, L428)", () => {
 
 // ── iris_quality.js: irisPupilContrast with pCount=0 (L131-132) ──
 test("IQ.irisPupilContrast: all pixels outside pupil → pCount=0 fallback (L131-132)", () => {
-  const w = 10, h = 1;
+  const w = 10,
+    h = 1;
   const data = new Float64Array(w * h).fill(200);
   // normH=1 → normH*0.2=0.2 → pRow(0)=0 < 0.2 → pixel IS in pupil → pCount > 0
   // Use normH=0 → loop runs 0 times → pCount=0, iCount=0
@@ -460,18 +526,24 @@ test("IQ.sharpness: 2x2 image → no gradients → count=0 returns 0 (L207)", ()
 
 // ── iris_quality.js: assess triggers all branches including passedTests++ (L409, L428) ──
 test("IQ.assess: with good gradient data → passedTests increments (L409, L428)", () => {
-  const w = 100, h = 100;
+  const w = 100,
+    h = 100;
   const mask = new Uint8Array(w * h).fill(1);
   const normalizedIris = new Float64Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const d = Math.hypot(x - 50, y - 50);
-    if (d < 15) normalizedIris[y * w + x] = 30;
-    else if (d < 50) normalizedIris[y * w + x] = 100 + Math.sin(x * 0.3) * 30;
-    else normalizedIris[y * w + x] = 180;
-  }
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const d = Math.hypot(x - 50, y - 50);
+      if (d < 15) normalizedIris[y * w + x] = 30;
+      else if (d < 50) normalizedIris[y * w + x] = 100 + Math.sin(x * 0.3) * 30;
+      else normalizedIris[y * w + x] = 180;
+    }
   const r = IQ.assess({
-    mask, normalizedIris, normW: w, normH: h,
-    pupil: { radius: 15 }, iris: { radius: 50 },
+    mask,
+    normalizedIris,
+    normW: w,
+    normH: h,
+    pupil: { radius: 15 },
+    iris: { radius: 50 },
   });
   assert.equal(typeof r.score, "number");
   assert.ok(r.score > 0);

@@ -34,11 +34,17 @@ describe("FaceCrypto — base64/hex helpers", () => {
   it("should round-trip bytes through base64", () => {
     const bytes = new Uint8Array([0, 1, 2, 250, 255]);
     const b64 = FaceCrypto.bytesToBase64(bytes);
-    assert.deepEqual(Array.from(FaceCrypto.base64ToBytes(b64)), [0, 1, 2, 250, 255]);
+    assert.deepEqual(
+      Array.from(FaceCrypto.base64ToBytes(b64)),
+      [0, 1, 2, 250, 255],
+    );
   });
 
   it("should encode bytes to hex (known vector)", () => {
-    assert.equal(FaceCrypto.bytesToHex(new Uint8Array([0xde, 0xad, 0xbe, 0xef])), "deadbeef");
+    assert.equal(
+      FaceCrypto.bytesToHex(new Uint8Array([0xde, 0xad, 0xbe, 0xef])),
+      "deadbeef",
+    );
   });
 
   it("should generate distinct random salts", () => {
@@ -51,7 +57,11 @@ describe("FaceCrypto — base64/hex helpers", () => {
 
 describe("FaceCrypto — encryptJSON/decryptJSON round-trip", () => {
   it("should encrypt and decrypt a nested object", async () => {
-    const obj = { label: "Artist", descriptor: [0.5, -0.25, 1e-7], nested: { a: [1, 2] } };
+    const obj = {
+      label: "Artist",
+      descriptor: [0.5, -0.25, 1e-7],
+      nested: { a: [1, 2] },
+    };
     const env = await FaceCrypto.encryptJSON(PASS, obj, ITERS);
     assert.equal(env.alg, "AES-GCM");
     assert.equal(env.version, 1);
@@ -78,8 +88,14 @@ describe("FaceCrypto — encryptJSON/decryptJSON round-trip", () => {
   });
 
   it("should reject malformed envelopes", async () => {
-    await assert.rejects(FaceCrypto.decryptJSON(PASS, null), /Invalid encrypted record/);
-    await assert.rejects(FaceCrypto.decryptJSON(PASS, { salt: "x" }), /Invalid encrypted record/);
+    await assert.rejects(
+      FaceCrypto.decryptJSON(PASS, null),
+      /Invalid encrypted record/,
+    );
+    await assert.rejects(
+      FaceCrypto.decryptJSON(PASS, { salt: "x" }),
+      /Invalid encrypted record/,
+    );
   });
 
   it("should produce different ciphers for the same payload (fresh IV/salt)", async () => {
@@ -102,8 +118,16 @@ describe("FaceCrypto — deriveKey + encryptWithKey/decryptWithKey", () => {
   });
 
   it("should derive distinct keys from distinct salts", async () => {
-    const k1 = await FaceCrypto.deriveKey(PASS, FaceCrypto.generateSalt(16), ITERS);
-    const k2 = await FaceCrypto.deriveKey(PASS, FaceCrypto.generateSalt(16), ITERS);
+    const k1 = await FaceCrypto.deriveKey(
+      PASS,
+      FaceCrypto.generateSalt(16),
+      ITERS,
+    );
+    const k2 = await FaceCrypto.deriveKey(
+      PASS,
+      FaceCrypto.generateSalt(16),
+      ITERS,
+    );
     const iv = FaceCrypto.generateSalt(12);
     const e1 = await FaceCrypto.encryptWithKey(k1, iv, { v: 1 });
     const e2 = await FaceCrypto.encryptWithKey(k2, iv, { v: 1 });
@@ -114,14 +138,19 @@ describe("FaceCrypto — deriveKey + encryptWithKey/decryptWithKey", () => {
 describe("FaceCrypto — sha256Hex", () => {
   it("should match the SHA-256 test vector for 'abc'", async () => {
     const h = await FaceCrypto.sha256Hex("abc");
-    assert.equal(h, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    assert.equal(
+      h,
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    );
   });
 
   it("should hash a Float32Array descriptor (bytes of its elements)", async () => {
     const desc = new Float32Array([0.1, 0.2, -0.3, 1.5]);
     const h = await FaceCrypto.sha256Hex(desc);
     assert.match(h, /^[0-9a-f]{64}$/);
-    const again = await FaceCrypto.sha256Hex(new Float32Array([0.1, 0.2, -0.3, 1.5]));
+    const again = await FaceCrypto.sha256Hex(
+      new Float32Array([0.1, 0.2, -0.3, 1.5]),
+    );
     assert.equal(h, again);
   });
 
@@ -135,7 +164,10 @@ describe("FaceCrypto — sha256Hex", () => {
 describe("FaceCrypto — fallback paths", () => {
   const realCrypto = globalThis.crypto;
   const setCrypto = (v) =>
-    Object.defineProperty(globalThis, "crypto", { value: v, configurable: true });
+    Object.defineProperty(globalThis, "crypto", {
+      value: v,
+      configurable: true,
+    });
 
   it("bytesToBase64 falls back to Buffer when btoa is unavailable", () => {
     const orig = globalThis.btoa;
@@ -155,7 +187,10 @@ describe("FaceCrypto — fallback paths", () => {
     const b64 = FaceCrypto.bytesToBase64(bytes);
     globalThis.atob = undefined;
     try {
-      assert.deepEqual(Array.from(FaceCrypto.base64ToBytes(b64)), Array.from(bytes));
+      assert.deepEqual(
+        Array.from(FaceCrypto.base64ToBytes(b64)),
+        Array.from(bytes),
+      );
     } finally {
       globalThis.atob = orig;
     }

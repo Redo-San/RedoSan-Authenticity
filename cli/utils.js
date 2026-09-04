@@ -172,7 +172,8 @@ function readPdfText(filePath) {
 
   // Find page content streams
   const pages = [];
-  const pageRe = /(\d+)\s+(\d+)\s+obj[\s\S]*?\/Type\s*\/Page[\s\S]*?\/Contents\s+(\d+)\s+(\d+)\s+R/g;
+  const pageRe =
+    /(\d+)\s+(\d+)\s+obj[\s\S]*?\/Type\s*\/Page[\s\S]*?\/Contents\s+(\d+)\s+(\d+)\s+R/g;
   while (true) {
     const pm = pageRe.exec(src);
     if (pm === null) break;
@@ -202,7 +203,9 @@ function readPdfText(filePath) {
     if (asianCount > 5 && asianCount / Math.floor(testLen / 2) > 0.4) {
       out2 = "";
       for (di2 = 0; di2 + 1 < s.length; di2 += 2) {
-        out2 += String.fromCharCode((s.charCodeAt(di2) << 8) | s.charCodeAt(di2 + 1));
+        out2 += String.fromCharCode(
+          (s.charCodeAt(di2) << 8) | s.charCodeAt(di2 + 1),
+        );
       }
       return out2;
     }
@@ -226,7 +229,9 @@ function readPdfText(filePath) {
         data = zlib.inflateSync(Buffer.from(raw, "binary")).toString("latin1");
       } catch {
         try {
-          data = zlib.inflateRawSync(Buffer.from(raw, "binary")).toString("latin1");
+          data = zlib
+            .inflateRawSync(Buffer.from(raw, "binary"))
+            .toString("latin1");
         } catch {
           continue;
         }
@@ -251,7 +256,9 @@ function readPdfText(filePath) {
       const parts = t[1].match(/\(([^)]*)\)/g);
       if (parts)
         parts.forEach((p2) => {
-          text += `${decodePdfString(p2.slice(1, -1).replace(/\\(.)/g, "$1"))} `;
+          text += `${decodePdfString(
+            p2.slice(1, -1).replace(/\\(.)/g, "$1"),
+          )} `;
         });
     }
 
@@ -280,7 +287,9 @@ function readPdfText(filePath) {
       if (hexParts)
         hexParts.forEach((h) => {
           const code = parseInt(h.slice(1, -1), 16);
-          text += cmap[code] ? String.fromCodePoint(cmap[code]) : String.fromCodePoint(0xff_fd);
+          text += cmap[code]
+            ? String.fromCodePoint(cmap[code])
+            : String.fromCodePoint(0xff_fd);
         });
     }
   }
@@ -397,7 +406,10 @@ function outputResult(text, opts) {
     console.log(text);
   }
   if (opts.output) {
-    fs.writeFileSync(path.resolve(opts.output), typeof text === "string" ? text : JSON.stringify(text, null, 2));
+    fs.writeFileSync(
+      path.resolve(opts.output),
+      typeof text === "string" ? text : JSON.stringify(text, null, 2),
+    );
     console.log(`\nResults saved to: ${opts.output}`);
   }
 }
@@ -469,8 +481,20 @@ const MAGIC_BYTES = {
     [0x47, 0x49, 0x46, 0x38, 0x37, 0x61],
   ],
   "image/webp": (buf) => {
-    if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
-    if (buf[8] !== 0x57 || buf[9] !== 0x45 || buf[10] !== 0x42 || buf[11] !== 0x50) return false;
+    if (
+      buf[0] !== 0x52 ||
+      buf[1] !== 0x49 ||
+      buf[2] !== 0x46 ||
+      buf[3] !== 0x46
+    )
+      return false;
+    if (
+      buf[8] !== 0x57 ||
+      buf[9] !== 0x45 ||
+      buf[10] !== 0x42 ||
+      buf[11] !== 0x50
+    )
+      return false;
     return true;
   },
   "image/bmp": [[0x42, 0x4d]],
@@ -480,7 +504,8 @@ const MAGIC_BYTES = {
   ],
   "image/svg+xml": (buf) => {
     var s = "";
-    for (let i = 0; i < Math.min(50, buf.length); i++) s += String.fromCharCode(buf[i]);
+    for (let i = 0; i < Math.min(50, buf.length); i++)
+      s += String.fromCharCode(buf[i]);
     s = s.toLowerCase();
     return s.includes("<svg") || s.includes("<?xml");
   },
@@ -492,20 +517,50 @@ const MAGIC_BYTES = {
     [0xff, 0xf2],
   ],
   "audio/wav": (buf) => {
-    if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
-    if (buf[8] !== 0x57 || buf[9] !== 0x41 || buf[10] !== 0x56 || buf[11] !== 0x45) return false;
+    if (
+      buf[0] !== 0x52 ||
+      buf[1] !== 0x49 ||
+      buf[2] !== 0x46 ||
+      buf[3] !== 0x46
+    )
+      return false;
+    if (
+      buf[8] !== 0x57 ||
+      buf[9] !== 0x41 ||
+      buf[10] !== 0x56 ||
+      buf[11] !== 0x45
+    )
+      return false;
     return true;
   },
   "audio/flac": [[0x66, 0x4c, 0x61, 0x43]],
   "audio/ogg": [[0x4f, 0x67, 0x67, 0x53]],
   "video/mp4": (buf) => {
-    if (buf[4] !== 0x66 || buf[5] !== 0x74 || buf[6] !== 0x79 || buf[7] !== 0x70) return false;
+    if (
+      buf[4] !== 0x66 ||
+      buf[5] !== 0x74 ||
+      buf[6] !== 0x79 ||
+      buf[7] !== 0x70
+    )
+      return false;
     return true;
   },
   "video/webm": [[0x1a, 0x45, 0xdf, 0xa3]],
   "video/avi": (buf) => {
-    if (buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return false;
-    if (buf[8] !== 0x41 || buf[9] !== 0x56 || buf[10] !== 0x49 || buf[11] !== 0x20) return false;
+    if (
+      buf[0] !== 0x52 ||
+      buf[1] !== 0x49 ||
+      buf[2] !== 0x46 ||
+      buf[3] !== 0x46
+    )
+      return false;
+    if (
+      buf[8] !== 0x41 ||
+      buf[9] !== 0x56 ||
+      buf[10] !== 0x49 ||
+      buf[11] !== 0x20
+    )
+      return false;
     return true;
   },
 };
@@ -594,7 +649,9 @@ function checkDocumentThreats(data) {
   if (s.length > maxSize)
     return {
       safe: false,
-      reason: `PDF exceeds 10MB limit (${(s.length / 1024 / 1024).toFixed(1)}MB)`,
+      reason: `PDF exceeds 10MB limit (${(s.length / 1024 / 1024).toFixed(
+        1,
+      )}MB)`,
     };
   for (let i = 0; i < DOC_THREAT_PATTERNS.length; i++) {
     if (DOC_THREAT_PATTERNS[i].pattern.test(s)) {
@@ -613,9 +670,15 @@ function checkFileStructure(data, ext) {
   const arr = data instanceof Uint8Array ? data : new Uint8Array(data);
   switch (ext) {
     case ".png": {
-      if (arr.length < 12) return { safe: false, reason: "File too small to be valid PNG" };
+      if (arr.length < 12)
+        return { safe: false, reason: "File too small to be valid PNG" };
       const iend = arr.slice(-12);
-      if (iend[4] !== 0x49 || iend[5] !== 0x45 || iend[6] !== 0x4e || iend[7] !== 0x44)
+      if (
+        iend[4] !== 0x49 ||
+        iend[5] !== 0x45 ||
+        iend[6] !== 0x4e ||
+        iend[7] !== 0x44
+      )
         return {
           safe: false,
           reason: "Invalid PNG: missing IEND chunk (possible appended data)",
@@ -636,7 +699,8 @@ function checkFileStructure(data, ext) {
     }
     case ".gif": {
       if (arr.length < 1) return { safe: false, reason: "File too small" };
-      if (arr.at(-1) !== 0x3b) return { safe: false, reason: "Invalid GIF: missing trailer (0x3B)" };
+      if (arr.at(-1) !== 0x3b)
+        return { safe: false, reason: "Invalid GIF: missing trailer (0x3B)" };
 
       break;
     }
@@ -705,7 +769,9 @@ function validateFile(filePath, options) {
 
   // 1. Extension blocklist
   if (!opts.allowDangerous && isDangerousExt(fileName)) {
-    throw new Error(`Blocked dangerous file type: ${ext} (${fileName}). Use --allow-dangerous to override.`);
+    throw new Error(
+      `Blocked dangerous file type: ${ext} (${fileName}). Use --allow-dangerous to override.`,
+    );
   }
 
   // 1b. Check files without extension by magic bytes
@@ -723,22 +789,39 @@ function validateFile(filePath, options) {
   const info = getFileInfo(filePath);
 
   // 2. Magic bytes check
-  if (info.type !== "application/octet-stream" && !checkMagicBytes(data, info.type)) {
+  if (
+    info.type !== "application/octet-stream" &&
+    !checkMagicBytes(data, info.type)
+  ) {
     throw new Error(
       `Magic bytes mismatch for ${fileName}: declared type ${info.type} doesn't match actual file content`,
     );
   }
   if (
-    [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".svg"].includes(ext) &&
+    [
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".webp",
+      ".bmp",
+      ".tiff",
+      ".tif",
+      ".svg",
+    ].includes(ext) &&
     hasDangerousContent(data)
   ) {
-    throw new Error(`Dangerous content detected in ${fileName}: embedded scripts or code patterns found`);
+    throw new Error(
+      `Dangerous content detected in ${fileName}: embedded scripts or code patterns found`,
+    );
   }
 
   // 4. File structure integrity
   const structResult = checkFileStructure(data, ext);
   if (!structResult.safe) {
-    throw new Error(`Structure check failed for ${fileName}: ${structResult.reason}`);
+    throw new Error(
+      `Structure check failed for ${fileName}: ${structResult.reason}`,
+    );
   }
 
   return data;

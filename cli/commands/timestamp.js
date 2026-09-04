@@ -9,8 +9,9 @@ const { readFileBytes, getFileInfo, fmtSize } = require("../utils");
 
 // ── OTS constants (copied from timestamp.js) ──
 var OTS_HEADER = [
-  0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x73, 0x00, 0x00, 0x50, 0x72,
-  0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2, 0xe8, 0x84, 0xe8, 0x92, 0x94,
+  0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+  0x70, 0x73, 0x00, 0x00, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x00, 0xbf, 0x89, 0xe2,
+  0xe8, 0x84, 0xe8, 0x92, 0x94,
 ];
 var OTS_MAJOR_VERSION = 1;
 var OTS_SHA256_TAG = 0x08;
@@ -35,17 +36,23 @@ function otsParse(bytes) {
   var magic = data.slice(off, off + OTS_HEADER.length);
   off += OTS_HEADER.length;
   for (const [i, element] of OTS_HEADER.entries()) {
-    if (magic[i] !== element) throw new Error("Invalid OTS file: bad magic bytes");
+    if (magic[i] !== element)
+      throw new Error("Invalid OTS file: bad magic bytes");
   }
   var ver = data[off++];
-  if (ver !== OTS_MAJOR_VERSION) throw new Error(`Unsupported OTS version: ${ver}`);
+  if (ver !== OTS_MAJOR_VERSION)
+    throw new Error(`Unsupported OTS version: ${ver}`);
   var tag = data[off++];
-  if (tag !== OTS_SHA256_TAG) throw new Error("Unsupported hash: only SHA-256 supported");
+  if (tag !== OTS_SHA256_TAG)
+    throw new Error("Unsupported hash: only SHA-256 supported");
   var hash = data.slice(off, off + 32);
   return { hash: hash, tag: tag };
 }
 
-var OTS_AGGREGATORS = ["https://a.pool.opentimestamps.org/digest", "https://b.pool.opentimestamps.org/digest"];
+var OTS_AGGREGATORS = [
+  "https://a.pool.opentimestamps.org/digest",
+  "https://b.pool.opentimestamps.org/digest",
+];
 
 // Node.js HTTPS POST (replaces fetch)
 /**
@@ -77,7 +84,11 @@ function httpsPost(url, bodyBytes) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(new Uint8Array(buf));
         } else {
-          reject(new Error(`HTTP ${res.statusCode}: ${buf.toString().substring(0, 200)}`));
+          reject(
+            new Error(
+              `HTTP ${res.statusCode}: ${buf.toString().substring(0, 200)}`,
+            ),
+          );
         }
       });
     });
@@ -141,7 +152,10 @@ async function runCreate(filePath, opts) {
   const info = getFileInfo(filePath);
 
   // Compute SHA-256
-  const sha256Hash = crypto.createHash("sha256").update(Buffer.from(data)).digest();
+  const sha256Hash = crypto
+    .createHash("sha256")
+    .update(Buffer.from(data))
+    .digest();
   const sha256Bytes = new Uint8Array(sha256Hash);
 
   console.log("Creating OpenTimestamps proof...");
@@ -152,7 +166,9 @@ async function runCreate(filePath, opts) {
   try {
     const resp = await upgradeOts(sha256Bytes);
     // Aggregator returns timestamp operations — wrap in .ots format
-    upgradedBytes = new Uint8Array(OTS_HEADER.length + 1 + 1 + 32 + resp.length);
+    upgradedBytes = new Uint8Array(
+      OTS_HEADER.length + 1 + 1 + 32 + resp.length,
+    );
     upgradedBytes.set(new Uint8Array(OTS_HEADER), 0);
     upgradedBytes[OTS_HEADER.length] = 1;
     upgradedBytes[OTS_HEADER.length + 1] = 0x08;
@@ -162,7 +178,9 @@ async function runCreate(filePath, opts) {
   } catch {
     // Aggregator unreachable — build incomplete .ots as fallback
     upgradedBytes = otsBuildDetached(sha256Bytes);
-    console.log("⚠ Calendar aggregator unreachable (will create incomplete .ots)");
+    console.log(
+      "⚠ Calendar aggregator unreachable (will create incomplete .ots)",
+    );
     console.log("  To complete later: redosan timestamp upgrade proof.ots");
   }
 
@@ -171,7 +189,9 @@ async function runCreate(filePath, opts) {
 
   fs.writeFileSync(outputPath, Buffer.from(upgradedBytes));
 
-  console.log(`\n✓ ${upgraded ? "Complete" : "Incomplete"} .ots timestamp created`);
+  console.log(
+    `\n✓ ${upgraded ? "Complete" : "Incomplete"} .ots timestamp created`,
+  );
   console.log(`File: ${info.name}`);
   console.log(`SHA-256: ${sha256Hash.toString("hex")}`);
   console.log(`Size: ${fmtSize(info.size)}`);
@@ -202,7 +222,10 @@ async function runVerify(filePath, opts) {
   const parsed = otsParse(otsData);
 
   // Compute file's SHA-256
-  const fileHash = crypto.createHash("sha256").update(Buffer.from(data)).digest();
+  const fileHash = crypto
+    .createHash("sha256")
+    .update(Buffer.from(data))
+    .digest();
   const fileHashBytes = new Uint8Array(fileHash);
 
   // Compare

@@ -1,76 +1,78 @@
 /* ── RTL overrides for Arabic ── */
 
 /* Sidebar adjustments */
-.sidebar { 
-  left: auto; 
-  right: -280px; 
-  border-right: none; 
-  border-left: 1px solid var(--border); 
+.sidebar {
+  left: auto;
+  right: -280px;
+  border-right: none;
+  border-left: 1px solid var(--border);
 }
 
-.sidebar.open { 
-  left: auto; 
-  right: 0; 
+.sidebar.open {
+  left: auto;
+  right: 0;
 }
 
-.sidebar a.active { 
-  border-right: none; 
-  border-left: 3px solid var(--primary); 
+.sidebar a.active {
+  border-right: none;
+  border-left: 3px solid var(--primary);
 }
 
-.sidebar-header { 
-  direction: ltr; 
+.sidebar-header {
+  direction: ltr;
 }
 
 /* Navigation */
-.nav-links { 
-  direction: ltr; 
+.nav-links {
+  direction: ltr;
 }
 
-.nav-links a { 
-  margin-left: 0; 
-  margin-right: 4px; 
+.nav-links a {
+  margin-left: 0;
+  margin-right: 4px;
 }
 
 /* Language dropdown */
-.lang-menu { 
-  left: 0; 
-  right: auto; 
+.lang-menu {
+  left: 0;
+  right: auto;
   min-width: 140px;
   max-width: 85vw;
 }
 
-.simple-top-right .lang-menu { 
-  left: 0; 
-  right: auto; 
+.simple-top-right .lang-menu {
+  left: 0;
+  right: auto;
 }
 
 /* Content alignment */
-.meta-table td:first-child { 
-  text-align: right; 
+.meta-table td:first-child {
+  text-align: right;
 }
 
-.meta-table td:last-child { 
-  text-align: left; 
+.meta-table td:last-child {
+  text-align: left;
 }
 
 /* Lists and paragraphs */
-.static-page ul { 
-  padding-right: 20px; 
-  padding-left: 0; 
+.static-page ul {
+  padding-right: 20px;
+  padding-left: 0;
 }
 
-.static-page ul li { 
-  text-align: right; 
+.static-page ul li {
+  text-align: right;
 }
 
-.static-page p { 
-  text-align: right; 
+.static-page p {
+  text-align: right;
 }
 
 /* Cards and containers */
-.card, .result, .modal-box { 
-  text-align: right; 
+.card,
+.result,
+.modal-box {
+  text-align: right;
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -86,37 +88,39 @@
 }
 
 /* Forms and inputs */
-input, textarea, select { 
-  text-align: right; 
+input,
+textarea,
+select {
+  text-align: right;
 }
 
-input[type="file"] { 
-  direction: ltr; 
+input[type="file"] {
+  direction: ltr;
 }
 
 /* Buttons */
-.btn { 
-  margin-left: 8px; 
-  margin-right: 0; 
+.btn {
+  margin-left: 8px;
+  margin-right: 0;
 }
 
-.tab-btn { 
-  margin-left: 2px; 
-  margin-right: 0; 
+.tab-btn {
+  margin-left: 2px;
+  margin-right: 0;
 }
 
-.btn-sm { 
-  margin-left: 4px; 
-  margin-right: 0; 
+.btn-sm {
+  margin-left: 4px;
+  margin-right: 0;
 }
 
 /* Footer */
-.footer-links { 
-  direction: ltr; 
+.footer-links {
+  direction: ltr;
 }
 
-.footer-copy { 
-  text-align: center; 
+.footer-copy {
+  text-align: center;
 }
 
 /* Fix width issues — prevent horizontal overflow in RTL */
@@ -124,13 +128,13 @@ html {
   max-width: 100vw;
 }
 
-body { 
+body {
   max-width: 100vw;
   overflow-x: clip;
 }
 
-.container { 
-  max-width: 720px; 
+.container {
+  max-width: 720px;
   width: 100%;
   padding: 32px 20px;
   box-sizing: border-box;
@@ -142,16 +146,16 @@ main {
 }
 
 /* Specific RTL fixes for Arabic text */
-[data-i18n] { 
-  unicode-bidi: plaintext; 
+[data-i18n] {
+  unicode-bidi: plaintext;
 }
 
-.sidebar-title { 
-  direction: rtl; 
+.sidebar-title {
+  direction: rtl;
 }
 
-.lang-btn { 
-  min-width: 80px; 
+.lang-btn {
+  min-width: 80px;
 }
 
 /* Back arrow flip for RTL */

@@ -32,7 +32,15 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "search");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     const heading = await page.evaluate(() => {
       const h = document.querySelector("#page-search h2");
       return h ? h.textContent : "";
@@ -51,14 +59,27 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "about");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     const content = await page.evaluate(() => {
       const section = document.getElementById("page-about");
       return section ? section.textContent || "" : "";
     });
-    assert.ok(content.length > 100, "About page should have substantial content");
     assert.ok(
-      content.includes("RedoSan") || content.includes("Authenticity") || content.includes("open source"),
+      content.length > 100,
+      "About page should have substantial content",
+    );
+    assert.ok(
+      content.includes("RedoSan") ||
+        content.includes("Authenticity") ||
+        content.includes("open source"),
       "About should describe the project. Got: " + content.substring(0, 120),
     );
     await ctx.close();
@@ -74,12 +95,23 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "privacy");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     const content = await page.evaluate(() => {
       const section = document.getElementById("page-privacy");
       return section ? section.textContent || "" : "";
     });
-    assert.ok(content.length > 100, "Privacy page should have substantial content");
+    assert.ok(
+      content.length > 100,
+      "Privacy page should have substantial content",
+    );
     assert.ok(
       /سياسة|خصوصية|data|privacy|datenschutz/i.test(content),
       "Privacy should discuss data handling. Got: " + content.substring(0, 100),
@@ -97,7 +129,15 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "contact");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     const content = await page.evaluate(() => {
       const section = document.getElementById("page-contact");
       return section ? section.textContent || "" : "";
@@ -105,7 +145,8 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     assert.ok(content.length > 50, "Contact page should have content");
     assert.ok(
       content.includes("GitHub") || content.includes("issues"),
-      "Contact should show contact info (GitHub links). Got: " + content.substring(0, 100),
+      "Contact should show contact info (GitHub links). Got: " +
+        content.substring(0, 100),
     );
     await ctx.close();
   });
@@ -120,7 +161,15 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "social");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     const links = await page.evaluate(() => {
       const section = document.getElementById("page-social");
       if (!section) return [];
@@ -128,7 +177,12 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
         .map((a) => a.href)
         .filter(Boolean);
     });
-    assert.ok(links.length >= 2, "Social page should have at least 2 social links (got " + links.length + ")");
+    assert.ok(
+      links.length >= 2,
+      "Social page should have at least 2 social links (got " +
+        links.length +
+        ")",
+    );
     await ctx.close();
   });
 
@@ -158,7 +212,8 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     assert.ok(resultsHtml.length > 0, "Search results should have content");
     assert.ok(
       resultsHtml.includes("watermark") || resultsHtml.includes("Results"),
-      "Search results should mention watermark. Got: " + resultsHtml.substring(0, 100),
+      "Search results should mention watermark. Got: " +
+        resultsHtml.substring(0, 100),
     );
     await ctx.close();
   });
@@ -184,8 +239,12 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
     assert.ok(panelVisible, "Assistant panel should be visible after click");
 
     // Check input exists
-    const hasInput = await page.evaluate(() => !!document.getElementById("assistantInput"));
-    const hasMessages = await page.evaluate(() => !!document.getElementById("assistantMessages"));
+    const hasInput = await page.evaluate(
+      () => !!document.getElementById("assistantInput"),
+    );
+    const hasMessages = await page.evaluate(
+      () => !!document.getElementById("assistantMessages"),
+    );
     assert.ok(hasInput, "Assistant input should exist");
     assert.ok(hasMessages, "Assistant messages container should exist");
 
@@ -201,7 +260,10 @@ describe("E2E — Search, Assistant, About, Privacy, Contact, Social", () => {
       const msgs = document.getElementById("assistantMessages");
       return msgs ? msgs.textContent : "";
     });
-    assert.ok(greetingText.length > 0 || true, "Greeting should appear or panel is loaded");
+    assert.ok(
+      greetingText.length > 0 || true,
+      "Greeting should appear or panel is loaded",
+    );
     // Note: sending messages is blocked by REDOSAN_BOT_CHECK anti-bot mechanism
     await ctx.close();
   });

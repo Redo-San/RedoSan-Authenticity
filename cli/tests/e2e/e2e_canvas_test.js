@@ -18,7 +18,12 @@ const REAL_PNG = path.resolve(
 const PNG_BUF = fs.readFileSync(REAL_PNG);
 
 // Small test PNG for quick operations
-const SMALL_PNG = path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png");
+const SMALL_PNG = path.resolve(
+  __dirname,
+  "..",
+  "fixtures",
+  "testimg_64x64.png",
+);
 const SMALL_BUF = fs.readFileSync(SMALL_PNG);
 
 let browser, server;
@@ -574,7 +579,9 @@ describe("E2E — Canvas Rendering Pipeline", () => {
       qrCanvasInfo.exists || downloadVisible || statusText.length > 0;
     assert.ok(
       hasResult,
-      `Certificate generation should produce result. QR canvas: ${JSON.stringify(qrCanvasInfo)}, DownloadVisible: ${downloadVisible}, Status: "${statusText}"`,
+      `Certificate generation should produce result. QR canvas: ${JSON.stringify(
+        qrCanvasInfo,
+      )}, DownloadVisible: ${downloadVisible}, Status: "${statusText}"`,
     );
 
     const fatal = errors.filter(

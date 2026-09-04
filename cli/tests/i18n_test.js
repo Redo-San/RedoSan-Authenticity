@@ -9,30 +9,53 @@ var _localStorage = {};
 
 function makeEl(id, extra) {
   if (!_els[id]) {
-    _els[id] = Object.assign({
-      style: { display: "" },
-      value: "",
-      textContent: "",
-      innerHTML: "",
-      className: "",
-      dataset: {},
-      placeholder: "",
-      title: "",
-      rel: "",
-      href: "",
-      id: id,
-      classList: { add: function () {}, remove: function () {}, contains: function () { return false; }, toggle: function () {} },
-      append: function () {},
-      appendChild: function () {},
-      remove: function () {},
-    addEventListener: function (event, cb) { if (event === 'DOMContentLoaded') globalThis.__domReadyCb = cb; },
-      removeEventListener: function () {},
-      getAttribute: function (a) { return this[a] || null; },
-      setAttribute: function (a, v) { this[a] = v; },
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
-      parentNode: { insertBefore: function () {}, removeChild: function () {} },
-    }, extra || {});
+    _els[id] = Object.assign(
+      {
+        style: { display: "" },
+        value: "",
+        textContent: "",
+        innerHTML: "",
+        className: "",
+        dataset: {},
+        placeholder: "",
+        title: "",
+        rel: "",
+        href: "",
+        id: id,
+        classList: {
+          add: function () {},
+          remove: function () {},
+          contains: function () {
+            return false;
+          },
+          toggle: function () {},
+        },
+        append: function () {},
+        appendChild: function () {},
+        remove: function () {},
+        addEventListener: function (event, cb) {
+          if (event === "DOMContentLoaded") globalThis.__domReadyCb = cb;
+        },
+        removeEventListener: function () {},
+        getAttribute: function (a) {
+          return this[a] || null;
+        },
+        setAttribute: function (a, v) {
+          this[a] = v;
+        },
+        querySelector: function () {
+          return null;
+        },
+        querySelectorAll: function () {
+          return [];
+        },
+        parentNode: {
+          insertBefore: function () {},
+          removeChild: function () {},
+        },
+      },
+      extra || {},
+    );
   }
   return _els[id];
 }
@@ -43,28 +66,62 @@ function setupDOM() {
 
   globalThis.document = {
     documentElement: { lang: "en", dir: "ltr", dataset: {}, style: {} },
-    getElementById: function (id) { return _els[id] || null; },
-    querySelector: function () { return null; },
+    getElementById: function (id) {
+      return _els[id] || null;
+    },
+    querySelector: function () {
+      return null;
+    },
     querySelectorAll: function (sel) {
       if (sel === "[data-i18n]") return [];
       if (sel === "[data-i18n-placeholder]") return [];
       if (sel === ".dz-text") return [];
       return [];
     },
-    createElement: function (tag) { return makeEl("created-" + tag, { tagName: tag }); },
-    createTextNode: function () { return {}; },
-    head: { append: function () {}, querySelector: function () { return null; } },
-    body: { classList: { add: function () {}, remove: function () {}, contains: function () { return false; }, toggle: function () {} }, append: function () {}, querySelector: function () { return null; } },
+    createElement: function (tag) {
+      return makeEl("created-" + tag, { tagName: tag });
+    },
+    createTextNode: function () {
+      return {};
+    },
+    head: {
+      append: function () {},
+      querySelector: function () {
+        return null;
+      },
+    },
+    body: {
+      classList: {
+        add: function () {},
+        remove: function () {},
+        contains: function () {
+          return false;
+        },
+        toggle: function () {},
+      },
+      append: function () {},
+      querySelector: function () {
+        return null;
+      },
+    },
     addEventListener: function (event, cb) {
       if (event === "DOMContentLoaded") globalThis.__domReadyCb = cb;
     },
   };
 
   globalThis.localStorage = {
-    getItem: function (k) { return _localStorage[k] !== undefined ? _localStorage[k] : null; },
-    setItem: function (k, v) { _localStorage[k] = String(v); },
-    removeItem: function (k) { delete _localStorage[k]; },
-    clear: function () { _localStorage = {}; },
+    getItem: function (k) {
+      return _localStorage[k] !== undefined ? _localStorage[k] : null;
+    },
+    setItem: function (k, v) {
+      _localStorage[k] = String(v);
+    },
+    removeItem: function (k) {
+      delete _localStorage[k];
+    },
+    clear: function () {
+      _localStorage = {};
+    },
   };
 
   var _eventListeners = {};
@@ -73,23 +130,70 @@ function setupDOM() {
     _eventListeners[evt].push(cb);
   };
   globalThis.removeEventListener = function () {};
-  globalThis.__getEventListeners = function () { return _eventListeners; };
+  globalThis.__getEventListeners = function () {
+    return _eventListeners;
+  };
   globalThis.window = globalThis;
-  globalThis.location = { protocol: "http:", hostname: "localhost", href: "http://localhost:8080/", pathname: "/", replace: function () {} };
-  globalThis.history = { pushState: function () {}, replaceState: function () {} };
-  globalThis.fetch = function () { return Promise.resolve({ ok: true, json: function () { return Promise.resolve({}); } }); };
+  globalThis.location = {
+    protocol: "http:",
+    hostname: "localhost",
+    href: "http://localhost:8080/",
+    pathname: "/",
+    replace: function () {},
+  };
+  globalThis.history = {
+    pushState: function () {},
+    replaceState: function () {},
+  };
+  globalThis.fetch = function () {
+    return Promise.resolve({
+      ok: true,
+      json: function () {
+        return Promise.resolve({});
+      },
+    });
+  };
   globalThis.__I18N_DATA = undefined;
-  globalThis.console = { error: function () {}, warn: function () {}, log: function () {} };
-  globalThis.__ = function (key) { return key; };
+  globalThis.console = {
+    error: function () {},
+    warn: function () {},
+    log: function () {},
+  };
+  globalThis.__ = function (key) {
+    return key;
+  };
 
-  try { Object.defineProperty(navigator, "language", { value: "en", configurable: true, writable: true }); } catch (e) {}
-  try { Object.defineProperty(navigator, "userLanguage", { value: undefined, configurable: true, writable: true }); } catch (e) {}
-  try { Object.defineProperty(navigator, "languages", { value: ["en-US"], configurable: true, writable: true }); } catch (e) {}
+  try {
+    Object.defineProperty(navigator, "language", {
+      value: "en",
+      configurable: true,
+      writable: true,
+    });
+  } catch (e) {}
+  try {
+    Object.defineProperty(navigator, "userLanguage", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+  } catch (e) {}
+  try {
+    Object.defineProperty(navigator, "languages", {
+      value: ["en-US"],
+      configurable: true,
+      writable: true,
+    });
+  } catch (e) {}
 }
 
 setupDOM();
-var i18nSrc = fs.readFileSync(path.resolve(__dirname, "../../Style/i18n.js"), "utf8");
-vm.runInThisContext(i18nSrc, { filename: path.resolve(__dirname, "../../Style/i18n.js") });
+var i18nSrc = fs.readFileSync(
+  path.resolve(__dirname, "../../Style/i18n.js"),
+  "utf8",
+);
+vm.runInThisContext(i18nSrc, {
+  filename: path.resolve(__dirname, "../../Style/i18n.js"),
+});
 
 describe("i18n.js — license IIFE & globals", () => {
   it("should populate globalThis.i18n", () => {
@@ -110,7 +214,10 @@ describe("i18n.js — sanitizeHtml", () => {
   });
 
   it("should allow safe tags with attributes", () => {
-    assert.equal(sanitizeHtml("<a href='https://example.com'>link</a>"), "<a href='https://example.com'>link<a>");
+    assert.equal(
+      sanitizeHtml("<a href='https://example.com'>link</a>"),
+      "<a href='https://example.com'>link<a>",
+    );
   });
 
   it("should strip unsafe tags", () => {
@@ -123,11 +230,17 @@ describe("i18n.js — sanitizeHtml", () => {
   });
 
   it("should strip dangerous URL schemes", () => {
-    assert.equal(sanitizeHtml("<a href='javascript:alert(1)'>x</a>"), "<a>x<a>");
+    assert.equal(
+      sanitizeHtml("<a href='javascript:alert(1)'>x</a>"),
+      "<a>x<a>",
+    );
   });
 
   it("should handle nested tags", () => {
-    assert.equal(sanitizeHtml("<p>Hello <strong>world</strong></p>"), "<p>Hello <strong>world<strong><p>");
+    assert.equal(
+      sanitizeHtml("<p>Hello <strong>world</strong></p>"),
+      "<p>Hello <strong>world<strong><p>",
+    );
   });
 
   it("should handle empty string", () => {
@@ -154,14 +267,26 @@ describe("i18n.js — detectLang", () => {
 
   it("should detect from navigator.language when no stored", async () => {
     delete _localStorage["redosan_lang"];
-    try { Object.defineProperty(navigator, "language", { value: "ar", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "ar",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
     assert.equal(lang, "ar");
   });
 
   it("should fallback to English for unsupported languages", async () => {
     delete _localStorage["redosan_lang"];
-    try { Object.defineProperty(navigator, "language", { value: "xx", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "xx",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
     assert.equal(lang, "en");
   });
@@ -171,7 +296,9 @@ describe("i18n.js — switchLang", () => {
   it("should store language and load it", () => {
     var loaded = "";
     var origLoadLang = globalThis.loadLang;
-    globalThis.loadLang = function (l) { loaded = l; };
+    globalThis.loadLang = function (l) {
+      loaded = l;
+    };
     switchLang("ar");
     assert.equal(_localStorage["redosan_lang"], "ar");
     assert.equal(loaded, "ar");
@@ -181,7 +308,9 @@ describe("i18n.js — switchLang", () => {
   it("should fallback to English for unsupported language", () => {
     var loaded = "";
     var origLoadLang = globalThis.loadLang;
-    globalThis.loadLang = function (l) { loaded = l; };
+    globalThis.loadLang = function (l) {
+      loaded = l;
+    };
     switchLang("zz");
     assert.equal(loaded, "en");
     globalThis.loadLang = origLoadLang;
@@ -226,7 +355,12 @@ describe("i18n.js — loadLang", () => {
   it("should fetch JSON file and apply", async () => {
     var origFetch = globalThis.fetch;
     globalThis.fetch = function () {
-      return Promise.resolve({ ok: true, json: function () { return Promise.resolve({ hello: "hallo" }); } });
+      return Promise.resolve({
+        ok: true,
+        json: function () {
+          return Promise.resolve({ hello: "hallo" });
+        },
+      });
     };
     var result = await loadLang("de");
     assert.equal(result, true);
@@ -240,7 +374,13 @@ describe("i18n.js — loadLang", () => {
     var callCount = 0;
     globalThis.fetch = function () {
       callCount++;
-      if (callCount === 2) return Promise.resolve({ ok: true, json: function () { return Promise.resolve({}); } });
+      if (callCount === 2)
+        return Promise.resolve({
+          ok: true,
+          json: function () {
+            return Promise.resolve({});
+          },
+        });
       return Promise.resolve({ ok: false });
     };
     globalThis.i18n.lang = "fr";
@@ -299,7 +439,10 @@ describe("i18n.js — toggleLangDropdown", () => {
 
   it("should toggle show class on lang menu", () => {
     var toggled = false;
-    document.getElementById("langMenu").classList.toggle = function (c) { toggled = true; assert.equal(c, "show"); };
+    document.getElementById("langMenu").classList.toggle = function (c) {
+      toggled = true;
+      assert.equal(c, "show");
+    };
     toggleLangDropdown();
     assert.ok(toggled);
   });
@@ -317,18 +460,30 @@ describe("i18n.js — error event handlers (coverage for lines 358, 363-365, 370
       delete globalThis.detectLang;
       delete globalThis.loadLang;
       delete globalThis.__domReadyCb;
-      var src = fs.readFileSync(path.resolve(__dirname, "../../Style/i18n.js"), "utf8");
-      vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Style/i18n.js") });
+      var src = fs.readFileSync(
+        path.resolve(__dirname, "../../Style/i18n.js"),
+        "utf8",
+      );
+      vm.runInThisContext(src, {
+        filename: path.resolve(__dirname, "../../Style/i18n.js"),
+      });
     }
   });
 
   it("should filter unhandledrejection for extension errors", () => {
     var listeners = globalThis.__getEventListeners();
     var handlers = listeners["unhandledrejection"];
-    assert.ok(handlers && handlers.length > 0, "unhandledrejection listeners should exist");
+    assert.ok(
+      handlers && handlers.length > 0,
+      "unhandledrejection listeners should exist",
+    );
     var evt = {
-      reason: new Error("Could not establish connection. Receiving end does not exist."),
-      preventDefault: function () { this._prevented = true; },
+      reason: new Error(
+        "Could not establish connection. Receiving end does not exist.",
+      ),
+      preventDefault: function () {
+        this._prevented = true;
+      },
       _prevented: false,
     };
     handlers[0](evt);
@@ -340,11 +495,17 @@ describe("i18n.js — error event handlers (coverage for lines 358, 363-365, 370
     var handlers = listeners["unhandledrejection"];
     var evt = {
       reason: new Error("TypeError: Cannot read property of undefined"),
-      preventDefault: function () { this._prevented = true; },
+      preventDefault: function () {
+        this._prevented = true;
+      },
       _prevented: false,
     };
     handlers[0](evt);
-    assert.equal(evt._prevented, false, "preventDefault should NOT have been called");
+    assert.equal(
+      evt._prevented,
+      false,
+      "preventDefault should NOT have been called",
+    );
   });
 
   it("should filter error events by message (line 363-365)", () => {
@@ -352,7 +513,9 @@ describe("i18n.js — error event handlers (coverage for lines 358, 363-365, 370
     var errorHandlers = listeners["error"];
     var evt = {
       message: "Unchecked runtime.lastError: Could not establish connection.",
-      preventDefault: function () { this._prevented = true; },
+      preventDefault: function () {
+        this._prevented = true;
+      },
       _prevented: false,
     };
     errorHandlers[0](evt);
@@ -365,8 +528,13 @@ describe("i18n.js — error event handlers (coverage for lines 358, 363-365, 370
     // Use a message that matches shouldFilterError at line 315:
     // (msg.includes('could not establish connection') && msg.includes('receiving end does not exist'))
     var evt = {
-      error: { message: "Could not establish connection. Receiving end does not exist." },
-      preventDefault: function () { this._prevented = true; },
+      error: {
+        message:
+          "Could not establish connection. Receiving end does not exist.",
+      },
+      preventDefault: function () {
+        this._prevented = true;
+      },
       _prevented: false,
     };
     errorHandlers[1](evt);
@@ -378,7 +546,9 @@ describe("i18n.js — error event handlers (coverage for lines 358, 363-365, 370
     var errorHandlers = listeners["error"];
     var evt = {
       message: "Real error",
-      preventDefault: function () { this._prevented = true; },
+      preventDefault: function () {
+        this._prevented = true;
+      },
       _prevented: false,
     };
     errorHandlers[0](evt);
@@ -388,16 +558,31 @@ describe("i18n.js — error event handlers (coverage for lines 358, 363-365, 370
 
 describe("i18n.js — shouldFilterError", () => {
   it("should filter extension runtime errors", () => {
-    assert.ok(shouldFilterError("Runtime.lastError: Could not establish connection. Receiving end does not exist."));
-    assert.ok(shouldFilterError("Unchecked runtime.lastError: The message port closed before a response was received."));
-    assert.ok(shouldFilterError("Uncaught (in promise) Could not establish connection. Receiving end does not exist."));
+    assert.ok(
+      shouldFilterError(
+        "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+      ),
+    );
+    assert.ok(
+      shouldFilterError(
+        "Unchecked runtime.lastError: The message port closed before a response was received.",
+      ),
+    );
+    assert.ok(
+      shouldFilterError(
+        "Uncaught (in promise) Could not establish connection. Receiving end does not exist.",
+      ),
+    );
   });
 
   it("should not filter normal errors", () => {
     assert.equal(shouldFilterError("Something went wrong"), false);
     assert.equal(shouldFilterError(""), false);
     assert.equal(shouldFilterError(null), false);
-    assert.equal(shouldFilterError("TypeError: Cannot read property of undefined"), false);
+    assert.equal(
+      shouldFilterError("TypeError: Cannot read property of undefined"),
+      false,
+    );
   });
 });
 
@@ -411,23 +596,38 @@ describe("i18n.js — DOMContentLoaded error handling", () => {
     var errorMessage = "";
     var fallbackCalled = false;
 
-    globalThis.detectLang = async function () { throw new Error("test error"); };
+    globalThis.detectLang = async function () {
+      throw new Error("test error");
+    };
     globalThis.console.error = function () {
       errorLogged = true;
-      errorMessage = Array.prototype.map.call(arguments, function (a) { return typeof a === "object" ? String(a) : a; }).join(" ");
+      errorMessage = Array.prototype.map
+        .call(arguments, function (a) {
+          return typeof a === "object" ? String(a) : a;
+        })
+        .join(" ");
     };
     globalThis.loadLang = function (lang) {
       if (lang === "en") fallbackCalled = true;
       return Promise.resolve(true);
     };
 
-    assert.ok(globalThis.__domReadyCb, "DOMContentLoaded callback should have been captured");
+    assert.ok(
+      globalThis.__domReadyCb,
+      "DOMContentLoaded callback should have been captured",
+    );
 
     await globalThis.__domReadyCb();
 
     assert.ok(errorLogged, "console.error should have been called");
-    assert.ok(errorMessage.indexOf("Language initialization failed") !== -1, "console.error should contain failure message");
-    assert.ok(fallbackCalled, "loadLang('en') should have been called as fallback");
+    assert.ok(
+      errorMessage.indexOf("Language initialization failed") !== -1,
+      "console.error should contain failure message",
+    );
+    assert.ok(
+      fallbackCalled,
+      "loadLang('en') should have been called as fallback",
+    );
 
     globalThis.detectLang = origDetectLang;
     globalThis.console.error = origConsoleError;

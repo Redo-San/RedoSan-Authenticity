@@ -16,11 +16,12 @@ after(async function () {
 });
 
 describe("Iris Storage — API coverage", function () {
-
   it("should save template and return id", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -28,7 +29,9 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         return await storage.save({
-          id: "save-1", label: "Save Test", eyeSide: "left",
+          id: "save-1",
+          label: "Save Test",
+          eyeSide: "left",
           leftCode: new Uint8Array([10, 20, 30]),
           leftMask: new Uint8Array([40, 50, 60]),
         });
@@ -42,7 +45,9 @@ describe("Iris Storage — API coverage", function () {
   it("should save template with right eye and optional fields", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -50,7 +55,9 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         var id = await storage.save({
-          id: "save-right", label: "Right Eye", eyeSide: "right",
+          id: "save-right",
+          label: "Right Eye",
+          eyeSide: "right",
           leftCode: new Uint8Array([1]),
           leftMask: new Uint8Array([2]),
           rightCode: new Uint8Array([3]),
@@ -82,7 +89,9 @@ describe("Iris Storage — API coverage", function () {
   it("should save with default eyeSide when not left/right", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -90,7 +99,8 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         await storage.save({
-          id: "save-default-eye", label: "Default",
+          id: "save-default-eye",
+          label: "Default",
           leftCode: new Uint8Array([1]),
           leftMask: new Uint8Array([2]),
           eyeSide: "both",
@@ -161,7 +171,9 @@ describe("Iris Storage — API coverage", function () {
   it("should load existing template", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -169,7 +181,9 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         await storage.save({
-          id: "load-1", label: "Load Me", eyeSide: "left",
+          id: "load-1",
+          label: "Load Me",
+          eyeSide: "left",
           leftCode: new Uint8Array([1, 2, 3]),
           leftMask: new Uint8Array([4, 5, 6]),
         });
@@ -206,20 +220,40 @@ describe("Iris Storage — API coverage", function () {
   it("should list stored templates", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
         await storage.clear();
-        await storage.save({ id: "l1", label: "A", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]) });
-        await storage.save({ id: "l2", label: "B", leftCode: new Uint8Array([3]), leftMask: new Uint8Array([4]) });
+        await storage.save({
+          id: "l1",
+          label: "A",
+          leftCode: new Uint8Array([1]),
+          leftMask: new Uint8Array([2]),
+        });
+        await storage.save({
+          id: "l2",
+          label: "B",
+          leftCode: new Uint8Array([3]),
+          leftMask: new Uint8Array([4]),
+        });
         return await storage.list();
       });
       assert.strictEqual(result.length, 2);
-      assert.ok(result.some(function (r) { return r.id === "l1"; }));
-      assert.ok(result.some(function (r) { return r.id === "l2"; }));
+      assert.ok(
+        result.some(function (r) {
+          return r.id === "l1";
+        }),
+      );
+      assert.ok(
+        result.some(function (r) {
+          return r.id === "l2";
+        }),
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -228,7 +262,9 @@ describe("Iris Storage — API coverage", function () {
   it("should list returns empty array when no templates", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -246,14 +282,21 @@ describe("Iris Storage — API coverage", function () {
   it("should delete template by id", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
         await storage.clear();
-        await storage.save({ id: "del-1", label: "Delete Me", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]) });
+        await storage.save({
+          id: "del-1",
+          label: "Delete Me",
+          leftCode: new Uint8Array([1]),
+          leftMask: new Uint8Array([2]),
+        });
         await storage.delete("del-1");
         var list = await storage.list();
         return list.length;
@@ -267,16 +310,33 @@ describe("Iris Storage — API coverage", function () {
   it("should count stored templates", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
         await storage.clear();
-        await storage.save({ id: "c1", label: "C1", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]) });
-        await storage.save({ id: "c2", label: "C2", leftCode: new Uint8Array([3]), leftMask: new Uint8Array([4]) });
-        await storage.save({ id: "c3", label: "C3", leftCode: new Uint8Array([5]), leftMask: new Uint8Array([6]) });
+        await storage.save({
+          id: "c1",
+          label: "C1",
+          leftCode: new Uint8Array([1]),
+          leftMask: new Uint8Array([2]),
+        });
+        await storage.save({
+          id: "c2",
+          label: "C2",
+          leftCode: new Uint8Array([3]),
+          leftMask: new Uint8Array([4]),
+        });
+        await storage.save({
+          id: "c3",
+          label: "C3",
+          leftCode: new Uint8Array([5]),
+          leftMask: new Uint8Array([6]),
+        });
         return await storage.count();
       });
       assert.strictEqual(result, 3);
@@ -288,7 +348,9 @@ describe("Iris Storage — API coverage", function () {
   it("should count returns 0 when empty", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -306,14 +368,26 @@ describe("Iris Storage — API coverage", function () {
   it("should clear all templates", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
-        await storage.save({ id: "clr1", label: "X", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]) });
-        await storage.save({ id: "clr2", label: "Y", leftCode: new Uint8Array([3]), leftMask: new Uint8Array([4]) });
+        await storage.save({
+          id: "clr1",
+          label: "X",
+          leftCode: new Uint8Array([1]),
+          leftMask: new Uint8Array([2]),
+        });
+        await storage.save({
+          id: "clr2",
+          label: "Y",
+          leftCode: new Uint8Array([3]),
+          leftMask: new Uint8Array([4]),
+        });
         await storage.clear();
         return await storage.count();
       });
@@ -326,15 +400,27 @@ describe("Iris Storage — API coverage", function () {
   it("should export all records", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
       var result = await page.evaluate(async function () {
         var storage = new window.IrisStorage();
         await storage.clear();
-        await storage.save({ id: "exp1", label: "E1", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]) });
-        await storage.save({ id: "exp2", label: "E2", leftCode: new Uint8Array([3]), leftMask: new Uint8Array([4]) });
+        await storage.save({
+          id: "exp1",
+          label: "E1",
+          leftCode: new Uint8Array([1]),
+          leftMask: new Uint8Array([2]),
+        });
+        await storage.save({
+          id: "exp2",
+          label: "E2",
+          leftCode: new Uint8Array([3]),
+          leftMask: new Uint8Array([4]),
+        });
         return await storage.exportAllRecords();
       });
       assert.strictEqual(result.length, 2);
@@ -348,7 +434,9 @@ describe("Iris Storage — API coverage", function () {
   it("should export all records returns empty array when empty", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -366,7 +454,9 @@ describe("Iris Storage — API coverage", function () {
   it("should import records with valid data", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -374,8 +464,20 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         var count = await storage.importRecords([
-          { id: "imp1", label: "I1", leftCode: [1, 2], leftMask: [3, 4], enrolledAt: Date.now() },
-          { id: "imp2", label: "I2", leftCode: [5, 6], leftMask: [7, 8], enrolledAt: Date.now() },
+          {
+            id: "imp1",
+            label: "I1",
+            leftCode: [1, 2],
+            leftMask: [3, 4],
+            enrolledAt: Date.now(),
+          },
+          {
+            id: "imp2",
+            label: "I2",
+            leftCode: [5, 6],
+            leftMask: [7, 8],
+            enrolledAt: Date.now(),
+          },
         ]);
         return count;
       });
@@ -388,7 +490,9 @@ describe("Iris Storage — API coverage", function () {
   it("should import records with null entries (skipped)", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -414,7 +518,9 @@ describe("Iris Storage — API coverage", function () {
   it("should import records with enc field (legacy normalization)", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -422,7 +528,12 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         var count = await storage.importRecords([
-          { id: "enc-1", enc: { alg: "AES-GCM" }, leftCode: [1, 2], leftMask: [3, 4] },
+          {
+            id: "enc-1",
+            enc: { alg: "AES-GCM" },
+            leftCode: [1, 2],
+            leftMask: [3, 4],
+          },
         ]);
         return count;
       });
@@ -453,7 +564,9 @@ describe("Iris Storage — API coverage", function () {
   it("should export template as JSON", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -461,7 +574,9 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         await storage.save({
-          id: "json-1", label: "JSON", eyeSide: "right",
+          id: "json-1",
+          label: "JSON",
+          eyeSide: "right",
           leftCode: new Uint8Array([10, 20]),
           leftMask: new Uint8Array([30, 40]),
         });
@@ -492,7 +607,9 @@ describe("Iris Storage — API coverage", function () {
   it("should import template from valid JSON", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -503,7 +620,9 @@ describe("Iris Storage — API coverage", function () {
           format: "redosan-iris-v1",
           exportedAt: Date.now(),
           template: {
-            id: "imported-1", label: "Imported", eyeSide: "left",
+            id: "imported-1",
+            label: "Imported",
+            eyeSide: "left",
             leftCode: Array.from(new Uint8Array([1, 2, 3])),
             leftMask: Array.from(new Uint8Array([4, 5, 6])),
           },
@@ -555,7 +674,9 @@ describe("Iris Storage — API coverage", function () {
   it("should full export/import roundtrip preserves data", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { localStorage.setItem("iris_consent", "1"); });
+      await page.evaluate(function () {
+        localStorage.setItem("iris_consent", "1");
+      });
       await page.reload();
       await page.waitForLoadState("networkidle");
 
@@ -563,7 +684,9 @@ describe("Iris Storage — API coverage", function () {
         var storage = new window.IrisStorage();
         await storage.clear();
         await storage.save({
-          id: "rt-1", label: "Roundtrip", eyeSide: "left",
+          id: "rt-1",
+          label: "Roundtrip",
+          eyeSide: "left",
           leftCode: new Uint8Array([10, 20, 30]),
           leftMask: new Uint8Array([40, 50, 60]),
         });
@@ -571,7 +694,11 @@ describe("Iris Storage — API coverage", function () {
         await storage.clear();
         var imported = await storage.importRecords(exported);
         var list = await storage.list();
-        return { exported: exported.length, imported: imported, stored: list.length };
+        return {
+          exported: exported.length,
+          imported: imported,
+          stored: list.length,
+        };
       });
       assert.strictEqual(result.exported, 1);
       assert.strictEqual(result.imported, 1);

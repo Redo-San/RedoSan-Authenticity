@@ -62,7 +62,16 @@ function checkTool(name) {
  * Check all tools at once. Returns { name: path|null }
  */
 function checkAllTools() {
-  return ["exiftool", "sox", "soxi", "pngcheck", "jpeginfo", "magick", "convert", "cbor-diag"].reduce((acc, t) => {
+  return [
+    "exiftool",
+    "sox",
+    "soxi",
+    "pngcheck",
+    "jpeginfo",
+    "magick",
+    "convert",
+    "cbor-diag",
+  ].reduce((acc, t) => {
     acc[t] = checkTool(t);
     return acc;
   }, {});
@@ -148,7 +157,8 @@ function audioInfo(filePath) {
     from: "basic",
     ext: path.extname(filePath).toLowerCase(),
     size: stat.size,
-    warning: "Install sox/soxi for detailed audio info (sample rate, bit depth, channels)",
+    warning:
+      "Install sox/soxi for detailed audio info (sample rate, bit depth, channels)",
   };
 }
 
@@ -303,7 +313,12 @@ function imageResize(input, output, scale) {
 function imageJpegCompress(input, output, quality) {
   const tool = _magickTool();
   if (!tool) return { ok: false, warning: "ImageMagick not installed" };
-  const out = _runTool(tool, [input, "-quality", String(quality || 75), output]);
+  const out = _runTool(tool, [
+    input,
+    "-quality",
+    String(quality || 75),
+    output,
+  ]);
   if (out.error) return { ok: false, error: out.error };
   return { ok: true, from: "imagemagick", quality: quality || 75 };
 }

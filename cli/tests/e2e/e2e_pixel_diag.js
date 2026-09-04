@@ -5,7 +5,9 @@ const fs = require("node:fs");
 
 const PORT = 9883;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png"),
+);
 
 (async () => {
   const _server = await startServer(PORT);
@@ -24,31 +26,47 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
     const sel = document.getElementById("pi-extract-algorithm");
     const opts = sel ? Array.from(sel.options).map((o) => o.value) : [];
     const embedSel = document.getElementById("pi-algorithm");
-    const embedOpts = embedSel ? Array.from(embedSel.options).map((o) => o.value) : [];
+    const embedOpts = embedSel
+      ? Array.from(embedSel.options).map((o) => o.value)
+      : [];
     const embedCat = document.getElementById("pi-category");
-    const catOpts = embedCat ? Array.from(embedCat.options).map((o) => o.value) : [];
+    const catOpts = embedCat
+      ? Array.from(embedCat.options).map((o) => o.value)
+      : [];
     return { extractOpts: opts, embedOpts: embedOpts, catOpts: catOpts };
   });
   console.log("BEFORE NAV:", JSON.stringify(initialDiag));
 
   // Click sidebar
   await page.goto(`${BASE}/Style/pages/pixel-injection/index.html`);
-    await page.waitForTimeout(2000);
+  await page.waitForTimeout(2000);
 
   // Check state after navigation
   const afterNav = await page.evaluate(() => {
     const extractSel = document.getElementById("pi-extract-algorithm");
-    const extractOpts = extractSel ? Array.from(extractSel.options).map((o) => o.value) : [];
+    const extractOpts = extractSel
+      ? Array.from(extractSel.options).map((o) => o.value)
+      : [];
     const embedSel = document.getElementById("pi-algorithm");
-    const embedOpts = embedSel ? Array.from(embedSel.options).map((o) => o.value) : [];
+    const embedOpts = embedSel
+      ? Array.from(embedSel.options).map((o) => o.value)
+      : [];
     const embedCat = document.getElementById("pi-category");
-    const catOpts = embedCat ? Array.from(embedCat.options).map((o) => o.value) : [];
+    const catOpts = embedCat
+      ? Array.from(embedCat.options).map((o) => o.value)
+      : [];
     const hasPI = typeof globalThis.pixelInjection !== "undefined";
     const curAlgo = hasPI ? globalThis.pixelInjection.currentAlgorithm : "N/A";
     const curCat = hasPI ? globalThis.pixelInjection.currentCategory : "N/A";
-    const hasCore = hasPI ? typeof globalThis.pixelInjection.core !== "undefined" : false;
-    const hasEmbedFn = hasCore ? typeof globalThis.pixelInjection.core.enhancedLSB === "function" : false;
-    const hasExtractFn = hasCore ? typeof globalThis.pixelInjection.core.extractEnhancedLSB === "function" : false;
+    const hasCore = hasPI
+      ? typeof globalThis.pixelInjection.core !== "undefined"
+      : false;
+    const hasEmbedFn = hasCore
+      ? typeof globalThis.pixelInjection.core.enhancedLSB === "function"
+      : false;
+    const hasExtractFn = hasCore
+      ? typeof globalThis.pixelInjection.core.extractEnhancedLSB === "function"
+      : false;
     const extractMap = hasPI ? globalThis.pixelInjection.extractMap : {};
     return {
       extractOpts,
@@ -66,7 +84,9 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   console.log("AFTER NAV:", JSON.stringify(afterNav, null, 2));
 
   // Now try embed then extract to see what happens
-  await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+  await page.setInputFiles("#pi-image", [
+    { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+  ]);
   await page.waitForTimeout(500);
   await page.setInputFiles("#pi-secret-file", [
     {
@@ -95,7 +115,10 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
     const img = output.querySelector("img");
     return img ? img.src : null;
   });
-  console.log("WATERMARKED IMG URL starts with data:", imgDataUrl ? imgDataUrl.startsWith("data:") : false);
+  console.log(
+    "WATERMARKED IMG URL starts with data:",
+    imgDataUrl ? imgDataUrl.startsWith("data:") : false,
+  );
 
   if (!imgDataUrl) {
     console.log("EMBED FAILED - no image shown");
@@ -118,7 +141,9 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
     return {
       options: sel ? Array.from(sel.options).map((o) => o.value) : [],
       selected: sel ? sel.value : null,
-      curAlgo: globalThis.pixelInjection ? globalThis.pixelInjection.currentAlgorithm : "N/A",
+      curAlgo: globalThis.pixelInjection
+        ? globalThis.pixelInjection.currentAlgorithm
+        : "N/A",
     };
   });
   console.log("EXTRACT DIAG:", JSON.stringify(extractDiag));

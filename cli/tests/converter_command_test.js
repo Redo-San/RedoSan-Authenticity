@@ -25,9 +25,11 @@ function loadCmd(mocks) {
     execSync: mocks.execSync || (() => Buffer.from("")),
   };
 
-  const mockSharp = mocks.sharp || (() => ({
-    toFile: async () => {},
-  }));
+  const mockSharp =
+    mocks.sharp ||
+    (() => ({
+      toFile: async () => {},
+    }));
 
   const mockConsole = {
     log: (...args) => logLines.push(args.join(" ")),
@@ -36,7 +38,10 @@ function loadCmd(mocks) {
 
   let exitCode = null;
   const mockProcess = Object.assign({}, process, {
-    exit: (code) => { exitCode = code; throw new Error(`EXIT:${code}`); },
+    exit: (code) => {
+      exitCode = code;
+      throw new Error(`EXIT:${code}`);
+    },
     argv: mocks.argv || process.argv,
   });
 
@@ -44,7 +49,8 @@ function loadCmd(mocks) {
     require: (mod) => {
       if (mod === "node:path" || mod === "path") return path;
       if (mod === "node:fs" || mod === "fs") return mockFS;
-      if (mod === "node:child_process" || mod === "child_process") return mockCP;
+      if (mod === "node:child_process" || mod === "child_process")
+        return mockCP;
       if (mod === "sharp") return mockSharp;
       // For modules actually needed
       return require(mod);
@@ -100,7 +106,11 @@ describe("Converter Command — runConverter", () => {
     }
 
     assert.equal(cmd.exitCode(), 1);
-    assert.ok(cmd.errLines.some((l) => l.includes("format") || l.includes("Target format")));
+    assert.ok(
+      cmd.errLines.some(
+        (l) => l.includes("format") || l.includes("Target format"),
+      ),
+    );
   });
 
   it("should copy image file when no conversion libraries available", async () => {
@@ -112,10 +122,16 @@ describe("Converter Command — runConverter", () => {
         if (p.includes("test.jpg") || p === "test.jpg") return true;
         return false;
       },
-      copyFileSync: (src, dst) => { copyCalled = true; },
-      execSync: () => { throw new Error("command not found"); },
+      copyFileSync: (src, dst) => {
+        copyCalled = true;
+      },
+      execSync: () => {
+        throw new Error("command not found");
+      },
       // sharp CLI bin not found, require('sharp') also fails
-      sharp: () => { throw new Error("sharp module not found"); },
+      sharp: () => {
+        throw new Error("sharp module not found");
+      },
     });
 
     try {
@@ -144,8 +160,10 @@ describe("Converter Command — runConverter", () => {
 
     await cmd.runConverter("test.jpg", { format: "webp" });
 
-    assert.ok(cmd.logLines.some((l) => l.includes("Converted")),
-      "Should log conversion success");
+    assert.ok(
+      cmd.logLines.some((l) => l.includes("Converted")),
+      "Should log conversion success",
+    );
     assert.equal(cmd.exitCode(), null);
   });
 
@@ -157,7 +175,9 @@ describe("Converter Command — runConverter", () => {
         if (p.includes("test.jpg")) return true;
         return false;
       },
-      sharp: () => { throw new Error("sharp not installed"); },
+      sharp: () => {
+        throw new Error("sharp not installed");
+      },
       execSync: (cmdStr) => {
         if (cmdStr.includes("magick")) return Buffer.from("ok");
         return Buffer.from("");
@@ -213,16 +233,22 @@ describe("Converter Command — runConverter", () => {
     }
 
     // Should have tried ffmpeg via execSync
-    assert.ok(cmd.logLines.some((l) => l.includes("ffmpeg") || l.includes("Converted")),
-      "Should use ffmpeg: " + cmd.logLines.join("; "));
+    assert.ok(
+      cmd.logLines.some((l) => l.includes("ffmpeg") || l.includes("Converted")),
+      "Should use ffmpeg: " + cmd.logLines.join("; "),
+    );
   });
 
   it("should copy non-image file when ffmpeg not available", async () => {
     let copyCalled = false;
     const cmd = loadCmd({
       existsSync: (p) => typeof p === "string" && p.includes("test.mp4"),
-      copyFileSync: (src, dst) => { copyCalled = true; },
-      execSync: () => { throw new Error("ffmpeg not found"); },
+      copyFileSync: (src, dst) => {
+        copyCalled = true;
+      },
+      execSync: () => {
+        throw new Error("ffmpeg not found");
+      },
     });
 
     try {
@@ -231,8 +257,10 @@ describe("Converter Command — runConverter", () => {
       // expected or not
     }
 
-    assert.ok(copyCalled || cmd.logLines.some((l) => l.includes("Copied")),
-      "Should have fallen back to copy: " + cmd.logLines.join("; "));
+    assert.ok(
+      copyCalled || cmd.logLines.some((l) => l.includes("Copied")),
+      "Should have fallen back to copy: " + cmd.logLines.join("; "),
+    );
   });
 
   it("should use built-in ffmpeg WASM when available", async () => {
@@ -243,24 +271,35 @@ describe("Converter Command — runConverter", () => {
         if (typeof p === "string" && p.includes("ffmpeg.min.js")) return true;
         return typeof p === "string" && p.includes("test.mp4");
       },
-      copyFileSync: (src, dst) => { copyCalled = true; },
+      copyFileSync: (src, dst) => {
+        copyCalled = true;
+      },
     });
 
     await cmd.runConverter("test.mp4", { format: "avi" });
 
     // ffmpeg WASM path exists → copies file and logs
     assert.ok(copyCalled, "Should copy when ffmpeg WASM is available");
-    assert.ok(cmd.logLines.some((l) => l.includes("ffmpeg") || l.includes("Output")),
-      "Should log ffmpeg WASM usage");
+    assert.ok(
+      cmd.logLines.some((l) => l.includes("ffmpeg") || l.includes("Output")),
+      "Should log ffmpeg WASM usage",
+    );
   });
 
   it("should handle conversion error and exit with code 1", async () => {
     let copyCalled = false;
     const cmd = loadCmd({
-      existsSync: (p) => typeof p === "string" && p.includes("test.jpg") || false,
-      copyFileSync: (src, dst) => { copyCalled = true; },
-      sharp: () => { throw new Error("sharp fails"); },
-      execSync: () => { throw new Error("magick also fails"); },
+      existsSync: (p) =>
+        (typeof p === "string" && p.includes("test.jpg")) || false,
+      copyFileSync: (src, dst) => {
+        copyCalled = true;
+      },
+      sharp: () => {
+        throw new Error("sharp fails");
+      },
+      execSync: () => {
+        throw new Error("magick also fails");
+      },
     });
 
     try {

@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // Polyfills for GPL check
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // Set up fake-indexeddb for IDBStore tests
 const { indexedDB, IDBKeyRange } = require("fake-indexeddb");
@@ -18,46 +23,70 @@ const engineSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_engine.js"),
   "utf8",
 );
-vm.runInThisContext(engineSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_engine.js") });
+vm.runInThisContext(engineSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_engine.js",
+  ),
+});
 
 // Load face_registry.js
 const registrySrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_registry.js"),
   "utf8",
 );
-vm.runInThisContext(registrySrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_registry.js") });
+vm.runInThisContext(registrySrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_registry.js",
+  ),
+});
 
 // Load face_crypto.js (registry lock/unlock/backup)
 const cryptoSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_crypto.js"),
   "utf8",
 );
-vm.runInThisContext(cryptoSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_crypto.js") });
+vm.runInThisContext(cryptoSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_crypto.js",
+  ),
+});
 
 // ── In-memory store for testing ──
 
 let _nextId = 1;
 let _dbSeq = 0;
 function _testDbName() {
-  return "TestDB_" + (++_dbSeq);
+  return "TestDB_" + ++_dbSeq;
 }
 
 function _storeEntry(entry, id) {
   return {
     id: id,
     label: entry.label,
-    descriptor: entry.descriptor instanceof Float32Array
-      ? { __f32: true, data: Array.from(entry.descriptor) }
-      : entry.descriptor,
+    descriptor:
+      entry.descriptor instanceof Float32Array
+        ? { __f32: true, data: Array.from(entry.descriptor) }
+        : entry.descriptor,
     metadata: entry.metadata,
     embeddingVersion: entry.embeddingVersion,
     did: entry.did,
-    created: entry.created instanceof Date
-      ? { __d: true, v: entry.created.toISOString() }
-      : entry.created,
-    updated: entry.updated instanceof Date
-      ? { __d: true, v: entry.updated.toISOString() }
-      : entry.updated,
+    created:
+      entry.created instanceof Date
+        ? { __d: true, v: entry.created.toISOString() }
+        : entry.created,
+    updated:
+      entry.updated instanceof Date
+        ? { __d: true, v: entry.updated.toISOString() }
+        : entry.updated,
     encrypted: entry.encrypted,
   };
 }
@@ -66,18 +95,17 @@ function _restoreEntry(obj) {
   return {
     id: obj.id,
     label: obj.label,
-    descriptor: obj.descriptor && obj.descriptor.__f32
-      ? new Float32Array(obj.descriptor.data)
-      : obj.descriptor,
+    descriptor:
+      obj.descriptor && obj.descriptor.__f32
+        ? new Float32Array(obj.descriptor.data)
+        : obj.descriptor,
     metadata: obj.metadata,
     embeddingVersion: obj.embeddingVersion,
     did: obj.did,
-    created: obj.created && obj.created.__d
-      ? new Date(obj.created.v)
-      : obj.created,
-    updated: obj.updated && obj.updated.__d
-      ? new Date(obj.updated.v)
-      : obj.updated,
+    created:
+      obj.created && obj.created.__d ? new Date(obj.created.v) : obj.created,
+    updated:
+      obj.updated && obj.updated.__d ? new Date(obj.updated.v) : obj.updated,
     encrypted: obj.encrypted,
   };
 }
@@ -99,7 +127,9 @@ InMemoryStore.prototype.add = async function (entry) {
 };
 
 InMemoryStore.prototype.get = async function (id) {
-  const found = this._entries.find(function (e) { return e.id === id; });
+  const found = this._entries.find(function (e) {
+    return e.id === id;
+  });
   return found ? _restoreEntry(found) : null;
 };
 
@@ -109,17 +139,23 @@ InMemoryStore.prototype.getAll = async function () {
 
 InMemoryStore.prototype.findByIndex = async function (indexName, value) {
   return this._entries
-    .filter(function (e) { return e[indexName] === value; })
+    .filter(function (e) {
+      return e[indexName] === value;
+    })
     .map(_restoreEntry);
 };
 
 InMemoryStore.prototype.put = async function (entry) {
-  const idx = this._entries.findIndex(function (e) { return e.id === entry.id; });
+  const idx = this._entries.findIndex(function (e) {
+    return e.id === entry.id;
+  });
   if (idx !== -1) this._entries[idx] = _storeEntry(entry, entry.id);
 };
 
 InMemoryStore.prototype.remove = async function (id) {
-  this._entries = this._entries.filter(function (e) { return e.id !== id; });
+  this._entries = this._entries.filter(function (e) {
+    return e.id !== id;
+  });
 };
 
 InMemoryStore.prototype.count = async function () {
@@ -135,7 +171,9 @@ InMemoryStore.prototype.putMeta = async function (key, value) {
 };
 
 InMemoryStore.prototype.getMeta = async function (key) {
-  return Object.prototype.hasOwnProperty.call(this._meta, key) ? this._meta[key] : null;
+  return Object.prototype.hasOwnProperty.call(this._meta, key)
+    ? this._meta[key]
+    : null;
 };
 
 InMemoryStore.prototype.removeMeta = async function (key) {
@@ -278,8 +316,14 @@ describe("FaceRegistry — addFace and getFace", () => {
     assert.ok(face.created instanceof Date);
     assert.ok(face.updated instanceof Date);
     assert.equal(face.descriptor.length, 128);
-    assert.ok(Math.abs(face.descriptor[0] - 0.1) < 0.001, "descriptor[0] should be ~0.1");
-    assert.ok(Math.abs(face.descriptor[1] - 0.2) < 0.001, "descriptor[1] should be ~0.2");
+    assert.ok(
+      Math.abs(face.descriptor[0] - 0.1) < 0.001,
+      "descriptor[0] should be ~0.1",
+    );
+    assert.ok(
+      Math.abs(face.descriptor[1] - 0.2) < 0.001,
+      "descriptor[1] should be ~0.2",
+    );
   });
 
   it("should return null for non-existent id", async () => {
@@ -310,7 +354,11 @@ describe("FaceRegistry — getAllFaces", () => {
     await reg.addFace("carol", randomDescriptor());
     const all = await reg.getAllFaces();
     assert.equal(all.length, 3);
-    const labels = all.map(function (f) { return f.label; }).sort();
+    const labels = all
+      .map(function (f) {
+        return f.label;
+      })
+      .sort();
     assert.deepEqual(labels, ["alice", "bob", "carol"]);
   });
 });
@@ -323,7 +371,9 @@ describe("FaceRegistry — findByLabel", () => {
     await reg.addFace("bob", randomDescriptor());
     const results = await reg.findByLabel("alice");
     assert.equal(results.length, 2);
-    results.forEach(function (f) { assert.equal(f.label, "alice"); });
+    results.forEach(function (f) {
+      assert.equal(f.label, "alice");
+    });
   });
 
   it("should return empty array for unmatched label", async () => {
@@ -351,7 +401,9 @@ describe("FaceRegistry — updateFace", () => {
     const id = await reg.addFace("alice", randomDescriptor());
     const before = await reg.getFace(id);
     const beforeMs = before.updated.getTime();
-    await new Promise(function (r) { setTimeout(r, 5); });
+    await new Promise(function (r) {
+      setTimeout(r, 5);
+    });
     await reg.updateFace(id, { label: "alice2" });
     const after = await reg.getFace(id);
     const afterMs = after.updated.getTime();
@@ -447,7 +499,9 @@ describe("FaceRegistry — findMatch", () => {
     const { reg } = freshRegistry();
     const ref = makeDescriptor(new Array(128).fill(0.5));
     const close = makeDescriptor(
-      Array.from({ length: 128 }, function (_, i) { return 0.5 + Math.sin(i) * 0.01; }),
+      Array.from({ length: 128 }, function (_, i) {
+        return 0.5 + Math.sin(i) * 0.01;
+      }),
     );
     await reg.addFace("far", randomDescriptor());
     await reg.addFace("close", close);
@@ -484,10 +538,9 @@ describe("FaceRegistry — findMatch", () => {
     try {
       const { reg } = freshRegistry();
       await reg.addFace("x", randomDescriptor());
-      await assert.rejects(
-        function () { return reg.findMatch(randomDescriptor()); },
-        /FaceEngine must be loaded|must be loaded/,
-      );
+      await assert.rejects(function () {
+        return reg.findMatch(randomDescriptor());
+      }, /FaceEngine must be loaded|must be loaded/);
     } finally {
       FaceEngine.compareDescriptors = origCompare;
     }
@@ -496,7 +549,9 @@ describe("FaceRegistry — findMatch", () => {
   it("should only match entries with the requested embeddingVersion", async () => {
     const { reg } = freshRegistry();
     const desc = makeDescriptor(new Array(128).fill(0.5));
-    await reg.addFace("arcface-only", desc, { embeddingVersion: "arcface-mbf" });
+    await reg.addFace("arcface-only", desc, {
+      embeddingVersion: "arcface-mbf",
+    });
     const result = await reg.findMatch(desc, 0.6, "human-hse");
     assert.equal(result.match, null);
   });
@@ -505,7 +560,9 @@ describe("FaceRegistry — findMatch", () => {
     const { reg } = freshRegistry();
     const desc = makeDescriptor(new Array(128).fill(0.5));
     await reg.addFace("hse-match", desc, { embeddingVersion: "human-hse" });
-    await reg.addFace("arcface-other", randomDescriptor(), { embeddingVersion: "arcface-mbf" });
+    await reg.addFace("arcface-other", randomDescriptor(), {
+      embeddingVersion: "arcface-mbf",
+    });
     const result = await reg.findMatch(desc, 0.6, "human-hse");
     assert.notEqual(result.match, null);
     assert.equal(result.match.label, "hse-match");
@@ -522,14 +579,19 @@ describe("FaceRegistry ? embeddingVersion storage", () => {
 
   it("should store the embeddingVersion from metadata", async () => {
     const { reg } = freshRegistry();
-    const id = await reg.addFace("alice", randomDescriptor(), { embeddingVersion: "arcface-mbf" });
+    const id = await reg.addFace("alice", randomDescriptor(), {
+      embeddingVersion: "arcface-mbf",
+    });
     const face = await reg.getFace(id);
     assert.equal(face.embeddingVersion, "arcface-mbf");
   });
 
   it("should keep embeddingVersion inside metadata too", async () => {
     const { reg } = freshRegistry();
-    const id = await reg.addFace("alice", randomDescriptor(), { embeddingVersion: "arcface-mbf", source: "upload" });
+    const id = await reg.addFace("alice", randomDescriptor(), {
+      embeddingVersion: "arcface-mbf",
+      source: "upload",
+    });
     const face = await reg.getFace(id);
     assert.equal(face.metadata.embeddingVersion, "arcface-mbf");
     assert.equal(face.metadata.source, "upload");
@@ -545,7 +607,10 @@ describe("FaceRegistry — descriptor persistence", () => {
     const face = await reg.getFace(id);
     assert.ok(face.descriptor instanceof Float32Array);
     for (let i = 0; i < 128; i++) {
-      assert.ok(Math.abs(face.descriptor[i] - desc[i]) < 0.001, "Mismatch at " + i);
+      assert.ok(
+        Math.abs(face.descriptor[i] - desc[i]) < 0.001,
+        "Mismatch at " + i,
+      );
     }
   });
 
@@ -577,7 +642,10 @@ describe("IDBStore — IndexedDB-backed storage", () => {
     const store = new IDBStore(_testDbName());
     await store.open();
     assert.ok(store._db, "db should be set");
-    assert.ok(store._db.objectStoreNames.contains("faces"), "faces store should exist");
+    assert.ok(
+      store._db.objectStoreNames.contains("faces"),
+      "faces store should exist",
+    );
   });
 
   it("should be idempotent on second open", async () => {
@@ -591,7 +659,12 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   it("should add entry and return id", async () => {
     const store = new IDBStore(_testDbName());
     await store.open();
-    const id = await store.add({ label: "test", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    const id = await store.add({
+      label: "test",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     assert.equal(typeof id, "number");
     assert.ok(id > 0);
   });
@@ -599,7 +672,12 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   it("should get entry by id", async () => {
     const store = new IDBStore(_testDbName());
     await store.open();
-    const entry = { label: "alice", descriptor: new Float32Array([0.1, 0.2]), created: new Date(), updated: new Date() };
+    const entry = {
+      label: "alice",
+      descriptor: new Float32Array([0.1, 0.2]),
+      created: new Date(),
+      updated: new Date(),
+    };
     const id = await store.add(entry);
     const result = await store.get(id);
     assert.notEqual(result, null);
@@ -616,8 +694,18 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   it("should getAll entries", async () => {
     const store = new IDBStore(_testDbName());
     await store.open();
-    await store.add({ label: "a", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
-    await store.add({ label: "b", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    await store.add({
+      label: "a",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
+    await store.add({
+      label: "b",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     const all = await store.getAll();
     assert.equal(all.length, 2);
   });
@@ -632,12 +720,29 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   it("should findByIndex", async () => {
     const store = new IDBStore(_testDbName());
     await store.open();
-    await store.add({ label: "alice", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
-    await store.add({ label: "alice", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
-    await store.add({ label: "bob", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    await store.add({
+      label: "alice",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
+    await store.add({
+      label: "alice",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
+    await store.add({
+      label: "bob",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     const results = await store.findByIndex("label", "alice");
     assert.equal(results.length, 2);
-    results.forEach(function (r) { assert.equal(r.label, "alice"); });
+    results.forEach(function (r) {
+      assert.equal(r.label, "alice");
+    });
   });
 
   it("should return empty array from findByIndex when no match", async () => {
@@ -650,9 +755,20 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   it("should put (update) existing entry", async () => {
     const store = new IDBStore(_testDbName());
     await store.open();
-    const entry = { label: "old", descriptor: new Float32Array(2), created: new Date(), updated: new Date() };
+    const entry = {
+      label: "old",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    };
     const id = await store.add(entry);
-    await store.put({ id: id, label: "updated", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    await store.put({
+      id: id,
+      label: "updated",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     const result = await store.get(id);
     assert.equal(result.label, "updated");
   });
@@ -660,7 +776,12 @@ describe("IDBStore — IndexedDB-backed storage", () => {
   it("should remove entry by id", async () => {
     const store = new IDBStore(_testDbName());
     await store.open();
-    const id = await store.add({ label: "delete-me", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    const id = await store.add({
+      label: "delete-me",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     await store.remove(id);
     const result = await store.get(id);
     assert.equal(result, null);
@@ -670,17 +791,37 @@ describe("IDBStore — IndexedDB-backed storage", () => {
     const store = new IDBStore(_testDbName());
     await store.open();
     assert.equal(await store.count(), 0);
-    await store.add({ label: "a", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    await store.add({
+      label: "a",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     assert.equal(await store.count(), 1);
-    await store.add({ label: "b", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    await store.add({
+      label: "b",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     assert.equal(await store.count(), 2);
   });
 
   it("should clear all entries", async () => {
     const store = new IDBStore(_testDbName());
     await store.open();
-    await store.add({ label: "a", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
-    await store.add({ label: "b", descriptor: new Float32Array(2), created: new Date(), updated: new Date() });
+    await store.add({
+      label: "a",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
+    await store.add({
+      label: "b",
+      descriptor: new Float32Array(2),
+      created: new Date(),
+      updated: new Date(),
+    });
     await store.clear();
     assert.equal(await store.count(), 0);
   });
@@ -734,7 +875,9 @@ describe("FaceRegistry — lock", () => {
   it("should encrypt plaintext entries in place and report the count", async () => {
     const reg = makeRegistry();
     await reg.open();
-    await reg.addFace("alice", makeDescriptor([1, 2, 3]), { embeddingVersion: "human-hse" });
+    await reg.addFace("alice", makeDescriptor([1, 2, 3]), {
+      embeddingVersion: "human-hse",
+    });
     await reg.addFace("bob", makeDescriptor([4, 5, 6]));
     const n = await reg.lock(LOCK_PASS);
     assert.equal(n, 2);
@@ -743,7 +886,9 @@ describe("FaceRegistry — lock", () => {
     assert.equal(faces.length, 2);
     for (const f of faces) {
       assert.equal(f.descriptor, undefined);
-      assert.ok(f.encrypted && f.encrypted.alg === "AES-GCM" && f.encrypted.cipher);
+      assert.ok(
+        f.encrypted && f.encrypted.alg === "AES-GCM" && f.encrypted.cipher,
+      );
       assert.ok(f.label, "label stays plaintext for the list");
     }
   });
@@ -818,18 +963,24 @@ describe("FaceRegistry — exportBackup/importBackup", () => {
     assert.equal((await reg2.getAllFaces()).length, 1);
   });
 
-it("should export encrypted backup and restore with the passphrase", async () => {
+  it("should export encrypted backup and restore with the passphrase", async () => {
     const reg = makeRegistry();
     await reg.open();
-    const id = await reg.addFace("alice", makeDescriptor([1, 2, 3]), { embeddingVersion: "human-hse" });
+    const id = await reg.addFace("alice", makeDescriptor([1, 2, 3]), {
+      embeddingVersion: "human-hse",
+    });
     await reg.updateFace(id, { did: "did:key:z6Mkxx" });
     const backup = await reg.exportBackup(LOCK_PASS);
     assert.ok(backup.entries[0].encrypted);
-    assert.equal(backup.entries[0].label, undefined, "label is inside the envelope");
+    assert.equal(
+      backup.entries[0].label,
+      undefined,
+      "label is inside the envelope",
+    );
 
     const reg2 = makeRegistry();
     await reg2.open();
-const n = await reg2.importBackup(backup, LOCK_PASS, "merge");
+    const n = await reg2.importBackup(backup, LOCK_PASS, "merge");
     assert.equal(n, 1);
     const faces = await reg2.getAllFaces();
     assert.equal(faces[0].label, "alice");
@@ -852,11 +1003,17 @@ const n = await reg2.importBackup(backup, LOCK_PASS, "merge");
     assert.equal(await reg2.getSize(), 0);
   });
 
-it("should reject invalid backup files", async () => {
+  it("should reject invalid backup files", async () => {
     const reg = makeRegistry();
     await reg.open();
-    await assert.rejects(reg.importBackup({ type: "nope" }, null, "merge"), /Invalid backup file/);
-    await assert.rejects(reg.importBackup(null, null, "merge"), /Invalid backup file/);
+    await assert.rejects(
+      reg.importBackup({ type: "nope" }, null, "merge"),
+      /Invalid backup file/,
+    );
+    await assert.rejects(
+      reg.importBackup(null, null, "merge"),
+      /Invalid backup file/,
+    );
   });
 });
 
@@ -867,7 +1024,11 @@ describe("FaceRegistry — setMeta/getMeta/removeMeta", () => {
     const reg = makeRegistry();
     await reg.open();
     assert.equal(await reg.getMeta("passkey"), null);
-    await reg.setMeta("passkey", { credentialId: "abc-123", name: "abc-123…", createdAt: "2026-01-01T00:00:00.000Z" });
+    await reg.setMeta("passkey", {
+      credentialId: "abc-123",
+      name: "abc-123…",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
     const passkey = await reg.getMeta("passkey");
     assert.equal(passkey.credentialId, "abc-123");
     await reg.removeMeta("passkey");
@@ -896,7 +1057,6 @@ describe("FaceRegistry — setMeta/getMeta/removeMeta", () => {
   });
 });
 
-
 // ── Coverage: retention purge arms ──
 
 describe("FaceRegistry — retention purge", () => {
@@ -907,7 +1067,9 @@ describe("FaceRegistry — retention purge", () => {
     const reg = new FaceRegistry({
       store: {
         open: async function () {},
-        getAll: async function () { throw new Error("db gone"); },
+        getAll: async function () {
+          throw new Error("db gone");
+        },
         remove: async function () {},
       },
     });
@@ -920,18 +1082,22 @@ describe("FaceRegistry — retention purge", () => {
     store._entries.push(
       {},
       { label: "no-id" },
-      { id: 1, updated: new Date(OLD) },            // updated too old → purge
-      { id: 2, created: new Date(OLD) },            // created fallback → purge
-      { id: 3 },                                     // no dates → now → keep
+      { id: 1, updated: new Date(OLD) }, // updated too old → purge
+      { id: 2, created: new Date(OLD) }, // created fallback → purge
+      { id: 3 }, // no dates → now → keep
       { id: 4, updated: "not-a-date", created: new Date(OLD) }, // NaN guard → created
-      { id: 5, updated: "junk", created: "junk" },   // both NaN → now → keep
-      { id: 6, updated: new Date() }                 // fresh → keep
+      { id: 5, updated: "junk", created: "junk" }, // both NaN → now → keep
+      { id: 6, updated: new Date() }, // fresh → keep
     );
     const reg = new FaceRegistry({ store });
     assert.equal(await reg.purgeExpired(), 3);
     const ids = (await store.getAll())
-      .map(function (e) { return e.id; })
-      .filter(function (id) { return id !== undefined; })
+      .map(function (e) {
+        return e.id;
+      })
+      .filter(function (id) {
+        return id !== undefined;
+      })
       .sort();
     assert.deepEqual(ids, [3, 5, 6]);
   });
@@ -939,7 +1105,10 @@ describe("FaceRegistry — retention purge", () => {
   it("keeps purging when one removal throws", async () => {
     let calls = 0;
     const store = new InMemoryStore();
-    store._entries.push({ id: 1, updated: new Date(OLD) }, { id: 2, updated: new Date(OLD) });
+    store._entries.push(
+      { id: 1, updated: new Date(OLD) },
+      { id: 2, updated: new Date(OLD) },
+    );
     store.remove = async function (id) {
       calls++;
       if (calls === 1) throw new Error("locked row");
@@ -954,14 +1123,21 @@ describe("FaceRegistry — retention purge", () => {
     const reg = new FaceRegistry({ store });
     assert.equal(await reg.purgeExpired(), 0);
     assert.equal(reg._opened, true);
-    assert.equal(await reg.purgeExpired(), 0, "second call takes the opened path");
+    assert.equal(
+      await reg.purgeExpired(),
+      0,
+      "second call takes the opened path",
+    );
   });
 
   it("surfaces storage errors from _idb (request.onerror)", async () => {
     const store = new IDBStore("ErrDB_" + Date.now());
     await store.open();
     await store.add({ id: 5, label: "first" });
-    await assert.rejects(store.add({ id: 5, label: "dup" }), /ConstraintError|KeyAlready|already/i);
+    await assert.rejects(
+      store.add({ id: 5, label: "dup" }),
+      /ConstraintError|KeyAlready|already/i,
+    );
   });
 });
 
@@ -972,13 +1148,24 @@ const waSrc = fs.readFileSync(
   "utf8",
 );
 vm.runInThisContext(waSrc, {
-  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_webauthn.js"),
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_webauthn.js",
+  ),
 });
 const REAL_WA = globalThis.FaceWebauthn;
 
 async function prfEnvelope(key, payload) {
   const env = await REAL_WA.encryptJSON(key, payload);
-  return { alg: "AES-GCM", version: 1, kdf: { name: "PRF" }, iv: env.iv, cipher: env.ct };
+  return {
+    alg: "AES-GCM",
+    version: 1,
+    kdf: { name: "PRF" },
+    iv: env.iv,
+    cipher: env.ct,
+  };
 }
 
 async function pbkdf2Envelope(passphrase, payload) {
@@ -987,9 +1174,16 @@ async function pbkdf2Envelope(passphrase, payload) {
   const iv = FaceCrypto.generateSalt(12);
   const env = await FaceCrypto.encryptWithKey(key, iv, payload);
   return {
-    alg: "AES-GCM", version: 1,
-    kdf: { name: "PBKDF2", hash: "SHA-256", iterations: FaceCrypto.KDF_ITERATIONS },
-    salt: FaceCrypto.bytesToBase64(salt), iv: env.iv, cipher: env.cipher,
+    alg: "AES-GCM",
+    version: 1,
+    kdf: {
+      name: "PBKDF2",
+      hash: "SHA-256",
+      iterations: FaceCrypto.KDF_ITERATIONS,
+    },
+    salt: FaceCrypto.bytesToBase64(salt),
+    iv: env.iv,
+    cipher: env.cipher,
   };
 }
 
@@ -1044,7 +1238,9 @@ describe("FaceRegistry — PRF seal/unseal", () => {
   });
 
   it("round-trips a face through addFace/getFace with the vault key", async () => {
-    const id = await reg.addFace("RoundTrip", new Float32Array([0.5, -0.25]), { tag: 1 });
+    const id = await reg.addFace("RoundTrip", new Float32Array([0.5, -0.25]), {
+      tag: 1,
+    });
     const face = await reg.getFace(id);
     assert.equal(face.label, "RoundTrip");
     assert.deepEqual(Array.from(face.descriptor), [0.5, -0.25]);
@@ -1107,12 +1303,29 @@ describe("FaceRegistry — sealAllPlaintext", () => {
     await reg.open();
     const store = reg._store;
     store._entries.push(
-      { id: 1, label: "Plain", descriptor: new Float32Array([1, 2]), metadata: { m: 1 }, embeddingVersion: "human-hse", did: "", created: new Date(), updated: new Date() },
+      {
+        id: 1,
+        label: "Plain",
+        descriptor: new Float32Array([1, 2]),
+        metadata: { m: 1 },
+        embeddingVersion: "human-hse",
+        did: "",
+        created: new Date(),
+        updated: new Date(),
+      },
       { id: 2, updated: new Date() },
-      { id: 3, label: "Already", created: new Date(), updated: new Date(), encrypted: { kdf: { name: "PRF" }, iv: "x", cipher: "y" } }
+      {
+        id: 3,
+        label: "Already",
+        created: new Date(),
+        updated: new Date(),
+        encrypted: { kdf: { name: "PRF" }, iv: "x", cipher: "y" },
+      },
     );
     assert.equal(await reg.sealAllPlaintext(), 1);
-    const sealedRow = store._entries.find(function (e) { return e.id === 1; });
+    const sealedRow = store._entries.find(function (e) {
+      return e.id === 1;
+    });
     assert.ok(sealedRow.encrypted, "plaintext row must now be sealed");
   });
 });
@@ -1150,7 +1363,10 @@ describe("FaceRegistry — lock/unlock (PBKDF2)", () => {
       updated: new Date(),
     });
     // a pre-locked PBKDF2 row (same passphrase) must be left alone by lock()
-    const preEnv = await pbkdf2Envelope("secret", { label: "Pre", descriptor: [9] });
+    const preEnv = await pbkdf2Envelope("secret", {
+      label: "Pre",
+      descriptor: [9],
+    });
     await reg._store.add({
       label: "Pre",
       created: new Date(),
@@ -1166,7 +1382,9 @@ describe("FaceRegistry — lock/unlock (PBKDF2)", () => {
     assert.equal(await reg.unlock("secret"), 3);
     assert.equal(await reg.isLocked(), false);
     const faces = await reg.getAllFaces();
-    const one = faces.find(function (f) { return f.label === "One"; });
+    const one = faces.find(function (f) {
+      return f.label === "One";
+    });
     assert.deepEqual(Array.from(one.descriptor), [1, 2]);
   });
 
@@ -1251,11 +1469,35 @@ describe("FaceRegistry — exportBackup", () => {
     // Bypass serialization so _descriptorToArray sees genuine raw shapes.
     reg._store.getAll = async function () {
       return [
-        { id: 1, label: "F32", descriptor: { __f32: true, data: [9, 8] }, created: new Date(), updated: new Date() },
-        { id: 2, label: "BadF32", descriptor: { __f32: true, data: "nope" }, created: new Date(), updated: new Date() },
-        { id: 3, label: "Arr", descriptor: [7, 6], created: new Date(), updated: new Date() },
+        {
+          id: 1,
+          label: "F32",
+          descriptor: { __f32: true, data: [9, 8] },
+          created: new Date(),
+          updated: new Date(),
+        },
+        {
+          id: 2,
+          label: "BadF32",
+          descriptor: { __f32: true, data: "nope" },
+          created: new Date(),
+          updated: new Date(),
+        },
+        {
+          id: 3,
+          label: "Arr",
+          descriptor: [7, 6],
+          created: new Date(),
+          updated: new Date(),
+        },
         { id: 4, label: "None", created: new Date(), updated: new Date() },
-        { id: 5, label: "Junk", descriptor: {}, created: new Date(), updated: new Date() },
+        {
+          id: 5,
+          label: "Junk",
+          descriptor: {},
+          created: new Date(),
+          updated: new Date(),
+        },
       ];
     };
     const backup = await reg.exportBackup();
@@ -1271,7 +1513,12 @@ describe("FaceRegistry — exportBackup", () => {
     await reg.open();
     await reg.addFace("Enc", new Float32Array([5]));
     // bare row without metadata/embedding/descriptor exercises payload defaults
-    await reg._store._entries.push({ id: 50, label: "Bare", created: new Date(), updated: new Date() });
+    await reg._store._entries.push({
+      id: 50,
+      label: "Bare",
+      created: new Date(),
+      updated: new Date(),
+    });
     const backup = await reg.exportBackup("passphrase");
     assert.equal(backup.entries.length, 2);
     for (const entry of backup.entries) {
@@ -1282,10 +1529,22 @@ describe("FaceRegistry — exportBackup", () => {
   it("re-encrypts PBKDF2 rows when exporting with their passphrase", async () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
-    const env = await pbkdf2Envelope("pw", { label: "Locked", descriptor: [4] });
-    await reg._store.add({ id: 11, label: "Locked", created: new Date(), updated: new Date(), encrypted: env });
+    const env = await pbkdf2Envelope("pw", {
+      label: "Locked",
+      descriptor: [4],
+    });
+    await reg._store.add({
+      id: 11,
+      label: "Locked",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: env,
+    });
     const backup = await reg.exportBackup("pw");
-    assert.ok(backup.entries[0].encrypted.cipher !== env.cipher, "fresh envelope per export");
+    assert.ok(
+      backup.entries[0].encrypted.cipher !== env.cipher,
+      "fresh envelope per export",
+    );
     const target = new FaceRegistry({ store: new InMemoryStore() });
     assert.equal(await target.importBackup(backup, "pw"), 1);
     const all = await target.getAllFaces();
@@ -1298,7 +1557,13 @@ describe("FaceRegistry — exportBackup", () => {
     reg.setVaultKey(key);
     await reg.open();
     const env = await prfEnvelope(key, {}); // sparse payload → export defaults kick in
-    await reg._store.add({ id: 21, label: "PrfRow", created: new Date(), updated: new Date(), encrypted: env });
+    await reg._store.add({
+      id: 21,
+      label: "PrfRow",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: env,
+    });
     const backup = await reg.exportBackup("any-pw");
     assert.ok(backup.entries[0].encrypted.cipher);
   });
@@ -1308,7 +1573,13 @@ describe("FaceRegistry — exportBackup", () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
     const env = await prfEnvelope(key, { descriptor: [1] });
-    await reg._store.add({ id: 22, label: "X", created: new Date(), updated: new Date(), encrypted: env });
+    await reg._store.add({
+      id: 22,
+      label: "X",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: env,
+    });
     await assert.rejects(reg.exportBackup("pw"), /passkey session/);
   });
 
@@ -1329,20 +1600,44 @@ describe("FaceRegistry — exportBackup", () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
     const env = await pbkdf2Envelope("pw", { descriptor: [] });
-    await reg._store.add({ id: 24, label: "L", created: new Date(), updated: new Date(), encrypted: env });
+    await reg._store.add({
+      id: 24,
+      label: "L",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: env,
+    });
     await assert.rejects(reg.exportBackup(), /requires a passphrase/);
   });
 
   it("exports PRF rows decrypted with a vault key, or as ciphertext without one", async () => {
     const key = await REAL_WA.deriveVaultKey(new Uint8Array(32).fill(9));
-    const fullEnv = await prfEnvelope(key, { label: "P", descriptor: [1], metadata: { m: 1 }, embeddingVersion: "v9", did: "did:key:z" });
+    const fullEnv = await prfEnvelope(key, {
+      label: "P",
+      descriptor: [1],
+      metadata: { m: 1 },
+      embeddingVersion: "v9",
+      did: "did:key:z",
+    });
     const bareEnv = await prfEnvelope(key, {});
 
     const unlockedReg = new FaceRegistry({ store: new InMemoryStore() });
     unlockedReg.setVaultKey(key);
     await unlockedReg.open();
-    await unlockedReg._store.add({ id: 31, label: "P", created: new Date(), updated: new Date(), encrypted: fullEnv });
-    await unlockedReg._store.add({ id: 33, label: "Bare", created: new Date(), updated: new Date(), encrypted: bareEnv });
+    await unlockedReg._store.add({
+      id: 31,
+      label: "P",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: fullEnv,
+    });
+    await unlockedReg._store.add({
+      id: 33,
+      label: "Bare",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: bareEnv,
+    });
     const openBackup = await unlockedReg.exportBackup();
     assert.equal(openBackup.entries[0].encrypted, undefined);
     assert.deepEqual(openBackup.entries[0].descriptor, [1]);
@@ -1356,7 +1651,13 @@ describe("FaceRegistry — exportBackup", () => {
 
     const lockedReg = new FaceRegistry({ store: new InMemoryStore() });
     await lockedReg.open();
-    await lockedReg._store.add({ id: 32, label: "P", created: new Date(), updated: new Date(), encrypted: fullEnv });
+    await lockedReg._store.add({
+      id: 32,
+      label: "P",
+      created: new Date(),
+      updated: new Date(),
+      encrypted: fullEnv,
+    });
     const cipherBackup = await lockedReg.exportBackup();
     assert.equal(cipherBackup.entries[0].encrypted.kdf.name, "PRF");
   });
@@ -1371,17 +1672,27 @@ describe("FaceRegistry — importBackup", () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
     await assert.rejects(reg.importBackup(null), /Invalid backup/);
-    await assert.rejects(reg.importBackup({ type: "nope", entries: [] }), /Invalid backup/);
-    await assert.rejects(reg.importBackup(makeBackup("not-array")), /Invalid backup/);
+    await assert.rejects(
+      reg.importBackup({ type: "nope", entries: [] }),
+      /Invalid backup/,
+    );
+    await assert.rejects(
+      reg.importBackup(makeBackup("not-array")),
+      /Invalid backup/,
+    );
   });
 
   it("imports plaintext rows with defaults in merge mode", async () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
-    const n = await reg.importBackup(makeBackup([{}, { label: "Named", descriptor: [1] }]));
+    const n = await reg.importBackup(
+      makeBackup([{}, { label: "Named", descriptor: [1] }]),
+    );
     assert.equal(n, 2);
     const faces = await reg.getAllFaces();
-    const imported = faces.find(function (f) { return f.label === "Imported"; });
+    const imported = faces.find(function (f) {
+      return f.label === "Imported";
+    });
     assert.ok(imported, "missing labels fall back to Imported");
     assert.deepEqual(Array.from(imported.descriptor), []);
   });
@@ -1390,7 +1701,11 @@ describe("FaceRegistry — importBackup", () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
     await reg.addFace("Old", new Float32Array([1]));
-    await reg.importBackup(makeBackup([{ label: "New", descriptor: [] }]), null, "replace");
+    await reg.importBackup(
+      makeBackup([{ label: "New", descriptor: [] }]),
+      null,
+      "replace",
+    );
     const faces = await reg.getAllFaces();
     assert.equal(faces.length, 1);
     assert.equal(faces[0].label, "New");
@@ -1401,13 +1716,21 @@ describe("FaceRegistry — importBackup", () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     reg.setVaultKey(key);
     await reg.open();
-    const env = await prfEnvelope(key, { label: "Prf", descriptor: [3], metadata: null, embeddingVersion: null, did: "" });
+    const env = await prfEnvelope(key, {
+      label: "Prf",
+      descriptor: [3],
+      metadata: null,
+      embeddingVersion: null,
+      did: "",
+    });
     // a label-less payload exercises the "Imported" fallback on reseal
     const bareEnv = await prfEnvelope(key, {}); // no label/descriptor → full reseal defaults
-    const n = await reg.importBackup(makeBackup([
-      { encrypted: env, created: new Date().toISOString() },
-      { encrypted: bareEnv }, // no created → Date.now() fallback
-    ]));
+    const n = await reg.importBackup(
+      makeBackup([
+        { encrypted: env, created: new Date().toISOString() },
+        { encrypted: bareEnv }, // no created → Date.now() fallback
+      ]),
+    );
     assert.equal(n, 2);
     const faces = await reg.getAllFaces();
     assert.equal(faces[0].label, "Prf");
@@ -1421,29 +1744,49 @@ describe("FaceRegistry — importBackup", () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
     const env = await prfEnvelope(key, { label: "Hidden", descriptor: [1] });
-    const n = await reg.importBackup(makeBackup([
-      { label: "Hidden", encrypted: env },
-      { encrypted: env },
-    ]));
+    const n = await reg.importBackup(
+      makeBackup([{ label: "Hidden", encrypted: env }, { encrypted: env }]),
+    );
     assert.equal(n, 2);
     const rows = await reg._store.getAll();
-    assert.equal(rows.filter(function (r) { return r.encrypted && r.encrypted.kdf.name === "PRF"; }).length, 2);
-    assert.equal(rows.some(function (r) { return r.label === "Imported"; }), true);
+    assert.equal(
+      rows.filter(function (r) {
+        return r.encrypted && r.encrypted.kdf.name === "PRF";
+      }).length,
+      2,
+    );
+    assert.equal(
+      rows.some(function (r) {
+        return r.label === "Imported";
+      }),
+      true,
+    );
   });
 
   it("requires a passphrase for PBKDF2 rows", async () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
     const env = await pbkdf2Envelope("pw", { label: "L", descriptor: [1] });
-    await assert.rejects(reg.importBackup(makeBackup([{ encrypted: env }])), /import requires a passphrase/);
+    await assert.rejects(
+      reg.importBackup(makeBackup([{ encrypted: env }])),
+      /import requires a passphrase/,
+    );
   });
 
   it("decrypts PBKDF2 rows with sparse payloads", async () => {
     const reg = new FaceRegistry({ store: new InMemoryStore() });
     await reg.open();
     const env = await pbkdf2Envelope("pw", { descriptor: [8] });
-    const namedEnv = await pbkdf2Envelope("pw", { label: "Named", metadata: null, embeddingVersion: null, did: "" }); // no descriptor
-    const n = await reg.importBackup(makeBackup([{ encrypted: env }, { encrypted: namedEnv }]), "pw");
+    const namedEnv = await pbkdf2Envelope("pw", {
+      label: "Named",
+      metadata: null,
+      embeddingVersion: null,
+      did: "",
+    }); // no descriptor
+    const n = await reg.importBackup(
+      makeBackup([{ encrypted: env }, { encrypted: namedEnv }]),
+      "pw",
+    );
     assert.equal(n, 2);
     const faces = await reg.getAllFaces();
     assert.equal(faces[0].label, "Imported");

@@ -8,20 +8,60 @@ var _els = {};
 
 function makeEl(id, extra) {
   if (!_els[id]) {
-    _els[id] = Object.assign({
-      style: { display: "" },
-      value: "", textContent: "", innerHTML: "", className: "", dataset: {},
-      placeholder: "", title: "", rel: "", href: "", id: id, src: "", download: "",
-      classList: { add: function () {}, remove: function () {}, contains: function () { return false; }, toggle: function () {} },
-      append: function () {}, appendChild: function () {}, remove: function () {},
-      addEventListener: function () {}, removeEventListener: function () {}, dispatchEvent: function () {},
-      getAttribute: function (a) { return this[a] || null; },
-      setAttribute: function (a, v) { this[a] = v; },
-      click: function () {}, focus: function () {},
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
-      parentElement: {}, parentNode: { insertBefore: function () {}, removeChild: function () {}, querySelector: function () { return null; } },
-    }, extra || {});
+    _els[id] = Object.assign(
+      {
+        style: { display: "" },
+        value: "",
+        textContent: "",
+        innerHTML: "",
+        className: "",
+        dataset: {},
+        placeholder: "",
+        title: "",
+        rel: "",
+        href: "",
+        id: id,
+        src: "",
+        download: "",
+        classList: {
+          add: function () {},
+          remove: function () {},
+          contains: function () {
+            return false;
+          },
+          toggle: function () {},
+        },
+        append: function () {},
+        appendChild: function () {},
+        remove: function () {},
+        addEventListener: function () {},
+        removeEventListener: function () {},
+        dispatchEvent: function () {},
+        getAttribute: function (a) {
+          return this[a] || null;
+        },
+        setAttribute: function (a, v) {
+          this[a] = v;
+        },
+        click: function () {},
+        focus: function () {},
+        querySelector: function () {
+          return null;
+        },
+        querySelectorAll: function () {
+          return [];
+        },
+        parentElement: {},
+        parentNode: {
+          insertBefore: function () {},
+          removeChild: function () {},
+          querySelector: function () {
+            return null;
+          },
+        },
+      },
+      extra || {},
+    );
   }
   return _els[id];
 }
@@ -34,17 +74,34 @@ function setupDOM() {
   var _cardCbs = {};
 
   globalThis.document = {
-    documentElement: { dataset: {}, style: {}, getAttribute: function () { return null; } },
-    getElementById: function (id) { return _els[id] || null; },
+    documentElement: {
+      dataset: {},
+      style: {},
+      getAttribute: function () {
+        return null;
+      },
+    },
+    getElementById: function (id) {
+      return _els[id] || null;
+    },
     querySelector: function (sel) {
       if (sel === 'meta[name="description"]') return makeEl("metaDesc");
-      if (sel.includes("data-wm-tab") || sel.includes("data-ots-tab") || sel.includes("data-c2pa-tab")) return makeEl("tabBtn");
+      if (
+        sel.includes("data-wm-tab") ||
+        sel.includes("data-ots-tab") ||
+        sel.includes("data-c2pa-tab")
+      )
+        return makeEl("tabBtn");
       return null;
     },
     querySelectorAll: function (sel) {
       if (sel === ".page") return [];
       if (sel === ".sidebar a[data-page]") return [];
-      if (sel === ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .logo[data-page]") return [];
+      if (
+        sel ===
+        ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .logo[data-page]"
+      )
+        return [];
       if (sel === ".simple-nav-links a[data-page]") return [];
       if (sel === ".card[data-page]") return [];
       if (sel === ".tab-btn[data-wm-tab]") return [];
@@ -53,19 +110,46 @@ function setupDOM() {
       if (sel === 'link[rel="preload"][as="audio"]') return [];
       if (sel === "#modeSelect") return [];
       if (sel === ".lang-dropdown") return [];
-      if (sel === ".sidebar a[data-page=\"removal-tools\"], .card[data-page=\"removal-tools\"], .footer-links a[data-page=\"removal-tools\"]") return [];
+      if (
+        sel ===
+        '.sidebar a[data-page="removal-tools"], .card[data-page="removal-tools"], .footer-links a[data-page="removal-tools"]'
+      )
+        return [];
       return [];
     },
     createElement: function (tag) {
       var el = makeEl("created-" + tag, { tagName: tag });
       return el;
     },
-    createTextNode: function () { return {}; },
-    head: { append: function () {}, querySelector: function () { return null; } },
-    body: { classList: { add: function () {}, remove: function () {}, contains: function () { return false; }, toggle: function () {} }, append: function () {}, querySelector: function () { return null; } },
+    createTextNode: function () {
+      return {};
+    },
+    head: {
+      append: function () {},
+      querySelector: function () {
+        return null;
+      },
+    },
+    body: {
+      classList: {
+        add: function () {},
+        remove: function () {},
+        contains: function () {
+          return false;
+        },
+        toggle: function () {},
+      },
+      append: function () {},
+      querySelector: function () {
+        return null;
+      },
+    },
     title: "test",
     addEventListener: function (evt, cb) {
-      if (evt === "DOMContentLoaded") { _domReadyCbs.push(cb); globalThis.__navDomReadyCbs = _domReadyCbs; }
+      if (evt === "DOMContentLoaded") {
+        _domReadyCbs.push(cb);
+        globalThis.__navDomReadyCbs = _domReadyCbs;
+      }
       if (evt === "click") _clickCbs.push(cb);
       if (evt === "keydown") globalThis.__navKeydownCb = cb;
       if (evt === "pointerdown") globalThis.__navPointerdownCb = cb;
@@ -79,29 +163,61 @@ function setupDOM() {
     _winEventListeners[evt].push(cb);
   };
   globalThis.removeEventListener = function () {};
-  globalThis.__getNavListeners = function () { return _winEventListeners; };
+  globalThis.__getNavListeners = function () {
+    return _winEventListeners;
+  };
   globalThis.window = globalThis;
   globalThis.location = {
-    protocol: "http:", hostname: "localhost", href: "http://localhost:8080/",
-    pathname: "/", replace: function () {}, hash: "",
+    protocol: "http:",
+    hostname: "localhost",
+    href: "http://localhost:8080/",
+    pathname: "/",
+    replace: function () {},
+    hash: "",
     search: "",
   };
-  globalThis.history = { pushState: function () {}, replaceState: function () {} };
-  globalThis.console = { error: function () {}, warn: function () {}, log: function () {} };
+  globalThis.history = {
+    pushState: function () {},
+    replaceState: function () {},
+  };
+  globalThis.console = {
+    error: function () {},
+    warn: function () {},
+    log: function () {},
+  };
   globalThis.setTimeout = setTimeout;
   globalThis.clearTimeout = clearTimeout;
   globalThis.setInterval = setInterval;
   globalThis.clearInterval = clearInterval;
-  globalThis.encodeURIComponent = function (s) { return s; };
-  globalThis.URLSearchParams = function () { return { get: function () { return null; } }; };
-  globalThis.performance = { now: function () { return 0; } };
-  globalThis.__ = function (key) { return key; };
+  globalThis.encodeURIComponent = function (s) {
+    return s;
+  };
+  globalThis.URLSearchParams = function () {
+    return {
+      get: function () {
+        return null;
+      },
+    };
+  };
+  globalThis.performance = {
+    now: function () {
+      return 0;
+    },
+  };
+  globalThis.__ = function (key) {
+    return key;
+  };
 }
 
 function loadNav() {
   setupDOM();
-  var src = fs.readFileSync(path.resolve(__dirname, "../../Style/navigation.js"), "utf8");
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Style/navigation.js") });
+  var src = fs.readFileSync(
+    path.resolve(__dirname, "../../Style/navigation.js"),
+    "utf8",
+  );
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../Style/navigation.js"),
+  });
 }
 
 describe("navigation.js — globals & IIFE", () => {
@@ -141,10 +257,18 @@ describe("navigation.js — toggleSidebar / closeSidebar", () => {
   });
 
   it("toggleSidebar should add/remove CSS classes", () => {
-    var sidebarToggle = false, overlayToggle = false, bodyToggle = false;
-    _els["sidebar"].classList.toggle = function (c) { if (c === "open") sidebarToggle = true; };
-    _els["sidebarOverlay"].classList.toggle = function (c) { if (c === "open") overlayToggle = true; };
-    globalThis.document.body.classList.toggle = function (c) { if (c === "no-scroll") bodyToggle = true; };
+    var sidebarToggle = false,
+      overlayToggle = false,
+      bodyToggle = false;
+    _els["sidebar"].classList.toggle = function (c) {
+      if (c === "open") sidebarToggle = true;
+    };
+    _els["sidebarOverlay"].classList.toggle = function (c) {
+      if (c === "open") overlayToggle = true;
+    };
+    globalThis.document.body.classList.toggle = function (c) {
+      if (c === "no-scroll") bodyToggle = true;
+    };
     toggleSidebar();
     assert.ok(sidebarToggle);
     assert.ok(overlayToggle);
@@ -152,10 +276,18 @@ describe("navigation.js — toggleSidebar / closeSidebar", () => {
   });
 
   it("closeSidebar should remove CSS classes", () => {
-    var sidebarRemove = false, overlayRemove = false, bodyRemove = false;
-    _els["sidebar"].classList.remove = function (c) { if (c === "open") sidebarRemove = true; };
-    _els["sidebarOverlay"].classList.remove = function (c) { if (c === "open") overlayRemove = true; };
-    globalThis.document.body.classList.remove = function (c) { if (c === "no-scroll") bodyRemove = true; };
+    var sidebarRemove = false,
+      overlayRemove = false,
+      bodyRemove = false;
+    _els["sidebar"].classList.remove = function (c) {
+      if (c === "open") sidebarRemove = true;
+    };
+    _els["sidebarOverlay"].classList.remove = function (c) {
+      if (c === "open") overlayRemove = true;
+    };
+    globalThis.document.body.classList.remove = function (c) {
+      if (c === "no-scroll") bodyRemove = true;
+    };
     closeSidebar();
     assert.ok(sidebarRemove);
     assert.ok(overlayRemove);
@@ -173,7 +305,9 @@ describe("navigation.js — showPage", () => {
 
   it("should activate a page section", () => {
     var activated = false;
-    _els["page-watermark"].classList.add = function (c) { if (c === "active") activated = true; };
+    _els["page-watermark"].classList.add = function (c) {
+      if (c === "active") activated = true;
+    };
     showPage("watermark");
     assert.ok(activated);
   });
@@ -224,7 +358,15 @@ describe("navigation.js — showStaticPage", () => {
 describe("navigation.js — hideAllExcept", () => {
   before(() => {
     loadNav();
-    ["modeSelect", "simplifiedMode", "mainNav", "app", "sidebar", "sidebarOverlay", "mainFooter"].forEach(function (id) {
+    [
+      "modeSelect",
+      "simplifiedMode",
+      "mainNav",
+      "app",
+      "sidebar",
+      "sidebarOverlay",
+      "mainFooter",
+    ].forEach(function (id) {
       _els[id] = makeEl(id);
     });
   });
@@ -306,14 +448,18 @@ describe("navigation.js — download modal", () => {
 
   it("showDownloadModal should add open class", () => {
     var opened = false;
-    _els["dl-modal"].classList.add = function (c) { if (c === "open") opened = true; };
+    _els["dl-modal"].classList.add = function (c) {
+      if (c === "open") opened = true;
+    };
     showDownloadModal();
     assert.ok(opened);
   });
 
   it("closeDownloadModal should remove open class", () => {
     var closed = false;
-    _els["dl-modal"].classList.remove = function (c) { if (c === "open") closed = true; };
+    _els["dl-modal"].classList.remove = function (c) {
+      if (c === "open") closed = true;
+    };
     closeDownloadModal();
     assert.ok(closed);
   });
@@ -326,7 +472,9 @@ describe("navigation.js — downloadResult", () => {
     var called = "";
     var orig = globalThis.getDownloadHandler;
     globalThis.getDownloadHandler = function () {
-      return function (f) { called = f; };
+      return function (f) {
+        called = f;
+      };
     };
     downloadResult("pdf");
     assert.equal(called, "pdf");
@@ -336,8 +484,12 @@ describe("navigation.js — downloadResult", () => {
   it("should call downloadFingerprint if no handler", () => {
     var called = "";
     var orig = globalThis.getDownloadHandler;
-    globalThis.getDownloadHandler = function () { return null; };
-    globalThis.downloadFingerprint = function (f) { called = f; };
+    globalThis.getDownloadHandler = function () {
+      return null;
+    };
+    globalThis.downloadFingerprint = function (f) {
+      called = f;
+    };
     downloadResult("json");
     assert.equal(called, "json");
     delete globalThis.downloadFingerprint;
@@ -362,7 +514,11 @@ describe("navigation.js — handleHashNav", () => {
     globalThis.location.hash = "";
     globalThis.location.search = "?search=test";
     globalThis.URLSearchParams = function () {
-      return { get: function (k) { return k === "search" ? "test" : null; } };
+      return {
+        get: function (k) {
+          return k === "search" ? "test" : null;
+        },
+      };
     };
     globalThis.setMode = function () {};
     handleHashNav();
@@ -391,7 +547,9 @@ describe("navigation.js — SPA mode nav click handlers", () => {
       addEventListener: function (evt, cb) {
         if (evt === "click") navLinkCb = cb;
       },
-      closest: function (sel) { return sel === ".sidebar" ? {} : null; },
+      closest: function (sel) {
+        return sel === ".sidebar" ? {} : null;
+      },
     });
 
     var navLink2 = makeEl("spaNavLink2", {
@@ -399,7 +557,9 @@ describe("navigation.js — SPA mode nav click handlers", () => {
       addEventListener: function (evt, cb) {
         if (evt === "click") navLink2Cb = cb;
       },
-      closest: function () { return null; },
+      closest: function () {
+        return null;
+      },
     });
 
     var simpleNavLink = makeEl("spaSimpleNavLink", {
@@ -417,7 +577,10 @@ describe("navigation.js — SPA mode nav click handlers", () => {
     });
 
     document.querySelectorAll = function (sel) {
-      if (sel === ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .logo[data-page]") {
+      if (
+        sel ===
+        ".nav-links a[data-page], .footer-links a[data-page], .sidebar a[data-page], .logo[data-page]"
+      ) {
         return [navLink1, navLink2];
       }
       if (sel === ".simple-nav-links a[data-page]") {
@@ -434,25 +597,42 @@ describe("navigation.js — SPA mode nav click handlers", () => {
       if (sel === 'link[rel="preload"][as="audio"]') return [];
       if (sel === "#modeSelect") return [];
       if (sel === ".lang-dropdown") return [];
-      if (sel === '.sidebar a[data-page="removal-tools"], .card[data-page="removal-tools"], .footer-links a[data-page="removal-tools"]') return [];
+      if (
+        sel ===
+        '.sidebar a[data-page="removal-tools"], .card[data-page="removal-tools"], .footer-links a[data-page="removal-tools"]'
+      )
+        return [];
       return [];
     };
 
-    var src = fs.readFileSync(path.resolve(__dirname, "../../Style/navigation.js"), "utf8");
+    var src = fs.readFileSync(
+      path.resolve(__dirname, "../../Style/navigation.js"),
+      "utf8",
+    );
     vm.runInThisContext(src);
 
     showPageSpy = "";
     showStaticPageSpy = "";
     closeSidebarSpy = false;
 
-    globalThis.showPage = function (name) { showPageSpy = name; };
-    globalThis.showStaticPage = function (name) { showStaticPageSpy = name; };
-    globalThis.closeSidebar = function () { closeSidebarSpy = true; };
+    globalThis.showPage = function (name) {
+      showPageSpy = name;
+    };
+    globalThis.showStaticPage = function (name) {
+      showStaticPageSpy = name;
+    };
+    globalThis.closeSidebar = function () {
+      closeSidebarSpy = true;
+    };
   });
 
   it("should call showPage and preventDefault on nav link click", () => {
     var prevented = false;
-    navLinkCb({ preventDefault: function () { prevented = true; } });
+    navLinkCb({
+      preventDefault: function () {
+        prevented = true;
+      },
+    });
     assert.equal(showPageSpy, "watermark");
     assert.ok(prevented);
   });
@@ -467,7 +647,11 @@ describe("navigation.js — SPA mode nav click handlers", () => {
     showPageSpy = "";
     closeSidebarSpy = false;
     var prevented = false;
-    navLink2Cb({ preventDefault: function () { prevented = true; } });
+    navLink2Cb({
+      preventDefault: function () {
+        prevented = true;
+      },
+    });
     assert.equal(showPageSpy, "fingerprint");
     assert.ok(!closeSidebarSpy);
     assert.ok(prevented);
@@ -475,7 +659,11 @@ describe("navigation.js — SPA mode nav click handlers", () => {
 
   it("should call showStaticPage and preventDefault on simple-nav link click", () => {
     var prevented = false;
-    simpleNavCb({ preventDefault: function () { prevented = true; } });
+    simpleNavCb({
+      preventDefault: function () {
+        prevented = true;
+      },
+    });
     assert.equal(showStaticPageSpy, "about");
     assert.ok(prevented);
   });
@@ -483,7 +671,11 @@ describe("navigation.js — SPA mode nav click handlers", () => {
   it("should call showPage and preventDefault on card click", () => {
     showPageSpy = "";
     var prevented = false;
-    cardCb({ preventDefault: function () { prevented = true; } });
+    cardCb({
+      preventDefault: function () {
+        prevented = true;
+      },
+    });
     assert.equal(showPageSpy, "certificate");
     assert.ok(prevented);
   });
@@ -496,7 +688,10 @@ describe("navigation.js — DOMContentLoaded main callback (lines 423-439)", () 
 
   it("should register pointerdown and keydown event listeners for deferredReplace", () => {
     var cbs = globalThis.__navDomReadyCbs;
-    assert.ok(cbs && cbs.length >= 1, "DOMContentLoaded callbacks should exist");
+    assert.ok(
+      cbs && cbs.length >= 1,
+      "DOMContentLoaded callbacks should exist",
+    );
     var mainCb = cbs[0];
     assert.ok(mainCb, "main DOMContentLoaded callback should exist");
 
@@ -518,7 +713,10 @@ describe("navigation.js — DOMContentLoaded main callback (lines 423-439)", () 
 
     ptrHandler();
 
-    assert.ok(replaced, "history.replaceState should be called by deferredReplace");
+    assert.ok(
+      replaced,
+      "history.replaceState should be called by deferredReplace",
+    );
     globalThis.history.replaceState = origReplaceState;
   });
 
@@ -543,7 +741,10 @@ describe("navigation.js — DOMContentLoaded handler (lines 535-538)", () => {
   it("should update isStandalone when dataset.standalone is set", () => {
     globalThis.document.documentElement.dataset.standalone = "watermark";
     var cbs = globalThis.__navDomReadyCbs;
-    assert.ok(cbs && cbs.length > 0, "DOMContentLoaded callbacks should be registered");
+    assert.ok(
+      cbs && cbs.length > 0,
+      "DOMContentLoaded callbacks should be registered",
+    );
     // The first callback is from line 423 (sanitizeRemovalTools/initNav/deferredReplace)
     // The second callback is from line 535 (isStandalone update)
     var cb535 = cbs[1];
@@ -616,7 +817,11 @@ describe("navigation.js — pageshow handler (lines 541-578)", () => {
     _els["modeSelect"] = makeEl("modeSelect");
     globalThis.history.state = { modeOverlay: true };
     handlers[0]({ persisted: true });
-    assert.equal(_els["modeSelect"].style.display, "", "modeSelect should be shown");
+    assert.equal(
+      _els["modeSelect"].style.display,
+      "",
+      "modeSelect should be shown",
+    );
   });
 
   it("should show modeSelect when history state is null", () => {
@@ -626,7 +831,11 @@ describe("navigation.js — pageshow handler (lines 541-578)", () => {
     _els["modeSelect"] = makeEl("modeSelect", { style: { display: "none" } });
     globalThis.history.state = null;
     handlers[0]({ persisted: true });
-    assert.equal(_els["modeSelect"].style.display, "", "modeSelect should be shown when no state");
+    assert.equal(
+      _els["modeSelect"].style.display,
+      "",
+      "modeSelect should be shown when no state",
+    );
   });
 });
 
@@ -643,7 +852,9 @@ describe("navigation.js — switchC2paTab with write mode (lines 529-531)", () =
 
   it("should call updateC2paWriteForm when mode is write and function exists", () => {
     var called = false;
-    globalThis.updateC2paWriteForm = function () { called = true; };
+    globalThis.updateC2paWriteForm = function () {
+      called = true;
+    };
     switchC2paTab("write");
     assert.ok(called);
     delete globalThis.updateC2paWriteForm;

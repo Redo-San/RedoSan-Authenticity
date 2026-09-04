@@ -38,8 +38,14 @@ describe("E2E — checkAutomation() detection", () => {
       result.signals.includes("webdriver"),
       "Should detect 'webdriver' signal in headless mode",
     );
-    assert.ok(result.score >= 35, "Score should be >= 35 with webdriver signal");
-    assert.ok(result.isAutomated === true, "isAutomated should be true when webdriver is detected");
+    assert.ok(
+      result.score >= 35,
+      "Score should be >= 35 with webdriver signal",
+    );
+    assert.ok(
+      result.isAutomated === true,
+      "isAutomated should be true when webdriver is detected",
+    );
 
     await ctx.close();
   });
@@ -75,7 +81,8 @@ describe("E2E — checkAutomation() detection", () => {
     });
 
     assert.ok(
-      result.signals.includes("few_languages") || result.signals.includes("webdriver"),
+      result.signals.includes("few_languages") ||
+        result.signals.includes("webdriver"),
       "Should detect either few_languages or webdriver (or both) in headless mode",
     );
 
@@ -100,7 +107,11 @@ describe("E2E — showBotOverlay() behavior", () => {
 
     // In headless Playwright, the overlay should be shown automatically
     // due to webdriver detection on DOMContentLoaded
-    assert.equal(overlayActive, "active", "Bot overlay should have 'active' class");
+    assert.equal(
+      overlayActive,
+      "active",
+      "Bot overlay should have 'active' class",
+    );
 
     await ctx.close();
   });
@@ -143,10 +154,7 @@ describe("E2E — showBotOverlay() behavior", () => {
     });
 
     assert.ok(iconText, "Overlay should have an icon element");
-    assert.ok(
-      iconText.includes("🛡️"),
-      "Icon should display the shield emoji",
-    );
+    assert.ok(iconText.includes("🛡️"), "Icon should display the shield emoji");
 
     await ctx.close();
   });
@@ -192,7 +200,10 @@ describe("E2E — Bot detection console messages", () => {
     );
 
     assert.ok(securityLine, "Security icon should appear in console");
-    assert.ok(statusLine, "Security status (BLOCKED/PASS) should appear in console");
+    assert.ok(
+      statusLine,
+      "Security status (BLOCKED/PASS) should appear in console",
+    );
 
     await ctx.close();
   });

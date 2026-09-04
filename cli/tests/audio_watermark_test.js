@@ -6,24 +6,43 @@ const vm = require("vm");
 
 // ── Polyfills ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 function makeMockDoc() {
   const makeEl = () => ({
-    value: "1", style: { display: "" }, files: null, textContent: "", innerHTML: "",
+    value: "1",
+    style: { display: "" },
+    files: null,
+    textContent: "",
+    innerHTML: "",
     classList: { remove: () => {}, add: () => {} },
   });
   function makeDiv() {
     const el = { _txt: "", _inner: "", style: {} };
     Object.defineProperty(el, "innerHTML", {
-      get: function() { return this._txt.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); },
-      set: function(v) { this._inner = v; },
+      get: function () {
+        return this._txt
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      },
+      set: function (v) {
+        this._inner = v;
+      },
     });
-    el.append = function(v) { if (v && v.nodeType === 3) this._txt += v.textContent; };
+    el.append = function (v) {
+      if (v && v.nodeType === 3) this._txt += v.textContent;
+    };
     return el;
   }
   return {
-    createElement: (tag) => tag === "div" ? makeDiv() : makeEl(),
+    createElement: (tag) => (tag === "div" ? makeDiv() : makeEl()),
     createTextNode: (txt) => ({ nodeType: 3, textContent: txt }),
     addEventListener: () => {},
     getElementById: () => makeEl(),
@@ -40,21 +59,34 @@ const crypto = require("crypto");
 if (!globalThis.crypto || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
-      digest: async (algo, data) => crypto.createHash("sha256").update(Buffer.from(data)).digest(),
+      digest: async (algo, data) =>
+        crypto.createHash("sha256").update(Buffer.from(data)).digest(),
       importKey: async (f, kd) => ({ type: "secret", keyData: kd }),
       deriveBits: async (algo, key, len) =>
-        crypto.pbkdf2Sync(Buffer.from(key.keyData), algo.salt || Buffer.from(key.keyData), algo.iterations || 1, len / 8, "sha256"),
+        crypto.pbkdf2Sync(
+          Buffer.from(key.keyData),
+          algo.salt || Buffer.from(key.keyData),
+          algo.iterations || 1,
+          len / 8,
+          "sha256",
+        ),
       generateKey: async () => ({ publicKey: {}, privateKey: {} }),
       sign: async () => new Uint8Array(64),
       verify: async () => true,
     },
-    getRandomValues: (arr) => { for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256); return arr; },
+    getRandomValues: (arr) => {
+      for (let i = 0; i < arr.length; i++)
+        arr[i] = Math.floor(Math.random() * 256);
+      return arr;
+    },
   };
 }
 
 // ── Mock shared functions ──
 globalThis._resultStore = {};
-globalThis.setResult = (k, d) => { globalThis._resultStore[k] = d; };
+globalThis.setResult = (k, d) => {
+  globalThis._resultStore[k] = d;
+};
 globalThis.getResult = (k) => globalThis._resultStore[k];
 globalThis.setText = () => {};
 globalThis.setOutput = () => {};
@@ -64,7 +96,14 @@ globalThis.getFile = async () => null;
 globalThis.validateFileInput = async () => true;
 globalThis.__ = (key, fallback) => fallback || key;
 globalThis.downloadBlobSimple = () => {};
-globalThis.escHtml = (s) => { if (s == null) return ""; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+globalThis.escHtml = (s) => {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+};
 
 // ── Load modules ──
 const MODULES = [
@@ -80,18 +119,34 @@ for (const [rel] of MODULES) {
 // ── Helpers ──
 function makeTestWav(numSamples, sr) {
   sr = sr || 44100;
-  const bps = 16, ch = 1, ba = ch * (bps / 8);
+  const bps = 16,
+    ch = 1,
+    ba = ch * (bps / 8);
   const dataSize = numSamples * ba;
   const buf = new ArrayBuffer(44 + dataSize);
   const v = new DataView(buf);
-  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  w(0, "RIFF"); v.setUint32(4, 36 + dataSize, true); w(8, "WAVE");
-  w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
-  v.setUint16(22, ch, true); v.setUint32(24, sr, true); v.setUint32(28, sr * ba, true);
-  v.setUint16(32, ba, true); v.setUint16(34, bps, true); w(36, "data");
+  const w = (o, s) => {
+    for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
+  };
+  w(0, "RIFF");
+  v.setUint32(4, 36 + dataSize, true);
+  w(8, "WAVE");
+  w(12, "fmt ");
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, ch, true);
+  v.setUint32(24, sr, true);
+  v.setUint32(28, sr * ba, true);
+  v.setUint16(32, ba, true);
+  v.setUint16(34, bps, true);
+  w(36, "data");
   v.setUint32(40, dataSize, true);
   for (let i = 0; i < numSamples; i++) {
-    v.setInt16(44 + i * 2, Math.floor(Math.sin(2 * Math.PI * 440 * i / sr) * 16000), true);
+    v.setInt16(
+      44 + i * 2,
+      Math.floor(Math.sin((2 * Math.PI * 440 * i) / sr) * 16000),
+      true,
+    );
   }
   return buf;
 }
@@ -110,8 +165,26 @@ const MSG = "Hello!";
 
 async function setupEmbedResult(algo, embedFn) {
   const sr = 44100;
-  const payload = globalThis.awFormatPayload(new TextEncoder().encode(MSG), await globalThis.pw_key(KEY));
-  const needed = algo === 1 || algo === 5 ? payload.length : algo === 3 ? payload.length * globalThis.AWM3_FRAME * 3 : algo === 4 ? payload.length * (globalThis.AWM4_FRAME >> 1) : algo === 7 ? payload.length * (globalThis.AWM7_FRAME >> 1) * 5 : algo === 6 ? payload.length * 1024 : algo === 8 ? payload.length * 1024 : algo === 2 ? payload.length * 2048 : 100000;
+  const payload = globalThis.awFormatPayload(
+    new TextEncoder().encode(MSG),
+    await globalThis.pw_key(KEY),
+  );
+  const needed =
+    algo === 1 || algo === 5
+      ? payload.length
+      : algo === 3
+      ? payload.length * globalThis.AWM3_FRAME * 3
+      : algo === 4
+      ? payload.length * (globalThis.AWM4_FRAME >> 1)
+      : algo === 7
+      ? payload.length * (globalThis.AWM7_FRAME >> 1) * 5
+      : algo === 6
+      ? payload.length * 1024
+      : algo === 8
+      ? payload.length * 1024
+      : algo === 2
+      ? payload.length * 2048
+      : 100000;
   const buf = makeTestWav(needed + 5000, sr);
   const info = globalThis.awReadWavRaw(buf);
   const s16 = new Int16Array(info.samples);
@@ -136,7 +209,13 @@ describe("Audio WM — tryExtractSingle", () => {
     const buf = makeTestWav(44100, 44100);
     const info = globalThis.awReadWavRaw(buf);
     const key = await globalThis.pw_key(KEY);
-    const result = await globalThis.tryExtractSingle(info.samples, 1, key, 44100, "LSB Audio");
+    const result = await globalThis.tryExtractSingle(
+      info.samples,
+      1,
+      key,
+      44100,
+      "LSB Audio",
+    );
     assert.equal(result, null);
   });
 
@@ -144,7 +223,13 @@ describe("Audio WM — tryExtractSingle", () => {
     const buf = makeTestWav(44100, 44100);
     const info = globalThis.awReadWavRaw(buf);
     const key = await globalThis.pw_key(KEY);
-    const result = await globalThis.tryExtractSingle(info.samples, 3, key, 44100, "Echo Hiding");
+    const result = await globalThis.tryExtractSingle(
+      info.samples,
+      3,
+      key,
+      44100,
+      "Echo Hiding",
+    );
     assert.equal(result, null);
   });
 
@@ -152,7 +237,13 @@ describe("Audio WM — tryExtractSingle", () => {
     const buf = makeTestWav(44100, 44100);
     const info = globalThis.awReadWavRaw(buf);
     const key = await globalThis.pw_key(KEY);
-    const result = await globalThis.tryExtractSingle(info.samples, 4, key, 44100, "DSSS");
+    const result = await globalThis.tryExtractSingle(
+      info.samples,
+      4,
+      key,
+      44100,
+      "DSSS",
+    );
     assert.equal(result, null);
   });
 
@@ -160,7 +251,13 @@ describe("Audio WM — tryExtractSingle", () => {
     const buf = makeTestWav(44100, 44100);
     const info = globalThis.awReadWavRaw(buf);
     const key = await globalThis.pw_key(KEY);
-    const result = await globalThis.tryExtractSingle(info.samples, 6, key, 44100, "DWT");
+    const result = await globalThis.tryExtractSingle(
+      info.samples,
+      6,
+      key,
+      44100,
+      "DWT",
+    );
     assert.equal(result, null);
   });
 
@@ -168,7 +265,13 @@ describe("Audio WM — tryExtractSingle", () => {
     const buf = makeTestWav(44100, 44100);
     const info = globalThis.awReadWavRaw(buf);
     const key = await globalThis.pw_key(KEY);
-    const result = await globalThis.tryExtractSingle(info.samples, 7, key, 44100, "Patchwork");
+    const result = await globalThis.tryExtractSingle(
+      info.samples,
+      7,
+      key,
+      44100,
+      "Patchwork",
+    );
     assert.equal(result, null);
   });
 
@@ -176,7 +279,13 @@ describe("Audio WM — tryExtractSingle", () => {
     const buf = makeTestWav(44100, 44100);
     const info = globalThis.awReadWavRaw(buf);
     const key = await globalThis.pw_key(KEY);
-    const result = await globalThis.tryExtractSingle(info.samples, 8, key, 44100, "DCT");
+    const result = await globalThis.tryExtractSingle(
+      info.samples,
+      8,
+      key,
+      44100,
+      "DCT",
+    );
     assert.equal(result, null);
   });
 });
@@ -187,7 +296,12 @@ describe("Audio WM — tryExtractAuto", () => {
     const buf = makeTestWav(44100, 44100);
     const info = globalThis.awReadWavRaw(buf);
     const key = await globalThis.pw_key(KEY);
-    const result = await globalThis.tryExtractAuto(info.samples, key, 44100, [1, 2, 5]);
+    const result = await globalThis.tryExtractAuto(
+      info.samples,
+      key,
+      44100,
+      [1, 2, 5],
+    );
     assert.equal(result, null);
   });
 });
@@ -202,29 +316,61 @@ describe("Audio WM — awmSelfTest (simulated)", () => {
     const PASS = "diagnostic";
     const MSG_ST = "SELF_TEST_OK";
     const key = await globalThis.pw_key(PASS);
-    const payload = globalThis.awFormatPayload(new TextEncoder().encode(MSG_ST), key);
+    const payload = globalThis.awFormatPayload(
+      new TextEncoder().encode(MSG_ST),
+      key,
+    );
     const s16 = new Int16Array(info.samples);
 
     const algos = [
-      { id: 1, name: "LSB", embed: () => globalThis.aw1_embed(new Int16Array(s16), payload),
-        extract: (m) => globalThis.aw1_extract(m, m.length) },
-      { id: 2, name: "FFT-QIM", embed: () => globalThis.aw2_embed(new Int16Array(s16), payload, sr),
-        extract: (m) => globalThis.aw2_extract(m, sr, m.length) },
-      { id: 5, name: "QIM", embed: () => globalThis.aw5_embed(new Int16Array(s16), payload, sr),
-        extract: (m) => globalThis.aw5_extract(m, sr, m.length) },
-      { id: 6, name: "DWT", embed: () => globalThis.aw6_embed(new Int16Array(s16), payload, sr),
-        extract: (m) => globalThis.aw6_extract(m, sr, m.length) },
-      { id: 8, name: "DCT", embed: () => globalThis.aw8_embed(new Int16Array(s16), payload, sr),
-        extract: (m) => globalThis.aw8_extract(m, sr, m.length) },
+      {
+        id: 1,
+        name: "LSB",
+        embed: () => globalThis.aw1_embed(new Int16Array(s16), payload),
+        extract: (m) => globalThis.aw1_extract(m, m.length),
+      },
+      {
+        id: 2,
+        name: "FFT-QIM",
+        embed: () => globalThis.aw2_embed(new Int16Array(s16), payload, sr),
+        extract: (m) => globalThis.aw2_extract(m, sr, m.length),
+      },
+      {
+        id: 5,
+        name: "QIM",
+        embed: () => globalThis.aw5_embed(new Int16Array(s16), payload, sr),
+        extract: (m) => globalThis.aw5_extract(m, sr, m.length),
+      },
+      {
+        id: 6,
+        name: "DWT",
+        embed: () => globalThis.aw6_embed(new Int16Array(s16), payload, sr),
+        extract: (m) => globalThis.aw6_extract(m, sr, m.length),
+      },
+      {
+        id: 8,
+        name: "DCT",
+        embed: () => globalThis.aw8_embed(new Int16Array(s16), payload, sr),
+        extract: (m) => globalThis.aw8_extract(m, sr, m.length),
+      },
     ];
 
     for (const algo of algos) {
-      const maxB = algo.id === 1 || algo.id === 5 ? s16.length : Math.floor(s16.length / (algo.id === 8 ? 1024 : algo.id === 6 ? 1024 : 2048));
+      const maxB =
+        algo.id === 1 || algo.id === 5
+          ? s16.length
+          : Math.floor(
+              s16.length / (algo.id === 8 ? 1024 : algo.id === 6 ? 1024 : 2048),
+            );
       if (payload.length > maxB) continue;
       const modified = algo.embed();
       const bits = algo.extract(modified);
-      const r = (bits && bits.length >= 32) ? globalThis.awExtractPayload(bits, key) : null;
-      const decoded = r && r !== "bad-password" ? new TextDecoder().decode(r) : null;
+      const r =
+        bits && bits.length >= 32
+          ? globalThis.awExtractPayload(bits, key)
+          : null;
+      const decoded =
+        r && r !== "bad-password" ? new TextDecoder().decode(r) : null;
       assert.equal(decoded, MSG_ST, `${algo.name} should roundtrip`);
     }
   });

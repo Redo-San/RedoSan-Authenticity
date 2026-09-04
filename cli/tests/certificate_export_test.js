@@ -8,36 +8,71 @@ const vm = require("vm");
 var _domElements = {};
 var _createdElements = [];
 globalThis.document = {
-  getElementById: function (id) { return _domElements[id] || null; },
+  getElementById: function (id) {
+    return _domElements[id] || null;
+  },
   createElement: function (tag) {
-    var el = { tagName: tag, href: "", download: "", children: [], style: {}, value: "", checked: false, textContent: "", innerHTML: "", id: "", remove: function () { var ix = _createdElements.indexOf(this); if (ix >= 0) _createdElements.splice(ix, 1); } };
+    var el = {
+      tagName: tag,
+      href: "",
+      download: "",
+      children: [],
+      style: {},
+      value: "",
+      checked: false,
+      textContent: "",
+      innerHTML: "",
+      id: "",
+      remove: function () {
+        var ix = _createdElements.indexOf(this);
+        if (ix >= 0) _createdElements.splice(ix, 1);
+      },
+    };
     el.click = function () {};
     el.setAttribute = function () {};
-    el.getAttribute = function () { return null; };
+    el.getAttribute = function () {
+      return null;
+    };
     if (tag === "canvas") {
-      el.width = 0; el.height = 0;
+      el.width = 0;
+      el.height = 0;
       el.getContext = function () {
         return {
           font: "",
           fillStyle: "",
           textBaseline: "",
-          measureText: function (t) { return { width: t.length * 5 }; },
+          measureText: function (t) {
+            return { width: t.length * 5 };
+          },
           fillText: function () {},
           scale: function () {},
         };
       };
-      el.toDataURL = function () { return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="; };
+      el.toDataURL = function () {
+        return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+      };
     }
     if (tag === "script") {
       el.src = "";
       el.onload = null;
       el.onerror = null;
       // trigger error immediately to avoid hanging
-      process.nextTick(function () { if (typeof el.onerror === "function") el.onerror(); });
+      process.nextTick(function () {
+        if (typeof el.onerror === "function") el.onerror();
+      });
     }
     Object.defineProperty(el, "textContent", {
-      get: function () { return this._tc || ""; },
-      set: function (v) { this._tc = String(v); this.innerHTML = this._tc.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); },
+      get: function () {
+        return this._tc || "";
+      },
+      set: function (v) {
+        this._tc = String(v);
+        this.innerHTML = this._tc
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      },
       configurable: true,
     });
     _createdElements.push(el);
@@ -55,9 +90,44 @@ globalThis.document = {
 };
 
 function mockElement(id, overrides) {
-  var el = { tagName: "input", href: "", download: "", children: [], style: {}, value: "", checked: false, textContent: "", innerHTML: "", id: id, files: null, remove: function() {}, click: function() {}, setAttribute: function() {}, getAttribute: function() { return null; }, display: "" };
-  Object.defineProperty(el, "textContent", { get: function() { return this._tc || ""; }, set: function(v) { this._tc = String(v); }, configurable: true });
-  Object.defineProperty(el, "style", { get: function() { return this._style || {}; }, set: function(v) { this._style = v; }, configurable: true });
+  var el = {
+    tagName: "input",
+    href: "",
+    download: "",
+    children: [],
+    style: {},
+    value: "",
+    checked: false,
+    textContent: "",
+    innerHTML: "",
+    id: id,
+    files: null,
+    remove: function () {},
+    click: function () {},
+    setAttribute: function () {},
+    getAttribute: function () {
+      return null;
+    },
+    display: "",
+  };
+  Object.defineProperty(el, "textContent", {
+    get: function () {
+      return this._tc || "";
+    },
+    set: function (v) {
+      this._tc = String(v);
+    },
+    configurable: true,
+  });
+  Object.defineProperty(el, "style", {
+    get: function () {
+      return this._style || {};
+    },
+    set: function (v) {
+      this._style = v;
+    },
+    configurable: true,
+  });
   if (overrides) Object.assign(el, overrides);
   _domElements[id] = el;
   return el;
@@ -68,54 +138,143 @@ function clearMockElements() {
   _createdElements = [];
 }
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
-globalThis.URL.createObjectURL = function () { return "blob:stub"; };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
+globalThis.URL.createObjectURL = function () {
+  return "blob:stub";
+};
 globalThis.URL.revokeObjectURL = function () {};
 globalThis.Image = class {
-  constructor() { this.naturalWidth = 100; this.naturalHeight = 100; }
-  set src(v) { if (this.onload) setTimeout(this.onload.bind(this), 0); }
+  constructor() {
+    this.naturalWidth = 100;
+    this.naturalHeight = 100;
+  }
+  set src(v) {
+    if (this.onload) setTimeout(this.onload.bind(this), 0);
+  }
 };
 globalThis.COUNTRY_CODES = [];
 globalThis.getDefaultPhoneCode = function () {};
 globalThis.updatePhoneMaxLength = function () {};
-globalThis.__ = function (k, d) { return d || k; };
+globalThis.__ = function (k, d) {
+  return d || k;
+};
 
 // ── Mock jspdf ──
 globalThis.jspdf = globalThis.jspdf || {};
 globalThis.jspdf.jsPDF = class {
-  constructor() { this.constructor.lastInstance = this; this._calls = []; }
-  setFontSize(s) { this._calls.push(["setFontSize", s]); return this; }
-  setTextColor(r, g, b) { this._calls.push(["setTextColor", r, g, b]); return this; }
-  setFont() { return this; }
-  text(str, x, y, opts) { this._calls.push(["text", str, x, y, opts]); return this; }
-  addPage() { this._calls.push(["addPage"]); return this; }
-  addImage() { this._calls.push(["addImage"]); return this; }
-  splitTextToSize(t, w) { var lines = []; var s = String(t); while (s.length > 0) { lines.push(s.substring(0, 60)); s = s.substring(60); } if (lines.length === 0) lines.push(""); return lines; }
-  output(fmt) { this._calls.push(["output", fmt]); return new Blob(["pdf"], { type: "application/pdf" }); }
+  constructor() {
+    this.constructor.lastInstance = this;
+    this._calls = [];
+  }
+  setFontSize(s) {
+    this._calls.push(["setFontSize", s]);
+    return this;
+  }
+  setTextColor(r, g, b) {
+    this._calls.push(["setTextColor", r, g, b]);
+    return this;
+  }
+  setFont() {
+    return this;
+  }
+  text(str, x, y, opts) {
+    this._calls.push(["text", str, x, y, opts]);
+    return this;
+  }
+  addPage() {
+    this._calls.push(["addPage"]);
+    return this;
+  }
+  addImage() {
+    this._calls.push(["addImage"]);
+    return this;
+  }
+  splitTextToSize(t, w) {
+    var lines = [];
+    var s = String(t);
+    while (s.length > 0) {
+      lines.push(s.substring(0, 60));
+      s = s.substring(60);
+    }
+    if (lines.length === 0) lines.push("");
+    return lines;
+  }
+  output(fmt) {
+    this._calls.push(["output", fmt]);
+    return new Blob(["pdf"], { type: "application/pdf" });
+  }
 };
 
 // ── Mock docx ──
 globalThis.docx = globalThis.docx || {
-  Paragraph: class { constructor(o) { this.opts = o; } },
-  TextRun: class { constructor(o) { this.opts = o; } },
-  Table: class { constructor(o) { this.opts = o; } },
-  TableRow: class { constructor(o) { this.opts = o; } },
-  TableCell: class { constructor(o) { this.opts = o; } },
-  Document: class { constructor(o) { this.opts = o; } },
-  ImageRun: class { constructor(o) { this.opts = o; } },
-  Packer: { toBlob: async function () { return new Blob(["docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }); } },
+  Paragraph: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  TextRun: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  Table: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  TableRow: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  TableCell: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  Document: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  ImageRun: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  Packer: {
+    toBlob: async function () {
+      return new Blob(["docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+    },
+  },
   WidthType: { PERCENTAGE: "percentage" },
 };
 
 // ── Mock QRious ──
 globalThis.QRious = class {
-  constructor(o) { this.element = o.element; this.value = o.value; this.size = o.size; this.level = o.level; this.padding = o.padding; }
+  constructor(o) {
+    this.element = o.element;
+    this.value = o.value;
+    this.size = o.size;
+    this.level = o.level;
+    this.padding = o.padding;
+  }
 };
 
 // ── Load certificate modules ──
 function loadModule(filePath) {
   var src = fs.readFileSync(filePath, "utf8");
-  var clean = src.replace(/^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/, "");
+  var clean = src.replace(
+    /^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/,
+    "",
+  );
   vm.runInThisContext(clean, { filename: path.resolve(filePath) });
 }
 
@@ -128,13 +287,22 @@ before(function () {
   loadModule(path.join(__dirname, "../../Certificate/certificate.js"));
 });
 
-var PNG_DATA_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+var PNG_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
 var mockData = {
   generator: "RedoSan Authenticity",
   generatedAt: "2026-01-15T12:30:00.000Z",
   user: { name: "Alice", email: "alice@example.com", phone: "", website: "" },
-  file: { name: "photo.jpg", size: 102400, type: "image/jpeg", hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", dataUrl: PNG_DATA_URL, width: 800, height: 600 },
+  file: {
+    name: "photo.jpg",
+    size: 102400,
+    type: "image/jpeg",
+    hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    dataUrl: PNG_DATA_URL,
+    width: 800,
+    height: 600,
+  },
   watermark: true,
   watermarkAlgo: "LSB",
   watermarkResult: "Watermark embedded successfully using LSB algorithm",
@@ -162,15 +330,35 @@ describe("Certificate — downloadCertPDF", function () {
   it("should include user name in text output", async function () {
     var blob = await downloadCertPDF(mockData);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
-    var texts = doc._calls.filter(function (c) { return c[0] === "text"; }).map(function (c) { return c[1]; });
-    assert.ok(texts.some(function (t) { return t.indexOf("Alice") !== -1; }));
+    var texts = doc._calls
+      .filter(function (c) {
+        return c[0] === "text";
+      })
+      .map(function (c) {
+        return c[1];
+      });
+    assert.ok(
+      texts.some(function (t) {
+        return t.indexOf("Alice") !== -1;
+      }),
+    );
   });
 
   it("should include file name", async function () {
     var blob = await downloadCertPDF(mockData);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
-    var texts = doc._calls.filter(function (c) { return c[0] === "text"; }).map(function (c) { return c[1]; });
-    assert.ok(texts.some(function (t) { return t.indexOf("photo.jpg") !== -1; }));
+    var texts = doc._calls
+      .filter(function (c) {
+        return c[0] === "text";
+      })
+      .map(function (c) {
+        return c[1];
+      });
+    assert.ok(
+      texts.some(function (t) {
+        return t.indexOf("photo.jpg") !== -1;
+      }),
+    );
   });
 
   it("should handle minimal data without optional fields", async function () {
@@ -194,12 +382,26 @@ describe("Certificate — downloadCertPDF", function () {
   it("should include watermark section when watermark is true", async function () {
     var blob = await downloadCertPDF(mockData);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
-    var texts = doc._calls.filter(function (c) { return c[0] === "text"; }).map(function (c) { return c[1]; });
-    assert.ok(texts.some(function (t) { return t.indexOf("Watermark") !== -1; }));
+    var texts = doc._calls
+      .filter(function (c) {
+        return c[0] === "text";
+      })
+      .map(function (c) {
+        return c[1];
+      });
+    assert.ok(
+      texts.some(function (t) {
+        return t.indexOf("Watermark") !== -1;
+      }),
+    );
   });
 
   it("should include document watermark section", async function () {
-    var data = Object.assign({}, mockData, { documentWatermark: true, documentWatermarkFileName: "contract.docx", documentWatermarkResult: "Embedded ok" });
+    var data = Object.assign({}, mockData, {
+      documentWatermark: true,
+      documentWatermarkFileName: "contract.docx",
+      documentWatermarkResult: "Embedded ok",
+    });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
     var allText = JSON.stringify(doc._calls);
@@ -208,7 +410,10 @@ describe("Certificate — downloadCertPDF", function () {
   });
 
   it("should include pixel injection section", async function () {
-    var data = Object.assign({}, mockData, { pixelInjection: true, piResultHtml: "PI complete" });
+    var data = Object.assign({}, mockData, {
+      pixelInjection: true,
+      piResultHtml: "PI complete",
+    });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
     var allText = JSON.stringify(doc._calls);
@@ -216,7 +421,10 @@ describe("Certificate — downloadCertPDF", function () {
   });
 
   it("should include timestamp section with result", async function () {
-    var data = Object.assign({}, mockData, { timestamp: true, tsResult: "Timestamp created: 2026-01-15" });
+    var data = Object.assign({}, mockData, {
+      timestamp: true,
+      tsResult: "Timestamp created: 2026-01-15",
+    });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
     var allText = JSON.stringify(doc._calls);
@@ -236,7 +444,10 @@ describe("Certificate — downloadCertPDF", function () {
   it("should include fingerprint section with hashes and perceptual hashes", async function () {
     var data = Object.assign({}, mockData, {
       fingerprint: true,
-      fpResult: { hashes: { "SHA-256": "abc123", "MD5": "def456" }, perceptual_hashes: { "dHash": "dhashval", "pHash": "phashval" } },
+      fpResult: {
+        hashes: { "SHA-256": "abc123", MD5: "def456" },
+        perceptual_hashes: { dHash: "dhashval", pHash: "phashval" },
+      },
     });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
@@ -248,7 +459,12 @@ describe("Certificate — downloadCertPDF", function () {
 
   it("should include DID signature section", async function () {
     var data = Object.assign({}, mockData, {
-      didSig: { did: "did:key:z6Mktest12345678901234567890123456789012", algorithm: "Ed25519", timestamp: "2026-01-15T12:00:00Z", signature: "somesigvalue12345678901234567890" },
+      didSig: {
+        did: "did:key:z6Mktest12345678901234567890123456789012",
+        algorithm: "Ed25519",
+        timestamp: "2026-01-15T12:00:00Z",
+        signature: "somesigvalue12345678901234567890",
+      },
     });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
@@ -257,7 +473,10 @@ describe("Certificate — downloadCertPDF", function () {
   });
 
   it("should include DID identity fallback section", async function () {
-    var data = Object.assign({}, mockData, { didSig: null, didIdentity: "did:key:z6Mkfallback" });
+    var data = Object.assign({}, mockData, {
+      didSig: null,
+      didIdentity: "did:key:z6Mkfallback",
+    });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
     var allText = JSON.stringify(doc._calls);
@@ -267,7 +486,14 @@ describe("Certificate — downloadCertPDF", function () {
 
   it("should include face biometric section", async function () {
     var data = Object.assign({}, mockData, {
-      faceBiometric: { detected: true, faceCount: 2, matchLabel: "Alice", didSigned: true, did: "did:key:face", exportedAt: "2026-01-15T12:00:00Z" },
+      faceBiometric: {
+        detected: true,
+        faceCount: 2,
+        matchLabel: "Alice",
+        didSigned: true,
+        did: "did:key:face",
+        exportedAt: "2026-01-15T12:00:00Z",
+      },
     });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
@@ -278,7 +504,13 @@ describe("Certificate — downloadCertPDF", function () {
 
   it("should include certificate transparency section (submitted, complete)", async function () {
     var data = Object.assign({}, mockData, {
-      ct: { submitted: true, hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", timestamp: "2026-01-15T12:00:00Z", aggregator: "https://example.com/ots", pending: false },
+      ct: {
+        submitted: true,
+        hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        timestamp: "2026-01-15T12:00:00Z",
+        aggregator: "https://example.com/ots",
+        pending: false,
+      },
     });
     var blob = await downloadCertPDF(data);
     var doc = globalThis.jspdf.jsPDF.lastInstance;
@@ -339,19 +571,29 @@ describe("Certificate — downloadCertDOCX", function () {
   });
 
   it("should include document watermark section in DOCX", async function () {
-    var data = Object.assign({}, mockData, { documentWatermark: true, documentWatermarkFileName: "contract.docx", documentWatermarkResult: "Embedded ok" });
+    var data = Object.assign({}, mockData, {
+      documentWatermark: true,
+      documentWatermarkFileName: "contract.docx",
+      documentWatermarkResult: "Embedded ok",
+    });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
   });
 
   it("should include pixel injection section in DOCX", async function () {
-    var data = Object.assign({}, mockData, { pixelInjection: true, piResultHtml: "PI complete" });
+    var data = Object.assign({}, mockData, {
+      pixelInjection: true,
+      piResultHtml: "PI complete",
+    });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
   });
 
   it("should include timestamp section in DOCX", async function () {
-    var data = Object.assign({}, mockData, { timestamp: true, tsResult: "Created" });
+    var data = Object.assign({}, mockData, {
+      timestamp: true,
+      tsResult: "Created",
+    });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
   });
@@ -359,7 +601,10 @@ describe("Certificate — downloadCertDOCX", function () {
   it("should include fingerprint section in DOCX", async function () {
     var data = Object.assign({}, mockData, {
       fingerprint: true,
-      fpResult: { hashes: { "SHA-256": "abc123" }, perceptual_hashes: { "dHash": "val" } },
+      fpResult: {
+        hashes: { "SHA-256": "abc123" },
+        perceptual_hashes: { dHash: "val" },
+      },
     });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
@@ -367,21 +612,35 @@ describe("Certificate — downloadCertDOCX", function () {
 
   it("should include DID signature section in DOCX", async function () {
     var data = Object.assign({}, mockData, {
-      didSig: { did: "did:key:z6Mktest", algorithm: "Ed25519", timestamp: "2026-01-15T12:00:00Z", signature: "sig".repeat(30) },
+      didSig: {
+        did: "did:key:z6Mktest",
+        algorithm: "Ed25519",
+        timestamp: "2026-01-15T12:00:00Z",
+        signature: "sig".repeat(30),
+      },
     });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
   });
 
   it("should include DID identity fallback in DOCX", async function () {
-    var data = Object.assign({}, mockData, { didSig: null, didIdentity: "did:key:fallback" });
+    var data = Object.assign({}, mockData, {
+      didSig: null,
+      didIdentity: "did:key:fallback",
+    });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
   });
 
   it("should include face biometric section in DOCX", async function () {
     var data = Object.assign({}, mockData, {
-      faceBiometric: { detected: true, faceCount: 1, matchLabel: "Bob", didSigned: false, exportedAt: "2026-01-15T12:00:00Z" },
+      faceBiometric: {
+        detected: true,
+        faceCount: 1,
+        matchLabel: "Bob",
+        didSigned: false,
+        exportedAt: "2026-01-15T12:00:00Z",
+      },
     });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
@@ -389,7 +648,13 @@ describe("Certificate — downloadCertDOCX", function () {
 
   it("should include CT section (complete) in DOCX", async function () {
     var data = Object.assign({}, mockData, {
-      ct: { submitted: true, hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", timestamp: "2026-01-15T12:00:00Z", aggregator: "https://example.com/ots", pending: false },
+      ct: {
+        submitted: true,
+        hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        timestamp: "2026-01-15T12:00:00Z",
+        aggregator: "https://example.com/ots",
+        pending: false,
+      },
     });
     var blob = await downloadCertDOCX(data);
     assert.ok(blob instanceof Blob);
@@ -414,7 +679,11 @@ describe("Certificate — downloadCertDOCX", function () {
 
 // ── Mock JSZip for EPUB tests ──
 var realJSZip;
-try { realJSZip = require("jszip"); } catch (e) { realJSZip = null; }
+try {
+  realJSZip = require("jszip");
+} catch (e) {
+  realJSZip = null;
+}
 if (realJSZip) globalThis.JSZip = realJSZip;
 
 describe("Certificate — downloadCertEPUB", function () {
@@ -512,8 +781,8 @@ describe("Certificate — downloadCertEPUB", function () {
     var fpData = Object.assign({}, mockData, {
       fingerprint: true,
       fpResult: {
-        hashes: { "SHA-256": "abcdef", "MD5": "12345" },
-        perceptual_hashes: { "ahash": "aaaa", "dhash": "bbbb" },
+        hashes: { "SHA-256": "abcdef", MD5: "12345" },
+        perceptual_hashes: { ahash: "aaaa", dhash: "bbbb" },
       },
     });
     var blob = await downloadCertEPUB(fpData);
@@ -526,7 +795,12 @@ describe("Certificate — downloadCertEPUB", function () {
 
   it("should handle didSig section", async function () {
     var didData = Object.assign({}, mockData, {
-      didSig: { did: "did:example:123", algorithm: "Ed25519", timestamp: "2026-01-15T12:30:00.000Z", signature: "sig".repeat(30) },
+      didSig: {
+        did: "did:example:123",
+        algorithm: "Ed25519",
+        timestamp: "2026-01-15T12:30:00.000Z",
+        signature: "sig".repeat(30),
+      },
     });
     var blob = await downloadCertEPUB(didData);
     var buf = await blob.arrayBuffer();
@@ -536,7 +810,10 @@ describe("Certificate — downloadCertEPUB", function () {
   });
 
   it("should handle didIdentity fallback when didSig is null", async function () {
-    var didData = Object.assign({}, mockData, { didSig: null, didIdentity: "did:example:456" });
+    var didData = Object.assign({}, mockData, {
+      didSig: null,
+      didIdentity: "did:example:456",
+    });
     var blob = await downloadCertEPUB(didData);
     var buf = await blob.arrayBuffer();
     var zip = await JSZip.loadAsync(buf);
@@ -546,7 +823,13 @@ describe("Certificate — downloadCertEPUB", function () {
 
   it("should handle ct section with submitted=true", async function () {
     var ctData = Object.assign({}, mockData, {
-      ct: { submitted: true, hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", timestamp: "2026-01-15T12:30:00.000Z", aggregator: "https://example.com/ots", pending: false },
+      ct: {
+        submitted: true,
+        hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        timestamp: "2026-01-15T12:30:00.000Z",
+        aggregator: "https://example.com/ots",
+        pending: false,
+      },
     });
     var blob = await downloadCertEPUB(ctData);
     var buf = await blob.arrayBuffer();
@@ -564,7 +847,9 @@ describe("Certificate — downloadCertEPUB", function () {
     var buf = await blob.arrayBuffer();
     var zip = await JSZip.loadAsync(buf);
     var xhtml = await zip.file("OEBPS/content.xhtml").async("string");
-    assert.ok(xhtml.indexOf("pending") === -1 || xhtml.indexOf("Pending") !== -1);
+    assert.ok(
+      xhtml.indexOf("pending") === -1 || xhtml.indexOf("Pending") !== -1,
+    );
   });
 
   it("should handle ct section with submitted=false (error state)", async function () {
@@ -580,7 +865,14 @@ describe("Certificate — downloadCertEPUB", function () {
 
   it("should handle faceBiometric section", async function () {
     var faceData = Object.assign({}, mockData, {
-      faceBiometric: { detected: true, faceCount: 2, matchLabel: "Alice", didSigned: true, did: "did:example:face", exportedAt: "2026-01-15T12:30:00.000Z" },
+      faceBiometric: {
+        detected: true,
+        faceCount: 2,
+        matchLabel: "Alice",
+        didSigned: true,
+        did: "did:example:face",
+        exportedAt: "2026-01-15T12:30:00.000Z",
+      },
     });
     var blob = await downloadCertEPUB(faceData);
     var buf = await blob.arrayBuffer();
@@ -593,7 +885,12 @@ describe("Certificate — downloadCertEPUB", function () {
 
   it("should handle faceBiometric without matchLabel", async function () {
     var faceData = Object.assign({}, mockData, {
-      faceBiometric: { detected: true, faceCount: 1, didSigned: false, exportedAt: "2026-01-15T12:30:00.000Z" },
+      faceBiometric: {
+        detected: true,
+        faceCount: 1,
+        didSigned: false,
+        exportedAt: "2026-01-15T12:30:00.000Z",
+      },
     });
     var blob = await downloadCertEPUB(faceData);
     var buf = await blob.arrayBuffer();
@@ -645,7 +942,12 @@ describe("Certificate — downloadCertEPUB", function () {
 
   it("should handle user section with phone and website", async function () {
     var userData = Object.assign({}, mockData, {
-      user: { name: "Bob", email: "bob@test.com", phone: "+1234567890", website: "https://bob.example.com" },
+      user: {
+        name: "Bob",
+        email: "bob@test.com",
+        phone: "+1234567890",
+        website: "https://bob.example.com",
+      },
     });
     var blob = await downloadCertEPUB(userData);
     var buf = await blob.arrayBuffer();
@@ -659,7 +961,9 @@ describe("Certificate — downloadCertEPUB", function () {
 });
 
 describe("Certificate — browser UI functions", function () {
-  before(function () { clearMockElements(); });
+  before(function () {
+    clearMockElements();
+  });
 
   describe("getValOrEmpty", function () {
     it("should return trimmed value when element exists", function () {
@@ -686,16 +990,26 @@ describe("Certificate — browser UI functions", function () {
 
   describe("ensureLib", function () {
     it("should resolve jspdf when global exists", async function () {
-      await assert.doesNotReject(function () { return ensureLib("jspdf"); });
+      await assert.doesNotReject(function () {
+        return ensureLib("jspdf");
+      });
     });
 
     it("should resolve QRious when global exists", async function () {
-      await assert.doesNotReject(function () { return ensureLib("QRious"); });
+      await assert.doesNotReject(function () {
+        return ensureLib("QRious");
+      });
     });
 
-    it("should reject for unknown library", { timeout: 5000 }, async function () {
-      await assert.rejects(function () { return ensureLib("nonexistent_lib"); });
-    });
+    it(
+      "should reject for unknown library",
+      { timeout: 5000 },
+      async function () {
+        await assert.rejects(function () {
+          return ensureLib("nonexistent_lib");
+        });
+      },
+    );
   });
 
   describe("showCertOverlay / hideCertOverlay", function () {
@@ -725,14 +1039,18 @@ describe("Certificate — browser UI functions", function () {
 
   describe("toggleCertMusicFields", function () {
     it("should hide fields when checkbox unchecked", function () {
-      var fields = mockElement("cert-music-fields", { style: { display: "block" } });
+      var fields = mockElement("cert-music-fields", {
+        style: { display: "block" },
+      });
       mockElement("cert-show-music", { checked: false });
       toggleCertMusicFields();
       assert.equal(fields.style.display, "none");
     });
 
     it("should show fields when checkbox checked", function () {
-      var fields = mockElement("cert-music-fields2", { style: { display: "none" } });
+      var fields = mockElement("cert-music-fields2", {
+        style: { display: "none" },
+      });
       mockElement("cert-show-music2", { checked: true });
       // temporarily patch getElementById for this test
       var orig = globalThis.document.getElementById;
@@ -747,7 +1065,9 @@ describe("Certificate — browser UI functions", function () {
     });
 
     it("should handle missing fields element gracefully", function () {
-      assert.doesNotThrow(function () { toggleCertMusicFields(); });
+      assert.doesNotThrow(function () {
+        toggleCertMusicFields();
+      });
     });
   });
 
@@ -772,7 +1092,9 @@ describe("Certificate — browser UI functions", function () {
     it("should alert when _certData is null", function () {
       var alerted = false;
       var origAlert = globalThis.alert;
-      globalThis.alert = function () { alerted = true; };
+      globalThis.alert = function () {
+        alerted = true;
+      };
       _certData = null;
       downloadProfessionalCert("pdf");
       assert.ok(alerted);
@@ -795,19 +1117,28 @@ describe("Certificate — browser UI functions", function () {
       };
       mockElement("cert-status", { textContent: "" });
       await downloadProfessionalCert("pdf");
-      assert.ok(document.getElementById("cert-status").textContent.indexOf("PDF") !== -1);
+      assert.ok(
+        document.getElementById("cert-status").textContent.indexOf("PDF") !==
+          -1,
+      );
     });
 
     it("should download DOCX when _certData is set", async function () {
       mockElement("cert-status", { textContent: "" });
       await downloadProfessionalCert("docx");
-      assert.ok(document.getElementById("cert-status").textContent.indexOf("DOCX") !== -1);
+      assert.ok(
+        document.getElementById("cert-status").textContent.indexOf("DOCX") !==
+          -1,
+      );
     });
 
     it("should download EPUB when _certData is set", async function () {
       mockElement("cert-status", { textContent: "" });
       await downloadProfessionalCert("epub");
-      assert.ok(document.getElementById("cert-status").textContent.indexOf("EPUB") !== -1);
+      assert.ok(
+        document.getElementById("cert-status").textContent.indexOf("EPUB") !==
+          -1,
+      );
     });
   });
 });

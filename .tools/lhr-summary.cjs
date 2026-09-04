@@ -22,7 +22,12 @@ function auditValue(l, id) {
 const pages = {};
 for (const f of files) {
   const l = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
-  const url = (l.finalDisplayedUrl || l.requestedUrl || l.finalUrl || "?").replace(/\/$/, "");
+  const url = (
+    l.finalDisplayedUrl ||
+    l.requestedUrl ||
+    l.finalUrl ||
+    "?"
+  ).replace(/\/$/, "");
   if (!pages[url]) pages[url] = [];
   pages[url].push({ file: f, l });
 }
@@ -64,7 +69,8 @@ for (const [url, runs] of Object.entries(pages)) {
       best.a11y,
       m(row.a11y, (x) => x),
     );
-    if (row.bp !== null && row.bp !== undefined) best.bp = best.bp === null ? row.bp : Math.max(best.bp, row.bp);
+    if (row.bp !== null && row.bp !== undefined)
+      best.bp = best.bp === null ? row.bp : Math.max(best.bp, row.bp);
     best.seo = Math.max(
       best.seo,
       m(row.seo, (x) => x),
@@ -82,13 +88,22 @@ for (const [url, runs] of Object.entries(pages)) {
       m(row.cls, (x) => x),
     );
   }
-  const label = url.replace("http://127.0.0.1:8080", "").replace("http://localhost:8080", "") || "/";
+  const label =
+    url
+      .replace("http://127.0.0.1:8080", "")
+      .replace("http://localhost:8080", "") || "/";
   rows.push({ label, best, perRun, runs: runs.length });
 }
 
 rows.sort((a, b) => (a.label < b.label ? -1 : 1));
 
-console.log("## Per-page best-of-" + rows[0].runs + " (LHCI " + files.length + " reports)");
+console.log(
+  "## Per-page best-of-" +
+    rows[0].runs +
+    " (LHCI " +
+    files.length +
+    " reports)",
+);
 console.log("| Page | Perf | A11y | BP | SEO | TBT(ms) | LCP(ms) | CLS |");
 console.log("|------|------|------|----|-----|---------|---------|-----|");
 for (const r of rows) {
@@ -120,8 +135,16 @@ for (const [url, runs] of Object.entries(pages)) {
   const failed = new Set();
   for (const { l } of runs) {
     for (const [id, a] of Object.entries(l.audits)) {
-      if (a.score !== null && a.score < 1 && (a.scoreDisplayMode === "binary" || a.scoreDisplayMode === "numeric")) {
-        failed.add(a.scoreDisplayMode === "binary" ? id : id + "#" + Math.round(a.numericValue));
+      if (
+        a.score !== null &&
+        a.score < 1 &&
+        (a.scoreDisplayMode === "binary" || a.scoreDisplayMode === "numeric")
+      ) {
+        failed.add(
+          a.scoreDisplayMode === "binary"
+            ? id
+            : id + "#" + Math.round(a.numericValue),
+        );
       }
     }
   }
@@ -135,9 +158,17 @@ for (const [key, labels] of Object.entries(seen)) {
 
 console.log("\n## CLS per run (both runs per page)");
 for (const r of rows) {
-  const clsRuns = r.perRun.map((p) => (p.cls === null || p.cls === undefined ? "-" : p.cls.toFixed(3)));
+  const clsRuns = r.perRun.map((p) =>
+    p.cls === null || p.cls === undefined ? "-" : p.cls.toFixed(3),
+  );
   const bad = r.perRun.filter((p) => p.cls !== null && p.cls > 0.05).length;
-  console.log(r.label + (bad ? "  <<< " + bad + " bad run(s)" : "") + "  [" + clsRuns.join(" | ") + "]");
+  console.log(
+    r.label +
+      (bad ? "  <<< " + bad + " bad run(s)" : "") +
+      "  [" +
+      clsRuns.join(" | ") +
+      "]",
+  );
 }
 
 console.log("\n## errors-in-console unique messages");
@@ -146,7 +177,10 @@ for (const [url, runs] of Object.entries(pages)) {
   for (const { l } of runs) {
     const e = l.audits["errors-in-console"];
     if (e && e.details && e.details.items) {
-      for (const it of e.details.items) allErrs.add((it.source || "?") + " :: " + (it.description || "").slice(0, 140));
+      for (const it of e.details.items)
+        allErrs.add(
+          (it.source || "?") + " :: " + (it.description || "").slice(0, 140),
+        );
     }
   }
 }

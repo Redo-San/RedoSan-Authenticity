@@ -42,7 +42,10 @@ describe("E2E — Fingerprint Hash Families", () => {
     await page.waitForTimeout(1000);
     assert.equal(
       errors.filter(
-        (e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"),
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
       ).length,
       0,
     );
@@ -57,8 +60,12 @@ describe("E2E — Fingerprint Hash Families", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
     await page.waitForTimeout(1000);
-    const hasFileInput = await page.evaluate(() => !!document.getElementById("fp-file"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("fp-btn"));
+    const hasFileInput = await page.evaluate(
+      () => !!document.getElementById("fp-file"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("fp-btn"),
+    );
     assert.ok(hasFileInput, "File input should exist");
     assert.ok(hasBtn, "Fingerprint button should exist");
     await ctx.close();
@@ -83,7 +90,10 @@ describe("E2E — Fingerprint Hash Families", () => {
     await page.evaluate(() => document.getElementById("fp-btn").click());
 
     // Wait for result to appear
-    await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#fp-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     // Get output HTML
@@ -96,10 +106,16 @@ describe("E2E — Fingerprint Hash Families", () => {
     // Perceptual hashes only show for images with adequate size; test image may be too small
     const expectedFamilies = ["SHA-1", "SHA-2", "SHA-3", "MD", "BLAKE"];
     for (const family of expectedFamilies) {
-      assert.ok(outputHtml.includes(family), `Output should contain "${family}" hash family`);
+      assert.ok(
+        outputHtml.includes(family),
+        `Output should contain "${family}" hash family`,
+      );
     }
     // Check that 64-bit SHA-2 and SHAKE sections also appear
-    assert.ok(outputHtml.includes("64-bit") || outputHtml.includes("SHA-512"), "Should show SHA-2 (64-bit) section");
+    assert.ok(
+      outputHtml.includes("64-bit") || outputHtml.includes("SHA-512"),
+      "Should show SHA-2 (64-bit) section",
+    );
     assert.ok(outputHtml.includes("SHAKE"), "Should show SHAKE section");
 
     await ctx.close();
@@ -120,14 +136,20 @@ describe("E2E — Fingerprint Hash Families", () => {
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("fp-btn").click());
 
-    await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#fp-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     const dlHtml = await page.evaluate(() => {
       const el = document.getElementById("fp-download");
       return el ? el.innerHTML : "";
     });
-    assert.ok(dlHtml.includes("Download"), "Download button should appear after fingerprinting");
+    assert.ok(
+      dlHtml.includes("Download"),
+      "Download button should appear after fingerprinting",
+    );
 
     await ctx.close();
   });

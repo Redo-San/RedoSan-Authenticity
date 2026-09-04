@@ -1,7 +1,9 @@
 const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1350, height: 940 },
+  });
   const pg = await ctx.newPage();
   await pg.addInitScript(() => {
     window.__before = null;
@@ -30,7 +32,9 @@ const { chromium } = require("playwright");
       window.__after = snap();
     }, 1100);
   });
-  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+    waitUntil: "load",
+  });
   await pg.waitForTimeout(1500);
   const r = await pg.evaluate(() => {
     const b = window.__before,
@@ -47,17 +51,22 @@ const { chromium } = require("playwright");
       if (y) {
         const dh = y.h - x.h,
           dt = y.t - x.t;
-        if (Math.abs(dh) > 4 || Math.abs(dt) > 4) diffs.push({ k, disp: x.d + "->" + y.d, dt, dh });
+        if (Math.abs(dh) > 4 || Math.abs(dt) > 4)
+          diffs.push({ k, disp: x.d + "->" + y.d, dt, dh });
       } else {
         diffs.push({ k, removed: true });
       }
     });
     a.forEach((x) => {
       const k = (x.id ? "#" + x.id : "") + "<" + x.tag + ">";
-      const found = b.some((z) => (z.id ? "#" + z.id : "") + "<" + z.tag + ">" === k);
+      const found = b.some(
+        (z) => (z.id ? "#" + z.id : "") + "<" + z.tag + ">" === k,
+      );
       if (!found) diffs.push({ k, added: true, cls: x.cls.slice(0, 40) });
     });
-    return diffs.filter((d) => !d.removed || d.k.includes("footer")).slice(0, 30);
+    return diffs
+      .filter((d) => !d.removed || d.k.includes("footer"))
+      .slice(0, 30);
   });
   console.log(JSON.stringify(r, null, 1));
   await browser.close();

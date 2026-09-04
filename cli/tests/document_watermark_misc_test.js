@@ -5,16 +5,45 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
-const src = fs.readFileSync(path.join(__dirname, "../../Document_Watermark/document_watermark_core.js"), "utf8");
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Document_Watermark/document_watermark_core.js") });
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Document_Watermark/document_watermark_core.js"),
+  "utf8",
+);
+vm.runInThisContext(src, {
+  filename: path.resolve(
+    __dirname,
+    "../../Document_Watermark/document_watermark_core.js",
+  ),
+});
 
-const reportSrc = fs.readFileSync(path.join(__dirname, "../../Document_Watermark/document_watermark_report.js"), "utf8");
-vm.runInThisContext(reportSrc, { filename: path.resolve(__dirname, "../../Document_Watermark/document_watermark_report.js") });
+const reportSrc = fs.readFileSync(
+  path.join(__dirname, "../../Document_Watermark/document_watermark_report.js"),
+  "utf8",
+);
+vm.runInThisContext(reportSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Document_Watermark/document_watermark_report.js",
+  ),
+});
 
-const pdfSrc = fs.readFileSync(path.join(__dirname, "../../Document_Watermark/document_watermark_pdf.js"), "utf8");
-vm.runInThisContext(pdfSrc, { filename: path.resolve(__dirname, "../../Document_Watermark/document_watermark_pdf.js") });
+const pdfSrc = fs.readFileSync(
+  path.join(__dirname, "../../Document_Watermark/document_watermark_pdf.js"),
+  "utf8",
+);
+vm.runInThisContext(pdfSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../../Document_Watermark/document_watermark_pdf.js",
+  ),
+});
 
 describe("Document Watermark — _checkPassword", () => {
   it("should return result unchanged when no password", () => {
@@ -28,15 +57,24 @@ describe("Document Watermark — _checkPassword", () => {
   });
 
   it("should throw WRONG_PASSWORD when password prefix does not match", () => {
-    assert.throws(() => _checkPassword("secret:hello world", "wrong"), /WRONG_PASSWORD/);
+    assert.throws(
+      () => _checkPassword("secret:hello world", "wrong"),
+      /WRONG_PASSWORD/,
+    );
   });
 
   it("should return result unchanged when no colon in first 50 chars", () => {
-    assert.equal(_checkPassword("this string has no colon with password", "secret"), "this string has no colon with password");
+    assert.equal(
+      _checkPassword("this string has no colon with password", "secret"),
+      "this string has no colon with password",
+    );
   });
 
   it("should throw when colon present but not matching password", () => {
-    assert.throws(() => _checkPassword("hello:world", "secret"), /WRONG_PASSWORD/);
+    assert.throws(
+      () => _checkPassword("hello:world", "secret"),
+      /WRONG_PASSWORD/,
+    );
   });
 
   it("should return result unchanged when password missing but colon present", () => {
@@ -90,7 +128,12 @@ describe("Document Watermark — _getWmAtPos", () => {
   });
 
   it("should extract watermarked segment when segText matches at startPos", () => {
-    const result = _getWmAtPos("hello world", "he\u200Bllo\u200B world", "hello", 0);
+    const result = _getWmAtPos(
+      "hello world",
+      "he\u200Bllo\u200B world",
+      "hello",
+      0,
+    );
     assert.notEqual(result, null);
     assert.ok(result.length > 0);
     assert.ok(result.includes("h"));
@@ -98,14 +141,24 @@ describe("Document Watermark — _getWmAtPos", () => {
   });
 
   it("should extract watermarked segment at a non-zero position", () => {
-    const result = _getWmAtPos("prefix hello world", "prefix he\u200Bllo\u200B world", "hello", 7);
+    const result = _getWmAtPos(
+      "prefix hello world",
+      "prefix he\u200Bllo\u200B world",
+      "hello",
+      7,
+    );
     assert.notEqual(result, null);
     assert.ok(result.length > 0);
     assert.ok(result.includes("h"));
   });
 
   it("should return watermarked segment with ZWC chars included", () => {
-    const result = _getWmAtPos("hello world", "he\u200Bllo\u200B world", "hello", 0);
+    const result = _getWmAtPos(
+      "hello world",
+      "he\u200Bllo\u200B world",
+      "hello",
+      0,
+    );
     assert.notEqual(result, null);
     assert.ok(result.includes("\u200B"));
     assert.equal(result.length, 6); // h e ZWC l l o
@@ -132,7 +185,9 @@ describe("Document Watermark PDF — _stringToBytes", () => {
 
 describe("Document Watermark PDF — _decompressRaw", () => {
   it("should roundtrip compress and decompress", async () => {
-    const original = new TextEncoder().encode("Hello, World! This is a test string.");
+    const original = new TextEncoder().encode(
+      "Hello, World! This is a test string.",
+    );
     const cs = new CompressionStream("deflate-raw");
     const writer = cs.writable.getWriter();
     const reader = cs.readable.getReader();
@@ -147,7 +202,10 @@ describe("Document Watermark PDF — _decompressRaw", () => {
     const total = chunks.reduce((a, c) => a + c.length, 0);
     const compressed = new Uint8Array(total);
     let offset = 0;
-    for (const c of chunks) { compressed.set(c, offset); offset += c.length; }
+    for (const c of chunks) {
+      compressed.set(c, offset);
+      offset += c.length;
+    }
 
     const decompressed = await _decompressRaw(compressed);
     assert.ok(decompressed instanceof Uint8Array);
@@ -170,7 +228,10 @@ describe("Document Watermark PDF — _decompressRaw", () => {
     const total = chunks.reduce((a, c) => a + c.length, 0);
     const compressed = new Uint8Array(total);
     let offset = 0;
-    for (const c of chunks) { compressed.set(c, offset); offset += c.length; }
+    for (const c of chunks) {
+      compressed.set(c, offset);
+      offset += c.length;
+    }
 
     const result = await _decompressRaw(compressed);
     assert.ok(result instanceof Uint8Array);
@@ -182,7 +243,9 @@ describe("Document Watermark PDF — _decompressRaw", () => {
     try {
       var bytes = new Uint8Array([0, 1, 2]);
       await assert.rejects(
-        async function () { await _decompressRaw(bytes); },
+        async function () {
+          await _decompressRaw(bytes);
+        },
         { name: "TypeError" },
       );
     } finally {
@@ -211,7 +274,10 @@ describe("Document Watermark PDF — _pdfReplaceInStream (segment parsing)", () 
   });
 
   it("should handle empty content", () => {
-    const result = _pdfReplaceInStream("", "", "", { forward: {}, reverse: {} });
+    const result = _pdfReplaceInStream("", "", "", {
+      forward: {},
+      reverse: {},
+    });
     assert.equal(result, "");
   });
 });
@@ -225,23 +291,36 @@ describe("Document Watermark PDF — buildWatermarkedPdfDoc", () => {
     await w.write(bytes);
     await w.close();
     const chunks = [];
-    while (true) { const v = await r.read(); if (v.done) break; chunks.push(v.value); }
+    while (true) {
+      const v = await r.read();
+      if (v.done) break;
+      chunks.push(v.value);
+    }
     const total = chunks.reduce((a, c) => a + c.length, 0);
     const result = new Uint8Array(total);
     let off = 0;
-    for (const c of chunks) { result.set(c, off); off += c.length; }
+    for (const c of chunks) {
+      result.set(c, off);
+      off += c.length;
+    }
     return result;
   }
 
   it("should return a Uint8Array", async () => {
     const pdfText = "BT /F1 12 Tf (Hello World) Tj ET";
     const comp = await makeCompressedStream(pdfText);
-    const pdfStr = "xref\n0 1\n0000000000 65535 f \ntrailer\n<</Size 1>>\nstartxref\n0\n%%EOF";
+    const pdfStr =
+      "xref\n0 1\n0000000000 65535 f \ntrailer\n<</Size 1>>\nstartxref\n0\n%%EOF";
     var streamData = "";
-    for (let i = 0; i < comp.length; i++) streamData += String.fromCharCode(comp[i]);
+    for (let i = 0; i < comp.length; i++)
+      streamData += String.fromCharCode(comp[i]);
     const fullPdf = pdfStr + "\nstream\n" + streamData + "\nendstream";
     const pdfBytes = new TextEncoder().encode(fullPdf);
-    const result = await buildWatermarkedPdfDoc(pdfBytes, "Hello World", "Hello\u200BWorld");
+    const result = await buildWatermarkedPdfDoc(
+      pdfBytes,
+      "Hello World",
+      "Hello\u200BWorld",
+    );
     assert.ok(result instanceof Uint8Array);
   });
 
@@ -270,12 +349,18 @@ describe("Document Watermark PDF — buildWatermarkedPdfDoc", () => {
   });
 
   it("should modify content when watermark differs from original", async () => {
-    const comp = await makeCompressedStream("BT /F1 12 Tf (Hello World) Tj ET\nBT /F2 10 Tf (End) Tj ET");
+    const comp = await makeCompressedStream(
+      "BT /F1 12 Tf (Hello World) Tj ET\nBT /F2 10 Tf (End) Tj ET",
+    );
     var sd = "";
     for (let i = 0; i < comp.length; i++) sd += String.fromCharCode(comp[i]);
     const src = "stream\n" + sd + "\nendstream";
     const bytes = new TextEncoder().encode(src);
-    const result = await buildWatermarkedPdfDoc(bytes, "Hello WorldEnd", "Hello\u200BWorld\u200BEnd");
+    const result = await buildWatermarkedPdfDoc(
+      bytes,
+      "Hello WorldEnd",
+      "Hello\u200BWorld\u200BEnd",
+    );
     assert.ok(result instanceof Uint8Array);
     const resultStr = new TextDecoder().decode(result);
     // Stream should be re-compressed, so exact content check is not needed
@@ -311,7 +396,11 @@ describe("Document Watermark PDF — buildWatermarkedPdfDoc", () => {
     for (let i = 0; i < comp.length; i++) sd += String.fromCharCode(comp[i]);
     const src = "stream\n" + sd + "\nendstream";
     const bytes = new TextEncoder().encode(src);
-    const result = await buildWatermarkedPdfDoc(bytes, "original", "watermarked");
+    const result = await buildWatermarkedPdfDoc(
+      bytes,
+      "original",
+      "watermarked",
+    );
     assert.ok(result instanceof Uint8Array);
     assert.ok(result.length > 0);
   });
@@ -326,18 +415,26 @@ describe("Document Watermark PDF — buildWatermarkedPdfDoc pageStream path", ()
     await w.write(bytes);
     await w.close();
     const chunks = [];
-    while (true) { const v = await r.read(); if (v.done) break; chunks.push(v.value); }
+    while (true) {
+      const v = await r.read();
+      if (v.done) break;
+      chunks.push(v.value);
+    }
     const total = chunks.reduce((a, c) => a + c.length, 0);
     const result = new Uint8Array(total);
     let off = 0;
-    for (const c of chunks) { result.set(c, off); off += c.length; }
+    for (const c of chunks) {
+      result.set(c, off);
+      off += c.length;
+    }
     return result;
   }
 
   it("should append watermark stream when no text match but BT/ET present", async () => {
     // Stream content that won't match originalText but has BT/ET
     // Use 2+ text segments so segs.sort comparator is invoked
-    const streamContent = "BT /F1 12 Tf (NonMatching) Tj /F2 14 Tf (TextHere) Tj ET";
+    const streamContent =
+      "BT /F1 12 Tf (NonMatching) Tj /F2 14 Tf (TextHere) Tj ET";
     const comp = await makeCompressedBytes(streamContent);
     // Build PDF bytes as Uint8Array directly — avoiding TextEncoder round trip
     // that would corrupt bytes > 127 in compressed data
@@ -348,7 +445,11 @@ describe("Document Watermark PDF — buildWatermarkedPdfDoc pageStream path", ()
     bytes.set(comp, prefix.length);
     bytes.set(suffix, prefix.length + comp.length);
     // originalText won't match "NonMatchingText" in the stream
-    const result = await buildWatermarkedPdfDoc(bytes, "OriginalText", "Watermarked\u200BText");
+    const result = await buildWatermarkedPdfDoc(
+      bytes,
+      "OriginalText",
+      "Watermarked\u200BText",
+    );
     assert.ok(result instanceof Uint8Array);
     assert.ok(result.length > 0);
     // Verify the output is different from input (watermark was appended)
@@ -378,7 +479,7 @@ describe("Document Watermark PDF — buildWatermarkedPdfDoc pageStream path", ()
 
   it("should handle TJ arrays with escaped parens and nested depth", async () => {
     // TJ array with escaped parens and nested depth
-    const streamContent = 'BT /F1 12 Tf [(Hello\\() (World\\))] TJ ET';
+    const streamContent = "BT /F1 12 Tf [(Hello\\() (World\\))] TJ ET";
     const comp = await makeCompressedBytes(streamContent);
     const prefix = new TextEncoder().encode("stream\n");
     const suffix = new TextEncoder().encode("\nendstream");
@@ -386,7 +487,11 @@ describe("Document Watermark PDF — buildWatermarkedPdfDoc pageStream path", ()
     bytes.set(prefix, 0);
     bytes.set(comp, prefix.length);
     bytes.set(suffix, prefix.length + comp.length);
-    const result = await buildWatermarkedPdfDoc(bytes, "Hello( World)", "Hello\u200B( World)");
+    const result = await buildWatermarkedPdfDoc(
+      bytes,
+      "Hello( World)",
+      "Hello\u200B( World)",
+    );
     assert.ok(result instanceof Uint8Array);
   });
 
@@ -459,18 +564,28 @@ describe("Document Watermark PDF — _pdfBuildCMap", () => {
     await w.write(comp);
     await w.close();
     const chunks = [];
-    while (true) { const v = await r.read(); if (v.done) break; chunks.push(v.value); }
+    while (true) {
+      const v = await r.read();
+      if (v.done) break;
+      chunks.push(v.value);
+    }
     const total = chunks.reduce((a, c) => a + c.length, 0);
     const cData = new Uint8Array(total);
     let off = 0;
-    for (const c of chunks) { cData.set(c, off); off += c.length; }
+    for (const c of chunks) {
+      cData.set(c, off);
+      off += c.length;
+    }
 
     let sd = "";
     for (let i = 0; i < cData.length; i++) sd += String.fromCharCode(cData[i]);
 
     const pdfSrc =
-      "1 0 obj<</Filter/FlateDecode/Length " + sd.length + ">>stream\n" +
-      sd + "\nendstream\nendobj\n" +
+      "1 0 obj<</Filter/FlateDecode/Length " +
+      sd.length +
+      ">>stream\n" +
+      sd +
+      "\nendstream\nendobj\n" +
       "2 0 obj<</Filter/FlateDecode>>stream\ntoo_long_to_skip\nendstream\nendobj\n";
 
     const cmap = await _pdfBuildCMap(pdfSrc);
@@ -485,7 +600,8 @@ describe("Document Watermark PDF — _pdfBuildCMap", () => {
 
   it("should handle decompression errors gracefully", async () => {
     // Invalid compressed data
-    const src = "1 0 obj<</Filter/FlateDecode>>stream\ninvalid!\nendstream\nendobj\n";
+    const src =
+      "1 0 obj<</Filter/FlateDecode>>stream\ninvalid!\nendstream\nendobj\n";
     const cmap = await _pdfBuildCMap(src);
     assert.ok(cmap);
     assert.deepEqual(cmap.forward, {});
@@ -501,14 +617,26 @@ describe("Document Watermark PDF — _pdfBuildCMap", () => {
     await w.write(enc);
     await w.close();
     const ch = [];
-    while (true) { const v = await r.read(); if (v.done) break; ch.push(v.value); }
+    while (true) {
+      const v = await r.read();
+      if (v.done) break;
+      ch.push(v.value);
+    }
     const t = ch.reduce((a, c) => a + c.length, 0);
     const cd = new Uint8Array(t);
     let o = 0;
-    for (const c of ch) { cd.set(c, o); o += c.length; }
+    for (const c of ch) {
+      cd.set(c, o);
+      o += c.length;
+    }
     let s = "";
     for (let i = 0; i < cd.length; i++) s += String.fromCharCode(cd[i]);
-    const src = "1 0 obj<</Filter/FlateDecode/Length " + s.length + ">>stream\n" + s + "\nendstream\nendobj\n";
+    const src =
+      "1 0 obj<</Filter/FlateDecode/Length " +
+      s.length +
+      ">>stream\n" +
+      s +
+      "\nendstream\nendobj\n";
     const cmap = await _pdfBuildCMap(src);
     assert.ok(cmap);
     assert.deepEqual(cmap.forward, {});
@@ -529,7 +657,10 @@ describe("Document Watermark PDF — _pdfBuildCMap", () => {
 
   it("should skip object with very large stream", async () => {
     const largeData = "x".repeat(200_000);
-    const src = "1 0 obj<</Filter/FlateDecode>>stream\n" + largeData + "\nendstream\nendobj\n";
+    const src =
+      "1 0 obj<</Filter/FlateDecode>>stream\n" +
+      largeData +
+      "\nendstream\nendobj\n";
     const cmap = await _pdfBuildCMap(src);
     assert.ok(cmap);
   });
@@ -539,7 +670,9 @@ describe("Document Watermark PDF — downloadDocw", () => {
   before(() => {
     globalThis.closeDownloadModal = function () {};
     globalThis.downloadBlobSimple = function () {};
-    globalThis.__ = function (key, def) { return def; };
+    globalThis.__ = function (key, def) {
+      return def;
+    };
   });
 
   it("should return early when no result", () => {
@@ -547,11 +680,20 @@ describe("Document Watermark PDF — downloadDocw", () => {
     globalThis._docwResult = null;
     try {
       downloadDocw("txt");
-    } finally { globalThis._docwResult = orig; }
+    } finally {
+      globalThis._docwResult = orig;
+    }
   });
 
   it("should download as PDF", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "secret", watermarkedText: "wm", textLength: 10, timestamp: "t", hash: "h" };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "secret",
+      watermarkedText: "wm",
+      textLength: 10,
+      timestamp: "t",
+      hash: "h",
+    };
     const orig = globalThis._docwBuildReportPdf;
     let called = false;
     globalThis._docwBuildReportPdf = async (r, mode) => {
@@ -569,13 +711,22 @@ describe("Document Watermark PDF — downloadDocw", () => {
   });
 
   it("should download as DOCX", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "secret", watermarkedText: "wm", textLength: 10, timestamp: "t", hash: "h" };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "secret",
+      watermarkedText: "wm",
+      textLength: 10,
+      timestamp: "t",
+      hash: "h",
+    };
     const orig = globalThis._docwBuildReportDocx;
     let called = false;
     globalThis._docwBuildReportDocx = async (r, mode) => {
       called = true;
       assert.equal(mode, "embed");
-      return new Blob(["docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      return new Blob(["docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
     };
     try {
       await downloadDocw("doc");
@@ -587,44 +738,100 @@ describe("Document Watermark PDF — downloadDocw", () => {
   });
 
   it("should download as JSON", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "secret", watermarkedText: "wm", textLength: 10, timestamp: "t", hash: "h", resultLength: 100 };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "secret",
+      watermarkedText: "wm",
+      textLength: 10,
+      timestamp: "t",
+      hash: "h",
+      resultLength: 100,
+    };
     try {
       await downloadDocw("json");
-    } finally { globalThis._docwResult = null; }
+    } finally {
+      globalThis._docwResult = null;
+    }
   });
 
   it("should download as CSV", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "test", watermarkedText: "wm", textLength: 5, timestamp: "t", hash: "h", resultLength: 20 };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "test",
+      watermarkedText: "wm",
+      textLength: 5,
+      timestamp: "t",
+      hash: "h",
+      resultLength: 20,
+    };
     try {
       await downloadDocw("csv");
-    } finally { globalThis._docwResult = null; }
+    } finally {
+      globalThis._docwResult = null;
+    }
   });
 
   it("should download as TXT", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "secret", watermarkedText: "wm", textLength: 10, timestamp: "t", hash: "h" };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "secret",
+      watermarkedText: "wm",
+      textLength: 10,
+      timestamp: "t",
+      hash: "h",
+    };
     try {
       await downloadDocw("txt");
-    } finally { globalThis._docwResult = null; }
+    } finally {
+      globalThis._docwResult = null;
+    }
   });
 
   it("should download as XML", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "secret", watermarkedText: "wm", textLength: 10, timestamp: "t", hash: "h" };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "secret",
+      watermarkedText: "wm",
+      textLength: 10,
+      timestamp: "t",
+      hash: "h",
+    };
     try {
       await downloadDocw("xml");
-    } finally { globalThis._docwResult = null; }
+    } finally {
+      globalThis._docwResult = null;
+    }
   });
 
   it("should download as HTML", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "secret", watermarkedText: "wm", textLength: 10, timestamp: "t", hash: "h" };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "secret",
+      watermarkedText: "wm",
+      textLength: 10,
+      timestamp: "t",
+      hash: "h",
+    };
     try {
       await downloadDocw("html");
-    } finally { globalThis._docwResult = null; }
+    } finally {
+      globalThis._docwResult = null;
+    }
   });
 
   it("should skip unknown format", async () => {
-    globalThis._docwResult = { algo: "ZWC", message: "secret", watermarkedText: "wm", textLength: 10, timestamp: "t", hash: "h" };
+    globalThis._docwResult = {
+      algo: "ZWC",
+      message: "secret",
+      watermarkedText: "wm",
+      textLength: 10,
+      timestamp: "t",
+      hash: "h",
+    };
     try {
       await downloadDocw("unknown_format");
-    } finally { globalThis._docwResult = null; }
+    } finally {
+      globalThis._docwResult = null;
+    }
   });
 });

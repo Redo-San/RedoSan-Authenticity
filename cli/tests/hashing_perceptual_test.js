@@ -7,7 +7,12 @@ const { createCanvas } = require("canvas");
 
 // ── Polyfills ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.document = {
   createElement: (tag) => {
     if (tag === "canvas") {
@@ -21,8 +26,13 @@ globalThis.document = {
 };
 globalThis.ImageData = class {};
 
-const src = fs.readFileSync(path.join(__dirname, "../../Fingerprint/hashing_perceptual.js"), "utf8");
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Fingerprint/hashing_perceptual.js") });
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Fingerprint/hashing_perceptual.js"),
+  "utf8",
+);
+vm.runInThisContext(src, {
+  filename: path.resolve(__dirname, "../../Fingerprint/hashing_perceptual.js"),
+});
 
 // ── Helpers ──
 function makeTestImageData(w, h) {
@@ -48,7 +58,10 @@ describe("Perceptual Hashing — ahash", () => {
   it("should return a 16-char hex string for a 64x64 image", () => {
     const imgData = makeTestImageData(64, 64);
     const hash = globalThis.ahash(imgData);
-    assert.ok(/^[0-9a-f]{16}$/i.test(hash), `Expected 16-char hex, got '${hash}'`);
+    assert.ok(
+      /^[0-9a-f]{16}$/i.test(hash),
+      `Expected 16-char hex, got '${hash}'`,
+    );
   });
 
   it("should return consistent results for the same image", () => {

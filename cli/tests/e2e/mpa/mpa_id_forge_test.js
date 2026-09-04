@@ -3,7 +3,13 @@ var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
 var path = require("path");
 var fs = require("fs");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors, closePage } = require("../mpa_helpers");
+var {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 
 var PAGE_ID = "id_forge";
 var browser;
@@ -20,11 +26,19 @@ after(async function () {
 async function generateId(page, type) {
   await page.evaluate(function (t) {
     var sel = document.getElementById("if-type");
-    if (sel) { sel.value = t; sel.dispatchEvent(new Event("change", { bubbles: true })); }
+    if (sel) {
+      sel.value = t;
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    }
   }, type);
   await page.waitForTimeout(300);
-  await page.evaluate(function () { document.getElementById("if-gen-btn").click(); });
-  await page.waitForSelector("#if-result", { state: "visible", timeout: 10000 });
+  await page.evaluate(function () {
+    document.getElementById("if-gen-btn").click();
+  });
+  await page.waitForSelector("#if-result", {
+    state: "visible",
+    timeout: 10000,
+  });
   await page.waitForTimeout(500);
   return await page.evaluate(function () {
     var el = document.getElementById("if-output");
@@ -46,8 +60,12 @@ describe("MPA — ID Forge", function () {
   it("should have key form elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      var hasType = await page.evaluate(function () { return !!document.getElementById("if-type"); });
-      var hasGenBtn = await page.evaluate(function () { return !!document.getElementById("if-gen-btn"); });
+      var hasType = await page.evaluate(function () {
+        return !!document.getElementById("if-type");
+      });
+      var hasGenBtn = await page.evaluate(function () {
+        return !!document.getElementById("if-gen-btn");
+      });
       assert.ok(hasType, "Type select should exist");
       assert.ok(hasGenBtn, "Generate button should exist");
     } finally {
@@ -60,7 +78,11 @@ describe("MPA — ID Forge", function () {
     try {
       var output = await generateId(page, "uuidv4");
       assert.ok(output.length > 0, "Output should contain generated ID");
-      assert.match(output, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, "Should match UUID v4 format");
+      assert.match(
+        output,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+        "Should match UUID v4 format",
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -71,7 +93,11 @@ describe("MPA — ID Forge", function () {
     try {
       var output = await generateId(page, "uuidv7");
       assert.ok(output.length > 0, "Output should contain generated ID");
-      assert.match(output, /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, "Should match UUID v7 format");
+      assert.match(
+        output,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+        "Should match UUID v7 format",
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -94,7 +120,11 @@ describe("MPA — ID Forge", function () {
       var output = await generateId(page, "nanoid");
       assert.ok(output.length > 0, "Output should contain generated ID");
       assert.ok(output.length <= 256, "NanoID should be within length limit");
-      assert.match(output, /^[a-zA-Z0-9_-]+$/, "Should match NanoID URL-safe format");
+      assert.match(
+        output,
+        /^[a-zA-Z0-9_-]+$/,
+        "Should match NanoID URL-safe format",
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -147,7 +177,9 @@ describe("MPA — ID Forge", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       await generateId(page, "uuidv4");
-      await page.evaluate(function () { idForgeShowDownload(); });
+      await page.evaluate(function () {
+        idForgeShowDownload();
+      });
       await page.waitForTimeout(500);
       var modalHasOpen = await page.evaluate(function () {
         var modal = document.getElementById("dl-modal");
@@ -169,22 +201,33 @@ describe("MPA — ID Forge", function () {
       });
       await page.waitForTimeout(300);
       // Switch to file tab and upload
-      await page.evaluate(function () { switchSwhidTab("file"); });
+      await page.evaluate(function () {
+        switchSwhidTab("file");
+      });
       await page.waitForTimeout(300);
       var testFile = path.resolve(__dirname, "../../fixtures/test.txt");
       var fileBuf = fs.readFileSync(testFile);
       await page.setInputFiles("#if-swhid-file", [
-        { name: "test.txt", mimeType: "text/plain", buffer: fileBuf }
+        { name: "test.txt", mimeType: "text/plain", buffer: fileBuf },
       ]);
       await page.waitForTimeout(300);
-      await page.evaluate(function () { document.getElementById("if-gen-btn").click(); });
-      await page.waitForSelector("#if-result", { state: "visible", timeout: 10000 });
+      await page.evaluate(function () {
+        document.getElementById("if-gen-btn").click();
+      });
+      await page.waitForSelector("#if-result", {
+        state: "visible",
+        timeout: 10000,
+      });
       await page.waitForTimeout(500);
       var output = await page.evaluate(function () {
         var el = document.getElementById("if-output");
         return el ? el.value : "";
       });
-      assert.match(output, /^swh:1:cnt:[0-9a-f]{40}$/, "SWHID from file should be valid");
+      assert.match(
+        output,
+        /^swh:1:cnt:[0-9a-f]{40}$/,
+        "SWHID from file should be valid",
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -194,13 +237,18 @@ describe("MPA — ID Forge", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       await generateId(page, "uuidv4");
-      await page.evaluate(function () { idForgeShowDownload(); });
+      await page.evaluate(function () {
+        idForgeShowDownload();
+      });
       await page.waitForTimeout(500);
       var hasFormats = await page.evaluate(function () {
         var btns = document.querySelectorAll("#dl-modal .dl-option");
         return btns.length >= 3;
       });
-      assert.ok(hasFormats, "Download modal should have at least 3 format options");
+      assert.ok(
+        hasFormats,
+        "Download modal should have at least 3 format options",
+      );
     } finally {
       await closePage(ctx, page);
     }

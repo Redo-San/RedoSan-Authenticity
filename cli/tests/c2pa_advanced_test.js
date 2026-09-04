@@ -12,7 +12,9 @@ function loadC2pa() {
   globalThis.BigInt = BigInt;
   globalThis.window.__ = globalThis.window.__ || ((s, d) => d || s);
   globalThis.window.escXml = globalThis.window.escXml || ((s) => s);
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../C2PA/c2pa.js") });
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../C2PA/c2pa.js"),
+  });
 }
 
 before(() => loadC2pa());
@@ -20,13 +22,19 @@ before(() => loadC2pa());
 describe("C2PA — sha256Hex", () => {
   it("should hash an empty buffer", async () => {
     const h = await sha256Hex(new ArrayBuffer(0));
-    assert.equal(h, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    assert.equal(
+      h,
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
   });
 
   it("should hash a simple string", async () => {
     const buf = new TextEncoder().encode("hello").buffer;
     const h = await sha256Hex(buf);
-    assert.equal(h, "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
+    assert.equal(
+      h,
+      "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+    );
   });
 });
 
@@ -38,12 +46,16 @@ describe("C2PA — withTimeout", () => {
 
   it("should reject on timeout", async () => {
     const slow = new Promise(() => {});
-    await assert.rejects(() => withTimeout(slow, 10, "custom timeout msg"), { message: "custom timeout msg" });
+    await assert.rejects(() => withTimeout(slow, 10, "custom timeout msg"), {
+      message: "custom timeout msg",
+    });
   });
 
   it("should use default message", async () => {
     const slow = new Promise(() => {});
-    await assert.rejects(() => withTimeout(slow, 10), { message: "Operation timed out" });
+    await assert.rejects(() => withTimeout(slow, 10), {
+      message: "Operation timed out",
+    });
   });
 });
 
@@ -103,7 +115,9 @@ describe("C2PA — getActionsHtml", () => {
       assertions: [
         {
           label: "c2pa.actions.v2",
-          data: { actions: [{ action: "c2pa.edited", softwareAgent: "Photoshop" }] },
+          data: {
+            actions: [{ action: "c2pa.edited", softwareAgent: "Photoshop" }],
+          },
         },
       ],
     };
@@ -117,7 +131,12 @@ describe("C2PA — getActionsHtml", () => {
       assertions: [
         {
           label: "c2pa.actions",
-          data: [{ action: "c2pa.captured", actor: { name: "Test User", identifier: "id-123" } }],
+          data: [
+            {
+              action: "c2pa.captured",
+              actor: { name: "Test User", identifier: "id-123" },
+            },
+          ],
         },
       ],
     };
@@ -131,7 +150,12 @@ describe("C2PA — getActionsHtml", () => {
       assertions: [
         {
           label: "c2pa.actions",
-          data: [{ action: "c2pa.captured", digitalSourceType: "http://example.com/camera" }],
+          data: [
+            {
+              action: "c2pa.captured",
+              digitalSourceType: "http://example.com/camera",
+            },
+          ],
         },
       ],
     };
@@ -144,7 +168,13 @@ describe("C2PA — getActionsHtml", () => {
       assertions: [
         {
           label: "c2pa.actions",
-          data: [{ action: "c2pa.created", reason: "test reason", parameters: { key: "val" } }],
+          data: [
+            {
+              action: "c2pa.created",
+              reason: "test reason",
+              parameters: { key: "val" },
+            },
+          ],
         },
       ],
     };
@@ -177,7 +207,9 @@ describe("C2PA — getAssertionsHtml", () => {
 
   it("should render assertion kind badge", () => {
     const manifest = {
-      assertions: [{ label: "c2pa.test", kind: "ContentBinding", data: "hello" }],
+      assertions: [
+        { label: "c2pa.test", kind: "ContentBinding", data: "hello" },
+      ],
     };
     const html = getAssertionsHtml(manifest);
     assert.ok(html.includes("ContentBinding"));

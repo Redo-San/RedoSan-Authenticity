@@ -6,23 +6,50 @@ const vm = require("vm");
 
 // ── GPL polyfills ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.isSecureContext = true;
-globalThis.btoa = globalThis.btoa || function (bin) { return Buffer.from(bin, "binary").toString("base64"); };
-globalThis.atob = globalThis.atob || function (b64) { return Buffer.from(b64, "base64").toString("binary"); };
+globalThis.btoa =
+  globalThis.btoa ||
+  function (bin) {
+    return Buffer.from(bin, "binary").toString("base64");
+  };
+globalThis.atob =
+  globalThis.atob ||
+  function (b64) {
+    return Buffer.from(b64, "base64").toString("binary");
+  };
 
 // ── Load module sources ──
 const webauthnSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_webauthn.js"),
   "utf8",
 );
-vm.runInThisContext(webauthnSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_webauthn.js") });
+vm.runInThisContext(webauthnSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_webauthn.js",
+  ),
+});
 
 const cryptoSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_crypto.js"),
   "utf8",
 );
-vm.runInThisContext(cryptoSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_crypto.js") });
+vm.runInThisContext(cryptoSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_crypto.js",
+  ),
+});
 
 const FaceWebauthn = globalThis.FaceWebauthn;
 
@@ -69,7 +96,9 @@ function fakeCredential(overrides) {
     rawId: rawId,
     type: "public-key",
     response: {
-      clientDataJSON: Uint8Array.from(Buffer.from('{"type":"webauthn.create","challenge":"abc"}')),
+      clientDataJSON: Uint8Array.from(
+        Buffer.from('{"type":"webauthn.create","challenge":"abc"}'),
+      ),
       attestationObject: Uint8Array.from([9, 8, 7]),
       authenticatorData: Uint8Array.from([5, 6]),
       signature: Uint8Array.from([7, 8]),
@@ -89,14 +118,23 @@ describe("FaceWebauthn — availability", () => {
   beforeEach(resetWebauthnMocks);
 
   it("should report unavailable when navigator.credentials is missing", () => {
-    Object.defineProperty(globalThis, "navigator", { value: {}, configurable: true });
+    Object.defineProperty(globalThis, "navigator", {
+      value: {},
+      configurable: true,
+    });
     assert.equal(FaceWebauthn.isAvailable(), false);
   });
 
   it("should report unavailable in a non-secure context", () => {
-    Object.defineProperty(globalThis, "isSecureContext", { value: false, configurable: true });
+    Object.defineProperty(globalThis, "isSecureContext", {
+      value: false,
+      configurable: true,
+    });
     assert.equal(FaceWebauthn.isAvailable(), false);
-    Object.defineProperty(globalThis, "isSecureContext", { value: true, configurable: true });
+    Object.defineProperty(globalThis, "isSecureContext", {
+      value: true,
+      configurable: true,
+    });
   });
 
   it("should report available with a credentials API and secure context", () => {
@@ -117,7 +155,10 @@ describe("FaceWebauthn — base64url helpers", () => {
   });
 
   it("should decode base64url with padding and handle empty input", () => {
-    assert.deepEqual(FaceWebauthn.b64urlToBytes("AAEC"), Uint8Array.from([0, 1, 2]));
+    assert.deepEqual(
+      FaceWebauthn.b64urlToBytes("AAEC"),
+      Uint8Array.from([0, 1, 2]),
+    );
     assert.equal(FaceWebauthn.b64urlToBytes(null), null);
     assert.equal(FaceWebauthn.bytesToB64url(null), "");
   });
@@ -139,13 +180,22 @@ describe("FaceWebauthn — randomChallenge", () => {
 
   it("should fall back to Math.random when WebCrypto is unavailable", () => {
     const saved = globalThis.crypto;
-    Object.defineProperty(globalThis, "crypto", { value: undefined, configurable: true });
+    Object.defineProperty(globalThis, "crypto", {
+      value: undefined,
+      configurable: true,
+    });
     try {
       const c = FaceWebauthn.randomChallenge(16);
       assert.match(c, /^[A-Za-z0-9_-]+$/);
-      assert.notEqual(FaceWebauthn.randomChallenge(16), FaceWebauthn.randomChallenge(16));
+      assert.notEqual(
+        FaceWebauthn.randomChallenge(16),
+        FaceWebauthn.randomChallenge(16),
+      );
     } finally {
-      Object.defineProperty(globalThis, "crypto", { value: saved, configurable: true });
+      Object.defineProperty(globalThis, "crypto", {
+        value: saved,
+        configurable: true,
+      });
     }
   });
 });
@@ -154,7 +204,9 @@ describe("FaceWebauthn — parseClientData", () => {
   beforeEach(resetWebauthnMocks);
 
   it("should parse JSON from bytes", () => {
-    const bytes = Uint8Array.from(Buffer.from('{"type":"webauthn.create","challenge":"abc"}', "utf8"));
+    const bytes = Uint8Array.from(
+      Buffer.from('{"type":"webauthn.create","challenge":"abc"}', "utf8"),
+    );
     const data = FaceWebauthn.parseClientData(bytes);
     assert.equal(data.type, "webauthn.create");
     assert.equal(data.challenge, "abc");
@@ -167,7 +219,10 @@ describe("FaceWebauthn — parseClientData", () => {
 
   it("should return {} for invalid input", () => {
     assert.deepEqual(FaceWebauthn.parseClientData(null), {});
-    assert.deepEqual(FaceWebauthn.parseClientData(Uint8Array.from([255, 254, 253])), {});
+    assert.deepEqual(
+      FaceWebauthn.parseClientData(Uint8Array.from([255, 254, 253])),
+      {},
+    );
   });
 });
 
@@ -180,7 +235,10 @@ describe("FaceWebauthn — credentialToJSON", () => {
     assert.equal(json.type, "public-key");
     assert.equal(json.rawId, "AQIDBA");
     assert.equal(json.response.attestationObject, "CQgH");
-    assert.equal(json.response.clientDataJSON, "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiYWJjIn0");
+    assert.equal(
+      json.response.clientDataJSON,
+      "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiYWJjIn0",
+    );
     assert.equal(json.response.authenticatorData, "BQY");
     assert.equal(json.response.signature, "Bwg");
     assert.equal(json.response.userHandle, "CQ");
@@ -193,13 +251,15 @@ describe("FaceWebauthn — credentialToJSON", () => {
   });
 
   it("should handle a plain get assertion without attestation fields", () => {
-    const json = FaceWebauthn.credentialToJSON(fakeCredential({
-      response: {
-        clientDataJSON: Uint8Array.from(Buffer.from("{}")),
-        authenticatorData: Uint8Array.from([1]),
-        signature: Uint8Array.from([2]),
-      },
-    }));
+    const json = FaceWebauthn.credentialToJSON(
+      fakeCredential({
+        response: {
+          clientDataJSON: Uint8Array.from(Buffer.from("{}")),
+          authenticatorData: Uint8Array.from([1]),
+          signature: Uint8Array.from([2]),
+        },
+      }),
+    );
     assert.equal(json.response.attestationObject, undefined);
     assert.equal(json.response.userHandle, undefined);
   });
@@ -211,13 +271,22 @@ describe("FaceWebauthn — verifyClientData", () => {
   it("should accept a matching challenge and type", () => {
     const json = FaceWebauthn.credentialToJSON(fakeCredential());
     const challenge = "abc";
-    assert.equal(FaceWebauthn.verifyClientData(json, challenge, "webauthn.create"), true);
+    assert.equal(
+      FaceWebauthn.verifyClientData(json, challenge, "webauthn.create"),
+      true,
+    );
   });
 
   it("should reject a wrong challenge or type", () => {
     const json = FaceWebauthn.credentialToJSON(fakeCredential());
-    assert.equal(FaceWebauthn.verifyClientData(json, "nope", "webauthn.create"), false);
-    assert.equal(FaceWebauthn.verifyClientData(json, "abc", "webauthn.get"), false);
+    assert.equal(
+      FaceWebauthn.verifyClientData(json, "nope", "webauthn.create"),
+      false,
+    );
+    assert.equal(
+      FaceWebauthn.verifyClientData(json, "abc", "webauthn.get"),
+      false,
+    );
   });
 
   it("should reject malformed credentials", () => {
@@ -262,11 +331,17 @@ describe("FaceWebauthn — register", () => {
   });
 
   it("should require a secure WebAuthn context", async () => {
-    Object.defineProperty(globalThis, "isSecureContext", { value: false, configurable: true });
+    Object.defineProperty(globalThis, "isSecureContext", {
+      value: false,
+      configurable: true,
+    });
     try {
       await assert.rejects(FaceWebauthn.register(), /not available/);
     } finally {
-      Object.defineProperty(globalThis, "isSecureContext", { value: true, configurable: true });
+      Object.defineProperty(globalThis, "isSecureContext", {
+        value: true,
+        configurable: true,
+      });
     }
   });
 });
@@ -277,13 +352,17 @@ describe("FaceWebauthn — authenticate", () => {
   it("should return the assertion JSON", async () => {
     getCredential = fakeCredential({
       response: {
-        clientDataJSON: Uint8Array.from(Buffer.from('{"type":"webauthn.get","challenge":"abc"}')),
+        clientDataJSON: Uint8Array.from(
+          Buffer.from('{"type":"webauthn.get","challenge":"abc"}'),
+        ),
         authenticatorData: Uint8Array.from([1, 2]),
         signature: Uint8Array.from([3, 4]),
         userHandle: Uint8Array.from([5]),
       },
     });
-    const json = await FaceWebauthn.authenticate({ allowCredentials: [{ id: "AQIDBA" }] });
+    const json = await FaceWebauthn.authenticate({
+      allowCredentials: [{ id: "AQIDBA" }],
+    });
     assert.equal(json.id, "mock-credential-id");
     assert.equal(json.response.signature, "AwQ");
   });
@@ -299,18 +378,26 @@ describe("FaceWebauthn — authenticate", () => {
   });
 
   it("should require a secure WebAuthn context", async () => {
-    Object.defineProperty(globalThis, "isSecureContext", { value: false, configurable: true });
+    Object.defineProperty(globalThis, "isSecureContext", {
+      value: false,
+      configurable: true,
+    });
     try {
       await assert.rejects(FaceWebauthn.authenticate(), /not available/);
     } finally {
-      Object.defineProperty(globalThis, "isSecureContext", { value: true, configurable: true });
+      Object.defineProperty(globalThis, "isSecureContext", {
+        value: true,
+        configurable: true,
+      });
     }
   });
 
   it("should send a PRF extension when prfSalt is supplied", async () => {
     getCredential = fakeCredential({
       response: {
-        clientDataJSON: Uint8Array.from(Buffer.from('{"type":"webauthn.get","challenge":"abc"}')),
+        clientDataJSON: Uint8Array.from(
+          Buffer.from('{"type":"webauthn.get","challenge":"abc"}'),
+        ),
         authenticatorData: Uint8Array.from([1, 2]),
         signature: Uint8Array.from([3, 4]),
         userHandle: Uint8Array.from([5]),
@@ -319,8 +406,12 @@ describe("FaceWebauthn — authenticate", () => {
     const json = await FaceWebauthn.authenticate({
       prfSalt: FaceWebauthn.bytesToB64url(Uint8Array.from([1, 2, 3, 4])),
     });
-    assert.ok(lastGetOptions && lastGetOptions.publicKey.extensions && lastGetOptions.publicKey.extensions.prf,
-      "PRF extension must be requested");
+    assert.ok(
+      lastGetOptions &&
+        lastGetOptions.publicKey.extensions &&
+        lastGetOptions.publicKey.extensions.prf,
+      "PRF extension must be requested",
+    );
     assert.equal(json.id, "mock-credential-id");
   });
 });
@@ -342,33 +433,49 @@ describe("FaceWebauthn — PRF vault derivation", () => {
     assert.equal(FaceWebauthn.prfOutput({}), null);
     assert.equal(FaceWebauthn.prfOutput({ clientExtensionResults: {} }), null);
     const b64u = FaceWebauthn.bytesToB64url(Uint8Array.from([1, 2, 3, 4]));
-    const cred = { clientExtensionResults: { prf: { results: { first: b64u } } } };
-    assert.deepEqual(FaceWebauthn.prfOutput(cred), Uint8Array.from([1, 2, 3, 4]));
+    const cred = {
+      clientExtensionResults: { prf: { results: { first: b64u } } },
+    };
+    assert.deepEqual(
+      FaceWebauthn.prfOutput(cred),
+      Uint8Array.from([1, 2, 3, 4]),
+    );
   });
 
   it("prfSupported reflects presence of PRF output", () => {
     assert.equal(FaceWebauthn.prfSupported({}), false);
     const b64u = FaceWebauthn.bytesToB64url(Uint8Array.from([9, 9]));
     assert.equal(
-      FaceWebauthn.prfSupported({ clientExtensionResults: { prf: { results: { first: b64u } } } }),
+      FaceWebauthn.prfSupported({
+        clientExtensionResults: { prf: { results: { first: b64u } } },
+      }),
       true,
     );
   });
 
   it("deriveVaultKey rejects missing PRF bytes", async () => {
-    await assert.rejects(FaceWebauthn.deriveVaultKey(null), /PRF output is required/);
+    await assert.rejects(
+      FaceWebauthn.deriveVaultKey(null),
+      /PRF output is required/,
+    );
   });
 
   it("deriveVaultKey rejects when WebCrypto is unavailable", async () => {
     const saved = globalThis.crypto;
-    Object.defineProperty(globalThis, "crypto", { value: undefined, configurable: true });
+    Object.defineProperty(globalThis, "crypto", {
+      value: undefined,
+      configurable: true,
+    });
     try {
       await assert.rejects(
         FaceWebauthn.deriveVaultKey(Uint8Array.from([1, 2, 3, 4])),
         /WebCrypto is not available/,
       );
     } finally {
-      Object.defineProperty(globalThis, "crypto", { value: saved, configurable: true });
+      Object.defineProperty(globalThis, "crypto", {
+        value: saved,
+        configurable: true,
+      });
     }
   });
 
@@ -385,7 +492,9 @@ describe("FaceWebauthn — PRF vault derivation", () => {
   });
 
   it("encryptJSON / decryptJSON round-trips an object", async () => {
-    const prf = Uint8Array.from(Array.from({ length: 32 }, (_, i) => (i * 7) & 0xff));
+    const prf = Uint8Array.from(
+      Array.from({ length: 32 }, (_, i) => (i * 7) & 0xff),
+    );
     const key = await FaceWebauthn.deriveVaultKey(prf);
     const blob = await FaceWebauthn.encryptJSON(key, { hello: "world", n: 42 });
     assert.match(blob.iv, /^[A-Za-z0-9_-]+$/);
@@ -398,8 +507,13 @@ describe("FaceWebauthn — PRF vault derivation", () => {
     const saved = globalThis.FaceCrypto;
     globalThis.FaceCrypto = undefined;
     try {
-      const key = await FaceWebauthn.deriveVaultKey(Uint8Array.from(Array.from({ length: 32 }, (_, i) => i)));
-      await assert.rejects(FaceWebauthn.encryptJSON(key, { a: 1 }), /FaceCrypto .* is not available/);
+      const key = await FaceWebauthn.deriveVaultKey(
+        Uint8Array.from(Array.from({ length: 32 }, (_, i) => i)),
+      );
+      await assert.rejects(
+        FaceWebauthn.encryptJSON(key, { a: 1 }),
+        /FaceCrypto .* is not available/,
+      );
     } finally {
       globalThis.FaceCrypto = saved;
     }
@@ -409,7 +523,9 @@ describe("FaceWebauthn — PRF vault derivation", () => {
     const saved = globalThis.FaceCrypto;
     globalThis.FaceCrypto = undefined;
     try {
-      const key = await FaceWebauthn.deriveVaultKey(Uint8Array.from(Array.from({ length: 32 }, (_, i) => i)));
+      const key = await FaceWebauthn.deriveVaultKey(
+        Uint8Array.from(Array.from({ length: 32 }, (_, i) => i)),
+      );
       await assert.rejects(
         FaceWebauthn.decryptJSON(key, { iv: "a-b_c", ct: "a-b_c" }),
         /FaceCrypto .* is not available/,
@@ -437,20 +553,33 @@ describe("FaceWebauthn — edge branches", () => {
   });
 
   it("parseClientData handles a plain byte array and null JSON", () => {
-    assert.deepEqual(FaceWebauthn.parseClientData([123, 34, 97, 34, 58, 49, 125]), { a: 1 });
+    assert.deepEqual(
+      FaceWebauthn.parseClientData([123, 34, 97, 34, 58, 49, 125]),
+      { a: 1 },
+    );
     assert.deepEqual(FaceWebauthn.parseClientData("null"), {});
   });
 
   it("credentialToJSON fills defaults for a sparse credential", () => {
-    const json = FaceWebauthn.credentialToJSON({ response: { clientDataJSON: Uint8Array.from([1, 2]) } });
+    const json = FaceWebauthn.credentialToJSON({
+      response: { clientDataJSON: Uint8Array.from([1, 2]) },
+    });
     assert.equal(json.id, "");
     assert.equal(json.type, "public-key");
     assert.equal(json.rawId, "");
   });
 
   it("verifyClientData rejects a non-string challenge", () => {
-    const raw = FaceWebauthn.bytesToB64url(Uint8Array.from(Buffer.from('{"type":"webauthn.get"}', "utf8")));
-    assert.equal(FaceWebauthn.verifyClientData({ response: { clientDataJSON: raw } }, "abc"), false);
+    const raw = FaceWebauthn.bytesToB64url(
+      Uint8Array.from(Buffer.from('{"type":"webauthn.get"}', "utf8")),
+    );
+    assert.equal(
+      FaceWebauthn.verifyClientData(
+        { response: { clientDataJSON: raw } },
+        "abc",
+      ),
+      false,
+    );
   });
 
   it("register honours explicit rpId and falls back to localhost", async () => {
@@ -471,7 +600,9 @@ describe("FaceWebauthn — edge branches", () => {
   it("authenticate honours explicit rpId and falls back to localhost", async () => {
     getCredential = fakeCredential({
       response: {
-        clientDataJSON: Uint8Array.from(Buffer.from('{"type":"webauthn.get","challenge":"abc"}')),
+        clientDataJSON: Uint8Array.from(
+          Buffer.from('{"type":"webauthn.get","challenge":"abc"}'),
+        ),
         authenticatorData: Uint8Array.from([1, 2]),
         signature: Uint8Array.from([3, 4]),
         userHandle: Uint8Array.from([5]),
@@ -504,8 +635,12 @@ describe("FaceWebauthn — hard JS timeout for hung authenticators", () => {
     Object.defineProperty(globalThis, "navigator", {
       value: {
         credentials: {
-          create: function () { return new Promise(function () {}); },
-          get: function () { return new Promise(function () {}); },
+          create: function () {
+            return new Promise(function () {});
+          },
+          get: function () {
+            return new Promise(function () {});
+          },
         },
       },
       configurable: true,
@@ -528,7 +663,10 @@ describe("FaceWebauthn — hard JS timeout for hung authenticators", () => {
   it("authenticate rejects via timeoutMs instead of hanging forever", async () => {
     hangNavigator();
     await assert.rejects(
-      FaceWebauthn.authenticate({ timeoutMs: 25, challenge: FaceWebauthn.randomChallenge(8) }),
+      FaceWebauthn.authenticate({
+        timeoutMs: 25,
+        challenge: FaceWebauthn.randomChallenge(8),
+      }),
       /authentication timed out after 25ms/,
     );
   });
@@ -537,7 +675,9 @@ describe("FaceWebauthn — hard JS timeout for hung authenticators", () => {
     Object.defineProperty(globalThis, "navigator", {
       value: {
         credentials: {
-          create: async function () { return { id: "fast", rawId: new Uint8Array(1), response: {} }; },
+          create: async function () {
+            return { id: "fast", rawId: new Uint8Array(1), response: {} };
+          },
         },
       },
       configurable: true,

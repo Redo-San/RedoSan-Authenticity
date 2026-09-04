@@ -6,18 +6,31 @@ const vm = require("vm");
 
 // Polyfills for GPL check
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 const src = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_biohash.js"),
   "utf8",
 );
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_biohash.js") });
+vm.runInThisContext(src, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_biohash.js",
+  ),
+});
 
 /** @returns {Float32Array} */
 function makeDescriptor(len, fill) {
   const arr = new Float32Array(len);
-  for (let i = 0; i < len; i++) arr[i] = fill !== undefined ? fill : Math.sin(i * 0.7);
+  for (let i = 0; i < len; i++)
+    arr[i] = fill !== undefined ? fill : Math.sin(i * 0.7);
   return arr;
 }
 
@@ -57,16 +70,32 @@ describe("FaceBioHash — equivalence with node crypto SHA-256", () => {
   }
 
   it("matches node crypto for known vectors (incl. non-ASCII)", () => {
-    const vectors = ["abc", "", "hello world", "RedoSan أصالة 🎨", "😀😀", "a".repeat(1000)];
+    const vectors = [
+      "abc",
+      "",
+      "hello world",
+      "RedoSan أصالة 🎨",
+      "😀😀",
+      "a".repeat(1000),
+    ];
     for (const v of vectors) {
-      const expected = crypto.createHash("sha256").update(v, "utf8").digest("hex");
-      assert.equal(FaceBioHash._sha256Hex(v), expected, `vector: ${JSON.stringify(v)}`);
+      const expected = crypto
+        .createHash("sha256")
+        .update(v, "utf8")
+        .digest("hex");
+      assert.equal(
+        FaceBioHash._sha256Hex(v),
+        expected,
+        `vector: ${JSON.stringify(v)}`,
+      );
     }
   });
 
   it("matches node crypto for 64 random strings", () => {
     const rnd = lcg(0xface2016);
-    const base = Array.from("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-+éΩمرحبا🎨");
+    const base = Array.from(
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-+éΩمرحبا🎨",
+    );
     for (let i = 0; i < 64; i++) {
       const len = (rnd() % 200) + 1;
       let s = "";
@@ -84,7 +113,10 @@ describe("FaceBioHash — equivalence with node crypto SHA-256", () => {
         s += ch;
         added++;
       }
-      const expected = crypto.createHash("sha256").update(s, "utf8").digest("hex");
+      const expected = crypto
+        .createHash("sha256")
+        .update(s, "utf8")
+        .digest("hex");
       assert.equal(FaceBioHash._sha256Hex(s), expected, `random #${i}`);
     }
   });
@@ -92,7 +124,10 @@ describe("FaceBioHash — equivalence with node crypto SHA-256", () => {
   it("boundary lengths 55/56/57 and 119/120/121 (padding edges)", () => {
     for (const len of [55, 56, 57, 63, 64, 65, 119, 120, 121]) {
       const v = "x".repeat(len);
-      const expected = crypto.createHash("sha256").update(v, "utf8").digest("hex");
+      const expected = crypto
+        .createHash("sha256")
+        .update(v, "utf8")
+        .digest("hex");
       assert.equal(FaceBioHash._sha256Hex(v), expected, `len ${len}`);
     }
   });
@@ -112,14 +147,20 @@ describe("FaceBioHash — generate", () => {
     const a = FaceBioHash.generate(d, "1234");
     const b = FaceBioHash.generate(d, "9999");
     const sim = FaceBioHash.similarity(a.code, b.code);
-    assert.ok(sim > 0.3 && sim < 0.7, "different PINs should be uncorrelated, got " + sim);
+    assert.ok(
+      sim > 0.3 && sim < 0.7,
+      "different PINs should be uncorrelated, got " + sim,
+    );
   });
 
   it("produces a different code for a different salt (renewability)", () => {
     const d = makeDescriptor(192);
     const a = FaceBioHash.generate(d, "1234", { salt: "redosan-biohash-v1" });
     const b = FaceBioHash.generate(d, "1234", { salt: "redosan-biohash-v2" });
-    assert.ok(FaceBioHash.similarity(a.code, b.code) < 0.7, "renewed salt must change the code");
+    assert.ok(
+      FaceBioHash.similarity(a.code, b.code) < 0.7,
+      "renewed salt must change the code",
+    );
   });
 
   it("packed code has the requested bit length", () => {
@@ -129,16 +170,28 @@ describe("FaceBioHash — generate", () => {
   });
 
   it("throws when no PIN is provided", () => {
-    assert.throws(() => FaceBioHash.generate(makeDescriptor(192), ""), /PIN is required/);
-    assert.throws(() => FaceBioHash.generate(makeDescriptor(192), null), /PIN is required/);
+    assert.throws(
+      () => FaceBioHash.generate(makeDescriptor(192), ""),
+      /PIN is required/,
+    );
+    assert.throws(
+      () => FaceBioHash.generate(makeDescriptor(192), null),
+      /PIN is required/,
+    );
   });
 
   it("throws when descriptor is missing", () => {
-    assert.throws(() => FaceBioHash.generate(null, "1234"), /descriptor is required/);
+    assert.throws(
+      () => FaceBioHash.generate(null, "1234"),
+      /descriptor is required/,
+    );
   });
 
   it("throws when dim exceeds descriptor length", () => {
-    assert.throws(() => FaceBioHash.generate(makeDescriptor(64), "1234", { dim: 128 }), /exceeds descriptor length/);
+    assert.throws(
+      () => FaceBioHash.generate(makeDescriptor(64), "1234", { dim: 128 }),
+      /exceeds descriptor length/,
+    );
   });
 });
 
@@ -167,7 +220,10 @@ describe("FaceBioHash — distance & similarity", () => {
     const a = FaceBioHash.generate(d, "1234");
     const b = FaceBioHash.generate(noisy, "1234");
     const sim = FaceBioHash.similarity(a.code, b.code);
-    assert.ok(sim > 0.7, "perturbed descriptor should keep most bits, got " + sim);
+    assert.ok(
+      sim > 0.7,
+      "perturbed descriptor should keep most bits, got " + sim,
+    );
   });
 
   it("discriminability: different descriptors yield far codes", () => {
@@ -196,7 +252,11 @@ describe("FaceBioHash — match", () => {
   it("returns null when below threshold", () => {
     const query = FaceBioHash.generate(makeDescriptor(192, 0.5), "1234");
     const far = FaceBioHash.generate(makeDescriptor(192, -0.5), "1234");
-    const result = FaceBioHash.match(query.code, [{ code: far.code, label: "far" }], 0.9);
+    const result = FaceBioHash.match(
+      query.code,
+      [{ code: far.code, label: "far" }],
+      0.9,
+    );
     assert.equal(result.match, null);
   });
 
@@ -221,7 +281,10 @@ describe("FaceBioHash — match", () => {
 
 describe("FaceBioHash — similarity edge cases", () => {
   it("returns 0 similarity for zero-length codes", () => {
-    assert.equal(FaceBioHash.similarity(new Uint8Array(0), new Uint8Array(0)), 0);
+    assert.equal(
+      FaceBioHash.similarity(new Uint8Array(0), new Uint8Array(0)),
+      0,
+    );
   });
 });
 

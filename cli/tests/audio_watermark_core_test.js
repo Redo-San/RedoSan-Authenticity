@@ -5,7 +5,12 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.document = {
   createElement: () => null,
   addEventListener: () => {},
@@ -13,10 +18,23 @@ globalThis.document = {
 };
 globalThis.requestAnimationFrame = (fn) => setTimeout(fn, 0);
 
-const src = fs.readFileSync(path.join(__dirname, "../../Audio_Watermark/audio_watermark_core.js"), "utf8");
-vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Audio_Watermark/audio_watermark_core.js") });
-const utils = fs.readFileSync(path.join(__dirname, "../../Watermark/utils.js"), "utf8");
-vm.runInThisContext(utils, { filename: path.resolve(__dirname, "../../Watermark/utils.js") });
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Audio_Watermark/audio_watermark_core.js"),
+  "utf8",
+);
+vm.runInThisContext(src, {
+  filename: path.resolve(
+    __dirname,
+    "../../Audio_Watermark/audio_watermark_core.js",
+  ),
+});
+const utils = fs.readFileSync(
+  path.join(__dirname, "../../Watermark/utils.js"),
+  "utf8",
+);
+vm.runInThisContext(utils, {
+  filename: path.resolve(__dirname, "../../Watermark/utils.js"),
+});
 
 function makeTestWav(numSamples, sr) {
   sr = sr || 44100;
@@ -94,13 +112,18 @@ describe("Audio Watermark — FFT", () => {
     const re = new Float64Array(n);
     const im = new Float64Array(n);
     for (let i = 0; i < n; i++) {
-      re[i] = Math.sin((2 * Math.PI * 50 * i) / n) + Math.sin((2 * Math.PI * 120 * i) / n);
+      re[i] =
+        Math.sin((2 * Math.PI * 50 * i) / n) +
+        Math.sin((2 * Math.PI * 120 * i) / n);
     }
     const orig = new Float64Array(re);
     awFft(re, im);
     awIfft(re, im);
     for (let i = 0; i < n; i++) {
-      assert.ok(Math.abs(re[i] - orig[i]) < 1e-10, `FFT roundtrip mismatch at ${i}`);
+      assert.ok(
+        Math.abs(re[i] - orig[i]) < 1e-10,
+        `FFT roundtrip mismatch at ${i}`,
+      );
     }
   });
 });
@@ -322,19 +345,31 @@ describe("Audio Watermark — awReadRightChannel", () => {
     // Build a stereo WAV manually
     const numSamples = 200;
     const sr = 44100;
-    const bps = 16, ch = 2, ba = ch * (bps / 8);
+    const bps = 16,
+      ch = 2,
+      ba = ch * (bps / 8);
     const dataSize = numSamples * ba;
     const buf = new ArrayBuffer(44 + dataSize);
     const v = new DataView(buf);
-    const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-    w(0, "RIFF"); v.setUint32(4, 36 + dataSize, true); w(8, "WAVE");
-    w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
-    v.setUint16(22, ch, true); v.setUint32(24, sr, true);
-    v.setUint32(28, sr * ba, true); v.setUint16(32, ba, true);
-    v.setUint16(34, bps, true); w(36, "data"); v.setUint32(40, dataSize, true);
+    const w = (o, s) => {
+      for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
+    };
+    w(0, "RIFF");
+    v.setUint32(4, 36 + dataSize, true);
+    w(8, "WAVE");
+    w(12, "fmt ");
+    v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true);
+    v.setUint16(22, ch, true);
+    v.setUint32(24, sr, true);
+    v.setUint32(28, sr * ba, true);
+    v.setUint16(32, ba, true);
+    v.setUint16(34, bps, true);
+    w(36, "data");
+    v.setUint32(40, dataSize, true);
     // Fill left=1000, right=2000
     for (let i = 0; i < numSamples; i++) {
-      v.setInt16(44 + i * ba, 1000, true);     // left
+      v.setInt16(44 + i * ba, 1000, true); // left
       v.setInt16(44 + i * ba + 2, 2000, true); // right
     }
     const result = awReadRightChannel(buf);
@@ -358,9 +393,19 @@ describe("Audio Watermark — awWriteWav dual path", () => {
     const buf = awWriteWav([left, right], sr, 2);
     // Verify the WAV has proper RIFF header
     const v = new DataView(buf);
-    const riff = String.fromCharCode(v.getUint8(0), v.getUint8(1), v.getUint8(2), v.getUint8(3));
+    const riff = String.fromCharCode(
+      v.getUint8(0),
+      v.getUint8(1),
+      v.getUint8(2),
+      v.getUint8(3),
+    );
     assert.equal(riff, "RIFF");
-    const wave = String.fromCharCode(v.getUint8(8), v.getUint8(9), v.getUint8(10), v.getUint8(11));
+    const wave = String.fromCharCode(
+      v.getUint8(8),
+      v.getUint8(9),
+      v.getUint8(10),
+      v.getUint8(11),
+    );
     assert.equal(wave, "WAVE");
     // Check channels = 2
     assert.equal(v.getUint16(22, true), 2);

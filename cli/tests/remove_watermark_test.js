@@ -19,21 +19,32 @@ const mockDocument = {
   querySelectorAll: () => [],
 };
 globalThis.document = mockDocument;
-if (typeof globalThis.ImageData === "undefined") globalThis.ImageData = ImageData;
+if (typeof globalThis.ImageData === "undefined")
+  globalThis.ImageData = ImageData;
 if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
       digest: async (algo, data) => {
         const n = typeof algo === "string" ? algo : algo.name || "SHA-256";
-        const h = crypto.createHash(n.toLowerCase().replace("-", "")).update(Buffer.from(data)).digest();
+        const h = crypto
+          .createHash(n.toLowerCase().replace("-", ""))
+          .update(Buffer.from(data))
+          .digest();
         return h.buffer;
       },
-      importKey: async (f, kd, algo, ext, us) => ({ type: "secret", algorithm: algo, keyData: kd }),
+      importKey: async (f, kd, algo, ext, us) => ({
+        type: "secret",
+        algorithm: algo,
+        keyData: kd,
+      }),
       deriveBits: async (algo, baseKey, len) => {
         const pw = Buffer.from(baseKey.keyData);
         const s = algo.salt || pw;
         const it = algo.iterations || 100000;
-        const h = typeof algo.hash === "string" ? algo.hash.replace("-", "").toLowerCase() : "sha256";
+        const h =
+          typeof algo.hash === "string"
+            ? algo.hash.replace("-", "").toLowerCase()
+            : "sha256";
         const d = crypto.pbkdf2Sync(pw, s, it, len / 8, h);
         return d.buffer;
       },
@@ -56,9 +67,18 @@ globalThis.LSB_MAX_BITS = 100000;
 const MODULES = [
   ["../../Watermark/utils.js", "utils.js"],
   ["../../Watermark/watermark_core.js", "watermark_core.js"],
-  ["../../Pixel_Injection/watermark_core_advanced.js", "watermark_core_advanced.js"],
-  ["../../Pixel_Injection/watermark_core_transforms.js", "watermark_core_transforms.js"],
-  ["../../Pixel_Injection/watermark_core_algorithms.js", "watermark_core_algorithms.js"],
+  [
+    "../../Pixel_Injection/watermark_core_advanced.js",
+    "watermark_core_advanced.js",
+  ],
+  [
+    "../../Pixel_Injection/watermark_core_transforms.js",
+    "watermark_core_transforms.js",
+  ],
+  [
+    "../../Pixel_Injection/watermark_core_algorithms.js",
+    "watermark_core_algorithms.js",
+  ],
 ];
 for (const [rel, name] of MODULES) {
   const src = fs.readFileSync(path.join(__dirname, rel), "utf8");
@@ -72,7 +92,10 @@ try {
 } catch (e) {}
 
 // For audio tests, load audio watermark core
-const audioCorePath = path.join(__dirname, "../../Audio_Watermark/audio_watermark_core.js");
+const audioCorePath = path.join(
+  __dirname,
+  "../../Audio_Watermark/audio_watermark_core.js",
+);
 let audioCoreLoaded = false;
 if (fs.existsSync(audioCorePath)) {
   const src = fs.readFileSync(audioCorePath, "utf8");
@@ -111,7 +134,10 @@ function ycbcrToData(Y, Cb, Cr, w, h) {
       cb = Cb[i] - 128,
       cr = Cr[i] - 128;
     data[i * 4] = Math.max(0, Math.min(255, Math.round(y + 1.402 * cr)));
-    data[i * 4 + 1] = Math.max(0, Math.min(255, Math.round(y - 0.3441 * cb - 0.7141 * cr)));
+    data[i * 4 + 1] = Math.max(
+      0,
+      Math.min(255, Math.round(y - 0.3441 * cb - 0.7141 * cr)),
+    );
     data[i * 4 + 2] = Math.max(0, Math.min(255, Math.round(y + 1.772 * cb)));
     data[i * 4 + 3] = 255;
   }
@@ -328,7 +354,10 @@ let key = null;
     const payloadBits = bits(payload);
     assert(payloadBits.length <= cap, "Payload fits in capacity");
     embedDCTAndApply(c2.imgData, payloadBits, 25);
-    assert(canExtractDCT(c2.imgData, payloadBits.length), "Should extract after DCT embed");
+    assert(
+      canExtractDCT(c2.imgData, payloadBits.length),
+      "Should extract after DCT embed",
+    );
   });
 
   test("Type 2 (Frequency DCT): cleanDCT → extract fails", () => {
@@ -350,7 +379,10 @@ let key = null;
     const payloadBits = bits(payload);
     embedDCTAndApply(c2.imgData, payloadBits, 25);
     cleanDCT(c2.imgData);
-    assert(!canExtractDCT(c2.imgData, payloadBits.length), "Should NOT extract after DCT clean");
+    assert(
+      !canExtractDCT(c2.imgData, payloadBits.length),
+      "Should NOT extract after DCT clean",
+    );
   });
 
   // Type 3: Neural SS (Seeded Shuffle LSB)
@@ -394,7 +426,10 @@ let key = null;
     const payloadBits = bits(payload);
     wm3_embed(c3.imgData, payloadBits, seed);
     cleanLSB(c3.imgData, 1);
-    assert(!canExtractType3(c3.imgData, seed), "Should NOT extract after LSB clear");
+    assert(
+      !canExtractType3(c3.imgData, seed),
+      "Should NOT extract after LSB clear",
+    );
   });
 
   // Type 4: Latent DCT (redundant x3)
@@ -417,7 +452,10 @@ let key = null;
     const payloadBits = bits(payload).repeat(3);
     assert(payloadBits.length <= cap, "Payload fits in capacity");
     embedDCTAndApply(c4.imgData, payloadBits, 30);
-    assert(canExtractDCT(c4.imgData, payloadBits.length), "Should extract after DCT embed");
+    assert(
+      canExtractDCT(c4.imgData, payloadBits.length),
+      "Should extract after DCT embed",
+    );
   });
 
   test("Type 4 (Latent DCT): cleanDCT → extract fails", () => {
@@ -439,7 +477,10 @@ let key = null;
     const payloadBits = bits(payload).repeat(3);
     embedDCTAndApply(c4.imgData, payloadBits, 30);
     cleanDCT(c4.imgData);
-    assert(!canExtractDCT(c4.imgData, payloadBits.length), "Should NOT extract after DCT clean");
+    assert(
+      !canExtractDCT(c4.imgData, payloadBits.length),
+      "Should NOT extract after DCT clean",
+    );
   });
 
   // Type 5: Zero-bit
@@ -499,7 +540,10 @@ let key = null;
     const payloadBits = bits(payload);
     wm6_embed(c6.imgData, payloadBits);
     cleanLSB(c6.imgData, 2);
-    assert(!canExtractType6(c6.imgData), "Should NOT extract after 2-bit LSB clear");
+    assert(
+      !canExtractType6(c6.imgData),
+      "Should NOT extract after 2-bit LSB clear",
+    );
   });
 
   // Type 7: Forensic
@@ -522,7 +566,10 @@ let key = null;
     const payloadBits = bits(payload);
     assert(payloadBits.length <= cap, "Payload fits");
     embedDCTAndApply(c7.imgData, payloadBits, 20);
-    assert(canExtractDCT(c7.imgData, payloadBits.length), "Should extract after embed");
+    assert(
+      canExtractDCT(c7.imgData, payloadBits.length),
+      "Should extract after embed",
+    );
   });
 
   test("Type 7 (Forensic DCT): cleanDCT → extract fails", () => {
@@ -544,7 +591,10 @@ let key = null;
     const payloadBits = bits(payload);
     embedDCTAndApply(c7.imgData, payloadBits, 20);
     cleanDCT(c7.imgData);
-    assert(!canExtractDCT(c7.imgData, payloadBits.length), "Should NOT extract after DCT clean");
+    assert(
+      !canExtractDCT(c7.imgData, payloadBits.length),
+      "Should NOT extract after DCT clean",
+    );
   });
 
   // Type 8: Fragile (SHA-256 hash)
@@ -558,7 +608,10 @@ let key = null;
     const c8 = createTestImage(64, 64);
     await wm8_embed(c8.imgData, secretData, key);
     cleanLSB(c8.imgData, 1);
-    assert(!canExtractType8(c8.imgData, key), "Should NOT extract after LSB clear");
+    assert(
+      !canExtractType8(c8.imgData, key),
+      "Should NOT extract after LSB clear",
+    );
   });
 
   // Type 9: Imatag-style (Y + Cb chrominance)
@@ -589,7 +642,10 @@ let key = null;
     embedInDCT(ycbcr2.Cb, 64, 64, payloadBits, 10);
     const r2 = ycbcrToData(ycbcr2.Y, ycbcr2.Cb, ycbcr2.Cr, 64, 64);
     c9.imgData.data.set(r2);
-    assert(canExtractDCT(c9.imgData, payloadBits.length), "Should extract after DCT embed");
+    assert(
+      canExtractDCT(c9.imgData, payloadBits.length),
+      "Should extract after DCT embed",
+    );
   });
 
   test("Type 9 (Imatag-style DCT): cleanDCT → extract fails", () => {
@@ -616,7 +672,10 @@ let key = null;
     const r = ycbcrToData(ycbcr.Y, ycbcr.Cb, ycbcr.Cr, 64, 64);
     c9.imgData.data.set(r);
     cleanDCT(c9.imgData);
-    assert(!canExtractDCT(c9.imgData, payloadBits.length), "Should NOT extract after DCT clean");
+    assert(
+      !canExtractDCT(c9.imgData, payloadBits.length),
+      "Should NOT extract after DCT clean",
+    );
   });
 
   // ── 2. Pixel Injection (Advanced Algorithms) Tests ──
@@ -624,7 +683,12 @@ let key = null;
     console.log("\n--- Pixel Injection (Advanced Algorithms) Removal ---\n");
 
     function piEmbed(img, algo, msg, pw, opts) {
-      const result = watermarkCore.algorithms[algo](img, msg, pw || "", opts || {});
+      const result = watermarkCore.algorithms[algo](
+        img,
+        msg,
+        pw || "",
+        opts || {},
+      );
       if (result && result.data) {
         img.data = new Uint8ClampedArray(result.data);
         if (result.width !== undefined) img.width = result.width;
@@ -641,7 +705,11 @@ let key = null;
     }
 
     function imgDataForCore(c) {
-      return { data: new Uint8ClampedArray(c.imgData.data), width: c.w, height: c.h };
+      return {
+        data: new Uint8ClampedArray(c.imgData.data),
+        width: c.w,
+        height: c.h,
+      };
     }
 
     const testMsg = "TestPIEmbed123!";
@@ -665,7 +733,10 @@ let key = null;
       const imgObj = { data: img.data, w: img.width, h: img.height };
       cleanLSB(imgObj, 1);
       const result = piExtract(img, "enhanced_lsb", "pass");
-      assert(!result || result.indexOf(testMsg) < 0, "Original message should be gone after LSB clear");
+      assert(
+        !result || result.indexOf(testMsg) < 0,
+        "Original message should be gone after LSB clear",
+      );
     });
 
     // DCT
@@ -677,7 +748,11 @@ let key = null;
       ctx.fillStyle = "gray";
       ctx.fillRect(0, 0, w, h);
       const imgData = ctx.getImageData(0, 0, w, h);
-      const img = { data: new Uint8ClampedArray(imgData.data), width: w, height: h };
+      const img = {
+        data: new Uint8ClampedArray(imgData.data),
+        width: w,
+        height: h,
+      };
       piEmbed(img, "dct", testMsg, "pass", { strength: 100 });
       const result = piExtract(img, "dct", "pass");
       assert(
@@ -694,12 +769,19 @@ let key = null;
       ctx.fillStyle = "gray";
       ctx.fillRect(0, 0, w, h);
       const imgData = ctx.getImageData(0, 0, w, h);
-      const img = { data: new Uint8ClampedArray(imgData.data), width: w, height: h };
+      const img = {
+        data: new Uint8ClampedArray(imgData.data),
+        width: w,
+        height: h,
+      };
       piEmbed(img, "dct", testMsg, "pass", { strength: 100 });
       const imgObj = { data: img.data, w: img.width, h: img.height };
       cleanDCT(imgObj);
       const result = piExtract(img, "dct", "pass");
-      assert(!result || result.indexOf(testMsg) < 0, "Original message should be gone after DCT clean");
+      assert(
+        !result || result.indexOf(testMsg) < 0,
+        "Original message should be gone after DCT clean",
+      );
     });
 
     // Multi-channel LSB
@@ -721,10 +803,15 @@ let key = null;
       const imgObj = { data: img.data, w: img.width, h: img.height };
       cleanLSB(imgObj, 1);
       const result = piExtract(img, "multi_channel_lsb", "pass");
-      assert(!result || result.indexOf(testMsg) < 0, "Original message should be gone after LSB clear");
+      assert(
+        !result || result.indexOf(testMsg) < 0,
+        "Original message should be gone after LSB clear",
+      );
     });
   } else {
-    console.log("\n--- Pixel Injection Tests: SKIPPED (WatermarkCore not available) ---");
+    console.log(
+      "\n--- Pixel Injection Tests: SKIPPED (WatermarkCore not available) ---",
+    );
   }
 
   // ── 3. Combined Pipeline Test ──
@@ -764,10 +851,16 @@ let key = null;
 
     // Verify none can extract
     assert(!canExtractLSB(img.imgData), "LSB not extractable after clean");
-    assert(!canExtractType3(img.imgData, 12345), "Type 3 not extractable after clean");
+    assert(
+      !canExtractType3(img.imgData, 12345),
+      "Type 3 not extractable after clean",
+    );
     assert(!canExtractType6(img.imgData), "Type 6 not extractable after clean");
     // DCT-based should also fail
-    assert(!canExtractDCT(img.imgData, payloadBits.length), "DCT types not extractable after clean");
+    assert(
+      !canExtractDCT(img.imgData, payloadBits.length),
+      "DCT types not extractable after clean",
+    );
   });
 
   // ── 4. Audio Watermark Tests ──

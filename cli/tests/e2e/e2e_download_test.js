@@ -188,7 +188,7 @@ describe("E2E — File Download Verification", () => {
       assert.ok(content.length > 0, "Downloaded file should have content");
       assert.ok(
         content.includes("SHA") || content.includes("hash"),
-        'Downloaded JSON fingerprint should contain hash data. Got: ' +
+        "Downloaded JSON fingerprint should contain hash data. Got: " +
           content.substring(0, 100),
       );
     }
@@ -417,7 +417,10 @@ describe("E2E — File Download Verification", () => {
       // Find the "Download Results" button (not the direct download link)
       const btns = dl.querySelectorAll("button");
       for (const btn of btns) {
-        if (btn.textContent.includes("Download") || btn.textContent.includes("Results")) {
+        if (
+          btn.textContent.includes("Download") ||
+          btn.textContent.includes("Results")
+        ) {
           btn.click();
           return;
         }
@@ -434,7 +437,10 @@ describe("E2E — File Download Verification", () => {
       const modal = document.getElementById("dl-modal");
       return modal && modal.classList.contains("open");
     });
-    assert.ok(modalOpen, "Download modal should open after clicking Download Results");
+    assert.ok(
+      modalOpen,
+      "Download modal should open after clicking Download Results",
+    );
 
     // Set up download listener
     const downloadPromise = page.waitForEvent("download", { timeout: 15000 });
@@ -463,11 +469,7 @@ describe("E2E — File Download Verification", () => {
           !e.includes("valid digest") &&
           !e.includes("frame-ancestors"),
       );
-      assert.equal(
-        fatal.length,
-        0,
-        `No fatal errors: ${fatal.join(", ")}`,
-      );
+      assert.equal(fatal.length, 0, `No fatal errors: ${fatal.join(", ")}`);
 
       await ctx.close();
       return;
@@ -554,10 +556,7 @@ describe("E2E — File Download Verification", () => {
         const modal = document.getElementById("dl-modal");
         return modal && !modal.classList.contains("open");
       });
-      assert.ok(
-        modalClosed,
-        "Modal should close after PDF format selection",
-      );
+      assert.ok(modalClosed, "Modal should close after PDF format selection");
       await ctx.close();
       return;
     }

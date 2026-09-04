@@ -56,7 +56,7 @@ describe("Document Watermark Core — _isGarbageResult", () => {
     // 60 chars all 'x' except last is 'y' — only first 50 scanned, all 'x'
     assert.equal(_isGarbageResult("x".repeat(60)), true);
     // 60 chars, first 50 contain both 'x' and 'y'
-    assert.equal(_isGarbageResult(("x".repeat(25) + "y".repeat(35))), false);
+    assert.equal(_isGarbageResult("x".repeat(25) + "y".repeat(35)), false);
   });
 });
 
@@ -152,7 +152,8 @@ describe("Document Watermark Core — Whitespace edge cases", () => {
 
   it("extract should handle multiple found special space indices", async () => {
     // Create a watermark with Whitespace, then extract
-    const cover = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5";
+    const cover =
+      "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5";
     const wm = await DOCW_WHITESPACE.embed(cover, "hello", null);
     const extracted = await DOCW_WHITESPACE.extract(wm, null);
     assert.equal(extracted, "hello");
@@ -210,7 +211,10 @@ describe("Document Watermark Core — Payload edge cases (uncompressed path)", (
 
   it("_checkPassword should throw WRONG_PASSWORD for incorrect password prefix", () => {
     // If result contains "password:" and password doesn't match, it throws
-    assert.throws(() => _checkPassword("mypass:secret", "wrongpw"), /WRONG_PASSWORD/);
+    assert.throws(
+      () => _checkPassword("mypass:secret", "wrongpw"),
+      /WRONG_PASSWORD/,
+    );
   });
 
   it("_checkPassword should strip password prefix when correct", () => {
@@ -220,9 +224,15 @@ describe("Document Watermark Core — Payload edge cases (uncompressed path)", (
 
   it("_bitsToMsg should decompress when first byte is 0x02 (compressed marker)", async () => {
     // The roundtrip test already covers this path naturally
-    const bits = await _msgToBits("A longer message that will benefit from compression!", "pw");
+    const bits = await _msgToBits(
+      "A longer message that will benefit from compression!",
+      "pw",
+    );
     const result = await _bitsToMsg(bits, "pw");
-    assert.equal(result, "A longer message that will benefit from compression!");
+    assert.equal(
+      result,
+      "A longer message that will benefit from compression!",
+    );
   });
 
   it("_bitsToMsg should handle uncompressed data (no 0x02 marker)", async () => {
@@ -311,8 +321,15 @@ describe("Document Watermark Core — docwEstimateCapacity extra", () => {
 
   it("should estimate Whitespace capacity", () => {
     // Whitespace is algorithm 3
-    assert.ok(docwEstimateCapacity("a b c d e", 3) > 0, "should detect capacity from spaces");
-    assert.equal(docwEstimateCapacity("nospaces", 3), 0, "no spaces = 0 capacity");
+    assert.ok(
+      docwEstimateCapacity("a b c d e", 3) > 0,
+      "should detect capacity from spaces",
+    );
+    assert.equal(
+      docwEstimateCapacity("nospaces", 3),
+      0,
+      "no spaces = 0 capacity",
+    );
   });
 });
 
@@ -332,12 +349,12 @@ describe("Document Watermark Core — Additional branch coverage", () => {
     // Extract with wrong password should throw WRONG_PASSWORD
     await assert.rejects(
       async () => await docwExtract(wm, 1, "wrongpassword"),
-      /WRONG_PASSWORD/
+      /WRONG_PASSWORD/,
     );
   });
 
   it("should handle docwAutoDetect with password-embedded content", async () => {
-    // Embed with password using ZWC (algo 1) 
+    // Embed with password using ZWC (algo 1)
     const wm = await docwEmbed("Hello World There", "testmsg", 1, "secret123");
     // Auto-detect with correct password should find the message
     const result = await docwAutoDetect(wm, "secret123");
@@ -351,7 +368,10 @@ describe("Document Watermark Core — Additional branch coverage", () => {
     const cap2 = docwEstimateCapacity("abcdefghij", 3); // 0 spaces → 0 bytes
     assert.equal(cap2, 0);
     const capMore = docwEstimateCapacity("a b c d e f g h i j k l m n o p", 3);
-    assert.ok(capMore >= cap1, "more spaces should give more or equal capacity");
+    assert.ok(
+      capMore >= cap1,
+      "more spaces should give more or equal capacity",
+    );
   });
 });
 
@@ -364,7 +384,11 @@ describe("Document Watermark Core — Compressed path (0x02 prefix)", () => {
     var firstByte = 0;
     for (var j = 0; j < 8; j++)
       firstByte = (firstByte << 1) | (bits[j] === "1" ? 1 : 0);
-    assert.equal(firstByte, 0x02, "should have 0x02 marker for compressible data");
+    assert.equal(
+      firstByte,
+      0x02,
+      "should have 0x02 marker for compressible data",
+    );
     const result = await _bitsToMsg(bits, null);
     assert.equal(result, msg);
   });
@@ -392,7 +416,7 @@ describe("Document Watermark Core — Compressed path (0x02 prefix)", () => {
 
   it("should return empty string for corrupted compressed data (catch returns '')", async () => {
     // Manually construct bits with 0x02 marker followed by garbage (not valid deflate)
-    var bytes = new Uint8Array([0x02, 0xFF, 0xFF, 0xFF, 0xFF]);
+    var bytes = new Uint8Array([0x02, 0xff, 0xff, 0xff, 0xff]);
     var bits = "";
     for (var i = 0; i < bytes.length; i++) {
       var b = bytes[i];
@@ -415,7 +439,8 @@ describe("Document Watermark Core — docwAutoDetect WRONG_PASSWORD path", () =>
   it("should detect WRONG_PASSWORD from docwAutoDetect when wrong password used with Whitespace", async () => {
     // Use Whitespace embed (algo 3) with password. ZWC and Homoglyph will return
     // empty strings on whitespace-embedded text, so no candidates are produced.
-    const cover = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p";
+    const cover =
+      "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p";
     const wm = await docwEmbed(cover, "hi", 3, "correctpass");
     // Call docwAutoDetect with wrong password — hits line 665-666 catch + line 672 throw
     await assert.rejects(
@@ -426,7 +451,8 @@ describe("Document Watermark Core — docwAutoDetect WRONG_PASSWORD path", () =>
 
   it("should still throw WRONG_PASSWORD when Homoglyph/Whitespace also find candidates", async () => {
     // Same approach with whitespace embed + wrong password
-    const cover = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p";
+    const cover =
+      "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p";
     const wm = await docwEmbed(cover, "hi", 3, "mypassword");
     await assert.rejects(
       async () => await docwAutoDetect(wm, "badpassword"),

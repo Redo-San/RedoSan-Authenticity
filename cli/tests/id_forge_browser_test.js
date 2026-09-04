@@ -408,7 +408,10 @@ describe("ID Forge (browser) — computeSwhidFromFile", () => {
 
   it("should hash a regular file", async () => {
     const content = "hello world";
-    const expected = nodeCrypto.createHash("sha1").update(content).digest("hex");
+    const expected = nodeCrypto
+      .createHash("sha1")
+      .update(content)
+      .digest("hex");
     const file = {
       name: "data.txt",
       arrayBuffer: async () => new TextEncoder().encode(content).buffer,
@@ -529,7 +532,10 @@ describe("ID Forge (browser) — swhid dispatch", () => {
     });
     mockEl("if-swhid-text", { value: "" });
     const id = await swhid();
-    const expected = nodeCrypto.createHash("sha1").update(content).digest("hex");
+    const expected = nodeCrypto
+      .createHash("sha1")
+      .update(content)
+      .digest("hex");
     assert.match(id, SWHID_RE);
     assert.equal(id, "swh:1:cnt:" + expected);
   });
@@ -602,9 +608,7 @@ describe("ID Forge (browser) — handleIdForgeGenerate", () => {
     handleIdForgeGenerate();
     await new Promise((r) => setTimeout(r, 100));
     assert.equal(globalThis._ifResult.ids.length, 3);
-    assert.ok(
-      globalThis._ifResult.ids.every((id) => id[14] === "7"),
-    );
+    assert.ok(globalThis._ifResult.ids.every((id) => id[14] === "7"));
   });
 
   it("should generate ulid (single)", async () => {
@@ -649,9 +653,7 @@ describe("ID Forge (browser) — handleIdForgeGenerate", () => {
     handleIdForgeGenerate();
     await new Promise((r) => setTimeout(r, 100));
     assert.equal(globalThis._ifResult.ids.length, 4);
-    assert.ok(
-      globalThis._ifResult.ids.every((id) => id.length === 21),
-    );
+    assert.ok(globalThis._ifResult.ids.every((id) => id.length === 21));
   });
 
   it("should generate swhid via dispatch", async () => {
@@ -824,10 +826,7 @@ describe("ID Forge (browser) — idForgeDownload", () => {
     idForgeDownload("pdf");
     assert.ok(_lastDownloadArgs, "download should be triggered");
     assert.equal(_lastDownloadArgs.format, "pdf");
-    assert.equal(
-      _lastDownloadArgs.name,
-      "id-forge-uuidv4.pdf",
-    );
+    assert.equal(_lastDownloadArgs.name, "id-forge-uuidv4.pdf");
   });
 
   it("should download DOC format", () => {
@@ -923,10 +922,7 @@ describe("ID Forge (browser) — idForgeShowInfo", () => {
     assert.ok(info.innerHTML.includes("UUID v4 info"));
     assert.ok(info.innerHTML.includes("🎲"));
     // nano wrapper should be hidden
-    assert.equal(
-      _elements.get("if-nanoid-wrapper").style.display,
-      "none",
-    );
+    assert.equal(_elements.get("if-nanoid-wrapper").style.display, "none");
     assert.equal(
       _elements.get("if-swhid-source-wrapper").style.display,
       "none",
@@ -953,10 +949,7 @@ describe("ID Forge (browser) — idForgeShowInfo", () => {
     idForgeShowInfo();
     assert.ok(_elements.get("if-info").innerHTML.includes("NanoID info"));
     assert.ok(_elements.get("if-info").innerHTML.includes("🔗"));
-    assert.equal(
-      _elements.get("if-nanoid-wrapper").style.display,
-      "block",
-    );
+    assert.equal(_elements.get("if-nanoid-wrapper").style.display, "block");
   });
 
   it("should show info for swhid and show source wrapper", () => {
@@ -968,10 +961,7 @@ describe("ID Forge (browser) — idForgeShowInfo", () => {
       _elements.get("if-swhid-source-wrapper").style.display,
       "block",
     );
-    assert.equal(
-      _elements.get("if-count-wrapper").style.display,
-      "none",
-    );
+    assert.equal(_elements.get("if-count-wrapper").style.display, "none");
   });
 
   it("should hide info panel for unknown type with no i18n text", () => {
@@ -1003,14 +993,8 @@ describe("ID Forge (browser) — switchSwhidTab", () => {
     assert.equal(fileTab.style.color, "#fff");
     assert.equal(textTab.style.background, "var(--card, #f0f0f0)");
     assert.equal(textTab.style.color, "var(--text, #333)");
-    assert.equal(
-      _elements.get("if-swhid-file-wrapper").style.display,
-      "block",
-    );
-    assert.equal(
-      _elements.get("if-swhid-text-wrapper").style.display,
-      "none",
-    );
+    assert.equal(_elements.get("if-swhid-file-wrapper").style.display, "block");
+    assert.equal(_elements.get("if-swhid-text-wrapper").style.display, "none");
   });
 
   it("should switch to text tab", () => {
@@ -1020,14 +1004,8 @@ describe("ID Forge (browser) — switchSwhidTab", () => {
     assert.equal(fileTab.style.background, "var(--card, #f0f0f0)");
     assert.equal(textTab.style.background, "var(--accent, #6c5ce7)");
     assert.equal(textTab.style.color, "#fff");
-    assert.equal(
-      _elements.get("if-swhid-file-wrapper").style.display,
-      "none",
-    );
-    assert.equal(
-      _elements.get("if-swhid-text-wrapper").style.display,
-      "block",
-    );
+    assert.equal(_elements.get("if-swhid-file-wrapper").style.display, "none");
+    assert.equal(_elements.get("if-swhid-text-wrapper").style.display, "block");
   });
 
   it("should handle no tab buttons gracefully", () => {
@@ -1035,10 +1013,7 @@ describe("ID Forge (browser) — switchSwhidTab", () => {
     _elements.delete("tab-text");
     switchSwhidTab("file");
     // Should not throw
-    assert.equal(
-      _elements.get("if-swhid-file-wrapper").style.display,
-      "block",
-    );
+    assert.equal(_elements.get("if-swhid-file-wrapper").style.display, "block");
   });
 });
 

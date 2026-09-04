@@ -2,17 +2,30 @@ const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
 const { startServer, stopServer } = require("./e2e_helpers");
-const { startCoverage, stopCoverage, prepareForC8, cleanV8Dir } = require("./e2e_coverage");
+const {
+  startCoverage,
+  stopCoverage,
+  prepareForC8,
+  cleanV8Dir,
+} = require("./e2e_coverage");
 const path = require("path");
 const fs = require("fs");
 
 const PORT = 9905;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg.png"));
-const TXT_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "test.txt"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg.png"),
+);
+const TXT_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "test.txt"),
+);
 // test.jpg may not exist — only read if present
 var JPEG_BUF = null;
-try { JPEG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "test.jpg")); } catch (e) {}
+try {
+  JPEG_BUF = fs.readFileSync(
+    path.resolve(__dirname, "..", "fixtures", "test.jpg"),
+  );
+} catch (e) {}
 
 let browser, server;
 
@@ -42,14 +55,30 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
     await page.waitForTimeout(3000);
 
     // Test escHtml via inline evaluation
-    const r1 = await page.evaluate(function () { return escHtml(null); });
-    const r2 = await page.evaluate(function () { return escHtml(undefined); });
-    const r3 = await page.evaluate(function () { return escHtml(""); });
-    const r4 = await page.evaluate(function () { return escHtml("hello"); });
-    const r5 = await page.evaluate(function () { return escHtml("a&b"); });
-    const r6 = await page.evaluate(function () { return escHtml("<tag>"); });
-    const r7 = await page.evaluate(function () { return escHtml('"hi"'); });
-    const r8 = await page.evaluate(function () { return escHtml('&<>"'); });
+    const r1 = await page.evaluate(function () {
+      return escHtml(null);
+    });
+    const r2 = await page.evaluate(function () {
+      return escHtml(undefined);
+    });
+    const r3 = await page.evaluate(function () {
+      return escHtml("");
+    });
+    const r4 = await page.evaluate(function () {
+      return escHtml("hello");
+    });
+    const r5 = await page.evaluate(function () {
+      return escHtml("a&b");
+    });
+    const r6 = await page.evaluate(function () {
+      return escHtml("<tag>");
+    });
+    const r7 = await page.evaluate(function () {
+      return escHtml('"hi"');
+    });
+    const r8 = await page.evaluate(function () {
+      return escHtml('&<>"');
+    });
 
     assert.equal(r1, "");
     assert.equal(r2, "");
@@ -109,18 +138,36 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
       var roundtrips = vals.map(function (v) {
         var packed = pack32(v >>> 0);
         var unpacked = unpack32(packed);
-        return { input: v, output: unpacked >>> 0, ok: (v >>> 0) === (unpacked >>> 0) };
+        return {
+          input: v,
+          output: unpacked >>> 0,
+          ok: v >>> 0 === unpacked >>> 0,
+        };
       });
 
       var emptyHash = await sha256Hex(new Uint8Array([]));
       var helloHash = await sha256Hex(new TextEncoder().encode("hello"));
 
-      return { roundtrips: roundtrips, emptyHash: emptyHash, helloHash: helloHash };
+      return {
+        roundtrips: roundtrips,
+        emptyHash: emptyHash,
+        helloHash: helloHash,
+      };
     });
 
-    assert.ok(r.roundtrips.every(function (x) { return x.ok; }));
-    assert.equal(r.emptyHash, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-    assert.equal(r.helloHash, "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
+    assert.ok(
+      r.roundtrips.every(function (x) {
+        return x.ok;
+      }),
+    );
+    assert.equal(
+      r.emptyHash,
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
+    assert.equal(
+      r.helloHash,
+      "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+    );
 
     await stopCoverage(page, "shared-pack-sha");
     await ctx.close();
@@ -140,7 +187,11 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
       var afterFirst = document.documentElement.dataset.theme;
       toggleTheme();
       var afterSecond = document.documentElement.dataset.theme;
-      return { initial: initial, afterFirst: afterFirst, afterSecond: afterSecond };
+      return {
+        initial: initial,
+        afterFirst: afterFirst,
+        afterSecond: afterSecond,
+      };
     });
 
     assert.notEqual(r.initial, r.afterFirst);
@@ -218,7 +269,11 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
 
       // Try calling setStatus — does it throw?
       var ssError = null;
-      try { setStatus("test status", "success"); } catch (e) { ssError = e.message; }
+      try {
+        setStatus("test status", "success");
+      } catch (e) {
+        ssError = e.message;
+      }
 
       // Try setStatusLegacy approach: directly do what setStatus does
       var innerEl = document.getElementById("py-status");
@@ -231,17 +286,29 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
 
       // Now try spinner
       var spError = null;
-      try { spinner("py-status", true); } catch (e) { spError = e.message; }
+      try {
+        spinner("py-status", true);
+      } catch (e) {
+        spError = e.message;
+      }
       var spShow = found.style.display;
 
       // Now try setOutput
       var soError = null;
-      try { setOutput("py-status", "<b>bold output</b>"); } catch (e) { soError = e.message; }
+      try {
+        setOutput("py-status", "<b>bold output</b>");
+      } catch (e) {
+        soError = e.message;
+      }
       var outHtml = found.innerHTML;
 
       // Now try setText
       var stError = null;
-      try { setText("py-status", "plain text"); } catch (e) { stError = e.message; }
+      try {
+        setText("py-status", "plain text");
+      } catch (e) {
+        stError = e.message;
+      }
       var stText = found.textContent;
 
       return {
@@ -258,12 +325,23 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
     });
 
     // Direct equivalent of setStatus should work
-    assert.equal(dbg.afterDirect, "test status", "Direct setStatus body: err=" + dbg.ssError);
-    assert.ok(dbg.afterDirectClass.indexOf("badge-success") !== -1, "Direct setStatus class: " + dbg.afterDirectClass);
+    assert.equal(
+      dbg.afterDirect,
+      "test status",
+      "Direct setStatus body: err=" + dbg.ssError,
+    );
+    assert.ok(
+      dbg.afterDirectClass.indexOf("badge-success") !== -1,
+      "Direct setStatus class: " + dbg.afterDirectClass,
+    );
     // spinner via function call
     assert.equal(dbg.spShow, "block", "spinner: err=" + dbg.spError);
     // setOutput via function call
-    assert.equal(dbg.outHtml, "<b>bold output</b>", "setOutput: err=" + dbg.soError);
+    assert.equal(
+      dbg.outHtml,
+      "<b>bold output</b>",
+      "setOutput: err=" + dbg.soError,
+    );
     // setText via function call
     assert.equal(dbg.stText, "plain text", "setText: err=" + dbg.stError);
 
@@ -362,7 +440,9 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
 
       // Convert to blob
       var blob = await new Promise(function (resolve) {
-        c.toBlob(function (b) { resolve(b); }, "image/png");
+        c.toBlob(function (b) {
+          resolve(b);
+        }, "image/png");
       });
       if (!blob) return { loaded: false, reason: "no blob" };
 
@@ -375,7 +455,10 @@ describe("E2E Deep Coverage — shared.js utilities", () => {
           loaded: true,
           w: result.w,
           h: result.h,
-          hasData: result.imgData && result.imgData.data && result.imgData.data.length > 0,
+          hasData:
+            result.imgData &&
+            result.imgData.data &&
+            result.imgData.data.length > 0,
         };
       } catch (e) {
         return { loaded: false, error: e.message };
@@ -405,7 +488,14 @@ describe("E2E Deep Coverage — search.js", () => {
       var idx = buildSearchIndex();
       return {
         indexLength: idx.length,
-        firstPage: idx.length > 0 ? { id: idx[0].id, hasTitle: !!idx[0].title, hasText: idx[0].text.length > 0 } : null,
+        firstPage:
+          idx.length > 0
+            ? {
+                id: idx[0].id,
+                hasTitle: !!idx[0].title,
+                hasText: idx[0].text.length > 0,
+              }
+            : null,
       };
     });
 
@@ -442,7 +532,10 @@ describe("E2E Deep Coverage — search.js", () => {
     });
 
     assert.ok(r.hasOutput);
-    assert.ok(r.hasResults, "Search should produce results. HTML length: " + r.htmlLen);
+    assert.ok(
+      r.hasResults,
+      "Search should produce results. HTML length: " + r.htmlLen,
+    );
 
     await stopCoverage(page, "search-siteSearch");
     await ctx.close();
@@ -508,12 +601,18 @@ describe("E2E Deep Coverage — search.js", () => {
       var html = output.innerHTML;
       return {
         hasOutput: html.length > 0,
-        noResultsMsg: html.indexOf("xyznonexistent") !== -1 || html.indexOf("No results") !== -1,
+        noResultsMsg:
+          html.indexOf("xyznonexistent") !== -1 ||
+          html.indexOf("No results") !== -1,
       };
     });
 
     assert.ok(r.hasOutput);
-    assert.ok(r.noResultsMsg, "Search output should show no-results message. HTML length: " + (r.hasOutput ? "non-empty" : "empty"));
+    assert.ok(
+      r.noResultsMsg,
+      "Search output should show no-results message. HTML length: " +
+        (r.hasOutput ? "non-empty" : "empty"),
+    );
 
     await stopCoverage(page, "search-noResults");
     await ctx.close();
@@ -531,7 +630,9 @@ describe("E2E Deep Coverage — search.js", () => {
       siteSearch();
     });
 
-    await page.evaluate(function () { closeSearchResults(); });
+    await page.evaluate(function () {
+      closeSearchResults();
+    });
 
     await stopCoverage(page, "search-close");
     await ctx.close();
@@ -549,9 +650,13 @@ describe("E2E Deep Coverage — converter module", () => {
     await navTo(page, "converter");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#conv-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#conv-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
-    await page.evaluate(function () { document.getElementById("conv-btn").click(); });
+    await page.evaluate(function () {
+      document.getElementById("conv-btn").click();
+    });
     await page.waitForTimeout(3000);
 
     const r = await page.evaluate(function () {
@@ -592,7 +697,15 @@ describe("E2E Deep Coverage — ID Forge", () => {
         btn: !!document.getElementById("if-gen-btn"),
       };
     });
-    assert.ok(domOk.sel && domOk.out && domOk.btn, "ID Forge DOM: sel=" + domOk.sel + " out=" + domOk.out + " btn=" + domOk.btn);
+    assert.ok(
+      domOk.sel && domOk.out && domOk.btn,
+      "ID Forge DOM: sel=" +
+        domOk.sel +
+        " out=" +
+        domOk.out +
+        " btn=" +
+        domOk.btn,
+    );
 
     // Generate UUID v4
     await page.evaluate(function () {
@@ -600,7 +713,9 @@ describe("E2E Deep Coverage — ID Forge", () => {
       document.getElementById("if-gen-btn").click();
     });
     await page.waitForTimeout(2000);
-    var uuidv4 = await page.evaluate(function () { return document.getElementById("if-output").value; });
+    var uuidv4 = await page.evaluate(function () {
+      return document.getElementById("if-output").value;
+    });
     assert.ok(uuidv4.length > 0, "UUID v4 should not be empty");
 
     // Generate UUID v7
@@ -609,7 +724,9 @@ describe("E2E Deep Coverage — ID Forge", () => {
       document.getElementById("if-gen-btn").click();
     });
     await page.waitForTimeout(2000);
-    var uuidv7 = await page.evaluate(function () { return document.getElementById("if-output").value; });
+    var uuidv7 = await page.evaluate(function () {
+      return document.getElementById("if-output").value;
+    });
     assert.ok(uuidv7.length > 0, "UUID v7 should not be empty");
 
     await stopCoverage(page, "idforge-uuids");
@@ -634,7 +751,9 @@ describe("E2E Deep Coverage — ID Forge", () => {
       document.getElementById("if-gen-btn").click();
     });
     await page.waitForTimeout(2000);
-    var ulid = await page.evaluate(function () { return document.getElementById("if-output").value; });
+    var ulid = await page.evaluate(function () {
+      return document.getElementById("if-output").value;
+    });
     assert.ok(ulid.length > 0, "ULID: " + ulid);
 
     // Generate NanoID
@@ -643,7 +762,9 @@ describe("E2E Deep Coverage — ID Forge", () => {
       document.getElementById("if-gen-btn").click();
     });
     await page.waitForTimeout(2000);
-    var nanoid = await page.evaluate(function () { return document.getElementById("if-output").value; });
+    var nanoid = await page.evaluate(function () {
+      return document.getElementById("if-output").value;
+    });
     assert.ok(nanoid.length > 0, "NanoID: " + nanoid);
 
     await stopCoverage(page, "idforge-ulid-nano");
@@ -673,7 +794,9 @@ describe("E2E Deep Coverage — ID Forge", () => {
       document.getElementById("if-gen-btn").click();
     });
     await page.waitForTimeout(3000);
-    var swhid = await page.evaluate(function () { return document.getElementById("if-output").value; });
+    var swhid = await page.evaluate(function () {
+      return document.getElementById("if-output").value;
+    });
     assert.ok(swhid.length > 0, "SWHID: " + swhid);
 
     await stopCoverage(page, "idforge-swhid");
@@ -715,10 +838,17 @@ describe("E2E Deep Coverage — Metadata module", () => {
     await navTo(page, "metadata");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#md-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#md-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
-    await page.evaluate(function () { document.getElementById("md-btn").click(); });
-    await page.waitForSelector("#md-result", { state: "visible", timeout: 30000 });
+    await page.evaluate(function () {
+      document.getElementById("md-btn").click();
+    });
+    await page.waitForSelector("#md-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     const r = await page.evaluate(function () {
@@ -726,7 +856,9 @@ describe("E2E Deep Coverage — Metadata module", () => {
       var dl = document.getElementById("md-download");
       return {
         outputLength: output ? output.innerHTML.length : 0,
-        hasFilename: output ? output.innerHTML.indexOf("testimg.png") !== -1 : false,
+        hasFilename: output
+          ? output.innerHTML.indexOf("testimg.png") !== -1
+          : false,
         hasDownload: dl ? dl.innerHTML.length > 0 : false,
       };
     });
@@ -786,7 +918,9 @@ describe("E2E Deep Coverage — Document Watermark", () => {
     assert.ok(extractDom.hasExtractBtn);
 
     // Switch back to embed and upload files to exercise full embed flow
-    await page.evaluate(function () { switchDocwTab("embed"); });
+    await page.evaluate(function () {
+      switchDocwTab("embed");
+    });
     await page.waitForTimeout(500);
 
     // Set algorithm and password, then upload a cover file
@@ -797,10 +931,18 @@ describe("E2E Deep Coverage — Document Watermark", () => {
     // Upload a cover file (TXT) — this triggers the handler that sets _docwCoverText
     // We use setInputFiles on docw-cover-file
     // Note: The handler for docw-cover-file reads the file content into _docwCoverText
-    await page.setInputFiles("#docw-cover-file", [{ name: "test.txt", mimeType: "text/plain", buffer: TXT_BUF }]);
+    await page.setInputFiles("#docw-cover-file", [
+      { name: "test.txt", mimeType: "text/plain", buffer: TXT_BUF },
+    ]);
     await page.waitForTimeout(500);
     // Upload a secret file
-    await page.setInputFiles("#docw-secret-file", [{ name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("SECRET") }]);
+    await page.setInputFiles("#docw-secret-file", [
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("SECRET"),
+      },
+    ]);
     await page.waitForTimeout(500);
 
     await stopCoverage(page, "docw-embed");
@@ -832,7 +974,11 @@ describe("E2E Deep Coverage — C2PA Provenance", () => {
       var readTab = document.getElementById("c2pa-read");
       var readVisible = readTab && readTab.style.display !== "none";
 
-      return { writeVisible: !!writeVisible, verifyVisible: !!verifyVisible, readVisible: !!readVisible };
+      return {
+        writeVisible: !!writeVisible,
+        verifyVisible: !!verifyVisible,
+        readVisible: !!readVisible,
+      };
     });
 
     assert.ok(r.writeVisible);
@@ -855,31 +1001,47 @@ describe("E2E Deep Coverage — Certificate", () => {
     await navTo(page, "certificate");
     await page.waitForTimeout(2000);
 
-    await page.setInputFiles("#cert-file", [{ name: "photo.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#cert-file", [
+      { name: "photo.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.fill("#cert-name", "Deep Coverage Test");
     await page.fill("#cert-email", "deep@test.com");
     await page.evaluate(function () {
       var sel = document.getElementById("cert-phonecode");
-      if (sel) { sel.value = "+1"; sel.dispatchEvent(new Event("change", { bubbles: true })); }
+      if (sel) {
+        sel.value = "+1";
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      }
     });
     await page.fill("#cert-phone", "5559876543");
     await page.fill("#cert-website", "https://deeptest.com");
     await page.waitForTimeout(300);
 
-    await page.evaluate(function () { document.getElementById("cert-gen-btn").click(); });
+    await page.evaluate(function () {
+      document.getElementById("cert-gen-btn").click();
+    });
     await page.waitForTimeout(10000);
 
     const r = await page.evaluate(function () {
       var dlSection = document.getElementById("cert-download-section");
       return {
-        dlVisible: dlSection && (dlSection.style.display !== "none" && dlSection.style.display !== ""),
+        dlVisible:
+          dlSection &&
+          dlSection.style.display !== "none" &&
+          dlSection.style.display !== "",
         hasDlBtns: dlSection && dlSection.querySelectorAll("button").length > 0,
         btnCount: dlSection ? dlSection.querySelectorAll("button").length : 0,
       };
     });
 
-    assert.ok(r.dlVisible, "Download section should be visible after cert generation");
-    assert.ok(r.hasDlBtns, "Download buttons should exist (found " + r.btnCount + " buttons)");
+    assert.ok(
+      r.dlVisible,
+      "Download section should be visible after cert generation",
+    );
+    assert.ok(
+      r.hasDlBtns,
+      "Download buttons should exist (found " + r.btnCount + " buttons)",
+    );
 
     await stopCoverage(page, "cert-generate");
     await ctx.close();
@@ -897,8 +1059,17 @@ describe("E2E Deep Coverage — DID Identity", () => {
     await navTo(page, "did");
     await page.waitForTimeout(2000);
 
-    var fpJson = JSON.stringify({ file_info: { file_name: "test.png" }, hashes: { "SHA-256": "abc123" } });
-    await page.setInputFiles("#did-fp-file", [{ name: "fp.json", mimeType: "application/json", buffer: Buffer.from(fpJson) }]);
+    var fpJson = JSON.stringify({
+      file_info: { file_name: "test.png" },
+      hashes: { "SHA-256": "abc123" },
+    });
+    await page.setInputFiles("#did-fp-file", [
+      {
+        name: "fp.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(fpJson),
+      },
+    ]);
     await page.waitForTimeout(500);
 
     const r = await page.evaluate(async function () {
@@ -907,7 +1078,9 @@ describe("E2E Deep Coverage — DID Identity", () => {
 
       sel.value = "Ed25519";
       if (typeof handleDidGenerate === "function") handleDidGenerate();
-      await new Promise(function (r) { setTimeout(r, 3000); });
+      await new Promise(function (r) {
+        setTimeout(r, 3000);
+      });
 
       var didEl = document.getElementById("did-did-value");
       return {
@@ -934,19 +1107,32 @@ describe("E2E Deep Coverage — DID Identity", () => {
     await navTo(page, "did");
     await page.waitForTimeout(2000);
 
-    var fpJson = JSON.stringify({ file_info: { file_name: "test.png" }, hashes: { "SHA-256": "abc123" } });
-    await page.setInputFiles("#did-fp-file", [{ name: "fp.json", mimeType: "application/json", buffer: Buffer.from(fpJson) }]);
+    var fpJson = JSON.stringify({
+      file_info: { file_name: "test.png" },
+      hashes: { "SHA-256": "abc123" },
+    });
+    await page.setInputFiles("#did-fp-file", [
+      {
+        name: "fp.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(fpJson),
+      },
+    ]);
     await page.waitForTimeout(500);
 
     const r = await page.evaluate(async function () {
       var sel = document.getElementById("did-algo-select");
       if (sel) sel.value = "Ed25519";
       if (typeof handleDidGenerate === "function") handleDidGenerate();
-      await new Promise(function (r) { setTimeout(r, 3000); });
+      await new Promise(function (r) {
+        setTimeout(r, 3000);
+      });
 
       var signBtn = document.getElementById("did-sign-btn");
       if (signBtn) signBtn.click();
-      await new Promise(function (r) { setTimeout(r, 2000); });
+      await new Promise(function (r) {
+        setTimeout(r, 2000);
+      });
 
       return {
         signExists: !!signBtn,

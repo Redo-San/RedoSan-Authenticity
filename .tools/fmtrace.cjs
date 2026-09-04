@@ -2,7 +2,9 @@ const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
   for (let run = 1; run <= 3; run++) {
-    const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+    const ctx = await browser.newContext({
+      viewport: { width: 1350, height: 940 },
+    });
     const pg = await ctx.newPage();
     await pg.addInitScript(() => {
       window.__probe = [];
@@ -28,8 +30,10 @@ const { chromium } = require("playwright");
             window.__probe.push({
               t,
               sig,
-              langBtn: (document.querySelector("#langBtn") || {}).textContent || "",
-              dzTxt: (document.querySelector(".dz-text") || {}).textContent || "",
+              langBtn:
+                (document.querySelector("#langBtn") || {}).textContent || "",
+              dzTxt:
+                (document.querySelector(".dz-text") || {}).textContent || "",
             });
             last = sig;
           }
@@ -38,7 +42,9 @@ const { chromium } = require("playwright");
       };
       setTimeout(tick, 160);
     });
-    await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+    await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+      waitUntil: "load",
+    });
     await pg.waitForTimeout(1900);
     const r = await pg.evaluate(() => window.__probe);
     console.log("=== RUN " + run);

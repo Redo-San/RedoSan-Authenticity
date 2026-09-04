@@ -502,7 +502,14 @@ function resetMusicState() {
   globalThis.__musicSaveTime = undefined;
   globalThis.__musicInit = undefined;
 
-  return { _docListeners, _winListeners, _sessionStore, _intervalCallbacks, _clearedIntervals, _mutationCallbacks };
+  return {
+    _docListeners,
+    _winListeners,
+    _sessionStore,
+    _intervalCallbacks,
+    _clearedIntervals,
+    _mutationCallbacks,
+  };
 }
 
 // ==========================================================================
@@ -621,11 +628,7 @@ describe("__musicInit() — early returns + full init (sequential)", function ()
 
     globalThis.__musicInit();
 
-    assert.equal(
-      _els["bg-music"],
-      undefined,
-      "should not re-create bg-music",
-    );
+    assert.equal(_els["bg-music"], undefined, "should not re-create bg-music");
     // Restore
     _els["bg-music"] = origBg;
   });
@@ -1461,11 +1464,7 @@ describe("restoreState() — seek with readyState>=3", function () {
       _els["bg-music"].src.indexOf("#t=60") !== -1,
       "src contains #t=60",
     );
-    assert.equal(
-      _els["bg-music"].paused,
-      false,
-      "audio should be playing",
-    );
+    assert.equal(_els["bg-music"].paused, false, "audio should be playing");
   });
 });
 

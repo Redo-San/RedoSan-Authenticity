@@ -6,9 +6,16 @@ const vm = require("vm");
 
 // ── CBOR tests ──
 function loadCbor() {
-  const src = fs.readFileSync(path.join(__dirname, "../../C2PA/cbor.js"), "utf8");
-  const patched = src.replace(/\bexport function /g, "function ").replace(/\bexport /g, "");
-  vm.runInThisContext(patched, { filename: path.resolve(__dirname, "../../C2PA/cbor.js") });
+  const src = fs.readFileSync(
+    path.join(__dirname, "../../C2PA/cbor.js"),
+    "utf8",
+  );
+  const patched = src
+    .replace(/\bexport function /g, "function ")
+    .replace(/\bexport /g, "");
+  vm.runInThisContext(patched, {
+    filename: path.resolve(__dirname, "../../C2PA/cbor.js"),
+  });
 }
 
 describe("CBOR — encodeInt", () => {
@@ -256,7 +263,10 @@ describe("CBOR — decode", () => {
 
   it("should throw on unsupported major type", () => {
     // major type 7 (0xE0+info) is unsupported
-    assert.throws(() => decode(new Uint8Array([0xe0]), 0), /unsupported major type/);
+    assert.throws(
+      () => decode(new Uint8Array([0xe0]), 0),
+      /unsupported major type/,
+    );
   });
 
   it("should throw when offset exceeds data length", () => {
@@ -295,7 +305,9 @@ function loadC2paUtils() {
   globalThis.BigInt = BigInt;
   globalThis.window.__ = globalThis.window.__ || ((s, d) => d || s);
   globalThis.escXml = globalThis.escXml || ((s) => s);
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../C2PA/c2pa.js") });
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../C2PA/c2pa.js"),
+  });
 }
 
 // Load once before all C2PA suites
@@ -322,7 +334,8 @@ describe("C2PA — splitCerts", () => {
   });
 
   it("should handle single cert", () => {
-    const pem = "-----BEGIN CERTIFICATE-----\nAAECAwQ=\n-----END CERTIFICATE-----";
+    const pem =
+      "-----BEGIN CERTIFICATE-----\nAAECAwQ=\n-----END CERTIFICATE-----";
     const certs = splitCerts(pem);
     assert.equal(certs.length, 1);
   });

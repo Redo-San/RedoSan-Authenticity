@@ -41,7 +41,11 @@ function startServer(port) {
 
         // Basic sanity checks: reject null bytes and ensure leading slash. Backslashes are normalized by path.resolve on POSIX,
         // but we explicitly reject backslashes to avoid confusion on Windows vs POSIX inputs.
-        if (requestPath.indexOf("\0") !== -1 || requestPath.indexOf("\\") !== -1 || !requestPath.startsWith("/")) {
+        if (
+          requestPath.indexOf("\0") !== -1 ||
+          requestPath.indexOf("\\") !== -1 ||
+          !requestPath.startsWith("/")
+        ) {
           res.writeHead(403);
           res.end();
           return;
@@ -77,13 +81,19 @@ function startServer(port) {
           res.end();
           return;
         }
-        if (!(realFilePath === realRoot || realFilePath.startsWith(realRoot + path.sep))) {
+        if (
+          !(
+            realFilePath === realRoot ||
+            realFilePath.startsWith(realRoot + path.sep)
+          )
+        ) {
           res.writeHead(403);
           res.end();
           return;
         }
 
-        const contentType = MIME[path.extname(realFilePath)] || "application/octet-stream";
+        const contentType =
+          MIME[path.extname(realFilePath)] || "application/octet-stream";
         fs.readFile(realFilePath, (err, data) => {
           if (err) {
             void err;

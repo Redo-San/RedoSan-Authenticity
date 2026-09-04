@@ -7,7 +7,9 @@ const fs = require("fs");
 
 const PORT = 9875;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg.png"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg.png"),
+);
 
 let browser, server;
 
@@ -35,7 +37,15 @@ describe("E2E — Metadata Download Formats", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "metadata");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -61,17 +71,25 @@ describe("E2E — Metadata Download Formats", () => {
     await navTo(page, "metadata");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#md-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#md-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("md-btn").click());
-    await page.waitForSelector("#md-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#md-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     const dlHtml = await page.evaluate(() => {
       const dl = document.getElementById("md-download");
       return dl ? dl.innerHTML : "";
     });
-    assert.ok(dlHtml.includes("Download"), "Download button should appear after reading metadata: " + dlHtml);
+    assert.ok(
+      dlHtml.includes("Download"),
+      "Download button should appear after reading metadata: " + dlHtml,
+    );
     await ctx.close();
   });
 
@@ -89,10 +107,15 @@ describe("E2E — Metadata Download Formats", () => {
     await navTo(page, "metadata");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#md-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#md-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("md-btn").click());
-    await page.waitForSelector("#md-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#md-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(500);
 
     // Click the download button in md-download
@@ -119,8 +142,18 @@ describe("E2E — Metadata Download Formats", () => {
     assert.ok(!modalStillOpen, "Modal should close after format selection");
 
     // Check for critical errors
-    const fatal = errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest") && !e.includes("frame-ancestors"));
-    assert.equal(fatal.length, 0, "No fatal errors during download: " + fatal.join(", "));
+    const fatal = errors.filter(
+      (e) =>
+        !e.includes("404") &&
+        !e.includes("Failed to load") &&
+        !e.includes("valid digest") &&
+        !e.includes("frame-ancestors"),
+    );
+    assert.equal(
+      fatal.length,
+      0,
+      "No fatal errors during download: " + fatal.join(", "),
+    );
     await ctx.close();
   });
 });

@@ -1,7 +1,9 @@
 const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1350, height: 940 },
+  });
   const pg = await ctx.newPage();
   await pg.addInitScript(() => {
     window.__probe = [];
@@ -16,7 +18,9 @@ const { chromium } = require("playwright");
           "|" +
           !!(window.__I18N_DATA && window.__I18N_DATA.ar) +
           "|" +
-          (typeof window.i18n !== "undefined" && !!i18n.data && !!i18n.data["ts.ts_create_btn"]);
+          (typeof window.i18n !== "undefined" &&
+            !!i18n.data &&
+            !!i18n.data["ts.ts_create_btn"]);
         if (sig !== last) {
           window.__probe.push({ t, sig });
           last = sig;
@@ -26,9 +30,12 @@ const { chromium } = require("playwright");
     };
     setTimeout(tick, 390);
   });
-  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+    waitUntil: "load",
+  });
   await pg.waitForTimeout(1600);
   const r = await pg.evaluate(() => window.__probe);
-  for (const p of r) console.log("  @" + p.t + ' btnTxt|dataAr|key="' + p.sig + '"');
+  for (const p of r)
+    console.log("  @" + p.t + ' btnTxt|dataAr|key="' + p.sig + '"');
   await browser.close();
 })();

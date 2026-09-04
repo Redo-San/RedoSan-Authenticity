@@ -31,11 +31,28 @@ const MIME = {
 let _covSeq = 0;
 
 const PAGE_NAMES = new Set([
-  "about", "audio-watermark", "c2pa", "certificate", "contact",
-  "converter", "did", "document-watermark", "face-biometric",
-  "fingerprint", "forensic", "home", "id_forge", "iris-biometric",
-  "metadata", "pixel-injection", "privacy", "removal-tools", "search",
-  "social", "timestamp", "watermark",
+  "about",
+  "audio-watermark",
+  "c2pa",
+  "certificate",
+  "contact",
+  "converter",
+  "did",
+  "document-watermark",
+  "face-biometric",
+  "fingerprint",
+  "forensic",
+  "home",
+  "id_forge",
+  "iris-biometric",
+  "metadata",
+  "pixel-injection",
+  "privacy",
+  "removal-tools",
+  "search",
+  "social",
+  "timestamp",
+  "watermark",
 ]);
 
 var AMP = "(?:&amp;|&)";
@@ -46,7 +63,15 @@ var PAGE_TITLES = {};
 function setRE(id, pattern) {
   PAGE_TITLES[id] = { re: new RegExp("^" + pattern + SUFFIX) };
 }
-PAGE_TITLES.home = { re: new RegExp("^RedoSan Authenticity " + DASH + " Digital Watermark, Fingerprint " + AMP + " Metadata Tool$") };
+PAGE_TITLES.home = {
+  re: new RegExp(
+    "^RedoSan Authenticity " +
+      DASH +
+      " Digital Watermark, Fingerprint " +
+      AMP +
+      " Metadata Tool$",
+  ),
+};
 setRE("about", "About ");
 setRE("privacy", "Privacy Policy ");
 setRE("contact", "Contact ");
@@ -94,7 +119,9 @@ function tryServe(filePath, res) {
       stat = fs.statSync(target);
     }
     var ext = path.extname(target);
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
+    res.writeHead(200, {
+      "Content-Type": MIME[ext] || "application/octet-stream",
+    });
     fs.createReadStream(target).pipe(res);
     return true;
   } catch {
@@ -106,15 +133,19 @@ function ensureServer() {
   if (started) return Promise.resolve();
   return new Promise(function (resolve, reject) {
     // Check if port is already in use from a previous process
-    var tester = http.request({ host: "localhost", port: PORT, path: "/", method: "HEAD" }, function (res) {
-      tester.destroy();
-      started = true;
-      resolve();
-    });
+    var tester = http.request(
+      { host: "localhost", port: PORT, path: "/", method: "HEAD" },
+      function (res) {
+        tester.destroy();
+        started = true;
+        resolve();
+      },
+    );
     tester.on("error", function () {
       // Port is free, start the server
       server = http.createServer(function (req, res) {
-        var pathname = "/" + req.url.split("?", 1)[0].replaceAll(/^\/+|\/+$/g, "");
+        var pathname =
+          "/" + req.url.split("?", 1)[0].replaceAll(/^\/+|\/+$/g, "");
         if (pathname === "/") pathname = "/index.html";
         var filePath = path.join(ROOT, pathname.replaceAll("/", path.sep));
 
@@ -143,9 +174,16 @@ function ensureServer() {
           reject(err);
         }
       });
-      server.listen(PORT, function () { server.unref(); resolve(); });
+      server.listen(PORT, function () {
+        server.unref();
+        resolve();
+      });
     });
-    tester.setTimeout(3000, function () { tester.destroy(); started = true; resolve(); });
+    tester.setTimeout(3000, function () {
+      tester.destroy();
+      started = true;
+      resolve();
+    });
     tester.end();
   });
 }
@@ -159,14 +197,19 @@ async function openPage(browser, pageId) {
   var page = await ctx.newPage();
   page.setDefaultTimeout(60000);
   var errors = [];
-  page.on("pageerror", function (e) { errors.push(e.message); });
+  page.on("pageerror", function (e) {
+    errors.push(e.message);
+  });
   page.on("console", function (msg) {
     if (msg.type() === "error") errors.push(msg.text());
   });
   await startCoverage(page);
   _covSeq++;
   page.__covTag = pageId + "-" + _covSeq;
-  await page.goto(pageURL(pageId), { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.goto(pageURL(pageId), {
+    waitUntil: "domcontentloaded",
+    timeout: 30000,
+  });
   await page.waitForTimeout(1500);
   return { ctx: ctx, page: page, errors: errors };
 }
@@ -181,7 +224,10 @@ async function closePage(ctx, page) {
 async function checkPageLoad(page, pageId) {
   var title = await page.title();
   var info = PAGE_TITLES[pageId];
-  assert.ok(info && info.re.test(title), "Title should match for " + pageId + ". Got: " + title);
+  assert.ok(
+    info && info.re.test(title),
+    "Title should match for " + pageId + ". Got: " + title,
+  );
   var standalone = await page.evaluate(function () {
     return document.documentElement.dataset.standalone;
   });
@@ -205,12 +251,17 @@ var KNOWN_BENIGN = [
 
 function checkNoErrors(errors, pageId) {
   var critical = errors.filter(function (e) {
-    return !KNOWN_BENIGN.some(function (re) { return re.test(e); });
+    return !KNOWN_BENIGN.some(function (re) {
+      return re.test(e);
+    });
   });
   assert.equal(
     critical.length,
     0,
-    "No critical console errors for " + pageId + ": " + JSON.stringify(critical)
+    "No critical console errors for " +
+      pageId +
+      ": " +
+      JSON.stringify(critical),
   );
 }
 
@@ -223,6 +274,16 @@ function stopServer() {
 }
 
 module.exports = {
-  ensureServer, stopServer, pageURL, openPage, closePage, checkPageLoad, checkNoErrors,
-  BASE, PORT, ROOT, PAGE_NAMES, PAGE_TITLES,
+  ensureServer,
+  stopServer,
+  pageURL,
+  openPage,
+  closePage,
+  checkPageLoad,
+  checkNoErrors,
+  BASE,
+  PORT,
+  ROOT,
+  PAGE_NAMES,
+  PAGE_TITLES,
 };
