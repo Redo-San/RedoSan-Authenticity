@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 echo "SCRIPT_V3_MARKER_RUNNING"
 
@@ -75,7 +75,10 @@ for MODEL in ${MODELS//,/ }; do
     -H "Content-Type: application/json" \
     -H "HTTP-Referer: https://redo-san.github.io/RedoSan-Authenticity/" \
     -H "X-Title: RedoSan Authenticity" \
-    -d @request.json https://openrouter.ai/api/v1/chat/completions)
+    -d @request.json https://openrouter.ai/api/v1/chat/completions 2>/dev/null) || {
+    echo "curl failed (timeout or network error) for $MODEL, trying next..."
+    continue
+  }
 
   HTTP_CODE=$(echo "$RESPONSE" | tail -1)
   BODY=$(echo "$RESPONSE" | sed '$d')

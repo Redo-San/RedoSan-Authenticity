@@ -1,0 +1,25 @@
+# Gitleaks configuration — allow-list for known false positives
+
+title = "RedoSan Authenticity gitleaks config"
+
+# Allow-list: patterns that gitleaks should ignore
+[[rules]]
+id = "c2pa-demo-key"
+description = "C2PA throwaway P-256 demo key (no access to any service)"
+regex = '''-----BEGIN PRIVATE KEY-----'''
+path = '''C2PA/c2pa\.js|cli/commands/c2pa\.js'''
+tags = ["key", "c2pa"]
+
+[[rules]]
+id = "c2pa-test-private-key"
+description = "C2PA test private key in test fixtures"
+regex = '''-----BEGIN (EC )?PRIVATE KEY-----'''
+path = '''cli/tests/'''
+tags = ["key", "c2pa", "test"]
+
+[[rules]]
+id = "did-test-key"
+description = "DID:key test fixtures (fake values, grant no access)"
+regex = '''did:key:z(Test|6Mk)'''
+path = '''cli/tests/'''
+tags = ["did", "test"]

@@ -16,53 +16,64 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const run = require('child_process').execSync;
-            const base = context.payload.pull_request.base.sha || 'origin/main';
+      - name: Run Prettier check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          BASE="${{ github.event.pull_request.base.sha }}"
 
-            const diff = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js" "*.css" "*.html" "*.json"', { encoding: 'utf8' });
-            const files = diff.trim().split('\n').filter(Boolean).filter(f => !f.includes('i18n-data.js') && !f.includes('i18n.js')).filter(f => !f.startsWith('Style/pages/') && f !== 'Style/shared.js').filter(f => !f.startsWith('cli/'));
+          FILES=$(git diff --name-only --diff-filter=ACMRT "$BASE...HEAD" -- "*.js" "*.css" "*.html" "*.json" \
+            | grep -v 'i18n-data\.js' | grep -v 'i18n\.js' \
+            | grep -v '^Style/pages/' | grep -v '^Style/shared\.js$' \
+            | grep -v '^cli/' || true)
 
-            if (files.length === 0) {
-              console.log('No files to check.');
-              return;
-            }
+          if [ -z "$FILES" ]; then
+            echo "No files to check."
+            exit 0
+          fi
 
-            const { data: comments } = await github.rest.issues.listComments({
-              ...context.repo, issue_number: context.issue.number
-            });
-            const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('Prettier Check')
-            );
+          echo "Checking formatting for changed files..."
+          echo "$FILES" | tr ' ' '\n'
 
-            try {
-              run('npx prettier --config .tools/Developer_Toolkit/.prettierrc --ignore-path .tools/Developer_Toolkit/.prettierignore --check ' + files.join(' '), { encoding: 'utf8', stdio: 'pipe' });
-              if (existing) {
-                await github.rest.issues.deleteComment({
-                  ...context.repo, comment_id: existing.id
-                });
-              }
-            } catch (e) {
-              const unformatted = (e.stdout || '') + (e.stderr || '');
-              const list = unformatted.trim().split('\n')
-                .map(l => l.replace(/\x1b\[\d+m/g, ''))
-                .filter(Boolean)
-                .filter(l => !l.includes('npm warn') && l.trim() !== 'Checking formatting...' && !/^(Warnings?|Errors?):/.test(l.trim()))
-                .slice(0, 20);
+          npx prettier --config .tools/Developer_Toolkit/.prettierrc \
+            --ignore-path .tools/Developer_Toolkit/.prettierignore \
+            --check $FILES 2>&1 | tee /tmp/prettier-output.txt
+          PRETTIER_EXIT=$?
 
-              const body = '## Prettier Check\n\nFound ' + list.length + ' unformatted file(s):\n\n' +
-                list.map(f => '- `' + f.replace('[warn] ', '').replace(' (code)', '').trim() + '`').join('\n') +
-                '\n\nRun `npx prettier --write ' + files.join(' ') + '` to fix.';
+          if [ "$PRETTIER_EXIT" -eq 0 ]; then
+            echo "All files formatted correctly."
+            # Delete old bot comment if exists
+            OLD_BODY=$(gh pr view "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("Prettier Check"))) | .id' 2>/dev/null || true)
+            if [ -n "$OLD_BODY" ]; then
+              gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --delete 2>/dev/null || true
+            fi
+            exit 0
+          fi
 
-              if (existing) {
-                await github.rest.issues.updateComment({
-                  ...context.repo, comment_id: existing.id, body
-                });
-              } else {
-                await github.rest.issues.createComment({
-                  ...context.repo, issue_number: context.issue.number, body
-                });
-              }
-            }
+          # Build the failure comment
+          LIST=$(cat /tmp/prettier-output.txt \
+            | sed 's/\x1b\[[0-9;]*m//g' \
+            | grep '\[warn\]' \
+            | sed 's/\[warn\] //' \
+            | sed 's/ (code)//' \
+            | head -20)
+
+          COUNT=$(echo "$LIST" | wc -l | tr -d ' ')
+          FILE_LIST=$(echo "$LIST" | sed 's/^/- `/' | sed 's/$/`/')
+
+          BODY="## Prettier Check
+
+          Found ${COUNT} unformatted file(s):
+
+          ${FILE_LIST}
+
+          Run \`npx prettier --write $FILES\` to fix."
+
+          # Delete old bot comment if exists, then post new one
+          gh pr view "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("Prettier Check"))) | .id' 2>/dev/null | while read -r CID; do
+            gh api repos/${{ github.repository }}/issues/comments/"$CID" --method DELETE 2>/dev/null || true
+          done
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body "$BODY"
+          exit 1
