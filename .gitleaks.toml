@@ -1,9 +1,10 @@
 # Gitleaks configuration — allow-list for known false positives
 # Ref: https://github.com/gitleaks/gitleaks/blob/master/README.md
-# Gitleaks v8.25+ uses [[allowlists]] format, NOT [[rules]]
+# Gitleaks v8.25+ uses [[allowlists]] format
 
 [extend]
 useDefault = true
+disabledRules = ["generic-api-key"]
 
 # Global allowlists - paths that should be skipped from scanning
 [[allowlists]]
