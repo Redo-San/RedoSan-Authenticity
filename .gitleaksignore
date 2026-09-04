@@ -75,3 +75,8 @@ d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-k
 d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:969
 d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:995
 d62162017ddc43c94572cf22811ee0aaebcdd8d3:cli/tests/face_ui_test.js:generic-api-key:1098
+#
+# 8) C2PA demo key in current HEAD (3fbb593) after prettier reformatting —
+#    same throwaway P-256 demo key as #1 above, line numbers shifted by prettier.
+3fbb593d36d399b80cafe4042f9c8291ac21b422:C2PA/c2pa.js:private-key:21
+3fbb593d36d399b80cafe4042f9c8291ac21b422:cli/commands/c2pa.js:private-key:15
