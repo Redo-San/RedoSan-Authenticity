@@ -62,7 +62,7 @@ for MODEL in ${MODELS//,/ }; do
     '{model: $model, messages: [{role: "system", content: $system}, {role: "user", content: ("PR Title: " + $title + "\n\nDescription: " + $body + "\n\n```diff\n" + $diff + "\n```")}], temperature: 0.1, max_tokens: 32000, stream: false}' > request.json
 
   echo "Sending request to OpenRouter API..."
-  RESPONSE=$(curl -s --max-time 15 -w "\n%{http_code}" \
+  RESPONSE=$(curl -s --max-time 60 -w "\n%{http_code}" \
     -H "Authorization: Bearer $OPENROUTER_API_KEY" \
     -H "Content-Type: application/json" \
     -H "HTTP-Referer: https://redo-san.github.io/RedoSan-Authenticity/" \
