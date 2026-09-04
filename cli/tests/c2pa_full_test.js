@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // ── Global mocks ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 globalThis.__ = (k, d) => d || k;
 globalThis.setText = () => {};
 globalThis.setStatus = () => {};
@@ -17,11 +22,19 @@ globalThis.showDownloadModal = () => {};
 globalThis.closeDownloadModal = () => {};
 globalThis.escHtml = (s) => {
   if (s == null) return "";
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 };
 globalThis.escXml = (s) => {
   if (s == null) return "";
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 };
 globalThis.createDocxTable = () => {};
 
@@ -34,9 +47,12 @@ globalThis.jspdf = {
       setFontSize: () => {},
       setTextColor: () => {},
       text: () => {},
-      addPage: () => { pages++; },
+      addPage: () => {
+        pages++;
+      },
       output: (type) => {
-        if (type === "blob") return new Blob(["pdf"], { type: "application/pdf" });
+        if (type === "blob")
+          return new Blob(["pdf"], { type: "application/pdf" });
         return "";
       },
     };
@@ -46,38 +62,69 @@ globalThis.jspdf = {
 // Mock docx
 const docxMock = {
   Document: class {
-    constructor(opts) { this.sections = opts.sections; }
+    constructor(opts) {
+      this.sections = opts.sections;
+    }
   },
   Packer: {
-    toBlob: async (doc) => new Blob(["docx"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }),
+    toBlob: async (doc) =>
+      new Blob(["docx"], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      }),
   },
   Paragraph: class {
-    constructor(opts) { this.opts = opts; this.children = opts.children || []; }
+    constructor(opts) {
+      this.opts = opts;
+      this.children = opts.children || [];
+    }
   },
   TextRun: class {
-    constructor(opts) { this.opts = opts; }
+    constructor(opts) {
+      this.opts = opts;
+    }
   },
-  Table: class { constructor(opts) { this.opts = opts; } },
-  TableRow: class { constructor(opts) { this.opts = opts; } },
-  TableCell: class { constructor(opts) { this.opts = opts; } },
+  Table: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  TableRow: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
+  TableCell: class {
+    constructor(opts) {
+      this.opts = opts;
+    }
+  },
 };
 globalThis.docx = docxMock;
 
 // ── Load cbor.js (replace 'export function' with 'function') ──
-const cborSrc = fs.readFileSync(path.join(__dirname, "../../C2PA/cbor.js"), "utf8");
+const cborSrc = fs.readFileSync(
+  path.join(__dirname, "../../C2PA/cbor.js"),
+  "utf8",
+);
 const cborClean = cborSrc
   .replace(/export function /g, "function ")
   .replace(/export function /g, "function ");
-vm.runInThisContext(cborClean, { filename: path.resolve(__dirname, "../../C2PA/cbor.js") });
+vm.runInThisContext(cborClean, {
+  filename: path.resolve(__dirname, "../../C2PA/cbor.js"),
+});
 
 // ── Load c2pa.js (replace import line) ──
-const c2paSrc = fs.readFileSync(path.join(__dirname, "../../C2PA/c2pa.js"), "utf8");
-const c2paClean = c2paSrc
-  .replace(
-    /import \{ createC2pa \} from 'https:\/\/cdn\.jsdelivr\.net\/npm\/@contentauth\/c2pa-web@0\.8\.1\/\+esm';/,
-    "var createC2pa = null;"
-  );
-vm.runInThisContext(c2paClean, { filename: path.resolve(__dirname, "../../C2PA/c2pa.js") });
+const c2paSrc = fs.readFileSync(
+  path.join(__dirname, "../../C2PA/c2pa.js"),
+  "utf8",
+);
+const c2paClean = c2paSrc.replace(
+  /import \{ createC2pa \} from 'https:\/\/cdn\.jsdelivr\.net\/npm\/@contentauth\/c2pa-web@0\.8\.1\/\+esm';/,
+  "var createC2pa = null;",
+);
+vm.runInThisContext(c2paClean, {
+  filename: path.resolve(__dirname, "../../C2PA/c2pa.js"),
+});
 
 // ── Helpers ──
 function makeManifestStore(overrides) {
@@ -117,7 +164,7 @@ function makeReadResult(overrides) {
 
 describe("C2PA — escHtml", () => {
   it("should escape HTML special characters", () => {
-    const result = escHtml("<script>\"alert\" & notify");
+    const result = escHtml('<script>"alert" & notify');
     assert.equal(result, "&lt;script&gt;&quot;alert&quot; &amp; notify");
   });
 
@@ -136,7 +183,10 @@ describe("C2PA — safeUrl", () => {
   it("should allow http, https, and data URLs", () => {
     assert.equal(safeUrl("http://example.com"), "http://example.com");
     assert.equal(safeUrl("https://example.com"), "https://example.com");
-    assert.equal(safeUrl("data:image/png;base64,abc"), "data:image/png;base64,abc");
+    assert.equal(
+      safeUrl("data:image/png;base64,abc"),
+      "data:image/png;base64,abc",
+    );
   });
 
   it("should reject non-http(s)/data URLs", () => {
@@ -261,7 +311,11 @@ describe("C2PA — getActionsHtml", () => {
         {
           label: "c2pa.actions",
           data: [
-            { action: "c2pa.created", when: "2024-01-01", description: "Created in test" },
+            {
+              action: "c2pa.created",
+              when: "2024-01-01",
+              description: "Created in test",
+            },
           ],
         },
       ],
@@ -299,7 +353,8 @@ describe("C2PA — getActionsHtml", () => {
               actor: { name: "Tester", identifier: "test@example.com" },
               reason: "Testing",
               parameters: { key: "val" },
-              digitalSourceType: "http://ns.adobe.com/xap/1.0/g/img/type/photographic",
+              digitalSourceType:
+                "http://ns.adobe.com/xap/1.0/g/img/type/photographic",
             },
           ],
         },
@@ -349,9 +404,7 @@ describe("C2PA — getAssertionsHtml", () => {
 
   it("should handle string data", () => {
     const manifest = {
-      assertions: [
-        { label: "c2pa.simple", data: "plain text" },
-      ],
+      assertions: [{ label: "c2pa.simple", data: "plain text" }],
     };
     const html = getAssertionsHtml(manifest);
     assert.ok(html.includes("plain text"));
@@ -481,7 +534,9 @@ describe("C2PA — getValidationHtml", () => {
     const ms = makeManifestStore({
       validation_state: "warning",
       validation_results: {},
-      validation_status: [{ code: "test.failure", explanation: "Detailed explanation here" }],
+      validation_status: [
+        { code: "test.failure", explanation: "Detailed explanation here" },
+      ],
     });
     const html = getValidationHtml(ms);
     assert.ok(html.includes("test.failure"));
@@ -514,7 +569,9 @@ describe("C2PA — c2paToCSV", () => {
     const r = makeReadResult({
       manifest: {
         ...makeReadResult().manifest,
-        assertions: [{ label: "c2pa.actions", data: [{ action: "c2pa.created" }] }],
+        assertions: [
+          { label: "c2pa.actions", data: [{ action: "c2pa.created" }] },
+        ],
       },
     });
     const csv = c2paToCSV(r);
@@ -552,7 +609,12 @@ describe("C2PA — c2paToTXT", () => {
     const r = makeReadResult({
       manifest: {
         ...makeReadResult().manifest,
-        assertions: [{ label: "c2pa.actions", data: [{ action: "c2pa.created", when: "2024-01-01" }] }],
+        assertions: [
+          {
+            label: "c2pa.actions",
+            data: [{ action: "c2pa.created", when: "2024-01-01" }],
+          },
+        ],
       },
     });
     const txt = c2paToTXT(r);
@@ -610,13 +672,25 @@ describe("C2PA — c2paToXML", () => {
     const r = makeReadResult({
       manifest: {
         ...makeReadResult().manifest,
-        assertions: [{ label: "c2pa.actions", data: [{ action: "c2pa.edited", when: "2024-06-01", digitalSourceType: "http://ns.adobe.com/xap/1.0/g/img/type/photographic" }] }],
+        assertions: [
+          {
+            label: "c2pa.actions",
+            data: [
+              {
+                action: "c2pa.edited",
+                when: "2024-06-01",
+                digitalSourceType:
+                  "http://ns.adobe.com/xap/1.0/g/img/type/photographic",
+              },
+            ],
+          },
+        ],
       },
     });
     const xml = c2paToXML(r);
     assert.ok(xml.includes('name="c2pa.edited"'));
     assert.ok(xml.includes('when="2024-06-01"'));
-    assert.ok(xml.includes('digitalSourceType'));
+    assert.ok(xml.includes("digitalSourceType"));
   });
 
   it("should include signature and ingredients", () => {
@@ -666,7 +740,12 @@ describe("C2PA — c2paToHTML", () => {
     const r = makeReadResult({
       manifest: {
         ...makeReadResult().manifest,
-        assertions: [{ label: "c2pa.actions", data: [{ action: "c2pa.captured", when: "2024-01-01" }] }],
+        assertions: [
+          {
+            label: "c2pa.actions",
+            data: [{ action: "c2pa.captured", when: "2024-01-01" }],
+          },
+        ],
       },
     });
     const html = c2paToHTML(r);
@@ -758,12 +837,16 @@ describe("C2PA — withTimeout", () => {
 
   it("should reject on timeout", async () => {
     const slow = new Promise(() => {});
-    await assert.rejects(() => withTimeout(slow, 10, "custom timeout msg"), { message: "custom timeout msg" });
+    await assert.rejects(() => withTimeout(slow, 10, "custom timeout msg"), {
+      message: "custom timeout msg",
+    });
   });
 
   it("should use default message when no msg provided", async () => {
     const slow = new Promise(() => {});
-    await assert.rejects(() => withTimeout(slow, 10), { message: "Operation timed out" });
+    await assert.rejects(() => withTimeout(slow, 10), {
+      message: "Operation timed out",
+    });
   });
 });
 
@@ -771,7 +854,10 @@ describe("C2PA — sha256Hex (crypto.subtle)", () => {
   it("should compute SHA-256 for known input", async () => {
     const enc = new TextEncoder();
     const result = await sha256Hex(enc.encode("hello").buffer);
-    assert.equal(result, "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
+    assert.equal(
+      result,
+      "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+    );
   });
 
   it("should produce 64-char hex string", async () => {
@@ -787,7 +873,12 @@ describe("C2PA — c2paToPDF", () => {
       manifest: {
         ...makeReadResult().manifest,
         claim_generator_info: [{ name: "TestGen", version: "1.0" }],
-        assertions: [{ label: "c2pa.actions", data: [{ action: "c2pa.created", when: "2024-01-01" }] }],
+        assertions: [
+          {
+            label: "c2pa.actions",
+            data: [{ action: "c2pa.created", when: "2024-01-01" }],
+          },
+        ],
         signature_info: { issuer: "CN=Test", time: "2024-01-01" },
       },
     });
@@ -797,7 +888,15 @@ describe("C2PA — c2paToPDF", () => {
 
   it("should handle manifest without optional fields", () => {
     const r = makeReadResult({
-      manifest: { title: null, format: null, claim_generator: null, instance_id: null, assertions: [], signature_info: null, claim_generator_info: null },
+      manifest: {
+        title: null,
+        format: null,
+        claim_generator: null,
+        instance_id: null,
+        assertions: [],
+        signature_info: null,
+        claim_generator_info: null,
+      },
     });
     const blob = c2paToPDF(r);
     assert.ok(blob instanceof Blob);
@@ -810,7 +909,9 @@ describe("C2PA — c2paToDOCX", () => {
       manifest: {
         ...makeReadResult().manifest,
         claim_generator_info: [{ name: "TestGen", version: "1.0" }],
-        assertions: [{ label: "c2pa.actions", data: [{ action: "c2pa.created" }] }],
+        assertions: [
+          { label: "c2pa.actions", data: [{ action: "c2pa.created" }] },
+        ],
         signature_info: { issuer: "CN=Test" },
       },
     });
@@ -870,8 +971,14 @@ describe("C2PA — createBrowserSigner", () => {
     assert.equal(sig1.length, 64);
     assert.equal(sig2.length, 64);
     // Both must be non-zero
-    assert.ok(sig1.some(b => b !== 0), "signature should not be all zeros");
-    assert.ok(sig2.some(b => b !== 0), "signature should not be all zeros");
+    assert.ok(
+      sig1.some((b) => b !== 0),
+      "signature should not be all zeros",
+    );
+    assert.ok(
+      sig2.some((b) => b !== 0),
+      "signature should not be all zeros",
+    );
   });
 });
 
@@ -883,17 +990,21 @@ describe("C2PA — addIngredientFromFile", () => {
         capturedTitle = meta;
         capturedMime = mime;
         capturedBlob = blob;
-      }
+      },
     };
     const mockFile = {
       name: "test_asset.png",
       type: "image/png",
-      arrayBuffer: async () => new TextEncoder().encode("mock file content").buffer
+      arrayBuffer: async () =>
+        new TextEncoder().encode("mock file content").buffer,
     };
 
     await addIngredientFromFile(mockBuilder, mockFile, "parentOf");
 
-    assert.deepEqual(capturedTitle, { title: "test_asset.png", relationship: "parentOf" });
+    assert.deepEqual(capturedTitle, {
+      title: "test_asset.png",
+      relationship: "parentOf",
+    });
     assert.equal(capturedMime, "image/png");
     assert.ok(capturedBlob instanceof Blob);
   });
@@ -903,12 +1014,12 @@ describe("C2PA — addIngredientFromFile", () => {
     const mockBuilder = {
       addIngredientFromBlob: async (meta) => {
         capturedTitle = meta;
-      }
+      },
     };
     const mockFile = {
       name: "asset.jpg",
       type: "image/jpeg",
-      arrayBuffer: async () => new TextEncoder().encode("data").buffer
+      arrayBuffer: async () => new TextEncoder().encode("data").buffer,
     };
 
     await addIngredientFromFile(mockBuilder, mockFile);
@@ -920,12 +1031,12 @@ describe("C2PA — addIngredientFromFile", () => {
     const mockBuilder = {
       addIngredientFromBlob: async (meta, mime) => {
         capturedMime = mime;
-      }
+      },
     };
     const mockFile = {
       name: "asset.bin",
       type: "",
-      arrayBuffer: async () => new TextEncoder().encode("data").buffer
+      arrayBuffer: async () => new TextEncoder().encode("data").buffer,
     };
 
     await addIngredientFromFile(mockBuilder, mockFile, "parentOf");

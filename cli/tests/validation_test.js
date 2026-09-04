@@ -48,27 +48,45 @@ function makeMockFile(name, type, data) {
       b._data = sliced.buffer;
       return b;
     },
-    arrayBuffer: function () { return Promise.resolve(arr.buffer); },
-    text: function () { return Promise.resolve(new TextDecoder().decode(arr)); },
+    arrayBuffer: function () {
+      return Promise.resolve(arr.buffer);
+    },
+    text: function () {
+      return Promise.resolve(new TextDecoder().decode(arr));
+    },
   };
   return blob;
 }
 
 var ROOT = path.resolve(__dirname, "../..");
-var sharedSrc = fs.readFileSync(path.resolve(ROOT, "Style/shared_validation.js"), "utf8");
+var sharedSrc = fs.readFileSync(
+  path.resolve(ROOT, "Style/shared_validation.js"),
+  "utf8",
+);
 
 function loadSharedValidation() {
-  vm.runInThisContext(sharedSrc, { filename: path.resolve(ROOT, "Style/shared_validation.js") });
+  vm.runInThisContext(sharedSrc, {
+    filename: path.resolve(ROOT, "Style/shared_validation.js"),
+  });
 }
 
 describe("shared_validation.js — isDangerousFile", function () {
   before(function () {
-    globalThis.__ = function (k) { return k; };
+    globalThis.__ = function (k) {
+      return k;
+    };
     globalThis.alert = mockAlert;
     globalThis.FileReader = MockFileReader;
-    globalThis.DataTransfer = function () { this.files = []; this.items = { add: function () {} }; };
+    globalThis.DataTransfer = function () {
+      this.files = [];
+      this.items = { add: function () {} };
+    };
     globalThis.TextDecoder = TextDecoder;
-    globalThis.location = { protocol: "http:", hostname: "localhost", href: "http://localhost:8080/" };
+    globalThis.location = {
+      protocol: "http:",
+      hostname: "localhost",
+      href: "http://localhost:8080/",
+    };
     globalThis.window = globalThis;
     loadSharedValidation();
   });
@@ -133,7 +151,9 @@ describe("shared_validation.js — isDangerousFile", function () {
 });
 
 describe("shared_validation.js — matchesAccept", function () {
-  before(function () { loadSharedValidation(); });
+  before(function () {
+    loadSharedValidation();
+  });
 
   it("returns true when acceptAttr is empty", function () {
     assert.ok(matchesAccept(makeMockFile("test.png", "image/png"), ""));
@@ -148,7 +168,9 @@ describe("shared_validation.js — matchesAccept", function () {
   });
 
   it("matches by MIME type", function () {
-    assert.ok(matchesAccept(makeMockFile("photo.png", "image/png"), "image/png"));
+    assert.ok(
+      matchesAccept(makeMockFile("photo.png", "image/png"), "image/png"),
+    );
   });
 
   it("matches by MIME category", function () {
@@ -160,24 +182,37 @@ describe("shared_validation.js — matchesAccept", function () {
   });
 
   it("rejects non-matching MIME type", function () {
-    assert.ok(!matchesAccept(makeMockFile("photo.png", "image/png"), "audio/mpeg"));
+    assert.ok(
+      !matchesAccept(makeMockFile("photo.png", "image/png"), "audio/mpeg"),
+    );
   });
 
   it("handles comma-separated accept rules", function () {
-    assert.ok(matchesAccept(makeMockFile("photo.jpg", "image/jpeg"), ".png,.jpg,.gif"));
+    assert.ok(
+      matchesAccept(makeMockFile("photo.jpg", "image/jpeg"), ".png,.jpg,.gif"),
+    );
   });
 
   it("matches any rule in comma-separated list", function () {
-    assert.ok(matchesAccept(makeMockFile("video.mp4", "video/mp4"), "image/*,video/*"));
+    assert.ok(
+      matchesAccept(makeMockFile("video.mp4", "video/mp4"), "image/*,video/*"),
+    );
   });
 
   it("matches extension despite wrong MIME type", function () {
-    assert.ok(matchesAccept(makeMockFile("doc.pdf", "application/octet-stream"), ".pdf"));
+    assert.ok(
+      matchesAccept(
+        makeMockFile("doc.pdf", "application/octet-stream"),
+        ".pdf",
+      ),
+    );
   });
 });
 
 describe("shared_validation.js — isEnglishFilename", function () {
-  before(function () { loadSharedValidation(); });
+  before(function () {
+    loadSharedValidation();
+  });
 
   it("accepts simple ASCII filename", function () {
     assert.ok(isEnglishFilename("photo.png"));
@@ -209,7 +244,9 @@ describe("shared_validation.js — isEnglishFilename", function () {
 });
 
 describe("shared_validation.js — hasDangerousContent", function () {
-  before(function () { loadSharedValidation(); });
+  before(function () {
+    loadSharedValidation();
+  });
 
   function toBytes(str) {
     return new TextEncoder().encode(str);
@@ -224,15 +261,25 @@ describe("shared_validation.js — hasDangerousContent", function () {
   });
 
   it("detects javascript: URIs", function () {
-    assert.ok(hasDangerousContent(toBytes('<a href="javascript:alert(1)">link</a>')));
+    assert.ok(
+      hasDangerousContent(toBytes('<a href="javascript:alert(1)">link</a>')),
+    );
   });
 
   it("detects foreignObject tags", function () {
-    assert.ok(hasDangerousContent(toBytes("<svg><foreignObject>...</foreignObject></svg>")));
+    assert.ok(
+      hasDangerousContent(
+        toBytes("<svg><foreignObject>...</foreignObject></svg>"),
+      ),
+    );
   });
 
   it("detects XML entities", function () {
-    assert.ok(hasDangerousContent(toBytes("<!ENTITY blah SYSTEM 'file:///etc/passwd'>")));
+    assert.ok(
+      hasDangerousContent(
+        toBytes("<!ENTITY blah SYSTEM 'file:///etc/passwd'>"),
+      ),
+    );
   });
 
   it("allows safe content", function () {
@@ -240,14 +287,20 @@ describe("shared_validation.js — hasDangerousContent", function () {
   });
 
   it("allows normal HTML without scripts", function () {
-    assert.ok(!hasDangerousContent(toBytes("<html><body><p>Safe</p></body></html>")));
+    assert.ok(
+      !hasDangerousContent(toBytes("<html><body><p>Safe</p></body></html>")),
+    );
   });
 });
 
 describe("shared_validation.js — hasDangerousMagic", function () {
-  before(function () { loadSharedValidation(); });
+  before(function () {
+    loadSharedValidation();
+  });
 
-  function magicBytes() { return new Uint8Array(arguments); }
+  function magicBytes() {
+    return new Uint8Array(arguments);
+  }
 
   it("detects PE executable magic (MZ)", function () {
     var buf = magicBytes(0x4d, 0x5a, 0x90, 0x00);
@@ -283,7 +336,9 @@ describe("shared_validation.js — hasDangerousMagic", function () {
 });
 
 describe("shared_validation.js — fileHasExtension", function () {
-  before(function () { loadSharedValidation(); });
+  before(function () {
+    loadSharedValidation();
+  });
 
   it("returns true for files with extension", function () {
     assert.ok(fileHasExtension({ name: "test.png" }));
@@ -323,7 +378,9 @@ describe("shared_validation.js — checkDocumentThreats", function () {
   });
 
   it("passes PDF files without threats", async function () {
-    var data = new TextEncoder().encode("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF");
+    var data = new TextEncoder().encode(
+      "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF",
+    );
     var file = makeMockFile("doc.pdf", "application/pdf", data);
     assert.ok(await checkDocumentThreats(file));
   });
@@ -347,7 +404,13 @@ describe("shared_validation.js — checkDocumentThreats", function () {
   });
 
   it("rejects large PDF files over 10MB", async function () {
-    var file = { type: "application/pdf", size: 11 * 1024 * 1024, slice: function () { return { _data: new ArrayBuffer(0) }; } };
+    var file = {
+      type: "application/pdf",
+      size: 11 * 1024 * 1024,
+      slice: function () {
+        return { _data: new ArrayBuffer(0) };
+      },
+    };
     assert.ok(await checkDocumentThreats(file));
   });
 });
@@ -358,25 +421,36 @@ describe("shared_validation.js — checkFileStructure PNG", function () {
     loadSharedValidation();
   });
 
-  beforeEach(function () { _fileReaderInstances = []; });
+  beforeEach(function () {
+    _fileReaderInstances = [];
+  });
 
   it("passes PNG with valid IEND chunk", async function () {
     var buf = new Uint8Array(100);
-    buf.set([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0x00, 0x00, 0x00, 0x00], 88);
+    buf.set(
+      [0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0x00, 0x00, 0x00, 0x00],
+      88,
+    );
     var file = makeMockFile("test.png", "image/png", buf);
     assert.ok(await checkFileStructure(file));
   });
 
   it("rejects PNG with missing IEND length", async function () {
     var buf = new Uint8Array(100);
-    buf.set([0x01, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0x00, 0x00, 0x00, 0x00], 88);
+    buf.set(
+      [0x01, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0x00, 0x00, 0x00, 0x00],
+      88,
+    );
     var file = makeMockFile("test.png", "image/png", buf);
     assert.ok(!(await checkFileStructure(file)));
   });
 
   it("rejects PNG with missing IEND marker", async function () {
     var buf = new Uint8Array(100);
-    buf.set([0x00, 0x00, 0x00, 0x00, 0x58, 0x58, 0x58, 0x58, 0x00, 0x00, 0x00, 0x00], 88);
+    buf.set(
+      [0x00, 0x00, 0x00, 0x00, 0x58, 0x58, 0x58, 0x58, 0x00, 0x00, 0x00, 0x00],
+      88,
+    );
     var file = makeMockFile("test.png", "image/png", buf);
     assert.ok(!(await checkFileStructure(file)));
   });
@@ -388,7 +462,9 @@ describe("shared_validation.js — checkFileStructure JPEG", function () {
     loadSharedValidation();
   });
 
-  beforeEach(function () { _fileReaderInstances = []; });
+  beforeEach(function () {
+    _fileReaderInstances = [];
+  });
 
   it("passes JPEG ending with FFD9", async function () {
     var buf = new Uint8Array(40);
@@ -421,7 +497,9 @@ describe("shared_validation.js — checkFileStructure GIF", function () {
     loadSharedValidation();
   });
 
-  beforeEach(function () { _fileReaderInstances = []; });
+  beforeEach(function () {
+    _fileReaderInstances = [];
+  });
 
   it("passes GIF ending with 0x3B", async function () {
     var buf = new Uint8Array(30);
@@ -447,7 +525,9 @@ describe("shared_validation.js — checkFileStructure WebP", function () {
     loadSharedValidation();
   });
 
-  beforeEach(function () { _fileReaderInstances = []; });
+  beforeEach(function () {
+    _fileReaderInstances = [];
+  });
 
   it("passes WebP files (always valid structure)", async function () {
     var buf = new Uint8Array(30);
@@ -462,7 +542,9 @@ describe("shared_validation.js — checkFileStructure default", function () {
     loadSharedValidation();
   });
 
-  beforeEach(function () { _fileReaderInstances = []; });
+  beforeEach(function () {
+    _fileReaderInstances = [];
+  });
 
   it("passes unknown format files", async function () {
     var buf = new Uint8Array(30);
@@ -477,7 +559,9 @@ describe("shared_validation.js — checkFileStructure small files", function () 
     loadSharedValidation();
   });
 
-  beforeEach(function () { _fileReaderInstances = []; });
+  beforeEach(function () {
+    _fileReaderInstances = [];
+  });
 
   it("passes files under 20 bytes", async function () {
     var buf = new Uint8Array([0x01, 0x02, 0x03]);
@@ -508,7 +592,9 @@ describe("shared_validation.js — detectDangerousMagic", function () {
     loadSharedValidation();
   });
 
-  beforeEach(function () { _fileReaderInstances = []; });
+  beforeEach(function () {
+    _fileReaderInstances = [];
+  });
 
   it("returns false for null input", async function () {
     assert.equal(await detectDangerousMagic(null), false);
@@ -564,10 +650,15 @@ describe("shared_validation.js — detectDangerousMagic", function () {
 
 describe("shared_validation.js — validateFileInput", function () {
   before(function () {
-    globalThis.__ = function (k, d) { return d || k || ""; };
+    globalThis.__ = function (k, d) {
+      return d || k || "";
+    };
     globalThis.alert = mockAlert;
     globalThis.FileReader = MockFileReader;
-    globalThis.DataTransfer = function () { this.files = []; this.items = { add: function () {} }; };
+    globalThis.DataTransfer = function () {
+      this.files = [];
+      this.items = { add: function () {} };
+    };
     globalThis.TextDecoder = TextDecoder;
     loadSharedValidation();
   });
@@ -583,18 +674,32 @@ describe("shared_validation.js — validateFileInput", function () {
       files: file ? [file] : [],
       value: file ? file.name : "",
       tagName: "INPUT",
-      getAttribute: function (a) { return a === "accept" ? (accept || null) : null; },
+      getAttribute: function (a) {
+        return a === "accept" ? accept || null : null;
+      },
     };
   }
 
   function makeValidPngBytes() {
-    var pngHeader = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52];
+    var pngHeader = [
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+      0x49, 0x48, 0x44, 0x52,
+    ];
     var full = new Uint8Array(pngHeader.length + 40);
     full.set(pngHeader);
     var end = full.length;
-    full[end - 12] = 0x00; full[end - 11] = 0x00; full[end - 10] = 0x00; full[end - 9] = 0x00;
-    full[end - 8] = 0x49; full[end - 7] = 0x45; full[end - 6] = 0x4e; full[end - 5] = 0x44;
-    full[end - 4] = 0x00; full[end - 3] = 0x00; full[end - 2] = 0x00; full[end - 1] = 0x00;
+    full[end - 12] = 0x00;
+    full[end - 11] = 0x00;
+    full[end - 10] = 0x00;
+    full[end - 9] = 0x00;
+    full[end - 8] = 0x49;
+    full[end - 7] = 0x45;
+    full[end - 6] = 0x4e;
+    full[end - 5] = 0x44;
+    full[end - 4] = 0x00;
+    full[end - 3] = 0x00;
+    full[end - 2] = 0x00;
+    full[end - 1] = 0x00;
     return full;
   }
 
@@ -607,9 +712,18 @@ describe("shared_validation.js — validateFileInput", function () {
       full = bigger;
       // Fix IEND to be at the new end
       var end = full.length;
-      full[end - 12] = 0x00; full[end - 11] = 0x00; full[end - 10] = 0x00; full[end - 9] = 0x00;
-      full[end - 8] = 0x49; full[end - 7] = 0x45; full[end - 6] = 0x4e; full[end - 5] = 0x44;
-      full[end - 4] = 0x00; full[end - 3] = 0x00; full[end - 2] = 0x00; full[end - 1] = 0x00;
+      full[end - 12] = 0x00;
+      full[end - 11] = 0x00;
+      full[end - 10] = 0x00;
+      full[end - 9] = 0x00;
+      full[end - 8] = 0x49;
+      full[end - 7] = 0x45;
+      full[end - 6] = 0x4e;
+      full[end - 5] = 0x44;
+      full[end - 4] = 0x00;
+      full[end - 3] = 0x00;
+      full[end - 2] = 0x00;
+      full[end - 1] = 0x00;
     }
     return makeInput(makeMockFile(name, "image/png", full));
   }
@@ -629,7 +743,11 @@ describe("shared_validation.js — validateFileInput", function () {
   });
 
   it("rejects oversized files (>200MB)", async function () {
-    var bigFile = makeMockFile("big.png", "image/png", new Uint8Array(201 * 1024 * 1024));
+    var bigFile = makeMockFile(
+      "big.png",
+      "image/png",
+      new Uint8Array(201 * 1024 * 1024),
+    );
     var input = makeInput(bigFile);
     assert.ok(!(await validateFileInput(input)));
     assert.ok(_mockAlert.length > 0);
@@ -689,7 +807,10 @@ describe("shared_validation.js — validateFileInput", function () {
     var buf = makeValidPngBytes();
     // Corrupt last 12 bytes (remove IEND)
     var end = buf.length;
-    buf[end - 8] = 0x00; buf[end - 7] = 0x00; buf[end - 6] = 0x00; buf[end - 5] = 0x00;
+    buf[end - 8] = 0x00;
+    buf[end - 7] = 0x00;
+    buf[end - 6] = 0x00;
+    buf[end - 5] = 0x00;
     var file = makeMockFile("corrupt.png", "image/png", buf);
     var input = makeInput(file);
     assert.ok(!(await validateFileInput(input)));
@@ -710,16 +831,28 @@ describe("shared_validation.js — matchesMagicBytes edge cases", function () {
 
   it("validates WebP via function validator", async function () {
     var buf = new Uint8Array(20);
-    buf[0] = 0x52; buf[1] = 0x49; buf[2] = 0x46; buf[3] = 0x46; // RIFF
-    buf[8] = 0x57; buf[9] = 0x45; buf[10] = 0x42; buf[11] = 0x50; // WEBP
+    buf[0] = 0x52;
+    buf[1] = 0x49;
+    buf[2] = 0x46;
+    buf[3] = 0x46; // RIFF
+    buf[8] = 0x57;
+    buf[9] = 0x45;
+    buf[10] = 0x42;
+    buf[11] = 0x50; // WEBP
     var file = makeMockFile("test.webp", "image/webp", buf);
     assert.ok(await matchesMagicBytes(file));
   });
 
   it("rejects WebP with wrong RIFF header", async function () {
     var buf = new Uint8Array(20);
-    buf[0] = 0x00; buf[1] = 0x00; buf[2] = 0x00; buf[3] = 0x00; // Wrong RIFF
-    buf[8] = 0x57; buf[9] = 0x45; buf[10] = 0x42; buf[11] = 0x50; // WEBP
+    buf[0] = 0x00;
+    buf[1] = 0x00;
+    buf[2] = 0x00;
+    buf[3] = 0x00; // Wrong RIFF
+    buf[8] = 0x57;
+    buf[9] = 0x45;
+    buf[10] = 0x42;
+    buf[11] = 0x50; // WEBP
     var file = makeMockFile("bad.webp", "image/webp", buf);
     assert.ok(!(await matchesMagicBytes(file)));
   });
@@ -733,23 +866,38 @@ describe("shared_validation.js — matchesMagicBytes edge cases", function () {
 
   it("validates WAV via function validator", async function () {
     var buf = new Uint8Array(20);
-    buf[0] = 0x52; buf[1] = 0x49; buf[2] = 0x46; buf[3] = 0x46; // RIFF
-    buf[8] = 0x57; buf[9] = 0x41; buf[10] = 0x56; buf[11] = 0x45; // WAVE
+    buf[0] = 0x52;
+    buf[1] = 0x49;
+    buf[2] = 0x46;
+    buf[3] = 0x46; // RIFF
+    buf[8] = 0x57;
+    buf[9] = 0x41;
+    buf[10] = 0x56;
+    buf[11] = 0x45; // WAVE
     var file = makeMockFile("test.wav", "audio/wav", buf);
     assert.ok(await matchesMagicBytes(file));
   });
 
   it("validates MP4 via function validator", async function () {
     var buf = new Uint8Array(20);
-    buf[4] = 0x66; buf[5] = 0x74; buf[6] = 0x79; buf[7] = 0x70; // ftyp
+    buf[4] = 0x66;
+    buf[5] = 0x74;
+    buf[6] = 0x79;
+    buf[7] = 0x70; // ftyp
     var file = makeMockFile("test.mp4", "video/mp4", buf);
     assert.ok(await matchesMagicBytes(file));
   });
 
   it("validates AVI via function validator", async function () {
     var buf = new Uint8Array(20);
-    buf[0] = 0x52; buf[1] = 0x49; buf[2] = 0x46; buf[3] = 0x46; // RIFF
-    buf[8] = 0x41; buf[9] = 0x56; buf[10] = 0x49; buf[11] = 0x20; // AVI
+    buf[0] = 0x52;
+    buf[1] = 0x49;
+    buf[2] = 0x46;
+    buf[3] = 0x46; // RIFF
+    buf[8] = 0x41;
+    buf[9] = 0x56;
+    buf[10] = 0x49;
+    buf[11] = 0x20; // AVI
     var file = makeMockFile("test.avi", "video/avi", buf);
     assert.ok(await matchesMagicBytes(file));
   });
@@ -825,7 +973,9 @@ describe("shared_validation.js — checkDocumentThreats error handler", function
     FileReader.prototype.readAsArrayBuffer = function () {
       if (this.onerror) this.onerror(new Error("read error"));
     };
-    var data = new TextEncoder().encode("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF");
+    var data = new TextEncoder().encode(
+      "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF",
+    );
     var file = makeMockFile("doc.pdf", "application/pdf", data);
     assert.ok(await checkDocumentThreats(file));
     globalThis.FileReader = origFR;
@@ -833,19 +983,30 @@ describe("shared_validation.js — checkDocumentThreats error handler", function
 });
 
 describe("shared_validation.js — matchesAccept edge cases", function () {
-  before(function () { loadSharedValidation(); });
+  before(function () {
+    loadSharedValidation();
+  });
 
   it("matches extension regardless of MIME type", function () {
-    assert.ok(matchesAccept(makeMockFile("doc.pdf", "application/octet-stream"), ".pdf,.png"));
+    assert.ok(
+      matchesAccept(
+        makeMockFile("doc.pdf", "application/octet-stream"),
+        ".pdf,.png",
+      ),
+    );
   });
 
   it("matches wildcard MIME without matching", function () {
-    assert.ok(!matchesAccept(makeMockFile("doc.pdf", "application/pdf"), "audio/*"));
+    assert.ok(
+      !matchesAccept(makeMockFile("doc.pdf", "application/pdf"), "audio/*"),
+    );
   });
 });
 
 describe("shared_validation.js — clearInputFiles", function () {
-  before(function () { loadSharedValidation(); });
+  before(function () {
+    loadSharedValidation();
+  });
 
   it("clears file input value and DataTransfer", function () {
     var dt = { files: [] };
@@ -855,7 +1016,15 @@ describe("shared_validation.js — clearInputFiles", function () {
   });
 
   it("handles error when setting value throws", function () {
-    var input = { get value() { return "x"; }, set value(v) { throw new Error("no"); }, files: [] };
+    var input = {
+      get value() {
+        return "x";
+      },
+      set value(v) {
+        throw new Error("no");
+      },
+      files: [],
+    };
     clearInputFiles(input);
     // Should not throw
     assert.ok(true);

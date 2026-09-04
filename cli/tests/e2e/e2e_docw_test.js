@@ -38,7 +38,15 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -50,11 +58,21 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "document-watermark");
     await page.waitForTimeout(1000);
-    const hasCover = await page.evaluate(() => !!document.getElementById("docw-cover-file"));
-    const hasSecret = await page.evaluate(() => !!document.getElementById("docw-secret-file"));
-    const hasAlgo = await page.evaluate(() => !!document.getElementById("docw-algo"));
-    const hasPw = await page.evaluate(() => !!document.getElementById("docw-password"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("docw-embed-btn"));
+    const hasCover = await page.evaluate(
+      () => !!document.getElementById("docw-cover-file"),
+    );
+    const hasSecret = await page.evaluate(
+      () => !!document.getElementById("docw-secret-file"),
+    );
+    const hasAlgo = await page.evaluate(
+      () => !!document.getElementById("docw-algo"),
+    );
+    const hasPw = await page.evaluate(
+      () => !!document.getElementById("docw-password"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("docw-embed-btn"),
+    );
     assert.ok(hasCover, "Cover file input exists");
     assert.ok(hasSecret, "Secret file input exists");
     assert.ok(hasAlgo, "Algorithm selector exists");
@@ -79,14 +97,18 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(1500);
 
     // Upload secret TXT
-    await page.setInputFiles("#docw-secret-file", [{ name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF }]);
+    await page.setInputFiles("#docw-secret-file", [
+      { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     // Set password
     await page.fill("#docw-password", "test-docw-pw");
 
     // Click embed
-    await page.evaluate(() => document.getElementById("docw-embed-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("docw-embed-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("docw-embed-result");
@@ -129,10 +151,18 @@ describe("E2E — Document Watermark", () => {
     await page.evaluate(() => switchDocwTab("extract"));
     await page.waitForTimeout(300);
 
-    const hasFile = await page.evaluate(() => !!document.getElementById("docw-extract-file"));
-    const hasAlgo = await page.evaluate(() => !!document.getElementById("docw-algo-ex"));
-    const hasPw = await page.evaluate(() => !!document.getElementById("docw-password-ex"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("docw-extract-btn"));
+    const hasFile = await page.evaluate(
+      () => !!document.getElementById("docw-extract-file"),
+    );
+    const hasAlgo = await page.evaluate(
+      () => !!document.getElementById("docw-algo-ex"),
+    );
+    const hasPw = await page.evaluate(
+      () => !!document.getElementById("docw-password-ex"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("docw-extract-btn"),
+    );
     assert.ok(hasFile, "Extract file input exists");
     assert.ok(hasAlgo, "Extract algorithm selector exists");
     assert.ok(hasPw, "Extract password input exists");
@@ -155,7 +185,11 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(1500);
 
     await page.setInputFiles("#docw-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("HOM ROUNDTRIP") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("HOM ROUNDTRIP"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -169,7 +203,9 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(300);
     await page.fill("#docw-password", "hom-pw");
 
-    await page.evaluate(() => document.getElementById("docw-embed-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("docw-embed-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("docw-embed-result");
@@ -183,7 +219,10 @@ describe("E2E — Document Watermark", () => {
       const el = document.getElementById("docw-embed-output");
       return el ? el.value : "";
     });
-    assert.ok(outputVal.length > 50, "Homoglyph embed output should have certificate text");
+    assert.ok(
+      outputVal.length > 50,
+      "Homoglyph embed output should have certificate text",
+    );
 
     const wmInfo = await page.evaluate(async () => {
       const container = document.getElementById("docw-embed-download");
@@ -193,11 +232,21 @@ describe("E2E — Document Watermark", () => {
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
-      return { buf: Array.from(new Uint8Array(await blob.arrayBuffer())), type: blob.type || "text/plain" };
+      return {
+        buf: Array.from(new Uint8Array(await blob.arrayBuffer())),
+        type: blob.type || "text/plain",
+      };
     });
-    assert.ok(wmInfo, "Homoglyph watermarked document blob should be available");
+    assert.ok(
+      wmInfo,
+      "Homoglyph watermarked document blob should be available",
+    );
     const wmBuf = Buffer.from(wmInfo.buf);
-    const ext = wmInfo.type.includes("pdf") ? "pdf" : wmInfo.type.includes("docx") ? "docx" : "txt";
+    const ext = wmInfo.type.includes("pdf")
+      ? "pdf"
+      : wmInfo.type.includes("docx")
+      ? "docx"
+      : "txt";
 
     await page.evaluate(() => switchDocwTab("extract"));
     await page.waitForTimeout(300);
@@ -217,7 +266,9 @@ describe("E2E — Document Watermark", () => {
     ]);
     await page.waitForTimeout(1500);
 
-    await page.evaluate(() => document.getElementById("docw-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("docw-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("docw-extract-result");
@@ -233,7 +284,8 @@ describe("E2E — Document Watermark", () => {
     });
     assert.ok(
       extractedMsg.includes("HOM ROUNDTRIP"),
-      "Homoglyph extract should recover secret. Got: " + extractedMsg.substring(0, 200),
+      "Homoglyph extract should recover secret. Got: " +
+        extractedMsg.substring(0, 200),
     );
     await ctx.close();
   });
@@ -253,7 +305,11 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(1500);
 
     await page.setInputFiles("#docw-secret-file", [
-      { name: "secret.txt", mimeType: "text/plain", buffer: Buffer.from("WS ROUNDTRIP") },
+      {
+        name: "secret.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("WS ROUNDTRIP"),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -267,7 +323,9 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(300);
     await page.fill("#docw-password", "ws-pw");
 
-    await page.evaluate(() => document.getElementById("docw-embed-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("docw-embed-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("docw-embed-result");
@@ -285,11 +343,21 @@ describe("E2E — Document Watermark", () => {
       if (!url) return null;
       const resp = await fetch(url);
       const blob = await resp.blob();
-      return { buf: Array.from(new Uint8Array(await blob.arrayBuffer())), type: blob.type || "text/plain" };
+      return {
+        buf: Array.from(new Uint8Array(await blob.arrayBuffer())),
+        type: blob.type || "text/plain",
+      };
     });
-    assert.ok(wmInfo, "Whitespace watermarked document blob should be available");
+    assert.ok(
+      wmInfo,
+      "Whitespace watermarked document blob should be available",
+    );
     const wmBuf = Buffer.from(wmInfo.buf);
-    const ext = wmInfo.type.includes("pdf") ? "pdf" : wmInfo.type.includes("docx") ? "docx" : "txt";
+    const ext = wmInfo.type.includes("pdf")
+      ? "pdf"
+      : wmInfo.type.includes("docx")
+      ? "docx"
+      : "txt";
 
     await page.evaluate(() => switchDocwTab("extract"));
     await page.waitForTimeout(300);
@@ -309,7 +377,9 @@ describe("E2E — Document Watermark", () => {
     ]);
     await page.waitForTimeout(1500);
 
-    await page.evaluate(() => document.getElementById("docw-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("docw-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("docw-extract-result");
@@ -325,7 +395,8 @@ describe("E2E — Document Watermark", () => {
     });
     assert.ok(
       extractedMsg.includes("WS ROUNDTRIP"),
-      "Whitespace extract should recover secret. Got: " + extractedMsg.substring(0, 200),
+      "Whitespace extract should recover secret. Got: " +
+        extractedMsg.substring(0, 200),
     );
     await ctx.close();
   });
@@ -346,14 +417,18 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(1500);
 
     // Upload secret TXT
-    await page.setInputFiles("#docw-secret-file", [{ name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF }]);
+    await page.setInputFiles("#docw-secret-file", [
+      { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     // Set password
     await page.fill("#docw-password", "roundtrip-pw");
 
     // Click embed
-    await page.evaluate(() => document.getElementById("docw-embed-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("docw-embed-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("docw-embed-result");
@@ -368,7 +443,10 @@ describe("E2E — Document Watermark", () => {
       const el = document.getElementById("docw-embed-output");
       return el ? el.value : "";
     });
-    assert.ok(outputVal.length > 50, "Embed output should have certificate text");
+    assert.ok(
+      outputVal.length > 50,
+      "Embed output should have certificate text",
+    );
 
     // Get watermarked blob from download link
     const wmInfo = await page.evaluate(async () => {
@@ -386,7 +464,11 @@ describe("E2E — Document Watermark", () => {
     });
     assert.ok(wmInfo, "Watermarked document blob should be available");
     const wmBuf = Buffer.from(wmInfo.buf);
-    const ext = wmInfo.type.includes("pdf") ? "pdf" : wmInfo.type.includes("docx") ? "docx" : "txt";
+    const ext = wmInfo.type.includes("pdf")
+      ? "pdf"
+      : wmInfo.type.includes("docx")
+      ? "docx"
+      : "txt";
 
     // Switch to extract tab
     await page.evaluate(() => switchDocwTab("extract"));
@@ -410,7 +492,9 @@ describe("E2E — Document Watermark", () => {
     await page.waitForTimeout(1500);
 
     // Click extract
-    await page.evaluate(() => document.getElementById("docw-extract-btn").click());
+    await page.evaluate(() =>
+      document.getElementById("docw-extract-btn").click(),
+    );
     await page.waitForFunction(
       () => {
         const r = document.getElementById("docw-extract-result");

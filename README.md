@@ -71,27 +71,27 @@
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Dual Mode UI** | Simplified step wizard + Professional full-tool interface with sidebar navigation; SPA and MPA modes |
-| **Watermark** | 9 core algorithms (LSB, DCT, Neural SS, Latent DCT, Zero-bit, Multi-bit, Forensic, Fragile, Imatag) + 4 perceptual hash detection modes |
-| **Audio Watermark** | 8 algorithms (LSB, Phase Coding, Echo Hiding, DSSS, QIM, DWT Haar, Patchwork, DCT) for WAV with Auto Detect |
-| **Document Watermark** | Embed/extract hidden messages in TXT/DOCX/PDF — whitespace, zero-width chars, synonyms, line-shift, word-shift |
-| **Pixel Injection** | 23 advanced algorithms across spatial, frequency, deep learning, and professional domains |
-| **C2PA Provenance** | Sign JPEG/PNG with C2PA metadata (ECDSA P-256), read and verify manifests |
-| **Fingerprint** | 17 cryptographic hashes + 4 perceptual image hashes; export JSON/CSV/TXT/XML/PDF/DOCX |
-| **Decentralized Identity (DID)** | W3C DID Core — `did:key:z…`, Ed25519/P-256/RSA, DID Documents, signing & verification |
-| **Metadata** | Full EXIF reader, image dimensions, format detection, audio/video metadata |
-| **Timestamp** | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade |
-| **Digital Certificate** | Generate PDF/DOCX/EPUB certificates with QR verification, identity, social links |
-| **File Converter** | Browser-side image/audio/video-to-audio/document/subtitle conversion |
-| **Face Biometric** | WebAuthn PRF vault, session-scoped consent, anti-spoof + liveness, ArcFace ONNX; register & verify face descriptors for visual rights protection |
-| **Forensic Analyzer** | ELA, noise inconsistency, JPEG structure, copy-move detection |
-| **ID Forge** | Generate UUID v4/v7, ULID, NanoID, SWHID; copy/download (JSON/CSV/TXT/XML/PDF/DOCX) |
-| **Removal Tools** | Strip watermarks, fingerprints, metadata, EXIF, thumbnails, GPS from images/audio |
-| **AI Assistant Raido** | Built-in bilingual (AR/EN) rule-based chatbot, no API needed |
-| **CLI** | Cross-platform Node.js CLI: 12 commands + interactive menu |
-| **Security Threat Blocker** | Service Worker + 404 page blocks dangerous extensions, validates whitelisted scripts |
+| Feature                          | Description                                                                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Dual Mode UI**                 | Simplified step wizard + Professional full-tool interface with sidebar navigation; SPA and MPA modes                                             |
+| **Watermark**                    | 9 core algorithms (LSB, DCT, Neural SS, Latent DCT, Zero-bit, Multi-bit, Forensic, Fragile, Imatag) + 4 perceptual hash detection modes          |
+| **Audio Watermark**              | 8 algorithms (LSB, Phase Coding, Echo Hiding, DSSS, QIM, DWT Haar, Patchwork, DCT) for WAV with Auto Detect                                      |
+| **Document Watermark**           | Embed/extract hidden messages in TXT/DOCX/PDF — whitespace, zero-width chars, synonyms, line-shift, word-shift                                   |
+| **Pixel Injection**              | 23 advanced algorithms across spatial, frequency, deep learning, and professional domains                                                        |
+| **C2PA Provenance**              | Sign JPEG/PNG with C2PA metadata (ECDSA P-256), read and verify manifests                                                                        |
+| **Fingerprint**                  | 17 cryptographic hashes + 4 perceptual image hashes; export JSON/CSV/TXT/XML/PDF/DOCX                                                            |
+| **Decentralized Identity (DID)** | W3C DID Core — `did:key:z…`, Ed25519/P-256/RSA, DID Documents, signing & verification                                                            |
+| **Metadata**                     | Full EXIF reader, image dimensions, format detection, audio/video metadata                                                                       |
+| **Timestamp**                    | OpenTimestamps (.ots) creation via calendar aggregation, verification, and upgrade                                                               |
+| **Digital Certificate**          | Generate PDF/DOCX/EPUB certificates with QR verification, identity, social links                                                                 |
+| **File Converter**               | Browser-side image/audio/video-to-audio/document/subtitle conversion                                                                             |
+| **Face Biometric**               | WebAuthn PRF vault, session-scoped consent, anti-spoof + liveness, ArcFace ONNX; register & verify face descriptors for visual rights protection |
+| **Forensic Analyzer**            | ELA, noise inconsistency, JPEG structure, copy-move detection                                                                                    |
+| **ID Forge**                     | Generate UUID v4/v7, ULID, NanoID, SWHID; copy/download (JSON/CSV/TXT/XML/PDF/DOCX)                                                              |
+| **Removal Tools**                | Strip watermarks, fingerprints, metadata, EXIF, thumbnails, GPS from images/audio                                                                |
+| **AI Assistant Raido**           | Built-in bilingual (AR/EN) rule-based chatbot, no API needed                                                                                     |
+| **CLI**                          | Cross-platform Node.js CLI: 12 commands + interactive menu                                                                                       |
+| **Security Threat Blocker**      | Service Worker + 404 page blocks dangerous extensions, validates whitelisted scripts                                                             |
 
 ---
 
@@ -109,9 +109,9 @@ Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.gith
 
 #### Interactive Menu
 
-| Platform | Command |
-|----------|---------|
-| Windows | Double-click **`cli_start.bat`** |
+| Platform      | Command                                   |
+| ------------- | ----------------------------------------- |
+| Windows       | Double-click **`cli_start.bat`**          |
 | Linux / macOS | `chmod +x cli_start.sh && ./cli_start.sh` |
 
 #### Command Line
@@ -129,36 +129,36 @@ npm link    # makes 'redosan' available globally
 
 ### Commands
 
-| Command | Description |
-|---------|-------------|
-| `redosan watermark embed -i <img> -s <secret> -o <out>` | Embed watermark (9 core algorithms) |
-| `redosan watermark extract -i <img>` | Extract watermark (single or auto-detect) |
-| `redosan audio-watermark embed -i <wav> -s <secret> -o <out>` | Embed audio watermark (8 algorithms) |
-| `redosan audio-watermark extract -i <wav>` | Extract audio watermark |
-| `redosan pixel-injection embed -i <img> -s <msg> -o <out>` | Embed with 23 advanced algorithms |
-| `redosan pixel-injection extract -i <img>` | Extract from advanced algorithms |
-| `redosan fingerprint <file>` | 17 cryptographic hashes + 4 perceptual image hashes |
-| `redosan metadata <file>` | Read EXIF, dimensions, format info |
-| `redosan timestamp create <file>` | Create OpenTimestamps `.ots` proof |
-| `redosan timestamp verify <file>` | Verify file against `.ots` proof |
-| `redosan timestamp upgrade <file>` | Upgrade incomplete `.ots` proof |
-| `redosan c2pa sign <file>` | Sign with C2PA provenance metadata |
-| `redosan c2pa read <file>` | Read C2PA manifest from JPEG/PNG |
-| `redosan c2pa verify <file>` | Verify C2PA digital signatures |
-| `redosan did generate` | Generate DID key pair (Ed25519/P-256/RSA) |
-| `redosan did sign <file>` | Sign file with DID private key |
-| `redosan did verify <file>` | Verify DID signature |
-| `redosan certificate generate` | Generate PDF/DOCX/EPUB certificate |
-| `redosan forensic <file>` | Analyze image for tampering |
-| `redosan converter <file>` | Convert files between formats |
-| `redosan document-watermark embed -i <doc> -s <msg> -o <out>` | Embed document watermark |
-| `redosan document-watermark extract -i <doc>` | Extract document watermark |
-| `node cli/lib/id_forge.js <type>` | Generate UUID v4/v7, ULID, NanoID, SWHID |
+| Command                                                       | Description                                         |
+| ------------------------------------------------------------- | --------------------------------------------------- |
+| `redosan watermark embed -i <img> -s <secret> -o <out>`       | Embed watermark (9 core algorithms)                 |
+| `redosan watermark extract -i <img>`                          | Extract watermark (single or auto-detect)           |
+| `redosan audio-watermark embed -i <wav> -s <secret> -o <out>` | Embed audio watermark (8 algorithms)                |
+| `redosan audio-watermark extract -i <wav>`                    | Extract audio watermark                             |
+| `redosan pixel-injection embed -i <img> -s <msg> -o <out>`    | Embed with 23 advanced algorithms                   |
+| `redosan pixel-injection extract -i <img>`                    | Extract from advanced algorithms                    |
+| `redosan fingerprint <file>`                                  | 17 cryptographic hashes + 4 perceptual image hashes |
+| `redosan metadata <file>`                                     | Read EXIF, dimensions, format info                  |
+| `redosan timestamp create <file>`                             | Create OpenTimestamps `.ots` proof                  |
+| `redosan timestamp verify <file>`                             | Verify file against `.ots` proof                    |
+| `redosan timestamp upgrade <file>`                            | Upgrade incomplete `.ots` proof                     |
+| `redosan c2pa sign <file>`                                    | Sign with C2PA provenance metadata                  |
+| `redosan c2pa read <file>`                                    | Read C2PA manifest from JPEG/PNG                    |
+| `redosan c2pa verify <file>`                                  | Verify C2PA digital signatures                      |
+| `redosan did generate`                                        | Generate DID key pair (Ed25519/P-256/RSA)           |
+| `redosan did sign <file>`                                     | Sign file with DID private key                      |
+| `redosan did verify <file>`                                   | Verify DID signature                                |
+| `redosan certificate generate`                                | Generate PDF/DOCX/EPUB certificate                  |
+| `redosan forensic <file>`                                     | Analyze image for tampering                         |
+| `redosan converter <file>`                                    | Convert files between formats                       |
+| `redosan document-watermark embed -i <doc> -s <msg> -o <out>` | Embed document watermark                            |
+| `redosan document-watermark extract -i <doc>`                 | Extract document watermark                          |
+| `node cli/lib/id_forge.js <type>`                             | Generate UUID v4/v7, ULID, NanoID, SWHID            |
 
 ### Global Flags
 
-| Flag | Description |
-|------|-------------|
+| Flag                | Description                                             |
+| ------------------- | ------------------------------------------------------- |
 | `--allow-dangerous` | Bypass all 6-layer file validation (trusted files only) |
 
 ### Examples
@@ -212,17 +212,17 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 
 ### 9 Core Watermark Algorithms
 
-| # | Name | Domain | Technique | Robustness |
-|---|------|--------|-----------|------------|
-| 1 | Spatial LSB | Pixel LSB | 3 bits/pixel in R,G,B | Low |
-| 2 | Frequency DCT | DCT 8×8 | Coefficient pair comparison (c[5,2] vs c[4,3]), K=15, ×3 redundancy | Medium |
-| 3 | Neural SS | Pixel LSB | Seeded-shuffle order embedding | Low |
-| 4 | Latent DCT | DCT 8×8 | 3× redundant DCT embedding, strength=30 | High |
-| 5 | Zero-bit | DCT 8×8 | Fixed signature "RedoSanZeroBit" (presence only) | Medium |
-| 6 | Multi-bit | Pixel 2-bit LSB | 2 bits/channel, 6 bits/pixel | Low |
-| 7 | Forensic | DCT 8×8 | DCT mid-frequency, strength=20 | Medium |
-| 8 | Fragile | Pixel LSB | SHA-256 hash (512 bits), tamper-evident | Very Low |
-| 9 | Imatag-style | DCT 8×8 | Dual-channel Y (K=15) + Cb (K=10) | High |
+| #   | Name          | Domain          | Technique                                                           | Robustness |
+| --- | ------------- | --------------- | ------------------------------------------------------------------- | ---------- |
+| 1   | Spatial LSB   | Pixel LSB       | 3 bits/pixel in R,G,B                                               | Low        |
+| 2   | Frequency DCT | DCT 8×8         | Coefficient pair comparison (c[5,2] vs c[4,3]), K=15, ×3 redundancy | Medium     |
+| 3   | Neural SS     | Pixel LSB       | Seeded-shuffle order embedding                                      | Low        |
+| 4   | Latent DCT    | DCT 8×8         | 3× redundant DCT embedding, strength=30                             | High       |
+| 5   | Zero-bit      | DCT 8×8         | Fixed signature "RedoSanZeroBit" (presence only)                    | Medium     |
+| 6   | Multi-bit     | Pixel 2-bit LSB | 2 bits/channel, 6 bits/pixel                                        | Low        |
+| 7   | Forensic      | DCT 8×8         | DCT mid-frequency, strength=20                                      | Medium     |
+| 8   | Fragile       | Pixel LSB       | SHA-256 hash (512 bits), tamper-evident                             | Very Low   |
+| 9   | Imatag-style  | DCT 8×8         | Dual-channel Y (K=15) + Cb (K=10)                                   | High       |
 
 **Payload format:** `[32-bit length][XOR-encrypted [0xAA, 0xBB || secret]]`  
 **Encryption:** PBKDF2-derived key via `pw_key(password)` with 100k iterations  
@@ -230,49 +230,49 @@ redosan fingerprint "C:\Users\You\photo.png" --json -o hashes.json
 
 ### 8 Audio Watermark Algorithms
 
-| # | Name | Domain | Technique |
-|---|------|--------|-----------|
-| 1 | LSB | Sample LSB | 16-bit sample LSB embedding |
-| 2 | Phase Coding | Phase | Quantize phase of first N frames |
-| 3 | Echo Hiding | Time | Echo delay modulation (1ms/2ms) |
-| 4 | DSSS | Spread Spectrum | Direct-sequence spread spectrum |
-| 5 | QIM | Quantization | Quantization index modulation |
-| 6 | DWT Haar | Wavelet | 1-level Haar DWT coefficient modification |
-| 7 | Patchwork | Statistical | Mean-shift of two subsets |
-| 8 | DCT | Frequency | DCT coefficient pair comparison |
+| #   | Name         | Domain          | Technique                                 |
+| --- | ------------ | --------------- | ----------------------------------------- |
+| 1   | LSB          | Sample LSB      | 16-bit sample LSB embedding               |
+| 2   | Phase Coding | Phase           | Quantize phase of first N frames          |
+| 3   | Echo Hiding  | Time            | Echo delay modulation (1ms/2ms)           |
+| 4   | DSSS         | Spread Spectrum | Direct-sequence spread spectrum           |
+| 5   | QIM          | Quantization    | Quantization index modulation             |
+| 6   | DWT Haar     | Wavelet         | 1-level Haar DWT coefficient modification |
+| 7   | Patchwork    | Statistical     | Mean-shift of two subsets                 |
+| 8   | DCT          | Frequency       | DCT coefficient pair comparison           |
 
 ### 5 Document Watermark Algorithms
 
-| # | Name | Technique | Capacity |
-|---|------|-----------|----------|
-| 1 | Whitespace | Space/tab encoding at line endings | ~1 bit/line |
-| 2 | Zero-Width | Zero-width joiners/non-joiners between chars | ~2 bits/char |
-| 3 | Synonym | Synonym substitution (WordNet-based) | ~1 bit/sentence |
-| 4 | Line-Shift | Vertical line position modulation | ~1 bit/line |
-| 5 | Word-Shift | Horizontal word spacing modulation | ~1 bit/word |
+| #   | Name       | Technique                                    | Capacity        |
+| --- | ---------- | -------------------------------------------- | --------------- |
+| 1   | Whitespace | Space/tab encoding at line endings           | ~1 bit/line     |
+| 2   | Zero-Width | Zero-width joiners/non-joiners between chars | ~2 bits/char    |
+| 3   | Synonym    | Synonym substitution (WordNet-based)         | ~1 bit/sentence |
+| 4   | Line-Shift | Vertical line position modulation            | ~1 bit/line     |
+| 5   | Word-Shift | Horizontal word spacing modulation           | ~1 bit/word     |
 
 ### 23 Advanced Pixel Injection Algorithms
 
-| Algorithm | Domain | Key Technique |
-|-----------|--------|---------------|
-| `enhanced_lsb` | Spatial | Adaptive complexity map, bit-positions 1-2 |
-| `adaptive_lsb` | Spatial | Region-adaptive strategy (complexity/edge/texture) |
-| `multi_channel_lsb` | Spatial | Channel-alternating LSB |
-| `random_lsb` | Spatial | Seeded PRNG positioning |
-| `dct` | Frequency | DCT 8×8 coefficient pair comparison (gap ≥20) |
-| `dwt` | Frequency | 1-level Haar DWT, step-2 embedding |
-| `dft` | Frequency | DFT 8×8 pair comparison (conjugate-symmetry) |
-| `hybrid_dct_dwt` | Hybrid | DCT + DWT sequential embedding |
-| `vine` | Deep Learning | Adversarial simulation for AI-editing resistance |
-| `pixel_seal` | Deep Learning | JND-based perceptual masking |
-| `nullguard` | Deep Learning | Null-space region detection |
-| `shallow_diffuse` | Deep Learning | Fast diffusion-based modulation |
-| `diffusion_based` | Deep Learning | Diffusion process simulation |
-| `imagewmark` | Professional | Configurable profile-based watermarking |
-| `meta_seal` | Professional | Multi-media protection profile |
-| `stardustmark` | Professional | Forensic-grade watermarking |
-| `invisimark` | Professional | AI-generated image protection |
-| `elevenlikes` | Professional | Industrial-grade solution |
+| Algorithm           | Domain        | Key Technique                                      |
+| ------------------- | ------------- | -------------------------------------------------- |
+| `enhanced_lsb`      | Spatial       | Adaptive complexity map, bit-positions 1-2         |
+| `adaptive_lsb`      | Spatial       | Region-adaptive strategy (complexity/edge/texture) |
+| `multi_channel_lsb` | Spatial       | Channel-alternating LSB                            |
+| `random_lsb`        | Spatial       | Seeded PRNG positioning                            |
+| `dct`               | Frequency     | DCT 8×8 coefficient pair comparison (gap ≥20)      |
+| `dwt`               | Frequency     | 1-level Haar DWT, step-2 embedding                 |
+| `dft`               | Frequency     | DFT 8×8 pair comparison (conjugate-symmetry)       |
+| `hybrid_dct_dwt`    | Hybrid        | DCT + DWT sequential embedding                     |
+| `vine`              | Deep Learning | Adversarial simulation for AI-editing resistance   |
+| `pixel_seal`        | Deep Learning | JND-based perceptual masking                       |
+| `nullguard`         | Deep Learning | Null-space region detection                        |
+| `shallow_diffuse`   | Deep Learning | Fast diffusion-based modulation                    |
+| `diffusion_based`   | Deep Learning | Diffusion process simulation                       |
+| `imagewmark`        | Professional  | Configurable profile-based watermarking            |
+| `meta_seal`         | Professional  | Multi-media protection profile                     |
+| `stardustmark`      | Professional  | Forensic-grade watermarking                        |
+| `invisimark`        | Professional  | AI-generated image protection                      |
+| `elevenlikes`       | Professional  | Industrial-grade solution                          |
 
 ---
 
@@ -435,14 +435,14 @@ CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chrom
 
 The project includes 59 GitHub Actions workflows:
 
-| Category | Workflows |
-|----------|-----------|
-| **Core** | CI (unit + E2E + coverage), ESLint, Biome, Stylelint, deploy-pages |
-| **Security** | Semgrep SAST, CodeQL, TruffleHog, npm audit, ClamAV, OpenSSF Scorecard, dependency-review, supply chain audit, secret scanner, permissions sheriff |
-| **Quality** | Pa11y + axe-core accessibility, Lighthouse CI, DOM review, dead CSS, file size budget, E2E coverage guard |
-| **Maintenance** | Broken link checker, translation auto-PR, stale issue manager, TODO issue creator, spell check |
-| **PR Management** | Conventional Commits lint, auto-assign, PR size label, branch name lint, cross-reference checker |
-| **AI Review** | Gemini CLI code review |
+| Category          | Workflows                                                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Core**          | CI (unit + E2E + coverage), ESLint, Biome, Stylelint, deploy-pages                                                                                 |
+| **Security**      | Semgrep SAST, CodeQL, TruffleHog, npm audit, ClamAV, OpenSSF Scorecard, dependency-review, supply chain audit, secret scanner, permissions sheriff |
+| **Quality**       | Pa11y + axe-core accessibility, Lighthouse CI, DOM review, dead CSS, file size budget, E2E coverage guard                                          |
+| **Maintenance**   | Broken link checker, translation auto-PR, stale issue manager, TODO issue creator, spell check                                                     |
+| **PR Management** | Conventional Commits lint, auto-assign, PR size label, branch name lint, cross-reference checker                                                   |
+| **AI Review**     | Gemini CLI code review                                                                                                                             |
 
 ---
 
@@ -466,26 +466,26 @@ The web app includes a two-layer security system:
 
 ## Technology Stack
 
-| Component | Technology |
-|-----------|-----------|
-| **UI** | Vanilla HTML/CSS/JS (no frameworks) |
-| **Icons** | Font Awesome 5 |
-| **CLI** | Node.js 20+, Commander.js |
-| **Testing** | `node:test` (68 files, 3,500+ tests) + Playwright (58 E2E suites) |
-| **CI** | GitHub Actions (59 workflows, Node 22/24 matrix) |
-| **PDF Export** | jsPDF + PDFKit |
-| **DOCX Export** | docx |
-| **EPUB Export** | Custom HTML-based generator |
-| **QR Codes** | QRious |
-| **ZIP** | JSZip |
-| **C2PA** | Custom ECDSA P-256 implementation |
-| **Canvas (CLI)** | `canvas` node package |
-| **Audio Encoding** | Pure-JS PCM, lamejs (MP3), MediaRecorder |
-| **Video→Audio** | ffmpeg.wasm v0.11.6 |
-| **Linting** | ESLint + Biome + Stylelint + Markdownlint + CSpell |
-| **Security** | Semgrep, TruffleHog, CodeQL, npm audit |
-| **Accessibility** | Pa11y, axe-core/Playwright |
-| **Performance** | Lighthouse CI, size-limit |
+| Component          | Technology                                                        |
+| ------------------ | ----------------------------------------------------------------- |
+| **UI**             | Vanilla HTML/CSS/JS (no frameworks)                               |
+| **Icons**          | Font Awesome 5                                                    |
+| **CLI**            | Node.js 20+, Commander.js                                         |
+| **Testing**        | `node:test` (68 files, 3,500+ tests) + Playwright (58 E2E suites) |
+| **CI**             | GitHub Actions (59 workflows, Node 22/24 matrix)                  |
+| **PDF Export**     | jsPDF + PDFKit                                                    |
+| **DOCX Export**    | docx                                                              |
+| **EPUB Export**    | Custom HTML-based generator                                       |
+| **QR Codes**       | QRious                                                            |
+| **ZIP**            | JSZip                                                             |
+| **C2PA**           | Custom ECDSA P-256 implementation                                 |
+| **Canvas (CLI)**   | `canvas` node package                                             |
+| **Audio Encoding** | Pure-JS PCM, lamejs (MP3), MediaRecorder                          |
+| **Video→Audio**    | ffmpeg.wasm v0.11.6                                               |
+| **Linting**        | ESLint + Biome + Stylelint + Markdownlint + CSpell                |
+| **Security**       | Semgrep, TruffleHog, CodeQL, npm audit                            |
+| **Accessibility**  | Pa11y, axe-core/Playwright                                        |
+| **Performance**    | Lighthouse CI, size-limit                                         |
 
 ---
 

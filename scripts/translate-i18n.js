@@ -273,7 +273,9 @@ async function translateViaLibreTranslate(texts, targetLang) {
           });
       }
     }
-    console.warn("  LibreTranslate " + instance.url + " failed: " + lastError.message);
+    console.warn(
+      "  LibreTranslate " + instance.url + " failed: " + lastError.message,
+    );
   }
   throw new Error("All LibreTranslate instances failed");
 }
@@ -394,16 +396,17 @@ async function translateViaMyMemory(texts, targetLang) {
         var data = await resp.json();
         if (data.responseStatus !== 200)
           throw new Error(
-            "responseStatus " + data.responseStatus + ": " + (data.responseDetails || ""),
+            "responseStatus " +
+              data.responseStatus +
+              ": " +
+              (data.responseDetails || ""),
           );
         translated[key] = data.responseData
           ? data.responseData.translatedText
           : text;
       } catch (error) {
         failures++;
-        console.warn(
-          "  MyMemory failed for key " + key + ": " + error.message,
-        );
+        console.warn("  MyMemory failed for key " + key + ": " + error.message);
       }
     }
   }
@@ -411,8 +414,7 @@ async function translateViaMyMemory(texts, targetLang) {
   var workers = [];
   for (var i = 0; i < Math.min(2, keys.length); i++) workers.push(worker());
   await Promise.all(workers);
-  if (failures === keys.length)
-    throw new Error("All MyMemory requests failed");
+  if (failures === keys.length) throw new Error("All MyMemory requests failed");
   return translated;
 }
 

@@ -43,7 +43,7 @@ class V8Coverage {
     for (const jf of jsonFiles) {
       try {
         const data = JSON.parse(fs.readFileSync(path.join(v8Dir, jf), "utf8"));
-        const scripts = Array.isArray(data) ? data : (data.result || []);
+        const scripts = Array.isArray(data) ? data : data.result || [];
         allScripts.push(...scripts);
       } catch (e) {
         console.warn(`Warning: failed to parse ${jf}: ${e.message}`);
@@ -57,7 +57,12 @@ class V8Coverage {
     for (const script of allScripts) {
       const url = script.url || "";
       if (!includeDirs.some((d) => url.includes(d))) continue;
-      if (url.includes("node_modules") || url.includes("test-") || url.includes("v8_coverage")) continue;
+      if (
+        url.includes("node_modules") ||
+        url.includes("test-") ||
+        url.includes("v8_coverage")
+      )
+        continue;
 
       if (!scriptsByURL.has(url)) {
         scriptsByURL.set(url, { url, functions: [] });
@@ -67,7 +72,8 @@ class V8Coverage {
       for (const fn of script.functions || []) {
         // Find existing function entry with same name and start offset
         let existing = target.functions.find(
-          (e) => e.functionName === fn.functionName &&
+          (e) =>
+            e.functionName === fn.functionName &&
             e.ranges?.[0]?.startOffset === fn.ranges?.[0]?.startOffset,
         );
         if (!existing) {
@@ -81,10 +87,13 @@ class V8Coverage {
           // Merge: if this process covered a range that was previously uncovered, mark it covered
           for (const r of fn.ranges || []) {
             const existingRange = existing.ranges.find(
-              (er) => er.startOffset === r.startOffset && er.endOffset === r.endOffset,
+              (er) =>
+                er.startOffset === r.startOffset &&
+                er.endOffset === r.endOffset,
             );
             if (existingRange) {
-              if (r.count > 0) existingRange.count = Math.max(existingRange.count, r.count);
+              if (r.count > 0)
+                existingRange.count = Math.max(existingRange.count, r.count);
             } else {
               existing.ranges.push({ ...r });
             }
@@ -112,7 +121,12 @@ class V8Coverage {
       // Filter to only our include directories
       if (!includeDirs.some((d) => url.includes(d))) continue;
       // Skip node_modules, test files, coverage helper itself
-      if (url.includes("node_modules") || url.includes("test-") || url.includes("v8_coverage")) continue;
+      if (
+        url.includes("node_modules") ||
+        url.includes("test-") ||
+        url.includes("v8_coverage")
+      )
+        continue;
 
       const filename = url;
       if (!fileMap.has(filename)) {
@@ -121,15 +135,23 @@ class V8Coverage {
         try {
           // V8 coverage uses file:/// URLs — convert to filesystem path
           const fsPath = filename.startsWith("file:///")
-            ? decodeURIComponent(filename.replace(/^file:\/{3}/, "").replace(/\//g, path.sep === "\\" ? "\\" : "/"))
+            ? decodeURIComponent(
+                filename
+                  .replace(/^file:\/{3}/, "")
+                  .replace(/\//g, path.sep === "\\" ? "\\" : "/"),
+              )
             : filename;
           const src = fs.readFileSync(fsPath, "utf8");
           excludedRanges = V8Coverage._parseC8IgnoreRanges(src);
-        } catch { /* file may not be readable */ }
+        } catch {
+          /* file may not be readable */
+        }
 
         fileMap.set(filename, {
           filename,
-          shortName: filename.replace(/.*Iris_Biometric\//, "").replace(/\\/g, "/"),
+          shortName: filename
+            .replace(/.*Iris_Biometric\//, "")
+            .replace(/\\/g, "/"),
           statements: { total: 0, covered: 0, uncovered: [] },
           branches: { total: 0, covered: 0, uncovered: [] },
           functions: { total: 0, covered: 0, uncovered: [] },
@@ -151,7 +173,13 @@ class V8Coverage {
           const count = range.count !== undefined ? range.count : 0;
 
           // Skip ranges that fall within c8 ignore markers
-          if (V8Coverage._isInExcludedRange(startOffset, endOffset, fc._excludedRanges)) {
+          if (
+            V8Coverage._isInExcludedRange(
+              startOffset,
+              endOffset,
+              fc._excludedRanges,
+            )
+          ) {
             continue;
           }
 
@@ -166,8 +194,11 @@ class V8Coverage {
 
           // Branch coverage: if another range starts at the same offset,
           // it represents an alternate branch (if/else, ternary, &&, ||)
-          const isBranch = ranges.some((other, j) =>
-            j !== i && other.startOffset === startOffset && other.endOffset !== range.endOffset
+          const isBranch = ranges.some(
+            (other, j) =>
+              j !== i &&
+              other.startOffset === startOffset &&
+              other.endOffset !== range.endOffset,
           );
           if (isBranch) {
             fc.branches.total++;
@@ -182,7 +213,9 @@ class V8Coverage {
         // Check if the function body overlaps any excluded range
         const fnStart = fn.ranges?.[0]?.startOffset || 0;
         const fnEnd = fn.ranges?.[0]?.endOffset || 0;
-        if (!V8Coverage._isInExcludedRange(fnStart, fnEnd, fc._excludedRanges)) {
+        if (
+          !V8Coverage._isInExcludedRange(fnStart, fnEnd, fc._excludedRanges)
+        ) {
           if (fnCovered) {
             fc.functions.covered++;
           } else {
@@ -273,28 +306,49 @@ class V8Coverage {
     lines.push(header);
     lines.push(SEP);
 
-    const sorted = [...files.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    const sorted = [...files.entries()].sort((a, b) =>
+      a[0].localeCompare(b[0]),
+    );
 
     for (const [, fc] of sorted) {
-      const stmtPct = V8Coverage._pct(fc.statements.covered, fc.statements.total);
+      const stmtPct = V8Coverage._pct(
+        fc.statements.covered,
+        fc.statements.total,
+      );
       const branchPct = V8Coverage._pct(fc.branches.covered, fc.branches.total);
       const funcPct = V8Coverage._pct(fc.functions.covered, fc.functions.total);
 
-      const unc = fc.statements.uncovered.length > 0
-        ? `  ← uncovered: ${fc.statements.uncovered.slice(0, 5).join(",")}${fc.statements.uncovered.length > 5 ? "..." : ""}`
-        : "";
+      const unc =
+        fc.statements.uncovered.length > 0
+          ? `  ← uncovered: ${fc.statements.uncovered.slice(0, 5).join(",")}${
+              fc.statements.uncovered.length > 5 ? "..." : ""
+            }`
+          : "";
 
       lines.push(
-        `${fc.shortName.padEnd(40)} | ${stmtPct.padStart(9)} | ${branchPct.padStart(9)} | ${funcPct.padStart(9)}${unc}`
+        `${fc.shortName.padEnd(40)} | ${stmtPct.padStart(
+          9,
+        )} | ${branchPct.padStart(9)} | ${funcPct.padStart(9)}${unc}`,
       );
     }
 
     lines.push(SEP);
-    const sStmt = V8Coverage._pct(summary.statements.covered, summary.statements.total);
-    const sBr = V8Coverage._pct(summary.branches.covered, summary.branches.total);
-    const sFn = V8Coverage._pct(summary.functions.covered, summary.functions.total);
+    const sStmt = V8Coverage._pct(
+      summary.statements.covered,
+      summary.statements.total,
+    );
+    const sBr = V8Coverage._pct(
+      summary.branches.covered,
+      summary.branches.total,
+    );
+    const sFn = V8Coverage._pct(
+      summary.functions.covered,
+      summary.functions.total,
+    );
     lines.push(
-      `${"TOTAL".padEnd(40)} | ${sStmt.padStart(9)} | ${sBr.padStart(9)} | ${sFn.padStart(9)}`
+      `${"TOTAL".padEnd(40)} | ${sStmt.padStart(9)} | ${sBr.padStart(
+        9,
+      )} | ${sFn.padStart(9)}`,
     );
     lines.push(SEP);
     lines.push("");
@@ -315,7 +369,9 @@ class V8Coverage {
       let src = null;
       try {
         src = fs.readFileSync(filename, "utf8");
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
       result.push({ url: filename, source: src || "", functions: [] });
     }
 
@@ -326,7 +382,7 @@ class V8Coverage {
 
   static _pct(covered, total) {
     if (total === 0) return "   N/A";
-    return (covered / total * 100).toFixed(2) + "%";
+    return ((covered / total) * 100).toFixed(2) + "%";
   }
 
   static _emptySummary() {
@@ -346,11 +402,16 @@ if (require.main === module) {
   const outIdx = args.indexOf("--output");
   const includeDirs = dirIdx >= 0 ? [args[dirIdx + 1]] : ["Iris_Biometric/"];
   const v8Dir = v8Idx >= 0 ? args[v8Idx + 1] : process.env.NODE_V8_COVERAGE;
-  const outputPath = outIdx >= 0 ? args[outIdx + 1] : "coverage/v8-iris-coverage.json";
+  const outputPath =
+    outIdx >= 0 ? args[outIdx + 1] : "coverage/v8-iris-coverage.json";
 
   if (!v8Dir) {
-    console.error("Usage: NODE_V8_COVERAGE=<dir> node v8_coverage_helper.js [--dir Iris_Biometric/]");
-    console.error("  or:  node v8_coverage_helper.js --v8dir <coverage-dir> [--dir Iris_Biometric/]");
+    console.error(
+      "Usage: NODE_V8_COVERAGE=<dir> node v8_coverage_helper.js [--dir Iris_Biometric/]",
+    );
+    console.error(
+      "  or:  node v8_coverage_helper.js --v8dir <coverage-dir> [--dir Iris_Biometric/]",
+    );
     process.exit(1);
   }
 

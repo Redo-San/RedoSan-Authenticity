@@ -19,7 +19,10 @@ test("IrisCamera.getCameraErrorMessage: formats error", () => {
 });
 
 test("IrisCamera.getCameraErrorMessage: DOMException", () => {
-  const msg = IC.getCameraErrorMessage({ name: "NotAllowedError", message: "denied" });
+  const msg = IC.getCameraErrorMessage({
+    name: "NotAllowedError",
+    message: "denied",
+  });
   assert.ok(msg.length > 0);
 });
 
@@ -43,7 +46,10 @@ test("IrisCamera.getCameraErrorMessage: formats error", () => {
 });
 
 test("IrisCamera.getCameraErrorMessage: DOMException", () => {
-  const msg = IC.getCameraErrorMessage({ name: "NotAllowedError", message: "denied" });
+  const msg = IC.getCameraErrorMessage({
+    name: "NotAllowedError",
+    message: "denied",
+  });
   assert.ok(msg.length > 0);
 });
 
@@ -92,7 +98,16 @@ test("IrisCamera.prototype.isActive: false when no stream", () => {
 test("IrisCamera.prototype.stopCamera: clears stream and video", () => {
   const cam = new IC();
   const stopped = [];
-  cam._stream = { getTracks: () => [{ stop() { stopped.push(true); } }], active: true };
+  cam._stream = {
+    getTracks: () => [
+      {
+        stop() {
+          stopped.push(true);
+        },
+      },
+    ],
+    active: true,
+  };
   cam._video = { srcObject: {}, style: { transform: "scale(1)" } };
   cam.stopCamera();
   assert.equal(stopped.length, 1);
@@ -186,17 +201,27 @@ test("IrisCamera.prototype.startCamera: succeeds with mock video", async () => {
   const mockTrack = { stop() {}, kind: "video" };
   const mockStream = { getTracks: () => [mockTrack], active: true };
   Object.defineProperty(global, "navigator", {
-    value: { mediaDevices: { getUserMedia: async () => mockStream }, isSecureContext: true },
-    configurable: true, writable: true,
+    value: {
+      mediaDevices: { getUserMedia: async () => mockStream },
+      isSecureContext: true,
+    },
+    configurable: true,
+    writable: true,
   });
   const cam = new IC();
   const videoEl = {
     tagName: "video",
     srcObject: null,
     style: { transform: "" },
-    play() { return { catch() {} }; },
+    play() {
+      return { catch() {} };
+    },
   };
-  const stream = await cam.startCamera(videoEl, { facingMode: "environment", width: 640, height: 480 });
+  const stream = await cam.startCamera(videoEl, {
+    facingMode: "environment",
+    width: 640,
+    height: 480,
+  });
   assert.equal(stream, mockStream);
   assert.equal(cam._stream, mockStream);
   assert.equal(cam._video, videoEl);
@@ -210,11 +235,22 @@ test("IrisCamera.prototype.startCamera: with deviceId option", async () => {
   const origDesc = Object.getOwnPropertyDescriptor(global, "navigator");
   const mockStream = { getTracks: () => [], active: true };
   Object.defineProperty(global, "navigator", {
-    value: { mediaDevices: { getUserMedia: async () => mockStream }, isSecureContext: true },
-    configurable: true, writable: true,
+    value: {
+      mediaDevices: { getUserMedia: async () => mockStream },
+      isSecureContext: true,
+    },
+    configurable: true,
+    writable: true,
   });
   const cam = new IC();
-  const videoEl = { tagName: "video", srcObject: null, style: { transform: "" }, play() { return { catch() {} }; } };
+  const videoEl = {
+    tagName: "video",
+    srcObject: null,
+    style: { transform: "" },
+    play() {
+      return { catch() {} };
+    },
+  };
   const stream = await cam.startCamera(videoEl, { deviceId: "cam-1" });
   assert.ok(stream);
   cam.stopCamera();
@@ -226,12 +262,23 @@ test("IrisCamera.prototype.startCamera: with mirror option", async () => {
   const origDesc = Object.getOwnPropertyDescriptor(global, "navigator");
   const mockStream = { getTracks: () => [], active: true };
   Object.defineProperty(global, "navigator", {
-    value: { mediaDevices: { getUserMedia: async () => mockStream }, isSecureContext: true },
-    configurable: true, writable: true,
+    value: {
+      mediaDevices: { getUserMedia: async () => mockStream },
+      isSecureContext: true,
+    },
+    configurable: true,
+    writable: true,
   });
   const cam = new IC();
   cam._mirror = true;
-  const videoEl = { tagName: "video", srcObject: null, style: { transform: "" }, play() { return { catch() {} }; } };
+  const videoEl = {
+    tagName: "video",
+    srcObject: null,
+    style: { transform: "" },
+    play() {
+      return { catch() {} };
+    },
+  };
   await cam.startCamera(videoEl);
   assert.ok(videoEl.style.transform.includes("scaleX(-1)"));
   cam.stopCamera();
@@ -254,7 +301,9 @@ test("IrisCamera.prototype.setBrightness: applies constraint when supported", as
   const applied = [];
   const mockTrack = {
     getCapabilities: () => ({ brightness: { min: -1, max: 1 } }),
-    applyConstraints: async (c) => { applied.push(c); },
+    applyConstraints: async (c) => {
+      applied.push(c);
+    },
   };
   const cam = new IC();
   cam._stream = { getVideoTracks: () => [mockTrack] };
@@ -367,8 +416,12 @@ test("IrisCamera.isSupported: navigator undefined → false (L35-L37)", () => {
 test("IrisCamera.startCamera: element without tagName (L104-L108)", async () => {
   const origNav = Object.getOwnPropertyDescriptor(global, "navigator");
   Object.defineProperty(global, "navigator", {
-    value: { mediaDevices: { getUserMedia: async () => ({ getTracks: () => [] }) }, isSecureContext: true },
-    configurable: true, writable: true,
+    value: {
+      mediaDevices: { getUserMedia: async () => ({ getTracks: () => [] }) },
+      isSecureContext: true,
+    },
+    configurable: true,
+    writable: true,
   });
   const cam = new IrisCamera();
   try {

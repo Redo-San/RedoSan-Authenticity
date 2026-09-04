@@ -88,7 +88,10 @@ describe("E2E — Security Console Output", () => {
     const blockedLine = consoleLines.find((t) => t.includes("BLOCKED"));
     // Playwright headless always has webdriver=true so it should be blocked
     assert.ok(blockedLine, "Should report BLOCKED due to webdriver detection");
-    assert.ok(blockedLine.includes("webdriver"), "Should mention 'webdriver' signal");
+    assert.ok(
+      blockedLine.includes("webdriver"),
+      "Should mention 'webdriver' signal",
+    );
 
     await ctx.close();
   });

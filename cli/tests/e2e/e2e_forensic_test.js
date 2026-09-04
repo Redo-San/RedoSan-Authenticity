@@ -7,7 +7,9 @@ const fs = require("fs");
 
 const PORT = 9903;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg.png"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg.png"),
+);
 
 let browser, server;
 
@@ -35,7 +37,15 @@ describe("E2E — Forensic Analyzer", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -47,8 +57,12 @@ describe("E2E — Forensic Analyzer", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "forensic");
     await page.waitForTimeout(1000);
-    const hasFile = await page.evaluate(() => !!document.getElementById("forensic-file"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("forensic-btn"));
+    const hasFile = await page.evaluate(
+      () => !!document.getElementById("forensic-file"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("forensic-btn"),
+    );
     assert.ok(hasFile, "File input exists");
     assert.ok(hasBtn, "Analyze button exists");
     await ctx.close();
@@ -63,11 +77,16 @@ describe("E2E — Forensic Analyzer", () => {
     await navTo(page, "forensic");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#forensic-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#forensic-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     await page.evaluate(() => document.getElementById("forensic-btn").click());
-    await page.waitForSelector("#forensic-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#forensic-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     const outputText = await page.evaluate(() => {
@@ -75,7 +94,10 @@ describe("E2E — Forensic Analyzer", () => {
       return el ? el.textContent : "";
     });
     assert.ok(outputText.length > 0, "Forensic output should have content");
-    assert.ok(!outputText.includes("Please select"), "Output should not show file select prompt");
+    assert.ok(
+      !outputText.includes("Please select"),
+      "Output should not show file select prompt",
+    );
     await ctx.close();
   });
 
@@ -88,10 +110,15 @@ describe("E2E — Forensic Analyzer", () => {
     await navTo(page, "forensic");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#forensic-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#forensic-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("forensic-btn").click());
-    await page.waitForSelector("#forensic-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#forensic-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1500);
 
     const hasELAMap = await page.evaluate(() => {
@@ -118,10 +145,15 @@ describe("E2E — Forensic Analyzer", () => {
     await navTo(page, "forensic");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#forensic-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#forensic-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("forensic-btn").click());
-    await page.waitForSelector("#forensic-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#forensic-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1500);
 
     const hasNoiseMap = await page.evaluate(() => {

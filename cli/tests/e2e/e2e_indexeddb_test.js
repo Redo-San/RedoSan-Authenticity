@@ -110,14 +110,21 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
       return faceId;
     });
 
-    assert.ok(typeof id === "number" && id > 0, `Face ID should be positive number, got ${id}`);
+    assert.ok(
+      typeof id === "number" && id > 0,
+      `Face ID should be positive number, got ${id}`,
+    );
 
     // Verify we can retrieve it
     const stored = await page.evaluate(async (fid) => {
       const reg = new window.FaceRegistry();
       const face = await reg.getFace(fid);
       return face
-        ? { label: face.label, hasDescriptor: face.descriptor instanceof Float32Array, descLen: face.descriptor.length }
+        ? {
+            label: face.label,
+            hasDescriptor: face.descriptor instanceof Float32Array,
+            descLen: face.descriptor.length,
+          }
         : null;
     }, id);
 
@@ -143,7 +150,9 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
       const desc = new Float32Array(128);
       for (let i = 0; i < 128; i++) desc[i] = (i / 128) * 2 - 1;
       const reg = new window.FaceRegistry();
-      return await reg.addFace("Persistent Face", desc, { source: "persist-test" });
+      return await reg.addFace("Persistent Face", desc, {
+        source: "persist-test",
+      });
     });
 
     // Navigate to another page and back
@@ -334,8 +343,16 @@ describe("E2E — IndexedDB Face Registry Persistence", () => {
       };
     });
 
-    assert.equal(results.duplicateCount, 2, "Should find 2 faces with 'Duplicate Label'");
-    assert.equal(results.uniqueCount, 1, "Should find 1 face with 'Unique Label'");
+    assert.equal(
+      results.duplicateCount,
+      2,
+      "Should find 2 faces with 'Duplicate Label'",
+    );
+    assert.equal(
+      results.uniqueCount,
+      1,
+      "Should find 1 face with 'Unique Label'",
+    );
     assert.equal(results.uniqueLabel, "Unique Label");
 
     await ctx.close();

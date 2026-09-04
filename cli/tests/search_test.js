@@ -8,12 +8,20 @@ before(function () {
   globalThis.document = {
     getElementById: function (id) {
       if (id === "page-home") return null;
-      if (id === "searchInput") return { value: "", trim: function () { return ""; } };
+      if (id === "searchInput")
+        return {
+          value: "",
+          trim: function () {
+            return "";
+          },
+        };
       if (id === "search-output") return { innerHTML: "" };
       return null;
     },
     addEventListener: function () {},
-    querySelectorAll: function () { return []; },
+    querySelectorAll: function () {
+      return [];
+    },
     documentElement: { dataset: {} },
   };
   globalThis.window = globalThis;
@@ -27,17 +35,26 @@ before(function () {
   globalThis.i18n = { data: {} };
   globalThis.escHtml = function (s) {
     if (s == null) return "";
-    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   };
   globalThis.console = { log: function () {} };
   globalThis.capturedResults = null;
   globalThis.capturedQuery = null;
-  var src = fs.readFileSync(path.join(__dirname, "../../Style/search.js"), "utf8");
+  var src = fs.readFileSync(
+    path.join(__dirname, "../../Style/search.js"),
+    "utf8",
+  );
   var modified = src.replace(
     /function showSearchResults[\s\S]*?function navigateToSearchResult/,
-    "function showSearchResults(query, results, isMpa) { capturedQuery = query; capturedResults = results; }\nfunction navigateToSearchResult"
+    "function showSearchResults(query, results, isMpa) { capturedQuery = query; capturedResults = results; }\nfunction navigateToSearchResult",
   );
-  vm.runInThisContext(modified, { filename: path.resolve(__dirname, "../../Style/search.js") });
+  vm.runInThisContext(modified, {
+    filename: path.resolve(__dirname, "../../Style/search.js"),
+  });
 });
 
 describe("search.js \u2014 _isMpaSearch", function () {
@@ -69,7 +86,11 @@ describe("search.js \u2014 buildSearchIndex", function () {
         var page = {
           id: "page-watermark",
           querySelector: function (q) {
-            if (q === "h2") return { textContent: "Watermark Tool", innerText: "Watermark Tool" };
+            if (q === "h2")
+              return {
+                textContent: "Watermark Tool",
+                innerText: "Watermark Tool",
+              };
             return null;
           },
           querySelectorAll: function (q) {
@@ -82,8 +103,12 @@ describe("search.js \u2014 buildSearchIndex", function () {
             return [];
           },
         };
-        Object.defineProperty(page, "textContent", { value: "Watermark Tool page content embed extract" });
-        Object.defineProperty(page, "innerText", { value: "Watermark Tool page content embed extract" });
+        Object.defineProperty(page, "textContent", {
+          value: "Watermark Tool page content embed extract",
+        });
+        Object.defineProperty(page, "innerText", {
+          value: "Watermark Tool page content embed extract",
+        });
         return [page];
       }
       return [];
@@ -99,7 +124,10 @@ describe("search.js \u2014 buildSearchIndex", function () {
   it("should return cached index on second call", function () {
     var called = false;
     var origQs = document.querySelectorAll;
-    document.querySelectorAll = function () { called = true; return []; };
+    document.querySelectorAll = function () {
+      called = true;
+      return [];
+    };
     var idx = buildSearchIndex();
     assert.equal(called, false);
     assert.equal(Array.isArray(idx), true);
@@ -162,7 +190,10 @@ describe("search.js \u2014 _executeSearch", function () {
     _executeSearch("sha", testIdx, false);
     assert.ok(capturedResults.length >= 1);
     for (var i = 1; i < capturedResults.length; i++) {
-      assert.ok(capturedResults[i - 1].score >= capturedResults[i].score, "results sorted descending at index " + i);
+      assert.ok(
+        capturedResults[i - 1].score >= capturedResults[i].score,
+        "results sorted descending at index " + i,
+      );
     }
   });
 
@@ -181,13 +212,20 @@ describe("search.js \u2014 _executeSearch", function () {
 
 describe("search.js — _executeSearch with MPA mode", function () {
   var testIdx = [
-    { id: "watermark", title: "Watermark Tool", text: "watermark tool for images", keywords: ["Embed"] },
+    {
+      id: "watermark",
+      title: "Watermark Tool",
+      text: "watermark tool for images",
+      keywords: ["Embed"],
+    },
   ];
 
   it("calls showSearchResults with isMpa=true", function () {
     var saved = globalThis.showSearchResults;
     var calledWith = null;
-    globalThis.showSearchResults = function (q, r, m) { calledWith = { q: q, r: r, m: m }; };
+    globalThis.showSearchResults = function (q, r, m) {
+      calledWith = { q: q, r: r, m: m };
+    };
     _executeSearch("watermark", testIdx, true);
     assert.equal(calledWith.q, "watermark");
     assert.equal(calledWith.m, true);
@@ -199,11 +237,21 @@ describe("search.js — navigateToSearchResult", function () {
   beforeEach(function () {
     document.getElementById = function (id) {
       if (id === "page-home") return { id: "page-home" };
-      if (id === "searchInput") return { value: "test", trim: function () { return "test"; } };
+      if (id === "searchInput")
+        return {
+          value: "test",
+          trim: function () {
+            return "test";
+          },
+        };
       return null;
     };
-    globalThis.showPage = function (pageName) { capturedQuery = pageName; };
-    globalThis._isMpaSearch = function () { return false; };
+    globalThis.showPage = function (pageName) {
+      capturedQuery = pageName;
+    };
+    globalThis._isMpaSearch = function () {
+      return false;
+    };
   });
 
   it("navigates to page and clears search", function () {
@@ -212,9 +260,13 @@ describe("search.js — navigateToSearchResult", function () {
   });
 
   it("returns early in MPA mode", function () {
-    globalThis._isMpaSearch = function () { return true; };
+    globalThis._isMpaSearch = function () {
+      return true;
+    };
     var called = false;
-    globalThis.showPage = function () { called = true; };
+    globalThis.showPage = function () {
+      called = true;
+    };
     navigateToSearchResult("metadata");
     assert.ok(!called);
   });
@@ -232,7 +284,9 @@ describe("search.js — closeSearchResults", function () {
   });
 
   it("handles missing searchResults element", function () {
-    globalThis.document.getElementById = function () { return null; };
+    globalThis.document.getElementById = function () {
+      return null;
+    };
     closeSearchResults();
     assert.ok(true);
   });
@@ -243,21 +297,38 @@ describe("search.js — siteSearch SPA mode", function () {
     globalThis.searchOutputEl = { innerHTML: "" };
     globalThis.document.getElementById = function (id) {
       if (id === "page-home") return { id: "page-home" };
-      if (id === "searchInput") return { value: "watermark", trim: function () { return "watermark"; } };
+      if (id === "searchInput")
+        return {
+          value: "watermark",
+          trim: function () {
+            return "watermark";
+          },
+        };
       if (id === "search-output") return globalThis.searchOutputEl;
       return null;
     };
-    globalThis._isMpaSearch = function () { return false; };
+    globalThis._isMpaSearch = function () {
+      return false;
+    };
     globalThis.showPage = function () {};
     globalThis.closeSearchResults = function () {};
     capturedResults = null;
     capturedQuery = null;
-    SEARCH_INDEX = [{ id: "watermark", title: "Watermark Tool", text: "watermark tool", keywords: ["Embed"] }];
+    SEARCH_INDEX = [
+      {
+        id: "watermark",
+        title: "Watermark Tool",
+        text: "watermark tool",
+        keywords: ["Embed"],
+      },
+    ];
   });
 
   it("calls _executeSearch via buildSearchIndex in SPA mode", function () {
     var origBuild = globalThis.buildSearchIndex;
-    globalThis.buildSearchIndex = function () { return SEARCH_INDEX; };
+    globalThis.buildSearchIndex = function () {
+      return SEARCH_INDEX;
+    };
     siteSearch();
     assert.ok(capturedResults !== null);
     assert.equal(capturedQuery, "watermark");
@@ -266,7 +337,13 @@ describe("search.js — siteSearch SPA mode", function () {
 
   it("returns early when query is empty", function () {
     globalThis.document.getElementById = function (id) {
-      if (id === "searchInput") return { value: "", trim: function () { return ""; } };
+      if (id === "searchInput")
+        return {
+          value: "",
+          trim: function () {
+            return "";
+          },
+        };
       return null;
     };
     siteSearch();

@@ -176,7 +176,10 @@ function embedZwc(text, bits) {
   var perChar = Math.ceil(needed / text.length);
   if (perChar > ZWC_MAX_ZWCS_PER_CHAR) {
     throw new Error(
-      "Cover text too short. Need ~" + Math.ceil(needed / ZWC_MAX_ZWCS_PER_CHAR) + " chars, have " + text.length,
+      "Cover text too short. Need ~" +
+        Math.ceil(needed / ZWC_MAX_ZWCS_PER_CHAR) +
+        " chars, have " +
+        text.length,
     );
   }
   var result = "";
@@ -331,7 +334,13 @@ function embedHomoglyph(text, bits) {
     maxBits += HOMO_MULTI[text[eligible[e]]] ? 2 : 1;
   }
   if (bits.length > maxBits) {
-    throw new Error("Text too short. Need ~" + bits.length + " bits, eligible chars provide " + maxBits + " bits");
+    throw new Error(
+      "Text too short. Need ~" +
+        bits.length +
+        " bits, eligible chars provide " +
+        maxBits +
+        " bits",
+    );
   }
   var result = text.split("");
   var bitIdx = 0;
@@ -346,7 +355,8 @@ function embedHomoglyph(text, bits) {
       if (val > 0) result[idx] = multi[val - 1];
       bitIdx += 2;
     } else {
-      if (bitIdx < bits.length && bits[bitIdx] === "1") result[idx] = HOMO_MAP[ch];
+      if (bitIdx < bits.length && bits[bitIdx] === "1")
+        result[idx] = HOMO_MAP[ch];
       bitIdx += 1;
     }
   }
@@ -409,11 +419,17 @@ function embedWhitespace(text, bits) {
   }
   var encodedCount = Math.ceil(bits.length / WS_BITS_PER_SPACE);
   if (spaceCount < encodedCount) {
-    throw new Error("Not enough spaces. Need ~" + encodedCount + ", found " + spaceCount);
+    throw new Error(
+      "Not enough spaces. Need ~" + encodedCount + ", found " + spaceCount,
+    );
   }
 
   var encoded = [];
-  for (var i = 0; i + (WS_BITS_PER_SPACE - 1) < bits.length; i += WS_BITS_PER_SPACE) {
+  for (
+    var i = 0;
+    i + (WS_BITS_PER_SPACE - 1) < bits.length;
+    i += WS_BITS_PER_SPACE
+  ) {
     var quad = bits.substr(i, WS_BITS_PER_SPACE);
     while (quad.length < WS_BITS_PER_SPACE) quad += "0";
     encoded.push(WS_SPACES[parseInt(quad, 2)]);
@@ -486,7 +502,8 @@ function bitsToBytes(bits) {
   var bytes = [];
   for (var i = 0; i + 7 < bits.length; i += 8) {
     var byteVal = 0;
-    for (var j = 0; j < 8; j++) byteVal = (byteVal << 1) | (bits[i + j] === "1" ? 1 : 0);
+    for (var j = 0; j < 8; j++)
+      byteVal = (byteVal << 1) | (bits[i + j] === "1" ? 1 : 0);
     bytes.push(byteVal);
   }
   return Buffer.from(bytes);
@@ -501,7 +518,8 @@ function checkPassword(result, password) {
   if (!password) return result;
   var colonIdx = result.indexOf(":");
   if (colonIdx > 0 && colonIdx <= 50) {
-    if (result.indexOf(password + ":") === 0) return result.substr(password.length + 1);
+    if (result.indexOf(password + ":") === 0)
+      return result.substr(password.length + 1);
     throw new Error("WRONG_PASSWORD");
   }
   return result;
@@ -554,8 +572,15 @@ async function runDocumentWatermark(action, opts) {
       process.exit(1);
     }
 
-    var watermarked = embed(text, message, opts.algo || "1", opts.password || "");
-    var outPath = opts.output ? path.resolve(opts.output) : inputPath + ".watermarked.txt";
+    var watermarked = embed(
+      text,
+      message,
+      opts.algo || "1",
+      opts.password || "",
+    );
+    var outPath = opts.output
+      ? path.resolve(opts.output)
+      : inputPath + ".watermarked.txt";
     writeFileText(outPath, watermarked);
     console.log("Watermarked text saved to: " + outPath);
   } else {

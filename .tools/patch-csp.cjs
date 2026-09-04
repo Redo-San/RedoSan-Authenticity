@@ -3,7 +3,10 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.join(__dirname, "..");
-const files = [path.join(root, "index.html"), path.join(root, "Style", "pages", "_page_template.html")];
+const files = [
+  path.join(root, "index.html"),
+  path.join(root, "Style", "pages", "_page_template.html"),
+];
 for (const p of fs.readdirSync(path.join(root, "Style", "pages"))) {
   if (p === "_page_template.html") continue;
   const f = path.join(root, "Style", "pages", p, "index.html");

@@ -10,10 +10,19 @@ const src = fs.readFileSync(
   path.join(__dirname, "..", "..", "Iris_Biometric", "iris_liveness.js"),
   "utf8",
 );
-vm.runInThisContext(src, { filename: path.join(__dirname, "..", "..", "Iris_Biometric", "iris_liveness.js") });
+vm.runInThisContext(src, {
+  filename: path.join(
+    __dirname,
+    "..",
+    "..",
+    "Iris_Biometric",
+    "iris_liveness.js",
+  ),
+});
 const IrisLiveness = global.IrisLiveness || global.window.IrisLiveness;
 
-const W = 100, H = 100;
+const W = 100,
+  H = 100;
 const iris = { cx: 50, cy: 50, radius: 30 };
 
 /**
@@ -41,13 +50,24 @@ function stripedImg() {
 
 test("periodicPatternTest: random texture is bona fide", () => {
   const r = IrisLiveness.periodicPatternTest(noiseImg(), W, H, iris);
-  assert.strictEqual(r.attack, false, "stochastic texture must not be flagged: " + r.detail);
+  assert.strictEqual(
+    r.attack,
+    false,
+    "stochastic texture must not be flagged: " + r.detail,
+  );
 });
 
 test("periodicPatternTest: striped pattern is flagged as attack", () => {
   const r = IrisLiveness.periodicPatternTest(stripedImg(), W, H, iris);
-  assert.strictEqual(r.attack, true, "regular stripes must be flagged: " + r.detail);
-  assert.ok(r.peakRatio > 0.22, "peakRatio should exceed threshold: " + r.peakRatio);
+  assert.strictEqual(
+    r.attack,
+    true,
+    "regular stripes must be flagged: " + r.detail,
+  );
+  assert.ok(
+    r.peakRatio > 0.22,
+    "peakRatio should exceed threshold: " + r.peakRatio,
+  );
 });
 
 test("periodicPatternTest: missing iris is skipped (not an attack)", () => {

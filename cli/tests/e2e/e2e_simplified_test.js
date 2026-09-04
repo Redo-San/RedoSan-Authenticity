@@ -8,8 +8,12 @@ const fs = require("fs");
 
 const PORT = 9906;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg.png"));
-const WAV_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "silence.wav"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg.png"),
+);
+const WAV_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "silence.wav"),
+);
 
 let browser, server;
 
@@ -58,7 +62,12 @@ describe("E2E — Simplified Mode (Wizard)", () => {
     });
     assert.ok(modeHidden, "Mode selection overlay should be hidden");
 
-    const fatal = errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
+    const fatal = errors.filter(
+      (e) =>
+        !e.includes("404") &&
+        !e.includes("Failed to load") &&
+        !e.includes("valid digest"),
+    );
     assert.equal(fatal.length, 0, "No fatal errors: " + fatal.join(", "));
     await stopCoverage(page, "simple-activate");
     await ctx.close();
@@ -79,7 +88,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
     await page.waitForTimeout(1000);
 
     await page.setInputFiles("#simpleFileInput", [
-      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
     ]);
     await page.waitForTimeout(2000);
 
@@ -89,8 +98,12 @@ describe("E2E — Simplified Mode (Wizard)", () => {
     });
     assert.ok(hasFileInfo, "File info should show uploaded filename");
 
-    const hasName = await page.evaluate(() => !!document.getElementById("sinfo-name"));
-    const hasEmail = await page.evaluate(() => !!document.getElementById("sinfo-email"));
+    const hasName = await page.evaluate(
+      () => !!document.getElementById("sinfo-name"),
+    );
+    const hasEmail = await page.evaluate(
+      () => !!document.getElementById("sinfo-email"),
+    );
     assert.ok(hasName, "Name field should exist");
     assert.ok(hasEmail, "Email field should exist");
     await stopCoverage(page, "simple-upload");
@@ -112,7 +125,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
     await page.waitForTimeout(1000);
 
     await page.setInputFiles("#simpleFileInput", [
-      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
     ]);
     await page.waitForTimeout(1000);
 
@@ -141,7 +154,10 @@ describe("E2E — Simplified Mode (Wizard)", () => {
       const aiCards = document.querySelectorAll(".simple-ai-card");
       return aiCards.length >= 2;
     });
-    assert.ok(hasAiStep, "Should advance to AI question step (2+ .simple-ai-card)");
+    assert.ok(
+      hasAiStep,
+      "Should advance to AI question step (2+ .simple-ai-card)",
+    );
     await stopCoverage(page, "simple-advance");
     await ctx.close();
   });
@@ -161,7 +177,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
     await page.waitForTimeout(1000);
 
     await page.setInputFiles("#simpleFileInput", [
-      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
     ]);
     await page.waitForTimeout(1000);
 
@@ -208,7 +224,7 @@ describe("E2E — Simplified Mode (Wizard)", () => {
     await page.waitForTimeout(1000);
 
     await page.setInputFiles("#simpleFileInput", [
-      { name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF }
+      { name: "silence.wav", mimeType: "audio/wav", buffer: WAV_BUF },
     ]);
     await page.waitForTimeout(1000);
 

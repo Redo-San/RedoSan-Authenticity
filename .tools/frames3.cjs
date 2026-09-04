@@ -1,7 +1,9 @@
 const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1350, height: 940 },
+  });
   const pg = await ctx.newPage();
   await pg.addInitScript(() => {
     window.__frames = [];
@@ -29,7 +31,9 @@ const { chromium } = require("playwright");
             });
           });
           const hasDz = !!document.querySelector("#ots-create .file-drop-zone");
-          const hasRaw = !!document.querySelector("#ots-create input[type=file]:not(.dz-input)");
+          const hasRaw = !!document.querySelector(
+            "#ots-create input[type=file]:not(.dz-input)",
+          );
           const sig = JSON.stringify(kids) + hasDz + hasRaw;
           if (sig !== last) {
             window.__frames.push({ t, kids, hasDz, hasRaw });
@@ -41,12 +45,15 @@ const { chromium } = require("playwright");
     };
     requestAnimationFrame(tick);
   });
-  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+    waitUntil: "load",
+  });
   await pg.waitForTimeout(1700);
   const r = await pg.evaluate(() => window.__frames);
   for (const f of r) {
     console.log("@" + f.t + " dz=" + f.hasDz + " raw=" + f.hasRaw);
-    for (const k of f.kids) console.log("   " + k.c + " t" + k.t + " h" + k.h + " [" + k.d + "]");
+    for (const k of f.kids)
+      console.log("   " + k.c + " t" + k.t + " h" + k.h + " [" + k.d + "]");
   }
   await browser.close();
 })();

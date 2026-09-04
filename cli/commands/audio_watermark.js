@@ -17,7 +17,8 @@ function deriveKey(password) {
  */
 function bytesToBits(data) {
   let s = "";
-  for (let i = 0; i < data.length; i++) s += data[i].toString(2).padStart(8, "0");
+  for (let i = 0; i < data.length; i++)
+    s += data[i].toString(2).padStart(8, "0");
   return s;
 }
 
@@ -28,7 +29,8 @@ function bytesToBits(data) {
 function bitsToBytes(s) {
   const len = Math.floor(s.length / 8);
   const b = Buffer.alloc(len);
-  for (let i = 0; i < len; i++) b[i] = parseInt(s.substring(i * 8, i * 8 + 8), 2);
+  for (let i = 0; i < len; i++)
+    b[i] = parseInt(s.substring(i * 8, i * 8 + 8), 2);
   return b;
 }
 
@@ -39,7 +41,8 @@ function bitsToBytes(s) {
  */
 function xorBytes(a, b) {
   const r = Buffer.alloc(a.length);
-  for (let i = 0; i < a.length; i++) r[i] = a[i] ^ (b.length ? b[i % b.length] : 0);
+  for (let i = 0; i < a.length; i++)
+    r[i] = a[i] ^ (b.length ? b[i % b.length] : 0);
   return r;
 }
 
@@ -201,13 +204,15 @@ function embedDSSS(wav, bits) {
   const chipLen = 32;
   const rng = crypto.createHash("sha256").update("dsss_seed").digest();
   const pattern = [];
-  for (let i = 0; i < chipLen; i++) pattern.push(rng[i % rng.length] > 127 ? 1 : 0);
+  for (let i = 0; i < chipLen; i++)
+    pattern.push(rng[i % rng.length] > 127 ? 1 : 0);
   let idx = 0;
   for (let b = 0; b < bits.length; b++) {
     const bit = parseInt(bits[b], 10);
     for (let c = 0; c < chipLen && headerSize + idx < out.length; c++) {
       const p = pattern[c];
-      out[headerSize + idx] = (out[headerSize + idx] & 0xfe) | (bit === 1 ? p : 1 - p);
+      out[headerSize + idx] =
+        (out[headerSize + idx] & 0xfe) | (bit === 1 ? p : 1 - p);
       idx++;
     }
   }
@@ -224,7 +229,8 @@ function extractDSSS(wav, bitCount) {
   const chipLen = 32;
   const rng = crypto.createHash("sha256").update("dsss_seed").digest();
   const pattern = [];
-  for (let i = 0; i < chipLen; i++) pattern.push(rng[i % rng.length] > 127 ? 1 : 0);
+  for (let i = 0; i < chipLen; i++)
+    pattern.push(rng[i % rng.length] > 127 ? 1 : 0);
   let bits = "",
     idx = 0;
   for (let b = 0; b < bitCount; b++) {
@@ -296,7 +302,9 @@ function embedDWT(wav, bits) {
   for (let b = 0; b < bits.length; b++) {
     const bit = parseInt(bits[b], 10);
     for (let j = 0; j < segLen && headerSize + idx + 1 < out.length; j += 2) {
-      const avg = Math.floor((out[headerSize + idx] + out[headerSize + idx + 1]) / 2);
+      const avg = Math.floor(
+        (out[headerSize + idx] + out[headerSize + idx + 1]) / 2,
+      );
       const diff = out[headerSize + idx] - out[headerSize + idx + 1];
       const newDiff = bit === 1 ? Math.abs(diff) + 2 : 0;
       out[headerSize + idx] = Math.max(0, Math.min(255, avg + newDiff / 2));
@@ -390,7 +398,9 @@ function embedDCT(wav, bits) {
   for (let b = 0; b < bits.length; b++) {
     const bit = parseInt(bits[b], 10);
     for (let j = 0; j < blockLen && headerSize + idx + 1 < out.length; j += 2) {
-      const avg = Math.floor((out[headerSize + idx] + out[headerSize + idx + 1]) / 2);
+      const avg = Math.floor(
+        (out[headerSize + idx] + out[headerSize + idx + 1]) / 2,
+      );
       const bias = bit === 1 ? 3 : -3;
       out[headerSize + idx] = Math.max(0, Math.min(255, avg + bias));
       out[headerSize + idx + 1] = Math.max(0, Math.min(255, avg - bias));
@@ -453,7 +463,9 @@ async function runAudioWatermark(action, filePath, opts) {
 
   const impl = algos[algo];
   if (!impl) {
-    console.error("Unknown algorithm. Supported: " + Object.keys(algos).join(", "));
+    console.error(
+      "Unknown algorithm. Supported: " + Object.keys(algos).join(", "),
+    );
     process.exit(1);
   }
 
@@ -477,11 +489,18 @@ async function runAudioWatermark(action, filePath, opts) {
     const bits = bytesToBits(fullPayload);
 
     const outBuf = impl.embed(wav, bits);
-    let outPath = opts.output ? path.resolve(opts.output) : path.resolve("output.wav");
+    let outPath = opts.output
+      ? path.resolve(opts.output)
+      : path.resolve("output.wav");
     if (fs.existsSync(outPath) && fs.statSync(outPath).isDirectory())
-      outPath = path.join(outPath, path.basename(filePath) + "-watermarked.wav");
+      outPath = path.join(
+        outPath,
+        path.basename(filePath) + "-watermarked.wav",
+      );
     fs.writeFileSync(outPath, outBuf);
-    console.log(`Audio watermark embedded (algorithm: ${algo}, ${msgBuf.length} bytes)`);
+    console.log(
+      `Audio watermark embedded (algorithm: ${algo}, ${msgBuf.length} bytes)`,
+    );
     console.log(`Output: ${outPath}`);
   } else if (action === "extract") {
     const maxBits = Math.min((wav.length - 44) * 8, 200_000);
@@ -491,12 +510,18 @@ async function runAudioWatermark(action, filePath, opts) {
       const dlen = parseInt(bits.substring(offset, offset + 16), 2);
       if (isNaN(dlen) || dlen <= 0 || dlen > 5000) continue;
       if (bits.length < offset + 16 + dlen * 8) continue;
-      const enc = bitsToBytes(bits.substring(offset + 16, offset + 16 + dlen * 8));
+      const enc = bitsToBytes(
+        bits.substring(offset + 16, offset + 16 + dlen * 8),
+      );
       const dec = xorBytes(enc, key);
       if (dec.length >= 2 && dec[0] === 0xaa && dec[1] === 0xbb) {
         const msg = dec.slice(2).toString("utf-8").replace(/\0+$/, "");
         if (opts.json) {
-          const json = JSON.stringify({ algorithm: algo, message: msg, length: msg.length, status: "ok" }, null, 2);
+          const json = JSON.stringify(
+            { algorithm: algo, message: msg, length: msg.length, status: "ok" },
+            null,
+            2,
+          );
           if (opts.output) {
             let outPath = path.resolve(opts.output);
             if (fs.existsSync(outPath) && fs.statSync(outPath).isDirectory())

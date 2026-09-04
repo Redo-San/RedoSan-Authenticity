@@ -1,13 +1,21 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors , closePage } = require("../mpa_helpers");
+var {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 var path = require("path");
 var fs = require("fs");
 
 var PAGE_ID = "pixel-injection";
 var browser;
-var PNG_BUF = fs.readFileSync(path.resolve(__dirname, "../../fixtures/testimg_64x64.png"));
+var PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "../../fixtures/testimg_64x64.png"),
+);
 
 before(async function () {
   await ensureServer();
@@ -32,9 +40,15 @@ describe("MPA — Pixel Injection", function () {
   it("should have key form elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      var hasImage = await page.evaluate(function () { return !!document.getElementById("pi-image"); });
-      var hasCategory = await page.evaluate(function () { return !!document.getElementById("pi-category"); });
-      var hasBtn = await page.evaluate(function () { return !!document.getElementById("pi-btn"); });
+      var hasImage = await page.evaluate(function () {
+        return !!document.getElementById("pi-image");
+      });
+      var hasCategory = await page.evaluate(function () {
+        return !!document.getElementById("pi-category");
+      });
+      var hasBtn = await page.evaluate(function () {
+        return !!document.getElementById("pi-btn");
+      });
       assert.ok(hasImage, "Image input should exist");
       assert.ok(hasCategory, "Category select should exist");
       assert.ok(hasBtn, "Embed button should exist");
@@ -53,7 +67,7 @@ describe("MPA — Pixel Injection", function () {
       });
       await page.waitForTimeout(300);
       await page.setInputFiles("#pi-image", [
-        { name: "testimg_64x64.png", mimeType: "image/png", buffer: PNG_BUF }
+        { name: "testimg_64x64.png", mimeType: "image/png", buffer: PNG_BUF },
       ]);
       await page.waitForTimeout(500);
       await page.evaluate(function () {

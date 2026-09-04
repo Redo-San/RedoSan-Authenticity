@@ -7,7 +7,26 @@ const vm = require("vm");
 // ── DOM mocks ──
 const elStore = {};
 function mockEl(id, overrides) {
-  const el = { id, value: "", style: { display: "" }, innerHTML: "", textContent: "", disabled: false, href: "", download: "", onclick: null, addEventListener: (ev, fn) => { el._listeners = el._listeners || {}; el._listeners[ev] = el._listeners[ev] || []; el._listeners[ev].push(fn); }, click: () => {}, src: "", _listeners: {}, ...overrides };
+  const el = {
+    id,
+    value: "",
+    style: { display: "" },
+    innerHTML: "",
+    textContent: "",
+    disabled: false,
+    href: "",
+    download: "",
+    onclick: null,
+    addEventListener: (ev, fn) => {
+      el._listeners = el._listeners || {};
+      el._listeners[ev] = el._listeners[ev] || [];
+      el._listeners[ev].push(fn);
+    },
+    click: () => {},
+    src: "",
+    _listeners: {},
+    ...overrides,
+  };
   elStore[id] = el;
   return el;
 }
@@ -15,26 +34,63 @@ globalThis.document = {
   getElementById: (id) => elStore[id] || null,
   querySelector: () => null,
   querySelectorAll: () => [],
-  createElement: (tag) => tag === "a" ? { href: "", download: "", click: () => {} } : { getContext: () => null, toBlob: (cb) => cb(new Uint8Array(0)) },
+  createElement: (tag) =>
+    tag === "a"
+      ? { href: "", download: "", click: () => {} }
+      : { getContext: () => null, toBlob: (cb) => cb(new Uint8Array(0)) },
   addEventListener: () => {},
 };
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // ── Shared helper mocks ──
 globalThis.__ = (key, fallback) => fallback || key;
-globalThis.getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ""; };
+globalThis.getVal = (id) => {
+  const el = document.getElementById(id);
+  return el ? el.value : "";
+};
 globalThis.getFile = async () => null;
-globalThis.setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+globalThis.setText = (id, text) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+};
 globalThis.spinner = () => {};
 const resultStore = {};
 globalThis.getResult = (key) => resultStore[key] || null;
-globalThis.setResult = (key, val) => { resultStore[key] = val; };
-globalThis.loadImage = async () => ({ imgData: { data: new Uint8Array(400), w: 10, h: 10 }, canvas: { toBlob: (cb) => cb(new Blob()) }, ctx: { putImageData: () => {} }, w: 10, h: 10 });
+globalThis.setResult = (key, val) => {
+  resultStore[key] = val;
+};
+globalThis.loadImage = async () => ({
+  imgData: { data: new Uint8Array(400), w: 10, h: 10 },
+  canvas: { toBlob: (cb) => cb(new Blob()) },
+  ctx: { putImageData: () => {} },
+  w: 10,
+  h: 10,
+});
 globalThis.canvasToBlob = async (c) => new Blob();
 globalThis.watermarkEmbed = async () => ({ ok: false, error: "test error" });
-globalThis.escHtml = (s) => s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-globalThis.escXml = (s) => s == null ? "" : String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+globalThis.escHtml = (s) =>
+  s == null
+    ? ""
+    : String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+globalThis.escXml = (s) =>
+  s == null
+    ? ""
+    : String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
 globalThis.downloadBlob = (blob, name, containerId) => {
   const container = document.getElementById(containerId);
   if (container) {
@@ -47,7 +103,11 @@ globalThis.downloadBlob = (blob, name, containerId) => {
       container.append(link);
     } else {
       // Fallback for mock elements without .append()
-      container.innerHTML += `<a href="${escHtml(link.href)}" download="${escHtml(link.download)}">${escHtml(link.textContent)}</a>`;
+      container.innerHTML += `<a href="${escHtml(
+        link.href,
+      )}" download="${escHtml(link.download)}">${escHtml(
+        link.textContent,
+      )}</a>`;
     }
   }
 };
@@ -55,30 +115,74 @@ globalThis.downloadBlobSimple = () => {};
 globalThis.showDownloadModal = () => {};
 globalThis.closeDownloadModal = () => {};
 globalThis.setDownloadHandler = () => {};
-globalThis.URL = { createObjectURL: () => "blob:mock", revokeObjectURL: () => {} };
+globalThis.URL = {
+  createObjectURL: () => "blob:mock",
+  revokeObjectURL: () => {},
+};
 globalThis.validateFileInput = async () => true;
-globalThis.Blob = class BlobMock { constructor(parts, opts) { this.parts = parts; this.type = (opts && opts.type) || ""; } };
+globalThis.Blob = class BlobMock {
+  constructor(parts, opts) {
+    this.parts = parts;
+    this.type = (opts && opts.type) || "";
+  }
+};
 
 // jsPDF mock
 globalThis.jspdf = {
   jsPDF: class {
-    constructor() { this.pages = []; this.fontSize = 10; this.textColor = [0,0,0]; }
-    setFontSize(s) { this.fontSize = s; }
-    setTextColor(r,g,b) { this.textColor = [r,g,b]; }
-    text(t, x, y) { this.pages.push({ t, x, y }); }
+    constructor() {
+      this.pages = [];
+      this.fontSize = 10;
+      this.textColor = [0, 0, 0];
+    }
+    setFontSize(s) {
+      this.fontSize = s;
+    }
+    setTextColor(r, g, b) {
+      this.textColor = [r, g, b];
+    }
+    text(t, x, y) {
+      this.pages.push({ t, x, y });
+    }
     addPage() {}
-    output(type) { return new Blob(["mock pdf"]); }
-  }
+    output(type) {
+      return new Blob(["mock pdf"]);
+    }
+  },
 };
 
 // docx mock
 globalThis.docx = {
-  Paragraph: class { constructor(o) { this.opts = o; } },
-  TextRun: class { constructor(o) { this.opts = o; } },
-  Table: class { constructor(o) { this.opts = o; } },
-  TableRow: class { constructor(o) { this.opts = o; } },
-  TableCell: class { constructor(o) { this.opts = o; } },
-  Document: class { constructor(o) { this.opts = o; } },
+  Paragraph: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  TextRun: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  Table: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  TableRow: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  TableCell: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
+  Document: class {
+    constructor(o) {
+      this.opts = o;
+    }
+  },
   Packer: { toBlob: async (d) => new Blob(["mock docx"]) },
   WidthType: { PERCENTAGE: 0 },
 };
@@ -94,8 +198,13 @@ for (const [rel] of MODULES) {
 }
 
 // Load watermark.js (the UI orchestrator)
-const wmSrc = fs.readFileSync(path.join(__dirname, "../../Watermark/watermark.js"), "utf8");
-vm.runInThisContext(wmSrc, { filename: path.resolve(__dirname, "../../Watermark/watermark.js") });
+const wmSrc = fs.readFileSync(
+  path.join(__dirname, "../../Watermark/watermark.js"),
+  "utf8",
+);
+vm.runInThisContext(wmSrc, {
+  filename: path.resolve(__dirname, "../../Watermark/watermark.js"),
+});
 
 // ── Test helpers ──
 function setupWmMocks() {
@@ -120,7 +229,16 @@ function setupWmMocks() {
 }
 
 describe("Watermark UI — format converters", () => {
-  const r = { type: "embed", algorithm: 1, algorithmName: "LSB", message: "ok", imageName: "test.png", secretName: "sec.bin", password: "****", timestamp: "2025-01-01" };
+  const r = {
+    type: "embed",
+    algorithm: 1,
+    algorithmName: "LSB",
+    message: "ok",
+    imageName: "test.png",
+    secretName: "sec.bin",
+    password: "****",
+    timestamp: "2025-01-01",
+  };
 
   it("wmToTXT should produce text", () => {
     const txt = wmToTXT(r);
@@ -199,50 +317,56 @@ describe("Watermark UI — downloadWatermark", () => {
   function setupDlTest() {
     setupWmMocks();
     dlCalls = [];
-    globalThis.downloadBlobSimple = (blob, name) => { dlCalls.push({ name }); };
-    setResult("wmResult", { type: "embed", algorithm: 1, algorithmName: "LSB" });
+    globalThis.downloadBlobSimple = (blob, name) => {
+      dlCalls.push({ name });
+    };
+    setResult("wmResult", {
+      type: "embed",
+      algorithm: 1,
+      algorithmName: "LSB",
+    });
   }
 
   it("should download JSON format", async () => {
     setupDlTest();
     await downloadWatermark("json");
-    assert.ok(dlCalls.some(d => d.name.endsWith(".json")));
+    assert.ok(dlCalls.some((d) => d.name.endsWith(".json")));
   });
 
   it("should download CSV format", async () => {
     setupDlTest();
     await downloadWatermark("csv");
-    assert.ok(dlCalls.some(d => d.name.endsWith(".csv")));
+    assert.ok(dlCalls.some((d) => d.name.endsWith(".csv")));
   });
 
   it("should download TXT format", async () => {
     setupDlTest();
     await downloadWatermark("txt");
-    assert.ok(dlCalls.some(d => d.name.endsWith(".txt")));
+    assert.ok(dlCalls.some((d) => d.name.endsWith(".txt")));
   });
 
   it("should download XML format", async () => {
     setupDlTest();
     await downloadWatermark("xml");
-    assert.ok(dlCalls.some(d => d.name.endsWith(".xml")));
+    assert.ok(dlCalls.some((d) => d.name.endsWith(".xml")));
   });
 
   it("should download HTML format", async () => {
     setupDlTest();
     await downloadWatermark("html");
-    assert.ok(dlCalls.some(d => d.name.endsWith(".html")));
+    assert.ok(dlCalls.some((d) => d.name.endsWith(".html")));
   });
 
   it("should download PDF format", async () => {
     setupDlTest();
     await downloadWatermark("pdf");
-    assert.ok(dlCalls.some(d => d.name.endsWith(".pdf")));
+    assert.ok(dlCalls.some((d) => d.name.endsWith(".pdf")));
   });
 
   it("should download DOCX format", async () => {
     setupDlTest();
     await downloadWatermark("doc");
-    assert.ok(dlCalls.some(d => d.name.endsWith(".docx")));
+    assert.ok(dlCalls.some((d) => d.name.endsWith(".docx")));
   });
 
   it("should do nothing for unknown format", async () => {
@@ -274,17 +398,26 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
 
   it("should handle embed error gracefully", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
     globalThis.getFile = async (id) => fakeFile;
-    globalThis.watermarkEmbed = async () => ({ ok: false, error: "test error" });
+    globalThis.watermarkEmbed = async () => ({
+      ok: false,
+      error: "test error",
+    });
     await handleWatermarkEmbed();
     globalThis.getFile = async () => null;
   });
 
   it("should require password for non-exempt types", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image" ? fakeFile : null;
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image" ? fakeFile : null);
     elStore["wm-password"].value = "";
     elStore["wm-type"].value = "1";
     await handleWatermarkEmbed();
@@ -295,8 +428,11 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
 
   it("should require secret file for non-exempt types", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image" ? fakeFile : null;
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image" ? fakeFile : null);
     elStore["wm-password"].value = "testpass";
     elStore["wm-type"].value = "1";
     await handleWatermarkEmbed();
@@ -307,9 +443,16 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
 
   it("should handle successful embed (type 1 / PNG)", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
     globalThis.getFile = async (id) => fakeFile;
-    globalThis.watermarkEmbed = async () => ({ ok: true, data: new Blob(), msg: "Embedded successfully" });
+    globalThis.watermarkEmbed = async () => ({
+      ok: true,
+      data: new Blob(),
+      msg: "Embedded successfully",
+    });
     elStore["wm-password"].value = "testpass";
     elStore["wm-type"].value = "1";
     await handleWatermarkEmbed();
@@ -320,7 +463,10 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
     assert.equal(r.algorithm, 1);
     assert.ok(r.message.includes("Embedded"));
     // Verify DL modal title
-    assert.equal(elStore["dl-modal-title"].textContent, "Download Watermark Result");
+    assert.equal(
+      elStore["dl-modal-title"].textContent,
+      "Download Watermark Result",
+    );
     // Verify PNG extension for type 1
     assert.ok(elStore["wm-download"].innerHTML.includes(".png"));
     // Verify output message
@@ -330,9 +476,16 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
 
   it("should handle successful embed (type 2 / JPG)", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
     globalThis.getFile = async (id) => fakeFile;
-    globalThis.watermarkEmbed = async () => ({ ok: true, data: new Blob(), msg: "Embedded as jpg" });
+    globalThis.watermarkEmbed = async () => ({
+      ok: true,
+      data: new Blob(),
+      msg: "Embedded as jpg",
+    });
     elStore["wm-password"].value = "testpass";
     elStore["wm-type"].value = "2";
     await handleWatermarkEmbed();
@@ -347,9 +500,16 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
 
   it("should handle embed with type 5 (no password)", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
     globalThis.getFile = async (id) => fakeFile;
-    globalThis.watermarkEmbed = async () => ({ ok: true, data: new Blob(), msg: "Zero-bit watermark created" });
+    globalThis.watermarkEmbed = async () => ({
+      ok: true,
+      data: new Blob(),
+      msg: "Zero-bit watermark created",
+    });
     elStore["wm-password"].value = "";
     elStore["wm-type"].value = "5";
     await handleWatermarkEmbed();
@@ -361,8 +521,17 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
 
   it("should handle embed error from validateFileInput on secret", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image" ? fakeFile : { name: "sec.bin", arrayBuffer: async () => new Uint8Array(10).buffer };
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? fakeFile
+        : {
+            name: "sec.bin",
+            arrayBuffer: async () => new Uint8Array(10).buffer,
+          };
     elStore["wm-password"].value = "testpass";
     elStore["wm-type"].value = "1";
     globalThis.validateFileInput = async () => false;
@@ -372,9 +541,14 @@ describe("Watermark UI — handleWatermarkEmbed", () => {
 
   it("should handle embed throwing exception", async () => {
     setupWmMocks();
-    const fakeFile = { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer };
+    const fakeFile = {
+      name: "test.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
     globalThis.getFile = async (id) => fakeFile;
-    globalThis.watermarkEmbed = async () => { throw new Error("embed crash"); };
+    globalThis.watermarkEmbed = async () => {
+      throw new Error("embed crash");
+    };
     elStore["wm-password"].value = "testpass";
     elStore["wm-type"].value = "1";
     await handleWatermarkEmbed();
@@ -402,15 +576,32 @@ describe("Watermark UI — updateCapacity", () => {
   });
 
   it("should calculate capacity for spatial types (1/3)", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "1";
     await updateCapacity();
     // w=10, h=10 → bits = 10*10*3 = 300 → capacityBytes = 37
-    assert.ok(elStore["wm-capacity"].textContent.includes("Capacity: ~37"), `Expected "Capacity: ~37" in "${elStore["wm-capacity"].textContent}"`);
+    assert.ok(
+      elStore["wm-capacity"].textContent.includes("Capacity: ~37"),
+      `Expected "Capacity: ~37" in "${elStore["wm-capacity"].textContent}"`,
+    );
   });
 
   it("should calculate capacity for multi-bit type 6", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "6";
     await updateCapacity();
     // bits = floor(300 * 2/3) = 200 → capacityBytes = 25
@@ -418,7 +609,14 @@ describe("Watermark UI — updateCapacity", () => {
   });
 
   it("should calculate capacity for DCT types (2/4/5/7/9)", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "2";
     await updateCapacity();
     // maxDCTBits(10,10,11) = 1*1*11 = 11 → capacityBytes = 1
@@ -426,7 +624,14 @@ describe("Watermark UI — updateCapacity", () => {
   });
 
   it("should calculate capacity for type 4 with redundant suffix", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "4";
     await updateCapacity();
     // bits = floor(11/3) = 3 → capacityBytes = 0
@@ -435,7 +640,14 @@ describe("Watermark UI — updateCapacity", () => {
   });
 
   it("should calculate capacity for fragile type 8", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "8";
     await updateCapacity();
     // bits = 512 → capacityBytes = 64
@@ -443,21 +655,44 @@ describe("Watermark UI — updateCapacity", () => {
   });
 
   it("should show chrominance suffix for type 9", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "9";
     await updateCapacity();
-    assert.ok(elStore["wm-capacity"].textContent.includes("chrominance redundant"));
+    assert.ok(
+      elStore["wm-capacity"].textContent.includes("chrominance redundant"),
+    );
   });
 
   it("should clear secret status for type 5", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "5";
     await updateCapacity();
     assert.equal(elStore["wm-secret-status"].textContent, "");
   });
 
   it("should clear secret status for type 8", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer } : null;
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            size: 10000,
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
     elStore["wm-type"].value = "8";
     await updateCapacity();
     assert.equal(elStore["wm-secret-status"].textContent, "");
@@ -465,8 +700,18 @@ describe("Watermark UI — updateCapacity", () => {
 
   it("should show OK status when secret fits within capacity", async () => {
     globalThis.getFile = async (id) => {
-      if (id === "wm-image") return { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer };
-      if (id === "wm-secret") return { name: "secret.bin", size: 10, arrayBuffer: async () => new Uint8Array(10).buffer };
+      if (id === "wm-image")
+        return {
+          name: "test.png",
+          size: 10000,
+          arrayBuffer: async () => new Uint8Array(100).buffer,
+        };
+      if (id === "wm-secret")
+        return {
+          name: "secret.bin",
+          size: 10,
+          arrayBuffer: async () => new Uint8Array(10).buffer,
+        };
       return null;
     };
     elStore["wm-type"].value = "1";
@@ -478,8 +723,18 @@ describe("Watermark UI — updateCapacity", () => {
 
   it("should show exceed status when secret exceeds capacity", async () => {
     globalThis.getFile = async (id) => {
-      if (id === "wm-image") return { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer };
-      if (id === "wm-secret") return { name: "secret.bin", size: 500, arrayBuffer: async () => new Uint8Array(500).buffer };
+      if (id === "wm-image")
+        return {
+          name: "test.png",
+          size: 10000,
+          arrayBuffer: async () => new Uint8Array(100).buffer,
+        };
+      if (id === "wm-secret")
+        return {
+          name: "secret.bin",
+          size: 500,
+          arrayBuffer: async () => new Uint8Array(500).buffer,
+        };
       return null;
     };
     elStore["wm-type"].value = "1";
@@ -491,7 +746,12 @@ describe("Watermark UI — updateCapacity", () => {
 
   it("should show max secret size when no secret file", async () => {
     globalThis.getFile = async (id) => {
-      if (id === "wm-image") return { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer };
+      if (id === "wm-image")
+        return {
+          name: "test.png",
+          size: 10000,
+          arrayBuffer: async () => new Uint8Array(100).buffer,
+        };
       return null;
     };
     elStore["wm-type"].value = "1";
@@ -501,13 +761,27 @@ describe("Watermark UI — updateCapacity", () => {
   });
 
   it("should handle error during capacity calculation", async () => {
-    globalThis.getFile = async (id) => id === "wm-image" ? { name: "test.png", arrayBuffer: async () => new Uint8Array(100).buffer } : null;
-    globalThis.loadImage = async () => { throw new Error("load failed"); };
+    globalThis.getFile = async (id) =>
+      id === "wm-image"
+        ? {
+            name: "test.png",
+            arrayBuffer: async () => new Uint8Array(100).buffer,
+          }
+        : null;
+    globalThis.loadImage = async () => {
+      throw new Error("load failed");
+    };
     await updateCapacity();
     assert.equal(elStore["wm-capacity"].textContent, "");
     assert.equal(elStore["wm-secret-status"].textContent, "");
     // Restore loadImage
-    globalThis.loadImage = async () => ({ imgData: { data: new Uint8Array(400), w: 10, h: 10 }, canvas: { toBlob: (cb) => cb(new Blob()) }, ctx: { putImageData: () => {} }, w: 10, h: 10 });
+    globalThis.loadImage = async () => ({
+      imgData: { data: new Uint8Array(400), w: 10, h: 10 },
+      canvas: { toBlob: (cb) => cb(new Blob()) },
+      ctx: { putImageData: () => {} },
+      w: 10,
+      h: 10,
+    });
   });
 });
 
@@ -527,8 +801,11 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should require password for non-exempt extract types", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "1";
     elStore["wm-password-ex"].value = "";
     await handleWatermarkExtract();
@@ -538,13 +815,21 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should auto-detect algorithm with type 0", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "0";
     elStore["wm-password-ex"].value = "testpass";
     // Mock watermarkExtract: type 1 succeeds, rest fail
     globalThis.watermarkExtract = async (type) => {
-      if (type === 1) return { ok: true, files: { "data.bin": new Uint8Array([1, 2, 3]) }, msg: "Found type 1" };
+      if (type === 1)
+        return {
+          ok: true,
+          files: { "data.bin": new Uint8Array([1, 2, 3]) },
+          msg: "Found type 1",
+        };
       return { ok: false, error: "No watermark" };
     };
     await handleWatermarkExtract();
@@ -557,13 +842,20 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should auto-detect type 5 specifically", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "0";
     elStore["wm-password-ex"].value = "testpass";
     // Only type 5 succeeds (detectWatermarkAlgorithm tries 5 separately without password)
     globalThis.watermarkExtract = async (type, imgFile, pw) => {
-      if (type === 5) return { ok: true, msg: "Type 5 PRESENCE CONFIRMED - Zero-bit watermark detected" };
+      if (type === 5)
+        return {
+          ok: true,
+          msg: "Type 5 PRESENCE CONFIRMED - Zero-bit watermark detected",
+        };
       return { ok: false, error: "No watermark" };
     };
     await handleWatermarkExtract();
@@ -574,41 +866,63 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should show no-match message when type 0 finds nothing", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "0";
     elStore["wm-password-ex"].value = "testpass";
-    globalThis.watermarkExtract = async () => ({ ok: false, error: "No watermark" });
+    globalThis.watermarkExtract = async () => ({
+      ok: false,
+      error: "No watermark",
+    });
     await handleWatermarkExtract();
     // Uses setText → textContent with the fallback string from __()
-    assert.ok(elStore["wm-output"].textContent.includes("No watermark detected"));
+    assert.ok(
+      elStore["wm-output"].textContent.includes("No watermark detected"),
+    );
     assert.equal(elStore["wm-result"].style.display, "block");
   });
 
   it("should handle successful extract without files", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "1";
     elStore["wm-password-ex"].value = "testpass";
-    globalThis.watermarkExtract = async () => ({ ok: true, msg: "Extracted watermark data" });
+    globalThis.watermarkExtract = async () => ({
+      ok: true,
+      msg: "Extracted watermark data",
+    });
     await handleWatermarkExtract();
     const r = getResult("wmResult");
     assert.ok(r != null);
     assert.equal(r.type, "extract");
     assert.equal(r.algorithm, 1);
     // Success path uses output.innerHTML
-    assert.ok(elStore["wm-output"].innerHTML.includes("Extracted watermark data"));
+    assert.ok(
+      elStore["wm-output"].innerHTML.includes("Extracted watermark data"),
+    );
     assert.ok(elStore["wm-download"].innerHTML.includes("Download Results"));
   });
 
   it("should handle successful extract without password", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "5";
     elStore["wm-password-ex"].value = "";
-    globalThis.watermarkExtract = async () => ({ ok: true, msg: "Extracted zero-bit" });
+    globalThis.watermarkExtract = async () => ({
+      ok: true,
+      msg: "Extracted zero-bit",
+    });
     await handleWatermarkExtract();
     const r = getResult("wmResult");
     assert.ok(r != null);
@@ -617,15 +931,18 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should handle successful extract with file contents", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "1";
     elStore["wm-password-ex"].value = "testpass";
     const secretData = new TextEncoder().encode("Hello from watermark");
     globalThis.watermarkExtract = async () => ({
       ok: true,
       files: { "secret.txt": secretData },
-      msg: "Extracted secret.txt"
+      msg: "Extracted secret.txt",
     });
     await handleWatermarkExtract();
     const r = getResult("wmResult");
@@ -639,11 +956,17 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should show wmErr message on extract failure", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "1";
     elStore["wm-password-ex"].value = "testpass";
-    globalThis.watermarkExtract = async () => ({ ok: false, error: "Wrong password" });
+    globalThis.watermarkExtract = async () => ({
+      ok: false,
+      error: "Wrong password",
+    });
     await handleWatermarkExtract();
     // Failure path uses setText → textContent → key from __() mock
     assert.ok(elStore["wm-output"].textContent.includes("wm.error_prefix"));
@@ -652,11 +975,17 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should add algo tip when password provided on failure", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "1";
     elStore["wm-password-ex"].value = "testpass";
-    globalThis.watermarkExtract = async () => ({ ok: false, error: "No watermark found with this algorithm" });
+    globalThis.watermarkExtract = async () => ({
+      ok: false,
+      error: "No watermark found with this algorithm",
+    });
     await handleWatermarkExtract();
     // Failure path → textContent includes both error prefix and tip
     assert.ok(elStore["wm-output"].textContent.includes("wm.error_prefix"));
@@ -665,11 +994,16 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should handle exceptions gracefully", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "1";
     elStore["wm-password-ex"].value = "testpass";
-    globalThis.watermarkExtract = async () => { throw new Error("Unexpected crash"); };
+    globalThis.watermarkExtract = async () => {
+      throw new Error("Unexpected crash");
+    };
     await handleWatermarkExtract();
     // Exception caught → setText with error_prefix i18n key
     assert.ok(elStore["wm-output"].textContent.includes("wm.error_prefix"));
@@ -678,8 +1012,11 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 
   it("should handle extract validateFileInput returning false", async () => {
     setupWmMocks();
-    const fakeFile = { name: "stego.png", arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image-ex" ? fakeFile : null;
+    const fakeFile = {
+      name: "stego.png",
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image-ex" ? fakeFile : null);
     elStore["wm-type-ex"].value = "1";
     elStore["wm-password-ex"].value = "testpass";
     globalThis.validateFileInput = async () => false;
@@ -691,8 +1028,12 @@ describe("Watermark UI — handleWatermarkExtract", () => {
 describe("Watermark UI — updateCapacity (edge cases)", () => {
   it("should handle missing wm-type element (fallback to 1)", async () => {
     setupWmMocks();
-    var fakeFile = { name: "test.png", size: 10000, arrayBuffer: async () => new Uint8Array(100).buffer };
-    globalThis.getFile = async (id) => id === "wm-image" ? fakeFile : null;
+    var fakeFile = {
+      name: "test.png",
+      size: 10000,
+      arrayBuffer: async () => new Uint8Array(100).buffer,
+    };
+    globalThis.getFile = async (id) => (id === "wm-image" ? fakeFile : null);
     delete elStore["wm-type"];
     await updateCapacity();
     elStore["wm-type"] = { value: "1" };

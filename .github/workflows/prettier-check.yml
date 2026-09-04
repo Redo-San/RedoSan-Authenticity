@@ -4,9 +4,6 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 permissions:
   pull-requests: write
   contents: read
@@ -19,53 +16,55 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          script: |
-            const run = require('child_process').execSync;
-            const base = context.payload.pull_request.base.sha || 'origin/main';
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run Prettier check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
 
-            const diff = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "*.js" "*.css" "*.html" "*.json"', { encoding: 'utf8' });
-            const files = diff.trim().split('\n').filter(Boolean).filter(f => !f.includes('i18n-data.js') && !f.includes('i18n.js')).filter(f => !f.startsWith('Style/pages/') && f !== 'Style/shared.js').filter(f => !f.startsWith('cli/'));
+          FILES=$(git diff --name-only --diff-filter=ACMRT "$BASE...HEAD" -- "*.js" "*.css" "*.html" "*.json" \
+            | grep -v 'i18n-data\.js' | grep -v 'i18n\.js' \
+            | grep -v '^Style/pages/' | grep -v '^Style/shared\.js$' \
+            | grep -v '^cli/' || true)
 
-            if (files.length === 0) {
-              console.log('No files to check.');
-              return;
-            }
+          if [ -z "$FILES" ]; then
+            echo "No files to check."
+            exit 0
+          fi
 
-            const { data: comments } = await github.rest.issues.listComments({
-              ...context.repo, issue_number: context.issue.number
-            });
-            const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('Prettier Check')
-            );
+          echo "Checking formatting for changed files..."
 
-            try {
-              run('npx prettier --config .tools/Developer_Toolkit/.prettierrc --ignore-path .tools/Developer_Toolkit/.prettierignore --check ' + files.join(' '), { encoding: 'utf8', stdio: 'pipe' });
-              if (existing) {
-                await github.rest.issues.deleteComment({
-                  ...context.repo, comment_id: existing.id
-                });
-              }
-            } catch (e) {
-              const unformatted = (e.stdout || '') + (e.stderr || '');
-              const list = unformatted.trim().split('\n')
-                .map(l => l.replace(/\x1b\[\d+m/g, ''))
-                .filter(Boolean)
-                .filter(l => !l.includes('npm warn') && l.trim() !== 'Checking formatting...' && !/^(Warnings?|Errors?):/.test(l.trim()))
-                .slice(0, 20);
+          npx prettier --config .tools/Developer_Toolkit/.prettierrc \
+            --ignore-path .tools/Developer_Toolkit/.prettierignore \
+            --check $FILES > /tmp/prettier-output.txt 2>&1 || true
+          PRETTIER_EXIT=${PIPESTATUS[0]}
 
-              const body = '## Prettier Check\n\nFound ' + list.length + ' unformatted file(s):\n\n' +
-                list.map(f => '- `' + f.replace('[warn] ', '').replace(' (code)', '').trim() + '`').join('\n') +
-                '\n\nRun `npx prettier --write ' + files.join(' ') + '` to fix.';
+          if [ "$PRETTIER_EXIT" -eq 0 ]; then
+            echo "All files formatted correctly."
+            exit 0
+          fi
 
-              if (existing) {
-                await github.rest.issues.updateComment({
-                  ...context.repo, comment_id: existing.id, body
-                });
-              } else {
-                await github.rest.issues.createComment({
-                  ...context.repo, issue_number: context.issue.number, body
-                });
-              }
-            }
+          cat /tmp/prettier-output.txt \
+            | sed 's/\x1b\[[0-9;]*m//g' \
+            | grep '\[warn\]' \
+            | sed 's/\[warn\] //' \
+            | sed 's/ (code)//' \
+            | head -20 \
+            > /tmp/prettier-warnings.txt
+
+          COUNT=$(wc -l < /tmp/prettier-warnings.txt | tr -d ' ')
+
+          # Build file list as markdown
+          printf '%s\n' "## Prettier Check" "" "Found ${COUNT} unformatted file(s):" "" > /tmp/prettier-body.md
+          sed 's/^/- `/' /tmp/prettier-warnings.txt >> /tmp/prettier-body.md
+          printf '%s\n' "" "Run \`npx prettier --write\` to fix." >> /tmp/prettier-body.md
+
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body-file /tmp/prettier-body.md
+          exit 1

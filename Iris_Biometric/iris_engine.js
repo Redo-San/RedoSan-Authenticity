@@ -193,9 +193,9 @@ IrisEngine.detectPupil = function (gray, width, height) {
   // Coarse search
   for (cx = width * 0.3; cx < width * 0.7; cx += stepXY) {
     for (cy = height * 0.3; cy < height * 0.7; cy += stepXY) {
+      prevSum = 0;
       for (r = minR; r <= maxR; r += stepR) {
         sum = 0;
-        prevSum = 0;
         for (i = 0; i < angleCount; i++) {
           theta = (i / angleCount) * 2 * Math.PI;
           x = Math.floor(cx + r * Math.cos(theta));

@@ -1051,4 +1051,115 @@ window.__I18N_DATA.en = {
     "Copy failed. Select the ID text manually.",
   "face.status.privacyIdReadyToCopy": "Privacy ID ready to copy.",
   "face.status.livenessCheckFailed": "Liveness check failed:",
+  "sidebar.iris_biometric": "Iris Biometric",
+  "card.iris_biometric.title": "Iris Biometric",
+  "card.iris_biometric.desc":
+    "Daugman algorithm — iris recognition, liveness, enrollment",
+  "iris.heading": "Iris Biometric",
+  "iris.privacy_note":
+    "🔒 All iris processing is 100% local. Data never leaves your device.",
+  "iris.help_title": "How to use Iris Biometric",
+  "iris.help.1":
+    "Register and verify iris biometrics for identity protection — 100% in your browser, nothing is uploaded.",
+  "iris.help.2": "Read the Consent Notice and tick the box to enable capture.",
+  "iris.help.3":
+    "Use your camera or upload a close-up eye photo; the tool segments your iris, normalizes it (Daugman rubber-sheet), and generates a 2048-bit IrisCode.",
+  "iris.help.4":
+    "Enter a name and press Generate Identifiers to store the template locally (IndexedDB).",
+  "iris.help.5":
+    "Compare a new capture against stored templates on the Verify tab to confirm a match.",
+  "iris.help.6":
+    "On the Enrolled Templates list you can refresh or clear all stored templates.",
+  "iris.help.7":
+    "⚠️ All processing is on-device. Withdraw consent at any time to delete every stored iris record (GDPR Art. 7(3) + 17).",
+  "iris.consent_title": "Iris Biometric Consent Notice",
+  "iris.consent_body":
+    "This tool processes iris patterns — a biometric identifier — entirely in your browser. Please read the details below before continuing.",
+  "iris.consent_what":
+    "What: a numeric iris code (2048-bit IrisCode) derived from your eye photo, generated using Gabor wavelet analysis.",
+  "iris.consent_purpose":
+    "Purpose: verifying and protecting your identity — authentication, anti-spoofing and liveness detection.",
+  "iris.consent_where":
+    "Storage: in this browser, on this device only. There is no server or cloud — nothing is uploaded, shared or used for training.",
+  "iris.consent_retention":
+    "Retention: records stay in this browser's local storage on this device until you delete them or withdraw consent.",
+  "iris.consent_rights":
+    "Your rights: you may withdraw consent at any time — this deletes all stored biometric data from this device.",
+  "iris.accuracy_note_title": "Accuracy note:",
+  "iris.accuracy_note":
+    "Capture uses your webcam under ordinary visible light. Professional iris scanners use near-infrared (NIR) illumination; under visible light — especially for darker irides — iris texture contrast is lower and accuracy is measurably reduced. Enrol in good, even lighting and retry if a capture is rejected.",
+  "iris.consent_check":
+    "I have read and understand the notice above and consent to on-device processing of my iris biometric data.",
+  "iris.consent_accept_btn": "I Consent",
+  "iris.consent_optional":
+    "You can browse the site without consenting — biometric features stay disabled.",
+  "iris.consent_given":
+    "✅ Consent recorded. You can withdraw it anytime — withdrawing deletes your stored biometric data.",
+  "iris.input_tab_camera": "Capture with Camera",
+  "iris.input_tab_upload": "Upload Photo",
+  "iris.input_tab_dual": "Both Eyes",
+  "iris.camera_label": "Live Camera",
+  "iris.camera_start_btn": "Start Camera",
+  "iris.camera_stop_btn": "Stop Camera",
+  "iris.capture_btn": "Capture Iris",
+  "iris.camera_hint":
+    "Look directly at the camera in good light. Position your eye in the frame, then Capture.",
+  "iris.image_label": "Eye Photo",
+  "iris.label_label": "Name / Label",
+  "iris.label_placeholder": "e.g. My Iris",
+  "iris.eye_side_label": "Eye Side",
+  "iris.eye_side_unknown": "Unknown",
+  "iris.eye_side_left": "Left",
+  "iris.eye_side_right": "Right",
+  "iris.dual_btn": "Capture Both Eyes",
+  "iris.run_btn": "Generate Identifiers",
+  "iris.result_title": "Capture Result",
+  "iris.result_liveness": "Liveness",
+  "iris.result_quality": "Quality Score",
+  "iris.result_pupil": "Pupil Radius",
+  "iris.result_iris": "Iris Radius",
+  "iris.result_code": "IrisCode",
+  "iris.result_hd": "Hamming Distance",
+  "iris.download_btn": "Download Results",
+  "iris.gallery_title": "Enrolled Templates",
+  "iris.count_label": "Total: {0}",
+  "iris.enc_hint":
+    "🔒 Iris codes are sealed automatically with AES-GCM (PBKDF2, 310k iterations) using a device vault key — nothing is stored in plaintext and no passphrase is required.",
+  "iris.no_templates": "No templates enrolled yet.",
+  "iris.refresh_btn": "Refresh List",
+  "iris.clear_all_btn": "Clear All",
+  "iris.iec62471_note":
+    "⚠️ This tool uses your device's visible-light webcam only. No NIR (near-infrared) emitter is activated. Per IEC 62471, the radiant exposure from a standard webcam LED illuminator at working distance is well below the exempt-group limits (0.001 W/cm² over 10 000 s). No retinal hazard exists at this intensity.",
+  "iris.status.cameraNotSupported": "Camera not supported in this browser.",
+  "iris.status.startingCamera": "Starting camera...",
+  "iris.status.cameraActive": "Camera active. Position your eye in the center.",
+  "iris.status.imageFormatError":
+    "Only PNG or BMP images are allowed — lossless capture is required. JPEG is rejected to preserve iris texture. (reason: {0})",
+  "iris.status.frameCaptured": 'Frame captured. Press "Generate Identifiers".',
+  "iris.status.photoLoaded": 'Photo loaded. Press "Generate Identifiers".',
+  "iris.status.startCameraFirst": "Start the camera first.",
+  "iris.status.captureError": "Capture error: {0}",
+  "iris.status.dualCaptureComplete":
+    "Dual-eye capture complete (Left + Right enrolled).",
+  "iris.status.dualCaptureError": "Dual capture error: {0}",
+  "iris.status.allTemplatesCleared": "All templates cleared.",
+  "iris.status.invalidChars":
+    "Only English (Latin) letters, numbers and basic punctuation are allowed.",
+  "iris.status.confirmClearAll":
+    "Delete ALL iris templates? This cannot be undone.",
+  "iris.status.importError": "Import error: {0}",
+  "iris.result.live": "✓ LIVE ({0}%)",
+  "iris.result.spoof": "✗ SPOOF ({0}%)",
+  "iris.alert.deleteTemplate": "Delete this iris template?",
+  "iris.alert.noTemplatesExport": "No templates to export.",
+  "iris.alert.invalidFormat": "Invalid format.",
+  "iris.alert.importedCount": "Imported {0} template(s).",
+  "iris.ready": "Iris biometric system ready. Stored templates: {0}",
+  "iris.gallery.eye_side": "Eye side",
+  "iris.gallery.verify": "Verify",
+  "iris.gallery.delete": "Delete",
+  "iris.download.title": "Download Report",
+  "iris.download.choose_format": "Choose a format:",
+  "iris.init": "Initializing iris biometric system...",
+  "iris.init_error": "Initialization error: {0}",
 };

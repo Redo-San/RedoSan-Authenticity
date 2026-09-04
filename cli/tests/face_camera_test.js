@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // ── GPL polyfills ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // Mock DOM element factory — video mocks must be real node-canvas instances so
 // drawImage(video, ...) succeeds.
@@ -86,12 +91,19 @@ const cameraSrc = fs.readFileSync(
   "utf8",
 );
 vm.runInThisContext(cameraSrc, {
-  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_camera.js"),
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_camera.js",
+  ),
 });
 
 describe("FaceCamera — isSupported", () => {
   it("is true in a secure context with mediaDevices", () => {
-    installNavigator(async function () { return fakeStream(); });
+    installNavigator(async function () {
+      return fakeStream();
+    });
     assert.equal(globalThis.FaceCamera.isSupported(), true);
   });
 
@@ -101,7 +113,10 @@ describe("FaceCamera — isSupported", () => {
   });
 
   it("is false in a non-secure context", () => {
-    setNavigator({ isSecureContext: false, mediaDevices: { getUserMedia: function () {} } });
+    setNavigator({
+      isSecureContext: false,
+      mediaDevices: { getUserMedia: function () {} },
+    });
     assert.equal(globalThis.FaceCamera.isSupported(), false);
   });
 
@@ -113,49 +128,92 @@ describe("FaceCamera — isSupported", () => {
 
 describe("FaceCamera — getCameraErrorMessage", () => {
   it("maps permission errors", () => {
-    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "NotAllowedError" }).includes("permission"));
-    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "SecurityError" }).includes("permission"));
+    assert.ok(
+      globalThis.FaceCamera.getCameraErrorMessage({
+        name: "NotAllowedError",
+      }).includes("permission"),
+    );
+    assert.ok(
+      globalThis.FaceCamera.getCameraErrorMessage({
+        name: "SecurityError",
+      }).includes("permission"),
+    );
   });
 
   it("maps not-found errors", () => {
-    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "NotFoundError" }).includes("No camera"));
+    assert.ok(
+      globalThis.FaceCamera.getCameraErrorMessage({
+        name: "NotFoundError",
+      }).includes("No camera"),
+    );
   });
 
   it("maps in-use errors", () => {
-    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "NotReadableError" }).includes("already in use"));
+    assert.ok(
+      globalThis.FaceCamera.getCameraErrorMessage({
+        name: "NotReadableError",
+      }).includes("already in use"),
+    );
   });
 
   it("maps overconstrained errors", () => {
-    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "OverconstrainedError" }).includes("constraints"));
+    assert.ok(
+      globalThis.FaceCamera.getCameraErrorMessage({
+        name: "OverconstrainedError",
+      }).includes("constraints"),
+    );
   });
 
   it("falls back to the message for unknown errors", () => {
-    const msg = globalThis.FaceCamera.getCameraErrorMessage({ name: "BogusError", message: "weird" });
+    const msg = globalThis.FaceCamera.getCameraErrorMessage({
+      name: "BogusError",
+      message: "weird",
+    });
     assert.ok(msg.includes("weird"));
   });
 
   it("handles null", () => {
-    assert.equal(globalThis.FaceCamera.getCameraErrorMessage(null), "Camera error.");
+    assert.equal(
+      globalThis.FaceCamera.getCameraErrorMessage(null),
+      "Camera error.",
+    );
   });
 
   it("maps abort errors", () => {
-    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "AbortError" }).includes("aborted"));
+    assert.ok(
+      globalThis.FaceCamera.getCameraErrorMessage({
+        name: "AbortError",
+      }).includes("aborted"),
+    );
   });
 
   it("maps not-supported errors", () => {
-    assert.ok(globalThis.FaceCamera.getCameraErrorMessage({ name: "NotSupportedError" }).includes("not supported"));
+    assert.ok(
+      globalThis.FaceCamera.getCameraErrorMessage({
+        name: "NotSupportedError",
+      }).includes("not supported"),
+    );
   });
 
   it("maps a string error", () => {
-    assert.equal(globalThis.FaceCamera.getCameraErrorMessage("SomeError"), "Camera error: SomeError");
+    assert.equal(
+      globalThis.FaceCamera.getCameraErrorMessage("SomeError"),
+      "Camera error: SomeError",
+    );
   });
 
   it("maps an error with only a code", () => {
-    assert.equal(globalThis.FaceCamera.getCameraErrorMessage({ code: "E123" }), "Camera error: E123");
+    assert.equal(
+      globalThis.FaceCamera.getCameraErrorMessage({ code: "E123" }),
+      "Camera error: E123",
+    );
   });
 
   it("maps a nameless error with no message", () => {
-    assert.equal(globalThis.FaceCamera.getCameraErrorMessage({ foo: 1 }), "Camera error: UnknownError");
+    assert.equal(
+      globalThis.FaceCamera.getCameraErrorMessage({ foo: 1 }),
+      "Camera error: UnknownError",
+    );
   });
 });
 
@@ -171,7 +229,9 @@ describe("FaceCamera — startCamera", () => {
   });
 
   it("attaches the stream and plays the video", async () => {
-    installNavigator(async function () { return fakeStream(); });
+    installNavigator(async function () {
+      return fakeStream();
+    });
     const video = makeEl("video");
     const stream = await camera.startCamera(video);
     assert.equal(camera.isActive(), true);
@@ -180,7 +240,9 @@ describe("FaceCamera — startCamera", () => {
   });
 
   it("does not mirror when mirror:false", async () => {
-    installNavigator(async function () { return fakeStream(); });
+    installNavigator(async function () {
+      return fakeStream();
+    });
     const video = makeEl("video");
     const cam = new globalThis.FaceCamera({ mirror: false });
     await cam.startCamera(video);
@@ -189,7 +251,9 @@ describe("FaceCamera — startCamera", () => {
   });
 
   it("throws without a video element", async () => {
-    installNavigator(async function () { return fakeStream(); });
+    installNavigator(async function () {
+      return fakeStream();
+    });
     await assert.rejects(camera.startCamera(null), /element is required/);
   });
 
@@ -199,7 +263,9 @@ describe("FaceCamera — startCamera", () => {
       err.name = "NotAllowedError";
       throw err;
     });
-    await assert.rejects(camera.startCamera(makeEl("video")), { name: "NotAllowedError" });
+    await assert.rejects(camera.startCamera(makeEl("video")), {
+      name: "NotAllowedError",
+    });
   });
 
   it("throws when unsupported (no mediaDevices)", async () => {
@@ -209,7 +275,10 @@ describe("FaceCamera — startCamera", () => {
 
   it("passes deviceId constraints", async () => {
     let captured;
-    installNavigator(async function (c) { captured = c; return fakeStream(); });
+    installNavigator(async function (c) {
+      captured = c;
+      return fakeStream();
+    });
     const video = makeEl("video");
     await camera.startCamera(video, { deviceId: "dev-9" });
     assert.equal(captured.video.deviceId.exact, "dev-9");
@@ -228,10 +297,18 @@ describe("FaceCamera — stopCamera & captureFrame", () => {
     const stream = {
       active: true,
       getTracks: function () {
-        return [{ stop: function () { stopped = true; } }];
+        return [
+          {
+            stop: function () {
+              stopped = true;
+            },
+          },
+        ];
       },
     };
-    installNavigator(async function () { return stream; });
+    installNavigator(async function () {
+      return stream;
+    });
     const video = makeEl("video");
     await camera.startCamera(video);
     camera.stopCamera();
@@ -246,7 +323,9 @@ describe("FaceCamera — stopCamera & captureFrame", () => {
   });
 
   it("captureFrame draws the video frame to a canvas", async () => {
-    installNavigator(async function () { return fakeStream(); });
+    installNavigator(async function () {
+      return fakeStream();
+    });
     const video = makeEl("video");
     video.videoWidth = 1280;
     video.videoHeight = 720;
@@ -261,7 +340,9 @@ describe("FaceCamera — stopCamera & captureFrame", () => {
   });
 
   it("captureFrame uses default dimensions", async () => {
-    installNavigator(async function () { return fakeStream(); });
+    installNavigator(async function () {
+      return fakeStream();
+    });
     const video = makeEl("video");
     video.videoWidth = 0;
     video.videoHeight = 0;
@@ -274,7 +355,9 @@ describe("FaceCamera — stopCamera & captureFrame", () => {
 
 describe("FaceCamera — listCameras", () => {
   it("returns video inputs only", async () => {
-    installNavigator(async function () { return fakeStream(); });
+    installNavigator(async function () {
+      return fakeStream();
+    });
     const camera = new globalThis.FaceCamera();
     const list = await camera.listCameras();
     assert.equal(list.length, 1);
@@ -292,7 +375,9 @@ describe("FaceCamera — listCameras", () => {
     setNavigator({
       isSecureContext: true,
       mediaDevices: {
-        getUserMedia: async function () { return fakeStream(); },
+        getUserMedia: async function () {
+          return fakeStream();
+        },
         enumerateDevices: async function () {
           return [{ kind: "videoinput", deviceId: "cam-x" }];
         },
@@ -338,14 +423,22 @@ describe("FaceCamera — scoreFrame & captureBestFrame", () => {
     camera.scoreFrame = async function () {
       const s = scores[idx % scores.length];
       idx++;
-      return { canvas: { w: s }, result: { box: { width: s * 100 } }, score: s * 100 };
+      return {
+        canvas: { w: s },
+        result: { box: { width: s * 100 } },
+        score: s * 100,
+      };
     };
     const best = await camera.captureBestFrame(null, 3, 0);
     assert.equal(best.score, 90);
   });
 
   it("scoreFrame returns 0 when no face detected", async () => {
-    const engine = { detectFaces: async function () { return []; } };
+    const engine = {
+      detectFaces: async function () {
+        return [];
+      },
+    };
     const r = await camera.scoreFrame({ width: 640, height: 480 }, engine);
     assert.equal(r.score, 0);
     assert.equal(r.result, null);

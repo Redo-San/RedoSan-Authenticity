@@ -41,7 +41,15 @@ describe("E2E — Fingerprint Page", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -53,8 +61,12 @@ describe("E2E — Fingerprint Page", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "fingerprint");
     await page.waitForTimeout(1000);
-    const hasFileInput = await page.evaluate(() => !!document.getElementById("fp-file"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("fp-btn"));
+    const hasFileInput = await page.evaluate(
+      () => !!document.getElementById("fp-file"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("fp-btn"),
+    );
     assert.ok(hasFileInput, "File input should exist");
     assert.ok(hasBtn, "Fingerprint button should exist");
     await ctx.close();
@@ -70,7 +82,9 @@ describe("E2E — Fingerprint Page", () => {
     await page.waitForTimeout(1000);
 
     // Upload a valid PNG file
-    await page.setInputFiles("#fp-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#fp-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
 
     await page.waitForTimeout(500);
 
@@ -85,7 +99,10 @@ describe("E2E — Fingerprint Page", () => {
     await page.evaluate(() => document.getElementById("fp-btn").click());
 
     // Wait for result
-    await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#fp-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     // Verify output contains hash info
@@ -99,7 +116,8 @@ describe("E2E — Fingerprint Page", () => {
 
     // Verify result is stored
     const hasResult = await page.evaluate(() => {
-      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const getFn =
+        typeof getResult === "function" ? getResult : window.getResult;
       return getFn ? !!getFn("fpResult") : false;
     });
     assert.ok(hasResult, "fpResult should be set in result store");
@@ -116,18 +134,26 @@ describe("E2E — Fingerprint Page", () => {
     await navTo(page, "fingerprint");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#fp-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#fp-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("fp-btn").click());
 
-    await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#fp-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     const dlHtml = await page.evaluate(() => {
       const el = document.getElementById("fp-download");
       return el ? el.innerHTML : "";
     });
-    assert.ok(dlHtml.includes("Download") || dlHtml.includes("تحميل"), "Download button should appear");
+    assert.ok(
+      dlHtml.includes("Download") || dlHtml.includes("تحميل"),
+      "Download button should appear",
+    );
 
     // Click download to verify modal appears
     await page.evaluate(() => {
@@ -139,7 +165,10 @@ describe("E2E — Fingerprint Page", () => {
       const modal = document.getElementById("dl-modal");
       return modal ? modal.classList.contains("open") : false;
     });
-    assert.ok(modalVisible, "Download modal should be visible after clicking download");
+    assert.ok(
+      modalVisible,
+      "Download modal should be visible after clicking download",
+    );
 
     await ctx.close();
   });
@@ -158,13 +187,24 @@ describe("E2E — Fingerprint Page", () => {
     await navTo(page, "fingerprint");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#fp-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+    await page.setInputFiles("#fp-file", [
+      { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+    ]);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById("fp-btn").click());
-    await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#fp-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
-    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
+    const fatal = errors.filter(
+      (e) =>
+        !e.includes("frame-ancestors") &&
+        !e.includes("404") &&
+        !e.includes("Failed to load") &&
+        !e.includes("valid digest"),
+    );
     assert.equal(fatal.length, 0, `Fatal errors: ${fatal.join(", ")}`);
     await ctx.close();
   });

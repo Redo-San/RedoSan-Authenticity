@@ -1,18 +1,35 @@
-'use strict';
-const fs = require('node:fs');
-const path = require('node:path');
+"use strict";
+const fs = require("node:fs");
+const path = require("node:path");
 
-const PAGES_DIR = path.resolve(__dirname, '../Style/pages');
+const PAGES_DIR = path.resolve(__dirname, "../Style/pages");
 // All 20 page directories
 const PAGES = [
-  'home', 'watermark', 'audio-watermark', 'fingerprint', 'search',
-  'pixel-injection', 'metadata', 'timestamp', 'did', 'c2pa',
-  'certificate', 'forensic', 'converter', 'removal-tools', 'id_forge',
-  'document-watermark', 'about', 'privacy', 'contact', 'social',
+  "home",
+  "watermark",
+  "audio-watermark",
+  "fingerprint",
+  "search",
+  "pixel-injection",
+  "metadata",
+  "timestamp",
+  "did",
+  "c2pa",
+  "certificate",
+  "forensic",
+  "converter",
+  "removal-tools",
+  "id_forge",
+  "document-watermark",
+  "about",
+  "privacy",
+  "contact",
+  "social",
 ];
 
-const MODE_SELECT_START = '    <!-- Mode Selection Overlay -->\n    <div\n      id="modeSelect"\n';
-const MODE_SELECT_END = '    </div>\n\n    <!-- Navigation bar -->';
+const MODE_SELECT_START =
+  '    <!-- Mode Selection Overlay -->\n    <div\n      id="modeSelect"\n';
+const MODE_SELECT_END = "    </div>\n\n    <!-- Navigation bar -->";
 
 // New init script that shows app directly (no modeSelect/simplified)
 const NEW_INIT_SCRIPT = `    <script>
@@ -32,13 +49,13 @@ const NEW_INIT_SCRIPT = `    <script>
 let fixed = 0;
 
 for (const pageId of PAGES) {
-  const filePath = path.join(PAGES_DIR, pageId, 'index.html');
+  const filePath = path.join(PAGES_DIR, pageId, "index.html");
   if (!fs.existsSync(filePath)) {
     console.log(`SKIP ${pageId}: file not found`);
     continue;
   }
 
-  let content = fs.readFileSync(filePath, 'utf-8');
+  let content = fs.readFileSync(filePath, "utf-8");
   const original = content;
   let changed = false;
 
@@ -47,9 +64,9 @@ for (const pageId of PAGES) {
   if (msStart === -1) {
     // Try alternative: modeSelect might not have the exact same whitespace
     // Fall back to removing the div with id="modeSelect" up to <!-- Navigation bar -->
-    const altStart = content.indexOf('<!-- Mode Selection Overlay -->');
+    const altStart = content.indexOf("<!-- Mode Selection Overlay -->");
     if (altStart !== -1) {
-      const navStart = content.indexOf('<!-- Navigation bar -->', altStart);
+      const navStart = content.indexOf("<!-- Navigation bar -->", altStart);
       if (navStart !== -1) {
         content = content.slice(0, altStart) + content.slice(navStart);
         changed = true;
@@ -61,7 +78,9 @@ for (const pageId of PAGES) {
     if (msEnd === -1) {
       console.log(`  WARN ${pageId}: found modeSelect start but no end marker`);
     } else {
-      content = content.slice(0, msStart) + content.slice(msEnd + MODE_SELECT_END.length);
+      content =
+        content.slice(0, msStart) +
+        content.slice(msEnd + MODE_SELECT_END.length);
       changed = true;
       console.log(`  Removed modeSelect from ${pageId}`);
     }
@@ -72,7 +91,7 @@ for (const pageId of PAGES) {
   const scriptIdx = content.lastIndexOf(scriptPattern);
   if (scriptIdx !== -1) {
     // Find the end of this script block
-    const scriptEnd = content.indexOf('</script>', scriptIdx);
+    const scriptEnd = content.indexOf("</script>", scriptIdx);
     if (scriptEnd !== -1) {
       const oldScript = content.slice(scriptIdx, scriptEnd + 9); // +9 for </script>
       const newScript = NEW_INIT_SCRIPT.replace(/\{PAGE_ID\}/g, pageId);
@@ -83,7 +102,7 @@ for (const pageId of PAGES) {
   }
 
   if (changed) {
-    fs.writeFileSync(filePath, content, 'utf-8');
+    fs.writeFileSync(filePath, content, "utf-8");
     fixed++;
   } else {
     console.log(`  No changes for ${pageId}`);

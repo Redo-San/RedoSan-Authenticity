@@ -69,7 +69,11 @@ test("IrisStorage.save: saves with right eye data", async () => {
 
 test("IrisStorage.load: retrieves saved template", async () => {
   const store = new ISt();
-  await store.save({ id: "load-1", leftCode: new Uint8Array([10, 20]), leftMask: new Uint8Array([30]) });
+  await store.save({
+    id: "load-1",
+    leftCode: new Uint8Array([10, 20]),
+    leftMask: new Uint8Array([30]),
+  });
   const loaded = await store.load("load-1");
   assert.ok(loaded);
   assert.equal(loaded.id, "load-1");
@@ -85,19 +89,35 @@ test("IrisStorage.load: returns null for missing id", async () => {
 
 test("IrisStorage.list: returns saved entries", async () => {
   const store = new ISt();
-  await store.save({ id: "list-1", label: "a", leftCode: new Uint8Array(2), leftMask: new Uint8Array(2) });
-  await store.save({ id: "list-2", label: "b", leftCode: new Uint8Array(2), leftMask: new Uint8Array(2) });
+  await store.save({
+    id: "list-1",
+    label: "a",
+    leftCode: new Uint8Array(2),
+    leftMask: new Uint8Array(2),
+  });
+  await store.save({
+    id: "list-2",
+    label: "b",
+    leftCode: new Uint8Array(2),
+    leftMask: new Uint8Array(2),
+  });
   const items = await store.list();
   assert.ok(Array.isArray(items));
   assert.ok(items.length >= 2);
-  const ids = items.map(function (x) { return x.id; });
+  const ids = items.map(function (x) {
+    return x.id;
+  });
   assert.ok(ids.includes("list-1"));
   assert.ok(ids.includes("list-2"));
 });
 
 test("IrisStorage.delete: removes a template", async () => {
   const store = new ISt();
-  await store.save({ id: "del-1", leftCode: new Uint8Array(1), leftMask: new Uint8Array(1) });
+  await store.save({
+    id: "del-1",
+    leftCode: new Uint8Array(1),
+    leftMask: new Uint8Array(1),
+  });
   await store.delete("del-1");
   const loaded = await store.load("del-1");
   assert.equal(loaded, null);
@@ -105,15 +125,27 @@ test("IrisStorage.delete: removes a template", async () => {
 
 test("IrisStorage.count: returns count", async () => {
   const store = new ISt();
-  await store.save({ id: "cnt-1", leftCode: new Uint8Array(1), leftMask: new Uint8Array(1) });
-  await store.save({ id: "cnt-2", leftCode: new Uint8Array(1), leftMask: new Uint8Array(1) });
+  await store.save({
+    id: "cnt-1",
+    leftCode: new Uint8Array(1),
+    leftMask: new Uint8Array(1),
+  });
+  await store.save({
+    id: "cnt-2",
+    leftCode: new Uint8Array(1),
+    leftMask: new Uint8Array(1),
+  });
   const n = await store.count();
   assert.ok(n >= 2);
 });
 
 test("IrisStorage.clear: removes all entries", async () => {
   const store = new ISt();
-  await store.save({ id: "clr-1", leftCode: new Uint8Array(1), leftMask: new Uint8Array(1) });
+  await store.save({
+    id: "clr-1",
+    leftCode: new Uint8Array(1),
+    leftMask: new Uint8Array(1),
+  });
   await store.clear();
   const n = await store.count();
   assert.equal(n, 0);
@@ -146,7 +178,11 @@ test("IrisStorage.importRecords: skips records without id", async () => {
 
 test("IrisStorage.exportAllRecords: returns saved records", async () => {
   const store = new ISt();
-  await store.save({ id: "exp-1", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]) });
+  await store.save({
+    id: "exp-1",
+    leftCode: new Uint8Array([1]),
+    leftMask: new Uint8Array([2]),
+  });
   const exported = await store.exportAllRecords();
   assert.ok(Array.isArray(exported));
   assert.ok(exported.length >= 1);
@@ -154,7 +190,11 @@ test("IrisStorage.exportAllRecords: returns saved records", async () => {
 
 test("IrisStorage.exportTemplate: exports as JSON", async () => {
   const store = new ISt();
-  await store.save({ id: "json-1", leftCode: new Uint8Array([1, 2]), leftMask: new Uint8Array([3]) });
+  await store.save({
+    id: "json-1",
+    leftCode: new Uint8Array([1, 2]),
+    leftMask: new Uint8Array([3]),
+  });
   const json = await store.exportTemplate("json-1");
   assert.ok(json);
   const data = JSON.parse(json);
@@ -171,7 +211,11 @@ test("IrisStorage.exportTemplate: returns null for missing", async () => {
 test("IrisStorage.importTemplate: imports JSON string", async () => {
   const store = new ISt();
   const tpl = { id: "imp-json-1", leftCode: [10, 20], leftMask: [30, 40] };
-  const json = JSON.stringify({ format: "redosan-iris-v1", exportedAt: Date.now(), template: tpl });
+  const json = JSON.stringify({
+    format: "redosan-iris-v1",
+    exportedAt: Date.now(),
+    template: tpl,
+  });
   const id = await store.importTemplate(json);
   assert.equal(id, "imp-json-1");
   const loaded = await store.load("imp-json-1");
@@ -191,7 +235,12 @@ test("IrisStorage.importTemplate: throws on bad format", async () => {
 
 test("IrisStorage.load: rehydrates record with eyeSide normalization", async () => {
   const store = new ISt();
-  await store.save({ id: "eye-1", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]), eyeSide: "right" });
+  await store.save({
+    id: "eye-1",
+    leftCode: new Uint8Array([1]),
+    leftMask: new Uint8Array([2]),
+    eyeSide: "right",
+  });
   const loaded = await store.load("eye-1");
   assert.ok(loaded);
   assert.equal(loaded.eyeSide, "right");
@@ -199,7 +248,12 @@ test("IrisStorage.load: rehydrates record with eyeSide normalization", async () 
 
 test("IrisStorage.load: rehydrates unknown eyeSide", async () => {
   const store = new ISt();
-  await store.save({ id: "eye-2", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]), eyeSide: "bad" });
+  await store.save({
+    id: "eye-2",
+    leftCode: new Uint8Array([1]),
+    leftMask: new Uint8Array([2]),
+    eyeSide: "bad",
+  });
   const loaded = await store.load("eye-2");
   assert.ok(loaded);
   assert.equal(loaded.eyeSide, "unknown");
@@ -215,7 +269,11 @@ test("IrisStorage.save: throws when FaceCrypto missing with vault key", async ()
   const store = new ISt();
   store.setVaultKey("fake-key");
   try {
-    await store.save({ id: "vault-1", leftCode: new Uint8Array(1), leftMask: new Uint8Array(1) });
+    await store.save({
+      id: "vault-1",
+      leftCode: new Uint8Array(1),
+      leftMask: new Uint8Array(1),
+    });
     assert.fail("should throw");
   } catch (e) {
     assert.ok(e.message.includes("FaceCrypto"));
@@ -320,7 +378,11 @@ test("IrisStorage.importTemplate: valid with right eye", async () => {
     rightMask: Array.from(new Uint8Array([10, 11, 12])),
     eyeSide: "unknown",
   };
-  const json = JSON.stringify({ format: "redosan-iris-v1", exportedAt: Date.now(), template });
+  const json = JSON.stringify({
+    format: "redosan-iris-v1",
+    exportedAt: Date.now(),
+    template,
+  });
   const id = await store.importTemplate(json);
   assert.equal(id, "imp-1");
 });
@@ -359,16 +421,27 @@ test("ISt.importRecords: empty", async () => {
 
 test("ISt.importRecords: with valid record", async () => {
   const store = new ISt();
-  const record = { template: { code: new Uint8Array(64).fill(1), mask: new Uint8Array(64).fill(1) }, metadata: { eyeSide: "left" } };
+  const record = {
+    template: {
+      code: new Uint8Array(64).fill(1),
+      mask: new Uint8Array(64).fill(1),
+    },
+    metadata: { eyeSide: "left" },
+  };
   await store.importRecords([record]);
 });
 
 test("ISt.save: normal", async () => {
   const store = new ISt();
   const template = {
-    id: "test-1", code: new Uint8Array(64).fill(0xAB), mask: new Uint8Array(64).fill(0xFF),
-    leftCode: new Uint8Array(64).fill(0xAB), leftMask: new Uint8Array(64).fill(0xFF),
-    eyeSide: "right", label: "test", enrolledAt: Date.now(),
+    id: "test-1",
+    code: new Uint8Array(64).fill(0xab),
+    mask: new Uint8Array(64).fill(0xff),
+    leftCode: new Uint8Array(64).fill(0xab),
+    leftMask: new Uint8Array(64).fill(0xff),
+    eyeSide: "right",
+    label: "test",
+    enrolledAt: Date.now(),
   };
   const r = await store.save(template);
   assert.ok(r);
@@ -458,9 +531,12 @@ test("ISt.save: FaceCrypto missing → throw", async () => {
     store.setVaultKey(new Uint8Array(32).fill(42));
     await assert.rejects(async () => {
       await store.save({
-        id: "fc-test", leftCode: new Uint8Array(64).fill(1),
-        leftMask: new Uint8Array(64).fill(1), eyeSide: "left",
-        enrolledAt: Date.now(), label: "test",
+        id: "fc-test",
+        leftCode: new Uint8Array(64).fill(1),
+        leftMask: new Uint8Array(64).fill(1),
+        eyeSide: "left",
+        enrolledAt: Date.now(),
+        label: "test",
       });
     }, /FaceCrypto must be loaded/);
   } finally {
@@ -474,9 +550,14 @@ test("ISt.save: FaceCrypto missing → throw", async () => {
 test("ISt._rehydrate: FaceCrypto missing → throw for encrypted record", async () => {
   const origFC = global.FaceCrypto;
   global.FaceCrypto = {
-    encryptWithKey: async (key, iv, data) => ({ iv: new Uint8Array(12), cipher: new Uint8Array(32) }),
+    encryptWithKey: async (key, iv, data) => ({
+      iv: new Uint8Array(12),
+      cipher: new Uint8Array(32),
+    }),
     decryptWithKey: async (key, data) => ({
-      leftCode: [1, 2], leftMask: [3, 4], eyeSide: "left"
+      leftCode: [1, 2],
+      leftMask: [3, 4],
+      eyeSide: "left",
     }),
     generateSalt: (n) => new Uint8Array(n),
   };
@@ -484,9 +565,12 @@ test("ISt._rehydrate: FaceCrypto missing → throw for encrypted record", async 
     const store = new ISt();
     store.setVaultKey(new Uint8Array(32).fill(42));
     await store.save({
-      id: "fc-enc-test", leftCode: new Uint8Array(64).fill(1),
-      leftMask: new Uint8Array(64).fill(1), eyeSide: "left",
-      enrolledAt: Date.now(), label: "enc-test",
+      id: "fc-enc-test",
+      leftCode: new Uint8Array(64).fill(1),
+      leftMask: new Uint8Array(64).fill(1),
+      eyeSide: "left",
+      enrolledAt: Date.now(),
+      label: "enc-test",
     });
   } finally {
     global.FaceCrypto = origFC;
@@ -508,9 +592,14 @@ test("ISt._rehydrate: FaceCrypto missing → throw for encrypted record", async 
 test("ISt.save: with right eye data → rightCode/rightMask stored (L129-130)", async () => {
   const store = new ISt();
   await store.save({
-    id: "re-test-2", leftCode: new Uint8Array(64).fill(1), leftMask: new Uint8Array(64).fill(1),
-    rightCode: new Uint8Array(64).fill(2), rightMask: new Uint8Array(64).fill(3),
-    eyeSide: "right", enrolledAt: Date.now(), label: "right-eye",
+    id: "re-test-2",
+    leftCode: new Uint8Array(64).fill(1),
+    leftMask: new Uint8Array(64).fill(1),
+    rightCode: new Uint8Array(64).fill(2),
+    rightMask: new Uint8Array(64).fill(3),
+    eyeSide: "right",
+    enrolledAt: Date.now(),
+    label: "right-eye",
   });
   const loaded = await store.load("re-test-2");
   assert.ok(loaded);
@@ -522,9 +611,15 @@ test("ISt.save: with right eye data → rightCode/rightMask stored (L129-130)", 
 test("ISt._rehydrate: record with all fields → rightCode, rightMask, quality, eyeSide (L186-189)", async () => {
   const store = new ISt();
   await store.save({
-    id: "full-rehydrate-2", leftCode: new Uint8Array([1, 2]), leftMask: new Uint8Array([3, 4]),
-    rightCode: new Uint8Array([5, 6]), rightMask: new Uint8Array([7, 8]),
-    quality: 85, eyeSide: "right", enrolledAt: Date.now(), label: "full",
+    id: "full-rehydrate-2",
+    leftCode: new Uint8Array([1, 2]),
+    leftMask: new Uint8Array([3, 4]),
+    rightCode: new Uint8Array([5, 6]),
+    rightMask: new Uint8Array([7, 8]),
+    quality: 85,
+    eyeSide: "right",
+    enrolledAt: Date.now(),
+    label: "full",
   });
   const loaded = await store.load("full-rehydrate-2");
   assert.ok(loaded);
@@ -537,10 +632,17 @@ test("ISt._rehydrate: record with all fields → rightCode, rightMask, quality, 
 // ── ISt.list: returns eyeSide from cursor (L257) ──
 test("ISt.list: returns eyeSide from cursor (L257)", async () => {
   const store = new ISt();
-  await store.save({ id: "list-eye-2", leftCode: new Uint8Array(4).fill(1), leftMask: new Uint8Array(4).fill(1), eyeSide: "left", enrolledAt: Date.now(), label: "list" });
+  await store.save({
+    id: "list-eye-2",
+    leftCode: new Uint8Array(4).fill(1),
+    leftMask: new Uint8Array(4).fill(1),
+    eyeSide: "left",
+    enrolledAt: Date.now(),
+    label: "list",
+  });
   const list = await store.list();
   assert.ok(list.length > 0);
-  const item = list.find(e => e.id === "list-eye-2");
+  const item = list.find((e) => e.id === "list-eye-2");
   assert.ok(item);
   assert.equal(item.eyeSide, "left");
 });
@@ -548,9 +650,15 @@ test("ISt.list: returns eyeSide from cursor (L257)", async () => {
 // ── ISt.list: default eyeSide when missing (L257) ──
 test("ISt.list: default eyeSide when missing (L257)", async () => {
   const store = new ISt();
-  await store.save({ id: "list-noeye", leftCode: new Uint8Array(4).fill(1), leftMask: new Uint8Array(4).fill(1), enrolledAt: Date.now(), label: "noeye" });
+  await store.save({
+    id: "list-noeye",
+    leftCode: new Uint8Array(4).fill(1),
+    leftMask: new Uint8Array(4).fill(1),
+    enrolledAt: Date.now(),
+    label: "noeye",
+  });
   const list = await store.list();
-  const item = list.find(e => e.id === "list-noeye");
+  const item = list.find((e) => e.id === "list-noeye");
   assert.ok(item);
   assert.equal(item.eyeSide, "unknown");
 });
@@ -559,7 +667,10 @@ test("ISt.list: default eyeSide when missing (L257)", async () => {
 test("ISt.load: FaceCrypto encrypt+decrypt round-trip with rightCode (L186-189)", async () => {
   const origFC = global.FaceCrypto;
   global.FaceCrypto = {
-    encryptWithKey: async (_key, _iv, payload) => ({ iv: new Uint8Array(12), cipher: Buffer.from(JSON.stringify(payload)) }),
+    encryptWithKey: async (_key, _iv, payload) => ({
+      iv: new Uint8Array(12),
+      cipher: Buffer.from(JSON.stringify(payload)),
+    }),
     decryptWithKey: async (_key, enc) => JSON.parse(enc.cipher.toString()),
     generateSalt: (n) => new Uint8Array(n),
   };
@@ -567,9 +678,15 @@ test("ISt.load: FaceCrypto encrypt+decrypt round-trip with rightCode (L186-189)"
     const store = new ISt();
     store.setVaultKey(new Uint8Array(32).fill(42));
     await store.save({
-      id: "fc-rt", leftCode: new Uint8Array([1]), leftMask: new Uint8Array([2]),
-      rightCode: new Uint8Array([3]), rightMask: new Uint8Array([4]),
-      quality: 90, eyeSide: "right", enrolledAt: Date.now(), label: "rt",
+      id: "fc-rt",
+      leftCode: new Uint8Array([1]),
+      leftMask: new Uint8Array([2]),
+      rightCode: new Uint8Array([3]),
+      rightMask: new Uint8Array([4]),
+      quality: 90,
+      eyeSide: "right",
+      enrolledAt: Date.now(),
+      label: "rt",
     });
     const loaded = await store.load("fc-rt");
     assert.ok(loaded);

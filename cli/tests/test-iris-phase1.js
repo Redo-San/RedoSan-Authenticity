@@ -39,15 +39,20 @@ global.ImageData = class ImageData {
 };
 global.crypto = {
   getRandomValues: (arr) => {
-    for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+    for (let i = 0; i < arr.length; i++)
+      arr[i] = Math.floor(Math.random() * 256);
     return arr;
   },
 };
 // Some modules call these during init; no-ops keep load clean.
 global.localStorage = {
   _m: {},
-  getItem(k) { return this._m[k] ?? null; },
-  setItem(k, v) { this._m[k] = String(v); },
+  getItem(k) {
+    return this._m[k] ?? null;
+  },
+  setItem(k, v) {
+    this._m[k] = String(v);
+  },
 };
 
 // ── Load Iris modules under test ──
@@ -86,7 +91,10 @@ describe("Phase1.1 irisValidateImageFile (lossless only)", () => {
   });
 
   it("rejects generic octet-stream with jpg name", () => {
-    const r = irisValidateImageFile({ type: "application/octet-stream", name: "eye.jpg" });
+    const r = irisValidateImageFile({
+      type: "application/octet-stream",
+      name: "eye.jpg",
+    });
     assert.equal(r.ok, false);
   });
 
@@ -127,21 +135,30 @@ describe("Phase1.2 IrisQualityFull.specularReflection", () => {
    * @param opts
    */
   function buildIrisImage(opts) {
-    const w = 200, h = 200;
+    const w = 200,
+      h = 200;
     const data = new Uint8ClampedArray(w * h).fill(100);
-    const cx = 100, cy = 100;
+    const cx = 100,
+      cy = 100;
     const irisR = 60;
     if (opts && opts.specular) {
       // Paint a saturated (near-white) blob inside the iris annulus
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           const d = Math.hypot(x - cx, y - cy);
-          if (d >= irisR * 0.3 && d <= irisR * 0.95 && Math.hypot(x - (cx + 20), y - cy) < 8) data[y * w + x] = 255;
+          if (
+            d >= irisR * 0.3 &&
+            d <= irisR * 0.95 &&
+            Math.hypot(x - (cx + 20), y - cy) < 8
+          )
+            data[y * w + x] = 255;
         }
       }
     }
     return {
-      data, width: w, height: h,
+      data,
+      width: w,
+      height: h,
       pupil: { x: cx, y: cy, radius: 20 },
       iris: { x: cx, y: cy, radius: irisR },
     };
@@ -150,7 +167,11 @@ describe("Phase1.2 IrisQualityFull.specularReflection", () => {
   it("returns 0 ratio when no saturated pixels", () => {
     const img = buildIrisImage({ specular: false });
     const r = IrisQualityFull.specularReflection(
-      img.data, img.width, img.height, img.pupil, img.iris
+      img.data,
+      img.width,
+      img.height,
+      img.pupil,
+      img.iris,
     );
     assert.equal(r.ratio, 0);
     assert.equal(r.saturatedPx, 0);
@@ -160,7 +181,11 @@ describe("Phase1.2 IrisQualityFull.specularReflection", () => {
   it("detects saturated specular blob inside iris", () => {
     const img = buildIrisImage({ specular: true });
     const r = IrisQualityFull.specularReflection(
-      img.data, img.width, img.height, img.pupil, img.iris
+      img.data,
+      img.width,
+      img.height,
+      img.pupil,
+      img.iris,
     );
     assert.ok(r.saturatedPx > 0, "should count saturated pixels");
     assert.ok(r.ratio > 0 && r.ratio < 1, "ratio in (0,1): " + r.ratio);
@@ -190,7 +215,10 @@ describe("Phase1.2 IrisQualityFull.specularReflection", () => {
       pupil: img.pupil,
       iris: img.iris,
     });
-    assert.ok("specularReflectionRatio" in gates.metrics, "gate metric present");
+    assert.ok(
+      "specularReflectionRatio" in gates.metrics,
+      "gate metric present",
+    );
   });
 });
 
@@ -212,7 +240,10 @@ describe("Phase1.3 IrisMatcher threshold = 0.26", () => {
     const mask = new Uint8Array(len).fill(1);
     const flip = Math.round(hdTarget * len);
     for (let i = 0; i < flip; i++) b[i] = 1;
-    return [{ code: a, mask }, { code: b, mask }];
+    return [
+      { code: a, mask },
+      { code: b, mask },
+    ];
   }
 
   it("engine config default is 0.26", () => {

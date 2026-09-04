@@ -9,10 +9,10 @@
 Only the latest `main` deployment and the newest tagged release receive
 security updates.
 
-| Version | Supported |
-|---------|-----------|
-| latest `main` / newest release (v1.7+) | ✅ |
-| older releases | ❌ |
+| Version                                | Supported |
+| -------------------------------------- | --------- |
+| latest `main` / newest release (v1.7+) | ✅        |
+| older releases                         | ❌        |
 
 ## Reporting a Vulnerability
 
@@ -21,7 +21,7 @@ security updates.
 ### How to Report
 
 1. **GitHub Private Vulnerability Reporting** (preferred): repository →
-   **Security** tab → *Report a vulnerability*, or directly:
+   **Security** tab → _Report a vulnerability_, or directly:
    <https://github.com/Redo-San/RedoSan-Authenticity/security/advisories/new>
 2. **Email**: <mailto:12227211+Redo-San@users.noreply.github.com>
 
@@ -44,7 +44,7 @@ and suggested fix if any.
 - Prototype-pollution paths
 - Service-worker cache poisoning
 - Vulnerabilities in vendored libraries under `vendor/`
-- Any path where the *local-only processing* guarantee can be violated
+- Any path where the _local-only processing_ guarantee can be violated
 
 **Out of scope**
 

@@ -47,13 +47,24 @@ async function openConsented() {
       check.dispatchEvent(new Event("change", { bubbles: true }));
       document.getElementById("face-consent-accept").click();
     });
-    await page.waitForFunction(function () {
-      return (document.getElementById("face-consent-panel") || {}).style?.display === "none";
-    }, null, { timeout: 15000 });
+    await page.waitForFunction(
+      function () {
+        return (
+          (document.getElementById("face-consent-panel") || {}).style
+            ?.display === "none"
+        );
+      },
+      null,
+      { timeout: 15000 },
+    );
   }
-  await page.waitForFunction(function () {
-    return !!window.faceRegistry;
-  }, null, { timeout: 30000 });
+  await page.waitForFunction(
+    function () {
+      return !!window.faceRegistry;
+    },
+    null,
+    { timeout: 30000 },
+  );
   return opened;
 }
 
@@ -121,11 +132,15 @@ describe("MPA — Face UI automatic lock / unlock", function () {
         window.FaceCrypto = undefined;
       });
 
-      await page.evaluate(function () { return window.handleFaceLock(); });
+      await page.evaluate(function () {
+        return window.handleFaceLock();
+      });
       var status = await statusText(page);
       assert.ok(status.includes("Encryption module"), status);
 
-      await page.evaluate(function () { return window.handleFaceUnlock(); });
+      await page.evaluate(function () {
+        return window.handleFaceUnlock();
+      });
       status = await statusText(page);
       assert.ok(status.includes("Encryption module"), status);
 
@@ -165,8 +180,11 @@ describe("MPA — Face UI automatic lock / unlock", function () {
             "STAGE_PASS_PLACEHOLDER";
           return window.handleFaceLock().then(function () {
             return {
-              status: (document.getElementById("face-status") || {}).textContent || "",
-              lockStatus: document.getElementById("face-lock-status").textContent,
+              status:
+                (document.getElementById("face-status") || {}).textContent ||
+                "",
+              lockStatus:
+                document.getElementById("face-lock-status").textContent,
               passLeft: document.getElementById("face-lock-pass").value,
             };
           });
@@ -182,18 +200,26 @@ describe("MPA — Face UI automatic lock / unlock", function () {
 
       var unlockResult = await withStaging(
         page,
-        '<input id="face-lock-pass" value="' + pass.replace(/"/g, "&quot;") + '" /><div id="face-lock-status"></div><div id="face-list"></div><div id="face-count"></div><button id="face-run"></button>',
+        '<input id="face-lock-pass" value="' +
+          pass.replace(/"/g, "&quot;") +
+          '" /><div id="face-lock-status"></div><div id="face-list"></div><div id="face-count"></div><button id="face-run"></button>',
         function () {
           return window.handleFaceUnlock().then(function () {
             return {
-              status: (document.getElementById("face-status") || {}).textContent || "",
-              lockStatus: document.getElementById("face-lock-status").textContent,
+              status:
+                (document.getElementById("face-status") || {}).textContent ||
+                "",
+              lockStatus:
+                document.getElementById("face-lock-status").textContent,
             };
           });
         },
       );
       assert.ok(/unlocked/i.test(unlockResult.status), unlockResult.status);
-      assert.ok(/Unlocked/i.test(unlockResult.lockStatus), unlockResult.lockStatus);
+      assert.ok(
+        /Unlocked/i.test(unlockResult.lockStatus),
+        unlockResult.lockStatus,
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -204,15 +230,15 @@ describe("MPA — Face UI automatic lock / unlock", function () {
     var ctx = opened.ctx;
     var page = opened.page;
     try {
-      var stage =
-        '<input id="face-lock-pass" value="pw" />';
+      var stage = '<input id="face-lock-pass" value="pw" />';
       await withStaging(page, stage, function () {
         window.__origLock = window.faceRegistry.lock.bind(window.faceRegistry);
         window.faceRegistry.lock = async function () {
           throw new Error("boom-lock");
         };
         return window.handleFaceLock().then(function () {
-          var s = (document.getElementById("face-status") || {}).textContent || "";
+          var s =
+            (document.getElementById("face-status") || {}).textContent || "";
           window.faceRegistry.lock = window.__origLock;
           return s;
         });
@@ -222,17 +248,24 @@ describe("MPA — Face UI automatic lock / unlock", function () {
       var status = await statusText(page);
       assert.ok(status.includes("Lock error: boom-lock"), status);
 
-      await withStaging(page, '<input id="face-lock-pass" value="pw" />', function () {
-        window.__origUnlock = window.faceRegistry.unlock.bind(window.faceRegistry);
-        window.faceRegistry.unlock = async function () {
-          throw new Error("bad-gcm");
-        };
-        return window.handleFaceUnlock().then(function () {
-          var s = (document.getElementById("face-status") || {}).textContent || "";
-          window.faceRegistry.unlock = window.__origUnlock;
-          return s;
-        });
-      });
+      await withStaging(
+        page,
+        '<input id="face-lock-pass" value="pw" />',
+        function () {
+          window.__origUnlock = window.faceRegistry.unlock.bind(
+            window.faceRegistry,
+          );
+          window.faceRegistry.unlock = async function () {
+            throw new Error("bad-gcm");
+          };
+          return window.handleFaceUnlock().then(function () {
+            var s =
+              (document.getElementById("face-status") || {}).textContent || "";
+            window.faceRegistry.unlock = window.__origUnlock;
+            return s;
+          });
+        },
+      );
       status = await statusText(page);
       assert.ok(status.includes("Unlock failed"), status);
     } finally {
@@ -248,13 +281,16 @@ describe("MPA — Face UI automatic backup / restore", function () {
     var page = opened.page;
     try {
       var restoreSpy = await captureDownloads(page);
-      await page.fill("#face-ui-e2e-staging, #face-lock-pass", "").catch(function () {});
+      await page
+        .fill("#face-ui-e2e-staging, #face-lock-pass", "")
+        .catch(function () {});
 
       var plain = await withStaging(page, "", function () {
         return window.handleFaceBackup().then(function () {
           return {
             downloads: window.__e2eDownloads.slice(),
-            status: (document.getElementById("face-status") || {}).textContent || "",
+            status:
+              (document.getElementById("face-status") || {}).textContent || "",
           };
         });
       });
@@ -270,7 +306,9 @@ describe("MPA — Face UI automatic backup / restore", function () {
           return window.handleFaceBackup().then(function () {
             return {
               downloads: window.__e2eDownloads.slice(),
-              status: (document.getElementById("face-status") || {}).textContent || "",
+              status:
+                (document.getElementById("face-status") || {}).textContent ||
+                "",
             };
           });
         },
@@ -290,12 +328,16 @@ describe("MPA — Face UI automatic backup / restore", function () {
     var page = opened.page;
     try {
       await page.evaluate(function () {
-        window.__origExport = window.faceRegistry.exportBackup.bind(window.faceRegistry);
+        window.__origExport = window.faceRegistry.exportBackup.bind(
+          window.faceRegistry,
+        );
         window.faceRegistry.exportBackup = async function () {
           throw new Error("disk full");
         };
       });
-      await page.evaluate(function () { return window.handleFaceBackup(); });
+      await page.evaluate(function () {
+        return window.handleFaceBackup();
+      });
       var status = await statusText(page);
       assert.ok(status.includes("Backup error: disk full"), status);
       await page.evaluate(function () {
@@ -312,7 +354,9 @@ describe("MPA — Face UI automatic backup / restore", function () {
     var page = opened.page;
     try {
       // No file chosen → guard branch
-      await page.evaluate(function () { return window.handleFaceRestore(); });
+      await page.evaluate(function () {
+        return window.handleFaceRestore();
+      });
       var status = await statusText(page);
       assert.ok(status.includes("Choose a backup file"), status);
 
@@ -322,7 +366,9 @@ describe("MPA — Face UI automatic backup / restore", function () {
       await withStaging(
         page,
         '<input type="file" id="face-restore-file" />',
-        function (done) { return done; },
+        function (done) {
+          return done;
+        },
       ).catch(function () {});
       // setInputFiles needs a live input; add one, set it, run handler.
       await page.evaluate(function () {
@@ -332,7 +378,9 @@ describe("MPA — Face UI automatic backup / restore", function () {
         host.innerHTML = '<input type="file" id="face-restore-file" />';
       });
       await page.setInputFiles("#face-restore-file", badPath);
-      await page.evaluate(function () { return window.handleFaceRestore(); });
+      await page.evaluate(function () {
+        return window.handleFaceRestore();
+      });
       status = await statusText(page);
       assert.ok(status.includes("not a valid backup"), status);
 
@@ -340,20 +388,38 @@ describe("MPA — Face UI automatic backup / restore", function () {
       var goodPath = path.join(tmpDir, "backup.json");
       fs.writeFileSync(
         goodPath,
-        JSON.stringify({ type: "redoSan.faceRegistryBackup", version: 1, entries: [] }),
+        JSON.stringify({
+          type: "redoSan.faceRegistryBackup",
+          version: 1,
+          entries: [],
+        }),
       );
-      page.once("dialog", function (d) { d.accept(); });
+      page.once("dialog", function (d) {
+        d.accept();
+      });
       await page.setInputFiles("#face-restore-file", goodPath);
-      await page.evaluate(function () { return window.handleFaceRestore(); });
+      await page.evaluate(function () {
+        return window.handleFaceRestore();
+      });
       status = await statusText(page);
       assert.ok(status.includes("Restored 0"), status);
       assert.ok(/\(replace\)/.test(status), status);
-      var cleared = await page.$eval("#face-restore-file", function (el) { return el.value || ""; });
-      assert.equal(cleared, "", "file input must reset after a successful import");
+      var cleared = await page.$eval("#face-restore-file", function (el) {
+        return el.value || "";
+      });
+      assert.equal(
+        cleared,
+        "",
+        "file input must reset after a successful import",
+      );
 
-      page.once("dialog", function (d) { d.dismiss(); });
+      page.once("dialog", function (d) {
+        d.dismiss();
+      });
       await page.setInputFiles("#face-restore-file", goodPath);
-      await page.evaluate(function () { return window.handleFaceRestore(); });
+      await page.evaluate(function () {
+        return window.handleFaceRestore();
+      });
       status = await statusText(page);
       assert.ok(/\(merge\)/.test(status), status);
     } finally {
@@ -369,21 +435,31 @@ describe("MPA — Face UI automatic backup / restore", function () {
       var goodPath = path.join(tmpDir, "backup2.json");
       fs.writeFileSync(
         goodPath,
-        JSON.stringify({ type: "redoSan.faceRegistryBackup", version: 1, entries: [] }),
+        JSON.stringify({
+          type: "redoSan.faceRegistryBackup",
+          version: 1,
+          entries: [],
+        }),
       );
-      page.once("dialog", function (d) { d.dismiss(); }); // merge mode
+      page.once("dialog", function (d) {
+        d.dismiss();
+      }); // merge mode
       await page.evaluate(function () {
         var host = document.createElement("div");
         host.id = "face-ui-e2e-staging";
         document.body.appendChild(host);
         host.innerHTML = '<input type="file" id="face-restore-file" />';
-        window.__origImport = window.faceRegistry.importBackup.bind(window.faceRegistry);
+        window.__origImport = window.faceRegistry.importBackup.bind(
+          window.faceRegistry,
+        );
         window.faceRegistry.importBackup = async function () {
           throw new Error("bad sig");
         };
       });
       await page.setInputFiles("#face-restore-file", goodPath);
-      await page.evaluate(function () { return window.handleFaceRestore(); });
+      await page.evaluate(function () {
+        return window.handleFaceRestore();
+      });
       var status = await statusText(page);
       assert.ok(status.includes("Restore error: bad sig"), status);
       await page.evaluate(function () {
@@ -401,15 +477,21 @@ describe("MPA — Face UI W3C credential (automatic issuance)", function () {
     var ctx = opened.ctx;
     var page = opened.page;
     try {
-      await page.waitForFunction(function () {
-        return typeof window.FaceVC === "object" && !!window.FaceVC;
-      }, null, { timeout: 20000 });
+      await page.waitForFunction(
+        function () {
+          return typeof window.FaceVC === "object" && !!window.FaceVC;
+        },
+        null,
+        { timeout: 20000 },
+      );
       await page.evaluate(function () {
         window._faceReport = null;
         window._faceKeypair = null;
         window._didKeypair = null;
       });
-      await page.evaluate(function () { return window.handleFaceIssueCredential(); });
+      await page.evaluate(function () {
+        return window.handleFaceIssueCredential();
+      });
       var status = await statusText(page);
       assert.ok(status.includes("pipeline first"), status);
 
@@ -418,7 +500,9 @@ describe("MPA — Face UI W3C credential (automatic issuance)", function () {
           photo: { descriptorHash: "ab".repeat(32), facesDetected: 1 },
         };
       });
-      await page.evaluate(function () { return window.handleFaceIssueCredential(); });
+      await page.evaluate(function () {
+        return window.handleFaceIssueCredential();
+      });
       status = await statusText(page);
       assert.ok(status.includes("DID keypair"), status);
     } finally {
@@ -431,10 +515,17 @@ describe("MPA — Face UI W3C credential (automatic issuance)", function () {
     var ctx = opened.ctx;
     var page = opened.page;
     try {
-      await page.waitForFunction(function () {
-        return typeof window.FaceVC === "object" && !!window.FaceVC &&
-          typeof window.didGenerateKeypair === "function";
-      }, null, { timeout: 20000 });
+      await page.waitForFunction(
+        function () {
+          return (
+            typeof window.FaceVC === "object" &&
+            !!window.FaceVC &&
+            typeof window.didGenerateKeypair === "function"
+          );
+        },
+        null,
+        { timeout: 20000 },
+      );
 
       var restoreSpy = await captureDownloads(page);
 
@@ -454,11 +545,13 @@ describe("MPA — Face UI W3C credential (automatic issuance)", function () {
             window._didKeypair = null;
             window._faceKeypair = await window.didGenerateKeypair("Ed25519");
             await window.handleFaceIssueCredential();
-            var issueStatus = (document.getElementById("face-status") || {}).textContent || "";
+            var issueStatus =
+              (document.getElementById("face-status") || {}).textContent || "";
             var rendered = {
               credential: !!window._faceCredential,
               box: document.getElementById("face-vc-box").style.display,
-              jsonLen: document.getElementById("face-vc-output").textContent.length,
+              jsonLen:
+                document.getElementById("face-vc-output").textContent.length,
               btn: document.getElementById("face-vc-download").style.display,
             };
             await window.handleFaceVCDownload();
@@ -503,18 +596,27 @@ describe("MPA — Face UI W3C credential (automatic issuance)", function () {
     var ctx = opened.ctx;
     var page = opened.page;
     try {
-      await page.waitForFunction(function () {
-        return typeof window.FaceVC === "object" && !!window.FaceVC;
-      }, null, { timeout: 20000 });
+      await page.waitForFunction(
+        function () {
+          return typeof window.FaceVC === "object" && !!window.FaceVC;
+        },
+        null,
+        { timeout: 20000 },
+      );
       await page.evaluate(function () {
         window._faceReport = { photo: { descriptorHash: "ee".repeat(32) } };
-        window._faceKeypair = { did: "did:key:zE2EProbe", algorithm: "Ed25519" };
+        window._faceKeypair = {
+          did: "did:key:zE2EProbe",
+          algorithm: "Ed25519",
+        };
         window.__origVcSign = window.FaceVC.sign;
         window.FaceVC.sign = async function () {
           throw new Error("sign blew up");
         };
       });
-      await page.evaluate(function () { return window.handleFaceIssueCredential(); });
+      await page.evaluate(function () {
+        return window.handleFaceIssueCredential();
+      });
       var status = await statusText(page);
       assert.ok(status.includes("Credential error: sign blew up"), status);
       await page.evaluate(function () {
@@ -538,13 +640,17 @@ describe("MPA — Face UI helpers (passkey gate, liveness wiring, overlay)", fun
         function () {
           var scrolled = false;
           var box = document.getElementById("face-passkey-require");
-          box.scrollIntoView = function () { scrolled = true; };
+          box.scrollIntoView = function () {
+            scrolled = true;
+          };
           box.style.display = "";
           window.revealPasskeyRequire();
           return {
             display: box.style.display,
             scrolled: scrolled,
-            statusText: (document.getElementById("face-passkey-status") || {}).textContent || "",
+            statusText:
+              (document.getElementById("face-passkey-status") || {})
+                .textContent || "",
           };
         },
       );
@@ -580,24 +686,38 @@ describe("MPA — Face UI helpers (passkey gate, liveness wiring, overlay)", fun
 
       // Camera not running
       await setMode("passive");
-      await page.evaluate(async function () { await window.runFaceLivenessCheck(); });
+      await page.evaluate(async function () {
+        await window.runFaceLivenessCheck();
+      });
       var status = await statusText(page);
       assert.ok(status.includes("Camera not running"), status);
 
       // Injected liveness engine drives the real renderer via onChallenge
       var wiring = await page.evaluate(async function () {
-        window.faceCamera = { isActive: function () { return true; } };
+        window.faceCamera = {
+          isActive: function () {
+            return true;
+          },
+        };
         window.faceEngine = {};
         window.__seenModes = [];
         window.faceLiveness = {
           verifyLiveness: function (cam, eng, opts) {
             window.__seenModes.push(opts.mode);
-            opts.onChallenge({ type: "blink", index: 0, total: 2, done: false });
+            opts.onChallenge({
+              type: "blink",
+              index: 0,
+              total: 2,
+              done: false,
+            });
             var shown = document.getElementById("face-challenge").textContent;
             opts.onChallenge({ type: "blink", index: 1, total: 2, done: true });
             var cleared = document.getElementById("face-challenge").textContent;
             return Promise.resolve({
-              live: true, score: 0.9, shown: shown, cleared: cleared,
+              live: true,
+              score: 0.9,
+              shown: shown,
+              cleared: cleared,
             });
           },
         };
@@ -605,16 +725,23 @@ describe("MPA — Face UI helpers (passkey gate, liveness wiring, overlay)", fun
       });
       assert.equal(wiring.live, true);
       assert.deepEqual(
-        await page.evaluate(function () { return window.__seenModes; }),
+        await page.evaluate(function () {
+          return window.__seenModes;
+        }),
         ["passive"],
       );
-      assert.ok(/Blink/i.test(wiring.shown || ""), "challenge text should render");
+      assert.ok(
+        /Blink/i.test(wiring.shown || ""),
+        "challenge text should render",
+      );
       assert.equal(wiring.cleared, "", "done challenge clears the box");
 
       // Thrown verification errors land in the status line
       var errStatus = await page.evaluate(async function () {
         window.faceLiveness = {
-          verifyLiveness: function () { throw new Error("cam died"); },
+          verifyLiveness: function () {
+            throw new Error("cam died");
+          },
         };
         await window.runFaceLivenessCheck();
         return (document.getElementById("face-status") || {}).textContent || "";
@@ -653,14 +780,18 @@ describe("MPA — Face UI helpers (passkey gate, liveness wiring, overlay)", fun
         var afterDue = { calls: calls, busy: window._faceOverlayBusy };
 
         resolvers[0].resolve();
-        await new Promise(function (r) { setTimeout(r, 10); });
+        await new Promise(function (r) {
+          setTimeout(r, 10);
+        });
 
         window.faceOverlayTick(560); // throttled (<200ms since last)
         var afterThrottle = { calls: calls };
 
         window.faceOverlayTick(900); // due again
         resolvers[1].reject(new Error("draw fail"));
-        await new Promise(function (r) { setTimeout(r, 10); });
+        await new Promise(function (r) {
+          setTimeout(r, 10);
+        });
         var busyAfterReject = window._faceOverlayBusy;
 
         window._faceOverlayRunning = false;
@@ -681,7 +812,11 @@ describe("MPA — Face UI helpers (passkey gate, liveness wiring, overlay)", fun
       assert.equal(res.afterDue.busy, true);
       assert.equal(res.afterThrottle.calls, 1);
       assert.equal(res.afterSecond.calls, 2);
-      assert.equal(res.busyAfterReject, false, "rejecting detection must release busy");
+      assert.equal(
+        res.busyAfterReject,
+        false,
+        "rejecting detection must release busy",
+      );
       assert.equal(res.afterStopped.calls, 2);
     } finally {
       await closePage(ctx, page);
@@ -728,7 +863,11 @@ describe("MPA — Face UI helpers (passkey gate, liveness wiring, overlay)", fun
         window._faceProgressOverlay = savedOverlay;
         return { rebuilt: rebuilt, threw: threw };
       });
-      assert.equal(res.rebuilt, true, "overlay should be recreated when absent");
+      assert.equal(
+        res.rebuilt,
+        true,
+        "overlay should be recreated when absent",
+      );
       assert.equal(res.threw, false, "show() must not throw without refs");
     } finally {
       await closePage(ctx, page);

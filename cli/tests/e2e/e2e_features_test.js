@@ -37,7 +37,9 @@ describe("E2E — Theme Toggle", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    const initialTheme = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
+    const initialTheme = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-theme"),
+    );
 
     await page.evaluate(() => {
       const btn = document.getElementById("themeToggle");
@@ -45,8 +47,14 @@ describe("E2E — Theme Toggle", () => {
     });
     await page.waitForTimeout(300);
 
-    const toggledTheme = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
-    assert.notEqual(initialTheme, toggledTheme, "Theme should change after toggle");
+    const toggledTheme = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-theme"),
+    );
+    assert.notEqual(
+      initialTheme,
+      toggledTheme,
+      "Theme should change after toggle",
+    );
     await ctx.close();
   });
 
@@ -57,15 +65,23 @@ describe("E2E — Theme Toggle", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(2000);
 
-    const initial = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
+    const initial = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-theme"),
+    );
 
     await page.evaluate(() => document.getElementById("themeToggle").click());
     await page.waitForTimeout(300);
     await page.evaluate(() => document.getElementById("themeToggle").click());
     await page.waitForTimeout(300);
 
-    const after = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
-    assert.equal(initial, after, "Should return to original after double toggle");
+    const after = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-theme"),
+    );
+    assert.equal(
+      initial,
+      after,
+      "Should return to original after double toggle",
+    );
     await ctx.close();
   });
 });
@@ -84,12 +100,16 @@ describe("E2E — Language Switching", () => {
 
     // Click Arabic option
     await page.evaluate(() => {
-      const ar = document.querySelector('#langMenu .lang-option[data-lang="ar"]');
+      const ar = document.querySelector(
+        '#langMenu .lang-option[data-lang="ar"]',
+      );
       if (ar) ar.click();
     });
     await page.waitForTimeout(500);
 
-    const lang = await page.evaluate(() => document.documentElement.getAttribute("lang"));
+    const lang = await page.evaluate(() =>
+      document.documentElement.getAttribute("lang"),
+    );
     assert.equal(lang, "ar", "Lang should be Arabic");
     await ctx.close();
   });
@@ -105,12 +125,16 @@ describe("E2E — Language Switching", () => {
     await page.waitForTimeout(300);
 
     await page.evaluate(() => {
-      const fr = document.querySelector('#langMenu .lang-option[data-lang="fr"]');
+      const fr = document.querySelector(
+        '#langMenu .lang-option[data-lang="fr"]',
+      );
       if (fr) fr.click();
     });
     await page.waitForTimeout(500);
 
-    const lang = await page.evaluate(() => document.documentElement.getAttribute("lang"));
+    const lang = await page.evaluate(() =>
+      document.documentElement.getAttribute("lang"),
+    );
     assert.equal(lang, "fr", "Lang should be French");
     await ctx.close();
   });
@@ -125,12 +149,16 @@ describe("E2E — Language Switching", () => {
     await page.evaluate(() => document.getElementById("langBtn").click());
     await page.waitForTimeout(300);
     await page.evaluate(() => {
-      const en = document.querySelector('#langMenu .lang-option[data-lang="en"]');
+      const en = document.querySelector(
+        '#langMenu .lang-option[data-lang="en"]',
+      );
       if (en) en.click();
     });
     await page.waitForTimeout(500);
 
-    const lang = await page.evaluate(() => document.documentElement.getAttribute("lang"));
+    const lang = await page.evaluate(() =>
+      document.documentElement.getAttribute("lang"),
+    );
     assert.equal(lang, "en", "Lang should be English");
     await ctx.close();
   });
@@ -152,10 +180,15 @@ describe("E2E — Download Formats", () => {
       await page.waitForTimeout(1000);
 
       // Upload and generate fingerprint
-      await page.setInputFiles("#fp-file", [{ name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF }]);
+      await page.setInputFiles("#fp-file", [
+        { name: "testimg.png", mimeType: "image/png", buffer: PNG_BUF },
+      ]);
       await page.waitForTimeout(500);
       await page.evaluate(() => document.getElementById("fp-btn").click());
-      await page.waitForSelector("#fp-result", { state: "visible", timeout: 30000 });
+      await page.waitForSelector("#fp-result", {
+        state: "visible",
+        timeout: 30000,
+      });
       await page.waitForTimeout(1000);
 
       // Open download modal
@@ -167,8 +200,14 @@ describe("E2E — Download Formats", () => {
 
       // MPA fingerprint page lazy-loads export libs on first pointerdown
       if (format === "doc") {
-        await page.evaluate(() => document.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })));
-        await page.waitForFunction(() => typeof window.docx !== "undefined", { timeout: 30000 });
+        await page.evaluate(() =>
+          document.dispatchEvent(
+            new PointerEvent("pointerdown", { bubbles: true }),
+          ),
+        );
+        await page.waitForFunction(() => typeof window.docx !== "undefined", {
+          timeout: 30000,
+        });
       }
 
       // Click format button directly
@@ -180,16 +219,37 @@ describe("E2E — Download Formats", () => {
       assert.ok(downloads.length > 0, `${format} download should start`);
       const dl = downloads[0];
       const suggested = dl.suggestedFilename();
-      assert.ok(suggested.includes(fileNamePart), `${format} filename "${suggested}" should contain "${fileNamePart}"`);
+      assert.ok(
+        suggested.includes(fileNamePart),
+        `${format} filename "${suggested}" should contain "${fileNamePart}"`,
+      );
 
       await ctx.close();
     };
   }
 
-  it("should download TXT fingerprint", testDownloadFormat("txt", ".fingerprint.txt"));
-  it("should download JSON fingerprint", testDownloadFormat("json", ".fingerprint.json"));
-  it("should download CSV fingerprint", testDownloadFormat("csv", ".fingerprint.csv"));
-  it("should download XML fingerprint", testDownloadFormat("xml", ".fingerprint.xml"));
-  it("should download PDF fingerprint", testDownloadFormat("pdf", ".fingerprint.pdf"));
-  it("should download DOCX fingerprint", testDownloadFormat("doc", ".fingerprint.docx"));
+  it(
+    "should download TXT fingerprint",
+    testDownloadFormat("txt", ".fingerprint.txt"),
+  );
+  it(
+    "should download JSON fingerprint",
+    testDownloadFormat("json", ".fingerprint.json"),
+  );
+  it(
+    "should download CSV fingerprint",
+    testDownloadFormat("csv", ".fingerprint.csv"),
+  );
+  it(
+    "should download XML fingerprint",
+    testDownloadFormat("xml", ".fingerprint.xml"),
+  );
+  it(
+    "should download PDF fingerprint",
+    testDownloadFormat("pdf", ".fingerprint.pdf"),
+  );
+  it(
+    "should download DOCX fingerprint",
+    testDownloadFormat("doc", ".fingerprint.docx"),
+  );
 });

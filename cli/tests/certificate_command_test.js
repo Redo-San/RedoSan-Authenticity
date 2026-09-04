@@ -10,15 +10,12 @@ const vm = require("vm");
 // ── Helper: create a minimal valid PNG ──
 function createMinimalPng() {
   return Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-    0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
-    0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41,
-    0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00,
-    0x00, 0x04, 0x00, 0x01, 0x27, 0x34, 0x27, 0x24,
-    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44,
-    0xae, 0x42, 0x60, 0x82,
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+    0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xde, 0x00, 0x00, 0x00,
+    0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0x60, 0x60, 0x00, 0x00,
+    0x00, 0x04, 0x00, 0x01, 0x27, 0x34, 0x27, 0x24, 0x00, 0x00, 0x00, 0x00,
+    0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
   ]);
 }
 
@@ -35,10 +32,13 @@ function loadCmd(mocks) {
   // Create a mocked fs that tracks calls
   const mockFS = {
     existsSync: mocks.existsSync || (() => true),
-    readFileSync: mocks.readFileSync || ((p) => {
-      if (typeof p === "string" && p.endsWith(".png")) return createMinimalPng();
-      return Buffer.from("");
-    }),
+    readFileSync:
+      mocks.readFileSync ||
+      ((p) => {
+        if (typeof p === "string" && p.endsWith(".png"))
+          return createMinimalPng();
+        return Buffer.from("");
+      }),
     writeFileSync: mocks.writeFileSync || (() => {}),
     statSync: mocks.statSync || ((p) => ({ size: 0 })),
   };
@@ -50,7 +50,10 @@ function loadCmd(mocks) {
 
   let exitCode = null;
   const mockProcess = Object.assign({}, process, {
-    exit: (code) => { exitCode = code; throw new Error(`EXIT:${code}`); },
+    exit: (code) => {
+      exitCode = code;
+      throw new Error(`EXIT:${code}`);
+    },
   });
 
   const sandbox = Object.assign({}, globalThis, {
@@ -113,7 +116,7 @@ describe("Certificate Command — buildCertData", () => {
 
     const cmd = loadCmd({
       existsSync: (p) => p === testPngPath,
-      readFileSync: (p) => p === testPngPath ? testPng : Buffer.from(""),
+      readFileSync: (p) => (p === testPngPath ? testPng : Buffer.from("")),
     });
 
     const data = await cmd.buildCertData(testPngPath, {
@@ -163,7 +166,7 @@ describe("Certificate Command — buildCertData", () => {
     const fpContent = JSON.stringify({
       hashes: {
         "SHA-256": "abc123",
-        "BLAKE3": "def456",
+        BLAKE3: "def456",
       },
       perceptual_hashes: {
         dHash: "dhashval",
@@ -282,10 +285,16 @@ describe("Certificate Command — buildQRVerificationJSON", () => {
     const data = {
       generator: "RedoSan",
       generatedAt: "2026-06-01T12:00:00Z",
-      file: { name: "photo.jpg", size: 5000, hash: "abc", width: 1920, height: 1080 },
+      file: {
+        name: "photo.jpg",
+        size: 5000,
+        hash: "abc",
+        width: 1920,
+        height: 1080,
+      },
       user: { name: "Bob", email: "bob@test.com" },
       fpResult: {
-        hashes: { "SHA-256": "sha256hash", "MD5": "md5hash" },
+        hashes: { "SHA-256": "sha256hash", MD5: "md5hash" },
         perceptual_hashes: { dHash: "dhash" },
       },
       didSig: {
@@ -384,7 +393,7 @@ describe("Certificate Command — runCertificate", () => {
 
     const cmd = loadCmd({
       existsSync: (p) => p === testPngPath,
-      readFileSync: (p) => p === testPngPath ? testPng : Buffer.from(""),
+      readFileSync: (p) => (p === testPngPath ? testPng : Buffer.from("")),
       writeFileSync: (p, data) => {
         writtenPath = p;
         writtenData = data;
@@ -399,8 +408,10 @@ describe("Certificate Command — runCertificate", () => {
 
     assert.ok(writtenPath, "Should have written output file");
     assert.ok(writtenData, "Should have data");
-    assert.ok(cmd.logLines.some((l) => l.includes("passport.pdf")),
-      "Should log output path: " + cmd.logLines.join("; "));
+    assert.ok(
+      cmd.logLines.some((l) => l.includes("passport.pdf")),
+      "Should log output path: " + cmd.logLines.join("; "),
+    );
   });
 
   it("should generate a DOCX passport", async () => {
@@ -411,8 +422,10 @@ describe("Certificate Command — runCertificate", () => {
 
     const cmd = loadCmd({
       existsSync: (p) => p === testPngPath,
-      readFileSync: (p) => p === testPngPath ? testPng : Buffer.from(""),
-      writeFileSync: (p, d) => { writtenPath = p; },
+      readFileSync: (p) => (p === testPngPath ? testPng : Buffer.from("")),
+      writeFileSync: (p, d) => {
+        writtenPath = p;
+      },
     });
 
     await cmd.runCertificate(testPngPath, {
@@ -433,8 +446,10 @@ describe("Certificate Command — runCertificate", () => {
 
     const cmd = loadCmd({
       existsSync: (p) => p === testPngPath,
-      readFileSync: (p) => p === testPngPath ? testPng : Buffer.from(""),
-      writeFileSync: (p, d) => { writtenPath = p; },
+      readFileSync: (p) => (p === testPngPath ? testPng : Buffer.from("")),
+      writeFileSync: (p, d) => {
+        writtenPath = p;
+      },
     });
 
     await cmd.runCertificate(testPngPath, {
@@ -463,7 +478,11 @@ describe("Certificate Command — runCertificate", () => {
     }
 
     assert.equal(cmd.exitCode(), 1);
-    assert.ok(cmd.errLines.some((l) => l.includes("Unsupported") || l.includes("format")),
-      "Should show unsupported format error");
+    assert.ok(
+      cmd.errLines.some(
+        (l) => l.includes("Unsupported") || l.includes("format"),
+      ),
+      "Should show unsupported format error",
+    );
   });
 });

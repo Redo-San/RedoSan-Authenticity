@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // ── GPL polyfills ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 const { createCanvas } = require("canvas");
 globalThis.document = {
@@ -20,13 +25,27 @@ const antispoofSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_antispoof.js"),
   "utf8",
 );
-vm.runInThisContext(antispoofSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_antispoof.js") });
+vm.runInThisContext(antispoofSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_antispoof.js",
+  ),
+});
 
 const livenessSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_liveness.js"),
   "utf8",
 );
-vm.runInThisContext(livenessSrc, { filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_liveness.js") });
+vm.runInThisContext(livenessSrc, {
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_liveness.js",
+  ),
+});
 
 const FaceAntiSpoof = globalThis.FaceAntiSpoof;
 
@@ -101,8 +120,22 @@ function placeEye(mesh, indices, cx, cy, eyeHeight, eyeWidth) {
 
 function faceWithEyes(eyeHeightL, eyeHeightR, noseOffsetX) {
   const mesh = emptyMesh();
-  placeEye(mesh, LEFT_EYE, 250, 200, eyeHeightL === undefined ? 8 : eyeHeightL, 60);
-  placeEye(mesh, RIGHT_EYE, 390, 200, eyeHeightR === undefined ? 8 : eyeHeightR, 60);
+  placeEye(
+    mesh,
+    LEFT_EYE,
+    250,
+    200,
+    eyeHeightL === undefined ? 8 : eyeHeightL,
+    60,
+  );
+  placeEye(
+    mesh,
+    RIGHT_EYE,
+    390,
+    200,
+    eyeHeightR === undefined ? 8 : eyeHeightR,
+    60,
+  );
   mesh[NOSE * 3] = 320 + (noseOffsetX || 0);
   mesh[NOSE * 3 + 1] = 260;
   mesh[EYE_L_INNER * 3] = 280;
@@ -136,7 +169,10 @@ describe("FaceAntiSpoof — constants", () => {
     assert.equal(FaceAntiSpoof.CROP_MARGIN_SCALE, 2.7);
     assert.equal(FaceAntiSpoof.INPUT_NAME, "input");
     assert.equal(FaceAntiSpoof.OUTPUT_NAME, "output");
-    assert.equal(FaceAntiSpoof.MODEL_SHA256, "d7b3cd9ba8a7ceb13baa8c4720902e27ca3112eff52f926c08804af6b6eecc7b");
+    assert.equal(
+      FaceAntiSpoof.MODEL_SHA256,
+      "d7b3cd9ba8a7ceb13baa8c4720902e27ca3112eff52f926c08804af6b6eecc7b",
+    );
     assert.ok(FaceAntiSpoof.MODEL_URL.includes("minifasnet_v2.onnx"));
     assert.deepEqual(FaceAntiSpoof.CLASSES, ["live", "print", "replay"]);
   });
@@ -179,7 +215,10 @@ describe("FaceAntiSpoof — preprocess", () => {
     // pixel (0,0) = rgb(10, 20, 30) → BGR (30, 20, 10) / 255
     assert.ok(Math.abs(out[0] - 30 / 255) < 1e-6, "first channel must be B");
     assert.ok(Math.abs(out[n] - 20 / 255) < 1e-6, "second channel must be G");
-    assert.ok(Math.abs(out[2 * n] - 10 / 255) < 1e-6, "third channel must be R");
+    assert.ok(
+      Math.abs(out[2 * n] - 10 / 255) < 1e-6,
+      "third channel must be R",
+    );
     // elsewhere (black) → all zeros
     assert.equal(out[1], 0);
   });
@@ -223,15 +262,24 @@ describe("FaceAntiSpoof — load/predict with injected runtime", () => {
   beforeEach(() => FaceAntiSpoof.reset());
 
   it("loads via an injected runtime and reports the backend", async () => {
-    const ok = await FaceAntiSpoof.load({ runtime: makeFakeOrt([1, 1, 1]), modelUrl: "mock.onnx" });
+    const ok = await FaceAntiSpoof.load({
+      runtime: makeFakeOrt([1, 1, 1]),
+      modelUrl: "mock.onnx",
+    });
     assert.equal(ok, true);
     assert.equal(FaceAntiSpoof.isReady(), true);
     assert.equal(FaceAntiSpoof.getError(), null);
   });
 
   it("predicts live when the live logit dominates", async () => {
-    await FaceAntiSpoof.load({ runtime: makeFakeOrt([2, 1, 0.5]), modelUrl: "mock.onnx" });
-    const res = await FaceAntiSpoof.predict(solidCanvas(640, 480, [128, 128, 128]), { x: 200, y: 100, width: 100, height: 150 });
+    await FaceAntiSpoof.load({
+      runtime: makeFakeOrt([2, 1, 0.5]),
+      modelUrl: "mock.onnx",
+    });
+    const res = await FaceAntiSpoof.predict(
+      solidCanvas(640, 480, [128, 128, 128]),
+      { x: 200, y: 100, width: 100, height: 150 },
+    );
     assert.equal(res.live, true);
     assert.equal(res.label, "live");
     // score = 1 - (p[print] + p[replay])
@@ -241,8 +289,14 @@ describe("FaceAntiSpoof — load/predict with injected runtime", () => {
   });
 
   it("predicts spoof when print/replay dominate", async () => {
-    await FaceAntiSpoof.load({ runtime: makeFakeOrt([0.2, 2, 1.5]), modelUrl: "mock.onnx" });
-    const res = await FaceAntiSpoof.predict(solidCanvas(640, 480, [128, 128, 128]), null);
+    await FaceAntiSpoof.load({
+      runtime: makeFakeOrt([0.2, 2, 1.5]),
+      modelUrl: "mock.onnx",
+    });
+    const res = await FaceAntiSpoof.predict(
+      solidCanvas(640, 480, [128, 128, 128]),
+      null,
+    );
     assert.equal(res.live, false);
     assert.equal(res.label, "spoof");
   });
@@ -269,13 +323,24 @@ describe("FaceAntiSpoof — load/predict with injected runtime", () => {
       },
     };
     await FaceAntiSpoof.load({ runtime: ort, modelUrl: "mock.onnx" });
-    await FaceAntiSpoof.predict(solidCanvas(640, 480, [128, 128, 128]), { x: 200, y: 100, width: 100, height: 150 });
-    assert.ok(seenFeeds && seenFeeds.input, "feeds must key the input tensor as 'input'");
+    await FaceAntiSpoof.predict(solidCanvas(640, 480, [128, 128, 128]), {
+      x: 200,
+      y: 100,
+      width: 100,
+      height: 150,
+    });
+    assert.ok(
+      seenFeeds && seenFeeds.input,
+      "feeds must key the input tensor as 'input'",
+    );
     assert.deepEqual(seenDims, [1, 3, 80, 80]);
   });
 
   it("throws when predicting without loading", async () => {
-    await assert.rejects(FaceAntiSpoof.predict(solidCanvas(10, 10, [1, 1, 1]), null), /not loaded/);
+    await assert.rejects(
+      FaceAntiSpoof.predict(solidCanvas(10, 10, [1, 1, 1]), null),
+      /not loaded/,
+    );
   });
 
   it("returns false with an error when no execution provider succeeds", async () => {
@@ -286,7 +351,10 @@ describe("FaceAntiSpoof — load/predict with injected runtime", () => {
         },
       },
     };
-    const ok = await FaceAntiSpoof.load({ runtime: badOrt, modelUrl: "mock.onnx" });
+    const ok = await FaceAntiSpoof.load({
+      runtime: badOrt,
+      modelUrl: "mock.onnx",
+    });
     assert.equal(ok, false);
     assert.equal(FaceAntiSpoof.isReady(), false);
     assert.ok(FaceAntiSpoof.getError().includes("provider boom"));
@@ -311,7 +379,10 @@ describe("FaceAntiSpoof — model integrity verification", () => {
         status: ok !== false ? 200 : 404,
         url,
         arrayBuffer: async function () {
-          return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+          return bytes.buffer.slice(
+            bytes.byteOffset,
+            bytes.byteOffset + bytes.byteLength,
+          );
         },
       };
     };
@@ -334,7 +405,11 @@ describe("FaceAntiSpoof — model integrity verification", () => {
       InferenceSession: {
         create: async function (arg) {
           seenArg = arg;
-          return { run: async function () { return { output: { data: new Float32Array([1, 1, 1]) } }; } };
+          return {
+            run: async function () {
+              return { output: { data: new Float32Array([1, 1, 1]) } };
+            },
+          };
         },
       },
     };
@@ -346,7 +421,10 @@ describe("FaceAntiSpoof — model integrity verification", () => {
     });
     assert.equal(ok, true);
     assert.equal(countFetch(), 1);
-    assert.ok(seenArg instanceof ArrayBuffer, "session must receive the verified ArrayBuffer");
+    assert.ok(
+      seenArg instanceof ArrayBuffer,
+      "session must receive the verified ArrayBuffer",
+    );
   });
 
   it("refuses to load on SHA-256 mismatch", async () => {
@@ -383,7 +461,10 @@ describe("FaceAntiSpoof — model integrity verification", () => {
 
   it("skips verification when an unknown custom model URL has no hash", async () => {
     const countFetch = fakeFetch(new Uint8Array([1]));
-    const ok = await FaceAntiSpoof.load({ runtime: makeFakeOrt([1, 1, 1]), modelUrl: "custom.onnx" });
+    const ok = await FaceAntiSpoof.load({
+      runtime: makeFakeOrt([1, 1, 1]),
+      modelUrl: "custom.onnx",
+    });
     assert.equal(ok, true);
     assert.equal(countFetch(), 0);
   });
@@ -391,7 +472,11 @@ describe("FaceAntiSpoof — model integrity verification", () => {
   it("throws in _verifySha256 when WebCrypto is unavailable (fail closed)", async () => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "crypto");
     try {
-      Object.defineProperty(globalThis, "crypto", { value: { subtle: null }, configurable: true, writable: true });
+      Object.defineProperty(globalThis, "crypto", {
+        value: { subtle: null },
+        configurable: true,
+        writable: true,
+      });
       await assert.rejects(
         FaceAntiSpoof._verifySha256(new Uint8Array([1, 2, 3]).buffer, "aa"),
         /WebCrypto/,
@@ -449,7 +534,13 @@ describe("FaceLiveness — antiSpoof integration", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._lastMesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._lastMesh,
+          },
+        ];
       },
     };
     return { camera, engine };
@@ -458,7 +549,10 @@ describe("FaceLiveness — antiSpoof integration", () => {
   it("keeps the heuristic pass when the PAD model says live", async () => {
     stub.live = true;
     const { camera, engine } = blinkingSetup();
-    const r = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
+    const r = await liveness.verifyLiveness(camera, engine, {
+      mode: "passive",
+      frames: 4,
+    });
     assert.equal(r.live, true);
     assert.ok(r.antiSpoof, "evidence must include the PAD stage");
     assert.equal(r.antiSpoof.ready, true);
@@ -472,7 +566,10 @@ describe("FaceLiveness — antiSpoof integration", () => {
   it("overrides the heuristic pass when the PAD model says spoof", async () => {
     stub.live = false;
     const { camera, engine } = blinkingSetup();
-    const r = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
+    const r = await liveness.verifyLiveness(camera, engine, {
+      mode: "passive",
+      frames: 4,
+    });
     assert.equal(r.live, false);
     assert.ok(r.reasons.includes("anti_spoof"));
     assert.equal(r.antiSpoof.live, false);
@@ -482,7 +579,11 @@ describe("FaceLiveness — antiSpoof integration", () => {
   it("skips the PAD stage entirely when antiSpoof: false", async () => {
     stub.live = false;
     const { camera, engine } = blinkingSetup();
-    const r = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4, antiSpoof: false });
+    const r = await liveness.verifyLiveness(camera, engine, {
+      mode: "passive",
+      frames: 4,
+      antiSpoof: false,
+    });
     assert.equal(r.live, true);
     assert.equal(r.antiSpoof, undefined);
   });
@@ -493,7 +594,10 @@ describe("FaceLiveness — antiSpoof integration", () => {
     stub.load = async () => false;
     stub.getError = () => "mock load failure";
     const { camera, engine } = blinkingSetup();
-    const r = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
+    const r = await liveness.verifyLiveness(camera, engine, {
+      mode: "passive",
+      frames: 4,
+    });
     assert.equal(r.live, true, "heuristics must survive a PAD load failure");
     assert.equal(r.antiSpoof.ready, false);
     assert.equal(r.antiSpoof.error, "mock load failure");
@@ -503,7 +607,10 @@ describe("FaceLiveness — antiSpoof integration", () => {
   it("skips PAD evidence when the module is absent entirely", async () => {
     globalThis.FaceAntiSpoof = undefined;
     const { camera, engine } = blinkingSetup();
-    const r = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
+    const r = await liveness.verifyLiveness(camera, engine, {
+      mode: "passive",
+      frames: 4,
+    });
     assert.equal(r.live, true);
     assert.equal(r.antiSpoof, undefined);
   });
@@ -518,7 +625,10 @@ describe("FaceLiveness — antiSpoofCheck", () => {
 
   it("returns null when the module is unavailable", async () => {
     globalThis.FaceAntiSpoof = undefined;
-    assert.equal(await globalThis.FaceLiveness.antiSpoofCheck(makeFrameCanvas(), null), null);
+    assert.equal(
+      await globalThis.FaceLiveness.antiSpoofCheck(makeFrameCanvas(), null),
+      null,
+    );
   });
 
   it("returns an error chunk when loading fails", async () => {
@@ -527,7 +637,10 @@ describe("FaceLiveness — antiSpoofCheck", () => {
       load: async () => false,
       getError: () => "boom",
     };
-    const res = await globalThis.FaceLiveness.antiSpoofCheck(makeFrameCanvas(), null);
+    const res = await globalThis.FaceLiveness.antiSpoofCheck(
+      makeFrameCanvas(),
+      null,
+    );
     assert.equal(res.ready, false);
     assert.equal(res.error, "boom");
   });
@@ -541,7 +654,10 @@ describe("FaceLiveness — antiSpoofCheck", () => {
         throw new Error("inference exploded");
       },
     };
-    const res = await globalThis.FaceLiveness.antiSpoofCheck(makeFrameCanvas(), null);
+    const res = await globalThis.FaceLiveness.antiSpoofCheck(
+      makeFrameCanvas(),
+      null,
+    );
     assert.equal(res.ready, false);
     assert.equal(res.error, "inference exploded");
   });
@@ -558,7 +674,10 @@ describe("FaceAntiSpoof — load caching and runtime discovery", () => {
 
   it("returns true immediately when a session is already loaded", async () => {
     const rt = makeFakeOrt([1, 1, 1]);
-    assert.equal(await FaceAntiSpoof.load({ runtime: rt, modelUrl: "mock.onnx" }), true);
+    assert.equal(
+      await FaceAntiSpoof.load({ runtime: rt, modelUrl: "mock.onnx" }),
+      true,
+    );
     assert.equal(await FaceAntiSpoof.load(), true);
   });
 
@@ -573,9 +692,15 @@ describe("FaceAntiSpoof — load caching and runtime discovery", () => {
     const savedDoc = globalThis.document;
     delete globalThis.document;
     try {
-      const ok = await FaceAntiSpoof.load({ modelUrl: "mock.onnx", verifyModel: false });
+      const ok = await FaceAntiSpoof.load({
+        modelUrl: "mock.onnx",
+        verifyModel: false,
+      });
       assert.equal(ok, false);
-      assert.match(FaceAntiSpoof.getError(), /onnxruntime-web is not available/);
+      assert.match(
+        FaceAntiSpoof.getError(),
+        /onnxruntime-web is not available/,
+      );
     } finally {
       globalThis.document = savedDoc;
     }
@@ -612,7 +737,10 @@ describe("FaceAntiSpoof — load caching and runtime discovery", () => {
       },
     };
     try {
-      const ok = await FaceAntiSpoof.load({ modelUrl: "mock.onnx", verifyModel: false });
+      const ok = await FaceAntiSpoof.load({
+        modelUrl: "mock.onnx",
+        verifyModel: false,
+      });
       assert.equal(ok, true);
       assert.ok(FaceAntiSpoof.isReady());
     } finally {
@@ -624,7 +752,13 @@ describe("FaceAntiSpoof — load caching and runtime discovery", () => {
   });
 
   it("crops nothing when the canvas has zero extent", () => {
-    const tiny = { width: 0, height: 0, getContext: function () { return {}; } };
+    const tiny = {
+      width: 0,
+      height: 0,
+      getContext: function () {
+        return {};
+      },
+    };
     assert.equal(FaceAntiSpoof.cropFace(tiny, null), null);
   });
 
@@ -665,7 +799,10 @@ describe("FaceAntiSpoof — _loadRuntime internals", () => {
 
   it("rejects without a DOM", async () => {
     delete globalThis.document;
-    await assert.rejects(FaceAntiSpoof._loadRuntime("u.js"), /not available in this environment/);
+    await assert.rejects(
+      FaceAntiSpoof._loadRuntime("u.js"),
+      /not available in this environment/,
+    );
   });
 
   it("resolves with window.ort on script load", async () => {
@@ -678,12 +815,18 @@ describe("FaceAntiSpoof — _loadRuntime internals", () => {
   it("rejects when window.ort is missing after the script loads", async () => {
     delete globalThis.ort;
     globalThis.document = scriptDoc((s) => s.onload());
-    await assert.rejects(FaceAntiSpoof._loadRuntime("u.js"), /window\.ort was not found/);
+    await assert.rejects(
+      FaceAntiSpoof._loadRuntime("u.js"),
+      /window\.ort was not found/,
+    );
   });
 
   it("rejects on script error", async () => {
     globalThis.document = scriptDoc((s) => s.onerror());
-    await assert.rejects(FaceAntiSpoof._loadRuntime("u.js"), /Failed to load onnxruntime-web/);
+    await assert.rejects(
+      FaceAntiSpoof._loadRuntime("u.js"),
+      /Failed to load onnxruntime-web/,
+    );
   });
 });
 
@@ -694,7 +837,10 @@ describe("FaceAntiSpoof — _fetchModelBytes guards", () => {
 
   it("throws when fetch is unavailable", async () => {
     globalThis.fetch = undefined;
-    await assert.rejects(FaceAntiSpoof._fetchModelBytes("m.onnx"), /requires fetch/);
+    await assert.rejects(
+      FaceAntiSpoof._fetchModelBytes("m.onnx"),
+      /requires fetch/,
+    );
   });
 
   it("propagates HTTP failures", async () => {
@@ -713,7 +859,10 @@ describe("FaceAntiSpoof — softmax and predict failure modes", () => {
   });
 
   it("predict rejects when no crop can be produced", async () => {
-    await FaceAntiSpoof.load({ runtime: makeFakeOrt([1, 1, 1]), modelUrl: "mock.onnx" });
+    await FaceAntiSpoof.load({
+      runtime: makeFakeOrt([1, 1, 1]),
+      modelUrl: "mock.onnx",
+    });
     await assert.rejects(
       FaceAntiSpoof.predict({}, null),
       /could not be produced/,
@@ -725,7 +874,11 @@ describe("FaceAntiSpoof — softmax and predict failure modes", () => {
       Tensor: function () {},
       InferenceSession: {
         create: async function () {
-          return { run: async function () { return {}; } };
+          return {
+            run: async function () {
+              return {};
+            },
+          };
         },
       },
     };
@@ -741,7 +894,11 @@ describe("FaceAntiSpoof — softmax and predict failure modes", () => {
       Tensor: function () {},
       InferenceSession: {
         create: async function () {
-          return { run: async function () { return { output: { data: [NaN] } }; } };
+          return {
+            run: async function () {
+              return { output: { data: [NaN] } };
+            },
+          };
         },
       },
     };

@@ -4,7 +4,12 @@
 const path = require("node:path");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
-const { readFileBytes, getFileInfo, fmtSize, validateFile } = require("../utils");
+const {
+  readFileBytes,
+  getFileInfo,
+  fmtSize,
+  validateFile,
+} = require("../utils");
 
 // ── Embedded C2PA test credentials (from C2PA/c2pa.js) ──
 const C2PA_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
@@ -124,7 +129,11 @@ function findC2PAInFile(filePath) {
     const marker = Buffer.from("c2pa");
     let i = 8;
     while (i <= data.length - 12) {
-      const chunkLen = (data[i] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | data[i + 3];
+      const chunkLen =
+        (data[i] << 24) |
+        (data[i + 1] << 16) |
+        (data[i + 2] << 8) |
+        data[i + 3];
       let match = true;
       for (let j = 0; j < 4; j++) {
         if (data[i + 4 + j] !== marker[j]) {
@@ -178,12 +187,14 @@ async function runC2pa(action, filePath, opts) {
       console.error("File not found");
       process.exit(1);
     }
-    const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
+    const allowDangerous =
+      opts.allowDangerous || process.argv.includes("--allow-dangerous");
     try {
       validateFile(absPath, { allowDangerous });
     } catch (error) {
       console.error(`Validation failed: ${error.message}`);
-      if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+      if (error.message.includes("Blocked dangerous file type"))
+        console.error("Use --allow-dangerous to bypass");
       process.exit(1);
     }
 
@@ -219,12 +230,18 @@ async function runC2pa(action, filePath, opts) {
 async function doSign(absPath, opts) {
   const data = readFileBytes(absPath);
   const info = getFileInfo(absPath);
-  const fileHash = crypto.createHash("sha256").update(Buffer.from(data)).digest("hex");
+  const fileHash = crypto
+    .createHash("sha256")
+    .update(Buffer.from(data))
+    .digest("hex");
   const assertions = [];
 
-  if (opts.claim) assertions.push({ label: "c2pa.claimed", data: { value: opts.claim } });
-  if (opts.title) assertions.push({ label: "c2pa.title", data: { value: opts.title } });
-  if (opts.author) assertions.push({ label: "c2pa.author", data: { value: opts.author } });
+  if (opts.claim)
+    assertions.push({ label: "c2pa.claimed", data: { value: opts.claim } });
+  if (opts.title)
+    assertions.push({ label: "c2pa.title", data: { value: opts.title } });
+  if (opts.author)
+    assertions.push({ label: "c2pa.author", data: { value: opts.author } });
   assertions.push({
     label: "c2pa.created",
     data: { value: new Date().toISOString() },
@@ -284,7 +301,11 @@ function embedC2PAJPEG(jpegBuf, manifestBuf) {
   if (sosIdx < 0) throw new Error("JPEG SOS marker not found");
 
   // Build C2PA payload: 'c2pa\x00' + 4-byte big-endian length + manifest
-  const c2paHeader = Buffer.concat([Buffer.from("c2pa\u0000", "utf-8"), Buffer.alloc(4), manifestBuf]);
+  const c2paHeader = Buffer.concat([
+    Buffer.from("c2pa\u0000", "utf-8"),
+    Buffer.alloc(4),
+    manifestBuf,
+  ]);
   c2paHeader.writeUInt32BE(manifestBuf.length, 5); // 4-byte length after 'c2pa\0'
 
   // Build APP11 segment: FF EB + 2-byte big-endian segment length (including length field) + payload
@@ -296,7 +317,11 @@ function embedC2PAJPEG(jpegBuf, manifestBuf) {
   c2paHeader.copy(app11, 4);
 
   // Insert before SOS
-  return Buffer.concat([jpegBuf.slice(0, sosIdx), app11, jpegBuf.slice(sosIdx)]);
+  return Buffer.concat([
+    jpegBuf.slice(0, sosIdx),
+    app11,
+    jpegBuf.slice(sosIdx),
+  ]);
 }
 
 /**
@@ -333,7 +358,11 @@ function embedC2PAPNG(pngBuf, manifestBuf) {
   chunk.writeUInt32BE(crcVal, 8 + chunkLen);
 
   // Insert before first IDAT (PNG spec: ancillary chunks before IDAT, only text after)
-  return Buffer.concat([pngBuf.slice(0, idatIdx), chunk, pngBuf.slice(idatIdx)]);
+  return Buffer.concat([
+    pngBuf.slice(0, idatIdx),
+    chunk,
+    pngBuf.slice(idatIdx),
+  ]);
 }
 
 /**
@@ -383,7 +412,10 @@ function crc32(buf) {
 async function doRead(absPath, opts) {
   const info = getFileInfo(absPath);
   const data = readFileBytes(absPath);
-  const fileHash = crypto.createHash("sha256").update(Buffer.from(data)).digest("hex");
+  const fileHash = crypto
+    .createHash("sha256")
+    .update(Buffer.from(data))
+    .digest("hex");
 
   console.log(`C2PA Read: ${info.name}`);
   console.log(`SHA-256: ${fileHash}`);
@@ -391,13 +423,19 @@ async function doRead(absPath, opts) {
 
   const c2paData = findC2PAInFile(absPath);
   if (c2paData) {
-    console.log(`\nC2PA data found at offset ${c2paData.offset} (${c2paData.length} bytes)`);
+    console.log(
+      `\nC2PA data found at offset ${c2paData.offset} (${c2paData.length} bytes)`,
+    );
     const parsed = parseC2PAFromBuffer(c2paData.data);
     console.log(JSON.stringify(parsed, null, 2));
   } else {
     console.log("\nNo C2PA data found in file.");
-    console.log("Tip: C2PA is embedded in JPEG/SVG/PNG files as APP11 or custom chunk.");
-    console.log("Files without C2PA support (GIF, BMP, WEBP) will not contain C2PA data.");
+    console.log(
+      "Tip: C2PA is embedded in JPEG/SVG/PNG files as APP11 or custom chunk.",
+    );
+    console.log(
+      "Files without C2PA support (GIF, BMP, WEBP) will not contain C2PA data.",
+    );
   }
 
   if (opts.output) {
@@ -426,7 +464,10 @@ async function doRead(absPath, opts) {
 async function doVerify(absPath, _opts) {
   const data = readFileBytes(absPath);
   const info = getFileInfo(absPath);
-  const fileHash = crypto.createHash("sha256").update(Buffer.from(data)).digest("hex");
+  const fileHash = crypto
+    .createHash("sha256")
+    .update(Buffer.from(data))
+    .digest("hex");
 
   console.log(`C2PA Verify: ${info.name}`);
   console.log(`SHA-256: ${fileHash}`);

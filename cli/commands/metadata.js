@@ -3,14 +3,24 @@
 
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { readFileBytes, getFileInfo, fmtSize, outputResult, loadImageData, validateFile } = require("../utils");
+const {
+  readFileBytes,
+  getFileInfo,
+  fmtSize,
+  outputResult,
+  loadImageData,
+  validateFile,
+} = require("../utils");
 
 // Patch crypto.subtle for Node.js
 if (globalThis.crypto === undefined || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
       digest: async (_algo, data) => {
-        const hash = crypto.createHash("sha256").update(Buffer.from(data)).digest();
+        const hash = crypto
+          .createHash("sha256")
+          .update(Buffer.from(data))
+          .digest();
         return hash.buffer;
       },
     },
@@ -28,11 +38,23 @@ const _origWarn = console.warn;
 console.log = () => {};
 console.warn = () => {};
 try {
-  const hashingPath = path.join(__dirname, "..", "..", "Fingerprint", "hashing.js");
+  const hashingPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "Fingerprint",
+    "hashing.js",
+  );
   require(hashingPath);
 
   // Load metadata reading functions
-  const metadataPath = path.join(__dirname, "..", "..", "Metadata", "metadata.js");
+  const metadataPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "Metadata",
+    "metadata.js",
+  );
   require(metadataPath);
 } finally {
   console.log = _origLog;
@@ -46,21 +68,26 @@ try {
  */
 async function runMetadata(filePath, opts) {
   const absPath = path.resolve(filePath);
-  const allowDangerous = opts.allowDangerous || process.argv.includes("--allow-dangerous");
+  const allowDangerous =
+    opts.allowDangerous || process.argv.includes("--allow-dangerous");
 
   try {
     try {
       validateFile(absPath, { allowDangerous });
     } catch (error) {
       console.error(`Validation failed: ${error.message}`);
-      if (error.message.includes("Blocked dangerous file type")) console.error("Use --allow-dangerous to bypass");
+      if (error.message.includes("Blocked dangerous file type"))
+        console.error("Use --allow-dangerous to bypass");
       process.exit(1);
     }
     const data = readFileBytes(absPath);
     const info = getFileInfo(filePath);
 
     // Compute SHA-256
-    const sha256 = await crypto.createHash("sha256").update(Buffer.from(data)).digest("hex");
+    const sha256 = await crypto
+      .createHash("sha256")
+      .update(Buffer.from(data))
+      .digest("hex");
 
     // Get image dimensions
     let imageInfo = {};

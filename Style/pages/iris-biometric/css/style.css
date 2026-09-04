@@ -35,7 +35,7 @@
   padding: 14px;
   border: 1px solid var(--border-color, #ddd);
   border-radius: 8px;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
 }
 
 .iris-result-box.visible {
@@ -53,7 +53,7 @@
   padding: 10px;
   border: 1px solid var(--border-color, #ddd);
   border-radius: 8px;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
 }
 
 .iris-result-item h4 {
@@ -85,7 +85,7 @@
   border: 1px solid var(--border-color, #ddd);
   border-radius: 8px;
   margin-bottom: 8px;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
   font-size: 0.85rem;
 }
 
@@ -104,7 +104,7 @@
   padding: 10px;
   border-radius: 8px;
   font-size: 0.85rem;
-  background: var(--card-bg, rgb(255,255,255,.04));
+  background: var(--card-bg, rgb(255, 255, 255, 0.04));
   min-height: 1.5em;
 }
 
@@ -138,7 +138,7 @@
 }
 
 .iris-gallery-table th {
-  background: var(--card-bg, rgb(255,255,255,.06));
+  background: var(--card-bg, rgb(255, 255, 255, 0.06));
   font-weight: 600;
 }
 
@@ -327,6 +327,58 @@
 
 .consent-list li {
   margin-bottom: 4px;
+}
+
+/* Help card body list items (for iris.help.1 through iris.help.7) */
+.help-card .help-card-body,
+.help-card-body {
+  list-style: none;
+  counter-reset: help-step;
+  padding: 12px 14px;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  white-space: normal;
+}
+
+.help-card-body li {
+  position: relative;
+  padding-left: 1.8em;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.help-card-body li:first-child {
+  padding-left: 0;
+}
+
+.help-card-body li:first-child::before {
+  content: none;
+  counter-increment: none;
+}
+
+.help-card-body li:nth-child(n + 2):not(:last-child)::before {
+  counter-increment: help-step;
+  content: counter(help-step) ".";
+  position: absolute;
+  left: 0;
+  color: var(--text, #222);
+  font-weight: 600;
+  font-size: 0.85em;
+}
+
+.help-card-body li:last-child {
+  padding-left: 0;
+}
+
+.help-card-body li:last-child::before {
+  content: none;
+  counter-increment: none;
+}
+
+.help-card.collapsed .help-card-body {
+  display: none;
 }
 
 #iris-consent-check {

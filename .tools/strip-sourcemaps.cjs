@@ -3,7 +3,12 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.join(__dirname, "..");
-const files = ["vendor/jspdf.umd.min.js", "vendor/pdf-lib.min.js", "vendor/qrious.min.js", "Converter/ffmpeg.min.js"];
+const files = [
+  "vendor/jspdf.umd.min.js",
+  "vendor/pdf-lib.min.js",
+  "vendor/qrious.min.js",
+  "Converter/ffmpeg.min.js",
+];
 
 let changed = 0;
 for (const rel of files) {

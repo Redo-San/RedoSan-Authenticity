@@ -1,7 +1,13 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors , closePage } = require("../mpa_helpers");
+var {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 
 var PAGE_ID = "certificate";
 var browser;
@@ -29,10 +35,18 @@ describe("MPA — Certificate", function () {
   it("should have key form elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      var hasFile = await page.evaluate(function () { return !!document.getElementById("cert-file"); });
-      var hasName = await page.evaluate(function () { return !!document.getElementById("cert-name"); });
-      var hasEmail = await page.evaluate(function () { return !!document.getElementById("cert-email"); });
-      var hasGenBtn = await page.evaluate(function () { return !!document.getElementById("cert-gen-btn"); });
+      var hasFile = await page.evaluate(function () {
+        return !!document.getElementById("cert-file");
+      });
+      var hasName = await page.evaluate(function () {
+        return !!document.getElementById("cert-name");
+      });
+      var hasEmail = await page.evaluate(function () {
+        return !!document.getElementById("cert-email");
+      });
+      var hasGenBtn = await page.evaluate(function () {
+        return !!document.getElementById("cert-gen-btn");
+      });
       assert.ok(hasFile, "File input should exist");
       assert.ok(hasName, "Name input should exist");
       assert.ok(hasEmail, "Email input should exist");

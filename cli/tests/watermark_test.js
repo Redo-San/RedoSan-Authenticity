@@ -7,9 +7,11 @@ const canvasLib = require("canvas");
 const { createCanvas, ImageData } = canvasLib;
 
 // ── Polyfills ──
-globalThis.pack32 = (v) => new Uint8Array([(v >> 24) & 255, (v >> 16) & 255, (v >> 8) & 255, v & 255]);
+globalThis.pack32 = (v) =>
+  new Uint8Array([(v >> 24) & 255, (v >> 16) & 255, (v >> 8) & 255, v & 255]);
 globalThis.document = {
-  createElement: (tag) => (tag === "canvas" ? createCanvas(1, 1) : { getContext: () => null }),
+  createElement: (tag) =>
+    tag === "canvas" ? createCanvas(1, 1) : { getContext: () => null },
   addEventListener: () => {},
   getElementById: () => null,
   querySelector: () => null,
@@ -17,49 +19,105 @@ globalThis.document = {
 };
 globalThis.window = globalThis;
 globalThis.ImageData = ImageData;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 const crypto = require("crypto");
 if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.subtle) {
   globalThis.crypto = {
     subtle: {
-      digest: async (algo, data) => crypto.createHash("sha256").update(Buffer.from(data)).digest(),
+      digest: async (algo, data) =>
+        crypto.createHash("sha256").update(Buffer.from(data)).digest(),
       importKey: async (f, kd) => ({ type: "secret", keyData: kd }),
       deriveBits: async (algo, key, len) =>
-        crypto.pbkdf2Sync(Buffer.from(key.keyData), algo.salt || Buffer.from(key.keyData), algo.iterations || 1, len / 8, "sha256"),
+        crypto.pbkdf2Sync(
+          Buffer.from(key.keyData),
+          algo.salt || Buffer.from(key.keyData),
+          algo.iterations || 1,
+          len / 8,
+          "sha256",
+        ),
       generateKey: async () => ({ publicKey: {}, privateKey: {} }),
       sign: async () => new Uint8Array(64),
       verify: async () => true,
     },
-    getRandomValues: (arr) => { for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256); return arr; },
+    getRandomValues: (arr) => {
+      for (let i = 0; i < arr.length; i++)
+        arr[i] = Math.floor(Math.random() * 256);
+      return arr;
+    },
   };
 }
 
 globalThis.sha256Hex = async (buf) => {
   const h = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(h))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 };
 
 // ── Mock shared.js functions ──
 globalThis._resultStore = {};
-globalThis.setResult = (k, d) => { globalThis._resultStore[k] = d; };
+globalThis.setResult = (k, d) => {
+  globalThis._resultStore[k] = d;
+};
 globalThis.getResult = (k) => globalThis._resultStore[k];
 globalThis._dlHandler = null;
-globalThis.setDownloadHandler = (fn) => { globalThis._dlHandler = fn; };
-globalThis.escHtml = (s) => { if (s == null) return ""; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
-globalThis.escXml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-globalThis.getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ""; };
-globalThis.setText = (id, text) => { /* noop in test */ };
-globalThis.setOutput = (id, html) => { /* noop */ };
-globalThis.spinner = (id, show) => { /* noop */ };
-globalThis.showResult = () => { /* noop */ };
-globalThis.showDownloadModal = () => { /* noop */ };
-globalThis.closeDownloadModal = () => { /* noop */ };
-globalThis.getFile = async (id) => { const el = document.getElementById(id); return el && el.files && el.files.length ? el.files[0] : null; };
+globalThis.setDownloadHandler = (fn) => {
+  globalThis._dlHandler = fn;
+};
+globalThis.escHtml = (s) => {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+};
+globalThis.escXml = (s) =>
+  String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+globalThis.getVal = (id) => {
+  const el = document.getElementById(id);
+  return el ? el.value : "";
+};
+globalThis.setText = (id, text) => {
+  /* noop in test */
+};
+globalThis.setOutput = (id, html) => {
+  /* noop */
+};
+globalThis.spinner = (id, show) => {
+  /* noop */
+};
+globalThis.showResult = () => {
+  /* noop */
+};
+globalThis.showDownloadModal = () => {
+  /* noop */
+};
+globalThis.closeDownloadModal = () => {
+  /* noop */
+};
+globalThis.getFile = async (id) => {
+  const el = document.getElementById(id);
+  return el && el.files && el.files.length ? el.files[0] : null;
+};
 globalThis.validateFileInput = async () => true;
 globalThis.__ = (key, fallback) => fallback || key;
-globalThis.downloadBlobSimple = (blob, fileName) => { /* noop */ };
-globalThis.downloadBlob = (blob, name, containerId) => { /* noop */ };
+globalThis.downloadBlobSimple = (blob, fileName) => {
+  /* noop */
+};
+globalThis.downloadBlob = (blob, name, containerId) => {
+  /* noop */
+};
 globalThis.URL.createObjectURL = (b) => "blob:test/" + Math.random();
 globalThis.URL.revokeObjectURL = () => {};
 
@@ -107,7 +165,9 @@ globalThis.loadImage = async (file) => {
 // Mock canvasToBlob: use node-canvas toBuffer
 globalThis.canvasToBlob = (canvas, mime) => {
   return new Promise((resolve) => {
-    const buf = canvas.toBuffer(mime === "image/jpeg" ? "image/jpeg" : "image/png");
+    const buf = canvas.toBuffer(
+      mime === "image/jpeg" ? "image/jpeg" : "image/png",
+    );
     resolve(new Blob([buf], { type: mime || "image/png" }));
   });
 };
@@ -129,7 +189,8 @@ function makeFile(name, content) {
   return {
     name: name || "test.bin",
     size: buf.length,
-    arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+    arrayBuffer: async () =>
+      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
     slice: (start, end) => buf.slice(start, end),
   };
 }
@@ -141,21 +202,31 @@ function makeImageFile(name) {
   return {
     name: name || "test.png",
     size: buf.length,
-    arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+    arrayBuffer: async () =>
+      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
   };
 }
 
 function makeTinyImageFile(name, w, h) {
-  w = w || 4; h = h || 4;
+  w = w || 4;
+  h = h || 4;
   const canvas = createCanvas(w, h);
   const buf = canvas.toBuffer("image/png");
   const imgData = canvas.getContext("2d").getImageData(0, 0, w, h);
-  imgData.w = w; imgData.h = h;
-  _testImageCache[name] = { canvas, ctx: canvas.getContext("2d"), imgData, w, h };
+  imgData.w = w;
+  imgData.h = h;
+  _testImageCache[name] = {
+    canvas,
+    ctx: canvas.getContext("2d"),
+    imgData,
+    w,
+    h,
+  };
   return {
     name: name || "tiny.png",
     size: buf.length,
-    arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+    arrayBuffer: async () =>
+      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
   };
 }
 
@@ -303,7 +374,13 @@ describe("Watermark — watermarkEmbed", () => {
     const secret = makeFile("sec.bin", [0xbe, 0xef]);
     const emb = await globalThis.watermarkEmbed(2, img, secret, "correctpw");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego_wrongpw.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego_wrongpw.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(2, stegoFile, "wrongpw");
     assert.equal(ext.ok, false);
   });
@@ -345,7 +422,9 @@ describe("Watermark — watermarkEmbed", () => {
     const secret = makeFile("secret.bin", [0xde, 0xad, 0xbe, 0xef]);
     const r = await globalThis.watermarkEmbed(4, img, secret, "pw");
     assert.equal(r.ok, false);
-    assert.ok(r.error.includes("Secret too large") || r.error.includes("too large"));
+    assert.ok(
+      r.error.includes("Secret too large") || r.error.includes("too large"),
+    );
   });
 });
 
@@ -362,7 +441,9 @@ describe("Watermark — watermarkExtract", () => {
     const img = makeImageFile("extract5_clean.png");
     const r = await globalThis.watermarkExtract(5, img, "");
     assert.equal(r.ok, false);
-    assert.ok(r.error.includes("No watermark") || r.error.includes("No zero-bit"));
+    assert.ok(
+      r.error.includes("No watermark") || r.error.includes("No zero-bit"),
+    );
   });
 
   it("should extract type 8 from clean image (no watermark)", async () => {
@@ -377,7 +458,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xde, 0xad]);
     const emb = await globalThis.watermarkEmbed(1, img, secret, "pw1");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(1, stegoFile, "pw1");
     assert.ok(ext.ok);
     assert.ok(ext.files);
@@ -389,7 +476,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xbe, 0xef]);
     const emb = await globalThis.watermarkEmbed(2, img, secret, "pw2");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego2.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego2.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(2, stegoFile, "pw2");
     assert.ok(ext.ok);
   });
@@ -399,7 +492,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xca, 0xfe]);
     const emb = await globalThis.watermarkEmbed(3, img, secret, "pw3");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego3.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego3.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(3, stegoFile, "pw3");
     assert.ok(ext.ok);
   });
@@ -409,7 +508,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xaa, 0xbb]);
     const emb = await globalThis.watermarkEmbed(6, img, secret, "pw6");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego6.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego6.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(6, stegoFile, "pw6");
     assert.ok(ext.ok);
   });
@@ -419,7 +524,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0x11, 0x22]);
     const emb = await globalThis.watermarkEmbed(7, img, secret, "pw7");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego7.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego7.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(7, stegoFile, "pw7");
     assert.ok(ext.ok);
   });
@@ -429,7 +540,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xde, 0xad, 0xbe, 0xef]);
     const emb = await globalThis.watermarkEmbed(8, img, secret, "");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego8.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego8.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(8, stegoFile, "");
     assert.ok(ext.ok);
   });
@@ -439,7 +556,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xca, 0xfe, 0xba, 0xbe]);
     const emb = await globalThis.watermarkEmbed(4, img, secret, "pw4");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego4.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego4.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(4, stegoFile, "pw4");
     assert.ok(ext.ok);
     assert.ok(ext.files);
@@ -451,7 +574,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0x33, 0x44]);
     const emb = await globalThis.watermarkEmbed(9, img, secret, "pw9");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego9.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego9.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(9, stegoFile, "pw9");
     assert.ok(ext.ok);
   });
@@ -461,7 +590,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xde, 0xad]);
     const emb = await globalThis.watermarkEmbed(1, img, secret, "pw1");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego1_wp.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego1_wp.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(1, stegoFile, "wrongpw");
     assert.equal(ext.ok, false);
   });
@@ -471,7 +606,13 @@ describe("Watermark — watermarkExtract", () => {
     const secret = makeFile("sec.bin", [0xaa, 0xbb]);
     const emb = await globalThis.watermarkEmbed(6, img, secret, "pw6");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego6_wp.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
+    const stegoFile = {
+      name: "stego6_wp.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
     const ext = await globalThis.watermarkExtract(6, stegoFile, "wrongpw");
     assert.equal(ext.ok, false);
   });
@@ -491,10 +632,19 @@ describe("Watermark — detectWatermarkAlgorithm", () => {
     const secret = makeFile("sec.bin", [0xde, 0xad]);
     const emb = await globalThis.watermarkEmbed(1, img, secret, "detectpw");
     assert.ok(emb.ok);
-    const stegoFile = { name: "stego_detect.png", arrayBuffer: async () => { const b = await emb.data.arrayBuffer(); return b; } };
-    const results = await globalThis.detectWatermarkAlgorithm(stegoFile, "detectpw");
+    const stegoFile = {
+      name: "stego_detect.png",
+      arrayBuffer: async () => {
+        const b = await emb.data.arrayBuffer();
+        return b;
+      },
+    };
+    const results = await globalThis.detectWatermarkAlgorithm(
+      stegoFile,
+      "detectpw",
+    );
     assert.ok(results.length > 0);
-    assert.ok(results.some(r => r.type === 1));
+    assert.ok(results.some((r) => r.type === 1));
   });
 });
 
@@ -513,7 +663,9 @@ describe("Watermark — downloadWatermark", () => {
   it("should generate TXT download", async () => {
     setupWmResult({ algorithm: 1, type: "embed", message: "test" });
     let capturedBlob = null;
-    globalThis.downloadBlobSimple = (blob, name) => { capturedBlob = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      capturedBlob = { blob, name };
+    };
     await globalThis.downloadWatermark("txt");
     assert.ok(capturedBlob);
     assert.ok(capturedBlob.name.endsWith(".txt"));
@@ -522,7 +674,9 @@ describe("Watermark — downloadWatermark", () => {
   it("should generate CSV download", async () => {
     setupWmResult({ algorithm: 2, type: "embed", message: "csv" });
     let capturedBlob = null;
-    globalThis.downloadBlobSimple = (blob, name) => { capturedBlob = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      capturedBlob = { blob, name };
+    };
     await globalThis.downloadWatermark("csv");
     assert.ok(capturedBlob);
     assert.ok(capturedBlob.name.endsWith(".csv"));
@@ -531,7 +685,9 @@ describe("Watermark — downloadWatermark", () => {
   it("should generate JSON download", async () => {
     setupWmResult({ algorithm: 3, type: "extract", message: "json" });
     let capturedBlob = null;
-    globalThis.downloadBlobSimple = (blob, name) => { capturedBlob = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      capturedBlob = { blob, name };
+    };
     await globalThis.downloadWatermark("json");
     assert.ok(capturedBlob);
     assert.ok(capturedBlob.name.endsWith(".json"));
@@ -540,7 +696,9 @@ describe("Watermark — downloadWatermark", () => {
   it("should generate XML download", async () => {
     setupWmResult({ algorithm: 4, type: "embed", message: "xml" });
     let capturedBlob = null;
-    globalThis.downloadBlobSimple = (blob, name) => { capturedBlob = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      capturedBlob = { blob, name };
+    };
     await globalThis.downloadWatermark("xml");
     assert.ok(capturedBlob);
     assert.ok(capturedBlob.name.endsWith(".xml"));
@@ -549,7 +707,9 @@ describe("Watermark — downloadWatermark", () => {
   it("should generate HTML download", async () => {
     setupWmResult({ algorithm: 5, type: "extract", message: "html" });
     let capturedBlob = null;
-    globalThis.downloadBlobSimple = (blob, name) => { capturedBlob = { blob, name }; };
+    globalThis.downloadBlobSimple = (blob, name) => {
+      capturedBlob = { blob, name };
+    };
     await globalThis.downloadWatermark("html");
     assert.ok(capturedBlob);
     assert.ok(capturedBlob.name.endsWith(".html"));

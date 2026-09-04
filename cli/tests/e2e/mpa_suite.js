@@ -28,8 +28,8 @@ var files = [
   "mpa/mpa_document_watermark_test.js",
   "mpa/mpa_face_test.js",
   "mpa/mpa_face_ui_test.js",
-  "mpa/mpa_face_pipeline_test.js"
+  "mpa/mpa_face_pipeline_test.js",
 ];
-files.forEach(function(f) {
+files.forEach(function (f) {
   require(path.resolve(__dirname, f));
 });

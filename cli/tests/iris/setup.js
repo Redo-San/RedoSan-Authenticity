@@ -17,10 +17,15 @@ global.document = {
   createElement: (t) => {
     if (t === "canvas") {
       return {
-        width: 0, height: 0,
+        width: 0,
+        height: 0,
         getContext: () => ({
           drawImage: () => {},
-          getImageData: () => ({ data: new Uint8ClampedArray(640 * 480 * 4), width: 640, height: 480 }),
+          getImageData: () => ({
+            data: new Uint8ClampedArray(640 * 480 * 4),
+            width: 640,
+            height: 480,
+          }),
           putImageData: () => {},
         }),
         toBlob: (cb) => cb(new Blob()),
@@ -33,9 +38,15 @@ global.document = {
       addEventListener() {},
       appendChild() {},
       setAttribute() {},
-      getAttribute() { return null; },
-      querySelector() { return null; },
-      querySelectorAll() { return []; },
+      getAttribute() {
+        return null;
+      },
+      querySelector() {
+        return null;
+      },
+      querySelectorAll() {
+        return [];
+      },
       width: 0,
       height: 0,
       value: "",
@@ -53,13 +64,20 @@ global.HTMLCanvasElement = function () {};
 global.HTMLVideoElement = function () {};
 global.HTMLImageElement = function () {};
 global.ImageData = class ImageData {
-  constructor(d, w, h) { this.data = d; this.width = w; this.height = h; }
+  constructor(d, w, h) {
+    this.data = d;
+    this.width = w;
+    this.height = h;
+  }
 };
 global.Blob = class Blob {};
 global.FileReader = class FileReader {};
 global.crypto = {
   subtle: { digest: async () => new ArrayBuffer(32) },
-  getRandomValues: (a) => { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); return a; },
+  getRandomValues: (a) => {
+    for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256);
+    return a;
+  },
 };
 global.fetch = async () => ({ ok: true, json: async () => ({}) });
 global.__ = (k, d) => (d === undefined ? k : d);
@@ -84,7 +102,9 @@ for (const file of modules) {
   try {
     const src = fs.readFileSync(path.join(irisDir, file), "utf8");
     vm.runInThisContext(src, { filename: path.join(irisDir, file) });
-  } catch (_) { /* extra globals may be needed */ }
+  } catch (_) {
+    /* extra globals may be needed */
+  }
 }
 
 // ── Module aliases ──

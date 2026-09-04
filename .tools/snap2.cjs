@@ -1,9 +1,13 @@
 const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1350, height: 940 },
+  });
   const pg = await ctx.newPage();
-  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", { waitUntil: "load" });
+  await pg.goto("http://localhost:8080/Style/pages/timestamp/index.html", {
+    waitUntil: "load",
+  });
   await pg.waitForTimeout(600);
   const snap = (label) =>
     pg.evaluate((lbl) => {
@@ -14,7 +18,11 @@ const { chromium } = require("playwright");
         Array.from(sec.children).forEach((c) => {
           if (c.children.length || c.tagName === "DIV")
             out.children.push(
-              c.tagName + "." + (c.className || "").split(" ")[0] + "=" + Math.round(c.getBoundingClientRect().height),
+              c.tagName +
+                "." +
+                (c.className || "").split(" ")[0] +
+                "=" +
+                Math.round(c.getBoundingClientRect().height),
             );
         });
       out.ots = [];
@@ -22,7 +30,11 @@ const { chromium } = require("playwright");
       if (ots)
         Array.from(ots.children).forEach((c) =>
           out.ots.push(
-            c.tagName + "." + (c.className || "").split(" ")[0] + "=" + Math.round(c.getBoundingClientRect().height),
+            c.tagName +
+              "." +
+              (c.className || "").split(" ")[0] +
+              "=" +
+              Math.round(c.getBoundingClientRect().height),
           ),
         );
       const fb = document.querySelector("#mainFooter");

@@ -13,14 +13,24 @@ globalThis.document = {
   querySelector: () => null,
   querySelectorAll: () => [],
 };
-globalThis.location = { protocol: "file:", href: "file:///test/hashing.js", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/hashing.js",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // Suppress BLAKE3 self-check output
 const origLog = console.log;
 console.log = () => {};
-const hashSrc = fs.readFileSync(path.join(__dirname, "../../Fingerprint/hashing.js"), "utf8");
+const hashSrc = fs.readFileSync(
+  path.join(__dirname, "../../Fingerprint/hashing.js"),
+  "utf8",
+);
 try {
-  vm.runInThisContext(hashSrc, { filename: path.resolve(__dirname, "../../Fingerprint/hashing.js") });
+  vm.runInThisContext(hashSrc, {
+    filename: path.resolve(__dirname, "../../Fingerprint/hashing.js"),
+  });
 } finally {
   console.log = origLog;
 }

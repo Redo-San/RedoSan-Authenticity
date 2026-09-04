@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // ── GPL polyfills ──
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // ── Load FaceLiveness source ──
 const livenessSrc = fs.readFileSync(
@@ -14,7 +19,12 @@ const livenessSrc = fs.readFileSync(
   "utf8",
 );
 vm.runInThisContext(livenessSrc, {
-  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_liveness.js"),
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_liveness.js",
+  ),
 });
 
 // ── Synthetic landmark helpers ──
@@ -69,8 +79,22 @@ function placeEye(mesh, indices, cx, cy, eyeHeight, eyeWidth) {
  */
 function faceWithEyes(eyeHeightL, eyeHeightR, noseOffsetX) {
   const mesh = emptyMesh();
-  placeEye(mesh, LEFT_EYE, 250, 200, eyeHeightL === undefined ? 8 : eyeHeightL, 60);
-  placeEye(mesh, RIGHT_EYE, 390, 200, eyeHeightR === undefined ? 8 : eyeHeightR, 60);
+  placeEye(
+    mesh,
+    LEFT_EYE,
+    250,
+    200,
+    eyeHeightL === undefined ? 8 : eyeHeightL,
+    60,
+  );
+  placeEye(
+    mesh,
+    RIGHT_EYE,
+    390,
+    200,
+    eyeHeightR === undefined ? 8 : eyeHeightR,
+    60,
+  );
   mesh[NOSE * 3] = 320 + (noseOffsetX || 0);
   mesh[NOSE * 3 + 1] = 260;
   // inner eye corners (for nose offset normalization)
@@ -93,7 +117,10 @@ function frame(mesh) {
 describe("FaceLiveness — ear", () => {
   it("returns 0 for null input", () => {
     assert.equal(globalThis.FaceLiveness.ear(null, LEFT_EYE), 0);
-    assert.equal(globalThis.FaceLiveness.ear(new Float32Array(10), LEFT_EYE), 0);
+    assert.equal(
+      globalThis.FaceLiveness.ear(new Float32Array(10), LEFT_EYE),
+      0,
+    );
   });
 
   it("is high for an open eye and low for a closed eye", () => {
@@ -125,7 +152,11 @@ describe("FaceLiveness — blinkScore", () => {
   });
 
   it("counts zero blinks when eyes stay open", () => {
-    const frames = [faceWithEyes(8, 8), faceWithEyes(8, 8), faceWithEyes(8, 8)].map(frame);
+    const frames = [
+      faceWithEyes(8, 8),
+      faceWithEyes(8, 8),
+      faceWithEyes(8, 8),
+    ].map(frame);
     assert.equal(globalThis.FaceLiveness.blinkScore(frames).count, 0);
   });
 
@@ -140,7 +171,10 @@ describe("FaceLiveness — blinkScore", () => {
 describe("FaceLiveness — motionScore", () => {
   it("returns 0 for fewer than 2 frames", () => {
     assert.equal(globalThis.FaceLiveness.motionScore([]), 0);
-    assert.equal(globalThis.FaceLiveness.motionScore([frame(faceWithEyes(8, 8))]), 0);
+    assert.equal(
+      globalThis.FaceLiveness.motionScore([frame(faceWithEyes(8, 8))]),
+      0,
+    );
   });
 
   it("is ~0 for a static subject", () => {
@@ -208,7 +242,11 @@ describe("FaceLiveness — qualityScore", () => {
   it("passes for a well-placed frontal face", () => {
     const mesh = faceWithEyes(8, 8, 0);
     const q = globalThis.FaceLiveness.qualityScore(
-      { box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: mesh },
+      {
+        box: { x: 200, y: 100, width: 240, height: 300 },
+        score: 0.9,
+        mesh: mesh,
+      },
       640,
       480,
     );
@@ -237,7 +275,11 @@ describe("FaceLiveness — qualityScore", () => {
   it("rejects a non-frontal profile when nose is offset", () => {
     const mesh = faceWithEyes(8, 8, 60); // nose shifted right
     const q = globalThis.FaceLiveness.qualityScore(
-      { box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: mesh },
+      {
+        box: { x: 200, y: 100, width: 240, height: 300 },
+        score: 0.9,
+        mesh: mesh,
+      },
       640,
       480,
     );
@@ -390,10 +432,19 @@ describe("FaceLiveness — verifyLiveness", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._lastMesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._lastMesh,
+          },
+        ];
       },
     };
-    const r = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
+    const r = await liveness.verifyLiveness(camera, engine, {
+      mode: "passive",
+      frames: 4,
+    });
     assert.equal(r.live, true);
     assert.equal(r.blinkCount, 1);
     assert.equal(r.mode, "passive");
@@ -409,10 +460,19 @@ describe("FaceLiveness — verifyLiveness", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._mesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._mesh,
+          },
+        ];
       },
     };
-    const r = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 3 });
+    const r = await liveness.verifyLiveness(camera, engine, {
+      mode: "passive",
+      frames: 3,
+    });
     assert.equal(r.live, false);
     assert.ok(r.reasons.includes("no_blink"));
   });
@@ -423,7 +483,12 @@ describe("FaceLiveness — verifyLiveness", () => {
     const open2 = faceWithEyes(8, 8);
     open2[NOSE * 3] += 3;
     const blink = faceWithEyes(2, 2);
-    const challengeFrames = [faceWithEyes(2, 2), smileMesh(), turnMesh(1), lookMesh(1)];
+    const challengeFrames = [
+      faceWithEyes(2, 2),
+      smileMesh(),
+      turnMesh(1),
+      lookMesh(1),
+    ];
     const sequence = [open1, blink, open2, open1, ...challengeFrames];
     let idx = 0;
     const camera = {
@@ -435,7 +500,13 @@ describe("FaceLiveness — verifyLiveness", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._mesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._mesh,
+          },
+        ];
       },
     };
     const r = await liveness.verifyLiveness(camera, engine, {
@@ -453,7 +524,12 @@ describe("FaceLiveness — verifyLiveness", () => {
     const open2 = faceWithEyes(8, 8);
     open2[NOSE * 3] += 3;
     const blink = faceWithEyes(2, 2);
-    const challengeFrames = [faceWithEyes(2, 2), smileMesh(), turnMesh(1), lookMesh(1)];
+    const challengeFrames = [
+      faceWithEyes(2, 2),
+      smileMesh(),
+      turnMesh(1),
+      lookMesh(1),
+    ];
     const sequence = [open1, blink, open2, open1, ...challengeFrames];
     let idx = 0;
     const camera = {
@@ -465,7 +541,13 @@ describe("FaceLiveness — verifyLiveness", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._mesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._mesh,
+          },
+        ];
       },
     };
     const notified = [];
@@ -478,7 +560,13 @@ describe("FaceLiveness — verifyLiveness", () => {
         notified.push(c.type);
       },
     });
-    assert.deepEqual(notified, ["blink", "smile", "turn-left", "look-up", null]);
+    assert.deepEqual(notified, [
+      "blink",
+      "smile",
+      "turn-left",
+      "look-up",
+      null,
+    ]);
   });
 
   it("times out safely when no face mesh ever appears in active mode", async () => {
@@ -499,7 +587,10 @@ describe("FaceLiveness — verifyLiveness", () => {
       timeoutMs: 100,
     });
     assert.equal(r.live, false);
-    assert.ok(Date.now() - started < 5000, "must fail fast via the overall deadline");
+    assert.ok(
+      Date.now() - started < 5000,
+      "must fail fast via the overall deadline",
+    );
   });
 });
 
@@ -514,9 +605,15 @@ describe("FaceLiveness — antiSpoofCheck", () => {
 
   it("returns null when the module or canvas is unusable", async () => {
     globalThis.FaceAntiSpoof = undefined;
-    assert.equal(await globalThis.FaceLiveness.antiSpoofCheck(makeCanvas(), null), null);
+    assert.equal(
+      await globalThis.FaceLiveness.antiSpoofCheck(makeCanvas(), null),
+      null,
+    );
     globalThis.FaceAntiSpoof = REAL_AS;
-    assert.equal(await globalThis.FaceLiveness.antiSpoofCheck(null, null), null);
+    assert.equal(
+      await globalThis.FaceLiveness.antiSpoofCheck(null, null),
+      null,
+    );
     assert.equal(await globalThis.FaceLiveness.antiSpoofCheck({}, null), null);
   });
 
@@ -526,7 +623,10 @@ describe("FaceLiveness — antiSpoofCheck", () => {
       load: async () => false,
       getError: () => "",
     };
-    const res = await globalThis.FaceLiveness.antiSpoofCheck(makeCanvas(), null);
+    const res = await globalThis.FaceLiveness.antiSpoofCheck(
+      makeCanvas(),
+      null,
+    );
     assert.equal(res.ready, false);
     assert.equal(res.error, "load-failed");
   });
@@ -544,7 +644,10 @@ describe("FaceLiveness — antiSpoofCheck", () => {
         probabilities: new Float32Array([0.93, 0.05, 0.02]),
       }),
     };
-    const res = await globalThis.FaceLiveness.antiSpoofCheck(makeCanvas(), null);
+    const res = await globalThis.FaceLiveness.antiSpoofCheck(
+      makeCanvas(),
+      null,
+    );
     assert.equal(res.ready, true);
     assert.equal(res.backend, "wasm");
     assert.equal(res.probabilities.length, 3);
@@ -552,9 +655,16 @@ describe("FaceLiveness — antiSpoofCheck", () => {
       assert.ok(Math.abs(res.probabilities[i] - [0.93, 0.05, 0.02][i]) < 1e-6);
     }
 
-    globalThis.FaceAntiSpoof.predict = async () => ({ live: false, score: 0.1, label: "spoof" });
+    globalThis.FaceAntiSpoof.predict = async () => ({
+      live: false,
+      score: 0.1,
+      label: "spoof",
+    });
     globalThis.FaceAntiSpoof.getBackend = () => "";
-    const minimal = await globalThis.FaceLiveness.antiSpoofCheck(makeCanvas(), null);
+    const minimal = await globalThis.FaceLiveness.antiSpoofCheck(
+      makeCanvas(),
+      null,
+    );
     assert.equal(minimal.probabilities, null);
     assert.equal(minimal.backend, null);
   });
@@ -568,7 +678,10 @@ describe("FaceLiveness — antiSpoofCheck", () => {
         throw new Error("pad exploded");
       },
     };
-    const res = await globalThis.FaceLiveness.antiSpoofCheck(makeCanvas(), null);
+    const res = await globalThis.FaceLiveness.antiSpoofCheck(
+      makeCanvas(),
+      null,
+    );
     assert.equal(res.ready, false);
     assert.equal(res.error, "pad exploded");
   });
@@ -593,21 +706,38 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
   function meshEngine(mesh) {
     return {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: mesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: mesh,
+          },
+        ];
       },
     };
   }
 
   it("defaults to passive mode with the standard frame budget", async () => {
-    const r = await liveness.verifyLiveness(staticCamera(faceWithEyes(8, 8)), meshEngine(faceWithEyes(8, 8)), { antiSpoof: false });
+    const r = await liveness.verifyLiveness(
+      staticCamera(faceWithEyes(8, 8)),
+      meshEngine(faceWithEyes(8, 8)),
+      { antiSpoof: false },
+    );
     assert.equal(r.mode, "passive");
-    assert.equal(r.quality.reasons[0] !== undefined || r.reasons.length >= 0, true);
+    assert.equal(
+      r.quality.reasons[0] !== undefined || r.reasons.length >= 0,
+      true,
+    );
   });
 
   it("skips null captures and survives detector failures", async () => {
     let calls = 0;
     const camera = { captureFrame: () => null };
-    const r1 = await liveness.verifyLiveness(camera, meshEngine(faceWithEyes(8, 8)), { frames: 2, antiSpoof: false });
+    const r1 = await liveness.verifyLiveness(
+      camera,
+      meshEngine(faceWithEyes(8, 8)),
+      { frames: 2, antiSpoof: false },
+    );
     assert.ok(r1.reasons.includes("no_frames"));
 
     const camera2 = { captureFrame: () => makeCanvas() };
@@ -620,13 +750,21 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
         return [{}];
       },
     };
-    const r2 = await liveness.verifyLiveness(camera2, flaky, { frames: 3, antiSpoof: false });
+    const r2 = await liveness.verifyLiveness(camera2, flaky, {
+      frames: 3,
+      antiSpoof: false,
+    });
     assert.equal(r2.live, false);
     calls++;
   });
 
   it("runs active-only mode without a passive phase", async () => {
-    const challengeFrames = [faceWithEyes(2, 2), smileMesh(), turnMesh(1), lookMesh(1)];
+    const challengeFrames = [
+      faceWithEyes(2, 2),
+      smileMesh(),
+      turnMesh(1),
+      lookMesh(1),
+    ];
     let idx = 0;
     const camera = {
       captureFrame: function () {
@@ -637,7 +775,13 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._mesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._mesh,
+          },
+        ];
       },
     };
     const r = await liveness.verifyLiveness(camera, engine, {
@@ -648,7 +792,11 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
       onChallenge: function () {},
     });
     assert.equal(r.live, true);
-    assert.equal(r.antiSpoof, undefined, "active-only runs leave no frames for PAD");
+    assert.equal(
+      r.antiSpoof,
+      undefined,
+      "active-only runs leave no frames for PAD",
+    );
     assert.ok(r.passedChallenges.length === 4);
   });
 
@@ -664,7 +812,12 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
   });
 
   it("completes an active run using the default challenge timeout", async () => {
-    const challengeFrames = [faceWithEyes(2, 2), smileMesh(), turnMesh(1), lookMesh(1)];
+    const challengeFrames = [
+      faceWithEyes(2, 2),
+      smileMesh(),
+      turnMesh(1),
+      lookMesh(1),
+    ];
     let idx = 0;
     const camera = {
       captureFrame: function () {
@@ -675,7 +828,13 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._mesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._mesh,
+          },
+        ];
       },
     };
     const r = await liveness.verifyLiveness(camera, engine, {
@@ -696,7 +855,13 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
       detectFaces: async function () {
         detectCalls++;
         if (detectCalls === 2) t.mock.timers.tick(60000);
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: openMesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: openMesh,
+          },
+        ];
       },
     };
     const r = await liveness.verifyLiveness(camera, engine, {
@@ -710,7 +875,11 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
     assert.equal(r.live, false);
     assert.deepEqual(r.passedChallenges, []);
     const last = notified[notified.length - 1];
-    assert.equal(last.done, true, "the deadline break must emit a final done notification");
+    assert.equal(
+      last.done,
+      true,
+      "the deadline break must emit a final done notification",
+    );
   });
 
   it("aborts the active phase when the detector keeps throwing", async () => {
@@ -755,7 +924,13 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
     };
     const engine = {
       detectFaces: async function () {
-        return [{ box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: camera._mesh }];
+        return [
+          {
+            box: { x: 200, y: 100, width: 240, height: 300 },
+            score: 0.9,
+            mesh: camera._mesh,
+          },
+        ];
       },
     };
     try {
@@ -771,20 +946,41 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
           probabilities: [0.2, 0.5, 0.3],
         }),
       };
-      const spoofed = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
-      assert.equal(spoofed.live, false, "a spoof verdict must override heuristics");
+      const spoofed = await liveness.verifyLiveness(camera, engine, {
+        mode: "passive",
+        frames: 4,
+      });
+      assert.equal(
+        spoofed.live,
+        false,
+        "a spoof verdict must override heuristics",
+      );
       assert.ok(spoofed.reasons.includes("anti_spoof"));
       assert.equal(spoofed.antiSpoof.ready, true);
 
-      globalThis.FaceAntiSpoof.predict = async () => ({ live: false, score: 0.9, label: "print" });
+      globalThis.FaceAntiSpoof.predict = async () => ({
+        live: false,
+        score: 0.9,
+        label: "print",
+      });
       idx = 0;
-      const lowConfidenceOverride = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
+      const lowConfidenceOverride = await liveness.verifyLiveness(
+        camera,
+        engine,
+        { mode: "passive", frames: 4 },
+      );
       assert.equal(lowConfidenceOverride.live, false);
-      assert.ok(!lowConfidenceOverride.reasons.includes("anti_spoof"), "high PAD scores skip the reason tag");
+      assert.ok(
+        !lowConfidenceOverride.reasons.includes("anti_spoof"),
+        "high PAD scores skip the reason tag",
+      );
 
       globalThis.FaceAntiSpoof = undefined;
       idx = 0;
-      const noPad = await liveness.verifyLiveness(camera, engine, { mode: "passive", frames: 4 });
+      const noPad = await liveness.verifyLiveness(camera, engine, {
+        mode: "passive",
+        frames: 4,
+      });
       assert.equal(noPad.antiSpoof, undefined);
 
       // PAD with a frame whose detection has no usable box → null box is passed
@@ -801,7 +997,10 @@ describe("FaceLiveness — verifyLiveness coverage arms", () => {
         },
       };
       idx = 0;
-      const noBoxRun = await liveness.verifyLiveness(camera, boxProbeEngine, { mode: "passive", frames: 2 });
+      const noBoxRun = await liveness.verifyLiveness(camera, boxProbeEngine, {
+        mode: "passive",
+        frames: 2,
+      });
       assert.equal(noBoxRun.antiSpoof.ready, true);
     } finally {
       globalThis.FaceAntiSpoof = REAL_AS;
@@ -839,7 +1038,11 @@ describe("FaceLiveness — edge arms (pure functions)", () => {
   });
 
   it("blinkScore counts a trailing closed run at the end of the window", () => {
-    const frames = [faceWithEyes(8, 8), faceWithEyes(8, 8), faceWithEyes(2, 2)].map(frame);
+    const frames = [
+      faceWithEyes(8, 8),
+      faceWithEyes(8, 8),
+      faceWithEyes(2, 2),
+    ].map(frame);
     const r = globalThis.FaceLiveness.blinkScore(frames);
     assert.equal(r.count, 1);
     assert.equal(r.closedRuns, 1);
@@ -862,7 +1065,11 @@ describe("FaceLiveness — edge arms (pure functions)", () => {
 
   it("sharpnessScore returns 0 for zero-size canvases and read failures", () => {
     assert.equal(
-      globalThis.FaceLiveness.sharpnessScore({ width: 0, height: 0, getContext: () => ({}) }),
+      globalThis.FaceLiveness.sharpnessScore({
+        width: 0,
+        height: 0,
+        getContext: () => ({}),
+      }),
       0,
     );
     const boom = {
@@ -925,7 +1132,11 @@ describe("FaceLiveness — edge arms (pure functions)", () => {
       { result: goodResult, canvas: makeCanvas(), mesh: faceWithEyes(8, 8) },
     ];
     const r = globalThis.FaceLiveness.analyzePassive(frames);
-    assert.equal(r.quality.ok, true, "later good frame must override early bad quality");
+    assert.equal(
+      r.quality.ok,
+      true,
+      "later good frame must override early bad quality",
+    );
     assert.ok(r.reasons.includes("no_blink"));
   });
 });
@@ -970,7 +1181,11 @@ describe("FaceLiveness — validator edge arms", () => {
   });
 
   it("smile fails on sparse meshes and accepts an open mouth", () => {
-    assert.equal(V.smile(new Float32Array(40)), false, "missing lip anchors hit the guard");
+    assert.equal(
+      V.smile(new Float32Array(40)),
+      false,
+      "missing lip anchors hit the guard",
+    );
     const openMouth = faceWithEyes(8, 8);
     openMouth[LIP_L * 3 + 1] = 350; // corners below the trigger line
     openMouth[LIP_R * 3 + 1] = 350;
@@ -1015,12 +1230,23 @@ describe("FaceLiveness — validator edge arms", () => {
     const moving = faceWithEyes(8, 8);
     moving[NOSE * 3] += 2;
     const frames = [
-      { canvas: c, mesh: moving, result: { box: { x: 200, y: 100, width: 240, height: 300 }, score: 0.9, mesh: moving } },
+      {
+        canvas: c,
+        mesh: moving,
+        result: {
+          box: { x: 200, y: 100, width: 240, height: 300 },
+          score: 0.9,
+          mesh: moving,
+        },
+      },
       { canvas: makeCanvas(), mesh: blink, result: null },
       { canvas: makeCanvas(), mesh: faceWithEyes(8, 8), result: null },
     ];
     const r = globalThis.FaceLiveness.analyzePassive(frames);
-    assert.ok(r.reasons.includes("blurred"), "soft frame must trigger the blurred reason");
+    assert.ok(
+      r.reasons.includes("blurred"),
+      "soft frame must trigger the blurred reason",
+    );
   });
 
   it("_noseOffset and _eyeMidY guard sparse meshes and coincident eyes", () => {
@@ -1036,7 +1262,9 @@ describe("FaceLiveness — validator edge arms", () => {
 
 describe("FaceLiveness — ChallengeEngine edge arms", () => {
   it("reports done immediately when started with an empty list", () => {
-    const engine = new globalThis.FaceLiveness.ChallengeEngine({ challenges: ["blink"] });
+    const engine = new globalThis.FaceLiveness.ChallengeEngine({
+      challenges: ["blink"],
+    });
     engine._challenges = [];
     assert.equal(engine.start(), null);
     const r = engine.validate(faceWithEyes(8, 8));
@@ -1044,7 +1272,9 @@ describe("FaceLiveness — ChallengeEngine edge arms", () => {
   });
 
   it("falls back to the random set for an explicitly empty challenge list", () => {
-    const engine = new globalThis.FaceLiveness.ChallengeEngine({ challenges: [] });
+    const engine = new globalThis.FaceLiveness.ChallengeEngine({
+      challenges: [],
+    });
     const first = engine.start();
     assert.notEqual(first, null);
     assert.equal(engine.summary().total, globalThis.FaceLiveness ? 3 : 3);

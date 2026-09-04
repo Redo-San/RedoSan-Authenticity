@@ -19,7 +19,9 @@ function addListener(type, fn) {
 
 function removeListener(type, fn) {
   if (_listeners[type]) {
-    _listeners[type] = _listeners[type].filter(function (f) { return f !== fn; });
+    _listeners[type] = _listeners[type].filter(function (f) {
+      return f !== fn;
+    });
   }
 }
 
@@ -62,51 +64,85 @@ function makeClassList() {
   var items = [];
   return {
     _classes: items,
-    add: function (c) { if (items.indexOf(c) === -1) items.push(c); },
+    add: function (c) {
+      if (items.indexOf(c) === -1) items.push(c);
+    },
     remove: function (c) {
       var idx = items.indexOf(c);
       if (idx !== -1) items.splice(idx, 1);
     },
-    contains: function (c) { return items.indexOf(c) !== -1; },
+    contains: function (c) {
+      return items.indexOf(c) !== -1;
+    },
     toggle: function (c) {
       var idx = items.indexOf(c);
-      if (idx !== -1) { items.splice(idx, 1); return false; }
-      items.push(c); return true;
+      if (idx !== -1) {
+        items.splice(idx, 1);
+        return false;
+      }
+      items.push(c);
+      return true;
     },
-    toString: function () { return items.join(" "); },
+    toString: function () {
+      return items.join(" ");
+    },
   };
 }
 
 // ── Mock element factory ──
 function makeEl(id, extra) {
   if (!_els[id]) {
-    _els[id] = Object.assign({
-      style: { display: "" },
-      value: "", textContent: "", innerHTML: "", className: "",
-      placeholder: "", title: "", rel: "", href: "", id: id,
-      dataset: {},
-      classList: makeClassList(),
-      append: function () {},
-      appendChild: function () {},
-      remove: function () {},
-      addEventListener: function () {},
-      removeEventListener: function () {},
-      dispatchEvent: function () {},
-      getAttribute: function (a) { return this[a] || null; },
-      setAttribute: function (a, v) { this[a] = v; },
-      click: function () {},
-      focus: function () {},
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
-      parentElement: {},
-      parentNode: {
-        insertBefore: function () {},
-        removeChild: function () {},
-        querySelector: function () { return null; },
+    _els[id] = Object.assign(
+      {
+        style: { display: "" },
+        value: "",
+        textContent: "",
+        innerHTML: "",
+        className: "",
+        placeholder: "",
+        title: "",
+        rel: "",
+        href: "",
+        id: id,
+        dataset: {},
+        classList: makeClassList(),
+        append: function () {},
+        appendChild: function () {},
+        remove: function () {},
+        addEventListener: function () {},
+        removeEventListener: function () {},
+        dispatchEvent: function () {},
+        getAttribute: function (a) {
+          return this[a] || null;
+        },
+        setAttribute: function (a, v) {
+          this[a] = v;
+        },
+        click: function () {},
+        focus: function () {},
+        querySelector: function () {
+          return null;
+        },
+        querySelectorAll: function () {
+          return [];
+        },
+        parentElement: {},
+        parentNode: {
+          insertBefore: function () {},
+          removeChild: function () {},
+          querySelector: function () {
+            return null;
+          },
+        },
+        closest: function () {
+          return null;
+        },
+        contains: function () {
+          return false;
+        },
       },
-      closest: function () { return null; },
-      contains: function () { return false; },
-    }, extra || {});
+      extra || {},
+    );
   } else if (extra) {
     Object.assign(_els[id], extra);
   }
@@ -119,33 +155,53 @@ function resetI18nUIState() {
 
   globalThis.document = {
     documentElement: {
-      lang: "", dir: "ltr", dataset: {}, style: {},
-      getAttribute: function () { return null; },
+      lang: "",
+      dir: "ltr",
+      dataset: {},
+      style: {},
+      getAttribute: function () {
+        return null;
+      },
     },
-    getElementById: function (id) { return _els[id] || null; },
-    querySelector: function () { return null; },
-    querySelectorAll: function () { return []; },
+    getElementById: function (id) {
+      return _els[id] || null;
+    },
+    querySelector: function () {
+      return null;
+    },
+    querySelectorAll: function () {
+      return [];
+    },
     createElement: function (tag) {
       var el = makeEl("created-" + tag + "_" + Math.random(), { tagName: tag });
       el.rel = "";
       el.href = "";
       el.remove = function () {
         for (var k in _els) {
-          if (_els[k] === el) { delete _els[k]; break; }
+          if (_els[k] === el) {
+            delete _els[k];
+            break;
+          }
         }
       };
       return el;
     },
-    createTextNode: function () { return {}; },
+    createTextNode: function () {
+      return {};
+    },
     title: "",
     head: {
       append: function () {},
-      querySelector: function () { return null; },
+      querySelector: function () {
+        return null;
+      },
     },
     body: {
       classList: makeClassList(),
       append: function () {},
-      querySelector: function () { return null; },
+      querySelector: function () {
+        return null;
+      },
     },
     addEventListener: addListener,
     removeEventListener: removeListener,
@@ -172,41 +228,86 @@ function resetI18nUIState() {
   };
 
   // Navigator
-  try { Object.defineProperty(navigator, "language", { value: "en-US", configurable: true, writable: true }); } catch (e) {}
-  try { Object.defineProperty(navigator, "userLanguage", { value: "", configurable: true, writable: true }); } catch (e) {}
+  try {
+    Object.defineProperty(navigator, "language", {
+      value: "en-US",
+      configurable: true,
+      writable: true,
+    });
+  } catch (e) {}
+  try {
+    Object.defineProperty(navigator, "userLanguage", {
+      value: "",
+      configurable: true,
+      writable: true,
+    });
+  } catch (e) {}
 
   // LocalStorage
   var _ls = {};
   globalThis.localStorage = {
-    getItem: function (k) { return _ls[k] !== undefined ? _ls[k] : null; },
-    setItem: function (k, v) { _ls[k] = String(v); },
-    removeItem: function (k) { delete _ls[k]; },
-    clear: function () { _ls = {}; },
+    getItem: function (k) {
+      return _ls[k] !== undefined ? _ls[k] : null;
+    },
+    setItem: function (k, v) {
+      _ls[k] = String(v);
+    },
+    removeItem: function (k) {
+      delete _ls[k];
+    },
+    clear: function () {
+      _ls = {};
+    },
   };
 
   // Fetch
   globalThis.fetch = async function (url) {
-    return { ok: true, json: async function () { return {}; } };
+    return {
+      ok: true,
+      json: async function () {
+        return {};
+      },
+    };
   };
 
-  globalThis.setTimeout = function (fn) { fn(); return 1; };
+  globalThis.setTimeout = function (fn) {
+    fn();
+    return 1;
+  };
   globalThis.clearTimeout = function () {};
 
   // __ function for translations (must return fallback to match source behavior)
-  globalThis.__ = function (key, fallback) { return fallback || key; };
+  globalThis.__ = function (key, fallback) {
+    return fallback || key;
+  };
 
   // Embedded translation data
   globalThis.__I18N_DATA = {
-    en: { "test.key": "Hello", "lang.name.en": "English", "lang.name.fr": "French", "shared.drop_file": "Drop files here", "shared.lang_title": "Language: {lang}" },
+    en: {
+      "test.key": "Hello",
+      "lang.name.en": "English",
+      "lang.name.fr": "French",
+      "shared.drop_file": "Drop files here",
+      "shared.lang_title": "Language: {lang}",
+    },
     fr: { "test.key": "Bonjour", "lang.name.fr": "Fran\u00e7ais" },
-    ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627", "shared.drop_file": "\u0623\u0633\u0642\u0637 \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0647\u0646\u0627" },
+    ar: {
+      "test.key": "\u0645\u0631\u062d\u0628\u0627",
+      "shared.drop_file":
+        "\u0623\u0633\u0642\u0637 \u0627\u0644\u0645\u0644\u0641\u0627\u062a \u0647\u0646\u0627",
+    },
   };
 }
 
 // ── Load i18n.js into the global scope ──
 function loadI18n() {
-  var src = fs.readFileSync(path.resolve(__dirname, "../../Style/i18n.js"), "utf8");
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Style/i18n.js") });
+  var src = fs.readFileSync(
+    path.resolve(__dirname, "../../Style/i18n.js"),
+    "utf8",
+  );
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../Style/i18n.js"),
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -226,7 +327,11 @@ before(function () {
 
 after(function () {
   // Restore a basic console for any post-test output
-  globalThis.console = { error: function () {}, warn: function () {}, log: function () {} };
+  globalThis.console = {
+    error: function () {},
+    warn: function () {},
+    log: function () {},
+  };
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -235,7 +340,10 @@ after(function () {
 describe("i18n.js — sanitizeHtml (additional edge cases)", function () {
   it("allows p, a, strong, em tags", function () {
     assert.equal(sanitizeHtml("<p>text</p>"), "<p>text<p>");
-    assert.equal(sanitizeHtml("<a href='https://example.com'>link</a>"), "<a href='https://example.com'>link<a>");
+    assert.equal(
+      sanitizeHtml("<a href='https://example.com'>link</a>"),
+      "<a href='https://example.com'>link<a>",
+    );
     assert.equal(sanitizeHtml("<strong>bold</strong>"), "<strong>bold<strong>");
     assert.equal(sanitizeHtml("<em>italic</em>"), "<em>italic<em>");
   });
@@ -247,22 +355,43 @@ describe("i18n.js — sanitizeHtml (additional edge cases)", function () {
 
   it("strips on* attributes like onclick", function () {
     assert.equal(sanitizeHtml("<p onclick='alert(1)'>test</p>"), "<p>test<p>");
-    assert.equal(sanitizeHtml("<a href='#' onmouseover='evil()'>link</a>"), "<a href='#'>link<a>");
+    assert.equal(
+      sanitizeHtml("<a href='#' onmouseover='evil()'>link</a>"),
+      "<a href='#'>link<a>",
+    );
   });
 
   it("blocks javascript: URLs in href", function () {
-    assert.equal(sanitizeHtml("<a href='javascript:alert(1)'>x</a>"), "<a>x<a>");
-    assert.equal(sanitizeHtml("<a href='JAVASCRIPT:doEvil()'>x</a>"), "<a>x<a>");
+    assert.equal(
+      sanitizeHtml("<a href='javascript:alert(1)'>x</a>"),
+      "<a>x<a>",
+    );
+    assert.equal(
+      sanitizeHtml("<a href='JAVASCRIPT:doEvil()'>x</a>"),
+      "<a>x<a>",
+    );
   });
 
   it("allows data-* attributes", function () {
-    assert.equal(sanitizeHtml("<span data-value='test'>text</span>"), "<span data-value='test'>text<span>");
-    assert.equal(sanitizeHtml("<div data-custom='123'>x</div>"), "<div data-custom='123'>x<div>");
+    assert.equal(
+      sanitizeHtml("<span data-value='test'>text</span>"),
+      "<span data-value='test'>text<span>",
+    );
+    assert.equal(
+      sanitizeHtml("<div data-custom='123'>x</div>"),
+      "<div data-custom='123'>x<div>",
+    );
   });
 
   it("handles nested tags", function () {
-    assert.equal(sanitizeHtml("<p>Hello <strong>world</strong></p>"), "<p>Hello <strong>world<strong><p>");
-    assert.equal(sanitizeHtml("<ul><li>item <em>1</em></li></ul>"), "<ul><li>item <em>1<em><li><ul>");
+    assert.equal(
+      sanitizeHtml("<p>Hello <strong>world</strong></p>"),
+      "<p>Hello <strong>world<strong><p>",
+    );
+    assert.equal(
+      sanitizeHtml("<ul><li>item <em>1</em></li></ul>"),
+      "<ul><li>item <em>1<em><li><ul>",
+    );
   });
 
   it("handles unknown tags by stripping them entirely", function () {
@@ -271,7 +400,10 @@ describe("i18n.js — sanitizeHtml (additional edge cases)", function () {
   });
 
   it("strips blob: and data: URLs in href", function () {
-    assert.equal(sanitizeHtml("<a href='data:text/html,alert(1)'>x</a>"), "<a>x<a>");
+    assert.equal(
+      sanitizeHtml("<a href='data:text/html,alert(1)'>x</a>"),
+      "<a>x<a>",
+    );
     assert.equal(sanitizeHtml("<a href='blob:fake'>x</a>"), "<a>x<a>");
   });
 
@@ -285,8 +417,12 @@ describe("i18n.js — sanitizeHtml (additional edge cases)", function () {
   });
 
   it("preserves allowed attributes but strips disallowed ones on the same tag", function () {
-    assert.equal(sanitizeHtml("<a href='https://good.com' onclick='evil()' data-info='ok'>link</a>"),
-      "<a href='https://good.com' data-info='ok'>link<a>");
+    assert.equal(
+      sanitizeHtml(
+        "<a href='https://good.com' onclick='evil()' data-info='ok'>link</a>",
+      ),
+      "<a href='https://good.com' data-info='ok'>link<a>",
+    );
   });
 });
 
@@ -303,7 +439,13 @@ describe("i18n.js — detectLang", function () {
 
   it("detects from navigator.language directly when supported", async function () {
     globalThis.localStorage.removeItem("redosan_lang");
-    try { Object.defineProperty(navigator, "language", { value: "ar", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "ar",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
     assert.equal(lang, "ar");
   });
@@ -311,38 +453,84 @@ describe("i18n.js — detectLang", function () {
   it("checks BROWSER_LANGUAGE_MAP but falls back to 'en' when mapped lang not in SUPPORTED", async function () {
     // 'pt' is in BROWSER_LANGUAGE_MAP as 'pt' but 'pt' is NOT in SUPPORTED
     globalThis.localStorage.removeItem("redosan_lang");
-    try { Object.defineProperty(navigator, "language", { value: "pt-BR", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "pt-BR",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
-    assert.equal(lang, "en", "pt falls back to en because pt is not in SUPPORTED");
+    assert.equal(
+      lang,
+      "en",
+      "pt falls back to en because pt is not in SUPPORTED",
+    );
   });
 
   it("checks region-specific variant as last check before en fallback", async function () {
     // A lang not in SUPPORTED, not in BROWSER_LANGUAGE_MAP, but with region
     globalThis.localStorage.removeItem("redosan_lang");
-    try { Object.defineProperty(navigator, "language", { value: "xh-ZA", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "xh-ZA",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
     assert.equal(lang, "en");
   });
 
   it("falls back to 'en' for unknown languages not in BROWSER_LANGUAGE_MAP", async function () {
     globalThis.localStorage.removeItem("redosan_lang");
-    try { Object.defineProperty(navigator, "language", { value: "xh", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "xh",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
     assert.equal(lang, "en");
   });
 
   it("handles navigator.userLanguage as fallback when language is empty", async function () {
     globalThis.localStorage.removeItem("redosan_lang");
-    try { Object.defineProperty(navigator, "language", { value: "", configurable: true, writable: true }); } catch (e) {}
-    try { Object.defineProperty(navigator, "userLanguage", { value: "de", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "userLanguage", {
+        value: "de",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
     assert.equal(lang, "de");
   });
 
   it("returns en when both language and userLanguage are empty", async function () {
     globalThis.localStorage.removeItem("redosan_lang");
-    try { Object.defineProperty(navigator, "language", { value: "", configurable: true, writable: true }); } catch (e) {}
-    try { Object.defineProperty(navigator, "userLanguage", { value: "", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "userLanguage", {
+        value: "",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
     var lang = await detectLang();
     assert.equal(lang, "en");
   });
@@ -355,7 +543,9 @@ describe("i18n.js — switchLang", function () {
   it("switches to a valid language", function () {
     var loadedLang = "";
     var origLoad = globalThis.loadLang;
-    globalThis.loadLang = function (l) { loadedLang = l; };
+    globalThis.loadLang = function (l) {
+      loadedLang = l;
+    };
 
     switchLang("ar");
     assert.equal(globalThis.localStorage.getItem("redosan_lang"), "ar");
@@ -367,7 +557,9 @@ describe("i18n.js — switchLang", function () {
   it("falls back to 'en' for an invalid language", function () {
     var loadedLang = "";
     var origLoad = globalThis.loadLang;
-    globalThis.loadLang = function (l) { loadedLang = l; };
+    globalThis.loadLang = function (l) {
+      loadedLang = l;
+    };
 
     switchLang("invalid");
     assert.equal(globalThis.localStorage.getItem("redosan_lang"), "en");
@@ -379,7 +571,9 @@ describe("i18n.js — switchLang", function () {
   it("saves to localStorage before calling loadLang", function () {
     var loadedLang = "";
     var origLoad = globalThis.loadLang;
-    globalThis.loadLang = function (l) { loadedLang = l; };
+    globalThis.loadLang = function (l) {
+      loadedLang = l;
+    };
 
     globalThis.localStorage.removeItem("redosan_lang");
     switchLang("de");
@@ -440,7 +634,9 @@ describe("i18n.js — getLanguageDisplayName", function () {
 // ═══════════════════════════════════════════════════════════════
 describe("i18n.js — loadLang", function () {
   it("loads from window.__I18N_DATA when available", async function () {
-    globalThis.__I18N_DATA = { fr: { hello: "bonjour", "lang.name.fr": "Fran\u00e7ais" } };
+    globalThis.__I18N_DATA = {
+      fr: { hello: "bonjour", "lang.name.fr": "Fran\u00e7ais" },
+    };
     var result = await loadLang("fr");
     assert.equal(result, true);
     assert.equal(globalThis.i18n.lang, "fr");
@@ -451,7 +647,12 @@ describe("i18n.js — loadLang", function () {
     delete globalThis.__I18N_DATA;
     var origFetch = globalThis.fetch;
     globalThis.fetch = async function () {
-      return { ok: true, json: async function () { return { hello: "hallo" }; } };
+      return {
+        ok: true,
+        json: async function () {
+          return { hello: "hallo" };
+        },
+      };
     };
 
     var result = await loadLang("de");
@@ -460,7 +661,11 @@ describe("i18n.js — loadLang", function () {
     assert.equal(globalThis.i18n.data.hello, "hallo");
 
     globalThis.fetch = origFetch;
-    globalThis.__I18N_DATA = { en: { "test.key": "Hello" }, fr: { "test.key": "Bonjour" }, ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" } };
+    globalThis.__I18N_DATA = {
+      en: { "test.key": "Hello" },
+      fr: { "test.key": "Bonjour" },
+      ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" },
+    };
   });
 
   it("falls back to 'en' on fetch error", async function () {
@@ -469,7 +674,13 @@ describe("i18n.js — loadLang", function () {
     var callCount = 0;
     globalThis.fetch = async function () {
       callCount++;
-      if (callCount === 2) return { ok: true, json: async function () { return {}; } };
+      if (callCount === 2)
+        return {
+          ok: true,
+          json: async function () {
+            return {};
+          },
+        };
       return { ok: false };
     };
     globalThis.i18n.lang = "fr";
@@ -478,7 +689,11 @@ describe("i18n.js — loadLang", function () {
     assert.equal(globalThis.i18n.lang, "en");
 
     globalThis.fetch = origFetch;
-    globalThis.__I18N_DATA = { en: { "test.key": "Hello" }, fr: { "test.key": "Bonjour" }, ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" } };
+    globalThis.__I18N_DATA = {
+      en: { "test.key": "Hello" },
+      fr: { "test.key": "Bonjour" },
+      ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" },
+    };
   });
 
   it("returns false on error when already 'en'", async function () {
@@ -493,7 +708,11 @@ describe("i18n.js — loadLang", function () {
     assert.equal(result, false);
 
     globalThis.fetch = origFetch;
-    globalThis.__I18N_DATA = { en: { "test.key": "Hello" }, fr: { "test.key": "Bonjour" }, ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" } };
+    globalThis.__I18N_DATA = {
+      en: { "test.key": "Hello" },
+      fr: { "test.key": "Bonjour" },
+      ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" },
+    };
   });
 
   it("uses standalone prefix for fetch URL when dataset.standalone is set", async function () {
@@ -502,18 +721,33 @@ describe("i18n.js — loadLang", function () {
     var origFetch = globalThis.fetch;
     globalThis.fetch = async function (url) {
       capturedUrl = url;
-      return { ok: true, json: async function () { return {}; } };
+      return {
+        ok: true,
+        json: async function () {
+          return {};
+        },
+      };
     };
     globalThis.document.documentElement.dataset = { standalone: "watermark" };
 
     await loadLang("en");
 
-    assert.ok(capturedUrl.indexOf("../../") !== -1, "should use '../../' prefix for standalone");
-    assert.ok(capturedUrl.indexOf("lang/en.json") !== -1, "should point to language file");
+    assert.ok(
+      capturedUrl.indexOf("../../") !== -1,
+      "should use '../../' prefix for standalone",
+    );
+    assert.ok(
+      capturedUrl.indexOf("lang/en.json") !== -1,
+      "should point to language file",
+    );
 
     globalThis.document.documentElement.dataset = {};
     globalThis.fetch = origFetch;
-    globalThis.__I18N_DATA = { en: { "test.key": "Hello" }, fr: { "test.key": "Bonjour" }, ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" } };
+    globalThis.__I18N_DATA = {
+      en: { "test.key": "Hello" },
+      fr: { "test.key": "Bonjour" },
+      ar: { "test.key": "\u0645\u0631\u062d\u0628\u0627" },
+    };
   });
 });
 
@@ -527,10 +761,16 @@ describe("i18n.js — toggleLangDropdown", function () {
 
   it("toggles 'show' class on langMenu", function () {
     toggleLangDropdown();
-    assert.ok(_els["langMenu"].classList.contains("show"), "langMenu should have 'show' class after toggle");
+    assert.ok(
+      _els["langMenu"].classList.contains("show"),
+      "langMenu should have 'show' class after toggle",
+    );
 
     toggleLangDropdown();
-    assert.ok(!_els["langMenu"].classList.contains("show"), "langMenu should NOT have 'show' class after second toggle");
+    assert.ok(
+      !_els["langMenu"].classList.contains("show"),
+      "langMenu should NOT have 'show' class after second toggle",
+    );
   });
 
   it("handles missing langMenu gracefully", function () {
@@ -609,7 +849,11 @@ describe("i18n.js — applyLang data-i18n / data-i18n-placeholder", function () 
     };
 
     applyLang();
-    assert.equal(el.textContent, originalContent, "should not modify undefined keys");
+    assert.equal(
+      el.textContent,
+      originalContent,
+      "should not modify undefined keys",
+    );
   });
 
   it("updates data-i18n-placeholder elements", function () {
@@ -647,7 +891,11 @@ describe("i18n.js — applyLang data-i18n / data-i18n-placeholder", function () 
     };
 
     applyLang();
-    assert.equal(el.placeholder, "original", "should not modify undefined keys");
+    assert.equal(
+      el.placeholder,
+      "original",
+      "should not modify undefined keys",
+    );
   });
 });
 
@@ -665,11 +913,14 @@ describe("i18n.js — applyLang rich section cleanup", function () {
     var removed = false;
     var emptyH2 = makeEl("empty-h2", {
       textContent: "",
-      remove: function () { removed = true; },
+      remove: function () {
+        removed = true;
+      },
     });
     var section = makeEl("section-1", {
       querySelectorAll: function (sel) {
-        if (sel.indexOf("h2:empty") !== -1 || sel.indexOf("h2:not") !== -1) return [emptyH2];
+        if (sel.indexOf("h2:empty") !== -1 || sel.indexOf("h2:not") !== -1)
+          return [emptyH2];
         if (sel.indexOf("a:not") !== -1) return [];
         if (sel.indexOf('a[href="#"]') !== -1) return [];
         return [];
@@ -693,7 +944,9 @@ describe("i18n.js — applyLang rich section cleanup", function () {
     var removed = false;
     var emptyA = makeEl("empty-a", {
       textContent: "",
-      remove: function () { removed = true; },
+      remove: function () {
+        removed = true;
+      },
     });
     var section = makeEl("section-2", {
       querySelectorAll: function (sel) {
@@ -721,7 +974,9 @@ describe("i18n.js — applyLang rich section cleanup", function () {
     var removed = false;
     var emptyLinkA = makeEl("empty-link-a", {
       textContent: "",
-      remove: function () { removed = true; },
+      remove: function () {
+        removed = true;
+      },
     });
     var section = makeEl("section-3", {
       querySelectorAll: function (sel) {
@@ -749,7 +1004,9 @@ describe("i18n.js — applyLang rich section cleanup", function () {
     var removed = false;
     var nonEmptyA = makeEl("non-empty-a", {
       textContent: "Link text",
-      remove: function () { removed = true; },
+      remove: function () {
+        removed = true;
+      },
     });
     var section = makeEl("section-4", {
       querySelectorAll: function (sel) {
@@ -790,7 +1047,9 @@ describe("i18n.js — applyLang drop zone text", function () {
     });
 
     globalThis.i18n.lang = "en";
-    globalThis.i18n.data = { "shared.drop_file": "<strong>Drop files here</strong>" };
+    globalThis.i18n.data = {
+      "shared.drop_file": "<strong>Drop files here</strong>",
+    };
     globalThis.document.querySelectorAll = function (sel) {
       if (sel === "[data-i18n]") return [];
       if (sel === "[data-i18n-placeholder]") return [];
@@ -818,7 +1077,11 @@ describe("i18n.js — applyLang drop zone text", function () {
     };
 
     applyLang();
-    assert.equal(dzEl.innerHTML, "original", "should not modify .dz-text when key is missing");
+    assert.equal(
+      dzEl.innerHTML,
+      "original",
+      "should not modify .dz-text when key is missing",
+    );
   });
 });
 
@@ -871,7 +1134,11 @@ describe("i18n.js — applyLang RTL CSS", function () {
 
     applyLang();
 
-    assert.equal(globalThis.document.documentElement.dir, "rtl", "Arabic should set dir='rtl'");
+    assert.equal(
+      globalThis.document.documentElement.dir,
+      "rtl",
+      "Arabic should set dir='rtl'",
+    );
     assert.ok(appended, "rtl-css link should be appended to head");
   });
 
@@ -880,7 +1147,9 @@ describe("i18n.js — applyLang RTL CSS", function () {
     var rtlLink = makeEl("rtl-css", {
       rel: "stylesheet",
       href: "Style/rtl.css",
-      remove: function () { removed = true; },
+      remove: function () {
+        removed = true;
+      },
     });
 
     globalThis.i18n.lang = "en";
@@ -905,7 +1174,11 @@ describe("i18n.js — applyLang RTL CSS", function () {
 
     applyLang();
 
-    assert.equal(globalThis.document.documentElement.dir, "ltr", "English should set dir='ltr'");
+    assert.equal(
+      globalThis.document.documentElement.dir,
+      "ltr",
+      "English should set dir='ltr'",
+    );
     assert.ok(removed, "rtl-css link should be removed for non-Arabic");
   });
 
@@ -925,7 +1198,9 @@ describe("i18n.js — applyLang RTL CSS", function () {
       return _els[id] || null;
     };
 
-    globalThis.document.head.append = function () { appendCalled = true; };
+    globalThis.document.head.append = function () {
+      appendCalled = true;
+    };
 
     globalThis.i18n.lang = "ar";
     applyLang();
@@ -962,12 +1237,22 @@ describe("i18n.js — applyLang button titles", function () {
 
     // Button titles should contain the display name via __() replacement
     var expectedDisplay = "English";
-    assert.ok(_els["langBtn"].title.indexOf(expectedDisplay) !== -1,
-      "langBtn title should contain '" + expectedDisplay + "', got: '" + _els["langBtn"].title + "'");
-    assert.ok(_els["simpleLangBtn"].title.indexOf(expectedDisplay) !== -1,
-      "simpleLangBtn title should contain '" + expectedDisplay + "'");
-    assert.ok(_els["modeLangBtn"].title.indexOf(expectedDisplay) !== -1,
-      "modeLangBtn title should contain '" + expectedDisplay + "'");
+    assert.ok(
+      _els["langBtn"].title.indexOf(expectedDisplay) !== -1,
+      "langBtn title should contain '" +
+        expectedDisplay +
+        "', got: '" +
+        _els["langBtn"].title +
+        "'",
+    );
+    assert.ok(
+      _els["simpleLangBtn"].title.indexOf(expectedDisplay) !== -1,
+      "simpleLangBtn title should contain '" + expectedDisplay + "'",
+    );
+    assert.ok(
+      _els["modeLangBtn"].title.indexOf(expectedDisplay) !== -1,
+      "modeLangBtn title should contain '" + expectedDisplay + "'",
+    );
   });
 });
 
@@ -981,7 +1266,9 @@ describe("i18n.js — click-outside dropdown closing", function () {
     assert.ok(sMenu.classList.contains("show"), "should start with 'show'");
 
     var sDropdown = makeEl("simplifiedMode .lang-dropdown", {
-      contains: function (el) { return false; },
+      contains: function (el) {
+        return false;
+      },
     });
 
     globalThis.document.querySelector = function (sel) {
@@ -996,7 +1283,10 @@ describe("i18n.js — click-outside dropdown closing", function () {
 
     clickHandler({ target: makeEl("outside-el") });
 
-    assert.ok(!sMenu.classList.contains("show"), "simpleLangMenu should lose 'show' class when clicking outside");
+    assert.ok(
+      !sMenu.classList.contains("show"),
+      "simpleLangMenu should lose 'show' class when clicking outside",
+    );
   });
 
   it("removes 'show' from modeLangMenu when clicking outside", function () {
@@ -1004,7 +1294,9 @@ describe("i18n.js — click-outside dropdown closing", function () {
     mMenus.classList.add("show");
 
     var mDropdown = makeEl("modeSelect .lang-dropdown", {
-      contains: function (el) { return false; },
+      contains: function (el) {
+        return false;
+      },
     });
 
     globalThis.document.querySelector = function (sel) {
@@ -1017,7 +1309,10 @@ describe("i18n.js — click-outside dropdown closing", function () {
     var clickHandler = _listeners["click"][0];
     clickHandler({ target: makeEl("outside-el-2") });
 
-    assert.ok(!mMenus.classList.contains("show"), "modeLangMenu should lose 'show' class when clicking outside");
+    assert.ok(
+      !mMenus.classList.contains("show"),
+      "modeLangMenu should lose 'show' class when clicking outside",
+    );
   });
 
   it("removes 'show' from langMenu (nav) when clicking outside", function () {
@@ -1025,7 +1320,9 @@ describe("i18n.js — click-outside dropdown closing", function () {
     pMenu.classList.add("show");
 
     var pDropdown = makeEl("nav .lang-dropdown", {
-      contains: function (el) { return false; },
+      contains: function (el) {
+        return false;
+      },
     });
 
     globalThis.document.querySelector = function (sel) {
@@ -1038,7 +1335,10 @@ describe("i18n.js — click-outside dropdown closing", function () {
     var clickHandler = _listeners["click"][0];
     clickHandler({ target: makeEl("outside-el-3") });
 
-    assert.ok(!pMenu.classList.contains("show"), "langMenu should lose 'show' class when clicking outside");
+    assert.ok(
+      !pMenu.classList.contains("show"),
+      "langMenu should lose 'show' class when clicking outside",
+    );
   });
 
   it("does NOT remove 'show' when clicking inside the dropdown", function () {
@@ -1047,7 +1347,9 @@ describe("i18n.js — click-outside dropdown closing", function () {
 
     var insideTarget = makeEl("inside-el");
     var sDropdown = makeEl("simplifiedMode .lang-dropdown", {
-      contains: function (el) { return el === insideTarget; },
+      contains: function (el) {
+        return el === insideTarget;
+      },
     });
 
     globalThis.document.querySelector = function (sel) {
@@ -1060,7 +1362,10 @@ describe("i18n.js — click-outside dropdown closing", function () {
     var clickHandler = _listeners["click"][0];
     clickHandler({ target: insideTarget });
 
-    assert.ok(sMenu.classList.contains("show"), "should keep 'show' when clicking inside the dropdown");
+    assert.ok(
+      sMenu.classList.contains("show"),
+      "should keep 'show' when clicking inside the dropdown",
+    );
   });
 });
 
@@ -1069,15 +1374,31 @@ describe("i18n.js — click-outside dropdown closing", function () {
 // ═══════════════════════════════════════════════════════════════
 describe("i18n.js — shouldFilterError", function () {
   it("returns true for various extension errors", function () {
-    assert.ok(shouldFilterError("Runtime.lastError: Could not establish connection. Receiving end does not exist."));
-    assert.ok(shouldFilterError("Unchecked runtime.lastError: The message port closed before a response was received."));
-    assert.ok(shouldFilterError("Uncaught (in promise) Could not establish connection. Receiving end does not exist."));
-    assert.ok(shouldFilterError("Runtime.lastError: Could not establish connection"));
+    assert.ok(
+      shouldFilterError(
+        "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+      ),
+    );
+    assert.ok(
+      shouldFilterError(
+        "Unchecked runtime.lastError: The message port closed before a response was received.",
+      ),
+    );
+    assert.ok(
+      shouldFilterError(
+        "Uncaught (in promise) Could not establish connection. Receiving end does not exist.",
+      ),
+    );
+    assert.ok(
+      shouldFilterError("Runtime.lastError: Could not establish connection"),
+    );
     assert.ok(shouldFilterError("Runtime.lastError: tabs.sendMessage"));
     assert.ok(shouldFilterError("Runtime.lastError: Access denied"));
     assert.ok(shouldFilterError("Runtime.lastError: Not available"));
     assert.ok(shouldFilterError("Runtime.lastError: The message port closed"));
-    assert.ok(shouldFilterError("Runtime.lastError: Extension context invalidated"));
+    assert.ok(
+      shouldFilterError("Runtime.lastError: Extension context invalidated"),
+    );
     // Source checks for: msg.includes('listener indicated an asynchronous response')
     assert.ok(shouldFilterError("listener indicated an asynchronous response"));
     assert.ok(shouldFilterError("Message channel closed before a response"));
@@ -1087,8 +1408,14 @@ describe("i18n.js — shouldFilterError", function () {
 
   it("returns false for normal errors", function () {
     assert.equal(shouldFilterError("Something went wrong"), false);
-    assert.equal(shouldFilterError("TypeError: Cannot read property of undefined"), false);
-    assert.equal(shouldFilterError("ReferenceError: foo is not defined"), false);
+    assert.equal(
+      shouldFilterError("TypeError: Cannot read property of undefined"),
+      false,
+    );
+    assert.equal(
+      shouldFilterError("ReferenceError: foo is not defined"),
+      false,
+    );
   });
 
   it("handles empty or null message", function () {
@@ -1109,18 +1436,24 @@ describe("i18n.js — shouldFilterError", function () {
 describe("i18n.js — console.error wrapper", function () {
   it("filters extension errors (does not call original)", function () {
     resetConsoleTracking();
-    console.error("Runtime.lastError: Could not establish connection. Receiving end does not exist.");
+    console.error(
+      "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+    );
 
-    assert.ok(!_trackConsole.error.called,
-      "original console.error should NOT be called for filtered errors");
+    assert.ok(
+      !_trackConsole.error.called,
+      "original console.error should NOT be called for filtered errors",
+    );
   });
 
   it("passes through normal errors (calls original)", function () {
     resetConsoleTracking();
     console.error("Normal error message");
 
-    assert.ok(_trackConsole.error.called,
-      "original console.error should be called for normal errors");
+    assert.ok(
+      _trackConsole.error.called,
+      "original console.error should be called for normal errors",
+    );
     assert.equal(_trackConsole.error.args[0], "Normal error message");
   });
 
@@ -1138,36 +1471,48 @@ describe("i18n.js — console.error wrapper", function () {
 describe("i18n.js — console.warn wrapper", function () {
   it("filters extension warnings", function () {
     resetConsoleTracking();
-    console.warn("Runtime.lastError: Could not establish connection. Receiving end does not exist.");
+    console.warn(
+      "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+    );
 
-    assert.ok(!_trackConsole.warn.called,
-      "original console.warn should NOT be called for filtered errors");
+    assert.ok(
+      !_trackConsole.warn.called,
+      "original console.warn should NOT be called for filtered errors",
+    );
   });
 
   it("passes through normal warnings", function () {
     resetConsoleTracking();
     console.warn("Normal warning");
 
-    assert.ok(_trackConsole.warn.called,
-      "original console.warn should be called for normal warnings");
+    assert.ok(
+      _trackConsole.warn.called,
+      "original console.warn should be called for normal warnings",
+    );
   });
 });
 
 describe("i18n.js — console.log wrapper", function () {
   it("filters extension log messages", function () {
     resetConsoleTracking();
-    console.log("Runtime.lastError: Could not establish connection. Receiving end does not exist.");
+    console.log(
+      "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+    );
 
-    assert.ok(!_trackConsole.log.called,
-      "original console.log should NOT be called for filtered errors");
+    assert.ok(
+      !_trackConsole.log.called,
+      "original console.log should NOT be called for filtered errors",
+    );
   });
 
   it("passes through normal log messages", function () {
     resetConsoleTracking();
     console.log("Normal log message");
 
-    assert.ok(_trackConsole.log.called,
-      "original console.log should be called for normal messages");
+    assert.ok(
+      _trackConsole.log.called,
+      "original console.log should be called for normal messages",
+    );
   });
 });
 
@@ -1178,62 +1523,90 @@ describe("i18n.js — unhandled rejection handler", function () {
   it("calls preventDefault for extension errors", function () {
     var prevented = false;
     var event = {
-      reason: new Error("Runtime.lastError: Could not establish connection. Receiving end does not exist."),
-      preventDefault: function () { prevented = true; },
+      reason: new Error(
+        "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+      ),
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler = _listeners["unhandledrejection"][0];
     assert.ok(handler, "unhandledrejection handler should be registered");
 
     handler(event);
-    assert.ok(prevented, "preventDefault should be called for extension errors");
+    assert.ok(
+      prevented,
+      "preventDefault should be called for extension errors",
+    );
   });
 
   it("does NOT call preventDefault for normal errors", function () {
     var prevented = false;
     var event = {
       reason: new Error("Normal error"),
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler = _listeners["unhandledrejection"][0];
     handler(event);
-    assert.ok(!prevented, "preventDefault should NOT be called for normal errors");
+    assert.ok(
+      !prevented,
+      "preventDefault should NOT be called for normal errors",
+    );
   });
 
   it("handles event with no reason", function () {
     var prevented = false;
     var event = {
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler = _listeners["unhandledrejection"][0];
     handler(event);
-    assert.ok(!prevented, "preventDefault should NOT be called when reason is missing");
+    assert.ok(
+      !prevented,
+      "preventDefault should NOT be called when reason is missing",
+    );
   });
 
   it("handles null reason", function () {
     var prevented = false;
     var event = {
       reason: null,
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler = _listeners["unhandledrejection"][0];
     handler(event);
-    assert.ok(!prevented, "preventDefault should NOT be called when reason is null");
+    assert.ok(
+      !prevented,
+      "preventDefault should NOT be called when reason is null",
+    );
   });
 
   it("handles reason that is not an Error object (plain string)", function () {
     var prevented = false;
     var event = {
-      reason: "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
-      preventDefault: function () { prevented = true; },
+      reason:
+        "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler = _listeners["unhandledrejection"][0];
     handler(event);
-    assert.ok(prevented, "preventDefault should be called for string reason with extension error");
+    assert.ok(
+      prevented,
+      "preventDefault should be called for string reason with extension error",
+    );
   });
 });
 
@@ -1244,8 +1617,11 @@ describe("i18n.js — error event handlers", function () {
   it("first error handler calls preventDefault for extension errors in event.message", function () {
     var prevented = false;
     var event = {
-      message: "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
-      preventDefault: function () { prevented = true; },
+      message:
+        "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     // First error handler (line 362) checks event.message
@@ -1253,14 +1629,22 @@ describe("i18n.js — error event handlers", function () {
     assert.ok(handler1, "first error handler should be registered");
 
     handler1(event);
-    assert.ok(prevented, "preventDefault should be called for extension errors in event.message");
+    assert.ok(
+      prevented,
+      "preventDefault should be called for extension errors in event.message",
+    );
   });
 
   it("second error handler calls preventDefault for extension errors in event.error.message", function () {
     var prevented = false;
     var event = {
-      error: { message: "Runtime.lastError: Could not establish connection. Receiving end does not exist." },
-      preventDefault: function () { prevented = true; },
+      error: {
+        message:
+          "Runtime.lastError: Could not establish connection. Receiving end does not exist.",
+      },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     // Second error handler (line 369) checks event.error.message
@@ -1268,37 +1652,52 @@ describe("i18n.js — error event handlers", function () {
     assert.ok(handler2, "second error handler should be registered");
 
     handler2(event);
-    assert.ok(prevented, "preventDefault should be called for extension errors in event.error.message");
+    assert.ok(
+      prevented,
+      "preventDefault should be called for extension errors in event.error.message",
+    );
   });
 
   it("does NOT prevent default for normal error messages", function () {
     var prevented = false;
     var event = {
       message: "Normal error message",
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler1 = _listeners["error"][0];
     handler1(event);
-    assert.ok(!prevented, "preventDefault should NOT be called for normal error messages");
+    assert.ok(
+      !prevented,
+      "preventDefault should NOT be called for normal error messages",
+    );
   });
 
   it("does NOT prevent default when event.error.message is normal", function () {
     var prevented = false;
     var event = {
       error: { message: "Normal error" },
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler2 = _listeners["error"][1];
     handler2(event);
-    assert.ok(!prevented, "preventDefault should NOT be called for normal errors in event.error.message");
+    assert.ok(
+      !prevented,
+      "preventDefault should NOT be called for normal errors in event.error.message",
+    );
   });
 
   it("handles missing event.message gracefully", function () {
     var prevented = false;
     var event = {
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
       error: null,
     };
 
@@ -1311,23 +1710,33 @@ describe("i18n.js — error event handlers", function () {
     var prevented = false;
     var event = {
       error: {},
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler2 = _listeners["error"][1];
     handler2(event);
-    assert.ok(!prevented, "should not prevent default when event.error.message is missing");
+    assert.ok(
+      !prevented,
+      "should not prevent default when event.error.message is missing",
+    );
   });
 
   it("handles missing event.error gracefully", function () {
     var prevented = false;
     var event = {
-      preventDefault: function () { prevented = true; },
+      preventDefault: function () {
+        prevented = true;
+      },
     };
 
     var handler2 = _listeners["error"][1];
     handler2(event);
-    assert.ok(!prevented, "should not prevent default when event.error is missing");
+    assert.ok(
+      !prevented,
+      "should not prevent default when event.error is missing",
+    );
   });
 });
 
@@ -1337,7 +1746,13 @@ describe("i18n.js — error event handlers", function () {
 describe("i18n.js — DOMContentLoaded init", function () {
   it("should detect lang and load on DOMContentLoaded", async function () {
     globalThis.localStorage.removeItem("redosan_lang");
-    try { Object.defineProperty(navigator, "language", { value: "fr", configurable: true, writable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(navigator, "language", {
+        value: "fr",
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {}
 
     globalThis.__I18N_DATA = { fr: { "test.key": "Bonjour" } };
 
@@ -1350,7 +1765,11 @@ describe("i18n.js — DOMContentLoaded init", function () {
     await domHandler();
 
     assert.equal(globalThis.i18n.lang, "fr", "should load French translations");
-    assert.equal(globalThis.i18n.data["test.key"], "Bonjour", "should have French translation data");
+    assert.equal(
+      globalThis.i18n.data["test.key"],
+      "Bonjour",
+      "should have French translation data",
+    );
   });
 
   it("should handle init error gracefully without throwing", async function () {
@@ -1374,7 +1793,10 @@ describe("i18n.js — DOMContentLoaded init", function () {
     } catch (e) {
       threw = true;
     }
-    assert.ok(!threw, "DOMContentLoaded handler should not throw when fetch fails");
+    assert.ok(
+      !threw,
+      "DOMContentLoaded handler should not throw when fetch fails",
+    );
 
     console.error = origConsoleError;
     globalThis.fetch = origFetch;
@@ -1409,8 +1831,12 @@ describe("i18n.js — applyLang standalone mode", function () {
         var link = makeEl("rtl-css", { tagName: "link" });
         link.rel = "";
         Object.defineProperty(link, "href", {
-          set: function (v) { createdHref = v; },
-          get: function () { return createdHref; },
+          set: function (v) {
+            createdHref = v;
+          },
+          get: function () {
+            return createdHref;
+          },
         });
         return link;
       }
@@ -1436,7 +1862,11 @@ describe("i18n.js — applyLang standalone mode", function () {
 
     applyLang();
 
-    assert.ok(createdHref.indexOf("../../") !== -1, "rtl-css href should use '../../' prefix for standalone, got: " + createdHref);
+    assert.ok(
+      createdHref.indexOf("../../") !== -1,
+      "rtl-css href should use '../../' prefix for standalone, got: " +
+        createdHref,
+    );
   });
 
   it("uses 'Style/' prefix for rtl-css in non-standalone mode", function () {
@@ -1452,8 +1882,12 @@ describe("i18n.js — applyLang standalone mode", function () {
         var link = makeEl("rtl-css", { tagName: "link" });
         link.rel = "";
         Object.defineProperty(link, "href", {
-          set: function (v) { createdHref = v; },
-          get: function () { return createdHref; },
+          set: function (v) {
+            createdHref = v;
+          },
+          get: function () {
+            return createdHref;
+          },
         });
         return link;
       }
@@ -1479,6 +1913,10 @@ describe("i18n.js — applyLang standalone mode", function () {
 
     applyLang();
 
-    assert.ok(createdHref.indexOf("Style/") !== -1, "rtl-css href should use 'Style/' prefix for non-standalone, got: " + createdHref);
+    assert.ok(
+      createdHref.indexOf("Style/") !== -1,
+      "rtl-css href should use 'Style/' prefix for non-standalone, got: " +
+        createdHref,
+    );
   });
 });

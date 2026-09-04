@@ -129,7 +129,10 @@ async function submitCertTransparency(fileBuf) {
     if (location && location.protocol === "file:") {
       friendlyMsg =
         "Cannot reach timestamp server from file:// protocol (CORS blocked). Serve via HTTP or use the OTS CLI.";
-    } else if (error.message === "Failed to fetch" || error.name === "TypeError") {
+    } else if (
+      error.message === "Failed to fetch" ||
+      error.name === "TypeError"
+    ) {
       friendlyMsg =
         "All OpenTimestamps calendar servers are unreachable from your network. Use the CLI: node cli timestamp create";
     }

@@ -9,9 +9,16 @@ const path = require("node:path");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const IRIS_FILES = [
-  "iris_camera.js", "iris_engine.js", "iris_liveness.js", "iris_matcher.js",
-  "iris_performance.js", "iris_quality_full.js", "iris_quality.js",
-  "iris_standards.js", "iris_storage.js", "iris_template_protection.js",
+  "iris_camera.js",
+  "iris_engine.js",
+  "iris_liveness.js",
+  "iris_matcher.js",
+  "iris_performance.js",
+  "iris_quality_full.js",
+  "iris_quality.js",
+  "iris_standards.js",
+  "iris_storage.js",
+  "iris_template_protection.js",
 ];
 
 async function captureBrowserCoverage() {
@@ -30,8 +37,12 @@ async function captureBrowserCoverage() {
   await page.waitForTimeout(500);
 
   // Load modules NOT on the iris page via addScriptTag (CSP-safe: path, not url)
-  await page.addScriptTag({ path: path.join(ROOT, "Iris_Biometric", "iris_performance.js") });
-  await page.addScriptTag({ path: path.join(ROOT, "Iris_Biometric", "iris_standards.js") });
+  await page.addScriptTag({
+    path: path.join(ROOT, "Iris_Biometric", "iris_performance.js"),
+  });
+  await page.addScriptTag({
+    path: path.join(ROOT, "Iris_Biometric", "iris_standards.js"),
+  });
   await page.waitForTimeout(200);
 
   // Execute comprehensive browser-side tests to maximize coverage
@@ -39,14 +50,20 @@ async function captureBrowserCoverage() {
     var r = { ok: [], err: [] };
 
     function tryCall(name, fn) {
-      try { fn(); r.ok.push(name); } catch (e) { r.err.push(name + ": " + e.message); }
+      try {
+        fn();
+        r.ok.push(name);
+      } catch (e) {
+        r.err.push(name + ": " + e.message);
+      }
     }
 
     // ── iris_quality.js ──
     tryCall("IrisQuality.constructor", () => new IrisQuality());
     tryCall("IrisQuality.pupilBoundaryCircularity", () => {
       var mask = new Uint8Array(100 * 100);
-      for (var y = 30; y < 70; y++) for (var x = 30; x < 70; x++) mask[y * 100 + x] = 1;
+      for (var y = 30; y < 70; y++)
+        for (var x = 30; x < 70; x++) mask[y * 100 + x] = 1;
       IrisQuality.pupilBoundaryCircularity(mask, 100, 100);
     });
     tryCall("IrisQuality.irisPupilContrast", () => {
@@ -68,14 +85,17 @@ async function captureBrowserCoverage() {
     tryCall("IrisQuality.assess", () => {
       var normIris = new Float64Array(64 * 128).fill(128);
       var mask = new Uint8Array(64 * 128).fill(2);
-      for (var y = 20; y < 50; y++) for (var x = 20; x < 50; x++) mask[y * 64 + x] = 0;
+      for (var y = 20; y < 50; y++)
+        for (var x = 20; x < 50; x++) mask[y * 64 + x] = 0;
       IrisQuality.assess({
         normalizedIris: normIris,
-        normW: 64, normH: 128,
+        normW: 64,
+        normH: 128,
         mask: mask,
         pupil: { cx: 32, cy: 40, radius: 12 },
         iris: { cx: 32, cy: 40, radius: 50 },
-        imageWidth: 200, imageHeight: 200,
+        imageWidth: 200,
+        imageHeight: 200,
         marginAdequacy: { left: 10, right: 10, top: 10, bottom: 10 },
       });
     });
@@ -91,7 +111,8 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisQualityFull.usableArea", () => {
       var mask = new Uint8Array(100 * 100).fill(1);
-      for (var y = 25; y < 75; y++) for (var x = 25; x < 75; x++) mask[y * 100 + x] = 2;
+      for (var y = 25; y < 75; y++)
+        for (var x = 25; x < 75; x++) mask[y * 100 + x] = 2;
       IrisQualityFull.usableArea(mask);
     });
     tryCall("IrisQualityFull.mutualQualityComparison", () => {
@@ -102,14 +123,14 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisQualityFull.eyelidCircularity", () => {
       var mask = new Uint8Array(100 * 100).fill(2);
-      IrisQualityFull.eyelidCircularity(mask, 100, 100, {x: 50, y: 50}, 40);
+      IrisQualityFull.eyelidCircularity(mask, 100, 100, { x: 50, y: 50 }, 40);
     });
     tryCall("IrisQualityFull.marginAdequacy", () => {
-      IrisQualityFull.marginAdequacy({x: 50, y: 50}, 40, 100, 100);
+      IrisQualityFull.marginAdequacy({ x: 50, y: 50 }, 40, 100, 100);
     });
     tryCall("IrisQualityFull.depthOfField", () => {
       var img = new Uint8Array(100 * 100).fill(128);
-      IrisQualityFull.depthOfField(img, 100, 100, {x: 50, y: 50}, 40);
+      IrisQualityFull.depthOfField(img, 100, 100, { x: 50, y: 50 }, 40);
     });
     tryCall("IrisQualityFull.detectNirCapability", async () => {
       await IrisQualityFull.detectNirCapability();
@@ -119,7 +140,8 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisQualityFull.pupilBoundaryCircularity", () => {
       var mask = new Uint8Array(100 * 100).fill(2);
-      for (var y = 30; y < 70; y++) for (var x = 30; x < 70; x++) mask[y * 100 + x] = 0;
+      for (var y = 30; y < 70; y++)
+        for (var x = 30; x < 70; x++) mask[y * 100 + x] = 0;
       IrisQualityFull.pupilBoundaryCircularity(mask, 100, 100);
     });
 
@@ -144,7 +166,11 @@ async function captureBrowserCoverage() {
       img[32 * 64 + 32] = 240;
       img[32 * 64 + 33] = 235;
       img[10 * 64 + 10] = 250;
-      IrisLiveness.specularReflectionTest(img, 64, 64, { cx: 32, cy: 32, radius: 10 });
+      IrisLiveness.specularReflectionTest(img, 64, 64, {
+        cx: 32,
+        cy: 32,
+        radius: 10,
+      });
     });
     tryCall("IrisLiveness.specularReflectionTest: null", () => {
       IrisLiveness.specularReflectionTest(null, 0, 0, null);
@@ -183,27 +209,45 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisLiveness.textureAnalysisTest: gradient", () => {
       var img = new Float64Array(200 * 200);
-      for (var y = 0; y < 200; y++) for (var x = 0; x < 200; x++) img[y * 200 + x] = (x + y) % 256;
-      IrisLiveness.textureAnalysisTest(img, 200, 200, { cx: 100, cy: 100, radius: 80 });
+      for (var y = 0; y < 200; y++)
+        for (var x = 0; x < 200; x++) img[y * 200 + x] = (x + y) % 256;
+      IrisLiveness.textureAnalysisTest(img, 200, 200, {
+        cx: 100,
+        cy: 100,
+        radius: 80,
+      });
     });
     tryCall("IrisLiveness.textureAnalysisTest: null", () => {
       IrisLiveness.textureAnalysisTest(null, 0, 0, null);
     });
     tryCall("IrisLiveness.colorChannelAnalysisTest: uniform", () => {
       var img = new Uint8Array(64 * 64 * 3).fill(128);
-      IrisLiveness.colorChannelAnalysisTest(img, 64, 64, { cx: 32, cy: 32, radius: 20 });
+      IrisLiveness.colorChannelAnalysisTest(img, 64, 64, {
+        cx: 32,
+        cy: 32,
+        radius: 20,
+      });
     });
     tryCall("IrisLiveness.colorChannelAnalysisTest: NIR", () => {
       var img = new Uint8Array(64 * 64 * 3).fill(128);
-      IrisLiveness.colorChannelAnalysisTest(img, 64, 64, { cx: 32, cy: 32, radius: 20 });
+      IrisLiveness.colorChannelAnalysisTest(img, 64, 64, {
+        cx: 32,
+        cy: 32,
+        radius: 20,
+      });
     });
     tryCall("IrisLiveness.colorChannelAnalysisTest: null", () => {
       IrisLiveness.colorChannelAnalysisTest(null, 0, 0, null);
     });
     tryCall("IrisLiveness.depthEstimationTest: gradient", () => {
       var img = new Float64Array(200 * 200);
-      for (var y = 0; y < 200; y++) for (var x = 0; x < 200; x++) img[y * 200 + x] = (x + y) % 256;
-      IrisLiveness.depthEstimationTest(img, 200, 200, { cx: 100, cy: 100, radius: 80 });
+      for (var y = 0; y < 200; y++)
+        for (var x = 0; x < 200; x++) img[y * 200 + x] = (x + y) % 256;
+      IrisLiveness.depthEstimationTest(img, 200, 200, {
+        cx: 100,
+        cy: 100,
+        radius: 80,
+      });
     });
     tryCall("IrisLiveness.depthEstimationTest: null", () => {
       IrisLiveness.depthEstimationTest(null, 0, 0, null);
@@ -215,23 +259,35 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisLiveness.periodicPatternTest: striped", () => {
       var img = new Float64Array(200 * 200);
-      for (var y = 0; y < 200; y++) for (var x = 0; x < 200; x++) img[y * 200 + x] = Math.sin(x * 0.3) * 127 + 128;
+      for (var y = 0; y < 200; y++)
+        for (var x = 0; x < 200; x++)
+          img[y * 200 + x] = Math.sin(x * 0.3) * 127 + 128;
       IrisLiveness.periodicPatternTest(img, 200, 200);
     });
     tryCall("IrisLiveness.periodicPatternTest: null", () => {
       IrisLiveness.periodicPatternTest(null, 0, 0);
     });
-    tryCall("IrisLiveness.computeAPCER: basic", () => IrisLiveness.computeAPCER(5, 100));
-    tryCall("IrisLiveness.computeAPCER: zero", () => IrisLiveness.computeAPCER(0, 0));
-    tryCall("IrisLiveness.computeBPCER: basic", () => IrisLiveness.computeBPCER(10, 100));
-    tryCall("IrisLiveness.computeBPCER: zero", () => IrisLiveness.computeBPCER(0, 0));
+    tryCall("IrisLiveness.computeAPCER: basic", () =>
+      IrisLiveness.computeAPCER(5, 100),
+    );
+    tryCall("IrisLiveness.computeAPCER: zero", () =>
+      IrisLiveness.computeAPCER(0, 0),
+    );
+    tryCall("IrisLiveness.computeBPCER: basic", () =>
+      IrisLiveness.computeBPCER(10, 100),
+    );
+    tryCall("IrisLiveness.computeBPCER: zero", () =>
+      IrisLiveness.computeBPCER(0, 0),
+    );
     tryCall("IrisLiveness.computeIAPAR", () => {
       IrisLiveness.computeIAPAR([
-        { agency: "A", apcer: 0.05, bpcer: 0.10 },
+        { agency: "A", apcer: 0.05, bpcer: 0.1 },
         { agency: "B", apcer: 0.08, bpcer: 0.12 },
       ]);
     });
-    tryCall("IrisLiveness.computeIAPAR: empty", () => IrisLiveness.computeIAPAR([]));
+    tryCall("IrisLiveness.computeIAPAR: empty", () =>
+      IrisLiveness.computeIAPAR([]),
+    );
     tryCall("IrisLiveness.computeBpcerApcerPoints", () => {
       var bonaFide = [];
       var attacks = [];
@@ -248,34 +304,44 @@ async function captureBrowserCoverage() {
       IrisLiveness.classifyPAISpecies(null);
     });
     tryCall("IrisLiveness.classifyPAISpecies: low dilation", () => {
-      IrisLiveness.classifyPAISpecies({ checks: [
-        { name: "pupilDilation", score: 0.1 },
-        { name: "specularReflection", score: 0.1 },
-        { name: "temporalConsistency", score: 0.1 },
-      ]});
+      IrisLiveness.classifyPAISpecies({
+        checks: [
+          { name: "pupilDilation", score: 0.1 },
+          { name: "specularReflection", score: 0.1 },
+          { name: "temporalConsistency", score: 0.1 },
+        ],
+      });
     });
     tryCall("IrisLiveness.classifyPAISpecies: screen moire", () => {
-      IrisLiveness.classifyPAISpecies({ checks: [
-        { name: "moireDetection", score: 0.1 },
-        { name: "colorChannelAnalysis", score: 0.1 },
-      ]});
+      IrisLiveness.classifyPAISpecies({
+        checks: [
+          { name: "moireDetection", score: 0.1 },
+          { name: "colorChannelAnalysis", score: 0.1 },
+        ],
+      });
     });
     tryCall("IrisLiveness.classifyPAISpecies: low texture", () => {
-      IrisLiveness.classifyPAISpecies({ checks: [
-        { name: "textureAnalysis", score: 0.1 },
-        { name: "depthEstimation", score: 0.1 },
-      ]});
+      IrisLiveness.classifyPAISpecies({
+        checks: [
+          { name: "textureAnalysis", score: 0.1 },
+          { name: "depthEstimation", score: 0.1 },
+        ],
+      });
     });
     tryCall("IrisLiveness.classifyPAISpecies: high scores", () => {
-      IrisLiveness.classifyPAISpecies({ checks: [
-        { name: "pupilDilation", score: 0.9 },
-        { name: "specularReflection", score: 0.9 },
-        { name: "temporalConsistency", score: 0.9 },
-      ]});
+      IrisLiveness.classifyPAISpecies({
+        checks: [
+          { name: "pupilDilation", score: 0.9 },
+          { name: "specularReflection", score: 0.9 },
+          { name: "temporalConsistency", score: 0.9 },
+        ],
+      });
     });
     tryCall("IrisLiveness.assess: full params", () => {
       var gray = new Float64Array(200 * 200);
-      for (var y = 0; y < 200; y++) for (var x = 0; x < 200; x++) gray[y * 200 + x] = 128 + Math.sin(x * 0.1) * 50;
+      for (var y = 0; y < 200; y++)
+        for (var x = 0; x < 200; x++)
+          gray[y * 200 + x] = 128 + Math.sin(x * 0.1) * 50;
       var rgb = new Uint8Array(200 * 200 * 3).fill(128);
       new IrisLiveness().assess({
         dilationFrames: [
@@ -307,16 +373,23 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisEngine._toGrayscale: ImageData", () => {
       var c = document.createElement("canvas");
-      c.width = 10; c.height = 10;
+      c.width = 10;
+      c.height = 10;
       var ctx = c.getContext("2d");
       var imgData = ctx.createImageData(10, 10);
-      for (var i = 0; i < imgData.data.length; i += 4) { imgData.data[i] = 128; imgData.data[i+1] = 128; imgData.data[i+2] = 128; imgData.data[i+3] = 255; }
+      for (var i = 0; i < imgData.data.length; i += 4) {
+        imgData.data[i] = 128;
+        imgData.data[i + 1] = 128;
+        imgData.data[i + 2] = 128;
+        imgData.data[i + 3] = 255;
+      }
       IrisEngine._toGrayscale(imgData);
     });
     tryCall("IrisEngine._toGrayscale: Float64Array", () => {
       // Float64Array path needs a canvas source, so pass an HTMLCanvasElement
       var c = document.createElement("canvas");
-      c.width = 10; c.height = 10;
+      c.width = 10;
+      c.height = 10;
       var ctx = c.getContext("2d");
       var imgData = ctx.createImageData(10, 10);
       IrisEngine._toGrayscale(imgData);
@@ -336,56 +409,73 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisEngine.validateEyePresence: ok", () => {
       var gray = new Float64Array(200 * 200).fill(100);
-      IrisEngine.validateEyePresence(gray, 200, 200,
+      IrisEngine.validateEyePresence(
+        gray,
+        200,
+        200,
         { cx: 100, cy: 100, radius: 20 },
-        { cx: 100, cy: 100, radius: 60 }
+        { cx: 100, cy: 100, radius: 60 },
       );
     });
     tryCall("IrisEngine.validateEyePresence: no-signal", () => {
       var gray = new Float64Array(200 * 200).fill(128);
-      IrisEngine.validateEyePresence(gray, 200, 200,
+      IrisEngine.validateEyePresence(
+        gray,
+        200,
+        200,
         { cx: 100, cy: 100, radius: 20 },
-        { cx: 100, cy: 100, radius: 60 }
+        { cx: 100, cy: 100, radius: 60 },
       );
     });
     tryCall("IrisEngine.validateEyePresence: no-dark-pupil", () => {
       var gray = new Float64Array(200 * 200).fill(200);
-      IrisEngine.validateEyePresence(gray, 200, 200,
+      IrisEngine.validateEyePresence(
+        gray,
+        200,
+        200,
         { cx: 100, cy: 100, radius: 20 },
-        { cx: 100, cy: 100, radius: 60 }
+        { cx: 100, cy: 100, radius: 60 },
       );
     });
     tryCall("IrisEngine.detectPupil: synthetic", () => {
       var gray = new Float64Array(200 * 200).fill(150);
-      for (var y = 90; y < 110; y++) for (var x = 90; x < 110; x++) gray[y * 200 + x] = 30;
+      for (var y = 90; y < 110; y++)
+        for (var x = 90; x < 110; x++) gray[y * 200 + x] = 30;
       IrisEngine.detectPupil(gray, 200, 200);
     });
     tryCall("IrisEngine.detectIris: synthetic", () => {
       var gray = new Float64Array(200 * 200).fill(180);
-      for (var y = 60; y < 140; y++) for (var x = 60; x < 140; x++) gray[y * 200 + x] = 100;
+      for (var y = 60; y < 140; y++)
+        for (var x = 60; x < 140; x++) gray[y * 200 + x] = 100;
       IrisEngine.detectIris(gray, 200, 200, { cx: 100, cy: 100, radius: 20 });
     });
     tryCall("IrisEngine.normalize", () => {
       var gray = new Float64Array(200 * 200);
-      for (var y = 0; y < 200; y++) for (var x = 0; x < 200; x++) gray[y * 200 + x] = (x + y) % 256;
-      IrisEngine.normalize(gray, 200, 200,
+      for (var y = 0; y < 200; y++)
+        for (var x = 0; x < 200; x++) gray[y * 200 + x] = (x + y) % 256;
+      IrisEngine.normalize(
+        gray,
+        200,
+        200,
         { cx: 100, cy: 100, radius: 20 },
         { cx: 100, cy: 100, radius: 60 },
-        { irisWidth: 64, irisHeight: 128 }
+        { irisWidth: 64, irisHeight: 128 },
       );
     });
     tryCall("IrisEngine.generateIrisCode: synthetic", () => {
       var norm = new Float64Array(64 * 128);
-      for (var y = 0; y < 128; y++) for (var x = 0; x < 64; x++) norm[y * 64 + x] = Math.sin(x * 0.2 + y * 0.1) * 127 + 128;
+      for (var y = 0; y < 128; y++)
+        for (var x = 0; x < 64; x++)
+          norm[y * 64 + x] = Math.sin(x * 0.2 + y * 0.1) * 127 + 128;
       IrisEngine.generateIrisCode(norm, 64, 128);
     });
 
     // ── iris_matcher.js ──
     tryCall("IrisMatcher.constructor", () => new IrisMatcher());
     tryCall("IrisMatcher.hammingDistance", () => {
-      var a = new Uint8Array(100).fill(0xFF);
-      var b = new Uint8Array(100).fill(0xAA);
-      var m = new Uint8Array(100).fill(0xFF);
+      var a = new Uint8Array(100).fill(0xff);
+      var b = new Uint8Array(100).fill(0xaa);
+      var m = new Uint8Array(100).fill(0xff);
       IrisMatcher.hammingDistance(a, b, m);
     });
     tryCall("IrisMatcher.decidabilityScore", () => {
@@ -393,8 +483,11 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisMatcher.identify: empty gallery", () => {
       IrisMatcher.identify(
-        { leftCode: new Uint8Array(100), leftMask: new Uint8Array(100).fill(1) },
-        []
+        {
+          leftCode: new Uint8Array(100),
+          leftMask: new Uint8Array(100).fill(1),
+        },
+        [],
       );
     });
 
@@ -420,19 +513,36 @@ async function captureBrowserCoverage() {
         { threshold: 0.9, far: 0.05, frr: 0.9 },
       ]);
     });
-    tryCall("IrisPerformance.calculateFAR", () => IrisPerformance.calculateFAR(5, 1000));
-    tryCall("IrisPerformance.calculateFRR", () => IrisPerformance.calculateFRR(3, 500));
-    tryCall("IrisPerformance.calculateAccuracy", () => IrisPerformance.calculateAccuracy(90, 5, 100));
+    tryCall("IrisPerformance.calculateFAR", () =>
+      IrisPerformance.calculateFAR(5, 1000),
+    );
+    tryCall("IrisPerformance.calculateFRR", () =>
+      IrisPerformance.calculateFRR(3, 500),
+    );
+    tryCall("IrisPerformance.calculateAccuracy", () =>
+      IrisPerformance.calculateAccuracy(90, 5, 100),
+    );
     tryCall("IrisPerformance.fnirAtFpir", () => {
-      var genu = []; var imp = [];
-      for (var i = 0; i < 50; i++) { genu.push(0.7 + Math.random() * 0.3); imp.push(Math.random() * 0.5); }
+      var genu = [];
+      var imp = [];
+      for (var i = 0; i < 50; i++) {
+        genu.push(0.7 + Math.random() * 0.3);
+        imp.push(Math.random() * 0.5);
+      }
       IrisPerformance.fnirAtFpir(genu, imp);
     });
     tryCall("IrisPerformance.wilsonCI", () => {
       IrisPerformance.wilsonCI(80, 100, 0.95);
     });
     tryCall("IrisPerformance.computeTimingStats", () => {
-      var inst = { _acquisitions: [10, 15, 20], _enrollments: [25, 30, 35], _ftaCount: 1, _fterCount: 2, _totalAcquisitions: 100, _totalEnrollments: 50 };
+      var inst = {
+        _acquisitions: [10, 15, 20],
+        _enrollments: [25, 30, 35],
+        _ftaCount: 1,
+        _fterCount: 2,
+        _totalAcquisitions: 100,
+        _totalEnrollments: 50,
+      };
       IrisPerformance.computeTimingStats(inst);
     });
     tryCall("IrisPerformance.recordFTA", () => {
@@ -452,7 +562,10 @@ async function captureBrowserCoverage() {
       IrisPerformance.recordEnrollment(inst, 25);
     });
     tryCall("IrisPerformance.pairedTTest: different", () => {
-      IrisPerformance.pairedTTest([0.8, 0.7, 0.6, 0.5, 0.9], [0.4, 0.3, 0.2, 0.5, 0.4]);
+      IrisPerformance.pairedTTest(
+        [0.8, 0.7, 0.6, 0.5, 0.9],
+        [0.4, 0.3, 0.2, 0.5, 0.4],
+      );
     });
     tryCall("IrisPerformance.pairedTTest: identical", () => {
       IrisPerformance.pairedTTest([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]);
@@ -463,37 +576,79 @@ async function captureBrowserCoverage() {
     tryCall("IrisPerformance.evaluate", () => {
       var genu = [0.8, 0.85, 0.7, 0.9, 0.75];
       var imp = [0.2, 0.3, 0.1, 0.4, 0.25];
-      IrisPerformance.evaluate({ genuineScores: genu, impostorScores: imp, systemName: "Test" });
+      IrisPerformance.evaluate({
+        genuineScores: genu,
+        impostorScores: imp,
+        systemName: "Test",
+      });
     });
     tryCall("IrisPerformance.compareSystems", () => {
       IrisPerformance.compareSystems(
-        { genuineScores: [0.8, 0.7, 0.9], impostorScores: [0.2, 0.3, 0.1], systemName: "A" },
-        { genuineScores: [0.6, 0.5, 0.7], impostorScores: [0.4, 0.5, 0.3], systemName: "B" }
+        {
+          genuineScores: [0.8, 0.7, 0.9],
+          impostorScores: [0.2, 0.3, 0.1],
+          systemName: "A",
+        },
+        {
+          genuineScores: [0.6, 0.5, 0.7],
+          impostorScores: [0.4, 0.5, 0.3],
+          systemName: "B",
+        },
       );
     });
 
     // ── iris_standards.js ──
     tryCall("IrisStandards.constructor", () => new IrisStandards());
-    tryCall("IrisStandards.captureDeviceInfo", () => IrisStandards.captureDeviceInfo());
+    tryCall("IrisStandards.captureDeviceInfo", () =>
+      IrisStandards.captureDeviceInfo(),
+    );
     tryCall("IrisStandards.validateDeviceInfo", () => {
-      IrisStandards.validateDeviceInfo({ manufacturer: "Test", model: "M1", firmware: "1.0" });
+      IrisStandards.validateDeviceInfo({
+        manufacturer: "Test",
+        model: "M1",
+        firmware: "1.0",
+      });
     });
     tryCall("IrisStandards.validateDeviceInfo: null", () => {
       IrisStandards.validateDeviceInfo(null);
     });
     tryCall("IrisStandards.validateRecord: valid", () => {
       IrisStandards.validateRecord({
-        cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-        imageKind: 2, width: 100, height: 100, pixelDepth: 8,
-        qualityScore: 70, eyeSide: "left", irisRadius: 50,
+        cbeff: {
+          headerSize: 33,
+          owner: 1,
+          type: 1,
+          version: 1,
+          birType: 1,
+          recordVersion: { major: 1, minor: 0 },
+        },
+        imageKind: 2,
+        width: 100,
+        height: 100,
+        pixelDepth: 8,
+        qualityScore: 70,
+        eyeSide: "left",
+        irisRadius: 50,
         deviceInfo: { manufacturer: "Test", model: "M1" },
       });
     });
     tryCall("IrisStandards.validateRecord: many warnings", () => {
       IrisStandards.validateRecord({
-        cbeff: { headerSize: 29, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-        imageKind: 2, width: 50, height: 50, pixelDepth: 6,
-        qualityScore: 30, eyeSide: "unknown", irisRadius: 30,
+        cbeff: {
+          headerSize: 29,
+          owner: 1,
+          type: 1,
+          version: 1,
+          birType: 1,
+          recordVersion: { major: 1, minor: 0 },
+        },
+        imageKind: 2,
+        width: 50,
+        height: 50,
+        pixelDepth: 6,
+        qualityScore: 30,
+        eyeSide: "unknown",
+        irisRadius: 30,
       });
     });
     tryCall("IrisStandards.validateRecord: bad imageKind", () => {
@@ -501,10 +656,18 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisStandards._classifyDeviceType", () => {
       IrisStandards._classifyDeviceType(null);
-      IrisStandards._classifyDeviceType("Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)");
-      IrisStandards._classifyDeviceType("Mozilla/5.0 (Linux; Android 13; Pixel 7)");
-      IrisStandards._classifyDeviceType("Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X)");
-      IrisStandards._classifyDeviceType("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+      IrisStandards._classifyDeviceType(
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)",
+      );
+      IrisStandards._classifyDeviceType(
+        "Mozilla/5.0 (Linux; Android 13; Pixel 7)",
+      );
+      IrisStandards._classifyDeviceType(
+        "Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X)",
+      );
+      IrisStandards._classifyDeviceType(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      );
     });
     tryCall("IrisStandards._getQualityLevel", () => {
       IrisStandards._getQualityLevel(10);
@@ -517,25 +680,47 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisStandards.createTemplate", () => {
       IrisStandards.createTemplate(
-        new Uint8Array(100).fill(0xFF),
+        new Uint8Array(100).fill(0xff),
         new Uint8Array(100).fill(1),
-        { eyeSide: "left", quality: 80 }
+        { eyeSide: "left", quality: 80 },
       );
     });
     tryCall("IrisStandards.serialize", () => {
       var record = {
-        cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-        imageKind: 2, width: 10, height: 10, pixelDepth: 8,
-        qualityScore: 70, eyeSide: "left",
+        cbeff: {
+          headerSize: 33,
+          owner: 1,
+          type: 1,
+          version: 1,
+          birType: 1,
+          recordVersion: { major: 1, minor: 0 },
+        },
+        imageKind: 2,
+        width: 10,
+        height: 10,
+        pixelDepth: 8,
+        qualityScore: 70,
+        eyeSide: "left",
         imageData: new Uint8Array(100).fill(0x80),
       };
       IrisStandards.serialize(record);
     });
     tryCall("IrisStandards.deserialize: 33-byte header", () => {
       var record = {
-        cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-        imageKind: 2, width: 10, height: 10, pixelDepth: 8,
-        qualityScore: 70, eyeSide: "left",
+        cbeff: {
+          headerSize: 33,
+          owner: 1,
+          type: 1,
+          version: 1,
+          birType: 1,
+          recordVersion: { major: 1, minor: 0 },
+        },
+        imageKind: 2,
+        width: 10,
+        height: 10,
+        pixelDepth: 8,
+        qualityScore: 70,
+        eyeSide: "left",
         imageData: new Uint8Array(100).fill(0x80),
       };
       var data = IrisStandards.serialize(record);
@@ -543,9 +728,20 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisStandards.deserialize: extended header", () => {
       var record = {
-        cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-        imageKind: 2, width: 10, height: 10, pixelDepth: 8,
-        qualityScore: 70, eyeSide: "left",
+        cbeff: {
+          headerSize: 33,
+          owner: 1,
+          type: 1,
+          version: 1,
+          birType: 1,
+          recordVersion: { major: 1, minor: 0 },
+        },
+        imageKind: 2,
+        width: 10,
+        height: 10,
+        pixelDepth: 8,
+        qualityScore: 70,
+        eyeSide: "left",
         imageData: new Uint8Array(100).fill(0x80),
         creationDate: new Date().toISOString(),
         encryptionAlgorithm: 1,
@@ -556,56 +752,99 @@ async function captureBrowserCoverage() {
     });
     tryCall("IrisStandards.createBIR", () => {
       IrisStandards.createBIR({
-        cbeff: { headerSize: 33, owner: 1, type: 1, version: 1, birType: 1, recordVersion: {major:1,minor:0} },
-        imageKind: 2, width: 10, height: 10, pixelDepth: 8,
-        qualityScore: 70, eyeSide: "left",
+        cbeff: {
+          headerSize: 33,
+          owner: 1,
+          type: 1,
+          version: 1,
+          birType: 1,
+          recordVersion: { major: 1, minor: 0 },
+        },
+        imageKind: 2,
+        width: 10,
+        height: 10,
+        pixelDepth: 8,
+        qualityScore: 70,
+        eyeSide: "left",
         imageData: new Uint8Array(100).fill(0x80),
       });
     });
 
     // ── iris_template_protection.js ──
-    tryCall("IrisTemplateProtection.constructor", () => new IrisTemplateProtection());
+    tryCall(
+      "IrisTemplateProtection.constructor",
+      () => new IrisTemplateProtection(),
+    );
     tryCall("IrisTemplateProtection.generateProjectionMatrix", () => {
       IrisTemplateProtection.generateProjectionMatrix(128, 256);
     });
     tryCall("IrisTemplateProtection.biohash", () => {
-      var template = { code: new Uint8Array(128).fill(0xFF), mask: new Uint8Array(128).fill(1) };
-      var key = new Uint8Array(32).fill(0xAA);
+      var template = {
+        code: new Uint8Array(128).fill(0xff),
+        mask: new Uint8Array(128).fill(1),
+      };
+      var key = new Uint8Array(32).fill(0xaa);
       IrisTemplateProtection.biohash(template, key);
     });
     tryCall("IrisTemplateProtection.verifyBiohash", () => {
-      var template = { code: new Uint8Array(128).fill(0xFF), mask: new Uint8Array(128).fill(1) };
-      var key = new Uint8Array(32).fill(0xAA);
+      var template = {
+        code: new Uint8Array(128).fill(0xff),
+        mask: new Uint8Array(128).fill(1),
+      };
+      var key = new Uint8Array(32).fill(0xaa);
       var hashed = IrisTemplateProtection.biohash(template, key);
       IrisTemplateProtection.verifyBiohash(hashed, key);
     });
     tryCall("IrisTemplateProtection.createTransformation", () => {
-      var template = { code: new Uint8Array(128).fill(0xFF), mask: new Uint8Array(128).fill(1) };
+      var template = {
+        code: new Uint8Array(128).fill(0xff),
+        mask: new Uint8Array(128).fill(1),
+      };
       IrisTemplateProtection.createTransformation(template, "test-key");
     });
     tryCall("IrisTemplateProtection.transform", () => {
-      var template = { code: new Uint8Array(128).fill(0xFF), mask: new Uint8Array(128).fill(1) };
-      var transf = IrisTemplateProtection.createTransformation(template, "test-key");
+      var template = {
+        code: new Uint8Array(128).fill(0xff),
+        mask: new Uint8Array(128).fill(1),
+      };
+      var transf = IrisTemplateProtection.createTransformation(
+        template,
+        "test-key",
+      );
       IrisTemplateProtection.transform(template, transf);
     });
     tryCall("IrisTemplateProtection.commit", async () => {
-      var template = new Uint8Array(128).fill(0xFF);
-      var key = new Uint8Array(32).fill(0xAA);
+      var template = new Uint8Array(128).fill(0xff);
+      var key = new Uint8Array(32).fill(0xaa);
       await IrisTemplateProtection.commit(template, key);
     });
     tryCall("IrisTemplateProtection.verifyCommitment", async () => {
-      var template = new Uint8Array(128).fill(0xFF);
-      var key = new Uint8Array(32).fill(0xAA);
+      var template = new Uint8Array(128).fill(0xff);
+      var key = new Uint8Array(32).fill(0xaa);
       var result = await IrisTemplateProtection.commit(template, key);
-      await IrisTemplateProtection.verifyCommitment(template, key, result.nonce, result.commitment);
+      await IrisTemplateProtection.verifyCommitment(
+        template,
+        key,
+        result.nonce,
+        result.commitment,
+      );
     });
     tryCall("IrisTemplateProtection.createCancelable", () => {
-      var template = { code: new Uint8Array(128).fill(0xFF), mask: new Uint8Array(128).fill(1) };
+      var template = {
+        code: new Uint8Array(128).fill(0xff),
+        mask: new Uint8Array(128).fill(1),
+      };
       IrisTemplateProtection.createCancelable(template, "user-id-1");
     });
     tryCall("IrisTemplateProtection.testUnlinkability", () => {
-      var t1 = { code: new Uint8Array(128).fill(0xFF), mask: new Uint8Array(128).fill(1) };
-      var t2 = { code: new Uint8Array(128).fill(0xAA), mask: new Uint8Array(128).fill(1) };
+      var t1 = {
+        code: new Uint8Array(128).fill(0xff),
+        mask: new Uint8Array(128).fill(1),
+      };
+      var t2 = {
+        code: new Uint8Array(128).fill(0xaa),
+        mask: new Uint8Array(128).fill(1),
+      };
       IrisTemplateProtection.testUnlinkability(t1, t2, 5);
     });
 
@@ -624,14 +863,20 @@ async function captureBrowserCoverage() {
 
 function mergeCoverage(nodeV8RawDir, browserCoverage) {
   // Read Node.js raw V8 coverage
-  const jsonFiles = fs.readdirSync(nodeV8RawDir).filter((f) => f.endsWith(".json"));
+  const jsonFiles = fs
+    .readdirSync(nodeV8RawDir)
+    .filter((f) => f.endsWith(".json"));
   const nodeScripts = [];
   for (const jf of jsonFiles) {
     try {
-      const data = JSON.parse(fs.readFileSync(path.join(nodeV8RawDir, jf), "utf8"));
-      const scripts = Array.isArray(data) ? data : (data.result || []);
+      const data = JSON.parse(
+        fs.readFileSync(path.join(nodeV8RawDir, jf), "utf8"),
+      );
+      const scripts = Array.isArray(data) ? data : data.result || [];
       nodeScripts.push(...scripts);
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
 
   // Build per-file merged coverage
@@ -644,7 +889,11 @@ function mergeCoverage(nodeV8RawDir, browserCoverage) {
       if (!script.functions || script.functions.length === 0) continue;
 
       if (!merged.has(name)) {
-        merged.set(name, { node: new Set(), browser: new Set(), total: new Set() });
+        merged.set(name, {
+          node: new Set(),
+          browser: new Set(),
+          total: new Set(),
+        });
       }
       const entry = merged.get(name);
 
@@ -672,7 +921,11 @@ function mergeCoverage(nodeV8RawDir, browserCoverage) {
     if (!IRIS_FILES.includes(name)) continue;
 
     if (!merged.has(name)) {
-      merged.set(name, { node: new Set(), browser: new Set(), total: new Set() });
+      merged.set(name, {
+        node: new Set(),
+        browser: new Set(),
+        total: new Set(),
+      });
     }
     const m = merged.get(name);
 
@@ -697,14 +950,16 @@ function printReport(merged) {
   console.log("=".repeat(100));
   console.log(
     "File".padEnd(35) +
-    "  Node%".padStart(8) +
-    "  Browser%".padStart(10) +
-    "  Merged%".padStart(10) +
-    "  Missing".padStart(10)
+      "  Node%".padStart(8) +
+      "  Browser%".padStart(10) +
+      "  Merged%".padStart(10) +
+      "  Missing".padStart(10),
   );
   console.log("-".repeat(100));
 
-  let totalNode = 0, totalBrowser = 0, totalMerged = 0;
+  let totalNode = 0,
+    totalBrowser = 0,
+    totalMerged = 0;
 
   const sorted = [...merged.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   for (const [name, data] of sorted) {
@@ -725,8 +980,10 @@ function printReport(merged) {
 
     // Better: count total ranges from both sources
     // For now, use file size as denominator for merged coverage
-    const nodePct = nodeOnly > 0 ? ((nodeOnly / fileSize) * 100).toFixed(1) : "0.0";
-    const browserPct = browserOnly > 0 ? ((browserOnly / fileSize) * 100).toFixed(1) : "0.0";
+    const nodePct =
+      nodeOnly > 0 ? ((nodeOnly / fileSize) * 100).toFixed(1) : "0.0";
+    const browserPct =
+      browserOnly > 0 ? ((browserOnly / fileSize) * 100).toFixed(1) : "0.0";
     const mergedPct = ((mergedCovered / fileSize) * 100).toFixed(1);
 
     totalNode += nodeOnly;
@@ -735,22 +992,35 @@ function printReport(merged) {
 
     console.log(
       name.padEnd(35) +
-      (nodePct + "%").padStart(8) +
-      (browserPct + "%").padStart(10) +
-      (mergedPct + "%").padStart(10) +
-      (fileSize - mergedCovered).toString().padStart(10)
+        (nodePct + "%").padStart(8) +
+        (browserPct + "%").padStart(10) +
+        (mergedPct + "%").padStart(10) +
+        (fileSize - mergedCovered).toString().padStart(10),
     );
   }
 
   console.log("-".repeat(100));
-  console.log("TOTAL bytes: Node=" + totalNode + " Browser=" + totalBrowser + " Merged=" + totalMerged);
+  console.log(
+    "TOTAL bytes: Node=" +
+      totalNode +
+      " Browser=" +
+      totalBrowser +
+      " Merged=" +
+      totalMerged,
+  );
   console.log("=".repeat(100));
 }
 
 async function main() {
   console.log("Capturing browser V8 coverage via Playwright CDP...");
   const { coverage, testResults } = await captureBrowserCoverage();
-  console.log("Browser tests: " + testResults.ok.length + " OK, " + testResults.err.length + " errors");
+  console.log(
+    "Browser tests: " +
+      testResults.ok.length +
+      " OK, " +
+      testResults.err.length +
+      " errors",
+  );
   if (testResults.err.length > 0) {
     console.log("Errors:");
     testResults.err.forEach((e) => console.log("  " + e));

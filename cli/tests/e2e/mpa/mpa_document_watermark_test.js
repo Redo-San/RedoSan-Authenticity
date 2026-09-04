@@ -1,13 +1,21 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors, closePage } = require("../mpa_helpers");
+var {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 var path = require("path");
 var fs = require("fs");
 
 var PAGE_ID = "document-watermark";
 var browser;
-var TXT_BUF = fs.readFileSync(path.resolve(__dirname, "../../fixtures/test.txt"));
+var TXT_BUF = fs.readFileSync(
+  path.resolve(__dirname, "../../fixtures/test.txt"),
+);
 var SECRET_BUF = Buffer.from("secret message for watermark");
 
 before(async function () {
@@ -33,10 +41,18 @@ describe("MPA — Document Watermark", function () {
   it("should have key form elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      var hasCoverFile = await page.evaluate(function () { return !!document.getElementById("docw-cover-file"); });
-      var hasSecretFile = await page.evaluate(function () { return !!document.getElementById("docw-secret-file"); });
-      var hasEmbedBtn = await page.evaluate(function () { return !!document.getElementById("docw-embed-btn"); });
-      var hasAlgo = await page.evaluate(function () { return !!document.getElementById("docw-algo"); });
+      var hasCoverFile = await page.evaluate(function () {
+        return !!document.getElementById("docw-cover-file");
+      });
+      var hasSecretFile = await page.evaluate(function () {
+        return !!document.getElementById("docw-secret-file");
+      });
+      var hasEmbedBtn = await page.evaluate(function () {
+        return !!document.getElementById("docw-embed-btn");
+      });
+      var hasAlgo = await page.evaluate(function () {
+        return !!document.getElementById("docw-algo");
+      });
       assert.ok(hasCoverFile, "Cover file input should exist");
       assert.ok(hasSecretFile, "Secret file input should exist");
       assert.ok(hasEmbedBtn, "Embed button should exist");
@@ -50,10 +66,12 @@ describe("MPA — Document Watermark", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       await page.setInputFiles("#docw-cover-file", [
-        { name: "test.txt", mimeType: "text/plain", buffer: TXT_BUF }
+        { name: "test.txt", mimeType: "text/plain", buffer: TXT_BUF },
       ]);
       await page.waitForTimeout(500);
-      var hasBtn = await page.evaluate(function () { return !!document.getElementById("docw-embed-btn"); });
+      var hasBtn = await page.evaluate(function () {
+        return !!document.getElementById("docw-embed-btn");
+      });
       assert.ok(hasBtn, "Embed button should still exist after upload");
     } finally {
       await closePage(ctx, page);
@@ -69,21 +87,31 @@ describe("MPA — Document Watermark", function () {
       });
       assert.ok(embedVisible, "Embed tab should be visible by default");
 
-      await page.evaluate(function () { switchDocwTab("extract"); });
+      await page.evaluate(function () {
+        switchDocwTab("extract");
+      });
       await page.waitForTimeout(300);
       var extractVisible = await page.evaluate(function () {
         var el = document.getElementById("docw-extract");
         return el && el.style.display !== "none";
       });
-      assert.ok(extractVisible, "Extract tab should be visible after switching");
+      assert.ok(
+        extractVisible,
+        "Extract tab should be visible after switching",
+      );
 
-      await page.evaluate(function () { switchDocwTab("embed"); });
+      await page.evaluate(function () {
+        switchDocwTab("embed");
+      });
       await page.waitForTimeout(300);
       embedVisible = await page.evaluate(function () {
         var el = document.getElementById("docw-embed");
         return el && el.style.display !== "none";
       });
-      assert.ok(embedVisible, "Embed tab should be visible after switching back");
+      assert.ok(
+        embedVisible,
+        "Embed tab should be visible after switching back",
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -93,17 +121,19 @@ describe("MPA — Document Watermark", function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
       // Register dialog handler
-      page.on("dialog", function (d) { d.dismiss().catch(function () {}); });
+      page.on("dialog", function (d) {
+        d.dismiss().catch(function () {});
+      });
 
       // Upload cover file
       await page.setInputFiles("#docw-cover-file", [
-        { name: "cover.txt", mimeType: "text/plain", buffer: TXT_BUF }
+        { name: "cover.txt", mimeType: "text/plain", buffer: TXT_BUF },
       ]);
       await page.waitForTimeout(1000);
 
       // Upload secret message file
       await page.setInputFiles("#docw-secret-file", [
-        { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF }
+        { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF },
       ]);
       await page.waitForTimeout(500);
 
@@ -127,7 +157,10 @@ describe("MPA — Document Watermark", function () {
         var el = document.getElementById("docw-embed-result");
         return el && el.style.display !== "none";
       });
-      assert.ok(resultVisible, "Embed result section should be visible after embedding");
+      assert.ok(
+        resultVisible,
+        "Embed result section should be visible after embedding",
+      );
 
       var hasOutput = await page.evaluate(function () {
         var el = document.getElementById("docw-embed-output");
@@ -142,7 +175,9 @@ describe("MPA — Document Watermark", function () {
   it("should have extract tab form elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      await page.evaluate(function () { switchDocwTab("extract"); });
+      await page.evaluate(function () {
+        switchDocwTab("extract");
+      });
       await page.waitForTimeout(300);
 
       var hasExtractFile = await page.evaluate(function () {
@@ -165,13 +200,15 @@ describe("MPA — Document Watermark", function () {
   it("should show download button after embedding", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      page.on("dialog", function (d) { d.dismiss().catch(function () {}); });
+      page.on("dialog", function (d) {
+        d.dismiss().catch(function () {});
+      });
       await page.setInputFiles("#docw-cover-file", [
-        { name: "cover.txt", mimeType: "text/plain", buffer: TXT_BUF }
+        { name: "cover.txt", mimeType: "text/plain", buffer: TXT_BUF },
       ]);
       await page.waitForTimeout(500);
       await page.setInputFiles("#docw-secret-file", [
-        { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF }
+        { name: "secret.txt", mimeType: "text/plain", buffer: SECRET_BUF },
       ]);
       await page.waitForTimeout(500);
       await page.fill("#docw-password", "test123");
@@ -190,7 +227,10 @@ describe("MPA — Document Watermark", function () {
         var txt = (dlArea.textContent || dlArea.innerText || "").toLowerCase();
         return txt.indexOf("download") !== -1;
       });
-      assert.ok(hasDownloadBtn, "Download button area should appear after embed");
+      assert.ok(
+        hasDownloadBtn,
+        "Download button area should appear after embed",
+      );
     } finally {
       await closePage(ctx, page);
     }
@@ -208,9 +248,18 @@ describe("MPA — Document Watermark", function () {
         }
         return opts;
       });
-      assert.ok(algoOptions.length >= 3, "Should have at least 3 algorithm options");
-      assert.ok(algoOptions.indexOf("1") !== -1, "Zero-width algorithm should exist");
-      assert.ok(algoOptions.indexOf("2") !== -1, "Whitespace algorithm should exist");
+      assert.ok(
+        algoOptions.length >= 3,
+        "Should have at least 3 algorithm options",
+      );
+      assert.ok(
+        algoOptions.indexOf("1") !== -1,
+        "Zero-width algorithm should exist",
+      );
+      assert.ok(
+        algoOptions.indexOf("2") !== -1,
+        "Whitespace algorithm should exist",
+      );
     } finally {
       await closePage(ctx, page);
     }

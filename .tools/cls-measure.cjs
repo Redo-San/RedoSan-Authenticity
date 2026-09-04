@@ -3,7 +3,9 @@ const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
   for (const page of ["watermark", "certificate", "timestamp"]) {
-    const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+    const ctx = await browser.newContext({
+      viewport: { width: 1350, height: 940 },
+    });
     const pg = await ctx.newPage();
     await pg.addInitScript(() => {
       window.__cls = 0;
@@ -13,13 +15,18 @@ const { chromium } = require("playwright");
           for (const e of list.getEntries()) {
             if (!e.hadRecentInput) {
               window.__cls += e.value;
-              window.__clsEntries.push({ v: Math.round(e.value * 1000) / 1000, t: Math.round(e.startTime) });
+              window.__clsEntries.push({
+                v: Math.round(e.value * 1000) / 1000,
+                t: Math.round(e.startTime),
+              });
             }
           }
         }).observe({ type: "layout-shift", buffered: true });
       } catch (err) {}
     });
-    await pg.goto(`http://localhost:8080/${page}/index.html`, { waitUntil: "load" });
+    await pg.goto(`http://localhost:8080/${page}/index.html`, {
+      waitUntil: "load",
+    });
     await pg.waitForTimeout(2500);
     const r = await pg.evaluate(() => {
       const dz = document.querySelectorAll(".file-drop-zone").length;

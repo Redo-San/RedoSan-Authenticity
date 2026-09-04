@@ -35,7 +35,15 @@ describe("E2E — Timestamp", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "timestamp");
     await page.waitForTimeout(1000);
-    assert.equal(errors.filter((e) => !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest")).length, 0);
+    assert.equal(
+      errors.filter(
+        (e) =>
+          !e.includes("404") &&
+          !e.includes("Failed to load") &&
+          !e.includes("valid digest"),
+      ).length,
+      0,
+    );
     await ctx.close();
   });
 
@@ -47,8 +55,12 @@ describe("E2E — Timestamp", () => {
     await page.waitForTimeout(2000);
     await navTo(page, "timestamp");
     await page.waitForTimeout(1000);
-    const hasFile = await page.evaluate(() => !!document.getElementById("ts-create-file"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("ts-create-btn"));
+    const hasFile = await page.evaluate(
+      () => !!document.getElementById("ts-create-file"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("ts-create-btn"),
+    );
     assert.ok(hasFile, "File input exists");
     assert.ok(hasBtn, "Create .ots button exists");
     await ctx.close();
@@ -63,11 +75,16 @@ describe("E2E — Timestamp", () => {
     await navTo(page, "timestamp");
     await page.waitForTimeout(1000);
 
-    await page.setInputFiles("#ts-create-file", [{ name: "test.txt", mimeType: "text/plain", buffer: TXT_BUF }]);
+    await page.setInputFiles("#ts-create-file", [
+      { name: "test.txt", mimeType: "text/plain", buffer: TXT_BUF },
+    ]);
     await page.waitForTimeout(500);
 
     await page.evaluate(() => document.getElementById("ts-create-btn").click());
-    await page.waitForSelector("#ts-result", { state: "visible", timeout: 30000 });
+    await page.waitForSelector("#ts-result", {
+      state: "visible",
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     const outputText = await page.evaluate(() => {
@@ -75,7 +92,10 @@ describe("E2E — Timestamp", () => {
       return el ? el.textContent : "";
     });
     assert.ok(outputText.length > 0, "Result should have text");
-    assert.ok(outputText.includes("SHA-256"), "Should show SHA-256 hash. Got: " + outputText.substring(0, 100));
+    assert.ok(
+      outputText.includes("SHA-256"),
+      "Should show SHA-256 hash. Got: " + outputText.substring(0, 100),
+    );
 
     const hasDlLink = await page.evaluate(() => {
       const dl = document.getElementById("ts-download");
@@ -97,9 +117,15 @@ describe("E2E — Timestamp", () => {
     await page.evaluate(() => switchOtsTab("verify"));
     await page.waitForTimeout(300);
 
-    const hasFile = await page.evaluate(() => !!document.getElementById("ts-verify-file"));
-    const hasOts = await page.evaluate(() => !!document.getElementById("ts-ots-proof"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("ts-verify-btn"));
+    const hasFile = await page.evaluate(
+      () => !!document.getElementById("ts-verify-file"),
+    );
+    const hasOts = await page.evaluate(
+      () => !!document.getElementById("ts-ots-proof"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("ts-verify-btn"),
+    );
     assert.ok(hasFile, "Verify file input exists");
     assert.ok(hasOts, "OTS proof input exists");
     assert.ok(hasBtn, "Verify button exists");

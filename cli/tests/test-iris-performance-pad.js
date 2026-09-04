@@ -6,11 +6,25 @@ const path = require("node:path");
 const test = require("node:test");
 const assert = require("node:assert");
 
-global.window = { location: { protocol: "file:", href: "file:///test" }, navigator: { userAgent: "node" } };
+global.window = {
+  location: { protocol: "file:", href: "file:///test" },
+  navigator: { userAgent: "node" },
+};
 global.document = {};
 vm.runInThisContext(
-  fs.readFileSync(path.join(__dirname, "..", "..", "Iris_Biometric", "iris_performance.js"), "utf8"),
-  { filename: path.join(__dirname, "..", "..", "Iris_Biometric", "iris_performance.js") }
+  fs.readFileSync(
+    path.join(__dirname, "..", "..", "Iris_Biometric", "iris_performance.js"),
+    "utf8",
+  ),
+  {
+    filename: path.join(
+      __dirname,
+      "..",
+      "..",
+      "Iris_Biometric",
+      "iris_performance.js",
+    ),
+  },
 );
 const P = global.window.IrisPerformance;
 
@@ -36,11 +50,21 @@ test("calculateBPCER: bona fide rejected at a high threshold", () => {
 test("reportPADMetrics: returns DET + operating points", () => {
   const r = P.reportPADMetrics(labels, scores);
   assert.ok(Array.isArray(r.det) && r.det.length > 0, "DET curve missing");
-  assert.strictEqual(r.apcerAtBpcer10, 0, "APCER@BPCER10 should be 0 for separable data");
+  assert.strictEqual(
+    r.apcerAtBpcer10,
+    0,
+    "APCER@BPCER10 should be 0 for separable data",
+  );
   assert.ok(r.iapar >= 0 && r.iapar <= 1, "IAPAR out of range: " + r.iapar);
 });
 test("empty input is safe", () => {
   assert.strictEqual(P.calculateAPCER([], [], 0.5), 0);
   assert.strictEqual(P.calculateBPCER([], [], 0.5), 0);
-  assert.deepStrictEqual(P.reportPADMetrics([], []), { apcerAtBpcer10: 0, apcerAtBpcer20: 0, bpcer: 0, iapar: 0, det: [] });
+  assert.deepStrictEqual(P.reportPADMetrics([], []), {
+    apcerAtBpcer10: 0,
+    apcerAtBpcer20: 0,
+    bpcer: 0,
+    iapar: 0,
+    det: [],
+  });
 });

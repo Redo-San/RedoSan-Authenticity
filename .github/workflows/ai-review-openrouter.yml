@@ -43,10 +43,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Sync from head branch (stale merge ref bypass)
-        run: |
-          git fetch origin "$GITHUB_HEAD_REF" --depth=1
-          git checkout "origin/$GITHUB_HEAD_REF" -- .
+          fetch-depth: 2
       - name: Install jq (if missing)
         run: |
           if ! command -v jq >/dev/null 2>&1; then

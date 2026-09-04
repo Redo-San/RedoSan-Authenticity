@@ -72,7 +72,10 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
     const progressWasShown = await page.evaluate(() => {
       return new Promise((resolve) => {
         const el = document.getElementById("fp-progress");
-        if (!el) { resolve(false); return; }
+        if (!el) {
+          resolve(false);
+          return;
+        }
         let shown = false;
         // Use MutationObserver to detect style changes
         const observer = new MutationObserver(() => {
@@ -100,7 +103,10 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
       });
     });
 
-    assert.ok(progressWasShown, "Progress bar should have been visible during processing");
+    assert.ok(
+      progressWasShown,
+      "Progress bar should have been visible during processing",
+    );
 
     // Wait for results to complete
     await page.waitForSelector("#fp-result", {
@@ -116,7 +122,11 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
         !e.includes("valid digest") &&
         !e.includes("frame-ancestors"),
     );
-    assert.equal(fatal.length, 0, `Fatal errors during progress: ${fatal.join(", ")}`);
+    assert.equal(
+      fatal.length,
+      0,
+      `Fatal errors during progress: ${fatal.join(", ")}`,
+    );
     await ctx.close();
   });
 
@@ -218,16 +228,16 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
       "BLAKE3",
     ];
     for (const family of expectedFamilies) {
-      assert.ok(
-        outputHtml.includes(family),
-        `Output should contain ${family}`,
-      );
+      assert.ok(outputHtml.includes(family), `Output should contain ${family}`);
     }
 
     // Perceptual hashes should be present for PNG images
     const expectedPerceptual = ["ahash", "dhash", "phash"];
     for (const ph of expectedPerceptual) {
-      assert.ok(outputHtml.includes(ph), `Output should contain ${ph} perceptual hash`);
+      assert.ok(
+        outputHtml.includes(ph),
+        `Output should contain ${ph} perceptual hash`,
+      );
     }
 
     await ctx.close();
@@ -259,13 +269,15 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
     await page.waitForTimeout(2000);
 
     const hasResult = await page.evaluate(() => {
-      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const getFn =
+        typeof getResult === "function" ? getResult : window.getResult;
       return getFn ? !!getFn("fpResult") : false;
     });
     assert.ok(hasResult, "fpResult should be stored in global result store");
 
     const resultHashes = await page.evaluate(() => {
-      const getFn = typeof getResult === "function" ? getResult : window.getResult;
+      const getFn =
+        typeof getResult === "function" ? getResult : window.getResult;
       const r = getFn ? getFn("fpResult") : null;
       if (!r) return null;
       return {
@@ -274,7 +286,8 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
         hasBlake3: !!r.hashes["BLAKE3"],
         hasSha3512: !!r.hashes["SHA-3_512"],
         hasSha3224: !!r.hashes["SHA-3_224"],
-        hasPerceptual: r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0,
+        hasPerceptual:
+          r.perceptual_hashes && Object.keys(r.perceptual_hashes).length > 0,
         fileName: r.file_info ? r.file_info.file_name : null,
       };
     });
@@ -283,11 +296,24 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
     assert.ok(resultHashes.hasSha256, "Result should contain SHA-256");
     assert.ok(resultHashes.hasBlake3, "Result should contain BLAKE3");
     // SHA-3 hashes come from the Web Worker — verify they were computed
-    assert.ok(resultHashes.hasSha3512, "Result should contain SHA-3_512 from worker");
-    assert.ok(resultHashes.hasSha3224, "Result should contain SHA-3_224 from worker");
+    assert.ok(
+      resultHashes.hasSha3512,
+      "Result should contain SHA-3_512 from worker",
+    );
+    assert.ok(
+      resultHashes.hasSha3224,
+      "Result should contain SHA-3_224 from worker",
+    );
     // Perceptual hashes for PNG
-    assert.ok(resultHashes.hasPerceptual, "Result should contain perceptual hashes for PNG");
-    assert.equal(resultHashes.fileName, "testimg.png", "File name should match");
+    assert.ok(
+      resultHashes.hasPerceptual,
+      "Result should contain perceptual hashes for PNG",
+    );
+    assert.equal(
+      resultHashes.fileName,
+      "testimg.png",
+      "File name should match",
+    );
 
     await ctx.close();
   });
@@ -310,7 +336,10 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
     const labelWasUpdated = await page.evaluate(() => {
       return new Promise((resolve) => {
         const label = document.getElementById("fp-progress-label");
-        if (!label) { resolve(false); return; }
+        if (!label) {
+          resolve(false);
+          return;
+        }
         let updated = false;
         const origText = label.textContent;
         // MutationObserver to detect text changes
@@ -343,7 +372,10 @@ describe("E2E — Web Worker Hash Fingerprinting", () => {
       });
     });
 
-    assert.ok(labelWasUpdated, "Progress label should have been updated during processing");
+    assert.ok(
+      labelWasUpdated,
+      "Progress label should have been updated during processing",
+    );
 
     // Wait for complete results
     await page.waitForSelector("#fp-result", {

@@ -19,13 +19,17 @@ function addListener(type, fn) {
 
 function removeListener(type, fn) {
   if (_listeners[type]) {
-    _listeners[type] = _listeners[type].filter(function (f) { return f !== fn; });
+    _listeners[type] = _listeners[type].filter(function (f) {
+      return f !== fn;
+    });
   }
 }
 
 function triggerEvent(type, evt) {
   if (_listeners[type]) {
-    _listeners[type].slice().forEach(function (fn) { fn(evt); });
+    _listeners[type].slice().forEach(function (fn) {
+      fn(evt);
+    });
   }
 }
 
@@ -34,49 +38,81 @@ function makeClassList() {
   var items = [];
   return {
     _classes: items,
-    add: function (c) { if (items.indexOf(c) === -1) items.push(c); },
+    add: function (c) {
+      if (items.indexOf(c) === -1) items.push(c);
+    },
     remove: function (c) {
       var idx = items.indexOf(c);
       if (idx !== -1) items.splice(idx, 1);
     },
-    contains: function (c) { return items.indexOf(c) !== -1; },
+    contains: function (c) {
+      return items.indexOf(c) !== -1;
+    },
     toggle: function (c) {
       var idx = items.indexOf(c);
-      if (idx !== -1) { items.splice(idx, 1); return false; }
-      items.push(c); return true;
+      if (idx !== -1) {
+        items.splice(idx, 1);
+        return false;
+      }
+      items.push(c);
+      return true;
     },
-    toString: function () { return items.join(" "); },
+    toString: function () {
+      return items.join(" ");
+    },
   };
 }
 
 // ── Mock element factory ──
 function makeEl(id, extra) {
   if (!_els[id]) {
-    _els[id] = Object.assign({
-      style: { display: "" },
-      value: "", textContent: "", innerHTML: "", className: "", src: "", download: "",
-      disabled: false, href: "", onclick: null,
-      classList: makeClassList(),
-      append: function () {},
-      appendChild: function () {},
-      remove: function () {},
-      addEventListener: function () {},
-      removeEventListener: function () {},
-      dispatchEvent: function () {},
-      getAttribute: function (a) { return this[a] || null; },
-      setAttribute: function (a, v) { this[a] = v; },
-      click: function () {},
-      focus: function () {},
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
-      parentElement: {},
-      parentNode: {
-        insertBefore: function () {},
-        removeChild: function () {},
-        querySelector: function () { return null; },
+    _els[id] = Object.assign(
+      {
+        style: { display: "" },
+        value: "",
+        textContent: "",
+        innerHTML: "",
+        className: "",
+        src: "",
+        download: "",
+        disabled: false,
+        href: "",
+        onclick: null,
+        classList: makeClassList(),
+        append: function () {},
+        appendChild: function () {},
+        remove: function () {},
+        addEventListener: function () {},
+        removeEventListener: function () {},
+        dispatchEvent: function () {},
+        getAttribute: function (a) {
+          return this[a] || null;
+        },
+        setAttribute: function (a, v) {
+          this[a] = v;
+        },
+        click: function () {},
+        focus: function () {},
+        querySelector: function () {
+          return null;
+        },
+        querySelectorAll: function () {
+          return [];
+        },
+        parentElement: {},
+        parentNode: {
+          insertBefore: function () {},
+          removeChild: function () {},
+          querySelector: function () {
+            return null;
+          },
+        },
+        closest: function () {
+          return null;
+        },
       },
-      closest: function () { return null; },
-    }, extra || {});
+      extra || {},
+    );
   } else if (extra) {
     Object.assign(_els[id], extra);
   }
@@ -92,18 +128,35 @@ function resetNavState() {
     documentElement: {
       dataset: {},
       style: {},
-      getAttribute: function () { return null; },
+      getAttribute: function () {
+        return null;
+      },
     },
-    getElementById: function (id) { return _els[id] || null; },
-    querySelector: function () { return null; },
-    querySelectorAll: function () { return []; },
-    createElement: function (tag) { return makeEl("created-" + tag, { tagName: tag }); },
-    createTextNode: function () { return {}; },
+    getElementById: function (id) {
+      return _els[id] || null;
+    },
+    querySelector: function () {
+      return null;
+    },
+    querySelectorAll: function () {
+      return [];
+    },
+    createElement: function (tag) {
+      return makeEl("created-" + tag, { tagName: tag });
+    },
+    createTextNode: function () {
+      return {};
+    },
     title: "",
     body: { classList: makeClassList(), append: function () {} },
     addEventListener: addListener,
     removeEventListener: removeListener,
-    head: { append: function () {}, querySelector: function () { return null; } },
+    head: {
+      append: function () {},
+      querySelector: function () {
+        return null;
+      },
+    },
   };
 
   globalThis.window = globalThis;
@@ -121,21 +174,41 @@ function resetNavState() {
 
   globalThis.history = {
     state: null,
-    pushState: function (state, title, url) { this.state = state; },
-    replaceState: function (state, title, url) { this.state = state; },
+    pushState: function (state, title, url) {
+      this.state = state;
+    },
+    replaceState: function (state, title, url) {
+      this.state = state;
+    },
   };
 
-  globalThis.console = { error: function () {}, warn: function () {}, log: function () {} };
+  globalThis.console = {
+    error: function () {},
+    warn: function () {},
+    log: function () {},
+  };
   globalThis.setTimeout = setTimeout;
   globalThis.clearTimeout = clearTimeout;
-  globalThis.URLSearchParams = function () { return { get: function () { return null; } }; };
-  globalThis.encodeURIComponent = function (s) { return s; };
-  globalThis.__ = function (key) { return key; };
+  globalThis.URLSearchParams = function () {
+    return {
+      get: function () {
+        return null;
+      },
+    };
+  };
+  globalThis.encodeURIComponent = function (s) {
+    return s;
+  };
+  globalThis.__ = function (key) {
+    return key;
+  };
 
   // Navigation.js-dependent globals
   globalThis.setMode = undefined;
   globalThis.siteSearch = undefined;
-  globalThis.getDownloadHandler = function () { return null; };
+  globalThis.getDownloadHandler = function () {
+    return null;
+  };
   globalThis.downloadFingerprint = undefined;
   globalThis.updateC2paWriteForm = undefined;
   globalThis.idForgeShowInfo = undefined;
@@ -144,8 +217,13 @@ function resetNavState() {
 
 // ── Load navigation.js ──
 function loadNav() {
-  var src = fs.readFileSync(path.resolve(__dirname, "../../Style/navigation.js"), "utf8");
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Style/navigation.js") });
+  var src = fs.readFileSync(
+    path.resolve(__dirname, "../../Style/navigation.js"),
+    "utf8",
+  );
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../Style/navigation.js"),
+  });
 }
 
 // ── Helpers for tests that need querySelectorAll to return .page elements ──
@@ -180,7 +258,9 @@ describe("navigation.js — sanitizeRemovalTools", function () {
   it("returns early when hostname is not production (localhost)", function () {
     globalThis.location.hostname = "localhost";
     // Should not throw despite no querySelectorAll for removal-tools returning anything
-    globalThis.document.querySelectorAll = function () { return []; };
+    globalThis.document.querySelectorAll = function () {
+      return [];
+    };
     sanitizeRemovalTools();
     // No elements should be removed — no assertion needed beyond no error
   });
@@ -189,9 +269,21 @@ describe("navigation.js — sanitizeRemovalTools", function () {
     globalThis.location.hostname = "redo-san.github.io";
     var removedCount = 0;
     var els = [
-      { remove: function () { removedCount++; } },
-      { remove: function () { removedCount++; } },
-      { remove: function () { removedCount++; } },
+      {
+        remove: function () {
+          removedCount++;
+        },
+      },
+      {
+        remove: function () {
+          removedCount++;
+        },
+      },
+      {
+        remove: function () {
+          removedCount++;
+        },
+      },
     ];
     globalThis.document.querySelectorAll = function (sel) {
       assert.ok(sel.indexOf("removal-tools") !== -1);
@@ -221,9 +313,14 @@ describe("navigation.js — showPage", function () {
 
     showPage("home");
 
-    assert.ok(pageHome.classList.contains("active"), "home page should have active class");
-    assert.ok(globalThis.document.title.indexOf("RedoSan Authenticity") !== -1,
-      "title should contain 'RedoSan Authenticity'");
+    assert.ok(
+      pageHome.classList.contains("active"),
+      "home page should have active class",
+    );
+    assert.ok(
+      globalThis.document.title.indexOf("RedoSan Authenticity") !== -1,
+      "title should contain 'RedoSan Authenticity'",
+    );
   });
 
   it("does nothing for invalid page name (not in PAGE_NAMES)", function () {
@@ -242,14 +339,22 @@ describe("navigation.js — showPage", function () {
 
     // Now call with undefined — should remove active from all pages
     showPage(undefined);
-    assert.ok(!pageHome.classList.contains("active"), "home should not be active after undefined call");
+    assert.ok(
+      !pageHome.classList.contains("active"),
+      "home should not be active after undefined call",
+    );
   });
 
   it("activates watermark, sets title, and updates meta description", function () {
     var pageWm = makeEl("page-watermark");
     makeEl("app");
 
-    var metaEl = { content: "", setAttribute: function (a, v) { this.content = v; } };
+    var metaEl = {
+      content: "",
+      setAttribute: function (a, v) {
+        this.content = v;
+      },
+    };
     globalThis.document.querySelector = function (sel) {
       if (sel === 'meta[name="description"]') return metaEl;
       return null;
@@ -259,11 +364,18 @@ describe("navigation.js — showPage", function () {
 
     showPage("watermark");
 
-    assert.ok(pageWm.classList.contains("active"), "watermark page should have active class");
-    assert.ok(globalThis.document.title.indexOf("Digital Watermark") !== -1,
-      "title should reference Digital Watermark");
-    assert.ok(metaEl.content.indexOf("digital watermarks") !== -1,
-      "meta description should reference digital watermarks");
+    assert.ok(
+      pageWm.classList.contains("active"),
+      "watermark page should have active class",
+    );
+    assert.ok(
+      globalThis.document.title.indexOf("Digital Watermark") !== -1,
+      "title should reference Digital Watermark",
+    );
+    assert.ok(
+      metaEl.content.indexOf("digital watermarks") !== -1,
+      "meta description should reference digital watermarks",
+    );
   });
 
   it("activates sidebar nav link when present", function () {
@@ -272,7 +384,10 @@ describe("navigation.js — showPage", function () {
     var navLink = makeEl("nav-wm", { classList: makeClassList() });
     navLink.dataset = { page: "watermark" };
 
-    globalThis.document.querySelectorAll = makeQuerySelectorAll([pageWm], [navLink]);
+    globalThis.document.querySelectorAll = makeQuerySelectorAll(
+      [pageWm],
+      [navLink],
+    );
     globalThis.document.querySelector = function (sel) {
       if (sel === 'meta[name="description"]') return null;
       if (sel.indexOf('data-page="watermark"') !== -1) return navLink;
@@ -280,7 +395,10 @@ describe("navigation.js — showPage", function () {
     };
 
     showPage("watermark");
-    assert.ok(navLink.classList.contains("active"), "sidebar nav link should be active");
+    assert.ok(
+      navLink.classList.contains("active"),
+      "sidebar nav link should be active",
+    );
   });
 
   it("calls pushState with {page: name} when mainNav is visible and not standalone", function () {
@@ -305,8 +423,11 @@ describe("navigation.js — showPage", function () {
 
     showPage("watermark");
 
-    assert.deepEqual(globalThis.history.state, { page: "watermark" },
-      "pushState should be called with page state");
+    assert.deepEqual(
+      globalThis.history.state,
+      { page: "watermark" },
+      "pushState should be called with page state",
+    );
   });
 
   it("calls pushState with {page:'home'} when name is home and mainNav visible", function () {
@@ -316,7 +437,9 @@ describe("navigation.js — showPage", function () {
     mainNav.style.display = "";
 
     globalThis.document.querySelectorAll = makeQuerySelectorAll([pageHome], []);
-    globalThis.document.querySelector = function () { return null; };
+    globalThis.document.querySelector = function () {
+      return null;
+    };
     globalThis.document.getElementById = function (id) {
       if (id === "mainNav") return mainNav;
       return _els[id] || null;
@@ -327,8 +450,11 @@ describe("navigation.js — showPage", function () {
     showPage("home");
 
     assert.ok(globalThis.history.state, "pushState should have been called");
-    assert.equal(globalThis.history.state.page, "home",
-      "state.page should be 'home'");
+    assert.equal(
+      globalThis.history.state.page,
+      "home",
+      "state.page should be 'home'",
+    );
   });
 
   it("does NOT call pushState when mainNav display is none", function () {
@@ -338,7 +464,9 @@ describe("navigation.js — showPage", function () {
     mainNav.style.display = "none"; // hidden
 
     globalThis.document.querySelectorAll = makeQuerySelectorAll([pageWm], []);
-    globalThis.document.querySelector = function () { return null; };
+    globalThis.document.querySelector = function () {
+      return null;
+    };
     globalThis.document.getElementById = function (id) {
       if (id === "mainNav") return mainNav;
       return _els[id] || null;
@@ -347,8 +475,11 @@ describe("navigation.js — showPage", function () {
 
     showPage("watermark");
 
-    assert.equal(globalThis.history.state, null,
-      "pushState should NOT be called when mainNav is hidden");
+    assert.equal(
+      globalThis.history.state,
+      null,
+      "pushState should NOT be called when mainNav is hidden",
+    );
   });
 
   it("does NOT call pushState when standalone", function () {
@@ -358,7 +489,9 @@ describe("navigation.js — showPage", function () {
     mainNav.style.display = "";
 
     globalThis.document.querySelectorAll = makeQuerySelectorAll([pageWm], []);
-    globalThis.document.querySelector = function () { return null; };
+    globalThis.document.querySelector = function () {
+      return null;
+    };
     globalThis.document.getElementById = function (id) {
       if (id === "mainNav") return mainNav;
       return _els[id] || null;
@@ -368,8 +501,11 @@ describe("navigation.js — showPage", function () {
 
     showPage("watermark");
 
-    assert.equal(globalThis.history.state, null,
-      "pushState should NOT be called when standalone dataset is set");
+    assert.equal(
+      globalThis.history.state,
+      null,
+      "pushState should NOT be called when standalone dataset is set",
+    );
   });
 });
 
@@ -380,7 +516,8 @@ describe("navigation.js — showPage standalone redirect", function () {
   before(function () {
     resetNavState();
     globalThis.document.documentElement.dataset = { standalone: "watermark" };
-    globalThis.location.href = "http://localhost/Style/pages/watermark/index.html";
+    globalThis.location.href =
+      "http://localhost/Style/pages/watermark/index.html";
     globalThis.location.pathname = "/Style/pages/watermark/index.html";
   });
 
@@ -392,8 +529,10 @@ describe("navigation.js — showPage standalone redirect", function () {
 
     showPage("watermark");
 
-    assert.ok(globalThis.location.href.indexOf("watermark/index.html") !== -1,
-      "should redirect to 'watermark/index.html'");
+    assert.ok(
+      globalThis.location.href.indexOf("watermark/index.html") !== -1,
+      "should redirect to 'watermark/index.html'",
+    );
   });
 
   it("redirects through 'pages' directory when 'pages' is in pathname", function () {
@@ -403,8 +542,10 @@ describe("navigation.js — showPage standalone redirect", function () {
 
     showPage("about");
 
-    assert.ok(globalThis.location.href.indexOf("pages/about/index.html") !== -1,
-      "should redirect through pages/ directory");
+    assert.ok(
+      globalThis.location.href.indexOf("pages/about/index.html") !== -1,
+      "should redirect through pages/ directory",
+    );
   });
 
   it("does not redirect when page element exists (standalone SPA)", function () {
@@ -415,10 +556,15 @@ describe("navigation.js — showPage standalone redirect", function () {
     showPage("watermark");
 
     // Should not have redirected
-    assert.equal(globalThis.location.href, "http://localhost/",
-      "should NOT redirect when page element exists");
-    assert.ok(pageWm.classList.contains("active"),
-      "should activate the page element");
+    assert.equal(
+      globalThis.location.href,
+      "http://localhost/",
+      "should NOT redirect when page element exists",
+    );
+    assert.ok(
+      pageWm.classList.contains("active"),
+      "should activate the page element",
+    );
   });
 });
 
@@ -465,7 +611,9 @@ describe("navigation.js — showStaticPage", function () {
 
   it("calls __musicInit if defined", function () {
     var musicCalled = false;
-    globalThis.__musicInit = function () { musicCalled = true; };
+    globalThis.__musicInit = function () {
+      musicCalled = true;
+    };
 
     showStaticPage("about");
 
@@ -480,8 +628,17 @@ describe("navigation.js — showStaticPage", function () {
 describe("navigation.js — hideAllExcept", function () {
   before(function () {
     resetNavState();
-    ["modeSelect", "simplifiedMode", "mainNav", "app", "sidebar", "sidebarOverlay", "mainFooter"]
-      .forEach(function (id) { makeEl(id); });
+    [
+      "modeSelect",
+      "simplifiedMode",
+      "mainNav",
+      "app",
+      "sidebar",
+      "sidebarOverlay",
+      "mainFooter",
+    ].forEach(function (id) {
+      makeEl(id);
+    });
   });
 
   it("hides all except 'app'", function () {
@@ -490,7 +647,11 @@ describe("navigation.js — hideAllExcept", function () {
     assert.equal(_els["modeSelect"].style.display, "none");
     assert.equal(_els["simplifiedMode"].style.display, "none");
     assert.equal(_els["mainNav"].style.display, "none");
-    assert.notEqual(_els["app"].style.display, "none", "app should remain visible");
+    assert.notEqual(
+      _els["app"].style.display,
+      "none",
+      "app should remain visible",
+    );
     assert.equal(_els["sidebar"].style.display, "none");
     assert.equal(_els["sidebarOverlay"].style.display, "none");
     assert.equal(_els["mainFooter"].style.display, "none");
@@ -499,7 +660,11 @@ describe("navigation.js — hideAllExcept", function () {
   it("hides all except 'modeSelect'", function () {
     hideAllExcept("modeSelect");
 
-    assert.notEqual(_els["modeSelect"].style.display, "none", "modeSelect should remain visible");
+    assert.notEqual(
+      _els["modeSelect"].style.display,
+      "none",
+      "modeSelect should remain visible",
+    );
     assert.equal(_els["simplifiedMode"].style.display, "none");
     assert.equal(_els["mainNav"].style.display, "none");
     assert.equal(_els["app"].style.display, "none");
@@ -583,7 +748,9 @@ describe("navigation.js — tab switching", function () {
   it("switchWmTab('embed') shows embed, hides extract, activates tab button", function () {
     var tabBtn = makeEl("tabBtn");
     var btnActivated = false;
-    tabBtn.classList.add = function (c) { if (c === "active") btnActivated = true; };
+    tabBtn.classList.add = function (c) {
+      if (c === "active") btnActivated = true;
+    };
 
     globalThis.document.querySelectorAll = function (sel) {
       if (sel === ".tab-btn[data-wm-tab]") return [tabBtn];
@@ -604,7 +771,9 @@ describe("navigation.js — tab switching", function () {
   it("switchWmTab('extract') shows extract, hides embed", function () {
     var tabBtn = makeEl("tabBtnX");
     var btnActivated = false;
-    tabBtn.classList.add = function (c) { if (c === "active") btnActivated = true; };
+    tabBtn.classList.add = function (c) {
+      if (c === "active") btnActivated = true;
+    };
 
     globalThis.document.querySelectorAll = function (sel) {
       if (sel === ".tab-btn[data-wm-tab]") return [tabBtn];
@@ -708,7 +877,9 @@ describe("navigation.js — tab switching", function () {
     var tabBtn = makeEl("c2paBtnW");
     tabBtn.classList = makeClassList();
     var writeFormCalled = false;
-    globalThis.updateC2paWriteForm = function () { writeFormCalled = true; };
+    globalThis.updateC2paWriteForm = function () {
+      writeFormCalled = true;
+    };
 
     globalThis.document.querySelectorAll = function (sel) {
       if (sel === ".tab-btn[data-c2pa-tab]") return [tabBtn];
@@ -759,20 +930,28 @@ describe("navigation.js — downloadResult", function () {
   it("calls handler returned by getDownloadHandler", function () {
     var calledFormat = null;
     globalThis.getDownloadHandler = function () {
-      return function (f) { calledFormat = f; };
+      return function (f) {
+        calledFormat = f;
+      };
     };
 
     downloadResult("pdf");
 
     assert.equal(calledFormat, "pdf");
 
-    globalThis.getDownloadHandler = function () { return null; };
+    globalThis.getDownloadHandler = function () {
+      return null;
+    };
   });
 
   it("calls downloadFingerprint when no handler", function () {
     var calledFormat = null;
-    globalThis.getDownloadHandler = function () { return null; };
-    globalThis.downloadFingerprint = function (f) { calledFormat = f; };
+    globalThis.getDownloadHandler = function () {
+      return null;
+    };
+    globalThis.downloadFingerprint = function (f) {
+      calledFormat = f;
+    };
 
     downloadResult("json");
 
@@ -799,8 +978,10 @@ describe("navigation.js — handleHashNav", function () {
 
     handleHashNav();
 
-    assert.ok(pageWm.classList.contains("active"),
-      "watermark page should be active after hash nav");
+    assert.ok(
+      pageWm.classList.contains("active"),
+      "watermark page should be active after hash nav",
+    );
   });
 
   it("handles hash #/home", function () {
@@ -823,7 +1004,11 @@ describe("navigation.js — handleHashNav", function () {
     globalThis.location.hash = "";
     globalThis.location.search = "?search=test";
     globalThis.URLSearchParams = function () {
-      return { get: function (k) { return k === "search" ? "test" : null; } };
+      return {
+        get: function (k) {
+          return k === "search" ? "test" : null;
+        },
+      };
     };
     globalThis.setMode = undefined;
     globalThis.siteSearch = function () {};
@@ -831,49 +1016,74 @@ describe("navigation.js — handleHashNav", function () {
     handleHashNav();
 
     // modeSelect should be hidden
-    assert.equal(modeSelect.style.display, "none",
-      "modeSelect should be hidden when setMode is undefined");
+    assert.equal(
+      modeSelect.style.display,
+      "none",
+      "modeSelect should be hidden when setMode is undefined",
+    );
     // body no-scroll should be removed
-    assert.ok(!globalThis.document.body.classList.contains("no-scroll"),
-      "body no-scroll should be removed");
+    assert.ok(
+      !globalThis.document.body.classList.contains("no-scroll"),
+      "body no-scroll should be removed",
+    );
   });
 
   it("calls setMode('professional') when search param, modeSelect visible, and setMode defined", function () {
     _els = {};
     var modeSelect = makeEl("modeSelect", { style: { display: "" } }); // visible
     var setModeCalled = "";
-    globalThis.setMode = function (m) { setModeCalled = m; };
+    globalThis.setMode = function (m) {
+      setModeCalled = m;
+    };
     globalThis.location.search = "?search=test";
     globalThis.URLSearchParams = function () {
-      return { get: function (k) { return k === "search" ? "test" : null; } };
+      return {
+        get: function (k) {
+          return k === "search" ? "test" : null;
+        },
+      };
     };
     globalThis.siteSearch = function () {};
 
     handleHashNav();
 
-    assert.equal(setModeCalled, "professional",
-      "setMode should be called with 'professional'");
+    assert.equal(
+      setModeCalled,
+      "professional",
+      "setMode should be called with 'professional'",
+    );
     // modeSelect should still be visible (setMode handles it)
-    assert.equal(modeSelect.style.display, "",
-      "modeSelect should remain visible (setMode handles display)");
+    assert.equal(
+      modeSelect.style.display,
+      "",
+      "modeSelect should remain visible (setMode handles display)",
+    );
   });
 
   it("does not dismiss mode overlay when modeSelect is already hidden and search param set", function () {
     _els = {};
     var modeSelect = makeEl("modeSelect", { style: { display: "none" } }); // hidden
     var setModeCalled = false;
-    globalThis.setMode = function () { setModeCalled = true; };
+    globalThis.setMode = function () {
+      setModeCalled = true;
+    };
     globalThis.location.search = "?search=test";
     globalThis.URLSearchParams = function () {
-      return { get: function (k) { return k === "search" ? "test" : null; } };
+      return {
+        get: function (k) {
+          return k === "search" ? "test" : null;
+        },
+      };
     };
     globalThis.siteSearch = function () {};
 
     handleHashNav();
 
     // setMode should NOT be called because modeSelect is already hidden
-    assert.ok(!setModeCalled,
-      "setMode should NOT be called when modeSelect is already hidden");
+    assert.ok(
+      !setModeCalled,
+      "setMode should NOT be called when modeSelect is already hidden",
+    );
     assert.equal(modeSelect.style.display, "none");
   });
 
@@ -883,10 +1093,16 @@ describe("navigation.js — handleHashNav", function () {
     var searchInput = makeEl("searchInput", { value: "" });
     var siteSearchCalled = false;
     globalThis.setMode = undefined;
-    globalThis.siteSearch = function () { siteSearchCalled = true; };
+    globalThis.siteSearch = function () {
+      siteSearchCalled = true;
+    };
     globalThis.location.search = "?search=test-query";
     globalThis.URLSearchParams = function () {
-      return { get: function (k) { return k === "search" ? "test-query" : null; } };
+      return {
+        get: function (k) {
+          return k === "search" ? "test-query" : null;
+        },
+      };
     };
 
     handleHashNav();
@@ -894,8 +1110,11 @@ describe("navigation.js — handleHashNav", function () {
     // After 600ms the setTimeout should have fired
     setTimeout(function () {
       try {
-        assert.equal(searchInput.value, "test-query",
-          "searchInput value should be set from query param");
+        assert.equal(
+          searchInput.value,
+          "test-query",
+          "searchInput value should be set from query param",
+        );
         assert.ok(siteSearchCalled, "siteSearch should have been called");
         done();
       } catch (e) {
@@ -938,31 +1157,52 @@ describe("navigation.js — DOMContentLoaded", function () {
     // 3. deferredReplace was set up on pointerdown and keydown
 
     // Verify that pointerdown and keydown listeners exist
-    assert.ok(_listeners["pointerdown"], "pointerdown listener should be registered");
+    assert.ok(
+      _listeners["pointerdown"],
+      "pointerdown listener should be registered",
+    );
     assert.ok(_listeners["keydown"], "keydown listener should be registered");
-    assert.ok(_listeners["pointerdown"].length >= 1,
-      "at least one pointerdown listener should exist");
-    assert.ok(_listeners["keydown"].length >= 1,
-      "at least one keydown listener should exist");
+    assert.ok(
+      _listeners["pointerdown"].length >= 1,
+      "at least one pointerdown listener should exist",
+    );
+    assert.ok(
+      _listeners["keydown"].length >= 1,
+      "at least one keydown listener should exist",
+    );
   });
 
   it("deferredReplace calls history.replaceState on first interaction  (covers lines 425-433)", function () {
     // history.state is null, so deferredReplace should call replaceState
-    var prevPointerdownCount = _listeners["pointerdown"] ? _listeners["pointerdown"].length : 0;
-    var prevKeydownCount = _listeners["keydown"] ? _listeners["keydown"].length : 0;
+    var prevPointerdownCount = _listeners["pointerdown"]
+      ? _listeners["pointerdown"].length
+      : 0;
+    var prevKeydownCount = _listeners["keydown"]
+      ? _listeners["keydown"].length
+      : 0;
 
     // Trigger pointerdown
     triggerEvent("pointerdown", {});
 
     // history.state should now be { modeOverlay: true }
-    assert.ok(globalThis.history.state, "history.state should be set by replaceState");
-    assert.equal(globalThis.history.state.modeOverlay, true,
-      "state.modeOverlay should be true");
+    assert.ok(
+      globalThis.history.state,
+      "history.state should be set by replaceState",
+    );
+    assert.equal(
+      globalThis.history.state.modeOverlay,
+      true,
+      "state.modeOverlay should be true",
+    );
 
     // The listeners should have removed themselves (pointerdown)
-    var newPointerdownCount = _listeners["pointerdown"] ? _listeners["pointerdown"].length : 0;
-    assert.ok(newPointerdownCount < prevPointerdownCount,
-      "pointerdown listener should have been removed after first interaction");
+    var newPointerdownCount = _listeners["pointerdown"]
+      ? _listeners["pointerdown"].length
+      : 0;
+    assert.ok(
+      newPointerdownCount < prevPointerdownCount,
+      "pointerdown listener should have been removed after first interaction",
+    );
   });
 
   it("deferredReplace does not replaceState if history.state.modeOverlay already exists", function () {
@@ -991,7 +1231,7 @@ describe("navigation.js — popstate handler", function () {
     resetNavState();
     globalThis.document.documentElement.dataset = {}; // not standalone
   });
-  
+
   // Helper: create elements that all popstate code paths need
   function ensureCommonEls() {
     // Some branches access modeSelect and simplifiedMode unconditionally
@@ -1017,11 +1257,15 @@ describe("navigation.js — popstate handler", function () {
 
     triggerEvent("popstate", { state: { staticPage: "about" } });
 
-    assert.ok(pageAbout.classList.contains("active"),
-      "static page should have active class");
+    assert.ok(
+      pageAbout.classList.contains("active"),
+      "static page should have active class",
+    );
     // no-scroll should be removed
-    assert.ok(!globalThis.document.body.classList.contains("no-scroll"),
-      "body no-scroll should be removed");
+    assert.ok(
+      !globalThis.document.body.classList.contains("no-scroll"),
+      "body no-scroll should be removed",
+    );
   });
 
   it("falls back to modeSelect when staticPage element does not exist", function () {
@@ -1031,8 +1275,11 @@ describe("navigation.js — popstate handler", function () {
 
     triggerEvent("popstate", { state: { staticPage: "nonexistent" } });
 
-    assert.equal(modeSelect.style.display, "",
-      "modeSelect should be shown when static page element is missing");
+    assert.equal(
+      modeSelect.style.display,
+      "",
+      "modeSelect should be shown when static page element is missing",
+    );
   });
 
   it("shows mode overlay when state is null or has modeOverlay, and calls resetProfessionalForms", function () {
@@ -1040,16 +1287,22 @@ describe("navigation.js — popstate handler", function () {
     var modeSelect = makeEl("modeSelect");
     var sidebarOverlay = makeEl("sidebarOverlay");
     var resetCalled = false;
-    globalThis.resetProfessionalForms = function () { resetCalled = true; };
+    globalThis.resetProfessionalForms = function () {
+      resetCalled = true;
+    };
 
     triggerEvent("popstate", { state: null });
 
-    assert.ok(globalThis.document.body.classList.contains("no-scroll"),
-      "body should have no-scroll for mode overlay");
-    assert.equal(modeSelect.style.display, "",
-      "modeSelect should be visible");
-    assert.equal(sidebarOverlay.style.display, "none",
-      "sidebarOverlay should be hidden");
+    assert.ok(
+      globalThis.document.body.classList.contains("no-scroll"),
+      "body should have no-scroll for mode overlay",
+    );
+    assert.equal(modeSelect.style.display, "", "modeSelect should be visible");
+    assert.equal(
+      sidebarOverlay.style.display,
+      "none",
+      "sidebarOverlay should be hidden",
+    );
     assert.ok(resetCalled, "resetProfessionalForms should have been called");
 
     delete globalThis.resetProfessionalForms;
@@ -1085,8 +1338,11 @@ describe("navigation.js — popstate handler", function () {
     assert.equal(_els["modeSelect"].style.display, "none");
     assert.equal(_els["sidebarOverlay"].style.display, "none");
     // simplifiedMode should be visible
-    assert.notEqual(_els["simplifiedMode"].style.display, "none",
-      "simplifiedMode should be visible");
+    assert.notEqual(
+      _els["simplifiedMode"].style.display,
+      "none",
+      "simplifiedMode should be visible",
+    );
     // home page should be active
     assert.ok(pageHome.classList.contains("active"));
   });
@@ -1106,16 +1362,30 @@ describe("navigation.js — popstate handler", function () {
     triggerEvent("popstate", { state: { modeSet: "professional" } });
 
     assert.ok(!globalThis.document.body.classList.contains("no-scroll"));
-    assert.equal(_els["modeSelect"].style.display, "none",
-      "modeSelect should be hidden");
-    assert.equal(_els["sidebarOverlay"].style.display, "none",
-      "sidebarOverlay should be hidden");
+    assert.equal(
+      _els["modeSelect"].style.display,
+      "none",
+      "modeSelect should be hidden",
+    );
+    assert.equal(
+      _els["sidebarOverlay"].style.display,
+      "none",
+      "sidebarOverlay should be hidden",
+    );
     // simplifiedMode should be hidden for professional mode
     assert.equal(_els["simplifiedMode"].style.display, "none");
     // app, sidebar, footer should be visible
     assert.notEqual(_els["app"].style.display, "none", "app should be visible");
-    assert.notEqual(_els["sidebar"].style.display, "none", "sidebar should be visible");
-    assert.notEqual(_els["mainFooter"].style.display, "none", "footer should be visible");
+    assert.notEqual(
+      _els["sidebar"].style.display,
+      "none",
+      "sidebar should be visible",
+    );
+    assert.notEqual(
+      _els["mainFooter"].style.display,
+      "none",
+      "footer should be visible",
+    );
     assert.ok(pageHome.classList.contains("active"));
   });
 
@@ -1127,7 +1397,10 @@ describe("navigation.js — popstate handler", function () {
     var navLink = makeEl("navLink", { classList: makeClassList() });
     navLink.dataset = { page: "watermark" };
 
-    globalThis.document.querySelectorAll = makeQuerySelectorAll([pageWm], [navLink]);
+    globalThis.document.querySelectorAll = makeQuerySelectorAll(
+      [pageWm],
+      [navLink],
+    );
     globalThis.document.querySelector = function (sel) {
       if (sel.indexOf('data-page="watermark"') !== -1) return navLink;
       return null;
@@ -1135,10 +1408,14 @@ describe("navigation.js — popstate handler", function () {
 
     triggerEvent("popstate", { state: { page: "watermark" } });
 
-    assert.ok(pageWm.classList.contains("active"),
-      "watermark page should be active");
-    assert.ok(navLink.classList.contains("active"),
-      "sidebar nav link should be active");
+    assert.ok(
+      pageWm.classList.contains("active"),
+      "watermark page should be active",
+    );
+    assert.ok(
+      navLink.classList.contains("active"),
+      "sidebar nav link should be active",
+    );
   });
 
   it("falls back to mode overlay when state.page element does not exist", function () {
@@ -1148,8 +1425,11 @@ describe("navigation.js — popstate handler", function () {
 
     triggerEvent("popstate", { state: { page: "nonexistent" } });
 
-    assert.equal(modeSelect.style.display, "",
-      "modeSelect should be shown when page element is missing");
+    assert.equal(
+      modeSelect.style.display,
+      "",
+      "modeSelect should be shown when page element is missing",
+    );
   });
 
   it("restores professional mode when page is inside #app but mainNav is hidden", function () {
@@ -1203,10 +1483,14 @@ describe("navigation.js — pageshow handler", function () {
 
     triggerEvent("pageshow", { persisted: true });
 
-    assert.ok(!globalThis.document.body.classList.contains("no-scroll"),
-      "no-scroll should be removed");
-    assert.ok(loader.classList.contains("page-loader--hidden"),
-      "page-loader should have page-loader--hidden class");
+    assert.ok(
+      !globalThis.document.body.classList.contains("no-scroll"),
+      "no-scroll should be removed",
+    );
+    assert.ok(
+      loader.classList.contains("page-loader--hidden"),
+      "page-loader should have page-loader--hidden class",
+    );
   });
 
   it("handles standalone MPA: re-activates page section", function () {
@@ -1218,8 +1502,10 @@ describe("navigation.js — pageshow handler", function () {
 
     triggerEvent("pageshow", { persisted: true });
 
-    assert.ok(pageWm.classList.contains("active"),
-      "standalone page should be re-activated");
+    assert.ok(
+      pageWm.classList.contains("active"),
+      "standalone page should be re-activated",
+    );
   });
 
   it("handles SPA: restores page from history.state.page", function () {
@@ -1243,10 +1529,14 @@ describe("navigation.js — pageshow handler", function () {
 
     triggerEvent("pageshow", { persisted: true });
 
-    assert.ok(pageFp.classList.contains("active"),
-      "fingerprint page should be active from history state");
-    assert.ok(navLink.classList.contains("active"),
-      "sidebar link should be active");
+    assert.ok(
+      pageFp.classList.contains("active"),
+      "fingerprint page should be active from history state",
+    );
+    assert.ok(
+      navLink.classList.contains("active"),
+      "sidebar link should be active",
+    );
   });
 
   it("handles SPA: restores static page from history.state.staticPage", function () {
@@ -1263,8 +1553,10 @@ describe("navigation.js — pageshow handler", function () {
 
     triggerEvent("pageshow", { persisted: true });
 
-    assert.ok(pageAbout.classList.contains("active"),
-      "about static page should be active");
+    assert.ok(
+      pageAbout.classList.contains("active"),
+      "about static page should be active",
+    );
   });
 
   it("handles SPA: shows modeSelect when state is null or has modeOverlay", function () {
@@ -1274,12 +1566,17 @@ describe("navigation.js — pageshow handler", function () {
 
     globalThis.document.documentElement.dataset = {};
     globalThis.history.state = { modeOverlay: true };
-    globalThis.document.querySelectorAll = function () { return []; };
+    globalThis.document.querySelectorAll = function () {
+      return [];
+    };
 
     triggerEvent("pageshow", { persisted: true });
 
-    assert.equal(modeSelect.style.display, "",
-      "modeSelect should be displayed for modeOverlay state");
+    assert.equal(
+      modeSelect.style.display,
+      "",
+      "modeSelect should be displayed for modeOverlay state",
+    );
 
     // Also test with null state
     _els = {};
@@ -1289,8 +1586,11 @@ describe("navigation.js — pageshow handler", function () {
 
     triggerEvent("pageshow", { persisted: true });
 
-    assert.equal(modeSelect2.style.display, "",
-      "modeSelect should be displayed for null state");
+    assert.equal(
+      modeSelect2.style.display,
+      "",
+      "modeSelect should be displayed for null state",
+    );
   });
 });
 

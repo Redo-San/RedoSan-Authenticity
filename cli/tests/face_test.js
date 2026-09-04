@@ -6,7 +6,12 @@ const vm = require("vm");
 
 // Polyfills for GPL check
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
 
 // Load face_engine.js
 const engineSrc = fs.readFileSync(
@@ -14,7 +19,12 @@ const engineSrc = fs.readFileSync(
   "utf8",
 );
 vm.runInThisContext(engineSrc, {
-  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_engine.js"),
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_engine.js",
+  ),
 });
 
 // ── Helpers ──
@@ -108,17 +118,11 @@ describe("FaceEngine — cosineSimilarity", () => {
   });
 
   it("should return -1 when a is null", () => {
-    assert.equal(
-      FaceEngine.cosineSimilarity(null, makeDescriptor([0.5])),
-      -1,
-    );
+    assert.equal(FaceEngine.cosineSimilarity(null, makeDescriptor([0.5])), -1);
   });
 
   it("should return -1 when b is null", () => {
-    assert.equal(
-      FaceEngine.cosineSimilarity(makeDescriptor([0.5]), null),
-      -1,
-    );
+    assert.equal(FaceEngine.cosineSimilarity(makeDescriptor([0.5]), null), -1);
   });
 
   it("should return 0 for zero-magnitude vectors", () => {
@@ -229,12 +233,9 @@ describe("FaceEngine — loadModels with mock Human", () => {
   it("should throw if Human is not available on globalThis", async () => {
     delete globalThis.Human;
     const engine = new FaceEngine();
-    await assert.rejects(
-      async function () {
-        await engine.loadModels();
-      },
-      /@vladmandic\/human is not loaded/,
-    );
+    await assert.rejects(async function () {
+      await engine.loadModels();
+    }, /@vladmandic\/human is not loaded/);
   });
 
   it("should fall back to CPU if WebGL context unavailable (cover line 42-44)", async () => {
@@ -302,12 +303,9 @@ describe("FaceEngine — loadModels with mock Human", () => {
     globalThis.Human = AlwaysFailingHuman;
 
     const engine = new FaceEngine();
-    await assert.rejects(
-      async function () {
-        await engine.loadModels();
-      },
-      /model load failed/,
-    );
+    await assert.rejects(async function () {
+      await engine.loadModels();
+    }, /model load failed/);
     assert.equal(engine.isLoaded(), false);
   });
 
@@ -342,7 +340,11 @@ describe("FaceEngine — detectFaces", () => {
     globalThis.Human = MockHuman;
     globalThis.document = {
       createElement: function () {
-        return { getContext: function () { return {}; } };
+        return {
+          getContext: function () {
+            return {};
+          },
+        };
       },
     };
   });
@@ -354,12 +356,9 @@ describe("FaceEngine — detectFaces", () => {
 
   it("should throw if models not loaded (cover line 97)", async () => {
     const engine = new FaceEngine();
-    await assert.rejects(
-      async function () {
-        await engine.detectFaces({});
-      },
-      /Models not loaded/,
-    );
+    await assert.rejects(async function () {
+      await engine.detectFaces({});
+    }, /Models not loaded/);
   });
 
   it("should return empty array when no face detected", async () => {
@@ -451,7 +450,11 @@ describe("FaceEngine — extractDescriptor", () => {
     globalThis.Human = MockHuman;
     globalThis.document = {
       createElement: function () {
-        return { getContext: function () { return {}; } };
+        return {
+          getContext: function () {
+            return {};
+          },
+        };
       },
     };
   });
@@ -478,7 +481,10 @@ describe("FaceEngine — extractDescriptor", () => {
   it("should return null when no face matches position (cover line 126)", async () => {
     const engine = new FaceEngine();
     await engine.loadModels();
-    const desc = await engine.extractDescriptor({}, { box: { x: 999, y: 999 } });
+    const desc = await engine.extractDescriptor(
+      {},
+      { box: { x: 999, y: 999 } },
+    );
     assert.equal(desc, null);
   });
 });

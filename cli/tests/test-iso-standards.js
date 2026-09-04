@@ -37,12 +37,14 @@ global.ImageData = class ImageData {
 };
 global.crypto = {
   getRandomValues: (arr) => {
-    for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+    for (let i = 0; i < arr.length; i++)
+      arr[i] = Math.floor(Math.random() * 256);
     return arr;
   },
   digest: (algo, data) => {
     const hash = new Uint8Array(32);
-    for (let i = 0; i < hash.length; i++) hash[i] = Math.floor(Math.random() * 256);
+    for (let i = 0; i < hash.length; i++)
+      hash[i] = Math.floor(Math.random() * 256);
     return Promise.resolve(hash.buffer);
   },
 };
@@ -63,10 +65,7 @@ for (const file of irisFiles) {
 
 // ── Load all Face Standards modules ──
 const faceDir = path.join(__dirname, "..", "..", "Face_Biometric");
-const faceFiles = [
-  "face_standards.js",
-  "face_performance.js",
-];
+const faceFiles = ["face_standards.js", "face_performance.js"];
 
 for (const file of faceFiles) {
   const src = fs.readFileSync(path.join(faceDir, file), "utf8");
@@ -82,7 +81,7 @@ describe("IrisStandards", () => {
     const imageData = new ImageData(
       new Uint8ClampedArray(640 * 480 * 4),
       640,
-      480
+      480,
     );
     const record = IrisStandards.createRecord({
       image: imageData,
@@ -150,7 +149,7 @@ describe("IrisStandards", () => {
     const imageData = new ImageData(
       new Uint8ClampedArray(100 * 100 * 4),
       100,
-      100
+      100,
     );
     const record = IrisStandards.createRecord({
       image: imageData,
@@ -291,7 +290,11 @@ describe("IrisTemplateProtection", () => {
     for (let i = 0; i < 256; i++) code[i] = i % 2;
 
     const userKey = new Uint8Array(32);
-    const result = await IrisTemplateProtection.createCancelable(code, userKey, 1);
+    const result = await IrisTemplateProtection.createCancelable(
+      code,
+      userKey,
+      1,
+    );
 
     assert.ok(result.template instanceof Uint8Array);
     assert.equal(result.template.length, 256);
@@ -346,7 +349,10 @@ describe("IrisPerformance", () => {
   });
 
   it("should evaluate system performance", () => {
-    const genuine = Array.from({ length: 200 }, () => 0.7 + Math.random() * 0.3);
+    const genuine = Array.from(
+      { length: 200 },
+      () => 0.7 + Math.random() * 0.3,
+    );
     const impostor = Array.from({ length: 2000 }, () => Math.random() * 0.4);
 
     const report = IrisPerformance.evaluate({
@@ -388,7 +394,7 @@ describe("FaceStandards", () => {
     const imageData = new ImageData(
       new Uint8ClampedArray(320 * 480 * 4),
       320,
-      480
+      480,
     );
     const record = FaceStandards.createRecord({
       image: imageData,
@@ -448,7 +454,7 @@ describe("FaceStandards", () => {
     const imageData = new ImageData(
       new Uint8ClampedArray(320 * 480 * 4),
       320,
-      480
+      480,
     );
     const record = FaceStandards.createRecord({
       image: imageData,
@@ -506,8 +512,16 @@ describe("FacePerformance", () => {
   it("should analyze pose performance", () => {
     const result = FacePerformance.analyzePose({
       poseData: [
-        { pose: "frontal", genuineScores: [0.9, 0.92, 0.95, 0.88, 0.91], impostorScores: [0.1, 0.12, 0.15, 0.08, 0.11] },
-        { pose: "left", genuineScores: [0.6, 0.65, 0.7, 0.55, 0.62], impostorScores: [0.4, 0.45, 0.5, 0.38, 0.42] },
+        {
+          pose: "frontal",
+          genuineScores: [0.9, 0.92, 0.95, 0.88, 0.91],
+          impostorScores: [0.1, 0.12, 0.15, 0.08, 0.11],
+        },
+        {
+          pose: "left",
+          genuineScores: [0.6, 0.65, 0.7, 0.55, 0.62],
+          impostorScores: [0.4, 0.45, 0.5, 0.38, 0.42],
+        },
       ],
     });
 
@@ -516,7 +530,10 @@ describe("FacePerformance", () => {
   });
 
   it("should evaluate comprehensive performance", () => {
-    const genuine = Array.from({ length: 200 }, () => 0.7 + Math.random() * 0.3);
+    const genuine = Array.from(
+      { length: 200 },
+      () => 0.7 + Math.random() * 0.3,
+    );
     const impostor = Array.from({ length: 2000 }, () => Math.random() * 0.4);
 
     const report = FacePerformance.evaluate({
@@ -547,7 +564,7 @@ describe("Integration", () => {
     const imageData = new ImageData(
       new Uint8ClampedArray(640 * 480 * 4),
       640,
-      480
+      480,
     );
     const record = IrisStandards.createRecord({
       image: imageData,
@@ -580,7 +597,10 @@ describe("Integration", () => {
     const biohash = IrisTemplateProtection.biohash(code, matrix, 64);
 
     // 6. Evaluate performance
-    const genuine = Array.from({ length: 100 }, () => 0.7 + Math.random() * 0.3);
+    const genuine = Array.from(
+      { length: 100 },
+      () => 0.7 + Math.random() * 0.3,
+    );
     const impostor = Array.from({ length: 1000 }, () => Math.random() * 0.4);
     const perf = IrisPerformance.evaluate({
       genuineScores: genuine,
@@ -599,7 +619,7 @@ describe("Integration", () => {
     const imageData = new ImageData(
       new Uint8ClampedArray(320 * 480 * 4),
       320,
-      480
+      480,
     );
     const record = FaceStandards.createRecord({
       image: imageData,
@@ -619,7 +639,10 @@ describe("Integration", () => {
     const template = FaceStandards.createTemplate(embedding);
 
     // 4. Evaluate performance
-    const genuine = Array.from({ length: 100 }, () => 0.7 + Math.random() * 0.3);
+    const genuine = Array.from(
+      { length: 100 },
+      () => 0.7 + Math.random() * 0.3,
+    );
     const impostor = Array.from({ length: 1000 }, () => Math.random() * 0.4);
     const perf = FacePerformance.evaluate({
       genuineScores: genuine,

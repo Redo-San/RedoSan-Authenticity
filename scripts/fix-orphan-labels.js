@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-var fs = require('node:fs');
-var path = require('node:path');
+var fs = require("node:fs");
+var path = require("node:path");
 
-var ROOT = path.join(__dirname, '..');
-var SKIP_DIRS = ['node_modules', 'vendor', '.git', 'cli'];
+var ROOT = path.join(__dirname, "..");
+var SKIP_DIRS = ["node_modules", "vendor", ".git", "cli"];
 var FIXED_FILES = [];
 
 /**
@@ -32,7 +32,13 @@ function findOrphanLabels(content) {
     var hasFor = /for\s*=\s*["']([^"']*)["']/i.test(attrs);
     var wrapsControl = /<(?:input|select|textarea)\b/i.test(inner);
     if (!hasFor && !wrapsControl) {
-      orphans.push({ full: m[0], attrs: attrs, inner: inner, start: m.index, end: re.lastIndex });
+      orphans.push({
+        full: m[0],
+        attrs: attrs,
+        inner: inner,
+        start: m.index,
+        end: re.lastIndex,
+      });
     }
   }
   return orphans;
@@ -64,8 +70,10 @@ function fixOrphans(content, filePath) {
     var o = orphans[i];
     var nextId = findNextInputId(content, o.end);
     if (nextId) {
-      var newLabel = '<label for="' + nextId + '"' + o.attrs + '>' + o.inner + '</label>';
-      content = content.substring(0, o.start) + newLabel + content.substring(o.end);
+      var newLabel =
+        '<label for="' + nextId + '"' + o.attrs + ">" + o.inner + "</label>";
+      content =
+        content.substring(0, o.start) + newLabel + content.substring(o.end);
       fixed = true;
       console.log('  Fixed: label → for="' + nextId + '" at offset ' + o.start);
     }
@@ -82,26 +90,28 @@ function walkDir(dir) {
   var entries = fs.readdirSync(dir, { withFileTypes: true });
   for (var i = 0; i < entries.length; i++) {
     var e = entries[i];
-    if (e.name.startsWith('.')) continue;
+    if (e.name.startsWith(".")) continue;
     var full = path.join(dir, e.name);
     if (e.isDirectory()) {
       walkDir(full);
     } else if (e.isFile() && shouldProcess(full)) {
-      var content = fs.readFileSync(full, 'utf-8');
+      var content = fs.readFileSync(full, "utf-8");
       var fixed = fixOrphans(content, full);
       if (fixed !== content) {
-        fs.writeFileSync(full, fixed, 'utf-8');
-        console.log('Updated: ' + path.relative(ROOT, full));
+        fs.writeFileSync(full, fixed, "utf-8");
+        console.log("Updated: " + path.relative(ROOT, full));
       }
     }
   }
 }
 
-console.log('Scanning for orphan labels...');
+console.log("Scanning for orphan labels...");
 walkDir(ROOT);
 if (FIXED_FILES.length === 0) {
-  console.log('No orphan labels found.');
+  console.log("No orphan labels found.");
 } else {
-  console.log('\nFixed ' + FIXED_FILES.length + ' file(s):');
-  FIXED_FILES.forEach(function(f) { console.log('  ' + path.relative(ROOT, f)); });
+  console.log("\nFixed " + FIXED_FILES.length + " file(s):");
+  FIXED_FILES.forEach(function (f) {
+    console.log("  " + path.relative(ROOT, f));
+  });
 }

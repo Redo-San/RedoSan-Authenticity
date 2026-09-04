@@ -18,7 +18,10 @@ const didSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Decentralized_Identity_DID", "did.js"),
   "utf8",
 );
-const funcSrc = didSrc.slice(0, didSrc.lastIndexOf("document.addEventListener"));
+const funcSrc = didSrc.slice(
+  0,
+  didSrc.lastIndexOf("document.addEventListener"),
+);
 const didFns = vm.runInThisContext(
   funcSrc +
     `;
@@ -39,7 +42,12 @@ const cryptoSrc = fs.readFileSync(
   "utf8",
 );
 vm.runInThisContext(cryptoSrc, {
-  filename: path.resolve(__dirname, "../..", "Face_Biometric", "face_crypto.js"),
+  filename: path.resolve(
+    __dirname,
+    "../..",
+    "Face_Biometric",
+    "face_crypto.js",
+  ),
 });
 const vcSrc = fs.readFileSync(
   path.join(__dirname, "..", "..", "Face_Biometric", "face_vc.js"),
@@ -58,8 +66,8 @@ async function verifyWithDID(payload, proofValueB64, cryptosuite) {
     cryptosuite === "ecdsa-rdfc-2019"
       ? "P-256"
       : cryptosuite === "eddsa-rdfc-2022"
-        ? "Ed25519"
-        : "RSA",
+      ? "Ed25519"
+      : "RSA",
   );
   // signature made with a different key must fail; see signVerifyPair below
   return false;
@@ -67,9 +75,17 @@ async function verifyWithDID(payload, proofValueB64, cryptosuite) {
 
 describe("FaceVC — build", () => {
   it("should build a credential with the W3C v2 context and types", () => {
-    const vc = FaceVC.build({ did: "did:key:z6Mkexample", descriptorHash: "ab".repeat(32), embeddingVersion: "human-hse", faceCount: 1 });
+    const vc = FaceVC.build({
+      did: "did:key:z6Mkexample",
+      descriptorHash: "ab".repeat(32),
+      embeddingVersion: "human-hse",
+      faceCount: 1,
+    });
     assert.deepEqual(vc["@context"], ["https://www.w3.org/ns/credentials/v2"]);
-    assert.deepEqual(vc.type, ["VerifiableCredential", "RedoSanFaceBiometricCredential"]);
+    assert.deepEqual(vc.type, [
+      "VerifiableCredential",
+      "RedoSanFaceBiometricCredential",
+    ]);
     assert.equal(vc.issuer, "did:key:z6Mkexample");
     assert.ok(!isNaN(Date.parse(vc.validFrom)));
     assert.equal(vc.issuanceDate, undefined);
@@ -105,23 +121,40 @@ describe("FaceVC — build", () => {
 describe("FaceVC — canonicalString", () => {
   it("should sort keys deterministically", () => {
     assert.equal(FaceVC.canonicalString({ b: 1, a: 2 }), '{"a":2,"b":1}');
-    assert.equal(FaceVC.canonicalString({ x: { z: 1, y: 2 }, w: 3 }), '{"w":3,"x":{"y":2,"z":1}}');
+    assert.equal(
+      FaceVC.canonicalString({ x: { z: 1, y: 2 }, w: 3 }),
+      '{"w":3,"x":{"y":2,"z":1}}',
+    );
   });
 });
 
 describe("FaceVC — sign/verify (Ed25519)", () => {
   it("should sign with a DID keypair and verify with the DID verification API", async () => {
     const kp = await makeKeypair("Ed25519");
-    const vc = FaceVC.build({ did: kp.did, descriptorHash: "cafebabe", embeddingVersion: "human-hse", faceCount: 1 });
+    const vc = FaceVC.build({
+      did: kp.did,
+      descriptorHash: "cafebabe",
+      embeddingVersion: "human-hse",
+      faceCount: 1,
+    });
     await FaceVC.sign(kp, vc);
     assert.equal(vc.proof.type, "DataIntegrityProof");
     assert.equal(vc.proof.cryptosuite, "eddsa-rdfc-2022");
     assert.equal(vc.proof.proofPurpose, "assertionMethod");
     assert.equal(vc.proof.verificationMethod, kp.did + "#" + kp.did.slice(8));
     assert.ok(vc.proof.proofValue.length > 0);
-    const payload = FaceVC.canonicalString({ issuer: vc.issuer, validFrom: vc.validFrom, credentialSubject: vc.credentialSubject });
+    const payload = FaceVC.canonicalString({
+      issuer: vc.issuer,
+      validFrom: vc.validFrom,
+      credentialSubject: vc.credentialSubject,
+    });
     const pubKey = await didFns.didImportVerifyKey(vc.issuer);
-    const ok = await didFns.didVerify(pubKey, FaceCrypto.base64ToBytes(vc.proof.proofValue), payload, "Ed25519");
+    const ok = await didFns.didVerify(
+      pubKey,
+      FaceCrypto.base64ToBytes(vc.proof.proofValue),
+      payload,
+      "Ed25519",
+    );
     assert.equal(ok, true);
   });
 
@@ -129,10 +162,18 @@ describe("FaceVC — sign/verify (Ed25519)", () => {
     const kp = await makeKeypair("Ed25519");
     const vc = FaceVC.build({ did: kp.did, descriptorHash: "beef" });
     await FaceVC.sign(kp, vc);
-    const res = await FaceVC.verify(vc, async (payload, proofValueB64, suite) => {
-      const pubKey = await didFns.didImportVerifyKey(vc.issuer);
-      return didFns.didVerify(pubKey, FaceCrypto.base64ToBytes(proofValueB64), payload, "Ed25519");
-    });
+    const res = await FaceVC.verify(
+      vc,
+      async (payload, proofValueB64, suite) => {
+        const pubKey = await didFns.didImportVerifyKey(vc.issuer);
+        return didFns.didVerify(
+          pubKey,
+          FaceCrypto.base64ToBytes(proofValueB64),
+          payload,
+          "Ed25519",
+        );
+      },
+    );
     assert.deepEqual(res, { valid: true });
   });
 
@@ -143,7 +184,12 @@ describe("FaceVC — sign/verify (Ed25519)", () => {
     vc.credentialSubject.descriptorHash = "bbbb";
     const res = await FaceVC.verify(vc, async (payload, proofValueB64) => {
       const pubKey = await didFns.didImportVerifyKey(vc.issuer);
-      return didFns.didVerify(pubKey, FaceCrypto.base64ToBytes(proofValueB64), payload, "Ed25519");
+      return didFns.didVerify(
+        pubKey,
+        FaceCrypto.base64ToBytes(proofValueB64),
+        payload,
+        "Ed25519",
+      );
     });
     assert.equal(res.valid, false);
   });
@@ -160,7 +206,10 @@ describe("FaceVC — sign/verify (Ed25519)", () => {
     assert.equal((await FaceVC.verify(noType, verifyWithDID)).valid, false);
     const wrongSubject = JSON.parse(JSON.stringify(vc));
     wrongSubject.credentialSubject.id = "did:key:someone-else";
-    assert.equal((await FaceVC.verify(wrongSubject, verifyWithDID)).valid, false);
+    assert.equal(
+      (await FaceVC.verify(wrongSubject, verifyWithDID)).valid,
+      false,
+    );
     const noProof = JSON.parse(JSON.stringify(vc));
     delete noProof.proof;
     assert.equal((await FaceVC.verify(noProof, verifyWithDID)).valid, false);
@@ -184,14 +233,26 @@ describe("FaceVC — sign/verify (Ed25519)", () => {
       type: ["VerifiableCredential", "RedoSanFaceBiometricCredential"],
       issuer: kp.did,
       issuanceDate: new Date().toISOString(),
-      credentialSubject: { id: kp.did, descriptorHash: "deadbeef", descriptorHashAlg: "sha-256" },
+      credentialSubject: {
+        id: kp.did,
+        descriptorHash: "deadbeef",
+        descriptorHashAlg: "sha-256",
+      },
     };
     await FaceVC.sign(kp, vc);
     assert.equal(vc.proof.proofValue.length > 0, true);
-    const res = await FaceVC.verify(vc, async (payload, proofValueB64, suite) => {
-      const pubKey = await didFns.didImportVerifyKey(vc.issuer);
-      return didFns.didVerify(pubKey, FaceCrypto.base64ToBytes(proofValueB64), payload, "Ed25519");
-    });
+    const res = await FaceVC.verify(
+      vc,
+      async (payload, proofValueB64, suite) => {
+        const pubKey = await didFns.didImportVerifyKey(vc.issuer);
+        return didFns.didVerify(
+          pubKey,
+          FaceCrypto.base64ToBytes(proofValueB64),
+          payload,
+          "Ed25519",
+        );
+      },
+    );
     assert.deepEqual(res, { valid: true });
   });
 

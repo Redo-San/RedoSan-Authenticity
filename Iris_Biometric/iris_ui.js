@@ -202,6 +202,10 @@ function _irisRaf() {
  * @param msg
  */
 function irisSetStatus(id, msg) {
+  // Use sophisticated version from index.html if available (has color coding)
+  if (typeof window.irisSetStatusAdvanced === "function") {
+    return window.irisSetStatusAdvanced(id, msg);
+  }
   var el = document.getElementById(id);
   if (el) el.textContent = msg;
 }
@@ -1142,7 +1146,7 @@ async function runIrisPipeline(src) {
     // templates remain decryptable on later runs).
     pass = _irisGetVaultPass();
     autoPass = "";
-    salt = FaceCrypto.generateSalt(16);
+    salt = _irisGetVaultSalt();
     key = await FaceCrypto.deriveKey(pass, salt);
     irisStorage.setVaultKey(key);
 
@@ -1265,6 +1269,19 @@ async function runIrisPipeline(src) {
   } finally {
     irisProgressHide();
     setIrisStage(null);
+  }
+}
+
+/** Stable per-device vault salt (localStorage-backed, auto-created). */
+function _irisGetVaultSalt() {
+  try {
+    var s = localStorage.getItem("iris_vault_salt");
+    if (s) return s;
+    var newSalt = FaceCrypto.generateSalt(16);
+    localStorage.setItem("iris_vault_salt", newSalt);
+    return newSalt;
+  } catch {
+    return FaceCrypto.generateSalt(16);
   }
 }
 

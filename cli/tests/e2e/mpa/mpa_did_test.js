@@ -1,7 +1,13 @@
 var { describe, it, before, after } = require("node:test");
 var assert = require("node:assert/strict");
 var { chromium } = require("playwright");
-var { ensureServer, openPage, checkPageLoad, checkNoErrors , closePage } = require("../mpa_helpers");
+var {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 
 var PAGE_ID = "did";
 var browser;
@@ -29,8 +35,12 @@ describe("MPA — DID Identity", function () {
   it("should have key form elements", async function () {
     var { ctx, page } = await openPage(browser, PAGE_ID);
     try {
-      var hasGenBtn = await page.evaluate(function () { return !!document.getElementById("did-gen-btn"); });
-      var hasAlgo = await page.evaluate(function () { return !!document.getElementById("did-algo-select"); });
+      var hasGenBtn = await page.evaluate(function () {
+        return !!document.getElementById("did-gen-btn");
+      });
+      var hasAlgo = await page.evaluate(function () {
+        return !!document.getElementById("did-algo-select");
+      });
       assert.ok(hasGenBtn, "Generate button should exist");
       assert.ok(hasAlgo, "Algorithm select should exist");
     } finally {

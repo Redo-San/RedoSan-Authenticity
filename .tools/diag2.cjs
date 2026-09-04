@@ -1,7 +1,9 @@
 const { chromium } = require("playwright");
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1350, height: 940 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1350, height: 940 },
+  });
   const pg = await ctx.newPage();
   await pg.addInitScript(() => {
     try {
@@ -9,7 +11,10 @@ const { chromium } = require("playwright");
       const obs = new MutationObserver((muts) => {
         const foot = () => document.getElementById("mainFooter");
         for (const m of muts) {
-          if (m.target === foot() || (m.target && m.target.parentElement === foot())) {
+          if (
+            m.target === foot() ||
+            (m.target && m.target.parentElement === foot())
+          ) {
             window.__mut.push({
               t: Math.round(performance.now()),
               type: m.type,
@@ -41,7 +46,9 @@ const { chromium } = require("playwright");
       window.__initErr = String(e);
     }
   });
-  await pg.goto("http://localhost:8080/timestamp/index.html", { waitUntil: "load" });
+  await pg.goto("http://localhost:8080/timestamp/index.html", {
+    waitUntil: "load",
+  });
   await pg.waitForTimeout(2500);
   const r = await pg.evaluate(() => ({
     initOk: window.__initOk,
@@ -49,7 +56,8 @@ const { chromium } = require("playwright");
     cls: window.__cls,
     clsRaw: window.__clsRaw,
     mut: (window.__mut || []).slice(0, 8),
-    footerDisplay: getComputedStyle(document.getElementById("mainFooter")).display,
+    footerDisplay: getComputedStyle(document.getElementById("mainFooter"))
+      .display,
     footerH: document.getElementById("mainFooter").offsetHeight,
   }));
   console.log(JSON.stringify(r, null, 1));

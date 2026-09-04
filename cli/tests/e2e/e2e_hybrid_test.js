@@ -41,7 +41,9 @@ describe("Hybrid Architecture — Initial Load", () => {
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
-    const pageCount = await page.evaluate(() => document.querySelectorAll("#app > .page").length);
+    const pageCount = await page.evaluate(
+      () => document.querySelectorAll("#app > .page").length,
+    );
     assert.equal(pageCount, 17, "#app should have 17 pre-loaded page sections");
     await ctx.close();
   });
@@ -100,7 +102,9 @@ describe("Hybrid Architecture — Professional Mode Entry", () => {
     await page.waitForTimeout(1500);
     // Click the Professional Mode card (MPA transition to home page)
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -109,7 +113,10 @@ describe("Hybrid Architecture — Professional Mode Entry", () => {
       return el && el.style.display !== "none";
     });
     const url = page.url();
-    assert.ok(url.includes("/Style/pages/home/index.html"), `URL should be MPA home: ${url}`);
+    assert.ok(
+      url.includes("/Style/pages/home/index.html"),
+      `URL should be MPA home: ${url}`,
+    );
     assert.ok(navVisible, "Main nav should be visible");
     await ctx.close();
   });
@@ -121,7 +128,9 @@ describe("Hybrid Architecture — Professional Mode Entry", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -143,7 +152,9 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
     await page.waitForTimeout(1500);
     // Enter professional mode first
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -159,7 +170,9 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
     });
     assert.equal(active, "page-watermark", "Should have watermark page active");
     // Verify tool-specific elements exist
-    const hasTool = await page.evaluate(() => !!document.getElementById("wm-type"));
+    const hasTool = await page.evaluate(
+      () => !!document.getElementById("wm-type"),
+    );
     assert.ok(hasTool, "Watermark tool select should exist");
     await ctx.close();
   });
@@ -171,12 +184,16 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
-      const link = document.querySelector('#sidebar a[data-page="fingerprint"]');
+      const link = document.querySelector(
+        '#sidebar a[data-page="fingerprint"]',
+      );
       if (link) link.click();
     });
     await page.waitForTimeout(2000);
@@ -186,7 +203,10 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
     });
     assert.equal(active, "page-fingerprint");
     const url = page.url();
-    assert.ok(url.includes("/Style/pages/fingerprint/index.html"), `URL should be MPA fingerprint page: ${url}`);
+    assert.ok(
+      url.includes("/Style/pages/fingerprint/index.html"),
+      `URL should be MPA fingerprint page: ${url}`,
+    );
     await ctx.close();
   });
 
@@ -197,7 +217,9 @@ describe("Hybrid Architecture — Navigation Between Tools", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -233,7 +255,9 @@ describe("Hybrid Architecture — Static Pages", () => {
     await page.waitForTimeout(1500);
     // Enter professional mode first
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -247,7 +271,11 @@ describe("Hybrid Architecture — Static Pages", () => {
       const s = document.querySelector(".page.active");
       return s ? s.id : null;
     });
-    assert.equal(active, "page-about", "About page should be shown from local DOM");
+    assert.equal(
+      active,
+      "page-about",
+      "About page should be shown from local DOM",
+    );
     await ctx.close();
   });
 });
@@ -260,7 +288,9 @@ describe("Hybrid Architecture — Shell Persistence", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -282,7 +312,9 @@ describe("Hybrid Architecture — Shell Persistence", () => {
     assert.ok(shell1.music, "Music button persists after watermark nav");
     // Navigate again
     await page.evaluate(() => {
-      const link = document.querySelector('#sidebar a[data-page="fingerprint"]');
+      const link = document.querySelector(
+        '#sidebar a[data-page="fingerprint"]',
+      );
       if (link) link.click();
     });
     await page.waitForTimeout(2000);
@@ -306,7 +338,9 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -318,7 +352,9 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
     await page.waitForTimeout(2000);
     // Navigate to fingerprint
     await page.evaluate(() => {
-      const link = document.querySelector('#sidebar a[data-page="fingerprint"]');
+      const link = document.querySelector(
+        '#sidebar a[data-page="fingerprint"]',
+      );
       if (link) link.click();
     });
     await page.waitForTimeout(2000);
@@ -329,7 +365,11 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
       const s = document.querySelector("#app > .page.active");
       return s ? s.id : null;
     });
-    assert.equal(active, "page-watermark", "Should be back on watermark after goBack");
+    assert.equal(
+      active,
+      "page-watermark",
+      "Should be back on watermark after goBack",
+    );
     await ctx.close();
   });
 
@@ -340,7 +380,9 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);
@@ -350,7 +392,9 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
     });
     await page.waitForTimeout(2000);
     await page.evaluate(() => {
-      const link = document.querySelector('#sidebar a[data-page="fingerprint"]');
+      const link = document.querySelector(
+        '#sidebar a[data-page="fingerprint"]',
+      );
       if (link) link.click();
     });
     await page.waitForTimeout(2000);
@@ -364,7 +408,11 @@ describe("Hybrid Architecture — Back/Forward Navigation", () => {
       const s = document.querySelector("#app > .page.active");
       return s ? s.id : null;
     });
-    assert.equal(active, "page-fingerprint", "Should be on fingerprint after goForward");
+    assert.equal(
+      active,
+      "page-fingerprint",
+      "Should be on fingerprint after goForward",
+    );
     await ctx.close();
   });
 });
@@ -377,7 +425,9 @@ describe("Hybrid Architecture — Title and Meta Updates", () => {
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(1500);
     await page.evaluate(() => {
-      const card = document.querySelector('.card[data-page="home"], a.mode-card');
+      const card = document.querySelector(
+        '.card[data-page="home"], a.mode-card',
+      );
       if (card) card.click();
     });
     await page.waitForTimeout(2000);

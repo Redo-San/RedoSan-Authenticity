@@ -10,10 +10,27 @@ function loadC2pa() {
   src = src.replace(/\bconst\s+/g, "var ");
   if (!globalThis.window) globalThis.window = globalThis;
   globalThis.BigInt = BigInt;
-  globalThis.window.__ = globalThis.window.__ || ((key, fallback) => fallback || key);
-  globalThis.window.escHtml = globalThis.window.escHtml || ((s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"));
-  globalThis.window.escXml = globalThis.window.escXml || ((s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"));
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../C2PA/c2pa.js") });
+  globalThis.window.__ =
+    globalThis.window.__ || ((key, fallback) => fallback || key);
+  globalThis.window.escHtml =
+    globalThis.window.escHtml ||
+    ((s) =>
+      String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;"));
+  globalThis.window.escXml =
+    globalThis.window.escXml ||
+    ((s) =>
+      String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;"));
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../C2PA/c2pa.js"),
+  });
 }
 
 before(() => loadC2pa());
@@ -22,7 +39,7 @@ const mockManifestStore = (overrides) => ({
   validation_state: "ok",
   validation_status: [],
   validation_results: {},
-  ...overrides
+  ...overrides,
 });
 
 const mockManifest = (overrides) => ({
@@ -31,16 +48,15 @@ const mockManifest = (overrides) => ({
   claim_generator: "RedoSan Authenticity",
   instance_id: "xmp:iid:12345",
   assertions: [
-    { label: "c2pa.actions", data: [{ action: "c2pa.created", when: "2024-01-15T00:00:00Z" }] }
+    {
+      label: "c2pa.actions",
+      data: [{ action: "c2pa.created", when: "2024-01-15T00:00:00Z" }],
+    },
   ],
   signature_info: { issuer: "CN=Test", time: "2024-01-15T00:00:00Z" },
-  ingredients: [
-    { title: "photo.jpg", relationship: "parentOf" }
-  ],
-  claim_generator_info: [
-    { name: "RedoSan Authenticity", version: "1.0.0" }
-  ],
-  ...overrides
+  ingredients: [{ title: "photo.jpg", relationship: "parentOf" }],
+  claim_generator_info: [{ name: "RedoSan Authenticity", version: "1.0.0" }],
+  ...overrides,
 });
 
 describe("C2PA — getValidationHtml", () => {
@@ -76,13 +92,11 @@ describe("C2PA — getValidationHtml", () => {
         activeManifest: {
           success: [
             { code: "c2pa.signed", explanation: "Signature verified" },
-            { code: "c2pa.valid", explanation: "Manifest valid" }
+            { code: "c2pa.valid", explanation: "Manifest valid" },
           ],
-          failure: [
-            { code: "c2pa.missing", explanation: "Missing field" }
-          ]
-        }
-      }
+          failure: [{ code: "c2pa.missing", explanation: "Missing field" }],
+        },
+      },
     });
     const html = getValidationHtml(ms);
     assert.ok(html.includes("success"));
@@ -91,7 +105,9 @@ describe("C2PA — getValidationHtml", () => {
   });
 
   it("should handle empty activeManifest categories", () => {
-    const ms = mockManifestStore({ validation_results: { activeManifest: { success: [] } } });
+    const ms = mockManifestStore({
+      validation_results: { activeManifest: { success: [] } },
+    });
     const html = getValidationHtml(ms);
     assert.ok(html.includes("badge"));
   });
@@ -99,14 +115,17 @@ describe("C2PA — getValidationHtml", () => {
   it("should handle legacy validation_status format", () => {
     const ms = mockManifestStore({
       validation_results: {},
-      validation_status: [{ code: "c2pa.legacy", explanation: "Legacy check" }]
+      validation_status: [{ code: "c2pa.legacy", explanation: "Legacy check" }],
     });
     const html = getValidationHtml(ms);
     assert.ok(html.includes("c2pa.legacy"));
   });
 
   it("should return badge-only html when no results or status", () => {
-    const ms = mockManifestStore({ validation_results: {}, validation_status: [] });
+    const ms = mockManifestStore({
+      validation_results: {},
+      validation_status: [],
+    });
     const html = getValidationHtml(ms);
     assert.ok(html.startsWith("<span"));
     assert.ok(html.endsWith("</span>"));
@@ -115,7 +134,7 @@ describe("C2PA — getValidationHtml", () => {
   it("should handle validation_status as plain strings", () => {
     const ms = mockManifestStore({
       validation_results: {},
-      validation_status: ["c2pa.warning"]
+      validation_status: ["c2pa.warning"],
     });
     const html = getValidationHtml(ms);
     assert.ok(html.includes("c2pa.warning"));
@@ -125,9 +144,9 @@ describe("C2PA — getValidationHtml", () => {
     const ms = mockManifestStore({
       validation_results: {
         activeManifest: {
-          success: [{ code: "<script>alert('xss')</script>" }]
-        }
-      }
+          success: [{ code: "<script>alert('xss')</script>" }],
+        },
+      },
     });
     const html = getValidationHtml(ms);
     assert.ok(!html.includes("<script>"));
@@ -140,7 +159,7 @@ describe("C2PA — c2paToCSV", () => {
     file: "test.jpg",
     activeLabel: "xmp:iid:12345",
     manifest: mockManifest(),
-    manifestStore: mockManifestStore()
+    manifestStore: mockManifestStore(),
   };
 
   it("should include CSV header", () => {
@@ -176,7 +195,7 @@ describe("C2PA — c2paToCSV", () => {
       file: "test.jpg",
       activeLabel: "label1",
       manifest: { assertions: [] },
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const csv = c2paToCSV(minimal);
     assert.ok(csv.includes("test.jpg"));
@@ -188,7 +207,7 @@ describe("C2PA — c2paToCSV", () => {
       file: "test.jpg",
       activeLabel: "label1",
       manifest: { title: "Test, Image", assertions: [] },
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const csv = c2paToCSV(resultWithComma);
     assert.ok(csv.includes('"Test, Image"'));
@@ -200,7 +219,7 @@ describe("C2PA — c2paToTXT", () => {
     file: "test.jpg",
     activeLabel: "xmp:iid:12345",
     manifest: mockManifest(),
-    manifestStore: mockManifestStore()
+    manifestStore: mockManifestStore(),
   };
 
   it("should include header", () => {
@@ -243,7 +262,7 @@ describe("C2PA — c2paToTXT", () => {
       file: "test.jpg",
       activeLabel: "label1",
       manifest: {},
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const txt = c2paToTXT(minimal);
     assert.ok(txt.includes("test.jpg"));
@@ -255,7 +274,7 @@ describe("C2PA — c2paToXML", () => {
     file: "test.jpg",
     activeLabel: "xmp:iid:12345",
     manifest: mockManifest(),
-    manifestStore: mockManifestStore()
+    manifestStore: mockManifestStore(),
   };
 
   it("should produce valid XML header", () => {
@@ -304,7 +323,7 @@ describe("C2PA — c2paToXML", () => {
       file: "test.jpg",
       activeLabel: "label1",
       manifest: { title: '<Test & "Image">', assertions: [] },
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const xml = c2paToXML(resultWithChars);
     assert.ok(!xml.includes("<Test"));
@@ -317,7 +336,7 @@ describe("C2PA — c2paToXML", () => {
       file: "test.jpg",
       activeLabel: "label1",
       manifest: {},
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const xml = c2paToXML(minimal);
     assert.ok(xml.includes("<file>test.jpg</file>"));
@@ -330,10 +349,19 @@ describe("C2PA — c2paToXML", () => {
       activeLabel: "label1",
       manifest: {
         assertions: [
-          { label: "c2pa.actions", data: [{ action: "c2pa.created", digitalSourceType: "http://ns.adobe.com/xap/1.0/g/img/digitalSourceType/digitalCameraCapture" }] }
-        ]
+          {
+            label: "c2pa.actions",
+            data: [
+              {
+                action: "c2pa.created",
+                digitalSourceType:
+                  "http://ns.adobe.com/xap/1.0/g/img/digitalSourceType/digitalCameraCapture",
+              },
+            ],
+          },
+        ],
       },
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const xml = c2paToXML(resultWithSrc);
     assert.ok(xml.includes("digitalSourceType"));
@@ -345,7 +373,7 @@ describe("C2PA — c2paToHTML", () => {
     file: "test.jpg",
     activeLabel: "xmp:iid:12345",
     manifest: mockManifest(),
-    manifestStore: mockManifestStore()
+    manifestStore: mockManifestStore(),
   };
 
   it("should produce full HTML page", () => {
@@ -391,7 +419,7 @@ describe("C2PA — c2paToHTML", () => {
       file: "test.jpg",
       activeLabel: "label1",
       manifest: { title: "<script>alert(1)</script>", assertions: [] },
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const html = c2paToHTML(resultWithXss);
     assert.ok(!html.includes("<script>"));
@@ -403,7 +431,7 @@ describe("C2PA — c2paToHTML", () => {
       file: "test.jpg",
       activeLabel: "label1",
       manifest: {},
-      manifestStore: mockManifestStore()
+      manifestStore: mockManifestStore(),
     };
     const html = c2paToHTML(minimal);
     assert.ok(html.includes("test.jpg"));

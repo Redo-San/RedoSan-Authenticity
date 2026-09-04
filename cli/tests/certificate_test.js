@@ -5,31 +5,53 @@ const path = require("path");
 const vm = require("vm");
 
 globalThis.window = globalThis;
-globalThis.location = { protocol: "file:", href: "file:///test/", hostname: "localhost", origin: "null" };
-globalThis.URL.createObjectURL = globalThis.URL.createObjectURL || (() => "blob:stub");
+globalThis.location = {
+  protocol: "file:",
+  href: "file:///test/",
+  hostname: "localhost",
+  origin: "null",
+};
+globalThis.URL.createObjectURL =
+  globalThis.URL.createObjectURL || (() => "blob:stub");
 globalThis.URL.revokeObjectURL = globalThis.URL.revokeObjectURL || (() => {});
 if (!globalThis.document) {
   var domEls = {};
   globalThis.document = {
-    getElementById: function (id) { return domEls[id] || null; },
-    _setEl: function (id, el) { domEls[id] = el; },
-    _resetEls: function () { domEls = {}; },
+    getElementById: function (id) {
+      return domEls[id] || null;
+    },
+    _setEl: function (id, el) {
+      domEls[id] = el;
+    },
+    _resetEls: function () {
+      domEls = {};
+    },
     readyState: "complete",
     createElement: function (t) {
       if (t === "canvas") {
         var ctx = {
           _font: "",
-          get font() { return this._font; },
-          set font(v) { this._font = v; },
-          measureText: function (text) { return { width: text.length * 10 }; },
+          get font() {
+            return this._font;
+          },
+          set font(v) {
+            this._font = v;
+          },
+          measureText: function (text) {
+            return { width: text.length * 10 };
+          },
           fillStyle: "",
           textBaseline: "",
           fillText: function () {},
           scale: function () {},
         };
         var canvas = {
-          getContext: function () { return ctx; },
-          toDataURL: function () { return "data:image/png;base64,iVBOR"; },
+          getContext: function () {
+            return ctx;
+          },
+          toDataURL: function () {
+            return "data:image/png;base64,iVBOR";
+          },
           width: 0,
           height: 0,
         };
@@ -38,10 +60,17 @@ if (!globalThis.document) {
       if (t === "div") {
         var escDiv = {
           _text: "",
-          get textContent() { return this._text; },
+          get textContent() {
+            return this._text;
+          },
           set textContent(v) {
             this._text = v;
-            this.innerHTML = String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+            this.innerHTML = String(v)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#39;");
           },
           innerHTML: "",
           style: {},
@@ -83,18 +112,36 @@ if (!globalThis.document) {
 }
 
 var canvasElem = {
-  getContext: function () { return { font: "", measureText: function () { return { width: 100 }; }, fillStyle: "", textBaseline: "", fillText: function () {} }; },
-  toDataURL: function () { return "data:image/png;base64,iVBOR"; },
+  getContext: function () {
+    return {
+      font: "",
+      measureText: function () {
+        return { width: 100 };
+      },
+      fillStyle: "",
+      textBaseline: "",
+      fillText: function () {},
+    };
+  },
+  toDataURL: function () {
+    return "data:image/png;base64,iVBOR";
+  },
   width: 0,
   height: 0,
 };
 
 var mockQRious = function (opts) {
-  opts.element.toDataURL = function () { return "data:image/png;base64,qr"; };
+  opts.element.toDataURL = function () {
+    return "data:image/png;base64,qr";
+  };
 };
 globalThis.QRious = mockQRious;
 
-globalThis.__ = globalThis.__ || function (k, d) { return d || k; };
+globalThis.__ =
+  globalThis.__ ||
+  function (k, d) {
+    return d || k;
+  };
 
 var imageResolve = { naturalWidth: 800, naturalHeight: 600 };
 globalThis.Image = function () {
@@ -114,29 +161,77 @@ globalThis.COUNTRY_CODES = globalThis.COUNTRY_CODES || [
   { code: "GB", dial: "+44", name: "UK", len: 10 },
 ];
 
-const srcUtils = fs.readFileSync(path.join(__dirname, "../../Certificate/certificate_utils.js"), "utf8");
-const cleanUtils = srcUtils.replace(/^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/, "");
-vm.runInThisContext(cleanUtils, { filename: path.resolve(__dirname, "../../Certificate/certificate_utils.js") });
+const srcUtils = fs.readFileSync(
+  path.join(__dirname, "../../Certificate/certificate_utils.js"),
+  "utf8",
+);
+const cleanUtils = srcUtils.replace(
+  /^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/,
+  "",
+);
+vm.runInThisContext(cleanUtils, {
+  filename: path.resolve(__dirname, "../../Certificate/certificate_utils.js"),
+});
 
-const srcOts = fs.readFileSync(path.join(__dirname, "../../Certificate/certificate_ots.js"), "utf8");
-const cleanOts = srcOts.replace(/^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/, "");
-vm.runInThisContext(cleanOts, { filename: path.resolve(__dirname, "../../Certificate/certificate_ots.js") });
+const srcOts = fs.readFileSync(
+  path.join(__dirname, "../../Certificate/certificate_ots.js"),
+  "utf8",
+);
+const cleanOts = srcOts.replace(
+  /^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/,
+  "",
+);
+vm.runInThisContext(cleanOts, {
+  filename: path.resolve(__dirname, "../../Certificate/certificate_ots.js"),
+});
 
-const srcPdf = fs.readFileSync(path.join(__dirname, "../../Certificate/certificate_pdf.js"), "utf8");
-const cleanPdf = srcPdf.replace(/^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/, "");
-vm.runInThisContext(cleanPdf, { filename: path.resolve(__dirname, "../../Certificate/certificate_pdf.js") });
+const srcPdf = fs.readFileSync(
+  path.join(__dirname, "../../Certificate/certificate_pdf.js"),
+  "utf8",
+);
+const cleanPdf = srcPdf.replace(
+  /^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/,
+  "",
+);
+vm.runInThisContext(cleanPdf, {
+  filename: path.resolve(__dirname, "../../Certificate/certificate_pdf.js"),
+});
 
-const srcDocx = fs.readFileSync(path.join(__dirname, "../../Certificate/certificate_docx.js"), "utf8");
-const cleanDocx = srcDocx.replace(/^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/, "");
-vm.runInThisContext(cleanDocx, { filename: path.resolve(__dirname, "../../Certificate/certificate_docx.js") });
+const srcDocx = fs.readFileSync(
+  path.join(__dirname, "../../Certificate/certificate_docx.js"),
+  "utf8",
+);
+const cleanDocx = srcDocx.replace(
+  /^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/,
+  "",
+);
+vm.runInThisContext(cleanDocx, {
+  filename: path.resolve(__dirname, "../../Certificate/certificate_docx.js"),
+});
 
-const srcEpub = fs.readFileSync(path.join(__dirname, "../../Certificate/certificate_epub.js"), "utf8");
-const cleanEpub = srcEpub.replace(/^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/, "");
-vm.runInThisContext(cleanEpub, { filename: path.resolve(__dirname, "../../Certificate/certificate_epub.js") });
+const srcEpub = fs.readFileSync(
+  path.join(__dirname, "../../Certificate/certificate_epub.js"),
+  "utf8",
+);
+const cleanEpub = srcEpub.replace(
+  /^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/,
+  "",
+);
+vm.runInThisContext(cleanEpub, {
+  filename: path.resolve(__dirname, "../../Certificate/certificate_epub.js"),
+});
 
-const src = fs.readFileSync(path.join(__dirname, "../../Certificate/certificate.js"), "utf8");
-const cleanSrc = src.replace(/^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/, "");
-vm.runInThisContext(cleanSrc, { filename: path.resolve(__dirname, "../../Certificate/certificate.js") });
+const src = fs.readFileSync(
+  path.join(__dirname, "../../Certificate/certificate.js"),
+  "utf8",
+);
+const cleanSrc = src.replace(
+  /^\(function\s*\(\)\s*\{[\s\S]*?throw new Error\([\s\S]*?\)\(\s*\);/,
+  "",
+);
+vm.runInThisContext(cleanSrc, {
+  filename: path.resolve(__dirname, "../../Certificate/certificate.js"),
+});
 
 describe("Certificate — hasNonLatinChars", () => {
   it("returns false for pure ASCII", () => {
@@ -228,18 +323,27 @@ describe("Certificate — getFileHashSha256", () => {
     const buf = new Uint8Array([0x61, 0x62, 0x63]); // "abc"
     const hash = await getFileHashSha256(buf);
     // SHA-256 of "abc"
-    assert.equal(hash, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    assert.equal(
+      hash,
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    );
   });
 
   it("should compute hash of empty buffer", async () => {
     const hash = await getFileHashSha256(new Uint8Array(0));
-    assert.equal(hash, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    assert.equal(
+      hash,
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
   });
 
   it("should return lowercase hex", async () => {
     const hash = await getFileHashSha256(new Uint8Array([0x00]));
     // SHA-256 of \x00
-    assert.equal(hash, "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d");
+    assert.equal(
+      hash,
+      "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+    );
     assert.ok(/^[0-9a-f]+$/.test(hash));
   });
 });
@@ -274,7 +378,10 @@ describe("Certificate — makeUUID", () => {
       var seen = {};
       for (var i = 0; i < 100; i++) {
         var id = makeUUID();
-        assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+        assert.match(
+          id,
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+        );
         seen[id] = true;
       }
       assert.ok(Object.keys(seen).length > 90);
@@ -339,7 +446,10 @@ describe("Certificate — stripHtml", () => {
 
 describe("Certificate — escHtml", () => {
   it("should escape HTML special chars", () => {
-    assert.equal(escHtml("<div>\"test\" & 'x'"), "&lt;div&gt;&quot;test&quot; &amp; &#39;x&#39;");
+    assert.equal(
+      escHtml("<div>\"test\" & 'x'"),
+      "&lt;div&gt;&quot;test&quot; &amp; &#39;x&#39;",
+    );
   });
 
   it("should return empty string for null/undefined", () => {
@@ -362,7 +472,13 @@ describe("Certificate — buildQRVerificationJSON", () => {
     minData = {
       generator: "Test",
       generatedAt: "2024-01-01T00:00:00.000Z",
-      file: { name: "test.jpg", size: 1024, hash: "abc123", width: 100, height: 100 },
+      file: {
+        name: "test.jpg",
+        size: 1024,
+        hash: "abc123",
+        width: 100,
+        height: 100,
+      },
       user: { name: "Tester", email: "t@t.com" },
     };
   });
@@ -381,7 +497,7 @@ describe("Certificate — buildQRVerificationJSON", () => {
   it("should include fingerprint hashes when fpResult exists", () => {
     var data = Object.assign({}, minData, {
       fpResult: {
-        hashes: { "SHA-256": "abc", "SHA-384": "def", "MD5": "ghi" },
+        hashes: { "SHA-256": "abc", "SHA-384": "def", MD5: "ghi" },
       },
     });
     var result = JSON.parse(buildQRVerificationJSON(data));
@@ -394,7 +510,7 @@ describe("Certificate — buildQRVerificationJSON", () => {
     var data = Object.assign({}, minData, {
       fpResult: {
         hashes: { "SHA-256": "abc" },
-        perceptual_hashes: { "dhash": "ffff", "phash": "aaaa" },
+        perceptual_hashes: { dhash: "ffff", phash: "aaaa" },
       },
     });
     var result = JSON.parse(buildQRVerificationJSON(data));
@@ -404,7 +520,11 @@ describe("Certificate — buildQRVerificationJSON", () => {
 
   it("should include DID signature when didSig exists", () => {
     var data = Object.assign({}, minData, {
-      didSig: { did: "did:key:z6MkhaXgBZDjot9W7K6ZoPwTyRnTqPZuLbSZNqJqRZpLJiTn", algorithm: "Ed25519", signature: "sig123" },
+      didSig: {
+        did: "did:key:z6MkhaXgBZDjot9W7K6ZoPwTyRnTqPZuLbSZNqJqRZpLJiTn",
+        algorithm: "Ed25519",
+        signature: "sig123",
+      },
     });
     var result = JSON.parse(buildQRVerificationJSON(data));
     assert.ok(result.did.startsWith("did:key:z6MkhaXgBZDjot9W7K6Z"));
@@ -517,7 +637,9 @@ describe("Certificate — addTextSafe", () => {
   it("should call doc.text for Latin text", function () {
     var called = false;
     var doc = {
-      text: function (t, x, y) { called = true; },
+      text: function (t, x, y) {
+        called = true;
+      },
     };
     addTextSafe(doc, "Hello", 10, 10, 100, 9);
     assert.ok(called);
@@ -527,7 +649,9 @@ describe("Certificate — addTextSafe", () => {
     var addImageCalled = false;
     var doc = {
       text: function () {},
-      addImage: function () { addImageCalled = true; },
+      addImage: function () {
+        addImageCalled = true;
+      },
     };
     addTextSafe(doc, "مرحبا", 10, 10, 100, 9);
     assert.ok(addImageCalled);

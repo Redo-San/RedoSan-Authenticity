@@ -1,0 +1,21 @@
+# Gitleaks configuration — allow-list for known false positives
+# Ref: https://github.com/gitleaks/gitleaks/blob/master/README.md
+# Gitleaks v8.25+ uses [[allowlists]] format
+
+[extend]
+useDefault = true
+disabledRules = ["generic-api-key"]
+
+# Global allowlists - paths that should be skipped from scanning
+[[allowlists]]
+description = "C2PA throwaway P-256 demo key (no access to any service)"
+paths = [
+  '''C2PA/c2pa\.js''',
+  '''cli/commands/c2pa\.js'''
+]
+
+[[allowlists]]
+description = "Test fixtures with did:key test values (fake, grant no access)"
+paths = [
+  '''cli/tests/'''
+]

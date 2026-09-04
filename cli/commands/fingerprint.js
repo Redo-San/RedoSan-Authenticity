@@ -30,7 +30,10 @@ if (globalThis.crypto === undefined || !globalThis.crypto.subtle) {
         };
         const nodeAlgo = algoMap[algo];
         if (!nodeAlgo) throw new Error(`Unsupported algorithm: ${algo}`);
-        const hash = crypto.createHash(nodeAlgo).update(Buffer.from(data)).digest();
+        const hash = crypto
+          .createHash(nodeAlgo)
+          .update(Buffer.from(data))
+          .digest();
         return hash.buffer;
       },
     },
@@ -81,7 +84,10 @@ const _origWarn = console.warn;
 console.log = () => {};
 console.warn = () => {};
 try {
-  const hashingSrc = fs.readFileSync(path.join(__dirname, "..", "..", "Fingerprint", "hashing.js"), "utf8");
+  const hashingSrc = fs.readFileSync(
+    path.join(__dirname, "..", "..", "Fingerprint", "hashing.js"),
+    "utf8",
+  );
   vm.runInThisContext(hashingSrc, { filename: "hashing.js" });
 } finally {
   console.log = _origLog;
@@ -103,7 +109,8 @@ async function runFingerprint(filePath, opts) {
     var data;
     try {
       data = validateFile(absPath, {
-        allowDangerous: opts.allowDangerous || process.argv.includes("--allow-dangerous"),
+        allowDangerous:
+          opts.allowDangerous || process.argv.includes("--allow-dangerous"),
       });
     } catch (error) {
       console.error(`Validation failed: ${error.message}`);
@@ -113,7 +120,16 @@ async function runFingerprint(filePath, opts) {
       process.exit(1);
     }
     const info = getFileInfo(filePath);
-    const imgExts = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".tif", ".webp"];
+    const imgExts = [
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".bmp",
+      ".gif",
+      ".tiff",
+      ".tif",
+      ".webp",
+    ];
 
     const algoMap = {
       sha1: "SHA-1",
@@ -143,7 +159,12 @@ async function runFingerprint(filePath, opts) {
     }
 
     // Web Crypto algorithms (native Node.js crypto)
-    const webAlgos = { "SHA-1": "SHA-1", "SHA-256": "SHA-256", "SHA-384": "SHA-384", "SHA-512": "SHA-512" };
+    const webAlgos = {
+      "SHA-1": "SHA-1",
+      "SHA-256": "SHA-256",
+      "SHA-384": "SHA-384",
+      "SHA-512": "SHA-512",
+    };
 
     if (!opts.algo || opts.algo === "all") {
       // Run ALL algorithms
@@ -265,7 +286,8 @@ async function runFingerprint(filePath, opts) {
         type: info.type,
       },
       hashes: hashes,
-      perceptual_hashes: Object.keys(perceptual).length > 0 ? perceptual : undefined,
+      perceptual_hashes:
+        Object.keys(perceptual).length > 0 ? perceptual : undefined,
     };
 
     // Output

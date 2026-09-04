@@ -1,7 +1,13 @@
 const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
-const { ensureServer, openPage, checkPageLoad, checkNoErrors , closePage } = require("../mpa_helpers");
+const {
+  ensureServer,
+  openPage,
+  checkPageLoad,
+  checkNoErrors,
+  closePage,
+} = require("../mpa_helpers");
 
 const PAGE_ID = "contact";
 let browser;
@@ -31,7 +37,9 @@ describe("MPA — Contact Us", function () {
     try {
       var section = await page.$("#page-contact");
       assert.ok(section, "Contact section should exist");
-      var text = await page.evaluate(function (el) { return el.textContent; }, section);
+      var text = await page.evaluate(function (el) {
+        return el.textContent;
+      }, section);
       assert.ok(text.length > 50, "Contact should have content");
     } finally {
       await closePage(ctx, page);

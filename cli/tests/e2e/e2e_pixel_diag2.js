@@ -5,7 +5,9 @@ const fs = require("node:fs");
 
 const PORT = 9884;
 const BASE = `http://localhost:${PORT}`;
-const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png"));
+const PNG_BUF = fs.readFileSync(
+  path.resolve(__dirname, "..", "fixtures", "testimg_64x64.png"),
+);
 
 (async () => {
   const _server = await startServer(PORT);
@@ -22,7 +24,7 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
 
   // Click sidebar
   await page.goto(`${BASE}/Style/pages/pixel-injection/index.html`);
-    await page.waitForTimeout(2000);
+  await page.waitForTimeout(2000);
 
   // Select DCT algorithm
   const setAlgoResult = await page.evaluate(() => {
@@ -40,7 +42,9 @@ const PNG_BUF = fs.readFileSync(path.resolve(__dirname, "..", "fixtures", "testi
   console.log("SET DCT ALGO:", JSON.stringify(setAlgoResult));
 
   // Upload and embed
-  await page.setInputFiles("#pi-image", [{ name: "cover.png", mimeType: "image/png", buffer: PNG_BUF }]);
+  await page.setInputFiles("#pi-image", [
+    { name: "cover.png", mimeType: "image/png", buffer: PNG_BUF },
+  ]);
   await page.waitForTimeout(500);
   await page.setInputFiles("#pi-secret-file", [
     {

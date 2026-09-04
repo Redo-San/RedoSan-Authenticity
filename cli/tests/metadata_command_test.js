@@ -15,10 +15,16 @@ function loadCmd(mocks) {
 
   const mockUtils = {
     readFileBytes: mocks.readFileBytes || (() => Buffer.from("")),
-    getFileInfo: mocks.getFileInfo || (() => ({ name: "f", size: 0, type: "bin", ext: ".bin" })),
+    getFileInfo:
+      mocks.getFileInfo ||
+      (() => ({ name: "f", size: 0, type: "bin", ext: ".bin" })),
     fmtSize: mocks.fmtSize || ((s) => String(s) + " B"),
     outputResult: mocks.outputResult || (() => {}),
-    loadImageData: mocks.loadImageData || (() => { throw new Error("No canvas"); }),
+    loadImageData:
+      mocks.loadImageData ||
+      (() => {
+        throw new Error("No canvas");
+      }),
     validateFile: mocks.validateFile || (() => {}),
   };
 
@@ -29,7 +35,11 @@ function loadCmd(mocks) {
   const sandbox = Object.assign({}, globalThis, {
     // Module system
     require: (mod) => {
-      if (mod === "../utils" || mod === "./utils" || mod === path.join(__dirname, "..", "utils")) {
+      if (
+        mod === "../utils" ||
+        mod === "./utils" ||
+        mod === path.join(__dirname, "..", "utils")
+      ) {
         return mockUtils;
       }
       // These files are loaded by the command for side effects (registering globals)
@@ -49,24 +59,33 @@ function loadCmd(mocks) {
     clearTimeout: clearTimeout,
     URL: URL,
     // Globals that metadata.js would normally provide
-    parseJPEGExif: mocks.parseJPEGExif || ((data) => {
-      if (data && data[0] === 0xff && data[1] === 0xd8) {
-        // Minimal EXIF parser stub: return Make from APP1 if present
-        for (let i = 0; i < data.length - 10; i++) {
-          if (data[i] === 0xff && data[i+1] === 0xe1) {
-            const segLen = (data[i+2] << 8) | data[i+3];
-            if (i + 4 + segLen <= data.length) {
-              const hdr = String.fromCharCode(data[i+4], data[i+5], data[i+6], data[i+7], data[i+8], data[i+9]);
-              if (hdr === "Exif\0\0") {
-                return { Make: "TestCamera" };
+    parseJPEGExif:
+      mocks.parseJPEGExif ||
+      ((data) => {
+        if (data && data[0] === 0xff && data[1] === 0xd8) {
+          // Minimal EXIF parser stub: return Make from APP1 if present
+          for (let i = 0; i < data.length - 10; i++) {
+            if (data[i] === 0xff && data[i + 1] === 0xe1) {
+              const segLen = (data[i + 2] << 8) | data[i + 3];
+              if (i + 4 + segLen <= data.length) {
+                const hdr = String.fromCharCode(
+                  data[i + 4],
+                  data[i + 5],
+                  data[i + 6],
+                  data[i + 7],
+                  data[i + 8],
+                  data[i + 9],
+                );
+                if (hdr === "Exif\0\0") {
+                  return { Make: "TestCamera" };
+                }
               }
             }
           }
+          return {};
         }
         return {};
-      }
-      return {};
-    }),
+      }),
   });
 
   vm.runInNewContext(src, sandbox, {
@@ -77,12 +96,20 @@ function loadCmd(mocks) {
 
 describe("Metadata Command — runMetadata", () => {
   it("should output metadata for a JPEG file", async () => {
-    const jpegData = new Uint8Array([0xff, 0xd8, 0xff, 0xe1, 0x00, 0x10, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00, 0xff, 0xd9]);
+    const jpegData = new Uint8Array([
+      0xff, 0xd8, 0xff, 0xe1, 0x00, 0x10, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00,
+      0xff, 0xd9,
+    ]);
     const outputs = [];
 
     const { runMetadata } = loadCmd({
       readFileBytes: (p) => Buffer.from(jpegData),
-      getFileInfo: (p) => ({ name: "test.jpg", size: jpegData.length, type: "image/jpeg", ext: ".jpg" }),
+      getFileInfo: (p) => ({
+        name: "test.jpg",
+        size: jpegData.length,
+        type: "image/jpeg",
+        ext: ".jpg",
+      }),
       fmtSize: (s) => String(s) + " B",
       validateFile: (p) => Buffer.from(jpegData),
       loadImageData: (p) => ({ width: 1920, height: 1080 }),
@@ -101,7 +128,12 @@ describe("Metadata Command — runMetadata", () => {
 
     const { runMetadata } = loadCmd({
       readFileBytes: (p) => Buffer.from(jpegData),
-      getFileInfo: (p) => ({ name: "test.jpg", size: jpegData.length, type: "image/jpeg", ext: ".jpg" }),
+      getFileInfo: (p) => ({
+        name: "test.jpg",
+        size: jpegData.length,
+        type: "image/jpeg",
+        ext: ".jpg",
+      }),
       fmtSize: (s) => String(s) + " B",
       validateFile: (p) => Buffer.from(jpegData),
       loadImageData: (p) => ({ width: 640, height: 480 }),
@@ -112,7 +144,9 @@ describe("Metadata Command — runMetadata", () => {
     });
 
     await runMetadata("test.jpg", { json: true });
-    const jsonOutput = outputs.find((o) => typeof o === "string" && o.includes("sha256"));
+    const jsonOutput = outputs.find(
+      (o) => typeof o === "string" && o.includes("sha256"),
+    );
     assert.ok(jsonOutput, "Should output JSON with sha256");
   });
 
@@ -121,14 +155,23 @@ describe("Metadata Command — runMetadata", () => {
 
     const { runMetadata } = loadCmd({
       readFileBytes: () => Buffer.from(""),
-      getFileInfo: () => ({ name: "bad.exe", size: 0, type: "bin", ext: ".exe" }),
+      getFileInfo: () => ({
+        name: "bad.exe",
+        size: 0,
+        type: "bin",
+        ext: ".exe",
+      }),
       fmtSize: (s) => String(s) + " B",
-      validateFile: () => { throw new Error("Blocked dangerous file type: .exe"); },
+      validateFile: () => {
+        throw new Error("Blocked dangerous file type: .exe");
+      },
       outputResult: () => {},
       parseJPEGExif: () => ({}),
       console: { log: () => {}, error: () => {} },
       process: Object.assign({}, process, {
-        exit: (code) => { exitCode = code; },
+        exit: (code) => {
+          exitCode = code;
+        },
       }),
     });
 
@@ -145,10 +188,17 @@ describe("Metadata Command — runMetadata", () => {
 
     const { runMetadata } = loadCmd({
       readFileBytes: () => Buffer.from([0xff, 0xd8, 0xff, 0xd9]),
-      getFileInfo: (p) => ({ name: "test.jpg", size: 3, type: "image/jpeg", ext: ".jpg" }),
+      getFileInfo: (p) => ({
+        name: "test.jpg",
+        size: 3,
+        type: "image/jpeg",
+        ext: ".jpg",
+      }),
       fmtSize: (s) => String(s) + " B",
       validateFile: (p) => Buffer.from([0xff, 0xd8, 0xff, 0xd9]),
-      loadImageData: () => { throw new Error("Canvas not available"); },
+      loadImageData: () => {
+        throw new Error("Canvas not available");
+      },
       outputResult: (text) => outputs.push(text),
       parseJPEGExif: () => ({}),
       console: { log: () => {}, error: () => {} },
@@ -163,7 +213,9 @@ describe("Metadata Command — runMetadata", () => {
     let exitCode = null;
 
     const { runMetadata } = loadCmd({
-      readFileBytes: () => { throw new Error("Unexpected error"); },
+      readFileBytes: () => {
+        throw new Error("Unexpected error");
+      },
       getFileInfo: () => ({ name: "f", size: 0 }),
       fmtSize: (s) => String(s) + " B",
       validateFile: () => {},
@@ -171,7 +223,9 @@ describe("Metadata Command — runMetadata", () => {
       parseJPEGExif: () => ({}),
       console: { log: () => {}, error: () => {} },
       process: Object.assign({}, process, {
-        exit: (code) => { exitCode = code; },
+        exit: (code) => {
+          exitCode = code;
+        },
       }),
     });
 
@@ -180,12 +234,19 @@ describe("Metadata Command — runMetadata", () => {
   });
 
   it("should work for non-JPEG files without EXIF", async () => {
-    const pngData = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00]);
+    const pngData = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00,
+    ]);
     const outputs = [];
 
     const { runMetadata } = loadCmd({
       readFileBytes: () => Buffer.from(pngData),
-      getFileInfo: (p) => ({ name: "test.png", size: pngData.length, type: "image/png", ext: ".png" }),
+      getFileInfo: (p) => ({
+        name: "test.png",
+        size: pngData.length,
+        type: "image/png",
+        ext: ".png",
+      }),
       fmtSize: (s) => String(s) + " B",
       validateFile: (p) => Buffer.from(pngData),
       loadImageData: (p) => ({ width: 100, height: 100 }),

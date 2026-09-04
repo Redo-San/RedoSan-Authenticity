@@ -62,19 +62,30 @@ function main() {
     const raw = JSON.parse(fs.readFileSync(f, "utf8"));
     for (const entry of raw) {
       totalScripts++;
-      if (entry.url && (entry.url.includes("/Style/") || entry.url.includes("/Watermark/") || entry.url.includes("/Fingerprint/"))) {
+      if (
+        entry.url &&
+        (entry.url.includes("/Style/") ||
+          entry.url.includes("/Watermark/") ||
+          entry.url.includes("/Fingerprint/"))
+      ) {
         styleScripts++;
       }
     }
   }
 
-  console.log(`\nE2E coverage guard: ${files.length} file(s), ${totalScripts} script entries, ${styleScripts} Style/ scripts`);
+  console.log(
+    `\nE2E coverage guard: ${files.length} file(s), ${totalScripts} script entries, ${styleScripts} Style/ scripts`,
+  );
 
   if (styleScripts === 0 && !useDeep) {
-    console.warn("WARN: No Style/ scripts captured in V8 coverage (expected with shallow run)");
+    console.warn(
+      "WARN: No Style/ scripts captured in V8 coverage (expected with shallow run)",
+    );
   }
   if (styleScripts === 0 && useDeep) {
-    console.error("FAIL: Deep run should capture Style/ scripts in V8 coverage");
+    console.error(
+      "FAIL: Deep run should capture Style/ scripts in V8 coverage",
+    );
     process.exit(1);
   }
 

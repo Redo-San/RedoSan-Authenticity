@@ -32,7 +32,13 @@ describe("E2E — Home Page", () => {
     });
     await page.goto(BASE, NAV_WAIT);
     await page.waitForTimeout(3000);
-    const fatal = errors.filter((e) => !e.includes("frame-ancestors") && !e.includes("404") && !e.includes("Failed to load") && !e.includes("valid digest"));
+    const fatal = errors.filter(
+      (e) =>
+        !e.includes("frame-ancestors") &&
+        !e.includes("404") &&
+        !e.includes("Failed to load") &&
+        !e.includes("valid digest"),
+    );
     assert.equal(fatal.length, 0, `Errors: ${fatal.join(", ")}`);
     await ctx.close();
   });
@@ -52,7 +58,9 @@ describe("E2E — Home Page", () => {
     const page = await ctx.newPage();
     page.setDefaultTimeout(60000);
     await page.goto(BASE, NAV_WAIT);
-    const count = await page.evaluate(() => document.querySelectorAll("#sidebar a[data-page]").length);
+    const count = await page.evaluate(
+      () => document.querySelectorAll("#sidebar a[data-page]").length,
+    );
     assert.ok(count >= 10, `Expected >=10 sidebar links, got ${count}`);
     await ctx.close();
   });
@@ -101,7 +109,7 @@ describe("E2E — Hash Routing & Page Navigation", () => {
     await ctx.close();
   });
 
-it("should navigate to MPA id forge URL", async () => {
+  it("should navigate to MPA id forge URL", async () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     page.setDefaultTimeout(60000);
@@ -110,7 +118,10 @@ it("should navigate to MPA id forge URL", async () => {
     await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
     const url = page.url();
-    assert.ok(url.includes("/Style/pages/id_forge/index.html"), `URL should be MPA id_forge page: ${url}`);
+    assert.ok(
+      url.includes("/Style/pages/id_forge/index.html"),
+      `URL should be MPA id_forge page: ${url}`,
+    );
     await ctx.close();
   });
 });
@@ -124,9 +135,15 @@ describe("E2E — ID Forge Functionality", () => {
     await page.waitForTimeout(2000);
     await page.goto(`${BASE}/Style/pages/id_forge/index.html`);
     await page.waitForTimeout(1000);
-    const hasSelect = await page.evaluate(() => !!document.getElementById("if-type"));
-    const hasBtn = await page.evaluate(() => !!document.getElementById("if-gen-btn"));
-    const hasOutput = await page.evaluate(() => !!document.getElementById("if-output"));
+    const hasSelect = await page.evaluate(
+      () => !!document.getElementById("if-type"),
+    );
+    const hasBtn = await page.evaluate(
+      () => !!document.getElementById("if-gen-btn"),
+    );
+    const hasOutput = await page.evaluate(
+      () => !!document.getElementById("if-output"),
+    );
     assert.ok(hasSelect, "ID Forge type selector should exist");
     assert.ok(hasBtn, "ID Forge generate button (#if-gen-btn) should exist");
     assert.ok(hasOutput, "ID Forge output textarea should exist");

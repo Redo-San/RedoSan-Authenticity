@@ -105,7 +105,11 @@ describe("E2E — DID Sign & Verify", () => {
       hashes: { "SHA-256": "abc123def456" },
     });
     await page.setInputFiles("#did-fp-file", [
-      { name: "fp.json", mimeType: "application/json", buffer: Buffer.from(fpJson) },
+      {
+        name: "fp.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(fpJson),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -175,7 +179,11 @@ describe("E2E — DID Sign & Verify", () => {
       hashes: { "SHA-256": "abc123def456" },
     });
     await page.setInputFiles("#did-fp-file", [
-      { name: "fp.json", mimeType: "application/json", buffer: Buffer.from(fpJson) },
+      {
+        name: "fp.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(fpJson),
+      },
     ]);
     await page.waitForTimeout(500);
 
@@ -195,7 +203,10 @@ describe("E2E — DID Sign & Verify", () => {
       const el = document.getElementById("did-did-value");
       return el ? el.textContent : "";
     });
-    assert.ok(didValue.startsWith("did:key:z"), "DID must be generated before signing");
+    assert.ok(
+      didValue.startsWith("did:key:z"),
+      "DID must be generated before signing",
+    );
 
     // Verify sign button is now visible
     const signBtnVisible = await page.evaluate(() => {
@@ -225,14 +236,21 @@ describe("E2E — DID Sign & Verify", () => {
       return el ? el.textContent : "";
     });
     assert.ok(sigValue.length > 0, "Signature value should be non-empty");
-    assert.ok(sigValue.endsWith("..."), "Signature value should end with '...' (truncated)");
+    assert.ok(
+      sigValue.endsWith("..."),
+      "Signature value should end with '...' (truncated)",
+    );
 
     // Check signed-by DID matches generated DID
     const sigDid = await page.evaluate(() => {
       const el = document.getElementById("did-sig-did");
       return el ? el.textContent : "";
     });
-    assert.equal(sigDid, didValue, "Signed-by DID should match the generated DID");
+    assert.equal(
+      sigDid,
+      didValue,
+      "Signed-by DID should match the generated DID",
+    );
 
     // Check result contains success + "verified"
     const resultHtml = await page.evaluate(() => {
@@ -243,7 +261,10 @@ describe("E2E — DID Sign & Verify", () => {
       resultHtml.includes("✅") ||
         resultHtml.includes("verified") ||
         resultHtml.includes("signed"),
-      `Result should indicate sign+verify success. Got: ${resultHtml.substring(0, 200)}`,
+      `Result should indicate sign+verify success. Got: ${resultHtml.substring(
+        0,
+        200,
+      )}`,
     );
 
     // Check download container is visible (the code sets style.display = ""

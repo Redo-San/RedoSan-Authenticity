@@ -8,8 +8,7 @@ const V8_DIR = path.resolve(ROOT, "coverage", "e2e-v8-" + process.pid);
 const C8_DIR = path.resolve(ROOT, "coverage/temp");
 
 function ensureDir(p) {
-  if (!fs.existsSync(p))
-    fs.mkdirSync(p, { recursive: true });
+  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
 async function startCoverage(page) {
@@ -47,7 +46,9 @@ function prepareForC8() {
   for (const dir of dirs) {
     try {
       files.push(
-        ...fs.readdirSync(path.join(v8Root, dir)).map((f) => path.join(v8Root, dir, f))
+        ...fs
+          .readdirSync(path.join(v8Root, dir))
+          .map((f) => path.join(v8Root, dir, f)),
       );
     } catch (e) {
       void e; // Dir may have been removed by another process — skip.
@@ -69,10 +70,13 @@ function prepareForC8() {
       void e;
       continue;
     }
-    const mapped = raw.map(entry => {
+    const mapped = raw.map((entry) => {
       let url = entry.url || "";
       const src = entry.source || "";
-      if (url.startsWith("http://localhost") || url.startsWith("https://localhost")) {
+      if (
+        url.startsWith("http://localhost") ||
+        url.startsWith("https://localhost")
+      ) {
         const parsed = new URL(url);
         url = path.resolve(ROOT, "." + parsed.pathname);
       }
@@ -84,7 +88,10 @@ function prepareForC8() {
       };
     });
 
-    const outPath = path.join(C8_DIR, `e2e-${process.pid}-${Date.now()}-${path.basename(file)}`);
+    const outPath = path.join(
+      C8_DIR,
+      `e2e-${process.pid}-${Date.now()}-${path.basename(file)}`,
+    );
     try {
       fs.writeFileSync(outPath, JSON.stringify({ result: mapped }, null, 2));
       copied++;

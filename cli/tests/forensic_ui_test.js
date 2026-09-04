@@ -9,27 +9,65 @@ var _els = {};
 
 function makeEl(id, extra) {
   if (!_els[id]) {
-    _els[id] = Object.assign({
-      style: { display: "" },
-      value: "", textContent: "", innerHTML: "", className: "",
-      _children: [],
-      classList: {
-        add: function () {}, remove: function () {},
-        contains: function () { return false; }, toggle: function () {},
+    _els[id] = Object.assign(
+      {
+        style: { display: "" },
+        value: "",
+        textContent: "",
+        innerHTML: "",
+        className: "",
+        _children: [],
+        classList: {
+          add: function () {},
+          remove: function () {},
+          contains: function () {
+            return false;
+          },
+          toggle: function () {},
+        },
+        append: function (child) {
+          this._children.push(child);
+          if (typeof child === "object" && child.textContent)
+            this.innerHTML += child.textContent;
+        },
+        appendChild: function (child) {
+          this._children.push(child);
+          if (typeof child === "object" && child.textContent)
+            this.innerHTML += child.textContent;
+        },
+        remove: function () {},
+        addEventListener: function () {},
+        dispatchEvent: function () {},
+        getAttribute: function (a) {
+          return this[a] || null;
+        },
+        setAttribute: function (a, v) {
+          this[a] = v;
+        },
+        click: function () {},
+        focus: function () {},
+        files: undefined,
+        disabled: false,
+        href: "",
+        download: "",
+        src: "",
+        querySelector: function () {
+          return null;
+        },
+        querySelectorAll: function () {
+          return [];
+        },
+        parentElement: {},
+        parentNode: {
+          insertBefore: function () {},
+          removeChild: function () {},
+          querySelector: function () {
+            return null;
+          },
+        },
       },
-      append: function (child) { this._children.push(child); if (typeof child === "object" && child.textContent) this.innerHTML += child.textContent; },
-      appendChild: function (child) { this._children.push(child); if (typeof child === "object" && child.textContent) this.innerHTML += child.textContent; }, remove: function () {},
-      addEventListener: function () {}, dispatchEvent: function () {},
-      getAttribute: function (a) { return this[a] || null; },
-      setAttribute: function (a, v) { this[a] = v; },
-      click: function () {}, focus: function () {},
-      files: undefined, disabled: false,
-      href: "", download: "", src: "",
-      querySelector: function () { return null; },
-      querySelectorAll: function () { return []; },
-      parentElement: {},
-      parentNode: { insertBefore: function () {}, removeChild: function () {}, querySelector: function () { return null; } },
-    }, extra || {});
+      extra || {},
+    );
   }
   return _els[id];
 }
@@ -38,7 +76,11 @@ function makeMockCanvas(w, h) {
   var c = createCanvas(w || 1, h || 1);
   c.style = {};
   c.toBlob = function (cb, mime, quality) {
-    cb(new Blob([c.toBuffer(mime || "image/png")], { type: mime || "image/png" }));
+    cb(
+      new Blob([c.toBuffer(mime || "image/png")], {
+        type: mime || "image/png",
+      }),
+    );
   };
   return c;
 }
@@ -47,24 +89,39 @@ before(function () {
   // Make the canvas package's ImageData available in vm context
   globalThis.ImageData = ImageData;
   globalThis.document = {
-    getElementById: function (id) { return _els[id] || null; },
+    getElementById: function (id) {
+      return _els[id] || null;
+    },
     createElement: function (tag) {
       if (tag === "canvas") return makeMockCanvas();
       if (tag === "div" || tag === "span") return makeEl("created-" + tag);
       var el = makeEl("created-" + tag, { tagName: tag });
       return el;
     },
-    createTextNode: function () { return {}; },
-    querySelector: function () { return null; },
-    querySelectorAll: function () { return []; },
+    createTextNode: function () {
+      return {};
+    },
+    querySelector: function () {
+      return null;
+    },
+    querySelectorAll: function () {
+      return [];
+    },
     addEventListener: function () {},
     documentElement: { dataset: {} },
     title: "test",
   };
   globalThis.window = globalThis;
-  globalThis.location = { protocol: "file:", hostname: "localhost", href: "file:///test/", search: "" };
+  globalThis.location = {
+    protocol: "file:",
+    hostname: "localhost",
+    href: "file:///test/",
+    search: "",
+  };
   globalThis.URL = {
-    createObjectURL: function () { return "blob:mock-url"; },
+    createObjectURL: function () {
+      return "blob:mock-url";
+    },
     revokeObjectURL: function () {},
   };
   globalThis.Blob = function (parts, opts) {
@@ -75,9 +132,13 @@ before(function () {
     this.parts = parts;
     this.name = name;
     this.type = (opts && opts.type) || "";
-    this.size = parts.reduce(function (a, b) { return a + (b.length || 0); }, 0);
+    this.size = parts.reduce(function (a, b) {
+      return a + (b.length || 0);
+    }, 0);
     this.arrayBuffer = function () {
-      var bufs = parts.map(function (p) { return Buffer.isBuffer(p) ? p : Buffer.from(p); });
+      var bufs = parts.map(function (p) {
+        return Buffer.isBuffer(p) ? p : Buffer.from(p);
+      });
       return Promise.resolve(new Uint8Array(Buffer.concat(bufs)));
     };
   };
@@ -94,8 +155,13 @@ before(function () {
   makeEl("forensic-copy-map");
 
   globalThis.setTimeout = setTimeout;
-  globalThis.setResult = function (k, v) { globalThis._results = globalThis._results || {}; globalThis._results[k] = v; };
-  globalThis.getResult = function (k) { return globalThis._results ? globalThis._results[k] : undefined; };
+  globalThis.setResult = function (k, v) {
+    globalThis._results = globalThis._results || {};
+    globalThis._results[k] = v;
+  };
+  globalThis.getResult = function (k) {
+    return globalThis._results ? globalThis._results[k] : undefined;
+  };
   globalThis.setText = function (id, text) {
     var el = document.getElementById(id);
     if (el) el.textContent = text;
@@ -126,11 +192,21 @@ before(function () {
     return { canvas: c, ctx: ctx, imgData: d, w: 64, h: 64 };
   };
 
-  var coreSrc = fs.readFileSync(path.join(__dirname, "../../Forensic/forensic_core.js"), "utf8");
-  vm.runInThisContext(coreSrc, { filename: path.resolve(__dirname, "../../Forensic/forensic_core.js") });
+  var coreSrc = fs.readFileSync(
+    path.join(__dirname, "../../Forensic/forensic_core.js"),
+    "utf8",
+  );
+  vm.runInThisContext(coreSrc, {
+    filename: path.resolve(__dirname, "../../Forensic/forensic_core.js"),
+  });
 
-  var src = fs.readFileSync(path.join(__dirname, "../../Forensic/forensic.js"), "utf8");
-  vm.runInThisContext(src, { filename: path.resolve(__dirname, "../../Forensic/forensic.js") });
+  var src = fs.readFileSync(
+    path.join(__dirname, "../../Forensic/forensic.js"),
+    "utf8",
+  );
+  vm.runInThisContext(src, {
+    filename: path.resolve(__dirname, "../../Forensic/forensic.js"),
+  });
 });
 
 describe("Forensic UI — forensicCanvasFromImageData", function () {
@@ -157,7 +233,10 @@ describe("Forensic UI — forensicDiffImageData", function () {
     var len = 16 * 16 * 4;
     var fill = function (arr) {
       for (var i = 0; i < len; i += 4) {
-        arr[i] = 128; arr[i + 1] = 128; arr[i + 2] = 128; arr[i + 3] = 255;
+        arr[i] = 128;
+        arr[i + 1] = 128;
+        arr[i + 2] = 128;
+        arr[i + 3] = 255;
       }
       return arr;
     };
@@ -176,8 +255,14 @@ describe("Forensic UI — forensicDiffImageData", function () {
     var aData = new Uint8ClampedArray(16 * 16 * 4);
     var bData = new Uint8ClampedArray(16 * 16 * 4);
     for (var i = 0; i < aData.length; i += 4) {
-      aData[i] = 128; aData[i + 1] = 128; aData[i + 2] = 128; aData[i + 3] = 255;
-      bData[i] = 0; bData[i + 1] = 0; bData[i + 2] = 0; bData[i + 3] = 255;
+      aData[i] = 128;
+      aData[i + 1] = 128;
+      aData[i + 2] = 128;
+      aData[i + 3] = 255;
+      bData[i] = 0;
+      bData[i + 1] = 0;
+      bData[i + 2] = 0;
+      bData[i + 3] = 255;
     }
     var a = new ImageData(aData, 16, 16);
     var b = new ImageData(bData, 16, 16);
@@ -201,7 +286,10 @@ describe("Forensic UI — forensicNoiseHeatmap", function () {
   it("should generate a heatmap with suspicious tiles highlighted", function () {
     var data = new Uint8ClampedArray(32 * 32 * 4);
     for (var i = 0; i < data.length; i += 4) {
-      data[i] = 100; data[i + 1] = 100; data[i + 2] = 100; data[i + 3] = 255;
+      data[i] = 100;
+      data[i + 1] = 100;
+      data[i + 2] = 100;
+      data[i + 3] = 255;
     }
     var imgData = new ImageData(data, 32, 32);
     var noise = {
@@ -292,11 +380,26 @@ describe("Forensic UI — renderForensicResult", function () {
       risk_score: 25,
       risk_level: "low",
       signals: ["No strong tamper signal found"],
-      ela: { mean_difference: 0.5, max_difference: 2.0, hot_pixel_ratio: 0.01, suspicion: 0.02 },
-      noise: { mean_residual: 3.0, stddev_residual: 1.5, suspicion: 0.1, high_residual: 10, suspicious_tiles: [] },
+      ela: {
+        mean_difference: 0.5,
+        max_difference: 2.0,
+        hot_pixel_ratio: 0.01,
+        suspicion: 0.02,
+      },
+      noise: {
+        mean_residual: 3.0,
+        stddev_residual: 1.5,
+        suspicion: 0.1,
+        high_residual: 10,
+        suspicious_tiles: [],
+      },
       copy_move: { match_count: 0, matches: [], suspicion: 0 },
       metadata: { suspicion: 0.05, jpeg: { is_jpeg: false }, signals: [] },
-      _visuals: { source: makeVis(64, 64), ela: makeVis(64, 64), noise: makeVis(64, 64) },
+      _visuals: {
+        source: makeVis(64, 64),
+        ela: makeVis(64, 64),
+        noise: makeVis(64, 64),
+      },
     };
     renderForensicResult(result);
     var output = document.getElementById("forensic-output");
@@ -313,11 +416,34 @@ describe("Forensic UI — renderForensicResult", function () {
       risk_score: 75,
       risk_level: "high",
       signals: ["High ELA suspicion", "Noise inconsistency detected"],
-      ela: { mean_difference: 15.2, max_difference: 90.0, hot_pixel_ratio: 0.15, suspicion: 0.7 },
-      noise: { mean_residual: 12.0, stddev_residual: 8.0, suspicion: 0.6, high_residual: 50, suspicious_tiles: [] },
-      copy_move: { match_count: 5, matches: [{ x1: 0, y1: 0, x2: 16, y2: 16 }], suspicion: 0.4 },
-      metadata: { suspicion: 0.3, jpeg: { is_jpeg: true, app_segments: ["APP1", "APP2"] }, signals: ["EXIF data found"] },
-      _visuals: { source: makeVis(100, 100), ela: makeVis(100, 100), noise: makeVis(100, 100) },
+      ela: {
+        mean_difference: 15.2,
+        max_difference: 90.0,
+        hot_pixel_ratio: 0.15,
+        suspicion: 0.7,
+      },
+      noise: {
+        mean_residual: 12.0,
+        stddev_residual: 8.0,
+        suspicion: 0.6,
+        high_residual: 50,
+        suspicious_tiles: [],
+      },
+      copy_move: {
+        match_count: 5,
+        matches: [{ x1: 0, y1: 0, x2: 16, y2: 16 }],
+        suspicion: 0.4,
+      },
+      metadata: {
+        suspicion: 0.3,
+        jpeg: { is_jpeg: true, app_segments: ["APP1", "APP2"] },
+        signals: ["EXIF data found"],
+      },
+      _visuals: {
+        source: makeVis(100, 100),
+        ela: makeVis(100, 100),
+        noise: makeVis(100, 100),
+      },
     };
     renderForensicResult(result);
     var output = document.getElementById("forensic-output");
@@ -399,7 +525,10 @@ describe("Forensic UI — handleForensicAnalyze", function () {
 
     assert.equal(resultDiv.style.display, "block");
     assert.ok(outputEl.innerHTML.length > 0);
-    assert.ok(outputEl.innerHTML.includes("Forensic Risk"), "Output should contain 'Forensic Risk'");
+    assert.ok(
+      outputEl.innerHTML.includes("Forensic Risk"),
+      "Output should contain 'Forensic Risk'",
+    );
     assert.ok(dlEl.innerHTML.includes("Download"));
     assert.equal(btn.disabled, false);
     assert.ok(globalThis.forensicLastResult !== null);
@@ -407,7 +536,9 @@ describe("Forensic UI — handleForensicAnalyze", function () {
 
   it("should handle errors during analysis", async function () {
     var fileEl = document.getElementById("forensic-file");
-    var smallFile = new File([Buffer.alloc(100)], "test.png", { type: "image/png" });
+    var smallFile = new File([Buffer.alloc(100)], "test.png", {
+      type: "image/png",
+    });
     fileEl.files = [smallFile];
 
     var outputEl = document.getElementById("forensic-output");
@@ -420,7 +551,10 @@ describe("Forensic UI — handleForensicAnalyze", function () {
     try {
       globalThis.FORENSIC_MAX_DIMENSION = 0;
       await handleForensicAnalyze();
-      assert.ok(outputEl.innerHTML.includes("Error") || outputEl.innerHTML.includes("error"));
+      assert.ok(
+        outputEl.innerHTML.includes("Error") ||
+          outputEl.innerHTML.includes("error"),
+      );
     } finally {
       globalThis.FORENSIC_MAX_DIMENSION = origMax;
     }
