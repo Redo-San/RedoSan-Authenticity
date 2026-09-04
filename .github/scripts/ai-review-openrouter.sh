@@ -59,7 +59,7 @@ for MODEL in ${MODELS//,/ }; do
     --arg title "$TITLE" \
     --arg body "$BODY" \
     --rawfile diff /tmp/pr_diff.txt \
-    '{model: $model, messages: [{role: "system", content: $system}, {role: "user", content: ("PR Title: " + $title + "\n\nDescription: " + $body + "\n\n```diff\n" + $diff + "\n```")}], temperature: 0.1, max_tokens: 8000, stream: false}' > request.json
+    '{model: $model, messages: [{role: "system", content: $system}, {role: "user", content: ("PR Title: " + $title + "\n\nDescription: " + $body + "\n\n```diff\n" + $diff + "\n```")}], temperature: 0.1, max_tokens: 32000, stream: false}' > request.json
 
   echo "Sending request to OpenRouter API..."
   RESPONSE=$(curl -s --max-time 30 -w "\n%{http_code}" \

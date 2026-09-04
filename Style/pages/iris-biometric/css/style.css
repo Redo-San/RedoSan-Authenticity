@@ -330,7 +330,7 @@
 }
 
 /* Help card body list items (for iris.help.1 through iris.help.7) */
-.help-card.help-card .help-card-body,
+.help-card .help-card-body,
 .help-card-body {
   list-style: none;
   counter-reset: help-step;

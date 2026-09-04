@@ -1500,7 +1500,7 @@
         if (!v.ok) {
           irisSetStatus(
             "iris-status",
-            __("iris.status.imageFormatError", "Only PNG or BMP images are allowed — lossless capture is required. JPEG is rejected to preserve iris texture. (reason: {0})", JSON.stringify({0: v.reason})),
+            __("iris.status.imageFormatError", "Only PNG or BMP images are allowed — lossless capture is required. JPEG is rejected to preserve iris texture. (reason: {0})", {0: v.reason}),
           );
           input.value = "";
           return;
@@ -1565,7 +1565,7 @@
             "camera-capture",
           );
         } catch (err) {
-          irisSetStatus("iris-status", __("iris.status.captureError", "Capture error: {0}", JSON.stringify({0: err.message})));
+          irisSetStatus("iris-status", __("iris.status.captureError", "Capture error: {0}", {0: err.message}));
         }
       }
 
@@ -1606,7 +1606,7 @@
         } catch (e) {
           irisSetStatus(
             "iris-status",
-            __("iris.status.dualCaptureError", "Dual capture error: {0}", JSON.stringify({0: (e && e.message ? e.message : e)})),
+            __("iris.status.dualCaptureError", "Dual capture error: {0}", {0: (e && e.message ? e.message : e)}),
           );
         }
       }
@@ -1740,14 +1740,14 @@
               irisStorage
                 .importRecords(records)
                 .then(function (count) {
-                  alert(__("iris.alert.importedCount", "Imported {0} template(s).", JSON.stringify({0: count})));
+                  alert(__("iris.alert.importedCount", "Imported {0} template(s).", {0: count}));
                   handleIrisRefreshList();
                 })
                 .catch(function (err) {
-                  alert(__("iris.status.importError", "Import error: {0}", JSON.stringify({0: err.message})));
+                  alert(__("iris.status.importError", "Import error: {0}", {0: err.message}));
                 });
             } catch (err) {
-              alert(__("iris.status.importError", "Import error: {0}", JSON.stringify({0: err.message})));
+              alert(__("iris.status.importError", "Import error: {0}", {0: err.message}));
             }
           };
           reader.readAsText(file);
@@ -1810,8 +1810,8 @@
         if (lt) {
           var score = (result.liveness.score * 100).toFixed(1);
           lt.textContent = result.liveness.isLive
-            ? __("iris.result.live", "✓ LIVE ({0}%)", JSON.stringify({0: score}))
-            : __("iris.result.spoof", "✗ SPOOF ({0}%)", JSON.stringify({0: score}));
+            ? __("iris.result.live", "✓ LIVE ({0}%)", {0: score})
+            : __("iris.result.spoof", "✗ SPOOF ({0}%)", {0: score});
           lt.style.color = result.liveness.isLive ? "#2ecc71" : "#e74c3c";
         }
         var qt = document.getElementById("iris-quality-text");
