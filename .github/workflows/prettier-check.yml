@@ -16,12 +16,17 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
       - name: Run Prettier check
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set +e
+          set -eo pipefail
           BASE="${{ github.event.pull_request.base.sha }}"
 
           FILES=$(git diff --name-only --diff-filter=ACMRT "$BASE...HEAD" -- "*.js" "*.css" "*.html" "*.json" \
@@ -35,45 +40,31 @@ jobs:
           fi
 
           echo "Checking formatting for changed files..."
-          echo "$FILES" | tr ' ' '\n'
 
           npx prettier --config .tools/Developer_Toolkit/.prettierrc \
             --ignore-path .tools/Developer_Toolkit/.prettierignore \
-            --check $FILES 2>&1 | tee /tmp/prettier-output.txt
-          PRETTIER_EXIT=$?
+            --check $FILES > /tmp/prettier-output.txt 2>&1 || true
+          PRETTIER_EXIT=${PIPESTATUS[0]}
 
           if [ "$PRETTIER_EXIT" -eq 0 ]; then
             echo "All files formatted correctly."
-            # Delete old bot comment if exists
-            OLD_BODY=$(gh pr view "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("Prettier Check"))) | .id' 2>/dev/null || true)
-            if [ -n "$OLD_BODY" ]; then
-              gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --delete 2>/dev/null || true
-            fi
             exit 0
           fi
 
-          # Build the failure comment
-          LIST=$(cat /tmp/prettier-output.txt \
+          cat /tmp/prettier-output.txt \
             | sed 's/\x1b\[[0-9;]*m//g' \
             | grep '\[warn\]' \
             | sed 's/\[warn\] //' \
             | sed 's/ (code)//' \
-            | head -20)
+            | head -20 \
+            > /tmp/prettier-warnings.txt
 
-          COUNT=$(echo "$LIST" | wc -l | tr -d ' ')
-          FILE_LIST=$(echo "$LIST" | sed 's/^/- `/' | sed 's/$/`/')
+          COUNT=$(wc -l < /tmp/prettier-warnings.txt | tr -d ' ')
 
-          BODY="## Prettier Check
+          # Build file list as markdown
+          printf '%s\n' "## Prettier Check" "" "Found ${COUNT} unformatted file(s):" "" > /tmp/prettier-body.md
+          sed 's/^/- `/' /tmp/prettier-warnings.txt >> /tmp/prettier-body.md
+          printf '%s\n' "" "Run \`npx prettier --write\` to fix." >> /tmp/prettier-body.md
 
-          Found ${COUNT} unformatted file(s):
-
-          ${FILE_LIST}
-
-          Run \`npx prettier --write $FILES\` to fix."
-
-          # Delete old bot comment if exists, then post new one
-          gh pr view "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("Prettier Check"))) | .id' 2>/dev/null | while read -r CID; do
-            gh api repos/${{ github.repository }}/issues/comments/"$CID" --method DELETE 2>/dev/null || true
-          done
-          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body "$BODY"
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body-file /tmp/prettier-body.md
           exit 1
