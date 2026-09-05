@@ -1,2 +1,6 @@
+# Fast, deterministic gates first (no network / node_modules dependency)
+git diff --check --cached
+node scripts/guard-large-files.mjs
+
 pwsh -NoProfile -File scripts/secret-scan-precommit.ps1
 npx lint-staged
