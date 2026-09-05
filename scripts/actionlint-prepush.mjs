@@ -7,10 +7,12 @@
  */
 import { execSync, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import path from "node:path";
 
 const ACTIONLINT = "actionlint";
-const TOOLKIT_ACTIONLINT = resolve(".tools/Developer_Toolkit/actionlint.exe");
+const TOOLKIT_ACTIONLINT = path.resolve(
+  ".tools/Developer_Toolkit/actionlint.exe",
+);
 
 function git(args) {
   return execSync(`git ${args}`, {
@@ -48,11 +50,13 @@ console.log(
 
 // Probe PATH first, then fall back to the on-disk toolkit binary.
 let result = spawnSync(ACTIONLINT, [], { stdio: "inherit" });
-if (result.error && result.error.code === "ENOENT") {
-  if (existsSync(TOOLKIT_ACTIONLINT)) {
-    console.log(`actionlint: not on PATH, using ${TOOLKIT_ACTIONLINT}`);
-    result = spawnSync(TOOLKIT_ACTIONLINT, [], { stdio: "inherit" });
-  }
+if (
+  result.error &&
+  result.error.code === "ENOENT" &&
+  existsSync(TOOLKIT_ACTIONLINT)
+) {
+  console.log(`actionlint: not on PATH, using ${TOOLKIT_ACTIONLINT}`);
+  result = spawnSync(TOOLKIT_ACTIONLINT, [], { stdio: "inherit" });
 }
 
 if (result.error) {
