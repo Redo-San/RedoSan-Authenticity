@@ -11,6 +11,8 @@ function Find-Gitleaks {
   if ($env:GITLEAKS_PATH) { $candidates += $env:GITLEAKS_PATH }
   $local = Join-Path $env:LOCALAPPDATA "opencode\gitleaks\gitleaks.exe"
   if (Test-Path $local) { $candidates += $local }
+  $toolkit = Join-Path $PSScriptRoot "..\.tools\Developer_Toolkit\gitleaks.exe"
+  if (Test-Path $toolkit) { $candidates += $toolkit }
   foreach ($c in $candidates) {
     if (Test-Path $c) { return $c }
   }

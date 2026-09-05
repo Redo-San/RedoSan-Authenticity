@@ -126,7 +126,7 @@ serverFactory(function (req, res) {
   if (!tryServe(filePath, req, res)) {
     // Rewrite `/page_name/`, `/page_name/index.html`, or bare `/page_name`
     // → Style/pages/{name}/index.html
-    m = pathname.match(/^\/([^\/]+?)(?:\/index\.html|\/)?$/);
+    m = pathname.match(/^\/([^/]+?)(?:\/index\.html|\/)?$/);
     if (m && PAGE_NAMES.has(m[1])) {
       rewritten = path.join(ROOT, "Style", "pages", m[1], "index.html");
       if (tryServe(rewritten, req, res)) return;

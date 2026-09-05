@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "import",
+    "promise",
+    "unicorn",
+    "jsx-a11y",
+    "typescript-eslint",
+    "react-perf"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "ignorePatterns": [
+    "sw-precache.js",
+    "**/coverage/**",
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/.opencode/**",
+    "**/.agents/**",
+    "**/agent/**",
+    "**/.claude/**",
+    "**/skills/**",
+    "**/.env/**",
+    "**/backstop_data/**",
+    "**/certs/**",
+    "**/docs/**",
+    "**/.lh13/**",
+    "**/.lighthouseci/**",
+    "**/.playwright-mcp/**",
+    "**/.stryker-tmp/**",
+    "**/test-results/**",
+    "**/tests/**",
+    "**/.tools/**"
+  ],
+  "env": {
+    "browser": true,
+    "es2024": true,
+    "node": true
+  },
+  "rules": {
+    "no-unused-vars": "off"
+  }
+}

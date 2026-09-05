@@ -1205,8 +1205,8 @@ class AdvancedWatermarkUI {
               type === "error"
                 ? "var(--danger)"
                 : type === "success"
-                ? "var(--success)"
-                : "var(--primary)"
+                  ? "var(--success)"
+                  : "var(--primary)"
             };
             color: white;
             border-radius: var(--radius);

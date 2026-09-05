@@ -345,7 +345,7 @@ WatermarkCore.prototype.hybridDCTDWT = function (
 // DCT operations
 WatermarkCore.prototype.applyDCT = function (block) {
   const N = 8;
-  const transformed = new Array(N * N);
+  const transformed = Array(N * N);
 
   for (let u = 0; u < N; u++) {
     for (let v = 0; v < N; v++) {
@@ -394,7 +394,7 @@ WatermarkCore.prototype.applyDFT = function (block) {
 
 WatermarkCore.prototype.applyInverseDFT = function (spectrum) {
   const N = 8;
-  const block = new Array(N * N);
+  const block = Array(N * N);
   for (let x = 0; x < N; x++) {
     for (let y = 0; y < N; y++) {
       let sum = 0;
@@ -415,7 +415,7 @@ WatermarkCore.prototype.applyInverseDFT = function (spectrum) {
 
 WatermarkCore.prototype.applyInverseDCT = function (dctBlock) {
   const N = 8;
-  const block = new Array(N * N);
+  const block = Array(N * N);
 
   for (let x = 0; x < N; x++) {
     for (let y = 0; y < N; y++) {
@@ -641,7 +641,7 @@ WatermarkCore.prototype.extractBlock = function (
   blockSize,
   channel = 0,
 ) {
-  const block = new Array(blockSize * blockSize);
+  const block = Array(blockSize * blockSize);
   for (let i = 0; i < blockSize; i++) {
     for (let j = 0; j < blockSize; j++) {
       const pixelIndex = ((y + i) * width + (x + j)) * 4;

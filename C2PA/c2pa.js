@@ -500,14 +500,14 @@ function getValidationHtml(manifestStore) {
     state === "ok"
       ? __("c2pa.valid", "Valid")
       : state === "Trusted"
-      ? __("c2pa.trusted", "Trusted")
-      : state || __("c2pa.unknown", "Unknown");
+        ? __("c2pa.trusted", "Trusted")
+        : state || __("c2pa.unknown", "Unknown");
   const badgeClass =
     state === "ok" || state === "Trusted"
       ? "badge-success"
       : state === "warning"
-      ? "badge-warning"
-      : "badge-muted";
+        ? "badge-warning"
+        : "badge-muted";
 
   let html = `<span class="badge ${badgeClass}">${escHtml(stateLabel)}</span>`;
 
@@ -1138,8 +1138,8 @@ async function c2paToPDF(r) {
       const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
-        ? a.data.actions
-        : [a.data];
+          ? a.data.actions
+          : [a.data];
       items.forEach(function (act) {
         if (y > 275) {
           doc.addPage();
@@ -1255,8 +1255,8 @@ async function c2paToDOCX(r) {
       const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
-        ? a.data.actions
-        : [a.data];
+          ? a.data.actions
+          : [a.data];
       items.forEach(function (act) {
         actRows.push([act.action || "unknown", act.when || ""]);
       });
@@ -1314,8 +1314,8 @@ function c2paToCSV(r) {
     const items = Array.isArray(a.data)
       ? a.data
       : a.data && a.data.actions
-      ? a.data.actions
-      : [a.data];
+        ? a.data.actions
+        : [a.data];
     items.forEach(function (act) {
       rows.push(["Action", act.action || "unknown"]);
     });
@@ -1370,8 +1370,8 @@ function c2paToTXT(r) {
       const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
-        ? a.data.actions
-        : [a.data];
+          ? a.data.actions
+          : [a.data];
       items.forEach(function (act) {
         lines.push(
           "  " +
@@ -1447,8 +1447,8 @@ function c2paToXML(r) {
       const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
-        ? a.data.actions
-        : [a.data];
+          ? a.data.actions
+          : [a.data];
       items.forEach(function (act) {
         xml += '    <action name="' + escXml(act.action || "unknown") + '"';
         if (act.when) xml += ' when="' + escXml(act.when) + '"';
@@ -1552,8 +1552,8 @@ function c2paToHTML(r) {
       const items = Array.isArray(a.data)
         ? a.data
         : a.data && a.data.actions
-        ? a.data.actions
-        : [a.data];
+          ? a.data.actions
+          : [a.data];
       items.forEach(function (act) {
         h +=
           "<tr><td>" +
@@ -1666,8 +1666,8 @@ window.handleC2paVerify = async function () {
       state === "ok"
         ? __("c2pa.verified", "Verified")
         : state === "Trusted"
-        ? __("c2pa.trusted", "Trusted")
-        : state || __("c2pa.unknown", "Unknown");
+          ? __("c2pa.trusted", "Trusted")
+          : state || __("c2pa.unknown", "Unknown");
     const isGood = state === "ok" || state === "Trusted";
 
     let html = `<div class="c2pa-verify-result ${

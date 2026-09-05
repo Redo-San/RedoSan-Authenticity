@@ -1,0 +1,30 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "index.html",
+    "Style/index.html",
+    "dev-server.js",
+    "cli/index.js",
+    "cli/commands/*.js",
+    "cli/lib/*.js",
+    "scripts/*.mjs",
+    "scripts/*.js",
+    "tests/**/*.test.js",
+    "cli/tests/**/*.test.js",
+    "*.config.mjs",
+    "*.config.js"
+  ],
+  "project": ["**/*.{js,cjs,mjs,html}"],
+  "ignoreDependencies": [
+    "opencode-vision",
+    "envsitter-guard",
+    "opencode-pty",
+    "opencode-lazy-loader"
+  ],
+  "ignoreBinaries": ["rg", "gitleaks", "actionlint", "fd", "cloc", "less"],
+  "ignoreExportsUsedInFile": true,
+  "paths": {
+    "@/*": ["Style/*"],
+    "@@/*": ["."]
+  }
+}

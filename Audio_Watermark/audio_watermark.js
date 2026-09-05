@@ -710,8 +710,8 @@ async function awmDualExtract() {
           ? fpAlgo === 1 || fpAlgo === 5
             ? 1
             : fpAlgo === 6
-            ? 1024
-            : 2048
+              ? 1024
+              : 2048
           : 1024;
       var splitPoint =
         Math.floor(info.samples.length / (frameSize * 2)) * frameSize;

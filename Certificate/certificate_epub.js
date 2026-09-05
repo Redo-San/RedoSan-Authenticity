@@ -191,10 +191,10 @@ async function downloadCertEPUB(data) {
         escHtml((data.didSig.signature || "").substring(0, 64) + "...") +
         "</td></tr></table>"
       : data.didIdentity
-      ? '<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">' +
-        escHtml(data.didIdentity) +
-        "</td></tr></table>"
-      : "") +
+        ? '<h2>DID Identity</h2><table><tr><td><strong>DID</strong></td><td style="font-size:0.7em;word-break:break-all">' +
+          escHtml(data.didIdentity) +
+          "</td></tr></table>"
+        : "") +
     (data.faceBiometric && data.faceBiometric.detected
       ? "<h2>Face Biometric</h2><table>" +
         "<tr><td><strong>Faces detected</strong></td><td>" +
@@ -238,14 +238,14 @@ async function downloadCertEPUB(data) {
             "</td></tr>") +
         '</table><p>Verifiable at: <a href="https://opentimestamps.org">opentimestamps.org</a></p>'
       : data.ct
-      ? "<h2>Certificate Transparency</h2><p>Status: " +
-        escHtml(
-          data.ct.submitted
-            ? "Submitted"
-            : "Unavailable — " + (data.ct.error || "offline"),
-        ) +
-        "</p>"
-      : "") +
+        ? "<h2>Certificate Transparency</h2><p>Status: " +
+          escHtml(
+            data.ct.submitted
+              ? "Submitted"
+              : "Unavailable — " + (data.ct.error || "offline"),
+          ) +
+          "</p>"
+        : "") +
     "<h2>Verification QR Code</h2>" +
     "<p>Scan this QR code to verify the document contents.</p>" +
     '<div class="qr-wrapper"><img src="images/qr.png" alt="QR Code"/></div>' +

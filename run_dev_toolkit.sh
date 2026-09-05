@@ -239,9 +239,9 @@ run_cloc() {
   set +e
   start_s=$(date +%s)
   if [ -n "$RUNNER" ]; then
-    "$RUNNER" "$CLI" . --exclude-dir=node_modules,.lighthouseci,backstop_data,vendor,coverage,test-results,.stryker-tmp,.tools,.claude,.opencode,.agents,skills --quiet --progress-rate=0
+    "$RUNNER" "$CLI" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools --quiet --progress-rate=0
   else
-    "$CLI" . --exclude-dir=node_modules,.lighthouseci,backstop_data,vendor,coverage,test-results,.stryker-tmp,.tools,.claude,.opencode,.agents,skills --quiet --progress-rate=0
+    "$CLI" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools --quiet --progress-rate=0
   fi
   ec=$?
   end_s=$(date +%s)
@@ -257,6 +257,143 @@ run_cloc() {
   read -r _unused
 }
 
+# ── Toolkit binary runners ──
+TK="$ROOT/.tools/Developer_Toolkit"
+
+# ── Actionlint runner ──
+run_actionlint() {
+  name="Actionlint"
+  banner
+  printf '\n'
+  printf '  %s╔══════════════════════════════════════╗%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '  %s║       Running: %-22s║%s\n' "${BOLD}${MAGENTA}" "$name" "${RESET}"
+  printf '  %s╚══════════════════════════════════════╝%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '\n'
+  if [ ! -f "$TK/actionlint.exe" ] && [ ! -f "$TK/actionlint" ]; then
+    printf '  %s[FAIL] actionlint missing. Install: powershell -File scripts/install-toolkit-tools.ps1%s\n' "${RED}" "${RESET}"
+    printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+    read -r _unused
+    return
+  fi
+  if [ -f "$TK/actionlint.exe" ]; then AL="$TK/actionlint.exe"; else AL="$TK/actionlint"; fi
+  set +e
+  start_s=$(date +%s)
+  "$AL" -color
+  ec=$?
+  end_s=$(date +%s)
+  set -e
+  printf '\n'
+  if [ $ec -eq 0 ]; then
+    printf '  %s%s✓ %s completed successfully%s  %s(elapsed: %ds)%s\n' "${GREEN}" "${BOLD}" "$name" "${RESET}" "${DIM}" "$((end_s - start_s))" "${RESET}"
+  else
+    printf '  %s%s✗ %s failed (exit code: %d)%s  %s(elapsed: %ds)%s\n' "${RED}" "${BOLD}" "$name" $ec "${RESET}" "${DIM}" "$((end_s - start_s))" "${RESET}"
+  fi
+  printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+  read -r _unused
+}
+
+# ── Gitleaks runner (staged secret scan) ──
+run_gitleaks() {
+  name="Gitleaks"
+  banner
+  printf '\n'
+  printf '  %s╔══════════════════════════════════════╗%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '  %s║       Running: %-22s║%s\n' "${BOLD}${MAGENTA}" "$name" "${RESET}"
+  printf '  %s╚══════════════════════════════════════╝%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '\n'
+  if [ ! -f "$TK/gitleaks.exe" ] && [ ! -f "$TK/gitleaks" ]; then
+    printf '  %s[FAIL] gitleaks missing. Install: powershell -File scripts/install-toolkit-tools.ps1%s\n' "${RED}" "${RESET}"
+    printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+    read -r _unused
+    return
+  fi
+  if [ -f "$TK/gitleaks.exe" ]; then GL="$TK/gitleaks.exe"; else GL="$TK/gitleaks"; fi
+  set +e
+  start_s=$(date +%s)
+  "$GL" protect --staged --verbose
+  ec=$?
+  end_s=$(date +%s)
+  set -e
+  printf '\n'
+  if [ $ec -eq 0 ]; then
+    printf '  %s%s✓ %s completed successfully%s  %s(elapsed: %ds)%s\n' "${GREEN}" "${BOLD}" "$name" "${RESET}" "${DIM}" "$((end_s - start_s))" "${RESET}"
+  else
+    printf '  %s%s✗ %s found leaks or failed (exit code: %d)%s  %s(elapsed: %ds)%s\n' "${RED}" "${BOLD}" "$name" $ec "${RESET}" "${DIM}" "$((end_s - start_s))" "${RESET}"
+  fi
+  printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+  read -r _unused
+}
+
+# ── Ripgrep runner ──
+run_rg() {
+  name="Ripgrep"
+  banner
+  printf '\n'
+  printf '  %s╔══════════════════════════════════════╗%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '  %s║       Running: %-22s║%s\n' "${BOLD}${MAGENTA}" "$name" "${RESET}"
+  printf '  %s╚══════════════════════════════════════╝%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '\n'
+  if [ ! -f "$TK/rg.exe" ] && [ ! -f "$TK/rg" ]; then
+    printf '  %s[FAIL] rg missing. Install: powershell -File scripts/install-toolkit-tools.ps1%s\n' "${RED}" "${RESET}"
+    printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+    read -r _unused
+    return
+  fi
+  if [ -f "$TK/rg.exe" ]; then RG="$TK/rg.exe"; else RG="$TK/rg"; fi
+  printf '  %sEnter search pattern: %s' "${GREEN}" "${RESET}"
+  read -r RG_QUERY
+  RG_QUERY=${RG_QUERY:-.}
+  set +e
+  "$RG" -n --no-ignore -g "!node_modules" -g "!.git" -g "!coverage" -g "!vendor" -g "!.opencode" -g "!.agents" -g "!agent" -g "!.claude" -g "!skills" -g "!.env" -g "!backstop_data" -g "!certs" -g "!docs" -g "!.lh13" -g "!.lighthouseci" -g "!.playwright-mcp" -g "!.stryker-tmp" -g "!test-results" -g "!tests" -g "!.tools" "$RG_QUERY" .
+  ec=$?
+  set -e
+  printf '\n'
+  if [ $ec -eq 0 ]; then
+    printf '  %s%s✓ %s search complete%s\n' "${GREEN}" "${BOLD}" "$name" "${RESET}"
+  elif [ $ec -eq 1 ]; then
+    printf '  %s%sℹ %s: no matches found%s\n' "${YELLOW}" "${BOLD}" "$name" "${RESET}"
+  else
+    printf '  %s%s✗ %s failed (exit code: %d)%s\n' "${RED}" "${BOLD}" "$name" $ec "${RESET}"
+  fi
+  printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+  read -r _unused
+}
+
+# ── FD runner ──
+run_fd() {
+  name="FD"
+  banner
+  printf '\n'
+  printf '  %s╔══════════════════════════════════════╗%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '  %s║       Running: %-22s║%s\n' "${BOLD}${MAGENTA}" "$name" "${RESET}"
+  printf '  %s╚══════════════════════════════════════╝%s\n' "${BOLD}${MAGENTA}" "${RESET}"
+  printf '\n'
+  if [ ! -f "$TK/fd.exe" ] && [ ! -f "$TK/fd" ]; then
+    printf '  %s[FAIL] fd missing. Install: powershell -File scripts/install-toolkit-tools.ps1%s\n' "${RED}" "${RESET}"
+    printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+    read -r _unused
+    return
+  fi
+  if [ -f "$TK/fd.exe" ]; then FD="$TK/fd.exe"; else FD="$TK/fd"; fi
+  printf '  %sEnter file pattern (e.g. *.js): %s' "${GREEN}" "${RESET}"
+  read -r FD_PATT
+  FD_PATT=${FD_PATT:-*}
+  set +e
+  "$FD" -H -g -E node_modules -E .git -E coverage -E vendor -E .opencode -E .agents -E agent -E .claude -E skills -E .env -E backstop_data -E certs -E docs -E .lh13 -E .lighthouseci -E .playwright-mcp -E .stryker-tmp -E test-results -E tests -E .tools "$FD_PATT" .
+  ec=$?
+  set -e
+  printf '\n'
+  if [ $ec -eq 0 ]; then
+    printf '  %s%s✓ %s search complete%s\n' "${GREEN}" "${BOLD}" "$name" "${RESET}"
+  elif [ $ec -eq 1 ]; then
+    printf '  %s%sℹ %s: no files found%s\n' "${YELLOW}" "${BOLD}" "$name" "${RESET}"
+  else
+    printf '  %s%s✗ %s failed (exit code: %d)%s\n' "${RED}" "${BOLD}" "$name" $ec "${RESET}"
+  fi
+  printf '\n  %sPress RETURN to continue...%s' "${DIM}" "${RESET}"
+  read -r _unused
+}
+
 # ── Menu ──
 menu() {
   banner
@@ -267,32 +404,45 @@ menu() {
   printf '  %s [1]%s  Biome          %s(lint + format)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '  %s [2]%s  ESLint         %s(JS lint)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '  %s [3]%s  Stylelint      %s(CSS lint)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s [4]%s  Prettier       %s(check formatting)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s [5]%s  Prettier W     %s(write formatting)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '\n'
   printf '  %s── Testing ───────────────────────────────%s\n' "${CYAN}" "${RESET}"
-  printf '  %s [4]%s  Madge          %s(circular deps)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s [5]%s  Core tests     %s(unit tests)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s [6]%s  All tests      %s(full suite)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s [7]%s  Coverage       %s(code coverage)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s [8]%s  CLOC           %s(count lines of code)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s [6]%s  Madge          %s(circular deps)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s [7]%s  Core tests     %s(unit tests)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s [8]%s  All tests      %s(full suite)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s [9]%s  Coverage       %s(code coverage)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[10]%s  CLOC           %s(count lines of code)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[11]%s  JSCPD          %s(duplicate code)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '\n'
+  printf '  %s── Lint / audit ──────────────────────────%s\n' "${CYAN}" "${RESET}"
+  printf '  %s[12]%s  Oxlint         %s(fast JS lint)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[13]%s  Actionlint     %s(workflow lint)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[14]%s  Gitleaks       %s(secret scan, staged)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '\n'
+  printf '  %s── Search / source ───────────────────────%s\n' "${CYAN}" "${RESET}"
+  printf '  %s[15]%s  Ripgrep        %s(quick code search)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[16]%s  FD             %s(find files)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '\n'
   printf '  %s── Documentation ─────────────────────────%s\n' "${CYAN}" "${RESET}"
-  printf '  %s [9]%s  TypeDoc        %s(API docs)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s[10]%s  Markdownlint   %s(MD quality)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[17]%s  TypeDoc        %s(API docs)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[18]%s  Markdownlint   %s(MD quality)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '\n'
   printf '  %s── Dependencies ──────────────────────────%s\n' "${CYAN}" "${RESET}"
-  printf '  %s[11]%s  Depcheck       %s(unused deps)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s[12]%s  Size Limit     %s(bundle budget)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s[13]%s  CSpell         %s(spell check)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[19]%s  Depcheck       %s(unused deps)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[20]%s  Size Limit     %s(bundle budget)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[21]%s  CSpell         %s(spell check)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[22]%s  Knip           %s(unused files/deps)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '\n'
   printf '  %s── Git ───────────────────────────────────%s\n' "${CYAN}" "${RESET}"
-  printf '  %s[14]%s  Commitlint     %s(check commit msg)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s[15]%s  Husky          %s(reinstall hooks)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[23]%s  Commitlint     %s(check commit msg)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[24]%s  Husky          %s(reinstall hooks)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '\n'
   printf '  %s── Build / E2E ───────────────────────────%s\n' "${CYAN}" "${RESET}"
-  printf '  %s[16]%s  Workbox        %s(SW build)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s[17]%s  Pa11y          %s(a11y audit)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s[18]%s  LHCI           %s(Lighthouse CI)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
-  printf '  %s[19]%s  BackstopJS     %s(visual regression)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[25]%s  Workbox        %s(SW build)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[26]%s  Pa11y          %s(a11y audit)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[27]%s  LHCI           %s(Lighthouse CI)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
+  printf '  %s[28]%s  BackstopJS     %s(visual regression)%s\n' "${GREEN}" "${RESET}" "${DIM}" "${RESET}"
   printf '\n'
   printf '  %s── Global ────────────────────────────────%s\n' "${CYAN}" "${RESET}"
   printf '  %s[C]%s  Full check     %s(lint + style + tests)%s\n' "${YELLOW}" "${RESET}" "${DIM}" "${RESET}"
@@ -314,22 +464,31 @@ menu() {
     1)  run "Biome"          sh -c "cd '$ROOT/.tools/Developer_Toolkit' && '$BIN'biome check '../..'" ;;
     2)  run "ESLint"         "$BIN"eslint . --cache --cache-location .eslintcache --config "$ROOT/.tools/Developer_Toolkit/eslint.config.mjs" ;;
     3)  run "Stylelint"      "$BIN"stylelint "**/*.css" --config "$ROOT/.tools/Developer_Toolkit/.stylelintrc.json" --ignore-path "$ROOT/.tools/Developer_Toolkit/.stylelintignore" ;;
-    4)  run "Madge"          "$BIN"madge --circular --extensions js C2PA Watermark Pixel_Injection Audio_Watermark Fingerprint Document_Watermark Timestamp Metadata Forensic ID_Forge Decentralized_Identity_DID Certificate Assistant Converter Style cli ;;
-    5)  run "Core Tests"     node --no-warnings --test --test-timeout=120000 cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/id_forge_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js ;;
-    6)  run "All Tests"      npm test ;;
-    7)  run "Coverage"       npm run coverage ;;
-    8)  run_cloc ;;
-    9)  run "TypeDoc"        "$BIN"typedoc --options "$ROOT/.tools/Developer_Toolkit/typedoc.json" ;;
-    10) run "Markdownlint"   "$BIN"markdownlint --config "$ROOT/.tools/Developer_Toolkit/.markdownlint.json" "**/*.md" --ignore node_modules --ignore skills --ignore agent --ignore .agents ;;
-    11) run "Depcheck"       "$BIN"depcheck --config "$ROOT/.tools/Developer_Toolkit/.depcheckrc" ;;
-    12) run "Size Limit"     "$BIN"size-limit ;;
-    13) run "CSpell"         "$BIN"cspell --config "$ROOT/.tools/Developer_Toolkit/cspell.json" --no-progress "**/*.js" "**/*.css" "**/*.html" "**/*.md" "**/*.yml" "**/*.json" ;;
-    14) run "Commitlint"     sh -c "printf 'feat: test\n' | '$BIN'commitlint --config '$ROOT/.tools/Developer_Toolkit/commitlint.config.mjs'" ;;
-    15) run "Husky"          "$BIN"husky ;;
-    16) run "Workbox"        "$BIN"workbox generateSW "$ROOT/.tools/Developer_Toolkit/workbox-config.js" ;;
-    17) run_with_server "Pa11y" "$BIN"pa11y http://127.0.0.1:8080/ ;;
-    18) run_lhci ;;
-    19) run_with_server "BackstopJS" "$BIN"backstop test --config "$ROOT/.tools/Developer_Toolkit/backstop.json" ;;
+    4)  run "Prettier"       "$BIN"prettier --config "$ROOT/.tools/Developer_Toolkit/.prettierrc" --ignore-path "$ROOT/.tools/Developer_Toolkit/.prettierignore" --check "**/*.{js,css,html,json}" ;;
+    5)  run "Prettier W"     "$BIN"prettier --write --config "$ROOT/.tools/Developer_Toolkit/.prettierrc" --ignore-path "$ROOT/.tools/Developer_Toolkit/.prettierignore" "**/*.{js,css,html,json}" ;;
+    6)  run "Madge"          "$BIN"madge --circular --extensions js C2PA Watermark Pixel_Injection Audio_Watermark Fingerprint Document_Watermark Timestamp Metadata Forensic ID_Forge Decentralized_Identity_DID Certificate Assistant Converter Style cli ;;
+    7)  run "Core Tests"     node --no-warnings --test --test-timeout=120000 cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/id_forge_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js ;;
+    8)  run "All Tests"      npm test ;;
+    9)  run "Coverage"       npm run coverage ;;
+    10) run_cloc ;;
+    11) run "JSCPD"          "$BIN"jscpd --config "$ROOT/.tools/Developer_Toolkit/.jscpd.json" . ;;
+    12) run "Oxlint"         "$BIN"oxlint --config "$ROOT/oxlint.config.json" . ;;
+    13) run_actionlint ;;
+    14) run_gitleaks ;;
+    15) run_rg ;;
+    16) run_fd ;;
+    17) run "TypeDoc"        "$BIN"typedoc --options "$ROOT/.tools/Developer_Toolkit/typedoc.json" ;;
+    18) run "Markdownlint"   "$BIN"markdownlint --config "$ROOT/.tools/Developer_Toolkit/.markdownlint.json" "**/*.md" --ignore coverage --ignore node_modules --ignore vendor --ignore .opencode --ignore .agents --ignore agent --ignore .claude --ignore skills --ignore .env --ignore backstop_data --ignore certs --ignore docs --ignore .lh13 --ignore .lighthouseci --ignore .playwright-mcp --ignore .stryker-tmp --ignore test-results --ignore tests --ignore .tools ;;
+    19) run "Depcheck"       "$BIN"depcheck --config "$ROOT/.tools/Developer_Toolkit/.depcheckrc" ;;
+    20) run "Size Limit"     "$BIN"size-limit ;;
+    21) run "CSpell"         "$BIN"cspell --config "$ROOT/.tools/Developer_Toolkit/cspell.json" --no-progress "**/*.js" "**/*.css" "**/*.html" "**/*.md" "**/*.yml" "**/*.json" ;;
+    22) run "Knip"           "$BIN"knip --config "$ROOT/.tools/Developer_Toolkit/knip.json" ;;
+    23) run "Commitlint"     sh -c "printf 'feat: test\n' | '$BIN'commitlint --config '$ROOT/.tools/Developer_Toolkit/commitlint.config.mjs'" ;;
+    24) run "Husky"          "$BIN"husky ;;
+    25) run "Workbox"        "$BIN"workbox generateSW "$ROOT/.tools/Developer_Toolkit/workbox-config.js" ;;
+    26) run_with_server "Pa11y" "$BIN"pa11y http://127.0.0.1:8080/ ;;
+    27) run_lhci ;;
+    28) run_with_server "BackstopJS" "$BIN"backstop test --config "$ROOT/.tools/Developer_Toolkit/backstop.json" ;;
     c|C) run "Full Check"    npm run check ;;
     q|Q) printf '\n'; exit 0 ;;
   esac

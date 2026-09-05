@@ -476,24 +476,26 @@ function docwExtractTextFromBuf(file, buf, callback) {
   var ext = file.name.split(".").pop().toLowerCase();
   switch (ext) {
     case "docx": {
-      DOCX_EXTRACTOR.readDocx(buf)
-        .then(function (text) {
+      (async () => {
+        try {
+          const text = await DOCX_EXTRACTOR.readDocx(buf);
           callback(null, text, "docx");
-        })
-        .catch(function (error) {
+        } catch (error) {
           callback(error.message);
-        });
+        }
+      })();
 
       break;
     }
     case "pdf": {
-      DOCX_EXTRACTOR.readPdf(new Uint8Array(buf))
-        .then(function (text) {
+      (async () => {
+        try {
+          const text = await DOCX_EXTRACTOR.readPdf(new Uint8Array(buf));
           callback(null, text || "", "pdf");
-        })
-        .catch(function (error) {
+        } catch (error) {
           callback("PDF extraction failed: " + error.message);
-        });
+        }
+      })();
 
       break;
     }

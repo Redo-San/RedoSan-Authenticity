@@ -591,10 +591,10 @@ async function generateProfessionalCert() {
       fpFileName: fpFile
         ? fpFile.name
         : fpGlobal
-        ? fpGlobal.file_info
-          ? fpGlobal.file_info.file_name
-          : ""
-        : "",
+          ? fpGlobal.file_info
+            ? fpGlobal.file_info.file_name
+            : ""
+          : "",
       documentWatermark: !!docwFile,
       documentWatermarkFileName: docwFileName,
       documentWatermarkResult: stripHtml(docwText),

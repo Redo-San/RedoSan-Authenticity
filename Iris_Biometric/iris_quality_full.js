@@ -404,8 +404,8 @@ IrisQualityFull.visibleIrisArea = function (mask, width, height, iris) {
  */
 IrisQualityFull.angularOcclusion = function (mask, width, height, iris) {
   var x, y, dx, dy, dist, idx, angle, bin;
-  var total30 = new Array(12).fill(0);
-  var invalid30 = new Array(12).fill(0);
+  var total30 = Array(12).fill(0);
+  var invalid30 = Array(12).fill(0);
   var i, occ90, max90, max30, sectors;
 
   if (!mask || !iris || !iris.radius) {

@@ -53,6 +53,7 @@ skills/
 .agents/
 .claude/
 agent/
+.Plans/
 skills-lock.json
 
 # Local AI tool config (OpenCode — machine-specific)
@@ -91,6 +92,7 @@ backstop_data/
 .stryker-tmp/
 test-results/
 .playwright-mcp/
+.eslintcache
 
 # Generated documentation
 docs/

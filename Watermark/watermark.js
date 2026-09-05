@@ -572,8 +572,8 @@ async function updateCapacity() {
       type === 9
         ? __("wm.chrominance_suffix", " (chrominance redundant)")
         : type === 4
-        ? __("wm.redundant_suffix", " (redundant x3)")
-        : "";
+          ? __("wm.redundant_suffix", " (redundant x3)")
+          : "";
     const capText = __(
       "wm.capacity_label",
       "Capacity: ~{bytes} byte{s}{suffix} ({w}×{h} image)",

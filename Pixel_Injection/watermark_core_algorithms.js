@@ -410,7 +410,7 @@ WatermarkCore.prototype.calculateAdvancedJNDMask = function (
   width,
   height,
 ) {
-  const mask = new Array(width * height);
+  const mask = Array(width * height);
   for (let i = 0; i < data.length; i += 4) {
     const pixelIndex = i / 4;
     const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
@@ -535,7 +535,7 @@ WatermarkCore.prototype.analyzeStatisticalCharacteristics = function (
   imageData,
 ) {
   const data = imageData.data;
-  let histogram = new Array(256).fill(0);
+  let histogram = Array(256).fill(0);
 
   // Calculate histogram
   for (let i = 0; i < data.length; i += 4) {
@@ -597,7 +597,7 @@ WatermarkCore.prototype.extractMLFeatures = function (imageData) {
 
 // Calculate histogram
 WatermarkCore.prototype.calculateHistogram = function (imageData) {
-  const histogram = new Array(256).fill(0);
+  const histogram = Array(256).fill(0);
   const data = imageData.data;
 
   for (let i = 0; i < data.length; i += 4) {
@@ -1016,7 +1016,7 @@ WatermarkCore.prototype.calculatePerceptualMask = function (
   width,
   height,
 ) {
-  const mask = new Array(width * height);
+  const mask = Array(width * height);
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {

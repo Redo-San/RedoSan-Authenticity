@@ -24,3 +24,4 @@ tests/
 Style/pages/
 Style/shared.js
 sw-precache.js
+cli/

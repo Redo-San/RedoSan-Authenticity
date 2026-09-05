@@ -97,14 +97,10 @@ var DOCX_EXTRACTOR = (function () {
     }).pipeThrough(new DecompressionStream(format));
     var reader = stream.getReader();
     var chunks = [];
-    try {
-      while (true) {
-        var v = await reader.read();
-        if (v.done) break;
-        chunks.push(v.value);
-      }
-    } catch (error) {
-      throw error;
+    while (true) {
+      var v = await reader.read();
+      if (v.done) break;
+      chunks.push(v.value);
     }
     var total = 0;
     for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
@@ -400,34 +396,34 @@ async function docwExtractText(file, callback) {
 
   switch (ext) {
     case "docx": {
-      reader.onload = function (e) {
-        DOCX_EXTRACTOR.readDocx(e.target.result)
-          .then(function (text) {
-            callback(null, text, "docx");
-          })
-          .catch(function (error) {
-            callback(error.message);
-          });
+      reader.onload = async function (e) {
+        try {
+          const text = await DOCX_EXTRACTOR.readDocx(e.target.result);
+          callback(null, text, "docx");
+        } catch (error) {
+          callback(error.message);
+        }
       };
       reader.readAsArrayBuffer(file);
 
       break;
     }
     case "pdf": {
-      reader.onload = function (e) {
-        DOCX_EXTRACTOR.readPdf(new Uint8Array(e.target.result))
-          .then(function (text) {
-            if (text) {
-              callback(null, text, "pdf");
-            } else {
-              callback(
-                "Could not extract text from PDF. The PDF may be image-based or encrypted.",
-              );
-            }
-          })
-          .catch(function (error) {
-            callback("PDF extraction failed: " + error.message);
-          });
+      reader.onload = async function (e) {
+        try {
+          const text = await DOCX_EXTRACTOR.readPdf(
+            new Uint8Array(e.target.result),
+          );
+          if (text) {
+            callback(null, text, "pdf");
+          } else {
+            callback(
+              "Could not extract text from PDF. The PDF may be image-based or encrypted.",
+            );
+          }
+        } catch (error) {
+          callback("PDF extraction failed: " + error.message);
+        }
       };
       reader.readAsArrayBuffer(file);
 

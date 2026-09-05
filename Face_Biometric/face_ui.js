@@ -1094,15 +1094,13 @@ function updateFaceRunState() {
     return;
   }
   var waSatisfied = facePasskeyRegistered || _faceWaUnavailable;
-  if (
-    !(
-      _facePendingCanvas &&
-      label &&
-      label.value &&
-      label.value.trim() !== "" &&
-      waSatisfied
-    )
-  ) {
+  if (!(
+    _facePendingCanvas &&
+    label &&
+    label.value &&
+    label.value.trim() !== "" &&
+    waSatisfied
+  )) {
     btn.disabled = true;
     // Surface the passkey requirement only when everything else is ready, so
     // the user knows why the button is still disabled.

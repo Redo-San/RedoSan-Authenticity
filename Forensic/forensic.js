@@ -244,8 +244,8 @@ function forensicRiskBadge(level, score) {
     cls === "danger"
       ? "var(--danger)"
       : cls === "warn"
-      ? "#f6a623"
-      : "var(--success)";
+        ? "#f6a623"
+        : "var(--success)";
   return (
     '<span style="display:inline-block;padding:6px 10px;border-radius:6px;background:' +
     color +

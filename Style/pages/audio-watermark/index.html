@@ -20,7 +20,7 @@
       rel="stylesheet"
       href="../../responsive.css"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
     <link rel="stylesheet" href="../../music-player.css" />
@@ -296,7 +296,7 @@
             data-i18n-placeholder="search.placeholder"
             placeholder="Search..."
             aria-label="Search"
-            onkeydown="if(event.key==='Enter')siteSearch()"
+            onkeydown="if (event.key === 'Enter') siteSearch();"
             onfocus="this.parentElement.classList.add('focused')"
             onblur="this.parentElement.classList.remove('focused')"
           />
@@ -309,7 +309,7 @@
         </div>
         <button
           class="theme-btn mode-switch-btn"
-          onclick="window.location.href='../../../../index.html'"
+          onclick="window.location.href = '../../../../index.html'"
           title="Back to Home"
           aria-label="Back to Home"
         >
@@ -342,56 +342,80 @@
           <div class="lang-menu" id="langMenu">
             <a
               href="#"
-              onclick="switchLang('en'); return false;"
+              onclick="
+                switchLang('en');
+                return false;
+              "
               class="lang-option"
               data-lang="en"
               >English</a
             >
             <a
               href="#"
-              onclick="switchLang('ar'); return false;"
+              onclick="
+                switchLang('ar');
+                return false;
+              "
               class="lang-option"
               data-lang="ar"
               >العربية</a
             >
             <a
               href="#"
-              onclick="switchLang('fr'); return false;"
+              onclick="
+                switchLang('fr');
+                return false;
+              "
               class="lang-option"
               data-lang="fr"
               >Français</a
             >
             <a
               href="#"
-              onclick="switchLang('de'); return false;"
+              onclick="
+                switchLang('de');
+                return false;
+              "
               class="lang-option"
               data-lang="de"
               >Deutsch</a
             >
             <a
               href="#"
-              onclick="switchLang('es'); return false;"
+              onclick="
+                switchLang('es');
+                return false;
+              "
               class="lang-option"
               data-lang="es"
               >Español</a
             >
             <a
               href="#"
-              onclick="switchLang('zh'); return false;"
+              onclick="
+                switchLang('zh');
+                return false;
+              "
               class="lang-option"
               data-lang="zh"
               >中文</a
             >
             <a
               href="#"
-              onclick="switchLang('ja'); return false;"
+              onclick="
+                switchLang('ja');
+                return false;
+              "
               class="lang-option"
               data-lang="ja"
               >日本語</a
             >
             <a
               href="#"
-              onclick="switchLang('ko'); return false;"
+              onclick="
+                switchLang('ko');
+                return false;
+              "
               class="lang-option"
               data-lang="ko"
               >한국어</a
@@ -517,7 +541,10 @@
         >
           <a
             href="#"
-            onclick="goHome();return false;"
+            onclick="
+              goHome();
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -587,7 +614,11 @@
               <select
                 id="awm-type"
                 name="awm-type"
-                onchange="toggleAwmPassword();updateAwmCapacity();toggleAwmInput()"
+                onchange="
+                  toggleAwmPassword();
+                  updateAwmCapacity();
+                  toggleAwmInput();
+                "
               >
                 <option value="1">1. LSB Audio</option>
                 <option value="2">2. Phase Coding</option>
@@ -684,7 +715,10 @@
                 max="3000"
                 value="500"
                 step="100"
-                oninput="document.getElementById('awm-strength-val').textContent=this.value"
+                oninput="
+                  document.getElementById('awm-strength-val').textContent =
+                    this.value
+                "
               />
             </div>
             <button
@@ -775,7 +809,10 @@
                 max="3000"
                 value="400"
                 step="100"
-                oninput="document.getElementById('awm-strength-ex-val').textContent=this.value"
+                oninput="
+                  document.getElementById('awm-strength-ex-val').textContent =
+                    this.value
+                "
               />
             </div>
             <button
@@ -906,7 +943,7 @@
     <div
       class="modal-overlay"
       id="dl-modal"
-      onclick="if(event.target===this)closeDownloadModal()"
+      onclick="if (event.target === this) closeDownloadModal();"
     >
       <div class="modal-box">
         <div class="modal-close" onclick="closeDownloadModal()">&times;</div>
@@ -1090,9 +1127,9 @@
             var a = document.querySelector(n);
             a && a.remove();
           };
-          t('.sidebar a[data-page="removal-tools"]'),
+          (t('.sidebar a[data-page="removal-tools"]'),
             t('.card[data-page="removal-tools"]'),
-            t("#page-removal-tools");
+            t("#page-removal-tools"));
         } else {
           (function () {
             function init() {
@@ -1180,8 +1217,8 @@
                 fn.replace("handleC2pa", "") === "Read"
                   ? "c2pa-read-output"
                   : fn.replace("handleC2pa", "") === "Write"
-                  ? "c2pa-write-output"
-                  : "c2pa-verify-output",
+                    ? "c2pa-write-output"
+                    : "c2pa-verify-output",
               );
               if (out) {
                 out.innerHTML =
