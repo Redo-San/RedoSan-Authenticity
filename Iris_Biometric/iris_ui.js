@@ -729,10 +729,14 @@ async function irisListTemplates() {
       ")" +
       ' <button class="iris-verify-btn" onclick="irisVerify(\'' +
       template.id +
-      "')\">Verify</button>" +
+      "')\">" +
+      __("iris.gallery.verify", "Verify") +
+      "</button>" +
       ' <button class="iris-delete-btn" onclick="irisDeleteTemplate(\'' +
       template.id +
-      "')\">Delete</button>" +
+      "')\">" +
+      __("iris.gallery.delete", "Delete") +
+      "</button>" +
       "</li>";
     items += li;
   }
@@ -1131,8 +1135,8 @@ async function runIrisPipeline(src) {
       eyeSideSel && eyeSideSel.value === "left"
         ? "left"
         : eyeSideSel && eyeSideSel.value === "right"
-        ? "right"
-        : "unknown";
+          ? "right"
+          : "unknown";
     var illumination = IrisQualityFull.detectIllumination(
       src.imageData && src.imageData.data ? src.imageData.data : null,
       src.width,
@@ -1821,6 +1825,7 @@ function _irisFileStamp() {
  * @param r
  */
 function _irisReportToCSV(r) {
+  var __ = _iris__();
   var rows;
   rows = [
     ["Key", "Value"],
@@ -1850,7 +1855,7 @@ function _irisReportToCSV(r) {
     ],
     ["Template ID", r.template.id],
     ["Template label", r.template.label],
-    ["Eye side", r.template.eyeSide || "unknown"],
+    [__("iris.gallery.eye_side", "Eye side"), r.template.eyeSide || "unknown"],
     ["NIR available", r.nir ? (r.nir.nirAvailable ? "yes" : "no") : "unknown"],
     ["Illumination", r.illumination ? r.illumination.modality : "unknown"],
     ["FTA", r.performance ? r.performance.fta : 0],
@@ -2051,13 +2056,18 @@ function _irisReportToXML(r) {
  * @param r
  */
 async function _irisReportToPDF(r) {
+  var __ = _iris__();
   var doc, y, push;
   await _irisEnsureLib("jspdf");
   doc = new window.jspdf.jsPDF();
   y = 20;
   doc.setFontSize(16);
   doc.setTextColor(108, 92, 231);
-  doc.text("RedoSan Authenticity - Iris Biometric", 14, y);
+  doc.text(
+    __("iris.report.title", "RedoSan Authenticity - Iris Biometric"),
+    14,
+    y,
+  );
   y += 10;
   push = function (k, v) {
     /* c8 ignore start -- real reports never exceed one page */
@@ -2129,7 +2139,10 @@ async function _irisReportToPDF(r) {
   y += 6;
   push("ID", r.template.id);
   push("Label", r.template.label);
-  push("Eye side", r.template.eyeSide || "unknown");
+  push(
+    __("iris.gallery.eye_side", "Eye side"),
+    r.template.eyeSide || "unknown",
+  );
   push("Encryption", r.template.encryption);
   push("Illumination", r.illumination ? r.illumination.modality : "unknown");
   push(

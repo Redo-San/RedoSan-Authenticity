@@ -459,14 +459,42 @@
     )
       initFaceBiometric();
 
+    // Standalone pages that need i18n-data-{lang}.js loaded via script tag
+    // (their <head> uses document.write which is skipped by runInlineScripts)
+    var STANDALONE_I18N_PAGES = [
+      "watermark",
+      "audio-watermark",
+      "face-biometric",
+      "iris-biometric",
+      "pixel-injection",
+      "document-watermark",
+      "fingerprint",
+      "forensic",
+      "id_forge",
+      "metadata",
+      "timestamp",
+      "did",
+      "c2pa",
+      "certificate",
+      "converter",
+    ];
+    var needsI18nData = STANDALONE_I18N_PAGES.includes(pageName);
+    var currentLang = i18n && i18n.lang ? i18n.lang : "en";
+    if (needsI18nData && currentLang !== "en") {
+      var base = i18nLangBase ? i18nLangBase() : "../../";
+      var scriptSrc = base + "lang/i18n-data-" + currentLang + ".js";
+      if (!document.querySelector('script[src="' + scriptSrc + '"]')) {
+        var s = document.createElement("script");
+        s.src = scriptSrc;
+        document.head.append(s);
+      }
+    }
+
     // Iris Biometric: re-run page init (consent gate, gallery list,
-    // camera setup) after an AJAX swap. initIrisBiometric only exists
+    // camera setup) after an AJAX swap. irisInit only exists
     // once iris_ui.js has been loaded by loadPageScripts.
-    if (
-      pageName === "iris-biometric" &&
-      typeof initIrisBiometric === "function"
-    )
-      initIrisBiometric();
+    if (pageName === "iris-biometric" && typeof irisInit === "function")
+      irisInit();
 
     // Pixel Injection: re-populate algorithm dropdowns, re-attach event listeners, reset to embed tab
     if (pageName === "pixel-injection") {

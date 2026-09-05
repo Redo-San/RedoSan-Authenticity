@@ -676,6 +676,10 @@
               border-radius: 8px;
               padding: 12px 14px;
               margin-bottom: 16px;
+              overflow-wrap: break-word;
+              word-wrap: break-word;
+              word-break: break-word;
+              box-sizing: border-box;
             "
           >
             <p style="margin-bottom: 8px">
@@ -1408,6 +1412,51 @@
       })();
     </script>
 
+    <!-- Status display (moved early for MPA inline script execution order) -->
+    <script>
+      /* ── Status display ── */
+      function irisSetStatusAdvanced(id, msg) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.textContent = msg;
+          el.className = "iris-status";
+          if (
+            msg.indexOf("Error") !== -1 ||
+            msg.indexOf("error") !== -1 ||
+            msg.indexOf("denied") !== -1
+          ) {
+            el.classList.add("error");
+          } else if (
+            msg.indexOf("success") !== -1 ||
+            msg.indexOf("Success") !== -1 ||
+            msg.indexOf("✓") !== -1 ||
+            msg.indexOf("✅") !== -1
+          ) {
+            el.classList.add("success");
+          } else {
+            el.classList.add("info");
+          }
+        }
+      }
+      window.irisSetStatusAdvanced = irisSetStatusAdvanced;
+
+      // Restrict the name/label field to English (Latin) characters only.
+      function irisSanitizeLabel(el) {
+        var cleaned = (el.value || "").replace(/[^A-Za-z0-9 _.\-@]/g, "");
+        if (cleaned !== el.value) {
+          el.value = cleaned;
+          irisSetStatusAdvanced(
+            "iris-status",
+            __(
+              "iris.status.invalidChars",
+              "Only English (Latin) letters, numbers and basic punctuation are allowed.",
+            ),
+          );
+        }
+      }
+      window.irisSanitizeLabel = irisSanitizeLabel;
+    </script>
+
     <!-- Page-level UI handlers -->
     <script>
       /* ── Consent ── */
@@ -1852,48 +1901,6 @@
         });
       }
 
-      /* ── Status display ── */
-      function irisSetStatusAdvanced(id, msg) {
-        var el = document.getElementById(id);
-        if (el) {
-          el.textContent = msg;
-          el.className = "iris-status";
-          if (
-            msg.indexOf("Error") !== -1 ||
-            msg.indexOf("error") !== -1 ||
-            msg.indexOf("denied") !== -1
-          ) {
-            el.classList.add("error");
-          } else if (
-            msg.indexOf("success") !== -1 ||
-            msg.indexOf("Success") !== -1 ||
-            msg.indexOf("✓") !== -1 ||
-            msg.indexOf("✅") !== -1
-          ) {
-            el.classList.add("success");
-          } else {
-            el.classList.add("info");
-          }
-        }
-      }
-      window.irisSetStatusAdvanced = irisSetStatusAdvanced;
-
-      // Restrict the name/label field to English (Latin) characters only.
-      function irisSanitizeLabel(el) {
-        var cleaned = (el.value || "").replace(/[^A-Za-z0-9 _.\-@]/g, "");
-        if (cleaned !== el.value) {
-          el.value = cleaned;
-          irisSetStatusAdvanced(
-            "iris-status",
-            __(
-              "iris.status.invalidChars",
-              "Only English (Latin) letters, numbers and basic punctuation are allowed.",
-            ),
-          );
-        }
-      }
-      window.irisSanitizeLabel = irisSanitizeLabel;
-
       /* ── Display result ── */
       function _irisDisplayResult(result) {
         var box = document.getElementById("iris-result-box");
@@ -1921,8 +1928,9 @@
         if (ht) ht.textContent = "—";
       }
 
-      /* ── Expose helpers for iris_ui.js ── */
-      window.irisSetStatus = irisSetStatus;
+/* ── Expose helpers for iris_ui.js ── */
+      /* Note: irisSetStatus is defined in iris_ui.js and uses
+         window.irisSetStatusAdvanced if available. No need to expose here. */
     </script>
 
     <!-- Bot / Automation block overlay -->
