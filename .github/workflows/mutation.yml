@@ -1,0 +1,68 @@
+name: Mutation Testing
+
+on:
+  schedule:
+    - cron: "30 2 * * 1"
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "Watermark/**"
+      - "Pixel_Injection/**"
+      - "Audio_Watermark/**"
+      - "Document_Watermark/**"
+      - "C2PA/**"
+      - "Forensic/**"
+      - "Timestamp/**"
+      - "Metadata/**"
+      - "cli/tests/watermark_core_test.js"
+      - "cli/tests/pixel_injection_test.js"
+      - "cli/tests/c2pa_cbor_test.js"
+      - "cli/tests/audio_watermark_core_test.js"
+      - "cli/tests/document_watermark_test.js"
+      - "cli/tests/forensic_test.js"
+      - "cli/tests/timestamp_test.js"
+      - "cli/tests/metadata_test.js"
+      - ".github/workflows/mutation.yml"
+      - ".tools/Developer_Toolkit/stryker.conf.js"
+      - "package.json"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Use Node.js 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install system deps (canvas)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
+      - name: Install npm deps
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci
+      - name: Run mutation tests
+        run: npm run mutate
+        timeout-minutes: 240
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          if-no-files-found: warn
+          retention-days: 14
