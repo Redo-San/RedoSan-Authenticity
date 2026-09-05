@@ -6,11 +6,15 @@ vendor/
 agent/
 .claude/
 skills/
+.env/
 backstop_data/
+certs/
 docs/
 .lighthouseci/
 .playwright-mcp/
 .stryker-tmp/
 coverage/
 test-results/
+tests/
+.lh13/
 .tools/

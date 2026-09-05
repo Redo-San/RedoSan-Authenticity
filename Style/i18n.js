@@ -177,6 +177,24 @@ async function detectLang() {
 function switchLang(lang) {
   if (!SUPPORTED.has(lang)) lang = "en";
   localStorage.setItem("redosan_lang", lang);
+
+  // On standalone pages, load the i18n-data-{lang}.js script first
+  // and wait for it to complete before calling loadLang
+  var isStandalone = document.documentElement.dataset.standalone;
+  if (isStandalone && lang !== "en") {
+    var base = i18nLangBase ? i18nLangBase() : "../../";
+    var scriptSrc = base + "lang/i18n-data-" + lang + ".js";
+    var existing = document.querySelector('script[src="' + scriptSrc + '"]');
+    if (!existing) {
+      var s = document.createElement("script");
+      s.src = scriptSrc;
+      s.onload = function () {
+        loadLang(lang);
+      };
+      document.head.append(s);
+      return;
+    }
+  }
   loadLang(lang);
 }
 
@@ -243,19 +261,24 @@ function i18nLangBase() {
 async function loadLang(lang) {
   try {
     const cached = window.__I18N_DATA && window.__I18N_DATA[lang];
-    if (cached && Object.keys(cached).length > 0) {
-      i18n.data = cached;
-      i18n.lang = lang;
-      applyLang();
-      return true;
-    }
     const base = i18nLangBase();
     const resp = await fetch(base + "lang/" + lang + ".json");
     if (!resp.ok) throw new Error("Language file not found: " + lang);
-    const data = await resp.json();
+    const fetched = await resp.json();
     if (!window.__I18N_DATA) window.__I18N_DATA = {};
-    window.__I18N_DATA[lang] = data;
-    i18n.data = data;
+
+    // Merge: prefer cached translations (from i18n-data-*.js) over fetched JSON
+    // This prevents overwriting good translations with stale/English values
+    let merged = { ...fetched };
+    if (cached) {
+      for (const k of Object.keys(cached)) {
+        if (cached[k] && typeof cached[k] === "string") {
+          merged[k] = cached[k];
+        }
+      }
+    }
+    window.__I18N_DATA[lang] = merged;
+    i18n.data = merged;
     i18n.lang = lang;
     // Keep English cached as a fallback for missing keys in other languages
     if (lang !== "en" && !window.__I18N_DATA.en) {

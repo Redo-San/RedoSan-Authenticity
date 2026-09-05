@@ -320,9 +320,19 @@
   max-width: 100%;
 }
 
+html[dir="rtl"] #iris-consent-panel {
+  text-align: right;
+}
+
 .consent-list {
   padding-left: 1.25em;
+  padding-right: 1.25em;
   margin: 0 0 8px;
+}
+
+html[dir="rtl"] .consent-list {
+  padding-left: 0;
+  padding-right: 1.25em;
 }
 
 .consent-list li {
@@ -366,6 +376,21 @@
   color: var(--text, #222);
   font-weight: 600;
   font-size: 0.85em;
+}
+
+html[dir="rtl"] .help-card-body li:nth-child(n + 2):not(:last-child)::before {
+  left: auto;
+  right: 0;
+}
+
+html[dir="rtl"] .help-card-body li {
+  padding-left: 0;
+  padding-right: 1.8em;
+}
+
+html[dir="rtl"] .help-card-body li:first-child,
+html[dir="rtl"] .help-card-body li:last-child {
+  padding-right: 0;
 }
 
 .help-card-body li:last-child {

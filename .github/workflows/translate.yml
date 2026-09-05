@@ -45,7 +45,7 @@ jobs:
       - name: Sync JSON → JS files
         run: node scripts/sync-i18n-json-to-js.js
       - name: Format generated JS files
-        run: npx --yes prettier --write Style/lang/i18n-data-*.js
+        run: npx --yes prettier@3.9.6 --write Style/lang/i18n-data-*.js
       - name: Commit translations
         id: commit
         run: |

@@ -74,6 +74,7 @@
     "depcheck": "npx depcheck --config .tools/Developer_Toolkit/.depcheckrc",
     "ncu": "npx npm-check-updates",
     "size": "npx size-limit",
+    "prepare": "husky",
     "docs": "npx typedoc --version",
     "pa11y": "npx pa11y https://redo-san.github.io/RedoSan-Authenticity/",
     "lhci": "npx lhci autorun --config .tools/Developer_Toolkit/lighthouserc.js",
@@ -164,6 +165,7 @@
     "opencode-vibeguard": "^0.1.0",
     "pa11y": "^9.1.1",
     "playwright": "^1.52.0",
+    "prettier": "^3.9.6",
     "repomix": "^1.15.0",
     "size-limit": "^11.2.0",
     "stylelint": "^17.14.1",
@@ -200,9 +202,20 @@
     ]
   },
   "lint-staged": {
-    "*.js": "eslint --fix --config .tools/Developer_Toolkit/eslint.config.mjs",
-    "*.css": "stylelint --fix --config .tools/Developer_Toolkit/.stylelintrc.json",
-    "*.{json,yml,yaml,md}": "node scripts/biome-lint-staged.mjs"
+    "*.js": [
+      "eslint --fix --config .tools/Developer_Toolkit/eslint.config.mjs",
+      "node scripts/prettier-lint-staged.mjs"
+    ],
+    "*.css": [
+      "stylelint --fix --config .tools/Developer_Toolkit/.stylelintrc.json",
+      "node scripts/prettier-lint-staged.mjs"
+    ],
+    "*.html": "node scripts/prettier-lint-staged.mjs",
+    "*.json": [
+      "node scripts/biome-lint-staged.mjs",
+      "node scripts/prettier-lint-staged.mjs"
+    ],
+    "*.{yml,yaml,md}": "node scripts/biome-lint-staged.mjs"
   },
   "size-limit": [
     {

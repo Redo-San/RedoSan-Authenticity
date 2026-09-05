@@ -8,13 +8,17 @@ vendor/
 agent/
 .claude/
 skills/
+.env/
 backstop_data/
+certs/
 docs/
+.lh13/
 .lighthouseci/
 .playwright-mcp/
 .stryker-tmp/
 coverage/
 test-results/
+tests/
 .tools/
 
 Style/pages/
