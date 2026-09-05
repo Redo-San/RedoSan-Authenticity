@@ -920,7 +920,9 @@ window.RedoSanLoadRemovalTools = function () {
   };
   var inject = function () {
     var s = document.createElement("script");
-    (s.src = REMOVAL_JS + "?v=4"), (s.defer = !0), document.body.append(s);
+    s.src = REMOVAL_JS + "?v=4";
+    s.defer = !0;
+    document.body.append(s);
   };
   var timer = setTimeout(function () {
     controller.abort();

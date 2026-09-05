@@ -224,8 +224,8 @@ FaceVC.verify = async function (vc, verifyFn) {
       vc.proof.cryptosuite === "ecdsa-rdfc-2019"
         ? "P-256"
         : vc.proof.cryptosuite === "eddsa-rdfc-2022"
-        ? "Ed25519"
-        : "RSA",
+          ? "Ed25519"
+          : "RSA",
     );
   } catch (e) {
     return { valid: false, error: "verification error: " + e.message };

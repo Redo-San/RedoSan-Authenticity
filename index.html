@@ -187,7 +187,7 @@
       rel="stylesheet"
       href="Style/responsive.css"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript><link rel="stylesheet" href="Style/responsive.css" /></noscript>
     <script type="application/ld+json">
@@ -263,56 +263,80 @@
           <div class="lang-menu" id="modeLangMenu">
             <a
               href="#"
-              onclick="switchLang('en'); return false;"
+              onclick="
+                switchLang('en');
+                return false;
+              "
               class="lang-option"
               data-lang="en"
               >English</a
             >
             <a
               href="#"
-              onclick="switchLang('ar'); return false;"
+              onclick="
+                switchLang('ar');
+                return false;
+              "
               class="lang-option"
               data-lang="ar"
               >العربية</a
             >
             <a
               href="#"
-              onclick="switchLang('fr'); return false;"
+              onclick="
+                switchLang('fr');
+                return false;
+              "
               class="lang-option"
               data-lang="fr"
               >Français</a
             >
             <a
               href="#"
-              onclick="switchLang('de'); return false;"
+              onclick="
+                switchLang('de');
+                return false;
+              "
               class="lang-option"
               data-lang="de"
               >Deutsch</a
             >
             <a
               href="#"
-              onclick="switchLang('es'); return false;"
+              onclick="
+                switchLang('es');
+                return false;
+              "
               class="lang-option"
               data-lang="es"
               >Español</a
             >
             <a
               href="#"
-              onclick="switchLang('zh'); return false;"
+              onclick="
+                switchLang('zh');
+                return false;
+              "
               class="lang-option"
               data-lang="zh"
               >中文</a
             >
             <a
               href="#"
-              onclick="switchLang('ja'); return false;"
+              onclick="
+                switchLang('ja');
+                return false;
+              "
               class="lang-option"
               data-lang="ja"
               >日本語</a
             >
             <a
               href="#"
-              onclick="switchLang('ko'); return false;"
+              onclick="
+                switchLang('ko');
+                return false;
+              "
               class="lang-option"
               data-lang="ko"
               >한국어</a
@@ -347,8 +371,18 @@
             class="mode-card mode-card-simple"
             role="button"
             tabindex="0"
-            onclick="if(typeof setMode==='function')setMode('simplified')"
-            onkeydown="if(!event.repeat&&(event.key==='Enter'||event.key===' '||event.code==='Space')){event.preventDefault();if(typeof setMode==='function')setMode('simplified')}"
+            onclick="if (typeof setMode === 'function') setMode('simplified');"
+            onkeydown="
+              if (
+                !event.repeat &&
+                (event.key === 'Enter' ||
+                  event.key === ' ' ||
+                  event.code === 'Space')
+              ) {
+                event.preventDefault();
+                if (typeof setMode === 'function') setMode('simplified');
+              }
+            "
           >
             <div class="mode-card-icon">✨</div>
             <h2 data-i18n="mode.simplified_title">Simplified Mode</h2>
@@ -371,28 +405,40 @@
           <a
             href="./Style/pages/about/index.html"
             data-page="about"
-            onclick="showStaticPage('about');return false"
+            onclick="
+              showStaticPage('about');
+              return false;
+            "
             data-i18n="nav.about"
             >About</a
           >
           <a
             href="./Style/pages/privacy/index.html"
             data-page="privacy"
-            onclick="showStaticPage('privacy');return false"
+            onclick="
+              showStaticPage('privacy');
+              return false;
+            "
             data-i18n="nav.privacy"
             >Privacy</a
           >
           <a
             href="./Style/pages/contact/index.html"
             data-page="contact"
-            onclick="showStaticPage('contact');return false"
+            onclick="
+              showStaticPage('contact');
+              return false;
+            "
             data-i18n="nav.contact"
             >Contact</a
           >
           <a
             href="./Style/pages/social/index.html"
             data-page="social"
-            onclick="showStaticPage('social');return false"
+            onclick="
+              showStaticPage('social');
+              return false;
+            "
             data-i18n="nav.social"
             >Social</a
           >
@@ -475,7 +521,7 @@
           </a>
           <button
             class="simple-mode-switch"
-            onclick="if(typeof switchMode==='function')switchMode()"
+            onclick="if (typeof switchMode === 'function') switchMode();"
             data-i18n="simple.pro_mode_btn"
           >
             ⚙️
@@ -519,56 +565,80 @@
             <div class="lang-menu" id="simpleLangMenu">
               <a
                 href="#"
-                onclick="switchLang('en'); return false;"
+                onclick="
+                  switchLang('en');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="en"
                 >English</a
               >
               <a
                 href="#"
-                onclick="switchLang('ar'); return false;"
+                onclick="
+                  switchLang('ar');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="ar"
                 >العربية</a
               >
               <a
                 href="#"
-                onclick="switchLang('fr'); return false;"
+                onclick="
+                  switchLang('fr');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="fr"
                 >Français</a
               >
               <a
                 href="#"
-                onclick="switchLang('de'); return false;"
+                onclick="
+                  switchLang('de');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="de"
                 >Deutsch</a
               >
               <a
                 href="#"
-                onclick="switchLang('es'); return false;"
+                onclick="
+                  switchLang('es');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="es"
                 >Español</a
               >
               <a
                 href="#"
-                onclick="switchLang('zh'); return false;"
+                onclick="
+                  switchLang('zh');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="zh"
                 >中文</a
               >
               <a
                 href="#"
-                onclick="switchLang('ja'); return false;"
+                onclick="
+                  switchLang('ja');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="ja"
                 >日本語</a
               >
               <a
                 href="#"
-                onclick="switchLang('ko'); return false;"
+                onclick="
+                  switchLang('ko');
+                  return false;
+                "
                 class="lang-option"
                 data-lang="ko"
                 >한국어</a
@@ -654,7 +724,7 @@
             data-i18n-placeholder="search.placeholder"
             placeholder="Search..."
             aria-label="Search"
-            onkeydown="if(event.key==='Enter')siteSearch()"
+            onkeydown="if (event.key === 'Enter') siteSearch();"
             onfocus="this.parentElement.classList.add('focused')"
             onblur="this.parentElement.classList.remove('focused')"
           />
@@ -706,56 +776,80 @@
           <div class="lang-menu" id="langMenu">
             <a
               href="#"
-              onclick="switchLang('en'); return false;"
+              onclick="
+                switchLang('en');
+                return false;
+              "
               class="lang-option"
               data-lang="en"
               >English</a
             >
             <a
               href="#"
-              onclick="switchLang('ar'); return false;"
+              onclick="
+                switchLang('ar');
+                return false;
+              "
               class="lang-option"
               data-lang="ar"
               >العربية</a
             >
             <a
               href="#"
-              onclick="switchLang('fr'); return false;"
+              onclick="
+                switchLang('fr');
+                return false;
+              "
               class="lang-option"
               data-lang="fr"
               >Français</a
             >
             <a
               href="#"
-              onclick="switchLang('de'); return false;"
+              onclick="
+                switchLang('de');
+                return false;
+              "
               class="lang-option"
               data-lang="de"
               >Deutsch</a
             >
             <a
               href="#"
-              onclick="switchLang('es'); return false;"
+              onclick="
+                switchLang('es');
+                return false;
+              "
               class="lang-option"
               data-lang="es"
               >Español</a
             >
             <a
               href="#"
-              onclick="switchLang('zh'); return false;"
+              onclick="
+                switchLang('zh');
+                return false;
+              "
               class="lang-option"
               data-lang="zh"
               >中文</a
             >
             <a
               href="#"
-              onclick="switchLang('ja'); return false;"
+              onclick="
+                switchLang('ja');
+                return false;
+              "
               class="lang-option"
               data-lang="ja"
               >日本語</a
             >
             <a
               href="#"
-              onclick="switchLang('ko'); return false;"
+              onclick="
+                switchLang('ko');
+                return false;
+              "
               class="lang-option"
               data-lang="ko"
               >한국어</a
@@ -1088,7 +1182,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1125,7 +1222,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1169,7 +1269,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1214,7 +1317,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1250,7 +1356,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1280,7 +1389,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1316,7 +1428,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1352,7 +1467,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1388,7 +1506,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1424,7 +1545,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1460,7 +1584,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1496,7 +1623,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1532,7 +1662,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1560,7 +1693,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1596,7 +1732,10 @@
         >
           <a
             href="#"
-            onclick="showPage('home');return false;"
+            onclick="
+              showPage('home');
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1776,7 +1915,10 @@
       <div style="margin-bottom: 12px">
         <a
           href="#"
-          onclick="history.back();return false;"
+          onclick="
+            history.back();
+            return false;
+          "
           class="back-btn"
           title="Back"
           ><span class="back-arrow">←</span></a
@@ -1804,7 +1946,10 @@
       <div style="margin-bottom: 12px">
         <a
           href="#"
-          onclick="history.back();return false;"
+          onclick="
+            history.back();
+            return false;
+          "
           class="back-btn"
           title="Back"
           ><span class="back-arrow">←</span></a
@@ -1831,7 +1976,10 @@
       <div style="margin-bottom: 12px">
         <a
           href="#"
-          onclick="history.back();return false;"
+          onclick="
+            history.back();
+            return false;
+          "
           class="back-btn"
           title="Back"
           ><span class="back-arrow">←</span></a
@@ -1858,7 +2006,10 @@
       <div style="margin-bottom: 12px">
         <a
           href="#"
-          onclick="history.back();return false;"
+          onclick="
+            history.back();
+            return false;
+          "
           class="back-btn"
           title="Back"
           ><span class="back-arrow">←</span></a
@@ -1883,7 +2034,7 @@
       <div
         class="modal-overlay"
         id="dl-modal"
-        onclick="if(event.target===this)closeDownloadModal()"
+        onclick="if (event.target === this) closeDownloadModal();"
       >
         <div class="modal-box">
           <div class="modal-close" onclick="closeDownloadModal()">&times;</div>
@@ -2129,14 +2280,14 @@
             var a = document.querySelector(n);
             a && a.remove();
           };
-          t('.sidebar a[data-page="removal-tools"]'),
+          (t('.sidebar a[data-page="removal-tools"]'),
             t('.card[data-page="removal-tools"]'),
-            t("#page-removal-tools");
+            t("#page-removal-tools"));
         } else {
           var s = document.createElement("script");
-          (s.src = "Removal_Tools/removal_tools.js?v=4"),
+          ((s.src = "Removal_Tools/removal_tools.js?v=4"),
             (s.defer = !0),
-            document.body.appendChild(s);
+            document.body.appendChild(s));
         }
       })();
     </script>
@@ -2212,8 +2363,8 @@
                 fn.replace("handleC2pa", "") === "Read"
                   ? "c2pa-read-output"
                   : fn.replace("handleC2pa", "") === "Write"
-                  ? "c2pa-write-output"
-                  : "c2pa-verify-output",
+                    ? "c2pa-write-output"
+                    : "c2pa-verify-output",
               );
               if (out) {
                 out.innerHTML =

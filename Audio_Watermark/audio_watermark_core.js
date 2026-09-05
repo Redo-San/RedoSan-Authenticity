@@ -340,7 +340,7 @@ function aw1_embed(s16, bitsStr) {
  */
 function aw1_extract(s16, maxBits) {
   const limit = Math.min(s16.length, maxBits || s16.length * 8, 400_032);
-  const out = new Array(limit);
+  const out = Array(limit);
   let needed = 0;
   for (let i = 0; i < limit; i++) {
     out[i] = s16[i] & 1;

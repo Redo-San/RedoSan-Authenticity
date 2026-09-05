@@ -228,8 +228,8 @@ FaceRegistry.prototype._purgeExpired = async function () {
       e.updated instanceof Date
         ? e.updated.getTime()
         : e.created instanceof Date
-        ? e.created.getTime()
-        : now;
+          ? e.created.getTime()
+          : now;
     /* c8 ignore next 1 -- both fallbacks yield a finite timestamp */
     if (isNaN(t)) t = now;
     if (t < cutoff) {

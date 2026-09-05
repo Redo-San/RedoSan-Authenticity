@@ -268,6 +268,9 @@ export default [
       "coverage/",
       "test-results/",
       ".tools/",
+      "certs/",
+      ".lh13/",
+      "tests/",
     ],
   },
 ];

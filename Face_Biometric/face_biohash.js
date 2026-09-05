@@ -119,7 +119,7 @@
 
     H = H0.slice();
     for (off = 0; off < bytes.length; off += 64) {
-      w = new Array(64);
+      w = Array(64);
       for (t = 0; t < 16; t++) {
         idx = off + t * 4;
         w[t] =

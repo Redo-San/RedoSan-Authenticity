@@ -19,21 +19,21 @@
       rel="stylesheet"
       href="css/style.css"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript><link rel="stylesheet" href="css/style.css" /></noscript>
     <link
       rel="stylesheet"
       href="../../responsive.css"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript><link rel="stylesheet" href="../../responsive.css" /></noscript>
     <link
       rel="stylesheet"
       href="../../music-player.css"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript><link rel="stylesheet" href="../../music-player.css" /></noscript>
     <title>Face Biometric Rights — RedoSan Authenticity</title>
@@ -361,7 +361,7 @@
             data-i18n-placeholder="search.placeholder"
             placeholder="Search..."
             aria-label="Search"
-            onkeydown="if(event.key==='Enter')siteSearch()"
+            onkeydown="if (event.key === 'Enter') siteSearch();"
             onfocus="this.parentElement.classList.add('focused')"
             onblur="this.parentElement.classList.remove('focused')"
           />
@@ -376,7 +376,7 @@
         <button
           type="button"
           class="theme-btn mode-switch-btn"
-          onclick="window.location.href='../../../index.html'"
+          onclick="window.location.href = '../../../index.html'"
           title="Back to Home"
           aria-label="Back to Home"
         >
@@ -414,56 +414,80 @@
           <div class="lang-menu" id="langMenu">
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('en'); return false;"
+              onclick="
+                switchLang('en');
+                return false;
+              "
               class="lang-option"
               data-lang="en"
               >English</a
             >
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('ar'); return false;"
+              onclick="
+                switchLang('ar');
+                return false;
+              "
               class="lang-option"
               data-lang="ar"
               >العربية</a
             >
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('fr'); return false;"
+              onclick="
+                switchLang('fr');
+                return false;
+              "
               class="lang-option"
               data-lang="fr"
               >Français</a
             >
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('de'); return false;"
+              onclick="
+                switchLang('de');
+                return false;
+              "
               class="lang-option"
               data-lang="de"
               >Deutsch</a
             >
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('es'); return false;"
+              onclick="
+                switchLang('es');
+                return false;
+              "
               class="lang-option"
               data-lang="es"
               >Español</a
             >
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('zh'); return false;"
+              onclick="
+                switchLang('zh');
+                return false;
+              "
               class="lang-option"
               data-lang="zh"
               >中文</a
             >
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('ja'); return false;"
+              onclick="
+                switchLang('ja');
+                return false;
+              "
               class="lang-option"
               data-lang="ja"
               >日本語</a
             >
             <a
               href="../../../index.html?lang=en"
-              onclick="switchLang('ko'); return false;"
+              onclick="
+                switchLang('ko');
+                return false;
+              "
               class="lang-option"
               data-lang="ko"
               >한국어</a
@@ -491,7 +515,12 @@
       tabindex="0"
       aria-label="Close menu"
       onclick="toggleSidebar()"
-      onkeydown="if(event.key==='Enter'||event.key===' '){toggleSidebar();event.preventDefault();}"
+      onkeydown="
+        if (event.key === 'Enter' || event.key === ' ') {
+          toggleSidebar();
+          event.preventDefault();
+        }
+      "
     ></div>
     <aside class="sidebar" id="sidebar" aria-label="Sidebar menu">
       <div class="sidebar-header">
@@ -608,7 +637,10 @@
         >
           <a
             href="#"
-            onclick="goHome();return false;"
+            onclick="
+              goHome();
+              return false;
+            "
             class="back-btn"
             title="Back"
             ><span class="back-arrow">←</span></a
@@ -1081,8 +1113,13 @@
       role="button"
       tabindex="0"
       aria-label="Close download dialog"
-      onclick="if(event.target===this)closeDownloadModal()"
-      onkeydown="if(event.key==='Enter'||event.key===' '){closeDownloadModal();event.preventDefault();}"
+      onclick="if (event.target === this) closeDownloadModal();"
+      onkeydown="
+        if (event.key === 'Enter' || event.key === ' ') {
+          closeDownloadModal();
+          event.preventDefault();
+        }
+      "
     >
       <div class="modal-box">
         <button
@@ -1286,9 +1323,9 @@
           a && a.remove();
         };
         if (/^https?:\/\/(.*\.)?(redo-san\.github\.io)(:\d+)?(\/|$)/.test(e)) {
-          t('.sidebar a[data-page="removal-tools"]'),
+          (t('.sidebar a[data-page="removal-tools"]'),
             t('.card[data-page="removal-tools"]'),
-            t("#page-removal-tools");
+            t("#page-removal-tools"));
         } else {
           (function () {
             function init() {
@@ -1458,8 +1495,8 @@
                 fn.replace("handleC2pa", "") === "Read"
                   ? "c2pa-read-output"
                   : fn.replace("handleC2pa", "") === "Write"
-                  ? "c2pa-write-output"
-                  : "c2pa-verify-output",
+                    ? "c2pa-write-output"
+                    : "c2pa-verify-output",
               );
               if (out) {
                 out.innerHTML =
@@ -1506,7 +1543,12 @@
       role="button"
       tabindex="0"
       onclick="closeLightbox()"
-      onkeydown="if(event.key==='Enter'||event.key===' '){closeLightbox();event.preventDefault();}"
+      onkeydown="
+        if (event.key === 'Enter' || event.key === ' ') {
+          closeLightbox();
+          event.preventDefault();
+        }
+      "
     >
       <button type="button" class="lightbox-close">&times;</button>
       <img class="lightbox-img" id="lightboxImg" alt="" />

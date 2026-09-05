@@ -535,8 +535,9 @@ async function convImage(file, format) {
  */
 async function convAudio(file, format) {
   var buf = await file.arrayBuffer();
-  var audioCtx = new (globalThis.AudioContext ||
-    globalThis.webkitAudioContext)();
+  var audioCtx = new (
+    globalThis.AudioContext || globalThis.webkitAudioContext
+  )();
   if (audioCtx.state === "suspended") await audioCtx.resume();
   var audioBuf = await audioCtx.decodeAudioData([...buf]);
   if (
@@ -993,8 +994,9 @@ async function convVideoToAudioCapture(file, format) {
     video.addEventListener("loadedmetadata", function () {
       try {
         var duration = video.duration || 30;
-        var audioCtx = new (globalThis.AudioContext ||
-          globalThis.webkitAudioContext)();
+        var audioCtx = new (
+          globalThis.AudioContext || globalThis.webkitAudioContext
+        )();
         if (audioCtx.state === "suspended") audioCtx.resume();
         var streamDest = audioCtx.createMediaStreamDestination();
         var source = audioCtx.createMediaElementSource(video);
@@ -1062,8 +1064,9 @@ async function convVideoToAudioCapture(file, format) {
           recorder.onstop = function () {
             if (pcmTarget) {
               var capBlob = new Blob(chunks, { type: recorder.mimeType });
-              var readCtx = new (globalThis.AudioContext ||
-                globalThis.webkitAudioContext)();
+              var readCtx = new (
+                globalThis.AudioContext || globalThis.webkitAudioContext
+              )();
               if (readCtx.state === "suspended") readCtx.resume();
               capBlob
                 .arrayBuffer()
@@ -1327,11 +1330,7 @@ async function convVideoFfmpeg(file, format) {
   ff.setProgress(function (p) {
     convSetProgress(20 + Math.round(p.ratio * 70));
   });
-  try {
-    await ff.load();
-  } catch (error) {
-    throw error;
-  }
+  await ff.load();
   if (status) status.textContent = __("conv.converting", "Converting...");
   convSetProgress(10);
 

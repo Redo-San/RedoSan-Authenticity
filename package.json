@@ -80,6 +80,9 @@
     "lhci": "npx lhci autorun --config .tools/Developer_Toolkit/lighthouserc.js",
     "backstop:test": "npx backstop test --config .tools/Developer_Toolkit/backstop.json",
     "workbox": "npx workbox generateSW .tools/Developer_Toolkit/workbox-config.js",
+    "knip": "npx knip --config .tools/Developer_Toolkit/knip.json",
+    "jscpd": "npx jscpd --config .tools/Developer_Toolkit/.jscpd.json",
+    "lint:ox": "npx oxlint --config oxlint.config.json",
     "check": "npm run lint && npm run biome && npm run stylelint && npm run madge:circular && npm run test:core",
     "check:quick": "npm run lint:fix && npm run biome:fix && npm run stylelint:fix && npm run test:core",
     "check:fix": "npm run lint:fix && npm run biome:fix && npm run stylelint:fix",
@@ -152,6 +155,8 @@
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.7.0",
     "husky": "^9.1.7",
+    "jscpd": "^5.1.2",
+    "knip": "^6.34.0",
     "lint-staged": "^17.1.1",
     "madge": "^8.0.0",
     "markdownlint-cli": "^0.49.1",
@@ -163,6 +168,7 @@
     "opencode-scheduler": "^1.3.0",
     "opencode-supermemory": "^2.0.11",
     "opencode-vibeguard": "^0.1.0",
+    "oxlint": "^1.81.0",
     "pa11y": "^9.1.1",
     "playwright": "^1.52.0",
     "prettier": "^3.9.6",
@@ -203,6 +209,7 @@
   },
   "lint-staged": {
     "*.js": [
+      "node scripts/oxlint-lint-staged.mjs",
       "eslint --fix --config .tools/Developer_Toolkit/eslint.config.mjs",
       "node scripts/prettier-lint-staged.mjs"
     ],

@@ -543,8 +543,8 @@ async function didSign(keypair, data) {
     typeof data === "string"
       ? new TextEncoder().encode(data)
       : data instanceof Uint8Array
-      ? data
-      : new Uint8Array(data);
+        ? data
+        : new Uint8Array(data);
   var algo;
   if (keypair.algorithm === "Ed25519") algo = { name: "Ed25519" };
   else if (keypair.algorithm === "P-256")
@@ -566,8 +566,8 @@ async function didVerify(publicKey, signature, data, algorithm) {
     typeof data === "string"
       ? new TextEncoder().encode(data)
       : data instanceof Uint8Array
-      ? data
-      : new Uint8Array(data);
+        ? data
+        : new Uint8Array(data);
   var sig =
     signature instanceof Uint8Array ? signature : new Uint8Array(signature);
   var algo;

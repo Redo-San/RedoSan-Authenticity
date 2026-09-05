@@ -303,7 +303,7 @@ function blake2bLoad64(data, off) {
  * @param final
  */
 function blake2bCompress(h, m, counter, final) {
-  var v = new Array(16);
+  var v = Array(16);
   for (var i = 0; i < 8; i++) {
     v[i] = h[i];
     v[i + 8] = B2IV[i];
@@ -338,7 +338,7 @@ async function blake2b(data) {
     counter = 0;
   while (offset + 128 <= data.length) {
     counter += 128;
-    var m = new Array(16);
+    var m = Array(16);
     for (var i = 0; i < 16; i++) m[i] = blake2bLoad64(data, offset + i * 8);
     blake2bCompress(h, m, counter, false);
     offset += 128;
@@ -349,7 +349,7 @@ async function blake2b(data) {
   var rem = data.length - offset;
   for (var j = 0; j < rem; j++) last[j] = data[offset + j];
   counter += rem;
-  var m = new Array(16);
+  var m = Array(16);
   for (var i = 0; i < 16; i++) m[i] = blake2bLoad64(last, i * 8);
   blake2bCompress(h, m, counter, true);
   var out = new Uint8Array(outLen);
@@ -459,7 +459,7 @@ async function blake2s(data) {
     counter = 0;
   while (offset + 64 <= data.length) {
     counter += 64;
-    var m = new Array(16);
+    var m = Array(16);
     for (var i = 0; i < 16; i++) m[i] = b2s_load32(data, offset + i * 4);
     b2s_compress(h, m, counter, false);
     offset += 64;
@@ -470,7 +470,7 @@ async function blake2s(data) {
   var rem = data.length - offset;
   for (var j = 0; j < rem; j++) last[j] = data[offset + j];
   counter += rem;
-  var m = new Array(16);
+  var m = Array(16);
   for (var i = 0; i < 16; i++) m[i] = b2s_load32(last, i * 4);
   b2s_compress(h, m, counter, true);
   var out = new Uint8Array(outLen);
@@ -611,7 +611,7 @@ async function md5(data) {
   var _mc = 0;
   for (var off = 0; off < msg.length; off += 64) {
     if (++_mc % 4000 === 0) await maybeYield();
-    var w = new Array(16);
+    var w = Array(16);
     for (var i = 0; i < 16; i++)
       w[i] = new DataView(msg.buffer).getUint32(off + i * 4, true);
     var a = s[0],
@@ -955,7 +955,7 @@ var SHA512_K = [
  * @param block
  */
 function sha512Core(H, block) {
-  var W = new Array(80);
+  var W = Array(80);
   for (var t = 0; t < 16; t++) {
     var i = t * 8;
     W[t] = [
@@ -1227,7 +1227,7 @@ function md4(data) {
     C = 0x98_ba_dc_fe,
     D = 0x10_32_54_76;
   for (var i = 0; i < pad.length; i += 64) {
-    var X = new Array(16);
+    var X = Array(16);
     for (var j = 0; j < 16; j++)
       X[j] =
         pad[i + j * 4] |

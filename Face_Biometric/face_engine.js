@@ -51,8 +51,8 @@ FaceEngine.prototype.loadModels = async function () {
   HumanCtor = this._human
     ? this._human.constructor
     : humanModule
-    ? humanModule.Human || humanModule.default || humanModule
-    : null;
+      ? humanModule.Human || humanModule.default || humanModule
+      : null;
   if (!HumanCtor)
     throw new Error(
       "@vladmandic/human is not loaded. Include the library via script tag or pass a human instance.",

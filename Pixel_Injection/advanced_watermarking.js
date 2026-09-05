@@ -61,7 +61,9 @@ class AdvancedWatermarking {
 
   applyDCT(block) {
     const N = block.length;
-    const dctBlock = new Array(N).fill().map(() => new Array(N).fill(0));
+    const dctBlock = Array(N)
+      .fill()
+      .map(() => Array(N).fill(0));
     for (let u = 0; u < N; u++) {
       for (let v = 0; v < N; v++) {
         let sum = 0;
@@ -84,7 +86,9 @@ class AdvancedWatermarking {
 
   applyInverseDCT(dctBlock) {
     const N = dctBlock.length;
-    const block = new Array(N).fill().map(() => new Array(N).fill(0));
+    const block = Array(N)
+      .fill()
+      .map(() => Array(N).fill(0));
     for (let x = 0; x < N; x++) {
       for (let y = 0; y < N; y++) {
         let sum = 0;
@@ -162,9 +166,9 @@ class AdvancedWatermarking {
   }
 
   extractBlock(data, x, y, width, blockSize) {
-    const block = new Array(blockSize)
+    const block = Array(blockSize)
       .fill()
-      .map(() => new Array(blockSize).fill(0));
+      .map(() => Array(blockSize).fill(0));
     for (let i = 0; i < blockSize; i++) {
       for (let j = 0; j < blockSize; j++) {
         const pixelIndex = ((y + i) * width + (x + j)) * 4;
