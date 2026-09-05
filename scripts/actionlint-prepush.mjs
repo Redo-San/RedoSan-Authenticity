@@ -5,9 +5,14 @@
  *
  * Works on Windows (PowerShell) and POSIX via `git diff --name-only`.
  */
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import path from "node:path";
 
 const ACTIONLINT = "actionlint";
+const TOOLKIT_ACTIONLINT = path.resolve(
+  ".tools/Developer_Toolkit/actionlint.exe",
+);
 
 function git(args) {
   return execSync(`git ${args}`, {
@@ -43,11 +48,26 @@ console.log(
   `actionlint: checking ${workflowFiles.length} changed workflow(s)...`,
 );
 
-try {
-  // actionlint runs against all workflows by default
-  execSync(ACTIONLINT, { stdio: "inherit" });
-  console.log("actionlint: all workflows OK");
-} catch {
-  // actionlint printed its own error output
-  process.exit(1);
+// Probe PATH first, then fall back to the on-disk toolkit binary.
+let result = spawnSync(ACTIONLINT, [], { stdio: "inherit" });
+if (
+  result.error &&
+  result.error.code === "ENOENT" &&
+  existsSync(TOOLKIT_ACTIONLINT)
+) {
+  console.log(`actionlint: not on PATH, using ${TOOLKIT_ACTIONLINT}`);
+  result = spawnSync(TOOLKIT_ACTIONLINT, [], { stdio: "inherit" });
 }
+
+if (result.error) {
+  console.warn(
+    `actionlint: binary not found (PATH or ${TOOLKIT_ACTIONLINT}); skipping workflow lint.`,
+  );
+  process.exit(0);
+}
+
+// actionlint printed its own error output
+if (result.status === 0) {
+  console.log("actionlint: all workflows OK");
+}
+process.exit(result.status ?? 1);

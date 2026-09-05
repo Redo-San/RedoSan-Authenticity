@@ -39,8 +39,8 @@ jobs:
         run: npm ci
       - name: Run unit tests
         run: npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt
-      - name: Run coverage
-        run: npm run coverage
+      - name: Run coverage gate
+        run: npm run coverage:gate
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:

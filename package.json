@@ -61,6 +61,7 @@
     "test:e2e-guard": "node scripts/e2e-coverage-guard.js",
     "test:e2e-guard-deep": "node scripts/e2e-coverage-guard.js --deep",
     "coverage": "c8 --reporter=text --reporter=lcov node --test --test-timeout=120000 cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/fingerprint_ui_test.js cli/tests/id_forge_test.js cli/tests/id_forge_ui_test.js cli/tests/watermark_core_test.js cli/tests/watermark_ui_test.js cli/tests/forensic_test.js cli/tests/forensic_ui_test.js cli/tests/pixel_injection_test.js cli/tests/advanced_watermarking_test.js cli/tests/c2pa_cbor_test.js cli/tests/c2pa_advanced_test.js cli/tests/audio_watermark_core_test.js cli/tests/audio_watermark_test.js cli/tests/audio_watermark_ui_test.js cli/tests/document_watermark_test.js cli/tests/document_watermark_ui_test.js cli/tests/converter_test.js cli/tests/timestamp_test.js cli/tests/metadata_test.js cli/tests/certificate_test.js cli/tests/certificate_ui_test.js cli/tests/certificate_full_coverage_test.js cli/tests/text_extractor_test.js cli/tests/i18n_test.js cli/tests/music_player_test.js cli/tests/navigation_test.js cli/tests/search_test.js cli/tests/shared_utils_test.js cli/tests/validation_test.js cli/tests/simplified_test.js cli/tests/cli_utils_test.js cli/tests/face_engine_test.js cli/tests/face_registry_test.js cli/tests/face_ui_test.js cli/tests/navigation_ui_test.js cli/tests/i18n_ui_test.js cli/tests/music_player_ui_test.js cli/tests/face_biohash_test.js cli/tests/face_fuzzy_test.js",
+    "coverage:gate": "npm run coverage",
     "coverage:report": "echo Coverage report available at coverage/lcov-report/index.html",
     "lint": "eslint --config .tools/Developer_Toolkit/eslint.config.mjs .",
     "lint:fix": "eslint --fix --config .tools/Developer_Toolkit/eslint.config.mjs .",
@@ -182,6 +183,7 @@
   },
   "c8": {
     "all": true,
+    "check-coverage": true,
     "include": [
       "Style/",
       "Watermark/",
@@ -205,7 +207,11 @@
       "vendor/",
       "Style/lang/",
       "cli/tests/"
-    ]
+    ],
+    "lines": 60,
+    "statements": 60,
+    "functions": 90,
+    "branches": 88
   },
   "lint-staged": {
     "*.js": [
