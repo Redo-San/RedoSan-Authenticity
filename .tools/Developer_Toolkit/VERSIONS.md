@@ -24,8 +24,8 @@ installed on-disk only — mirroring the `cloc.exe` precedent.
 - Standard CLI usage — `rg`, `fd`, `gitleaks`, `actionlint` follow their upstream
   docs; no extra PATH setup needed since the repo calls them by full path from this folder.
 - `gitleaks`: the pre-commit hook (`scripts/secret-scan-precommit.ps1`) looks for
-  gitleaks in PATH, `GITLEAKS_PATH`, and `%LOCALAPPDATA%\opencode\gitleaks\gitleaks.exe` —
-  it does not yet probe this folder (see GIT-TOOLS-RESEARCH-PLAN.md, recommended integration).
+  gitleaks in PATH, `GITLEAKS_PATH`, `%LOCALAPPDATA%\opencode\gitleaks\gitleaks.exe`, and in
+  `.tools/Developer_Toolkit/gitleaks.exe` (this folder).
 - `fd`: remember positional order is `fd [pattern] [path]`. To list files by
   extension under a path, e.g. `fd.exe -e js . Style` (an explicit `.` pattern).
   A bare `fd -e js Style` treats `Style` as the search pattern, not the path.
