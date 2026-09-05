@@ -1,0 +1,1 @@
+node scripts/deps-check-hook.mjs post-rewrite "$1"
