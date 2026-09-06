@@ -30,13 +30,15 @@ jobs:
         with:
           egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - name: Knip report
-        uses: codex-/knip-reporter@45ce8e3f0619cf6ad8fe441cc5e6117ea92ec4fd # v4.0.0
+        uses: codex-/knip-reporter@7ee82434e4adcb560038aaa59bc647fe8c3c6ee4 # v4.0.0
         with:
           command_script_name: knip
           ignore_results: true

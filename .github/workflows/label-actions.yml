@@ -21,7 +21,7 @@ jobs:
           egress-policy: block
           allowed-endpoints: api.github.com:443
       - name: Run label actions
-        uses: dessant/label-actions@d71129790bf2ef1ea975b5adbf68c21b5bea7b27 # v5.0.3
+        uses: dessant/label-actions@65225c179d3b2502f6eda7b3d15101a3f412366b # v5.0.3
         with:
           config-path: .github/label-actions.yml
           process-only: "issues"

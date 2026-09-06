@@ -20,26 +20,28 @@ jobs:
         with:
           egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - name: ESLint
-        uses: reviewdog/action-eslint@b19663f0faf1d4b0f1e9f92821f530a836b4b317 # v1.34.0
+        uses: reviewdog/action-eslint@556a3fdaf8b4201d4d74d406013386aa4f7dab96 # v1.34.0
         with:
           reporter: github-pr-review
           filter_mode: diff_context
           fail_on_error: false
           eslint_flags: --config .tools/Developer_Toolkit/eslint.config.mjs --max-warnings 10000 .
       - name: actionlint
-        uses: reviewdog/action-actionlint@95df9f9287044811e4e023d40cb292e07569ac85 # v1.73.4
+        uses: reviewdog/action-actionlint@d290e336d5a743810aef4404f757dc862276d2ae # v1.73.4
         with:
           reporter: github-pr-review
           filter_mode: diff_context
           fail_on_error: false
       - name: misspell
-        uses: reviewdog/action-misspell@dfb5c728e60546aca47282343e9d090cf75e9e63 # v1.28.0
+        uses: reviewdog/action-misspell@ba7ac4030fa6812f8c8b2d4e516af8bc99553c32 # v1.28.0
         with:
           reporter: github-pr-review
           filter_mode: diff_context
