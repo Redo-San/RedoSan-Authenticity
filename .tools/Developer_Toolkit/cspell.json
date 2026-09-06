@@ -1172,7 +1172,9 @@
     "FTER",
     "fter",
     "Fter",
-    "abcdefghjkmnpqrstuvwxyz"
+    "abcdefghjkmnpqrstuvwxyz",
+    "GHSA",
+    "unexcepted"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[؀-ۿ]+/"],

@@ -1,0 +1,65 @@
+name: Security Audit
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Scheduled npm audit (full scope)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install system deps (canvas)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
+      - name: Install npm deps
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci
+      - name: Run npm audit (full scope)
+        run: npm audit --json > audit-report.json
+      - name: Enforce advisory exceptions policy
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('audit-report.json', 'utf8'));
+          const exceptions = fs
+            .readFileSync('security/vulnerability-exceptions.md', 'utf8')
+            .match(/\b(GHSA-[\w-]+|CVE-\d{4}-\d+)\b/g) || [];
+          const allowed = new Set(exceptions);
+          const unexcepted = [];
+          for (const id of Object.keys(report.vulnerabilities || {})) {
+            const vuln = report.vulnerabilities[id];
+            if (vuln.severity !== 'high' && vuln.severity !== 'critical') continue;
+            const advisoryId = vuln.url && vuln.url.replace(/.*advisories\//, '');
+            if (advisoryId && allowed.has(advisoryId)) continue;
+            unexcepted.push(`${advisoryId || 'n/a'} (${id}) ${vuln.severity} ${vuln.range}`);
+          }
+          if (unexcepted.length) {
+            console.error('High/critical advisories WITHOUT an exception entry (fix or document in security/vulnerability-exceptions.md):');
+            for (const row of unexcepted) console.error('  - ' + row);
+            process.exit(1);
+          }
+          console.log('No unexcepted high/critical advisories.');
+          EOF
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: audit-report
+          path: audit-report.json
+          if-no-files-found: error
