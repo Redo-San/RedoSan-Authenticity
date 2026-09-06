@@ -29,6 +29,7 @@ const IGNORED_ROOTS = [
   ".stryker-tmp",
   "test-results",
   "tests",
+  "cli/tests", // oxlint.config.json `**/tests/**` subsumes cli/ tests
   "vendor",
 ];
 
