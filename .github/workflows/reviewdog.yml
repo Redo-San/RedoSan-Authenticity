@@ -1,0 +1,46 @@
+name: Reviewdog
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  reviewdog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: ESLint
+        uses: reviewdog/action-eslint@b19663f0faf1d4b0f1e9f92821f530a836b4b317 # v1.34.0
+        with:
+          reporter: github-pr-review
+          filter_mode: diff_context
+          fail_on_error: false
+          eslint_flags: --config .tools/Developer_Toolkit/eslint.config.mjs --max-warnings 10000 .
+      - name: actionlint
+        uses: reviewdog/action-actionlint@95df9f9287044811e4e023d40cb292e07569ac85 # v1.73.4
+        with:
+          reporter: github-pr-review
+          filter_mode: diff_context
+          fail_on_error: false
+      - name: misspell
+        uses: reviewdog/action-misspell@dfb5c728e60546aca47282343e9d090cf75e9e63 # v1.28.0
+        with:
+          reporter: github-pr-review
+          filter_mode: diff_context
+          fail_on_error: false

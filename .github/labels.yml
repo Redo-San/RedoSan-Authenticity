@@ -1,0 +1,69 @@
+- name: a11y
+  color: ededed
+- name: automated
+  color: bfdadc
+  description: Automated PR (translations, etc.)
+- name: body-needs-fix
+  color: ededed
+- name: bug
+  color: d73a4a
+  description: Something isn't working
+- name: ci
+  color: 0077b6
+  description: CI configuration and dependencies
+- name: dependencies
+  color: 0366d6
+  description: Dependencies updates
+- name: documentation
+  color: 0075ca
+  description: Improvements or additions to documentation
+- name: duplicate
+  color: cfd3d7
+  description: This issue or pull request already exists
+- name: enhancement
+  color: a2eeef
+  description: New feature or request
+- name: good first issue
+  color: 7057ff
+  description: Good for newcomers
+- name: help wanted
+  color: 008672
+  description: Extra attention is needed
+- name: high-priority
+  color: d73a4a
+  description: Critical bugs that need immediate attention
+- name: invalid
+  color: e4e669
+  description: This doesn't seem right
+- name: low-priority
+  color: 0e8a16
+  description: Minor issues and cleanup
+- name: medium-priority
+  color: fbca04
+  description: Important but not critical
+- name: question
+  color: d876e3
+  description: Further information is requested
+- name: refactor
+  color: 1d76db
+  description: Code refactoring needed
+- name: security
+  color: b60205
+  description: Security-related issues
+- name: size/large
+  color: ededed
+- name: size/medium
+  color: ededed
+- name: size/small
+  color: ededed
+- name: type/bug
+  color: ededed
+- name: type/docs
+  color: C2E0C6
+- name: type/enhancement
+  color: BFD4F2
+- name: type/todo
+  color: 006B75
+- name: wontfix
+  color: ffffff
+  description: This will not be worked on

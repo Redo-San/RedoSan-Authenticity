@@ -1,0 +1,24 @@
+# Configuration for Label Actions - https://github.com/dessant/label-actions
+invalid:
+  issues:
+    comment: >
+      This issue has been closed as invalid.
+    close: true
+    close-reason: "not planned"
+duplicate:
+  issues:
+    comment: >
+      This issue is a duplicate of an existing issue and has been closed.
+    close: true
+    close-reason: "not planned"
+wontfix:
+  issues:
+    comment: >
+      This issue will not be worked on and has been closed.
+    close: true
+    close-reason: "not planned"
+needs-more-info:
+  issues:
+    comment: >
+      Thanks for reporting! We need a bit more information to reproduce or assess
+      this issue. Please provide the requested details.

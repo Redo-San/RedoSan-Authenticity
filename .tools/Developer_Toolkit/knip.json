@@ -19,9 +19,18 @@
     "opencode-vision",
     "envsitter-guard",
     "opencode-pty",
-    "opencode-lazy-loader"
+    "opencode-lazy-loader",
+    "@stryker-mutator/command-runner"
   ],
-  "ignoreBinaries": ["rg", "gitleaks", "actionlint", "fd", "cloc", "less"],
+  "ignoreBinaries": [
+    "rg",
+    "gitleaks",
+    "actionlint",
+    "fd",
+    "cloc",
+    "less",
+    "vendor"
+  ],
   "ignoreExportsUsedInFile": true,
   "paths": {
     "@/*": ["Style/*"],
