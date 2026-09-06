@@ -100,6 +100,7 @@ export default [
       "unicorn/prefer-number-coercion": "off",
       "unicorn/no-useless-recursion": "off",
       "unicorn/no-duplicate-set-values": "off",
+      "unicorn/single-line-block-comment-style": "off",
       "unicorn/prefer-global-this": "off",
       "unicorn/no-unnecessary-global-this": "off",
       "unicorn/logical-assignment-operators": "off",

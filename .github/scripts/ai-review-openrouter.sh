@@ -3,6 +3,16 @@ set -uo pipefail
 
 echo "SCRIPT_V3_MARKER_RUNNING"
 
+# Dependabot PRs cannot receive repository secrets (GitHub security model), so
+# an OpenRouter review can never run on them. Skip with a clear comment instead
+# of failing the required check on every automated dependency bump.
+if [ "${PR_AUTHOR:-}" = "dependabot[bot]" ]; then
+  echo "Skipping OpenRouter review for Dependabot PR (secrets unavailable to dependabot-triggered runs)."
+  printf '%s' "_OpenRouter code review skipped: Dependabot PRs cannot access repository secrets, so an AI review is not possible for automated dependency updates. Maintainer review required._" > /tmp/review.md
+  gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file /tmp/review.md 2>/dev/null || echo "Skipped comment (no GH token or comment failed)."
+  exit 0
+fi
+
 if [ -z "$OPENROUTER_API_KEY" ]; then
   echo "OPENROUTER_API_KEY is not set"; exit 1
 fi
