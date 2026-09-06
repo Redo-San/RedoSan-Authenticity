@@ -1,0 +1,84 @@
+# CodeRabbit AI review configuration
+# Docs: https://docs.coderabbit.ai/configuration/
+
+language: en-US
+
+early_access: false
+
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+    ignored_title_patterns:
+      - "^\\[skip review\\]"
+    labels:
+      - automated
+
+  path_filters:
+    - "!vendor/**"
+    - "!node_modules/**"
+    - "!.tools/**"
+    - "!.opencode/**"
+    - "!.agents/**"
+    - "!coverage/**"
+    - "!backstop_data/**"
+    - "!test-results/**"
+    - "!*.min.js"
+    - "!*.min.css"
+    - "!package-lock.json"
+    - "!sw-precache.js"
+    - "!skip-ci"
+    - "!codecov.yml"
+
+  path_instructions:
+    - path: "**/*.js"
+      instructions: |
+        - Code is Vanilla JS (no frameworks, no build step). Do not suggest NPM packages or framework rewrites.
+        - Modules are IIFE or class-based, attached to `window` (browser) — follow that pattern.
+        - Never suggest comments unless the project convention requires them.
+        - Check for prototype-pollution risks, XSS via innerHTML, and unsafe URL handling.
+    - path: "Watermark/**"
+      instructions: |
+        - Validate watermark embed/extract round-trips: embedded message must decode correctly.
+        - Check byte-exact array handling (Uint8ClampedArray / ImageData copies back to img.data).
+    - path: "Audio_Watermark/**"
+      instructions: |
+        - Audio must preserve both ears; check Float32Array boundary handling and sample-rate independence.
+    - path: "Pixel_Injection/**"
+      instructions: |
+        - Check piEmbed() copies results back to img.data for enhanced_lsb and multi_channel_lsb.
+    - path: "Document_Watermark/**"
+      instructions: |
+        - Verify zero-width-character and whitespace techniques survive copy/paste round-trips.
+    - path: "Fingerprint/**"
+      instructions: |
+        - Deterministic hashes only — no Math.random, no Date.now in output. Perceptual hashes must be size-stable.
+    - path: "C2PA/**"
+      instructions: |
+        - Validate COSE Sign1 and attestation structure; ensure ECDSA signatures verify.
+    - path: "Decentralized_Identity_DID/**"
+      instructions: |
+        - Key generation/import must be crypto.subtle-compatible; verify sign/verify round-trip for Ed25519/P-256/RSA.
+    - path: "cli/**"
+      instructions: |
+        - Commander.js conventions; keep commands composable and JSON output stable for scripts.
+    - path: "Style/lang/**"
+      instructions: |
+        - These are generated i18n files — only review for structural consistency, not copy style.
+    - path: ".github/workflows/**"
+      instructions: |
+        - All Actions MUST be SHA-pinned with a `# vX.Y.Z` comment, add step-security/harden-runner to every job, and keep egress-policy: block with allow-listed endpoints.
+        - Never use unversioned refs (main/master/latest).
+
+  auto_review_novel_diff: true
+
+chat:
+  auto_reply: true
