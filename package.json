@@ -65,6 +65,7 @@
     "mutate": "npx stryker run .tools/Developer_Toolkit/stryker.conf.js",
     "mutate:fast": "npm run mutate -- --incremental",
     "coverage:report": "echo Coverage report available at coverage/lcov-report/index.html",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
     "lint": "eslint --config .tools/Developer_Toolkit/eslint.config.mjs .",
     "lint:fix": "eslint --fix --config .tools/Developer_Toolkit/eslint.config.mjs .",
     "biome": "cd .tools/Developer_Toolkit && npx @biomejs/biome check ../..",
