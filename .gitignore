@@ -90,6 +90,7 @@ cli/tests/fixtures/face_identifier_test_img.jpg
 .lh13/
 backstop_data/
 .stryker-tmp/
+reports/
 test-results/
 .playwright-mcp/
 .eslintcache

@@ -9,6 +9,29 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, "..");
 
+// Drops node_modules/ plus the roots oxlint itself ignores (oxlint.config.json
+// ignorePatterns, e.g. **/.tools/**) so a commit whose only JS change lives
+// there does not fail with "No files found to lint" (following oxc#1124 spirit).
+const IGNORED_ROOTS = [
+  ".tools",
+  ".opencode",
+  ".agents",
+  "agent",
+  ".claude",
+  "skills",
+  ".env",
+  "backstop_data",
+  "certs",
+  "docs",
+  ".lh13",
+  ".lighthouseci",
+  ".playwright-mcp",
+  ".stryker-tmp",
+  "test-results",
+  "tests",
+  "vendor",
+];
+
 const files = process.argv
   .slice(2)
   .map((p) =>
@@ -16,7 +39,12 @@ const files = process.argv
       .relative(repoRoot, path.isAbsolute(p) ? p : path.join(repoRoot, p))
       .replace(/\\/g, "/"),
   )
-  .filter((p) => !p.startsWith("node_modules/") && p.endsWith(".js"));
+  .filter(
+    (p) =>
+      !p.startsWith("node_modules/") &&
+      p.endsWith(".js") &&
+      !IGNORED_ROOTS.some((root) => p.startsWith(root + "/")),
+  );
 
 if (files.length === 0) process.exit(0);
 
