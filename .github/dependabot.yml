@@ -7,7 +7,7 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "UTC"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 10
     cooldown:
       default-days: 7
       semver-major-days: 30
@@ -18,6 +18,15 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["patch", "minor"]
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -31,3 +40,6 @@ updates:
       default-days: 7
     labels:
       - "ci"
+    groups:
+      github-actions:
+        patterns: ["*"]
