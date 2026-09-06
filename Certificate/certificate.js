@@ -333,7 +333,7 @@ async function downloadCert(format, btn) {
     }
     // Stamp the certificate file itself
     if (certBlob) {
-      stampCertFile(certBlob, format);
+      await stampCertFile(certBlob, format);
     }
     setResult("lastCtResult", data && data.ct ? data.ct : null);
     if (data.ct && data.ct.otsProof) {
@@ -702,7 +702,7 @@ async function downloadProfessionalCert(format) {
         break;
       }
     }
-    if (certBlob) stampCertFile(certBlob, format);
+    if (certBlob) await stampCertFile(certBlob, format);
     if (status)
       status.textContent = format.toUpperCase() + " downloaded successfully.";
   } catch (error) {
