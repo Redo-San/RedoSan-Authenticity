@@ -1083,4 +1083,40 @@ window.__I18N_DATA.zh = {
   "iris.download.choose_format": "Choose a format:",
   "iris.init": "Initializing iris biometric system...",
   "iris.init_error": "Initialization error: {0}",
+  "face.delete_btn": "Delete",
+  "face.deleted_from_registry": "Face deleted from registry.",
+  "face.no_faces": "No registered faces yet.",
+  "face.status.cameraElementNotFound": "Camera element not found.",
+  "face.status.cameraNotRunningStartThe":
+    "Camera not running. Start the camera first.",
+  "face.status.cameraStopped": "Camera stopped.",
+  "face.status.capturingFrame": "Capturing frame...",
+  "face.status.checkingRegisteredFaces": "Checking registered faces...",
+  "face.status.copyFailedSelectTheId":
+    "Copy failed. Select the ID text manually.",
+  "face.status.couldNotCaptureAFrame": "Could not capture a frame.",
+  "face.status.detectingFaces": "Detecting faces...",
+  "face.status.doneAllIdentifiersGenerated": "Done. All identifiers generated.",
+  "face.status.faceCameraModuleNotLoaded": "Face Camera module not loaded.",
+  "face.status.faceEngineNotInitialized": "Face Engine not initialized.",
+  "face.status.faceLivenessModuleNotLoaded": "Face Liveness module not loaded.",
+  "face.status.faceRegistryNotInitialized": "Face Registry not initialized.",
+  "face.status.generateAPrivacyIdFirst":
+    "Generate a Privacy ID first (run the pipeline).",
+  "face.status.generatingDidKeypair": "Generating DID keypair...",
+  "face.status.generatingFuzzyIdentifier": "Generating Fuzzy identifier...",
+  "face.status.generatingPrivacyIdentifierBiohash":
+    "Generating Privacy Identifier (BioHash)...",
+  "face.status.livenessCheckFailed": "Liveness check failed:",
+  "face.status.loadingModels": "Loading models...",
+  "face.status.noFaceDetectedInThe": "No face detected in the image.",
+  "face.status.photoTooLargeMaximumFile":
+    "Photo too large. Maximum file size is 25 MB.",
+  "face.status.privacyIdCopiedToClipboard": "Privacy ID copied to clipboard.",
+  "face.status.privacyIdReadyToCopy": "Privacy ID ready to copy.",
+  "face.status.signingFaceDescriptorWithDid":
+    "Signing face descriptor with DID...",
+  "face.status.startingCamera": "Starting camera...",
+  "face.status.verifyingPasskey": "Verifying passkey...",
+  "face.status.webauthnModuleNotLoaded": "WebAuthn module not loaded.",
 };
