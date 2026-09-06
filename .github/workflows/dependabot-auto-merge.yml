@@ -8,10 +8,6 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-permissions:
-  contents: write
-  pull-requests: write
-
 concurrency:
   group: dependabot-auto-merge
   cancel-in-progress: true
@@ -19,6 +15,9 @@ concurrency:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
@@ -37,6 +36,21 @@ jobs:
           fi
           for n in $prs; do
             echo "Processing dependabot PR #$n"
+            body="$(gh pr view "$n" --repo "$GITHUB_REPOSITORY" --json title,body --jq '{title:.title,body:.body}')"
+            is_major=""
+            while IFS= read -r b; do
+              [ -z "$b" ] && continue
+              fm="$(printf '%s' "$b" | sed -E 's/^([0-9]+)\..*/\1/')"
+              tm="$(printf '%s' "$b" | sed -E 's/^[0-9]+\.[0-9]+\.[0-9]+ to ([0-9]+)\..*/\1/')"
+              if [ -n "$fm" ] && [ -n "$tm" ] && [ "$tm" -gt "$fm" ]; then
+                is_major=1
+                break
+              fi
+            done <<< "$(printf '%s' "$body" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+ to [0-9]+\.[0-9]+\.[0-9]+')"
+            if [ "$is_major" = "1" ]; then
+              echo "PR #$n skipped: includes a major version bump (human review required)"
+              continue
+            fi
             gh pr review "$n" --approve --repo "$GITHUB_REPOSITORY" || true
             gh pr merge "$n" --auto --merge --repo "$GITHUB_REPOSITORY" || true
           done

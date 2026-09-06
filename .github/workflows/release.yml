@@ -10,9 +10,6 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-permissions:
-  contents: write
-
 concurrency:
   group: release-${{ github.ref_name }}
   cancel-in-progress: true
@@ -20,6 +17,8 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
@@ -101,26 +100,34 @@ jobs:
             const assets = ['CHANGELOG.md', 'sbom.spdx.json'];
             for (const name of assets) {
               if (!fs.existsSync(name)) continue;
-              try {
-                await github.rest.repos.uploadReleaseAsset({
+              const { data: releaseAssets } =
+                await github.rest.repos.listReleaseAssets({
                   owner,
                   repo,
                   release_id: release.id,
-                  name,
-                  data: fs.readFileSync(name),
-                  headers: {
-                    'content-type': name.endsWith('.json')
-                      ? 'application/json'
-                      : 'text/markdown',
-                    'content-length': fs.statSync(name).size,
-                  },
+                  per_page: 100,
                 });
-                core.info(`Uploaded asset ${name}`);
-              } catch (e) {
-                if (e.status === 422) {
-                  core.info(`Asset ${name} already attached`);
-                } else {
-                  throw e;
-                }
+              const stale = releaseAssets.find((a) => a.name === name);
+              if (stale) {
+                await github.rest.repos.deleteReleaseAsset({
+                  owner,
+                  repo,
+                  asset_id: stale.id,
+                });
+                core.info(`Removed stale asset ${name}`);
               }
+              await github.rest.repos.uploadReleaseAsset({
+                owner,
+                repo,
+                release_id: release.id,
+                name,
+                data: fs.readFileSync(name),
+                headers: {
+                  'content-type': name.endsWith('.json')
+                    ? 'application/json'
+                    : 'text/markdown',
+                  'content-length': fs.statSync(name).size,
+                },
+              });
+              core.info(`Uploaded asset ${name}`);
             }
