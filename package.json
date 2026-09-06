@@ -112,7 +112,7 @@
     "commander": "^14.0.3",
     "docx": "^9.7.1",
     "jszip": "^3.10.1",
-    "pdfkit": "^0.18.0",
+    "pdfkit": "^0.20.0",
     "qrcode": "^1.5.4"
   },
   "overrides": {
