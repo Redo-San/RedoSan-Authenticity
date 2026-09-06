@@ -1,0 +1,126 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  release:
+    types: [published, released]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: block
+          allowed-endpoints: |
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            uploads.github.com:443
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        with:
+          config: cliff.toml
+          args: --verbose
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Publish release and attach assets
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const tag =
+              (context.payload.release && context.payload.release.tag_name) ||
+              context.ref.replace('refs/tags/', '');
+
+            const findRelease = async () => {
+              const releases = await github.paginate(
+                github.rest.repos.listReleases, { owner, repo, per_page: 100 }
+              );
+              return releases.find((r) => r.tag_name === tag) || null;
+            };
+
+            let release = await findRelease();
+            if (!release) {
+              try {
+                release = (
+                  await github.rest.repos.createRelease({
+                    owner,
+                    repo,
+                    tag_name: tag,
+                    name: tag,
+                    generate_release_notes: true,
+                  })
+                ).data;
+              } catch (e) {
+                release = await findRelease();
+                if (!release) throw e;
+              }
+            } else if (release.draft) {
+              release = (
+                await github.rest.repos.updateRelease({
+                  owner,
+                  repo,
+                  release_id: release.id,
+                  draft: false,
+                })
+              ).data;
+            }
+            core.info(`Release ${release.name} (#${release.id}) is ready`);
+
+            const assets = ['CHANGELOG.md', 'sbom.spdx.json'];
+            for (const name of assets) {
+              if (!fs.existsSync(name)) continue;
+              try {
+                await github.rest.repos.uploadReleaseAsset({
+                  owner,
+                  repo,
+                  release_id: release.id,
+                  name,
+                  data: fs.readFileSync(name),
+                  headers: {
+                    'content-type': name.endsWith('.json')
+                      ? 'application/json'
+                      : 'text/markdown',
+                    'content-length': fs.statSync(name).size,
+                  },
+                });
+                core.info(`Uploaded asset ${name}`);
+              } catch (e) {
+                if (e.status === 422) {
+                  core.info(`Asset ${name} already attached`);
+                } else {
+                  throw e;
+                }
+              }
+            }

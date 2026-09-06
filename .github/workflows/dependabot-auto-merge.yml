@@ -1,0 +1,44 @@
+name: Dependabot auto-merge
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependabot-auto-merge
+  cancel-in-progress: true
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: block
+          allowed-endpoints: |
+            api.github.com:443
+            github.com:443
+      - name: Approve and enable auto-merge for Dependabot PRs
+        shell: bash
+        run: |
+          set -euo pipefail
+          prs="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --author "app/dependabot" --json number,mergeable,title --jq '.[] | select(.mergeable == "MERGEABLE") | .number')"
+          if [ -z "$prs" ]; then
+            echo "No mergeable Dependabot PRs to process."
+            exit 0
+          fi
+          for n in $prs; do
+            echo "Processing dependabot PR #$n"
+            gh pr review "$n" --approve --repo "$GITHUB_REPOSITORY" || true
+            gh pr merge "$n" --auto --merge --repo "$GITHUB_REPOSITORY" || true
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

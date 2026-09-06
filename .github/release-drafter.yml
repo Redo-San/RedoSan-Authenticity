@@ -1,0 +1,69 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: "Features"
+    semver-increment: "minor"
+    when:
+      - conventional:
+          type: "feat"
+      - labels:
+          - "feature"
+          - "enhancement"
+  - title: "Bug Fixes"
+    semver-increment: "patch"
+    when:
+      - conventional:
+          type: "fix"
+      - labels:
+          - "bug"
+          - "fix"
+  - title: "Maintenance"
+    when:
+      - conventional:
+          types:
+            [
+              "build",
+              "chore",
+              "ci",
+              "docs",
+              "refactor",
+              "style",
+              "test",
+              "perf",
+              "revert",
+            ]
+      - labels:
+          - "chore"
+          - "ci"
+          - "docs"
+          - "refactor"
+          - "test"
+          - "maintenance"
+  - title: "Dependencies"
+    semver-increment: "patch"
+    when:
+      - labels:
+          - "dependencies"
+
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+change-title-escapes: '\<*_&'
+version-resolver:
+  major:
+    labels:
+      - "major"
+  minor:
+    labels:
+      - "minor"
+  patch:
+    labels:
+      - "patch"
+  default: patch
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  ## New Contributors
+
+  $NEW_CONTRIBUTORS
