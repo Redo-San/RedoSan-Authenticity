@@ -100,6 +100,7 @@ const docxMock = {
   },
 };
 globalThis.docx = docxMock;
+globalThis.ensureLib = async () => {};
 
 // ── Load cbor.js (replace 'export function' with 'function') ──
 const cborSrc = fs.readFileSync(
@@ -118,10 +119,7 @@ const c2paSrc = fs.readFileSync(
   path.join(__dirname, "../../C2PA/c2pa.js"),
   "utf8",
 );
-const c2paClean = c2paSrc.replace(
-  /import \{ createC2pa \} from 'https:\/\/cdn\.jsdelivr\.net\/npm\/@contentauth\/c2pa-web@0\.8\.1\/\+esm';/,
-  "var createC2pa = null;",
-);
+const c2paClean = c2paSrc.replace(/^import .+$/m, "var createC2pa = null;");
 vm.runInThisContext(c2paClean, {
   filename: path.resolve(__dirname, "../../C2PA/c2pa.js"),
 });
@@ -868,7 +866,7 @@ describe("C2PA — sha256Hex (crypto.subtle)", () => {
 });
 
 describe("C2PA — c2paToPDF", () => {
-  it("should generate PDF blob with report content", () => {
+  it("should generate PDF blob with report content", async () => {
     const r = makeReadResult({
       manifest: {
         ...makeReadResult().manifest,
@@ -882,11 +880,11 @@ describe("C2PA — c2paToPDF", () => {
         signature_info: { issuer: "CN=Test", time: "2024-01-01" },
       },
     });
-    const blob = c2paToPDF(r);
+    const blob = await c2paToPDF(r);
     assert.ok(blob instanceof Blob);
   });
 
-  it("should handle manifest without optional fields", () => {
+  it("should handle manifest without optional fields", async () => {
     const r = makeReadResult({
       manifest: {
         title: null,
@@ -898,7 +896,7 @@ describe("C2PA — c2paToPDF", () => {
         claim_generator_info: null,
       },
     });
-    const blob = c2paToPDF(r);
+    const blob = await c2paToPDF(r);
     assert.ok(blob instanceof Blob);
   });
 });

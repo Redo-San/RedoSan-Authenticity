@@ -40,7 +40,7 @@ jobs:
       - name: npm audit (production deps)
         run: npm run audit:prod
       - name: Run unit tests
-        run: npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt
+        run: npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt && npm run test:cli
       - name: Run coverage gate
         run: npm run coverage:gate
       - name: Upload coverage to Codecov

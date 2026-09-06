@@ -99,6 +99,8 @@ globalThis.createDocxTable = function createDocxTable(docx, rows) {
   });
 };
 
+globalThis.ensureLib = async () => {};
+
 // ── Load c2pa.js ──
 function loadC2pa() {
   let src = fs.readFileSync(path.join(__dirname, "../../C2PA/c2pa.js"), "utf8");
@@ -156,43 +158,43 @@ function pdfCalls() {
 }
 
 describe("C2PA — c2paToPDF", () => {
-  it("should return a Blob", () => {
-    const blob = c2paToPDF(mockResult);
+  it("should return a Blob", async () => {
+    const blob = await c2paToPDF(mockResult);
     assert.ok(blob instanceof Blob);
   });
 
-  it("should include file name in output", () => {
-    const blob = c2paToPDF(mockResult);
+  it("should include file name in output", async () => {
+    await c2paToPDF(mockResult);
     const calls = pdfCalls();
     const texts = calls.filter((c) => c[0] === "text").map((c) => c[1]);
     assert.ok(texts.some((t) => t.includes("test.jpg")));
   });
 
-  it("should include validation state", () => {
-    c2paToPDF(mockResult);
+  it("should include validation state", async () => {
+    await c2paToPDF(mockResult);
     const calls = pdfCalls();
     const texts = calls.filter((c) => c[0] === "text").map((c) => c[1]);
     assert.ok(texts.some((t) => t.includes("ok")));
   });
 
-  it("should call output with 'blob'", () => {
-    c2paToPDF(mockResult);
+  it("should call output with 'blob'", async () => {
+    await c2paToPDF(mockResult);
     const calls = pdfCalls();
     assert.ok(calls.some((c) => c[0] === "output" && c[1] === "blob"));
   });
 
-  it("should handle minimal manifest without optional fields", () => {
+  it("should handle minimal manifest without optional fields", async () => {
     const minimal = {
       file: "min.jpg",
       activeLabel: "lbl1",
       manifest: {},
       manifestStore: { validation_state: "unknown" },
     };
-    const blob = c2paToPDF(minimal);
+    const blob = await c2paToPDF(minimal);
     assert.ok(blob instanceof Blob);
   });
 
-  it("should handle page break when content exceeds page height", () => {
+  it("should handle page break when content exceeds page height", async () => {
     const manyActions = [];
     for (let i = 0; i < 50; i++) {
       manyActions.push({ action: "c2pa.edited", when: "2024-01-01" });
@@ -214,7 +216,7 @@ describe("C2PA — c2paToPDF", () => {
       },
       manifestStore: { validation_state: "ok" },
     };
-    const blob = c2paToPDF(result);
+    const blob = await c2paToPDF(result);
     assert.ok(blob instanceof Blob);
     const calls = pdfCalls();
     const addPageCalls = calls.filter((c) => c[0] === "addPage");

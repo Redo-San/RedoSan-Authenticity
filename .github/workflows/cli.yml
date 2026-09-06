@@ -1,0 +1,47 @@
+name: CLI suite
+
+on:
+  push:
+    paths:
+      - "cli/**"
+      - "package.json"
+      - "package-lock.json"
+  pull_request:
+    paths:
+      - "cli/**"
+      - "package.json"
+      - "package-lock.json"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22, 24]
+
+    steps:
+      - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          package-manager-cache: false
+      - name: Install system deps (canvas)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
+      - name: Install npm deps
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci
+      - name: Run CLI suite
+        run: npm run test:cli
