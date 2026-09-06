@@ -1,0 +1,42 @@
+name: Milestone
+
+on:
+  issues:
+    types: [closed]
+  pull_request:
+    types: [closed]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  milestone:
+    name: Milestone Update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+
+      - name: Set Milestone for merged PR
+        uses: hustcer/milestone-action@2f38355153344ccaaa44b5b5fcff9f604dff1b45 # v3.2
+        if: github.event.pull_request.merged == true
+        with:
+          action: bind-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Milestone for closed issue (fix merged)
+        uses: hustcer/milestone-action@2f38355153344ccaaa44b5b5fcff9f604dff1b45 # v3.2
+        if: github.event.issue.state == 'closed'
+        with:
+          action: bind-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
