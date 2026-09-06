@@ -44,7 +44,7 @@ describe("FaceEngine — constructor and isLoaded", () => {
     assert.equal(engine._loaded, false);
     assert.equal(
       engine._modelBasePath,
-      "https://cdn.jsdelivr.net/npm/@vladmandic/human/models/",
+      "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/",
     );
     assert.equal(engine._tinyDetector, false);
   });
