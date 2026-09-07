@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.repository }}-${{ github.head_ref || github.ref_name }}-upptime
+  group: ${{ github.repository }}-upptime
   cancel-in-progress: false
 
 env:
@@ -26,7 +26,7 @@ jobs:
       issues: write
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
           allowed-endpoints: |
@@ -36,10 +36,12 @@ jobs:
             objects.githubusercontent.com:443
             redo-san.github.io:443
 
+      # main has a ruleset requiring PRs + status checks, so Upptime's direct
+      # status commits must live on the unprotected `status` branch.
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
+          ref: status
           persist-credentials: true
 
       - name: Configure git authentication
