@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          prs="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --author "app/dependabot" --json number,mergeable,title --jq '.[] | select(.mergeable == "MERGEABLE") | .number')"
+          prs="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --author "app/dependabot" --json number --jq '.[].number')"
           if [ -z "$prs" ]; then
             echo "No mergeable Dependabot PRs to process."
             exit 0
