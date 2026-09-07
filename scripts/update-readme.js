@@ -210,7 +210,6 @@ function workflowsBlock(repoRoot) {
 
 /**
  * Extract markdown list bullets from a release body's "What's Changed" section.
- *
  * @param {string} [body] - GitHub release body.
  * @returns {string[]} Bullet lines between "What's Changed" and the changelog footer.
  */
