@@ -1,0 +1,45 @@
+name: Request Info
+
+on:
+  issues:
+    types: [opened]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  issues: write
+
+jobs:
+  request-info:
+    if: github.actor != 'github-actions[bot]' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const body = (context.payload.issue.body || '').trim();
+            const title = (context.payload.issue.title || '').trim();
+            const num = context.issue.number;
+            const hasUrl = body.includes('Page URL');
+            const hasDesc = body.includes('Description');
+            const tooShort = body.length < 40;
+            const needsInfo = !hasUrl || !hasDesc || tooShort;
+            if (!needsInfo) return;
+            await github.rest.issues.addLabels({
+              ...context.repo, issue_number: num, labels: ['needs-more-info']
+            }).catch(() => {});
+            const lines = [
+              'Thanks for reporting!',
+              '',
+              'It looks like some required fields are missing or the description is too short.',
+              'Please fill in the issue template so we can reproduce and fix it:',
+              '- **Page URL** — which page were you on?',
+              '- **Description** — what happened?',
+              '- **Steps to reproduce** — how can we reproduce it?',
+              '',
+              'Once updated, a maintainer will review it as soon as possible 🚀'
+            ];
+            await github.rest.issues.createComment({
+              ...context.repo, issue_number: num, body: lines.join('\n')
+            }).catch(() => {});
