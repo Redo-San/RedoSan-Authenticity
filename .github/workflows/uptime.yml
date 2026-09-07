@@ -40,18 +40,17 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
-          token: ${{ secrets.GH_PAT || github.token }}
           persist-credentials: false
 
       - name: Configure git authentication
         run: gh auth setup-git
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Check endpoint status
         uses: upptime/uptime-monitor@a9df8681951501693cbd6bea9c84df24bbf94210 # v1.43.16
         with:
           command: "update"
         env:
-          GH_PAT: ${{ secrets.GH_PAT || github.token }}
+          GH_PAT: ${{ github.token }}
           SECRETS_CONTEXT: "{}"
