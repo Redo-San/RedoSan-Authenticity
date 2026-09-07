@@ -102,7 +102,7 @@ jobs:
 
             async function main() {
               if (!apiKey) {
-                await react("x");
+                await react("-1");
                 await github.rest.issues.createComment({
                   owner, repo, issue_number: issueNumber,
                   body: "The **/ask** command is not enabled: the `OPENROUTER_API_KEY` secret is not configured.",
@@ -110,7 +110,7 @@ jobs:
                 return;
               }
               if (question.length === 0) {
-                await react("x");
+                await react("-1");
                 await github.rest.issues.createComment({
                   owner, repo, issue_number: issueNumber,
                   body: "Please include a question, e.g. `/ask How does the DCT watermark work?`",
@@ -119,7 +119,7 @@ jobs:
               }
               const authorized = await isAuthorized(actor);
               if (!authorized) {
-                await react("x");
+                await react("-1");
                 await github.rest.issues.createComment({
                   owner, repo, issue_number: issueNumber,
                   body: "Sorry @" + actor + ", only users with **write** access can run **/ask**.",
@@ -139,7 +139,7 @@ jobs:
                 });
                 await react("rocket");
               } catch (e) {
-                await react("x");
+                await react("-1");
                 await github.rest.issues.createComment({
                   owner, repo, issue_number: issueNumber,
                   body: "The **/ask** command failed:\n\n```\n" + String(e && e.message ? e.message : e).slice(0, 2000) + "\n```",
