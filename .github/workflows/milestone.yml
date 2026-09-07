@@ -24,6 +24,7 @@ jobs:
           allowed-endpoints: >
             api.github.com:443
             github.com:443
+            release-assets.githubusercontent.com:443
 
       - name: Set Milestone for merged PR
         uses: hustcer/milestone-action@2f38355153344ccaaa44b5b5fcff9f604dff1b45 # v3.2
