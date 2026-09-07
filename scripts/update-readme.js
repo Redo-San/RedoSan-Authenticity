@@ -210,9 +210,8 @@ function workflowsBlock(repoRoot) {
 
 /**
  * Extract markdown list bullets from a release body's "What's Changed" section.
- *
  * @param {string} [body] - GitHub release body.
- * @returns {string[]} Bullet lines under the "What's Changed" heading.
+ * @returns {string[]} Bullet lines between "What's Changed" and the changelog footer.
  */
 function bulletsFromRelease(body) {
   const lines = String(body || "").split("\n");
@@ -220,15 +219,15 @@ function bulletsFromRelease(body) {
   let capture = false;
   for (const raw of lines) {
     const line = raw.trim();
-    if (line.startsWith("## ")) {
-      if (/what'?s changed/i.test(line)) {
-        capture = true;
-        continue;
-      }
-      if (capture) break;
+    if (/^##\s+what'?s changed/i.test(line)) {
+      capture = true;
       continue;
     }
-    if (capture && /^-\s+/.test(line)) out.push(line);
+    if (!capture) continue;
+    if (/^\*\*full changelog\*\*/i.test(line)) break;
+    if (/^[-*]\s+/.test(line) && !/no new contributors/i.test(line)) {
+      out.push(line);
+    }
   }
   return out;
 }
