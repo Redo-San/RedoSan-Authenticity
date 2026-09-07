@@ -24,6 +24,8 @@
 
 ---
 
+<!-- BOT:START whats-new -->
+
 ## What's New in v1.7.1
 
 - **Face Biometric hardening** — WebAuthn PRF vault (passphrase replaced), session-scoped consent, anti-spoof + liveness, ArcFace ONNX, auto-register passkey; 100% test coverage (Face_Biometric + E2E pipeline/UI specs)
@@ -62,6 +64,8 @@
 - **i18n (8 languages)** — Full Arabic, German, Spanish, French, Japanese, Korean, Chinese translations alongside English. Real-time switching, RTL support.
 
 </details>
+
+<!-- BOT:END whats-new -->
 
 ---
 
@@ -411,7 +415,9 @@ Bypass with `--allow-dangerous` for testing trusted files.
 
 ## Testing
 
-68 unit test files + 58 E2E suites with 3,500+ tests using `node:test` (zero external test dependencies) + Playwright:
+<!-- BOT:START testing-stats -->
+88 unit test files + 58 E2E suites with 5,200+ tests using `node:test` (zero external test dependencies) + Playwright:
+<!-- BOT:END testing-stats -->
 
 ```bash
 npm test                         # All tests
@@ -433,16 +439,18 @@ CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chrom
 
 ## CI/CD Workflows
 
-The project includes 59 GitHub Actions workflows:
+<!-- BOT:START workflows -->
+The project includes 74 GitHub Actions workflows:
 
-| Category          | Workflows                                                                                                                                          |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Core**          | CI (unit + E2E + coverage), ESLint, Biome, Stylelint, deploy-pages                                                                                 |
-| **Security**      | Semgrep SAST, CodeQL, TruffleHog, npm audit, ClamAV, OpenSSF Scorecard, dependency-review, supply chain audit, secret scanner, permissions sheriff |
-| **Quality**       | Pa11y + axe-core accessibility, Lighthouse CI, DOM review, dead CSS, file size budget, E2E coverage guard                                          |
-| **Maintenance**   | Broken link checker, translation auto-PR, stale issue manager, TODO issue creator, spell check                                                     |
-| **PR Management** | Conventional Commits lint, auto-assign, PR size label, branch name lint, cross-reference checker                                                   |
-| **AI Review**     | Gemini CLI code review                                                                                                                             |
+| Category | Workflows |
+| -------- | --------- |
+| **AI Review** | Ai Review Openrouter, Eslint Review, Gemini Analysis, Ollama Analysis, Review, Reviewdog |
+| **PR Management** | Auto Assign, Branch Name Lint, Cross Ref Check, Issue Labeler, Label Actions, Label Sync, Labeler, Pr Body Check, Pr Size Label, Pr Stats, Pr Title Lint |
+| **Security** | Abom, Codeql, Dependency Review, Malware Scan, Npm Audit Checker, Permissions Sheriff, Pwn Hunter, Scorecards, Secret Scan Gitleaks, Secret Scanner, Security Audit, Security, Semgrep, Zizmor |
+| **Quality** | A11y Fix, A11y, Backstop, Codebase Audit, Console Log Detector, Cspell Check, Css Lint, Dead Css, Depcheck, Dom Review, E2e Coverage Guard, File Size Budget, Html Hint, Knip, Madge Check, Markdownlint, Mutation, Performance, Size Limit, Spell Check, Typedoc Check |
+| **Maintenance** | Broken Links, Copilot Setup Steps, Dependabot Auto Merge, Lock Closed, Milestone, Minimal Dispatch, Release Drafter, Release, Request Info, Slash Command, Stale, Todo Issues, Translate, Uptime, Welcome |
+| **Core** | Ci, Cli, Deploy Pages, Js Syntax Check, Lint, Prettier Check, Update Readme |
+<!-- BOT:END workflows -->
 
 ---
 
