@@ -64,6 +64,9 @@
   color: "BFD4F2"
 - name: type/todo
   color: "006B75"
+- name: needs-more-info
+  color: "fd8b00"
+  description: More information is needed to reproduce or assess this issue
 - name: wontfix
   color: "ffffff"
   description: This will not be worked on
