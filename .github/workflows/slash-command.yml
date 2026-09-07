@@ -1,0 +1,149 @@
+name: Slash Command
+
+on:
+  issue_comment:
+    types: [created]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  ask:
+    name: /ask command
+    if: startsWith(github.event.comment.body, '/ask')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: block
+          allowed-endpoints: |
+            api.github.com:443
+            openrouter.ai:443
+
+      - name: Run /ask command
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issueNumber = context.payload.issue.number;
+            const actor = context.actor;
+            const body = (context.payload.comment.body || "").trim();
+            const question = body.replace(/^\/ask\b/i, "").trim();
+            const commentId = context.payload.comment.id;
+            const apiKey = process.env.OPENROUTER_API_KEY;
+
+            async function react(content) {
+              await github.rest.reactions.createForIssueComment({
+                owner, repo, comment_id: commentId, content,
+              });
+            }
+
+            async function isAuthorized(username) {
+              try {
+                const res = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner, repo, username,
+                });
+                return ["admin", "write"].includes(res.data.permission);
+              } catch (e) {
+                return false;
+              }
+            }
+
+            async function pickFreeModel() {
+              const res = await fetch("https://openrouter.ai/api/v1/models", {
+                headers: { "content-type": "application/json" },
+              });
+              if (!res.ok) throw new Error("models endpoint returned " + res.status);
+              const data = await res.json();
+              const freeIds = (data.data || []).map((m) => m.id).filter((id) => id.includes(":free"));
+              if (freeIds.length === 0) throw new Error("no free models available");
+              freeIds.sort();
+              return freeIds[0];
+            }
+
+            async function askOpenRouter(question, model) {
+              const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  "content-type": "application/json",
+                  authorization: "Bearer " + apiKey,
+                },
+                body: JSON.stringify({
+                  model,
+                  messages: [
+                    {
+                      role: "system",
+                      content:
+                        "You are a concise assistant helping contributors of the RedoSan-Authenticity repository " +
+                        "(vanilla JS digital authenticity toolkit: watermark, fingerprint, C2PA, DID, certificate, forensic, converter). " +
+                        "Answer directly and factually. Keep answers under 300 words.",
+                    },
+                    { role: "user", content: question },
+                  ],
+                  temperature: 0.3,
+                  max_tokens: 1000,
+                }),
+              });
+              if (!res.ok) {
+                const text = await res.text();
+                throw new Error("completions returned " + res.status + ": " + text.slice(0, 500));
+              }
+              const data = await res.json();
+              return (data.choices && data.choices[0] && data.choices[0].message.content) || "(empty response)";
+            }
+
+            async function main() {
+              if (!apiKey) {
+                await react("x");
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: issueNumber,
+                  body: "The **/ask** command is not enabled: the `OPENROUTER_API_KEY` secret is not configured.",
+                });
+                return;
+              }
+              if (question.length === 0) {
+                await react("x");
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: issueNumber,
+                  body: "Please include a question, e.g. `/ask How does the DCT watermark work?`",
+                });
+                return;
+              }
+              const authorized = await isAuthorized(actor);
+              if (!authorized) {
+                await react("x");
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: issueNumber,
+                  body: "Sorry @" + actor + ", only users with **write** access can run **/ask**.",
+                });
+                return;
+              }
+              await react("eyes");
+              try {
+                const model = await pickFreeModel();
+                const answer = await askOpenRouter(question, model);
+                const bodyText =
+                  "### /ask\n\n**Question:** " + question + "\n\n**Answer** (model: `" + model +
+                  "`, free tier):\n\n" + answer;
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: issueNumber,
+                  body: bodyText.slice(0, 60000),
+                });
+                await react("rocket");
+              } catch (e) {
+                await react("x");
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: issueNumber,
+                  body: "The **/ask** command failed:\n\n```\n" + String(e && e.message ? e.message : e).slice(0, 2000) + "\n```",
+                });
+              }
+            }
+
+            await main();
