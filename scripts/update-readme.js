@@ -9,7 +9,7 @@ const UNIT_NAME_RE = /(_test|\.test)\.(js|mjs)$/;
 const UNIT_LEADING_RE = /^test-.*\.(js|mjs)$/;
 const E2E_NAME_RE = /_test\.(js|mjs)$/;
 
-const EXCLUDED_TEST_DIRS = ["e2e", "fixtures", "a11y"];
+const EXCLUDED_TEST_DIRS = new Set(["e2e", "fixtures", "a11y"]);
 
 const WORKFLOW_CATEGORIES = [
   {
@@ -35,6 +35,12 @@ const WORKFLOW_CATEGORIES = [
   { name: "Core", re: /./ },
 ];
 
+/**
+ * Parse CLI flags (both `--flag value` and `--flag=value` forms).
+ *
+ * @param {string[]} argv - Raw command-line arguments.
+ * @returns {Object} Normalized CLI arguments merged with environment defaults.
+ */
 function parseArgs(argv) {
   const args = { readme: "README.md", repoRoot: process.cwd() };
   const camel = (flag) =>
@@ -61,11 +67,19 @@ function parseArgs(argv) {
   return args;
 }
 
+/**
+ * Recursively collect every file path below a directory.
+ *
+ * @param {string} dir - Directory to walk.
+ * @param {string[]} [out] - Accumulator for collected file paths.
+ * @returns {string[]} Full paths of every file under `dir`.
+ */
 function walk(dir, out = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (!EXCLUDED_TEST_DIRS.includes(entry.name)) walk(full, out);
+      if (!EXCLUDED_TEST_DIRS.has(entry.name)) walk(full, out);
     } else {
       out.push(full);
     }
@@ -73,10 +87,22 @@ function walk(dir, out = []) {
   return out;
 }
 
+/**
+ * Tell whether a file name follows the unit test naming rules.
+ *
+ * @param {string} name - File base name.
+ * @returns {boolean} True when the name matches a unit test pattern.
+ */
 function isUnitFile(name) {
   return UNIT_NAME_RE.test(name) || UNIT_LEADING_RE.test(name);
 }
 
+/**
+ * Count test declarations (`test(...)`/`it(...)`) inside a test file.
+ *
+ * @param {string} file - Path to a test file.
+ * @returns {number} Number of detected test declarations.
+ */
 function countDeclarations(file) {
   const text = fs.readFileSync(file, "utf8");
   let count = (text.match(/\btest\(\s*['"]/g) || []).length;
@@ -84,6 +110,12 @@ function countDeclarations(file) {
   return count;
 }
 
+/**
+ * Compute the testing statistics for the repository.
+ *
+ * @param {string} repoRoot - Repository root directory.
+ * @returns {{unit: number, e2e: number, tests: number, testsRounded: number}} Testing stats.
+ */
 function computeStats(repoRoot) {
   const testsDir = path.join(repoRoot, "cli", "tests");
   const unitFiles = walk(path.join(testsDir)).filter((f) =>
@@ -104,6 +136,12 @@ function computeStats(repoRoot) {
   };
 }
 
+/**
+ * Convert a hyphenated workflow file name into a display label.
+ *
+ * @param {string} basename - Workflow base name without extension.
+ * @returns {string} Human-readable display name.
+ */
 function displayName(basename) {
   return basename
     .split("-")
@@ -111,6 +149,12 @@ function displayName(basename) {
     .join(" ");
 }
 
+/**
+ * Group workflow file names by their matching category.
+ *
+ * @param {string[]} files - Workflow file names.
+ * @returns {Map<string, string[]>} Category name to display names.
+ */
 function categorize(files) {
   const groups = new Map(WORKFLOW_CATEGORIES.map((c) => [c.name, []]));
   for (const file of files) {
@@ -121,15 +165,29 @@ function categorize(files) {
   return groups;
 }
 
+/**
+ * Build the "Testing" summary paragraph.
+ *
+ * @param {{unit: number, e2e: number, tests: number, testsRounded: number}} stats - Testing stats.
+ * @returns {string} Markdown paragraph for the Testing section.
+ */
 function testingBlock(stats) {
   return (
     `${stats.unit} unit test files + ${stats.e2e} E2E suites with ` +
-    `${stats.testsRounded.toLocaleString("en-US")}+ tests using \`node:test\` ` +
+    `${stats.testsRounded.toLocaleString(
+      "en-US",
+    )}+ tests using \`node:test\` ` +
     "(zero external test dependencies) + Playwright:"
   );
 }
 
-function workflowsBlock(repoRoot, stats) {
+/**
+ * Build the CI/CD workflows table section.
+ *
+ * @param {string} repoRoot - Repository root directory.
+ * @returns {string} Markdown for the workflows section.
+ */
+function workflowsBlock(repoRoot) {
   const workflowsDir = path.join(repoRoot, ".github", "workflows");
   const files = fs
     .readdirSync(workflowsDir)
@@ -150,6 +208,12 @@ function workflowsBlock(repoRoot, stats) {
   ].join("\n");
 }
 
+/**
+ * Extract markdown list bullets from a release body's "What's Changed" section.
+ *
+ * @param {string} [body] - GitHub release body.
+ * @returns {string[]} Bullet lines under the "What's Changed" heading.
+ */
 function bulletsFromRelease(body) {
   const lines = String(body || "").split("\n");
   const out = [];
@@ -169,6 +233,12 @@ function bulletsFromRelease(body) {
   return out;
 }
 
+/**
+ * Turn bullet lines into a short archive summary.
+ *
+ * @param {string[]} bullets - Bullet lines of the current active version.
+ * @returns {string} Short summary label for the archive.
+ */
 function summaryFromBullets(bullets) {
   if (bullets.length === 0) return "Release notes";
   let first = bullets[0]
@@ -179,6 +249,14 @@ function summaryFromBullets(bullets) {
   return cut > -1 ? first.slice(0, cut).trim() : first.slice(0, 80).trim();
 }
 
+/**
+ * Build an archive `<details>` block for a previous version.
+ *
+ * @param {string} version - Version label.
+ * @param {string} summary - Short summary label.
+ * @param {string[]} bullets - Bullet lines of that version.
+ * @returns {string} Markdown details block.
+ */
 function detailsBlock(version, summary, bullets) {
   return [
     "<details>",
@@ -190,6 +268,14 @@ function detailsBlock(version, summary, bullets) {
   ].join("\n");
 }
 
+/**
+ * Compute the new "What's New" region content, archiving the previous version.
+ *
+ * @param {string} currentInner - Content between the markers.
+ * @param {string} releaseVersion - New release version.
+ * @param {string} [releaseBody] - Release body for the new bullets.
+ * @returns {string} New "What's New" region content.
+ */
 function whatsNewBlock(currentInner, releaseVersion, releaseBody) {
   const inner = currentInner.trimStart();
   const match = inner.match(/^## What's New in (\S+)\s*\n\n([\s\S]*)$/);
@@ -230,10 +316,24 @@ function whatsNewBlock(currentInner, releaseVersion, releaseBody) {
     .trimEnd();
 }
 
+/**
+ * Build one BOT marker comment.
+ *
+ * @param {string} id - Marker id.
+ * @param {boolean} [end] - True for the END marker.
+ * @returns {string} HTML comment marker.
+ */
 function marker(id, end) {
   return `<!-- BOT:${end ? "END" : "START"} ${id} -->`;
 }
 
+/**
+ * Extract the content between a marker pair.
+ *
+ * @param {string} text - Full document.
+ * @param {string} id - Marker id.
+ * @returns {string} Content between the START and END markers.
+ */
 function regionContent(text, id) {
   const start = marker(id, false);
   const end = marker(id, true);
@@ -245,6 +345,14 @@ function regionContent(text, id) {
   return text.slice(si + start.length, ei);
 }
 
+/**
+ * Replace the content between a marker pair.
+ *
+ * @param {string} text - Full document.
+ * @param {string} id - Marker id.
+ * @param {string} content - New region content.
+ * @returns {string} Updated document.
+ */
 function replaceRegion(text, id, content) {
   const start = marker(id, false);
   const end = marker(id, true);
@@ -258,6 +366,10 @@ function replaceRegion(text, id, content) {
   );
 }
 
+/**
+ * Command entry point: regenerate the generated README sections.
+ * Writes the README when anything changed and prints a stats JSON summary.
+ */
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const readmePath = path.resolve(args.repoRoot, args.readme);
@@ -266,11 +378,7 @@ function main() {
 
   const stats = computeStats(args.repoRoot);
   current = replaceRegion(current, "testing-stats", testingBlock(stats));
-  current = replaceRegion(
-    current,
-    "workflows",
-    workflowsBlock(args.repoRoot, stats),
-  );
+  current = replaceRegion(current, "workflows", workflowsBlock(args.repoRoot));
 
   if (args.releaseVersion) {
     const inner = regionContent(current, "whats-new");
