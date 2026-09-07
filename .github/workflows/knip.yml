@@ -15,7 +15,6 @@ on:
 
 permissions:
   contents: read
-  checks: write
   pull-requests: write
 
 env:
@@ -42,5 +41,5 @@ jobs:
         with:
           command_script_name: knip
           ignore_results: true
-          annotations: true
+          annotations: false
           collapse_sections: auto
