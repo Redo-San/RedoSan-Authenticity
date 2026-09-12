@@ -83,6 +83,7 @@ var PAGE_TITLES = {
   watermark: "Digital Watermark — RedoSan Authenticity",
   "audio-watermark": "Audio Watermark — RedoSan Authenticity",
   "face-biometric": "Face Biometric Rights — RedoSan Authenticity",
+  "voice-biometric": "Voice Biometric Rights — RedoSan Authenticity",
   "pixel-injection": "Pixel Injection — RedoSan Authenticity",
   forensic: "Forensic Analyzer — RedoSan Authenticity",
   fingerprint: "Fingerprint &amp; Image Hashing — RedoSan Authenticity",
@@ -108,6 +109,8 @@ var PAGE_DESCS = {
     "Embed and extract hidden messages in WAV audio files using LSB, Echo Hiding, and QIM algorithms. 100% browser-based.",
   "face-biometric":
     "Register and verify face biometric descriptors for visual rights protection. 100% browser-based, nothing uploaded.",
+  "voice-biometric":
+    "Register and verify ECAPA voice biometric descriptors with anti-spoof detection for vocal-rights protection. 100% browser-based, nothing uploaded.",
   "pixel-injection":
     "Advanced pixel injection for steganography with 20+ algorithms including enhanced LSB, DCT, and DWT. Free online tool.",
   forensic:
@@ -158,6 +161,7 @@ var PAGE_NAMES = new Set([
   "search",
   "social",
   "timestamp",
+  "voice-biometric",
   "watermark",
 ]);
 

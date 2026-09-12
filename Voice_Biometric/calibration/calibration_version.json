@@ -1,0 +1,8 @@
+{
+  "$schema": "Voice_Biometric/calibration/calibration-version-schema-v1",
+  "schemaVersion": 1,
+  "calibrationArtifactVersion": "1.0.0",
+  "manifest": "Voice_Biometric/calibration/calibration_manifest.json",
+  "generatedAt": "2026-09-08T12:00:00.000Z",
+  "generatedBy": "B4 bootstrap (regenerate with cli/commands/voice-calibrate.js once the labelled dev set ships)"
+}

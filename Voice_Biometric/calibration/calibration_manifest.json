@@ -1,0 +1,47 @@
+{
+  "$schema": "Voice_Biometric/calibration/calibration-manifest-schema-v1",
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-09T12:00:00.000Z",
+  "generatedBy": "B4 bootstrap: VoiceMatcher.fitCalibration + golden fixtures (regenerate with cli/commands/voice-calibrate.js once the labelled dev set ships); re-verified at Phase C2 2026-09-09 against the committed binaries — fbank re-hash 024e5073…7f5a63 MATCH, model pin f46380bb…3f64e unchanged (runtime-fetched, SRI-verified)",
+  "method": "affine-logistic-to-LLR (Newton-IRLS)",
+  "operatingPoint": {
+    "P_TARGET": 0.01,
+    "C_MISS": 1,
+    "C_FA": 1
+  },
+  "threshold": 4.59511985013459,
+  "metrics": {
+    "EER": 0,
+    "minDCF": 0,
+    "actDCF": 1,
+    "Cllr": 0.81203404699132
+  },
+  "calibration": {
+    "alpha": 44.87181368551066,
+    "beta": -27.36125915808683,
+    "logloss": 2.7581405890203613e-8,
+    "iterations": 16,
+    "converged": true,
+    "method": "affine-logistic-to-LLR (Newton-IRLS)"
+  },
+  "devSet": {
+    "id": "golden-bootstrap-v1",
+    "datasetVersion": "1",
+    "description": "Browser-parity golden embeddings from B2 fixtures. nImpostor=1 is a single cross-speaker trial, so EER/minDCF are degenerate; this artifact is the traced bootstrap state of the threshold, not a lab measurement.",
+    "source": "cli/tests/fixtures/golden_sp1.json + golden_sp2.json (LibriSpeech dev-clean readers sp1=F / sp2=M); genuine = browser-oracle parity cosine 1.0; impostor = cosine(sp1,sp2) = 0.22588924615165568",
+    "nGenuine": 2,
+    "nImpostor": 1
+  },
+  "model": {
+    "embedder": "speechbrain/spkrec-ecapa-voxceleb",
+    "version": "1.1.1",
+    "sha256": "f46380bbaeddb929fb3a10ab63a4b1877a50e3d1e5fdd55a1b618d5651d3f64e",
+    "dimension": 192
+  },
+  "preprocessing": {
+    "version": "B1",
+    "revision": "1.0",
+    "fbankSha256": "024e5073b7cfedee84408dc68dd6bafa02808fc786e67f1314e9c918297f5a63",
+    "description": "SpeechBrain 80-band fbank; features.js parity"
+  }
+}

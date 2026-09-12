@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "model": {
+    "id": "vedk00/ecapa-voxceleb-speaker-embedding-onnx",
+    "model_version": "ecapa-speaker-v1",
+    "file": "Voice_Biometric/models/ecapa-speaker-v1.onnx",
+    "committed": false,
+    "fetch": {
+      "url": "https://huggingface.co/vedk00/ecapa-voxceleb-speaker-embedding-onnx/resolve/main/model/ecapa-speaker-v1.onnx",
+      "verified_at_runtime": "SRI W3C pattern via crypto.subtle before session create (voice_embed_onnx.js MODEL_SHA256)"
+    },
+    "onnx_sha256": "f46380bbaeddb929fb3a10ab63a4b1877a50e3d1e5fdd55a1b618d5651d3f64e",
+    "filterbank_file": "Voice_Biometric/models/fbank-80x201-f32.bin",
+    "filterbank_sha256": "024e5073b7cfedee84408dc68dd6bafa02808fc786e67f1314e9c918297f5a63",
+    "source_commit": "a9cb9321b07b4ee5b0ea47fdd25242d9cacd824a",
+    "source_license": "Apache-2.0 (upstream vedk00 packaging + speechbrain/spkrec-ecapa-voxceleb config); weights trained on VoxCeleb → CC-BY-4.0 attribution"
+  },
+  "vad": {
+    "id": "runanywhere/silero-vad-v5",
+    "model_version": "silero_vad.onnx",
+    "file": "Voice_Biometric/models/silero_vad.onnx",
+    "onnx_sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+    "source_commit": "38a8e93669ea8fd4dd5d693bc90d86b7b667d36d",
+    "upstream_equivalent": "snakers4/silero-vad master silero_vad.onnx (MIT), byte-identical",
+    "source_license": "MIT"
+  },
+  "antispoof": {
+    "models": {
+      "aasist-l": {
+        "label": "AASIST-L (ASVspoof5, 0.085306 M params)",
+        "file": "Voice_Biometric/models/aasist-l.onnx",
+        "onnx_sha256": "f43f0a638b52846f5d0e630c0a738d10e9306325945127c6f8662d559585f218",
+        "source_commit": "357e022c44a1aa926097e18c1457bde3873ed8bf",
+        "source_license": "MIT (clovaai/aasist upstream)"
+      },
+      "aasist": {
+        "label": "AASIST (deepvoice3 classification, full size)",
+        "file": "Voice_Biometric/models/aasist.onnx",
+        "onnx_sha256": "130e536266b7c537f9a13029e1612a9f392fd1cc827783683b6d1c062a3db5e1",
+        "source_commit": "16774d458d86d2a021ae31646c1bf66a5331b53e",
+        "source_license": "MIT (clovaai/aasist upstream)"
+      }
+    },
+    "default_model_key": "aasist-l",
+    "default_execution_providers": ["wasm"],
+    "window": 64600
+  },
+  "preprocessing": {
+    "input_sample_rate": 16000,
+    "input_channels": 1,
+    "feature_type": "SpeechBrain fbank",
+    "n_fft": 400,
+    "win_length": 400,
+    "hop_length": 160,
+    "n_mels": 80,
+    "normalization": "sentence mean subtraction"
+  },
+  "runtime": {
+    "onnxruntime_web_version": "1.20.1",
+    "ep": "webgpu|wasm|cpu",
+    "bundle_url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js",
+    "source_integrity": "jsdelivr CDN pin, verified via RUNTIME_URL + SRI logic"
+  },
+  "embedding_dimensions": 192
+}

@@ -466,6 +466,7 @@
       "audio-watermark",
       "face-biometric",
       "iris-biometric",
+      "voice-biometric",
       "pixel-injection",
       "document-watermark",
       "fingerprint",
@@ -495,6 +496,15 @@
     // once iris_ui.js has been loaded by loadPageScripts.
     if (pageName === "iris-biometric" && typeof irisInit === "function")
       irisInit();
+
+    // Voice Biometric: re-run page init (consent gate, registry list,
+    // embedder hint) after an AJAX swap. initVoiceBiometric only exists
+    // once voice_ui.js has been loaded by loadPageScripts.
+    if (
+      pageName === "voice-biometric" &&
+      typeof initVoiceBiometric === "function"
+    )
+      initVoiceBiometric();
 
     // Pixel Injection: re-populate algorithm dropdowns, re-attach event listeners, reset to embed tab
     if (pageName === "pixel-injection") {

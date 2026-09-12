@@ -149,6 +149,11 @@
           data-i18n="sidebar.iris_biometric"
           >Iris Biometric</a
         >
+        <a
+          href="/RedoSan-Authenticity/Style/pages/voice-biometric/index.html"
+          data-i18n="sidebar.voice_biometric"
+          >Voice Biometric</a
+        >
         <div class="lang-dropdown">
           <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
             English
@@ -272,6 +277,11 @@
             href="/RedoSan-Authenticity/Style/pages/iris-biometric/index.html"
             data-i18n="sidebar.iris_biometric"
             >Iris Biometric</a
+          >
+          <a
+            href="/RedoSan-Authenticity/Style/pages/voice-biometric/index.html"
+            data-i18n="sidebar.voice_biometric"
+            >Voice Biometric</a
           >
         </div>
       </div>
@@ -452,6 +462,25 @@
         "/RedoSan-Authenticity/Iris_Biometric/iris_quality_full.js",
         "/RedoSan-Authenticity/Iris_Biometric/iris_template_protection.js",
         "/RedoSan-Authenticity/Iris_Biometric/iris_performance.js",
+        "/RedoSan-Authenticity/Voice_Biometric/audio_embed.js",
+        "/RedoSan-Authenticity/Voice_Biometric/c2pa_audio_hash.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_antispoof.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_capture_worklet.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_crypto.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_embed_onnx.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_embed_wavlm.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_engine.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_features.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_liveness.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_matcher.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_microphone.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_performance.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_provenance.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_registry.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_standards.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_template_protection.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_ui.js",
+        "/RedoSan-Authenticity/Voice_Biometric/voice_vad.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-ar.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-de.js",
         "/RedoSan-Authenticity/Style/lang/i18n-data-en.js",
@@ -521,6 +550,8 @@
         "/RedoSan-Authenticity/Style/pages/watermark/css/responsive.css",
         "/RedoSan-Authenticity/Style/pages/iris-biometric/css/style.css",
         "/RedoSan-Authenticity/Style/pages/iris-biometric/css/responsive.css",
+        "/RedoSan-Authenticity/Style/pages/voice-biometric/css/style.css",
+        "/RedoSan-Authenticity/Style/pages/voice-biometric/css/responsive.css",
       ];
 
       var YML_WHITELIST = [
@@ -600,6 +631,7 @@
         "/RedoSan-Authenticity/Style/pages/fingerprint/index.html",
         "/RedoSan-Authenticity/Style/pages/face-biometric/index.html",
         "/RedoSan-Authenticity/Style/pages/iris-biometric/index.html",
+        "/RedoSan-Authenticity/Style/pages/voice-biometric/index.html",
         "/RedoSan-Authenticity/Style/pages/search/index.html",
         "/RedoSan-Authenticity/Style/pages/pixel-injection/index.html",
         "/RedoSan-Authenticity/Style/pages/face-biometric/index.html",
@@ -762,6 +794,7 @@
           '<a href="/RedoSan-Authenticity/#metadata" data-i18n="sidebar.metadata">Metadata</a>' +
           '<a href="/RedoSan-Authenticity/#timestamp" data-i18n="sidebar.timestamp">Timestamp</a>' +
           '<a href="/RedoSan-Authenticity/Style/pages/iris-biometric/index.html" data-i18n="sidebar.iris_biometric">Iris Biometric</a>' +
+          '<a href="/RedoSan-Authenticity/Style/pages/voice-biometric/index.html" data-i18n="sidebar.voice_biometric">Voice Biometric</a>' +
           '<a href="https://github.com/Redo-San/RedoSan-Authenticity/issues" target="_blank" rel="noopener" data-i18n="404.report_issue">Report Issue</a>' +
           "</div>" +
           "</div>";

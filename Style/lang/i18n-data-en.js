@@ -1162,4 +1162,130 @@ window.__I18N_DATA.en = {
   "iris.download.choose_format": "Choose a format:",
   "iris.init": "Initializing iris biometric system...",
   "iris.init_error": "Initialization error: {0}",
+  "sidebar.voice_biometric": "Voice Biometric",
+  "card.voice_biometric.title": "Voice Biometric",
+  "card.voice_biometric.desc":
+    "ECAPA voice embedding with anti-spoof &amp; liveness",
+  "voice.heading": "Voice Biometric Rights",
+  "voice.privacy_note":
+    "🔒 All voice processing is 100% local. Data never leaves your device.",
+  "voice.help_title": "How to use Voice Biometric",
+  "voice.help":
+    "Register and analyze voice biometrics for vocal-rights protection — 100% in your browser, nothing is uploaded.\n1) Read the Biometric Consent Notice and tick the box to enable capture.\n2) Upload an audio sample (WAV/FLAC/MP3) or record one with your microphone; the tool extracts a 192-d voice descriptor (ECAPA-TDNN) and runs an anti-spoof / liveness check (AASIST).\n3) Compare a new sample against your registry to estimate similarity.\n4) Optional: sign the analysis with your DID and timestamp it (OpenTimestamps) for provenance.\n5) On the Manage tab you can export an encrypted backup, import it on another device, or delete entries.\n⚠️ All processing is on-device. Withdraw consent at any time to delete every stored biometric record (GDPR Art. 7(3) + 17).",
+  "voice.consent_title": "Biometric Consent Notice",
+  "voice.consent_body":
+    "This tool processes vocal characteristics — a biometric identifier — entirely in your browser. Please read the details below before continuing.",
+  "voice.consent_what":
+    "What: a numeric voice descriptor (192-d ECAPA-TDNN embedding) derived from your audio sample, plus an anti-spoof/liveness verdict (AASIST) computed on the same sample.",
+  "voice.consent_purpose":
+    "Purpose: verifying and protecting your vocal rights — speaker similarity estimation, anti-spoofing and forgery detection.",
+  "voice.consent_where":
+    "Storage: in this browser, on this device only. There is no server or cloud — nothing is uploaded, shared or used for training.",
+  "voice.consent_retention":
+    "Retention: records stay in this browser's local storage on this device until you delete them or withdraw consent; a local safety net also removes records left unused for 3 years.",
+  "voice.consent_rights":
+    "Your rights: you may withdraw consent at any time — this deletes all stored biometric data from this device.",
+  "voice.consent_check":
+    "I confirm I am 18 or older, have read and understand the notice above, and consent to on-device processing of my voice for vocal rights protection.",
+  "voice.consent_accept_btn": "I Consent",
+  "voice.consent_optional":
+    "You can browse the site without consenting — biometric features stay disabled.",
+  "voice.consent_given":
+    "✅ Consent recorded. You can withdraw it anytime — withdrawing deletes your stored biometric data.",
+  "voice.consent_withdraw_btn": "Withdraw Consent",
+  "voice.consent_withdraw_hint":
+    "Deletes the consent record and all stored biometric data (GDPR Art. 7(3) + 17).",
+  "voice.input_tab_upload": "Upload Audio",
+  "voice.input_tab_mic": "Record with Mic",
+  "voice.audio_label": "Audio file (WAV / FLAC / MP3)",
+  "voice.mic_label": "Microphone",
+  "voice.record_start_btn": "Start Recording",
+  "voice.record_stop_btn": "Stop Recording",
+  "voice.record_abort_btn": "Discard Recording",
+  "voice.antispoof_label": "Anti-spoof / Liveness",
+  "voice.antispoof_off": "Off",
+  "voice.antispoof_aasist": "AASIST (ONNX, recommended)",
+  "voice.antispoof_heuristic": "Heuristic (energy + VAD)",
+  "voice.antispoof_hint":
+    "🛡️ Liveness blocks replayed recordings and synthetic voice (presentation attacks).",
+  "voice.label_label": "Name / Label",
+  "voice.label_placeholder":
+    "e.g. Artist Name — used to auto-register the voice",
+  "voice.embedder_label": "Embedding Engine",
+  "voice.embedder_ecapa": "ECAPA-TDNN (ONNX)",
+  "voice.embedder_wavlm": "WavLM (ONNX, large)",
+  "voice.embedder_hint":
+    "ECAPA-TDNN (192-dim) downloads an ~83 MB ONNX model on first use. WavLM Base+ (512-dim) downloads a ~102 MB model — best accuracy, heavier; embeddings stay local on this device.",
+  "voice.embedder_hint_ecapa":
+    "ECAPA-TDNN (192-dim) downloads an ~83 MB ONNX model on first use; embeddings stay local and never leave this device.",
+  "voice.embedder_hint_onnx":
+    "ONNX embedder loads a model on first use; embeddings stay local.",
+  "voice.embedder_hint_wavlm":
+    "WavLM Base+ (512-dim) downloads a ~102 MB ONNX model on first use — best accuracy, heavier; embeddings stay local and never leave this device.",
+  "voice.hint.duration":
+    "Duration: 2–10 seconds of continuous speech gives the most reliable embedding; silent or music-only clips are rejected by the quality gate and flagged as low-confidence when processed.",
+  "voice.status.embedderChanged":
+    "Embedder switched to {0}. Re-run to regenerate identifiers.",
+  "voice.limitation.lowMagnitude":
+    "The embedding produced an unexpectedly low signal magnitude; the input may not have contained clear speech. Treat the resulting identifiers as low-confidence.",
+  "voice.auto_hint":
+    "⚡ Pick an audio sample or record one with the microphone, enter a Name/Label, then press Generate Identifiers — voice encoding, anti-spoof/liveness check, DID signing, registry (dis)similarity and provenance timestamp all run together automatically.",
+  "voice.run_btn": "Generate Identifiers",
+  "voice.download_btn": "Download Results",
+  "voice.count_label": "Registered voices: {0}",
+  "voice.migration_note":
+    "Mixed embedding versions detected - re-embed older voice samples to enable cross-matching.",
+  "voice.refresh_btn": "Refresh List",
+  "voice.nist_note":
+    "⚖️ Forensic similarity analysis — not a NIST-recognized voice authenticator. NIST SP 800-63B §3.2.3.2 prohibits biometric comparison based on voice for authentication; this tool reports similarity for evidence purposes only and never asserts an identity claim.",
+  "voice.report.limitations": "Limitations",
+  "voice.report.provenance": "Provenance",
+  "voice.report.standards": "Standards record",
+  "voice.report.vc": "Verifiable Credential",
+  "voice.report.didDoc": "DID document",
+  "voice.report.did": "DID identity & signature",
+  "voice.report.noMatch": "Not found in the registry.",
+  "voice.report.registry": "Registry",
+  "voice.report.template": "Protected template (ISO/IEC 24745)",
+  "voice.report.speaker": "Speaker verification",
+  "voice.report.pad": "Presentation attack detection",
+  "voice.report.quality": "Quality gate",
+  "voice.report.audio": "Audio",
+  "voice.report.title": "Voice Biometric Report",
+  "voice.status.record": "Creating standards record…",
+  "voice.step.record": "Creating standards record…",
+  "voice.status.registry": "Matching registry…",
+  "voice.step.registry": "Matching registry…",
+  "voice.status.did": "Signing embedding with DID…",
+  "voice.step.did": "Signing embedding with DID…",
+  "voice.status.template": "Protecting template…",
+  "voice.step.template": "Protecting template…",
+  "voice.status.embed": "Extracting voice embedding…",
+  "voice.step.embed": "Extracting voice embedding…",
+  "voice.status.pad": "Checking presentation attack…",
+  "voice.step.pad": "Checking presentation attack…",
+  "voice.status.quality": "Assessing audio quality…",
+  "voice.step.quality": "Assessing audio quality…",
+  "voice.status.preparing": "Preparing voice engine…",
+  "voice.step.load": "Preparing voice engine…",
+  "voice.progress.title": "Generating Voice Identifiers",
+  "voice.status.recordingAborted": "Recording aborted.",
+  "voice.status.recording": "Recording… speak clearly, then press Stop.",
+  "voice.status.requestingMic": "Requesting microphone…",
+  "voice.error.noAudio": "Could not read the audio file.",
+  "voice.refresh_done": "Results cleared. Registered voices: {0}",
+  "voice.deleted_from_registry": "Voice deleted from registry.",
+  "voice.delete_btn": "Delete",
+  "voice.vad_ready": "VAD ready — speech-activity gating active.",
+  "voice.no_voices": "No voices registered yet.",
+  "voice.vad_unavailable": "VAD not loaded — RMS energy fallback gating.",
+  "voice.recorder_status": "Ready to record",
+  "voice.recorder_status_recording": "Recording...",
+  "voice.recorder_status_staged": "Recording staged",
+  "voice.recorder_max_label": "Max",
+  "voice.status.maxDurationReached":
+    "Maximum recording duration (3 minutes) reached. Recording stopped automatically.",
+  "voice.error.tooLong":
+    "Audio exceeds maximum duration of 3 minutes. Please trim your file.",
+  "voice.countdown_seconds": "{0}s left",
 };
