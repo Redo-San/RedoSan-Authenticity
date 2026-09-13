@@ -137,7 +137,8 @@
     "smol-toml": "1.7.2",
     "diff": ">=8.0.3",
     "@babel/core": "7.29.7",
-    "qs": "6.16.0"
+    "qs": "6.16.0",
+    "colord": "2.9.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
