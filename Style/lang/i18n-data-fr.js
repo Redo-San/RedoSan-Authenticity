@@ -1253,19 +1253,9 @@ window.__I18N_DATA.fr = {
   "voice.embedder_ecapa": "ECAPA-TDNN (ONNX)",
   "voice.embedder_wavlm": "WavLM (ONNX, volumineux)",
   "voice.embedder_hint":
-    "ECAPA-TDNN (192-dim) télécharge un modèle ONNX d'environ 83 Mo à la première utilisation. WavLM Base+ (512-dim) télécharge un modèle d'environ 102 Mo — meilleure précision, plus lourd ; les embeddings restent locaux sur cet appareil.",
-  "voice.embedder_hint_ecapa":
-    "ECAPA-TDNN (192-dim) télécharge un modèle ONNX d'environ 83 Mo à la première utilisation ; les embeddings restent locaux et ne quittent jamais cet appareil.",
-  "voice.embedder_hint_onnx":
-    "L'embedder ONNX charge un modèle à la première utilisation ; les embeddings restent locaux.",
-  "voice.embedder_hint_wavlm":
-    "WavLM Base+ (512-dim) télécharge un modèle ONNX d'environ 102 Mo à la première utilisation — meilleure précision, plus lourd ; les embeddings restent locaux et ne quittent jamais cet appareil.",
+    "ECAPA-TDNN (192-dim) télécharge un modèle ONNX d'environ 83 Mo lors de la première utilisation. WavLM Base+ (512-dim) télécharge un modèle d'environ 102 Mo — meilleure précision, plus lourd; les embeddings restent locaux sur cet appareil.",
   "voice.hint.duration":
-    "Durée : 2 à 10 secondes de parole continue donnent l'embedding le plus fiable ; les clips de silence ou de musique seule sont rejetés par la porte de qualité et signalés comme à faible confiance lors du traitement.",
-  "voice.status.embedderChanged":
-    "Embedder changé pour {0}. Relancez pour régénérer les identifiants.",
-  "voice.limitation.lowMagnitude":
-    "L'embedding a produit une amplitude de signal étonnamment faible ; l'entrée n'a peut-être pas contenu de parole claire. Considérez les identifiants obtenus comme à faible confiance.",
+    "Durée : 2–10 secondes de parole continue donnent l'intrication la plus fiable ; les clips silencieux ou uniquement musicaux sont rejetés par le contrôle de qualité et marqués comme faible confiance.",
   "voice.auto_hint":
     "⚡ Choisissez un échantillon audio ou enregistrez-en un avec le microphone, saisissez un Nom/Étiquette, puis appuyez sur Générer les identifiants — encodage vocal, contrôle anti-usurpation/détection de vivacité, signature DID, (dis)similarité du registre et horodatage de provenance s'exécutent tous automatiquement ensemble.",
   "voice.run_btn": "Générer les identifiants",

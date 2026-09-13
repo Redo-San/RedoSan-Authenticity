@@ -1254,19 +1254,9 @@ window.__I18N_DATA.de = {
   "voice.embedder_ecapa": "ECAPA-TDNN (ONNX)",
   "voice.embedder_wavlm": "WavLM (ONNX, groß)",
   "voice.embedder_hint":
-    "ECAPA-TDNN (192-dim) lädt ein ~83-MB-ONNX-Modell beim ersten Gebrauch. WavLM Base+ (512-dim) lädt ein ~102-MB-Modell – beste Genauigkeit, schwerer; die Einbettungen bleiben lokal auf diesem Gerät.",
-  "voice.embedder_hint_ecapa":
-    "ECAPA-TDNN (192-dim) lädt ein ~83-MB-ONNX-Modell beim ersten Gebrauch; die Einbettungen bleiben lokal und verlassen dieses Gerät nie.",
-  "voice.embedder_hint_onnx":
-    "Der ONNX-Embedder lädt beim ersten Gebrauch ein Modell; die Einbettungen bleiben lokal.",
-  "voice.embedder_hint_wavlm":
-    "WavLM Base+ (512-dim) lädt ein ~102-MB-ONNX-Modell beim ersten Gebrauch – beste Genauigkeit, schwerer; die Einbettungen bleiben lokal und verlassen dieses Gerät nie.",
+    "ECAPA-TDNN (192-dim) lädt beim ersten Gebrauch ein ~83 MB großes ONNX-Modell. WavLM Base+ (512-dim) lädt ein ~102 MB großes Modell — beste Genauigkeit, schwerer; die Einbettungen bleiben lokal auf diesem Gerät.",
   "voice.hint.duration":
-    "Dauer: 2–10 Sekunden zusammenhängender Sprache ergeben die zuverlässigste Einbettung; stille oder reine Musik-Clips werden vom Qualitätsgate abgelehnt und bei Verarbeitung als niedrig konfident gekennzeichnet.",
-  "voice.status.embedderChanged":
-    "Embedder auf {0} umgestellt. Neu ausführen, um die Identifikatoren neu zu erzeugen.",
-  "voice.limitation.lowMagnitude":
-    "Die Einbettung erzeugte eine unerwartet niedrige Signalamplitude; der Eingang enthielt möglicherweise keine deutliche Sprache. Behandeln Sie die erzeugten Identifikatoren als niedrig konfident.",
+    "Dauer: 2–10 Sekunden kontinuierliche Sprache geben das zuverlässigste Embedding; stille oder nur Musik-Clips werden von der Qualitätsprüfung abgelehnt und als niedrige Konfidenz markiert.",
   "voice.auto_hint":
     "⚡ Wählen Sie eine Audioprobe oder nehmen Sie eine mit dem Mikrofon auf, geben Sie einen Namen/Label ein und drücken Sie anschließend Generate Identifiers — Stimmcodierung, Anti-Spoof-/Liveness-Prüfung, DID-Signatur, (Un)ähnlichkeit des Registers und Provenienz-Zeitstempel laufen alle automatisch zusammen.",
   "voice.run_btn": "Kennungen generieren",

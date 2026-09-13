@@ -1244,19 +1244,9 @@ window.__I18N_DATA.es = {
   "voice.embedder_ecapa": "ECAPA-TDNN (ONNX)",
   "voice.embedder_wavlm": "WavLM (ONNX, grande)",
   "voice.embedder_hint":
-    "ECAPA-TDNN (192-dim) descarga un modelo ONNX de ~83 MB en el primer uso. WavLM Base+ (512-dim) descarga un modelo de ~102 MB — mejor precisión, más pesado; los embeddings permanecen locales en este dispositivo.",
-  "voice.embedder_hint_ecapa":
-    "ECAPA-TDNN (192-dim) descarga un modelo ONNX de ~83 MB en el primer uso; los embeddings permanecen locales y nunca salen de este dispositivo.",
-  "voice.embedder_hint_onnx":
-    "El embedder ONNX carga un modelo en el primer uso; los embeddings permanecen locales.",
-  "voice.embedder_hint_wavlm":
-    "WavLM Base+ (512-dim) descarga un modelo ONNX de ~102 MB en el primer uso — mejor precisión, más pesado; los embeddings permanecen locales y nunca salen de este dispositivo.",
+    "ECAPA-TDNN (192-dim) descarga un modelo ONNX de ~83 MB en el primer uso. WavLM Base+ (512-dim) descarga un modelo de ~102 MB — mejor precisión, más pesado; las incrustaciones permanecen locales en este dispositivo.",
   "voice.hint.duration":
-    "Duración: de 2 a 10 segundos de habla continua producen el embedding más fiable; los clips de silencio o solo música son rechazados por la puerta de calidad y se marcan como de baja confianza al procesarse.",
-  "voice.status.embedderChanged":
-    "Embedder cambiado a {0}. Vuelva a ejecutar para regenerar los identificadores.",
-  "voice.limitation.lowMagnitude":
-    "El embedding produjo una magnitud de señal inesperadamente baja; la entrada puede no haber contenido habla clara. Trate los identificadores resultantes como de baja confianza.",
+    "Duración: 2–10 segundos de habla continua dan la incrustación más confiable; los clips silenciosos o solo música son rechazados por la puerta de calidad y marcados como baja confianza.",
   "voice.auto_hint":
     "⚡ Elija una muestra de audio o grabe una con el micrófono, introduzca un Nombre/Etiqueta y pulse Generar identificadores — codificación de voz, verificación anti-suplantación/detección de vivacidad, firma DID, (dis)similitud del registro y marca de tiempo de procedencia se ejecutan automáticamente juntos.",
   "voice.run_btn": "Generar identificadores",
