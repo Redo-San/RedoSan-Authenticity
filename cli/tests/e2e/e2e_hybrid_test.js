@@ -44,7 +44,7 @@ describe("Hybrid Architecture — Initial Load", () => {
     const pageCount = await page.evaluate(
       () => document.querySelectorAll("#app > .page").length,
     );
-    assert.equal(pageCount, 17, "#app should have 17 pre-loaded page sections");
+    assert.equal(pageCount, 18, "#app should have 18 pre-loaded page sections");
     await ctx.close();
   });
 
