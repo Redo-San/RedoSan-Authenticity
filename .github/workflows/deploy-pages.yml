@@ -53,7 +53,8 @@ jobs:
 
       # Stage the complete site: root SPA (index.html, sw.js, 404.html) plus
       # the MPA pages under Style/pages and every feature directory they
-      # reference via relative paths (../../../Face_Biometric, ...).
+      # reference via relative paths (../../../Face_Biometric,
+      # ../../../Voice_Biometric, ...).
       # Removal_Tools is excluded on purpose: it is a work-in-progress service
       # that only runs locally, so its pages stay full-page redirects on prod.
       - name: Stage full site (SPA root + MPA pages)
@@ -66,7 +67,7 @@ jobs:
           cp -r Watermark Audio_Watermark Pixel_Injection Document_Watermark \
                 Fingerprint C2PA Certificate Face_Biometric \
                 Decentralized_Identity_DID Timestamp Metadata Forensic \
-                ID_Forge Converter Assistant vendor _site/
+                ID_Forge Converter Assistant Voice_Biometric vendor _site/
           du -sh _site
 
       - name: Upload artifact
