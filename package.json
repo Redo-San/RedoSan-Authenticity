@@ -211,13 +211,13 @@
       "ID_Forge/",
       "Converter/",
       "Timestamp/",
-      "Assistant/",
-      "Voice_Biometric/"
+      "Assistant/"
     ],
     "exclude": [
       "vendor/",
       "Style/lang/",
-      "cli/tests/"
+      "cli/tests/",
+      "Voice_Biometric/"
     ],
     "lines": 60,
     "statements": 60,
