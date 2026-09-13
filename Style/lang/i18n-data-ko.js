@@ -1162,4 +1162,129 @@ window.__I18N_DATA.ko = {
   "face.status.startingCamera": "Starting camera...",
   "face.status.verifyingPasskey": "Verifying passkey...",
   "face.status.webauthnModuleNotLoaded": "WebAuthn module not loaded.",
+  "sidebar.voice_biometric": "Voice Biometric",
+  "card.voice_biometric.title": "Voice Biometric",
+  "card.voice_biometric.desc":
+    "ECAPA 음성 임베딩, 위조 방지 및 라이브니스 포함",
+  "voice.heading": "Voice Biometric Rights",
+  "voice.privacy_note":
+    "🔒 All voice processing is 100% local. Data never leaves your device.",
+  "voice.help_title": "Voice Biometric을 사용하는 방법",
+  "voice.help":
+    "보컬 권리 보호를 위해 음성 생체 인식 정보를 등록하고 분석합니다 — 100% 브라우저에서 처리되며 아무것도 업로드되지 않습니다.\n1) 생체 인식 동의 공지를 읽고 체크박스에 체크하여 캡처를 활성화합니다.\n2) 오디오 샘플(WAV/FLAC/MP3)을 업로드하거나 마이크로 녹음합니다. 도구는 192차원 음성 설명자(ECAPA-TDNN)를 추출하고 위조 방지/라이브니스 검사(AASIST)를 실행합니다.\n3) 새 샘플을 레지스트리와 비교하여 유사성을 추정합니다.\n4) 선택 사항: 분석 결과에 DID로 서명하고 출처 증명을 위해 타임스탬프(OpenTimestamps)를 추가합니다.\n5) 관리 탭에서 암호화된 백업을 내보내거나 다른 기기로 가져오거나 항목을 삭제할 수 있습니다.\n⚠️ 모든 처리는 기기에서 수행됩니다. 동의는 언제든지 철회할 수 있으며 저장된 모든 생체 데이터가 삭제됩니다(GDPR 제7(3)조 + 17).",
+  "voice.consent_title": "생체 인식 동의 공지",
+  "voice.consent_body":
+    "이 도구 프로세스 보컬 특성 - 생체 식별자 - 브라우저에서 완전히. 계속하기 전에 세부 사항을 읽으십시오.",
+  "voice.consent_what":
+    "내용: 오디오 샘플에서 도출된 숫자 음성 설명자(192차원 ECAPA-TDNN 임베딩)와 동일한 샘플로 계산된 위조 방지/라이브니스 판정(AASIST).",
+  "voice.consent_purpose":
+    "목적: 음성 권리를 확인하고 보호 — 화자 유사성 추정, 위조 방지 및 위변조 탐지.",
+  "voice.consent_where":
+    "저장: 이 브라우저, 이 기기에서만. 서버나 클라우드는 없습니다 — 업로드, 공유 또는 훈련에 사용되지 않습니다.",
+  "voice.consent_retention":
+    "보존: 레코드는 삭제하거나 동의를 철회할 때까지 이 기기의 브라우저 로컬 저장소에 유지됩니다. 로컬 안전망은 3년간 사용되지 않은 레코드도 제거합니다.",
+  "voice.consent_rights":
+    "귀하의 권리: 언제든지 동의를 철회할 수 있습니다 — 이는 이 기기에 저장된 모든 생체 데이터를 삭제합니다.",
+  "voice.consent_check":
+    "저는 18세 이상이며 위 공지를 읽고 이해했으며, 음성 권리 보호를 위해 제 목소리를 기기에서 처리하는 것에 동의합니다.",
+  "voice.consent_accept_btn": "동의",
+  "voice.consent_optional":
+    "동의하지 않아도 사이트를 탐색할 수 있습니다 — 생체 인식 기능은 비활성화된 상태로 유지됩니다.",
+  "voice.consent_given":
+    "✅ 동의가 기록되었습니다. 언제든지 철회할 수 있습니다 — 철회하면 저장된 생체 데이터가 삭제됩니다.",
+  "voice.consent_withdraw_btn": "동의 철회",
+  "voice.consent_withdraw_hint":
+    "동의 기록과 저장된 모든 생체 데이터를 삭제합니다 (GDPR 제7(3)조 + 17).",
+  "voice.input_tab_upload": "오디오 업로드",
+  "voice.input_tab_mic": "마이크로 녹음",
+  "voice.audio_label": "오디오 파일(WAV / FLAC / MP3)",
+  "voice.mic_label": "마이크",
+  "voice.record_start_btn": "녹음 시작",
+  "voice.record_stop_btn": "녹음 중지",
+  "voice.record_abort_btn": "녹음 삭제",
+  "voice.antispoof_label": "위조 방지 / 라이브니스",
+  "voice.antispoof_off": "끄기",
+  "voice.antispoof_aasist": "AASIST(ONNX, 권장)",
+  "voice.antispoof_heuristic": "휴리스틱(에너지 + VAD)",
+  "voice.antispoof_hint":
+    "🛡️ 라이브니스는 재생된 녹음과 합성 음성(프레젠테이션 공격)을 차단합니다.",
+  "voice.label_label": "이름 / 라벨",
+  "voice.label_placeholder": "e.g. Artist Name - 음성 자동등록",
+  "voice.embedder_label": "임베딩 엔진",
+  "voice.embedder_ecapa": "ECAPA-TDNN(ONNX)",
+  "voice.embedder_wavlm": "WavLM(ONNX, 대형)",
+  "voice.embedder_hint":
+    "ECAPA-TDNN(192차원)은 첫 사용 시 약 83MB ONNX 모델을 다운로드합니다. WavLM Base+(512차원)는 약 102MB 모델을 사용합니다 — 정확도는 최고지만 무겁고, 임베딩은 이 기기에만 유지됩니다.",
+  "voice.embedder_hint_ecapa":
+    "ECAPA-TDNN(192차원)은 첫 사용 시 약 83MB ONNX 모델을 다운로드하며, 임베딩은 로컬에 유지되고 이 기기를 절대 벗어나지 않습니다.",
+  "voice.embedder_hint_onnx":
+    "ONNX 임베더는 첫 사용 시 모델을 로드합니다. 임베딩은 로컬에 유지됩니다.",
+  "voice.embedder_hint_wavlm":
+    "WavLM Base+(512차원)는 첫 사용 시 약 102MB ONNX 모델을 다운로드하며 — 정확도는 최고지만 무겁고, 임베딩은 로컬에 유지되고 이 기기를 절대 벗어나지 않습니다.",
+  "voice.hint.duration":
+    "길이: 2~10초의 연속된 음성이 가장 신뢰할 수 있는 임베딩을 만듭니다. 무음 또는 음악만 있는 클립은 품질 게이트에서 거부되며, 처리 시 낮은 신뢰도로 표시됩니다.",
+  "voice.status.embedderChanged":
+    "임베더가 {0}(으)로 전환되었습니다. 식별자를 다시 생성하려면 재실행하세요.",
+  "voice.limitation.lowMagnitude":
+    "임베딩이 예기치 않게 낮은 신호 크기를 생성했으며, 입력에 명확한 음성이 포함되지 않았을 수 있습니다. 생성된 식별자는 낮은 신뢰도로 취급하십시오.",
+  "voice.auto_hint":
+    "⚡ 오디오 샘플을 선택하거나 마이크로 녹음하고 이름/라벨을 입력한 뒤 Identifiers 생성을 누릅니다 — 음성 인코딩, 위조 방지/라이브니스 검사, DID 서명, 레지스트리(비)유사성, 출처 타임스탬프가 모두 자동으로 실행됩니다.",
+  "voice.run_btn": "식별자 생성",
+  "voice.download_btn": "결과 다운로드",
+  "voice.count_label": "등록된 음성: {0}",
+  "voice.migration_note":
+    "혼합된 임베딩 버전이 감지되었습니다 — 이전 음성 샘플을 다시 임베딩하면 교차 매칭이 가능합니다.",
+  "voice.refresh_btn": "목록 새로고침",
+  "voice.nist_note":
+    "⚖️ 법의학적 유사성 분석 — NIST가 인정한 음성 인증기가 아닙니다. NIST SP 800-63B §3.2.3.2는 음성만으로 인증하기 위한 생체 비교를 금지합니다. 이 도구는 증거 목적으로만 유사성을 보고하며 신원을 주장하지 않습니다.",
+  "voice.report.limitations": "제한 사항",
+  "voice.report.provenance": "출처",
+  "voice.report.standards": "표준 레코드",
+  "voice.report.vc": "검증 가능한 자격 증명",
+  "voice.report.didDoc": "DID 문서",
+  "voice.report.did": "DID ID 및 서명",
+  "voice.report.noMatch": "레지스트리에서 찾을 수 없습니다.",
+  "voice.report.registry": "레지스트리",
+  "voice.report.template": "보호된 템플릿 (ISO/IEC 24745)",
+  "voice.report.speaker": "화자 검증",
+  "voice.report.pad": "프레젠테이션 공격 탐지",
+  "voice.report.quality": "품질 게이트",
+  "voice.report.audio": "오디오",
+  "voice.report.title": "음성 생체 인식 보고서",
+  "voice.status.record": "표준 레코드 생성 중…",
+  "voice.step.record": "표준 레코드 생성 중…",
+  "voice.status.registry": "레지스트리 매칭 중…",
+  "voice.step.registry": "레지스트리 매칭 중…",
+  "voice.status.did": "DID로 임베딩 서명 중…",
+  "voice.step.did": "DID로 임베딩 서명 중…",
+  "voice.status.template": "템플릿 보호 중…",
+  "voice.step.template": "템플릿 보호 중…",
+  "voice.status.embed": "음성 임베딩 추출 중…",
+  "voice.step.embed": "음성 임베딩 추출 중…",
+  "voice.status.pad": "프레젠테이션 공격 확인 중…",
+  "voice.step.pad": "프레젠테이션 공격 확인 중…",
+  "voice.status.quality": "오디오 품질 평가 중…",
+  "voice.step.quality": "오디오 품질 평가 중…",
+  "voice.status.preparing": "음성 엔진 준비 중…",
+  "voice.step.load": "음성 엔진 준비 중…",
+  "voice.progress.title": "음성 식별자 생성 중",
+  "voice.status.recordingAborted": "녹음이 중단되었습니다.",
+  "voice.status.recording": "녹음 중… 명확하게 말한 후 중지를 누르세요.",
+  "voice.status.requestingMic": "마이크 요청 중…",
+  "voice.error.noAudio": "오디오 파일을 읽을 수 없습니다.",
+  "voice.refresh_done": "결과가 지워졌습니다. 등록된 음성: {0}",
+  "voice.deleted_from_registry": "레지스트리에서 음성이 삭제되었습니다.",
+  "voice.delete_btn": "삭제",
+  "voice.vad_ready": "VAD 준비 완료 — 음성 활동 게이팅 활성.",
+  "voice.no_voices": "아직 등록된 음성이 없습니다.",
+  "voice.vad_unavailable": "VAD 로드되지 않음 — RMS 에너지 대체 게이팅.",
+  "voice.recorder_status": "녹음 준비 완료",
+  "voice.recorder_status_recording": "녹음 중...",
+  "voice.recorder_status_staged": "녹음 저장됨",
+  "voice.recorder_max_label": "최대",
+  "voice.status.maxDurationReached":
+    "최대 녹음 시간(3분)에 도달했습니다. 녹음이 자동으로 중지되었습니다.",
+  "voice.error.tooLong":
+    "오디오가 최대 시간(3분)을 초과합니다. 파일을 트리밍해 주세요.",
+  "voice.countdown_seconds": "남은 시간 {0}초",
 };

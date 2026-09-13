@@ -13,6 +13,7 @@
     "test": "npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:c2pa-adv && npm run test:audio && npm run test:docw && npm run test:docw-ui && npm run test:conv && npm run test:ts && npm run test:meta && npm run test:cert && npm run test:txtxt && npm run test:cli && npm run test:e2e-all",
     "test:quick": "npm run test:core && npm run test:pixel && npm run test:advwm && npm run test:c2pa && npm run test:audio && npm run test:docw && npm run test:conv && npm run test:meta && npm run test:cert",
     "test:face": "node --test --test-timeout=120000 cli/tests/face_engine_test.js && node --test --test-timeout=120000 cli/tests/face_registry_test.js && node --test --test-timeout=120000 cli/tests/face_crypto_test.js && node --test --test-timeout=120000 cli/tests/face_vc_test.js && node --test --test-timeout=120000 cli/tests/face_ui_test.js && node --test --test-timeout=120000 cli/tests/face_biohash_test.js && node --test --test-timeout=120000 cli/tests/face_fuzzy_test.js && node --test --test-timeout=120000 cli/tests/face_liveness_test.js && node --test --test-timeout=120000 cli/tests/face_antispoof_test.js && node --test --test-timeout=120000 cli/tests/face_camera_test.js && node --test --test-timeout=120000 cli/tests/face_align_test.js && node --test --test-timeout=120000 cli/tests/face_webauthn_test.js && node --test --test-timeout=120000 cli/tests/face_embed_onnx_test.js",
+    "test:voice": "node --test --test-timeout=120000 cli/tests/voice_template_protection_test.js cli/tests/voice_crypto_test.js cli/tests/voice_registry_test.js cli/tests/voice_vad_test.js cli/tests/voice_features_test.js cli/tests/voice_matcher_test.js cli/tests/voice_microphone_test.js cli/tests/voice_liveness_test.js cli/tests/voice_performance_test.js cli/tests/voice_embed_onnx_test.js cli/tests/voice_embed_wavlm_test.js cli/tests/voice_antispoof_test.js cli/tests/voice_provenance_test.js cli/tests/voice_standards_test.js cli/tests/voice_engine_test.js cli/tests/voice_ui_test.js",
     "test:face-real": "node cli/tests/face_test_real_identifiers.mjs",
     "test:core": "node --test --test-timeout=120000 cli/tests/did_test.js cli/tests/fingerprint_test.js cli/tests/id_forge_test.js cli/tests/watermark_core_test.js cli/tests/forensic_test.js cli/tests/face_engine_test.js cli/tests/face_registry_test.js cli/tests/face_crypto_test.js cli/tests/face_vc_test.js cli/tests/face_ui_test.js cli/tests/face_biohash_test.js cli/tests/face_fuzzy_test.js cli/tests/face_liveness_test.js cli/tests/face_antispoof_test.js cli/tests/face_camera_test.js cli/tests/face_align_test.js cli/tests/face_webauthn_test.js cli/tests/face_embed_onnx_test.js",
     "test:pixel": "node --test --test-timeout=120000 cli/tests/pixel_injection_test.js",
@@ -94,7 +95,8 @@
     "check:full": "npm run lint && npm run biome && npm run stylelint && npm run markdownlint && npm run cspell && npm run madge:circular && npm run depcheck && npm run test:core",
     "dom-review": "node cli/tests/dom_check.js",
     "id-forge": "node cli/lib/id_forge.js",
-    "sitemap": "node scripts/generate-sitemap.js"
+    "sitemap": "node scripts/generate-sitemap.js",
+    "test:e2e-voice-biometric": "node --test --test-concurrency=1 --test-timeout=600000 cli/tests/e2e/mpa/mpa_voice_biometric_test.js"
   },
   "keywords": [
     "watermark",
@@ -130,9 +132,9 @@
     "@puppeteer/browsers": "3.2.1",
     "nanoid@3": "3.3.18",
     "nanoid@5": "5.1.16",
-    "js-yaml": "4.3.1",
+    "js-yaml": "4.3.2",
     "markdown-it": "14.2.0",
-    "smol-toml": "1.6.1",
+    "smol-toml": "1.7.2",
     "diff": ">=8.0.3",
     "@babel/core": "7.29.7",
     "qs": "6.16.0"
@@ -214,7 +216,8 @@
     "exclude": [
       "vendor/",
       "Style/lang/",
-      "cli/tests/"
+      "cli/tests/",
+      "Voice_Biometric/"
     ],
     "lines": 60,
     "statements": 60,

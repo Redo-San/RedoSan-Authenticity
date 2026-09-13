@@ -1200,4 +1200,132 @@ window.__I18N_DATA.fr = {
   "face.status.startingCamera": "Starting camera...",
   "face.status.verifyingPasskey": "Verifying passkey...",
   "face.status.webauthnModuleNotLoaded": "WebAuthn module not loaded.",
+  "sidebar.voice_biometric": "Voice Biometric",
+  "card.voice_biometric.title": "Voice Biometric",
+  "card.voice_biometric.desc":
+    "Embedding vocal ECAPA avec anti-usurpation et détection de vivacité",
+  "voice.heading": "Voice Biometric Rights",
+  "voice.privacy_note":
+    "🔒 All voice processing is 100% local. Data never leaves your device.",
+  "voice.help_title": "Comment utiliser Voice Biometric",
+  "voice.help":
+    "Sérialisez et analysez la biométrie vocale pour la protection des droits vocaux — 100% dans votre navigateur, rien n'est téléversé.\n1) Lisez l'avis de consentement biométrique et cochez la case pour activer la capture.\n2) Chargez un échantillon audio (WAV/FLAC/MP3) ou enregistrez-en un avec votre microphone; l'outil extrait un descripteur vocal 192-d (ECAPA-TDNN) et exécute un contrôle anti-usurpation / détection de vivacité (AASIST).\n3) Comparez un nouvel échantillon à votre registre pour estimer la similarité.\n4) Facultatif: signez l'analyse avec votre DID et horodatez-la (OpenTimestamps) pour la provenance.\n5) Sous l'onglet Gérer, vous pouvez exporter une sauvegarde chiffrée, l'importer sur un autre appareil ou supprimer des entrées.\n⚠️ Tout le traitement est effectué sur l'appareil. Retirez votre consentement à tout moment pour supprimer chaque enregistrement biométrique stocké (GDPR Art. 7(3) + 17).",
+  "voice.consent_title": "Avis de consentement biométrique",
+  "voice.consent_body":
+    "Cet outil traite les caractéristiques vocales — un identifiant biométrique — entièrement dans votre navigateur. Veuillez lire les détails ci-dessous avant de continuer.",
+  "voice.consent_what":
+    "Quoi: un descripteur vocal numérique (embedding 192-d ECAPA-TDNN) dérivé de votre échantillon audio, plus un verdict anti-usurpation/liveness (AASIST) calculé sur le même échantillon.",
+  "voice.consent_purpose":
+    "Objectif: vérifier et protéger vos droits vocaux — estimation de similarité du locuteur, anti-usurpation et détection de contrefaçon.",
+  "voice.consent_where":
+    "Stockage: dans ce navigateur, sur cet appareil seulement. Il n'y a pas de serveur ou de nuage — rien n'est téléchargé, partagé ou utilisé pour l'entraînement.",
+  "voice.consent_retention":
+    "Conservation: les enregistrements restent dans le stockage local de ce navigateur sur cet appareil jusqu'à ce que vous les supprimiez ou retiriez le consentement; un filet de sécurité local supprime également les enregistrements laissés inutilisés pendant 3 ans.",
+  "voice.consent_rights":
+    "Vos droits : vous pouvez retirer votre consentement à tout moment — cela supprime toutes les données biométriques stockées de ce dispositif.",
+  "voice.consent_check":
+    "Je confirme que j'ai 18 ans ou plus, que j'ai lu et compris l'avis ci-dessus et que j'accepte le traitement de ma voix sur l'appareil pour la protection des droits vocaux.",
+  "voice.consent_accept_btn": "Je consens",
+  "voice.consent_optional":
+    "Vous pouvez parcourir le site sans consentement — les caractéristiques biométriques restent désactivées.",
+  "voice.consent_given":
+    "✅ Consentement enregistré. Vous pouvez le retirer à tout moment — le retrait supprime vos données biométriques stockées.",
+  "voice.consent_withdraw_btn": "Retirer le consentement",
+  "voice.consent_withdraw_hint":
+    "Supprimer le dossier de consentement et toutes les données biométriques stockées (art. 7(3) et 17 du RGPD).",
+  "voice.input_tab_upload": "Téléverser un audio",
+  "voice.input_tab_mic": "Enregistrer au micro",
+  "voice.audio_label": "Fichier audio (WAV / FLAC / MP3)",
+  "voice.mic_label": "Microphone",
+  "voice.record_start_btn": "Démarrer l'enregistrement",
+  "voice.record_stop_btn": "Arrêter l'enregistrement",
+  "voice.record_abort_btn": "Jeter l'enregistrement",
+  "voice.antispoof_label": "Anti-usurpation / Liveness",
+  "voice.antispoof_off": "Désactivé",
+  "voice.antispoof_aasist": "AASIST (ONNX, recommandé)",
+  "voice.antispoof_heuristic": "Heuristique (énergie + VAD)",
+  "voice.antispoof_hint":
+    "🛡️ La détection de liveness bloque les enregistrements rejoués et la voix synthétique (attaques par présentation).",
+  "voice.label_label": "Nom / Libellé",
+  "voice.label_placeholder":
+    "ex. Nom de l'artiste — utilisé pour enregistrer automatiquement la voix",
+  "voice.embedder_label": "Moteur d'embedding",
+  "voice.embedder_ecapa": "ECAPA-TDNN (ONNX)",
+  "voice.embedder_wavlm": "WavLM (ONNX, volumineux)",
+  "voice.embedder_hint":
+    "ECAPA-TDNN (192-dim) télécharge un modèle ONNX d'environ 83 Mo à la première utilisation. WavLM Base+ (512-dim) télécharge un modèle d'environ 102 Mo — meilleure précision, plus lourd ; les embeddings restent locaux sur cet appareil.",
+  "voice.embedder_hint_ecapa":
+    "ECAPA-TDNN (192-dim) télécharge un modèle ONNX d'environ 83 Mo à la première utilisation ; les embeddings restent locaux et ne quittent jamais cet appareil.",
+  "voice.embedder_hint_onnx":
+    "L'embedder ONNX charge un modèle à la première utilisation ; les embeddings restent locaux.",
+  "voice.embedder_hint_wavlm":
+    "WavLM Base+ (512-dim) télécharge un modèle ONNX d'environ 102 Mo à la première utilisation — meilleure précision, plus lourd ; les embeddings restent locaux et ne quittent jamais cet appareil.",
+  "voice.hint.duration":
+    "Durée : 2 à 10 secondes de parole continue donnent l'embedding le plus fiable ; les clips de silence ou de musique seule sont rejetés par la porte de qualité et signalés comme à faible confiance lors du traitement.",
+  "voice.status.embedderChanged":
+    "Embedder changé pour {0}. Relancez pour régénérer les identifiants.",
+  "voice.limitation.lowMagnitude":
+    "L'embedding a produit une amplitude de signal étonnamment faible ; l'entrée n'a peut-être pas contenu de parole claire. Considérez les identifiants obtenus comme à faible confiance.",
+  "voice.auto_hint":
+    "⚡ Choisissez un échantillon audio ou enregistrez-en un avec le microphone, saisissez un Nom/Étiquette, puis appuyez sur Générer les identifiants — encodage vocal, contrôle anti-usurpation/détection de vivacité, signature DID, (dis)similarité du registre et horodatage de provenance s'exécutent tous automatiquement ensemble.",
+  "voice.run_btn": "Générer les identifiants",
+  "voice.download_btn": "Télécharger les résultats",
+  "voice.count_label": "Voix enregistrées : {0}",
+  "voice.migration_note":
+    "Versions d'embedding mixtes détectées — ré-encodiez les anciens échantillons vocaux pour activer la comparaison croisée.",
+  "voice.refresh_btn": "Actualiser la liste",
+  "voice.nist_note":
+    "⚖️ Analyse de similarité forensique — pas un authentificateur vocal reconnu par NIST. NIST SP 800-63B §3.2.3.2 interdit la comparaison biométrique basée sur la voix pour l'authentification; cet outil ne rapporte que la similarité à des fins de preuve et n'affirme jamais une revendication d'identité.",
+  "voice.report.limitations": "Limitations",
+  "voice.report.provenance": "Provenance",
+  "voice.report.standards": "Enregistrement standard",
+  "voice.report.vc": "Identifiant vérifiable",
+  "voice.report.didDoc": "Document DID",
+  "voice.report.did": "Identité et signature DID",
+  "voice.report.noMatch": "Non trouvé dans le registre.",
+  "voice.report.registry": "Registre",
+  "voice.report.template": "Modèle protégé (ISO/IEC 24745)",
+  "voice.report.speaker": "Vérification du locuteur",
+  "voice.report.pad": "Détection d'attaque de présentation",
+  "voice.report.quality": "Vérification de qualité",
+  "voice.report.audio": "Audio",
+  "voice.report.title": "Rapport de biométrie vocale",
+  "voice.status.record": "Création de l'enregistrement standard…",
+  "voice.step.record": "Création de l'enregistrement standard…",
+  "voice.status.registry": "Comparaison du registre…",
+  "voice.step.registry": "Comparaison du registre…",
+  "voice.status.did": "Signature de l'intrication avec DID…",
+  "voice.step.did": "Signature de l'intrication avec DID…",
+  "voice.status.template": "Protection du modèle…",
+  "voice.step.template": "Protection du modèle…",
+  "voice.status.embed": "Extraction de l'intrication vocale…",
+  "voice.step.embed": "Extraction de l'intrication vocale…",
+  "voice.status.pad": "Vérification de l'attaque de présentation…",
+  "voice.step.pad": "Vérification de l'attaque de présentation…",
+  "voice.status.quality": "Évaluation de la qualité audio…",
+  "voice.step.quality": "Évaluation de la qualité audio…",
+  "voice.status.preparing": "Préparation du moteur vocal…",
+  "voice.step.load": "Préparation du moteur vocal…",
+  "voice.progress.title": "Génération des identifiants vocaux",
+  "voice.status.recordingAborted": "Enregistrement annulé.",
+  "voice.status.recording":
+    "Enregistrement… parlez clairement, puis appuyez sur Arrêter.",
+  "voice.status.requestingMic": "Demande du microphone…",
+  "voice.error.noAudio": "Impossible de lire le fichier audio.",
+  "voice.refresh_done": "Résultats effacés. Voix enregistrées : {0}",
+  "voice.deleted_from_registry": "Voix supprimée du registre.",
+  "voice.delete_btn": "Supprimer",
+  "voice.vad_ready": "VAD prêt — filtrage d'activité vocale actif.",
+  "voice.no_voices": "Aucune voix enregistrée pour l'instant.",
+  "voice.vad_unavailable":
+    "VAD non chargé — détection d'énergie RMS de secours.",
+  "voice.recorder_status": "Prêt à enregistrer",
+  "voice.recorder_status_recording": "Enregistrement...",
+  "voice.recorder_status_staged": "Enregistrement enregistré",
+  "voice.recorder_max_label": "Max",
+  "voice.status.maxDurationReached":
+    "Durée maximale d'enregistrement (3 minutes) atteinte. Enregistrement arrêté automatiquement.",
+  "voice.error.tooLong":
+    "L'audio dépasse la durée maximale de 3 minutes. Veuillez couper votre fichier.",
+  "voice.countdown_seconds": "{0}s restant",
 };

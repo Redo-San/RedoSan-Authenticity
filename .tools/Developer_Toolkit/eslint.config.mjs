@@ -263,6 +263,7 @@ export default [
       "sw-precache.js",
       "test_opts.js",
       "Face_Biometric/",
+      "Voice_Biometric/",
       ".lighthouseci/",
       ".playwright-mcp/",
       ".stryker-tmp/",

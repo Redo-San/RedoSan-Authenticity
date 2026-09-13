@@ -29,6 +29,7 @@ var files = [
   "mpa/mpa_face_test.js",
   "mpa/mpa_face_ui_test.js",
   "mpa/mpa_face_pipeline_test.js",
+  "mpa/mpa_voice_biometric_test.js",
 ];
 files.forEach(function (f) {
   require(path.resolve(__dirname, f));

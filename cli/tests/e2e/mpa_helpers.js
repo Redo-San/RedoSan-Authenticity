@@ -52,6 +52,7 @@ const PAGE_NAMES = new Set([
   "search",
   "social",
   "timestamp",
+  "voice-biometric",
   "watermark",
 ]);
 
@@ -93,6 +94,7 @@ setRE("id_forge", "ID Forge ");
 setRE("document-watermark", "Document Watermark ");
 setRE("face-biometric", "Face Biometric Rights ");
 setRE("iris-biometric", "Iris Biometric ");
+setRE("voice-biometric", "Voice Biometric Rights ");
 
 let server = null;
 let started = false;
@@ -119,8 +121,11 @@ function tryServe(filePath, res) {
       stat = fs.statSync(target);
     }
     var ext = path.extname(target);
+    var cacheControl = "public, max-age=31536000, immutable";
+    if (ext === ".html" || ext === ".json") cacheControl = "no-cache";
     res.writeHead(200, {
       "Content-Type": MIME[ext] || "application/octet-stream",
+      "Cache-Control": cacheControl,
     });
     fs.createReadStream(target).pipe(res);
     return true;
@@ -130,7 +135,19 @@ function tryServe(filePath, res) {
 }
 
 function ensureServer() {
-  if (started) return Promise.resolve();
+  if (started) {
+    // Verify the port is actually responsive; if not, restart
+    var ok = false;
+    var t = http.request({ host: "localhost", port: PORT, path: "/", method: "HEAD" }, function (res) { ok = true; t.destroy(); }).on("error", function () {});
+    t.setTimeout(2000, function () { t.destroy(); });
+    t.end();
+    if (!ok) {
+      started = false;
+      server = null;
+    } else {
+      return Promise.resolve();
+    }
+  }
   return new Promise(function (resolve, reject) {
     // Check if port is already in use from a previous process
     var tester = http.request(
