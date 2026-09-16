@@ -643,8 +643,10 @@ self.addEventListener("fetch", function (event) {
         if (event.request.mode === "navigate") {
           return fetch(event.request).catch(function () {
             return fallback.then(function (hit) {
-              if (hit) return isolationHeaders(hit);
-              return Response.error();
+              if (hit && hit.type !== "opaqueredirect" && hit.body) {
+                return isolationHeaders(hit);
+              }
+              return hit || Response.error();
             });
           });
         }
