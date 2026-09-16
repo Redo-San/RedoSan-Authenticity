@@ -115,6 +115,12 @@
     _error: null,
     _state: null,
     _context: null,
+    /**
+     * Persisted after a proxy worker fails (CSP-blocked pages). Kept true so
+     * later load() calls for any backend don't re-enable `ort.env.wasm.proxy`
+     * and re-trigger the same block.
+     */
+    _proxyDisabled: false,
 
     /** @returns {boolean} */
     isReady: function () {
@@ -215,7 +221,7 @@
         // The proxy worker keeps the wasm codepath off the main thread so the
         // UI stays responsive during inference; WebGPU cannot run inside it.
         if (ort && ort.env && ort.env.wasm) {
-          ort.env.wasm.proxy = backends[i] !== "webgpu";
+          ort.env.wasm.proxy = backends[i] !== "webgpu" && !this._proxyDisabled;
         }
         try {
           session = await ort.InferenceSession.create(buffer || modelUrl, {
@@ -223,6 +229,7 @@
           });
           this._session = session;
           this._backend = backends[i];
+          this._error = null;
           return true;
         } catch (e) {
           err = e;
@@ -242,9 +249,11 @@
               });
               this._session = session;
               this._backend = backends[i];
+              this._error = null;
               return true;
             } catch (e2) {
               err = e2;
+              this._proxyDisabled = true;
             }
           }
         }

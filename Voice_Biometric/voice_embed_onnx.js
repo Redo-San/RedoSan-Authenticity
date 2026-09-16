@@ -96,6 +96,13 @@ var VoiceONNXEmbedder = {
   _backend: null,
   _error: null,
   /**
+   * Persisted after a proxy worker fails (CSP-blocked pages). Kept true so
+   * later load() calls for any backend don't re-enable `ort.env.wasm.proxy`
+   * and re-trigger the same block. Reset when the page regains an environment
+   * where blob workers are allowed (see reset()).
+   */
+  _proxyDisabled: false,
+  /**
    * Pre-normalization L2 magnitude of the last embedding (raw fbank-driven
    * x-vector). Set after every successful embed() and nulled by reset().
    * Consumers use it as a non-speech honesty signal alongside the waveform
@@ -203,7 +210,7 @@ var VoiceONNXEmbedder = {
       // The proxy worker keeps the wasm codepath off the main thread so the UI
       // stays responsive during inference; WebGPU cannot run inside it.
       if (ort && ort.env && ort.env.wasm) {
-        ort.env.wasm.proxy = backends[i] !== "webgpu";
+        ort.env.wasm.proxy = backends[i] !== "webgpu" && !this._proxyDisabled;
       }
       try {
         session = await ort.InferenceSession.create(buffer || modelUrl, {
@@ -211,6 +218,7 @@ var VoiceONNXEmbedder = {
         });
         this._session = session;
         this._backend = backends[i];
+        this._error = null;
         return true;
       } catch (e) {
         err = e;
@@ -230,9 +238,13 @@ var VoiceONNXEmbedder = {
             });
             this._session = session;
             this._backend = backends[i];
+            this._error = null;
             return true;
           } catch (e2) {
             err = e2;
+            // The proxy is unusable here (CSP blocks blob workers); persist that
+            // so later providers do not re-enable it and hit the block again.
+            this._proxyDisabled = true;
           }
         }
       }
