@@ -1871,6 +1871,69 @@ async function voiceProvenanceEmbed(bytes, kp) {
 // ── Report rendering ──
 
 /**
+ * Compact HTML preview of a standards record. The full record embeds the raw
+ * PCM as `representations[].audioContent`, which would inject a multi-MB text
+ * node into the DOM and freeze scrolling — so only a metadata digest is shown.
+ * @param {object} record Voice standards record (may contain raw PCM in representations[].audioContent)
+ * @returns {string} Compact HTML string with metadata-only digest
+ */
+function voiceStandardsPreview(record) {
+  var digests, i, rep;
+  if (!record) return "-";
+  digests = [];
+  rep = record.representations || [];
+  for (i = 0; i < rep.length; i++) {
+    digests.push({
+      audioContentPresent: !!rep[i].audioContent,
+      audioContentSamples:
+        rep[i].audioContent && typeof rep[i].audioContent.length === "number"
+          ? rep[i].audioContent.length
+          : rep[i].audioContent && rep[i].audioContent.byteLength != null
+            ? rep[i].audioContent.byteLength
+            : null,
+      quality: rep[i].quality
+        ? {
+            score: rep[i].quality.score,
+            gate: rep[i].quality.gate,
+            reasons: rep[i].quality.reasons || [],
+          }
+        : null,
+    });
+  }
+  return (
+    "<pre style='font-size:0.65rem;overflow-x:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px'>" +
+    escHtml(
+      JSON.stringify(
+        {
+          recordVersion: record.recordVersion,
+          sessionId: record.sessionId,
+          channel: record.channel,
+          captureDevice: record.captureDevice,
+          transducer: record.transducer,
+          audioMetaInfo: record.audioMetaInfo,
+          captureProcessProtocol: record.captureProcessProtocol,
+          extendedVendorData: record.extendedVendorData,
+          representations: digests,
+          deviceInfo: record.deviceInfo
+            ? {
+                vendor: record.deviceInfo.vendor,
+                model: record.deviceInfo.model,
+                serialNumber: record.deviceInfo.serialNumber,
+                additionalInfo: record.deviceInfo.additionalInfo,
+              }
+            : null,
+          creationDate: record.creationDate,
+          timestamp: record.timestamp,
+        },
+        null,
+        2,
+      ),
+    ) +
+    "</pre>"
+  );
+}
+
+/**
  * @param {boolean} show
  */
 function renderVoiceActions(show) {
@@ -2055,9 +2118,7 @@ function renderVoiceReport(r) {
   if (r.standards) {
     sections.push([
       __("voice.report.standards", "Standards record"),
-      "<pre style='font-size:0.65rem;overflow-x:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px'>" +
-        escHtml(JSON.stringify(r.standards, null, 2)) +
-        "</pre>",
+      voiceStandardsPreview(r.standards),
     ]);
   }
   if (r.provenance) {
