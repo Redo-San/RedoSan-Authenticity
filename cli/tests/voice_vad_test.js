@@ -523,4 +523,17 @@ describe("VoiceVAD — branch coverage (error/edge paths)", () => {
     assert.ok(p.probability >= VoiceVAD.NEG_THRESHOLD);
     assert.ok(p.probability < VoiceVAD.THRESHOLD);
   });
+
+  it("process() recovers when the proxy worker detached the state buffer", async () => {
+    // Regression: onnxruntime-web's proxy worker transfers the state input
+    // buffer to the worker and detaches the original array, leaving a
+    // zero-length (still truthy) Float32Array. process() must reset it
+    // instead of throwing "Unexpected VAD state output".
+    const rt = fakeRuntime(0.5);
+    await VoiceVAD.load({ runtime: rt });
+    VoiceVAD._state = new Float32Array(0); // detached by a proxy transfer
+    const p = await VoiceVAD.process(new Float32Array(512).fill(0.1));
+    assert.equal(VoiceVAD._state.length, 256);
+    assert.ok(Math.abs(p.probability - 0.5) < 1e-3);
+  });
 });
