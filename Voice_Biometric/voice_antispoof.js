@@ -435,14 +435,10 @@ var VoiceAntiSpoof = {
       }
     }
     this._runtime = ort;
-    /* c8 ignore next 3 -- threading layer stalls the main thread (Atomics.wait
-       in onnxruntime-web) on pages that are not cross-origin isolated. */
-    if (
-      ort &&
-      ort.env &&
-      ort.env.wasm &&
-      !(typeof self !== "undefined" && self.crossOriginIsolated)
-    ) {
+    /* c8 ignore next 3 -- multi-threaded session creation (numThreads > 1)
+       hangs indefinitely in onnxruntime-web (onnxruntime#26858) even on
+       cross-origin-isolated pages; always pin single-threaded creation. */
+    if (ort && ort.env && ort.env.wasm) {
       ort.env.wasm.numThreads = 1;
     }
     backends = options.executionProviders || this.DEFAULT_EXECUTION_PROVIDERS;
