@@ -383,8 +383,17 @@
       if (!this._session)
         throw new Error("VoiceVAD is not loaded. Call load() first.");
       fed = this.preprocess(pcmBlock);
-      if (!this._state) this.resetStates();
-      stateIn = new this._runtime.Tensor("float32", this._state, STATE_SHAPE);
+      // The proxy worker transfers the input tensor buffer to the worker
+      // thread, detaching the original. Pass a fresh copy so the persistent
+      // `_state` array is never detached (and stay alert to an array left
+      // detached by an earlier run).
+      if (!this._state || this._state.length !== STATE_LAYERS * STATE_DIM)
+        this.resetStates();
+      stateIn = new this._runtime.Tensor(
+        "float32",
+        new Float32Array(this._state),
+        STATE_SHAPE,
+      );
       srIn = new this._runtime.Tensor(
         "int64",
         new BigInt64Array([BigInt(this.SR_VALUE)]),
