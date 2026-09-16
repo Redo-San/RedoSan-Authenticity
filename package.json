@@ -118,7 +118,8 @@
     "qrcode": "^1.5.4"
   },
   "optionalDependencies": {
-    "sharp": "^0.35.4"
+    "sharp": "^0.35.4",
+    "onnxruntime-node": "^1.30.0"
   },
   "overrides": {
     "@mapbox/node-pre-gyp": "2.0.3",
