@@ -623,6 +623,17 @@ self.addEventListener("fetch", function (event) {
             })
             .catch(function () {});
         }
+        // GitHub Pages cannot set COOP/COEP at the server, so inject them here
+        // for navigations. This keeps the page cross-origin-isolated, which the
+        // ONNX threading layer + proxy workers need. (coi-serviceworker pattern)
+        if (
+          event.request.mode === "navigate" &&
+          resp.ok &&
+          resp.type !== "opaqueredirect" &&
+          resp.body
+        ) {
+          return isolationHeaders(resp);
+        }
         return resp;
       })
       .catch(function () {
@@ -632,6 +643,9 @@ self.addEventListener("fetch", function (event) {
         if (event.request.mode === "navigate") {
           return fetch(event.request).catch(function () {
             return fallback.then(function (hit) {
+              if (hit && hit.type !== "opaqueredirect" && hit.body) {
+                return isolationHeaders(hit);
+              }
               return hit || Response.error();
             });
           });
@@ -644,8 +658,33 @@ self.addEventListener("fetch", function (event) {
 });
 
 /**
- *
- * @param filePath
+ * Rebuild a navigation response with cross-origin-isolation headers that
+ * GitHub Pages cannot set via server configuration. Only applied to same-origin
+ * HTML navigations so CDN/static subresources are left untouched.
+ * @param {Response} resp The successful navigation response to re-wrap
+ * @returns {Response} A new response carrying the COOP/COEP headers
+ */
+function isolationHeaders(resp) {
+  var headers = new Headers(resp.headers);
+  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  // require-corp (not credentialless): every cross-origin no-cors subresource on
+  // this site comes from CDNs that already send CORP: cross-origin, so this works
+  // in all browsers (incl. Safari, which never supported credentialless) and
+  // avoids Chromium bug 40830070 (SW-injected credentialless blocks no-cors
+  // resources that lack CORP). Same-origin requests are exempt from CORP checks.
+  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  return new Response(resp.body, {
+    status: resp.status,
+    statusText: resp.statusText,
+    headers: headers,
+  });
+}
+
+/**
+ * Render the block page shown when a request looks like a malicious file
+ * disguised as a legitimate resource.
+ * @param {string} filePath The requested path that was blocked
+ * @returns {string} Standalone HTML block page
  */
 function threatPage(filePath) {
   return (
@@ -656,15 +695,17 @@ function threatPage(filePath) {
 }
 
 /**
- *
+ * Render the notice page shown when the protected logo is requested directly.
+ * @returns {string} Standalone HTML notice page
  */
 function logoBlockPage() {
   return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Protected — RedoSan Authenticity</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center}.container{max-width:500px;padding:40px 20px;text-align:center}.icon{font-size:64px;margin-bottom:20px}h1{color:#6C5CE7;font-size:24px;margin-bottom:12px}p{color:#a0a0b0;line-height:1.6}.btn{display:inline-block;margin-top:24px;padding:12px 32px;background:#6C5CE7;color:#fff;text-decoration:none;border-radius:8px}</style></head><body><div class="container"><div class="icon">&#x1F512;</div><h1>This image is protected</h1><p>The RedoSan Authenticity logo is a protected asset. Direct downloads are blocked. Please visit the main site to view it.</p><a href="/RedoSan-Authenticity/" class="btn">Go to Home</a></div></body></html>';
 }
 
 /**
- *
- * @param str
+ * HTML-escape a string for safe interpolation into block pages.
+ * @param {string} str Raw string to escape
+ * @returns {string} HTML-escaped string
  */
 function escapeHtml(str) {
   return str

@@ -139,6 +139,12 @@ var VoiceAntiSpoof = {
   _backend: null,
   _modelKey: null,
   _error: null,
+  /**
+   * Persisted after a proxy worker fails (CSP-blocked pages). Kept true so
+   * later load() calls for any backend don't re-enable `ort.env.wasm.proxy`
+   * and re-trigger the same block.
+   */
+  _proxyDisabled: false,
 
   /** @returns {boolean} */
   isReady: function () {
@@ -431,10 +437,22 @@ var VoiceAntiSpoof = {
     this._runtime = ort;
     /* c8 ignore next 3 -- threading layer stalls the main thread (Atomics.wait
        in onnxruntime-web) on pages that are not cross-origin isolated. */
-    if (ort && ort.env && ort.env.wasm) ort.env.wasm.numThreads = 1;
+    if (
+      ort &&
+      ort.env &&
+      ort.env.wasm &&
+      !(typeof self !== "undefined" && self.crossOriginIsolated)
+    ) {
+      ort.env.wasm.numThreads = 1;
+    }
     backends = options.executionProviders || this.DEFAULT_EXECUTION_PROVIDERS;
     err = null;
     for (i = 0; i < backends.length; i++) {
+      // The proxy worker keeps the wasm codepath off the main thread so the
+      // UI stays responsive during inference; WebGPU cannot run inside it.
+      if (ort && ort.env && ort.env.wasm) {
+        ort.env.wasm.proxy = backends[i] !== "webgpu" && !this._proxyDisabled;
+      }
       try {
         session = await ort.InferenceSession.create(buffer || modelUrl, {
           executionProviders: [backends[i]],
@@ -446,6 +464,30 @@ var VoiceAntiSpoof = {
         return true;
       } catch (e) {
         err = e;
+        /* c8 ignore next 8 -- CSP-restricted pages block blob workers; retry the
+           same backend without the proxy instead of failing the whole load */
+        if (
+          backends[i] !== "webgpu" &&
+          ort &&
+          ort.env &&
+          ort.env.wasm &&
+          ort.env.wasm.proxy
+        ) {
+          try {
+            ort.env.wasm.proxy = false;
+            session = await ort.InferenceSession.create(buffer || modelUrl, {
+              executionProviders: [backends[i]],
+            });
+            this._session = session;
+            this._backend = backends[i];
+            this._modelKey = modelKey;
+            this._error = null;
+            return true;
+          } catch (e2) {
+            err = e2;
+            this._proxyDisabled = true;
+          }
+        }
       }
     }
     /* c8 ignore next -- reaching here implies every provider threw, so err is set */

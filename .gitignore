@@ -56,6 +56,7 @@ skills/
 .claude/
 agent/
 .Plans/
+.ua/
 skills-lock.json
 
 # Local AI tool config (OpenCode — machine-specific)
