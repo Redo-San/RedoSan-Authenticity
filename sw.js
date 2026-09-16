@@ -623,6 +623,12 @@ self.addEventListener("fetch", function (event) {
             })
             .catch(function () {});
         }
+        // GitHub Pages cannot set COOP/COEP at the server, so inject them here
+        // for navigations. This keeps the page cross-origin-isolated, which the
+        // ONNX threading layer + proxy workers need. (coi-serviceworker pattern)
+        if (event.request.mode === "navigate" && resp.ok) {
+          return isolationHeaders(resp);
+        }
         return resp;
       })
       .catch(function () {
@@ -632,7 +638,8 @@ self.addEventListener("fetch", function (event) {
         if (event.request.mode === "navigate") {
           return fetch(event.request).catch(function () {
             return fallback.then(function (hit) {
-              return hit || Response.error();
+              if (hit) return isolationHeaders(hit);
+              return Response.error();
             });
           });
         }
@@ -642,6 +649,29 @@ self.addEventListener("fetch", function (event) {
       }),
   );
 });
+
+/**
+ * Rebuild a navigation response with cross-origin-isolation headers that
+ * GitHub Pages cannot set via server configuration. Only applied to same-origin
+ * HTML navigations so CDN/static subresources are left untouched.
+ * @param {Response} resp
+ * @returns {Response}
+ */
+function isolationHeaders(resp) {
+  var headers = new Headers(resp.headers);
+  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  // require-corp (not credentialless): every cross-origin no-cors subresource on
+  // this site comes from CDNs that already send CORP: cross-origin, so this works
+  // in all browsers (incl. Safari, which never supported credentialless) and
+  // avoids Chromium bug 40830070 (SW-injected credentialless blocks no-cors
+  // resources that lack CORP). Same-origin requests are exempt from CORP checks.
+  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  return new Response(resp.body, {
+    status: resp.status,
+    statusText: resp.statusText,
+    headers: headers,
+  });
+}
 
 /**
  *

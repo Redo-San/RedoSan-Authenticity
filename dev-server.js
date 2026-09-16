@@ -197,6 +197,10 @@ function tryServe(filePath, req, res) {
       "Cache-Control": "no-cache",
       ETag: etag,
     };
+    if (isHtml) {
+      headers["Cross-Origin-Opener-Policy"] = "same-origin";
+      headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+    }
     if (!isHtml && req.headers["if-none-match"] === etag) {
       res.writeHead(304, headers);
       res.end();

@@ -192,10 +192,22 @@ var VoiceWavlmEmbedder = {
     this._runtime = ort;
     /* c8 ignore next 3 -- threading layer stalls the main thread (Atomics.wait
        in onnxruntime-web) on pages that are not cross-origin isolated. */
-    if (ort && ort.env && ort.env.wasm) ort.env.wasm.numThreads = 1;
+    if (
+      ort &&
+      ort.env &&
+      ort.env.wasm &&
+      !(typeof self !== "undefined" && self.crossOriginIsolated)
+    ) {
+      ort.env.wasm.numThreads = 1;
+    }
     backends = ["webgpu", "wasm", "cpu"];
     err = null;
     for (i = 0; i < backends.length; i++) {
+      // The proxy worker keeps the wasm codepath off the main thread so the
+      // UI stays responsive during inference; WebGPU cannot run inside it.
+      if (ort && ort.env && ort.env.wasm) {
+        ort.env.wasm.proxy = backends[i] !== "webgpu";
+      }
       try {
         session = await ort.InferenceSession.create(buffer || modelUrl, {
           executionProviders: [backends[i]],
@@ -205,6 +217,27 @@ var VoiceWavlmEmbedder = {
         return true;
       } catch (e) {
         err = e;
+        /* c8 ignore next 8 -- CSP-restricted pages block blob workers; retry
+             the same backend without the proxy instead of failing the load */
+        if (
+          backends[i] !== "webgpu" &&
+          ort &&
+          ort.env &&
+          ort.env.wasm &&
+          ort.env.wasm.proxy
+        ) {
+          try {
+            ort.env.wasm.proxy = false;
+            session = await ort.InferenceSession.create(buffer || modelUrl, {
+              executionProviders: [backends[i]],
+            });
+            this._session = session;
+            this._backend = backends[i];
+            return true;
+          } catch (e2) {
+            err = e2;
+          }
+        }
       }
     }
     /* c8 ignore next -- reaching here implies every provider threw, so err is set */
