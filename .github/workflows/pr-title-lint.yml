@@ -20,7 +20,7 @@ jobs:
         with:
           script: |
             const TYPES = ['feat','fix','chore','docs','style','refactor','perf','test','ci','build','revert'];
-            const RE = new RegExp('^('+TYPES.join('|')+')(\\(\\w+\\))?!?:\\s.+');
+            const RE = new RegExp('^('+TYPES.join('|')+')(\\([^\\(\\)]+\\))?!?:\\s.+');
             const title = context.payload.pull_request.title;
             const num = context.issue.number;
 

@@ -46,3 +46,6 @@ jobs:
           reporter: github-pr-review
           filter_mode: diff_context
           fail_on_error: false
+          exclude: |
+            **/Style/lang/*.json
+            **/Style/lang/i18n-data*.js
