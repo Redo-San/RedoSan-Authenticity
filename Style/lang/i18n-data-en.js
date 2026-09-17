@@ -1213,7 +1213,7 @@ window.__I18N_DATA.en = {
     "e.g. Artist Name — used to auto-register the voice",
   "voice.embedder_label": "Embedding Engine",
   "voice.embedder_ecapa": "ECAPA-TDNN (ONNX)",
-  "voice.embedder_wavlm": "WavLM (ONNX, large)",
+  "voice.embedder_wavlm": "WavLM Base+ (ONNX)",
   "voice.embedder_hint":
     "ECAPA-TDNN (192-dim) downloads an ~83 MB ONNX model on first use. WavLM Base+ (512-dim) downloads a ~102 MB model — best accuracy, heavier; embeddings stay local on this device.",
   "voice.embedder_hint_ecapa":
@@ -1224,10 +1224,6 @@ window.__I18N_DATA.en = {
     "WavLM Base+ (512-dim) downloads a ~102 MB ONNX model on first use — best accuracy, heavier; embeddings stay local and never leave this device.",
   "voice.hint.duration":
     "Duration: 2–10 seconds of continuous speech gives the most reliable embedding; silent or music-only clips are rejected by the quality gate and flagged as low-confidence when processed.",
-  "voice.status.embedderChanged":
-    "Embedder switched to {0}. Re-run to regenerate identifiers.",
-  "voice.limitation.lowMagnitude":
-    "The embedding produced an unexpectedly low signal magnitude; the input may not have contained clear speech. Treat the resulting identifiers as low-confidence.",
   "voice.auto_hint":
     "⚡ Pick an audio sample or record one with the microphone, enter a Name/Label, then press Generate Identifiers — voice encoding, anti-spoof/liveness check, DID signing, registry (dis)similarity and provenance timestamp all run together automatically.",
   "voice.run_btn": "Generate Identifiers",
@@ -1267,6 +1263,8 @@ window.__I18N_DATA.en = {
   "voice.status.quality": "Assessing audio quality…",
   "voice.step.quality": "Assessing audio quality…",
   "voice.status.preparing": "Preparing voice engine…",
+  "voice.status.reportDone":
+    "Voice identifiers generated and registered (embedder: {0}).",
   "voice.step.load": "Preparing voice engine…",
   "voice.progress.title": "Generating Voice Identifiers",
   "voice.status.recordingAborted": "Recording aborted.",
@@ -1288,4 +1286,8 @@ window.__I18N_DATA.en = {
   "voice.error.tooLong":
     "Audio exceeds maximum duration of 3 minutes. Please trim your file.",
   "voice.countdown_seconds": "{0}s left",
+  "voice.status.embedderChanged":
+    "Embedder switched to {0}. Re-run to regenerate identifiers.",
+  "voice.limitation.lowMagnitude":
+    "The embedding produced an unexpectedly low signal magnitude; the input may not have contained clear speech. Treat the resulting identifiers as low-confidence.",
 };

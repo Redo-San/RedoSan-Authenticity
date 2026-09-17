@@ -178,6 +178,40 @@
     };
   }
 
+  /**
+   * Fetch the pinned SpeechBrain filterbank (201*80 float32, row-major
+   * k*80+mel, HTK mel scale, 16 kHz) from a URL and validate its length so the
+   * ECAPA feature chain can run entirely in-browser (no manual injection).
+   * @param {string} url
+   * @returns {Promise<Float32Array>}
+   */
+  function loadFbank(url) {
+    if (typeof fetch !== "function") {
+      return Promise.reject(
+        new Error("VoiceFeatures.loadFbank requires fetch support."),
+      );
+    }
+    return fetch(url, { cache: "no-cache" })
+      .then(function (res) {
+        if (!res.ok)
+          throw new Error(
+            "VoiceFeatures.loadFbank: HTTP " + res.status + " for " + url,
+          );
+        return res.arrayBuffer();
+      })
+      .then(function (buf) {
+        var fbank;
+        if (buf && buf.byteLength === N_BINS * N_MELS * 4) {
+          fbank = new Float32Array(buf);
+        } else {
+          throw new Error(
+            "VoiceFeatures.loadFbank: fbank must be a 201*80 (k*80+mel) matrix",
+          );
+        }
+        return fbank;
+      });
+  }
+
   var VoiceFeatures = {
     N_FFT: N_FFT,
     HOP: HOP,
@@ -187,6 +221,7 @@
     SAMPLE_RATE: SAMPLE_RATE,
     LOG_MEL_ABS: 0.002,
     computeLogMel: computeLogMel,
+    loadFbank: loadFbank,
   };
 
   if (typeof module !== "undefined" && module.exports)

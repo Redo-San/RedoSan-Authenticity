@@ -80,6 +80,7 @@ var _voiceTemplateSecret = null;
 var _voiceRegistry = null;
 var _voiceEngine = null;
 var _voiceEmbedder = "ecapa";
+var _voiceFbank = null;
 /**
  * Warn-only non-speech honesty floors for the pre-normalization embedding L2
  * magnitude (embedder.lastMagnitude). Near-zero magnitude means the encoder
@@ -100,10 +101,17 @@ var _voiceProgressOverlay = null;
 /**
  * @param {string} id
  * @param {string} msg
+ * @param {boolean} [ok] true styles the message as a green success status.
  */
-function setStatus(id, msg) {
+function setStatus(id, msg, ok) {
   var el = document.getElementById(id);
-  if (el) el.textContent = msg;
+  if (!el) return;
+  el.textContent = msg;
+  if (ok) {
+    if (el.classList) el.classList.add("voice-status-success");
+  } else if (el.classList) {
+    el.classList.remove("voice-status-success");
+  }
 }
 
 /**
@@ -429,6 +437,7 @@ function updateVoiceEmbedderHint() {
   var hint;
   hint = document.getElementById("voice-embedder-hint");
   if (!hint) return;
+  hint.removeAttribute("data-i18n");
   if (_voiceEmbedder === "wavlm") {
     hint.textContent = __(
       "voice.embedder_hint_wavlm",
@@ -466,6 +475,57 @@ function voiceEmbedderFor(mode) {
 }
 
 /**
+ * Resolve the shipped SpeechBrain filterbank (Voice_Biometric/models/
+ * fbank-80x201-f32.bin) relative to this page. Derives the directory from the
+ * loaded voice_ui.js <script> so it works identically in the SPA (root) and
+ * the MPA standalone page (Style/pages/voice-biometric/).
+ * Filterbank resolution hook: returns the local fbank asset URL for this
+ * page, or null when the script tag is not resolvable.
+ * @returns {string|null} absolute URL of fbank-80x201-f32.bin, or null.
+ */
+function voiceFbankUrl() {
+  var s, src;
+  if (typeof document === "undefined") return null;
+  s = document.querySelector('script[src$="Voice_Biometric/voice_ui.js"]');
+  if (!s || !s.src) return null;
+  src = String(s.src).replace(/voice_ui\.min\.js$/, ".js");
+  src = String(src).replace(/voice_ui\.js$/, "");
+  // ?v=1 cache-buster: guards against stale SW/HTTP cache entries holding an
+  // empty response for the bare URL (observed as HTTP 204 on Chrome fetch).
+  return src + "models/fbank-80x201-f32.bin?v=1";
+}
+
+/**
+ * Load the ECAPA filterbank once and cache it on the active engine. The ECAPA
+ * embedder consumes fbank features; without this the engine falls back to
+ * feeding raw PCM and embedding fails on a whole-frames check. Safe to call
+ * repeatedly; resolves null when VoiceFeatures is unavailable.
+ * @returns {Promise<Float32Array|null>} the cached filterbank, or null.
+ */
+async function ensureVoiceFbank() {
+  var url;
+  if (_voiceFbank) return _voiceFbank;
+  if (
+    typeof VoiceFeatures === "undefined" ||
+    typeof VoiceFeatures.loadFbank !== "function"
+  )
+    return null;
+  url = voiceFbankUrl();
+  if (!url) return null;
+  try {
+    _voiceFbank = await VoiceFeatures.loadFbank(url);
+  } catch (error) {
+    setStatus(
+      "voice-status",
+      "Voice filterbank failed to load: " + error.message,
+    );
+    return null;
+  }
+  if (_voiceEngine) _voiceEngine._fbank = _voiceFbank;
+  return _voiceFbank;
+}
+
+/**
  * Build a fresh engine wired to the currently selected embedder.
  * @returns {VoiceEngine|null}
  */
@@ -476,6 +536,7 @@ function buildVoiceEngine() {
   return new VoiceEngine({
     sampleRate: VOICE_SAMPLE_RATE,
     embedder: embedder,
+    fbank: _voiceFbank || undefined,
   });
 }
 
@@ -490,6 +551,8 @@ function handleVoiceEmbedderChange() {
   if (!sel) return;
   _voiceEmbedder = sel.value;
   _voiceEngine = buildVoiceEngine();
+  if (typeof ensureVoiceFbank === "function")
+    ensureVoiceFbank().then(function () {});
   _voiceReport = null;
   window._voiceReport = null;
   repEl = document.getElementById("voice-report");
@@ -1292,6 +1355,7 @@ async function runVoicePipeline(audio, opts) {
   if (!_voiceEngine) {
     _voiceEngine = buildVoiceEngine();
   }
+  await ensureVoiceFbank();
   if (!_voiceRegistry && typeof VoiceRegistry === "function") {
     _voiceRegistry = new VoiceRegistry();
     try {
@@ -1730,11 +1794,10 @@ async function runVoicePipeline(audio, opts) {
     setStatus(
       "voice-status",
       __(
-        "voice.status.embedderChanged",
-        "Embedder switched to " +
-          _voiceEmbedder +
-          ". Re-run to regenerate identifiers.",
+        "voice.status.reportDone",
+        "Voice identifiers generated and registered (embedder: {0}).",
       ).replace("{0}", _voiceEmbedder),
+      true,
     );
     console.log("[POST-REPORT] setStatus END");
     if (typeof listVoiceRegistered === "function") {
@@ -3366,6 +3429,7 @@ async function initVoiceBiometric() {
   if (!_voiceTemplateSecret) {
     _voiceTemplateSecret = voiceRandomToken(16);
   }
+  await ensureVoiceFbank();
   initVoiceConsent();
   updateVoiceEmbedderHint();
   updateVoiceVadStatus();
