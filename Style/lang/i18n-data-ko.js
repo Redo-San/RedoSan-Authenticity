@@ -1212,7 +1212,7 @@ window.__I18N_DATA.ko = {
   "voice.label_placeholder": "e.g. Artist Name - 음성 자동등록",
   "voice.embedder_label": "임베딩 엔진",
   "voice.embedder_ecapa": "ECAPA-TDNN(ONNX)",
-  "voice.embedder_wavlm": "WavLM(ONNX, 대형)",
+  "voice.embedder_wavlm": "WavLM Base+ (ONNX)",
   "voice.embedder_hint":
     "ECAPA-TDNN(192차원)은 첫 사용 시 약 83MB ONNX 모델을 다운로드합니다. WavLM Base+(512차원)는 약 102MB 모델을 사용합니다 — 정확도는 최고지만 무겁고, 임베딩은 이 기기에만 유지됩니다.",
   "voice.embedder_hint_ecapa":
@@ -1222,11 +1222,7 @@ window.__I18N_DATA.ko = {
   "voice.embedder_hint_wavlm":
     "WavLM Base+(512차원)는 첫 사용 시 약 102MB ONNX 모델을 다운로드하며 — 정확도는 최고지만 무겁고, 임베딩은 로컬에 유지되고 이 기기를 절대 벗어나지 않습니다.",
   "voice.hint.duration":
-    "길이: 2~10초의 연속된 음성이 가장 신뢰할 수 있는 임베딩을 만듭니다. 무음 또는 음악만 있는 클립은 품질 게이트에서 거부되며, 처리 시 낮은 신뢰도로 표시됩니다.",
-  "voice.status.embedderChanged":
-    "임베더가 {0}(으)로 전환되었습니다. 식별자를 다시 생성하려면 재실행하세요.",
-  "voice.limitation.lowMagnitude":
-    "임베딩이 예기치 않게 낮은 신호 크기를 생성했으며, 입력에 명확한 음성이 포함되지 않았을 수 있습니다. 생성된 식별자는 낮은 신뢰도로 취급하십시오.",
+    "지속 시간: 2~10초의 연속된 음성이 가장 신뢰할 수 있는 임베딩을 제공합니다. 무음 또는 음악만 포함된 클립은 게이트에 의해 거부되고 처리 시 낮은 신뢰도로 표시됩니다.",
   "voice.auto_hint":
     "⚡ 오디오 샘플을 선택하거나 마이크로 녹음하고 이름/라벨을 입력한 뒤 Identifiers 생성을 누릅니다 — 음성 인코딩, 위조 방지/라이브니스 검사, DID 서명, 레지스트리(비)유사성, 출처 타임스탬프가 모두 자동으로 실행됩니다.",
   "voice.run_btn": "식별자 생성",
@@ -1266,6 +1262,8 @@ window.__I18N_DATA.ko = {
   "voice.status.quality": "오디오 품질 평가 중…",
   "voice.step.quality": "오디오 품질 평가 중…",
   "voice.status.preparing": "음성 엔진 준비 중…",
+  "voice.status.reportDone":
+    "음성 식별자가 생성 및 등록되었습니다(임베더: {0}).",
   "voice.step.load": "음성 엔진 준비 중…",
   "voice.progress.title": "음성 식별자 생성 중",
   "voice.status.recordingAborted": "녹음이 중단되었습니다.",
@@ -1287,4 +1285,8 @@ window.__I18N_DATA.ko = {
   "voice.error.tooLong":
     "오디오가 최대 시간(3분)을 초과합니다. 파일을 트리밍해 주세요.",
   "voice.countdown_seconds": "남은 시간 {0}초",
+  "voice.status.embedderChanged":
+    "임베더가 {0}(으)로 전환되었습니다. 식별자를 다시 생성하려면 재실행하세요.",
+  "voice.limitation.lowMagnitude":
+    "임베딩이 예기치 않게 낮은 신호 크기를 생성했으며, 입력에 명확한 음성이 포함되지 않았을 수 있습니다. 생성된 식별자는 낮은 신뢰도로 취급하십시오.",
 };

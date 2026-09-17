@@ -1233,7 +1233,7 @@ window.__I18N_DATA.ja = {
     "例: アーティスト名 — 音声を自動登録するために使用",
   "voice.embedder_label": "埋め込みエンジン",
   "voice.embedder_ecapa": "ECAPA-TDNN（ONNX）",
-  "voice.embedder_wavlm": "WavLM（ONNX、大容量）",
+  "voice.embedder_wavlm": "WavLM Base+（ONNX）",
   "voice.embedder_hint":
     "ECAPA-TDNN（192次元）は初回使用時に約83 MBのONNXモデルをダウンロードします。WavLM Base+（512次元）は約102 MBのモデルです — 精度は最高ですが重く、埋め込みはこの端末上に留まります。",
   "voice.embedder_hint_ecapa":
@@ -1243,11 +1243,7 @@ window.__I18N_DATA.ja = {
   "voice.embedder_hint_wavlm":
     "WavLM Base+（512次元）は初回使用時に約102 MBのONNXモデルをダウンロードします — 精度は最高ですが重く、埋め込みはローカルに留まり、この端末から出ることはありません。",
   "voice.hint.duration":
-    "再生時間：2〜10秒の連続した音声で最も信頼できる埋め込みが得られます。無音または音楽のみのクリップは品質ゲートで拒否され、処理時に低信頼とフラグ付けされます。",
-  "voice.status.embedderChanged":
-    "エンベッダーを {0} に切り替えました。識別子を再生成するには再実行してください。",
-  "voice.limitation.lowMagnitude":
-    "埋め込みが予想外に低い信号強度を生成しました。入力に明確な音声が含まれていなかった可能性があります。生成された識別子は低信頼として扱ってください。",
+    "所要時間: 2〜10秒の連続した話声が最も信頼性の高い埋め込みを提供します。無音または音楽のみのクリップは品質ゲートで拒否され、処理時に低信頼度としてフラグ付けされます。",
   "voice.auto_hint":
     "⚡ 音声サンプルを選ぶかマイクで録音し、名前/ラベルを入力して [Identifiers を生成] を押します — 音声エンコーディング、なりすまし防止/ライブネス検査、DID 署名、レジストリの(非)類似度、出所タイムスタンプがすべて自動実行されます。",
   "voice.run_btn": "識別子を生成",
@@ -1287,6 +1283,8 @@ window.__I18N_DATA.ja = {
   "voice.status.quality": "オーディオ品質を評価中…",
   "voice.step.quality": "オーディオ品質を評価中…",
   "voice.status.preparing": "音声エンジンを準備中…",
+  "voice.status.reportDone":
+    "音声識別子を生成し登録しました（エンベッダー: {0}）。",
   "voice.step.load": "音声エンジンを準備中…",
   "voice.progress.title": "音声識別子を生成中",
   "voice.status.recordingAborted": "録音が中止されました。",
@@ -1310,4 +1308,8 @@ window.__I18N_DATA.ja = {
   "voice.error.tooLong":
     "音声が最大許容時間（3分）を超過しています。ファイルをトリミングしてください。",
   "voice.countdown_seconds": "残り{0}秒",
+  "voice.status.embedderChanged":
+    "エンベッダーを {0} に切り替えました。識別子を再生成するには再実行してください。",
+  "voice.limitation.lowMagnitude":
+    "埋め込みが予想外に低い信号強度を生成しました。入力に明確な音声が含まれていなかった可能性があります。生成された識別子は低信頼として扱ってください。",
 };

@@ -280,6 +280,11 @@
   color: var(--text);
 }
 
+#voice-status.voice-status-success {
+  color: #1aab4e !important;
+  font-weight: 600;
+}
+
 .voice-recorder-dot {
   width: 10px;
   height: 10px;
