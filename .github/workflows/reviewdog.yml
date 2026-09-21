@@ -28,20 +28,20 @@ jobs:
           cache: npm
       - run: npm ci
       - name: ESLint
-        uses: reviewdog/action-eslint@556a3fdaf8b4201d4d74d406013386aa4f7dab96 # v1.34.0
+        uses: reviewdog/action-eslint@5eb89b1e6e94ca33e91c3814c34b25a8370bba46 # v1.35.0
         with:
           reporter: github-pr-review
           filter_mode: diff_context
           fail_on_error: false
           eslint_flags: --config .tools/Developer_Toolkit/eslint.config.mjs --max-warnings 10000 .
       - name: actionlint
-        uses: reviewdog/action-actionlint@d290e336d5a743810aef4404f757dc862276d2ae # v1.73.4
+        uses: reviewdog/action-actionlint@8b682e1e7e512151d73a6b9449cbff173846226e # v1.74.0
         with:
           reporter: github-pr-review
           filter_mode: diff_context
           fail_on_error: false
       - name: misspell
-        uses: reviewdog/action-misspell@ba7ac4030fa6812f8c8b2d4e516af8bc99553c32 # v1.28.0
+        uses: reviewdog/action-misspell@da40ce414be6ce320a9322aa2bae10bd3b9e6ef3 # v1.29.0
         with:
           reporter: github-pr-review
           filter_mode: diff_context
