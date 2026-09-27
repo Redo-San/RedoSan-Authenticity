@@ -5,7 +5,7 @@ on:
     tags:
       - "v*"
   release:
-    types: [published, released]
+    types: [published]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: release-${{ github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -33,6 +33,7 @@ jobs:
             raw.githubusercontent.com:443
             uploads.github.com:443
             ghcr.io:443
+            pkg-containers.githubusercontent.com:443
             registry.npmjs.org:443
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,7 +45,7 @@ jobs:
         uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
         with:
           config: cliff.toml
-          args: --verbose
+          args: --latest --verbose
         env:
           OUTPUT: CHANGELOG.md
 
@@ -100,6 +101,18 @@ jobs:
                 })
               ).data;
             }
+
+            if (fs.existsSync('CHANGELOG.md')) {
+              const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+              await github.rest.repos.updateRelease({
+                owner,
+                repo,
+                release_id: release.id,
+                body: changelog,
+              });
+              core.info('Updated release body with CHANGELOG.md');
+            }
+
             core.info(`Release ${release.name} (#${release.id}) is ready`);
 
             const assets = ['CHANGELOG.md', 'sbom.spdx.json'];
@@ -120,19 +133,33 @@ jobs:
                   asset_id: stale.id,
                 });
                 core.info(`Removed stale asset ${name}`);
+                await new Promise(r => setTimeout(r, 2000));
               }
-              await github.rest.repos.uploadReleaseAsset({
-                owner,
-                repo,
-                release_id: release.id,
-                name,
-                data: fs.readFileSync(name),
-                headers: {
-                  'content-type': name.endsWith('.json')
-                    ? 'application/json'
-                    : 'text/markdown',
-                  'content-length': fs.statSync(name).size,
-                },
-              });
-              core.info(`Uploaded asset ${name}`);
+              let uploaded = false;
+              for (let attempt = 0; attempt < 3 && !uploaded; attempt++) {
+                try {
+                  await github.rest.repos.uploadReleaseAsset({
+                    owner,
+                    repo,
+                    release_id: release.id,
+                    name,
+                    data: fs.readFileSync(name),
+                    headers: {
+                      'content-type': name.endsWith('.json')
+                        ? 'application/json'
+                        : 'text/markdown',
+                      'content-length': fs.statSync(name).size,
+                    },
+                  });
+                  uploaded = true;
+                  core.info(`Uploaded asset ${name}`);
+                } catch (e) {
+                  if (attempt < 2) {
+                    core.info(`Upload attempt ${attempt + 1} failed, retrying...`);
+                    await new Promise(r => setTimeout(r, 2000));
+                  } else {
+                    throw e;
+                  }
+                }
+              }
             }
