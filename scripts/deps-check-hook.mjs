@@ -53,9 +53,10 @@ function countLibcMarkers() {
 }
 
 /**
- *
- * @param fromRef
- * @param toRef
+ * Lists the files that differ between two git refs.
+ * @param {string} fromRef base ref to diff from
+ * @param {string} toRef ref to diff to
+ * @returns {string[]} changed file paths, empty when the diff cannot be read
  */
 function filesBetween(fromRef, toRef) {
   try {
@@ -72,7 +73,9 @@ function filesBetween(fromRef, toRef) {
 }
 
 /**
- *
+ * Collects the files touched by the current merge or rebase, reading
+ * `@{u}..HEAD` ranges from stdin in the post-rewrite case.
+ * @returns {Set<string>} unique changed file paths
  */
 function changedFiles() {
   const set = new Set();
