@@ -273,6 +273,11 @@ export default [
       "certs/",
       ".lh13/",
       "tests/",
+      // Gitignored local scratch/tooling dirs (.gitignore). Never present in a
+      // fresh CI checkout, so linting them only reports phantom errors locally.
+      ".Plans/",
+      ".ua/",
+      "reports/",
     ],
   },
 ];
