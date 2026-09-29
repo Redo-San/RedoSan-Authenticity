@@ -1,0 +1,44 @@
+# Editor line-ending policy - RedoSan Authenticity
+#
+# This file is the EDITOR-side twin of .gitattributes. The two must never
+# disagree: .gitattributes decides what Git stores/checks out, this file
+# decides what your editor writes to disk. If they diverge you get silent
+# `w/crlf` drift that `git status` hides (content normalises on add).
+#
+# Why this file exists: core.autocrlf=true is the Git-for-Windows SYSTEM
+# default and is disabled repo-locally, so with eol=lf enforced by
+# .gitattributes, your editor is now the only remaining source of line
+# endings for this repository. Without this file, Windows editors freely
+# write CRLF into files that must be LF.
+#
+# If you ever add a new eol= override to .gitattributes, mirror it here.
+# See skills/husky-hooks/references/ for the full rationale.
+
+root = true
+
+# Matches `* text=auto eol=lf` in .gitattributes - LF for all text.
+[*]
+end_of_line = lf
+charset = utf-8
+
+# Matches `*.bat|cmd|ps1 text eol=crlf` in .gitattributes.
+# These are Windows-native launchers and PowerShell scripts; they must stay
+# CRLF or Windows breaks them. Kept explicitly so an editor cannot "helpfully"
+# convert them to LF.
+[*.{bat,cmd,ps1}]
+end_of_line = crlf
+
+# Vendored minified bundles are marked binary (`-text`) in .gitattributes and
+# are never hand-edited. end_of_line is left unset so no editor rewrites them.
+[vendor/**]
+end_of_line = unset
+
+# NOTE - deliberately NOT set here, on purpose:
+#   trim_trailing_whitespace / insert_final_newline
+# Those are enforced authoritatively by `.husky/pre-commit` ->
+# `git diff --check --cached` (whitespace/conflict-marker gate) and by
+# Prettier (final newline) via lint-staged. Setting them here would edit
+# whitespace-sensitive test fixtures (cli/tests/fixtures/*) and would append
+# newlines to .husky/post-merge and .husky/post-rewrite, which are
+# intentionally single-line files with no trailing newline. Keep the EOL
+# policy here; let the hooks own whitespace.
