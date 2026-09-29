@@ -140,8 +140,8 @@
     "@babel/core": "7.29.7",
     "qs": "6.16.0",
     "colord": "2.9.4",
-    "fast-uri": "2.4.5",
-    "ip-address": "10.3.1",
+    "fast-uri": "2.4.7",
+    "ip-address": "10.5.0",
     "linkify-it": "5.0.2"
   },
   "devDependencies": {
