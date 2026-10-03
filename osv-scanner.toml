@@ -1,0 +1,22 @@
+# OSV-Scanner configuration.
+#
+# Read by the OpenSSF Scorecard "Vulnerabilities" check
+# (.github/workflows/scorecards.yml), which is reported into GitHub code
+# scanning as rule `VulnerabilitiesID`.
+#
+# Schema: https://google.github.io/osv-scanner/configuration/
+# File must sit next to the lockfile it applies to (package-lock.json).
+
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+reason = """
+braces <=3.0.3: stack-exhaustion denial of service via deeply nested glob
+patterns. Advisory published 2026-09-18; GitHub reports no
+first_patched_version and npm `latest` (3.0.3) is itself inside the
+vulnerable range, so no fixed release exists yet. The package is reached
+only through devDependency tooling (stylelint -> fast-glob/micromatch,
+workbox-cli -> chokidar, depcheck -> findup-sync) compiling glob patterns
+authored in this repository, never attacker-controlled input, and
+`npm audit --omit=dev` reports 0 vulnerabilities. Delete this entry as
+soon as upstream publishes a version above 3.0.3.
+"""
