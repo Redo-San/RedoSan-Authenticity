@@ -12,7 +12,14 @@ permissions:
 
 jobs:
   request-info:
-    if: github.actor != 'github-actions[bot]' && github.actor != 'dependabot[bot]'
+    # Skip contributor-task issues (good first issue / up-for-grabs): those are
+    # maintainer-authored, self-contained tasks with acceptance criteria, not bug
+    # reports, so asking the reporter for a page URL and repro steps is wrong.
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'dependabot[bot]' &&
+      !contains(github.event.issue.labels.*.name, 'good first issue') &&
+      !contains(github.event.issue.labels.*.name, 'up-for-grabs')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
