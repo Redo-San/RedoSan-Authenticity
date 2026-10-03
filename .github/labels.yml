@@ -26,6 +26,9 @@
 - name: good first issue
   color: "7057ff"
   description: Good for newcomers
+- name: hacktoberfest
+  color: "663399"
+  description: Accepted for Hacktoberfest contribution counts
 - name: help wanted
   color: "008672"
   description: Extra attention is needed
@@ -64,6 +67,9 @@
   color: "BFD4F2"
 - name: type/todo
   color: "006B75"
+- name: up-for-grabs
+  color: "15c213"
+  description: Available for anyone to pick up
 - name: needs-more-info
   color: "fd8b00"
   description: More information is needed to reproduce or assess this issue
