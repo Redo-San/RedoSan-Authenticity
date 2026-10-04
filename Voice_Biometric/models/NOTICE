@@ -2,7 +2,7 @@ Voice_Biometric model artifacts — NOTICE
 ========================================
 
 This directory ships third-party model/weight artifacts under their own
-licenses. The repository itself remains GPL-2.0; nothing here changes that.
+licenses. The repository itself remains GPL-2.0-or-later; nothing here changes that.
 
 1) ECAPA-TDNN speaker embedder (model/ecapa-speaker-v1.onnx,
    fbank-80x201-f32.bin)

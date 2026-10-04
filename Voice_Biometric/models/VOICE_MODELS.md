@@ -157,7 +157,7 @@ Modifications: converted to ONNX with a frozen SpeechBrain-compatible
 ```
 
 > The exact strings embedded in `NOTICE`/attribution files are finalized at Phase C1
-> (legal gate). Nothing here changes the GPL-2.0 license of the repository itself; the
+> (legal gate). Nothing here changes the GPL-2.0-or-later license of the repository itself; the
 > Apache-2.0/CC-BY-4.0 chain applies to the _model artifacts_ only, which is why they are
 > kept vendored with their own NOTICE rather than merged into the GPL source tree.
 
