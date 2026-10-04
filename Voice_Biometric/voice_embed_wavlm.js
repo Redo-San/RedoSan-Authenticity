@@ -60,8 +60,8 @@
  *                  VoxCeleb1+2 + Libri-Light + others; SV fine-tune).
  *   Model license: Apache-2.0 (Microsoft WavLM release and the conversion
  *                  package both carry an Apache-2.0 license).
- *   This file    : The wrapper/loader code in this repository is GPL-2.0.
- *                  GPL-2.0 covers OUR code, NOT the model weights —
+ *   This file    : The wrapper/loader code in this repository is GPL-2.0-or-later.
+ *                  GPL-2.0-or-later covers OUR code, NOT the model weights —
  *                  shipping this file does not change the Apache-2.0 terms
  *                  of the `model_quantized.onnx` weights.
  */

@@ -42,8 +42,8 @@
  *   Model license: The pre-trained *weights* are released by InsightFace for
  *                  NON-COMMERCIAL RESEARCH USE ONLY; commercial deployment
  *                  requires a separate commercial license from InsightFace.
- *   This file    : The wrapper/loader code in this repository is GPL-2.0.
- *                  GPL-2.0 covers OUR code, NOT the model weights — shipping
+ *   This file    : The wrapper/loader code in this repository is GPL-2.0-or-later.
+ *                  GPL-2.0-or-later covers OUR code, NOT the model weights — shipping
  *                  this file does not grant any commercial right to the
  *                  `w600k_mbf.onnx` weights.
  *   Usage here   : On-device, offline, non-commercial / personal authenticity

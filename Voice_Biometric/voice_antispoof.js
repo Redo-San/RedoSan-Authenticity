@@ -72,7 +72,7 @@
  *                  research note for full hashes and URLs.
  *   Upstream    : github.com/clovaai/aasist (MIT).
  *   Model license: MIT (upstream AASIST weights / HF export).
- *   This file    : wrapper/loader code is GPL-2.0. GPL-2.0 covers OUR
+ *   This file    : wrapper/loader code is GPL-2.0-or-later. GPL-2.0-or-later covers OUR
  *                  code, NOT the third-party model weights.
  */
 var VoiceAntiSpoof = {

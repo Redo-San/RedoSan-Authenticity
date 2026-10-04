@@ -24,9 +24,9 @@
  *   Artifact : `silero_vad.onnx` from runanywhere/silero-vad-v5 — byte-identical
  *              to upstream snakers4/silero-vad `silero_vad.onnx` (master).
  *              SHA-256 1a153a22…8788e3, 2 327 524 B, opset 16 (producer: spox).
- *              MIT licensed (more permissive than this repo's GPL-2.0; the
+ *              MIT licensed (more permissive than this repo's GPL-2.0-or-later; the
  *              weights are a separately-attributed runtime artifact, same
- *              pattern as the ECAPA-TDNN model — the wrapper here is GPL-2.0).
+ *              pattern as the ECAPA-TDNN model — the wrapper here is GPL-2.0-or-later).
  *   Inputs  : `input`  float32 [?,?]  — 64 context samples + 512 pcm samples
  *                                       (= 576) per step at 16 kHz.
  *              `state`  float32 [2,?,128] — LSTM hidden/cell state [2,1,128],

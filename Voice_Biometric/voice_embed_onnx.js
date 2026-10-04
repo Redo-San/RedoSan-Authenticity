@@ -56,8 +56,8 @@
  *                  2106.04624). Weights derived from the upstream release.
  *   Model license: Apache-2.0 (upstream SpeechBrain model and the ONNX
  *                  conversion package carry an Apache-2.0 license).
- *   This file    : The wrapper/loader code in this repository is GPL-2.0.
- *                  GPL-2.0 covers OUR code, NOT the model weights —
+ *   This file    : The wrapper/loader code in this repository is GPL-2.0-or-later.
+ *                  GPL-2.0-or-later covers OUR code, NOT the model weights —
  *                  shipping this file does not change the Apache-2.0 terms
  *                  of the `ecapa-speaker-v1.onnx` weights.
  */
