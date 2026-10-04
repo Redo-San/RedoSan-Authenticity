@@ -89,6 +89,11 @@ try {
     "utf8",
   );
   vm.runInThisContext(hashingSrc, { filename: "hashing.js" });
+  const perceptualSrc = fs.readFileSync(
+    path.join(__dirname, "..", "..", "Fingerprint", "hashing_perceptual.js"),
+    "utf8",
+  );
+  vm.runInThisContext(perceptualSrc, { filename: "hashing_perceptual.js" });
 } finally {
   console.log = _origLog;
   console.warn = _origWarn;
