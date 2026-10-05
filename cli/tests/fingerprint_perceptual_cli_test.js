@@ -54,4 +54,25 @@ describe("CLI fingerprint — perceptual hashes", () => {
       "non-image input should not produce perceptual hashes",
     );
   });
+
+  // hashing.js verifies BLAKE3 inside an async IIFE, so its load-time log
+  // fires after the CLI's suppression blocks have ended. A stray line on
+  // stdout makes `redosan fingerprint --json | jq` fail to parse.
+  it("emits pure JSON on stdout for --json", () => {
+    const r = run(["fingerprint", PNG, "--json"]);
+    assert.equal(r.status, 0, r.stderr || "process failed");
+
+    let parsed;
+    try {
+      parsed = JSON.parse(r.stdout);
+    } catch (error) {
+      assert.fail(`stdout is not valid JSON: ${error.message}\n${r.stdout}`);
+    }
+    assert.ok(parsed.hashes, "parsed JSON should carry hashes");
+    assert.ok(
+      parsed.perceptual_hashes,
+      "parsed JSON should carry perceptual_hashes",
+    );
+    assert.equal(r.stderr, "", `stderr should be empty: ${r.stderr}`);
+  });
 });
