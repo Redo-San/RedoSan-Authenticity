@@ -1,0 +1,16 @@
+RedoSan Authenticity is a dual-use security research toolkit.
+
+It contains software that can be used for both defensive and offensive
+purposes, including watermarking, fingerprinting, forensic analysis and
+digital-identity tooling. It is published in accordance with npm's
+Dual-Use Content Policy.
+
+Intended uses include: media authenticity verification, provenance
+research, digital forensics education, and security testing of content
+you own or are authorised to test.
+
+RedoSan Authenticity must not be used to produce forgeries, to impersonate
+others, or to violate any applicable law. Users are solely responsible
+for how they use this software.
+
+License: GPL-2.0-or-later (see LICENSE).
