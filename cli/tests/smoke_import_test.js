@@ -43,3 +43,25 @@ describe("CLI smoke (real binary)", () => {
     );
   });
 });
+
+describe("cli/tools — tool lookup is not shell-interpreted", () => {
+  it("does not execute shell metacharacters passed as a tool name", () => {
+    const tools = require("../tools");
+    const marker = path.join(
+      os.tmpdir(),
+      `redosan-which-injection-${process.pid}`,
+    );
+    const injected = `definitely-missing-tool & touch ${marker} & echo exiftool`;
+    assert.equal(tools.checkTool(injected), null);
+    assert.ok(
+      !fs.existsSync(marker),
+      "the injected command must never reach a shell",
+    );
+  });
+
+  it("still returns a path or null for a real tool name", () => {
+    const tools = require("../tools");
+    const found = tools.checkTool("exiftool");
+    assert.ok(found === null || typeof found === "string");
+  });
+});

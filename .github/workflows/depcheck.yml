@@ -71,19 +71,23 @@ jobs:
 
             const body = '## Depcheck\n\n' + lines.join('\n');
 
-            const { data: comments } = await github.rest.issues.listComments({
-              ...context.repo, issue_number: context.issue.number
-            });
-            const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('## Depcheck')
-            );
+            try {
+              const { data: comments } = await github.rest.issues.listComments({
+                ...context.repo, issue_number: context.issue.number
+              });
+              const existing = comments.find(c =>
+                c.user.type === 'Bot' && c.body.includes('## Depcheck')
+              );
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                ...context.repo, comment_id: existing.id, body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                ...context.repo, issue_number: context.issue.number, body
-              });
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  ...context.repo, comment_id: existing.id, body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  ...context.repo, issue_number: context.issue.number, body
+                });
+              }
+            } catch (err) {
+              core.warning('Depcheck report could not be posted: ' + (err && err.message ? err.message : String(err)));
             }

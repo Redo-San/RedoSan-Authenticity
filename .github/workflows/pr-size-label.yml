@@ -9,6 +9,7 @@ env:
 
 permissions:
   pull-requests: write
+  issues: write
 
 jobs:
   size:
@@ -51,21 +52,27 @@ jobs:
 
             const names = allLabels.map(l => l.name);
             if (!names.includes(label)) {
-              await github.rest.issues.addLabels({
-                ...context.repo,
-                issue_number: context.issue.number,
-                labels: [label]
-              }).catch(async () => {
-                await github.rest.issues.createLabel({
-                  ...context.repo,
-                  name: label,
-                  color: total < 50 ? 'bfe5bf' : total < 300 ? 'fef2c0' : 'f9d0c4',
-                  description: total < 50 ? 'Small PR (< 50 lines)' : total < 300 ? 'Medium PR (50-299 lines)' : 'Large PR (300+ lines)'
-                });
+              try {
                 await github.rest.issues.addLabels({
                   ...context.repo,
                   issue_number: context.issue.number,
                   labels: [label]
                 });
-              });
+              } catch {
+                try {
+                  await github.rest.issues.createLabel({
+                    ...context.repo,
+                    name: label,
+                    color: total < 50 ? 'bfe5bf' : total < 300 ? 'fef2c0' : 'f9d0c4',
+                    description: total < 50 ? 'Small PR (< 50 lines)' : total < 300 ? 'Medium PR (50-299 lines)' : 'Large PR (300+ lines)'
+                  });
+                  await github.rest.issues.addLabels({
+                    ...context.repo,
+                    issue_number: context.issue.number,
+                    labels: [label]
+                  });
+                } catch (createErr) {
+                  core.warning('Size label could not be applied: ' + (createErr && createErr.message ? createErr.message : String(createErr)));
+                }
+              }
             }
