@@ -1321,4 +1321,6 @@ window.__I18N_DATA.es = {
     "Embedder cambiado a {0}. Vuelva a ejecutar para regenerar los identificadores.",
   "voice.limitation.lowMagnitude":
     "El embedding produjo una magnitud de señal inesperadamente baja; la entrada puede no haber contenido habla clara. Trate los identificadores resultantes como de baja confianza.",
+,
+    "footer.classic_mode": "Versión clásica"
 };
