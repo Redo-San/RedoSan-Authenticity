@@ -2271,11 +2271,23 @@ if (typeof window !== "undefined")
       tvAbc ===
         "56887470a385e413002515c5db4a44f41258bc6604b436aef25840d65888d895"
     ) {
-      console.log("BLAKE3 self-check passed");
+      // stdout is reserved for program output. This module is also loaded by
+      // the CLI (`redosan fingerprint`, `redosan metadata`), where an async
+      // load-time log lands after their suppression blocks have ended and
+      // corrupts `--json`. Report the success only where it is a console
+      // diagnostic rather than a data stream.
+      if (
+        typeof process === "undefined" ||
+        !process.versions ||
+        !process.versions.node
+      ) {
+        console.log("BLAKE3 self-check passed");
+      }
     } else {
+      // Failure diagnostics belong on stderr so they never collide with data.
       console.warn("BLAKE3 implementation deviates from expected");
-      console.log("Empty input hash:", tvEmpty, "(expected 292d4e1d...)");
-      console.log("ABC input hash:", tvAbc, "(expected 56887470...)");
+      console.warn("Empty input hash:", tvEmpty, "(expected 292d4e1d...)");
+      console.warn("ABC input hash:", tvAbc, "(expected 56887470...)");
     }
   } catch (error) {
     console.warn("BLAKE3 self-check failed:", error.message);
