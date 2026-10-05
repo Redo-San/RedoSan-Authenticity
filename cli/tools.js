@@ -2,7 +2,7 @@
 // Each tool is wrapped with a JS fallback so nothing breaks when tools are missing.
 // Load via: const tools = require('./tools');
 
-const { execFileSync, execSync } = require("node:child_process");
+const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
@@ -17,7 +17,7 @@ const os = require("node:os");
 function _findTool(name) {
   try {
     const cmd = process.platform === "win32" ? "where" : "which";
-    return execSync(`${cmd} ${name}`, { stdio: ["ignore", "pipe", "ignore"] })
+    return execFileSync(cmd, [name], { stdio: ["ignore", "pipe", "ignore"] })
       .toString()
       .trim()
       .split("\n", 1)[0]
