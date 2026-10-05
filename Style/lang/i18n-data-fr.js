@@ -1330,4 +1330,5 @@ window.__I18N_DATA.fr = {
     "Embedder changé pour {0}. Relancez pour régénérer les identifiants.",
   "voice.limitation.lowMagnitude":
     "L'embedding a produit une amplitude de signal étonnamment faible ; l'entrée n'a peut-être pas contenu de parole claire. Considérez les identifiants obtenus comme à faible confiance.",
+  "footer.classic_mode": "Version classique",
 };

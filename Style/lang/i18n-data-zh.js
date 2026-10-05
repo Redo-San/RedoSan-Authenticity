@@ -1241,4 +1241,5 @@ window.__I18N_DATA.zh = {
     "嵌入器已切换为 {0}。请重新运行以重新生成标识符。",
   "voice.limitation.lowMagnitude":
     "嵌入产生了意料之外的低信号幅度；输入可能未包含清晰的语音。请将生成的标识符视为低置信度。",
+  "footer.classic_mode": "经典版",
 };

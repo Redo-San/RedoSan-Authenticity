@@ -1290,4 +1290,5 @@ window.__I18N_DATA.en = {
     "Embedder switched to {0}. Re-run to regenerate identifiers.",
   "voice.limitation.lowMagnitude":
     "The embedding produced an unexpectedly low signal magnitude; the input may not have contained clear speech. Treat the resulting identifiers as low-confidence.",
+  "footer.classic_mode": "Classic Version",
 };
