@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "CLI for RedoSan Authenticity — digital watermarking, fingerprinting, metadata & timestamp tools",
   "bin": {
-    "redosan": "./cli/index.js"
+    "redosan": "cli/index.js"
   },
   "scripts": {
     "start": "node cli/index.js",
