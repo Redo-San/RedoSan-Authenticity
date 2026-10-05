@@ -1330,6 +1330,5 @@ window.__I18N_DATA.de = {
     "Embedder auf {0} umgestellt. Neu ausführen, um die Identifikatoren neu zu erzeugen.",
   "voice.limitation.lowMagnitude":
     "Die Einbettung erzeugte eine unerwartet niedrige Signalamplitude; der Eingang enthielt möglicherweise keine deutliche Sprache. Behandeln Sie die erzeugten Identifikatoren als niedrig konfident.",
-,
     "footer.classic_mode": "Klassische Version"
 };
