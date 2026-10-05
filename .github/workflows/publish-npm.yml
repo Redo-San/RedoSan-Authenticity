@@ -1,0 +1,85 @@
+name: Publish npm
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions: {}
+
+concurrency:
+  group: publish-npm-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Stage package on npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify tag matches package.json version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          check-latest: true
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      # `npm stage publish` (staged publishing) is required by the npm Dual-Use
+      # Content Policy: dual-use packages may not be published directly via
+      # trusted publishing/OIDC, only staged. That subcommand needs an npm CLI
+      # >= 11.15.0, and Node 24 ships npm >= 11.16.0; `check-latest` above
+      # always selects the newest 24.x, so the bundled CLI is verified instead
+      # of installing one ad-hoc (zizmor `adhoc-packages`: installing outside a
+      # lockfile, which is also what made `npm@latest` an unpinned supply-chain
+      # dependency).
+      - name: Verify staged publishing support
+        run: |
+          npm -v
+          if ! npm stage publish --help >/dev/null 2>&1; then
+            echo "::error::npm stage publish requires npm >= 11.15.0 (staged publishing, GA 2026-05-22)."
+            exit 1
+          fi
+
+      - name: Install system deps (canvas)
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
+
+      - name: Install npm deps
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci
+
+      - name: Run check gate
+        run: npm run check
+
+      - name: npm audit (production deps)
+        run: npm run audit:prod
+
+      - name: Stage package (defers 2FA to approval)
+        run: npm stage publish --provenance
+
+      - name: Remind maintainer to approve
+        run: |
+          echo "::notice title=Package staged::Run 'npm stage list' then 'npm stage approve <stage-id>' with 2FA to publish."

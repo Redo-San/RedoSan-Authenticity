@@ -35,11 +35,25 @@ jobs:
             const run = require('child_process').execSync;
             const base = context.payload.pull_request.base.sha;
 
-            const changed = run('git diff --name-only --diff-filter=ACMRT ' + base + '...HEAD -- "package.json" "package-lock.json"', { encoding: 'utf8' })
-              .trim().split('\n').filter(Boolean);
+            const num = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ ...context.repo, issue_number: num });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes('npm audit Checker'));
 
-            if (changed.length === 0) {
-              console.log('No package files changed. Skipping audit report.');
+            // Only report when the dependency GRAPH changed. A metadata-only
+            // edit (repository, homepage, files, keywords, contentPolicy, ...)
+            // leaves `npm audit` output identical to the base branch, so
+            // commenting on it would repeat advice that does not apply to the
+            // change under review.
+            const depKeys = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies', 'overrides'];
+            let graphChanged = run('git diff --name-only ' + base + '...HEAD -- package-lock.json', { encoding: 'utf8' }).trim().length > 0;
+            if (!graphChanged) {
+              const basePkg = JSON.parse(run('git show ' + base + ':package.json', { encoding: 'utf8' }));
+              const headPkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              graphChanged = depKeys.some((k) => JSON.stringify(basePkg[k] || {}) !== JSON.stringify(headPkg[k] || {}));
+            }
+            if (!graphChanged) {
+              if (existing) await github.rest.issues.deleteComment({ ...context.repo, comment_id: existing.id });
+              console.log('Dependency graph unchanged - skipping audit report.');
               return;
             }
 
@@ -54,18 +68,25 @@ jobs:
             const vulns = report?.metadata?.vulnerabilities || {};
             const total = Object.values(vulns).reduce((a, b) => a + b, 0);
 
-            const num = context.issue.number;
-            const { data: comments } = await github.rest.issues.listComments({ ...context.repo, issue_number: num });
-            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes('npm audit Checker'));
-
             if (total === 0 && (!report?.vulnerabilities || Object.keys(report.vulnerabilities).length === 0)) {
               if (existing) await github.rest.issues.deleteComment({ ...context.repo, comment_id: existing.id });
               console.log('✅ No vulnerabilities found.');
               return;
             }
 
+            // `npm audit fix` (without --force) only applies non-breaking
+            // fixes, so say so honestly when it would be a no-op.
+            const nonBreakingFixes = Object.values(report?.vulnerabilities || {})
+              .filter((v) => v.fixAvailable === true).length;
+
+            let prodTotal = null;
+            try {
+              const prodOut = run('npm audit --omit=dev --json 2>&1; exit 0', { encoding: 'utf8' });
+              prodTotal = JSON.parse(prodOut)?.metadata?.vulnerabilities?.total ?? 0;
+            } catch { /* report without the production line */ }
+
             const table = '| Severity | Count |\n|----------|------|\n' +
-              ['critical', 'high', 'moderate', 'low'].map(s => `| ${s} | ${vulns[s] || 0} |`).join('\n') +
+              ['critical', 'high', 'moderate', 'low'].map(s => `| ${s} | ${vulns[s] || 0}`).join('\n') +
               '\n\n**Total:** ' + total + ' vulnerabilities';
 
             let top = '';
@@ -76,8 +97,15 @@ jobs:
                 ).join('\n');
             }
 
-            const body = '## 🛡️ npm audit Checker\n\n' + table + top +
-              '\n\n_Run `npm audit fix` locally to address._';
+            const prod = prodTotal === null ? '' :
+              `\n\n**Production (\`npm audit --omit=dev\`): ${prodTotal} vulnerabilities.**`;
+            const advice = nonBreakingFixes > 0
+              ? `\n\n_Run \`npm audit fix\` locally to address ${nonBreakingFixes} finding(s)._`
+              : '\n\n`npm audit fix` would make **no changes** here: every remaining finding ' +
+                'needs a semver-major bump (`npm audit fix --force`), which is a separate, ' +
+                'deliberate upgrade rather than a drop-in fix.';
+
+            const body = '## 🛡️ npm audit Checker\n\n' + table + top + prod + advice;
 
             if (existing) {
               await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
