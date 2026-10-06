@@ -42,12 +42,32 @@ jobs:
             .match(/\b(GHSA-[\w-]+|CVE-\d{4}-\d+)\b/g) || [];
           const allowed = new Set(exceptions);
           const unexcepted = [];
+          // npm audit puts the advisory URL on `via` leaf objects, not on the
+          // vulnerability entry itself; chain findings reference each other by
+          // package name, so walk the links to collect the root advisory ids.
+          const collectRootIds = (node, seen) => {
+            if (typeof node === 'string') {
+              if (seen.has(node)) return [];
+              seen.add(node);
+              const target = (report.vulnerabilities || {})[node];
+              return target ? collectRootIds(target, seen) : [];
+            }
+            if (Array.isArray(node)) return node.flatMap((item) => collectRootIds(item, seen));
+            if (node && typeof node === 'object') {
+              const own =
+                typeof node.url === 'string' && node.url.includes('advisories/')
+                  ? [node.url.replace(/.*advisories\//, '')]
+                  : [];
+              return own.concat(collectRootIds(node.via || [], seen));
+            }
+            return [];
+          };
           for (const id of Object.keys(report.vulnerabilities || {})) {
             const vuln = report.vulnerabilities[id];
             if (vuln.severity !== 'high' && vuln.severity !== 'critical') continue;
-            const advisoryId = vuln.url && vuln.url.replace(/.*advisories\//, '');
-            if (advisoryId && allowed.has(advisoryId)) continue;
-            unexcepted.push(`${advisoryId || 'n/a'} (${id}) ${vuln.severity} ${vuln.range}`);
+            const roots = [...new Set(collectRootIds(vuln, new Set()))];
+            if (roots.length > 0 && roots.every((r) => allowed.has(r))) continue;
+            unexcepted.push(`${roots.join(', ') || 'n/a'} (${id}) ${vuln.severity} ${vuln.range}`);
           }
           if (unexcepted.length) {
             console.error('High/critical advisories WITHOUT an exception entry (fix or document in security/vulnerability-exceptions.md):');
