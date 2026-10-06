@@ -26,7 +26,34 @@
 
 <!-- BOT:START whats-new -->
 
-## What's New in v1.7.1
+## What's New in v2.0.0
+
+- **npm-ready CLI** — package fully prepared for npm publication (bin wiring, metadata, staged-publish workflow with tag/version verification), version aligned to 2.0.0
+- **Security hardening** — CLI tool names no longer pass through a shell (command-injection fix), perceptual hashes wired into the fingerprint CLI, patched `katex`/`smol-toml`/MCP SDK overrides, Scorecard advisories cleared, two-tier npm-audit policy
+- **Contribution readiness** — full GPL-2.0 text, Code of Conduct, issue templates, discovery labels, 12 curated `good first issue` tasks; listed on up-for-grabs.net, CodeTriage, and goodfirstissue.org
+- **Community** — first external contributions merged (ESLint DOM configuration, footer translations), fork-safe PR bots, issue-hygiene automation
+- **Quality** — 107 unit test files + 59 E2E suites (6,200+ tests), 77 CI workflows, knip/depcheck ignore-policy alignment, two-phase release workflow with changelog + SBOM
+
+<details>
+<summary><b>v1.9</b> — Voice Biometric, README Automation</summary>
+
+- **Voice Biometric** — New in-browser voice tool: 3-minute recorder with VAD, ECAPA/WavLM ONNX embeddings, anti-spoof + liveness, encrypted template protection, C2PA audio provenance; cross-origin isolation with proxy-worker fallback
+- **README auto-update bot** — generated sections (testing stats, workflow tables, release summaries) stay in sync automatically
+
+</details>
+
+<details>
+<summary><b>v1.8</b> — Iris Biometric i18n, Quality Gates, Release Automation</summary>
+
+- **Iris Biometric i18n** — full 8-language support for the iris tool plus standalone-page translation loading
+- **Quality gates** — Lighthouse + performance category gates, Stryker mutation testing, c8 coverage gate, two-tier npm-audit policy
+- **Release automation** — release-drafter, git-cliff changelogs, SBOM generation, slash-command bot, uptime monitoring
+- **Tooling** — oxlint pre-commit gate, husky hooks (whitespace / large-file / pre-push / deps refresh), dev tooling centralized in `.tools/Developer_Toolkit`
+
+</details>
+
+<details>
+<summary><b>v1.7.1</b> — Face Biometric Hardening, i18n, SEO & Security</summary>
 
 - **Face Biometric hardening** — WebAuthn PRF vault (passphrase replaced), session-scoped consent, anti-spoof + liveness, ArcFace ONNX, auto-register passkey; 100% test coverage (Face_Biometric + E2E pipeline/UI specs)
 - **i18n keyless fallback** — Google Web Translate + MyMemory fallback for missing keys (no API key required); translation bot regression fix; all 125 `face.*` keys translated to Arabic
@@ -34,6 +61,8 @@
 - **Security** — CodeQL XSS fix (`iris_ui.js`), SECURITY.md disclosure policy, Dependabot fast-uri/qs patches (0 npm vulnerabilities remaining), supply chain bumps
 - **Responsive** — classic media-query syntax for legacy browsers; skip SW in in-app webviews
 - **CI** — conventional PR title enforcement, prettier before commit, all Actions SHAs bumped
+
+</details>
 
 <details>
 <summary><b>v1.7</b> — Face Biometric, Pixel Injection Reliability, Security Hardening</summary>
@@ -69,7 +98,7 @@
 
 ---
 
-**RedoSan Authenticity** is a 100% client-side digital authenticity toolkit. Embed invisible watermarks, timestamp with OpenTimestamps, sign C2PA provenance metadata, cryptographically fingerprint files, inject pixel-level messages, and watermark documents — all without uploading data to any server.
+**RedoSan Authenticity** is a 100% client-side digital authenticity toolkit. Embed invisible watermarks, timestamp with OpenTimestamps, sign C2PA provenance metadata, cryptographically fingerprint files, inject pixel-level messages, watermark documents, and register or verify face, voice, and iris biometrics entirely on-device — all without uploading data to any server.
 
 ---
 
@@ -90,6 +119,8 @@
 | **Digital Certificate**          | Generate PDF/DOCX/EPUB certificates with QR verification, identity, social links                                                                 |
 | **File Converter**               | Browser-side image/audio/video-to-audio/document/subtitle conversion                                                                             |
 | **Face Biometric**               | WebAuthn PRF vault, session-scoped consent, anti-spoof + liveness, ArcFace ONNX; register & verify face descriptors for visual rights protection |
+| **Iris Biometric**               | In-browser iris capture with quality assessment, liveness/anti-spoof, encrypted template protection, and on-device storage                       |
+| **Voice Biometric**              | 3-minute recorder with VAD, ECAPA/WavLM ONNX embeddings, anti-spoof + liveness, template protection, C2PA audio provenance                       |
 | **Forensic Analyzer**            | ELA, noise inconsistency, JPEG structure, copy-move detection                                                                                    |
 | **ID Forge**                     | Generate UUID v4/v7, ULID, NanoID, SWHID; copy/download (JSON/CSV/TXT/XML/PDF/DOCX)                                                              |
 | **Removal Tools**                | Strip watermarks, fingerprints, metadata, EXIF, thumbnails, GPS from images/audio                                                                |
@@ -288,20 +319,22 @@ The project supports both SPA and MPA modes:
 
 ```text
 RedoSan-Authenticity/
-├── index.html                 ← SPA entry (hash-based routing, 4743 lines)
+├── index.html                 ← SPA entry (hash-based routing, 2507 lines)
 ├── sw.js                      ← Service Worker (cache whitelist, threat blocking)
 ├── 404.html                   ← Offline + threat detection page
 ├── Style/
-│   ├── pages/                 ← 21 standalone MPA pages
+│   ├── pages/                 ← 23 standalone MPA pages
 │   │   ├── watermark/index.html
 │   │   ├── audio-watermark/index.html
 │   │   ├── fingerprint/index.html
 │   │   ├── c2pa/index.html
 │   │   ├── did/index.html
 │   │   ├── face-biometric/index.html
+│   │   ├── iris-biometric/index.html
+│   │   ├── voice-biometric/index.html
 │   │   ├── document-watermark/index.html
 │   │   ├── pixel-injection/index.html
-│   │   └── ... (22 total)
+│   │   └── ... (23 total)
 │   ├── mpa-router.js          ← AJAX navigation with audio persistence
 │   ├── music-player.js        ← Background music with first-click activation
 │   ├── i18n.js                ← Translation system (8 languages)
@@ -309,7 +342,7 @@ RedoSan-Authenticity/
 │   ├── shared.js              ← Common utilities (download, canvas, DOM)
 │   ├── shared_validation.js   ← File validation (6 layers)
 │   ├── music-player.css       ← Audio player styles
-│   ├── style.css              ← Main styles (2998 lines)
+│   ├── style.css              ← Main styles (3668 lines)
 │   ├── responsive.css         ← Mobile breakpoints
 │   ├── rtl.css                ← RTL overrides for Arabic
 │   └── lang/                  ← i18n data files (8 languages)
@@ -356,6 +389,10 @@ RedoSan-Authenticity/
 │   ├── face_engine.js            ← Detection + matching
 │   ├── face_registry.js          ← Registered face storage
 │   └── face_ui.js                ← UI handlers
+├── Iris_Biometric/
+│   └── ...                    ← Capture, quality, liveness, template protection
+├── Voice_Biometric/
+│   └── ...                    ← VAD, ONNX embeddings, anti-spoof, provenance
 ├── Removal_Tools/
 │   └── ...                    ← Image + audio sanitization
 ├── Assistant/
@@ -366,8 +403,8 @@ RedoSan-Authenticity/
 │   ├── utils.js               ← CLI polyfills + file helpers
 │   ├── commands/              ← 12 command implementations
 │   ├── lib/id_forge.js        ← CLI ID generation
-│   └── tests/                 ← 68 test files (3,500+ tests)
-└── .github/workflows/         ← 40+ CI/CD workflows
+│   └── tests/                 ← 107 unit + 59 E2E test files (6,200+ tests)
+└── .github/workflows/         ← 77 CI/CD workflows
 ```
 
 ### MPA Navigation Flow
@@ -422,6 +459,8 @@ Bypass with `--allow-dangerous` for testing trusted files.
 ```bash
 npm test                         # All tests
 npm run test:core                # Core unit tests
+npm run test:face                # Face biometric suite
+npm run test:voice               # Voice biometric suite
 npm run test:pixel               # Pixel injection
 npm run test:c2pa                # C2PA + CBOR
 npm run test:audio               # Audio watermark
@@ -467,6 +506,7 @@ The web app includes a two-layer security system:
 
 - **100% client-side** — No files are ever uploaded to any server
 - All processing happens in your browser (Web App) or your local machine (CLI)
+- **Biometrics stay on-device** — face, voice, and iris templates are generated, stored encrypted, and matched locally; they never leave your device
 - No analytics, no tracking, no telemetry
 - Open source — audit the code yourself
 
@@ -474,26 +514,27 @@ The web app includes a two-layer security system:
 
 ## Technology Stack
 
-| Component          | Technology                                                        |
-| ------------------ | ----------------------------------------------------------------- |
-| **UI**             | Vanilla HTML/CSS/JS (no frameworks)                               |
-| **Icons**          | Font Awesome 5                                                    |
-| **CLI**            | Node.js 20+, Commander.js                                         |
-| **Testing**        | `node:test` (68 files, 3,500+ tests) + Playwright (58 E2E suites) |
-| **CI**             | GitHub Actions (59 workflows, Node 22/24 matrix)                  |
-| **PDF Export**     | jsPDF + PDFKit                                                    |
-| **DOCX Export**    | docx                                                              |
-| **EPUB Export**    | Custom HTML-based generator                                       |
-| **QR Codes**       | QRious                                                            |
-| **ZIP**            | JSZip                                                             |
-| **C2PA**           | Custom ECDSA P-256 implementation                                 |
-| **Canvas (CLI)**   | `canvas` node package                                             |
-| **Audio Encoding** | Pure-JS PCM, lamejs (MP3), MediaRecorder                          |
-| **Video→Audio**    | ffmpeg.wasm v0.11.6                                               |
-| **Linting**        | ESLint + Biome + Stylelint + Markdownlint + CSpell                |
-| **Security**       | Semgrep, TruffleHog, CodeQL, npm audit                            |
-| **Accessibility**  | Pa11y, axe-core/Playwright                                        |
-| **Performance**    | Lighthouse CI, size-limit                                         |
+| Component          | Technology                                                              |
+| ------------------ | ----------------------------------------------------------------------- |
+| **UI**             | Vanilla HTML/CSS/JS (no frameworks)                                     |
+| **Icons**          | Font Awesome 5                                                          |
+| **CLI**            | Node.js 20+, Commander.js                                               |
+| **Testing**        | `node:test` (107 unit files, 6,200+ tests) + Playwright (59 E2E suites) |
+| **CI**             | GitHub Actions (77 workflows, Node 22/24 matrix)                        |
+| **Biometrics**     | In-browser ONNX models (ArcFace, ECAPA, WavLM) + WebCrypto              |
+| **PDF Export**     | jsPDF + PDFKit                                                          |
+| **DOCX Export**    | docx                                                                    |
+| **EPUB Export**    | Custom HTML-based generator                                             |
+| **QR Codes**       | QRious                                                                  |
+| **ZIP**            | JSZip                                                                   |
+| **C2PA**           | Custom ECDSA P-256 implementation                                       |
+| **Canvas (CLI)**   | `canvas` node package                                                   |
+| **Audio Encoding** | Pure-JS PCM, lamejs (MP3), MediaRecorder                                |
+| **Video→Audio**    | ffmpeg.wasm v0.11.6                                                     |
+| **Linting**        | ESLint + Biome + Stylelint + Markdownlint + CSpell                      |
+| **Security**       | Semgrep, TruffleHog, CodeQL, npm audit                                  |
+| **Accessibility**  | Pa11y, axe-core/Playwright                                              |
+| **Performance**    | Lighthouse CI, size-limit                                               |
 
 ---
 
@@ -507,7 +548,9 @@ Contributions are welcome. The project is in active development on `main`.
 4. Push: `git push origin feat/my-feature`
 5. Open a Pull Request to `main`
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines, and [SECURITY.md](https://github.com/Redo-San/RedoSan-Authenticity/blob/main/.github/SECURITY.md) for the security policy.
+New contributors are welcome — start from the [good first issue](https://github.com/Redo-San/RedoSan-Authenticity/labels/good%20first%20issue) list (12 curated tasks), and read the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines, and [SECURITY.md](SECURITY.md) for the security policy.
 
 ### Development Setup
 
