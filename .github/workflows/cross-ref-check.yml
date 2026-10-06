@@ -79,6 +79,9 @@ jobs:
             const wfDir = '.github/workflows';
             const newWfs = changed.filter(f => f.startsWith(wfDir) && f.endsWith('.yml'));
             for (const wf of newWfs) {
+              // deleted files are "changed" too; read() would return '' and
+              // report a bogus missing-env warning for a file that is gone
+              if (!fs.existsSync(wf)) continue;
               const content = read(wf);
               if (!content.includes('FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true')) {
                 warn(`CrossRef: \`${wf}\` missing \`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true\``);

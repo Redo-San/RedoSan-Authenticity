@@ -30,16 +30,15 @@ const WORKFLOW_CATEGORIES = [
   },
   {
     name: "Maintenance",
-    re: /broken-links|translate|stale|todo-issues|milestone|lock-closed|request-info|release|dependabot|welcome|uptime|copilot|slash-command|minimal-dispatch/,
+    re: /broken-links|translate|stale|todo-issues|milestone|lock-closed|issue-compliance|duplicate-issues|spam-guard|release|dependabot|welcome|uptime|copilot|slash-command|minimal-dispatch/,
   },
   { name: "Core", re: /./ },
 ];
 
 /**
  * Parse CLI flags (both `--flag value` and `--flag=value` forms).
- *
  * @param {string[]} argv - Raw command-line arguments.
- * @returns {Object} Normalized CLI arguments merged with environment defaults.
+ * @returns {object} Normalized CLI arguments merged with environment defaults.
  */
 function parseArgs(argv) {
   const args = { readme: "README.md", repoRoot: process.cwd() };
@@ -69,7 +68,6 @@ function parseArgs(argv) {
 
 /**
  * Recursively collect every file path below a directory.
- *
  * @param {string} dir - Directory to walk.
  * @param {string[]} [out] - Accumulator for collected file paths.
  * @returns {string[]} Full paths of every file under `dir`.
@@ -89,7 +87,6 @@ function walk(dir, out = []) {
 
 /**
  * Tell whether a file name follows the unit test naming rules.
- *
  * @param {string} name - File base name.
  * @returns {boolean} True when the name matches a unit test pattern.
  */
@@ -99,7 +96,6 @@ function isUnitFile(name) {
 
 /**
  * Count test declarations (`test(...)`/`it(...)`) inside a test file.
- *
  * @param {string} file - Path to a test file.
  * @returns {number} Number of detected test declarations.
  */
@@ -112,7 +108,6 @@ function countDeclarations(file) {
 
 /**
  * Compute the testing statistics for the repository.
- *
  * @param {string} repoRoot - Repository root directory.
  * @returns {{unit: number, e2e: number, tests: number, testsRounded: number}} Testing stats.
  */
@@ -138,7 +133,6 @@ function computeStats(repoRoot) {
 
 /**
  * Convert a hyphenated workflow file name into a display label.
- *
  * @param {string} basename - Workflow base name without extension.
  * @returns {string} Human-readable display name.
  */
@@ -151,7 +145,6 @@ function displayName(basename) {
 
 /**
  * Group workflow file names by their matching category.
- *
  * @param {string[]} files - Workflow file names.
  * @returns {Map<string, string[]>} Category name to display names.
  */
@@ -167,7 +160,6 @@ function categorize(files) {
 
 /**
  * Build the "Testing" summary paragraph.
- *
  * @param {{unit: number, e2e: number, tests: number, testsRounded: number}} stats - Testing stats.
  * @returns {string} Markdown paragraph for the Testing section.
  */
@@ -183,7 +175,6 @@ function testingBlock(stats) {
 
 /**
  * Build the CI/CD workflows table section.
- *
  * @param {string} repoRoot - Repository root directory.
  * @returns {string} Markdown for the workflows section.
  */
@@ -234,7 +225,6 @@ function bulletsFromRelease(body) {
 
 /**
  * Turn bullet lines into a short archive summary.
- *
  * @param {string[]} bullets - Bullet lines of the current active version.
  * @returns {string} Short summary label for the archive.
  */
@@ -250,7 +240,6 @@ function summaryFromBullets(bullets) {
 
 /**
  * Build an archive `<details>` block for a previous version.
- *
  * @param {string} version - Version label.
  * @param {string} summary - Short summary label.
  * @param {string[]} bullets - Bullet lines of that version.
@@ -269,7 +258,6 @@ function detailsBlock(version, summary, bullets) {
 
 /**
  * Compute the new "What's New" region content, archiving the previous version.
- *
  * @param {string} currentInner - Content between the markers.
  * @param {string} releaseVersion - New release version.
  * @param {string} [releaseBody] - Release body for the new bullets.
@@ -317,7 +305,6 @@ function whatsNewBlock(currentInner, releaseVersion, releaseBody) {
 
 /**
  * Build one BOT marker comment.
- *
  * @param {string} id - Marker id.
  * @param {boolean} [end] - True for the END marker.
  * @returns {string} HTML comment marker.
@@ -328,7 +315,6 @@ function marker(id, end) {
 
 /**
  * Extract the content between a marker pair.
- *
  * @param {string} text - Full document.
  * @param {string} id - Marker id.
  * @returns {string} Content between the START and END markers.
@@ -346,7 +332,6 @@ function regionContent(text, id) {
 
 /**
  * Replace the content between a marker pair.
- *
  * @param {string} text - Full document.
  * @param {string} id - Marker id.
  * @param {string} content - New region content.

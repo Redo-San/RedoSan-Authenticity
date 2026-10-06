@@ -1,0 +1,132 @@
+name: Duplicate Issues
+
+on:
+  issues:
+    types: [opened]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  issues: write
+
+jobs:
+  duplicates:
+    if: >-
+      github.event.issue.state == 'open' &&
+      github.event.issue.author_association != 'OWNER' &&
+      github.event.issue.author_association != 'MEMBER' &&
+      github.event.issue.author_association != 'COLLABORATOR' &&
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'dependabot[bot]' &&
+      !contains(github.event.issue.labels.*.name, 'good first issue') &&
+      !contains(github.event.issue.labels.*.name, 'up-for-grabs')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: api.github.com:443
+      - name: Find possible duplicates
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const MARKER = '<!-- possible-duplicates -->';
+            const issue = context.payload.issue;
+            const num = issue.number;
+            const labels = (issue.labels || []).map((l) => l.name);
+            if (labels.includes('possible-duplicate') || labels.includes('duplicate')) return;
+
+            const STOPWORDS = new Set([
+              'the', 'and', 'for', 'with', 'that', 'this', 'from', 'are', 'was', 'were',
+              'have', 'has', 'had', 'not', 'but', 'you', 'your', 'can', 'cant', 'does',
+              'did', 'when', 'what', 'why', 'how', 'who', 'all', 'any', 'into', 'out',
+              'get', 'got', 'add', 'new', 'use', 'using', 'used', 'issue', 'bug',
+              'error', 'please', 'problem', 'help', 'want', 'need', 'make', 'made',
+            ]);
+
+            function tokens(text) {
+              return new Set(
+                text
+                  .toLowerCase()
+                  .replace(/https?:\/\/\S+/g, ' ')
+                  .split(/[^a-z0-9\u0600-\u06ff]+/i)
+                  .filter((word) => word.length > 2 && !STOPWORDS.has(word))
+              );
+            }
+
+            const normalize = (text) =>
+              text.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/g, ' ').trim();
+
+            const newTitleTokens = tokens(issue.title);
+            const newTitleNorm = normalize(issue.title);
+            if (newTitleTokens.size < 3 || newTitleNorm.length < 10) return;
+
+            // Recent open issues (3 pages) plus the most recent closed issues,
+            // since a duplicate of an already-fixed bug is still a duplicate.
+            const candidates = [];
+            for (const [state, pages] of [['open', 3], ['closed', 1]]) {
+              for (let page = 1; page <= pages; page++) {
+                const { data } = await github.rest.issues.listForRepo({
+                  ...context.repo,
+                  state,
+                  per_page: 100,
+                  page,
+                  sort: 'created',
+                  direction: 'desc',
+                });
+                for (const item of data) {
+                  if (item.pull_request) continue;
+                  if (item.number === num) continue;
+                  candidates.push(item);
+                }
+                if (data.length < 100) break;
+              }
+            }
+
+            const hits = [];
+            for (const other of candidates) {
+              const otherTokens = tokens(other.title);
+              const otherNorm = normalize(other.title);
+              if (!otherNorm) continue;
+              let shared = 0;
+              for (const token of newTitleTokens) if (otherTokens.has(token)) shared += 1;
+              const union = new Set([...newTitleTokens, ...otherTokens]).size;
+              const jaccard = union ? shared / union : 0;
+              const containment =
+                shared >= 2 &&
+                (newTitleNorm.includes(otherNorm) || otherNorm.includes(newTitleNorm));
+              if (jaccard >= 0.6 || containment) hits.push({ issue: other, score: jaccard });
+            }
+
+            if (hits.length === 0) return;
+            hits.sort((a, b) => b.score - a.score);
+
+            const list = hits
+              .slice(0, 3)
+              .map((hit) => {
+                const state = hit.issue.state === 'open' ? 'open' : 'closed';
+                return '- #' + hit.issue.number + ' (' + state + '): ' + hit.issue.title;
+              })
+              .join('\n');
+
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: num,
+              labels: ['possible-duplicate'],
+            });
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: num,
+              body: [
+                MARKER,
+                'I found existing issues that look similar to this one:',
+                '',
+                list,
+                '',
+                'If this is the same problem, please add your details there instead so everything',
+                'stays in one place. This is an automated title comparison (no AI involved) -',
+                'ignore it if the issues are unrelated; a maintainer will confirm or remove the label.',
+              ].join('\n'),
+            });

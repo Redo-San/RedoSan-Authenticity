@@ -416,8 +416,7 @@ Bypass with `--allow-dangerous` for testing trusted files.
 ## Testing
 
 <!-- BOT:START testing-stats -->
-
-88 unit test files + 58 E2E suites with 5,200+ tests using `node:test` (zero external test dependencies) + Playwright:
+107 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
 <!-- BOT:END testing-stats -->
 
 ```bash
@@ -441,18 +440,16 @@ CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chrom
 ## CI/CD Workflows
 
 <!-- BOT:START workflows -->
+The project includes 77 GitHub Actions workflows:
 
-The project includes 74 GitHub Actions workflows:
-
-| Category          | Workflows                                                                                                                                                                                                                                                               |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **AI Review**     | Ai Review Openrouter, Eslint Review, Gemini Analysis, Ollama Analysis, Review, Reviewdog                                                                                                                                                                                |
-| **PR Management** | Auto Assign, Branch Name Lint, Cross Ref Check, Issue Labeler, Label Actions, Label Sync, Labeler, Pr Body Check, Pr Size Label, Pr Stats, Pr Title Lint                                                                                                                |
-| **Security**      | Abom, Codeql, Dependency Review, Malware Scan, Npm Audit Checker, Permissions Sheriff, Pwn Hunter, Scorecards, Secret Scan Gitleaks, Secret Scanner, Security Audit, Security, Semgrep, Zizmor                                                                          |
-| **Quality**       | A11y Fix, A11y, Backstop, Codebase Audit, Console Log Detector, Cspell Check, Css Lint, Dead Css, Depcheck, Dom Review, E2e Coverage Guard, File Size Budget, Html Hint, Knip, Madge Check, Markdownlint, Mutation, Performance, Size Limit, Spell Check, Typedoc Check |
-| **Maintenance**   | Broken Links, Copilot Setup Steps, Dependabot Auto Merge, Lock Closed, Milestone, Minimal Dispatch, Release Drafter, Release, Request Info, Slash Command, Stale, Todo Issues, Translate, Uptime, Welcome                                                               |
-| **Core**          | Ci, Cli, Deploy Pages, Js Syntax Check, Lint, Prettier Check, Update Readme                                                                                                                                                                                             |
-
+| Category | Workflows |
+| -------- | --------- |
+| **AI Review** | Ai Review Openrouter, Eslint Review, Gemini Analysis, Ollama Analysis, Review, Reviewdog |
+| **PR Management** | Auto Assign, Branch Name Lint, Cross Ref Check, Issue Labeler, Label Actions, Label Sync, Labeler, Pr Body Check, Pr Size Label, Pr Stats, Pr Title Lint |
+| **Security** | Abom, Codeql, Dependency Review, Malware Scan, Npm Audit Checker, Permissions Sheriff, Pwn Hunter, Scorecards, Secret Scan Gitleaks, Secret Scanner, Security Audit, Security, Semgrep, Zizmor |
+| **Quality** | A11y Fix, A11y, Backstop, Codebase Audit, Console Log Detector, Cspell Check, Css Lint, Dead Css, Depcheck, Dom Review, E2e Coverage Guard, File Size Budget, Html Hint, Knip, Madge Check, Markdownlint, Mutation, Performance, Size Limit, Spell Check, Typedoc Check |
+| **Maintenance** | Broken Links, Copilot Setup Steps, Dependabot Auto Merge, Duplicate Issues, Issue Compliance, Lock Closed, Milestone, Minimal Dispatch, Release Drafter, Release, Slash Command, Spam Guard, Stale, Todo Issues, Translate, Uptime, Welcome |
+| **Core** | Ci, Cli, Deploy Pages, Js Syntax Check, Lint, Prettier Check, Publish Npm, Update Readme |
 <!-- BOT:END workflows -->
 
 ---
