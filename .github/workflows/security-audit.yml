@@ -31,12 +31,25 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: "true"
         run: npm ci
       - name: Run npm audit (full scope)
-        run: npm audit --json > audit-report.json
+        # `npm audit` exits 1 when it finds vulnerabilities, which would kill
+        # this step before the policy gate ever runs (the 2026-10-05 failure
+        # mode). The JSON report is complete either way; the next step is the
+        # actual gate. Fail here only when npm did not produce a valid report
+        # (error payloads are JSON too but lack `metadata`/`vulnerabilities`).
+        run: |
+          set +e
+          npm audit --json > audit-report.json
+          set -e
+          node -e "const r = JSON.parse(require('fs').readFileSync('audit-report.json', 'utf8')); if (!r.metadata || !r.vulnerabilities) { console.error('npm audit did not produce a valid report'); process.exit(1); }"
       - name: Enforce advisory exceptions policy
         run: |
           node - <<'EOF'
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync('audit-report.json', 'utf8'));
+          if (!report.metadata || !report.vulnerabilities) {
+            console.error('npm audit did not produce a valid report (audit error instead of findings)');
+            process.exit(1);
+          }
           const exceptions = fs
             .readFileSync('security/vulnerability-exceptions.md', 'utf8')
             .match(/\b(GHSA-[\w-]+|CVE-\d{4}-\d+)\b/g) || [];
