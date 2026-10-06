@@ -10,6 +10,13 @@ env:
 permissions: {}
 
 jobs:
+  # SLA matrix (one owner per label, no overlap):
+  #   - generic issues/PRs .... 60d stale, +7d close (this job)
+  #   - needs-more-info ....... 7d stale,  +7d close (needs-info job below)
+  #   - vuln-report ........... 2d stale,  +3d close (security-sla job below)
+  # The two short-SLA labels are listed in exempt-issue-labels here so a
+  # single issue is never put on two clocks at once; that is why this job
+  # intentionally differs from the SLA jobs below.
   stale:
     runs-on: ubuntu-latest
     permissions:

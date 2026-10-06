@@ -1,6 +1,9 @@
 name: Issue Compliance
 
 on:
+  # Only opened/edited: applying or removing the needs-more-info label does
+  # not emit one of these types, so this workflow can never be re-triggered
+  # by its own labels and there is no add/remove feedback loop.
   issues:
     types: [opened, edited]
 
