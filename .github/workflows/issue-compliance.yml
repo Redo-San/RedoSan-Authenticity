@@ -1,0 +1,150 @@
+name: Issue Compliance
+
+on:
+  issues:
+    types: [opened, edited]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  compliance:
+    # Exempt: maintainers (owner/member/collaborator), bots, and
+    # maintainer-authored contributor tasks (good first issue / up-for-grabs),
+    # plus security reports which have their own routing workflow.
+    if: >-
+      github.event.issue.state == 'open' &&
+      github.event.issue.author_association != 'OWNER' &&
+      github.event.issue.author_association != 'MEMBER' &&
+      github.event.issue.author_association != 'COLLABORATOR' &&
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'dependabot[bot]' &&
+      !contains(github.event.issue.labels.*.name, 'good first issue') &&
+      !contains(github.event.issue.labels.*.name, 'up-for-grabs') &&
+      !contains(github.event.issue.labels.*.name, 'vuln-report')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: api.github.com:443
+      - name: Check template compliance
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const MARKER = '<!-- issue-compliance -->';
+            const issue = context.payload.issue;
+            const num = issue.number;
+            const title = (issue.title || '').trim();
+            const body = (issue.body || '').trim();
+            const labels = (issue.labels || []).map((l) => l.name);
+
+            if (labels.includes('invalid') || labels.includes('duplicate')) return;
+
+            // Extra exempt logins (beyond author association), if configured.
+            try {
+              const { data } = await github.rest.repos.getContent({
+                ...context.repo,
+                path: '.github/TEAM_MEMBERS',
+              });
+              const team = Buffer.from(data.content, 'base64')
+                .toString('utf8')
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter((line) => line && !line.startsWith('#'))
+                .map((line) => line.toLowerCase());
+              if (team.includes((issue.user && issue.user.login ? issue.user.login : '').toLowerCase())) return;
+            } catch {
+              // File absent -> exemption relies on author association alone.
+            }
+
+            function parseSections(text) {
+              const out = {};
+              let current = null;
+              for (const line of text.split(/\r?\n/)) {
+                const heading = line.match(/^###\s+(.+?)\s*$/);
+                if (heading) {
+                  current = heading[1];
+                  out[current] = '';
+                  continue;
+                }
+                if (current !== null) out[current] += (out[current] ? '\n' : '') + line;
+              }
+              for (const key of Object.keys(out)) out[key] = out[key].trim();
+              return out;
+            }
+
+            const isBlank = (value) =>
+              !value ||
+              value === '_No response_' ||
+              value.replace(/[\s*_#>\-`.,:;!?()[\]{}]/g, '').length < 3;
+
+            const sections = parseSections(body);
+            const missing = [];
+
+            if (!body) {
+              missing.push('an issue body (please reopen through one of the issue templates)');
+            } else if ('Page URL' in sections || 'Steps to reproduce' in sections) {
+              for (const field of ['Page URL', 'Description', 'Steps to reproduce', 'Browser']) {
+                if (isBlank(sections[field])) missing.push(field);
+              }
+            } else if ('Problem' in sections || 'Proposed solution' in sections) {
+              for (const field of ['Problem', 'Proposed solution']) {
+                if (isBlank(sections[field])) missing.push(field);
+              }
+            } else if (body.length < 40) {
+              missing.push('a description of at least ~40 characters (please use the issue templates)');
+            }
+            if (title.length < 10) missing.push('a more descriptive title (at least 10 characters)');
+
+            const labelled = labels.includes('needs-more-info');
+
+            if (missing.length === 0) {
+              if (!labelled) return;
+              await github.rest.issues
+                .removeLabel({ ...context.repo, issue_number: num, name: 'needs-more-info' })
+                .catch(() => {});
+              const { data: comments } = await github.rest.issues.listComments({
+                ...context.repo,
+                issue_number: num,
+                per_page: 100,
+              });
+              const nag = comments.find((comment) => (comment.body || '').includes(MARKER));
+              if (nag) {
+                await github.rest.issues.createComment({
+                  ...context.repo,
+                  issue_number: num,
+                  body:
+                    MARKER +
+                    '\nThanks - the requested details are all in place now, so the `needs-more-info` label has been removed.',
+                });
+              }
+              return;
+            }
+
+            if (labelled) return; // already asked once, do not nag again
+
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: num,
+              labels: ['needs-more-info'],
+            });
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: num,
+              body: [
+                MARKER,
+                'Thanks for the report! Some required details are still missing:',
+                '',
+                missing.map((entry) => '- ' + entry).join('\n'),
+                '',
+                'Please **edit the issue** and fill them in. The `needs-more-info` label is removed',
+                'automatically as soon as everything is provided, and issues that stay incomplete',
+                'for 14 days are closed automatically (they can be reopened at any time).',
+              ].join('\n'),
+            });

@@ -1,0 +1,5 @@
+# Maintainers exempt from issue-hygiene automation (welcome/request-info/
+# duplicate/spam/compliance bots skip issues and comments authored by these
+# accounts or by anyone with an OWNER/MEMBER author association).
+# One login per line, case-insensitive; '#' lines are ignored.
+Redo-San

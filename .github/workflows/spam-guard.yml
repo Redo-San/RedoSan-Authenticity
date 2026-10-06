@@ -1,0 +1,143 @@
+name: Spam Guard
+
+on:
+  issues:
+    types: [opened]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  issues: write
+
+jobs:
+  spam:
+    if: >-
+      github.event.issue.state == 'open' &&
+      github.event.issue.author_association != 'OWNER' &&
+      github.event.issue.author_association != 'MEMBER' &&
+      github.event.issue.author_association != 'COLLABORATOR' &&
+      github.actor != 'github-actions[bot]' &&
+      github.actor != 'dependabot[bot]' &&
+      !contains(github.event.issue.labels.*.name, 'good first issue') &&
+      !contains(github.event.issue.labels.*.name, 'up-for-grabs') &&
+      !contains(github.event.issue.labels.*.name, 'vuln-report')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: api.github.com:443
+      - name: Screen new issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const MARKER = '<!-- spam-guard -->';
+            const issue = context.payload.issue;
+            const num = issue.number;
+            const labels = (issue.labels || []).map((l) => l.name);
+            if (labels.includes('invalid') || labels.includes('duplicate') || labels.includes('needs-more-info')) {
+              return;
+            }
+
+            const title = issue.title || '';
+            const body = issue.body || '';
+            const text = (title + '\n' + body).toLowerCase();
+
+            // High-precision promotional / phishing / fraud patterns. A hit here is
+            // only ever a signal: action requires corroboration (see scoring below).
+            const STRONG = [
+              /(claim|get|receive)\s+(your\s+)?free\s+(bitcoin|btc|eth|ethereum|crypto|airdrop|gift|reward)/,
+              /free\s+(bitcoin|btc|eth|crypto)\s*(giveaway|airdrop|distribution)/,
+              /double\s+your\s+(bitcoin|btc|eth|crypto|money|funds)/,
+              /guaranteed\s+(daily|weekly|monthly)\s+(profit|return|returns|income|payment)/,
+              /(recover|recovery)\s+(your\s+)?(stolen|lost)\s+(crypto|funds|bitcoin|money)/,
+              /(whatsapp|telegram).{0,60}(investment|profit|trading\s+signals?|recovery\s+(expert|service|company))/,
+              /(investment|profit|trading\s+signals?|recovery\s+(expert|service|company)).{0,60}(whatsapp|telegram)/,
+              /\bfollow\s+me\s+on\s+(telegram|whatsapp)\b/,
+              /\bdm\s+me\s+on\s+(telegram|whatsapp)\b/,
+              /\bguest[\s-]?post\b|\bsponsored[\s-]?post\b|\bguest\s+blogging\b/,
+              /\blink[\s-]?building\b|\bbuy\s+backlinks?\b|\bseo\s+services?\b/,
+              /\bmake\s+money\s+from\s+home\b|\bearn\s+\$?\d+(\.\d+)?\s*(per|a)\s+day\b/,
+              /\bclick\s+here\s+to\s+(verify|claim|confirm|activate|download)\b/,
+              /\b(account|user\s+account)\s+(will\s+be|has\s+been|is\s+now)\s+(suspended|locked|limited|disabled)/,
+              /\b(work\s+from\s+home|part[\s-]?time\s+(job|work))\b.{0,60}\b(earn|pay|salary|\$\d)/,
+              /\b(casino|gambling|betting)\s+(site|online|bonus|offer)/,
+              /\badult\s+(content|site|services?)\b/,
+              /\b(western\s+union|money\s*gram|wire\s+transfer)\b.{0,60}\b(send|receive|payment)/,
+            ];
+            const strong = STRONG.filter((pattern) => pattern.test(text)).length;
+
+            const urls = [...new Set(body.match(/https?:\/\/[^\s)\]>]+/g) || [])];
+            const external = urls.filter(
+              (url) => !url.includes('github.com/Redo-San') && !url.includes('redo-san.github.io')
+            );
+            const SHORTENERS = ['bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'cutt.ly', 'is.gd', 'rb.gy', 'shorturl.at', 'ow.ly', 'tiny.cc'];
+            const hasShortener = external.some((url) =>
+              SHORTENERS.some((domain) => url.includes('://' + domain + '/'))
+            );
+
+            const weak = [];
+            const trimmedBody = body.trim();
+            if (trimmedBody.length > 0 && trimmedBody.length < 30) weak.push('a very short body');
+            if (external.length >= 4) weak.push(external.length + ' external links');
+            if (hasShortener) weak.push('a URL-shortener link');
+            const letters = title.match(/[a-z]/gi) || [];
+            const caps = title.match(/[A-Z]/g) || [];
+            if (letters.length >= 20 && caps.length / letters.length > 0.7) {
+              weak.push('an all-caps title');
+            }
+
+            try {
+              const login = issue.user && issue.user.login ? issue.user.login : '';
+              if (login && !login.endsWith('[bot]')) {
+                const data = await github.graphql(
+                  'query ($login: String!) { user(login: $login) { createdAt } }',
+                  { login }
+                );
+                const created = data.user && data.user.createdAt ? Date.parse(data.user.createdAt) : NaN;
+                const fresh = Number.isFinite(created) && Date.now() - created < 72 * 3600 * 1000;
+                if (fresh && (external.length > 0 || trimmedBody.length < 100)) {
+                  weak.push('a brand-new account posting links or little detail');
+                }
+              }
+            } catch {
+              // Account age unavailable -> no weak signal from it.
+            }
+
+            console.log('strong=' + strong + ' weak=' + weak.length + ' ' + JSON.stringify(weak));
+
+            // Scoring: act only with corroboration so real reports are never closed
+            // on a single ambiguous phrase. Invalid -> label-actions posts the close
+            // comment; needs-more-info -> 14 day SLA handled by the Stale workflow.
+            if (strong >= 2 || (strong >= 1 && weak.length >= 1)) {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: num,
+                labels: ['invalid'],
+              });
+              return;
+            }
+            if (weak.length >= 2) {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: num,
+                labels: ['needs-more-info'],
+              });
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: num,
+                body: [
+                  MARKER,
+                  'This issue looks incomplete or promotional rather than an actionable bug report:',
+                  '',
+                  weak.map((entry) => '- ' + entry).join('\n'),
+                  '',
+                  'If this is a genuine report, please **edit the issue** and add the details',
+                  '(what you did, what you expected, steps to reproduce). The `needs-more-info`',
+                  'label is removed automatically once the description is filled in, and issues',
+                  'that stay like this for 14 days are closed automatically.',
+                ].join('\n'),
+              });
+            }

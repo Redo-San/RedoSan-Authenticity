@@ -7,20 +7,21 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   stale:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           days-before-stale: 60
           days-before-close: 7
-          exempt-issue-labels: "type/todo,type/broken-links,type/dead-css,first-interaction"
+          exempt-issue-labels: "type/todo,type/broken-links,type/dead-css,first-interaction,needs-more-info,vuln-report"
           exempt-pr-labels: "first-interaction"
           stale-issue-label: "stale"
           stale-pr-label: "stale"
@@ -32,3 +33,55 @@ jobs:
             This issue has been automatically closed due to inactivity.
           close-pr-message: |
             This PR has been automatically closed due to inactivity.
+
+  # Issues waiting on the reporter (needs-more-info, applied by the Issue
+  # Compliance and Spam Guard workflows) get a much shorter leash than the
+  # generic 60-day rule: 7 days to respond, then 7 more days before closing.
+  needs-info:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Close unresponsive needs-more-info issues
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          only-issue-labels: "needs-more-info"
+          days-before-issue-stale: 7
+          days-before-issue-close: 7
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-label: "stale"
+          stale-issue-message: |
+            This issue is waiting for more information and has had no updates for 7 days.
+            Please add the requested details - otherwise it will be closed in 7 days
+            (it can be reopened later).
+          close-issue-message: |
+            Closing because the requested information was never provided. If this is still
+            relevant, comment with the missing details and the issue can be reopened.
+
+  # Public security reports are routed to the private advisory channel; give the
+  # reporter a quick warning, then close the public copy after 3 more days.
+  security-sla:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Route public security reports privately
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          only-issue-labels: "vuln-report"
+          exempt-issue-labels: "help wanted,good first issue,up-for-grabs,high-priority"
+          days-before-issue-stale: 2
+          days-before-issue-close: 3
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-label: "stale"
+          stale-issue-message: |
+            Security issues should not be discussed publicly. Please report this through
+            the private channel (Security tab -> Report a vulnerability) so it can be
+            handled safely. This public thread will be closed in 3 days.
+          close-issue-message: |
+            Closing this public thread to keep the discussion private. If this is still
+            relevant, please report it through the private vulnerability reporting channel.

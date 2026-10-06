@@ -17,8 +17,3 @@ wontfix:
       This issue will not be worked on and has been closed.
     close: true
     close-reason: "not planned"
-needs-more-info:
-  issues:
-    comment: >
-      Thanks for reporting! We need a bit more information to reproduce or assess
-      this issue. Please provide the requested details.
