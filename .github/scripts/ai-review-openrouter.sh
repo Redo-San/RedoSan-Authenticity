@@ -120,6 +120,19 @@ for MODEL in ${MODELS//,/ }; do
   echo "DEBUG: $MODEL finish_reason=$FINISH_REASON (empty content)"
 done
 
+# Models sometimes leak raw tool-call / control markup instead of a review.
+# Strip it before it can reach the PR, and skip posting when nothing usable
+# remains (an empty or markup-only response is noise, not a review).
+if [ -n "$REVIEW" ]; then
+  CLEAN=$(printf '%s' "$REVIEW" | perl -0777 -pe 's/<\|tool_call_start\|>.*?<\|tool_call_end\|>//gs; s/<\|[^<>|]{1,60}\|>//g' 2>/dev/null || true)
+  CLEAN=$(printf '%s' "$CLEAN" | sed -e 's/[[:space:]]\{1,\}$//' -e '/./,$!d')
+  if [ "${#CLEAN}" -lt 80 ]; then
+    echo "Model output unusable after sanitization (${#CLEAN} usable chars); skipping comment."
+    exit 0
+  fi
+  REVIEW="$CLEAN"
+fi
+
 if [ -z "$REVIEW" ]; then
   REVIEW="_OpenRouter review failed: all models returned empty responses._"
 fi
