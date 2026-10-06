@@ -1261,7 +1261,8 @@
     "ybndrfg",
     "ZBASE",
     "Zisserman",
-    "Cristo"
+    "Cristo",
+    "goodfirstissue"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[؀-ۿ]+/"],
