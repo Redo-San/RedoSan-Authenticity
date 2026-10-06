@@ -23,6 +23,9 @@
 - name: enhancement
   color: "a2eeef"
   description: New feature or request
+- name: first-interaction
+  color: "0e8a16"
+  description: First-time contributor issue or pull request
 - name: good first issue
   color: "7057ff"
   description: Good for newcomers
