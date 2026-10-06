@@ -20,7 +20,19 @@
     "envsitter-guard",
     "opencode-pty",
     "opencode-lazy-loader",
-    "@stryker-mutator/command-runner"
+    "@stryker-mutator/command-runner",
+    "@commitlint/config-conventional",
+    "@noble/hashes",
+    "acorn",
+    "caniuse-lite",
+    "mocha",
+    "oh-my-openagent",
+    "opencode-conductor",
+    "opencode-scheduler",
+    "opencode-supermemory",
+    "opencode-vibeguard",
+    "stylelint-config-standard",
+    "undici-types"
   ],
   "ignoreBinaries": [
     "rg",
