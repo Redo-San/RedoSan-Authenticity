@@ -1,0 +1,106 @@
+name: Discussion Welcome
+
+on:
+  discussion:
+    types: [created]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  discussions: write
+  issues: write
+
+jobs:
+  welcome:
+    if: github.actor != 'github-actions[bot]' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const author = context.payload.discussion.user.login;
+            const number = context.payload.discussion.number;
+            const categorySlug = context.payload.discussion.category.slug;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const MARK = '<!-- rs-discussion-welcome -->';
+
+            if (categorySlug === 'announcements') return;
+
+            const { repository } = await github.graphql(
+              `query($owner: String!, $repo: String!, $n: Int!) {
+                 repository(owner: $owner, name: $repo) {
+                   discussion(number: $n) {
+                     id
+                     comments(first: 50) { nodes { body } }
+                   }
+                   discussions(first: 100, orderBy: { field: CREATED_AT, direction: DESC }) {
+                     nodes { number author { login } }
+                   }
+                 }
+               }`,
+              { owner, repo, n: number }
+            );
+
+            const disc = repository.discussion;
+            if (!disc) return;
+
+            const prior = repository.discussions.nodes.some(
+              (d) => d.number !== number && d.author && d.author.login === author
+            );
+            if (prior) return;
+
+            const alreadyWelcomed = (disc.comments.nodes || []).some(
+              (c) => c.body && c.body.includes(MARK)
+            );
+            if (alreadyWelcomed) return;
+
+            const body = [
+              MARK,
+              `👋 Welcome @${author}! Thanks for starting a discussion in **${repo}**.`,
+              '',
+              'Some helpful resources:',
+              '- [Project wiki](https://github.com/Redo-San/RedoSan-Authenticity/wiki) — Installation, Usage Guide, API Reference, FAQ',
+              '- [README](https://github.com/Redo-San/RedoSan-Authenticity#readme) — quick start and algorithm overview',
+              '- Be respectful and constructive — see the [Code of Conduct](https://github.com/Redo-San/RedoSan-Authenticity/blob/main/CODE_OF_CONDUCT.md)'
+            ].join('\n');
+
+            await github.graphql(
+              `mutation($id: ID!, $body: String!) {
+                 addDiscussionComment(input: { discussionId: $id, body: $body }) {
+                   comment { id }
+                 }
+               }`,
+              { id: disc.id, body }
+            );
+
+            const { repository: labelRepo } = await github.graphql(
+              `query($owner: String!, $repo: String!, $name: String!) {
+                 repository(owner: $owner, name: $repo) { label(name: $name) { id } }
+               }`,
+              { owner, repo, name: 'first-interaction' }
+            );
+
+            let labelId = labelRepo.label && labelRepo.label.id;
+            if (!labelId) {
+              const created = await github.rest.issues.createLabel({
+                ...context.repo,
+                name: 'first-interaction',
+                color: '7057ff',
+                description: 'First-time discussion, issue, or PR participant'
+              });
+              labelId = created.data.id;
+            }
+
+            await github.graphql(
+              `mutation($labelId: ID!, $labelableId: ID!) {
+                 addLabelsToLabelable(input: { labelIds: [$labelId], labelableId: $labelableId }) {
+                   clientMutationId
+                 }
+               }`,
+              { labelId, labelableId: disc.id }
+            );
+
+            core.info(`Welcomed first-time discussion author @${author} in #${number}`);

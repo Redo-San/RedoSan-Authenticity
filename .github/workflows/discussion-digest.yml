@@ -1,0 +1,170 @@
+name: Community Digest
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  discussions: write
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const TITLE = 'Community Digest — automated project stats';
+            const MARK = '<!-- rs-community-digest -->';
+
+            const { data: repoInfo } = await github.rest.repos.get({ owner, repo });
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner,
+              repo,
+              per_page: 3
+            });
+
+            const { repository } = await github.graphql(
+              `query($owner: String!, $repo: String!) {
+                 repository(owner: $owner, name: $repo) {
+                   id
+                   openIssues: issues(states: OPEN) { totalCount }
+                   openPRs: pullRequests(states: OPEN) { totalCount }
+                   discussionCategories(first: 20) { nodes { id slug name } }
+                   discussions(first: 100, orderBy: { field: CREATED_AT, direction: DESC }) {
+                     totalCount
+                     nodes {
+                       id
+                       number
+                       title
+                       url
+                       updatedAt
+                       comments { totalCount }
+                       category { name }
+                     }
+                   }
+                 }
+               }`,
+              { owner, repo }
+            );
+
+            const cats = repository.discussionCategories.nodes;
+            const catQuery = cats
+              .map((c, i) => `cat${i}: discussions(first: 1, categoryId: "${c.id}") { totalCount }`)
+              .join('\n                     ');
+            const catCounts = await github.graphql(
+              `query($owner: String!, $repo: String!) {
+                 repository(owner: $owner, name: $repo) {
+                   ${catQuery}
+                 }
+               }`,
+              { owner, repo }
+            );
+
+            const fmtDate = (iso) => (iso || '').slice(0, 10);
+            const today = new Date().toISOString().slice(0, 10);
+
+            const statRows = [
+              '| Metric | Value |',
+              '| --- | --- |',
+              `| Stars | ${repoInfo.stargazers_count} |`,
+              `| Forks | ${repoInfo.forks_count} |`,
+              `| Open issues | ${repository.openIssues.totalCount} |`,
+              `| Open pull requests | ${repository.openPRs.totalCount} |`,
+              `| Discussions | ${repository.discussions.totalCount} |`,
+              `| Latest release | ${
+                releases[0]
+                  ? `[${releases[0].tag_name}](${releases[0].html_url}) (${fmtDate(
+                      releases[0].published_at
+                    )})`
+                  : 'none'
+              } |`
+            ];
+
+            const catRows = ['| Category | Discussions |', '| --- | --- |'];
+            cats.forEach((c, i) => {
+              const count = catCounts.repository[`cat${i}`].totalCount;
+              catRows.push(`| ${c.name} | ${count} |`);
+            });
+
+            const recent = repository.discussions.nodes.slice(0, 5).map((d) => {
+              const when = fmtDate(d.updatedAt);
+              const comments = d.comments.totalCount;
+              return `- [#${d.number} ${d.title}](${d.url}) — ${d.category.name} · ${comments} comment${comments === 1 ? '' : 's'} (updated ${when})`;
+            });
+
+            const releaseRows = releases.length
+              ? releases.map(
+                  (r) =>
+                    `- [${r.tag_name}](${r.html_url}) — ${fmtDate(r.published_at)}`
+                )
+              : ['- none'];
+
+            const body = [
+              MARK,
+              '## Community Digest',
+              '',
+              `> Automatically generated on ${today} · refreshed every Monday.`,
+              '',
+              '### Project stats',
+              '',
+              ...statRows,
+              '',
+              '### Discussions by category',
+              '',
+              ...catRows,
+              '',
+              '### Recent discussions',
+              '',
+              ...recent,
+              '',
+              '### Latest releases',
+              '',
+              ...releaseRows
+            ].join('\n');
+
+            const existing = repository.discussions.nodes.find(
+              (d) => d.title === TITLE || d.title.startsWith('Community Digest')
+            );
+
+            if (existing) {
+              await github.graphql(
+                `mutation($id: ID!, $body: String!) {
+                   updateDiscussion(input: { discussionId: $id, body: $body }) {
+                     discussion { number }
+                   }
+                 }`,
+                { id: existing.id, body }
+              );
+              core.info(`Updated digest discussion #${existing.number}`);
+            } else {
+              const general = cats.find((c) => c.slug === 'general') || cats[0];
+              if (!general) {
+                core.setFailed('No discussion category found');
+                return;
+              }
+              const { createDiscussion } = await github.graphql(
+                `mutation($repoId: ID!, $catId: ID!, $title: String!, $body: String!) {
+                   createDiscussion(input: {
+                     repositoryId: $repoId,
+                     categoryId: $catId,
+                     title: $title,
+                     body: $body
+                   }) {
+                     discussion { number url }
+                   }
+                 }`,
+                { repoId: repository.id, catId: general.id, title: TITLE, body }
+              );
+              core.info(`Created digest discussion #${createDiscussion.discussion.number}`);
+            }
