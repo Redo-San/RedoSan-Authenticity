@@ -77,7 +77,13 @@ jobs:
       - name: npm audit (production deps)
         run: npm run audit:prod
 
+      # The stage call authenticates with the granular NPM_TOKEN secret via
+      # the .npmrc that setup-node wrote; OIDC alone cannot bootstrap a package
+      # that does not exist on the registry yet (first publish => E401 without
+      # the token).
       - name: Stage package (defers 2FA to approval)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm stage publish --provenance --access public
 
       - name: Remind maintainer to approve
