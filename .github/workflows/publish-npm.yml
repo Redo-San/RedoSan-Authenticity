@@ -78,7 +78,7 @@ jobs:
         run: npm run audit:prod
 
       - name: Stage package (defers 2FA to approval)
-        run: npm stage publish --provenance
+        run: npm stage publish --provenance --access public
 
       - name: Remind maintainer to approve
         run: |

@@ -25,7 +25,6 @@
 ---
 
 <!-- BOT:START whats-new -->
-
 ## What's New in v2.0.0
 
 - **npm-ready CLI** — package fully prepared for npm publication (bin wiring, metadata, staged-publish workflow with tag/version verification), version aligned to 2.0.0
@@ -93,7 +92,6 @@
 - **i18n (8 languages)** — Full Arabic, German, Spanish, French, Japanese, Korean, Chinese translations alongside English. Real-time switching, RTL support.
 
 </details>
-
 <!-- BOT:END whats-new -->
 
 ---
