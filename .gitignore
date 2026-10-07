@@ -21,6 +21,8 @@ cli/tests/fixtures/spkrec_ecapa/
 cli/test_output/
 test/tmp/
 Tests/AudioWatermark/tmp/
+# Root-level diagnostic scratch (local-only; real suites live in cli/tests/)
+/tests/
 coverage/
 *.log
 
