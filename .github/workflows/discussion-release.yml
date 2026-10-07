@@ -1,0 +1,95 @@
+name: Release Announcement
+
+on:
+  release:
+    types: [published]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  discussions: write
+
+jobs:
+  announce:
+    if: github.actor != 'github-actions[bot]' && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const release = context.payload.release;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const { repository } = await github.graphql(
+              `query($owner: String!, $repo: String!) {
+                 repository(owner: $owner, name: $repo) {
+                   id
+                   discussionCategories(first: 20) { nodes { id slug } }
+                   discussions(first: 50, orderBy: { field: CREATED_AT, direction: DESC }) {
+                     nodes { number title }
+                   }
+                 }
+               }`,
+              { owner, repo }
+            );
+
+            const duplicate = repository.discussions.nodes.find(
+              (d) => d.title.includes(release.tag_name)
+            );
+            if (duplicate) {
+              core.info(`Announcement for ${release.tag_name} already exists (#${duplicate.number})`);
+              return;
+            }
+
+            const category =
+              repository.discussionCategories.nodes.find((c) => c.slug === 'announcements') ||
+              repository.discussionCategories.nodes.find((c) => c.slug === 'general');
+            if (!category) {
+              core.setFailed('No announcements or general discussion category found');
+              return;
+            }
+
+            const notes = (release.body || '')
+              .replace(/<!--[\s\S]*?-->/g, '')
+              .trim()
+              .slice(0, 15000);
+
+            const lines = [
+              `## RedoSan Authenticity ${release.name || release.tag_name}`,
+              '',
+              `Published ${release.published_at} — [full release notes](${release.html_url}).`,
+              ''
+            ];
+            if (notes) {
+              lines.push(notes, '');
+            }
+            lines.push(
+              '---',
+              'Web app: https://redo-san.github.io/RedoSan-Authenticity/',
+              'Wiki: https://github.com/Redo-San/RedoSan-Authenticity/wiki',
+              'Discussions: https://github.com/Redo-San/RedoSan-Authenticity/discussions'
+            );
+
+            const { createDiscussion } = await github.graphql(
+              `mutation($repoId: ID!, $catId: ID!, $title: String!, $body: String!) {
+                 createDiscussion(input: {
+                   repositoryId: $repoId,
+                   categoryId: $catId,
+                   title: $title,
+                   body: $body
+                 }) {
+                   discussion { number url }
+                 }
+               }`,
+              {
+                repoId: repository.id,
+                catId: category.id,
+                title: `RedoSan Authenticity ${release.name || release.tag_name} released`,
+                body: lines.join('\n')
+              }
+            );
+
+            core.info(`Created announcement discussion #${createDiscussion.discussion.number}`);
