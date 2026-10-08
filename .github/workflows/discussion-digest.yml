@@ -20,8 +20,6 @@ jobs:
     steps:
       - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          DISCUSSIONS_PAT: ${{ secrets.GH_PAT }}
         with:
           script: |
             const owner = context.repo.owner;
@@ -152,16 +150,6 @@ jobs:
                 core.info(`Updated digest discussion #${existing.number} via GITHUB_TOKEN`);
               } catch (err) {
                 core.info(`GITHUB_TOKEN cannot update discussions: ${err.message}`);
-              }
-              const pat = process.env.DISCUSSIONS_PAT;
-              if (!done && pat) {
-                try {
-                  await getOctokit(pat).graphql(update, { id: existing.id, body });
-                  done = true;
-                  core.info(`Updated digest discussion #${existing.number} via GH_PAT`);
-                } catch (err) {
-                  core.info(`GH_PAT cannot update discussions: ${err.message}`);
-                }
               }
               if (!done) {
                 await github.graphql(
