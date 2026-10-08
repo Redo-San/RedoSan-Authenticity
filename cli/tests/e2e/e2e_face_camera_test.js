@@ -39,6 +39,10 @@ async function openFacePage() {
   const ctx = await browser.newContext({
     permissions: ["camera", "microphone"],
     viewport: { width: 1280, height: 900 },
+    // i18n status strings must stay English: the stop message goes through
+    // __() while the start message is hardcoded, so a non-English default
+    // locale would break the "stopped" substring assertions below.
+    locale: "en-US",
   });
   const page = await ctx.newPage();
   page.setDefaultTimeout(90000);
@@ -66,10 +70,29 @@ async function openFacePage() {
     }
   });
   // Accept the biometric consent notice so collection entry points unlock.
+  // initFaceConsent() attaches its change listener asynchronously after
+  // startup, so re-dispatch change until the accept button unlocks instead
+  // of racing the listener attachment (same approach as mpa_face_test.js).
   const check = page.locator("#face-consent-check");
   if ((await check.count()) === 1) {
-    await check.check();
-    await page.click("#face-consent-accept");
+    await page.waitForFunction(
+      () => {
+        const panel = document.getElementById("face-consent-panel");
+        if (!panel || panel.style.display === "none") return true;
+        const box = document.getElementById("face-consent-check");
+        const accept = document.getElementById("face-consent-accept");
+        if (!box || !accept) return false;
+        box.checked = true;
+        box.dispatchEvent(new Event("change", { bubbles: true }));
+        return !accept.disabled;
+      },
+      null,
+      { timeout: 15000 },
+    );
+    const acceptBtn = page.locator("#face-consent-accept");
+    if (await acceptBtn.isEnabled().catch(() => false)) {
+      await acceptBtn.click();
+    }
     await page.waitForFunction(
       () =>
         (document.getElementById("face-consent-panel") || {}).style?.display ===
