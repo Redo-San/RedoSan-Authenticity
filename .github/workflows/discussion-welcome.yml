@@ -3,6 +3,12 @@ name: Discussion Welcome
 on:
   discussion:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      discussion_number:
+        description: "Discussion number to welcome (skips the first-timer check)"
+        required: true
+        type: number
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -20,20 +26,21 @@ jobs:
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            const author = context.payload.discussion.user.login;
-            const number = context.payload.discussion.number;
-            const categorySlug = context.payload.discussion.category.slug;
+            const isManual = context.eventName === 'workflow_dispatch';
+            const number = isManual
+              ? Number(context.payload.inputs.discussion_number)
+              : context.payload.discussion.number;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const MARK = '<!-- rs-discussion-welcome -->';
-
-            if (categorySlug === 'announcements') return;
 
             const { repository } = await github.graphql(
               `query($owner: String!, $repo: String!, $n: Int!) {
                  repository(owner: $owner, name: $repo) {
                    discussion(number: $n) {
                      id
+                     author { login }
+                     category { slug }
                      comments(first: 50) { nodes { body } }
                    }
                    discussions(first: 100, orderBy: { field: CREATED_AT, direction: DESC }) {
@@ -45,17 +52,32 @@ jobs:
             );
 
             const disc = repository.discussion;
-            if (!disc) return;
+            if (!disc) {
+              core.info(`Discussion #${number} not found`);
+              return;
+            }
+            if (disc.category.slug === 'announcements') {
+              core.info(`#${number} is an announcement; skipping welcome`);
+              return;
+            }
 
-            const prior = repository.discussions.nodes.some(
+            const author = disc.author ? disc.author.login : 'unknown';
+
+            const prior = !isManual && repository.discussions.nodes.some(
               (d) => d.number !== number && d.author && d.author.login === author
             );
-            if (prior) return;
+            if (prior) {
+              core.info(`@${author} already has discussions; skipping welcome`);
+              return;
+            }
 
             const alreadyWelcomed = (disc.comments.nodes || []).some(
               (c) => c.body && c.body.includes(MARK)
             );
-            if (alreadyWelcomed) return;
+            if (alreadyWelcomed) {
+              core.info(`#${number} already welcomed; skipping`);
+              return;
+            }
 
             const body = [
               MARK,
