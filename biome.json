@@ -1,11 +1,5 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.4/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true,
-    "root": "."
-  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -46,7 +40,13 @@
     }
   },
   "files": {
-    "includes": ["**/cli/**/*.js", "!**/cli/tests", "!**/cli/lib"],
+    "includes": [
+      "**/cli/**/*.js",
+      "!**/cli/tests",
+      "!**/cli/lib",
+      "!**/node_modules",
+      "!**/.stryker-tmp"
+    ],
     "ignoreUnknown": true
   }
 }
