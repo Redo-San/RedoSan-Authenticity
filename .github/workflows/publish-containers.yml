@@ -103,9 +103,12 @@ jobs:
           else
             docker run --rm -d --name smoke-site -p 8080:80 "$tag"
             sleep 3
-            curl -fsS http://127.0.0.1:8080/ | grep -qi redosan
-            curl -fsS http://127.0.0.1:8080/RedoSan-Authenticity/ | grep -qi redosan
-            curl -fsS http://127.0.0.1:8080/RedoSan-Authenticity/Style/pages/watermark/ | grep -qi watermark
+            curl -fsS -o /tmp/root.html http://127.0.0.1:8080/
+            grep -qi redosan /tmp/root.html
+            curl -fsS -o /tmp/base.html http://127.0.0.1:8080/RedoSan-Authenticity/
+            grep -qi redosan /tmp/base.html
+            curl -fsS -o /tmp/mpa.html http://127.0.0.1:8080/RedoSan-Authenticity/Style/pages/watermark/
+            grep -qi watermark /tmp/mpa.html
             code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/definitely-missing-page)"
             if [ "$code" != 404 ]; then
               echo "expected 404 for missing page, got $code"

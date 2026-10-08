@@ -22,8 +22,10 @@ WORKDIR /app
 
 # .npmrc carries legacy-peer-deps=true — the lockfile was resolved with it,
 # so `npm ci` fails with Invalid/Missing errors when it is absent.
+# scripts.prepare (husky) must go: husky is a devDependency, so with
+# --omit=dev the `husky` binary would not exist and prepare exits 127.
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci --omit=dev
+RUN npm pkg delete scripts.prepare && npm ci --omit=dev
 
 # Mirror of package.json "files" (cli/tests is excluded via .dockerignore).
 COPY LICENSE README.md DISCLOSURE ./
