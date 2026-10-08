@@ -5,7 +5,7 @@
 #   docker run --rm -v "$PWD:/work" -w /work \
 #     ghcr.io/redo-san/redosan-authenticity-cli:latest fingerprint --help
 
-FROM node:24-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS build
+FROM node:25-slim@sha256:81db02c4b671288a03915da9534dbd54f96d0e7c24d80ccc54f5b36b2e684370 AS build
 
 # `npm ci` runs the `prepare` (husky) lifecycle script; HUSKY=0 skips it.
 ENV HUSKY=0
@@ -34,7 +34,7 @@ COPY Watermark Audio_Watermark Pixel_Injection Document_Watermark Fingerprint \
      ID_Forge Converter vendor ./
 COPY cli ./cli
 
-FROM node:24-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+FROM node:25-slim@sha256:81db02c4b671288a03915da9534dbd54f96d0e7c24d80ccc54f5b36b2e684370
 
 # Runtime shared libraries for canvas (incl. fontconfig + a font: text
 # watermarks render through pango, which needs at least one system font).
