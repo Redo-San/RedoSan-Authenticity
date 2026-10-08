@@ -20,7 +20,9 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+# .npmrc carries legacy-peer-deps=true — the lockfile was resolved with it,
+# so `npm ci` fails with Invalid/Missing errors when it is absent.
+COPY package.json package-lock.json .npmrc ./
 RUN npm ci --omit=dev
 
 # Mirror of package.json "files" (cli/tests is excluded via .dockerignore).
