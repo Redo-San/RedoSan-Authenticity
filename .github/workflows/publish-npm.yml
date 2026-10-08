@@ -44,7 +44,11 @@ jobs:
         with:
           node-version: 24
           check-latest: true
-          registry-url: https://registry.npmjs.org
+          # No `registry-url` here on purpose: it writes
+          # `_authToken=${NODE_AUTH_TOKEN}` into the runner .npmrc, which makes
+          # npm fall back to classic auth with an empty token (ENEEDAUTH) and
+          # never start the OIDC exchange (npm/documentation#1960). The npm
+          # default registry is already registry.npmjs.org.
           package-manager-cache: false
 
       # `npm stage publish` (staged publishing) is required by the npm Dual-Use
@@ -77,13 +81,13 @@ jobs:
       - name: npm audit (production deps)
         run: npm run audit:prod
 
-      # The stage call authenticates with the granular NPM_TOKEN secret via
-      # the .npmrc that setup-node wrote; OIDC alone cannot bootstrap a package
-      # that does not exist on the registry yet (first publish => E401 without
-      # the token).
+      # OIDC trusted publishing: npm CLI >= 11.5.1 detects the
+      # ACTIONS_ID_TOKEN_REQUEST_* env vars (granted by `id-token: write`)
+      # and authenticates via OIDC before falling back to any token. Trust
+      # `abb01470-8e56-44f7-a75b-735ec174dc0e` was validated by v2.0.1's
+      # publish, so no NODE_AUTH_TOKEN secret is needed any more (follow-up:
+      # revoke the `redosan_actions_stage` token and delete NPM_TOKEN).
       - name: Stage package (defers 2FA to approval)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm stage publish --provenance --access public
 
       - name: Remind maintainer to approve
