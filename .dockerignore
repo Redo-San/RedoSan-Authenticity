@@ -1,0 +1,45 @@
+# Build-context exclusions for docker/site.Dockerfile + docker/cli/Dockerfile.
+# CI checkouts only contain tracked files; these lines additionally protect
+# local builds from ever copying dev artifacts (or secrets!) into an image.
+
+# Secrets — never allowed in a build context.
+.env
+.env.*
+certs
+
+# Heavy dev-only artifacts (gitignored, generated, or tooling binaries).
+.git
+.agents
+.claude
+.lh13
+.lighthouseci
+.opencode
+.Plans
+.playwright-mcp
+.ruff_cache
+.stryker-tmp
+.ua
+agent
+backstop_data
+coverage
+docs
+node_modules
+reports
+skills
+test-results
+tests
+repomix-output.xml
+cli/tests
+cli/test-results
+# Local-only toolkit binaries (gitignored); keep the configs.
+.tools/Developer_Toolkit/*.exe
+.tools/Developer_Toolkit/repomix-output.xml
+
+# Voice models: only the four tracked files belong to the site (the service
+# worker precaches them); the big ONNX/WASM weights are fetched at runtime
+# and are gitignored anyway.
+Voice_Biometric/models/*
+!Voice_Biometric/models/NOTICE
+!Voice_Biometric/models/VOICE_MODELS.md
+!Voice_Biometric/models/fbank-80x201-f32.bin
+!Voice_Biometric/models/manifest.json
