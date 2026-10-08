@@ -1,0 +1,116 @@
+name: Containers
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions: {}
+
+concurrency:
+  group: containers-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  build:
+    name: Build ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read # checkout only
+      packages: write # push the two images to GHCR (ghcr.io/redo-san/*)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: redosan-authenticity
+            file: docker/site.Dockerfile
+            kind: site
+          - image: redosan-authenticity-cli
+            file: docker/cli.Dockerfile
+            kind: cli
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ghcr.io/redo-san/${{ matrix.image }}
+          flavor: |
+            latest=false
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      # Pull requests build without pushing (and without attestations, which
+      # the docker exporter used by `load` does not support), then smoke-test
+      # the loaded image below so a broken Dockerfile can never merge.
+      - name: Build image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
+          provenance: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+      - name: Smoke test image
+        if: github.event_name == 'pull_request'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          KIND: ${{ matrix.kind }}
+        run: |
+          set -euo pipefail
+          tag="$(printf '%s\n' "$TAGS" | grep -m1 ':pr-')"
+          echo "smoking $tag"
+          if [ "$KIND" = cli ]; then
+            docker run --rm "$tag" --help > /dev/null
+            docker run --rm "$tag" fingerprint --help > /dev/null
+            # Loads the native canvas binding — catches missing runtime libs.
+            docker run --rm --entrypoint node "$tag" -e "require('canvas'); console.log('canvas ok')"
+          else
+            docker run --rm -d --name smoke-site -p 8080:80 "$tag"
+            sleep 3
+            curl -fsS http://127.0.0.1:8080/ | grep -qi redosan
+            curl -fsS http://127.0.0.1:8080/RedoSan-Authenticity/ | grep -qi redosan
+            curl -fsS http://127.0.0.1:8080/RedoSan-Authenticity/Style/pages/watermark/ | grep -qi watermark
+            code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/definitely-missing-page)"
+            if [ "$code" != 404 ]; then
+              echo "expected 404 for missing page, got $code"
+              docker logs smoke-site
+              exit 1
+            fi
+            docker rm -f smoke-site
+          fi
