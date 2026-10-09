@@ -94,40 +94,25 @@ jobs:
         run: |
           echo "::notice title=Package staged::Run 'npm stage list' then 'npm stage approve <stage-id>' with 2FA to publish."
 
-  # Creates a GitHub Deployment record (environment: npm) after the package is
+  # Records a GitHub Deployment (environment: npm) after the package is
   # staged, so the Deployments tab tracks the npm publish channel the same way
-  # it tracks Pages and GHCR.
+  # it tracks Pages and GHCR. Uses the `environment:` block (not POST
+  # /deployments) for the same protected-branch 409 reason noted in
+  # publish-containers.yml.
   deployment-record:
     name: Record npm deployment
     needs: stage
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/redosan
     permissions:
       contents: read
-      deployments: write
     steps:
       - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
-      - name: Create npm deployment + status
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          description="Staged redosan package on npm (pending maintainer approval)"
-          environment_url="https://www.npmjs.com/package/redosan"
-          log_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          payload="$(jq -n \
-            --arg ref "$GITHUB_REF_NAME" \
-            --arg env "npm" \
-            --arg desc "$description" \
-            '{ref: $ref, environment: $env, description: $desc, auto_inactive: true}')"
-          deployment_id="$(gh api "repos/${GITHUB_REPOSITORY}/deployments" \
-            --input - <<<"$payload" --jq '.id')"
-          gh api "repos/${GITHUB_REPOSITORY}/deployments/${deployment_id}/statuses" \
-            -X POST \
-            -f state=success \
-            -f environment_url="$environment_url" \
-            -f log_url="$log_url" \
-            -f description="$description"
+      - name: Confirm npm stage
+        run: echo "Staged redosan package on npm (pending maintainer approval) for ${GITHUB_REF_NAME}."
