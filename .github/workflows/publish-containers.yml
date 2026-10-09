@@ -145,3 +145,43 @@ jobs:
             fi
             docker rm -f smoke-site
           fi
+
+  # Creates a GitHub Deployment record (environment: ghcr) after both images
+  # are pushed to GHCR, so the Deployments tab tracks container publishes the
+  # same way it already tracks Pages deploys. Skipped on pull_request, which
+  # builds without pushing.
+  deployment-record:
+    name: Record GHCR deployment
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Create GHCR deployment + status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          description="Published redosan-authenticity + redosan-authenticity-cli images to GHCR"
+          environment_url="https://github.com/${GITHUB_REPOSITORY}/pkgs/container/redosan-authenticity"
+          log_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          payload="$(jq -n \
+            --arg ref "$GITHUB_REF_NAME" \
+            --arg env "ghcr" \
+            --arg desc "$description" \
+            '{ref: $ref, environment: $env, description: $desc, auto_inactive: true}')"
+          deployment_id="$(gh api "repos/${GITHUB_REPOSITORY}/deployments" \
+            --input - <<<"$payload" --jq '.id')"
+          gh api "repos/${GITHUB_REPOSITORY}/deployments/${deployment_id}/statuses" \
+            -X POST \
+            -f state=success \
+            -f environment_url="$environment_url" \
+            -f log_url="$log_url" \
+            -f description="$description"
