@@ -544,6 +544,7 @@ The web app includes a two-layer security system:
 
 <p align="center">
   <a href="https://ossdrop.com/tool/redosan-authenticity"><img src="https://ossdrop.com/badge/redosan-authenticity" width="250" height="56" alt="RedoSan-Authenticity on OSSDrop"></a>
+  <a href="https://devhunt.org/tool/redosan-authenticity"><img src="https://devhunt.org/badge/redosan-authenticity.svg" width="220" height="54" alt="redosan-authenticity - Featured on DevHunt"></a>
 </p>
 
 ---
