@@ -26,7 +26,7 @@ jobs:
       issues: write
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
           allowed-endpoints: |
@@ -50,7 +50,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: Check endpoint status
-        uses: upptime/uptime-monitor@8be193bbcb957a3a917d2bb16a0c96959778a889 # v1.44.1
+        uses: upptime/uptime-monitor@0c7ff0afb99f9021627f3e9c6eb3b5c972ff242f # v1.45.2
         with:
           command: "update"
         env:

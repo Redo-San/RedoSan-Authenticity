@@ -22,7 +22,7 @@ jobs:
     if: github.actor != 'github-actions[bot]' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
