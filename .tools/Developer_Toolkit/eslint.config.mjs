@@ -197,6 +197,8 @@ export default [
       "unicorn/prefer-promise-try": "off",
       "unicorn/prefer-ternary": "off",
       "unicorn/no-return-array-push": "off",
+      // ── Unicorn v75 new rules (raise repo-wide errors, style-only / legacy patterns) ──
+      "unicorn/prefer-combined-guards": "off",
     },
     settings: {
       "import-x/resolver": {
