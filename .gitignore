@@ -144,4 +144,8 @@ secrets.*
 # Build / probe artifacts
 vkprobe.obj
 
+# Tauri desktop (generated frontend copy + Rust build cache)
+dist-tauri/
+src-tauri/target/
+
 

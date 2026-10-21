@@ -801,7 +801,11 @@ if (typeof ensureLib === "undefined") {
 
 var SW_VERSION = 4;
 /* c8 ignore next 32 */
-if ("serviceWorker" in navigator && location.protocol !== "file:") {
+if (
+  "serviceWorker" in navigator &&
+  location.protocol !== "file:" &&
+  !window.__TAURI_INTERNALS__
+) {
   // In-app browsers (Facebook/Instagram/TikTok/Threads webviews) isolate and
   // sometimes wipe storage, and their SW support is unreliable — registering
   // there risks serving stale or broken caches to those visitors.
