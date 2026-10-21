@@ -61,6 +61,11 @@ const REWRITE_PAIRS = [
 // is not preceded by a URL host character (letters, digits, :, ., _, ~, -).
 const ROOT_ABS_RE = /(^|[^A-Za-z0-9:._~-])\/RedoSan-Authenticity\//;
 
+/**
+ * Recursively list files under dir, skipping dotfiles and Thumbs.db.
+ * @param {string} dir - directory to walk
+ * @returns {string[]} absolute paths of all files
+ */
 function walk(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
@@ -73,6 +78,11 @@ function walk(dir) {
   return out;
 }
 
+/**
+ * Copy the allowlisted site into dist-tauri/, rewrite the root-absolute
+ * prefix, then fail the build if any survivor remains.
+ * @returns {void} exits 1 on missing allowlist entry or gate failure
+ */
 function main() {
   rmSync(DIST, { recursive: true, force: true });
   mkdirSync(DIST, { recursive: true });
