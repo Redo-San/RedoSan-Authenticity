@@ -18,3 +18,5 @@ test-results/
 tests/
 .lh13/
 .tools/
+dist-tauri/
+src-tauri/

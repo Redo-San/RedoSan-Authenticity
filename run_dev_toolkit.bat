@@ -103,7 +103,7 @@ if /i "%CHOICE%"=="14" goto run_gitleaks
 if /i "%CHOICE%"=="15" goto run_rg
 if /i "%CHOICE%"=="16" goto run_fd
 if /i "%CHOICE%"=="17" set "TN=TypeDoc" & set "TC=%BIN%typedoc --options .tools\Developer_Toolkit\typedoc.json" & goto run
-if /i "%CHOICE%"=="18" set "TN=Markdownlint" & set "TC=%BIN%markdownlint --config .tools\Developer_Toolkit\.markdownlint.json **/*.md --ignore coverage --ignore node_modules --ignore vendor --ignore .opencode --ignore .agents --ignore agent --ignore .claude --ignore skills --ignore .env --ignore backstop_data --ignore certs --ignore docs --ignore .lh13 --ignore .lighthouseci --ignore .playwright-mcp --ignore .stryker-tmp --ignore test-results --ignore tests --ignore .tools" & goto run
+if /i "%CHOICE%"=="18" set "TN=Markdownlint" & set "TC=%BIN%markdownlint --config .tools\Developer_Toolkit\.markdownlint.json **/*.md --ignore coverage --ignore node_modules --ignore vendor --ignore .opencode --ignore .agents --ignore agent --ignore .claude --ignore skills --ignore .env --ignore backstop_data --ignore certs --ignore docs --ignore .lh13 --ignore .lighthouseci --ignore .playwright-mcp --ignore .stryker-tmp --ignore test-results --ignore tests --ignore .tools --ignore dist-tauri --ignore src-tauri" & goto run
 if /i "%CHOICE%"=="19" set "TN=Depcheck" & set "TC=%BIN%depcheck --config .tools\Developer_Toolkit\.depcheckrc" & goto run
 if /i "%CHOICE%"=="20" set "TN=Size Limit" & set "TC=%BIN%size-limit" & goto run
 if /i "%CHOICE%"=="21" set "TN=CSpell" & set "TC=%BIN%cspell --config .tools\Developer_Toolkit\cspell.json --no-progress **/*.js **/*.css **/*.html **/*.md **/*.yml **/*.json" & goto run
@@ -277,7 +277,7 @@ if not exist "%TK%rg.exe" (
 set /p "RG_QUERY=Enter search pattern: "
 if not defined RG_QUERY set "RG_QUERY=."
 setlocal DisableDelayedExpansion
-"%TK%rg.exe" -n --no-ignore -g "!node_modules" -g "!.git" -g "!coverage" -g "!vendor" -g "!.opencode" -g "!.agents" -g "!agent" -g "!.claude" -g "!skills" -g "!.env" -g "!backstop_data" -g "!certs" -g "!docs" -g "!.lh13" -g "!.lighthouseci" -g "!.playwright-mcp" -g "!.stryker-tmp" -g "!test-results" -g "!tests" -g "!.tools" "%RG_QUERY%" .
+"%TK%rg.exe" -n --no-ignore -g "!node_modules" -g "!.git" -g "!coverage" -g "!vendor" -g "!.opencode" -g "!.agents" -g "!agent" -g "!.claude" -g "!skills" -g "!.env" -g "!backstop_data" -g "!certs" -g "!docs" -g "!.lh13" -g "!.lighthouseci" -g "!.playwright-mcp" -g "!.stryker-tmp" -g "!test-results" -g "!tests" -g "!.tools" -g "!dist-tauri" -g "!src-tauri" "%RG_QUERY%" .
 set "EC=%ERRORLEVEL%"
 endlocal & set "EC=%EC%"
 echo.
@@ -310,7 +310,7 @@ if not exist "%TK%fd.exe" (
 )
 set /p "FD_PATT=Enter file pattern (e.g. *.js): "
 if not defined FD_PATT set "FD_PATT=*"
-"%TK%fd.exe" -H -g -E node_modules -E .git -E coverage -E vendor -E .opencode -E .agents -E agent -E .claude -E skills -E .env -E backstop_data -E certs -E docs -E .lh13 -E .lighthouseci -E .playwright-mcp -E .stryker-tmp -E test-results -E tests -E .tools "%FD_PATT%" .
+"%TK%fd.exe" -H -g -E node_modules -E .git -E coverage -E vendor -E .opencode -E .agents -E agent -E .claude -E skills -E .env -E backstop_data -E certs -E docs -E .lh13 -E .lighthouseci -E .playwright-mcp -E .stryker-tmp -E test-results -E tests -E .tools -E dist-tauri -E src-tauri "%FD_PATT%" .
 set "EC=%ERRORLEVEL%"
 echo.
 echo  -----------------------------------------------
@@ -347,7 +347,7 @@ echo  [OK] Using: %CLOCEXE%
 echo.
 pushd "%~dp0"
 for /f "delims=" %%a in ('powershell -NoProfile -Command "[int64]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())"') do set "T0=%%a"
-"%CLOCEXE%" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools --quiet --progress-rate=0
+"%CLOCEXE%" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools,dist-tauri,src-tauri --quiet --progress-rate=0
 set "EC=%ERRORLEVEL%"
 for /f "delims=" %%a in ('powershell -NoProfile -Command "[math]::Round((([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())-%T0%)/1000.0,1)"') do set "ELAPSED=%%a"
 popd

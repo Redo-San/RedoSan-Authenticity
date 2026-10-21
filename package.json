@@ -160,8 +160,8 @@
     "qrcode": "^1.5.4"
   },
   "optionalDependencies": {
-    "sharp": "^0.35.5",
-    "onnxruntime-node": "^1.30.0"
+    "onnxruntime-node": "^1.30.0",
+    "sharp": "^0.35.5"
   },
   "overrides": {
     "hono": "4.13.13",
@@ -198,6 +198,7 @@
     "@noble/hashes": "^2.4.0",
     "@size-limit/preset-small-lib": "^14.0.0",
     "@stryker-mutator/core": "^10.0.0",
+    "@tauri-apps/cli": "^2.12.4",
     "backstopjs": "^6.3.25",
     "c8": "^12.0.0",
     "caniuse-lite": "^1.0.30001812",

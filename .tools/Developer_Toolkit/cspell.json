@@ -1262,7 +1262,8 @@
     "ZBASE",
     "Zisserman",
     "Cristo",
-    "goodfirstissue"
+    "goodfirstissue",
+    "nsis"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[؀-ۿ]+/"],
@@ -1303,7 +1304,10 @@
     "../../Style/simplified_helpers.js",
     "../../Style/simplified_renderers.js",
     "../../Style/lang/**",
-    "../../Assistant/assistant_data.js"
+    "../../Assistant/assistant_data.js",
+    "../../dist-tauri",
+    "../../src-tauri/target",
+    "../../src-tauri/gen"
   ],
   "dictionaries": [
     "en_US",

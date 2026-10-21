@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "RedoSan Authenticity",
+  "version": "2.0.1",
+  "identifier": "io.github.redo-san.redosan-authenticity",
+  "build": {
+    "beforeDevCommand": {
+      "script": "node scripts/tauri-prepare-assets.mjs",
+      "cwd": ".."
+    },
+    "devUrl": "http://localhost:8080",
+    "beforeBuildCommand": {
+      "script": "node scripts/tauri-prepare-assets.mjs",
+      "cwd": ".."
+    },
+    "frontendDist": "../dist-tauri"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "RedoSan Authenticity",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 960,
+        "minHeight": 640
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "connect-src": "'self' ipc: http://ipc.localhost",
+        "img-src": "'self' asset: http://asset.localhost blob: data:",
+        "style-src": "'self' 'unsafe-inline'",
+        "script-src": "'self' 'wasm-unsafe-eval'"
+      },
+      "capabilities": ["main-capability"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "icon": ["icons/icon.ico"],
+    "category": "Utility",
+    "shortDescription": "Client-side digital authenticity toolkit (watermark, fingerprint, C2PA, forensics)",
+    "publisher": "Redo-San",
+    "license": "GPL-2.0-or-later"
+  }
+}

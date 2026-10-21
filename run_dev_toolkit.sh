@@ -239,9 +239,9 @@ run_cloc() {
   set +e
   start_s=$(date +%s)
   if [ -n "$RUNNER" ]; then
-    "$RUNNER" "$CLI" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools --quiet --progress-rate=0
+    "$RUNNER" "$CLI" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools,dist-tauri,src-tauri --quiet --progress-rate=0
   else
-    "$CLI" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools --quiet --progress-rate=0
+    "$CLI" . --exclude-dir=node_modules,.git,vendor,coverage,.opencode,.agents,agent,.claude,skills,.env,backstop_data,certs,docs,.lh13,.lighthouseci,.playwright-mcp,.stryker-tmp,test-results,tests,.tools,dist-tauri,src-tauri --quiet --progress-rate=0
   fi
   ec=$?
   end_s=$(date +%s)
@@ -344,7 +344,7 @@ run_rg() {
   read -r RG_QUERY
   RG_QUERY=${RG_QUERY:-.}
   set +e
-  "$RG" -n --no-ignore -g "!node_modules" -g "!.git" -g "!coverage" -g "!vendor" -g "!.opencode" -g "!.agents" -g "!agent" -g "!.claude" -g "!skills" -g "!.env" -g "!backstop_data" -g "!certs" -g "!docs" -g "!.lh13" -g "!.lighthouseci" -g "!.playwright-mcp" -g "!.stryker-tmp" -g "!test-results" -g "!tests" -g "!.tools" "$RG_QUERY" .
+  "$RG" -n --no-ignore -g "!node_modules" -g "!.git" -g "!coverage" -g "!vendor" -g "!.opencode" -g "!.agents" -g "!agent" -g "!.claude" -g "!skills" -g "!.env" -g "!backstop_data" -g "!certs" -g "!docs" -g "!.lh13" -g "!.lighthouseci" -g "!.playwright-mcp" -g "!.stryker-tmp" -g "!test-results" -g "!tests" -g "!.tools" -g "!dist-tauri" -g "!src-tauri" "$RG_QUERY" .
   ec=$?
   set -e
   printf '\n'
@@ -379,7 +379,7 @@ run_fd() {
   read -r FD_PATT
   FD_PATT=${FD_PATT:-*}
   set +e
-  "$FD" -H -g -E node_modules -E .git -E coverage -E vendor -E .opencode -E .agents -E agent -E .claude -E skills -E .env -E backstop_data -E certs -E docs -E .lh13 -E .lighthouseci -E .playwright-mcp -E .stryker-tmp -E test-results -E tests -E .tools "$FD_PATT" .
+  "$FD" -H -g -E node_modules -E .git -E coverage -E vendor -E .opencode -E .agents -E agent -E .claude -E skills -E .env -E backstop_data -E certs -E docs -E .lh13 -E .lighthouseci -E .playwright-mcp -E .stryker-tmp -E test-results -E tests -E .tools -E dist-tauri -E src-tauri "$FD_PATT" .
   ec=$?
   set -e
   printf '\n'
@@ -478,7 +478,7 @@ menu() {
     15) run_rg ;;
     16) run_fd ;;
     17) run "TypeDoc"        "$BIN"typedoc --options "$ROOT/.tools/Developer_Toolkit/typedoc.json" ;;
-    18) run "Markdownlint"   "$BIN"markdownlint --config "$ROOT/.tools/Developer_Toolkit/.markdownlint.json" "**/*.md" --ignore coverage --ignore node_modules --ignore vendor --ignore .opencode --ignore .agents --ignore agent --ignore .claude --ignore skills --ignore .env --ignore backstop_data --ignore certs --ignore docs --ignore .lh13 --ignore .lighthouseci --ignore .playwright-mcp --ignore .stryker-tmp --ignore test-results --ignore tests --ignore .tools ;;
+    18) run "Markdownlint"   "$BIN"markdownlint --config "$ROOT/.tools/Developer_Toolkit/.markdownlint.json" "**/*.md" --ignore coverage --ignore node_modules --ignore vendor --ignore .opencode --ignore .agents --ignore agent --ignore .claude --ignore skills --ignore .env --ignore backstop_data --ignore certs --ignore docs --ignore .lh13 --ignore .lighthouseci --ignore .playwright-mcp --ignore .stryker-tmp --ignore test-results --ignore tests --ignore .tools --ignore dist-tauri --ignore src-tauri ;;
     19) run "Depcheck"       "$BIN"depcheck --config "$ROOT/.tools/Developer_Toolkit/.depcheckrc" ;;
     20) run "Size Limit"     "$BIN"size-limit ;;
     21) run "CSpell"         "$BIN"cspell --config "$ROOT/.tools/Developer_Toolkit/cspell.json" --no-progress "**/*.js" "**/*.css" "**/*.html" "**/*.md" "**/*.yml" "**/*.json" ;;
