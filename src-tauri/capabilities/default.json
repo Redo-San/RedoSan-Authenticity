@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-capability",
-  "description": "Main window — no filesystem, shell, dialog, or http plugin access in v1",
+  "description": "Core window/event/path defaults for the main window; no fs, shell, dialog, or http plugin access",
   "windows": ["main"],
   "permissions": [
     "core:path:default",
