@@ -47,5 +47,6 @@
   "paths": {
     "@/*": ["Style/*"],
     "@@/*": ["."]
-  }
+  },
+  "ignore": ["dist-tauri/**", "src-tauri/**"]
 }

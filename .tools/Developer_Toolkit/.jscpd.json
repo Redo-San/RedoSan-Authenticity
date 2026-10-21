@@ -30,7 +30,9 @@
     "**/.tools/**",
     "**/package-lock.json",
     "**/i18n-data.js",
-    "**/lang/*.js"
+    "**/lang/*.js",
+    "**/dist-tauri/**",
+    "**/src-tauri/**"
   ],
   "threshold": 10,
   "minTokens": 50,

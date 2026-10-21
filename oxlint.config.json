@@ -33,7 +33,10 @@
     "**/.stryker-tmp/**",
     "**/test-results/**",
     "**/tests/**",
-    "**/.tools/**"
+    "**/.tools/**",
+    "**/dist-tauri/**",
+    "**/src-tauri/target/**",
+    "**/src-tauri/gen/**"
   ],
   "env": {
     "browser": true,
