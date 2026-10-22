@@ -854,6 +854,7 @@ if (
  * @param {File} file - Image file to decode.
  * @returns {Promise<HTMLImageElement>} Resolves with the decoded image.
  */
+// eslint-disable-next-line no-unused-vars -- browser global consumed cross-file by Fingerprint/hashing.js and Watermark/watermark.js (shared.js loads first on every page)
 function loadImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image(),
