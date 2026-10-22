@@ -1,0 +1,13 @@
+# osv-scanner ignore list - read by the OpenSSF Scorecard "Vulnerabilities"
+# check (.github/workflows/scorecards.yml). Must sit next to Cargo.lock per
+# https://github.com/google/osv-scanner#ignore-vulnerabilities-by-id
+# (Scorecard help text for code-scanning alert 978 points to the same mechanism).
+# Triage evidence also recorded in Dependabot alert #82 dismissal (2026-10-21).
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0429"
+reason = "glib 0.18 VariantStrIter unsoundness (INFO severity). glib/gtk/webkit2gtk are Linux/BSD-only dependencies gated behind cfg in wry 0.57.0 (verified in registry source); this project ships Windows-only desktop builds (CI matrix windows-latest), so the affected code is never compiled. No fix exists in the 0.18.x line (last release 0.18.5); upgrading requires gtk-rs 0.20+ and a wry/tao bump."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0370"
+reason = "proc-macro-error unmaintained (INFO severity, no patched release ever published). Only reverse dependencies are glib-macros 0.18.5 and gtk3-macros 0.18.2 - the same Linux-only gtk-rs 0.18 chain as RUSTSEC-2024-0429, never compiled on Windows targets."
