@@ -143,11 +143,24 @@ var FaceAntiSpoof = {
         this._error = "Provided runtime is unusable.";
         return false;
       }
-      try {
-        ort = await this._loadRuntime(options.runtimeUrl || this.RUNTIME_URL);
-      } catch (e) {
-        this._error = e.message;
-        return false;
+      if (options.runtimeUrl) {
+        try {
+          ort = await this._loadRuntime(options.runtimeUrl);
+        } catch (e) {
+          this._error = e.message;
+          return false;
+        }
+      } else {
+        try {
+          ort = await this._loadRuntime(this._localRuntimeUrl());
+        } catch (e1) {
+          try {
+            ort = await this._loadRuntime(this.RUNTIME_URL);
+          } catch (e2) {
+            this._error = e2.message;
+            return false;
+          }
+        }
       }
     }
     this._runtime = ort;
@@ -176,9 +189,18 @@ var FaceAntiSpoof = {
    * @returns {Promise<ArrayBuffer>}
    */
   _fetchModelBytes: async function (url) {
-    var res;
+    var res, local;
     if (typeof fetch !== "function") {
       throw new Error("Model integrity verification requires fetch support.");
+    }
+    local = this._localModelUrl(url);
+    if (local) {
+      try {
+        res = await fetch(local, { cache: "no-store" });
+        if (res.ok) return res.arrayBuffer();
+      } catch (e) {
+        /* local mirror unavailable - fall through to the remote source */
+      }
     }
     res = await fetch(url);
     if (!res.ok)
@@ -186,6 +208,38 @@ var FaceAntiSpoof = {
         "Model download failed: HTTP " + res.status + " for " + url,
       );
     return res.arrayBuffer();
+  },
+
+  /**
+   * Local mirror path for the default model; null for any other URL so
+   * custom URLs and test fixtures keep hitting the network directly.
+   * @param {string} url
+   * @returns {string|null}
+   */
+  _localModelUrl: function (url) {
+    if (url !== this.MODEL_URL) return null;
+    var prefix =
+      typeof document !== "undefined" &&
+      document.documentElement &&
+      document.documentElement.dataset.standalone
+        ? "../../../"
+        : "";
+    return prefix + "vendor/face/minifasnet_v2.onnx";
+  },
+
+  /**
+   * Vendored onnxruntime-web script fetched by `npm run assets:desktop`.
+   * Tauri builds require it (offline); web builds fall back to RUNTIME_URL.
+   * @returns {string}
+   */
+  _localRuntimeUrl: function () {
+    var prefix =
+      typeof document !== "undefined" &&
+      document.documentElement &&
+      document.documentElement.dataset.standalone
+        ? "../../../"
+        : "";
+    return prefix + "vendor/ort/ort.min.js";
   },
 
   /**

@@ -919,12 +919,43 @@ function convTimeout(promise, ms) {
   ]);
 }
 
+var convCorePathCache = null;
+
+/**
+ * Resolve the FFmpeg core script URL: vendored copy first so offline
+ * (Tauri) builds never touch the network, CDN fallback when the local
+ * asset was not fetched into vendor/ffmpeg/. A successful local probe is
+ * cached so conversions after the first do not re-download it; the CDN
+ * fallback is not cached, so a later-fetched vendor copy still wins.
+ * @returns {Promise<string>} local vendor URL when reachable, CDN fallback otherwise
+ */
+async function convResolveCorePath() {
+  if (convCorePathCache) return convCorePathCache;
+  try {
+    if (typeof document !== "undefined" && document.documentElement) {
+      var base = document.documentElement.dataset.standalone ? "../../../" : "";
+      var local = base + "vendor/ffmpeg/ffmpeg-core.js";
+      var res = await fetch(local, { cache: "no-store" });
+      if (res.ok) {
+        await res.arrayBuffer();
+        convCorePathCache = local;
+        return local;
+      }
+    }
+  } catch {
+    /* local core unavailable - fall through to the CDN */
+  }
+  return "https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js";
+}
+
 /* c8 ignore start */
 
 /**
- *
- * @param file
- * @param format
+ * Convert a video file to audio: routes non-video containers through the
+ * audio path, otherwise extracts the audio track (capture then FFmpeg).
+ * @param {object} file - source video File
+ * @param {string} format - target audio format (e.g. "mp3")
+ * @returns {Promise<object>} converted audio as { blob, ext }
  */
 async function convVideo(file, format) {
   var videoContainers = [
@@ -1198,8 +1229,7 @@ async function convVideoToAudioFfmpeg(file, format) {
     throw new Error(__("conv.audio_limited", "Audio format not supported."));
   if (typeof FFmpeg === "undefined")
     throw new Error("FFmpeg library not loaded");
-  var corePath =
-    "https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js";
+  var corePath = await convResolveCorePath();
   var ff = FFmpeg.createFFmpeg({
     corePath: corePath,
     mainName: "main",
@@ -1320,8 +1350,7 @@ async function convVideoFfmpeg(file, format) {
 
   if (typeof FFmpeg === "undefined")
     throw new Error("FFmpeg library not loaded");
-  var corePath =
-    "https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js";
+  var corePath = await convResolveCorePath();
   var ff = FFmpeg.createFFmpeg({
     corePath: corePath,
     mainName: "main",

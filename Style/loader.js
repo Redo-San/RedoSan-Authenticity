@@ -11,9 +11,9 @@
     qrious: "vendor/qrious.min.js",
     jszip: "vendor/jszip.min.js",
     opentimestamps: "vendor/opentimestamps.min.js",
-    docx: "https://cdn.jsdelivr.net/npm/docx@8.5.0",
-    human: "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/dist/human.js",
-    lamejs: "https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.all.min.js",
+    docx: "vendor/docx.umd.min.js",
+    human: "vendor/human.js",
+    lamejs: "vendor/lame.all.min.js",
   };
 
   var CERT_STACK = [

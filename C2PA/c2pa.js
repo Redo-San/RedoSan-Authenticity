@@ -11,10 +11,13 @@
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
 })(); /* c8 ignore stop */
-import { createC2pa } from "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm";
+
+var createC2pa = null;
 
 const WASM_SRC =
   "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm";
+// Identical to the `sha256` pin for vendor/c2pa/c2pa_bg.wasm in
+// scripts/fetch-desktop-assets.mjs — re-pin both together.
 const EXPECTED_WASM_HASH =
   "640d8e02f9d6d8e2c919f3795126d049c4800ce2e71611322ae352a9e075c9ea";
 
@@ -74,24 +77,89 @@ async function sha256Hex(buf) {
 
 /* c8 ignore start */
 /**
- *
+ * Resolve the engine module: vendored copy first (offline Tauri builds),
+ * CDN +esm fallback when vendor/c2pa/index.js was not fetched. The resolved
+ * engine (including a CDN fallback) is cached for the session and the local
+ * path is not retried afterwards.
+ * @returns {Promise<(options: {wasmSrc: string}) => Promise<object>>} engine
+ * factory invoked as `engine({ wasmSrc })` to boot the C2PA engine
+ */
+async function loadC2paEngine() {
+  if (createC2pa) return createC2pa;
+  var mod;
+  try {
+    // fetched into vendor/ by `npm run assets:desktop` (offline Tauri builds)
+
+    mod = await import("../vendor/c2pa/index.js");
+  } catch (error) {
+    // Never fail silently: in strict-CSP Tauri builds the CDN import below
+    // will be blocked and this warn marks the broken vendor/ state first.
+    console.warn(
+      "[c2pa] vendored engine unavailable (run `npm run assets:desktop`), " +
+        "falling back to CDN:",
+      error,
+    );
+    mod =
+      await import("https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm");
+  }
+  // First-wins cache: whichever candidate (vendored or CDN) resolves first is
+  // cached for the session; the other path is not retried (documented above).
+  createC2pa = mod.createC2pa || mod.default || null;
+  if (!createC2pa) {
+    throw new Error("C2PA engine module did not export createC2pa");
+  }
+  return createC2pa;
+}
+
+/**
+ * Fetch the C2PA WASM from local vendor first (standalone builds), fall back
+ * to the CDN, and verify its pinned SHA-256 before caching it as a blob URL.
+ * @returns {Promise<string>} object URL of the integrity-verified WASM module
  */
 async function ensureVerifiedWasm() {
   if (!verifiedWasmUrl) {
-    const wasmTimeout = new Promise(function (_, reject) {
-      setTimeout(function () {
-        reject(new Error("C2PA WASM download timed out"));
-      }, 30_000);
-    });
-    const wasmResp = await Promise.race([fetch(WASM_SRC), wasmTimeout]);
-    const wasmBuf = await wasmResp.arrayBuffer();
-    const wasmHash = await sha256Hex(wasmBuf);
-    if (wasmHash !== EXPECTED_WASM_HASH) {
-      throw new Error(
-        "C2PA WASM integrity check failed — possible supply-chain attack",
-      );
+    var prefix =
+      typeof document !== "undefined" &&
+      document.documentElement &&
+      document.documentElement.dataset.standalone
+        ? "../../../"
+        : "";
+    var candidates = [prefix + "vendor/c2pa/c2pa_bg.wasm", WASM_SRC];
+    var wasmBuf = null;
+    var lastErr = null;
+    for (var candidate of candidates) {
+      try {
+        var wasmTimeout = new Promise(function (_, reject) {
+          setTimeout(function () {
+            reject(new Error("C2PA WASM download timed out"));
+          }, 30_000);
+        });
+        var wasmResp = await Promise.race([fetch(candidate), wasmTimeout]);
+        if (!wasmResp.ok) continue;
+        var buf = await wasmResp.arrayBuffer();
+        var wasmHash = await sha256Hex(buf);
+        if (wasmHash !== EXPECTED_WASM_HASH) {
+          throw new Error(
+            "C2PA WASM integrity check failed — possible supply-chain attack",
+          );
+        }
+        wasmBuf = buf;
+        break;
+      } catch (error) {
+        lastErr = error;
+        if (
+          error &&
+          error.message &&
+          error.message.includes("integrity check failed")
+        ) {
+          throw error;
+        }
+      }
     }
-    const wasmBlob = new Blob([wasmBuf], { type: "application/wasm" });
+    if (!wasmBuf) {
+      throw lastErr || new Error("C2PA WASM download failed");
+    }
+    var wasmBlob = new Blob([wasmBuf], { type: "application/wasm" });
     verifiedWasmUrl = URL.createObjectURL(wasmBlob);
   }
   return verifiedWasmUrl;
@@ -108,8 +176,9 @@ async function getC2pa() {
         reject(new Error("C2PA engine timed out initializing"));
       }, 20_000);
     });
+    const engine = await loadC2paEngine();
     c2paInstance = await Promise.race([
-      createC2pa({ wasmSrc: verified }),
+      engine({ wasmSrc: verified }),
       engineTimeout,
     ]);
   }

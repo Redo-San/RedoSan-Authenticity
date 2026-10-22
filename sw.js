@@ -172,6 +172,15 @@ var JS_WHITELIST = new Set([
   "/RedoSan-Authenticity/Document_Watermark/text_extractor.js",
   "/RedoSan-Authenticity/Document_Watermark/document_watermark.js",
   "/RedoSan-Authenticity/vendor/pdf-lib.min.js",
+  // A3 offline desktop assets (scripts/fetch-desktop-assets.mjs)
+  "/RedoSan-Authenticity/vendor/human.js",
+  "/RedoSan-Authenticity/vendor/lame.all.min.js",
+  "/RedoSan-Authenticity/vendor/ffmpeg/ffmpeg-core.js",
+  "/RedoSan-Authenticity/vendor/ffmpeg/ffmpeg-core.worker.js",
+  "/RedoSan-Authenticity/vendor/ort/ort.min.js",
+  "/RedoSan-Authenticity/vendor/ort/ort-wasm-simd-threaded.mjs",
+  "/RedoSan-Authenticity/vendor/c2pa/index.js",
+  "/RedoSan-Authenticity/vendor/c2pa/c2pa-DKxSS-my.js",
   "/RedoSan-Authenticity/scripts/fix-orphan-labels.js",
   "/RedoSan-Authenticity/.tools/Developer_Toolkit/eslint.config.mjs",
   "/RedoSan-Authenticity/.tools/Developer_Toolkit/commitlint.config.mjs",
@@ -385,6 +394,13 @@ var JSON_WHITELIST = new Set([
   "/RedoSan-Authenticity/Style/lang/zh.json",
   // Pre-built search index (fetched by Style/search.js)
   "/RedoSan-Authenticity/Style/pages/search/search-index.json",
+  // Human model manifests (A3 offline desktop assets, face_engine probe)
+  "/RedoSan-Authenticity/vendor/human-models/models.json",
+  "/RedoSan-Authenticity/vendor/human-models/blazeface.json",
+  "/RedoSan-Authenticity/vendor/human-models/faceres.json",
+  "/RedoSan-Authenticity/vendor/human-models/facemesh.json",
+  "/RedoSan-Authenticity/vendor/human-models/iris.json",
+  "/RedoSan-Authenticity/vendor/human-models/emotion.json",
 ]);
 
 // Whitelist of legitimate Markdown files served by the site.

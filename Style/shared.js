@@ -714,14 +714,10 @@ if (typeof ensureLib === "undefined") {
     ],
     docx: [
       "vendor/docx.umd.min.js",
-      "https://cdn.jsdelivr.net/npm/docx@8.5.0/dist/index.js",
-      "https://unpkg.com/docx@8.5.0/build/index.js",
-      "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js",
+      "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js",
+      "https://unpkg.com/docx@8.5.0/build/index.umd.js",
     ],
-    OpenTimestamps: [
-      "vendor/opentimestamps.min.js",
-      "https://cdn.jsdelivr.net/npm/opentimestamps.min.js",
-    ],
+    OpenTimestamps: ["vendor/opentimestamps.min.js"],
   };
   /**
    * Ensure a vendor library global (jspdf, docx, QRious, JSZip,

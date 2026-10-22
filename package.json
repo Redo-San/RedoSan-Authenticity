@@ -96,6 +96,7 @@
     "dom-review": "node cli/tests/dom_check.js",
     "id-forge": "node cli/lib/id_forge.js",
     "sitemap": "node scripts/generate-sitemap.js",
+    "assets:desktop": "node scripts/fetch-desktop-assets.mjs",
     "test:e2e-voice-biometric": "node --test --test-concurrency=1 --test-timeout=600000 cli/tests/e2e/mpa/mpa_voice_biometric_test.js"
   },
   "keywords": [

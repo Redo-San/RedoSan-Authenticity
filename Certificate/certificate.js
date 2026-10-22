@@ -166,9 +166,8 @@ function ensureLib(name) {
       case "docx": {
         urls = [
           vbase + "docx.umd.min.js",
-          "https://cdn.jsdelivr.net/npm/docx@8.5.0",
-          "https://unpkg.com/docx@8.5.0/build/index.js",
-          "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.js",
+          "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js",
+          "https://unpkg.com/docx@8.5.0/build/index.umd.js",
         ];
         break;
       }

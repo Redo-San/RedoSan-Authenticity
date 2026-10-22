@@ -46,6 +46,11 @@ jobs:
           reporter: github-pr-review
           filter_mode: diff_context
           fail_on_error: false
+          # vendor/ holds sha-pinned third-party bundles that are never
+          # edited (AGENTS.md C6); vendor/human.js (~1.5 MB single line)
+          # also exceeds GitHub's diff-comment size limit (API 422), which
+          # failed this job on PR #575.
           exclude: |
             **/Style/lang/*.json
             **/Style/lang/i18n-data*.js
+            **/vendor/**

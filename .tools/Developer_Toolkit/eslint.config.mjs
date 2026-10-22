@@ -149,7 +149,14 @@ export default [
       "no-useless-assignment": "off",
       "no-useless-escape": "off",
       "no-useless-catch": "off",
-      "import-x/no-unresolved": ["warn", { ignore: ["^https://"] }],
+      // "^https://" = remote CDN fallback imports (never resolvable locally);
+      // vendor/c2pa/index.js is fetched by `npm run assets:desktop` and is
+      // gitignored, so it is absent in CI checkouts — a local-only inline
+      // disable comment cannot be used (lint-staged --fix strips it as unused).
+      "import-x/no-unresolved": [
+        "warn",
+        { ignore: ["^https://", "vendor[/\\\\]c2pa[/\\\\]index\\.js$"] },
+      ],
       "import-x/no-named-as-default": "off",
       "import-x/no-named-as-default-member": "off",
       "import-x/namespace": "off",
