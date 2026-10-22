@@ -61,6 +61,82 @@ const REWRITE_PAIRS = [
 // is not preceded by a URL host character (letters, digits, :, ., _, ~, -).
 const ROOT_ABS_RE = /(^|[^A-Za-z0-9:._~-])\/RedoSan-Authenticity\//;
 
+// Plan A5: Tauri pages run under a strict CSP with no remote origins, so the
+// CDN preconnect hints are dead weight in the desktop bundle only (the web
+// build keeps them). Matches both shapes with/without crossorigin.
+const PRECONNECT_RE =
+  /[ \t]*<link\s+rel="preconnect"\s+href="https:\/\/(?:cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|huggingface\.co)"[^>]*\/?>\r?\n?/g;
+
+// Offline inventory (plan A3): committed vendor libs + everything fetched by
+// scripts/fetch-desktop-assets.mjs. Missing entries fail the build fast with
+// an actionable message (the allowlist copy would silently package holes).
+const REQUIRED_ASSETS = [
+  "vendor/docx.umd.min.js",
+  "vendor/lame.all.min.js",
+  "vendor/human.js",
+  "vendor/ffmpeg/ffmpeg-core.js",
+  "vendor/ffmpeg/ffmpeg-core.wasm",
+  "vendor/ffmpeg/ffmpeg-core.worker.js",
+  "vendor/ort/ort.min.js",
+  "vendor/ort/ort-wasm-simd-threaded.mjs",
+  "vendor/ort/ort-wasm-simd-threaded.wasm",
+  "vendor/human-models/models.json",
+  "vendor/human-models/blazeface.json",
+  "vendor/human-models/blazeface.bin",
+  "vendor/human-models/faceres.json",
+  "vendor/human-models/faceres.bin",
+  "vendor/human-models/facemesh.json",
+  "vendor/human-models/facemesh.bin",
+  "vendor/human-models/iris.json",
+  "vendor/human-models/iris.bin",
+  "vendor/human-models/emotion.json",
+  "vendor/human-models/emotion.bin",
+  "vendor/c2pa/index.js",
+  "vendor/c2pa/c2pa-DKxSS-my.js",
+  "vendor/c2pa/c2pa_bg.wasm",
+  "vendor/face/w600k_mbf.onnx",
+  "vendor/face/minifasnet_v2.onnx",
+];
+
+// Voice ONNX weights stay runtime-fetched by design (pre-existing SRI design,
+// ~200 MB): warn-only, never a build failure (plan A3 excluded them).
+const OPTIONAL_VOICE_MODELS = [
+  "Voice_Biometric/models/silero_vad.onnx",
+  "Voice_Biometric/models/ecapa-speaker-v1.onnx",
+  "Voice_Biometric/models/model_quantized.onnx",
+  "Voice_Biometric/models/aasist.onnx",
+  "Voice_Biometric/models/aasist-l.onnx",
+];
+
+/**
+ * Fail the build when the offline asset set is incomplete; warn only for the
+ * intentionally runtime-fetched voice weights.
+ * @returns {void} exits 1 on a missing required asset
+ */
+function checkOfflineAssets() {
+  const missing = REQUIRED_ASSETS.filter(
+    (rel) => !existsSync(path.join(ROOT, rel)),
+  );
+  if (missing.length > 0) {
+    for (const rel of missing)
+      console.error(`[tauri-prepack] missing asset: ${rel}`);
+    console.error(
+      `[tauri-prepack] FAIL: ${missing.length} offline asset(s) missing - ` +
+        "run `npm run assets:desktop` (scripts/fetch-desktop-assets.mjs) first",
+    );
+    process.exit(1);
+  }
+  const voiceMissing = OPTIONAL_VOICE_MODELS.filter(
+    (rel) => !existsSync(path.join(ROOT, rel)),
+  );
+  if (voiceMissing.length > 0) {
+    console.warn(
+      `[tauri-prepack] warn: ${voiceMissing.length} voice model(s) absent - ` +
+        "voice features fall back to the network at runtime",
+    );
+  }
+}
+
 /**
  * Recursively list files under dir, skipping dotfiles and Thumbs.db.
  * @param {string} dir - directory to walk
@@ -84,6 +160,7 @@ function walk(dir) {
  * @returns {void} exits 1 on missing allowlist entry or gate failure
  */
 function main() {
+  checkOfflineAssets();
   rmSync(DIST, { recursive: true, force: true });
   mkdirSync(DIST, { recursive: true });
 
@@ -91,6 +168,7 @@ function main() {
   let totalBytes = 0;
   let rewrittenFiles = 0;
   let rewrittenHits = 0;
+  let preconnectStripped = 0;
 
   for (const entry of ALLOWLIST) {
     const src = path.join(ROOT, entry);
@@ -125,10 +203,13 @@ function main() {
       }
       after = after.split(from).join(to);
     }
-    if (hits > 0) {
+    const stripped = (after.match(PRECONNECT_RE) || []).length;
+    if (stripped > 0) after = after.replace(PRECONNECT_RE, "");
+    if (hits > 0 || stripped > 0) {
       writeFileSync(file, after);
       rewrittenFiles += 1;
       rewrittenHits += hits;
+      preconnectStripped += stripped;
     }
   }
 
@@ -152,7 +233,8 @@ function main() {
   const mb = (totalBytes / 1024 / 1024).toFixed(2);
   console.log(
     `[tauri-prepack] ${fileCount} files, ${mb} MiB -> dist-tauri/; ` +
-      `rewrote ${rewrittenHits} prefix occurrence(s) in ${rewrittenFiles} file(s); gate: 0 survivors`,
+      `rewrote ${rewrittenHits} prefix occurrence(s) in ${rewrittenFiles} file(s); ` +
+      `stripped ${preconnectStripped} preconnect hint(s); gate: 0 survivors`,
   );
 }
 

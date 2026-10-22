@@ -33,3 +33,6 @@
 *.map binary
 *.min.js binary
 *.min.css binary
+
+# sha256-pinned vendored artifacts (byte-exact; no EOL/whitespace rewriting)
+vendor/human.js binary

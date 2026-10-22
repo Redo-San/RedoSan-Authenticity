@@ -148,5 +148,11 @@ vkprobe.obj
 dist-tauri/
 src-tauri/target/
 
+# Desktop offline assets fetched by `npm run assets:desktop` (scripts/fetch-desktop-assets.mjs)
+/vendor/ffmpeg/
+/vendor/ort/
+/vendor/human-models/
+/vendor/c2pa/
+/vendor/face/
 
 src-tauri/gen/schemas/

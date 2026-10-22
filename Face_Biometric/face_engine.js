@@ -58,7 +58,33 @@ FaceEngine.prototype.loadModels = async function () {
       "@vladmandic/human is not loaded. Include the library via script tag or pass a human instance.",
     );
   if (!this._human) {
-    this._human = new HumanCtor({ modelBasePath: this._modelBasePath });
+    var modelBase = this._modelBasePath;
+    /* Offline (Tauri) builds ship vendor/human-models/; probe it first and
+       keep the CDN default only as fallback. Custom paths are respected
+       as-is. Kept in a local var so the constructor default stays stable. */
+    if (
+      modelBase ===
+      "https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/"
+    ) {
+      try {
+        var localBase =
+          typeof document !== "undefined" &&
+          document.documentElement &&
+          document.documentElement.dataset.standalone
+            ? "../../../vendor/human-models/"
+            : "vendor/human-models/";
+        var probeResp = await fetch(localBase + "blazeface.json", {
+          cache: "no-store",
+        });
+        if (probeResp.ok) {
+          await probeResp.arrayBuffer();
+          modelBase = localBase;
+        }
+      } catch (e) {
+        /* local models unavailable - fall back to the CDN default */
+      }
+    }
+    this._human = new HumanCtor({ modelBasePath: modelBase });
   }
   // Detect WebGL support for backend selection
   backend = "webgl";
