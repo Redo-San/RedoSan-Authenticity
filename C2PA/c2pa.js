@@ -91,7 +91,14 @@ async function loadC2paEngine() {
     // fetched into vendor/ by `npm run assets:desktop` (offline Tauri builds)
 
     mod = await import("../vendor/c2pa/index.js");
-  } catch {
+  } catch (error) {
+    // Never fail silently: in strict-CSP Tauri builds the CDN import below
+    // will be blocked and this warn marks the broken vendor/ state first.
+    console.warn(
+      "[c2pa] vendored engine unavailable (run `npm run assets:desktop`), " +
+        "falling back to CDN:",
+      error,
+    );
     mod =
       await import("https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm");
   }

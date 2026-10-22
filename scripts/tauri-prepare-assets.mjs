@@ -67,7 +67,10 @@ const ROOT_ABS_RE = /(^|[^A-Za-z0-9:._~-])\/RedoSan-Authenticity\//;
 
 // Plan A5: Tauri pages run under a strict CSP with no remote origins, so the
 // CDN preconnect hints are dead weight in the desktop bundle only (the web
-// build keeps them). Matches both shapes with/without crossorigin.
+// build keeps them). Matches both shapes with/without crossorigin. Repo markup
+// is uniform (rel before href, double quotes; verified 0 survivors after the
+// strip run) — update this regex together with the link templates if that
+// shape ever changes.
 const PRECONNECT_RE =
   /[ \t]*<link\s+rel="preconnect"\s+href="https:\/\/(?:cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|huggingface\.co)"[^>]*\/?>\r?\n?/g;
 
