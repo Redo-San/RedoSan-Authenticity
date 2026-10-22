@@ -1,0 +1,77 @@
+name: Tauri Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "desktop-v*"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tauri-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # v1 ships Windows only (plan A10): offline forensic use-case is the
+    # primary audience. Add ubuntu-22.04 later if demand appears; macOS
+    # needs ad-hoc signing config and is out of scope for v1.
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+    runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: write
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+
+      - uses: swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npx -y npm@11.20.0 ci
+
+      # beforeBuildCommand (tauri-prepare-assets.mjs) requires all 30
+      # offline assets, but only the 8 COMMITTED_VENDOR libs are tracked;
+      # the other 22 are SHA-256-pinned downloads fetched here.
+      - name: Fetch offline desktop assets
+        run: node scripts/fetch-desktop-assets.mjs
+
+      - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: desktop-v__VERSION__
+          releaseName: RedoSan Authenticity Desktop v__VERSION__
+          releaseBody: |
+            Unsigned Windows build (v1): Windows SmartScreen will warn on first run -
+            choose "More info" -> "Run anyway". Signing is a purchase decision tracked
+            as the future upgrade path: https://v2.tauri.app/distribute/sign/windows/
+
+            Offline-first: all runtime assets are vendored during the build; no network
+            is required after installation.
+          releaseDraft: true
+          prerelease: false
