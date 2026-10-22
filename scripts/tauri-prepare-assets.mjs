@@ -21,6 +21,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ASSETS, COMMITTED_VENDOR } from "./desktop-assets-manifest.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = path.join(ROOT, "dist-tauri");
@@ -74,39 +75,20 @@ const ROOT_ABS_RE = /(^|[^A-Za-z0-9:._~-])\/RedoSan-Authenticity\//;
 const PRECONNECT_RE =
   /[ \t]*<link\s+rel="preconnect"\s+href="https:\/\/(?:cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|huggingface\.co)"[^>]*\/?>\r?\n?/g;
 
-// Offline inventory (plan A3): committed vendor libs + everything fetched by
-// scripts/fetch-desktop-assets.mjs. Missing entries fail the build fast with
-// an actionable message (the allowlist copy would silently package holes).
+// Offline inventory (plan A3): derived from the pinned manifest in
+// scripts/fetch-desktop-assets.mjs (22 fetched + 8 committed libs) so the two
+// lists cannot drift; missing entries fail the build fast (the allowlist copy
+// would silently package holes).
 const REQUIRED_ASSETS = [
-  "vendor/docx.umd.min.js",
-  "vendor/lame.all.min.js",
-  "vendor/human.js",
-  "vendor/ffmpeg/ffmpeg-core.js",
-  "vendor/ffmpeg/ffmpeg-core.wasm",
-  "vendor/ffmpeg/ffmpeg-core.worker.js",
-  "vendor/ort/ort.min.js",
-  "vendor/ort/ort-wasm-simd-threaded.mjs",
-  "vendor/ort/ort-wasm-simd-threaded.wasm",
-  "vendor/human-models/models.json",
-  "vendor/human-models/blazeface.json",
-  "vendor/human-models/blazeface.bin",
-  "vendor/human-models/faceres.json",
-  "vendor/human-models/faceres.bin",
-  "vendor/human-models/facemesh.json",
-  "vendor/human-models/facemesh.bin",
-  "vendor/human-models/iris.json",
-  "vendor/human-models/iris.bin",
-  "vendor/human-models/emotion.json",
-  "vendor/human-models/emotion.bin",
-  "vendor/c2pa/index.js",
-  "vendor/c2pa/c2pa-DKxSS-my.js",
-  "vendor/c2pa/c2pa_bg.wasm",
-  "vendor/face/w600k_mbf.onnx",
-  "vendor/face/minifasnet_v2.onnx",
+  ...ASSETS.map((asset) => asset.dest),
+  ...COMMITTED_VENDOR.map((asset) => asset.dest),
 ];
 
 // Voice ONNX weights stay runtime-fetched by design (pre-existing SRI design,
-// ~200 MB): warn-only, never a build failure (plan A3 excluded them).
+// ~200 MB): warn-only, never a build failure (plan A3 excluded them). In the
+// Tauri build the strict CSP (no remote origins) blocks that runtime fetch, so
+// voice embedding is unavailable in the desktop app until the weights are
+// vendored (tracked as a follow-up).
 const OPTIONAL_VOICE_MODELS = [
   "Voice_Biometric/models/silero_vad.onnx",
   "Voice_Biometric/models/ecapa-speaker-v1.onnx",

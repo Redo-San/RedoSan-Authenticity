@@ -23,6 +23,19 @@ npm link        # makes the 'redosan' CLI available globally
 node dev-server.js   # local dev server on http://localhost:8080
 ```
 
+### Desktop app (Tauri)
+
+```bash
+npm run assets:desktop -- --check   # verify the 30 pinned offline assets
+npm run assets:desktop               # fetch/repair the heavy downloads
+npx tauri build                      # prepack via scripts/tauri-prepare-assets.mjs
+```
+
+Small vendor libraries are committed to git; heavy downloads (ffmpeg,
+onnxruntime, models) are gitignored and pinned by
+`scripts/fetch-desktop-assets.mjs`. CI does not build the desktop binary —
+verification is script-level (`--check` plus the prepare gates).
+
 ## Code conventions
 
 - **No comments** in code unless absolutely necessary

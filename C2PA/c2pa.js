@@ -102,6 +102,8 @@ async function loadC2paEngine() {
     mod =
       await import("https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/+esm");
   }
+  // First-wins cache: whichever candidate (vendored or CDN) resolves first is
+  // cached for the session; the other path is not retried (documented above).
   createC2pa = mod.createC2pa || mod.default || null;
   if (!createC2pa) {
     throw new Error("C2PA engine module did not export createC2pa");
