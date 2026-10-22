@@ -8,6 +8,7 @@
 // Wired as beforeDevCommand/beforeBuildCommand in src-tauri/tauri.conf.json.
 // Exits 1 if any root-absolute prefix survives the rewrite (build gate).
 // Plan: .Plans/TAURI-WXT-DISTRIBUTION-PLAN.md section A3.
+// Debug: TAURI_PREPACK_VERBOSE=1 lists every verified offline asset.
 import {
   cpSync,
   existsSync,
@@ -128,6 +129,12 @@ function checkOfflineAssets() {
         "run `npm run assets:desktop` (scripts/fetch-desktop-assets.mjs) first",
     );
     process.exit(1);
+  }
+  console.log(
+    `[tauri-prepack] offline assets ok: ${REQUIRED_ASSETS.length} present`,
+  );
+  if (process.env.TAURI_PREPACK_VERBOSE) {
+    for (const rel of REQUIRED_ASSETS) console.log(`[tauri-prepack]   ${rel}`);
   }
   const voiceMissing = OPTIONAL_VOICE_MODELS.filter(
     (rel) => !existsSync(path.join(ROOT, rel)),

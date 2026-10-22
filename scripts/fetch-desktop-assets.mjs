@@ -10,6 +10,8 @@
 // Usage:
 //   node scripts/fetch-desktop-assets.mjs          # fetch/repair
 //   node scripts/fetch-desktop-assets.mjs --check  # verify only, no network
+//   node scripts/fetch-desktop-assets.mjs --force  # re-download even when
+//                                                   # already valid (recovery)
 //
 // Pinning: every sha256/size below was computed from the artifact downloaded
 // from its pinned `url` when this manifest was authored (plan A3), then
@@ -31,6 +33,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CHECK_ONLY = process.argv.includes("--check");
+const FORCE = process.argv.includes("--force");
 
 const JSDELIVR = "https://cdn.jsdelivr.net/npm";
 const ASSETS = [
@@ -48,6 +51,13 @@ const ASSETS = [
     size: 24_383_038,
   },
   {
+    // Intentional 0 bytes: @ffmpeg/core-st@0.11.1 ships this placeholder
+    // empty upstream (verified live 2026-10: HTTP 200, empty body, sha256
+    // below = sha256 of the empty string). The single-threaded core never
+    // spawns a worker (no Worker usage in ffmpeg-core.js or converter.js);
+    // the entry stays pinned so the REQUIRED_ASSETS gate and this manifest
+    // cannot drift apart, and a future upstream change fails the size/hash
+    // check loudly instead of being silently accepted.
     dest: "vendor/ffmpeg/ffmpeg-core.worker.js",
     url: `${JSDELIVR}/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.worker.js`,
     sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -224,13 +234,19 @@ async function main() {
   const failed = [];
   for (const asset of ASSETS) {
     const abs = path.join(ROOT, asset.dest);
-    if (isValid(abs, asset)) {
+    // --force refetches valid files; --check stays offline in every mode.
+    if (isValid(abs, asset) && (CHECK_ONLY || !FORCE)) {
       skipped += 1;
       continue;
     }
     if (CHECK_ONLY) {
       failed.push(`${asset.dest} (missing or hash mismatch)`);
       continue;
+    }
+    if (asset.size >= 1024 * 1024) {
+      console.log(
+        `fetching ${asset.dest} (${(asset.size / (1024 * 1024)).toFixed(1)} MB)...`,
+      );
     }
     try {
       await download(asset);
