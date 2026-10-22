@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+/* eslint-disable security/detect-non-literal-fs-filename -- all fs paths are
+   derived from the fixed repo ROOT, the fixed dist-tauri/ copy, or the
+   explicit ALLOWLIST/REQUIRED_ASSETS constants; no user input reaches them */
 // Tauri prepack: copy the static site into dist-tauri/ and rewrite the
 // root-absolute "/RedoSan-Authenticity/" navigation prefix to relative so
 // pages work under Tauri's tauri://localhost custom protocol.

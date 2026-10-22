@@ -17,6 +17,8 @@ ignores:
   - "opencode-vibeguard"
   - "stylelint-config-standard"
   - "undici-types"
+  # invoked via `npx tauri build` (beforeDevCommand), not imported anywhere
+  - "@tauri-apps/cli"
 skipMissing:
   - "./vendor/jspdf.umd.min.js"
   - "./cli/commands/converter.js"

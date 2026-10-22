@@ -32,7 +32,8 @@
     "opencode-supermemory",
     "opencode-vibeguard",
     "stylelint-config-standard",
-    "undici-types"
+    "undici-types",
+    "@tauri-apps/cli"
   ],
   "ignoreBinaries": [
     "rg",

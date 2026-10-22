@@ -923,7 +923,7 @@ function convTimeout(promise, ms) {
  * Resolve the FFmpeg core script URL: vendored copy first so offline
  * (Tauri) builds never touch the network, CDN fallback when the local
  * asset was not fetched into vendor/ffmpeg/.
- * @returns {Promise<string>}
+ * @returns {Promise<string>} local vendor URL when reachable, CDN fallback otherwise
  */
 async function convResolveCorePath() {
   try {
@@ -945,9 +945,11 @@ async function convResolveCorePath() {
 /* c8 ignore start */
 
 /**
- *
- * @param file
- * @param format
+ * Convert a video file to audio: routes non-video containers through the
+ * audio path, otherwise extracts the audio track (capture then FFmpeg).
+ * @param {object} file - source video File
+ * @param {string} format - target audio format (e.g. "mp3")
+ * @returns {Promise<object>} converted audio as { blob, ext }
  */
 async function convVideo(file, format) {
   var videoContainers = [

@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+/* eslint-disable security/detect-non-literal-fs-filename -- every path is
+   built as path.join(ROOT, <entry>.dest) from the pinned ASSETS manifest
+   plus the fixed repo ROOT; no user or network input reaches these calls */
 // Fetch the desktop offline assets into vendor/ (gitignored; plan A3).
 // Every entry is pinned by URL + SHA-256 + size; downloads are verified
 // before landing and skipped entirely when already valid (idempotent).
@@ -161,7 +164,7 @@ const ASSETS = [
 ];
 
 /**
- * @param {Buffer} buf
+ * @param {Buffer} buf - raw bytes to digest
  * @returns {string} lowercase hex SHA-256
  */
 function sha256(buf) {
@@ -169,8 +172,8 @@ function sha256(buf) {
 }
 
 /**
- * @param {string} abs
- * @param {{sha256: string, size: number}} asset
+ * @param {string} abs - absolute path of the candidate file
+ * @param {{sha256: string, size: number}} asset - pinned manifest entry
  * @returns {boolean} true when the file exists with the pinned hash + size
  */
 function isValid(abs, asset) {
@@ -181,7 +184,7 @@ function isValid(abs, asset) {
 
 /**
  * Download one asset, verify the pin, then land it atomically.
- * @param {(typeof ASSETS)[number]} asset
+ * @param {(typeof ASSETS)[number]} asset - pinned manifest entry to fetch
  * @returns {Promise<void>} rejects on any verification failure
  */
 async function download(asset) {

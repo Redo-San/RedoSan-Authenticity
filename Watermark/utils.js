@@ -161,13 +161,15 @@ if (typeof ensureLib === "undefined") {
     ],
   };
   /**
-   *
-   * @param name
+   * @param {string} name - library key from __ensureLibUrls (e.g. "jspdf")
    */
+  // eslint-disable-next-line no-unused-vars -- global entry point awaited cross-file via globalThis (watermark.js, converter.js, tests)
   function ensureLib(name) {
     return new Promise(function (resolve, reject) {
+      // eslint-disable-next-line security/detect-object-injection -- `name` is supplied only by this module's fixed ensureLib call sites
       const check = __ensureLibGlobals[name];
       if (check && check()) return resolve();
+      // eslint-disable-next-line security/detect-object-injection -- `name` is supplied only by this module's fixed ensureLib call sites
       let urls = (__ensureLibUrls[name] || []).slice();
       if (!urls.length) return reject(new Error("Unknown library: " + name));
       const rel = urls[0];
@@ -178,6 +180,7 @@ if (typeof ensureLib === "undefined") {
         urls[0] = vbase + rel.slice("vendor/".length);
       }
       const loaded = typeof window !== "undefined" && window.__ensureLibCache;
+      // eslint-disable-next-line security/detect-object-injection -- cache key is the same fixed library name as above
       if (loaded && check && loaded[name] && check()) return resolve();
       if (!loaded) window.__ensureLibCache = {};
       const load = (i) => {

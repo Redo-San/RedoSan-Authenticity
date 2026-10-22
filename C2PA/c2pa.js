@@ -77,12 +77,15 @@ async function sha256Hex(buf) {
 /**
  * Resolve the engine module: vendored copy first (offline Tauri builds),
  * CDN +esm fallback when vendor/c2pa/index.js was not fetched.
- * @returns {Promise<Function>}
+ * @returns {Promise<(options: {wasmSrc: string}) => Promise<object>>} engine
+ * factory invoked as `engine({ wasmSrc })` to boot the C2PA engine
  */
 async function loadC2paEngine() {
   if (createC2pa) return createC2pa;
   var mod;
   try {
+    // fetched into vendor/ by `npm run assets:desktop` (offline Tauri builds)
+
     mod = await import("../vendor/c2pa/index.js");
   } catch {
     mod =
@@ -96,7 +99,9 @@ async function loadC2paEngine() {
 }
 
 /**
- *
+ * Fetch the C2PA WASM from local vendor first (standalone builds), fall back
+ * to the CDN, and verify its pinned SHA-256 before caching it as a blob URL.
+ * @returns {Promise<string>} object URL of the integrity-verified WASM module
  */
 async function ensureVerifiedWasm() {
   if (!verifiedWasmUrl) {
@@ -109,14 +114,14 @@ async function ensureVerifiedWasm() {
     var candidates = [prefix + "vendor/c2pa/c2pa_bg.wasm", WASM_SRC];
     var wasmBuf = null;
     var lastErr = null;
-    for (var ci = 0; ci < candidates.length; ci++) {
+    for (var candidate of candidates) {
       try {
         var wasmTimeout = new Promise(function (_, reject) {
           setTimeout(function () {
             reject(new Error("C2PA WASM download timed out"));
           }, 30_000);
         });
-        var wasmResp = await Promise.race([fetch(candidates[ci]), wasmTimeout]);
+        var wasmResp = await Promise.race([fetch(candidate), wasmTimeout]);
         if (!wasmResp.ok) continue;
         var buf = await wasmResp.arrayBuffer();
         var wasmHash = await sha256Hex(buf);
