@@ -16,6 +16,8 @@ var createC2pa = null;
 
 const WASM_SRC =
   "https://cdn.jsdelivr.net/npm/@contentauth/c2pa-web@0.8.1/dist/resources/c2pa_bg.wasm";
+// Identical to the `sha256` pin for vendor/c2pa/c2pa_bg.wasm in
+// scripts/fetch-desktop-assets.mjs — re-pin both together.
 const EXPECTED_WASM_HASH =
   "640d8e02f9d6d8e2c919f3795126d049c4800ce2e71611322ae352a9e075c9ea";
 
@@ -76,7 +78,9 @@ async function sha256Hex(buf) {
 /* c8 ignore start */
 /**
  * Resolve the engine module: vendored copy first (offline Tauri builds),
- * CDN +esm fallback when vendor/c2pa/index.js was not fetched.
+ * CDN +esm fallback when vendor/c2pa/index.js was not fetched. The resolved
+ * engine (including a CDN fallback) is cached for the session and the local
+ * path is not retried afterwards.
  * @returns {Promise<(options: {wasmSrc: string}) => Promise<object>>} engine
  * factory invoked as `engine({ wasmSrc })` to boot the C2PA engine
  */

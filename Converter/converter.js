@@ -919,13 +919,18 @@ function convTimeout(promise, ms) {
   ]);
 }
 
+var convCorePathCache = null;
+
 /**
  * Resolve the FFmpeg core script URL: vendored copy first so offline
  * (Tauri) builds never touch the network, CDN fallback when the local
- * asset was not fetched into vendor/ffmpeg/.
+ * asset was not fetched into vendor/ffmpeg/. A successful local probe is
+ * cached so conversions after the first do not re-download it; the CDN
+ * fallback is not cached, so a later-fetched vendor copy still wins.
  * @returns {Promise<string>} local vendor URL when reachable, CDN fallback otherwise
  */
 async function convResolveCorePath() {
+  if (convCorePathCache) return convCorePathCache;
   try {
     if (typeof document !== "undefined" && document.documentElement) {
       var base = document.documentElement.dataset.standalone ? "../../../" : "";
@@ -933,6 +938,7 @@ async function convResolveCorePath() {
       var res = await fetch(local, { cache: "no-store" });
       if (res.ok) {
         await res.arrayBuffer();
+        convCorePathCache = local;
         return local;
       }
     }

@@ -148,7 +148,10 @@ vkprobe.obj
 dist-tauri/
 src-tauri/target/
 
-# Desktop offline assets fetched by `npm run assets:desktop` (scripts/fetch-desktop-assets.mjs)
+# Desktop offline assets fetched by `npm run assets:desktop` (scripts/fetch-desktop-assets.mjs).
+# Heavy, reproducible downloads stay out of git; the small committed vendor libs
+# (docx.umd.min.js, human.js, lame.all.min.js, pdf-lib/jspdf/qrious/jszip/opentimestamps)
+# predate that script and are intentionally shipped in-repo.
 /vendor/ffmpeg/
 /vendor/ort/
 /vendor/human-models/

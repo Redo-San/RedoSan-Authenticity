@@ -10,6 +10,13 @@
 // Usage:
 //   node scripts/fetch-desktop-assets.mjs          # fetch/repair
 //   node scripts/fetch-desktop-assets.mjs --check  # verify only, no network
+//
+// Pinning: every sha256/size below was computed from the artifact downloaded
+// from its pinned `url` when this manifest was authored (plan A3), then
+// re-verified on every fetch and by `--check`.
+// Re-pinning (upstream version bump): point `url` at the new release,
+// download it once, recompute that entry's sha256 and size, run `--check`,
+// and commit the manifest update together with the upstream version note.
 import { createHash } from "node:crypto";
 import {
   existsSync,
