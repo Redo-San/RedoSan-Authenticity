@@ -42,14 +42,15 @@ jobs:
         with:
           toolchain: stable
 
-      - uses: swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-        with:
-          workspaces: "./src-tauri -> target"
-
+      # No cache steps here (plan A10 listed rust-cache + setup-node npm
+      # cache): zizmor's cache-poisoning audit requires release workflows
+      # to stay off GitHub Actions caches entirely - a poisoned cache from
+      # an untrusted workflow could otherwise pivot into the installers
+      # this workflow publishes. Tag-only runs build cold, which is fine.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-          cache: npm
+          package-manager-cache: false
 
       - name: Install npm dependencies
         run: npx -y npm@11.20.0 ci
