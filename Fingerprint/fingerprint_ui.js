@@ -22,7 +22,16 @@
 async function downloadFingerprint(format) {
   closeDownloadModal();
   var r = getResult("fpResult");
-  if (!r) return;
+  if (!r) {
+    if (typeof rsToast === "function")
+      rsToast(
+        typeof rsT === "function"
+          ? rsT("dlmgr.no_result", "No result yet — run the tool first.")
+          : "No result yet",
+        "err",
+      );
+    return;
+  }
 
   var name = r.file_info.file_name;
 

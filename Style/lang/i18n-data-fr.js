@@ -1331,4 +1331,18 @@ window.__I18N_DATA.fr = {
   "voice.limitation.lowMagnitude":
     "L'embedding a produit une amplitude de signal étonnamment faible ; l'entrée n'a peut-être pas contenu de parole claire. Considérez les identifiants obtenus comme à faible confiance.",
   "footer.classic_mode": "Version classique",
+  "dlmgr.title": "Téléchargements",
+  "dlmgr.saved": "Téléchargement enregistré : {0}",
+  "dlmgr.saved_generic": "Téléchargement enregistré",
+  "dlmgr.no_result": "Aucun résultat pour l'instant — lancez d'abord l'outil.",
+  "dlmgr.empty": "Aucun téléchargement",
+  "dlmgr.reveal": "Afficher dans le dossier",
+  "dlmgr.copy": "Copier le chemin",
+  "dlmgr.copied": "Chemin copié dans le presse-papiers",
+  "dlmgr.copy_failed": "Impossible de copier le chemin",
+  "dlmgr.remove": "Retirer",
+  "dlmgr.clear": "Tout effacer",
+  "dlmgr.cleared": "Liste des téléchargements effacée",
+  "dlmgr.open_failed": "Impossible d'ouvrir le dossier",
+  "dlmgr.link_failed": "Impossible d'ouvrir le lien",
 };

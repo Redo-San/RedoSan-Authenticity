@@ -1063,5 +1063,19 @@
   "voice.recorder_max_label": "최대",
   "voice.status.maxDurationReached": "최대 녹음 시간(3분)에 도달했습니다. 녹음이 자동으로 중지되었습니다.",
   "voice.error.tooLong": "오디오가 최대 시간(3분)을 초과합니다. 파일을 트리밍해 주세요.",
-  "voice.countdown_seconds": "남은 시간 {0}초"
+  "voice.countdown_seconds": "남은 시간 {0}초",
+  "dlmgr.title": "다운로드",
+  "dlmgr.saved": "다운로드 저장됨: {0}",
+  "dlmgr.saved_generic": "다운로드 저장됨",
+  "dlmgr.no_result": "아직 결과가 없습니다 — 먼저 도구를 실행하세요.",
+  "dlmgr.empty": "아직 다운로드가 없습니다",
+  "dlmgr.reveal": "폴더에서 보기",
+  "dlmgr.copy": "경로 복사",
+  "dlmgr.copied": "경로가 클립보드에 복사되었습니다",
+  "dlmgr.copy_failed": "경로를 복사할 수 없습니다",
+  "dlmgr.remove": "제거",
+  "dlmgr.clear": "모두 지우기",
+  "dlmgr.cleared": "다운로드 목록을 지웠습니다",
+  "dlmgr.open_failed": "폴더를 열 수 없습니다",
+  "dlmgr.link_failed": "링크를 열 수 없습니다"
 }

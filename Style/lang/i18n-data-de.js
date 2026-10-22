@@ -1331,4 +1331,18 @@ window.__I18N_DATA.de = {
   "voice.limitation.lowMagnitude":
     "Die Einbettung erzeugte eine unerwartet niedrige Signalamplitude; der Eingang enthielt möglicherweise keine deutliche Sprache. Behandeln Sie die erzeugten Identifikatoren als niedrig konfident.",
   "footer.classic_mode": "Klassische Version",
+  "dlmgr.title": "Downloads",
+  "dlmgr.saved": "Download gespeichert: {0}",
+  "dlmgr.saved_generic": "Download gespeichert",
+  "dlmgr.no_result": "Noch kein Ergebnis — führen Sie zuerst das Tool aus.",
+  "dlmgr.empty": "Noch keine Downloads",
+  "dlmgr.reveal": "Im Ordner anzeigen",
+  "dlmgr.copy": "Pfad kopieren",
+  "dlmgr.copied": "Pfad in die Zwischenablage kopiert",
+  "dlmgr.copy_failed": "Pfad konnte nicht kopiert werden",
+  "dlmgr.remove": "Entfernen",
+  "dlmgr.clear": "Alle löschen",
+  "dlmgr.cleared": "Download-Liste geleert",
+  "dlmgr.open_failed": "Ordner konnte nicht geöffnet werden",
+  "dlmgr.link_failed": "Link konnte nicht geöffnet werden",
 };

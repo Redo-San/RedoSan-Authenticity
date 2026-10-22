@@ -1322,4 +1322,18 @@ window.__I18N_DATA.es = {
   "voice.limitation.lowMagnitude":
     "El embedding produjo una magnitud de señal inesperadamente baja; la entrada puede no haber contenido habla clara. Trate los identificadores resultantes como de baja confianza.",
   "footer.classic_mode": "Versión clásica",
+  "dlmgr.title": "Descargas",
+  "dlmgr.saved": "Descarga guardada: {0}",
+  "dlmgr.saved_generic": "Descarga guardada",
+  "dlmgr.no_result": "Aún no hay resultado — ejecuta primero la herramienta.",
+  "dlmgr.empty": "Aún no hay descargas",
+  "dlmgr.reveal": "Mostrar en carpeta",
+  "dlmgr.copy": "Copiar ruta",
+  "dlmgr.copied": "Ruta copiada al portapapeles",
+  "dlmgr.copy_failed": "No se pudo copiar la ruta",
+  "dlmgr.remove": "Quitar",
+  "dlmgr.clear": "Borrar todo",
+  "dlmgr.cleared": "Lista de descargas borrada",
+  "dlmgr.open_failed": "No se pudo abrir la carpeta",
+  "dlmgr.link_failed": "No se pudo abrir el enlace",
 };

@@ -1065,5 +1065,19 @@
   "voice.recorder_max_label": "最大",
   "voice.status.maxDurationReached": "已达到最大录音时长（3分钟）。录音已自动停止。",
   "voice.error.tooLong": "音频超过最大时长（3分钟）。请裁剪您的文件。",
-  "voice.countdown_seconds": "剩余{0}秒"
+  "voice.countdown_seconds": "剩余{0}秒",
+  "dlmgr.title": "下载",
+  "dlmgr.saved": "已保存下载: {0}",
+  "dlmgr.saved_generic": "已保存下载",
+  "dlmgr.no_result": "暂无结果 — 请先运行工具。",
+  "dlmgr.empty": "暂无下载",
+  "dlmgr.reveal": "在文件夹中显示",
+  "dlmgr.copy": "复制路径",
+  "dlmgr.copied": "路径已复制到剪贴板",
+  "dlmgr.copy_failed": "无法复制路径",
+  "dlmgr.remove": "移除",
+  "dlmgr.clear": "全部清除",
+  "dlmgr.cleared": "已清除下载列表",
+  "dlmgr.open_failed": "无法打开文件夹",
+  "dlmgr.link_failed": "无法打开链接"
 }

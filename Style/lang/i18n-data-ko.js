@@ -1290,4 +1290,18 @@ window.__I18N_DATA.ko = {
   "voice.limitation.lowMagnitude":
     "임베딩이 예기치 않게 낮은 신호 크기를 생성했으며, 입력에 명확한 음성이 포함되지 않았을 수 있습니다. 생성된 식별자는 낮은 신뢰도로 취급하십시오.",
   "footer.classic_mode": "클래식 버전",
+  "dlmgr.title": "다운로드",
+  "dlmgr.saved": "다운로드 저장됨: {0}",
+  "dlmgr.saved_generic": "다운로드 저장됨",
+  "dlmgr.no_result": "아직 결과가 없습니다 — 먼저 도구를 실행하세요.",
+  "dlmgr.empty": "아직 다운로드가 없습니다",
+  "dlmgr.reveal": "폴더에서 보기",
+  "dlmgr.copy": "경로 복사",
+  "dlmgr.copied": "경로가 클립보드에 복사되었습니다",
+  "dlmgr.copy_failed": "경로를 복사할 수 없습니다",
+  "dlmgr.remove": "제거",
+  "dlmgr.clear": "모두 지우기",
+  "dlmgr.cleared": "다운로드 목록을 지웠습니다",
+  "dlmgr.open_failed": "폴더를 열 수 없습니다",
+  "dlmgr.link_failed": "링크를 열 수 없습니다",
 };

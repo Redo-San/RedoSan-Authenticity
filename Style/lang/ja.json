@@ -1063,5 +1063,19 @@
   "voice.recorder_max_label": "最大",
   "voice.status.maxDurationReached": "最大録音時間（3分）に達しました。録音は自動的に停止しました。",
   "voice.error.tooLong": "音声が最大許容時間（3分）を超過しています。ファイルをトリミングしてください。",
-  "voice.countdown_seconds": "残り{0}秒"
+  "voice.countdown_seconds": "残り{0}秒",
+  "dlmgr.title": "ダウンロード",
+  "dlmgr.saved": "ダウンロードを保存しました: {0}",
+  "dlmgr.saved_generic": "ダウンロードを保存しました",
+  "dlmgr.no_result": "まだ結果がありません — まずツールを実行してください。",
+  "dlmgr.empty": "ダウンロードはまだありません",
+  "dlmgr.reveal": "フォルダーに表示",
+  "dlmgr.copy": "パスをコピー",
+  "dlmgr.copied": "パスをクリップボードにコピーしました",
+  "dlmgr.copy_failed": "パスをコピーできませんでした",
+  "dlmgr.remove": "削除",
+  "dlmgr.clear": "すべてクリア",
+  "dlmgr.cleared": "ダウンロード一覧をクリアしました",
+  "dlmgr.open_failed": "フォルダーを開けませんでした",
+  "dlmgr.link_failed": "リンクを開けませんでした"
 }

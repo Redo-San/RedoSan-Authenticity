@@ -199,6 +199,7 @@ function downloadBlobSimple(blob, fileName) {
   a.href = url;
   a.download = fileName.replace(/[/\\]/g, "_");
   a.click();
+  rsRecordDownload(blob, fileName);
   // Revoke after the browser has had time to start the download — revoking
   // synchronously cancels large blobs (e.g. DOCX) before they finish reading.
   setTimeout(function () {
@@ -236,7 +237,597 @@ function downloadBlob(blob, name, containerId) {
   link.className = "btn";
   link.style.cssText = "margin:4px";
   link.textContent = __("shared.download") + " " + name;
+  if (isTauriDesktop() && typeof link.addEventListener === "function") {
+    link.addEventListener("click", function () {
+      rsRecordDownload(blob, name);
+    });
+  }
   container.append(link);
+}
+
+// ── Tauri desktop integration: external links + download manager ──
+// In WebView2, target="_blank" anchors never open (links on the Social and
+// Contact pages silently do nothing) and <a download> files land in
+// %USERPROFILE%\Downloads with no visible feedback. The Tauri build injects
+// window.__TAURI__, so there we route external links through the opener
+// plugin and surface every saved file with a toast plus an in-app manager
+// (list, size, time, location, reveal/copy/remove/clear). The web build
+// never passes isTauriDesktop(), so its behavior is unchanged.
+
+var RS_DLS_KEY = "rs_dl_history";
+var RS_DLS_MAX = 50;
+var _rsDlDir = null;
+var _rsToastTimer = null;
+var _rsDlOutsideHandler = null;
+
+/**
+ *
+ * @returns {boolean}
+ */
+function isTauriDesktop() {
+  try {
+    return !!(
+      (window.__TAURI__ &&
+        window.__TAURI__.core &&
+        window.__TAURI__.core.invoke) ||
+      (window.__TAURI_INTERNALS__ && window.__TAURI_INTERNALS__.invoke)
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ *
+ * @param cmd
+ * @param args
+ * @returns {Promise}
+ */
+function tauriInvoke(cmd, args) {
+  var api = window.__TAURI__;
+  var invoke =
+    api && api.core && api.core.invoke
+      ? api.core.invoke
+      : window.__TAURI_INTERNALS__ && window.__TAURI_INTERNALS__.invoke;
+  if (!invoke) return Promise.reject(new Error("not-tauri"));
+  return invoke(cmd, args || {});
+}
+
+/**
+ * i18n lookup with a {0} substitution that does not depend on which global
+ * __ variant (2-arg in shared.js, 3-arg in i18n.js) is currently defined.
+ * @param key
+ * @param fallback
+ * @param arg0
+ * @returns {string}
+ */
+function rsT(key, fallback, arg0) {
+  var s =
+    (typeof i18n !== "undefined" && i18n && i18n.data && i18n.data[key]) ||
+    fallback ||
+    key;
+  if (arg0 !== undefined && arg0 !== null)
+    s = String(s).split("{0}").join(String(arg0));
+  return s;
+}
+
+/**
+ *
+ * @param text
+ * @param kind
+ */
+function rsToast(text, kind) {
+  if (!text) return;
+  try {
+    if (
+      typeof document === "undefined" ||
+      typeof document.createElement !== "function" ||
+      !document.body
+    )
+      return;
+    var el = document.getElementById("rs-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "rs-toast";
+      el.setAttribute("role", "status");
+      el.setAttribute("aria-live", "polite");
+      el.style.cssText =
+        "position:fixed;top:16px;left:50%;transform:translateX(-50%);" +
+        "z-index:2000000;max-width:min(92vw,540px);padding:10px 16px;" +
+        "border-radius:8px;font-size:14px;line-height:1.45;color:#fff;" +
+        "background:#1f2937;box-shadow:0 4px 16px rgba(0,0,0,.3);" +
+        "opacity:0;transition:opacity .25s;pointer-events:none;" +
+        "text-align:center;word-break:break-word;";
+      document.body.append(el);
+    }
+    el.style.background = kind === "err" ? "#b91c1c" : "#1f2937";
+    el.textContent = text;
+    el.style.opacity = "1";
+    if (_rsToastTimer) clearTimeout(_rsToastTimer);
+    _rsToastTimer = setTimeout(function () {
+      el.style.opacity = "0";
+    }, 4500);
+  } catch {
+    /* feedback must never break the caller */
+  }
+}
+
+/**
+ *
+ * @returns {Array}
+ */
+function rsDlList() {
+  try {
+    var v = JSON.parse(window.localStorage.getItem(RS_DLS_KEY));
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ *
+ * @param list
+ */
+function rsDlSave(list) {
+  try {
+    window.localStorage.setItem(
+      RS_DLS_KEY,
+      JSON.stringify(list.slice(0, RS_DLS_MAX)),
+    );
+  } catch {
+    /* storage unavailable — history is best-effort */
+  }
+}
+
+/**
+ * Resolve %USERPROFILE%\Downloads once via core:path resolve_directory
+ * (BaseDirectory::Download serializes as its repr(u16) code, Download = 7).
+ * @returns {Promise}
+ */
+function rsDlDir() {
+  if (_rsDlDir) return Promise.resolve(_rsDlDir);
+  return tauriInvoke("plugin:path|resolve_directory", {
+    directory: 7,
+    path: null,
+  }).then(function (d) {
+    _rsDlDir = d;
+    return d;
+  });
+}
+
+/**
+ *
+ * @param entry
+ * @returns {string}
+ */
+function rsDlFullPath(entry) {
+  if (entry.path) return entry.path;
+  if (!entry.dir) return entry.name;
+  var sep = "";
+  if (!/[/\\]$/.test(entry.dir)) {
+    sep = entry.dir.includes("\\") ? "\\" : "/";
+  }
+  return entry.dir + sep + entry.name;
+}
+
+/**
+ *
+ * @param n
+ * @returns {string}
+ */
+function rsDlSize(n) {
+  if (typeof n !== "number" || !isFinite(n)) return "";
+  if (n < 1024) return n + " B";
+  if (n < 1_048_576) return (n / 1024).toFixed(1) + " KB";
+  if (n < 1_073_741_824) return (n / 1_048_576).toFixed(1) + " MB";
+  return (n / 1_073_741_824).toFixed(2) + " GB";
+}
+
+/**
+ *
+ * @param ts
+ * @returns {string}
+ */
+function rsDlTime(ts) {
+  if (typeof ts !== "number") return "";
+  try {
+    return new Date(ts).toLocaleString();
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Record a file that WebView2 just saved: persist it to history, paint the
+ * badge/panel, toast the destination path. Desktop-only, best-effort.
+ * @param blob
+ * @param fileName
+ */
+function rsRecordDownload(blob, fileName) {
+  if (!isTauriDesktop()) return;
+  var name = String(fileName || "download").replace(/[/\\]/g, "_");
+  var entry = {
+    name: name,
+    size: blob && typeof blob.size === "number" ? blob.size : 0,
+    time: Date.now(),
+    dir: "",
+    path: "",
+  };
+  var list = rsDlList();
+  list.unshift(entry);
+  rsDlSave(list);
+  rsDlPaint();
+  rsDlDir()
+    .then(function (dir) {
+      entry.dir = dir;
+      entry.path = rsDlFullPath(entry);
+      rsDlSave(list);
+      rsDlPaint();
+      rsToast(rsT("dlmgr.saved", "Download saved: {0}", rsDlFullPath(entry)));
+    })
+    .catch(function () {
+      rsToast(rsT("dlmgr.saved_generic", "Download saved"));
+    });
+}
+
+/**
+ *
+ * @param text
+ */
+async function rsDlCopy(text) {
+  var copied = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    }
+  } catch {
+    copied = false; // clipboard blocked — execCommand fallback below
+  }
+  if (!copied) copied = rsDlCopyFallback(text);
+  if (copied) rsToast(rsT("dlmgr.copied", "Path copied to clipboard"));
+  else rsToast(rsT("dlmgr.copy_failed", "Could not copy the path"), "err");
+}
+
+/**
+ * execCommand-based clipboard fallback for when the async Clipboard API is
+ * blocked. Returns whether the copy succeeded.
+ * @param text
+ * @returns {boolean}
+ */
+function rsDlCopyFallback(text) {
+  try {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;top:-9999px;opacity:0";
+    document.body.append(ta);
+    ta.select();
+    var ok = !!(document.execCommand && document.execCommand("copy"));
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ *
+ * @param entry
+ */
+function rsDlReveal(entry) {
+  var full = rsDlFullPath(entry);
+  tauriInvoke("plugin:opener|reveal_item_in_dir", { path: full })
+    .catch(function () {
+      // The file may have been deleted outside the app — reveal its folder.
+      if (entry.dir && entry.dir !== full)
+        return tauriInvoke("plugin:opener|reveal_item_in_dir", {
+          path: entry.dir,
+        });
+      throw new Error("reveal-failed");
+    })
+    .catch(function () {
+      rsToast(rsT("dlmgr.open_failed", "Could not open the folder"), "err");
+    });
+}
+
+/**
+ *
+ * @param open
+ */
+function rsDlToggle(open) {
+  var panel = document.getElementById("rs-dl-panel");
+  var btn = document.getElementById("rs-dl-btn");
+  if (!panel || !btn) return;
+  if (open === undefined) open = panel.hasAttribute("hidden");
+  if (open) {
+    rsDlPaint();
+    panel.removeAttribute("hidden");
+    btn.setAttribute("aria-expanded", "true");
+    if (!_rsDlOutsideHandler) {
+      _rsDlOutsideHandler = function (e) {
+        var t = e.target;
+        if (
+          t &&
+          t.closest &&
+          (t.closest("#rs-dl-panel") || t.closest("#rs-dl-btn"))
+        )
+          return;
+        rsDlToggle(false);
+      };
+      document.addEventListener("click", _rsDlOutsideHandler);
+    }
+  } else {
+    panel.setAttribute("hidden", "");
+    btn.setAttribute("aria-expanded", "false");
+    if (_rsDlOutsideHandler) {
+      document.removeEventListener("click", _rsDlOutsideHandler);
+      _rsDlOutsideHandler = null;
+    }
+  }
+}
+
+/**
+ * Render badge count, header labels and the item list from current history.
+ */
+function rsDlPaint() {
+  var list = rsDlList();
+  var badge = document.getElementById("rs-dl-badge");
+  if (badge) {
+    badge.textContent = list.length > 99 ? "99+" : String(list.length);
+    badge.style.display = list.length ? "flex" : "none";
+  }
+  var title = document.getElementById("rs-dl-title");
+  if (title) title.textContent = rsT("dlmgr.title", "Downloads");
+  var clearBtn = document.getElementById("rs-dl-clear");
+  if (clearBtn) clearBtn.textContent = rsT("dlmgr.clear", "Clear all");
+  var box = document.getElementById("rs-dl-items");
+  if (!box) return;
+  if (!list.length) {
+    box.innerHTML =
+      '<div class="rs-dl-empty">' +
+      escHtml(rsT("dlmgr.empty", "No downloads yet")) +
+      "</div>";
+    return;
+  }
+  var html = "";
+  list.forEach(function (e, i) {
+    var meta = [];
+    if (e.size) meta.push(escHtml(rsDlSize(e.size)));
+    if (e.time) meta.push(escHtml(rsDlTime(e.time)));
+    if (e.dir) meta.push(escHtml(e.dir));
+    html +=
+      '<div class="rs-dl-item">' +
+      '<div class="rs-dl-name" title="' +
+      escHtml(e.name) +
+      '">' +
+      escHtml(e.name) +
+      "</div>" +
+      (meta.length
+        ? '<div class="rs-dl-meta">' + meta.join(" &middot; ") + "</div>"
+        : "") +
+      '<div class="rs-dl-acts">' +
+      '<button type="button" data-act="reveal" data-idx="' +
+      i +
+      '">' +
+      escHtml(rsT("dlmgr.reveal", "Show in folder")) +
+      "</button>" +
+      '<button type="button" data-act="copy" data-idx="' +
+      i +
+      '">' +
+      escHtml(rsT("dlmgr.copy", "Copy path")) +
+      "</button>" +
+      '<button type="button" data-act="remove" data-idx="' +
+      i +
+      '">' +
+      escHtml(rsT("dlmgr.remove", "Remove")) +
+      "</button>" +
+      "</div></div>";
+  });
+  box.innerHTML = html;
+}
+
+/**
+ *
+ * @param e
+ */
+function rsDlPanelClick(e) {
+  var t = e.target;
+  if (!t || !t.closest) return;
+  var act = t.closest("button[data-act]");
+  if (!act) return;
+  var idx = parseInt(act.dataset.idx, 10);
+  if (Number.isNaN(idx)) return;
+  var list = rsDlList();
+  var entry = list[idx];
+  if (!entry) return;
+  switch (act.dataset.act) {
+    case "reveal": {
+      rsDlReveal(entry);
+      break;
+    }
+    case "copy": {
+      rsDlCopy(rsDlFullPath(entry));
+      break;
+    }
+    case "remove": {
+      list.splice(idx, 1);
+      rsDlSave(list);
+      rsDlPaint();
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+}
+
+/**
+ * Copy the page's style nonce so this injected stylesheet is not blocked.
+ * Tauri injects a nonce token on every <style> of the bundled HTML (MPA
+ * pages), replaces it with a fresh random value per request, and appends it
+ * to the style-src header only when such a token exists. The SPA root ships
+ * no page <style>, its header carries no nonce, and this returns "".
+ * @returns {string}
+ */
+function rsStyleNonce() {
+  try {
+    var styles = document.querySelectorAll("style");
+    for (var i = 0; i < styles.length; i++) {
+      if (styles[i].nonce) return styles[i].nonce;
+    }
+  } catch {
+    /* best effort: fall back to an unsigned stylesheet */
+  }
+  return "";
+}
+
+/**
+ * Build the floating manager button + panel (once) and wire its handlers.
+ */
+function rsDlBuildUI() {
+  if (document.getElementById("rs-dl-btn")) return;
+  var style = document.createElement("style");
+  style.id = "rs-dl-style";
+  var styleNonce = rsStyleNonce();
+  if (styleNonce) style.nonce = styleNonce;
+  style.textContent =
+    "#rs-dl-btn{position:fixed;right:88px;bottom:24px;width:46px;height:46px;" +
+    "border:none;border-radius:50%;background:var(--primary,#6c5ce7);color:#fff;" +
+    "display:flex;align-items:center;justify-content:center;cursor:pointer;" +
+    "z-index:9999999;box-shadow:0 4px 14px rgba(0,0,0,.32);transition:transform .2s;" +
+    "touch-action:manipulation;padding:0}" +
+    "#rs-dl-btn:hover{transform:scale(1.08)}" +
+    "#rs-dl-btn svg{width:22px;height:22px;pointer-events:none}" +
+    "#rs-dl-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;" +
+    "padding:0 4px;border-radius:9px;background:#ef4444;color:#fff;font-size:11px;" +
+    "font-weight:700;align-items:center;justify-content:center;line-height:1;" +
+    "display:none;border:2px solid var(--bg,#0f0f1a)}" +
+    "#rs-dl-panel{position:fixed;right:88px;bottom:80px;" +
+    "width:min(340px,calc(100vw - 40px));max-height:min(420px,52vh);" +
+    "display:flex;flex-direction:column;background:var(--card,#1a1a2e);" +
+    "color:var(--text,#e8e8f0);border:1px solid var(--border,#2a2a45);" +
+    "border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);" +
+    "z-index:9999998;overflow:hidden}" +
+    "#rs-dl-panel[hidden]{display:none}" +
+    ".rs-dl-head{display:flex;align-items:center;justify-content:space-between;" +
+    "gap:8px;padding:10px 12px;border-bottom:1px solid var(--border,#2a2a45);" +
+    "font-weight:700;font-size:14px}" +
+    ".rs-dl-head button{border:1px solid var(--border,#2a2a45);" +
+    "background:transparent;color:var(--text-muted,#9b9bb5);border-radius:6px;" +
+    "padding:4px 8px;font-size:12px;cursor:pointer}" +
+    ".rs-dl-head button:hover{border-color:var(--danger,#ff5252);color:var(--danger,#ff5252)}" +
+    "#rs-dl-items{overflow-y:auto;padding:6px}" +
+    ".rs-dl-item{padding:8px;border-radius:8px}" +
+    ".rs-dl-item:hover{background:var(--card-hover,#252540)}" +
+    ".rs-dl-name{font-size:13px;font-weight:600;direction:ltr;text-align:left;" +
+    "white-space:nowrap;overflow:hidden;text-overflow:ellipsis}" +
+    ".rs-dl-meta{font-size:11px;color:var(--text-muted,#9b9bb5);direction:ltr;" +
+    "text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" +
+    "margin-top:2px}" +
+    ".rs-dl-acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}" +
+    ".rs-dl-acts button{border:1px solid var(--border,#2a2a45);" +
+    "background:transparent;color:inherit;border-radius:6px;padding:3px 8px;" +
+    "font-size:11px;cursor:pointer}" +
+    ".rs-dl-acts button:hover{border-color:var(--primary,#6c5ce7);" +
+    "color:var(--primary-text,#8a7bf0)}" +
+    ".rs-dl-empty{padding:18px 8px;text-align:center;font-size:13px;" +
+    "color:var(--text-muted,#9b9bb5)}";
+  document.head.append(style);
+
+  var btn = document.createElement("button");
+  btn.id = "rs-dl-btn";
+  btn.type = "button";
+  btn.setAttribute("aria-haspopup", "true");
+  btn.setAttribute("aria-expanded", "false");
+  btn.setAttribute("aria-label", rsT("dlmgr.title", "Downloads"));
+  btn.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ' +
+    'aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/>' +
+    '<path d="M4 19h16"/></svg><span id="rs-dl-badge"></span>';
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    rsDlToggle();
+  });
+
+  var panel = document.createElement("div");
+  panel.id = "rs-dl-panel";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", rsT("dlmgr.title", "Downloads"));
+  panel.setAttribute("hidden", "");
+  panel.innerHTML =
+    '<div class="rs-dl-head"><span id="rs-dl-title"></span>' +
+    '<button type="button" id="rs-dl-clear"></button></div>' +
+    '<div id="rs-dl-items"></div>';
+  panel.addEventListener("click", rsDlPanelClick);
+  panel.querySelector("#rs-dl-clear").addEventListener("click", function () {
+    rsDlSave([]);
+    rsDlPaint();
+    rsToast(rsT("dlmgr.cleared", "Download list cleared"));
+  });
+
+  document.body.append(btn);
+  document.body.append(panel);
+  rsDlPaint();
+}
+
+/**
+ * Capture-phase interceptor: in the Tauri window every cross-origin
+ * http(s)/mailto/tel link opens through the opener plugin (WebView2 would
+ * otherwise swallow target="_blank" silently, and same-tab navigation would
+ * replace the whole app). Same-origin links stay native.
+ * @param e
+ */
+function rsInterceptExternalLink(e) {
+  if (!isTauriDesktop()) return;
+  if (!e || e.defaultPrevented || e.button !== 0) return;
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  var el = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+  if (!el) return;
+  var raw = el.getAttribute("href") || "";
+  if (!/^(https?:|mailto:|tel:)/i.test(raw)) return;
+  try {
+    var u = new URL(raw, window.location.href);
+    if (/^https?:$/i.test(u.protocol) && u.origin === window.location.origin)
+      return;
+  } catch {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+  tauriInvoke("plugin:opener|open_url", { url: raw }).catch(function () {
+    rsToast(rsT("dlmgr.link_failed", "Could not open the link"), "err");
+  });
+}
+
+/**
+ *
+ */
+function rsInitTauriUI() {
+  if (!isTauriDesktop()) return;
+  try {
+    rsDlBuildUI();
+  } catch {
+    /* UI is progressive enhancement */
+  }
+}
+
+if (
+  typeof document !== "undefined" &&
+  typeof document.addEventListener === "function"
+) {
+  document.addEventListener("click", rsInterceptExternalLink, {
+    capture: true,
+  });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", rsInitTauriUI);
+  } else {
+    rsInitTauriUI();
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") rsDlToggle(false);
+  });
 }
 
 /**

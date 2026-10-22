@@ -1065,5 +1065,19 @@
   "voice.recorder_max_label": "Max",
   "voice.status.maxDurationReached": "Durée maximale d'enregistrement (3 minutes) atteinte. Enregistrement arrêté automatiquement.",
   "voice.error.tooLong": "L'audio dépasse la durée maximale de 3 minutes. Veuillez couper votre fichier.",
-  "voice.countdown_seconds": "{0}s restant"
+  "voice.countdown_seconds": "{0}s restant",
+  "dlmgr.title": "Téléchargements",
+  "dlmgr.saved": "Téléchargement enregistré : {0}",
+  "dlmgr.saved_generic": "Téléchargement enregistré",
+  "dlmgr.no_result": "Aucun résultat pour l'instant — lancez d'abord l'outil.",
+  "dlmgr.empty": "Aucun téléchargement",
+  "dlmgr.reveal": "Afficher dans le dossier",
+  "dlmgr.copy": "Copier le chemin",
+  "dlmgr.copied": "Chemin copié dans le presse-papiers",
+  "dlmgr.copy_failed": "Impossible de copier le chemin",
+  "dlmgr.remove": "Retirer",
+  "dlmgr.clear": "Tout effacer",
+  "dlmgr.cleared": "Liste des téléchargements effacée",
+  "dlmgr.open_failed": "Impossible d'ouvrir le dossier",
+  "dlmgr.link_failed": "Impossible d'ouvrir le lien"
 }

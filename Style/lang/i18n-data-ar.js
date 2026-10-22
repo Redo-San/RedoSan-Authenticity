@@ -1284,4 +1284,18 @@ window.__I18N_DATA.ar = {
   "voice.limitation.lowMagnitude":
     "أنتج التضمين قدرة إشارة منخفضة بشكل غير متوقع؛ قد لا يكون المدخل احتوى كلامًا واضحًا. تعامل مع المعرفات الناتجة باعتبارها منخفضة الثقة.",
   "footer.classic_mode": "الإصدار الكلاسيكي",
+  "dlmgr.title": "التنزيلات",
+  "dlmgr.saved": "تم حفظ التنزيل: {0}",
+  "dlmgr.saved_generic": "تم حفظ التنزيل",
+  "dlmgr.no_result": "لا توجد نتيجة بعد — شغّل الأداة أولاً.",
+  "dlmgr.empty": "لا توجد تنزيلات بعد",
+  "dlmgr.reveal": "إظهار في المجلد",
+  "dlmgr.copy": "نسخ المسار",
+  "dlmgr.copied": "تم نسخ المسار إلى الحافظة",
+  "dlmgr.copy_failed": "تعذر نسخ المسار",
+  "dlmgr.remove": "إزالة",
+  "dlmgr.clear": "مسح الكل",
+  "dlmgr.cleared": "تم مسح قائمة التنزيلات",
+  "dlmgr.open_failed": "تعذر فتح المجلد",
+  "dlmgr.link_failed": "تعذر فتح الرابط",
 };
