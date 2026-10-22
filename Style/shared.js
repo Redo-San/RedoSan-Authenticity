@@ -261,8 +261,9 @@ var _rsToastTimer = null;
 var _rsDlOutsideHandler = null;
 
 /**
- *
- * @returns {boolean}
+ * Detect whether the app runs inside the Tauri desktop shell (injected
+ * __TAURI__ / __TAURI_INTERNALS__ globals). Always false on the web build.
+ * @returns {boolean} True when running under Tauri.
  */
 function isTauriDesktop() {
   try {
@@ -278,10 +279,11 @@ function isTauriDesktop() {
 }
 
 /**
- *
- * @param cmd
- * @param args
- * @returns {Promise}
+ * Invoke a Tauri plugin command through whichever global IPC entry point is
+ * available. Rejects immediately when no Tauri bridge exists.
+ * @param {string} cmd - Command name, e.g. "plugin:opener|open_url".
+ * @param {object} [args] - Command arguments object.
+ * @returns {Promise<unknown>} Resolves with the command result.
  */
 function tauriInvoke(cmd, args) {
   var api = window.__TAURI__;
@@ -296,13 +298,14 @@ function tauriInvoke(cmd, args) {
 /**
  * i18n lookup with a {0} substitution that does not depend on which global
  * __ variant (2-arg in shared.js, 3-arg in i18n.js) is currently defined.
- * @param key
- * @param fallback
- * @param arg0
- * @returns {string}
+ * @param {string} key - Translation key (e.g. "dlmgr.title").
+ * @param {string} fallback - English text used when no translation exists.
+ * @param {string|number} [arg0] - Value substituted for the {0} placeholder.
+ * @returns {string} Translated (or fallback) text with placeholders resolved.
  */
 function rsT(key, fallback, arg0) {
   var s =
+    // eslint-disable-next-line security/detect-object-injection -- key is an internal data-i18n constant, never user input
     (typeof i18n !== "undefined" && i18n && i18n.data && i18n.data[key]) ||
     fallback ||
     key;
@@ -312,9 +315,9 @@ function rsT(key, fallback, arg0) {
 }
 
 /**
- *
- * @param text
- * @param kind
+ * Transient top-center notification; replaces any toast already on screen.
+ * @param {string} text - Message to show.
+ * @param {string} [kind] - "err" for error styling; anything else is neutral.
  */
 function rsToast(text, kind) {
   if (!text) return;
@@ -353,8 +356,8 @@ function rsToast(text, kind) {
 }
 
 /**
- *
- * @returns {Array}
+ * Read the persisted download history from localStorage.
+ * @returns {Array<object>} Stored entries (newest first), or [] when absent.
  */
 function rsDlList() {
   try {
@@ -366,8 +369,8 @@ function rsDlList() {
 }
 
 /**
- *
- * @param list
+ * Persist the download history, truncated to the RS_DLS_MAX cap.
+ * @param {Array<object>} list - Entries to store.
  */
 function rsDlSave(list) {
   try {
@@ -383,7 +386,7 @@ function rsDlSave(list) {
 /**
  * Resolve %USERPROFILE%\Downloads once via core:path resolve_directory
  * (BaseDirectory::Download serializes as its repr(u16) code, Download = 7).
- * @returns {Promise}
+ * @returns {Promise<string>} Resolves with the Downloads directory (cached).
  */
 function rsDlDir() {
   if (_rsDlDir) return Promise.resolve(_rsDlDir);
@@ -397,9 +400,9 @@ function rsDlDir() {
 }
 
 /**
- *
- * @param entry
- * @returns {string}
+ * Absolute path of a history entry: stored path, or dir + separator + name.
+ * @param {object} entry - Download history entry.
+ * @returns {string} Full path, or just the name when the dir is unknown.
  */
 function rsDlFullPath(entry) {
   if (entry.path) return entry.path;
@@ -412,9 +415,9 @@ function rsDlFullPath(entry) {
 }
 
 /**
- *
- * @param n
- * @returns {string}
+ * Human-readable byte size for the history list.
+ * @param {number} n - Size in bytes.
+ * @returns {string} Formatted size such as "4.2 MB", or "" for non-numbers.
  */
 function rsDlSize(n) {
   if (typeof n !== "number" || !isFinite(n)) return "";
@@ -425,9 +428,9 @@ function rsDlSize(n) {
 }
 
 /**
- *
- * @param ts
- * @returns {string}
+ * Locale-formatted timestamp for the history list.
+ * @param {number} ts - Unix timestamp in milliseconds.
+ * @returns {string} Localized date/time, or "" when the value is invalid.
  */
 function rsDlTime(ts) {
   if (typeof ts !== "number") return "";
@@ -440,9 +443,12 @@ function rsDlTime(ts) {
 
 /**
  * Record a file that WebView2 just saved: persist it to history, paint the
- * badge/panel, toast the destination path. Desktop-only, best-effort.
- * @param blob
- * @param fileName
+ * badge/panel, toast the destination path. Desktop-only, best-effort. The
+ * entry is stored immediately (the badge updates without waiting on IPC) and
+ * the same object is enriched with the resolved directory once core:path
+ * answers — one entry, saved twice by design, never duplicated.
+ * @param {Blob} blob - Blob handed to the anchor's download.
+ * @param {string} fileName - Requested file name.
  */
 function rsRecordDownload(blob, fileName) {
   if (!isTauriDesktop()) return;
@@ -472,8 +478,8 @@ function rsRecordDownload(blob, fileName) {
 }
 
 /**
- *
- * @param text
+ * Copy text to the clipboard and toast the outcome.
+ * @param {string} text - Text to copy.
  */
 async function rsDlCopy(text) {
   var copied = false;
@@ -493,8 +499,8 @@ async function rsDlCopy(text) {
 /**
  * execCommand-based clipboard fallback for when the async Clipboard API is
  * blocked. Returns whether the copy succeeded.
- * @param text
- * @returns {boolean}
+ * @param {string} text - Text to copy.
+ * @returns {boolean} True when execCommand reported success.
  */
 function rsDlCopyFallback(text) {
   try {
@@ -512,8 +518,9 @@ function rsDlCopyFallback(text) {
 }
 
 /**
- *
- * @param entry
+ * Reveal a saved file in Explorer, falling back to its folder, then to an
+ * error toast.
+ * @param {object} entry - Download history entry.
  */
 function rsDlReveal(entry) {
   var full = rsDlFullPath(entry);
@@ -532,8 +539,9 @@ function rsDlReveal(entry) {
 }
 
 /**
- *
- * @param open
+ * Show/hide the download panel, wiring and removing the outside-click
+ * close handler; keyboard focus follows the panel.
+ * @param {boolean} [open] - Force a state; omitted toggles the current one.
  */
 function rsDlToggle(open) {
   var panel = document.getElementById("rs-dl-panel");
@@ -544,6 +552,7 @@ function rsDlToggle(open) {
     rsDlPaint();
     panel.removeAttribute("hidden");
     btn.setAttribute("aria-expanded", "true");
+    if (typeof panel.focus === "function") panel.focus({ preventScroll: true });
     if (!_rsDlOutsideHandler) {
       _rsDlOutsideHandler = function (e) {
         var t = e.target;
@@ -558,8 +567,15 @@ function rsDlToggle(open) {
       document.addEventListener("click", _rsDlOutsideHandler);
     }
   } else {
+    // Capture focus before hiding — a hidden element is blurred first.
+    var focusWasInPanel =
+      typeof panel.contains === "function" &&
+      document.activeElement != null &&
+      panel.contains(document.activeElement);
     panel.setAttribute("hidden", "");
     btn.setAttribute("aria-expanded", "false");
+    if (focusWasInPanel && typeof btn.focus === "function")
+      btn.focus({ preventScroll: true });
     if (_rsDlOutsideHandler) {
       document.removeEventListener("click", _rsDlOutsideHandler);
       _rsDlOutsideHandler = null;
@@ -628,8 +644,8 @@ function rsDlPaint() {
 }
 
 /**
- *
- * @param e
+ * Handle reveal/copy/remove actions inside the panel list.
+ * @param {Event} e - Click event that bubbled from a panel action button.
  */
 function rsDlPanelClick(e) {
   var t = e.target;
@@ -639,6 +655,7 @@ function rsDlPanelClick(e) {
   var idx = parseInt(act.dataset.idx, 10);
   if (Number.isNaN(idx)) return;
   var list = rsDlList();
+  // eslint-disable-next-line security/detect-object-injection -- idx is an integer parsed from this panel's own data-idx markup and guarded by the !entry check
   var entry = list[idx];
   if (!entry) return;
   switch (act.dataset.act) {
@@ -668,12 +685,13 @@ function rsDlPanelClick(e) {
  * pages), replaces it with a fresh random value per request, and appends it
  * to the style-src header only when such a token exists. The SPA root ships
  * no page <style>, its header carries no nonce, and this returns "".
- * @returns {string}
+ * @returns {string} The page style's nonce IDL value, or "" when none exists.
  */
 function rsStyleNonce() {
   try {
     var styles = document.querySelectorAll("style");
     for (var i = 0; i < styles.length; i++) {
+      // eslint-disable-next-line security/detect-object-injection -- i is the bounded loop counter over the styles NodeList
       if (styles[i].nonce) return styles[i].nonce;
     }
   } catch {
@@ -754,6 +772,7 @@ function rsDlBuildUI() {
   var panel = document.createElement("div");
   panel.id = "rs-dl-panel";
   panel.setAttribute("role", "dialog");
+  panel.setAttribute("tabindex", "-1");
   panel.setAttribute("aria-label", rsT("dlmgr.title", "Downloads"));
   panel.setAttribute("hidden", "");
   panel.innerHTML =
@@ -777,7 +796,7 @@ function rsDlBuildUI() {
  * http(s)/mailto/tel link opens through the opener plugin (WebView2 would
  * otherwise swallow target="_blank" silently, and same-tab navigation would
  * replace the whole app). Same-origin links stay native.
- * @param e
+ * @param {Event} e - Capture-phase click event.
  */
 function rsInterceptExternalLink(e) {
   if (!isTauriDesktop()) return;
@@ -802,7 +821,7 @@ function rsInterceptExternalLink(e) {
 }
 
 /**
- *
+ * Build the desktop-only download manager UI on first load.
  */
 function rsInitTauriUI() {
   if (!isTauriDesktop()) return;
@@ -831,8 +850,9 @@ if (
 }
 
 /**
- *
- * @param file
+ * Load a File/Blob into an Image element through an object URL.
+ * @param {File} file - Image file to decode.
+ * @returns {Promise<HTMLImageElement>} Resolves with the decoded image.
  */
 function loadImage(file) {
   return new Promise((resolve, reject) => {

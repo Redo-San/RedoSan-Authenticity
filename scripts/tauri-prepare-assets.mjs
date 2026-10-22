@@ -205,8 +205,11 @@ function main() {
     // The page meta CSP also applies in WebView2 (both header and meta are
     // enforced) but lacks the Tauri IPC sources, so every invoke logged 3
     // CSP errors and fell back to postMessage. Desktop bundle only — the
-    // web build keeps its own meta untouched. Idempotent per file.
+    // web build keeps its own meta untouched. Idempotent per file. Only
+    // .html files carry the meta tag, so non-HTML text files are never
+    // touched even if they mention both marker strings.
     if (
+      path.extname(file).toLowerCase() === ".html" &&
       after.includes("Content-Security-Policy") &&
       after.includes("connect-src 'self'") &&
       !after.includes("ipc.localhost")

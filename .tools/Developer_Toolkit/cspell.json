@@ -1265,7 +1265,9 @@
     "Zisserman",
     "Cristo",
     "goodfirstissue",
-    "nsis"
+    "nsis",
+    "dlmgr",
+    "repr"
   ],
   "flagWords": [],
   "ignoreRegExpList": ["/[؀-ۿ]+/"],
