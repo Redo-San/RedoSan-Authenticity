@@ -795,7 +795,6 @@ function initVoiceConsent() {
     if (startBtn) startBtn.disabled = false;
     return;
   }
-  if (check) check.checked = false;
   audioEl = document.getElementById("voice-audio");
   if (audioEl) audioEl.disabled = true;
   startBtn = document.getElementById("voice-record-start");
@@ -807,6 +806,7 @@ function initVoiceConsent() {
       if (acceptBtn) acceptBtn.disabled = !check.checked;
     });
   }
+  if (check && acceptBtn) acceptBtn.disabled = !check.checked;
 }
 
 // ── Input switching / file staging / microphone capture ──

@@ -1348,6 +1348,7 @@ function initFaceConsent() {
       if (acceptBtn) acceptBtn.disabled = !check.checked;
     });
   }
+  if (check && acceptBtn) acceptBtn.disabled = !check.checked;
 }
 
 /**

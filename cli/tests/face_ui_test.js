@@ -5773,6 +5773,25 @@ describe("Face UI — consent storage edge arms", () => {
     registered();
     assert.equal(acceptBtn.disabled, true);
   });
+
+  it("initFaceConsent syncs a checkbox ticked before wiring", () => {
+    const checkEl = {
+      checked: true,
+      addEventListener: function () {},
+    };
+    const acceptBtn = { disabled: true };
+    globalThis.document = makeConsentDoc({
+      "face-consent-check": checkEl,
+      "face-consent-accept": acceptBtn,
+    });
+    globalThis.initFaceConsent();
+    assert.equal(checkEl.checked, true, "early tick preserved");
+    assert.equal(
+      acceptBtn.disabled,
+      false,
+      "accept enabled without a change event",
+    );
+  });
 });
 
 describe("Face UI — handleFaceRun entry guards", () => {
