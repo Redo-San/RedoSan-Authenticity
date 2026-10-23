@@ -133,6 +133,30 @@ function checkOfflineAssets() {
 }
 
 /**
+ * Fail the build when src-tauri/tauri.conf.json drifts from package.json
+ * (plan A5 note: desktop artifact version must equal the package version,
+ * otherwise releases tag the wrong build). Runs on every dev and build via
+ * beforeDevCommand/beforeBuildCommand, so drift cannot ship silently.
+ * @returns {void} exits 1 on a version mismatch
+ */
+function checkVersionSync() {
+  const pkgVersion = JSON.parse(
+    readFileSync(path.join(ROOT, "package.json"), "utf8"),
+  ).version;
+  const tauriVersion = JSON.parse(
+    readFileSync(path.join(ROOT, "src-tauri", "tauri.conf.json"), "utf8"),
+  ).version;
+  if (pkgVersion !== tauriVersion) {
+    console.error(
+      `[tauri-prepack] FAIL: version mismatch - package.json ${pkgVersion} ` +
+        `vs src-tauri/tauri.conf.json ${tauriVersion} - keep them in sync`,
+    );
+    process.exit(1);
+  }
+  console.log(`[tauri-prepack] version sync ok: ${pkgVersion}`);
+}
+
+/**
  * Recursively list files under dir, skipping dotfiles and Thumbs.db.
  * @param {string} dir - directory to walk
  * @returns {string[]} absolute paths of all files
@@ -155,6 +179,7 @@ function walk(dir) {
  * @returns {void} exits 1 on missing allowlist entry or gate failure
  */
 function main() {
+  checkVersionSync();
   checkOfflineAssets();
   rmSync(DIST, { recursive: true, force: true });
   mkdirSync(DIST, { recursive: true });
