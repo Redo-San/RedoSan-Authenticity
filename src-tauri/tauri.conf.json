@@ -34,7 +34,8 @@
         "style-src": "'self' 'unsafe-inline'",
         "style-src-attr": "'unsafe-inline'",
         "script-src": "'self' 'wasm-unsafe-eval'",
-        "script-src-attr": "'unsafe-inline'"
+        "script-src-attr": "'unsafe-inline'",
+        "worker-src": "'self' blob:"
       },
       "capabilities": ["main-capability"]
     }
