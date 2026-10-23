@@ -2887,6 +2887,33 @@ describe("voice_ui — initVoiceConsent edge cases", () => {
     assert.equal(doc.getElementById("voice-audio").disabled, false);
     assert.equal(doc.getElementById("voice-record-start").disabled, false);
   });
+
+  it("preserves a checkbox ticked before wiring and syncs the accept button", () => {
+    globalThis.sessionStorage = makeLocalStorage();
+    let registered = null;
+    const checkEl = {
+      checked: true,
+      addEventListener: function (_t, cb) {
+        registered = cb;
+      },
+    };
+    const acceptBtn = { disabled: true };
+    globalThis.document = makeVoiceConsentDoc({
+      "voice-consent-check": checkEl,
+      "voice-consent-accept": acceptBtn,
+    });
+    globalThis.initVoiceConsent();
+    assert.equal(checkEl.checked, true, "early tick preserved");
+    assert.equal(
+      acceptBtn.disabled,
+      false,
+      "accept enabled without a change event",
+    );
+    assert.ok(typeof registered === "function", "change listener attached");
+    checkEl.checked = false;
+    registered();
+    assert.equal(acceptBtn.disabled, true, "listener still toggles button");
+  });
 });
 
 // ── initVoiceBiometric error path ──
