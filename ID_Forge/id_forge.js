@@ -516,6 +516,14 @@ function escXml(s) {
  * @param name
  */
 function downloadBlobSimple(blob, name) {
+  if (
+    typeof isTauriDesktop === "function" &&
+    typeof rsSaveAsDesktop === "function" &&
+    isTauriDesktop()
+  ) {
+    rsSaveAsDesktop(blob, name);
+    return;
+  }
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = name;

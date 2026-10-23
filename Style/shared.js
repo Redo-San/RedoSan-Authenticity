@@ -172,11 +172,26 @@ function __(key, fallback) {
 }
 
 /**
- *
+ * Save a result file. On the desktop build this opens the native Save As
+ * dialog (rsSaveAsDesktop); the web build keeps the anchor download.
  * @param blob
  * @param fileName
  */
 function downloadBlobSimple(blob, fileName) {
+  if (isTauriDesktop()) {
+    rsSaveAsDesktop(blob, fileName);
+    return;
+  }
+  rsAnchorDownloadSimple(blob, fileName);
+}
+
+/**
+ * Anchor-based download — main path on the web build, desktop fallback
+ * when the Save As IPC path fails.
+ * @param blob
+ * @param fileName
+ */
+function rsAnchorDownloadSimple(blob, fileName) {
   var url = URL.createObjectURL(blob);
   if (isInAppBrowser()) {
     const win = window.open(url, "_blank");
@@ -238,8 +253,9 @@ function downloadBlob(blob, name, containerId) {
   link.style.cssText = "margin:4px";
   link.textContent = __("shared.download") + " " + name;
   if (isTauriDesktop() && typeof link.addEventListener === "function") {
-    link.addEventListener("click", function () {
-      rsRecordDownload(blob, name);
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      rsSaveAsDesktop(blob, name);
     });
   }
   container.append(link);
@@ -247,12 +263,13 @@ function downloadBlob(blob, name, containerId) {
 
 // ── Tauri desktop integration: external links + download manager ──
 // In WebView2, target="_blank" anchors never open (links on the Social and
-// Contact pages silently do nothing) and <a download> files land in
+// Contact pages silently do nothing) and <a download> files used to land in
 // %USERPROFILE%\Downloads with no visible feedback. The Tauri build injects
 // window.__TAURI__, so there we route external links through the opener
-// plugin and surface every saved file with a toast plus an in-app manager
-// (list, size, time, location, reveal/copy/remove/clear). The web build
-// never passes isTauriDesktop(), so its behavior is unchanged.
+// plugin, save results through the native Save As dialog (rsSaveAsDesktop),
+// and surface every saved file with a toast plus an in-app manager (list,
+// size, time, location, reveal/copy/remove/clear). The web build never
+// passes isTauriDesktop(), so its behavior is unchanged.
 
 var RS_DLS_KEY = "rs_dl_history";
 var RS_DLS_MAX = 50;
@@ -293,6 +310,41 @@ function tauriInvoke(cmd, args) {
       : window.__TAURI_INTERNALS__ && window.__TAURI_INTERNALS__.invoke;
   if (!invoke) return Promise.reject(new Error("not-tauri"));
   return invoke(cmd, args || {});
+}
+
+/**
+ * Desktop Save As: hand the blob to the Rust `save_result_file` command,
+ * which opens the native OS dialog on the main thread and writes the bytes
+ * only after the user confirms a location (never silently). Cancel returns
+ * null — no history entry, no toast; an IPC failure falls back to the
+ * anchor download so a result is never lost.
+ * @param {Blob} blob - Result bytes.
+ * @param {string} fileName - Suggested file name.
+ */
+function rsSaveAsDesktop(blob, fileName) {
+  var suggested = String(fileName || "download")
+    .replace(/[/\\]/g, "_")
+    .replace(/[<>:"|?*]/g, "_");
+  var saveViaAnchor = function () {
+    rsAnchorDownloadSimple(blob, fileName);
+  };
+  if (!blob || typeof blob.arrayBuffer !== "function") {
+    saveViaAnchor();
+    return;
+  }
+  blob
+    .arrayBuffer()
+    .then(function (buf) {
+      return tauriInvoke("save_result_file", {
+        defaultName: suggested,
+        bytes: new Uint8Array(buf),
+      });
+    })
+    .then(function (path) {
+      if (typeof path === "string" && path)
+        rsRecordDownload(blob, fileName, path);
+    })
+    .catch(saveViaAnchor);
 }
 
 /**
@@ -442,15 +494,19 @@ function rsDlTime(ts) {
 }
 
 /**
- * Record a file that WebView2 just saved: persist it to history, paint the
- * badge/panel, toast the destination path. Desktop-only, best-effort. The
- * entry is stored immediately (the badge updates without waiting on IPC) and
- * the same object is enriched with the resolved directory once core:path
- * answers — one entry, saved twice by design, never duplicated.
- * @param {Blob} blob - Blob handed to the anchor's download.
+ * Record a file that was just saved: persist it to history, paint the
+ * badge/panel, toast the destination path. Desktop-only, best-effort. When
+ * the native Save As dialog returned `savedPath`, that exact path (and the
+ * name the user confirmed) is recorded; otherwise the entry falls back to
+ * the default download directory resolved over core:path. The entry is
+ * stored immediately (the badge updates without waiting on IPC) and the same
+ * object is enriched with the resolved directory once core:path answers —
+ * one entry, saved twice by design, never duplicated.
+ * @param {Blob} blob - Blob that was saved.
  * @param {string} fileName - Requested file name.
+ * @param {string} [savedPath] - Absolute path confirmed by the Save As dialog.
  */
-function rsRecordDownload(blob, fileName) {
+function rsRecordDownload(blob, fileName, savedPath) {
   if (!isTauriDesktop()) return;
   var name = String(fileName || "download").replace(/[/\\]/g, "_");
   var entry = {
@@ -464,6 +520,18 @@ function rsRecordDownload(blob, fileName) {
   list.unshift(entry);
   rsDlSave(list);
   rsDlPaint();
+  if (savedPath) {
+    // The user may have renamed the file inside the dialog — trust its path.
+    var cut = Math.max(savedPath.lastIndexOf("/"), savedPath.lastIndexOf("\\"));
+    entry.path = savedPath;
+    entry.dir = cut > 0 ? savedPath.slice(0, cut) : "";
+    var confirmed = cut >= 0 ? savedPath.slice(cut + 1) : "";
+    if (confirmed) entry.name = confirmed;
+    rsDlSave(list);
+    rsDlPaint();
+    rsToast(rsT("dlmgr.saved", "Download saved: {0}", savedPath));
+    return;
+  }
   rsDlDir()
     .then(function (dir) {
       entry.dir = dir;
@@ -1517,8 +1585,13 @@ function goHome() {
 // Load the local-only Removal Tools script only when the server actually
 // serves it as JavaScript (Removal_Tools/ is gitignored, so fresh checkouts
 // would otherwise receive 404.html with HTTP 200 + text/html).
+// Local-only + in development: never loaded in the Tauri desktop build.
 window.RedoSanLoadRemovalTools = function () {
-  if (window.location.hostname === "redo-san.github.io") return;
+  if (
+    window.location.hostname === "redo-san.github.io" ||
+    window.__TAURI_INTERNALS__
+  )
+    return;
   var REMOVAL_JS = "../../../Removal_Tools/removal_tools.js";
   var controller = new AbortController();
   var probe = function (method) {
