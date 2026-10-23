@@ -164,6 +164,7 @@ function main() {
   let rewrittenFiles = 0;
   let rewrittenHits = 0;
   let preconnectStripped = 0;
+  let cspIpcInjected = 0;
 
   for (const entry of ALLOWLIST) {
     const src = path.join(ROOT, entry);
@@ -178,7 +179,12 @@ function main() {
       recursive: true,
       filter: (from) => {
         const base = path.basename(from);
-        return !base.startsWith(".") && base !== "Thumbs.db";
+        if (base === "Thumbs.db" || base.startsWith(".")) return false;
+        // Removal Tools is local-only and still in development — its shell
+        // never ships in the desktop bundle (site builds are unaffected).
+        const rel = path.relative(ROOT, from);
+        if (rel === path.join("Style", "pages", "removal-tools")) return false;
+        return true;
       },
     });
   }
@@ -190,6 +196,7 @@ function main() {
     const before = readFileSync(file, "utf8");
     let after = before;
     let hits = 0;
+    let fileIpcInjected = 0;
     for (const [from, to] of REWRITE_PAIRS) {
       let idx = after.indexOf(from);
       while (idx !== -1) {
@@ -200,7 +207,27 @@ function main() {
     }
     const stripped = (after.match(PRECONNECT_RE) || []).length;
     if (stripped > 0) after = after.replace(PRECONNECT_RE, "");
-    if (hits > 0 || stripped > 0) {
+    // The page meta CSP also applies in WebView2 (both header and meta are
+    // enforced) but lacks the Tauri IPC sources, so every invoke logged 3
+    // CSP errors and fell back to postMessage. Desktop bundle only — the
+    // web build keeps its own meta untouched. Idempotent per file. Only
+    // .html files carry the meta tag, so non-HTML text files are never
+    // touched even if they mention both marker strings.
+    if (
+      path.extname(file).toLowerCase() === ".html" &&
+      after.includes("Content-Security-Policy") &&
+      after.includes("connect-src 'self'") &&
+      !after.includes("ipc.localhost")
+    ) {
+      after = after.replace(
+        "connect-src 'self'",
+        // eslint-disable-next-line unicorn/prefer-https -- Tauri IPC origin must be the http ipc.localhost scheme by spec
+        "connect-src ipc: http://ipc.localhost 'self'",
+      );
+      cspIpcInjected += 1;
+      fileIpcInjected = 1;
+    }
+    if (hits > 0 || stripped > 0 || fileIpcInjected > 0) {
       writeFileSync(file, after);
       rewrittenFiles += 1;
       rewrittenHits += hits;
@@ -229,7 +256,8 @@ function main() {
   console.log(
     `[tauri-prepack] ${fileCount} files, ${mb} MiB -> dist-tauri/; ` +
       `rewrote ${rewrittenHits} prefix occurrence(s) in ${rewrittenFiles} file(s); ` +
-      `stripped ${preconnectStripped} preconnect hint(s); gate: 0 survivors`,
+      `stripped ${preconnectStripped} preconnect hint(s); ` +
+      `injected IPC CSP source into ${cspIpcInjected} file(s); gate: 0 survivors`,
   );
 }
 

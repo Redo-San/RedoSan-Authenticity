@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-capability",
-  "description": "Core window/event/path defaults for the main window; no fs, shell, dialog, or http plugin access",
+  "description": "Core window/event/path defaults for the main window plus opener (open https/mailto links + reveal downloads folder); no fs, shell, dialog, or http plugin access",
   "windows": ["main"],
   "permissions": [
     "core:path:default",
@@ -9,6 +9,8 @@
     "core:window:default",
     "core:app:default",
     "core:resources:default",
-    "core:window:allow-set-title"
+    "core:window:allow-set-title",
+    "core:path:allow-resolve-directory",
+    "opener:default"
   ]
 }

@@ -39,6 +39,7 @@ export default [
             "HTMLElement",
             "IDBDatabase",
             "MediaStream",
+            "Blob",
           ],
         },
       ],

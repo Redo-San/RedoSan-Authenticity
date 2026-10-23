@@ -16,6 +16,7 @@
     "frontendDist": "../dist-tauri"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "RedoSan Authenticity",

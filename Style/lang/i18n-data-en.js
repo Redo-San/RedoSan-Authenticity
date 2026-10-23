@@ -1291,4 +1291,18 @@ window.__I18N_DATA.en = {
   "voice.limitation.lowMagnitude":
     "The embedding produced an unexpectedly low signal magnitude; the input may not have contained clear speech. Treat the resulting identifiers as low-confidence.",
   "footer.classic_mode": "Classic Version",
+  "dlmgr.title": "Downloads",
+  "dlmgr.saved": "Download saved: {0}",
+  "dlmgr.saved_generic": "Download saved",
+  "dlmgr.no_result": "No result yet — run the tool first.",
+  "dlmgr.empty": "No downloads yet",
+  "dlmgr.reveal": "Show in folder",
+  "dlmgr.copy": "Copy path",
+  "dlmgr.copied": "Path copied to clipboard",
+  "dlmgr.copy_failed": "Could not copy the path",
+  "dlmgr.remove": "Remove",
+  "dlmgr.clear": "Clear all",
+  "dlmgr.cleared": "Download list cleared",
+  "dlmgr.open_failed": "Could not open the folder",
+  "dlmgr.link_failed": "Could not open the link",
 };

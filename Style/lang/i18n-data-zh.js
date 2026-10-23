@@ -1242,4 +1242,18 @@ window.__I18N_DATA.zh = {
   "voice.limitation.lowMagnitude":
     "嵌入产生了意料之外的低信号幅度；输入可能未包含清晰的语音。请将生成的标识符视为低置信度。",
   "footer.classic_mode": "经典版",
+  "dlmgr.title": "下载",
+  "dlmgr.saved": "已保存下载: {0}",
+  "dlmgr.saved_generic": "已保存下载",
+  "dlmgr.no_result": "暂无结果 — 请先运行工具。",
+  "dlmgr.empty": "暂无下载",
+  "dlmgr.reveal": "在文件夹中显示",
+  "dlmgr.copy": "复制路径",
+  "dlmgr.copied": "路径已复制到剪贴板",
+  "dlmgr.copy_failed": "无法复制路径",
+  "dlmgr.remove": "移除",
+  "dlmgr.clear": "全部清除",
+  "dlmgr.cleared": "已清除下载列表",
+  "dlmgr.open_failed": "无法打开文件夹",
+  "dlmgr.link_failed": "无法打开链接",
 };

@@ -1313,4 +1313,18 @@ window.__I18N_DATA.ja = {
   "voice.limitation.lowMagnitude":
     "埋め込みが予想外に低い信号強度を生成しました。入力に明確な音声が含まれていなかった可能性があります。生成された識別子は低信頼として扱ってください。",
   "footer.classic_mode": "クラシック版",
+  "dlmgr.title": "ダウンロード",
+  "dlmgr.saved": "ダウンロードを保存しました: {0}",
+  "dlmgr.saved_generic": "ダウンロードを保存しました",
+  "dlmgr.no_result": "まだ結果がありません — まずツールを実行してください。",
+  "dlmgr.empty": "ダウンロードはまだありません",
+  "dlmgr.reveal": "フォルダーに表示",
+  "dlmgr.copy": "パスをコピー",
+  "dlmgr.copied": "パスをクリップボードにコピーしました",
+  "dlmgr.copy_failed": "パスをコピーできませんでした",
+  "dlmgr.remove": "削除",
+  "dlmgr.clear": "すべてクリア",
+  "dlmgr.cleared": "ダウンロード一覧をクリアしました",
+  "dlmgr.open_failed": "フォルダーを開けませんでした",
+  "dlmgr.link_failed": "リンクを開けませんでした",
 };

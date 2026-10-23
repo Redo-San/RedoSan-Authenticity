@@ -17,7 +17,11 @@
  *
  */
 function sanitizeRemovalTools() {
-  if (window.location.hostname !== "redo-san.github.io") return;
+  if (
+    window.location.hostname !== "redo-san.github.io" &&
+    !window.__TAURI_INTERNALS__
+  )
+    return;
   /* c8 ignore next 5 */
   var sel =
     '.sidebar a[data-page="removal-tools"], .card[data-page="removal-tools"], .footer-links a[data-page="removal-tools"]';

@@ -1061,5 +1061,19 @@
   "voice.recorder_max_label": "Max",
   "voice.status.maxDurationReached": "Maximum recording duration (3 minutes) reached. Recording stopped automatically.",
   "voice.error.tooLong": "Audio exceeds maximum duration of 3 minutes. Please trim your file.",
-  "voice.countdown_seconds": "{0}s left"
+  "voice.countdown_seconds": "{0}s left",
+  "dlmgr.title": "Downloads",
+  "dlmgr.saved": "Download saved: {0}",
+  "dlmgr.saved_generic": "Download saved",
+  "dlmgr.no_result": "No result yet — run the tool first.",
+  "dlmgr.empty": "No downloads yet",
+  "dlmgr.reveal": "Show in folder",
+  "dlmgr.copy": "Copy path",
+  "dlmgr.copied": "Path copied to clipboard",
+  "dlmgr.copy_failed": "Could not copy the path",
+  "dlmgr.remove": "Remove",
+  "dlmgr.clear": "Clear all",
+  "dlmgr.cleared": "Download list cleared",
+  "dlmgr.open_failed": "Could not open the folder",
+  "dlmgr.link_failed": "Could not open the link"
 }
