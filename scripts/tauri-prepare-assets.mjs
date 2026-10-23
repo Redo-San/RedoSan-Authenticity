@@ -179,7 +179,12 @@ function main() {
       recursive: true,
       filter: (from) => {
         const base = path.basename(from);
-        return !base.startsWith(".") && base !== "Thumbs.db";
+        if (base.startsWith(".") || base === "Thumbs.db") return false;
+        // Removal Tools is local-only and still in development — its shell
+        // never ships in the desktop bundle (site builds are unaffected).
+        const rel = path.relative(ROOT, from);
+        if (rel === path.join("Style", "pages", "removal-tools")) return false;
+        return true;
       },
     });
   }
