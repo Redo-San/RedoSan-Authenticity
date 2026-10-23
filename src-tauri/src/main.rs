@@ -14,11 +14,18 @@ async fn save_result_file(
     bytes: Vec<u8>,
 ) -> Result<Option<String>, String> {
     let start_dir = app.path().download_dir().ok();
+    let parent = app.get_webview_window("main");
     let (tx, rx) = std::sync::mpsc::channel();
     app.run_on_main_thread(move || {
         let mut dialog = rfd::FileDialog::new().set_file_name(&default_name);
         if let Some(dir) = start_dir {
             dialog = dialog.set_directory(dir);
+        }
+        // Own the dialog to the main window so it stays modal and on top.
+        // set_parent is supported on Windows, macOS and Linux (XDG); a
+        // missing window must never abort the dialog, hence if-let only.
+        if let Some(win) = &parent {
+            dialog = dialog.set_parent(win);
         }
         let result = match dialog.save_file() {
             Some(path) => std::fs::write(&path, bytes)

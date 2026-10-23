@@ -274,6 +274,11 @@ function downloadBlob(blob, name, containerId) {
 
 var RS_DLS_KEY = "rs_dl_history";
 var RS_DLS_MAX = 50;
+// core:path|resolve_directory takes tauri::path::BaseDirectory as a
+// #[repr(u16)] Deserialize_repr enum — integers only, no string form
+// (tauri 2.12.5 src/path/mod.rs: Download = 7). Named so an upstream enum
+// change is caught here instead of silently resolving the wrong folder.
+var RS_BASE_DIRECTORY_DOWNLOAD = 7;
 var _rsDlDir = null;
 var _rsToastTimer = null;
 var _rsDlOutsideHandler = null;
@@ -447,7 +452,7 @@ function rsDlSave(list) {
 function rsDlDir() {
   if (_rsDlDir) return Promise.resolve(_rsDlDir);
   return tauriInvoke("plugin:path|resolve_directory", {
-    directory: 7,
+    directory: RS_BASE_DIRECTORY_DOWNLOAD,
     path: null,
   }).then(function (d) {
     _rsDlDir = d;
