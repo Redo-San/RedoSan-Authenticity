@@ -179,7 +179,7 @@ function main() {
       recursive: true,
       filter: (from) => {
         const base = path.basename(from);
-        if (base.startsWith(".") || base === "Thumbs.db") return false;
+        if (base === "Thumbs.db" || base.startsWith(".")) return false;
         // Removal Tools is local-only and still in development — its shell
         // never ships in the desktop bundle (site builds are unaffected).
         const rel = path.relative(ROOT, from);
