@@ -174,9 +174,10 @@ function __(key, fallback) {
 /**
  * Save a result file. On the desktop build this opens the native Save As
  * dialog (rsSaveAsDesktop); the web build keeps the anchor download.
- * @param blob
- * @param fileName
+ * @param {Blob} blob - Result bytes to save.
+ * @param {string} fileName - Suggested file name for the saved file.
  */
+// eslint-disable-next-line no-unused-vars -- browser global consumed cross-file by C2PA, DID, Watermark, Pixel_Injection, Metadata, Document_Watermark, Fingerprint, Face/Iris/Voice_Biometric (shared.js loads before each)
 function downloadBlobSimple(blob, fileName) {
   if (isTauriDesktop()) {
     rsSaveAsDesktop(blob, fileName);
@@ -188,8 +189,8 @@ function downloadBlobSimple(blob, fileName) {
 /**
  * Anchor-based download — main path on the web build, desktop fallback
  * when the Save As IPC path fails.
- * @param blob
- * @param fileName
+ * @param {Blob} blob - Result bytes to save.
+ * @param {string} fileName - Value for the anchor's download attribute.
  */
 function rsAnchorDownloadSimple(blob, fileName) {
   var url = URL.createObjectURL(blob);
@@ -327,6 +328,9 @@ function rsSaveAsDesktop(blob, fileName) {
     .replace(/[<>:"|?*]/g, "_");
   var saveViaAnchor = function () {
     rsAnchorDownloadSimple(blob, fileName);
+    // IPC failed but the anchor still saved the file — keep the history
+    // entry so the fallback is not a silent, untracked download.
+    if (blob && typeof blob.size === "number") rsRecordDownload(blob, fileName);
   };
   if (!blob || typeof blob.arrayBuffer !== "function") {
     saveViaAnchor();

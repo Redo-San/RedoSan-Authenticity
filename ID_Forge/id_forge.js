@@ -511,9 +511,10 @@ function escXml(s) {
 }
 
 /**
- *
- * @param blob
- * @param name
+ * Save a result file: native Save As dialog on the Tauri desktop build
+ * (shared.js helper), anchor download on the web build.
+ * @param {Blob} blob - Result bytes to save.
+ * @param {string} name - Suggested file name for the saved file.
  */
 function downloadBlobSimple(blob, name) {
   if (
