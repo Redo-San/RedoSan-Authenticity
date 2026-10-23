@@ -519,17 +519,19 @@ function rsDlCopyFallback(text) {
 
 /**
  * Reveal a saved file in Explorer, falling back to its folder, then to an
- * error toast.
+ * error toast. The opener command takes `paths` (a JSON array) — its Rust
+ * signature is `reveal_item_in_dir(paths: Vec<PathBuf>)` — and on Windows
+ * canonicalizes each entry, so a deleted file fails over to its directory.
  * @param {object} entry - Download history entry.
  */
 function rsDlReveal(entry) {
   var full = rsDlFullPath(entry);
-  tauriInvoke("plugin:opener|reveal_item_in_dir", { path: full })
+  tauriInvoke("plugin:opener|reveal_item_in_dir", { paths: [full] })
     .catch(function () {
       // The file may have been deleted outside the app — reveal its folder.
       if (entry.dir && entry.dir !== full)
         return tauriInvoke("plugin:opener|reveal_item_in_dir", {
-          path: entry.dir,
+          paths: [entry.dir],
         });
       throw new Error("reveal-failed");
     })
