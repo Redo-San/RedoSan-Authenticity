@@ -2914,6 +2914,22 @@ describe("voice_ui — initVoiceConsent edge cases", () => {
     registered();
     assert.equal(acceptBtn.disabled, true, "listener still toggles button");
   });
+
+  it("keeps the accept button disabled when the checkbox starts unchecked", () => {
+    globalThis.sessionStorage = makeLocalStorage();
+    const checkEl = {
+      checked: false,
+      addEventListener: function () {},
+    };
+    const acceptBtn = { disabled: false };
+    globalThis.document = makeVoiceConsentDoc({
+      "voice-consent-check": checkEl,
+      "voice-consent-accept": acceptBtn,
+    });
+    globalThis.initVoiceConsent();
+    assert.equal(checkEl.checked, false, "stays unchecked");
+    assert.equal(acceptBtn.disabled, true, "accept disabled without a tick");
+  });
 });
 
 // ── initVoiceBiometric error path ──
