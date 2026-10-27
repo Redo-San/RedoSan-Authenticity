@@ -26,5 +26,5 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npx -y npm@11.20.0 ci
       - run: npx typedoc --version
