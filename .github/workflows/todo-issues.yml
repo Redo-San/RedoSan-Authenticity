@@ -25,7 +25,7 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const PATTERN = /(?:TODO|FIXME|HACK)\s*:\s*(.+)/g;
-            const EXCLUDE_DIRS = ['node_modules', '.git', '.github'];
+            const EXCLUDE_DIRS = ['node_modules', '.git', '.github', 'vendor', 'coverage', 'dist', 'build'];
             const EXCLUDE_FILES = ['package-lock.json', '*.min.js'];
 
             function walk(dir) {

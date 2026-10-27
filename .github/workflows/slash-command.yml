@@ -1,7 +1,7 @@
 name: Slash Command
 
 on:
-  issue_comment:
+  issue_comment: # zizmor: ignore[dangerous-triggers] -- /ask is gated by an admin/write collaborator permission check; never checks out or executes untrusted code
     types: [created]
 
 env:
