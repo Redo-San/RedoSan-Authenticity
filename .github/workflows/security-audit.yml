@@ -29,7 +29,7 @@ jobs:
       - name: Install npm deps
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npm ci
+        run: npx -y npm@11.20.0 ci
       - name: Run npm audit (full scope)
         # `npm audit` exits 1 when it finds vulnerabilities, which would kill
         # this step before the policy gate ever runs (the 2026-10-05 failure

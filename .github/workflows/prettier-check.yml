@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npx -y npm@11.20.0 ci
       - name: Run Prettier check
         shell: bash
         env:

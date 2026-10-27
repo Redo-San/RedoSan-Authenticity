@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npx -y npm@11.20.0 ci
       - name: Generate reference images
         run: npx backstop reference --config .tools/Developer_Toolkit/backstop.json
         continue-on-error: true

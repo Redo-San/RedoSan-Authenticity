@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npx -y npm@11.20.0 ci
       - name: Knip report
         uses: codex-/knip-reporter@7ee82434e4adcb560038aaa59bc647fe8c3c6ee4 # v4.0.0
         with:

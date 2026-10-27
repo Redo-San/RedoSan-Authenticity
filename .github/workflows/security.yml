@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npx -y npm@11.20.0 ci
       - run: npx eslint --config .tools/Developer_Toolkit/eslint.config.mjs . --rules-only sonarjs/recommended
         continue-on-error: true
 

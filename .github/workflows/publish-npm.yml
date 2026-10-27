@@ -73,7 +73,7 @@ jobs:
       - name: Install npm deps
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npm ci
+        run: npx -y npm@11.20.0 ci
 
       - name: Run check gate
         run: npm run check

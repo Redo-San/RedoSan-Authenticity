@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-      - run: npm ci
+      - run: npx -y npm@11.20.0 ci
       - run: npx playwright install chromium --with-deps
       - name: Run DOM Review
         run: node cli/tests/dom_check.js

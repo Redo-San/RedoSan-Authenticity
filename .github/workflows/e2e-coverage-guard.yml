@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci --ignore-scripts
+      - run: npx -y npm@11.20.0 ci --ignore-scripts
       - run: npx playwright install chromium
       - name: Run E2E coverage guard
         run: node scripts/e2e-coverage-guard.js --deep

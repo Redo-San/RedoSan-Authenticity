@@ -36,7 +36,7 @@ jobs:
       - name: Install npm deps
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npm ci
+        run: npx -y npm@11.20.0 ci
       - name: npm audit (production deps)
         run: npm run audit:prod
       - name: Run unit tests
@@ -73,7 +73,7 @@ jobs:
       - name: Install npm deps
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npm ci
+        run: npx -y npm@11.20.0 ci
       - name: Install Playwright browsers
         run: npx playwright install chromium 2>&1 || echo "Playwright install skipped (may already be cached)"
       - name: Run E2E tests
