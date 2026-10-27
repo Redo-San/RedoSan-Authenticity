@@ -252,7 +252,8 @@ test("ignores an unrelated PNG chunk", () => {
 test("detects a JPEG APP11 JUMBF manifest store", () => {
   const payload = Buffer.concat([
     Buffer.from("JP", "ascii"),
-    Buffer.from('jumbc2pa', "ascii"),
+    Buffer.from("jumb", "ascii"),
+    Buffer.from("c2pa", "ascii"),
   ]);
   const result = detectC2pa(jpegWithApp11(payload));
   assert.equal(result.present, true);
@@ -263,7 +264,8 @@ test("detects a JPEG APP11 JUMBF manifest store", () => {
 test("ignores a JPEG APP11 segment without the c2pa label", () => {
   const payload = Buffer.concat([
     Buffer.from("JP", "ascii"),
-    Buffer.from('jumbother', "ascii"),
+    Buffer.from("jumb", "ascii"),
+    Buffer.from("none", "ascii"),
   ]);
   assert.equal(detectC2pa(jpegWithApp11(payload)).present, false);
 });
