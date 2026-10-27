@@ -11,4 +11,14 @@ export default defineConfig({
     permissions: ["contextMenus", "activeTab", "storage"],
     host_permissions: [],
   },
+  // The fingerprint implementations are shared with the site and live outside
+  // extension/ (repo root Fingerprint/). Vite's dev server refuses to serve
+  // files above its root by default; allow the repo root for `wxt dev`.
+  vite: () => ({
+    server: {
+      fs: {
+        allow: [".."],
+      },
+    },
+  }),
 });

@@ -1,12 +1,37 @@
 (function () {
-  if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
-    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
-    )
-  )
+  // Browser-extension contexts are first-party: `chrome.runtime.id` /
+  // `browser.runtime.id` only exist for code running inside an extension
+  // (popup, options, isolated content script) and are not exposed to a page's
+  // main world, so allowing them does not weaken the guard against third-party
+  // sites hotlinking this file.
+  var allowed = true; // non-browser contexts (Node, CLI, Web Worker)
+  var isExtension = false;
+  try {
+    var g = typeof globalThis === "undefined" ? {} : globalThis;
+    var runtime =
+      (g.chrome && g.chrome.runtime) || (g.browser && g.browser.runtime);
+    isExtension = !!(runtime && runtime.id);
+  } catch {
+    // A sandboxed page can throw on `chrome` access; no runtime, no exemption.
+    isExtension = false;
+  }
+  if (!isExtension && typeof window != "undefined" && window.location) {
+    // Parse the URL instead of regex-matching the whole href: a path such as
+    // https://evil.example/x.redo-san.github.io/ must not satisfy the check.
+    try {
+      var loc = new URL(window.location.href);
+      var host = loc.hostname;
+      allowed =
+        loc.protocol === "file:" ||
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        /(^|\.)redo-san\.github\.io$/.test(host);
+    } catch {
+      // An invalid href cannot be verified, so fail closed.
+      allowed = false;
+    }
+  }
+  if (!allowed)
     throw new Error(
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
@@ -177,4 +202,17 @@ function resizeImageData(imgData, targetSize) {
   r.w = targetSize;
   r.h = targetSize;
   return r;
+}
+
+// ── Bundler bridge ──
+// Same reason as Fingerprint/hashing.js: a bundled consumer cannot see this
+// module's top-level declarations, so expose them explicitly.
+if (typeof window !== "undefined") {
+  window.RedosanPerceptual = {
+    ahash: ahash,
+    dhash: dhash,
+    phash: phash,
+    whash: whash,
+    resizeImageData: resizeImageData,
+  };
 }
