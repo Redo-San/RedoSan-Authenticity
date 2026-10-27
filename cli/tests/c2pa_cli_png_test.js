@@ -184,6 +184,40 @@ describe("c2pa CLI — PNG container", () => {
     assert.equal(report.c2pa.version, 1);
   });
 
+  it("parses the manifest when the chunk CRC contains a JSON brace", () => {
+    // The manifest payload is followed by the chunk's 4-byte CRC. Reading the
+    // whole chunk and slicing between the first "{" and the last "}" made the
+    // parse depend on those CRC bytes: a 0x7d ("}") there ended the object
+    // early, JSON.parse threw, and `c2pa read` reported {raw, note} instead of
+    // the manifest. The CRC depends on the signed payload, and the payload
+    // carries a timestamp, so this used to fail on a fraction of runs.
+    let payload = null;
+    for (let n = 0; n < 5000 && !payload; n++) {
+      const candidate = Buffer.from(
+        `{"version":1,"claim_generator":"crc-brace","pad":"${n}"}`,
+        "utf-8",
+      );
+      const crc = crc32(
+        Buffer.concat([Buffer.from("caBX", "ascii"), candidate]),
+      );
+      for (let shift = 0; shift < 32; shift += 8) {
+        if (((crc >>> shift) & 0xff) === 0x7d) payload = candidate;
+      }
+    }
+    assert.ok(payload, "found a payload whose CRC contains 0x7d");
+
+    const file = path.join(dir, "crc-brace.png");
+    fs.writeFileSync(
+      file,
+      insertChunk(fs.readFileSync(FIXTURE), "caBX", payload),
+    );
+
+    const out = path.join(dir, "crc-brace.json");
+    runCli(["c2pa", "read", file, "--output", out]);
+    const report = JSON.parse(fs.readFileSync(out, "utf-8"));
+    assert.equal(report.c2pa.claim_generator, "crc-brace");
+  });
+
   it("prefers caBX when a file carries both chunks", () => {
     const mixed = path.join(dir, "mixed.png");
     const withLegacy = insertChunk(
