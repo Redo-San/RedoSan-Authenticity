@@ -126,8 +126,9 @@ function findC2PAInFile(filePath) {
           return {
             offset: i,
             length: segLen + 2,
-            // Skip FFEB, the 2-byte segment length, "c2pa\0" and the 4-byte
-            // manifest length: the JSON parser must see manifest bytes only.
+            // Skip the 0xFFEB marker, the 2-byte segment length, "c2pa\0" and
+            // the 4-byte manifest length: the JSON parser must see manifest
+            // bytes only.
             data: data.slice(i + 13, i + 4 + segLen),
           };
         }
