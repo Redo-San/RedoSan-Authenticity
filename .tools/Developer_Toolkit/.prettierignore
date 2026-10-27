@@ -27,3 +27,7 @@ sw-precache.js
 cli/
 dist-tauri/
 src-tauri/
+# Prettier resolves these relative to this file, not the repo root.
+../../extension/node_modules
+../../extension/.output
+../../extension/.wxt

@@ -248,6 +248,23 @@ export default [
     },
   },
   {
+    // extension/ is a nested npm project (own package.json + lockfile). Its
+    // dependencies live in extension/node_modules, which the root `npm ci`
+    // does not install, so root-level import resolution cannot see `wxt`.
+    files: ["extension/**/*.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: {
+        ...globals.browser,
+        ...globals.webextensions,
+        ...globals.es2022,
+      },
+    },
+    rules: {
+      "import-x/no-unresolved": "off",
+    },
+  },
+  {
     files: [
       "Fingerprint/hashing.js",
       "Fingerprint/hashing_perceptual.js",
@@ -306,6 +323,9 @@ export default [
       "reports/",
       "dist-tauri/",
       "src-tauri/",
+      "extension/node_modules/",
+      "extension/.output/",
+      "extension/.wxt/",
     ],
   },
 ];

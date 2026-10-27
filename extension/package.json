@@ -1,0 +1,22 @@
+{
+  "name": "redosan-authenticity-inspector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "WXT scaffold for the RedoSan Authenticity Inspector browser extension (inspection only, no network).",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "postinstall": "wxt prepare"
+  },
+  "devDependencies": {
+    "wxt": "^0.21.5"
+  }
+}

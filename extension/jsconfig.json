@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "checkJs": false,
+    "strict": false
+  },
+  "exclude": [".output", ".wxt", "node_modules"]
+}
