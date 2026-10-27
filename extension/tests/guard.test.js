@@ -22,10 +22,13 @@ const GUARDED_FILES = [
 ];
 
 /**
- * @param {string} relativePath
+ * @param {string} relativePath Repo-relative path to a guarded script.
  * @returns {string} the leading IIFE, including its `})();`
  */
 function guardSource(relativePath) {
+  // The path is a literal from GUARDED_FILES joined to the repo root; no user
+  // input reaches the filesystem here.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const source = readFileSync(path.join(ROOT, relativePath), "utf8");
   const start = source.indexOf("(function () {");
   assert.notEqual(start, -1, `${relativePath} should open with an IIFE guard`);
@@ -36,7 +39,7 @@ function guardSource(relativePath) {
 
 /**
  * Run one file's guard with a controlled global environment.
- * @param {string} relativePath
+ * @param {string} relativePath Repo-relative path to a guarded script.
  * @param {object} sandbox globals visible to the guard
  * @returns {() => void} invoked with no arguments; throws if the guard rejects
  */
@@ -49,8 +52,8 @@ function loadGuard(relativePath, sandbox) {
 }
 
 /**
- * @param {string} href
- * @param {object} [extra]
+ * @param {string} href Page URL to simulate.
+ * @param {object} [extra] Extra globals merged into the sandbox.
  * @returns {object} sandbox with a window.location and no extension runtime
  */
 function webPage(href, extra = {}) {

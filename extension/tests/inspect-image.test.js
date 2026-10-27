@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -58,9 +59,10 @@ const OPENSSL_VECTORS = [
 ];
 
 /**
- *
- * @param algorithm
- * @param data
+ * Compute the reference digest with Node's OpenSSL bindings.
+ * @param {string} algorithm OpenSSL hash name, e.g. `sha3-256`.
+ * @param {Buffer|Uint8Array} data Bytes to digest.
+ * @returns {string} Lowercase hex digest.
  */
 function opensslDigest(algorithm, data) {
   const options = algorithm === "shake128" ? { outputLength: 32 } : undefined;
@@ -70,16 +72,20 @@ function opensslDigest(algorithm, data) {
 }
 
 /**
- *
- * @param name
+ * Read a file from the shared CLI fixture directory.
+ * @param {string} name File name inside `cli/tests/fixtures`.
+ * @returns {Buffer} Raw fixture bytes.
  */
 function fixture(name) {
+  // `name` is always a literal at the call sites in this file; the directory is
+  // the same fixture folder the CLI suite uses.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   return readFileSync(path.join(FIXTURES, name));
 }
 
 /**
- *
- * @param value
+ * @param {number} value Integer to encode.
+ * @returns {Buffer} 4-byte big-endian buffer.
  */
 function u32be(value) {
   const buffer = Buffer.alloc(4);
@@ -88,8 +94,8 @@ function u32be(value) {
 }
 
 /**
- *
- * @param value
+ * @param {number} value Integer to encode.
+ * @returns {Buffer} 4-byte little-endian buffer.
  */
 function u32le(value) {
   const buffer = Buffer.alloc(4);
@@ -102,9 +108,10 @@ const PNG_SIGNATURE = Buffer.from([
 ]);
 
 /**
- *
- * @param type
- * @param payload
+ * Build a minimal PNG that carries one chunk.
+ * @param {string} type Four-letter chunk type.
+ * @param {Buffer} payload Chunk payload.
+ * @returns {Buffer} Signature + the chunk + IEND.
  */
 function pngWithChunk(type, payload) {
   const chunk = Buffer.concat([
@@ -122,8 +129,9 @@ function pngWithChunk(type, payload) {
 }
 
 /**
- *
- * @param payload
+ * Build a minimal JPEG that carries one APP11 segment.
+ * @param {Buffer} payload Segment payload, including the `JP` marker and label.
+ * @returns {Buffer} SOI + APP11 + EOI.
  */
 function jpegWithApp11(payload) {
   return Buffer.concat([
@@ -136,9 +144,10 @@ function jpegWithApp11(payload) {
 }
 
 /**
- *
- * @param type
- * @param payload
+ * Build a minimal RIFF/WEBP container with one chunk.
+ * @param {string} type Four-letter RIFF chunk type.
+ * @param {Buffer} payload Chunk payload.
+ * @returns {Buffer} RIFF header + the chunk, padded to an even length.
  */
 function webpWithChunk(type, payload) {
   const pad = payload.length % 2;
@@ -154,7 +163,8 @@ function webpWithChunk(type, payload) {
 }
 
 /**
- *
+ * Build a deterministic 32x32 RGBA image.
+ * @returns {{data: Uint8ClampedArray, w: number, h: number}} ImageData-shaped object.
  */
 function syntheticImage32() {
   const data = new Uint8ClampedArray(32 * 32 * 4);
