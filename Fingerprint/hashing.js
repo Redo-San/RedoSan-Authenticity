@@ -49,6 +49,9 @@ var SHA3_RC = [
   0x80_00_80_81, 0x80_00_00_00, 0x00_00_80_80, 0x80_00_00_00, 0x80_00_00_01,
   0x00_00_00_00, 0x80_00_80_08, 0x80_00_00_00,
 ];
+/* eslint-disable security/detect-object-injection -- every index inside keccakF
+   is a loop counter bounded by the 25-lane state or an offset into the fixed
+   SHA3_ROTC table; no user-controlled key can reach these accesses. */
 /**
  * Keccak-f[1600] permutation.
  * @param {Uint32Array} st 50-word state, two 32-bit words per lane:
@@ -125,6 +128,7 @@ function keccakF(st) {
     st[1] ^= SHA3_RC[round * 2 + 1];
   }
 }
+/* eslint-enable security/detect-object-injection */
 /**
  * Sponge construction shared by the four SHA-3 fixed-output functions.
  * @param {Uint8Array} data Input bytes.
