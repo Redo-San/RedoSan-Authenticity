@@ -50,8 +50,10 @@ var SHA3_RC = [
   0x00_00_00_00, 0x80_00_80_08, 0x80_00_00_00,
 ];
 /**
- *
- * @param st
+ * Keccak-f[1600] permutation.
+ * @param {Uint32Array} st 50-word state, two 32-bit words per lane:
+ *   `st[2 * (x + 5y)]` holds the low word and `st[2 * (x + 5y) + 1]` the high
+ *   word of lane (x, y). The permutation is applied in place.
  */
 function keccakF(st) {
   var bc = new Uint32Array(10);
@@ -124,9 +126,10 @@ function keccakF(st) {
   }
 }
 /**
- *
- * @param data
- * @param bits
+ * Sponge construction shared by the four SHA-3 fixed-output functions.
+ * @param {Uint8Array} data Input bytes.
+ * @param {number} bits Digest length in bits (224, 256, 384 or 512).
+ * @returns {Promise<string>} Lowercase hex digest.
  */
 async function sha3(data, bits) {
   var rate = 1600 - bits * 2,
@@ -177,10 +180,11 @@ var sha3_512 = async function (d) {
 
 // ── SHAKE128 / SHAKE256 (FIPS 202 XOF, reuses keccakF) ──
 /**
- *
- * @param data
- * @param bits
- * @param outBytes
+ * Extendable-output sponge behind SHAKE128 and SHAKE256.
+ * @param {Uint8Array} data Input bytes.
+ * @param {number} bits Security level in bits (128 or 256).
+ * @param {number} outBytes Number of output bytes to squeeze.
+ * @returns {Promise<string>} Lowercase hex output of `outBytes` bytes.
  */
 async function shake(data, bits, outBytes) {
   var rate = 1600 - bits * 2,
