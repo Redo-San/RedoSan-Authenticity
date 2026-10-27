@@ -28,105 +28,112 @@ function maybeYield() {
 // ── All hashing algorithms (pure JS, no UI) ──
 
 // ── SHA-3 (fast 32-bit pair arithmetic, no BigInt) ──
+// Keccak-f[1600] tables. The state is held as 25 lanes of two 32-bit words
+// (low, high), so index = 2 * (x + 5y).
+//
+// Rotation offset for each lane, indexed by x + 5y (FIPS 202 rho offsets).
 var SHA3_ROTC = [
-  1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 2, 14, 27, 41, 52, 8, 25, 43, 62, 18, 39,
-  61, 20, 44,
+  0, 1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21, 8, 18,
+  2, 61, 56, 14,
 ];
+// Iota round constants, low word then high word per round.
 var SHA3_RC = [
-  0x00_00_00_01, 0x00_00_00_00, 0x00_00_80_82, 0x00_00_00_00, 0x80_00_80_00,
-  0x80_00_00_00, 0x00_00_80_80, 0x80_00_00_00, 0x00_00_80_09, 0x80_00_00_00,
-  0x00_00_00_8a, 0x80_00_00_00, 0x00_00_00_88, 0x80_00_00_00, 0x00_80_80_09,
-  0x80_00_00_00, 0x00_00_00_0e, 0x80_00_00_00, 0x00_00_00_8b, 0x80_00_00_00,
-  0x00_80_00_0b, 0x80_00_00_00, 0x00_00_80_8b, 0x80_00_00_00, 0x80_00_00_0b,
-  0x80_00_00_00, 0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_80, 0x80_00_00_00,
-  0x80_00_00_0f, 0x80_00_00_00, 0x80_00_80_08, 0x80_00_00_00, 0x00_00_00_93,
-  0x80_00_00_00, 0x80_00_80_0a, 0x80_00_00_00, 0x00_00_00_96, 0x80_00_00_00,
-  0x00_80_80_03, 0x80_00_00_00, 0x00_80_80_83, 0x80_00_00_00, 0x00_00_02_80,
-  0x80_00_00_00, 0x80_00_00_a5, 0x80_00_00_00,
+  0x00_00_00_01, 0x00_00_00_00, 0x00_00_80_82, 0x00_00_00_00, 0x00_00_80_8a,
+  0x80_00_00_00, 0x80_00_80_00, 0x80_00_00_00, 0x00_00_80_8b, 0x00_00_00_00,
+  0x80_00_00_01, 0x00_00_00_00, 0x80_00_80_81, 0x80_00_00_00, 0x00_00_80_09,
+  0x80_00_00_00, 0x00_00_00_8a, 0x00_00_00_00, 0x00_00_00_88, 0x00_00_00_00,
+  0x80_00_80_09, 0x00_00_00_00, 0x80_00_00_0a, 0x00_00_00_00, 0x80_00_80_8b,
+  0x00_00_00_00, 0x00_00_00_8b, 0x80_00_00_00, 0x00_00_80_89, 0x80_00_00_00,
+  0x00_00_80_03, 0x80_00_00_00, 0x00_00_80_02, 0x80_00_00_00, 0x00_00_00_80,
+  0x80_00_00_00, 0x00_00_80_0a, 0x00_00_00_00, 0x80_00_00_0a, 0x80_00_00_00,
+  0x80_00_80_81, 0x80_00_00_00, 0x00_00_80_80, 0x80_00_00_00, 0x80_00_00_01,
+  0x00_00_00_00, 0x80_00_80_08, 0x80_00_00_00,
 ];
+/* eslint-disable security/detect-object-injection -- every index inside keccakF
+   is a loop counter bounded by the 25-lane state or an offset into the fixed
+   SHA3_ROTC table; no user-controlled key can reach these accesses. */
 /**
- *
- * @param st
+ * Keccak-f[1600] permutation.
+ * @param {Uint32Array} st 50-word state, two 32-bit words per lane:
+ *   `st[2 * (x + 5y)]` holds the low word and `st[2 * (x + 5y) + 1]` the high
+ *   word of lane (x, y). The permutation is applied in place.
  */
 function keccakF(st) {
-  var C0 = [0, 0, 0, 0, 0],
-    C1 = [0, 0, 0, 0, 0],
-    D0,
-    D1,
-    x,
-    y,
-    i,
-    t,
-    xs,
-    ys,
-    idx,
-    n,
-    v0,
-    v1;
-  for (var r = 0; r < 24; r++) {
+  var bc = new Uint32Array(10);
+  var b = new Uint32Array(50);
+  var x, y, i, n, lo, hi, lane, dest;
+  for (var round = 0; round < 24; round++) {
+    // Theta: column parities, then mix them back into every lane.
     for (x = 0; x < 5; x++) {
-      i = x * 2;
-      C0[x] = st[i] ^ st[i + 10] ^ st[i + 20] ^ st[i + 30] ^ st[i + 40];
-      C1[x] = st[i + 1] ^ st[i + 11] ^ st[i + 21] ^ st[i + 31] ^ st[i + 41];
+      bc[x * 2] =
+        st[x * 2] ^
+        st[x * 2 + 10] ^
+        st[x * 2 + 20] ^
+        st[x * 2 + 30] ^
+        st[x * 2 + 40];
+      bc[x * 2 + 1] =
+        st[x * 2 + 1] ^
+        st[x * 2 + 11] ^
+        st[x * 2 + 21] ^
+        st[x * 2 + 31] ^
+        st[x * 2 + 41];
     }
     for (x = 0; x < 5; x++) {
-      var xp1 = (x + 1) % 5,
-        xm1 = (x + 4) % 5;
-      D0 = C0[xm1] ^ ((C0[xp1] << 1) | (C1[xp1] >>> 31));
-      D1 = C1[xm1] ^ ((C1[xp1] << 1) | (C0[xp1] >>> 31));
+      var prev = ((x + 4) % 5) * 2;
+      var next = ((x + 1) % 5) * 2;
+      lo = (bc[prev] ^ ((bc[next] << 1) | (bc[next + 1] >>> 31))) >>> 0;
+      hi = (bc[prev + 1] ^ ((bc[next + 1] << 1) | (bc[next] >>> 31))) >>> 0;
       for (y = 0; y < 5; y++) {
-        idx = y * 10 + x * 2;
-        st[idx] ^= D0;
-        st[idx + 1] ^= D1;
+        i = (x + 5 * y) * 2;
+        st[i] ^= lo;
+        st[i + 1] ^= hi;
       }
     }
-    t = st[2];
-    var th = st[3];
-    xs = [
-      0, 1, 2, 3, 4, 1, 2, 3, 4, 0, 2, 3, 4, 0, 1, 3, 4, 0, 1, 2, 4, 0, 1, 2, 3,
-    ];
-    ys = [
-      0, 1, 2, 3, 4, 3, 4, 0, 1, 2, 1, 2, 3, 4, 0, 4, 0, 1, 2, 3, 2, 3, 4, 0, 1,
-    ];
-    for (x = 0; x < 24; x++) {
-      idx = (xs[x] * 5 + ys[x]) * 2;
-      v0 = st[idx];
-      v1 = st[idx + 1];
-      n = SHA3_ROTC[x];
-      st[idx] =
-        n < 32
-          ? ((v0 << n) | (v1 >>> (32 - n))) >>> 0
-          : ((v1 << (n - 32)) | (v0 >>> (64 - n))) >>> 0;
-      st[idx + 1] =
-        n < 32
-          ? ((v1 << n) | (v0 >>> (32 - n))) >>> 0
-          : ((v0 << (n - 32)) | (v1 >>> (64 - n))) >>> 0;
+    // Rho + Pi: B[y, 2x+3y] = rot(A[x, y], r[x, y]).
+    for (x = 0; x < 5; x++) {
+      for (y = 0; y < 5; y++) {
+        lane = x + 5 * y;
+        dest = (y + 5 * ((2 * x + 3 * y) % 5)) * 2;
+        n = SHA3_ROTC[lane];
+        lo = st[lane * 2];
+        hi = st[lane * 2 + 1];
+        if (n === 0) {
+          b[dest] = lo;
+          b[dest + 1] = hi;
+        } else if (n < 32) {
+          b[dest] = ((lo << n) | (hi >>> (32 - n))) >>> 0;
+          b[dest + 1] = ((hi << n) | (lo >>> (32 - n))) >>> 0;
+        } else if (n === 32) {
+          b[dest] = hi;
+          b[dest + 1] = lo;
+        } else {
+          n -= 32;
+          b[dest] = ((hi << n) | (lo >>> (32 - n))) >>> 0;
+          b[dest + 1] = ((lo << n) | (hi >>> (32 - n))) >>> 0;
+        }
+      }
     }
-    for (x = 0; x < 25; x++) {
-      idx = x * 2;
-      var t2l = st[idx],
-        t2h = st[idx + 1];
-      st[idx] = t;
-      st[idx + 1] = th;
-      t = t2l;
-      th = t2h;
-    }
-    for (y = 0; y < 5; y++)
+    // Chi: row-wise non-linear mixing.
+    for (y = 0; y < 5; y++) {
       for (x = 0; x < 5; x++) {
-        i = y * 10 + x * 2;
-        var ip1 = y * 10 + ((x + 1) % 5) * 2,
-          ip2 = y * 10 + ((x + 2) % 5) * 2;
-        st[i] ^= ~st[ip1] & st[ip2];
-        st[i + 1] ^= ~st[ip1 + 1] & st[ip2 + 1];
+        i = (y * 5 + x) * 2;
+        var i1 = (y * 5 + ((x + 1) % 5)) * 2;
+        var i2 = (y * 5 + ((x + 2) % 5)) * 2;
+        st[i] = b[i] ^ (~b[i1] & b[i2]);
+        st[i + 1] = b[i + 1] ^ (~b[i1 + 1] & b[i2 + 1]);
       }
-    st[0] ^= SHA3_RC[r * 2];
-    st[1] ^= SHA3_RC[r * 2 + 1];
+    }
+    // Iota.
+    st[0] ^= SHA3_RC[round * 2];
+    st[1] ^= SHA3_RC[round * 2 + 1];
   }
 }
+/* eslint-enable security/detect-object-injection */
 /**
- *
- * @param data
- * @param bits
+ * Sponge construction shared by the four SHA-3 fixed-output functions.
+ * @param {Uint8Array} data Input bytes.
+ * @param {number} bits Digest length in bits (224, 256, 384 or 512).
+ * @returns {Promise<string>} Lowercase hex digest.
  */
 async function sha3(data, bits) {
   var rate = 1600 - bits * 2,
@@ -149,7 +156,7 @@ async function sha3(data, bits) {
     st[(j >> 3) * 2 + half] ^= data[i + j] << ((j & 3) << 3);
   }
   st[(rem >> 3) * 2 + (rem & 4 ? 1 : 0)] ^= 0x06 << ((rem & 3) << 3);
-  st[(lanes - 1) * 2] ^= 0x80_00_00_00;
+  // Only the high half of the last rate lane carries the final pad10*1 bit.
   st[(lanes - 1) * 2 + 1] ^= 0x80_00_00_00;
   keccakF(st);
   var outBytes = bits >> 3,
@@ -177,10 +184,11 @@ var sha3_512 = async function (d) {
 
 // ── SHAKE128 / SHAKE256 (FIPS 202 XOF, reuses keccakF) ──
 /**
- *
- * @param data
- * @param bits
- * @param outBytes
+ * Extendable-output sponge behind SHAKE128 and SHAKE256.
+ * @param {Uint8Array} data Input bytes.
+ * @param {number} bits Security level in bits (128 or 256).
+ * @param {number} outBytes Number of output bytes to squeeze.
+ * @returns {Promise<string>} Lowercase hex output of `outBytes` bytes.
  */
 async function shake(data, bits, outBytes) {
   var rate = 1600 - bits * 2,
@@ -203,7 +211,10 @@ async function shake(data, bits, outBytes) {
     st[(j >> 3) * 2 + half] ^= data[i + j] << ((j & 3) << 3);
   }
   st[(rem >> 3) * 2 + (rem & 4 ? 1 : 0)] ^= 0x1f << ((rem & 3) << 3);
-  st[(lanes - 1) * 2] ^= 0x80_00_00_00;
+  // Final bit of the pad10*1 rule: only the high 32-bit half of the last lane
+  // of the rate (byte r-1, i.e. position 7 inside its lane) carries it. The
+  // extra low-half XOR that used to live here corrupted the last four data
+  // bytes of the rate, which is why SHAKE128/256 disagreed with FIPS 202.
   st[(lanes - 1) * 2 + 1] ^= 0x80_00_00_00;
   keccakF(st);
   var result = new Uint8Array(outBytes);

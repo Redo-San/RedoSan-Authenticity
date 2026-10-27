@@ -316,3 +316,60 @@ describe("Hashing — consistency", () => {
     assert.notEqual(h1, h2);
   });
 });
+
+// Regression guard for the Keccak core. Before this was added, keccakF used a
+// corrupted round-constant table and set the pad10*1 final bit in both 32-bit
+// halves of the last rate lane, so every SHA-3/SHAKE digest was non-standard
+// (it disagreed with OpenSSL and the published FIPS 202 vectors).
+describe("Hashing — Keccak known-answer vectors (FIPS 202)", () => {
+  var enc = (s) => new TextEncoder().encode(s);
+
+  it("SHA3-224/256/384/512 match the published vectors", async () => {
+    var cases = [
+      [
+        "sha3_256",
+        new Uint8Array(0),
+        "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
+      ],
+      [
+        "sha3_256",
+        enc("abc"),
+        "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532",
+      ],
+      [
+        "sha3_224",
+        enc("abc"),
+        "e642824c3f8cf24ad09234ee7d3c766fc9a3a5168d0c94ad73b46fdf",
+      ],
+      [
+        "sha3_384",
+        enc("abc"),
+        "ec01498288516fc926459f58e2c6ad8df9b473cb0fc08c2596da7cf0e49be4b298d88cea927ac7f539f1edf228376d25",
+      ],
+      [
+        "sha3_512",
+        enc("abc"),
+        "b751850b1a57168a5693cd924b6b096e08f621827444f70d884f5d0240d2712e10e116e9192af3c91a7ec57647e3934057340b4cf408d5a56592f8274eec53f0",
+      ],
+    ];
+    for (var i = 0; i < cases.length; i++) {
+      var actual = await globalThis[cases[i][0]](cases[i][1]);
+      assert.equal(actual, cases[i][2], cases[i][0]);
+    }
+  });
+
+  it("SHAKE128/256 match the published vectors", async () => {
+    assert.equal(
+      await shake128(new Uint8Array(0)),
+      "7f9c2ba4e88f827d616045507605853ed73b8093f6efbc88eb1a6eacfa66ef26",
+    );
+    assert.equal(
+      await shake128(enc("abc")),
+      "5881092dd818bf5cf8a3ddb793fbcba74097d5c526a6d35f97b83351940f2cc8",
+    );
+    assert.equal(
+      await shake256(new Uint8Array(0)),
+      "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
+    );
+  });
+});
