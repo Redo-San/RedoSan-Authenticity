@@ -159,18 +159,23 @@ npm link    # makes 'redosan' available globally
 
 ### Desktop App (Tauri, experimental)
 
-Offline-capable desktop build (Windows / macOS / Linux) via Tauri 2. The
-desktop bundle ships every runtime asset locally (vendor libraries, FFmpeg,
-ONNX runtime, face/iris models) under a strict CSP with no remote origins.
+Offline-capable **Windows x64** desktop build via Tauri 2 (macOS and Linux are
+out of scope for v1). The bundle ships every runtime asset locally — 30 pinned
+files (22 downloaded and SHA-256-verified at build time, 8 committed) covering
+FFmpeg.wasm, ONNX Runtime, the C2PA wasm module and the face/iris models — under
+a strict CSP with no remote origins. Windows installers are attached to
+`desktop-v*` releases; builds are unsigned, so SmartScreen warns on first run.
 
 ```bash
 npm run assets:desktop -- --check   # verify the 30 pinned offline assets
-npm run assets:desktop               # fetch missing heavy assets (~80 MB)
+npm run assets:desktop               # fetch missing heavy assets (~70 MB)
 npx tauri build                      # build the desktop binary
 ```
 
-> Voice biometric weights (~200 MB) are not bundled; the desktop CSP blocks the
+> Voice biometric weights (~200 MB) are not bundled: the desktop CSP blocks the
 > runtime fetch, so voice embedding is unavailable there until vendored.
+
+Verification procedure and recorded results: `src-tauri/OFFLINE-VERIFICATION.md`.
 
 ---
 

@@ -68,11 +68,14 @@ jobs:
           tagName: desktop-v__VERSION__
           releaseName: RedoSan Authenticity Desktop v__VERSION__
           releaseBody: |
-            Unsigned Windows build (v1): Windows SmartScreen will warn on first run -
+            Windows x64 build (v1). Unsigned: Windows SmartScreen will warn on first run -
             choose "More info" -> "Run anyway". Signing is a purchase decision tracked
             as the future upgrade path: https://v2.tauri.app/distribute/sign/windows/
 
-            Offline-first: all runtime assets are vendored during the build; no network
-            is required after installation.
+            Offline-first: all 30 runtime assets are vendored and SHA-256-verified during
+            the build; no network is required after installation.
+
+            Known limitation: the ~200 MB voice biometric weights are not bundled, and the
+            desktop CSP blocks the runtime fetch, so voice embedding is unavailable here.
           releaseDraft: true
           prerelease: false
