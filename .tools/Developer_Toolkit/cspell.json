@@ -34,6 +34,7 @@
     "appimage",
     "CGNAT",
     "webrtc",
+    "wxt",
     "ahash",
     "dhash",
     "phash",
@@ -1311,7 +1312,11 @@
     "../../Assistant/assistant_data.js",
     "../../dist-tauri",
     "../../src-tauri/target",
-    "../../src-tauri/gen"
+    "../../src-tauri/gen",
+    "../../extension/node_modules",
+    "../../extension/.output",
+    "../../extension/.wxt",
+    "../../extension/package-lock.json"
   ],
   "dictionaries": [
     "en_US",

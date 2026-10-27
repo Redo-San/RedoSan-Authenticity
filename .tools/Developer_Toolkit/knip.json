@@ -49,5 +49,5 @@
     "@/*": ["Style/*"],
     "@@/*": ["."]
   },
-  "ignore": ["dist-tauri/**", "src-tauri/**"]
+  "ignore": ["dist-tauri/**", "src-tauri/**", "extension/**"]
 }

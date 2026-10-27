@@ -20,3 +20,7 @@ tests/
 .tools/
 dist-tauri/
 src-tauri/
+# Stylelint resolves these relative to the working directory (repo root).
+extension/node_modules
+extension/.output
+extension/.wxt
