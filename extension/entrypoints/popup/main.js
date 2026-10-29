@@ -4,6 +4,7 @@ import "../../assets/report.css";
 import { reportToJson } from "../../utils/format-report.js";
 import { inspectImage, isImageName } from "../../utils/inspect-image.js";
 import { directionFor, translate } from "../../utils/messages.js";
+import { MAX_IMAGE_BYTES } from "../../utils/protocol.js";
 import {
   buildReportModel,
   renderNotice,
@@ -95,6 +96,12 @@ function renderLastReport() {
 async function run(file) {
   if (!isImageFile(file)) {
     showStatus(translate("errorNotImage", settings.lang), "error");
+    return;
+  }
+  // Hashing reads the whole file into memory; refuse anything the context-menu
+  // path would also refuse instead of freezing the popup.
+  if (file.size > MAX_IMAGE_BYTES) {
+    showStatus(translate("errorTooLarge", settings.lang), "error");
     return;
   }
 
