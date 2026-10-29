@@ -93,24 +93,31 @@ export async function cryptoHashes(input, onProgress) {
   }
 
   const notify = typeof onProgress === "function" ? onProgress : () => {};
-  const hashes = {};
+  const entries = [];
 
   for (const algorithm of WEB_CRYPTO) {
     notify(algorithm);
-    hashes[algorithm] = await webCryptoSha(algorithm, data);
+    entries.push([algorithm, await webCryptoSha(algorithm, data)]);
   }
 
+  // Dispatch through a Map: the pure-JS implementations are looked up by name
+  // once, and an entry that is missing or not a function is skipped instead of
+  // being called.
+  const implementations = new Map(Object.entries(namespace));
   for (const [name, fn] of JS_DIGESTS) {
     notify(name);
-    try {
-      hashes[name] = await namespace[fn](data);
-    } catch {
-      // An implementation that is unavailable or fails is simply not reported.
+    const implementation = implementations.get(fn);
+    if (typeof implementation === "function") {
+      try {
+        entries.push([name, await implementation(data)]);
+      } catch {
+        // An implementation that is unavailable or fails is simply not reported.
+      }
     }
     // Keep the popup responsive: a single pure-JS digest blocks the thread.
     await yieldToEventLoop();
   }
 
   notify("");
-  return hashes;
+  return Object.fromEntries(entries);
 }

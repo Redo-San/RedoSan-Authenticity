@@ -26,13 +26,19 @@ export function perceptualHashes(imageData) {
     throw new TypeError("perceptualHashes expects { data, w, h }");
   }
 
-  const hashes = {};
+  // Resolve the implementations once: dispatch through a Map keeps the name
+  // lookup off the object itself, and a missing entry is skipped rather than
+  // called.
+  const implementations = new Map(Object.entries(namespace));
+  const entries = [];
   for (const name of PERCEPTUAL_NAMES) {
+    const implementation = implementations.get(name);
+    if (typeof implementation !== "function") continue;
     try {
-      hashes[name] = namespace[name](imageData);
+      entries.push([name, implementation(imageData)]);
     } catch {
       // whash has historically thrown for some inputs; omit it rather than fail.
     }
   }
-  return hashes;
+  return Object.fromEntries(entries);
 }
