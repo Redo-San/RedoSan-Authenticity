@@ -11,3 +11,19 @@ reason = "glib 0.18 VariantStrIter unsoundness (INFO severity). glib/gtk/webkit2
 [[IgnoredVulns]]
 id = "RUSTSEC-2024-0370"
 reason = "proc-macro-error unmaintained (INFO severity, no patched release ever published). Only reverse dependencies are glib-macros 0.18.5 and gtk3-macros 0.18.2 - the same Linux-only gtk-rs 0.18 chain as RUSTSEC-2024-0429, never compiled on Windows targets."
+
+[[IgnoredVulns]]
+id = "GHSA-qwgh-2vcv-g2f7"
+reason = "block-buffer 0.10.4 panic corrupts the inline buffer position. Reached only through sha2 0.10.9 -> tauri-codegen 2.7.4 at build time, hashing source files that are embedded into the binary, never attacker input. The fix ships in block-buffer 0.12.1, which requires sha2/digest 0.11; tauri-codegen pins the 0.10 line, so no compatible upgrade exists until Tauri updates. Not part of the shipped runtime."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0370"
+reason = "zvariant unmaintained (INFO severity). Linux-only path: zvariant 5.15.1 <- zbus 5.19.0 <- tauri-plugin-opener 2.7.2. `cargo tree --target x86_64-pc-windows-msvc -i zvariant` prints nothing, and this project ships Windows-only desktop builds, so the crate is never compiled. No replacement release exists."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0371"
+reason = "zbus_names unmaintained (INFO severity), same Linux-only zvariant/zbus chain as RUSTSEC-2026-0370: reached only through tauri-plugin-opener on Linux targets, never compiled in the Windows-only desktop build. No replacement release exists."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0372"
+reason = "zvariant_derive unmaintained (INFO severity), proc-macro half of the same Linux-only zvariant/zbus chain as RUSTSEC-2026-0370; not compiled on Windows targets, and no replacement release exists."

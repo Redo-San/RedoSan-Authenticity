@@ -166,6 +166,7 @@
   },
   "overrides": {
     "hono": "4.13.13",
+    "@hono/node-server": "2.1.5",
     "@mapbox/node-pre-gyp": "2.0.3",
     "tar": "7.5.22",
     "serialize-javascript": "7.1.4",
@@ -183,7 +184,7 @@
     "toml": "5.0.1",
     "diff": ">=8.0.3",
     "@babel/core": "7.29.7",
-    "qs": "6.16.0",
+    "qs": "6.17.1",
     "colord": "2.9.4",
     "ip-address": "10.7.4",
     "basic-ftp": "6.2.1",
