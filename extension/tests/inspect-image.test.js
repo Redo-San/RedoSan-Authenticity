@@ -170,11 +170,10 @@ function syntheticImage32() {
   const data = new Uint8ClampedArray(32 * 32 * 4);
   for (let y = 0; y < 32; y++) {
     for (let x = 0; x < 32; x++) {
-      const i = (y * 32 + x) * 4;
-      data[i] = (x % 8) * 31;
-      data[i + 1] = (x * 13 + y * 7) % 256;
-      data[i + 2] = (x * 5 + y * 17) % 256;
-      data[i + 3] = 255;
+      data.set(
+        [(x % 8) * 31, (x * 13 + y * 7) % 256, (x * 5 + y * 17) % 256, 255],
+        (y * 32 + x) * 4,
+      );
     }
   }
   return { data, w: 32, h: 32 };
@@ -189,16 +188,22 @@ test("exposes the 21 hash names in report order", () => {
 
 test("matches every CLI vector for testimg_64x64.png", async () => {
   const hashes = await cryptoHashes(fixture("testimg_64x64.png"));
+  const byName = new Map(Object.entries(hashes));
   for (const [name, expected] of Object.entries(CLI_VECTORS_64)) {
-    assert.equal(hashes[name], expected, `${name} should match the CLI vector`);
+    assert.equal(
+      byName.get(name),
+      expected,
+      `${name} should match the CLI vector`,
+    );
   }
 });
 
 test("matches Node OpenSSL for the four digests the CLI omits", async () => {
   const bytes = fixture("testimg_64x64.png");
   const hashes = await cryptoHashes(bytes);
+  const byName = new Map(Object.entries(hashes));
   for (const [name, algorithm] of OPENSSL_VECTORS) {
-    assert.equal(hashes[name], opensslDigest(algorithm, bytes), name);
+    assert.equal(byName.get(name), opensslDigest(algorithm, bytes), name);
   }
 });
 

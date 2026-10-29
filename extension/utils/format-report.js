@@ -2,16 +2,19 @@
 // these functions stay i18n-free so tests and "copy as JSON" share one shape.
 
 /**
- * @param {object} report
- * @returns {string}
+ * Serialize a report as pretty-printed JSON.
+ * @param {object} report Report returned by `inspectImage()`.
+ * @returns {string} JSON text with two-space indentation and no trailing
+ *   newline.
  */
 export function reportToJson(report) {
   return JSON.stringify(report, null, 2);
 }
 
 /**
- * @param {object} report
- * @returns {string}
+ * Render a report as plain text for display and clipboard export.
+ * @param {object} report Report returned by `inspectImage()`.
+ * @returns {string} One field per line, grouped into hash and C2PA sections.
  */
 export function reportToText(report) {
   const lines = [];

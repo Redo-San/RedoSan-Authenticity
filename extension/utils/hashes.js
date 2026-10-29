@@ -35,8 +35,8 @@ export const HASH_NAMES = [...WEB_CRYPTO, ...JS_DIGESTS.map(([name]) => name)];
 
 /**
  * Normalize the accepted binary inputs.
- * @param {Uint8Array|ArrayBuffer} input
- * @returns {Uint8Array}
+ * @param {Uint8Array|ArrayBuffer} input Bytes, or a buffer wrapping them.
+ * @returns {Uint8Array} A byte view over the same memory.
  */
 export function toBytes(input) {
   if (input instanceof Uint8Array) return input;
@@ -45,8 +45,9 @@ export function toBytes(input) {
 }
 
 /**
- * @param {ArrayBuffer|Uint8Array} buffer
- * @returns {string} lowercase hex
+ * Render a digest as hex.
+ * @param {ArrayBuffer|Uint8Array} buffer Digest bytes straight from a hash.
+ * @returns {string} Lowercase hex, two characters per byte.
  */
 function toHex(buffer) {
   return Array.from(new Uint8Array(buffer), (byte) =>
@@ -55,16 +56,18 @@ function toHex(buffer) {
 }
 
 /**
- * @param {string} algorithm
- * @param {Uint8Array} data
- * @returns {Promise<string>}
+ * Run one digest through WebCrypto.
+ * @param {string} algorithm WebCrypto name, e.g. `SHA-256`.
+ * @param {Uint8Array} data Bytes to digest.
+ * @returns {Promise<string>} Lowercase hex digest.
  */
 async function webCryptoSha(algorithm, data) {
   return toHex(await globalThis.crypto.subtle.digest(algorithm, data));
 }
 
 /**
- *
+ * Yield to the event loop between digests.
+ * @returns {Promise<void>} Resolves on the next turn of the event loop.
  */
 function yieldToEventLoop() {
   return new Promise((resolve) => setTimeout(resolve, 0));
@@ -75,9 +78,10 @@ function yieldToEventLoop() {
  *
  * A digest that throws is omitted from the result (same behaviour as the CLI),
  * so callers must treat the key set as best-effort rather than fixed.
- * @param {Uint8Array|ArrayBuffer} input
- * @param {(name: string) => void} [onProgress] receives the digest name, then ""
- * @returns {Promise<Record<string, string>>}
+ * @param {Uint8Array|ArrayBuffer} input File bytes to hash.
+ * @param {(name: string) => void} [onProgress] Progress callback: the digest
+ *   name before each one runs, then "" once the set is complete.
+ * @returns {Promise<Record<string, string>>} Hash name to lowercase hex digest.
  */
 export async function cryptoHashes(input, onProgress) {
   const data = toBytes(input);

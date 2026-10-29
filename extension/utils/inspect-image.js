@@ -19,8 +19,9 @@ const IMAGE_EXTENSIONS = new Set([
 ]);
 
 /**
- * @param {string} name
- * @returns {boolean}
+ * Is this file name one the browser can decode?
+ * @param {string} name File name or path; only the extension is used.
+ * @returns {boolean} True when the extension is one of IMAGE_EXTENSIONS.
  */
 export function isImageName(name) {
   const dot = name.lastIndexOf(".");
@@ -31,8 +32,9 @@ export function isImageName(name) {
 /**
  * Draw any browser-decodable image at 32x32 and return the pixels in the shape
  * Fingerprint/hashing_perceptual.js expects ({ data, w, h }).
- * @param {Blob} blob
+ * @param {Blob} blob Image bytes the browser can decode.
  * @returns {Promise<{data: Uint8ClampedArray, w: number, h: number, width: number, height: number}>}
+ *   Downscaled RGBA pixels plus the source dimensions read from the bitmap.
  */
 export async function decodeTo32(blob) {
   if (typeof globalThis.createImageBitmap !== "function") {
@@ -72,11 +74,15 @@ export async function decodeTo32(blob) {
  *
  * `options.decode` is injectable so unit tests can skip canvas decoding; the
  * default draws the real image at 32x32.
- * @param {File} file
- * @param {object} [options]
- * @param {(blob: Blob) => Promise<object>} [options.decode]
- * @param {(name: string) => void} [options.onProgress]
- * @returns {Promise<object>}
+ * @param {File} file File chosen in the popup.
+ * @param {object} [options] Inspection hooks; both are optional.
+ * @param {(blob: Blob) => Promise<object>} [options.decode] Replaces the canvas
+ *   downscale; must resolve to `{data, w, h, width, height}`.
+ * @param {(name: string) => void} [options.onProgress] Forwarded to
+ *   `cryptoHashes`.
+ * @returns {Promise<object>} Report with `file`, `hashes`, `perceptual_hashes`,
+ *   `c2pa` and `image`; `image` is `null` for non-images and `{error}` when
+ *   decoding fails.
  */
 export async function inspectImage(file, options = {}) {
   const decode = options.decode || decodeTo32;

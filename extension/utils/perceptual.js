@@ -11,7 +11,9 @@ export const PERCEPTUAL_NAMES = ["ahash", "dhash", "phash", "whash"];
  * The functions expect a 32x32 RGBA buffer shaped like `{ data, w, h }`; they
  * do not resize, so the caller must draw the image at 32x32 first.
  * @param {{ data: Uint8ClampedArray|Uint8Array, w: number, h: number }} imageData
- * @returns {Record<string, string>} lowercase hex, 16 characters each
+ *   32x32 RGBA pixels; `w` and `h` are both 32.
+ * @returns {Record<string, string>} Perceptual hash name to lowercase hex, 16
+ *   characters each.
  */
 export function perceptualHashes(imageData) {
   const namespace = globalThis.RedosanPerceptual;
