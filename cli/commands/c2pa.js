@@ -98,8 +98,12 @@ function genC2PAManifest(fileHash, fileName, mimeType, assertions) {
 
 // ── C2PA Read (search file for C2PA markers) ──
 /**
- *
- * @param filePath
+ * Locate the embedded manifest and return its payload, never the container
+ * bytes around it.
+ * @param {string} filePath Image to inspect.
+ * @returns {{offset: number, length: number, data: Buffer, chunkType?: string, standard?: boolean} | null}
+ *   `offset`/`length` describe the whole container unit; `data` is the payload
+ *   only, or `null` when the file carries no manifest.
  */
 function findC2PAInFile(filePath) {
   const data = readFileBytes(filePath);
@@ -119,44 +123,49 @@ function findC2PAInFile(filePath) {
           }
         }
         if (found) {
-          const payload = data.slice(i, i + 4 + segLen);
-          return { offset: i, length: segLen + 2, data: payload };
+          return {
+            offset: i,
+            length: segLen + 2,
+            // Skip the 0xFFEB marker, the 2-byte segment length, "c2pa\0" and
+            // the 4-byte manifest length: the JSON parser must see manifest
+            // bytes only.
+            data: data.slice(i + 13, i + 4 + segLen),
+          };
         }
       }
     }
   } else if (ext === ".png") {
-    // PNG: look for c2pa chunk
-    const marker = Buffer.from("c2pa");
-    let i = 8;
-    while (i <= data.length - 12) {
-      const chunkLen =
-        (data[i] << 24) |
-        (data[i + 1] << 16) |
-        (data[i + 2] << 8) |
-        data[i + 3];
-      let match = true;
-      for (let j = 0; j < 4; j++) {
-        if (data[i + 4 + j] !== marker[j]) {
-          match = false;
-          break;
-        }
-      }
-      if (match && chunkLen > 0 && i + 12 + chunkLen <= data.length) {
+    // PNG: the manifest store lives in a `caBX` chunk (C2PA 2.2, Annex A.3).
+    // `c2pa` is what older builds of this CLI wrote; it is not a legal PNG
+    // chunk type (PNG 3rd ed. 5.3 restricts every type byte to A-Z/a-z), so it
+    // is still read for those files but reported as non-standard.
+    for (const chunkType of ["caBX", "c2pa"]) {
+      const offset = findPNGChunk(data, chunkType);
+      if (offset < 0) continue;
+      const chunkLen = data.readUInt32BE(offset);
+      if (chunkLen > 0 && offset + 12 + chunkLen <= data.length) {
         return {
-          offset: i,
+          offset,
           length: chunkLen + 12,
-          data: data.slice(i, i + chunkLen + 12),
+          // Payload only. The 4-byte length, the type and the trailing CRC are
+          // container bytes: a CRC that happens to contain 0x7d used to close
+          // the JSON object early, so `read` fell back to {raw, note}.
+          data: data.slice(offset + 8, offset + 8 + chunkLen),
+          chunkType,
+          standard: chunkType === "caBX",
         };
       }
-      i += chunkLen + 12;
     }
   }
   return null;
 }
 
 /**
- *
- * @param buf
+ * Parse the JSON manifest out of an embedded payload.
+ * Tolerates stray bytes before or after the object so files written by older
+ * builds, which sometimes carried container headers in the payload, still read.
+ * @param {Buffer} buf Payload bytes extracted by `findC2PAInFile`.
+ * @returns {object} Parsed manifest, or `{raw, note}` when the bytes are not JSON.
  */
 function parseC2PAFromBuffer(buf) {
   try {
@@ -325,9 +334,10 @@ function embedC2PAJPEG(jpegBuf, manifestBuf) {
 }
 
 /**
- *
- * @param buf
- * @param marker
+ * Find a JPEG marker.
+ * @param {Buffer} buf JPEG bytes to scan.
+ * @param {number} marker Second marker byte, e.g. `0xda` for SOS.
+ * @returns {number} Offset of the `0xFF` byte, or `-1` when absent.
  */
 function findJPEGMarker(buf, marker) {
   for (let i = 0; i < buf.length - 1; i++) {
@@ -336,18 +346,22 @@ function findJPEGMarker(buf, marker) {
   return -1;
 }
 
-// ── PNG: embed C2PA as custom 'c2pa' chunk before IEND ──
+// ── PNG: embed C2PA as a `caBX` chunk before IDAT ──
 /**
- *
- * @param pngBuf
- * @param manifestBuf
+ * Insert the manifest store into a PNG as a `caBX` chunk before the first IDAT.
+ * @param {Buffer} pngBuf Source PNG bytes.
+ * @param {Buffer} manifestBuf Manifest store to embed.
+ * @returns {Buffer} PNG bytes with the `caBX` chunk inserted; the input is not
+ *   modified.
  */
 function embedC2PAPNG(pngBuf, manifestBuf) {
   const idatIdx = findPNGChunk(pngBuf, "IDAT");
   if (idatIdx < 0) throw new Error("PNG IDAT chunk not found");
 
-  // Build c2pa chunk: 4-byte length + 'c2pa' + data + 4-byte CRC
-  const chunkType = Buffer.from("c2pa", "ascii");
+  // C2PA 2.2, Annex A.3: the manifest store is carried by an ancillary,
+  // private, not-safe-to-copy chunk of type `caBX`, recommended before IDAT.
+  // Chunk layout: 4-byte length + type + data + 4-byte CRC.
+  const chunkType = Buffer.from("caBX", "ascii");
   const chunkLen = manifestBuf.length;
   const crcInput = Buffer.concat([chunkType, manifestBuf]);
   const crcVal = crc32(crcInput);
@@ -366,9 +380,10 @@ function embedC2PAPNG(pngBuf, manifestBuf) {
 }
 
 /**
- *
- * @param buf
- * @param name
+ * Find a PNG chunk by type.
+ * @param {Buffer} buf PNG datastream bytes.
+ * @param {string} name Four-letter chunk type, e.g. `IDAT`.
+ * @returns {number} Offset of the chunk length field, or `-1` when absent.
  */
 function findPNGChunk(buf, name) {
   const nameBytes = Buffer.from(name, "ascii");
@@ -426,12 +441,19 @@ async function doRead(absPath, opts) {
     console.log(
       `\nC2PA data found at offset ${c2paData.offset} (${c2paData.length} bytes)`,
     );
+    if (c2paData.chunkType) {
+      console.log(
+        `Container: ${c2paData.chunkType} chunk${
+          c2paData.standard ? "" : " (legacy, non-standard type)"
+        }`,
+      );
+    }
     const parsed = parseC2PAFromBuffer(c2paData.data);
     console.log(JSON.stringify(parsed, null, 2));
   } else {
     console.log("\nNo C2PA data found in file.");
     console.log(
-      "Tip: C2PA is embedded in JPEG/SVG/PNG files as APP11 or custom chunk.",
+      "Tip: C2PA is embedded in PNG as a caBX chunk and in JPEG as an APP11 segment.",
     );
     console.log(
       "Files without C2PA support (GIF, BMP, WEBP) will not contain C2PA data.",
@@ -439,12 +461,21 @@ async function doRead(absPath, opts) {
   }
 
   if (opts.output) {
+    // The destination is the path the user passed to --output; treating it as
+    // untrusted would make the flag unusable in a CLI that writes what it reads.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFileSync(
       path.resolve(opts.output),
       JSON.stringify(
         {
           file: info.name,
           hash: fileHash,
+          container: c2paData
+            ? {
+                chunk_type: c2paData.chunkType || null,
+                standard: c2paData.standard ?? null,
+              }
+            : null,
           c2pa: c2paData ? parseC2PAFromBuffer(c2paData.data) : null,
         },
         null,
@@ -477,6 +508,11 @@ async function doVerify(absPath, _opts) {
   if (!c2paData) {
     console.log("No C2PA data found in file.");
     return;
+  }
+  if (c2paData.chunkType && !c2paData.standard) {
+    console.log(
+      `\nWarning: manifest is stored in a legacy "${c2paData.chunkType}" chunk; C2PA requires "caBX".`,
+    );
   }
 
   const parsed = parseC2PAFromBuffer(c2paData.data);
