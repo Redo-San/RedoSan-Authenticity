@@ -20,3 +20,31 @@ authored in this repository, never attacker-controlled input, and
 `npm audit --omit=dev` reports 0 vulnerabilities. Delete this entry as
 soon as upstream publishes a version above 3.0.3.
 """
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+reason = """
+deepmerge 4.3.1: prototype poisoning in mergeObject(). No fixed release
+exists (npm `latest` is 4.3.1, the advisory covers every release through
+4.3.1). Reached only through devDependency tooling
+(workbox-cli -> workbox-build -> @rollup/plugin-node-resolve -> deepmerge)
+merging build-time option objects authored in this repository, never
+attacker-controlled input. `npm audit --omit=dev` reports 0
+vulnerabilities. Delete this entry when upstream publishes a fixed
+release or workbox-cli drops the dependency.
+"""
+
+[[IgnoredVulns]]
+id = "GHSA-mrhx-c7xc-m3w5"
+reason = """
+zod <4.6.6: memory exhaustion while validating oversized constrained
+collections. The vulnerable copies are zod 3.x, pulled only by dev-only
+browser tooling (lighthouse -> puppeteer-core -> chromium-bidi, pa11y,
+backstopjs); this project's own zod 4 is pinned to 4.6.7 by a package.json
+override. No 3.x release contains the fix (the first fixed version is
+4.6.6) and forcing zod 4 into chromium-bidi would break that tool's
+schema API. Those tools validate their own configuration and test-page
+data during local audits, not untrusted service input, and
+`npm audit --omit=dev` reports 0 vulnerabilities. Delete this entry when
+the browser tooling moves to zod 4.
+"""
