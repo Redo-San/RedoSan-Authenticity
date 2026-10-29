@@ -82,3 +82,15 @@ test("Firefox carries a stable add-on id for signing", () => {
   assert.match(gecko.strict_min_version, /^\d+\.\d+$/);
   assert.ok(!("browser_specific_settings" in CHROME));
 });
+
+test("the AMO sources zip includes the shared fingerprint modules", () => {
+  // The extension imports two scripts from the repository root. WXT archives
+  // its own project root by default, which would make the sources zip
+  // impossible to rebuild, so the config must widen the root and allowlist them.
+  assert.equal(config.zip.sourcesRoot, "..");
+  assert.ok(config.zip.includeSources.includes("Fingerprint/hashing.js"));
+  assert.ok(
+    config.zip.includeSources.includes("Fingerprint/hashing_perceptual.js"),
+  );
+  assert.ok(config.zip.excludeSources.includes("extension/tests/**"));
+});

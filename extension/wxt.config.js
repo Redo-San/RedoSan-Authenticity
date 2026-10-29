@@ -38,4 +38,23 @@ export default defineConfig({
       },
     },
   }),
+  // AMO reviews a sources zip that must rebuild the published bundle. The WXT
+  // default only archives this project root, which would omit the two shared
+  // Fingerprint scripts and make the archive impossible to rebuild, so archive
+  // from the repository root with an explicit allowlist instead.
+  zip: {
+    sourcesRoot: "..",
+    includeSources: [
+      "extension/**/*",
+      "Fingerprint/hashing.js",
+      "Fingerprint/hashing_perceptual.js",
+      "LICENSE",
+    ],
+    excludeSources: [
+      "extension/.output/**",
+      "extension/.wxt/**",
+      "extension/node_modules/**",
+      "extension/tests/**",
+    ],
+  },
 });

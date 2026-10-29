@@ -30,6 +30,11 @@ npx -y npm@11.20.0 test          # node:test suite in tests/ (no browser needed)
 npx -y npm@11.20.0 run zip       # store zip (zip:firefox also builds sources)
 ```
 
+| Document                | Contents                                                                    |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `SOURCE_CODE_REVIEW.md` | What the AMO sources zip contains and how to rebuild it byte-identically.   |
+| `STORE_LISTING.md`      | Listing copy, permission justifications, data-use answers, asset checklist. |
+
 ## Layout
 
 | Path                               | Contents                                                                                |
@@ -71,7 +76,7 @@ parent directory through `server.fs.allow` in `wxt.config.js`.
 | B0 scaffold                                 | done   |
 | B1 inspection pipeline + unit tests         | done   |
 | B2 context menu, popup, options, `_locales` | done   |
-| B3 Firefox sources zip + store prep         | next   |
+| B3 Firefox sources zip + store prep         | done   |
 | B4 release workflow                         | next   |
 
 See `.Plans/TAURI-WXT-DISTRIBUTION-PLAN.md` in the maintainer workspace for the
