@@ -1,3 +1,6 @@
+/* Popup shell. Report rows are styled by assets/report.css, imported from
+   main.js so the popup and the in-page panel stay identical. */
+
 :root {
   color-scheme: light dark;
 }
@@ -5,21 +8,137 @@
 body {
   margin: 0;
   font:
-    14px/1.5 system-ui,
+    13px/1.45 system-ui,
+    -apple-system,
+    "Segoe UI",
     sans-serif;
+  background: Canvas;
+  color: CanvasText;
 }
 
-main {
-  width: 320px;
-  padding: 16px;
+.popup {
+  box-sizing: border-box;
+  width: 380px;
+  padding: 14px;
 }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: 15px;
+.popup__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-end: 10px;
+}
+
+.popup__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.popup__link {
+  margin-inline-start: auto;
+  padding: 4px 8px;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.popup__link:hover {
+  opacity: 1;
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 12px;
+  border: 1px dashed rgb(127, 127, 127, 0.6);
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.drop:hover,
+.drop--over {
+  border-color: #2563eb;
+}
+
+.drop:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.drop__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.drop__title {
+  font-weight: 600;
+}
+
+.drop__hint {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.drop__button {
+  align-self: center;
+  margin-block-start: 6px;
+  padding: 4px 10px;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  font-size: 12px;
 }
 
 .status {
-  margin: 0;
-  opacity: 0.75;
+  min-height: 18px;
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+.status[data-kind="error"] {
+  color: #b91c1c;
+}
+
+.status[data-kind="success"] {
+  color: #15803d;
+}
+
+.copy {
+  width: 100%;
+  margin-block-start: 10px;
+  padding: 8px;
+  border: 1px solid currentcolor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.copy:hover {
+  background: rgb(127, 127, 127, 0.12);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status[data-kind="error"] {
+    color: #fca5a5;
+  }
+
+  .status[data-kind="success"] {
+    color: #86efac;
+  }
 }

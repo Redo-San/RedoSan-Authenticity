@@ -1,0 +1,190 @@
+{
+  "extName": {
+    "message": "مفتّش الأصالة من RedoSan",
+    "description": "Extension name shown in the browser UI and the store listing."
+  },
+  "extDescription": {
+    "message": "فحص محلي للصور: بصمات تشفيرية وإدراكية، وكشف وجود C2PA. لا شيء يغادر متصفحك.",
+    "description": "Extension description shown in the browser UI and the store listing."
+  },
+  "actionTitle": {
+    "message": "مفتّش الأصالة من RedoSan",
+    "description": "Tooltip shown when hovering the toolbar button."
+  },
+  "contextMenuTitle": {
+    "message": "افحص باستخدام RedoSan",
+    "description": "Right-click menu item on images."
+  },
+  "popupHeading": {
+    "message": "مفتّش الأصالة من RedoSan",
+    "description": "Popup heading."
+  },
+  "popupDropTitle": {
+    "message": "أفلت صورة أو الصقها أو اختر ملفًا",
+    "description": "Popup prompt above the file picker."
+  },
+  "popupDropHint": {
+    "message": "كل شيء يعمل على جهازك. لا يُرفع أي شيء.",
+    "description": "Privacy reassurance under the popup prompt."
+  },
+  "popupChoose": {
+    "message": "اختيار ملف",
+    "description": "Button label that opens the file picker."
+  },
+  "popupOptions": {
+    "message": "خيارات",
+    "description": "Link from the popup to the options page."
+  },
+  "popupEmpty": {
+    "message": "لم يتم فحص أي ملف بعد.",
+    "description": "Placeholder before the first inspection."
+  },
+  "popupInspecting": {
+    "message": "جارٍ الفحص…",
+    "description": "Progress message while hashes are computed."
+  },
+  "actionCopyJson": {
+    "message": "نسخ بتنسيق JSON",
+    "description": "Button that copies the last report to the clipboard."
+  },
+  "copyDone": {
+    "message": "نُسخ إلى الحافظة",
+    "description": "Confirmation after a successful copy."
+  },
+  "copyFailed": {
+    "message": "تعذّر النسخ",
+    "description": "Shown when the clipboard write fails."
+  },
+  "reportCryptographic": {
+    "message": "البصمات التشفيرية",
+    "description": "Report section heading."
+  },
+  "reportPerceptual": {
+    "message": "البصمات الإدراكية",
+    "description": "Report section heading."
+  },
+  "reportC2pa": {
+    "message": "C2PA",
+    "description": "Report section heading for content provenance."
+  },
+  "reportC2paPresent": {
+    "message": "وُجد مخزن بيانات C2PA",
+    "description": "C2PA status when a manifest exists."
+  },
+  "reportC2paAbsent": {
+    "message": "لم يُعثر على بيانات C2PA",
+    "description": "C2PA status when no manifest exists."
+  },
+  "reportC2paNonStandard": {
+    "message": "كتلة غير قياسية",
+    "description": "Suffix for a manifest found in a legacy, non-standard container chunk."
+  },
+  "reportStatus": {
+    "message": "الحالة",
+    "description": "Label for a status row."
+  },
+  "reportFormat": {
+    "message": "التنسيق",
+    "description": "Label for the container format of a C2PA manifest."
+  },
+  "reportOffset": {
+    "message": "الإزاحة",
+    "description": "Label for the byte offset of a C2PA manifest."
+  },
+  "reportLength": {
+    "message": "الطول",
+    "description": "Label for the byte length of a C2PA manifest."
+  },
+  "reportDimensions": {
+    "message": "الأبعاد",
+    "description": "Label for the pixel dimensions of the inspected image."
+  },
+  "reportDecodeFailed": {
+    "message": "تعذّر فك ترميز الصورة",
+    "description": "Notice shown when perceptual hashes could not be computed."
+  },
+  "reportNoHashes": {
+    "message": "لا توجد بصمات مفعّلة. فعّل بعضها من الخيارات.",
+    "description": "Notice shown when every hash is disabled in the options."
+  },
+  "panelTitle": {
+    "message": "فحص RedoSan",
+    "description": "Heading of the panel injected into the page."
+  },
+  "panelClose": {
+    "message": "إغلاق",
+    "description": "Close button of the injected panel."
+  },
+  "errorFetch": {
+    "message": "تعذّر تنزيل هذه الصورة.",
+    "description": "Error when the image bytes cannot be fetched."
+  },
+  "errorFetchHint": {
+    "message": "قد يمنع الموقع قراءة صوره من أصل آخر.",
+    "description": "Second line of the fetch error."
+  },
+  "errorNotImage": {
+    "message": "لا يبدو هذا الرابط صورة.",
+    "description": "Error when the selected file or URL is not an image."
+  },
+  "errorTooLarge": {
+    "message": "هذه الصورة أكبر من أن تُفحص.",
+    "description": "Error when the file exceeds the size limit."
+  },
+  "errorUrl": {
+    "message": "لا يمكن فحص عنوان هذه الصورة.",
+    "description": "Error when the URL scheme is not fetchable."
+  },
+  "errorRead": {
+    "message": "تعذّرت قراءة هذه الصورة.",
+    "description": "Generic prefix for inspection errors."
+  },
+  "optionsTitle": {
+    "message": "الخيارات",
+    "description": "Options page heading."
+  },
+  "optionsLanguage": {
+    "message": "اللغة",
+    "description": "Label for the language picker."
+  },
+  "optionsHashes": {
+    "message": "البصمات المطلوب حسابها",
+    "description": "Heading of the hash selection section."
+  },
+  "optionsCryptographic": {
+    "message": "تشفيرية",
+    "description": "Group heading for cryptographic hashes."
+  },
+  "optionsPerceptual": {
+    "message": "إدراكية",
+    "description": "Group heading for perceptual hashes."
+  },
+  "optionsSelectAll": {
+    "message": "تحديد الكل",
+    "description": "Button that enables every hash in a group."
+  },
+  "optionsSelectNone": {
+    "message": "إلغاء التحديد",
+    "description": "Button that disables every hash in a group."
+  },
+  "optionsReset": {
+    "message": "إعادة الضبط الافتراضي",
+    "description": "Button that restores the default selection."
+  },
+  "optionsSaved": {
+    "message": "حُفظت التغييرات",
+    "description": "Confirmation after a settings change."
+  },
+  "optionsHint": {
+    "message": "تُحفظ التغييرات تلقائيًا. لا تُحسب البصمات المعطّلة.",
+    "description": "Explanation under the hash selection heading."
+  },
+  "langEnglish": {
+    "message": "English",
+    "description": "Language picker label."
+  },
+  "langArabic": {
+    "message": "العربية",
+    "description": "Language picker label."
+  }
+}

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RedoSan Authenticity Inspector — Options</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="options">
+      <h1 class="options__title" data-i18n="optionsTitle"></h1>
+
+      <section class="options__section">
+        <label
+          class="options__label"
+          for="language"
+          data-i18n="optionsLanguage"
+        ></label>
+        <select id="language" class="options__select">
+          <option value="en" data-i18n="langEnglish"></option>
+          <option value="ar" data-i18n="langArabic"></option>
+        </select>
+      </section>
+
+      <section class="options__section">
+        <h2 class="options__heading" data-i18n="optionsHashes"></h2>
+        <p class="options__hint" data-i18n="optionsHint"></p>
+
+        <fieldset class="options__group" data-group="crypto">
+          <legend data-i18n="optionsCryptographic"></legend>
+          <div class="options__actions">
+            <button
+              type="button"
+              data-action="all"
+              data-i18n="optionsSelectAll"
+            ></button>
+            <button
+              type="button"
+              data-action="none"
+              data-i18n="optionsSelectNone"
+            ></button>
+          </div>
+          <div id="crypto" class="options__list"></div>
+        </fieldset>
+
+        <fieldset class="options__group" data-group="perceptual">
+          <legend data-i18n="optionsPerceptual"></legend>
+          <div class="options__actions">
+            <button
+              type="button"
+              data-action="all"
+              data-i18n="optionsSelectAll"
+            ></button>
+            <button
+              type="button"
+              data-action="none"
+              data-i18n="optionsSelectNone"
+            ></button>
+          </div>
+          <div id="perceptual" class="options__list"></div>
+        </fieldset>
+
+        <div class="options__actions options__actions--footer">
+          <button type="button" id="reset" data-i18n="optionsReset"></button>
+          <span
+            id="saved"
+            class="options__saved"
+            role="status"
+            aria-live="polite"
+          ></span>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

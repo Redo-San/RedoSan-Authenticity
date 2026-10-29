@@ -1,15 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RedoSan Authenticity Inspector</title>
+    <title>__MSG_actionTitle__</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main>
-      <h1>RedoSan Authenticity Inspector</h1>
-      <p class="status">Scaffold ready. Image inspection lands in B1.</p>
+    <main class="popup">
+      <header class="popup__header">
+        <h1 class="popup__title" data-i18n="popupHeading"></h1>
+        <button
+          id="options"
+          class="popup__link"
+          type="button"
+          data-i18n="popupOptions"
+        ></button>
+      </header>
+
+      <label class="drop" id="drop">
+        <span class="drop__title" data-i18n="popupDropTitle"></span>
+        <span class="drop__hint" data-i18n="popupDropHint"></span>
+        <input id="file" class="drop__input" type="file" accept="image/*" />
+        <span class="drop__button" data-i18n="popupChoose"></span>
+      </label>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div id="report" class="report"></div>
+      <button
+        id="copy"
+        class="copy"
+        type="button"
+        data-i18n="actionCopyJson"
+        hidden
+      ></button>
     </main>
     <script type="module" src="./main.js"></script>
   </body>

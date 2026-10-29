@@ -5,33 +5,9 @@
 // declarations. The module attaches window.RedosanHashing for exactly this
 // reason; see the B8 notes in .Plans/TAURI-WXT-DISTRIBUTION-PLAN.md.
 import "../../Fingerprint/hashing.js";
+import { JS_DIGESTS, toAllowedSet, WEB_CRYPTO } from "./hash-names.js";
 
-// Native WebCrypto digests: fast and non-blocking, so they run first.
-const WEB_CRYPTO = ["SHA-1", "SHA-256", "SHA-384", "SHA-512"];
-
-// Pure-JS digests, in report order. The names match the web app and the CLI.
-const JS_DIGESTS = [
-  ["SHA-224", "sha224"],
-  ["SHA-3_224", "sha3_224"],
-  ["SHA-3_256", "sha3_256"],
-  ["SHA-3_384", "sha3_384"],
-  ["SHA-3_512", "sha3_512"],
-  ["BLAKE2b", "blake2b"],
-  ["BLAKE2s", "blake2s"],
-  ["BLAKE3", "blake3"],
-  ["MD2", "md2"],
-  ["MD4", "md4"],
-  ["MD5", "md5"],
-  ["RIPEMD-160", "ripemd160"],
-  ["Whirlpool", "whirlpool"],
-  ["SHA-512/224", "sha512_224"],
-  ["SHA-512/256", "sha512_256"],
-  ["SHAKE128", "shake128"],
-  ["SHAKE256", "shake256"],
-];
-
-/** All hash names this module can produce, in report order. */
-export const HASH_NAMES = [...WEB_CRYPTO, ...JS_DIGESTS.map(([name]) => name)];
+export { HASH_NAMES } from "./hash-names.js";
 
 /**
  * Normalize the accepted binary inputs.
@@ -74,16 +50,19 @@ function yieldToEventLoop() {
 }
 
 /**
- * Compute every supported digest for `input`.
+ * Compute the selected digests for `input`.
  *
  * A digest that throws is omitted from the result (same behaviour as the CLI),
  * so callers must treat the key set as best-effort rather than fixed.
  * @param {Uint8Array|ArrayBuffer} input File bytes to hash.
  * @param {(name: string) => void} [onProgress] Progress callback: the digest
  *   name before each one runs, then "" once the set is complete.
+ * @param {Iterable<string>|null} [enabled] Hash names to compute. Omitted or
+ *   `null` computes every name in `HASH_NAMES`; an empty iterable computes
+ *   nothing.
  * @returns {Promise<Record<string, string>>} Hash name to lowercase hex digest.
  */
-export async function cryptoHashes(input, onProgress) {
+export async function cryptoHashes(input, onProgress, enabled) {
   const data = toBytes(input);
   const namespace = globalThis.RedosanHashing;
   if (!namespace) {
@@ -92,10 +71,12 @@ export async function cryptoHashes(input, onProgress) {
     );
   }
 
+  const allowed = toAllowedSet(enabled);
   const notify = typeof onProgress === "function" ? onProgress : () => {};
   const entries = [];
 
   for (const algorithm of WEB_CRYPTO) {
+    if (allowed && !allowed.has(algorithm)) continue;
     notify(algorithm);
     entries.push([algorithm, await webCryptoSha(algorithm, data)]);
   }
@@ -105,6 +86,7 @@ export async function cryptoHashes(input, onProgress) {
   // being called.
   const implementations = new Map(Object.entries(namespace));
   for (const [name, fn] of JS_DIGESTS) {
+    if (allowed && !allowed.has(name)) continue;
     notify(name);
     const implementation = implementations.get(fn);
     if (typeof implementation === "function") {

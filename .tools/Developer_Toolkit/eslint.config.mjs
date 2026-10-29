@@ -253,7 +253,9 @@ export default [
     // does not install, so root-level import resolution cannot see `wxt`.
     files: ["extension/**/*.js"],
     languageOptions: {
-      ecmaVersion: 2022,
+      // extension/utils/messages.js imports the locale JSON with
+      // `with { type: "json" }`, a stage-4 feature espree only parses at 2025.
+      ecmaVersion: 2025,
       globals: {
         ...globals.browser,
         ...globals.webextensions,

@@ -1,0 +1,190 @@
+{
+  "extName": {
+    "message": "RedoSan Authenticity Inspector",
+    "description": "Extension name shown in the browser UI and the store listing."
+  },
+  "extDescription": {
+    "message": "Client-side image inspection: cryptographic and perceptual fingerprints, C2PA presence check. No data leaves your browser.",
+    "description": "Extension description shown in the browser UI and the store listing."
+  },
+  "actionTitle": {
+    "message": "RedoSan Authenticity Inspector",
+    "description": "Tooltip shown when hovering the toolbar button."
+  },
+  "contextMenuTitle": {
+    "message": "Inspect with RedoSan",
+    "description": "Right-click menu item on images."
+  },
+  "popupHeading": {
+    "message": "RedoSan Authenticity Inspector",
+    "description": "Popup heading."
+  },
+  "popupDropTitle": {
+    "message": "Drop, paste, or choose an image",
+    "description": "Popup prompt above the file picker."
+  },
+  "popupDropHint": {
+    "message": "Everything runs on your device. Nothing is uploaded.",
+    "description": "Privacy reassurance under the popup prompt."
+  },
+  "popupChoose": {
+    "message": "Choose a file",
+    "description": "Button label that opens the file picker."
+  },
+  "popupOptions": {
+    "message": "Options",
+    "description": "Link from the popup to the options page."
+  },
+  "popupEmpty": {
+    "message": "No file inspected yet.",
+    "description": "Placeholder before the first inspection."
+  },
+  "popupInspecting": {
+    "message": "Inspecting…",
+    "description": "Progress message while hashes are computed."
+  },
+  "actionCopyJson": {
+    "message": "Copy as JSON",
+    "description": "Button that copies the last report to the clipboard."
+  },
+  "copyDone": {
+    "message": "Copied to the clipboard",
+    "description": "Confirmation after a successful copy."
+  },
+  "copyFailed": {
+    "message": "Could not copy",
+    "description": "Shown when the clipboard write fails."
+  },
+  "reportCryptographic": {
+    "message": "Cryptographic hashes",
+    "description": "Report section heading."
+  },
+  "reportPerceptual": {
+    "message": "Perceptual hashes",
+    "description": "Report section heading."
+  },
+  "reportC2pa": {
+    "message": "C2PA",
+    "description": "Report section heading for content provenance."
+  },
+  "reportC2paPresent": {
+    "message": "Manifest store found",
+    "description": "C2PA status when a manifest exists."
+  },
+  "reportC2paAbsent": {
+    "message": "No manifest store found",
+    "description": "C2PA status when no manifest exists."
+  },
+  "reportC2paNonStandard": {
+    "message": "non-standard chunk",
+    "description": "Suffix for a manifest found in a legacy, non-standard container chunk."
+  },
+  "reportStatus": {
+    "message": "Status",
+    "description": "Label for a status row."
+  },
+  "reportFormat": {
+    "message": "Format",
+    "description": "Label for the container format of a C2PA manifest."
+  },
+  "reportOffset": {
+    "message": "Offset",
+    "description": "Label for the byte offset of a C2PA manifest."
+  },
+  "reportLength": {
+    "message": "Length",
+    "description": "Label for the byte length of a C2PA manifest."
+  },
+  "reportDimensions": {
+    "message": "Dimensions",
+    "description": "Label for the pixel dimensions of the inspected image."
+  },
+  "reportDecodeFailed": {
+    "message": "Image decode failed",
+    "description": "Notice shown when perceptual hashes could not be computed."
+  },
+  "reportNoHashes": {
+    "message": "No hashes enabled. Turn some on in the options.",
+    "description": "Notice shown when every hash is disabled in the options."
+  },
+  "panelTitle": {
+    "message": "RedoSan inspection",
+    "description": "Heading of the panel injected into the page."
+  },
+  "panelClose": {
+    "message": "Close",
+    "description": "Close button of the injected panel."
+  },
+  "errorFetch": {
+    "message": "Could not download this image.",
+    "description": "Error when the image bytes cannot be fetched."
+  },
+  "errorFetchHint": {
+    "message": "The site may block reading its images from another origin.",
+    "description": "Second line of the fetch error."
+  },
+  "errorNotImage": {
+    "message": "This link does not look like an image.",
+    "description": "Error when the selected file or URL is not an image."
+  },
+  "errorTooLarge": {
+    "message": "This image is too large to inspect.",
+    "description": "Error when the file exceeds the size limit."
+  },
+  "errorUrl": {
+    "message": "This image address cannot be inspected.",
+    "description": "Error when the URL scheme is not fetchable."
+  },
+  "errorRead": {
+    "message": "Could not read this image.",
+    "description": "Generic prefix for inspection errors."
+  },
+  "optionsTitle": {
+    "message": "Options",
+    "description": "Options page heading."
+  },
+  "optionsLanguage": {
+    "message": "Language",
+    "description": "Label for the language picker."
+  },
+  "optionsHashes": {
+    "message": "Hashes to compute",
+    "description": "Heading of the hash selection section."
+  },
+  "optionsCryptographic": {
+    "message": "Cryptographic",
+    "description": "Group heading for cryptographic hashes."
+  },
+  "optionsPerceptual": {
+    "message": "Perceptual",
+    "description": "Group heading for perceptual hashes."
+  },
+  "optionsSelectAll": {
+    "message": "Select all",
+    "description": "Button that enables every hash in a group."
+  },
+  "optionsSelectNone": {
+    "message": "Select none",
+    "description": "Button that disables every hash in a group."
+  },
+  "optionsReset": {
+    "message": "Reset to defaults",
+    "description": "Button that restores the default selection."
+  },
+  "optionsSaved": {
+    "message": "Saved",
+    "description": "Confirmation after a settings change."
+  },
+  "optionsHint": {
+    "message": "Changes are saved automatically. Disabled hashes are not computed.",
+    "description": "Explanation under the hash selection heading."
+  },
+  "langEnglish": {
+    "message": "English",
+    "description": "Language picker label."
+  },
+  "langArabic": {
+    "message": "العربية",
+    "description": "Language picker label."
+  }
+}
