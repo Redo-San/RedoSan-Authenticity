@@ -1,0 +1,101 @@
+/* Shared report styles: used by the popup (normal DOM) and by the in-page
+   panel (inside its shadow root, where WXT resets inherited styles). */
+
+.redosan-report__header {
+  margin-block-end: 10px;
+}
+
+.redosan-report__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.redosan-report__subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+  overflow-wrap: anywhere;
+}
+
+.redosan-report__section {
+  margin-block-start: 14px;
+}
+
+.redosan-report__heading {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.redosan-report__list {
+  display: grid;
+  grid-template-columns: minmax(78px, max-content) minmax(0, 1fr);
+  gap: 3px 10px;
+  margin: 0;
+}
+
+.redosan-report__list dt {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.redosan-report__list dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.redosan-report__list code {
+  font:
+    11px/1.55 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+  overflow-wrap: anywhere;
+}
+
+.redosan-report__notice {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.redosan-report__notice--info {
+  background: rgb(127, 127, 127, 0.14);
+}
+
+.redosan-report__notice--success {
+  background: rgb(21, 128, 61, 0.14);
+  color: #15803d;
+}
+
+.redosan-report__notice--warning {
+  background: rgb(180, 83, 9, 0.14);
+  color: #b45309;
+}
+
+.redosan-report__notice--error {
+  background: rgb(185, 28, 28, 0.14);
+  color: #b91c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .redosan-report__notice--success {
+    color: #86efac;
+  }
+
+  .redosan-report__notice--warning {
+    color: #fcd34d;
+  }
+
+  .redosan-report__notice--error {
+    color: #fca5a5;
+  }
+}

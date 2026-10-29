@@ -1,0 +1,116 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font:
+    14px/1.5 system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  background: Canvas;
+  color: CanvasText;
+}
+
+.options {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+}
+
+.options__title {
+  margin: 0 0 18px;
+  font-size: 20px;
+}
+
+.options__section {
+  margin-block-end: 22px;
+}
+
+.options__label,
+.options__heading {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.options__hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.options__select {
+  padding: 6px 10px;
+  border: 1px solid rgb(127, 127, 127, 0.6);
+  border-radius: 8px;
+  background: Canvas;
+  color: CanvasText;
+  font: inherit;
+}
+
+.options__group {
+  margin: 0 0 14px;
+  padding: 12px 14px 14px;
+  border: 1px solid rgb(127, 127, 127, 0.35);
+  border-radius: 10px;
+}
+
+.options__group legend {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.options__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block-end: 8px;
+}
+
+.options__actions--footer {
+  margin-block: 16px 0;
+}
+
+.options__actions button {
+  padding: 4px 10px;
+  border: 1px solid rgb(127, 127, 127, 0.6);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.options__actions button:hover {
+  background: rgb(127, 127, 127, 0.12);
+}
+
+.options__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 4px 12px;
+}
+
+.options__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.options__saved {
+  font-size: 12px;
+  color: #15803d;
+}
+
+@media (prefers-color-scheme: dark) {
+  .options__saved {
+    color: #86efac;
+  }
+}

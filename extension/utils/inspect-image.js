@@ -1,5 +1,6 @@
 // Orchestrates one inspection: bytes -> cryptographic hashes, perceptual
 // hashes and a C2PA presence check. Everything runs locally.
+import { PERCEPTUAL_NAMES, toAllowedSet } from "./hash-names.js";
 import { cryptoHashes } from "./hashes.js";
 import { perceptualHashes } from "./perceptual.js";
 import { detectC2pa } from "./c2pa-presence.js";
@@ -75,11 +76,13 @@ export async function decodeTo32(blob) {
  * `options.decode` is injectable so unit tests can skip canvas decoding; the
  * default draws the real image at 32x32.
  * @param {File} file File chosen in the popup.
- * @param {object} [options] Inspection hooks; both are optional.
+ * @param {object} [options] Inspection hooks; all are optional.
  * @param {(blob: Blob) => Promise<object>} [options.decode] Replaces the canvas
  *   downscale; must resolve to `{data, w, h, width, height}`.
  * @param {(name: string) => void} [options.onProgress] Forwarded to
  *   `cryptoHashes`.
+ * @param {Iterable<string>|null} [options.enabledHashes] Hash names to compute.
+ *   Omitted or `null` computes every hash; an empty iterable computes none.
  * @returns {Promise<object>} Report with `file`, `hashes`, `perceptual_hashes`,
  *   `c2pa` and `image`; `image` is `null` for non-images and `{error}` when
  *   decoding fails.
@@ -88,7 +91,11 @@ export async function inspectImage(file, options = {}) {
   const decode = options.decode || decodeTo32;
   const bytes = new Uint8Array(await file.arrayBuffer());
 
-  const hashes = await cryptoHashes(bytes, options.onProgress);
+  const hashes = await cryptoHashes(
+    bytes,
+    options.onProgress,
+    options.enabledHashes,
+  );
   const report = {
     file: {
       name: file.name || "",
@@ -101,12 +108,21 @@ export async function inspectImage(file, options = {}) {
     image: null,
   };
 
-  if (isImageName(report.file.name)) {
+  // A CDN address often has no extension, so the MIME type the browser
+  // resolved is just as trustworthy as the name.
+  const looksLikeImage =
+    isImageName(report.file.name) || report.file.type.startsWith("image/");
+  // Decoding is the expensive part; skip it when every perceptual hash is
+  // disabled, and report `null` so the UI does not imply the image was read.
+  const allowed = toAllowedSet(options.enabledHashes);
+  const wantsPerceptual =
+    allowed === null || PERCEPTUAL_NAMES.some((name) => allowed.has(name));
+  if (looksLikeImage && wantsPerceptual) {
     try {
       const small = await decode(
         new Blob([bytes], { type: file.type || "application/octet-stream" }),
       );
-      report.perceptual_hashes = perceptualHashes(small);
+      report.perceptual_hashes = perceptualHashes(small, options.enabledHashes);
       report.image = { width: small.width, height: small.height };
     } catch (error) {
       report.image = { error: error.message };
