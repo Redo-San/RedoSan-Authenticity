@@ -177,6 +177,14 @@ npx tauri build                      # build the desktop binary
 
 Verification procedure and recorded results: `src-tauri/OFFLINE-VERIFICATION.md`.
 
+### Browser Extension (preview)
+
+A companion extension inspects an image locally and reports cryptographic and
+perceptual fingerprints plus a C2PA presence check. v1 is inspection only: no
+embedding, no network calls, no host permissions, and nothing runs on page load.
+Source, build steps and store preparation live in [`extension/`](extension/README.md);
+the extension has not been submitted to a store yet.
+
 ---
 
 ## CLI Reference
