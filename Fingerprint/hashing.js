@@ -1,13 +1,38 @@
 /* c8 ignore start */
 (function () {
-  if (
-    typeof window != "undefined" &&
-    window.location &&
-    window.location.protocol !== "file:" &&
-    !/^https?:\/\/(.*\.)?(redo-san\.github\.io|localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(
-      window.location.href,
-    )
-  )
+  // Browser-extension contexts are first-party: `chrome.runtime.id` /
+  // `browser.runtime.id` only exist for code running inside an extension
+  // (popup, options, isolated content script) and are not exposed to a page's
+  // main world, so allowing them does not weaken the guard against third-party
+  // sites hotlinking this file.
+  var allowed = true; // non-browser contexts (Node, CLI, Web Worker)
+  var isExtension = false;
+  try {
+    var g = typeof globalThis === "undefined" ? {} : globalThis;
+    var runtime =
+      (g.chrome && g.chrome.runtime) || (g.browser && g.browser.runtime);
+    isExtension = !!(runtime && runtime.id);
+  } catch {
+    // A sandboxed page can throw on `chrome` access; no runtime, no exemption.
+    isExtension = false;
+  }
+  if (!isExtension && typeof window != "undefined" && window.location) {
+    // Parse the URL instead of regex-matching the whole href: a path such as
+    // https://evil.example/x.redo-san.github.io/ must not satisfy the check.
+    try {
+      var loc = new URL(window.location.href);
+      var host = loc.hostname;
+      allowed =
+        loc.protocol === "file:" ||
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        /(^|\.)redo-san\.github\.io$/.test(host);
+    } catch {
+      // An invalid href cannot be verified, so fail closed.
+      allowed = false;
+    }
+  }
+  if (!allowed)
     throw new Error(
       "RedoSan Authenticity: This script is protected by GPL license.",
     );
@@ -2305,3 +2330,34 @@ if (typeof window !== "undefined")
   }
 })();
 /* c8 ignore stop */
+
+// ── Bundler bridge ──
+// Vite/Rollup scope a module's top-level declarations, so a bundled consumer
+// (the browser extension) cannot reach md2()/sha3_256()/... the way the site's
+// global scripts and the CLI's vm loader do. Expose one explicit namespace
+// instead of relying on implicit globals.
+if (typeof window !== "undefined") {
+  window.RedosanHashing = {
+    fingerprintFile: fingerprintFile,
+    fastFingerprint: fastFingerprint,
+    computeRemainingHashes: computeRemainingHashes,
+    md2: md2,
+    md4: md4,
+    md5: md5,
+    sha224: sha224,
+    sha3_224: sha3_224,
+    sha3_256: sha3_256,
+    sha3_384: sha3_384,
+    sha3_512: sha3_512,
+    shake128: shake128,
+    shake256: shake256,
+    blake2b: blake2b,
+    blake2s: blake2s,
+    blake3: blake3,
+    ripemd160: ripemd160,
+    whirlpool: whirlpool,
+    sha512_224: sha512_224,
+    sha512_256: sha512_256,
+    trimFingerprintPayload: trimFingerprintPayload,
+  };
+}

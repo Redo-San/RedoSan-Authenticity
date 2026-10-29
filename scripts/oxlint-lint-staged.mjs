@@ -9,10 +9,20 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, "..");
 
-// Drops node_modules/ plus the roots oxlint itself ignores (oxlint.config.json
-// ignorePatterns, e.g. **/.tools/**) so a commit whose only JS change lives
-// there does not fail with "No files found to lint" (following oxc#1124 spirit).
-const IGNORED_ROOTS = [
+// Drops node_modules/ plus everything oxlint itself ignores (oxlint.config.json
+// ignorePatterns) so a commit whose only JS change lives there does not fail
+// with "No files found to lint" (following oxc#1124 spirit). Matched by path
+// segment because the config also uses nested globs such as `**/tests/**`, which
+// a first-segment check misses (e.g. extension/tests/*.test.js).
+const IGNORED_SEGMENTS = new Set([
+  "node_modules",
+  "coverage",
+  "vendor",
+  "backstop_data",
+  "certs",
+  "docs",
+  "test-results",
+  "tests",
   ".tools",
   ".opencode",
   ".agents",
@@ -20,18 +30,14 @@ const IGNORED_ROOTS = [
   ".claude",
   "skills",
   ".env",
-  "backstop_data",
-  "certs",
-  "docs",
   ".lh13",
   ".lighthouseci",
   ".playwright-mcp",
   ".stryker-tmp",
-  "test-results",
-  "tests",
-  "cli/tests", // oxlint.config.json `**/tests/**` subsumes cli/ tests
-  "vendor",
-];
+  "dist-tauri",
+]);
+
+const IGNORED_PREFIXES = ["src-tauri/target/", "src-tauri/gen/"];
 
 const files = process.argv
   .slice(2)
@@ -42,9 +48,9 @@ const files = process.argv
   )
   .filter(
     (p) =>
-      !p.startsWith("node_modules/") &&
       p.endsWith(".js") &&
-      !IGNORED_ROOTS.some((root) => p.startsWith(root + "/")),
+      !p.split("/").some((segment) => IGNORED_SEGMENTS.has(segment)) &&
+      !IGNORED_PREFIXES.some((prefix) => p.startsWith(prefix)),
   );
 
 if (files.length === 0) process.exit(0);
