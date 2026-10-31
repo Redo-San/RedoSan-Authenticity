@@ -152,6 +152,8 @@ src-tauri/target/
 extension/node_modules/
 extension/.output/
 extension/.wxt/
+# `wxt submit init` writes store credentials here; never commit them.
+extension/.env.submit
 
 # Desktop offline assets fetched by `npm run assets:desktop` (scripts/fetch-desktop-assets.mjs).
 # Heavy, reproducible downloads stay out of git; the small committed vendor libs

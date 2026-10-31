@@ -115,19 +115,37 @@ claims that a file is authentic. Show the panel, the popup and the options page.
 3. **Microsoft Edge** — free Partner Center account; reuse the Chrome zip and
    listing copy. No separate build.
 
-Subsequent uploads are automated by `.github/workflows/wxt-release.yml` (B4).
-`wxt submit init` writes `.env.submit` (gitignored); the same values become
-repository secrets:
+Subsequent uploads are automated by `.github/workflows/wxt-release.yml`. It runs
+on `workflow_dispatch` only - never on a tag push or a merge - and every run
+starts with `dry_run: true`:
 
-| Secret                 | Purpose                                      |
-| ---------------------- | -------------------------------------------- |
-| `CHROME_EXTENSION_ID`  | Item ID from the Chrome Web Store dashboard  |
-| `CHROME_CLIENT_ID`     | OAuth client ID for the Chrome Web Store API |
-| `CHROME_CLIENT_SECRET` | OAuth client secret                          |
-| `CHROME_REFRESH_TOKEN` | Long-lived refresh token for the uploader    |
-| `FIREFOX_EXTENSION_ID` | `inspector@redo-san.github.io`               |
-| `FIREFOX_JWT_ISSUER`   | AMO API issuer                               |
-| `FIREFOX_JWT_SECRET`   | AMO API secret                               |
+1. Actions -> **Extension Release** -> _Run workflow_.
+2. Keep `stores: both` and `dry_run: true` first. A green run proves both
+   credentials and the packaging guard without uploading anything.
+3. Re-run with `dry_run: false` when the build is ready for review.
 
-Validate the workflow with `npx wxt submit --dry-run` and never auto-submit on a
-tag push; store submissions stay behind `workflow_dispatch`.
+The workflow reinstalls from `extension/package-lock.json`, runs the unit tests,
+builds the Chrome and Firefox packages plus the AMO sources zip, and refuses to
+submit when `scripts/verify-store-packages.js` finds a packaged manifest that
+drifted from the reviewed scope (host permissions, `<all_urls>`, content
+scripts, permission allowlist). The three zips stay as a 14-day artifact.
+
+`wxt submit init` writes `extension/.env.submit` for local runs (gitignored);
+the same values become repository secrets. Chrome uses Web Store API **v2** with
+a linked service account, because API v1.1 was shut down on 2026-10-15.
+
+| Secret                                | Purpose                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------- |
+| `CHROME_EXTENSION_ID`                 | Item ID from the Chrome Web Store dashboard (exists after the manual item) |
+| `CHROME_PUBLISHER_ID`                 | Publisher ID, dashboard Publisher > Settings                               |
+| `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL` | Service account email added under Account in the dashboard                 |
+| `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY`  | JSON key `private_key` value, with real line breaks (no `\n` escapes)      |
+| `FIREFOX_JWT_ISSUER`                  | AMO API issuer from addons.mozilla.org > API keys                          |
+| `FIREFOX_JWT_SECRET`                  | AMO API secret                                                             |
+
+`FIREFOX_EXTENSION_ID` is not a secret: the workflow passes
+`inspector@redo-san.github.io`, which is also the gecko id in the built
+manifest, and the packaging guard fails the run if the two ever diverge.
+
+Validate locally with `npx wxt submit --dry-run`; never auto-submit on a tag
+push, store submissions stay behind `workflow_dispatch` (plan B4).
