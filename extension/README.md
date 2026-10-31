@@ -28,6 +28,7 @@ npx -y npm@11.20.0 run build     # production build in .output/chrome-mv3
 npx -y npm@11.20.0 run build:firefox
 npx -y npm@11.20.0 test          # node:test suite in tests/ (no browser needed)
 npx -y npm@11.20.0 run zip       # store zip (zip:firefox also builds sources)
+npx -y npm@11.20.0 run verify:store  # assert the packaged manifests match the v1 scope
 ```
 
 | Document                | Contents                                                                    |
@@ -77,7 +78,10 @@ parent directory through `server.fs.allow` in `wxt.config.js`.
 | B1 inspection pipeline + unit tests         | done   |
 | B2 context menu, popup, options, `_locales` | done   |
 | B3 Firefox sources zip + store prep         | done   |
-| B4 release workflow                         | next   |
+| B4 release workflow                         | done   |
+
+Store submissions run from **Actions -> Extension Release** (manual only, starts
+as a dry run); `STORE_LISTING.md` lists the required repository secrets.
 
 See `.Plans/TAURI-WXT-DISTRIBUTION-PLAN.md` in the maintainer workspace for the
 full plan; the plan file is not tracked in git.

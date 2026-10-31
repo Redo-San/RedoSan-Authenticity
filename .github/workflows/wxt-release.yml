@@ -1,0 +1,212 @@
+name: Extension Release
+
+# Manual trigger only (plan B4): a store submission is a maintainer decision, so
+# this workflow must never run on a tag push or a merge. Everything else in the
+# pipeline - build, unit tests, packaged-manifest guard - runs first.
+on:
+  workflow_dispatch:
+    inputs:
+      stores:
+        description: Store to submit the freshly built packages to
+        required: true
+        default: both
+        type: choice
+        options:
+          - both
+          - chrome
+          - firefox
+      dry_run:
+        description: Authenticate only; do not upload or submit for review
+        required: true
+        default: true
+        type: boolean
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+concurrency:
+  # One submission at a time, whichever branch the manual run targets: a store
+  # upload must never race another one. `github.ref` is not part of the key for
+  # that reason.
+  group: extension-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and submit
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # No Actions cache on purpose: zizmor's cache-poisoning rule forbids caches
+      # in a workflow that can publish, and store submissions are rare enough
+      # that a cold install is cheap.
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Install dependencies
+        working-directory: extension
+        # npm 11 is pinned deliberately: a bare `npm` may be older on the
+        # runner, and npm < 11 strips the `libc` markers from the lockfile.
+        run: npx -y npm@11.20.0 ci
+
+      - name: Run unit tests
+        working-directory: extension
+        run: npx -y npm@11.20.0 test
+
+      - name: Clean previous build output
+        working-directory: extension
+        # A stale zip from an earlier run must never be mistaken for this
+        # build's artifact by the glob checks below.
+        run: rm -rf .output
+
+      - name: Build store packages
+        working-directory: extension
+        run: |
+          npx -y npm@11.20.0 run zip
+          npx -y npm@11.20.0 run zip:firefox
+
+      # The stores reject an archive without a root manifest.json; fail here
+      # with the archive name instead of inside the upload SDK.
+      - name: Verify archive contents
+        working-directory: extension
+        run: |
+          set -eu
+          for zip in .output/*-chrome.zip .output/*-firefox.zip; do
+            unzip -Z1 "$zip" | grep -qx 'manifest.json' || {
+              echo "::error::$zip has no manifest.json at its root"
+              exit 1
+            }
+            echo "ok: $zip"
+          done
+
+      # `wxt zip` rewrites the manifest per browser, so this checks the packaged
+      # output rather than the config the unit tests see.
+      - name: Verify packaged manifests
+        working-directory: extension
+        run: node scripts/verify-store-packages.js
+
+      - name: Upload store packages
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: extension-store-packages
+          path: extension/.output/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      # GitHub substitutes an empty string for an unset secret, which the store
+      # SDK only reports after it has already started: fail here with a readable
+      # list instead.
+      - name: Check submission credentials
+        env:
+          STORES: ${{ inputs.stores }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          set -eu
+          names=()
+          if [ "$STORES" != "firefox" ]; then
+            names+=(
+              CHROME_EXTENSION_ID
+              CHROME_PUBLISHER_ID
+              CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL
+              CHROME_SERVICE_ACCOUNT_PRIVATE_KEY
+            )
+          fi
+          if [ "$STORES" != "chrome" ]; then
+            names+=(FIREFOX_JWT_ISSUER FIREFOX_JWT_SECRET)
+          fi
+          missing=""
+          for name in "${names[@]}"; do
+            if [ -z "${!name:-}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::missing repository secrets:$missing"
+            exit 1
+          fi
+          echo "All secrets required for stores=$STORES are present."
+
+      # Chrome Web Store API v2 (v1.1 was shut down on 2026-10-15): a service
+      # account linked to the publisher authenticates the upload, so no OAuth
+      # refresh-token secret is involved.
+      - name: Submit to the Chrome Web Store
+        if: inputs.stores != 'firefox'
+        working-directory: extension
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          CHROME_API_VERSION: v2
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+        run: |
+          set -eu
+          shopt -s nullglob
+          zips=(.output/*-chrome.zip)
+          if [ "${#zips[@]}" -ne 1 ]; then
+            echo "::error::expected exactly one *-chrome.zip, found ${#zips[@]}"
+            exit 1
+          fi
+          args=()
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          npx --no-install wxt submit "${args[@]}" \
+            --chrome-zip "${zips[0]}"
+
+      - name: Submit to Firefox Add-ons (AMO)
+        if: inputs.stores != 'chrome'
+        working-directory: extension
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          set -eu
+          shopt -s nullglob
+          zips=(.output/*-firefox.zip)
+          sources=(.output/*-sources.zip)
+          if [ "${#zips[@]}" -ne 1 ] || [ "${#sources[@]}" -ne 1 ]; then
+            echo "::error::expected one *-firefox.zip and one *-sources.zip, found ${#zips[@]} and ${#sources[@]}"
+            exit 1
+          fi
+          # Take the id from the built manifest instead of repeating the
+          # constant; scripts/verify-store-packages.js already asserted it
+          # matches the reviewed public id.
+          FIREFOX_EXTENSION_ID="$(node -e "
+            try {
+              const m = require('./.output/firefox-mv2/manifest.json');
+              const id = m.browser_specific_settings?.gecko?.id;
+              if (typeof id !== 'string' || id.length === 0) throw new Error('gecko.id is missing');
+              process.stdout.write(id);
+            } catch (error) {
+              console.error(error.message);
+              process.exit(1);
+            }
+          ")" || {
+            echo "::error::could not read browser_specific_settings.gecko.id from the built Firefox manifest"
+            exit 1
+          }
+          export FIREFOX_EXTENSION_ID
+          args=()
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          npx --no-install wxt submit "${args[@]}" \
+            --firefox-zip "${zips[0]}" \
+            --firefox-sources-zip "${sources[0]}"
