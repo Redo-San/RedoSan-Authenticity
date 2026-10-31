@@ -69,11 +69,31 @@ jobs:
         working-directory: extension
         run: npx -y npm@11.20.0 test
 
+      - name: Clean previous build output
+        working-directory: extension
+        # A stale zip from an earlier run must never be mistaken for this
+        # build's artifact by the glob checks below.
+        run: rm -rf .output
+
       - name: Build store packages
         working-directory: extension
         run: |
           npx -y npm@11.20.0 run zip
           npx -y npm@11.20.0 run zip:firefox
+
+      # The stores reject an archive without a root manifest.json; fail here
+      # with the archive name instead of inside the upload SDK.
+      - name: Verify archive contents
+        working-directory: extension
+        run: |
+          set -eu
+          for zip in .output/*-chrome.zip .output/*-firefox.zip; do
+            unzip -Z1 "$zip" | grep -qx 'manifest.json' || {
+              echo "::error::$zip has no manifest.json at its root"
+              exit 1
+            }
+            echo "ok: $zip"
+          done
 
       # `wxt zip` rewrites the manifest per browser, so this checks the packaged
       # output rather than the config the unit tests see.
@@ -170,7 +190,20 @@ jobs:
           # Take the id from the built manifest instead of repeating the
           # constant; scripts/verify-store-packages.js already asserted it
           # matches the reviewed public id.
-          FIREFOX_EXTENSION_ID="$(node -e "const m = require('./.output/firefox-mv2/manifest.json'); process.stdout.write(m.browser_specific_settings.gecko.id)")"
+          FIREFOX_EXTENSION_ID="$(node -e "
+            try {
+              const m = require('./.output/firefox-mv2/manifest.json');
+              const id = m.browser_specific_settings?.gecko?.id;
+              if (typeof id !== 'string' || id.length === 0) throw new Error('gecko.id is missing');
+              process.stdout.write(id);
+            } catch (error) {
+              console.error(error.message);
+              process.exit(1);
+            }
+          ")" || {
+            echo "::error::could not read browser_specific_settings.gecko.id from the built Firefox manifest"
+            exit 1
+          }
           export FIREFOX_EXTENSION_ID
           args=()
           if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi

@@ -78,6 +78,10 @@ function checkManifest(target, raw) {
     `${target.label}: manifest version ${manifest.version} does not match package.json ${VERSION}`,
   );
   requireInvariant(
+    Array.isArray(manifest.permissions),
+    `${target.label}: permissions must be an array, found ${typeof manifest.permissions}`,
+  );
+  requireInvariant(
     JSON.stringify([...(manifest.permissions ?? [])].sort()) ===
       JSON.stringify([...target.permissions].sort()),
     `${target.label}: permissions ${JSON.stringify(manifest.permissions)} differ from the reviewed set ${JSON.stringify(target.permissions)}`,
