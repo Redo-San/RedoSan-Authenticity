@@ -28,7 +28,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: extension-release-${{ github.ref }}
+  # One submission at a time, whichever branch the manual run targets: a store
+  # upload must never race another one. `github.ref` is not part of the key for
+  # that reason.
+  group: extension-release
   cancel-in-progress: false
 
 jobs:
@@ -58,6 +61,8 @@ jobs:
 
       - name: Install dependencies
         working-directory: extension
+        # npm 11 is pinned deliberately: a bare `npm` may be older on the
+        # runner, and npm < 11 strips the `libc` markers from the lockfile.
         run: npx -y npm@11.20.0 ci
 
       - name: Run unit tests
@@ -135,25 +140,40 @@ jobs:
           CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
         run: |
           set -eu
+          shopt -s nullglob
+          zips=(.output/*-chrome.zip)
+          if [ "${#zips[@]}" -ne 1 ]; then
+            echo "::error::expected exactly one *-chrome.zip, found ${#zips[@]}"
+            exit 1
+          fi
           args=()
           if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
           npx --no-install wxt submit "${args[@]}" \
-            --chrome-zip .output/*-chrome.zip
+            --chrome-zip "${zips[0]}"
 
       - name: Submit to Firefox Add-ons (AMO)
         if: inputs.stores != 'chrome'
         working-directory: extension
         env:
           DRY_RUN: ${{ inputs.dry_run }}
-          # Public constant, identical to the gecko id in the built manifest;
-          # scripts/verify-store-packages.js fails the run if they diverge.
-          FIREFOX_EXTENSION_ID: inspector@redo-san.github.io
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
         run: |
           set -eu
+          shopt -s nullglob
+          zips=(.output/*-firefox.zip)
+          sources=(.output/*-sources.zip)
+          if [ "${#zips[@]}" -ne 1 ] || [ "${#sources[@]}" -ne 1 ]; then
+            echo "::error::expected one *-firefox.zip and one *-sources.zip, found ${#zips[@]} and ${#sources[@]}"
+            exit 1
+          fi
+          # Take the id from the built manifest instead of repeating the
+          # constant; scripts/verify-store-packages.js already asserted it
+          # matches the reviewed public id.
+          FIREFOX_EXTENSION_ID="$(node -e "const m = require('./.output/firefox-mv2/manifest.json'); process.stdout.write(m.browser_specific_settings.gecko.id)")"
+          export FIREFOX_EXTENSION_ID
           args=()
           if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
           npx --no-install wxt submit "${args[@]}" \
-            --firefox-zip .output/*-firefox.zip \
-            --firefox-sources-zip .output/*-sources.zip
+            --firefox-zip "${zips[0]}" \
+            --firefox-sources-zip "${sources[0]}"

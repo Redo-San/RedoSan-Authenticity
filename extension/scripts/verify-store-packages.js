@@ -91,6 +91,10 @@ function checkManifest(target, raw) {
     `${target.label}: optional_permissions must stay empty, found ${JSON.stringify(manifest.optional_permissions)}`,
   );
   requireInvariant(
+    (manifest.optional_host_permissions ?? []).length === 0,
+    `${target.label}: optional_host_permissions must stay empty, found ${JSON.stringify(manifest.optional_host_permissions)}`,
+  );
+  requireInvariant(
     !("content_scripts" in manifest),
     `${target.label}: content_scripts is registered at load time; injection must stay on demand`,
   );
@@ -98,9 +102,42 @@ function checkManifest(target, raw) {
     !("web_accessible_resources" in manifest),
     `${target.label}: web_accessible_resources would expose the injected bundle to pages`,
   );
+
+  // The context menu and the on-demand injection both live in the background
+  // entrypoint; a different or missing worker would break the v1 flow silently
+  // after a WXT upgrade.
+  const background = manifest.background ?? {};
+  if (target.manifestVersion === 3) {
+    requireInvariant(
+      background.service_worker === "background.js",
+      `${target.label}: background.service_worker is ${JSON.stringify(background.service_worker)}, expected "background.js"`,
+    );
+    requireInvariant(
+      !("scripts" in background) && !("page" in background),
+      `${target.label}: background must stay an MV3 service worker`,
+    );
+  } else {
+    requireInvariant(
+      Array.isArray(background.scripts) &&
+        background.scripts.length === 1 &&
+        background.scripts[0] === "background.js",
+      `${target.label}: background.scripts is ${JSON.stringify(background.scripts)}, expected ["background.js"]`,
+    );
+    requireInvariant(
+      background.persistent !== true,
+      `${target.label}: background.persistent must stay false (event page)`,
+    );
+  }
+
+  // Strip the localized strings first: a description that happens to mention a
+  // pattern is not a grant, and the checks above already require every
+  // permission-bearing array to be empty.
+  const scan = raw
+    .replaceAll(manifest.name ?? "", "")
+    .replaceAll(manifest.description ?? "", "");
   for (const token of FORBIDDEN_STRINGS) {
     requireInvariant(
-      !raw.includes(token),
+      !scan.includes(token),
       `${target.label}: manifest mentions ${token}`,
     );
   }

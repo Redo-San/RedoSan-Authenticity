@@ -132,7 +132,9 @@ scripts, permission allowlist). The three zips stay as a 14-day artifact.
 
 `wxt submit init` writes `extension/.env.submit` for local runs (gitignored);
 the same values become repository secrets. Chrome uses Web Store API **v2** with
-a linked service account, because API v1.1 was shut down on 2026-10-15.
+a linked service account, because API v1.1 was shut down on 2026-10-15. The old
+OAuth secrets (`CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`,
+`CHROME_REFRESH_TOKEN`) are no longer read and can be deleted.
 
 | Secret                                | Purpose                                                                    |
 | ------------------------------------- | -------------------------------------------------------------------------- |
@@ -143,9 +145,9 @@ a linked service account, because API v1.1 was shut down on 2026-10-15.
 | `FIREFOX_JWT_ISSUER`                  | AMO API issuer from addons.mozilla.org > API keys                          |
 | `FIREFOX_JWT_SECRET`                  | AMO API secret                                                             |
 
-`FIREFOX_EXTENSION_ID` is not a secret: the workflow passes
-`inspector@redo-san.github.io`, which is also the gecko id in the built
-manifest, and the packaging guard fails the run if the two ever diverge.
+`FIREFOX_EXTENSION_ID` is not a secret. The workflow reads it from the built
+manifest and the packaging guard fails the run when that id differs from the
+reviewed `inspector@redo-san.github.io`.
 
 Validate locally with `npx wxt submit --dry-run`; never auto-submit on a tag
 push, store submissions stay behind `workflow_dispatch` (plan B4).
