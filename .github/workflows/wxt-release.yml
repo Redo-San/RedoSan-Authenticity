@@ -106,6 +106,10 @@ jobs:
         with:
           name: extension-store-packages
           path: extension/.output/*.zip
+          # `.output` starts with a dot, so upload-artifact treats it as hidden
+          # and skips it unless this is enabled. Without it the glob matches
+          # nothing and the run fails with "No files were found".
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
 
