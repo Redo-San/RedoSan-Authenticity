@@ -50,7 +50,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: Check endpoint status
-        uses: upptime/uptime-monitor@9aa4499dce16aa3b144134cd767cb5a6aeb9660d # v1.46.2
+        uses: upptime/uptime-monitor@74f0683383384927e064d76a5f21f340d6af36fc # v1.46.5
         with:
           command: "update"
         env:
