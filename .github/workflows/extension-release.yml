@@ -1,0 +1,196 @@
+name: Extension Release
+
+# Builds the browser extension, the Windows installer and the SHA-256 sums, then
+# publishes them as GitHub Release assets. No store, no credentials: Chrome
+# blocks off-store installs on Windows and Firefox release builds reject
+# unsigned add-ons, so there is nothing a store account could add here without
+# paying the Chrome Web Store registration fee. See extension/DISTRIBUTION.md.
+#
+# Manual only: a release is a maintainer decision.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag; leave empty to use ext-v<extension version>
+        required: false
+        default: ""
+        type: string
+      publish:
+        description: Create or update the GitHub Release with the built assets
+        required: true
+        default: true
+        type: boolean
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+concurrency:
+  # One release at a time, whichever branch the manual run targets.
+  group: extension-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build packages, installer and release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # No Actions cache on purpose: zizmor's cache-poisoning rule forbids
+      # caches in a workflow that can publish.
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Install dependencies
+        working-directory: extension
+        # npm 11 is pinned deliberately: a bare `npm` may be older on the
+        # runner, and npm < 11 strips the `libc` markers from the lockfile.
+        run: npx -y npm@11.20.0 ci
+
+      - name: Run unit tests
+        working-directory: extension
+        run: npx -y npm@11.20.0 test
+
+      - name: Clean previous build output
+        working-directory: extension
+        run: rm -rf .output dist
+
+      - name: Build browser packages
+        working-directory: extension
+        run: |
+          npx -y npm@11.20.0 run zip
+          npx -y npm@11.20.0 run zip:firefox
+
+      # An archive without a root manifest.json is unusable in every install
+      # path; fail here with the archive name.
+      - name: Verify archive contents
+        working-directory: extension
+        run: |
+          set -eu
+          for zip in .output/*-chrome.zip .output/*-firefox.zip; do
+            unzip -Z1 "$zip" | grep -qx 'manifest.json' || {
+              echo "::error::$zip has no manifest.json at its root"
+              exit 1
+            }
+            echo "ok: $zip"
+          done
+
+      # `wxt zip` rewrites the manifest per browser, so this checks the packaged
+      # output rather than the config the unit tests see.
+      - name: Verify packaged manifests
+        working-directory: extension
+        run: node scripts/verify-release-packages.js
+
+      # The installer embeds the packaged trees and the XPI (a renamed Firefox
+      # zip); a fixed name keeps installer.nsi independent of the version.
+      - name: Stage installer inputs
+        working-directory: extension
+        run: cp .output/*-firefox.zip .output/redosan-inspector.xpi
+
+      - name: Install NSIS
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends nsis
+
+      - name: Build Windows installer
+        working-directory: extension
+        run: |
+          set -eu
+          version="$(node -p "require('./package.json').version")"
+          mkdir -p dist
+          makensis -V2 \
+            -DVERSION="$version" \
+            -DVERSION4="$version.0" \
+            -DSRCDIR="$PWD/.output" \
+            -DOUTFILE="$PWD/dist/RedoSan-Inspector-Setup-$version.exe" \
+            installer/installer.nsi
+          test -s "dist/RedoSan-Inspector-Setup-$version.exe"
+
+      - name: Write checksums
+        working-directory: extension
+        run: |
+          set -eu
+          ( cd .output && sha256sum ./*.zip ) > dist/SHA256SUMS.txt
+          ( cd dist && sha256sum ./*.exe ) >> dist/SHA256SUMS.txt
+          cat dist/SHA256SUMS.txt
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: extension-release-assets
+          # `.output` starts with a dot, so upload-artifact treats it as hidden
+          # and skips it unless include-hidden-files is enabled.
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            extension/.output/*.zip
+            extension/dist/*
+
+      - name: Publish GitHub Release
+        if: inputs.publish
+        working-directory: extension
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_INPUT: ${{ inputs.tag }}
+          PUBLISH: ${{ inputs.publish }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          REF: ${{ github.ref }}
+        run: |
+          set -eu
+          if [ "$PUBLISH" = "true" ] && [ "$REF" != "refs/heads/main" ]; then
+            echo "::error::publishing a release is only allowed from main (got $REF)"
+            exit 1
+          fi
+
+          version="$(node -p "require('./package.json').version")"
+          tag="${TAG_INPUT:-ext-v$version}"
+
+          cat > release-notes.md <<EOF
+          Browser extension packages for RedoSan Authenticity Inspector $version.
+
+          | Asset | Use |
+          | --- | --- |
+          | \`RedoSan-Inspector-Setup-$version.exe\` | Windows installer: copies both builds, opens \`chrome://extensions\`, and writes the Firefox steps to \`INSTALL.txt\`. |
+          | \`*-chrome.zip\` | Chrome or Edge: unzip, then \`chrome://extensions\` -> Developer mode -> Load unpacked. |
+          | \`*-firefox.zip\` | Firefox: rename to \`.xpi\`. Release Firefox only installs signed add-ons; use \`about:debugging\` for a temporary load or sign it for free through AMO (unlisted). |
+          | \`*-sources.zip\` | Source archive for the AMO review / reproducible rebuild. |
+          | \`SHA256SUMS.txt\` | Verify every download with \`sha256sum -c SHA256SUMS.txt\`. |
+
+          Full instructions and the reason there is no store listing:
+          https://github.com/$REPO/blob/main/extension/DISTRIBUTION.md
+
+          The installer is unsigned, so Windows SmartScreen may warn; use
+          "More info" -> "Run anyway" after verifying the checksum.
+          EOF
+
+          files=(.output/*.zip dist/*.exe dist/SHA256SUMS.txt)
+
+          if gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$tag" "${files[@]}" --repo "$REPO" --clobber
+          else
+            gh release create "$tag" "${files[@]}" \
+              --repo "$REPO" \
+              --target "$SHA" \
+              --title "RedoSan Authenticity Inspector $version" \
+              --notes-file release-notes.md
+          fi

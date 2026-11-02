@@ -152,6 +152,8 @@ src-tauri/target/
 extension/node_modules/
 extension/.output/
 extension/.wxt/
+# Installer build output (makensis -DOUTFILE=...).
+extension/dist/
 # `wxt submit init` writes store credentials here; never commit them.
 extension/.env.submit
 

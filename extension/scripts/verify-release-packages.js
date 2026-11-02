@@ -1,8 +1,8 @@
 // Release-time guard for the packaged manifests. `wxt zip` rewrites the
 // manifest per browser, so the config-level assertions in
 // tests/manifest.test.js cannot see what actually ships. This script runs in
-// .github/workflows/wxt-release.yml after `npm run zip` and refuses to submit a
-// package whose permissions drifted away from the v1 scope
+// .github/workflows/extension-release.yml after `npm run zip` and refuses to
+// publish a package whose permissions drifted away from the v1 scope
 // (.Plans/TAURI-WXT-DISTRIBUTION-PLAN.md, B1).
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
@@ -16,7 +16,7 @@ const VERSION = JSON.parse(
 
 /**
  * Permissions the listing copy in STORE_LISTING.md justifies, per target. An
- * addition here must also be justified there and in the store dashboard.
+ * addition here must also be justified there.
  */
 const TARGETS = [
   {
@@ -210,4 +210,4 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
-console.log("\nStore packages match the reviewed v1 scope.");
+console.log("\nRelease packages match the reviewed v1 scope.");

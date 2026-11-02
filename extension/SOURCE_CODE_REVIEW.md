@@ -71,5 +71,5 @@ artifacts produced in the same session rather than the pinned value above.
 
 Neither store requires a sources archive. The Chrome zip is
 `.output/redosan-authenticity-inspector-0.1.0-chrome.zip`; Edge accepts the same
-package through Partner Center. See `STORE_LISTING.md` for the listing copy and
-permission justifications.
+package. No store submission is planned, so the zip ships as a release asset
+(see `DISTRIBUTION.md`) and this file keeps the reference copy.

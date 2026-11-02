@@ -9,7 +9,9 @@ picks "Inspect with RedoSan" from the image context menu.
 ## Usage
 
 1. Build: `npx -y npm@11.20.0 run build` (or `run build:firefox`).
-2. Load `.output/chrome-mv3` as an unpacked extension.
+2. Load `.output/chrome-mv3` as an unpacked extension, or install a published
+   release package from the repository's Releases page (see
+   [`DISTRIBUTION.md`](DISTRIBUTION.md)).
 3. Right-click any image → **Inspect with RedoSan**; the panel opens in the
    page's shadow DOM and never leaves the tab.
 4. Or open the toolbar popup, then drop, paste, or choose a file. A report can
@@ -27,14 +29,15 @@ npx -y npm@11.20.0 run dev       # Chrome dev build with hot reload
 npx -y npm@11.20.0 run build     # production build in .output/chrome-mv3
 npx -y npm@11.20.0 run build:firefox
 npx -y npm@11.20.0 test          # node:test suite in tests/ (no browser needed)
-npx -y npm@11.20.0 run zip       # store zip (zip:firefox also builds sources)
-npx -y npm@11.20.0 run verify:store  # assert the packaged manifests match the v1 scope
+npx -y npm@11.20.0 run zip       # release package (zip:firefox also builds sources)
+npx -y npm@11.20.0 run verify:release  # assert the packaged manifests match the v1 scope
 ```
 
-| Document                | Contents                                                                    |
-| ----------------------- | --------------------------------------------------------------------------- |
-| `SOURCE_CODE_REVIEW.md` | What the AMO sources zip contains and how to rebuild it byte-identically.   |
-| `STORE_LISTING.md`      | Listing copy, permission justifications, data-use answers, asset checklist. |
+| Document                | Contents                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `DISTRIBUTION.md`       | Release assets, install steps for Chrome/Edge and Firefox, installer limits. |
+| `SOURCE_CODE_REVIEW.md` | What the AMO sources zip contains and how to rebuild it byte-identically.    |
+| `STORE_LISTING.md`      | Listing copy kept for reference; no store submission is planned.             |
 
 ## Layout
 
@@ -77,11 +80,13 @@ parent directory through `server.fs.allow` in `wxt.config.js`.
 | B0 scaffold                                 | done   |
 | B1 inspection pipeline + unit tests         | done   |
 | B2 context menu, popup, options, `_locales` | done   |
-| B3 Firefox sources zip + store prep         | done   |
-| B4 release workflow                         | done   |
+| B3 Firefox sources zip                      | done   |
+| B4 release workflow (assets + installer)    | done   |
 
-Store submissions run from **Actions -> Extension Release** (manual only, starts
-as a dry run); `STORE_LISTING.md` lists the required repository secrets.
+Releases run from **Actions -> Extension Release** (manual only) and attach the
+browser packages, the Windows installer and `SHA256SUMS.txt` to a GitHub
+Release. No store account or repository secret is involved; see
+[`DISTRIBUTION.md`](DISTRIBUTION.md) for the install paths and their limits.
 
 See `.Plans/TAURI-WXT-DISTRIBUTION-PLAN.md` in the maintainer workspace for the
 full plan; the plan file is not tracked in git.
