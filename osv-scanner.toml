@@ -8,6 +8,22 @@
 # File must sit next to the lockfile it applies to (package-lock.json).
 
 [[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+reason = """
+minimatch <11.0.1: denial of service via globparts amplification. Upstream
+shipped no backport: the only fixed release is the 11.0.1 major, which
+removed the `makeRe`/`AST` exports that eslint-plugin-import-x 4.17.1
+(latest) still imports (`import { makeRe } from 'minimatch'`), so forcing
+11.x breaks `npm run lint`. The vulnerable copies are dev-only
+(eslint-plugin-import-x -> minimatch 10, depcheck -> 7, multimatch -> 3,
+filelist -> 5) and every glob pattern they evaluate is authored in this
+repository, never attacker-controlled. The glob 14.0.2 override already
+carries its own minimatch 11.0.3 for glob's own tree. `npm audit
+--omit=dev` reports 0 vulnerabilities. Delete this entry when
+eslint-plugin-import-x and depcheck adopt minimatch >= 11.
+"""
+
+[[IgnoredVulns]]
 id = "GHSA-gcqx-w48m-w2h4"
 reason = """
 deepmerge 4.3.1: prototype poisoning in mergeObject(). No fixed release
