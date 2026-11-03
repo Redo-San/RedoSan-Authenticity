@@ -62,11 +62,15 @@ jobs:
               (context.payload.release && context.payload.release.tag_name) ||
               context.ref.replace('refs/tags/', '');
 
+            // A tag can end up attached to more than one release when a
+            // release's tag is changed in the UI. Prefer the published release
+            // so a stale draft cannot be published over it.
             const findRelease = async () => {
               const releases = await github.paginate(
                 github.rest.repos.listReleases, { owner, repo, per_page: 100 }
               );
-              return releases.find((r) => r.tag_name === tag) || null;
+              const matches = releases.filter((r) => r.tag_name === tag);
+              return matches.find((r) => !r.draft) || matches[0] || null;
             };
 
             let release = await findRelease();
@@ -86,14 +90,33 @@ jobs:
                 if (!release) throw e;
               }
             } else if (release.draft) {
-              release = (
-                await github.rest.repos.updateRelease({
-                  owner,
-                  repo,
-                  release_id: release.id,
-                  draft: false,
-                })
-              ).data;
+              try {
+                release = (
+                  await github.rest.repos.updateRelease({
+                    owner,
+                    repo,
+                    release_id: release.id,
+                    draft: false,
+                  })
+                ).data;
+              } catch (e) {
+                // Only 422 already_exists on tag_name means another release
+                // owns the tag (for example after a UI tag change). Any other
+                // failure must stay visible instead of being swallowed.
+                const data = e.response && e.response.data;
+                const tagConflict =
+                  e.status === 422 &&
+                  data &&
+                  data.code === 'already_exists' &&
+                  data.field === 'tag_name';
+                if (!tagConflict) throw e;
+                const published = await findRelease();
+                if (!published || published.draft) throw e;
+                release = published;
+                core.info(
+                  `Skipped draft publish: ${published.tag_name} is already published`
+                );
+              }
             }
 
             if (fs.existsSync('CHANGELOG.md')) {

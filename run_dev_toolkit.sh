@@ -452,12 +452,31 @@ menu() {
   read -r CHOICE
 
   # Health check — detect if opencode server is reachable
+  # opencode V2 serves its JSON API under /api; /global/health is a V1 path
+  # that answers 200 with the web UI shell on unknown routes.
   if command -v curl >/dev/null 2>&1; then
-    if curl -sf http://127.0.0.1:4096/global/health >/dev/null 2>&1; then
-      printf '  %s[Server] opencode healthy%s\n' "${GREEN}" "${RESET}"
-    else
-      printf '  %s[Server] opencode not reachable (status unknown)%s\n' "${DIM}" "${RESET}"
+    health_pass="${OPENCODE_PASSWORD:-${OPENCODE_SERVER_PASSWORD:-}}"
+    health_file="${TMPDIR:-/tmp}/.redosan-server.password"
+    if [ -z "$health_pass" ] && [ -f "$health_file" ]; then
+      health_pass="$(cat "$health_file" 2>/dev/null || true)"
     fi
+    if [ -n "$health_pass" ]; then
+      # Feed curl its config on stdin so the password never lands in argv.
+      health_body="$(
+        printf 'url = "http://127.0.0.1:4096/api/info"\nuser = "opencode:%s"\n' "$health_pass" |
+          curl -sf -K - 2>/dev/null || true
+      )"
+    else
+      health_body="$(curl -sf http://127.0.0.1:4096/api/info 2>/dev/null || true)"
+    fi
+    case "$health_body" in
+      *'"version"'*'"pid"'* | *'"pid"'*'"version"'*)
+        printf '  %s[Server] opencode healthy%s\n' "${GREEN}" "${RESET}"
+        ;;
+      *)
+        printf '  %s[Server] opencode not reachable (status unknown)%s\n' "${DIM}" "${RESET}"
+        ;;
+    esac
   fi
 
   case "$CHOICE" in
