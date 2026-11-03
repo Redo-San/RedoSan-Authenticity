@@ -428,15 +428,14 @@ if "%STARTED_SERVER%"=="1" (
 )
 exit /b 0
 
-:: ---- Health check for opencode server ----
 :ensure_toolkit
 if not exist "%TK%" mkdir "%TK%"
 exit /b 0
 
 :: ---- Health check for opencode server ----
 :check_server_health
-for /f "tokens=*" %%a in ('powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri 'http://127.0.0.1:4096/global/health' -TimeoutSec 2 -UseBasicParsing -ErrorAction Stop; $d = $r.Content ^| ConvertFrom-Json; if ($d.healthy) { 'OK' } else { 'DOWN' } } catch { 'DOWN' }" 2^>nul') do set "SRV=%%a"
-if "%SRV%"=="OK" (
+for /f "tokens=1 delims=:" %%a in ('powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\check_opencode_health.ps1" -Port 4096 2^>nul') do set "SRV=%%a"
+if "%SRV%"=="HEALTHY" (
   echo  [Server] opencode healthy
 ) else (
   echo  [Server] opencode not reachable (status unknown)
