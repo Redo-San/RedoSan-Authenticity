@@ -1,8 +1,10 @@
-# Store listing preparation
+# Store listing reference
 
-First-publication material for the browser extension. Creating the listings and
-paying any registration fee is a maintainer decision; this file only prepares
-the copy, the permission justifications and the asset checklist.
+Reference copy for the browser extension. No store submission is planned; the
+release assets described in [`DISTRIBUTION.md`](DISTRIBUTION.md) are the
+supported distribution path. This file keeps the listing copy, the permission
+justifications and the data-use answers ready in case a maintainer ever pays the
+Chrome Web Store fee or opens a public AMO listing.
 
 ## Identity
 
@@ -100,54 +102,16 @@ popup path (drop, paste, choose a file) performs no network request at all.
 Screenshots must not contain third-party copyrighted images, personal data, or
 claims that a file is authentic. Show the panel, the popup and the options page.
 
-## First publication checklist
+## Store status
 
-1. **Chrome Web Store** — one-time developer registration fee (a purchase; get
-   maintainer approval before paying). Create the item, upload
-   `.output/redosan-authenticity-inspector-0.1.0-chrome.zip`, paste the copy and
-   the permission justifications above, complete the privacy practices form,
-   submit for review.
-2. **Firefox AMO** — free account with two-factor authentication. Create the
-   add-on with the ID above, upload
-   `.output/redosan-authenticity-inspector-0.1.0-firefox.zip`, upload
-   `.output/redosan-authenticity-inspector-0.1.0-sources.zip` and point the
-   reviewer notes at `SOURCE_CODE_REVIEW.md`, then submit.
-3. **Microsoft Edge** — free Partner Center account; reuse the Chrome zip and
-   listing copy. No separate build.
+No store submission is planned. The extension is distributed as GitHub Release
+assets instead: the Chrome Web Store charges a one-time registration fee, Chrome
+blocks off-store installs on Windows, and Firefox release builds reject unsigned
+add-ons. [`DISTRIBUTION.md`](DISTRIBUTION.md) documents the install paths and
+the Windows installer.
 
-Subsequent uploads are automated by `.github/workflows/wxt-release.yml`. It runs
-on `workflow_dispatch` only - never on a tag push or a merge - and every run
-starts with `dry_run: true`:
-
-1. Actions -> **Extension Release** -> _Run workflow_.
-2. Keep `stores: both` and `dry_run: true` first. A green run proves both
-   credentials and the packaging guard without uploading anything.
-3. Re-run with `dry_run: false` when the build is ready for review.
-
-The workflow reinstalls from `extension/package-lock.json`, runs the unit tests,
-builds the Chrome and Firefox packages plus the AMO sources zip, and refuses to
-submit when `scripts/verify-store-packages.js` finds a packaged manifest that
-drifted from the reviewed scope (host permissions, `<all_urls>`, content
-scripts, permission allowlist). The three zips stay as a 14-day artifact.
-
-`wxt submit init` writes `extension/.env.submit` for local runs (gitignored);
-the same values become repository secrets. Chrome uses Web Store API **v2** with
-a linked service account, because API v1.1 was shut down on 2026-10-15. The old
-OAuth secrets (`CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`,
-`CHROME_REFRESH_TOKEN`) are no longer read and can be deleted.
-
-| Secret                                | Purpose                                                                    |
-| ------------------------------------- | -------------------------------------------------------------------------- |
-| `CHROME_EXTENSION_ID`                 | Item ID from the Chrome Web Store dashboard (exists after the manual item) |
-| `CHROME_PUBLISHER_ID`                 | Publisher ID, dashboard Publisher > Settings                               |
-| `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL` | Service account email added under Account in the dashboard                 |
-| `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY`  | JSON key `private_key` value, with real line breaks (no `\n` escapes)      |
-| `FIREFOX_JWT_ISSUER`                  | AMO API issuer from addons.mozilla.org > API keys                          |
-| `FIREFOX_JWT_SECRET`                  | AMO API secret                                                             |
-
-`FIREFOX_EXTENSION_ID` is not a secret. The workflow reads it from the built
-manifest and the packaging guard fails the run when that id differs from the
-reviewed `inspector@redo-san.github.io`.
-
-Validate locally with `npx wxt submit --dry-run`; never auto-submit on a tag
-push, store submissions stay behind `workflow_dispatch` (plan B4).
+This file stays as reference material. If a maintainer ever pays the Chrome fee
+or wants a public AMO listing, the copy, permission justifications and data-use
+answers above are the text to paste. The previous automation
+(`.github/workflows/wxt-release.yml` plus six repository secrets) was removed
+because it could not publish anything without that payment.

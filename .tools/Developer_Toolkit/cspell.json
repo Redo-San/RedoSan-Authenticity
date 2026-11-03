@@ -1271,6 +1271,13 @@
     "Cristo",
     "goodfirstissue",
     "nsis",
+    "makensis",
+    "DVERSION",
+    "DSRCDIR",
+    "DOUTFILE",
+    "DSEP",
+    "LOCALAPPDATA",
+    "xpinstall",
     "dlmgr",
     "repr"
   ],
