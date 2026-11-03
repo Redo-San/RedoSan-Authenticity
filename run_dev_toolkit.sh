@@ -461,7 +461,11 @@ menu() {
       health_pass="$(cat "$health_file" 2>/dev/null || true)"
     fi
     if [ -n "$health_pass" ]; then
-      health_body="$(curl -sf -u "opencode:$health_pass" http://127.0.0.1:4096/api/info 2>/dev/null || true)"
+      # Feed curl its config on stdin so the password never lands in argv.
+      health_body="$(
+        printf 'url = "http://127.0.0.1:4096/api/info"\nuser = "opencode:%s"\n' "$health_pass" |
+          curl -sf -K - 2>/dev/null || true
+      )"
     else
       health_body="$(curl -sf http://127.0.0.1:4096/api/info 2>/dev/null || true)"
     fi
