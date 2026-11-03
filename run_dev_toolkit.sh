@@ -457,8 +457,31 @@ menu() {
   if command -v curl >/dev/null 2>&1; then
     health_pass="${OPENCODE_PASSWORD:-${OPENCODE_SERVER_PASSWORD:-}}"
     health_file="${TMPDIR:-/tmp}/.redosan-server.password"
-    if [ -z "$health_pass" ] && [ -f "$health_file" ]; then
-      health_pass="$(cat "$health_file" 2>/dev/null || true)"
+    # Only trust a private regular file owned by this user: the temp directory
+    # is shared, so another local user could pre-create that path.
+    if [ -z "$health_pass" ] && [ -f "$health_file" ] && [ ! -L "$health_file" ]; then
+      health_uid="$(
+        stat -c '%u' "$health_file" 2>/dev/null ||
+          stat -f '%u' "$health_file" 2>/dev/null ||
+          echo ''
+      )"
+      health_mode="$(
+        stat -c '%a' "$health_file" 2>/dev/null ||
+          stat -f '%Lp' "$health_file" 2>/dev/null ||
+          echo ''
+      )"
+      # Reject files another user could write. Exact 0600 is not required:
+      # Git Bash reports 0644 on Windows, where %TEMP% is already per-user.
+      if [ "$health_uid" = "$(id -u)" ] && [ -n "$health_mode" ] &&
+        [ $((0$health_mode & 022)) -eq 0 ]; then
+        health_pass="$(cat "$health_file" 2>/dev/null || true)"
+      fi
+    fi
+    # curl config is line-based: a newline, quote or backslash in the password
+    # could close the string and inject directives, so drop such values.
+    health_clean="$(printf '%s' "$health_pass" | tr -d '\r\n"\\')"
+    if [ "$health_clean" != "$health_pass" ]; then
+      health_pass=''
     fi
     if [ -n "$health_pass" ]; then
       # Feed curl its config on stdin so the password never lands in argv.
