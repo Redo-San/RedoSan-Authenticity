@@ -100,9 +100,16 @@ jobs:
                   })
                 ).data;
               } catch (e) {
-                // Publishing a draft returns 422 already_exists when another
-                // release owns the tag (for example after a UI tag change). Fall
-                // back to that release instead of failing the whole run.
+                // Only 422 already_exists on tag_name means another release
+                // owns the tag (for example after a UI tag change). Any other
+                // failure must stay visible instead of being swallowed.
+                const data = e.response && e.response.data;
+                const tagConflict =
+                  e.status === 422 &&
+                  data &&
+                  data.code === 'already_exists' &&
+                  data.field === 'tag_name';
+                if (!tagConflict) throw e;
                 const published = await findRelease();
                 if (!published || published.draft) throw e;
                 release = published;
