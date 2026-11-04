@@ -504,7 +504,7 @@ Bypass with `--allow-dangerous` for testing trusted files.
 ## Testing
 
 <!-- BOT:START testing-stats -->
-109 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
+110 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
 <!-- BOT:END testing-stats -->
 
 ```bash

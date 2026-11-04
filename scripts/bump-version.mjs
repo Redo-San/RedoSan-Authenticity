@@ -113,9 +113,9 @@ if (typeof tauri.version === "string" && tauri.version.endsWith(".json")) {
     /"version"\s*:\s*"[^"]*"/,
     `"version": "${target}"`,
   );
-  if (bumpedTauri === tauriRaw) {
+  if (bumpedTauri === tauriRaw || JSON.parse(bumpedTauri).version !== target) {
     console.error(
-      '[bump] could not find the "version" field in tauri.conf.json',
+      '[bump] could not update the "version" field in tauri.conf.json',
     );
     process.exit(1);
   }
@@ -126,5 +126,5 @@ console.log(`[bump] ${previous} -> ${target}`);
 console.log("  package.json, package-lock.json, src-tauri/Cargo.toml,");
 console.log("  src-tauri/Cargo.lock, src-tauri/tauri.conf.json");
 console.log(
-  "Next: refresh README What's New, then run `node scripts/check-version-sync.mjs`.",
+  `Next: run RELEASE_VERSION=v${target} node scripts/update-readme.js, then npm run check:release.`,
 );

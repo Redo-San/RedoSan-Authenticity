@@ -118,7 +118,7 @@ expectVersion(
   version,
 );
 
-const readmeMatch = readText("README.md").match(/^## What's New in v(\S+)$/m);
+const readmeMatch = readText("README.md").match(/^## What's New in v?(\S+)$/m);
 expectVersion(
   "README.md What's New",
   readmeMatch ? readmeMatch[1] : null,
