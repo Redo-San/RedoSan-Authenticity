@@ -25,14 +25,24 @@
 ---
 
 <!-- BOT:START whats-new -->
+## What's New in v2.1.1
 
-## What's New in v2.1.0
+- **CLI version** — `redosan --version` now reads `package.json` at runtime, with a regression test that fails when the two drift
+- **Release guards** — `npm run check` and `prepack` verify package-lock, Cargo.toml, Cargo.lock, tauri.conf.json, the CLI output, the README heading and the git tag
+- **npm README** — the publish workflow regenerates the package README from the tag changelog before staging, so the registry page always announces the current release
+- **Package parity** — `files` lists the eight shipped vendor libraries explicitly; a local `npm pack` now produces the same 66-file, 1.69 MB tarball as CI instead of 42 MB
+- **Maintenance** — `scripts/bump-version.mjs` updates all five manifests, the npm setup wizard reads the version dynamically, and README automation understands git-cliff bodies
+
+<details>
+<summary><b>v2.1.0</b> — Browser extension</summary>
 
 - **Browser extension** — Chrome/Edge (MV3) and Firefox (MV2) inspector built on the shared `Fingerprint/` code: right-click an image for 21 digests plus the four perceptual hashes and a C2PA presence check, with no network call; context-menu panel, popup and options page included
 - **Off-store distribution** — release packaging for the extension (`ext-v*` assets: Chrome zip, Firefox zip, sources zip) plus an unsigned Windows installer that installs both builds and opens the browser extension pages; no store submission
 - **Desktop (Tauri)** — offline vendored runtime assets, CSP fixes for blob workers and inline handlers, an in-app download manager with opener link handling, and a `tauri-release.yml` pipeline for `desktop-v*` tags
 - **Security and fixes** — patched `glob`, `qs`, `hono`, `markdown-it`, `toml` and `ip-address` advisories; corrected Keccak padding/round constants; C2PA PNG manifests now use the `caBX` chunk
 - **Release automation** — npm trusted publishing through OIDC, GHCR site/CLI images with deployment records, draft-publish hardening, and the 2.1.0 version alignment across manifests
+
+</details>
 
 <details>
 <summary><b>v2.0.0</b> — npm-ready CLI, Security Hardening, Contribution Readiness</summary>
@@ -494,7 +504,7 @@ Bypass with `--allow-dangerous` for testing trusted files.
 ## Testing
 
 <!-- BOT:START testing-stats -->
-108 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
+109 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
 <!-- BOT:END testing-stats -->
 
 ```bash

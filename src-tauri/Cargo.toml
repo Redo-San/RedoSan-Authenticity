@@ -1,6 +1,6 @@
 [package]
 name = "redosan-authenticity"
-version = "2.1.0"
+version = "2.1.1"
 description = "Client-side digital authenticity toolkit (watermark, fingerprint, C2PA, forensics)"
 edition = "2021"
 authors = ["Redo-San"]
