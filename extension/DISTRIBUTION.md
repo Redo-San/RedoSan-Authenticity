@@ -28,8 +28,9 @@ cost money or refuse the package unless it is signed and reviewed.
 - **Firefox AMO** is free, but release and beta builds "will not allow unsigned
   extensions to be installed, with no override"
   ([MozillaWiki](https://wiki.mozilla.org/Add-ons/Extension_Signing)). The
-  `xpinstall.signatures.required` policy that disables the check is
-  **Firefox ESR only**, so it is not a general answer either.
+  `xpinstall.signatures.required=false` override is honored only in **ESR,
+  Developer Edition and Nightly** (it also needs a fixed add-on ID), so it is
+  not an answer for a regular release or beta install either.
 - Edge Add-ons and Opera add-ons are free, but they add accounts, review cycles
   and listing maintenance for a ~90 KB inspector that makes no network calls.
   The Chrome build already loads in Edge.
@@ -67,9 +68,10 @@ source archive. AMO returns a signed XPI that is not listed publicly. Then open
 XPI. Unlisted signing costs nothing; it is the only way to get a permanent
 install in release Firefox without paying anyone.
 
-Firefox Developer Edition and Nightly can also set
+Firefox ESR, Developer Edition and Nightly can also set
 `xpinstall.signatures.required=false` in `about:config`, which allows the
-unsigned XPI to install permanently.
+unsigned XPI to install permanently
+([Extension Workshop](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/)).
 
 ## Windows installer
 
