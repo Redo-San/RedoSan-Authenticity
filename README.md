@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/github/deployments/Redo-San/RedoSan-Authenticity/github-pages?style=flat-square&label=Pages&color=6C5CE7" alt="GitHub Pages">
   <a href="https://redo-san.github.io/RedoSan-Authenticity/"><img src="https://img.shields.io/badge/Try%20Online-GitHub%20Pages-6C5CE7?style=flat-square&logo=github&logoColor=white" alt="Try Online"></a>
   <img src="https://img.shields.io/github/actions/workflow/status/Redo-San/RedoSan-Authenticity/ci.yml?branch=main&style=flat-square&label=CI&logo=github" alt="CI">
-  <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square&logo=node.js" alt="Node">
+  <img src="https://img.shields.io/badge/node-%3E%3D22.14.0-brightgreen?style=flat-square&logo=node.js" alt="Node">
   <img src="https://img.shields.io/badge/100%25-Client%20Side-FAB972?style=flat-square" alt="Client Side">
 </p>
 
@@ -26,13 +26,24 @@
 
 <!-- BOT:START whats-new -->
 
-## What's New in v2.0.0
+## What's New in v2.1.0
+
+- **Browser extension** — Chrome/Edge (MV3) and Firefox (MV2) inspector built on the shared `Fingerprint/` code: right-click an image for 21 digests plus the four perceptual hashes and a C2PA presence check, with no network call; context-menu panel, popup and options page included
+- **Off-store distribution** — release packaging for the extension (`ext-v*` assets: Chrome zip, Firefox zip, sources zip) plus an unsigned Windows installer that installs both builds and opens the browser extension pages; no store submission
+- **Desktop (Tauri)** — offline vendored runtime assets, CSP fixes for blob workers and inline handlers, an in-app download manager with opener link handling, and a `tauri-release.yml` pipeline for `desktop-v*` tags
+- **Security and fixes** — patched `glob`, `qs`, `hono`, `markdown-it`, `toml` and `ip-address` advisories; corrected Keccak padding/round constants; C2PA PNG manifests now use the `caBX` chunk
+- **Release automation** — npm trusted publishing through OIDC, GHCR site/CLI images with deployment records, draft-publish hardening, and the 2.1.0 version alignment across manifests
+
+<details>
+<summary><b>v2.0.0</b> — npm-ready CLI, Security Hardening, Contribution Readiness</summary>
 
 - **npm-ready CLI** — package fully prepared for npm publication (bin wiring, metadata, staged-publish workflow with tag/version verification), version aligned to 2.0.0
 - **Security hardening** — CLI tool names no longer pass through a shell (command-injection fix), perceptual hashes wired into the fingerprint CLI, patched `katex`/`smol-toml`/MCP SDK overrides, Scorecard advisories cleared, two-tier npm-audit policy
 - **Contribution readiness** — full GPL-2.0 text, Code of Conduct, issue templates, discovery labels, 12 curated `good first issue` tasks; listed on up-for-grabs.net, CodeTriage, and goodfirstissue.org
 - **Community** — first external contributions merged (ESLint DOM configuration, footer translations), fork-safe PR bots, issue-hygiene automation
 - **Quality** — 107 unit test files + 59 E2E suites (6,200+ tests), 77 CI workflows, knip/depcheck ignore-policy alignment, two-phase release workflow with changelog + SBOM
+
+</details>
 
 <details>
 <summary><b>v1.9</b> — Voice Biometric, README Automation</summary>
@@ -125,6 +136,7 @@
 | **Removal Tools**                | Strip watermarks, fingerprints, metadata, EXIF, thumbnails, GPS from images/audio                                                                |
 | **AI Assistant Raido**           | Built-in bilingual (AR/EN) rule-based chatbot, no API needed                                                                                     |
 | **CLI**                          | Cross-platform Node.js CLI: 12 commands + interactive menu                                                                                       |
+| **Browser Extension**            | Chrome/Edge and Firefox inspector: local fingerprints + C2PA presence check, no network calls                                                    |
 | **Security Threat Blocker**      | Service Worker + 404 page blocks dangerous extensions, validates whitelisted scripts                                                             |
 
 ---
@@ -139,7 +151,7 @@ Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.gith
 - **Professional Mode** — Full sidebar access to all tools
 - **Direct MPA Links** — Use any tool directly at `Style/pages/{tool}/index.html`
 
-### CLI (Node.js 20+)
+### CLI (Node.js 22.14+)
 
 #### Interactive Menu
 
@@ -177,13 +189,15 @@ npx tauri build                      # build the desktop binary
 
 Verification procedure and recorded results: `src-tauri/OFFLINE-VERIFICATION.md`.
 
-### Browser Extension (preview)
+### Browser Extension
 
 A companion extension inspects an image locally and reports cryptographic and
-perceptual fingerprints plus a C2PA presence check. v1 is inspection only: no
-embedding, no network calls, no host permissions, and nothing runs on page load.
-Source, build steps and store preparation live in [`extension/`](extension/README.md);
-the extension has not been submitted to a store yet.
+perceptual fingerprints plus a C2PA presence check. v0.1.0 is inspection only:
+no embedding, no network calls, no host permissions, and nothing runs on page
+load. It ships as a Manifest V3 build for Chrome/Edge and an MV2 build for
+Firefox, distributed off-store as GitHub Release assets (`ext-v*`: Chrome zip,
+Firefox zip, sources zip) together with an unsigned Windows installer. Source,
+build steps and distribution notes live in [`extension/`](extension/README.md).
 
 ---
 
@@ -346,7 +360,7 @@ The project supports both SPA and MPA modes:
 
 ```text
 RedoSan-Authenticity/
-├── index.html                 ← SPA entry (hash-based routing, 2507 lines)
+├── index.html                 ← SPA entry (hash-based routing, 2449 lines)
 ├── sw.js                      ← Service Worker (cache whitelist, threat blocking)
 ├── 404.html                   ← Offline + threat detection page
 ├── Style/
@@ -369,7 +383,7 @@ RedoSan-Authenticity/
 │   ├── shared.js              ← Common utilities (download, canvas, DOM)
 │   ├── shared_validation.js   ← File validation (6 layers)
 │   ├── music-player.css       ← Audio player styles
-│   ├── style.css              ← Main styles (3668 lines)
+│   ├── style.css              ← Main styles (3126 lines)
 │   ├── responsive.css         ← Mobile breakpoints
 │   ├── rtl.css                ← RTL overrides for Arabic
 │   └── lang/                  ← i18n data files (8 languages)
@@ -430,8 +444,8 @@ RedoSan-Authenticity/
 │   ├── utils.js               ← CLI polyfills + file helpers
 │   ├── commands/              ← 12 command implementations
 │   ├── lib/id_forge.js        ← CLI ID generation
-│   └── tests/                 ← 107 unit + 59 E2E test files (6,200+ tests)
-└── .github/workflows/         ← 77 CI/CD workflows
+│   └── tests/                 ← 108 unit + 59 E2E test files (6,200+ tests)
+└── .github/workflows/         ← 83 CI/CD workflows
 ```
 
 ### MPA Navigation Flow
@@ -480,8 +494,7 @@ Bypass with `--allow-dangerous` for testing trusted files.
 ## Testing
 
 <!-- BOT:START testing-stats -->
-
-107 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
+108 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
 <!-- BOT:END testing-stats -->
 
 ```bash
@@ -507,18 +520,16 @@ CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chrom
 ## CI/CD Workflows
 
 <!-- BOT:START workflows -->
+The project includes 83 GitHub Actions workflows:
 
-The project includes 77 GitHub Actions workflows:
-
-| Category          | Workflows                                                                                                                                                                                                                                                               |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **AI Review**     | Ai Review Openrouter, Eslint Review, Gemini Analysis, Ollama Analysis, Review, Reviewdog                                                                                                                                                                                |
-| **PR Management** | Auto Assign, Branch Name Lint, Cross Ref Check, Issue Labeler, Label Actions, Label Sync, Labeler, Pr Body Check, Pr Size Label, Pr Stats, Pr Title Lint                                                                                                                |
-| **Security**      | Abom, Codeql, Dependency Review, Malware Scan, Npm Audit Checker, Permissions Sheriff, Pwn Hunter, Scorecards, Secret Scan Gitleaks, Secret Scanner, Security Audit, Security, Semgrep, Zizmor                                                                          |
-| **Quality**       | A11y Fix, A11y, Backstop, Codebase Audit, Console Log Detector, Cspell Check, Css Lint, Dead Css, Depcheck, Dom Review, E2e Coverage Guard, File Size Budget, Html Hint, Knip, Madge Check, Markdownlint, Mutation, Performance, Size Limit, Spell Check, Typedoc Check |
-| **Maintenance**   | Broken Links, Copilot Setup Steps, Dependabot Auto Merge, Duplicate Issues, Issue Compliance, Lock Closed, Milestone, Minimal Dispatch, Release Drafter, Release, Slash Command, Spam Guard, Stale, Todo Issues, Translate, Uptime, Welcome                             |
-| **Core**          | Ci, Cli, Deploy Pages, Js Syntax Check, Lint, Prettier Check, Publish Npm, Update Readme                                                                                                                                                                                |
-
+| Category | Workflows |
+| -------- | --------- |
+| **AI Review** | Ai Review Openrouter, Eslint Review, Gemini Analysis, Ollama Analysis, Review, Reviewdog |
+| **PR Management** | Auto Assign, Branch Name Lint, Cross Ref Check, Issue Labeler, Label Actions, Label Sync, Labeler, Pr Body Check, Pr Size Label, Pr Stats, Pr Title Lint |
+| **Security** | Abom, Codeql, Dependency Review, Malware Scan, Npm Audit Checker, Permissions Sheriff, Pwn Hunter, Scorecards, Secret Scan Gitleaks, Secret Scanner, Security Audit, Security, Semgrep, Zizmor |
+| **Quality** | A11y Fix, A11y, Backstop, Codebase Audit, Console Log Detector, Cspell Check, Css Lint, Dead Css, Depcheck, Dom Review, E2e Coverage Guard, File Size Budget, Html Hint, Knip, Madge Check, Markdownlint, Mutation, Performance, Size Limit, Spell Check, Typedoc Check |
+| **Maintenance** | Broken Links, Copilot Setup Steps, Dependabot Auto Merge, Discussion Release, Discussion Welcome, Duplicate Issues, Extension Release, Issue Compliance, Lock Closed, Milestone, Minimal Dispatch, Release Drafter, Release, Slash Command, Spam Guard, Stale, Tauri Release, Todo Issues, Translate, Uptime, Welcome |
+| **Core** | Ci, Cli, Deploy Pages, Discussion Digest, Js Syntax Check, Lint, Prettier Check, Publish Containers, Publish Npm, Update Readme |
 <!-- BOT:END workflows -->
 
 ---
@@ -548,9 +559,9 @@ The web app includes a two-layer security system:
 | ------------------ | ----------------------------------------------------------------------- |
 | **UI**             | Vanilla HTML/CSS/JS (no frameworks)                                     |
 | **Icons**          | Font Awesome 5                                                          |
-| **CLI**            | Node.js 20+, Commander.js                                               |
-| **Testing**        | `node:test` (107 unit files, 6,200+ tests) + Playwright (59 E2E suites) |
-| **CI**             | GitHub Actions (77 workflows, Node 22/24 matrix)                        |
+| **CLI**            | Node.js 22.14+, Commander.js                                            |
+| **Testing**        | `node:test` (108 unit files, 6,200+ tests) + Playwright (59 E2E suites) |
+| **CI**             | GitHub Actions (83 workflows, Node 22/24 matrix)                        |
 | **Biometrics**     | In-browser ONNX models (ArcFace, ECAPA, WavLM) + WebCrypto              |
 | **PDF Export**     | jsPDF + PDFKit                                                          |
 | **DOCX Export**    | docx                                                                    |
