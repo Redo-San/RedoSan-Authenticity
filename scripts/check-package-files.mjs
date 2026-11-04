@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* eslint-disable security/detect-non-literal-fs-filename -- every path is a
+   fixed repository-relative literal joined to ROOT, never external input. */
 // Package-content guard: `files` in package.json must point at real paths and
 // must not sweep in build-time assets that are gitignored locally.
 //

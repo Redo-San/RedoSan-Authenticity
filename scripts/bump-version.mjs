@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* eslint-disable security/detect-non-literal-fs-filename -- every path is a
+   fixed repository-relative literal joined to ROOT, never external input. */
 // Bump the project version in every manifest that carries it.
 //
 // `npm version` alone only updates package.json + package-lock.json; the Tauri
@@ -14,10 +16,29 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const target = (process.argv[2] || "").replace(/^v/, "");
 
-if (target.length > 64 || !SEMVER.test(target)) {
+/**
+ * Validate a semver string without a backtracking-prone regex.
+ * @param {string} value - Candidate version.
+ * @returns {boolean} True when value is a valid `MAJOR.MINOR.PATCH[-pre]`.
+ */
+function isSemver(value) {
+  if (value.length === 0 || value.length > 64) return false;
+  const dash = value.indexOf("-");
+  const core = dash === -1 ? value : value.slice(0, dash);
+  const pre = dash === -1 ? "" : value.slice(dash + 1);
+  const coreParts = core.split(".");
+  if (coreParts.length !== 3) return false;
+  if (!coreParts.every((part) => /^\d+$/.test(part))) return false;
+  if (dash === -1) return true;
+  return (
+    pre.length > 0 &&
+    pre.split(".").every((part) => /^[0-9A-Za-z-]+$/.test(part))
+  );
+}
+
+if (!isSemver(target)) {
   console.error("usage: node scripts/bump-version.mjs <semver>   (e.g. 2.1.1)");
   process.exit(1);
 }
@@ -89,16 +110,22 @@ write("src-tauri/Cargo.toml", bumpedCargoToml);
 
 // Cargo.lock: the workspace member entry, which cargo rewrites on next build
 // anyway; editing it here keeps `--locked` builds and the guard consistent.
+// Locate it by literal markers instead of a RegExp built from the crate name.
 const cargoLock = read("src-tauri/Cargo.lock");
-const escapedName = cargoName.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-const lockEntry = new RegExp(
-  String.raw`(\[\[package\]\]\r?\nname = "${escapedName}"\r?\nversion = ")[^"]*(")`,
-);
-const bumpedCargoLock = cargoLock.replace(lockEntry, `$1${target}$2`);
-if (bumpedCargoLock === cargoLock) {
+const eol = cargoLock.includes("\r\n") ? "\r\n" : "\n";
+const lockMarker = `[[package]]${eol}name = "${cargoName}"${eol}version = "`;
+const lockStart = cargoLock.indexOf(lockMarker);
+const lockVersionStart = lockStart + lockMarker.length;
+const lockVersionEnd =
+  lockStart === -1 ? -1 : cargoLock.indexOf('"', lockVersionStart);
+if (lockStart === -1 || lockVersionEnd === -1) {
   console.error(`[bump] could not locate ${cargoName} in Cargo.lock`);
   process.exit(1);
 }
+const bumpedCargoLock =
+  cargoLock.slice(0, lockVersionStart) +
+  target +
+  cargoLock.slice(lockVersionEnd);
 write("src-tauri/Cargo.lock", bumpedCargoLock);
 
 // Tauri accepts a literal semver or a path to package.json. Only rewrite the

@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* eslint-disable security/detect-non-literal-fs-filename -- every path is a
+   fixed repository-relative literal joined to ROOT, never external input. */
 // Release-readiness guard: every manifest that ships or identifies the project
 // must agree with package.json, and the README must already announce the
 // version being packed.
