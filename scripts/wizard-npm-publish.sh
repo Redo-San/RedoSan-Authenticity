@@ -206,7 +206,6 @@ finish() {
 # produces (stage-id) is recovered on demand with `npm stage list`.
 
 PKG_NAME="redosan-authenticity-cli"
-PKG_VERSION="1.0.0"
 GH_OWNER="Redo-San"
 GH_REPO="RedoSan-Authenticity"
 TRUST_WORKFLOW="publish-npm.yml"
@@ -241,13 +240,14 @@ fi
 
 pkg_line=$(node -p "const p=require('./package.json');p.name+'@'+p.version+' ('+p.license+')'")
 say "package: $pkg_line"
+PKG_VERSION="$(node -p "require('./package.json').version")"
 
 if [[ "$(node -p "require('./package.json').name")" != "$PKG_NAME" ]]; then
   warn "package.json name is not $PKG_NAME — refusing to continue."
   exit 1
 fi
-if [[ "$(node -p "require('./package.json').version")" != "$PKG_VERSION" ]]; then
-  warn "package.json version is not $PKG_VERSION — refusing to continue."
+if [[ -z "$PKG_VERSION" ]]; then
+  warn "package.json has no version — refusing to continue."
   exit 1
 fi
 if [[ "$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')" != "main" ]]; then

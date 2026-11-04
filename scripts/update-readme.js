@@ -220,6 +220,15 @@ function bulletsFromRelease(body) {
       out.push(line);
     }
   }
+  // git-cliff bodies (produced by release.yml) group commits under headings
+  // such as `### Features` and have no "What's Changed" section, so fall back
+  // to every bullet line instead of dropping the release notes entirely.
+  if (out.length === 0) {
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (/^[-*]\s+/.test(line)) out.push(line);
+    }
+  }
   return out;
 }
 

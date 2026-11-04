@@ -29,6 +29,8 @@ jobs:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # git-cliff needs the previous tag to compute `--latest`.
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Verify tag matches package.json version
@@ -74,6 +76,26 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
         run: npx -y npm@11.20.0 ci
+
+      # The README is frozen into the tarball at pack time, and npm keeps
+      # registry metadata immutable, so generate it from this tag's notes
+      # before `npm run check` validates the "What's New" heading. Without
+      # this step 2.1.0 shipped a README that still announced 2.0.0.
+      - name: Generate changelog for the package README
+        id: cliff
+        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Refresh README with the release notes
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+          RELEASE_NAME: ${{ github.ref_name }}
+          RELEASE_BODY: ${{ steps.cliff.outputs.changelog }}
+        run: node scripts/update-readme.js
 
       - name: Run check gate
         run: npm run check

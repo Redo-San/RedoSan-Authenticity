@@ -1,0 +1,119 @@
+#!/usr/bin/env node
+// Bump the project version in every manifest that carries it.
+//
+// `npm version` alone only updates package.json + package-lock.json; the Tauri
+// config and both Cargo files are edited here so `npm run check:release` stays
+// green after a bump. Usage:
+//
+//   node scripts/bump-version.mjs 2.1.1
+//
+// The README "What's New" section is intentionally not touched: it needs the
+// release notes, so update it with scripts/update-readme.js in the same commit.
+import { readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+const target = (process.argv[2] || "").replace(/^v/, "");
+
+if (target.length > 64 || !SEMVER.test(target)) {
+  console.error("usage: node scripts/bump-version.mjs <semver>   (e.g. 2.1.1)");
+  process.exit(1);
+}
+
+/**
+ * Read a file relative to the repository root.
+ * @param {string} rel - Repository-relative path.
+ * @returns {string} File contents.
+ */
+function read(rel) {
+  return readFileSync(path.join(ROOT, rel), "utf8");
+}
+
+/**
+ * Write a file relative to the repository root, preserving a trailing newline.
+ * @param {string} rel - Repository-relative path.
+ * @param {string} content - New contents.
+ * @returns {void}
+ */
+function write(rel, content) {
+  writeFileSync(path.join(ROOT, rel), content, "utf8");
+}
+
+/**
+ * Serialize JSON the same way npm does (2-space indent, trailing newline).
+ * @param {unknown} value - JSON value.
+ * @returns {string} Serialized JSON.
+ */
+function json(value) {
+  return `${JSON.stringify(value, null, 2)}\n`;
+}
+
+const pkg = JSON.parse(read("package.json"));
+const previous = pkg.version;
+if (previous === target) {
+  console.log(`[bump] already at ${target} - nothing to do`);
+  process.exit(0);
+}
+
+pkg.version = target;
+write("package.json", json(pkg));
+
+const lock = JSON.parse(read("package-lock.json"));
+lock.version = target;
+if (lock.packages?.[""]) lock.packages[""].version = target;
+write("package-lock.json", json(lock));
+
+// Cargo.toml: only the [package] section, never a dependency version.
+const cargoToml = read("src-tauri/Cargo.toml");
+const pkgSectionStart = cargoToml.indexOf("[package]");
+const nextSection = cargoToml.indexOf("\n[", pkgSectionStart + 1);
+const pkgSectionEnd = nextSection === -1 ? cargoToml.length : nextSection;
+const cargoSection = cargoToml.slice(pkgSectionStart, pkgSectionEnd);
+const cargoNameMatch = cargoSection.match(/^name\s*=\s*"([^"]+)"/m);
+if (pkgSectionStart === -1 || !cargoNameMatch) {
+  console.error("[bump] could not parse the [package] section of Cargo.toml");
+  process.exit(1);
+}
+const cargoName = cargoNameMatch[1];
+const bumpedCargoToml =
+  cargoToml.slice(0, pkgSectionStart) +
+  cargoSection.replace(/^version\s*=\s*"[^"]*"/m, `version = "${target}"`) +
+  cargoToml.slice(pkgSectionEnd);
+if (bumpedCargoToml === cargoToml) {
+  console.error("[bump] could not find the [package] version in Cargo.toml");
+  process.exit(1);
+}
+write("src-tauri/Cargo.toml", bumpedCargoToml);
+
+// Cargo.lock: the workspace member entry, which cargo rewrites on next build
+// anyway; editing it here keeps `--locked` builds and the guard consistent.
+const cargoLock = read("src-tauri/Cargo.lock");
+const escapedName = cargoName.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+const lockEntry = new RegExp(
+  String.raw`(\[\[package\]\]\r?\nname = "${escapedName}"\r?\nversion = ")[^"]*(")`,
+);
+const bumpedCargoLock = cargoLock.replace(lockEntry, `$1${target}$2`);
+if (bumpedCargoLock === cargoLock) {
+  console.error(`[bump] could not locate ${cargoName} in Cargo.lock`);
+  process.exit(1);
+}
+write("src-tauri/Cargo.lock", bumpedCargoLock);
+
+// Tauri accepts a literal semver or a path to package.json. Only rewrite the
+// literal form; a path already tracks package.json.
+const tauri = JSON.parse(read("src-tauri/tauri.conf.json"));
+if (typeof tauri.version === "string" && tauri.version.endsWith(".json")) {
+  console.log("[bump] tauri.conf.json uses a package.json path - skipped");
+} else {
+  tauri.version = target;
+  write("src-tauri/tauri.conf.json", json(tauri));
+}
+
+console.log(`[bump] ${previous} -> ${target}`);
+console.log("  package.json, package-lock.json, src-tauri/Cargo.toml,");
+console.log("  src-tauri/Cargo.lock, src-tauri/tauri.conf.json");
+console.log(
+  "Next: refresh README What's New, then run `node scripts/check-version-sync.mjs`.",
+);

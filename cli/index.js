@@ -6,6 +6,10 @@ const { Command } = require("commander");
 const path = require("node:path");
 const fs = require("node:fs");
 
+// Single source of truth: package.json is always included in the published
+// tarball, so `redosan --version` cannot drift from the package version again.
+const pkg = require("../package.json");
+
 const program = new Command();
 
 program
@@ -13,7 +17,7 @@ program
   .description(
     "Digital authenticity tools — fingerprint, watermark, audio-watermark, metadata, timestamp, did, certificate, converter, document-watermark",
   )
-  .version("1.0.0")
+  .version(pkg.version)
   .option(
     "--allow-dangerous",
     "Skip file validation (allow blocked extensions, bypass magic bytes check)",
