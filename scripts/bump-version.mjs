@@ -102,13 +102,24 @@ if (bumpedCargoLock === cargoLock) {
 write("src-tauri/Cargo.lock", bumpedCargoLock);
 
 // Tauri accepts a literal semver or a path to package.json. Only rewrite the
-// literal form; a path already tracks package.json.
-const tauri = JSON.parse(read("src-tauri/tauri.conf.json"));
+// literal form with a targeted replacement: re-serializing the JSON would
+// reflow its compact arrays and bury the version bump in formatting noise.
+const tauriRaw = read("src-tauri/tauri.conf.json");
+const tauri = JSON.parse(tauriRaw);
 if (typeof tauri.version === "string" && tauri.version.endsWith(".json")) {
   console.log("[bump] tauri.conf.json uses a package.json path - skipped");
 } else {
-  tauri.version = target;
-  write("src-tauri/tauri.conf.json", json(tauri));
+  const bumpedTauri = tauriRaw.replace(
+    /"version"\s*:\s*"[^"]*"/,
+    `"version": "${target}"`,
+  );
+  if (bumpedTauri === tauriRaw) {
+    console.error(
+      '[bump] could not find the "version" field in tauri.conf.json',
+    );
+    process.exit(1);
+  }
+  write("src-tauri/tauri.conf.json", bumpedTauri);
 }
 
 console.log(`[bump] ${previous} -> ${target}`);
