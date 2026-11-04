@@ -219,6 +219,7 @@
     "exif",
     "xmp",
     "pdfkit",
+    "jspdf",
     "jszip",
     "qrious",
     "pa11y",
