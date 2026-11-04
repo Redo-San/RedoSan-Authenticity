@@ -180,3 +180,14 @@ jobs:
                 }
               }
             }
+
+      # The extension set and the desktop installers do not change with every
+      # main release, but the newest release must still offer the full download
+      # set. Copy the newest asset of each family from an earlier release and
+      # refresh SHA256SUMS.txt over every mirrored binary.
+      - name: Mirror release assets and checksums
+        if: ${{ startsWith(github.event.release.tag_name || github.ref_name, 'v') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
+        run: node scripts/sync-release-assets.mjs --target "$RELEASE_TAG"
