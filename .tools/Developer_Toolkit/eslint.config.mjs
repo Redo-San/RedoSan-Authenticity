@@ -131,6 +131,21 @@ export default [
       "unicorn/no-immediate-mutation": "off",
       "unicorn/no-array-sort": "off",
       "unicorn/no-array-from-fill": "off",
+      // ── eslint-plugin-unicorn v77 additions ──
+      // The repo writes JSDoc-style `/** ... */` blocks with a leading `*` on
+      // every line (~1350 occurrences); the new recommended rule rejects that
+      // layout, so keep the established comment style.
+      "unicorn/no-asterisk-prefix-in-documentation-comments": "off",
+      // Fires on callback parameters kept for signature compatibility.
+      "unicorn/no-unnecessary-parameters": "off",
+      // `\x` escapes are intentional in byte-level payload code.
+      "unicorn/prefer-short-escape-sequences": "off",
+      // Multi-parameter helpers stay explicit instead of taking one options object.
+      "unicorn/prefer-single-object-destructuring": "off",
+      // TypeError vs Error is already chosen per call site.
+      "unicorn/prefer-type-error": "off",
+      // Local services use http://127.0.0.1 on purpose, so https is not an upgrade.
+      "unicorn/prefer-https": "off",
       // ── SonarJS style / redundancy (safe to suppress) ──
       "sonarjs/no-unused-vars": "off",
       "sonarjs/no-dead-store": "off",
