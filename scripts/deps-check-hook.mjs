@@ -16,8 +16,8 @@ const FORCE = process.env.REDOSAN_DEPS_CHECK_FORCE === "1";
 // (@biomejs/cli, @oxlint/binding, @oxc-parser/binding, jscpd). npm 10 drops
 // those fields silently when it rewrites package-lock.json, so a developer on
 // npm 10 who merges a dependency change commits a lockfile that can install a
-// glibc build on a musl (Alpine) runner. CI uses Node 24 (npm 11), so the
-// committed lockfile is the npm 11 shape; keep it that way locally too.
+// glibc build on a musl (Alpine) runner. CI pins npm 12.2.2 on Node 24/26 and
+// writes the same lockfileVersion 3 shape as npm 11; keep it that way locally.
 const MIN_NPM_MAJOR = 11;
 const IS_WIN = process.platform === "win32";
 

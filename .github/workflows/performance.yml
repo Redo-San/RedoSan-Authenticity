@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npx -y npm@11.20.0 ci
+      - run: npx -y npm@12.2.2 ci
       - name: Start dev server
         run: node dev-server.js &
         env:

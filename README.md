@@ -161,7 +161,7 @@ Visit **[https://redo-san.github.io/RedoSan-Authenticity/](https://redo-san.gith
 - **Professional Mode** — Full sidebar access to all tools
 - **Direct MPA Links** — Use any tool directly at `Style/pages/{tool}/index.html`
 
-### CLI (Node.js 22.14+)
+### CLI (Node.js 24.15+)
 
 #### Interactive Menu
 
@@ -523,7 +523,7 @@ npm run test:e2e-deep            # Deep E2E coverage with V8 capture
 npm run coverage                 # c8 coverage report
 ```
 
-CI runs on Node.js 22/24 via GitHub Actions. E2E tests use Playwright with Chromium.
+CI runs on Node.js 24/26 via GitHub Actions. E2E tests use Playwright with Chromium.
 
 ---
 
@@ -569,9 +569,9 @@ The web app includes a two-layer security system:
 | ------------------ | ----------------------------------------------------------------------- |
 | **UI**             | Vanilla HTML/CSS/JS (no frameworks)                                     |
 | **Icons**          | Font Awesome 5                                                          |
-| **CLI**            | Node.js 22.14+, Commander.js                                            |
+| **CLI**            | Node.js 24.15+, Commander.js                                            |
 | **Testing**        | `node:test` (108 unit files, 6,200+ tests) + Playwright (59 E2E suites) |
-| **CI**             | GitHub Actions (83 workflows, Node 22/24 matrix)                        |
+| **CI**             | GitHub Actions (83 workflows, Node 24/26 matrix)                        |
 | **Biometrics**     | In-browser ONNX models (ArcFace, ECAPA, WavLM) + WebCrypto              |
 | **PDF Export**     | jsPDF + PDFKit                                                          |
 | **DOCX Export**    | docx                                                                    |

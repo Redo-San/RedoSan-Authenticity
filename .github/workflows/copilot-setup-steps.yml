@@ -41,7 +41,7 @@ jobs:
           sudo apt-get install -y libcairo2-dev libjpeg-turbo8-dev libpango1.0-dev libgif-dev librsvg2-dev build-essential
 
       - name: Install npm dependencies
-        run: npx -y npm@11.20.0 ci
+        run: npx -y npm@12.2.2 ci
 
       - name: Verify setup
         run: |

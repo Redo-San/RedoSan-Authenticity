@@ -41,10 +41,10 @@ jobs:
             exit 1
           fi
 
-      - name: Use Node.js 24
+      - name: Use Node.js 26
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
           check-latest: true
           # No `registry-url` here on purpose: it writes
           # `_authToken=${NODE_AUTH_TOKEN}` into the runner .npmrc, which makes
@@ -56,11 +56,13 @@ jobs:
       # `npm stage publish` (staged publishing) is required by the npm Dual-Use
       # Content Policy: dual-use packages may not be published directly via
       # trusted publishing/OIDC, only staged. That subcommand needs an npm CLI
-      # >= 11.15.0, and Node 24 ships npm >= 11.16.0; `check-latest` above
-      # always selects the newest 24.x, so the bundled CLI is verified instead
-      # of installing one ad-hoc (zizmor `adhoc-packages`: installing outside a
+      # >= 11.15.0, and Node 26 ships npm 11.20.0; `check-latest` above always
+      # selects the newest 26.x, so the bundled CLI is verified instead of
+      # installing one ad-hoc (zizmor `adhoc-packages`: installing outside a
       # lockfile, which is also what made `npm@latest` an unpinned supply-chain
-      # dependency).
+      # dependency). Publishing stays on the bundled npm 11 because staged
+      # publishing and provenance are stable there; the rest of CI pins npm
+      # 12.2.2 for a single lockfile shape.
       - name: Verify staged publishing support
         run: |
           npm -v
@@ -75,7 +77,7 @@ jobs:
       - name: Install npm deps
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npx -y npm@11.20.0 ci
+        run: npm ci
 
       # The README is frozen into the tarball at pack time, and npm keeps
       # registry metadata immutable, so generate it from this tag's notes

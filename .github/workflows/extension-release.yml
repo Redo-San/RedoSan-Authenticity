@@ -61,13 +61,13 @@ jobs:
 
       - name: Install dependencies
         working-directory: extension
-        # npm 11 is pinned deliberately: a bare `npm` may be older on the
+        # npm 12 is pinned deliberately: a bare `npm` may be older on the
         # runner, and npm < 11 strips the `libc` markers from the lockfile.
-        run: npx -y npm@11.20.0 ci
+        run: npx -y npm@12.2.2 ci
 
       - name: Run unit tests
         working-directory: extension
-        run: npx -y npm@11.20.0 test
+        run: npx -y npm@12.2.2 test
 
       - name: Clean previous build output
         working-directory: extension
@@ -76,8 +76,8 @@ jobs:
       - name: Build browser packages
         working-directory: extension
         run: |
-          npx -y npm@11.20.0 run zip
-          npx -y npm@11.20.0 run zip:firefox
+          npx -y npm@12.2.2 run zip
+          npx -y npm@12.2.2 run zip:firefox
 
       # An archive without a root manifest.json is unusable in every install
       # path; fail here with the archive name.

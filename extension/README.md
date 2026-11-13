@@ -8,7 +8,7 @@ picks "Inspect with RedoSan" from the image context menu.
 
 ## Usage
 
-1. Build: `npx -y npm@11.20.0 run build` (or `run build:firefox`).
+1. Build: `npx -y npm@12.2.2 run build` (or `run build:firefox`).
 2. Load `.output/chrome-mv3` as an unpacked extension, or install a published
    release package from the repository's Releases page (see
    [`DISTRIBUTION.md`](DISTRIBUTION.md)).
@@ -24,13 +24,13 @@ computed; disabled hashes are skipped entirely, so a report can be as small as
 ## Commands
 
 ```bash
-npx -y npm@11.20.0 install       # installs WXT and runs `wxt prepare`
-npx -y npm@11.20.0 run dev       # Chrome dev build with hot reload
-npx -y npm@11.20.0 run build     # production build in .output/chrome-mv3
-npx -y npm@11.20.0 run build:firefox
-npx -y npm@11.20.0 test          # node:test suite in tests/ (no browser needed)
-npx -y npm@11.20.0 run zip       # release package (zip:firefox also builds sources)
-npx -y npm@11.20.0 run verify:release  # assert the packaged manifests match the v1 scope
+npx -y npm@12.2.2 install       # installs WXT and runs `wxt prepare`
+npx -y npm@12.2.2 run dev       # Chrome dev build with hot reload
+npx -y npm@12.2.2 run build     # production build in .output/chrome-mv3
+npx -y npm@12.2.2 run build:firefox
+npx -y npm@12.2.2 test          # node:test suite in tests/ (no browser needed)
+npx -y npm@12.2.2 run zip       # release package (zip:firefox also builds sources)
+npx -y npm@12.2.2 run verify:release  # assert the packaged manifests match the v1 scope
 ```
 
 | Document                | Contents                                                                     |

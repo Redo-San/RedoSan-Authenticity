@@ -25,13 +25,13 @@ are covered by the repository). Everything else is unmodified source.
 
 ## Rebuild from the sources zip
 
-Requires Node 22.14 or newer (the extension's `engines` field; CI uses Node 24)
+Requires Node 24.15 or newer (the extension's `engines` field; CI covers Node 24/26)
 and network access for `npm ci`.
 
 ```pwsh
 # 1. Build the published artifacts from the extension folder.
 cd extension
-npx -y npm@11.20.0 run zip:firefox
+npx -y npm@12.2.2 run zip:firefox
 
 # 2. Extract the sources archive somewhere outside the repository.
 $dst = Join-Path $env:TEMP "redosan-sources-check"
@@ -40,8 +40,8 @@ Expand-Archive .output/redosan-authenticity-inspector-0.1.0-sources.zip $dst
 
 # 3. Rebuild only from the extracted archive.
 cd $dst/extension
-npx -y npm@11.20.0 ci
-npx -y npm@11.20.0 run zip:firefox
+npx -y npm@12.2.2 ci
+npx -y npm@12.2.2 run zip:firefox
 
 # 4. Both hashes must match.
 (Get-FileHash .output/redosan-authenticity-inspector-0.1.0-firefox.zip).Hash

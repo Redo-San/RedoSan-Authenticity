@@ -210,11 +210,11 @@ GH_OWNER="Redo-San"
 GH_REPO="RedoSan-Authenticity"
 TRUST_WORKFLOW="publish-npm.yml"
 
-# `npm stage` and `npm trust` both require npm >= 11.15.0; the CLI bundled on
-# this machine is 10.x, and upgrading it in place is forbidden here (C5: npm <
-# 11 strips `libc` markers on Windows). So every npm call goes through a pinned
-# modern CLI via npx — no global install, no change to package-lock.json.
-npm11() { npx -y npm@11.20.0 "$@"; }
+# `npm stage` and `npm trust` both require npm >= 11.15.0; a bare `npm` may be
+# older on another machine, and npm < 11 strips `libc` markers on Windows. So
+# every npm call goes through a pinned npm 12.2.2 via npx - no global install,
+# no change to package-lock.json.
+npm_cli() { npx -y npm@12.2.2 "$@"; }
 
 # All npm commands below are the ones verified from `npm ... --help` and
 # docs.npmjs.com at authoring time. Do not add npmjs.com application URLs: that
@@ -263,7 +263,7 @@ note "branch main · clean tree"
 
 # Name-availability probe. `npm view` exits 0 when the package exists; any
 # other failure must be a real 404, not a network blip, before we call it free.
-view_out=$(npm11 view "$PKG_NAME" version 2>&1) && {
+view_out=$(npm_cli view "$PKG_NAME" version 2>&1) && {
   warn "$PKG_NAME already exists on the npm registry."
   exit 1
 } || true
@@ -277,16 +277,16 @@ say "name '$PKG_NAME' is free on the registry ✓"
 # ── Stage 2 — npm 11.15+ ──────────────────────────────────────────────────
 stage "npm CLI 11.15+ (via npx)" 2
 say "Bundled npm here is $(npm -v). Both 'stage' and 'trust' need 11.15.0+,"
-say "so we drive a pinned npm@11.20.0 through npx instead of upgrading yours."
-if ! npm11 stage --help >/dev/null 2>&1; then
-  warn "npm@11.20.0 has no 'stage' subcommand — cannot continue."
+say "so we drive a pinned npm@12.2.2 through npx instead of upgrading yours."
+if ! npm_cli stage --help >/dev/null 2>&1; then
+  warn "npm@12.2.2 has no 'stage' subcommand — cannot continue."
   exit 1
 fi
-if ! npm11 trust --help >/dev/null 2>&1; then
-  warn "npm@11.20.0 has no 'trust' subcommand — cannot continue."
+if ! npm_cli trust --help >/dev/null 2>&1; then
+  warn "npm@12.2.2 has no 'trust' subcommand — cannot continue."
   exit 1
 fi
-note "npx -y npm@11.20.0 → $(npm11 -v 2>/dev/null | tail -n1) · stage ✓ trust ✓"
+note "npx -y npm@12.2.2 → $(npm_cli -v 2>/dev/null | tail -n1) · stage ✓ trust ✓"
 
 # ── Stage 3 — account + login ─────────────────────────────────────────────
 stage "npm account + login" 4
@@ -297,13 +297,13 @@ if ! confirm "Do you already have an npm account (user $GH_OWNER or similar)?"; 
   pause "Create the account in the browser, then press Enter."
 fi
 step "Running: npm login  (approve it in the browser when it opens)"
-if ! npm11 login; then
+if ! npm_cli login; then
   warn "npm login failed."
   note "If npx swallowed the browser flow, run plain 'npm login' in another"
   note "terminal and re-run this wizard — the session is the same either way."
   exit 1
 fi
-if ! who=$(npm11 whoami 2>/dev/null); then
+if ! who=$(npm_cli whoami 2>/dev/null); then
   warn "npm whoami failed — not actually logged in."
   exit 1
 fi
@@ -315,7 +315,7 @@ say "Account-level 2FA is a hard prerequisite of 'npm trust' — even if you hav
 say "never enabled it, npm will refuse the trust command until you do."
 step "Mode auth-and-writes: 2FA for login and for write actions."
 step "Running: npm profile enable-2fa auth-and-writes"
-if npm11 profile enable-2fa auth-and-writes; then
+if npm_cli profile enable-2fa auth-and-writes; then
   note "enable command completed."
 else
   warn "command returned non-zero (already enabled, or it wants the browser flow)."
@@ -340,14 +340,14 @@ if ! confirm "Stage $PKG_NAME@$PKG_VERSION now?"; then
   warn "stopped before touching the registry."
   exit 1
 fi
-if ! npm11 stage publish; then
+if ! npm_cli stage publish; then
   warn "staging failed."
   note "Most likely: 2FA is not enabled, or you lack publish access to the name."
   exit 1
 fi
 say "staged. Capturing the stage-id..."
 
-raw=$(npm11 stage list --json 2>&1) || true
+raw=$(npm_cli stage list --json 2>&1) || true
 STAGE_ID=$(printf '%s' "$raw" | node -e "
   let s = '';
   process.stdin.on('data', d => (s += d)).on('end', () => {
@@ -370,7 +370,7 @@ if [[ -z "$STAGE_ID" ]]; then
   ask STAGE_ID "Paste the stage-id for $PKG_VERSION:"
 fi
 if [[ -z "$STAGE_ID" ]]; then
-  warn "no stage-id — re-run and paste it, or run: npx -y npm@11.20.0 stage list"
+  warn "no stage-id — re-run and paste it, or run: npx -y npm@12.2.2 stage list"
   exit 1
 fi
 say "stage-id: $STAGE_ID ✓"
@@ -383,7 +383,7 @@ say "never push a package live without your 2FA approval."
 note "npm allows just ONE trust configuration per package."
 step "Running: npm trust github $PKG_NAME --file $TRUST_WORKFLOW \\"
 step "           --repo $GH_OWNER/$GH_REPO --allow-stage-publish -y"
-if ! npm11 trust github "$PKG_NAME" \
+if ! npm_cli trust github "$PKG_NAME" \
       --file "$TRUST_WORKFLOW" \
       --repo "$GH_OWNER/$GH_REPO" \
       --allow-stage-publish -y; then
@@ -392,14 +392,14 @@ if ! npm11 trust github "$PKG_NAME" \
   note "(stage 5), or you lack write access to $PKG_NAME."
   exit 1
 fi
-list_out=$(npm11 trust list "$PKG_NAME" 2>&1) || true
+list_out=$(npm_cli trust list "$PKG_NAME" 2>&1) || true
 printf '%s\n' "$list_out"
 if printf '%s' "$list_out" | grep -q "$TRUST_WORKFLOW" \
    && printf '%s' "$list_out" | grep -q "$GH_REPO"; then
   say "trust confirmed: $GH_OWNER/$GH_REPO :: $TRUST_WORKFLOW (stage-only) ✓"
 else
   warn "could not verify the trust output — check it yourself:"
-  note "  npx -y npm@11.20.0 trust list $PKG_NAME"
+  note "  npx -y npm@12.2.2 trust list $PKG_NAME"
 fi
 note "--allow-publish was NOT passed, so direct publish stays forbidden."
 
@@ -409,15 +409,15 @@ say "Approving publishes the staged tarball. npm prompts for a one-time"
 say "password — that prompt is the proof-of-presence npm's dual-use policy"
 say "wants, and it is exactly what you will repeat for every later release."
 step "Running: npm stage approve $STAGE_ID"
-if ! npm11 stage approve "$STAGE_ID"; then
+if ! npm_cli stage approve "$STAGE_ID"; then
   warn "approval failed — $PKG_NAME is still staged and not live."
-  note "Retry with: npx -y npm@11.20.0 stage approve $STAGE_ID"
+  note "Retry with: npx -y npm@12.2.2 stage approve $STAGE_ID"
   exit 1
 fi
 say "approved. Verifying against the registry..."
 
-live_ver=$(npm11 view "$PKG_NAME" version 2>/dev/null) || live_ver=""
-live_lic=$(npm11 view "$PKG_NAME" license 2>/dev/null) || live_lic=""
+live_ver=$(npm_cli view "$PKG_NAME" version 2>/dev/null) || live_ver=""
+live_lic=$(npm_cli view "$PKG_NAME" license 2>/dev/null) || live_lic=""
 if [[ "$live_ver" != "$PKG_VERSION" ]]; then
   warn "registry reports version '$live_ver', expected '$PKG_VERSION'."
   exit 1
@@ -435,7 +435,7 @@ say "Phase B is done. Phase D proves the CI path on the next version:"
 step "1. bump package.json version to 1.0.1 and commit on main"
 step "2. git tag v1.0.1 && git push origin v1.0.1"
 step "3. watch .github/workflows/publish-npm.yml → OIDC exchange → STAGED"
-step "4. npx -y npm@11.20.0 stage list  →  stage approve <id>  (2FA)"
+step "4. npx -y npm@12.2.2 stage list  →  stage approve <id>  (2FA)"
 step "5. npm view $PKG_NAME  →  then Item 4g (libraries.io) auto-indexes"
 
 PLAN_FILE=".Plans/OSS-EXECUTION-PLAN.md"
