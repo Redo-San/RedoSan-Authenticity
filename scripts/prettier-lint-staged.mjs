@@ -51,10 +51,29 @@ const files = process.argv
 
 if (files.length === 0) process.exit(0);
 
-const cmd = `prettier --write --config "${configPath.replace(/\\/g, "/")}" --ignore-path "${ignorePath.replace(/\\/g, "/")}" ${files.map((f) => JSON.stringify(f)).join(" ")}`;
-const res = spawnSync(cmd, {
-  cwd: repoRoot,
-  stdio: "inherit",
-  shell: true,
-});
+// Run the local Prettier entrypoint directly; no shell means staged file names
+// are passed verbatim as argv entries and cannot inject commands.
+const prettierBin = path.join(
+  repoRoot,
+  "node_modules",
+  "prettier",
+  "bin",
+  "prettier.cjs",
+);
+const res = spawnSync(
+  process.execPath,
+  [
+    prettierBin,
+    "--write",
+    "--config",
+    configPath.replace(/\\/g, "/"),
+    "--ignore-path",
+    ignorePath.replace(/\\/g, "/"),
+    ...files,
+  ],
+  {
+    cwd: repoRoot,
+    stdio: "inherit",
+  },
+);
 process.exit(res.status === null ? 1 : res.status);

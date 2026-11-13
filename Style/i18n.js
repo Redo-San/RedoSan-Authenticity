@@ -15,17 +15,48 @@
 var i18n = { lang: "en", data: {} };
 var SUPPORTED = new Set(["en", "ar", "fr", "de", "es", "zh", "ja", "ko"]);
 
+// Resolve the Style/ directory from this script's own URL instead of the
+// page pathname. The pathname can contain duplicate slashes (for example
+// `//host/Style/pages/...`), which would turn a language-script URL into a
+// protocol-relative, cross-origin URL.
+var I18N_SCRIPT_BASE = (function () {
+  var script = document.currentScript;
+  if (!script || !script.src) return "";
+  try {
+    return new URL("./", script.src).href;
+  } catch (error) {
+    void error;
+    return "";
+  }
+})();
+
 /**
- *
- * @param key
- * @param fallback
- * @param args optional placeholder args object like {0: value}
+ * Read one translation from a language dictionary.
+ * @param {{[key: string]: string}|undefined} dict Language dictionary.
+ * @param {string} key Translation key.
+ * @returns {string|undefined} Translation text when present.
+ */
+function lookupTranslation(dict, key) {
+  if (!dict) return undefined;
+  // Key lookup only: `key` comes from static `data-i18n` attributes or literal
+  // call sites, so the dynamic object access is not an injection sink.
+  // eslint-disable-next-line security/detect-object-injection
+  return dict[key];
+}
+
+/**
+ * Translate a key with optional positional placeholders.
+ * @param {string} key Translation key looked up in the active language data.
+ * @param {string} [fallback] Text used when the key is missing everywhere.
+ * @param {{[index: number]: unknown}} [args] Placeholder args like {0: value}.
+ * @returns {string} Translated text with `{0}`-style placeholders applied.
  */
 function __(key, fallback, args) {
-  if (i18n && i18n.data && i18n.data[key])
-    return applyArgs(i18n.data[key], JSON.stringify(args || {}));
+  var translated = lookupTranslation(i18n && i18n.data, key);
+  if (translated) return applyArgs(translated, JSON.stringify(args || {}));
   var en = window.__I18N_DATA && window.__I18N_DATA.en;
-  if (en && en[key]) return applyArgs(en[key], JSON.stringify(args || {}));
+  var english = lookupTranslation(en, key);
+  if (english) return applyArgs(english, JSON.stringify(args || {}));
   return applyArgs(fallback || key, JSON.stringify(args || {}));
 }
 
@@ -184,10 +215,25 @@ function switchLang(lang) {
   if (isStandalone && lang !== "en") {
     var base = i18nLangBase ? i18nLangBase() : "../../";
     var scriptSrc = base + "lang/i18n-data-" + lang + ".js";
-    var existing = document.querySelector('script[src="' + scriptSrc + '"]');
+    var scriptUrl;
+    try {
+      scriptUrl = new URL(scriptSrc, globalThis.location.href);
+    } catch (error) {
+      void error;
+      loadLang(lang);
+      return;
+    }
+    // Language packs are same-origin assets. Refusing any other origin keeps
+    // a crafted page path from loading a remote script.
+    if (scriptUrl.origin !== globalThis.location.origin) {
+      loadLang(lang);
+      return;
+    }
+    var scriptHref = scriptUrl.href;
+    var existing = document.querySelector('script[src="' + scriptHref + '"]');
     if (!existing) {
       var s = document.createElement("script");
-      s.src = scriptSrc;
+      s.src = scriptHref;
       s.onload = function () {
         loadLang(lang);
       };
@@ -245,12 +291,17 @@ function getLanguageDisplayName(lang) {
  * Resolve the Style/ base directory for language files. Works from the SPA
  * root (Style/...), standalone MPA pages (../../), and deep 404 fallback
  * paths (absolute /Style/... under the site root).
- * @returns {string}
+ * @returns {string} Base URL ending in `Style/` (or `../../` on standalone pages).
  */
 function i18nLangBase() {
+  if (I18N_SCRIPT_BASE) return I18N_SCRIPT_BASE;
   if (document.documentElement.dataset.standalone) return "../../";
   var m = globalThis.location.pathname.match(/^(.*?\/)Style\/pages\//);
-  if (m) return m[1] + "Style/";
+  if (m) {
+    // Collapse duplicate slashes so a path such as `//host/Style/pages/...`
+    // cannot make the result protocol-relative.
+    return m[1].replace(/\/{2,}/g, "/") + "Style/";
+  }
   return "Style/";
 }
 
