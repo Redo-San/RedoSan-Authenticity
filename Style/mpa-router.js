@@ -231,6 +231,24 @@
   }
 
   /**
+   * Whether a URL resolves to the same origin as the current document.
+   * Feature scripts and AJAX page swaps are same-origin by design; refusing
+   * cross-origin targets keeps a crafted link or fetched page from loading
+   * remote code into the shell.
+   * @param url
+   * @returns {boolean}
+   */
+  function isSameOrigin(url) {
+    try {
+      var base = new URL(globalThis.location.href);
+      return new URL(url, base).origin === base.origin;
+    } catch (error) {
+      void error;
+      return false;
+    }
+  }
+
+  /**
    * Collect external feature scripts declared by the freshly fetched page
    * that are not already loaded in the current document. Shared shell
    * scripts (shared.js, navigation.js, mpa-router.js, ...) are present on
@@ -254,6 +272,7 @@
       var scriptType;
       if (src) {
         abs = resolveScriptSrc(src, pageUrl);
+        if (!isSameOrigin(abs)) return;
         if (present.has(abs)) return;
         missing.push({ src: abs, type: s.type || "text/javascript" });
       } else {
@@ -651,6 +670,22 @@
     if (_inFlight) return;
     if (url === _lastUrl) return;
     if (!isValidPageName(pageName)) {
+      globalThis.location.href = url;
+      return;
+    }
+
+    // AJAX page swaps only make sense inside this site. A cross-origin URL
+    // must be a normal navigation, never a fetch whose scripts are executed
+    // in the current document.
+    var target;
+    try {
+      target = new URL(url, globalThis.location.href);
+    } catch (error) {
+      void error;
+      globalThis.location.href = url;
+      return;
+    }
+    if (target.origin !== globalThis.location.origin) {
       globalThis.location.href = url;
       return;
     }

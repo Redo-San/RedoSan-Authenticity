@@ -51,15 +51,31 @@ const allowed = visible.filter((p) => {
 });
 if (allowed.length === 0) process.exit(0);
 
-const cmd = `npx @biomejs/biome check --write --config-path "${configPath.replace(
-  /\\/g,
-  "/",
-)}" ${allowed.map((a) => JSON.stringify(a)).join(" ")}`;
-const res = spawnSync(cmd, {
-  cwd: repoRoot,
-  stdio: "inherit",
-  shell: true,
-});
+// Invoke the local CLI with an argument array and no shell so staged file
+// names can never be interpreted as shell syntax.
+const biomeBin = path.join(
+  repoRoot,
+  "node_modules",
+  "@biomejs",
+  "biome",
+  "bin",
+  "biome",
+);
+const res = spawnSync(
+  process.execPath,
+  [
+    biomeBin,
+    "check",
+    "--write",
+    "--config-path",
+    configPath.replace(/\\/g, "/"),
+    ...allowed,
+  ],
+  {
+    cwd: repoRoot,
+    stdio: "inherit",
+  },
+);
 process.exit(res.status === null ? 1 : res.status);
 
 /**
