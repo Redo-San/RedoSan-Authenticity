@@ -124,7 +124,7 @@
     "url": "https://github.com/Redo-San/RedoSan-Authenticity/issues"
   },
   "engines": {
-    "node": ">=22.14.0"
+    "node": ">=24.15.0"
   },
   "files": [
     "cli/index.js",
@@ -175,8 +175,8 @@
     "sharp": "^0.35.5"
   },
   "overrides": {
-    "hono": "4.13.13",
-    "@hono/node-server": "2.1.5",
+    "hono": "4.13.18",
+    "@hono/node-server": "2.1.8",
     "@mapbox/node-pre-gyp": "2.0.3",
     "tar": "7.5.22",
     "serialize-javascript": "7.1.4",
@@ -204,7 +204,7 @@
     "qs": "6.17.1",
     "colord": "2.9.4",
     "ip-address": "10.7.4",
-    "basic-ftp": "6.2.1",
+    "basic-ftp": "6.2.6",
     "fast-uri": "3.1.9",
     "body-parser@2": "2.4.0",
     "body-parser@1": "1.20.9",
@@ -319,5 +319,13 @@
       "limit": "10 kB",
       "path": "sw.js"
     }
-  ]
+  ],
+  "allowScripts": {
+    "canvas@3.2.3": true,
+    "msgpackr-extract@3.0.7": true,
+    "oh-my-openagent@5.1.58": true,
+    "onnxruntime-node@1.30.0": true,
+    "puppeteer@25.17.0": true,
+    "unrs-resolver@1.12.2": true
+  }
 }

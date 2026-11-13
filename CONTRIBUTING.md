@@ -77,7 +77,7 @@ npm run coverage    # c8 coverage report
 
 - **Unit tests**: `node:test` files in `cli/tests/` (`npm run test:core`, `npm run test:{feature}`)
 - **E2E tests**: Playwright suites in `cli/tests/e2e/` (`npm run test:e2e-all`, `npm run test:e2e-mpa`)
-- Run relevant tests for your change before pushing; CI runs the full matrix on Node 22/24
+- Run relevant tests for your change before pushing; CI runs the full matrix on Node 24/26
 
 ## Security
 

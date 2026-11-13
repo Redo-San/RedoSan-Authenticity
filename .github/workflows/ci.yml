@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22, 24]
+        node-version: [24, 26]
 
     steps:
       - uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
@@ -36,7 +36,7 @@ jobs:
       - name: Install npm deps
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npx -y npm@11.20.0 ci
+        run: npx -y npm@12.2.2 ci
       - name: npm audit (production deps)
         run: npm run audit:prod
       - name: Run unit tests
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22, 24]
+        node-version: [24, 26]
 
     steps:
       - uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
@@ -73,7 +73,7 @@ jobs:
       - name: Install npm deps
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
-        run: npx -y npm@11.20.0 ci
+        run: npx -y npm@12.2.2 ci
       - name: Install Playwright browsers
         run: npx playwright install chromium 2>&1 || echo "Playwright install skipped (may already be cached)"
       - name: Run E2E tests

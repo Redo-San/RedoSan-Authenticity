@@ -14,8 +14,8 @@ against the script directory, not the current directory. `SEP` defaults to `/`
 
 ```powershell
 cd extension
-npx -y npm@11.20.0 run zip
-npx -y npm@11.20.0 run zip:firefox
+npx -y npm@12.2.2 run zip
+npx -y npm@12.2.2 run zip:firefox
 Copy-Item .output\*-firefox.zip .output\redosan-inspector.xpi -Force
 New-Item -ItemType Directory -Force dist | Out-Null
 
@@ -33,8 +33,8 @@ New-Item -ItemType Directory -Force dist | Out-Null
 ```bash
 sudo apt-get install -y --no-install-recommends nsis
 cd extension
-npx -y npm@11.20.0 run zip
-npx -y npm@11.20.0 run zip:firefox
+npx -y npm@12.2.2 run zip
+npx -y npm@12.2.2 run zip:firefox
 cp .output/*-firefox.zip .output/redosan-inspector.xpi
 mkdir -p dist
 makensis -V2 \
