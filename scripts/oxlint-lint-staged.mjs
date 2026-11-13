@@ -55,6 +55,23 @@ const files = process.argv
 
 if (files.length === 0) process.exit(0);
 
-const cmd = `npx oxlint --config "${path.join(repoRoot, "oxlint.config.json").replace(/\\/g, "/")}" ${files.map((f) => JSON.stringify(f)).join(" ")}`;
-const res = spawnSync(cmd, { cwd: repoRoot, stdio: "inherit", shell: true });
+// Pass every path as a separate argument without a shell so a crafted file
+// name cannot inject commands.
+const oxlintBin = path.join(
+  repoRoot,
+  "node_modules",
+  "oxlint",
+  "bin",
+  "oxlint",
+);
+const res = spawnSync(
+  process.execPath,
+  [
+    oxlintBin,
+    "--config",
+    path.join(repoRoot, "oxlint.config.json").replace(/\\/g, "/"),
+    ...files,
+  ],
+  { cwd: repoRoot, stdio: "inherit" },
+);
 process.exit(res.status === null ? 1 : res.status);
