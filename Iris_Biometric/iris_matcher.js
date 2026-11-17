@@ -254,10 +254,10 @@ IrisMatcher.xorVisual = function (a, b) {
   result = new Uint8Array(len);
 
   for (i = 0; i < len; i++) {
-    if (a.mask[i] !== 1 || b.mask[i] !== 1) {
-      result[i] = 2; // masked
-    } else {
+    if (a.mask[i] === 1 && b.mask[i] === 1) {
       result[i] = a.code[i] === b.code[i] ? 0 : 1;
+    } else {
+      result[i] = 2; // masked
     }
   }
 

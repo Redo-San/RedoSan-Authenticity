@@ -451,7 +451,7 @@ IrisLiveness.textureAnalysisTest = function (grayImage, width, height, iris) {
       }
 
       // Count non-uniform patterns (indicator of texture complexity)
-      energy += lbp !== 0 && lbp !== 255 ? 1 : 0;
+      if (lbp !== 0 && lbp !== 255) energy += 1;
       count++;
     }
   }

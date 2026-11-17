@@ -882,22 +882,8 @@ class PixelInjection {
       const options = this.getAdvancedOptions();
 
       // Check if algorithm exists in core or algorithms object
-      if (
-        !this.core[this.currentAlgorithm] ||
-        typeof this.core[this.currentAlgorithm] !== "function"
-      ) {
-        if (!this.core.algorithms[this.currentAlgorithm]) {
-          throw new Error(
-            `Algorithm ${this.currentAlgorithm} is not available`,
-          );
-        }
-        // Use algorithms object as fallback
-        const coreAlgorithm = this.core.algorithms[this.currentAlgorithm];
-        if (typeof coreAlgorithm !== "function") {
-          throw new TypeError(
-            `Algorithm ${this.currentAlgorithm} is not a function`,
-          );
-        }
+      const coreAlgorithm = this.core[this.currentAlgorithm];
+      if (typeof coreAlgorithm === "function") {
         this.watermarkedImage = await coreAlgorithm(
           imageData,
           message,
@@ -905,7 +891,19 @@ class PixelInjection {
           options,
         );
       } else {
-        this.watermarkedImage = await this.core[this.currentAlgorithm](
+        const fallbackAlgorithm = this.core.algorithms[this.currentAlgorithm];
+        if (!fallbackAlgorithm) {
+          throw new Error(
+            `Algorithm ${this.currentAlgorithm} is not available`,
+          );
+        }
+        // Use algorithms object as fallback
+        if (typeof fallbackAlgorithm !== "function") {
+          throw new TypeError(
+            `Algorithm ${this.currentAlgorithm} is not a function`,
+          );
+        }
+        this.watermarkedImage = await fallbackAlgorithm(
           imageData,
           message,
           password,
@@ -1528,7 +1526,7 @@ class PixelInjection {
 
     const fmtPct = (v) => (v * 100).toFixed(1) + "%";
     const fmtScore = (v) =>
-      v !== null && v !== undefined && v !== Infinity ? v.toFixed(2) : "N/A";
+      v === null || v === undefined || v === Infinity ? "N/A" : v.toFixed(2);
     const badge = (cond, t, f) =>
       `<span style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:0.75rem;font-weight:700;${
         cond
@@ -1569,9 +1567,9 @@ class PixelInjection {
                 )}
                 ${valueBox(
                   "Estimated Strength",
-                  stat.strength !== null && stat.strength !== undefined
-                    ? fmtPct(stat.strength)
-                    : "N/A",
+                  stat.strength === null || stat.strength === undefined
+                    ? "N/A"
+                    : fmtPct(stat.strength),
                 )}
               </div>
               <div class="card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
