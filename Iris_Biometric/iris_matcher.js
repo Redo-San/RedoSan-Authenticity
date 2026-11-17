@@ -254,9 +254,14 @@ IrisMatcher.xorVisual = function (a, b) {
   result = new Uint8Array(len);
 
   for (i = 0; i < len; i++) {
+    // `i` is a bounded loop counter over fixed-length typed arrays, so the
+    // indexed reads cannot reach a prototype key.
+    // eslint-disable-next-line security/detect-object-injection
     if (a.mask[i] === 1 && b.mask[i] === 1) {
+      // eslint-disable-next-line security/detect-object-injection
       result[i] = a.code[i] === b.code[i] ? 0 : 1;
     } else {
+      // eslint-disable-next-line security/detect-object-injection
       result[i] = 2; // masked
     }
   }
