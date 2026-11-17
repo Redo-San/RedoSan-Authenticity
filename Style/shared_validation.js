@@ -354,8 +354,8 @@ function checkFileStructure(file) {
             resolve(false);
             return;
           }
-          if (arr.at(-2) !== 0xff || arr.at(-1) !== 0xd9) resolve(false);
-          else resolve(true);
+          if (arr.at(-2) === 0xff && arr.at(-1) === 0xd9) resolve(true);
+          else resolve(false);
 
           break;
         }

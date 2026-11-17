@@ -817,7 +817,7 @@ function toggleWmPassword() {
   /* c8 ignore next */ var type = typeSelect
     ? parseInt(typeSelect.value, 10)
     : 1;
-  pwGroup.style.display = type !== 5 && type !== 8 ? "block" : "none";
+  pwGroup.style.display = type === 5 || type === 8 ? "none" : "block";
 }
 
 /**
@@ -830,7 +830,7 @@ function toggleWmExtractPassword() {
   /* c8 ignore next */ var type = typeSelect
     ? parseInt(typeSelect.value, 10)
     : 0;
-  pwGroup.style.display = type !== 5 && type !== 8 ? "block" : "none";
+  pwGroup.style.display = type === 5 || type === 8 ? "none" : "block";
 }
 
 // ── Multi-format watermark download ──

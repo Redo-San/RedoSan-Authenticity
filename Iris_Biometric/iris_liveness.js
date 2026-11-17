@@ -411,7 +411,7 @@ IrisLiveness.textureAnalysisTest = function (grayImage, width, height, iris) {
   // Compute local binary pattern (LBP) energy in the iris region
   var sumEnergy = 0,
     count = 0;
-  var x, y, cx, cy, r, idx, val, neighbors, lbp, energy;
+  var x, y, cx, cy, r, idx, val, neighbors, lbp;
 
   cx = iris.cx;
   cy = iris.cy;
@@ -451,7 +451,7 @@ IrisLiveness.textureAnalysisTest = function (grayImage, width, height, iris) {
       }
 
       // Count non-uniform patterns (indicator of texture complexity)
-      energy += lbp !== 0 && lbp !== 255 ? 1 : 0;
+      if (lbp !== 0 && lbp !== 255) sumEnergy += 1;
       count++;
     }
   }
