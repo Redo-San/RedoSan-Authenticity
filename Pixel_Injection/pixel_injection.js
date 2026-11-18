@@ -884,7 +884,10 @@ class PixelInjection {
       // Check if algorithm exists in core or algorithms object
       const coreAlgorithm = this.core[this.currentAlgorithm];
       if (typeof coreAlgorithm === "function") {
-        this.watermarkedImage = await coreAlgorithm(
+        // Call with the core as receiver: the algorithm is a WatermarkCore
+        // method and relies on `this` for its helpers.
+        this.watermarkedImage = await coreAlgorithm.call(
+          this.core,
           imageData,
           message,
           password,

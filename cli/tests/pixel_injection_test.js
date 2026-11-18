@@ -2112,6 +2112,61 @@ describe("PixelInjection — handlePixelInjection validation", () => {
     // Restore
     pi.loadImage = origLoad;
   });
+
+  it("should invoke a prototype algorithm with the core as receiver", async () => {
+    const imageInput = doc.getElementById("pi-image");
+    imageInput.files = [{ name: "test.png", type: "image/png", size: 1000 }];
+    const msgInput = doc.getElementById("pi-message");
+    msgInput.value = "";
+    const secretFile = doc.getElementById("pi-secret-file");
+    secretFile.files = [
+      { name: "secret.txt", type: "text/plain", _text: "receiver probe" },
+    ];
+    doc.getElementById("pi-password").value = "";
+
+    const origLoad = pi.loadImage;
+    const origAlgorithm = pi.currentAlgorithm;
+    const origCategory = pi.currentCategory;
+    const origWatermarked = pi.watermarkedImage;
+    pi.loadImage = async () => makeImage(16, 16);
+    pi.watermarkedImage = null;
+
+    // Algorithms such as dct/extractDCT live on the WatermarkCore prototype
+    // and rely on `this` for their helpers (encodeMessage, bytesToBinary, …).
+    // Dispatching one detached from the core breaks that contract, so the
+    // probe records the receiver it was called with.
+    const proto = Object.getPrototypeOf(pi.core);
+    proto.__receiverProbe = function (img) {
+      this.__probeSawCore = this;
+      return new ImageData(
+        new Uint8ClampedArray(img.data),
+        img.width,
+        img.height,
+      );
+    };
+    pi.currentAlgorithm = "__receiverProbe";
+    pi.currentCategory = "spatial";
+
+    try {
+      await pi.handlePixelInjection();
+      assert.strictEqual(
+        pi.core.__probeSawCore,
+        pi.core,
+        "algorithm must run with the core instance as receiver",
+      );
+      assert.ok(
+        pi.watermarkedImage instanceof ImageData,
+        "the probe output must be stored as the watermarked image",
+      );
+    } finally {
+      delete proto.__receiverProbe;
+      delete pi.core.__probeSawCore;
+      pi.currentAlgorithm = origAlgorithm;
+      pi.currentCategory = origCategory;
+      pi.watermarkedImage = origWatermarked;
+      pi.loadImage = origLoad;
+    }
+  });
 });
 
 describe("PixelInjection — handlePixelExtraction validation", () => {
