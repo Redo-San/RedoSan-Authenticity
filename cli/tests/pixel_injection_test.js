@@ -2125,7 +2125,11 @@ describe("PixelInjection — handlePixelInjection validation", () => {
     doc.getElementById("pi-password").value = "";
 
     const origLoad = pi.loadImage;
+    const origAlgorithm = pi.currentAlgorithm;
+    const origCategory = pi.currentCategory;
+    const origWatermarked = pi.watermarkedImage;
     pi.loadImage = async () => makeImage(16, 16);
+    pi.watermarkedImage = null;
 
     // Algorithms such as dct/extractDCT live on the WatermarkCore prototype
     // and rely on `this` for their helpers (encodeMessage, bytesToBinary, …).
@@ -2145,16 +2149,21 @@ describe("PixelInjection — handlePixelInjection validation", () => {
 
     try {
       await pi.handlePixelInjection();
-      assert.equal(
+      assert.strictEqual(
         pi.core.__probeSawCore,
         pi.core,
         "algorithm must run with the core instance as receiver",
       );
-      assert.ok(pi.watermarkedImage !== null);
+      assert.ok(
+        pi.watermarkedImage instanceof ImageData,
+        "the probe output must be stored as the watermarked image",
+      );
     } finally {
       delete proto.__receiverProbe;
       delete pi.core.__probeSawCore;
-      pi.currentAlgorithm = "enhanced_lsb";
+      pi.currentAlgorithm = origAlgorithm;
+      pi.currentCategory = origCategory;
+      pi.watermarkedImage = origWatermarked;
       pi.loadImage = origLoad;
     }
   });
