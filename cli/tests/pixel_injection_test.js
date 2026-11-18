@@ -2112,6 +2112,52 @@ describe("PixelInjection — handlePixelInjection validation", () => {
     // Restore
     pi.loadImage = origLoad;
   });
+
+  it("should invoke a prototype algorithm with the core as receiver", async () => {
+    const imageInput = doc.getElementById("pi-image");
+    imageInput.files = [{ name: "test.png", type: "image/png", size: 1000 }];
+    const msgInput = doc.getElementById("pi-message");
+    msgInput.value = "";
+    const secretFile = doc.getElementById("pi-secret-file");
+    secretFile.files = [
+      { name: "secret.txt", type: "text/plain", _text: "receiver probe" },
+    ];
+    doc.getElementById("pi-password").value = "";
+
+    const origLoad = pi.loadImage;
+    pi.loadImage = async () => makeImage(16, 16);
+
+    // Algorithms such as dct/extractDCT live on the WatermarkCore prototype
+    // and rely on `this` for their helpers (encodeMessage, bytesToBinary, …).
+    // Dispatching one detached from the core breaks that contract, so the
+    // probe records the receiver it was called with.
+    const proto = Object.getPrototypeOf(pi.core);
+    proto.__receiverProbe = function (img) {
+      this.__probeSawCore = this;
+      return new ImageData(
+        new Uint8ClampedArray(img.data),
+        img.width,
+        img.height,
+      );
+    };
+    pi.currentAlgorithm = "__receiverProbe";
+    pi.currentCategory = "spatial";
+
+    try {
+      await pi.handlePixelInjection();
+      assert.equal(
+        pi.core.__probeSawCore,
+        pi.core,
+        "algorithm must run with the core instance as receiver",
+      );
+      assert.ok(pi.watermarkedImage !== null);
+    } finally {
+      delete proto.__receiverProbe;
+      delete pi.core.__probeSawCore;
+      pi.currentAlgorithm = "enhanced_lsb";
+      pi.loadImage = origLoad;
+    }
+  });
 });
 
 describe("PixelInjection — handlePixelExtraction validation", () => {
