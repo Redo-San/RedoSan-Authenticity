@@ -249,4 +249,100 @@ describe("E2E — Simplified Mode (Wizard)", () => {
     await stopCoverage(page, "simple-audio");
     await ctx.close();
   });
+
+  it("should complete pixel injection and timestamp steps in the SPA", async () => {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    page.setDefaultTimeout(60000);
+    const errors = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+    await startCoverage(page);
+    await page.goto(BASE, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(2000);
+
+    // The SPA shell has no professional pixel-injection/timestamp markup, so
+    // these steps must run against their engines directly.
+    await page.evaluate(() => {
+      if (typeof setMode === "function") setMode("simplified");
+    });
+    await page.waitForTimeout(800);
+
+    const steps = await page.evaluate((b64) => {
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      window.simpleFile = new File([bytes], "testimg.png", {
+        type: "image/png",
+      });
+      window.simpleType = "image";
+      window.simpleIsAI = false;
+      window.simpleResults = window.simpleResults || {};
+      window.simpleResults.didSig = { did: "did:key:zE2E", signature: "00" };
+      window.simpleSteps = window.buildSteps("image", false);
+      return window.simpleSteps.map((s, i) => ({ i, id: s.id }));
+    }, PNG_BUF.toString("base64"));
+
+    const stepIndex = (id) => steps.find((s) => s.id === id).i;
+
+    await page.evaluate((i) => {
+      window.simpleStep = i;
+      window.simpleStepDone = false;
+      window.renderStep();
+    }, stepIndex("pixel-injection"));
+    await page.waitForTimeout(400);
+    // Headless runs show the bot-block overlay, which intercepts pointer
+    // events; dispatch the click directly to exercise the same handler.
+    await page.evaluate(() => document.getElementById("spi-btn").click());
+    await page.waitForFunction(() => window.simpleStepDone === true, null, {
+      timeout: 60000,
+    });
+
+    const pixel = await page.evaluate(() => {
+      const next = document.getElementById("simpleNextBtn");
+      return {
+        blob: (window.simpleResults.piFinalUrl || "").startsWith("blob:"),
+        next: !!next && next.style.display !== "none" && !next.disabled,
+        status: (document.getElementById("spi-status") || {}).textContent || "",
+      };
+    });
+    assert.ok(pixel.blob, "Pixel injection should produce an image blob");
+    assert.ok(pixel.next, "Next should be enabled after pixel injection");
+    assert.ok(
+      pixel.status.length > 0,
+      "Pixel injection should report a result",
+    );
+
+    await page.evaluate((i) => {
+      window.simpleStep = i;
+      window.simpleStepDone = false;
+      window.renderStep();
+    }, stepIndex("timestamp"));
+    await page.waitForFunction(
+      () => !!(window.simpleResults && window.simpleResults.timestamp),
+      null,
+      { timeout: 60000 },
+    );
+
+    const timestamp = await page.evaluate(() => {
+      const next = document.getElementById("simpleNextBtn");
+      return {
+        result: (window.simpleResults.tsResult || "").length > 0,
+        next: !!next && next.style.display !== "none" && !next.disabled,
+        text: (document.getElementById("sts-result") || {}).textContent || "",
+      };
+    });
+    assert.ok(timestamp.result, "Timestamp should produce a result");
+    assert.ok(timestamp.next, "Next should be enabled after timestamp");
+    assert.ok(
+      timestamp.text.length > 0,
+      "Timestamp should report a result in the step",
+    );
+
+    const fatal = errors.filter(
+      (e) => !e.includes("404") && !e.includes("Failed to load"),
+    );
+    assert.equal(fatal.length, 0, "No fatal errors: " + fatal.join(", "));
+    await stopCoverage(page, "simple-pixel-timestamp");
+    await ctx.close();
+  });
 });

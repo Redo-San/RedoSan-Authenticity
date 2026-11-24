@@ -149,6 +149,42 @@ function getOtsUpgradeCommand(fileName) {
   ].join("\n");
 }
 
+/**
+ * Builds an OpenTimestamps proof for a file without touching the DOM, so the
+ * simplified wizard (SPA) can reuse it without the professional timestamp
+ * section markup.
+ * @param {File} file File to timestamp.
+ * @returns {Promise<{otsBytes: Uint8Array, hex: string, complete: boolean}>} Proof bytes, SHA-256 hex and attestation status.
+ */
+async function otsCreateForFile(file) {
+  var buf = await file.arrayBuffer();
+  var hashBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", buf));
+  var hex = [...hashBytes]
+    .map(function (b) {
+      return b.toString(16).padStart(2, "0");
+    })
+    .join("");
+
+  var otsBytes;
+  var complete = false;
+  try {
+    var resp = await upgradeOts(hashBytes);
+    // Aggregator returns serialized timestamp (timestamp ops only).
+    // Build full .ots: magic + version + SHA-256 tag + file hash + calendar response
+    otsBytes = new Uint8Array(OTS_HEADER.length + 1 + 1 + 32 + resp.length);
+    otsBytes.set(new Uint8Array(OTS_HEADER), 0);
+    otsBytes[OTS_HEADER.length] = 1;
+    otsBytes[OTS_HEADER.length + 1] = 0x08;
+    otsBytes.set(hashBytes, OTS_HEADER.length + 2);
+    otsBytes.set(resp, OTS_HEADER.length + 2 + 32);
+    complete = true;
+  } catch {
+    // Aggregator unreachable ? build incomplete .ots as fallback
+    otsBytes = otsBuildDetached(buf, hashBytes);
+  }
+  return { otsBytes: otsBytes, hex: hex, complete: complete };
+}
+
 /* c8 ignore start */
 /**
  *
@@ -189,31 +225,10 @@ async function handleOtsCreate() {
   resultDiv.style.display = "none";
 
   try {
-    var buf = await file.arrayBuffer();
-    var hashBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", buf));
-    var hex = [...hashBytes]
-      .map(function (b) {
-        return b.toString(16).padStart(2, "0");
-      })
-      .join("");
-
-    var otsBytes;
-    var complete = false;
-    try {
-      var resp = await upgradeOts(hashBytes);
-      // Aggregator returns serialized timestamp (timestamp ops only).
-      // Build full .ots: magic + version + SHA-256 tag + file hash + calendar response
-      otsBytes = new Uint8Array(OTS_HEADER.length + 1 + 1 + 32 + resp.length);
-      otsBytes.set(new Uint8Array(OTS_HEADER), 0);
-      otsBytes[OTS_HEADER.length] = 1;
-      otsBytes[OTS_HEADER.length + 1] = 0x08;
-      otsBytes.set(hashBytes, OTS_HEADER.length + 2);
-      otsBytes.set(resp, OTS_HEADER.length + 2 + 32);
-      complete = true;
-    } catch {
-      // Aggregator unreachable — build incomplete .ots as fallback
-      otsBytes = otsBuildDetached(buf, hashBytes);
-    }
+    var created = await otsCreateForFile(file);
+    var otsBytes = created.otsBytes;
+    var hex = created.hex;
+    var complete = created.complete;
 
     var blob = new Blob([otsBytes], { type: "application/octet-stream" });
     downloadBlob(blob, file.name + ".ots", "ts-download");
