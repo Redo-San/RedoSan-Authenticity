@@ -838,9 +838,8 @@ describe("simplified.js — runTimestampStep branches", function () {
     await runTimestampStep();
     assert.equal(simpleResults.timestamp, true);
     assert.ok(simpleResults.tsResult.indexOf("a".repeat(64)) !== -1);
-    assert.ok(
-      simpleResults.tsResult.indexOf("a.pool.opentimestamps.org") !== -1,
-    );
+    assert.equal(simpleResults.tsBlob.size, 3);
+    assert.ok(simpleResults.tsResult.indexOf("Pending") === -1);
     assert.ok(
       getMockEl("sts-result").innerHTML.indexOf("simple-success") !== -1,
     );
