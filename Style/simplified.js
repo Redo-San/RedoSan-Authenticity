@@ -1008,276 +1008,340 @@ async function embedAlgo(algo, s16, bitsStr, sr, strength, onProgress) {
 /**
  *
  */
+/**
+ * Converts a File/Blob into ImageData without the professional section DOM,
+ * which does not exist in the SPA shell.
+ * @param {File|Blob} file Image to decode.
+ * @returns {Promise<ImageData>} Decoded pixels.
+ */
+function simpleFileToImageData(file) {
+  return new Promise(function (resolve, reject) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      try {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        var data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(data);
+      } catch (error) {
+        URL.revokeObjectURL(url);
+        reject(error);
+      }
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(url);
+      reject(new Error("Could not read the selected image"));
+    };
+    img.src = url;
+  });
+}
+
+/**
+ * Encodes ImageData back to a PNG Blob.
+ * @param {ImageData} imageData Pixels to encode.
+ * @returns {Promise<Blob>} PNG-encoded blob.
+ */
+function simpleImageDataToBlob(imageData) {
+  return new Promise(function (resolve, reject) {
+    var canvas = document.createElement("canvas");
+    canvas.width = imageData.width;
+    canvas.height = imageData.height;
+    canvas.getContext("2d").putImageData(imageData, 0, 0);
+    canvas.toBlob(function (blob) {
+      if (blob) resolve(blob);
+      else reject(new Error("Could not encode the watermarked image"));
+    }, "image/png");
+  });
+}
+
+/**
+ * Resolves a pixel algorithm on the core, falling back to the bound
+ * `core.algorithms` map for snake_case names such as enhanced_lsb.
+ * @param {object} core Watermark core instance.
+ * @param {string} name Algorithm name.
+ * @returns {Function|null} Algorithm bound to the core, or null.
+ */
+function simpleResolvePiAlgorithm(core, name) {
+  if (!core) return null;
+  if (typeof core[name] === "function") return core[name];
+  if (core.algorithms && typeof core.algorithms[name] === "function") {
+    return core.algorithms[name];
+  }
+  return null;
+}
+
+/**
+ * Runs the pixel injection step against the engine directly: the SPA has no
+ * professional pixel-injection markup, so handlePixelInjection() cannot be
+ * used here.
+ * @returns {Promise<void>} Resolves when the step finishes.
+ */
 async function runPixelInjectStep() {
   var piBtn = document.getElementById("spi-btn");
-  if (piBtn) piBtn.disabled = true;
-  if (typeof window.handlePixelInjection !== "function") {
-    await simpleEnsureSection("pixel-injection");
-    if (piBtn) piBtn.disabled = false;
-    if (typeof window.handlePixelInjection !== "function") {
-      hideProgress();
-      var statusEl = document.getElementById("spi-status");
-      var btn = document.getElementById("spi-btn");
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = __("simple.pi_btn", "Inject Message");
-      }
-      if (statusEl) {
-        statusEl.innerHTML =
-          '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-          escapeHtml(
-            __(
-              "simple.pi_no_engine",
-              "Injection engine could not be loaded. Please refresh and try again.",
-            ),
-          ) +
-          "</div>";
-      }
-      return;
-    }
+  var statusEl = document.getElementById("spi-status");
+  if (piBtn) {
+    piBtn.disabled = true;
+    piBtn.textContent = __("simple.injecting", "Injecting...");
   }
   showProgress();
-  var cat = document.getElementById("spi-category").value;
-  var pass = document.getElementById("spi-password").value;
-  var statusEl = document.getElementById("spi-status");
-  var btn = document.getElementById("spi-btn");
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = __("simple.injecting", "Injecting...");
-  }
-
-  // Use DID signature as the message
-  var didMessage = simpleResults.didSig
-    ? "DID Signature:\n" + JSON.stringify(simpleResults.didSig, null, 2)
-    : "";
-
-  if (window.switchPiTab) window.switchPiTab("embed");
-
-  setTimeout(function () {
-    // Populate hidden professional form fields
-    var fileInput = document.getElementById("pi-image");
-    if (fileInput) {
-      var srcFile = simpleResults.watermarkBlob
-        ? new File([simpleResults.watermarkBlob], simpleFile.name, {
-            /* c8 ignore next */ type:
-              simpleResults.watermarkBlob.type || simpleFile.type,
-          })
-        : simpleFile;
-      if (srcFile) {
-        var dt = new DataTransfer();
-        dt.items.add(srcFile);
-        fileInput.files = dt.files;
-        fileInput.dispatchEvent(new Event("change"));
-      }
-    }
-    var catSelect = document.getElementById("pi-category");
-    if (catSelect) {
-      catSelect.value = cat;
-      catSelect.dispatchEvent(new Event("change"));
-    }
-    var algoSelect = document.getElementById("pi-algorithm");
-    var srcAlgo = document.getElementById("spi-algorithm");
-    if (algoSelect && srcAlgo) algoSelect.value = srcAlgo.value;
-    var msgFileInput = document.getElementById("pi-secret-file");
-    if (msgFileInput && didMessage) {
-      var msgBlob = new Blob([didMessage], { type: "text/plain" });
-      var dtMsg = new DataTransfer();
-      dtMsg.items.add(
-        new File([msgBlob], "did-signature.txt", { type: "text/plain" }),
+  try {
+    await simpleEnsureSection("pixel-injection");
+    var engine = window.pixelInjection;
+    if (!engine || !engine.core) {
+      throw new Error(
+        __(
+          "simple.pi_no_engine",
+          "Injection engine could not be loaded. Please refresh and try again.",
+        ),
       );
-      msgFileInput.files = dtMsg.files;
-      msgFileInput.dispatchEvent(new Event("change"));
     }
-    var passInput = document.getElementById("pi-password");
-    if (passInput) passInput.value = pass;
-
-    /**
-     *
-     */
-    function cleanupPiFields() {
-      if (msgFileInput) {
-        var dt3 = new DataTransfer();
-        msgFileInput.files = dt3.files;
-      }
-      if (passInput) passInput.value = "";
-      if (fileInput) {
-        var dt2 = new DataTransfer();
-        fileInput.files = dt2.files;
-      }
+    var srcFile = simpleFile;
+    if (simpleResults.watermarkBlob) {
+      srcFile = new File(
+        [simpleResults.watermarkBlob],
+        simpleFile ? simpleFile.name : "image.png",
+        {
+          type:
+            simpleResults.watermarkBlob.type ||
+            (simpleFile && simpleFile.type) ||
+            "image/png",
+        },
+      );
     }
-
-    var promise = window.handlePixelInjection();
-    if (promise && promise.then) {
-      /* c8 ignore start */ promise
-        .then(function () {
-          simpleResults["pixel-injection"] = true;
-          var piOutput = document.getElementById("pi-output");
-          var piDownload = document.getElementById("pi-download");
-          if (piOutput) simpleResults.piResultHtml = piOutput.innerHTML;
-          if (piDownload) simpleResults.piHtml = piDownload.innerHTML;
-          if (piDownload) {
-            var piLink = piDownload.querySelector("a");
-            if (piLink) simpleResults.piFinalUrl = piLink.href;
-          }
-          simpleStepDone = true;
-          var nextBtn = document.getElementById("simpleNextBtn");
-          nextBtn.disabled = false;
-          nextBtn.style.display = "";
-
-          if (btn) {
-            btn.textContent = "✅ " + __("simple.injected", "Injected");
-          }
-          if (statusEl) {
-            statusEl.innerHTML =
-              '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
-              __(
-                "simple.pi_done_did",
-                "✅ DID signature injected successfully as secret message.",
-              ) +
-              "</div>";
-          }
-          hideProgress();
-        }) /* c8 ignore stop */
-        .catch(function (error) {
-          hideProgress();
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = __("simple.pi_btn", "Inject Message");
-          }
-          if (statusEl) {
-            statusEl.innerHTML =
-              '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
-              escapeHtml(
-                error && error.message
-                  ? error.message
-                  : __("simple.pi_failed", "Injection failed"),
-              ) +
-              "</div>";
-          }
-        })
-        .then(function () {
-          cleanupPiFields();
-        });
+    if (!srcFile) {
+      throw new Error(__("simple.pi_no_file", "Please choose an image first."));
     }
-  }, 50);
+    var imageData = await simpleFileToImageData(srcFile);
+    var catSel = document.getElementById("spi-category");
+    var algoSel = document.getElementById("spi-algorithm");
+    var passInput = document.getElementById("spi-password");
+    var algorithm = (algoSel && algoSel.value) || "enhanced_lsb";
+    var category = (catSel && catSel.value) || "spatial";
+    var password = (passInput && passInput.value) || "";
+    var message = simpleResults.didSig
+      ? "DID Signature:\n" + JSON.stringify(simpleResults.didSig, null, 2)
+      : "";
+    var algorithmFn = simpleResolvePiAlgorithm(engine.core, algorithm);
+    if (typeof algorithmFn !== "function") {
+      throw new Error("Algorithm " + algorithm + " is not available");
+    }
+    var watermarked = await algorithmFn.call(
+      engine.core,
+      imageData,
+      message,
+      password,
+      {},
+    );
+    if (!watermarked) {
+      throw new Error(__("simple.pi_failed", "Injection failed"));
+    }
+    var blob = await simpleImageDataToBlob(watermarked);
+    if (simpleResults.piFinalUrl) {
+      URL.revokeObjectURL(simpleResults.piFinalUrl);
+    }
+    simpleResults.piBlob = blob;
+    simpleResults.piFinalUrl = URL.createObjectURL(blob);
+    simpleResults.piAlgorithm = algorithm;
+    simpleResults.piCategory = category;
+    simpleResults["pixel-injection"] = true;
+    simpleResults.piResultHtml =
+      '<img src="' +
+      simpleResults.piFinalUrl +
+      '" alt="Pixel-injected image" style="max-width:100%;border-radius:8px">';
+    simpleResults.piHtml =
+      '<a class="btn" download="' +
+      escapeHtml(simpleFile ? simpleFile.name : "image.png") +
+      '" href="' +
+      simpleResults.piFinalUrl +
+      '">' +
+      escapeHtml(__("shared.download", "Download")) +
+      "</a>";
+    if (statusEl) {
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
+        escapeHtml(
+          __(
+            "simple.pi_done_did",
+            "✅ DID signature injected successfully as secret message.",
+          ),
+        ) +
+        '<div style="margin-top:10px">' +
+        simpleResults.piResultHtml +
+        '</div><div style="margin-top:10px">' +
+        simpleResults.piHtml +
+        "</div></div>";
+    }
+    simpleStepDone = true;
+    var nextBtn = document.getElementById("simpleNextBtn");
+    if (nextBtn) {
+      nextBtn.disabled = false;
+      nextBtn.style.display = "";
+    }
+    if (piBtn) {
+      piBtn.disabled = false;
+      piBtn.textContent = "✅ " + __("simple.injected", "Injected");
+    }
+  } catch (error) {
+    if (statusEl) {
+      statusEl.innerHTML =
+        '<div style="font-size:0.85rem;color:var(--danger);padding:12px;background:rgba(220,53,69,.1);border-radius:8px">' +
+        escapeHtml(
+          error && error.message
+            ? error.message
+            : __("simple.pi_failed", "Injection failed"),
+        ) +
+        "</div>";
+    }
+    if (piBtn) {
+      piBtn.disabled = false;
+      piBtn.textContent = __("simple.pi_btn", "Inject Message");
+    }
+  } finally {
+    hideProgress();
+  }
 }
 
 /**
  *
  */
+/**
+ * Resolves the file to timestamp: final C2PA/injected/audio output when
+ * available, otherwise the original upload.
+ * @returns {Promise<File|null>} File to timestamp, or null when nothing is loaded.
+ */
+async function simpleTimestampSourceFile() {
+  var srcUrl = null;
+  if (simpleType === "image") {
+    srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl;
+  } else if (simpleType === "audio") {
+    srcUrl = simpleResults.audioWatermarkUrl;
+  }
+  var blob = null;
+  if (srcUrl) {
+    if (srcUrl.indexOf("blob:") === 0) {
+      var resp = await fetch(srcUrl);
+      blob = await resp.blob();
+    } else {
+      blob = dataUrlToBlob(srcUrl);
+    }
+  }
+  if (!blob) blob = simpleResults.watermarkBlob || simpleFile;
+  if (!blob) return null;
+  return new File([blob], simpleFile ? simpleFile.name : "file", {
+    type:
+      blob.type ||
+      (simpleFile && simpleFile.type) ||
+      "application/octet-stream",
+  });
+}
+
+/**
+ * Runs the timestamp step through the DOM-free otsCreateForFile() helper: the
+ * SPA has no professional timestamp markup, so handleOtsCreate() cannot be
+ * used here.
+ * @returns {Promise<void>} Resolves when the step finishes.
+ */
 async function runTimestampStep() {
-  if (!window.handleOtsCreate) {
+  var resultDiv = document.getElementById("sts-result");
+  try {
     await simpleEnsureSection("timestamp");
-    if (!window.handleOtsCreate) {
-      var resultDiv = document.getElementById("sts-result");
-      if (resultDiv)
+    if (typeof otsCreateForFile !== "function") {
+      throw new Error(
+        __(
+          "simple.ts_no_engine",
+          "Timestamp engine could not be loaded. Please refresh and try again.",
+        ),
+      );
+    }
+    if (simpleResults.timestamp && simpleResults.tsResult) {
+      if (resultDiv) {
         resultDiv.innerHTML =
-          '<div class="simple-error">' +
-          escapeHtml(
-            __(
-              "simple.ts_no_engine",
-              "Timestamp engine could not be loaded. Please refresh and try again.",
-            ),
-          ) +
+          '<div class="simple-success">' +
+          escapeHtml(simpleResults.tsResult).replace(/\n/g, "<br>") +
           "</div>";
+      }
+      simpleStepDone = true;
+      var doneBtn = document.getElementById("simpleNextBtn");
+      if (doneBtn) {
+        doneBtn.disabled = false;
+        doneBtn.style.display = "";
+      }
       return;
     }
-  }
-  var fileInput = document.getElementById("ts-create-file");
-  if (fileInput) {
-    // Use final output (C2PA/audio > injected > original) depending on available steps
-    try {
-      var srcUrl = null;
-      if (simpleType === "image")
-        srcUrl = simpleResults.c2paUrl || simpleResults.piFinalUrl;
-      else if (simpleType === "audio") srcUrl = simpleResults.audioWatermarkUrl;
-      if (srcUrl) {
-        var blob;
-        if (srcUrl.indexOf("blob:") === 0) {
-          var resp = await fetch(srcUrl);
-          blob = await resp.blob();
-        } else {
-          blob = dataUrlToBlob(srcUrl);
-        }
-        if (blob) {
-          var finalFile = new File([blob], simpleFile.name, {
-            type: simpleFile.type,
-          });
-          var dt = new DataTransfer();
-          dt.items.add(finalFile);
-          fileInput.files = dt.files;
-        }
-      } else if (simpleFile) {
-        var dt = new DataTransfer();
-        dt.items.add(simpleFile);
-        fileInput.files = dt.files;
-      }
-      var evt = new Event("change");
-      fileInput.dispatchEvent(evt);
-    } catch {
-      if (simpleFile) {
-        var dt = new DataTransfer();
-        dt.items.add(simpleFile);
-        fileInput.files = dt.files;
-        var evt = new Event("change");
-        fileInput.dispatchEvent(evt);
-      }
+    var sourceFile = await simpleTimestampSourceFile();
+    if (!sourceFile) {
+      throw new Error(__("simple.ts_no_file", "Please choose a file first."));
     }
-  }
-  var promise = window.handleOtsCreate();
-  if (promise && promise.then) {
-    promise
-      .then(function () {
-        var resultDiv = document.getElementById("sts-result");
-        if (resultDiv) {
-          var text = escapeHtml(
-            (document.getElementById("ts-output") || {}).textContent || "",
-          );
-          resultDiv.innerHTML =
-            '<div class="simple-success">' +
-            text.replace(/\n/g, "<br>") +
-            "</div>";
-        }
-        simpleResults.timestamp = true;
-        var tsOut = document.getElementById("ts-output");
-        if (tsOut) {
-          var rawText = tsOut.textContent || "";
-          var hashMatch = rawText.match(/[a-f0-9]{64}/i);
-          var hash = hashMatch ? hashMatch[0] : "";
-          var hasAttestation =
-            rawText.includes("blockchain") || rawText.includes("attestation");
-          var dateStr = new Date()
-            .toISOString()
-            .replace("T", " ")
-            .substring(0, 19);
-          simpleResults.tsResult = hash
-            ? "Certificate Transparency\n" +
-              "SHA-256: " +
-              hash +
-              "\n" +
-              (hasAttestation
-                ? "Logged: " +
-                  dateStr +
-                  "\nTransparency log: a.pool.opentimestamps.org\n"
-                : "Created: " +
-                  dateStr +
-                  "\nStatus: Pending — awaiting blockchain attestation\n") +
-              "Verifiable at: https://opentimestamps.org"
-            : rawText;
-        }
-        var tsDl = document.getElementById("ts-download");
-        if (tsDl) simpleResults.tsHtml = tsDl.innerHTML;
-        simpleStepDone = true;
-        document.getElementById("simpleNextBtn").disabled = false;
-      })
-      .catch(function (error) {
-        var resultDiv = document.getElementById("sts-result");
-        if (resultDiv)
-          resultDiv.innerHTML =
-            '<div class="simple-error">' +
-            __("simple.ts_failed").replace("{msg}", escapeHtml(error.message)) +
-            "</div>";
-      });
+    var created = await otsCreateForFile(sourceFile);
+    var blob = new Blob([created.otsBytes], {
+      type: "application/octet-stream",
+    });
+    downloadBlobSimple(blob, sourceFile.name + ".ots");
+    var dateStr = new Date().toISOString().replace("T", " ").substring(0, 19);
+    var text = created.complete
+      ? __(
+          "ts.created_success",
+          "✓ Complete .ots timestamp created with blockchain attestation!\n\nSHA-256: {hash}\nSize: {size} bytes\n\nThis .ots file includes merkle proof from the OpenTimestamps calendar aggregator. Verify it anytime using the Verify tab.",
+        )
+          .replace("{hash}", created.hex)
+          .replace("{size}", String(blob.size))
+      : __(
+          "ts.created_warning",
+          "SHA-256: {hash}\n\nCalendar aggregator unreachable. Created an incomplete .ots timestamp ({size} bytes, standard format).",
+        )
+          .replace("{hash}", created.hex)
+          .replace("{size}", String(blob.size));
+    simpleResults.timestamp = true;
+    simpleResults.tsBlob = blob;
+    simpleResults.tsResult =
+      "Certificate Transparency\nSHA-256: " +
+      created.hex +
+      "\n" +
+      (created.complete
+        ? "Logged: " +
+          dateStr +
+          "\nTransparency log: a.pool.opentimestamps.org\n"
+        : "Created: " +
+          dateStr +
+          "\nStatus: Pending — awaiting blockchain attestation\n") +
+      "Verifiable at: https://opentimestamps.org";
+    simpleResults.tsHtml =
+      '<a class="btn" download="' +
+      escapeHtml(sourceFile.name) +
+      '.ots" href="' +
+      URL.createObjectURL(blob) +
+      '">' +
+      escapeHtml(__("shared.download", "Download .ots")) +
+      "</a>";
+    if (resultDiv) {
+      resultDiv.innerHTML =
+        '<div class="simple-success">' +
+        escapeHtml(text).replace(/\n/g, "<br>") +
+        "</div>";
+    }
+    simpleStepDone = true;
+    var nextBtn = document.getElementById("simpleNextBtn");
+    if (nextBtn) {
+      nextBtn.disabled = false;
+      nextBtn.style.display = "";
+    }
+  } catch (error) {
+    if (resultDiv) {
+      resultDiv.innerHTML =
+        '<div class="simple-error">' +
+        escapeHtml(
+          __("simple.ts_failed", "Timestamp failed: {msg}").replace(
+            "{msg}",
+            error && error.message ? error.message : "Unknown error",
+          ),
+        ) +
+        "</div>";
+    }
   }
 }
 

@@ -810,65 +810,79 @@ describe("simplified.js — runFingerprintStep", function () {
 });
 
 describe("simplified.js — runTimestampStep branches", function () {
+  var _origOtsCreate, _origEscapeHtml;
   beforeEach(function () {
     simpleFile = { name: "test.jpg", size: 1024 };
     simpleResults = {};
     getMockEl("sts-result");
-    getMockEl("ts-create-file");
-    getMockEl("ts-output");
-    getMockEl("ts-download");
     getMockEl("simpleNextBtn");
+    _origOtsCreate = globalThis.otsCreateForFile;
+    _origEscapeHtml = globalThis.escapeHtml;
+    globalThis.escapeHtml = function (s) {
+      return String(s == null ? "" : s);
+    };
+  });
+  afterEach(function () {
+    globalThis.otsCreateForFile = _origOtsCreate;
+    globalThis.escapeHtml = _origEscapeHtml;
   });
 
-  it("creates timestamp result with blockchain attestation", async function () {
-    getMockEl("ts-output").textContent =
-      "abc" + "a".repeat(61) + " blockchain attestation";
+  it("stores a complete .ots result with blockchain attestation", async function () {
+    globalThis.otsCreateForFile = function () {
+      return Promise.resolve({
+        otsBytes: new Uint8Array([1, 2, 3]),
+        hex: "a".repeat(64),
+        complete: true,
+      });
+    };
     await runTimestampStep();
-    assert.ok(simpleResults.timestamp === true);
+    assert.equal(simpleResults.timestamp, true);
+    assert.ok(simpleResults.tsResult.indexOf("a".repeat(64)) !== -1);
+    assert.equal(simpleResults.tsBlob.size, 3);
+    assert.ok(simpleResults.tsResult.indexOf("Pending") === -1);
+    assert.ok(
+      getMockEl("sts-result").innerHTML.indexOf("simple-success") !== -1,
+    );
   });
 
-  it("creates timestamp result without attestation", async function () {
-    getMockEl("ts-output").textContent = "abc" + "b".repeat(61);
+  it("stores an incomplete .ots result when the aggregator is unreachable", async function () {
+    globalThis.otsCreateForFile = function () {
+      return Promise.resolve({
+        otsBytes: new Uint8Array([1]),
+        hex: "b".repeat(64),
+        complete: false,
+      });
+    };
     await runTimestampStep();
-    assert.ok(simpleResults.timestamp === true);
+    assert.equal(simpleResults.timestamp, true);
+    assert.ok(simpleResults.tsResult.indexOf("Pending") !== -1);
   });
 
-  it("returns early when handleOtsCreate is missing (line 1012)", async function () {
-    globalThis.handleOtsCreate = null;
+  it("reports an error when the timestamp engine is missing", async function () {
+    globalThis.otsCreateForFile = undefined;
     await runTimestampStep();
     assert.equal(simpleResults.timestamp, undefined);
+    assert.ok(getMockEl("sts-result").innerHTML.indexOf("simple-error") !== -1);
   });
 
-  it("handles timestamp with empty textContent (line 1061)", async function () {
-    getMockEl("ts-output").textContent = "";
-    globalThis.handleOtsCreate = function () {
-      return Promise.resolve({ ok: true });
+  it("reuses a previous timestamp instead of hashing again", async function () {
+    var calls = 0;
+    globalThis.otsCreateForFile = function () {
+      calls++;
+      return Promise.resolve({
+        otsBytes: new Uint8Array([1]),
+        hex: "c".repeat(64),
+        complete: true,
+      });
     };
+    simpleResults.timestamp = true;
+    simpleResults.tsResult = "cached timestamp";
     await runTimestampStep();
-    assert.ok(simpleResults.timestamp === true);
-  });
-
-  it("handles timestamp with non-empty textContent (line 1061 truthy branch)", async function () {
-    getMockEl("ts-output").textContent = "some attestation hash abc123";
-    globalThis.handleOtsCreate = function () {
-      return Promise.resolve({ ok: true });
-    };
-    await runTimestampStep();
-    assert.ok(simpleResults.timestamp === true);
-  });
-
-  it("handles timestamp with missing ts-output element (line 1061 null || {} branch)", async function () {
-    var origGet = globalThis.document.getElementById;
-    globalThis.document.getElementById = function (id) {
-      if (id === "ts-output") return null;
-      return origGet(id);
-    };
-    globalThis.handleOtsCreate = function () {
-      return Promise.resolve({ ok: true });
-    };
-    await runTimestampStep();
-    globalThis.document.getElementById = origGet;
-    assert.ok(simpleResults.timestamp === true);
+    assert.equal(calls, 0);
+    assert.ok(
+      getMockEl("sts-result").innerHTML.indexOf("cached timestamp") !== -1,
+    );
+    assert.equal(simpleStepDone, true);
   });
 });
 
@@ -1393,78 +1407,136 @@ describe("simplified.js — runPixelInjectStep", function () {
   });
 });
 
-describe("simplified.js — runPixelInjectStep setTimeout branches (lines 916, 995)", function () {
-  var _origSetTimeout;
+describe("simplified.js — runPixelInjectStep direct engine", function () {
+  var _origToImageData,
+    _origToBlob,
+    _origPixelInjection,
+    _origEscapeHtml,
+    _origTranslate;
+  var decoded = { width: 2, height: 2, data: new Uint8ClampedArray(16) };
+
   beforeEach(function () {
     simpleFile = { name: "test.jpg", size: 1024, type: "image/jpeg" };
     simpleResults.didSig = { did: "did:example:123", signature: "sig" };
-    simpleResults.watermarkBlob = { type: "image/png" };
     simpleType = "image";
     getMockEl("spi-category");
     getMockEl("spi-password");
     getMockEl("spi-status");
     getMockEl("spi-algorithm");
     getMockEl("spi-btn");
-    getMockEl("pi-image");
-    getMockEl("pi-category");
-    getMockEl("pi-algorithm");
-    getMockEl("pi-message");
-    getMockEl("pi-password");
-    getMockEl("pi-output");
-    getMockEl("pi-download");
     getMockEl("simpleNextBtn");
-    _origSetTimeout = globalThis.setTimeout;
-    globalThis.setTimeout = function (fn) {
-      _origSetTimeout(fn, 0);
+    getMockEl("spi-algorithm").value = "dct";
+    _origToImageData = globalThis.simpleFileToImageData;
+    _origToBlob = globalThis.simpleImageDataToBlob;
+    _origPixelInjection = globalThis.pixelInjection;
+    _origEscapeHtml = globalThis.escapeHtml;
+    _origTranslate = globalThis.__;
+    globalThis.escapeHtml = function (s) {
+      return String(s == null ? "" : s);
+    };
+    globalThis.__ = function (key, fallback) {
+      return fallback || key;
+    };
+    globalThis.simpleFileToImageData = function () {
+      return Promise.resolve(decoded);
+    };
+    globalThis.simpleImageDataToBlob = function () {
+      return Promise.resolve(new Blob(["png"], { type: "image/png" }));
     };
   });
+
   afterEach(function () {
-    globalThis.setTimeout = _origSetTimeout;
+    globalThis.simpleFileToImageData = _origToImageData;
+    globalThis.simpleImageDataToBlob = _origToBlob;
+    globalThis.pixelInjection = _origPixelInjection;
+    globalThis.escapeHtml = _origEscapeHtml;
+    globalThis.__ = _origTranslate;
   });
 
-  it("pixel injection success inside setTimeout", async function () {
-    globalThis.handlePixelInjection = function () {
-      return Promise.resolve();
+  it("calls a prototype algorithm with the core as receiver", async function () {
+    var core = {
+      calls: 0,
+      dct: function (image, message) {
+        this.calls++;
+        assert.equal(this, core);
+        assert.equal(image, decoded);
+        assert.ok(message.indexOf("DID Signature") !== -1);
+        return Promise.resolve(decoded);
+      },
     };
-    runPixelInjectStep();
-    await new Promise(function (r) {
-      _origSetTimeout(r, 10);
-    });
-    assert.ok(simpleResults["pixel-injection"] === true);
+    globalThis.pixelInjection = { core: core };
+    await runPixelInjectStep();
+    assert.equal(core.calls, 1);
+    assert.equal(simpleResults["pixel-injection"], true);
+    assert.ok(String(simpleResults.piFinalUrl).indexOf("blob:") === 0);
+    assert.equal(simpleStepDone, true);
+    assert.equal(getMockEl("simpleNextBtn").style.display, "");
   });
 
-  it("pixel injection failure inside setTimeout", async function () {
-    globalThis.handlePixelInjection = function () {
-      return Promise.reject(new Error("inject failed"));
+  it("falls back to the bound algorithms map for snake_case names", async function () {
+    var received = null;
+    var core = {
+      algorithms: {
+        enhanced_lsb: function () {
+          received = "enhanced_lsb";
+          return Promise.resolve(decoded);
+        },
+      },
     };
-    runPixelInjectStep();
-    await new Promise(function (r) {
-      _origSetTimeout(r, 10);
-    });
-    assert.ok(true);
+    getMockEl("spi-algorithm").value = "enhanced_lsb";
+    globalThis.pixelInjection = { core: core };
+    await runPixelInjectStep();
+    assert.equal(received, "enhanced_lsb");
+    assert.equal(simpleResults["pixel-injection"], true);
   });
 
-  it("pixel injection failure without error.message (line 995)", async function () {
-    globalThis.handlePixelInjection = function () {
-      return Promise.reject({});
-    };
-    runPixelInjectStep();
-    await new Promise(function (r) {
-      _origSetTimeout(r, 10);
-    });
-    assert.ok(true);
+  it("reports an unavailable algorithm instead of hanging", async function () {
+    globalThis.pixelInjection = { core: {} };
+    await runPixelInjectStep();
+    assert.equal(simpleResults["pixel-injection"], undefined);
+    assert.ok(
+      getMockEl("spi-status").innerHTML.indexOf("not available") !== -1,
+    );
   });
 
-  it("pixel injection with null watermarkBlob (line 916)", async function () {
-    simpleResults.watermarkBlob = null;
-    globalThis.handlePixelInjection = function () {
-      return Promise.resolve();
+  it("reports engine errors without marking the step done", async function () {
+    globalThis.pixelInjection = {
+      core: {
+        dct: function () {
+          return Promise.reject(new Error("DCT exploded"));
+        },
+      },
     };
-    runPixelInjectStep();
-    await new Promise(function (r) {
-      _origSetTimeout(r, 10);
-    });
-    assert.ok(simpleResults["pixel-injection"] === true);
+    await runPixelInjectStep();
+    assert.equal(simpleStepDone, false);
+    assert.ok(getMockEl("spi-status").innerHTML.indexOf("DCT exploded") !== -1);
+  });
+
+  it("reports a missing engine instead of hanging", async function () {
+    globalThis.pixelInjection = {};
+    await runPixelInjectStep();
+    assert.ok(
+      getMockEl("spi-status").innerHTML.indexOf("could not be loaded") !== -1,
+    );
+  });
+
+  it("uses the watermarked blob as the pixel-injection source", async function () {
+    var captured = null;
+    globalThis.simpleFileToImageData = function (file) {
+      captured = file;
+      return Promise.resolve(decoded);
+    };
+    simpleResults.watermarkBlob = { type: "image/png" };
+    globalThis.pixelInjection = {
+      core: {
+        dct: function () {
+          return Promise.resolve(decoded);
+        },
+      },
+    };
+    await runPixelInjectStep();
+    assert.equal(captured.name, "test.jpg");
+    assert.equal(captured.type, "image/png");
   });
 });
 
@@ -1593,40 +1665,76 @@ describe("simplified.js — setTimeout callback coverage (runFingerprintStep)", 
 });
 
 describe("simplified.js — runTimestampStep catch block (fetch error)", function () {
+  var _origFetch, _origOtsCreate, _origEscapeHtml, _origTranslate;
   beforeEach(function () {
     simpleFile = { name: "test.jpg", size: 1024 };
     simpleType = "image";
     simpleResults.piFinalUrl = "blob:trigger-fetch-error";
     getMockEl("sts-result");
-    getMockEl("ts-create-file");
-    getMockEl("ts-output");
-    getMockEl("ts-download");
     getMockEl("simpleNextBtn");
-    globalThis.handleOtsCreate = function () {
-      return Promise.resolve({ ok: true });
+    _origFetch = globalThis.fetch;
+    _origOtsCreate = globalThis.otsCreateForFile;
+    _origEscapeHtml = globalThis.escapeHtml;
+    _origTranslate = globalThis.__;
+    globalThis.escapeHtml = function (s) {
+      return String(s == null ? "" : s);
+    };
+    globalThis.__ = function (key, fallback) {
+      return fallback || key;
+    };
+    globalThis.otsCreateForFile = function () {
+      return Promise.resolve({
+        otsBytes: new Uint8Array([1]),
+        hex: "d".repeat(64),
+        complete: true,
+      });
+    };
+    globalThis.fetch = function () {
+      return Promise.reject(new Error("network down"));
     };
   });
+  afterEach(function () {
+    globalThis.fetch = _origFetch;
+    globalThis.otsCreateForFile = _origOtsCreate;
+    globalThis.escapeHtml = _origEscapeHtml;
+    globalThis.__ = _origTranslate;
+  });
 
-  it("handles fetch error in timestamp step try block", async function () {
+  it("surfaces the fetch error in the step", async function () {
     await runTimestampStep();
-    assert.ok(simpleStepDone === true);
+    assert.equal(simpleResults.timestamp, undefined);
+    assert.equal(simpleStepDone, false);
+    assert.ok(getMockEl("sts-result").innerHTML.indexOf("network down") !== -1);
   });
 });
 
-describe("simplified.js — runTimestampStep with C2PA/audio URL (blob fetch path)", function () {
+describe("simplified.js — runTimestampStep source resolution", function () {
+  var _origFetch, _origOtsCreate, _origEscapeHtml, captured;
+
+  function captureFile(file) {
+    captured = file;
+    return Promise.resolve({
+      otsBytes: new Uint8Array([1, 2]),
+      hex: "e".repeat(64),
+      complete: true,
+    });
+  }
+
   beforeEach(function () {
     simpleFile = { name: "test.jpg", size: 1024, type: "image/jpeg" };
     simpleResults = {};
     simpleType = "image";
-    getMockEl("ts-create-file");
+    captured = null;
     getMockEl("sts-result");
-    getMockEl("ts-output");
-    getMockEl("ts-download");
     getMockEl("simpleNextBtn");
-    globalThis.handleOtsCreate = function () {
-      return Promise.resolve({ ok: true });
+    _origFetch = globalThis.fetch;
+    _origOtsCreate = globalThis.otsCreateForFile;
+    _origEscapeHtml = globalThis.escapeHtml;
+    globalThis.escapeHtml = function (s) {
+      return String(s == null ? "" : s);
     };
-    globalThis.fetch = function (url) {
+    globalThis.otsCreateForFile = captureFile;
+    globalThis.fetch = function () {
       return Promise.resolve({
         blob: function () {
           return Promise.resolve(
@@ -1638,41 +1746,45 @@ describe("simplified.js — runTimestampStep with C2PA/audio URL (blob fetch pat
   });
 
   afterEach(function () {
-    delete globalThis.fetch;
+    globalThis.fetch = _origFetch;
+    globalThis.otsCreateForFile = _origOtsCreate;
+    globalThis.escapeHtml = _origEscapeHtml;
   });
 
-  it("feeds C2PA blob URL into timestamp file input for images", async function () {
+  it("uses the C2PA blob URL for images", async function () {
     simpleResults.c2paUrl = "blob:c2pa-output";
-    var fileInput = document.getElementById("ts-create-file");
-    assert.equal(fileInput.files, undefined);
     await runTimestampStep();
-    assert.ok(
-      fileInput.files !== undefined,
-      "fileInput.files should be set after runTimestampStep",
-    );
-    assert.ok(simpleStepDone === true);
+    assert.equal(captured.name, "test.jpg");
+    assert.equal(simpleResults.timestamp, true);
   });
 
-  it("feeds PI blob URL when c2paUrl is absent", async function () {
+  it("uses the pixel-injection blob URL when c2paUrl is absent", async function () {
     simpleResults.piFinalUrl = "blob:pi-output";
-    var fileInput = document.getElementById("ts-create-file");
     await runTimestampStep();
-    assert.ok(fileInput.files !== undefined);
+    assert.equal(captured.name, "test.jpg");
+    assert.equal(simpleResults.timestamp, true);
   });
 
-  it("feeds audio watermark URL into timestamp file input for audio type", async function () {
+  it("uses the audio watermark URL for audio files", async function () {
     simpleType = "audio";
     simpleFile = { name: "test.wav", size: 2048, type: "audio/wav" };
     simpleResults.audioWatermarkUrl = "blob:audio-wm-output";
-    var fileInput = document.getElementById("ts-create-file");
     await runTimestampStep();
-    assert.ok(fileInput.files !== undefined);
+    assert.equal(captured.name, "test.wav");
+    assert.equal(simpleResults.timestamp, true);
   });
 
-  it("uses dataUrlToBlob path for non-blob URL", async function () {
+  it("falls back to the original upload when no output URL exists", async function () {
+    await runTimestampStep();
+    assert.equal(captured.name, "test.jpg");
+    assert.equal(simpleResults.timestamp, true);
+  });
+
+  it("decodes a data URL without fetching", async function () {
     simpleResults.c2paUrl = "data:text/plain;base64,dGVzdA==";
     await runTimestampStep();
-    assert.ok(true); // no exception
+    assert.equal(captured.name, "test.jpg");
+    assert.equal(simpleResults.timestamp, true);
   });
 });
 
