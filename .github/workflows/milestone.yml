@@ -27,7 +27,7 @@ jobs:
             release-assets.githubusercontent.com:443
 
       - name: Set Milestone for merged PR
-        uses: hustcer/milestone-action@2f38355153344ccaaa44b5b5fcff9f604dff1b45 # v3.2
+        uses: hustcer/milestone-action@815f8224db33f809c5063c66e2e4f530208f401e # v3.3
         if: github.event.pull_request.merged == true
         with:
           action: bind-pr
@@ -35,7 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set Milestone for closed issue (fix merged)
-        uses: hustcer/milestone-action@2f38355153344ccaaa44b5b5fcff9f604dff1b45 # v3.2
+        uses: hustcer/milestone-action@815f8224db33f809c5063c66e2e4f530208f401e # v3.3
         if: github.event.issue.state == 'closed'
         with:
           action: bind-issue
