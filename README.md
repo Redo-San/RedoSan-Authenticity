@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/node-%3E%3D22.14.0-brightgreen?style=flat-square&logo=node.js" alt="Node">
   <img src="https://img.shields.io/badge/100%25-Client%20Side-FAB972?style=flat-square" alt="Client Side">
   <img src='https://www.codetriage.com/redo-san/redosan-authenticity/badges/users.svg' alt='Open Source Helpers' />
+  <a href="https://deepwiki.com/Redo-San/RedoSan-Authenticity"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
 <h1 align="center"> RedoSan Authenticity</h1>
