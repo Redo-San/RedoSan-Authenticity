@@ -1149,18 +1149,6 @@ async function runPixelInjectStep() {
     simpleResults.piAlgorithm = algorithm;
     simpleResults.piCategory = category;
     simpleResults["pixel-injection"] = true;
-    simpleResults.piResultHtml =
-      '<img src="' +
-      simpleResults.piFinalUrl +
-      '" alt="Pixel-injected image" style="max-width:100%;border-radius:8px">';
-    simpleResults.piHtml =
-      '<a class="btn" download="' +
-      escapeHtml(simpleFile ? simpleFile.name : "image.png") +
-      '" href="' +
-      simpleResults.piFinalUrl +
-      '">' +
-      escapeHtml(__("shared.download", "Download")) +
-      "</a>";
     if (statusEl) {
       statusEl.innerHTML =
         '<div style="font-size:0.85rem;color:var(--success);padding:12px;background:rgba(40,167,69,.1);border-radius:8px">' +
@@ -1170,11 +1158,7 @@ async function runPixelInjectStep() {
             "✅ DID signature injected successfully as secret message.",
           ),
         ) +
-        '<div style="margin-top:10px">' +
-        simpleResults.piResultHtml +
-        '</div><div style="margin-top:10px">' +
-        simpleResults.piHtml +
-        "</div></div>";
+        "</div>";
     }
     simpleStepDone = true;
     var nextBtn = document.getElementById("simpleNextBtn");
@@ -1281,7 +1265,6 @@ async function runTimestampStep() {
     var blob = new Blob([created.otsBytes], {
       type: "application/octet-stream",
     });
-    downloadBlobSimple(blob, sourceFile.name + ".ots");
     var dateStr = new Date().toISOString().replace("T", " ").substring(0, 19);
     var text = created.complete
       ? __(

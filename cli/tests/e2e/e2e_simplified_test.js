@@ -299,10 +299,12 @@ describe("E2E — Simplified Mode (Wizard)", () => {
 
     const pixel = await page.evaluate(() => {
       const next = document.getElementById("simpleNextBtn");
+      const status = document.getElementById("spi-status");
       return {
         blob: (window.simpleResults.piFinalUrl || "").startsWith("blob:"),
         next: !!next && next.style.display !== "none" && !next.disabled,
-        status: (document.getElementById("spi-status") || {}).textContent || "",
+        status: (status || {}).textContent || "",
+        statusHtml: (status || {}).innerHTML || "",
       };
     });
     assert.ok(pixel.blob, "Pixel injection should produce an image blob");
@@ -311,7 +313,15 @@ describe("E2E — Simplified Mode (Wizard)", () => {
       pixel.status.length > 0,
       "Pixel injection should report a result",
     );
+    assert.ok(
+      !/<img|download=/i.test(pixel.statusHtml),
+      "The pixel step should not preview or download the image",
+    );
 
+    const downloads = [];
+    page.on("download", (download) =>
+      downloads.push(download.suggestedFilename()),
+    );
     await page.evaluate((i) => {
       window.simpleStep = i;
       window.simpleStepDone = false;
@@ -321,6 +331,11 @@ describe("E2E — Simplified Mode (Wizard)", () => {
       () => !!(window.simpleResults && window.simpleResults.timestamp),
       null,
       { timeout: 60000 },
+    );
+    assert.equal(
+      downloads.length,
+      0,
+      "The timestamp step should not download the .ots file",
     );
 
     const timestamp = await page.evaluate(() => {
