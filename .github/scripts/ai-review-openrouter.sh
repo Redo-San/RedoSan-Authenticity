@@ -60,8 +60,8 @@ SYSTEM_PROMPT="You are an expert code reviewer for a watermarking/authenticity w
 
 REVIEW=""
 # Try fast free models first with short timeout, then router as fallback
-FAST_MODELS="liquid/lfm-2.5-2.6b:free,thinkingmachines/inkling-small:free,poolside/laguna-xs-2.1:free,cohere/north-mini-code:free,dots-studio/dots-3-note-preview:free"
-SLOW_MODELS="openrouter/free,inclusionai/ling-3.0-flash-fin:free,poolside/laguna-s-2.1:free,thinkingmachines/inkling:free,z-ai/glm-5.2:free,minimax/minimax-m3:free,nvidia/nemotron-3.5-lightning:free,nvidia/nemotron-3.5-content-safety:free,nvidia/nemotron-3-ultra-550b-a55b:free,nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free,minimax/minimax-m2.7:free,nvidia/nemotron-3-super-120b-a12b:free"
+FAST_MODELS="liquid/lfm-3-1.7b:free,inclusionai/ling-3.2-flash:free,baidu/ernie-5.5-flash-preview:free,particle-ai/particle-1:free,recursive/flint-v1.0:free"
+SLOW_MODELS="openrouter/free,nvidia/nemotron-3.5-lightning:free,nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free"
 MODELS="${OPENROUTER_MODEL:-$FAST_MODELS,$SLOW_MODELS}"
 for MODEL in ${MODELS//,/ }; do
   echo "Trying model: $MODEL"
