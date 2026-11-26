@@ -27,13 +27,23 @@
 ---
 
 <!-- BOT:START whats-new -->
-## What's New in v2.1.1
+
+## What's New in v2.2.0
+
+- **Simplified mode** — the pixel injection and timestamp steps run without the professional MPA markup: pixel injection calls the watermark core directly and timestamp uses the shared `otsCreateForFile()` helper, so the SPA wizard no longer hangs or throws on missing `#pi-*`/`#ts-*` fields
+- **Simplified outputs** — the pixel step shows only its status message and the timestamp step no longer opens a save dialog; the final step owns the image and `.ots` downloads
+- **Desktop (Tauri)** — desktop 2.2.0 bundles both simplified-mode fixes and publishes NSIS/MSI installers from the `desktop-v2.2.0` tag
+
+<details>
+<summary><b>v2.1.1</b> — Release guards</summary>
 
 - **CLI version** — `redosan --version` now reads `package.json` at runtime, with a regression test that fails when the two drift
 - **Release guards** — `npm run check` and `prepack` verify package-lock, Cargo.toml, Cargo.lock, tauri.conf.json, the CLI output, the README heading and the git tag
 - **npm README** — the publish workflow regenerates the package README from the tag changelog before staging, so the registry page always announces the current release
 - **Package parity** — `files` lists the eight shipped vendor libraries explicitly; a local `npm pack` now produces the same 66-file, 1.69 MB tarball as CI instead of 42 MB
 - **Maintenance** — `scripts/bump-version.mjs` updates all five manifests, the npm setup wizard reads the version dynamically, and README automation understands git-cliff bodies
+
+</details>
 
 <details>
 <summary><b>v2.1.0</b> — Browser extension</summary>
@@ -506,7 +516,8 @@ Bypass with `--allow-dangerous` for testing trusted files.
 ## Testing
 
 <!-- BOT:START testing-stats -->
-110 unit test files + 59 E2E suites with 6,200+ tests using `node:test` (zero external test dependencies) + Playwright:
+
+111 unit test files + 59 E2E suites with 6,300+ tests using `node:test` (zero external test dependencies) + Playwright:
 <!-- BOT:END testing-stats -->
 
 ```bash
@@ -532,16 +543,18 @@ CI runs on Node.js 24/26 via GitHub Actions. E2E tests use Playwright with Chrom
 ## CI/CD Workflows
 
 <!-- BOT:START workflows -->
+
 The project includes 83 GitHub Actions workflows:
 
-| Category | Workflows |
-| -------- | --------- |
-| **AI Review** | Ai Review Openrouter, Eslint Review, Gemini Analysis, Ollama Analysis, Review, Reviewdog |
-| **PR Management** | Auto Assign, Branch Name Lint, Cross Ref Check, Issue Labeler, Label Actions, Label Sync, Labeler, Pr Body Check, Pr Size Label, Pr Stats, Pr Title Lint |
-| **Security** | Abom, Codeql, Dependency Review, Malware Scan, Npm Audit Checker, Permissions Sheriff, Pwn Hunter, Scorecards, Secret Scan Gitleaks, Secret Scanner, Security Audit, Security, Semgrep, Zizmor |
-| **Quality** | A11y Fix, A11y, Backstop, Codebase Audit, Console Log Detector, Cspell Check, Css Lint, Dead Css, Depcheck, Dom Review, E2e Coverage Guard, File Size Budget, Html Hint, Knip, Madge Check, Markdownlint, Mutation, Performance, Size Limit, Spell Check, Typedoc Check |
-| **Maintenance** | Broken Links, Copilot Setup Steps, Dependabot Auto Merge, Discussion Release, Discussion Welcome, Duplicate Issues, Extension Release, Issue Compliance, Lock Closed, Milestone, Minimal Dispatch, Release Drafter, Release, Slash Command, Spam Guard, Stale, Tauri Release, Todo Issues, Translate, Uptime, Welcome |
-| **Core** | Ci, Cli, Deploy Pages, Discussion Digest, Js Syntax Check, Lint, Prettier Check, Publish Containers, Publish Npm, Update Readme |
+| Category          | Workflows                                                                                                                                                                                                                                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AI Review**     | Ai Review Openrouter, Eslint Review, Gemini Analysis, Ollama Analysis, Review, Reviewdog                                                                                                                                                                                                                              |
+| **PR Management** | Auto Assign, Branch Name Lint, Cross Ref Check, Issue Labeler, Label Actions, Label Sync, Labeler, Pr Body Check, Pr Size Label, Pr Stats, Pr Title Lint                                                                                                                                                              |
+| **Security**      | Abom, Codeql, Dependency Review, Malware Scan, Npm Audit Checker, Permissions Sheriff, Pwn Hunter, Scorecards, Secret Scan Gitleaks, Secret Scanner, Security Audit, Security, Semgrep, Zizmor                                                                                                                        |
+| **Quality**       | A11y Fix, A11y, Backstop, Codebase Audit, Console Log Detector, Cspell Check, Css Lint, Dead Css, Depcheck, Dom Review, E2e Coverage Guard, File Size Budget, Html Hint, Knip, Madge Check, Markdownlint, Mutation, Performance, Size Limit, Spell Check, Typedoc Check                                               |
+| **Maintenance**   | Broken Links, Copilot Setup Steps, Dependabot Auto Merge, Discussion Release, Discussion Welcome, Duplicate Issues, Extension Release, Issue Compliance, Lock Closed, Milestone, Minimal Dispatch, Release Drafter, Release, Slash Command, Spam Guard, Stale, Tauri Release, Todo Issues, Translate, Uptime, Welcome |
+| **Core**          | Ci, Cli, Deploy Pages, Discussion Digest, Js Syntax Check, Lint, Prettier Check, Publish Containers, Publish Npm, Update Readme                                                                                                                                                                                       |
+
 <!-- BOT:END workflows -->
 
 ---
