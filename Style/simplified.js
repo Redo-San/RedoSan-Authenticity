@@ -515,6 +515,40 @@ function restartSimple() {
 }
 
 /**
+ * Load the fingerprint stack, then open the shared download modal so the
+ * report formats work in the SPA shell that never mounts the pro section.
+ */
+async function simpleDownloadFingerprint() {
+  try {
+    await simpleEnsureSection("fingerprint");
+    if (typeof window.setupFpDownload !== "function") {
+      throw new Error("Fingerprint module did not load");
+    }
+    window.setupFpDownload();
+    window.showDownloadModal();
+  } catch (error) {
+    alert("Failed to open the fingerprint download: " + error.message);
+  }
+}
+
+/**
+ * Load the DID stack, then open the shared download modal so the identity
+ * report formats work in the SPA shell that never mounts the pro section.
+ */
+async function simpleDownloadDID() {
+  try {
+    await simpleEnsureSection("did");
+    if (typeof window.setupDidDownload !== "function") {
+      throw new Error("DID module did not load");
+    }
+    window.setupDidDownload();
+    window.showDownloadModal();
+  } catch (error) {
+    alert("Failed to open the DID download: " + error.message);
+  }
+}
+
+/**
  * Ensure a lazy-loaded feature section is available in simplified mode.
  * The SPA only loads section scripts for the current route, so simplified
  * steps must request the section they depend on explicitly.
@@ -525,6 +559,44 @@ function simpleEnsureSection(name) {
     return window.RedoSanLoader.loadSection(name).catch(function () {});
   }
   return Promise.resolve();
+}
+
+/**
+ * Load the certificate stack on demand, then run a professional download.
+ * The Done step lives in the SPA, where the certificate scripts are not
+ * loaded until this point, so the inline handlers must go through here.
+ * @param format
+ * @param btn
+ */
+async function simpleDownloadCert(format, btn) {
+  try {
+    await simpleEnsureSection("certificate");
+    if (typeof window.downloadCert !== "function") {
+      throw new Error("Certificate module did not load");
+    }
+    await window.downloadCert(format, btn);
+  } catch (error) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = String(format).toUpperCase();
+    }
+    alert("Failed to generate certificate: " + error.message);
+  }
+}
+
+/**
+ * Load the certificate stack on demand and download its detached .ots proof.
+ */
+async function simpleDownloadCertOts() {
+  try {
+    await simpleEnsureSection("certificate");
+    if (typeof window.downloadCertOtsProof !== "function") {
+      throw new Error("Certificate module did not load");
+    }
+    await window.downloadCertOtsProof();
+  } catch (error) {
+    alert("Failed to download certificate proof: " + error.message);
+  }
 }
 
 /**

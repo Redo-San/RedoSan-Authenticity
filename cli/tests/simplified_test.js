@@ -2689,7 +2689,7 @@ describe("simplified_renderers.js — renderDone C2PA branch", function () {
     simpleResults = { fingerprint: true, fpResult: { sha256: "abc" } };
     renderDone(getMockEl("simpleBody"));
     var h = getMockEl("simpleBody").innerHTML;
-    assert.ok(h.includes("setupFpDownload"));
+    assert.ok(h.includes("simpleDownloadFingerprint"));
   });
 
   it("shows certificate section when any result exists", function () {
