@@ -1,3 +1,4 @@
+/* exported simpleDownloadCert, simpleDownloadCertOts, simpleDownloadDID, simpleDownloadFingerprint */
 /* c8 ignore start */
 (function () {
   if (
@@ -517,6 +518,7 @@ function restartSimple() {
 /**
  * Load the fingerprint stack, then open the shared download modal so the
  * report formats work in the SPA shell that never mounts the pro section.
+ * @returns {Promise<void>}
  */
 async function simpleDownloadFingerprint() {
   try {
@@ -534,6 +536,7 @@ async function simpleDownloadFingerprint() {
 /**
  * Load the DID stack, then open the shared download modal so the identity
  * report formats work in the SPA shell that never mounts the pro section.
+ * @returns {Promise<void>}
  */
 async function simpleDownloadDID() {
   try {
@@ -552,7 +555,8 @@ async function simpleDownloadDID() {
  * Ensure a lazy-loaded feature section is available in simplified mode.
  * The SPA only loads section scripts for the current route, so simplified
  * steps must request the section they depend on explicitly.
- * @param name
+ * @param {string} name Section name registered in the loader
+ * @returns {Promise<void>}
  */
 function simpleEnsureSection(name) {
   if (window.RedoSanLoader) {
@@ -565,8 +569,9 @@ function simpleEnsureSection(name) {
  * Load the certificate stack on demand, then run a professional download.
  * The Done step lives in the SPA, where the certificate scripts are not
  * loaded until this point, so the inline handlers must go through here.
- * @param format
- * @param btn
+ * @param {string} format One of pdf, docx or epub
+ * @param {HTMLElement} [btn] Button that triggered the download
+ * @returns {Promise<void>}
  */
 async function simpleDownloadCert(format, btn) {
   try {
@@ -586,6 +591,7 @@ async function simpleDownloadCert(format, btn) {
 
 /**
  * Load the certificate stack on demand and download its detached .ots proof.
+ * @returns {Promise<void>}
  */
 async function simpleDownloadCertOts() {
   try {
