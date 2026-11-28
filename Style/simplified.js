@@ -1,4 +1,3 @@
-/* exported simpleDownloadCert, simpleDownloadCertOts, simpleDownloadDID, simpleDownloadFingerprint */
 /* c8 ignore start */
 (function () {
   if (
@@ -604,6 +603,13 @@ async function simpleDownloadCertOts() {
     alert("Failed to download certificate proof: " + error.message);
   }
 }
+
+// The Done step calls these from inline onclick attributes, which ESLint
+// cannot resolve, so expose them on window explicitly.
+window.simpleDownloadCert = simpleDownloadCert;
+window.simpleDownloadCertOts = simpleDownloadCertOts;
+window.simpleDownloadDID = simpleDownloadDID;
+window.simpleDownloadFingerprint = simpleDownloadFingerprint;
 
 /**
  *
