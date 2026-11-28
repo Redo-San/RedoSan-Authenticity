@@ -515,10 +515,47 @@ function restartSimple() {
 }
 
 /**
+ * Load the fingerprint stack, then open the shared download modal so the
+ * report formats work in the SPA shell that never mounts the pro section.
+ * @returns {Promise<void>}
+ */
+async function simpleDownloadFingerprint() {
+  try {
+    await simpleEnsureSection("fingerprint");
+    if (typeof window.setupFpDownload !== "function") {
+      throw new Error("Fingerprint module did not load");
+    }
+    window.setupFpDownload();
+    window.showDownloadModal();
+  } catch (error) {
+    alert("Failed to open the fingerprint download: " + error.message);
+  }
+}
+
+/**
+ * Load the DID stack, then open the shared download modal so the identity
+ * report formats work in the SPA shell that never mounts the pro section.
+ * @returns {Promise<void>}
+ */
+async function simpleDownloadDID() {
+  try {
+    await simpleEnsureSection("did");
+    if (typeof window.setupDidDownload !== "function") {
+      throw new Error("DID module did not load");
+    }
+    window.setupDidDownload();
+    window.showDownloadModal();
+  } catch (error) {
+    alert("Failed to open the DID download: " + error.message);
+  }
+}
+
+/**
  * Ensure a lazy-loaded feature section is available in simplified mode.
  * The SPA only loads section scripts for the current route, so simplified
  * steps must request the section they depend on explicitly.
- * @param name
+ * @param {string} name Section name registered in the loader
+ * @returns {Promise<void>}
  */
 function simpleEnsureSection(name) {
   if (window.RedoSanLoader) {
@@ -526,6 +563,53 @@ function simpleEnsureSection(name) {
   }
   return Promise.resolve();
 }
+
+/**
+ * Load the certificate stack on demand, then run a professional download.
+ * The Done step lives in the SPA, where the certificate scripts are not
+ * loaded until this point, so the inline handlers must go through here.
+ * @param {string} format One of pdf, docx or epub
+ * @param {HTMLElement} [btn] Button that triggered the download
+ * @returns {Promise<void>}
+ */
+async function simpleDownloadCert(format, btn) {
+  try {
+    await simpleEnsureSection("certificate");
+    if (typeof window.downloadCert !== "function") {
+      throw new Error("Certificate module did not load");
+    }
+    await window.downloadCert(format, btn);
+  } catch (error) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = String(format).toUpperCase();
+    }
+    alert("Failed to generate certificate: " + error.message);
+  }
+}
+
+/**
+ * Load the certificate stack on demand and download its detached .ots proof.
+ * @returns {Promise<void>}
+ */
+async function simpleDownloadCertOts() {
+  try {
+    await simpleEnsureSection("certificate");
+    if (typeof window.downloadCertOtsProof !== "function") {
+      throw new Error("Certificate module did not load");
+    }
+    await window.downloadCertOtsProof();
+  } catch (error) {
+    alert("Failed to download certificate proof: " + error.message);
+  }
+}
+
+// The Done step calls these from inline onclick attributes, which ESLint
+// cannot resolve, so expose them on window explicitly.
+window.simpleDownloadCert = simpleDownloadCert;
+window.simpleDownloadCertOts = simpleDownloadCertOts;
+window.simpleDownloadDID = simpleDownloadDID;
+window.simpleDownloadFingerprint = simpleDownloadFingerprint;
 
 /**
  *

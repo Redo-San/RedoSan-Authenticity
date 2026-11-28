@@ -785,7 +785,7 @@ function renderDone(body) {
       '<div class="simple-done-section"><h3>' + __("simple.fp_label") + "</h3>";
     fpHtml += '<div style="margin-top:12px">';
     fpHtml +=
-      '<button class="btn" onclick="setupFpDownload();showDownloadModal()">' +
+      '<button class="btn" onclick="simpleDownloadFingerprint()">' +
       __("simple.fp_dl_btn") +
       "</button>";
     fpHtml += "</div></div>";
@@ -830,7 +830,7 @@ function renderDone(body) {
     }
     didHtml += '<div style="margin-top:12px">';
     didHtml +=
-      '<button class="btn" onclick="setupDidDownload();showDownloadModal()">' +
+      '<button class="btn" onclick="simpleDownloadDID()">' +
       __("simple.did_dl_btn", "📥 Download DID") +
       "</button>";
     didHtml += "</div></div>";
@@ -847,18 +847,32 @@ function renderDone(body) {
     results.c2pa ||
     results.didSig;
   if (hasAnyResult) {
+    // Warm the certificate stack so the passport buttons respond at once.
+    simpleEnsureSection("certificate");
     var certType = simpleType || "other";
     var certDescKey = "simple.cert_desc_" + certType;
-    var certDescFallback = {
-      image:
-        "Download a signed document with all results, image preview, and QR verification code.",
-      audio:
-        "Download a signed document with all results, audio player preview, and QR verification code.",
-      video:
-        "Download a signed document with all results, video preview, and QR verification code.",
-      other:
-        "Download a signed document with all results and QR verification code.",
-    }[certType];
+    var certDescFallback =
+      "Download a signed document with all results and QR verification code.";
+    switch (certType) {
+      case "image": {
+        certDescFallback =
+          "Download a signed document with all results, image preview, and QR verification code.";
+        break;
+      }
+      case "audio": {
+        certDescFallback =
+          "Download a signed document with all results, audio player preview, and QR verification code.";
+        break;
+      }
+      case "video": {
+        certDescFallback =
+          "Download a signed document with all results, video preview, and QR verification code.";
+        break;
+      }
+      default: {
+        break;
+      }
+    }
     sections.push(
       '<div class="simple-done-section simple-cert-section">' +
         "<h3>" +
@@ -868,10 +882,10 @@ function renderDone(body) {
         __(certDescKey, certDescFallback) +
         "</p>" +
         '<div class="simple-cert-btns">' +
-        '<button class="btn cert-btn" onclick="downloadCert(\'pdf\', this)" style="background:#d32f2f;color:#fff">📄 PDF</button>' +
-        '<button class="btn cert-btn" onclick="downloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
-        '<button class="btn cert-btn" onclick="downloadCert(\'epub\', this)" style="background:#7ab55c;color:#fff">📖 EPUB</button>' +
-        '<button class="btn cert-btn" id="cert-ots-dl-btn" onclick="downloadCertOtsProof()" style="background:#666;color:#fff;display:none;margin-top:8px">🛡️ Certificate .OTS Proof</button>' +
+        '<button class="btn cert-btn" onclick="simpleDownloadCert(\'pdf\', this)" style="background:#d32f2f;color:#fff">📄 PDF</button>' +
+        '<button class="btn cert-btn" onclick="simpleDownloadCert(\'docx\', this)" style="background:#2b579a;color:#fff">📝 DOCX</button>' +
+        '<button class="btn cert-btn" onclick="simpleDownloadCert(\'epub\', this)" style="background:#7ab55c;color:#fff">📖 EPUB</button>' +
+        '<button class="btn cert-btn" id="cert-ots-dl-btn" onclick="simpleDownloadCertOts()" style="background:#666;color:#fff;display:none;margin-top:8px">🛡️ Certificate .OTS Proof</button>' +
         "</div></div>",
     );
   }
