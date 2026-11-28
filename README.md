@@ -28,11 +28,18 @@
 
 <!-- BOT:START whats-new -->
 
-## What's New in v2.2.0
+## What's New in v2.2.1
+
+- See the full release notes: https://github.com/Redo-San/RedoSan-Authenticity/releases/tag/v2.2.1
+
+<details>
+<summary><b>v2.2.0</b> — Simplified mode</summary>
 
 - **Simplified mode** — the pixel injection and timestamp steps run without the professional MPA markup: pixel injection calls the watermark core directly and timestamp uses the shared `otsCreateForFile()` helper, so the SPA wizard no longer hangs or throws on missing `#pi-*`/`#ts-*` fields
 - **Simplified outputs** — the pixel step shows only its status message and the timestamp step no longer opens a save dialog; the final step owns the image and `.ots` downloads
 - **Desktop (Tauri)** — desktop 2.2.0 bundles both simplified-mode fixes and publishes NSIS/MSI installers from the `desktop-v2.2.0` tag
+
+</details>
 
 <details>
 <summary><b>v2.1.1</b> — Release guards</summary>
