@@ -30,7 +30,7 @@
 
 ## What's New in v2.2.1
 
-- See the full release notes: https://github.com/Redo-San/RedoSan-Authenticity/releases/tag/v2.2.1
+- See the full release notes: [v2.2.1](https://github.com/Redo-San/RedoSan-Authenticity/releases/tag/v2.2.1)
 
 <details>
 <summary><b>v2.2.0</b> — Simplified mode</summary>

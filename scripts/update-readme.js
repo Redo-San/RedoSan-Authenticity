@@ -291,7 +291,7 @@ function whatsNewBlock(currentInner, releaseVersion, releaseBody) {
     releaseBullets.length > 0
       ? releaseBullets
       : [
-          `- See the full release notes: ${REPO_URL}/releases/tag/${releaseVersion}`,
+          `- See the full release notes: [${releaseVersion}](${REPO_URL}/releases/tag/${releaseVersion})`,
         ];
 
   const archive = detailsBlock(
